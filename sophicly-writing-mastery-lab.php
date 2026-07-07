@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.921
+ * Version: 7.19.922
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.921');
+define('SWML_VERSION', '7.19.922');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -404,6 +404,7 @@ class Sophicly_Writing_Mastery_Lab {
             'libraryUrl'       => home_url('/library/'),
             'pageUrl'          => home_url('/writing-mastery-lab/'),
             'iconsUrl'         => plugin_dir_url(__FILE__) . 'frontend/icons/emoji/', // v7.19.916: svgifyEmojis base
+            'techniqueNames'   => $this->get_technique_names(), // v7.19.922: Fix→Learn chips — N1 technique resolution
             'courseResumeUrl'   => $course_resume_url,
             // v7.17.36: LD topic permalink the WML shortcode is embedded in. Stamped
             // onto session_records rows by student-data listeners. Empty on the
@@ -814,6 +815,7 @@ class Sophicly_Writing_Mastery_Lab {
                 'libraryUrl'     => home_url('/library/'),
                 'pageUrl'        => home_url('/writing-mastery-lab/'),
                 'iconsUrl'       => plugin_dir_url(__FILE__) . 'frontend/icons/emoji/', // v7.19.916: svgifyEmojis base
+                'techniqueNames' => $this->get_technique_names(), // v7.19.922: Fix→Learn chips — N1 technique resolution
                 'courseResumeUrl' => '',
                 // v7.17.36: LD topic permalink for student-data lesson_url stamping.
                 'lessonUrl'      => get_queried_object_id() ? get_permalink(get_queried_object_id()) : '',
@@ -979,6 +981,27 @@ class Sophicly_Writing_Mastery_Lab {
      * when no course resolves or the bridge is unavailable → JS falls back to the
      * legacy local timer. $target_uid lets review mode read the STUDENT's window.
      */
+    /**
+     * v7.19.922: canonical technique-name set for the "Fix → Learn" chips (N1 → Table of
+     * Techniques deep-link). Parsed from the GENERATED
+     * protocols/shared/reference/table-of-techniques.md ("### Name `Xx`" headings) — never
+     * hand-edit that file; re-sync it when the table generator regenerates. Transient-cached
+     * on filemtime so the ~500KB file is parsed once per change, not once per page load.
+     */
+    private function get_technique_names() {
+        $path = plugin_dir_path(__FILE__) . 'protocols/shared/reference/table-of-techniques.md';
+        if (!file_exists($path)) return [];
+        $mtime  = (int) filemtime($path);
+        $cached = get_transient('swml_technique_names');
+        if (is_array($cached) && (int) ($cached['mtime'] ?? 0) === $mtime && is_array($cached['names'] ?? null)) {
+            return $cached['names'];
+        }
+        preg_match_all('/^###\s+(.+?)\s+`[^`]{1,4}`\s*$/m', (string) file_get_contents($path), $m);
+        $names = array_values(array_unique($m[1]));
+        set_transient('swml_technique_names', ['mtime' => $mtime, 'names' => $names], WEEK_IN_SECONDS);
+        return $names;
+    }
+
     private function get_course_deadline_for_config($target_uid = 0) {
         if (!class_exists('Sophicly_LearnDash_Bridge')) return null;
         $uid = $target_uid ?: get_current_user_id();

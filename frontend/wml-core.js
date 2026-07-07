@@ -2600,6 +2600,10 @@ window.WML = (function() {
     }
 
     function formatAI(text) {
+        // v7.19.922 (Neil): tag marking-penalty lines with "Learn →" chip tokens BEFORE any
+        // transform — detection reuses the ledger's raw-text codeRe shape. Tokens are added to
+        // this local copy only; raw chatHistory and every raw-text consumer stay untouched.
+        text = tagLearnChips(text);
         // Security: escape raw HTML entities before markdown conversion (v7.15.2)
         // All HTML tags are generated programmatically AFTER this step by the markdown converter
         text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -2773,6 +2777,10 @@ window.WML = (function() {
         // v7.19.916 (Neil): decorative emojis → brand illustrative icons (see svgifyEmojis).
         html = svgifyEmojis(html);
 
+        // v7.19.922: swap the Learn-chip tokens (added by tagLearnChips at the top of this
+        // function) for the real buttons — last, so no other transform can split them.
+        html = renderLearnChipTokens(html);
+
         return html;
     }
 
@@ -2802,6 +2810,142 @@ window.WML = (function() {
             : seg.replace(_emojiIconRe, (m, e) =>
                 '<img src="' + iconBase + EMOJI_ICON_MAP[e] + '.svg" class="swml-emoji-ico" alt="" aria-hidden="true" loading="lazy">')
         ).join('');
+    }
+
+    // ── v7.19.922 (Neil): "Fix → Learn" chips on marking-penalty lines ─────────────────
+    // The feedback names the fault + the fix; the chip names WHERE TO LEARN the skill.
+    // Display layer only (the svgify pattern): chip tokens are added inside formatAI's
+    // local copy, so raw chatHistory and every raw-text consumer (pen ledger, detectors,
+    // marker extraction) are untouched by construction. PM canvas cards are EXCLUDED v1
+    // (the schema drops <button> — the v898 fbGlyph lesson); the pop-out Feedback pad is
+    // covered by appendLearnChips() on its non-PM clones instead (wml-assessment.js).
+    // Destinations are FEATURE-DETECTED at render time:
+    //   N1      → window.SophiclyTable  (LIVE — notes v2.6.52 deep-link contract, in prod)
+    //   F1 / T1 → window.SophiclyToolkit (ships DORMANT — lights up on the notes toolkit
+    //             deploy with ZERO WML change; contract asks in the 2026-07-07 handoff)
+    //   K1      → destination TBD (contract ask open) — no entry, so no chip.
+    // NEVER a bare open() — it resolves to document.open and blanks the page (notes gotcha).
+    const PENALTY_LEARN_MAP = {
+        F1: { dest: 'toolkit', arg: 'inference-verbs', label: 'Inference Verbs' },
+        T1: { dest: 'toolkit', arg: 'inference-verbs', label: 'Inference Verbs' },
+        N1: { dest: 'table' },   // arg = technique name resolved from the penalty line itself
+    };
+    // Detection = the pen-ledger codeRe shape (keep in sync with _penLedgerCards' codeRe in
+    // wml-assessment.js) PLUS the tally form the rebuilt Penalty Ledger / code-tallied Trend
+    // emit ("**F1 — name** ×5 = −2.5" / "F1 ×8: …"). Line-anchored; the map gates which
+    // codes actually chip, so lookalikes ("Q2 ×2") fall through harmlessly.
+    const _LEARN_LINE_RE = /(^|\n)([ \t]*(?:[·•*-][ \t]*)?\*{0,2}([A-Z]{1,3}\d(?:-[A-Z]+)?)\*{0,2}(?:[^(\n]{0,60}\((?:−|-|–)[ \t]*[\d.]+\)|[^\n×]{0,60}×\d+)[^\n]*)/g;
+    // N1 needs the technique the student misnamed. Canonical name set = the GENERATED
+    // protocols/shared/reference/table-of-techniques.md headings, localized as
+    // swmlConfig.techniqueNames. One combined regex, longest-first so "Extended Metaphor"
+    // beats "Metaphor"; "The X" names also match without their article.
+    let _techMatcher = null;
+    function _resolveTechniqueName(text) {
+        const names = (typeof swmlConfig !== 'undefined' && swmlConfig.techniqueNames) || [];
+        if (!names.length || !text) return null;
+        if (!_techMatcher) {
+            const canon = {}, alts = [];
+            names.forEach(n => {
+                canon[n.toLowerCase()] = n; alts.push(n);
+                if (/^The\s+/i.test(n)) { const s = n.replace(/^The\s+/i, ''); canon[s.toLowerCase()] = n; alts.push(s); }
+            });
+            alts.sort((a, b) => b.length - a.length);
+            const esc = alts.map(a => a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            _techMatcher = { re: new RegExp('\\b(?:' + esc.join('|') + ')\\b', 'i'), canon: canon };
+        }
+        const m = text.match(_techMatcher.re);
+        return m ? (_techMatcher.canon[m[0].toLowerCase()] || null) : null;
+    }
+    // Map + availability gate → chip descriptor or null. Gating at render keeps the
+    // toolkit half dormant until its global ships, and never renders a dead button.
+    function _learnChipFor(code, context) {
+        const map = PENALTY_LEARN_MAP[code];
+        if (!map || typeof window === 'undefined') return null;
+        if (map.dest === 'toolkit') {
+            if (!(window.SophiclyToolkit && window.SophiclyToolkit.open)) return null;
+            return { dest: 'toolkit', arg: map.arg, label: map.label };
+        }
+        if (!(window.SophiclyTable && window.SophiclyTable.open)) return null;
+        const name = _resolveTechniqueName(context);
+        return name ? { dest: 'table', arg: name, label: name } : null;
+    }
+    // Raw-text phase (start of formatAI): append a ⟦SWML_LEARN:dest:arg:label⟧ token to each
+    // chip-eligible penalty line. Colon-delimited — technique names never carry colons, and
+    // the token has no markdown-active chars (| would risk the table converter).
+    function tagLearnChips(text) {
+        if (!text || typeof window === 'undefined') return text;
+        if (!(window.SophiclyTable || window.SophiclyToolkit)) return text;
+        try {
+            return String(text).replace(_LEARN_LINE_RE, (whole, lead, line, code, offset, str) => {
+                let context = line;
+                if (code === 'N1') {
+                    // Ledger tally headers carry the technique on their indented "· Q2 ¶1: …"
+                    // item lines, not the header — extend the context with them.
+                    const after = str.slice(offset + whole.length).replace(/^\n/, '').split('\n');
+                    for (let i = 0; i < after.length; i++) {
+                        if (/^[ \t]+[·•]/.test(after[i])) context += ' ' + after[i]; else break;
+                    }
+                }
+                const chip = _learnChipFor(code, context);
+                if (!chip) return whole;
+                return lead + line + ' ⟦SWML_LEARN:' + chip.dest + ':' + chip.arg + ':' + chip.label + '⟧';
+            });
+        } catch (e) { console.warn('WML learn-chip: tag skipped —', e && e.message); return text; }
+    }
+    // HTML phase (end of formatAI): token → button. <pre>/<code> segments (odd indices)
+    // just DROP their tokens — a quoted protocol snippet must never grow a control.
+    function renderLearnChipTokens(html) {
+        if (!html || html.indexOf('⟦SWML_LEARN:') === -1) return html;
+        const attr = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        return html.split(/(<pre[\s\S]*?<\/pre>|<code[^>]*>[\s\S]*?<\/code>)/g).map((seg, i) => (i % 2)
+            ? seg.replace(/\s*⟦SWML_LEARN:[^⟧]*⟧/g, '')
+            : seg.replace(/⟦SWML_LEARN:([a-z]+):([^:⟧]+):([^⟧]+)⟧/g, (m, dest, arg, label) =>
+                '<button type="button" class="swml-learn-chip" data-learn-dest="' + attr(dest)
+                + '" data-learn-arg="' + attr(arg) + '" title="Open '
+                + (dest === 'table' ? 'the Table of Techniques' : 'the Mastery Toolkit')
+                + '">Learn: ' + attr(label) + ' →</button>')
+        ).join('');
+    }
+    // DOM phase for non-PM clones (the pop-out Feedback pad; PM doc itself stays chip-free
+    // v1). Same detection on textContent — rendered blocks have no markdown asterisks or
+    // leading bullet chars. Idempotent: a block that already carries a chip is skipped.
+    function appendLearnChips(rootEl) {
+        try {
+            if (!rootEl || !rootEl.querySelectorAll) return;
+            const blockRe = /^([A-Z]{1,3}\d(?:-[A-Z]+)?)(?:[^(]{0,60}\((?:−|-|–)\s*[\d.]+\)|[^×]{0,60}×\d+)/;
+            rootEl.querySelectorAll('p, li').forEach(bl => {
+                if (bl.querySelector('.swml-learn-chip')) return;
+                const t = (bl.textContent || '').trim();
+                const m = t.match(blockRe);
+                if (!m) return;
+                const chip = _learnChipFor(m[1], t);
+                if (!chip) return;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'swml-learn-chip';
+                btn.setAttribute('data-learn-dest', chip.dest);
+                btn.setAttribute('data-learn-arg', chip.arg);
+                btn.textContent = 'Learn: ' + chip.label + ' →';
+                bl.appendChild(document.createTextNode(' '));
+                bl.appendChild(btn);
+            });
+        } catch (e) { console.warn('WML learn-chip: DOM inject skipped —', e && e.message); }
+    }
+    // ONE delegated click for every chip surface (bubbles, pad). Window-level guard so the
+    // two-bundle double-load / SPA re-run can't bind twice (the __swmlBooted lesson).
+    if (typeof document !== 'undefined' && !window.__swmlLearnChipBound) {
+        window.__swmlLearnChipBound = true;
+        document.addEventListener('click', function (e) {
+            const b = e.target && e.target.closest && e.target.closest('.swml-learn-chip');
+            if (!b) return;
+            e.preventDefault(); e.stopPropagation();
+            const dest = b.getAttribute('data-learn-dest') || '';
+            const arg = b.getAttribute('data-learn-arg') || '';
+            // ALWAYS window-qualified — a bare open() resolves to document.open (blank page).
+            if (dest === 'table' && window.SophiclyTable && window.SophiclyTable.open) window.SophiclyTable.open(arg);
+            else if (dest === 'toolkit' && window.SophiclyToolkit && window.SophiclyToolkit.open) window.SophiclyToolkit.open(arg);
+            else console.warn('WML learn-chip: destination unavailable —', dest, arg);
+        }, true);
     }
 
     // v7.19.898 (Neil dislikes emojis): ONE source of truth that turns the three feedback status
@@ -2987,6 +3131,7 @@ window.WML = (function() {
         stripAIInternals, detectAssessmentStep, formatAI, svgifyStatusGlyphs, countWords,
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
         parseProgressBeat, progressChipHTML, withProgressChip,
+        appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)
         isTopicFlow,
         // Rendering

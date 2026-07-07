@@ -13066,6 +13066,10 @@
                 if (!fbAdded) {
                     body.appendChild(el('p', { textContent: 'No feedback yet — it will appear here once marking begins.' }));
                 }
+                // v7.19.922: Fix→Learn chips on the pad's non-PM clones (the doc itself stays
+                // chip-free v1 — PM schema drops <button>). Clones are rebuilt each render, so
+                // this re-runs per render; the injector is idempotent per block.
+                try { WML.appendLearnChips(body); } catch (_) {}
             };
             const _renderEssayPad = () => {
                 // v7.19.813 (Neil): clone every response section so the student can read

@@ -3428,3 +3428,23 @@ html[data-theme="light"] .swml-tooltip[data-placement="right"]::after {
 .swml-fb-no {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M9 9l6 6M15 9l-6 6' stroke='%23ff5470' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z' stroke='%23ff5470' stroke-width='1.9'/%3E%3C/svg%3E");
 }
+
+/* ── v7.19.922: "Fix → Learn" chip on marking-penalty lines ──────────────────
+   Appended by formatAI (chat bubbles, both pipelines) and WML.appendLearnChips
+   (pop-out Feedback pad clones). Slim pill per the chips rule; no outline stroke. */
+.swml-learn-chip {
+    display: inline-flex; align-items: center;
+    margin-left: 8px; padding: 2px 9px 3px;
+    border: none; border-radius: 999px; cursor: pointer;
+    font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1.4;
+    color: var(--swml-purple); background: rgba(83, 51, 237, 0.10);
+    vertical-align: baseline; white-space: nowrap;
+    transition: background 0.15s ease;
+}
+.swml-learn-chip:hover { background: rgba(83, 51, 237, 0.18); }
+:root[data-theme="dark"] .swml-learn-chip,
+[data-theme="dark"] .swml-learn-chip {
+    color: #a99cf5; background: rgba(139, 123, 247, 0.16);
+}
+:root[data-theme="dark"] .swml-learn-chip:hover,
+[data-theme="dark"] .swml-learn-chip:hover { background: rgba(139, 123, 247, 0.26); }
