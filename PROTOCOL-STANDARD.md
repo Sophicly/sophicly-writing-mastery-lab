@@ -607,6 +607,10 @@ shapes (`Score:` lines, 📌 breadcrumbs, `[SAY]` emission blocks, bespoke compl
 "Type Y" cues outside protocol-a). A second template — even inside a changelog or a "scoring-only"
 helper module — WILL eventually be imitated; the model ran protocol-q1-msq's dead template first
 and protocol-a's second, marking Q1 twice. Helper modules supply INPUTS; protocol-a owns turns.
+The law extends to RETIRED FLOW VOCABULARY (P2 final sweep, 2026-07-07): any loaded file that
+narrates a retired flow ("Part B Source Collection", "main menu", old step systems) as if live —
+including version-history and relationship blocks — is the same coin-flip; rewrite the wording to
+the current flow or explicitly label it retired/historical in the same sentence.
 
 **Phase 1 — Delta doc → Neil sign-off (the gate before build):** VERDICT (audit) / PAPER SHAPE
 (marks ÷ 4 map, question set verified against the real paper PDFs — not memory) / PORTS VERBATIM
