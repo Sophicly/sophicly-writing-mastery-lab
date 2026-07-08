@@ -238,10 +238,10 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **AO:** AO1
    * **WhyWrong:** Answers like "detailed" or "balanced" name general virtues — the specific top-band skill is weaving both poems through every paragraph, which "integrated" captures exactly.
 3. **Type: MCQ \[Tests Context Weighting\]**
-   * **Question:** AO3 is worth 6 marks in the AQA anthology question — proportionally smaller than in 19C Novel. How should you treat context?
+   * **Question:** AO3 is worth 6 marks in the AQA anthology question — the lightest of its three assessed strands (AO1 12, AO2 12, AO3 6). How should you treat context?
    * **Options:** A) Skip it entirely, B) Integrate it lightly where it drives the poet's concept — don't dump a history paragraph, C) Write a full history paragraph for each poem, D) Double the AO3 effort to compensate.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. AO3 is proportionally lighter on poetry than 19C. Integrate it briefly where it genuinely drives the poet's concept, not as a standalone paragraph.
+   * **Feedback:** ✓ Correct. AO3 is the lightest of the three strands here (6 of 30). Integrate it briefly where it genuinely drives the poet's concept, not as a standalone paragraph.
    * **AO:** AO3
    * **Why A:** Because AO3 is the smallest strand it can seem skippable, but ignoring it surrenders 6 marks that light, well-placed context would secure.
    * **Why C:** A history paragraph per poem feels thorough, yet bolt-on background scores poorly — context must serve the analysis, not sit beside it.
