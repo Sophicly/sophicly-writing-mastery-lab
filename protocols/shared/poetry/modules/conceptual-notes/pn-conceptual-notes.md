@@ -194,6 +194,14 @@ lettered options, each anchored to the injected poem and the roster, with a one-
 method / feeling). Literary judgment is fair game; inventing mark-scheme or "the examiner wants"
 claims is NOT. Collect the quote(s) that anchor the comparison(s) — from THIS poem's injected text.
 
+**Scaffold the blank slate (common — this may be their FIRST poem):** if the student doesn't know
+other poems yet, or says they haven't studied any, do NOT leave them stuck. LEAD with 2–3 grounded
+pairings from the roster as lettered options, each with a plain-English hook ("*Follower* — also
+about a parent seen across distance"; "*War Photographer* — the opposite: emotion held at arm's
+length"). They pick one and say what about the link appeals — that IS their comparison. Reassure
+them the pairing deepens as they study the other poem; the note here is the seed, not the finished
+essay. Never require that they've already read the paired poem in depth.
+
 ---
 
 ## FILING CONTRACT — @FIELD_SET (runs after EVERY element)

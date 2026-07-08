@@ -113,6 +113,15 @@ prompt thinking about → how they might influence belief or behaviour.
 **Hybrid forms** (most GCSE anthology poems blend): establish the PRIMARY form → identify SECONDARY
 features → explain WHY the poet combines them → show how the blend creates MEANING.
 
+**Commonly confused — the distinction changes how you interpret everything:**
+- **Dramatic monologue vs lyric:** in a dramatic monologue the speaker is a CHARACTER the poet
+  created (speaker ≠ poet), often revealing more than they intend to a silent listener; a lyric is
+  the poet's own compressed emotional voice (speaker ≈ poet). Mistaking one for the other flips
+  whether the speaker's views are the POET's or a character's to be judged.
+- **Interior monologue vs dramatic monologue:** interior monologue is unspoken thought — associative,
+  fragmented, no listener; a dramatic monologue is SPEECH addressed to someone. One shows how a mind
+  works; the other shows a character performing (and betraying) themselves to an audience.
+
 **Structural features** (for the Structure & Language element): metre (regular vs free — effect),
 rhyme scheme (strong = control; breaking/half-rhyme = instability), enjambment (flow, compulsion
 forward, emphasis on the line-end word), caesura (interruption, shift), stanza structure (shifts of
