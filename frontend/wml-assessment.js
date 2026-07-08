@@ -29802,6 +29802,15 @@
                 // ── Per-poem section-groups (Neil ruling: pre-built + collapsed, one per
                 // anthology poem; the student picks a poem in the CN chat and Sophia files
                 // notes + 1–3 key quotes per element into that poem's stable fieldIds).
+                // v7.19.973 (Neil): a section-header opens the poems' half — it renders as
+                // an in-doc banner (instruction copy) AND opens a SUPER-GROUP in the
+                // document TOC + outline panel (the v123 tier), so all ~15 poem groups
+                // nest under one collapsible "Conceptual Notes" row instead of flooding it.
+                if (pcnPoems.length) {
+                    html += sectionHTML('section-header', 'Conceptual Notes', false, null,
+                        '<h2>Conceptual Notes — The Poems</h2>' +
+                        '<p><em>One section per poem. In your Conceptual Notes lesson you’ll pick a poem and build its notes with Sophia — speaker, context, form, structure &amp; language, themes, purpose, and the big message, each anchored to 1–3 key quotes. During the quiz these sections stay locked.</em></p>');
+                }
                 var pcnSubs = [
                     ['speaker', 'Speaker', 'Who is the speaker? What is their perspective, tone, and emotional state?'],
                     ['context', 'Historical Context', 'When was this written? What historical, social, or biographical context shapes the poem’s meaning?'],

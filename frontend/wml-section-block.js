@@ -380,10 +380,21 @@
                 // (part of the created DOM, before PM mounts it — no post-mount mutation,
                 // §PM NodeView law), derived from state.task on each render and NEVER
                 // persisted (a lock baked into saved HTML would freeze the CN lesson —
-                // the v955 one-doc law). Enforcement is CSS (the display-lock precedent).
+                // the v955 one-doc law).
+                // v7.19.973 (Neil: still editable): CSS pointer-events blocked the mouse but
+                // not keyboard/arrow-key caret entry — enforce with contenteditable=false,
+                // the SAME mechanism baked-readonly sections use (renderHTML stamps it).
+                // Construction-time attribute; the wrapper-attr firewall covers it besides.
                 try {
-                    if (_isPoemGroup && window.WML && window.WML.state && window.WML.state.task === 'foundational_quiz') {
+                    const _st = getStateRef() || (window.WML && window.WML.state) || null;
+                    const _fqLock = !!(_isPoemGroup && _st && _st.task === 'foundational_quiz');
+                    if (_fqLock) {
                         dom.classList.add('swml-task-locked');
+                        dom.setAttribute('contenteditable', 'false');
+                    }
+                    if (_isPoemGroup && !window.__swmlPoemLockDbg) {
+                        window.__swmlPoemLockDbg = true;
+                        console.info('[WML poetry-CN] poem-group NodeView: task =', _st && _st.task, '→ fq-locked =', _fqLock);
                     }
                 } catch (_) { /* never block render */ }
 

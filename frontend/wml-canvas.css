@@ -11864,6 +11864,7 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    are immune (their background/padding are !important). Keep both data-URIs in sync with
    WML.lockIconSVG. */
 .swml-section-readonly::before,
+.swml-section-block.swml-task-locked::before,
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before {
@@ -11873,6 +11874,22 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     background-position: 7px center;
     padding-left: 26px;
 }
+/* v7.19.973: FQ-locked poem groups — instruction note at the top of the expanded
+   section (pure CSS pseudo, zero PM footprint; render-time class, never persisted). */
+.swml-section-block.swml-task-locked > .swml-section-content::before {
+    content: 'Locked during the quiz \2014 you\2019ll build this poem\2019s notes in the Conceptual Notes lesson.';
+    display: block;
+    font-size: 11px;
+    font-style: italic;
+    color: rgba(255,255,255,0.45);
+    margin: 4px 0 8px;
+}
+[data-swml-theme="light"] .swml-section-block.swml-task-locked > .swml-section-content::before,
+.swml-canvas-light .swml-section-block.swml-task-locked > .swml-section-content::before {
+    color: rgba(30,32,40,0.5);
+}
+[data-swml-theme="light"] .swml-section-block.swml-task-locked::before,
+.swml-canvas-light .swml-section-block.swml-task-locked::before,
 [data-swml-theme="light"] .swml-section-readonly::before,
 .swml-canvas-light .swml-section-readonly::before,
 [data-swml-theme="light"] #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
