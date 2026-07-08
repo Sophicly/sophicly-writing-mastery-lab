@@ -300,6 +300,14 @@ class SWML_Quiz_Bank {
         }
         $pool = self::questions_for($subject, $board);
         if (empty($pool)) return [];
+        // v7.19.964 (Neil — "what about ALL the other texts?"): the engine already scales to every
+        // text via the ladder above; the only gap is un-authored per-text banks. Make that gap
+        // LOUD instead of silent — if this text HAS a per-text ASSESSMENT bank but we're still
+        // falling back to the GENERIC quiz bank, the quiz is serving cross-text examples. Log it
+        // so the missing mark-scheme-quiz/{slug}.md is authored (coverage never silently reads OK).
+        if ($text !== '' && $text !== null && function_exists('error_log') && !empty(self::parse_sections_msa($text))) {
+            error_log('WML mark-scheme quiz: no per-text bank for "' . $text . '" — serving GENERIC "' . $subject . '" (cross-text examples). Author protocols/shared/mark-scheme-quiz/ for this text (a per-text assessment bank already exists).');
+        }
         return self::pick_from_pool($pool, sanitize_key($subject) . ':' . sanitize_key($board), $n);
     }
 
