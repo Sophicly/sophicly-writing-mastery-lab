@@ -2226,7 +2226,22 @@
             let m;
             while ((m = re.exec(aiReply)) !== null) {
                 let payload = null;
-                try { payload = JSON.parse(m[1]); } catch (_) { continue; }
+                try { payload = JSON.parse(m[1]); }
+                catch (_) {
+                    // v7.19.981: tolerant fallback. LLM-emitted values routinely carry
+                    // UNESCAPED straight double-quotes (poetry CN quotes the poem verbatim —
+                    // e.g. value:"the speaker says "run"") which break strict JSON.parse and
+                    // used to drop the fill SILENTLY. Recover field+value by position: value
+                    // = everything between its opening quote and the final "} of the marker.
+                    const fm = /"field"\s*:\s*"([^"]+)"\s*,\s*"value"\s*:\s*"([\s\S]*)"\s*\}$/.exec(m[1].trim());
+                    if (fm) {
+                        payload = { field: fm[1], value: fm[2] };
+                        console.warn('WML FieldSet: recovered marker with unescaped quotes for', fm[1]);
+                    } else {
+                        console.warn('WML FieldSet: DROPPED unparseable marker', m[1].slice(0, 120));
+                        continue;
+                    }
+                }
                 const fid = (payload && typeof payload.field === 'string') ? payload.field.trim() : '';
                 const val = (payload && typeof payload.value === 'string') ? payload.value.trim() : '';
                 if (fid && val) sets.push({ field: fid, value: val });
