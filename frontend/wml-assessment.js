@@ -21,6 +21,12 @@
     // `window.WML_DEBUG = true` in the console.
     const SWML_DEBUG = (typeof window !== 'undefined' && window.WML_DEBUG === true);
 
+    // v7.19.970 (Neil): tasks with NO attempt model — quizzes run mastery rounds with the
+    // attempt locked to 1 (v954) and Conceptual Notes lost its selector+badge (v958), so the
+    // sidebar Attempts menu is dead UI on them. Module scope: both training-panel builders
+    // (separate closures) read it.
+    const ATTEMPTLESS_TASKS = ['foundational_quiz', 'conceptual_notes'];
+
     // ── Destructure core exports as local variables ──
     const { config, API, headers, state } = WML;
     const { TEXT_CATALOGUE, POETRY_ANTHOLOGY_BY_BOARD, PROSE_ANTHOLOGY_BY_BOARD,
@@ -7440,7 +7446,9 @@
 
         // v7.15.102: Attempts menu — training-env, student-only. Delegates to
         // _showAttemptsMenu (module-level) which reuses _showAttemptSwitchModal.
-        if (isExamPrep && state.viewerMode === 'edit') {
+        // v7.19.970 (Neil): quizzes + Conceptual Notes have NO attempt model (v954 mastery
+        // rounds lock attempt to 1; v958 killed the CN selector) — the button is dead UI there.
+        if (isExamPrep && !ATTEMPTLESS_TASKS.includes(state.task) && state.viewerMode === 'edit') {
             const SVG_STACK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
             protoSpacer.appendChild(iconBtn(SVG_STACK, 'Attempts', async () => {
                 try { if (canvasEditor) saveCanvasContent(); } catch (_) {}
@@ -16675,7 +16683,8 @@
                         protoSpacer.appendChild(iconBtn(SVG_FOLDER, 'Past Work', () => { closeCanvasOverlay(); if (WML && typeof WML.showPortfolio === 'function') WML.showPortfolio(); }));
 
                         // v7.15.102: Attempts menu — training-env, student-only
-                        if (isExamPrep && state.viewerMode === 'edit') {
+                        // v7.19.970 (Neil): no attempt model on quizzes/CN — see ATTEMPTLESS_TASKS.
+                        if (isExamPrep && !ATTEMPTLESS_TASKS.includes(state.task) && state.viewerMode === 'edit') {
                             const SVG_STACK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
                             protoSpacer.appendChild(iconBtn(SVG_STACK, 'Attempts', async () => {
                                 try { if (canvasEditor) saveCanvasContent(); } catch (_) {}
