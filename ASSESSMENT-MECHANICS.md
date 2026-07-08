@@ -524,7 +524,40 @@ v915). Residual: none if the gate runs; that's why it's mechanical, not memory.
 doc blanks on entry. Nets: hydration-gated additive-only mutations; `stage_is_frozen()` biased
 FROZEN; write stages excluded from reseed. Residual: any widening of the reseed set.
 
-**14. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
+**14. Override-bank fallback → AI into a deterministic surface** (v960, Neil 2026-07-08).
+Trigger: a deterministic quiz/assessment gates its code path on `state.text`, but a bank OVERRIDE
+(`fq_bank`, or any case where the SERVED bank ≠ the course text) makes the real bank differ.
+Symptom: the WHOLE quiz silently drops to the legacy AI path — questions AND answers become AI
+(coaching, not code-scored); reads as "the quiz works" until you notice it never scored. Net:
+gate on the EFFECTIVE served bank (`fqBank || text`), mirroring the server's own resolution
+(`class-rest-api.php` fq_bank branch); fail-loud warn names fqBank+text on a genuine miss.
+**Doctrine (universal): the FQ, mark-scheme quiz, and mark-scheme assessment are PROGRAMMATIC —
+code-scored, never AI-scored. AI appears ONLY when the student explicitly asks for help.**
+Residual: any NEW deterministic gate keyed on `state.text` alone while an override channel exists.
+
+**15. Hardcoded count literal** (the "5/5" class, v961, Neil 2026-07-08).
+Trigger: a display string hardcodes a question/round count (`5/5`, "answer all 5") that is actually
+dynamic — the bank/stage serves 5/10/15/18. Symptom: a 10- or 18-Q round shows "5/5"; the number
+lies. Net: derive EVERY count from the live set — `roundResults.length` / server `res.total` /
+`q.total` — never a literal. Residual: any new count literal in quiz copy, the result card, the
+clear-warnings, or the sidebar. **Corollary (first-paint, Neil): the sidebar must know the round
+size at BOOT (server-injected) so it shows the real journey immediately — never a placeholder step
+count that changes to the true one after the quiz starts.**
+
+**16. Deferred DOM-attach race** (post-round menu, v961, Neil 2026-07-08).
+Trigger: UI appended inside a `setTimeout` that resolves `chatMessages.lastElementChild` at
+fire-time. Symptom: a bubble / re-render in the window steals or detaches the target → the buttons
+vanish (the mastery menu was absent → the student was forced to TYPE → routed to clarify → looked
+like a "fallback"). Net: capture the target element SYNCHRONOUSLY at call-time + an `isConnected`
+fallback. Residual: any new `lastElementChild`-inside-a-timeout attach.
+
+**17. Duplicate draw** (v961, Neil 2026-07-08).
+Trigger: a round can serve two questions testing the same thing. Symptom: the same fact asked
+2–3× in one round (Neil: epic length). Net: stem-dedup in `pick_from_pool` — UNIVERSAL, every
+quiz AND assessment draws through it; fail-loud `error_log` when dupes are dropped. Residual:
+same-concept-different-wording near-dupes (not stem-catchable) = a bank-authoring audit (chat B).
+
+**18. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
 the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
 (#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract
 TBD). See `~/.claude/handoffs/open/wml-backlog.md`.
@@ -635,7 +668,7 @@ contract, and a stale contract is worse than none.*
   always-on strips, RESEED-until-marked, code-tallied Trend, resume-proof ledger, Fix→Learn
   chips, v923 ruling nets, tier-list net, collapsible capability class, queued UI sends,
   grand-total one-source (downward-only fallback), theme-owned readouts, feedback-pad lane.
-  Expanded §8 failure index into the full POTENTIAL-ERRORS REGISTER (§9, 14 classes with
+  Expanded §8 failure index into the full POTENTIAL-ERRORS REGISTER (§9, now 18 classes with
   trigger/symptom/net/residual). Added §0b UNIVERSALITY MAP (engine-universal / doc-derived /
   protocol-ported — Neil's gold-standard ruling), §2b AUTO-FILL CONTRACT (the five-step
   chat→document machinery, Neil's codify ask — generalises to planning/CW/notes) and §10
