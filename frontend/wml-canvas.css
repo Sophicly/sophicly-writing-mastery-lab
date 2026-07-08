@@ -7359,16 +7359,20 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* v7.19.957 (Neil live review): the Self-Assessment section's RAW doc paragraphs
    (h3 categories + "Skill: — / 5" lines) are the ctl-row's derivation + persistence
    layer, NOT display — since the v951 naturalization the widget groups + headline
-   strip ARE the whole UI. Expanding the section (chevron / collapse-all) exposed the
-   duplicate "old structure". Hide the content layer permanently and drop the now
-   meaningless chevron; the section renders identically in both collapse states, so
-   collapse-all's class toggle on it is a harmless no-op. The paragraphs stay in the
-   DOM/doc — dropdown writes, extraction and AI payload reads are untouched. */
+   strip ARE the whole UI. Expanding the section exposed the duplicate "old
+   structure": the content layer is hidden PERMANENTLY. The paragraphs stay in the
+   DOM/doc — dropdown writes, extraction and AI payload reads are untouched.
+   v7.19.959 (Neil): the chevron comes BACK — v957 removed it as "meaningless", but
+   that killed SA's collapse entirely. Real model: collapse toggles the WIDGET
+   GROUPS (the ctl-row), so collapsed = headline strip only, expanded = strip +
+   dropdown groups. SA-scoped: feedback boxes keep their mark-selector rows visible
+   while collapsed (the old-overlay-parity law) — only SA's row collapses, exactly
+   the ".swml-fb-collapsed > .swml-ctl-row" escape hatch the v951 landmine sanctioned. */
 .swml-section-block[data-section-label="Self-Assessment"] > .swml-section-content {
     display: none !important;
 }
-.swml-section-block[data-section-label="Self-Assessment"] > .swml-fb-toggle {
-    display: none;
+.swml-section-block[data-section-label="Self-Assessment"].swml-fb-collapsed > .swml-ctl-row {
+    display: none !important;
 }
 .swml-ctl-group-title {
     flex: 1 0 100%;

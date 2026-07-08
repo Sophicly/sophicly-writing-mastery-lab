@@ -229,12 +229,17 @@ by one consumer (the FQ-time lock died in .955 for exactly this reason).
   `.swml-ctl-group` (full-width, small-caps `.swml-ctl-group-title`) per category, items
   wrapping beneath. DERIVED from the doc — new papers' categories appear with zero wiring.
   Groups live INSIDE `.swml-ctl-row`, so every clone/baseline strip law holds by construction.
-  **v957 (Neil live review):** the SA section's RAW doc paragraphs (h3s + "Skill: — / 5" lines)
-  are DATA ONLY — permanently CSS-hidden (`> .swml-section-content { display:none }`), chevron
-  hidden with them; the ctl-groups + headline strip are the entire visible UI (expanding used
-  to reveal the duplicate "old structure"). The paragraphs stay in the DOM/doc: dropdown
-  writes, extraction and AI-payload reads are untouched. Inside a ctl-group each skill is its
-  own full-width row, label left / dropdown RIGHT-aligned (uniform right rag).
+  **v957/v959 (Neil live review ×2):** the SA section's RAW doc paragraphs (h3s + "Skill: — / 5"
+  lines) are DATA ONLY — permanently CSS-hidden (`> .swml-section-content { display:none }`);
+  the ctl-groups + headline strip are the entire visible UI (expanding used to reveal the
+  duplicate "old structure"). The paragraphs stay in the DOM/doc: dropdown writes, extraction
+  and AI-payload reads are untouched. SA's COLLAPSE toggles the WIDGET GROUPS instead
+  (`.swml-fb-collapsed > .swml-ctl-row` hidden, SA-scoped): collapsed = strip only, expanded =
+  strip + groups. (v957 briefly removed SA's chevron as "meaningless" — wrong, it killed SA's
+  collapse; v959 restored it with the row-collapse model.) Feedback boxes keep their
+  mark-selector rows visible while collapsed (old-overlay-parity law) — SA is the sanctioned
+  exception. Inside a ctl-group each skill is its own full-width row, label left / dropdown
+  RIGHT-aligned (uniform right rag).
 - **Display-lock indicator lives IN the section-label pill (v952).** The v947 banner rode
   `::before` — the SAME pseudo-element the section-label pill owns — so it REPLACED the pill,
   inherited its loud styling and lost the section name (Neil live review). The rule now
