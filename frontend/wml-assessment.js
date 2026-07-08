@@ -7833,7 +7833,28 @@
             bubble.appendChild(content);
             chatMessages.appendChild(bubble);
             // v7.14.61: Skip scroll during history restore (prevents document jumping)
-            if (!chatMessages._suppressScroll) chatMessages.scrollTop = chatMessages.scrollHeight;
+            // v7.19.962 (Neil — UNIVERSAL, every programmatic chat message): scrolling to the
+            // BOTTOM hides the TOP of any message taller than the viewport (the question + first
+            // options of a quiz turn), forcing the student to scroll up every turn. When the new
+            // message is taller than the chat viewport, align its TOP to the top of the chat area
+            // so the start is always visible; short messages that fit still scroll to bottom
+            // (unchanged). This lives in addChatMessage — the ONE function every message (both
+            // pipelines, every quiz type, every protocol) flows through — so it is universal by
+            // construction, never a per-bubble fix (the SA-only align was the §9.1 narrow-scope
+            // bug that made this recur here). getBoundingClientRect delta = offsetParent-safe.
+            if (!chatMessages._suppressScroll) {
+                requestAnimationFrame(() => {
+                    try {
+                        const tallerThanView = bubble.offsetHeight > (chatMessages.clientHeight - 8);
+                        if (tallerThanView) {
+                            const d = bubble.getBoundingClientRect().top - chatMessages.getBoundingClientRect().top;
+                            chatMessages.scrollTop = Math.max(0, chatMessages.scrollTop + d - 8);
+                        } else {
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }
+                    } catch (_) { chatMessages.scrollTop = chatMessages.scrollHeight; }
+                });
+            }
         }
 
         // Clear chat button

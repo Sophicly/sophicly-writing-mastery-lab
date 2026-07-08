@@ -4446,7 +4446,22 @@
 
         bubble.appendChild(content);
         msgs.appendChild(bubble);
-        if (!silent) msgs.scrollTop = msgs.scrollHeight;
+        // v7.19.962 (Neil — UNIVERSAL, both chat pipelines): a message taller than the viewport
+        // must align its TOP to the top of the chat area, not scroll to the bottom (which hides
+        // the start). Same fix as the canvas pipeline's addChatMessage — kept identical so the
+        // two pipelines can't drift. Short messages that fit still scroll to bottom.
+        if (!silent) {
+            requestAnimationFrame(() => {
+                try {
+                    if (bubble.offsetHeight > (msgs.clientHeight - 8)) {
+                        const d = bubble.getBoundingClientRect().top - msgs.getBoundingClientRect().top;
+                        msgs.scrollTop = Math.max(0, msgs.scrollTop + d - 8);
+                    } else {
+                        msgs.scrollTop = msgs.scrollHeight;
+                    }
+                } catch (_) { msgs.scrollTop = msgs.scrollHeight; }
+            });
+        }
 
         // Timer detection for Random Quote Analysis
         // v7.17.26: gate on !guided — mastery Phase 1/2 must never show exam-style timer.

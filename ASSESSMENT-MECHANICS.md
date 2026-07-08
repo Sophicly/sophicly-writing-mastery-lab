@@ -138,6 +138,17 @@ goes through `sendCanvasMessageQueued()` — exists in BOTH pipelines, exported 
 which polls until idle then sends. Boot-time silent directives keep DIRECT calls deliberately
 (they must not queue behind user turns). New button = queued form, no exceptions.
 
+**SHARED-SURFACE UX LIVES IN THE SHARED RENDER FN (v962 — Neil, "fix once, fixed across the
+board").** Any behaviour EVERY chat message/turn experiences — autoscroll, message positioning,
+typing indicator, quick-action bars — belongs in the ONE function every message flows through,
+and there are TWO (dual pipeline): `addChatMessage` (canvas, wml-assessment.js) and `addMessage`
+(main/planning, wml-app.js). Fix BOTH, keep identical. A UX fix applied to a single bubble or
+gated on a task name is a §9.1 name-guard bug and WILL recur on every sibling surface (the
+message-top-align scroll was fixed once on the Self-Assessment bubble, then recurred on the FQ +
+mark-scheme quiz until it moved into the shared fn). Canonical: a message taller than the viewport
+aligns its TOP to the chat top so the start is always visible; short messages still scroll to
+bottom. See memory `feedback_shared_surface_fix_in_one_function`.
+
 ## §2b. THE AUTO-FILL CONTRACT — how chat fills the document (Neil, 2026-07-07: codified
 because it generalises — assessment, planning, creative writing, conceptual notes all use it)
 
