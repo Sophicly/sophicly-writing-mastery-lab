@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.973
+ * Version: 7.19.974
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.973');
+define('SWML_VERSION', '7.19.974');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -224,13 +224,37 @@ class Sophicly_Writing_Mastery_Lab {
                 ['id' => 'porphyrias_lover',        'title' => "Porphyria's Lover",       'poet' => 'Robert Browning'],
             ],
         ];
-        // Overlay any admin-populated poem lists (swml_poems_{board}_{anthology}).
-        if (class_exists('SWML_Topic_Questions')) {
-            foreach (array_keys($map) as $key) {
-                list($board, $anth) = explode('|', $key, 2);
-                $db = SWML_Topic_Questions::get_poems($board, $anth);
-                if (is_array($db) && !empty($db)) $map[$key] = array_values($db);
+        // v7.19.974 (Neil: "I'm assuming Power & Conflict / Worlds & Lives / Edexcel work
+        // too"): overlay EVERY populated swml_poems_{board}_{anthology} option — the
+        // admin poem manager is the live truth for every anthology (staging/prod hold
+        // all of them: AQA ×3, Edexcel ×4, Edexcel-IGCSE, Eduqas ×2, OCR ×3), not just
+        // the seeded key. Rows are slimmed to {id,title,poet} — the raw option carries
+        // full poem_text, which must never ride the page embed (config bloat) — and
+        // titles/poets are cleaned of markdown-import artifacts (stray asterisks).
+        // Boards carry no underscores (dash form), so the first '_' splits board|anthology.
+        global $wpdb;
+        $names = $wpdb->get_col($wpdb->prepare(
+            "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+            $wpdb->esc_like('swml_poems_') . '%'
+        ));
+        foreach ((array) $names as $name) {
+            $rest = substr($name, strlen('swml_poems_'));
+            $us = strpos($rest, '_');
+            if ($us === false) continue;
+            $board = substr($rest, 0, $us);
+            $anth  = substr($rest, $us + 1);
+            $rows = get_option($name, []);
+            if (!is_array($rows) || empty($rows)) continue;
+            $clean = [];
+            foreach ($rows as $r) {
+                if (!is_array($r) || empty($r['id'])) continue;
+                $clean[] = [
+                    'id'    => sanitize_key($r['id']),
+                    'title' => trim((string) ($r['title'] ?? ''), "* \t"),
+                    'poet'  => trim((string) ($r['poet'] ?? ''), "* \t"),
+                ];
             }
+            if (!empty($clean)) $map[$board . '|' . $anth] = $clean;
         }
         return $map;
     }

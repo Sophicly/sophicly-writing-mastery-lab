@@ -13916,8 +13916,9 @@
             const isTabsMode = sourceIdx === 'tabs' && sourceEls && sourceEls.length >= 2;
             const isEssayMode = sourceIdx === 'essay'; // v7.19.813: student's own response(s), for side-by-side feedback reading
             const isFeedbackMode = sourceIdx === 'feedback'; // v7.19.829 (Neil): every question's filed feedback in its own pad
+            const isNotesMode = sourceIdx === 'notes'; // v7.19.974 (Neil): notes docs — all filled note sections in one pad
             const _workPad = _isAnyLanguagePaper() ? 'My Response' : 'My Essay'; // v7.19.829: language papers aren't essays
-            const label = isFeedbackMode ? 'Feedback' : (isEssayMode ? _workPad : (isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract'))));
+            const label = isNotesMode ? 'My Notes' : (isFeedbackMode ? 'Feedback' : (isEssayMode ? _workPad : (isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract')))));
             header.appendChild(el('span', { textContent: label }));
             header.appendChild(el('button', {
                 className: 'swml-extract-panel-close', textContent: '✕',
@@ -14136,7 +14137,13 @@
             } else if (srcEl) {
                 body.appendChild(_stripChipsFromClone(srcEl.cloneNode(true)));
             } else if (sourceEls.length > 0) {
-                sourceEls.forEach(src => body.appendChild(_stripChipsFromClone(src.cloneNode(true))));
+                sourceEls.forEach(src => {
+                    const c = _stripChipsFromClone(src.cloneNode(true));
+                    // v7.19.974: notes pad — clones of collapsed / FQ-locked sections must
+                    // still READ in the pad; the classes only make sense in the live doc.
+                    if (isNotesMode) c.classList.remove('swml-fb-collapsed', 'swml-task-locked');
+                    body.appendChild(c);
+                });
             } else {
                 // v7.15.21: Prefer the Essay Question section, not the first question section (which is "About This Exercise")
                 const essayQEl = editorEl.querySelector('[data-section-type="question"][data-section-label="Essay Question"]')
@@ -14265,6 +14272,18 @@
             title: 'Pop out the question extract so you can view it while writing',
             onClick: () => {
                 if (Object.keys(extractPanels).length > 0) { closeAllExtractPanels(); return; }
+
+                // v7.19.974 (Neil): notes docs (Conceptual Notes / FQ organiser) have no
+                // question extract — Extract pops MY NOTES instead: every note section
+                // with at least one filled field (all of them when nothing's filled yet),
+                // stacked in one scrollable read-only pad.
+                if (state.task === 'conceptual_notes' || state.task === 'foundational_quiz') {
+                    const _plans = Array.from(editorEl.querySelectorAll('[data-section-type="plan"]'));
+                    const _filled = _plans.filter(sec =>
+                        Array.from(sec.querySelectorAll('[data-input-field]')).some(f => (f.textContent || '').trim().length > 0));
+                    const _show = _filled.length ? _filled : _plans;
+                    if (_show.length) { spawnExtractPanel(_show, 'notes', { top: '60px', right: '20px' }); return; }
+                }
 
                 // v7.19.86: prefer dedicated extract sections (exam_crib has 10).
                 // Falls back to legacy `source` (dual-text mode) and then to
@@ -22740,6 +22759,9 @@
             if (state.task === 'exam_crib') return;
             // foundational_quiz doc has no Response section — Transfer button is redundant.
             if (state.task === 'foundational_quiz') return;
+            // v7.19.974 (Neil): Conceptual Notes docs (all subjects — notes organiser, no
+            // Response section) — same redundancy; the button floated dead over the pills.
+            if (state.task === 'conceptual_notes') return;
             // v7.19.224: Codex has no Response section — Transfer-to-Response buttons irrelevant.
             if (state.task === 'mastery_codex') return;
             // v7.19.463: CW steps have plan sections (Story Components, Story Ideas, Chosen
