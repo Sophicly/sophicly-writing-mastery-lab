@@ -6173,6 +6173,50 @@
         return true;
     }
 
+    // v7.19.976 (Neil): heal pre-975 poetry CN docs — inject the Comparisons subsection
+    // (poem_{id}_comparisons + _quotes) at the end of any poem group that lacks it.
+    // TARGETED insertContentAt heal per migrateDocument's own v818 law (never setContent
+    // from a heal — that path once overwrote a certified doc). Idempotent (keyed on
+    // fieldId existence), ADDITIVE only, gated to the poetry-CN doc family, staggered
+    // after onCreate like _healLearnChips so the async server setContent lands first.
+    function _healPoetryCnComparisons(editor) {
+        try {
+            if (!editor || !editor.state || !editor.chain) return;
+            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            const fieldIds = new Set();
+            editor.state.doc.descendants((n) => {
+                if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) fieldIds.add(n.attrs.fieldId);
+            });
+            if (!fieldIds.size) return; // empty/placeholder doc — template covers it
+            const targets = [];
+            editor.state.doc.descendants((node, pos) => {
+                if (!node.type || node.type.name !== 'sectionBlock') return;
+                if ((node.attrs && node.attrs.sectionType) !== 'plan') return false;
+                let pid = null;
+                node.descendants((c) => {
+                    if (pid) return false;
+                    if (c.type && c.type.name === 'inputField') {
+                        const m = /^poem_(.+?)_(speaker|context|form|structure|themes|purpose|message)(?:_quotes)?$/.exec(String((c.attrs && c.attrs.fieldId) || ''));
+                        if (m) pid = m[1];
+                    }
+                });
+                if (pid && !fieldIds.has('poem_' + pid + '_comparisons')) targets.push({ pos: pos, size: node.nodeSize, pid: pid });
+                return false;
+            });
+            if (!targets.length) return;
+            targets.sort((a, b) => b.pos - a.pos); // descending — earlier positions stay valid
+            targets.forEach((t) => {
+                const html = '<p><strong>Comparisons</strong></p>' +
+                    inputHTML('Which anthology poems pair well with this one — and on what grounds (shared theme, contrasting method, different feeling)?', 'poem_' + t.pid + '_comparisons') +
+                    inputHTML('Key quotes (1–3).', 'poem_' + t.pid + '_comparisons_quotes');
+                editor.chain().insertContentAt(t.pos + t.size - 1, html).run();
+            });
+            console.log('[WML poetry-CN] healed Comparisons into', targets.length, 'poem group(s)');
+        } catch (e) {
+            console.warn('[WML poetry-CN] Comparisons heal failed (doc untouched beyond applied inserts)', e);
+        }
+    }
+
     // Fire a silent API call to generate statements for any stale qIds on
     // this editor's canvas. Runs once per onCreate — if statements are
     // already populated, no-op. Used for diagnostic (no chat UI) + back-fill
@@ -21479,6 +21523,10 @@
                 // is a no-op. Covers stale pre-949 marked docs and reseeded fbdiscuss copies.
                 setTimeout(() => { try { _healLearnChips(); } catch (_) {} }, 1500);
                 setTimeout(() => { try { _healLearnChips(); } catch (_) {} }, 3500);
+                // v7.19.976: poetry-CN Comparisons heal — same staggered/idempotent shape
+                // (second pass covers the async server setContent replacing the first-pass doc).
+                setTimeout(() => { try { _healPoetryCnComparisons(editor); } catch (_) {} }, 1800);
+                setTimeout(() => { try { _healPoetryCnComparisons(editor); } catch (_) {} }, 3800);
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
