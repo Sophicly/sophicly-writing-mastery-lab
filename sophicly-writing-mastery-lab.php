@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.955
+ * Version: 7.19.956
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.955');
+define('SWML_VERSION', '7.19.956');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -570,13 +570,15 @@ class Sophicly_Writing_Mastery_Lab {
         }
 
         $atts = shortcode_atts([
-            'task'    => '',
-            'phase'   => '',
-            'topic'   => '',
-            'step'    => '',
-            'board'   => '',
-            'subject' => '',
-            'text'    => '',
+            'task'     => '',
+            'phase'    => '',
+            'topic'    => '',
+            'step'     => '',
+            'board'    => '',
+            'subject'  => '',
+            'text'     => '',
+            'fq_bank'  => '',
+            'fq_stage' => '',
         ], $atts, 'writing_mastery_lab');
 
         $post_id = get_the_ID();
@@ -586,9 +588,15 @@ class Sophicly_Writing_Mastery_Lab {
         $task    = sanitize_key($atts['task']);
         $phase   = sanitize_key($atts['phase']);
         $topic   = absint($atts['topic']);
-        // v7.19.952: per-lesson FQ bank/stage overrides — bridge-only fields (no shortcode attr).
-        $fq_bank  = '';
-        $fq_stage = 0;
+        // v7.19.952: per-lesson FQ bank/stage overrides — read from the bridge option
+        // below (authoritative). v7.19.956: ALSO seeded from dedicated shortcode atts
+        // (bridge injection contract 2026-07-08 — fq_bank="poetic_forms" fq_stage="N").
+        // The bank is a SEPARATE channel from text= by design: the course-context
+        // block clobbers text= for shared lessons (correctly), so overloading text=
+        // to pick a bank silently loses the override — the Neil live wrong-bank run.
+        // Same option-wins/att-fallback pattern as the v7.17.16 step attribute.
+        $fq_bank  = sanitize_file_name($atts['fq_bank']);
+        $fq_stage = absint($atts['fq_stage']);
         // v7.17.16: shortcode step attribute (bridge emits this alongside task for mark_scheme_unit).
         // Bridge option at line ~548 still wins (authoritative); shortcode value acts as fallback
         // when the bridge option lookup misses (e.g. new lesson not yet mapped).
