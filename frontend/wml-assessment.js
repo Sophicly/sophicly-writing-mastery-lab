@@ -7265,7 +7265,9 @@
             // only guarded the build-time call, so the async attempt-resolution chain
             // (L15617/15755) re-injected the badge on Neil's poetry FQ lesson. Also REMOVES
             // a badge a pre-gate call already injected.
-            if (['foundational_quiz', 'mark_scheme', 'mark_scheme_unit', 'mark_scheme_assessment'].includes(state.task)) {
+            // v7.19.958 (Neil live 2026-07-08): conceptual_notes joins the no-attempt set —
+            // ONE accreting notes doc, "students just keep continuing through it".
+            if (['foundational_quiz', 'conceptual_notes', 'mark_scheme', 'mark_scheme_unit', 'mark_scheme_assessment'].includes(state.task)) {
                 const _b = protoBadges.querySelector('.swml-attempt-badge');
                 if (_b) _b.remove();
                 return;
@@ -15814,8 +15816,13 @@
                             // lesson — never show the "Previous Attempts / Start Attempt N"
                             // selector (Neil). It always resumes its one doc; redoing the quiz
                             // updates the same result rather than spawning attempt 2.
-                            const isFoundationalQuiz = state.task === 'foundational_quiz';
-                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticEntryTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl && !topicFlowSuppress && !diagnosticInTopic && !isFoundationalQuiz) {
+                            // v7.19.958 (Neil live 2026-07-08): conceptual_notes too — the CN
+                            // doc is ONE accreting document; the selector was still prompting
+                            // "which attempt" on CN lessons. Resumes the CURRENT index attempt
+                            // (a student whose notes live under attempt 2 keeps seeing them);
+                            // no new attempts are ever offered from inside the lesson.
+                            const isMasteryDocTask = state.task === 'foundational_quiz' || state.task === 'conceptual_notes';
+                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticEntryTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl && !topicFlowSuppress && !diagnosticInTopic && !isMasteryDocTask) {
                                 const shown = await _showAttemptSelector(idx, suffix);
                                 if (shown) return; // selector handles mode + chat init
                                 attemptSelectorShown = false;
