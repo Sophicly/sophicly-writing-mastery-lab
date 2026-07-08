@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.959
+ * Version: 7.19.960
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.959');
+define('SWML_VERSION', '7.19.960');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -190,6 +190,49 @@ class Sophicly_Writing_Mastery_Lab {
             if (isset($slugs[$alias]))     $slugs[$canonical] = true;
         }
         return array_keys($slugs);
+    }
+
+    /**
+     * v7.19.960: Poem list per poetry anthology, injected into swmlConfig so the
+     * Poetry Conceptual-Notes ONE-DOC template can render a section-group per poem
+     * SYNCHRONOUSLY at doc-build (the pickers fetch /poems async — the template can't).
+     * Keyed `{board}|{anthology}` (anthology = state.text). The single source of truth
+     * for the doc's per-poem sections; the same list must feed the poem-quiz sidecars
+     * (universal-root: doc sections derive from the SAME entity list). Canonical seed
+     * below (AQA Love & Relationships — the 15 anthology poems, slugs = the sanitize_key
+     * form state.poem uses); any anthology with a populated `swml_poems_{board}_{anthology}`
+     * option OVERRIDES its seed row (admin-managed content wins). Slug MUST match chat-B's
+     * `@form:<poem_slug>` sidecar join key — see feedback_markscheme / the poetry CN design.
+     */
+    public function get_anthology_poems_map() {
+        $map = [
+            'aqa|love_relationships' => [
+                ['id' => 'climbing_my_grandfather', 'title' => 'Climbing My Grandfather', 'poet' => 'Andrew Waterhouse'],
+                ['id' => 'follower',                'title' => 'Follower',                'poet' => 'Seamus Heaney'],
+                ['id' => 'walking_away',            'title' => 'Walking Away',            'poet' => 'Cecil Day-Lewis'],
+                ['id' => 'before_you_were_mine',    'title' => 'Before You Were Mine',    'poet' => 'Carol Ann Duffy'],
+                ['id' => 'mother_any_distance',     'title' => 'Mother, Any Distance',    'poet' => 'Simon Armitage'],
+                ['id' => 'eden_rock',               'title' => 'Eden Rock',               'poet' => 'Charles Causley'],
+                ['id' => 'neutral_tones',           'title' => 'Neutral Tones',           'poet' => 'Thomas Hardy'],
+                ['id' => 'winter_swans',            'title' => 'Winter Swans',            'poet' => 'Owen Sheers'],
+                ['id' => 'when_we_two_parted',      'title' => 'When We Two Parted',      'poet' => 'Lord Byron'],
+                ['id' => 'loves_philosophy',        'title' => "Love's Philosophy",       'poet' => 'Percy Bysshe Shelley'],
+                ['id' => 'sonnet_29_i_think_of_thee', 'title' => "Sonnet 29 – 'I think of thee'", 'poet' => 'Elizabeth Barrett Browning'],
+                ['id' => 'singh_song',              'title' => 'Singh Song!',             'poet' => 'Daljit Nagra'],
+                ['id' => 'letters_from_yorkshire',  'title' => 'Letters from Yorkshire',  'poet' => 'Maura Dooley'],
+                ['id' => 'the_farmers_bride',       'title' => "The Farmer's Bride",      'poet' => 'Charlotte Mew'],
+                ['id' => 'porphyrias_lover',        'title' => "Porphyria's Lover",       'poet' => 'Robert Browning'],
+            ],
+        ];
+        // Overlay any admin-populated poem lists (swml_poems_{board}_{anthology}).
+        if (class_exists('SWML_Topic_Questions')) {
+            foreach (array_keys($map) as $key) {
+                list($board, $anth) = explode('|', $key, 2);
+                $db = SWML_Topic_Questions::get_poems($board, $anth);
+                if (is_array($db) && !empty($db)) $map[$key] = array_values($db);
+            }
+        }
+        return $map;
     }
 
     /**
@@ -435,6 +478,8 @@ class Sophicly_Writing_Mastery_Lab {
             'taskCaps' => SWML_Protocol_Router::instance()->build_task_caps(),
             // v7.19.823: server-derived FQ activation — bank basenames + alias forms.
             'fqBankTexts' => $this->get_fq_bank_texts(),
+            // v7.19.960: per-anthology poem lists for the poetry CN ONE-DOC template.
+            'anthologyPoems' => $this->get_anthology_poems_map(),
         ]);
 
         // v7.14.16: Embed language paper specs for type-aware document builder
@@ -866,6 +911,8 @@ class Sophicly_Writing_Mastery_Lab {
                 'taskCaps' => SWML_Protocol_Router::instance()->build_task_caps(),
                 // v7.19.823: server-derived FQ activation (same builder as the standalone site).
                 'fqBankTexts' => $this->get_fq_bank_texts(),
+                // v7.19.960: per-anthology poem lists for the poetry CN ONE-DOC template.
+                'anthologyPoems' => $this->get_anthology_poems_map(),
             ]);
         } else {
             // v7.14.16: Refresh nonce for LD Focus Mode AJAX transitions

@@ -318,16 +318,25 @@
         ? window.swmlConfig.fqBankTexts.map(s => String(s).toLowerCase())
         : ['romeo_and_juliet'];
     function _fqDeterministic() {
+        // v7.19.960 ROOT FIX (Neil 2026-07-08: Poetic Forms FQ on AQA L&R was AI-run —
+        // answers COACHED, not code-scored). The fq_bank override makes the SERVED bank
+        // differ from state.text (poetic_forms on an anthology lesson); /quiz/start
+        // resolves fq_bank FIRST (class-rest-api.php:838). This gate keyed only on
+        // state.text, so an override-bank FQ failed the deterministic check and the
+        // WHOLE quiz silently fell back to the legacy AI quiz (AI renders the questions
+        // AND coaches every answer). Gate on the EFFECTIVE bank — fqBank wins, exactly
+        // as the server resolves it — so the code controller owns the turn.
+        const _effBank = ((state.fqBank || state.text) || '').toLowerCase();
         const on = QUIZ_CONTROLLER_ON && state.task === 'foundational_quiz'
-            && FQ_BANK_TEXTS.indexOf((state.text || '').toLowerCase()) !== -1;
-        // v7.19.825: SLUG GUARDRAIL — an FQ lesson whose text has no authored bank
-        // silently fell back to the legacy AI quiz, and silence reads as success (the
+            && FQ_BANK_TEXTS.indexOf(_effBank) !== -1;
+        // v7.19.825: SLUG GUARDRAIL — an FQ lesson whose effective bank has no authored
+        // file silently fell back to the legacy AI quiz, and silence reads as success (the
         // #1 slug-bug class: one underscore off and nothing visibly breaks). Warn
         // loudly, once, so any slug↔bank mismatch surfaces the first time the lesson
         // is opened in testing.
         if (!on && QUIZ_CONTROLLER_ON && state.task === 'foundational_quiz' && !_fqDeterministic._warned) {
             _fqDeterministic._warned = true;
-            console.warn('WML FQ: no question bank matches text "' + state.text + '" — legacy AI quiz fallback. If a bank exists under a different slug, add an alias to SLUG_ALIASES (class-rest-api.php), the one slug registry.');
+            console.warn('WML FQ: no question bank matches effective bank "' + _effBank + '" (fqBank="' + (state.fqBank || '') + '", text="' + state.text + '") — legacy AI quiz fallback. If a bank exists under a different slug, add an alias to SLUG_ALIASES (class-rest-api.php), the one slug registry.');
         }
         return on;
     }
@@ -9394,7 +9403,11 @@
             let awaitingPrediction = false; // gating flag while we wait for the prediction
 
             // FQ + MSA each keep their OWN sidecar key so MSQ resume is byte-identical (no collision).
-            const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, state.text, (state.attempt || 1)].join('_');
+            // v7.19.960: key the resume sidecar on the EFFECTIVE bank (fqBank override wins),
+            // not state.text — else a forms FQ (fqBank=poetic_forms) and a poem FQ on the same
+            // anthology both key on the course text and clobber each other's resume state.
+            // Empty fqBank (MSQ/MSA/poem-FQ) falls back to state.text → byte-identical to before.
+            const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, (state.fqBank || state.text), (state.attempt || 1)].join('_');
             function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts, predictedScore, awaitingPrediction })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function rehydrate(opts) {

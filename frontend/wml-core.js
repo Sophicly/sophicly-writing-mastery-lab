@@ -1669,6 +1669,17 @@ window.WML = (function() {
         return false;
     };
     const isAnthologySubject = () => ['poetry_anthology', 'prose_anthology', 'nonfiction_anthology'].includes(state.subject);
+    // v7.19.960: the shared poetry Conceptual-Notes / Foundational-Quiz organiser doc —
+    // ONE doc per anthology (forms organiser part + per-poem groups). The collapse gate,
+    // the render-time FQ lock, and the CN template branch all key on THIS, never on a
+    // literal task name or the legacy `text==='poetic_forms'` scope (the fq_bank override
+    // used to produce that scope and no longer does — forms FQ now lands on the anthology
+    // doc). Per-poem groups render only when a poem list is present (unseen_poetry has
+    // none → forms + General Notes only).
+    const isPoetryCnDoc = () => {
+        if (isPoetrySubject() && (state.task === 'conceptual_notes' || state.task === 'foundational_quiz')) return true;
+        try { return canvasDocScope().text === 'poetic_forms'; } catch (_) { return false; }
+    };
     function getSteps() {
         if (state.task === 'assessment') return ASSESSMENT_STEPS;
         if (state.task === 'polishing') return POLISHING_STEPS;
