@@ -955,14 +955,23 @@ class SWML_Protocol_Router {
         if ($modular_protocol) {
             // Inject skip instructions at the TOP of the protocol when poem/text is pre-selected
             $skip_block = '';
+            $subject = $context['subject'] ?? '';
+            $task = $context['task'] ?? '';
+            $is_poetry_sub = in_array($subject, ['poetry_anthology', 'unseen_poetry']);
+            $is_nonfiction_sub = ($subject === 'nonfiction_anthology');
+
+            // v7.19.978: Poetry Conceptual Notes runs the one-doc picker + per-poem walk
+            // (pn-conceptual-notes.md). It needs live DATA, not a hardcoded next-message:
+            // the anthology roster, the chosen poem's text, the fieldId contract, the done
+            // list. This REPLACES the legacy single-poem "exact next message" skip (which
+            // injected a dead Step-3 question). Fails loud on a roster miss — never lets the
+            // model improvise a poem list or ask the student to paste the poem.
             $poem_title = $context['poem_title'] ?? '';
             $poem = $context['poem'] ?? '';
-            if (!empty($poem) || !empty($poem_title)) {
+            if ($task === 'conceptual_notes' && $is_poetry_sub) {
+                $skip_block = $this->build_poetry_cn_injection($context);
+            } else if (!empty($poem) || !empty($poem_title)) {
                 $text_name = $poem_title ?: $poem;
-                $subject = $context['subject'] ?? '';
-                $is_poetry_sub = in_array($subject, ['poetry_anthology', 'unseen_poetry']);
-                $is_nonfiction_sub = ($subject === 'nonfiction_anthology');
-                $task = $context['task'] ?? '';
 
                 $skip_block .= "\n\n## ⚠️ CRITICAL SESSION RULES — READ BEFORE ANYTHING ELSE ⚠️\n\n";
                 $skip_block .= "### 1. TEXT IS PRE-SELECTED\n";
@@ -978,18 +987,7 @@ class SWML_Protocol_Router {
                     $skip_block .= "### 4. YOUR EXACT NEXT MESSAGE\n";
                     $skip_block .= "When the student says 'ready', respond with EXACTLY this (and nothing else):\n\n";
 
-                    if ($is_poetry_sub) {
-                        $skip_block .= "---BEGIN EXACT MESSAGE---\n";
-                        $skip_block .= "Let's start with a core idea about how poetry works. Which do you think best describes what makes poetry unique?\n\n";
-                        $skip_block .= "A) Poetry tells stories in a more compressed way than novels or plays\n";
-                        $skip_block .= "B) Poetry captures a concentrated moment, perspective, or voice — exploring it deeply through particular language choices\n";
-                        $skip_block .= "C) Poetry is mainly about rhyme and rhythm\n";
-                        $skip_block .= "D) Poetry expresses the poet's personal feelings directly\n\n";
-                        $skip_block .= "Choose A, B, C, or D.\n";
-                        $skip_block .= "---END EXACT MESSAGE---\n\n";
-                        $skip_block .= "After the student answers, follow the protocol from Step 3's Socratic Guidance onwards.\n";
-                        $skip_block .= "SKIP: Entry Point, Step 1, Step 1B, Step 2 — they are already handled.\n\n";
-                    } else if ($is_nonfiction_sub) {
+                    if ($is_nonfiction_sub) {
                         $skip_block .= "---BEGIN EXACT MESSAGE---\n";
                         $skip_block .= "Before we explore **{$text_name}**, here's a quick thinking question to warm up:\n\n";
                         $skip_block .= "**Which do you think is the MOST important element for understanding a non-fiction text?**\n\n";
@@ -1280,6 +1278,103 @@ class SWML_Protocol_Router {
      * and are referenced from manifests. Board-specific step files live in the
      * board's own directory.
      */
+    /**
+     * v7.19.978: Poetry Conceptual Notes one-doc injection.
+     *
+     * Supplies pn-conceptual-notes.md (the walk) with the data it must NEVER ask the
+     * student for: (a) the anthology poem ROSTER for the picker, (b) the SELECTED poem's
+     * full text (ONE poem at a time — token budget), (c) the frozen fieldId contract for
+     * @FIELD_SET, (d) the done-poem list so the picker excludes finished poems.
+     *
+     * The anthology resolves on state.text through the ONE canonical slug ladder
+     * (SWML_REST_API::canonical_slug + a _poetry suffix probe — TEXT-SLUG SOP). A roster
+     * miss FAILS LOUD (error_log) and injects a ROSTER-UNAVAILABLE gate: the model is told
+     * to report the problem, never to improvise a poem list, guess a poem's contents, or
+     * ask the student to name/paste a poem (the dead pre-v978 behaviour, engineered out).
+     */
+    private function build_poetry_cn_injection($context) {
+        $board  = sanitize_key($context['board'] ?? '');
+        $text   = (string) ($context['text'] ?? '');
+        $sel_id = sanitize_key($context['current_poem_id'] ?? ($context['poem'] ?? ''));
+        $done   = array_values(array_filter(array_map('sanitize_key', (array) ($context['done_poem_ids'] ?? []))));
+
+        $b = "\n\n## ⚠️ CONCEPTUAL NOTES — SESSION DATA (read before anything else) ⚠️\n\n";
+
+        // Roster resolves through the SAME source as the doc's per-poem sections + the poem
+        // quiz banks (universal-root: one entity list), via the canonical slug ladder.
+        $map = class_exists('Sophicly_Writing_Mastery_Lab')
+            ? Sophicly_Writing_Mastery_Lab::instance()->get_anthology_poems_map()
+            : [];
+        $canon = class_exists('SWML_REST_API') ? SWML_REST_API::canonical_slug($text) : $text;
+        $cands = [];
+        foreach ([$text, $canon, preg_replace('/_poetry$/', '', $text), $text . '_poetry',
+                  preg_replace('/_poetry$/', '', (string) $canon), $canon . '_poetry'] as $c) {
+            $c = (string) $c;
+            if ($c !== '' && !in_array($c, $cands, true)) $cands[] = $c;
+        }
+        $anthology = '';
+        $roster = [];
+        foreach ($cands as $c) {
+            if (!empty($map[$board . '|' . $c])) { $anthology = $c; $roster = $map[$board . '|' . $c]; break; }
+        }
+
+        if (empty($roster)) {
+            error_log("WML Poetry-CN: NO ROSTER board={$board} text={$text} (tried " . implode(',', $cands)
+                . ") — author swml_poems_{board}_{anthology} or add a slug alias");
+            $b .= "**ROSTER UNAVAILABLE.** The anthology poem list could not be loaded for this course. "
+                . "Tell the student plainly that their poem list isn't available yet and ask them to report it to their tutor. "
+                . "Do NOT improvise a poem list, do NOT guess any poem's contents, and do NOT ask the student to name or paste a poem.\n";
+            return $b;
+        }
+
+        // Roster for the picker — each id in [brackets]; the id drives @POEM_SELECTED + @FIELD_SET.
+        $b .= "### Anthology roster — the ONLY poems you may offer\n";
+        $b .= "Build the picker from these. Use each poem's `id` (in [brackets]) in @POEM_SELECTED and in every @FIELD_SET field (poem_{id}_{element}).\n";
+        foreach ($roster as $p) {
+            $id = $p['id'] ?? '';
+            if ($id === '') continue;
+            $done_tag = in_array($id, $done, true) ? ' — ✓ notes complete' : '';
+            $b .= "- {$p['title']}" . (!empty($p['poet']) ? " ({$p['poet']})" : '') . " [id: {$id}]{$done_tag}\n";
+        }
+        if (!empty($done)) {
+            $b .= "\nAlready complete (exclude from the picker unless the student asks to revisit): " . implode(', ', $done) . "\n";
+        }
+
+        // Selected poem — inject its full text + the fieldId contract.
+        if ($sel_id !== '') {
+            $sel = null;
+            foreach ($roster as $p) { if (($p['id'] ?? '') === $sel_id) { $sel = $p; break; } }
+            if ($sel) {
+                $poem_text = '';
+                $rows = get_option('swml_poems_' . $board . '_' . $anthology, []);
+                if (is_array($rows)) {
+                    foreach ($rows as $r) {
+                        if (is_array($r) && sanitize_key($r['id'] ?? '') === $sel_id) {
+                            $poem_text = (string) ($r['poem_text'] ?? '');
+                            break;
+                        }
+                    }
+                }
+                $b .= "\n### Current poem: {$sel['title']}" . (!empty($sel['poet']) ? " ({$sel['poet']})" : '') . " [id: {$sel_id}]\n";
+                $b .= "Skip the picker — walk THIS poem. File every element into these EXACT fieldIds:\n";
+                foreach (['speaker', 'context', 'form', 'structure', 'themes', 'purpose', 'message', 'comparisons'] as $el) {
+                    $b .= "- poem_{$sel_id}_{$el}  (notes)  ·  poem_{$sel_id}_{$el}_quotes  (1–3 quotes)\n";
+                }
+                if (trim($poem_text) !== '') {
+                    $b .= "\n#### Full text of {$sel['title']} — quote ONLY from this:\n";
+                    $b .= "```\n" . trim($poem_text) . "\n```\n";
+                } else {
+                    error_log("WML Poetry-CN: poem text MISSING id={$sel_id} in swml_poems_{$board}_{$anthology}");
+                    $b .= "\n**POEM TEXT UNAVAILABLE** for this poem — tell the student it isn't loaded yet and ask them to report it; do NOT quote from memory or invent lines.\n";
+                }
+            }
+        } else {
+            $b .= "\nNo poem selected yet — present the picker (two-step disclosure: ~5 recommended if a recommended list is provided, then \"See all poems…\") and wait for the student's choice.\n";
+        }
+
+        return $b;
+    }
+
     private function load_modular_protocol($context, $user_id = 0) {
         // v7.19.406 (CACHE): never let a previous call's slice leak into this request.
         $this->dynamic_step_slice = '';
@@ -1809,7 +1904,8 @@ class SWML_Protocol_Router {
 
         // Require minimum loaded files to consider this valid
         // Self-contained protocols (exam_question, essay_plan) need only 1 file; standard protocols need 2+
-        // AQA uses modular protocols (many small files), shared is semi-modular (conceptual_notes = 9 files)
+        // AQA uses modular protocols (many small files); shared is semi-modular (poetry
+        // conceptual_notes = 3 shared modules + pn-reference.md + pn-conceptual-notes.md, v978).
         // All current boards now modular. Only future boards not yet listed would be monolithic.
         $is_monolithic = (!in_array($protocol_board, ['aqa', 'shared', 'ocr', 'eduqas', 'edexcel', 'edexcel-igcse', 'ccea', 'sqa', 'cambridge-igcse']));
         $single_file_tasks = ['exam_question', 'exam_question_modern', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'memory_practice', 'foundational_quiz'];
@@ -1820,6 +1916,18 @@ class SWML_Protocol_Router {
         }
 
         $assembled = implode("\n\n", $parts);
+
+        // v7.19.978: fail-loud guard against a silent generic-degrade. The poetry CN
+        // one-doc flow lives ENTIRELY in pn-conceptual-notes.md. If that file failed to
+        // resolve (e.g. a manifest path typo), the 3 shared modules + pn-reference.md alone
+        // still clear $min_modules (>=2) and the session would run as generic Socratic chat
+        // with NO picker / walk / @FIELD_SET filing — success-looking silence. Surface it
+        // loudly ("THE FAMILY SKELETON" is a heading unique to the walk file).
+        if ($task === 'conceptual_notes'
+            && in_array(($context['subject'] ?? ''), ['poetry_anthology', 'unseen_poetry'], true)
+            && strpos($assembled, 'THE FAMILY SKELETON') === false) {
+            error_log('WML Router: POETRY CN walk file (pn-conceptual-notes.md) MISSING from assembled protocol — check manifest paths; NOT serving generic fallback silently');
+        }
 
         // ── Exam Question Creator Injection for Recall Mode ──
         // When essay_plan Mode A (Recall) or model_answer Mode C (Advanced) is active,
@@ -3357,6 +3465,19 @@ TEMPLATE;
             // v7.15.38: $board arrives normalized to hyphenated form.
             $is_nonfiction = ($subject === 'nonfiction_anthology')
                 || ($subject === 'language1' && $board === 'edexcel-igcse');
+            if ($is_poetry) {
+                // v7.19.978: poetry CN runs the one-doc picker + per-poem walk
+                // (pn-conceptual-notes.md); session DATA is injected by
+                // build_poetry_cn_injection(). Filing is @FIELD_SET (function-calling is
+                // disabled) — NONE of the legacy save_session_element / cn_section_N /
+                // "Welcome then Ready / Step 2" scaffolding below applies.
+                $preamble .= "\n### CONCEPTUAL NOTES (poetry) — SESSION RULES\n";
+                $preamble .= "1. One question per message. Wait for the answer, give brief feedback, then ask the next. Never combine questions.\n";
+                $preamble .= "2. Never re-send the welcome. Once a poem is selected, never re-ask which poem.\n";
+                $preamble .= "3. Filing is AUTOMATED via @FIELD_SET markers (see the protocol). There is NO function to call and NOTHING for the student to copy anywhere. Never say 'workbook', 'save', 'panel', 'querying', 'loading', or mention any technical issue.\n";
+                $preamble .= "4. Follow the protocol exactly: picker (two-step disclosure) → per-poem element walk (speaker → … → comparisons) → @FIELD_SET filing (note + 1–3 quotes) per element → next-poem loop.\n";
+                $preamble .= "5. Quote ONLY from the injected poem text. No attempts, no scoring, no completion — Conceptual Notes is a building exercise.\n\n";
+            } else {
             $preamble .= "\n### CRITICAL RULES FOR CONCEPTUAL NOTES SESSION\n";
             $preamble .= "1. **NEVER reveal vector store queries.** Query the vector store silently — never say 'querying', never show the query string, never mention the vector store exists. Use retrieved knowledge to inform your Socratic questions.\n";
             $preamble .= "2. **One question at a time.** Ask one question, wait for the student's response, give brief feedback, then ask the next question. Never combine multiple questions.\n";
@@ -3413,6 +3534,7 @@ TEMPLATE;
                 $preamble .= "| S7 Message | `cn_section_7` | Section summary (big message, contemporary application) |\n";
             }
             $preamble .= "Call the function SILENTLY when the student confirms (chooses A) — never narrate it.\n";
+            } // end !$is_poetry legacy CN preamble
 
         } else if ($task === 'memory_practice') {
             // Memory Practice protocol — universal, all boards, all subjects

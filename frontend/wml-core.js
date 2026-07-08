@@ -2511,6 +2511,9 @@ window.WML = (function() {
         // v7.19.466: Strip @FIELD_SET{...} AI-authored row-fill signals (Phase 3 — CW Step 3
         // loglines are written into the canvas rows, not echoed in the bubble).
         text = text.replace(/@FIELD_SET\s*\{[^}]*\}/g, '').trim();
+        // v7.19.978: Strip @POEM_SELECTED{...} — the poetry-CN poem-choice marker. Stays in
+        // history (the poem-id restore on resume scans for it) but never renders in the bubble.
+        text = text.replace(/@POEM_SELECTED\s*\{[^}]*\}/g, '').trim();
         // v7.19.854: Strip @SUMMARY_COMPLETE — the closing-chain arming marker the final-summary
         // mandate requires. It stays in history (the chain keys on it) but never renders.
         text = text.replace(/@SUMMARY_COMPLETE/g, '').trim();

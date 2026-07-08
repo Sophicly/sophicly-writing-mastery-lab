@@ -1240,6 +1240,12 @@ class SWML_REST_API {
             'response_wc' => isset($params['responseWc']) && is_numeric($params['responseWc'])
                 ? max(0, absint($params['responseWc']))
                 : null,
+            // v7.19.978: poetry Conceptual Notes one-doc flow. The chosen poem (so the
+            // router injects THAT poem's text + fieldId contract) and the poems whose
+            // notes are already complete (so the picker excludes them). Empty when the
+            // student hasn't picked yet — the router then serves the picker roster only.
+            'current_poem_id' => sanitize_key($params['currentPoemId'] ?? ''),
+            'done_poem_ids'   => array_values(array_filter(array_map('sanitize_key', (array) ($params['donePoemIds'] ?? [])))),
         ];
 
         // v7.17.47: For AQA Literature assessments, run migration inference

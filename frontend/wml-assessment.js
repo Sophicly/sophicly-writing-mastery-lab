@@ -6271,6 +6271,77 @@
         }
     }
 
+    // v7.19.978: poetry-CN poem-selection support. The walk (pn-conceptual-notes.md)
+    // emits @POEM_SELECTED{"id":"..."} when the student picks a poem; the id drives the
+    // router's poem-text + fieldId-contract injection on the NEXT turn. Extractor runs in
+    // BOTH canvas pipelines (self-guarding: no-op off a poetry-CN doc / when absent).
+    function _extractPoemSelected(reply) {
+        try {
+            if (!reply || !(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            const m = /@POEM_SELECTED\s*(\{[^}]*\})/.exec(String(reply));
+            if (!m) return;
+            let id = '';
+            try { const o = JSON.parse(m[1]); id = (o && typeof o.id === 'string') ? o.id.trim() : ''; } catch (_) { return; }
+            if (!id) return;
+            if (window.state) state.currentPoemId = id;
+            console.log('[WML poetry-CN] poem selected →', id);
+        } catch (e) { console.warn('[WML poetry-CN] _extractPoemSelected failed', e); }
+    }
+
+    // Resolve the current poem for the payload: state.currentPoemId if the extractor set
+    // it this session, else scan chat history for the LAST @POEM_SELECTED (resume law — a
+    // mid-walk refresh keeps filing into the right poem). Caches back into state. Returns
+    // '' off a poetry-CN doc / when no poem has been picked (→ router serves the picker).
+    // `hist` is passed in because canvasChatHistory is a per-pipeline local, NOT module scope.
+    function _poetryCnCurrentPoemId(hist) {
+        try {
+            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return '';
+            if (window.state && state.currentPoemId) return state.currentPoemId;
+            if (!Array.isArray(hist)) return '';
+            for (let i = hist.length - 1; i >= 0; i--) {
+                const c = hist[i] && hist[i].content;
+                if (!c || c.indexOf('@POEM_SELECTED') === -1) continue;
+                const m = /@POEM_SELECTED\s*(\{[^}]*\})/.exec(c);
+                if (!m) continue;
+                try {
+                    const o = JSON.parse(m[1]);
+                    if (o && o.id) {
+                        const id = String(o.id).trim();
+                        if (window.state) state.currentPoemId = id;
+                        console.log('[WML poetry-CN] resolved current poem from history →', id);
+                        return id;
+                    }
+                } catch (_) {}
+                return '';
+            }
+            return '';
+        } catch (e) { console.warn('[WML poetry-CN] _poetryCnCurrentPoemId failed', e); return ''; }
+    }
+
+    // Done poems = poem groups whose eight element NOTE fields are ALL non-empty (quotes
+    // optional). Derived from the LIVE doc — never a counter — so the picker excludes
+    // finished poems (design: done-ness from filled fields). Sent in the canvas payload.
+    function _poetryCnDonePoemIds() {
+        try {
+            if (!canvasEditor || !(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return [];
+            const ELS = ['speaker', 'context', 'form', 'structure', 'themes', 'purpose', 'message', 'comparisons'];
+            const filled = {};
+            canvasEditor.state.doc.descendants((n) => {
+                if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) {
+                    const m = /^poem_(.+?)_(speaker|context|form|structure|themes|purpose|message|comparisons)$/.exec(String(n.attrs.fieldId));
+                    if (m && (n.textContent || '').trim().length > 0) {
+                        (filled[m[1]] = filled[m[1]] || {})[m[2]] = true;
+                    }
+                }
+            });
+            const done = [];
+            Object.keys(filled).forEach((pid) => {
+                if (ELS.every((e) => filled[pid][e])) done.push(pid);
+            });
+            return done;
+        } catch (e) { console.warn('[WML poetry-CN] _poetryCnDonePoemIds failed', e); return []; }
+    }
+
     // Fire a silent API call to generate statements for any stale qIds on
     // this editor's canvas. Runs once per onCreate — if statements are
     // already populated, no-op. Used for diagnostic (no chat UI) + back-fill
@@ -8901,6 +8972,11 @@
                         topicNumber: state.topicNumber || 1,
                         phase: state.phase || 'initial',
                         planning_mode: state.planningMode || '',
+                        // v7.19.978: poetry Conceptual Notes one-doc flow — the chosen poem
+                        // (router injects its text + fieldId contract) and the poems already
+                        // complete (picker excludes them). Empty/[] off a poetry-CN doc.
+                        currentPoemId: _poetryCnCurrentPoemId(canvasChatHistory),
+                        donePoemIds: _poetryCnDonePoemIds(),
                         // v7.17.47: attempt + suffix required for assessment state pointer
                         attempt: state.attempt || 1,
                         suffix: (typeof WML !== 'undefined' && WML.resolveStorageSuffix)
@@ -9288,6 +9364,7 @@
                         // the cw_ guard (CANVAS TASK-SCOPING rule 1 — the #1 silent-skip bug class).
                         applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
                         applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored field/row-fill (Phase 3)
+                        _extractPoemSelected(res.reply); // v7.19.978: poetry-CN poem-choice marker (self-guarding)
                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                             const _r = res.reply;
                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
@@ -17679,6 +17756,9 @@
                                         topicNumber: state.topicNumber || 1,
                                         phase: state.phase || 'initial',
                                         planning_mode: state.planningMode || '',
+                                        // v7.19.978: poetry Conceptual Notes one-doc flow (twin pipeline).
+                                        currentPoemId: _poetryCnCurrentPoemId(canvasChatHistory),
+                                        donePoemIds: _poetryCnDonePoemIds(),
                                     })
                                 });
                                 const res = await response.json();
@@ -17720,6 +17800,7 @@
                                         // @FIELD_SET (CANVAS TASK-SCOPING rule 1).
                                         applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
                                         applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored field/row-fill (Phase 3)
+                                        _extractPoemSelected(res.reply); // v7.19.978: poetry-CN poem-choice marker (twin, self-guarding)
                                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                                             const _r = res.reply;
                                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
