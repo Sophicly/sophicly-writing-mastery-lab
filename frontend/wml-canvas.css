@@ -5249,9 +5249,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 
 /* Section label badge (::before) */
+/* v7.19.969 (Neil): inline-flex + align-items:center — the lock data-URI in content: is a
+   replaced image that sits bottom-on-baseline under inline-block, so its middle rode ~4px
+   above the 10px text's middle. Flex centres image + text runs geometrically; the literal
+   spaces in content: collapse as whitespace-only flex items, so gap owns the spacing. */
 .swml-section-block::before {
     content: counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     position: absolute;
     top: -10px;
     left: 12px;
