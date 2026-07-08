@@ -1345,13 +1345,28 @@ class SWML_Protocol_Router {
             $sel = null;
             foreach ($roster as $p) { if (($p['id'] ?? '') === $sel_id) { $sel = $p; break; } }
             if ($sel) {
+                // v7.19.982: resolve poem text SLUG-INDEPENDENTLY. The roster may have
+                // matched the hardcoded seed key (aqa|love_relationships) while the admin
+                // saved texts under a divergent slug (…_poetry). Rather than guess ONE
+                // option name, search every swml_poems_{board}_* option for this id with a
+                // non-empty poem_text — first hit wins. (Fixes the slug-drift text-miss
+                // class; a genuine data gap still falls through to POEM TEXT UNAVAILABLE.)
                 $poem_text = '';
-                $rows = get_option('swml_poems_' . $board . '_' . $anthology, []);
-                if (is_array($rows)) {
+                global $wpdb;
+                $opt_names = $wpdb->get_col($wpdb->prepare(
+                    "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+                    $wpdb->esc_like('swml_poems_' . $board . '_') . '%'
+                ));
+                // Try the resolved anthology option first (fast path), then any board option.
+                array_unshift($opt_names, 'swml_poems_' . $board . '_' . $anthology);
+                foreach (array_unique($opt_names) as $opt) {
+                    $rows = get_option($opt, []);
+                    if (!is_array($rows)) continue;
                     foreach ($rows as $r) {
-                        if (is_array($r) && sanitize_key($r['id'] ?? '') === $sel_id) {
-                            $poem_text = (string) ($r['poem_text'] ?? '');
-                            break;
+                        if (is_array($r) && sanitize_key($r['id'] ?? '') === $sel_id
+                            && trim((string) ($r['poem_text'] ?? '')) !== '') {
+                            $poem_text = (string) $r['poem_text'];
+                            break 2;
                         }
                     }
                 }
