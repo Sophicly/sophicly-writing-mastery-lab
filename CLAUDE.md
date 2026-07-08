@@ -112,6 +112,31 @@ boundary — canvas load/save AND quiz start; FQ activation (`swmlConfig.fqBankT
 4. **Never silent:** a `foundational_quiz` text with no matching bank `console.warn`s and falls back
    to the legacy AI quiz — that warning means "add an alias or a bank", never a code fork.
 
+### SOP — resolving a bank / template / protocol FILE by text (Neil 2026-07-08: "fix path/file/slug at the root")
+
+Recurring bug class (§9.11 slug/name drift): a selector keys on the WRONG dimension (subject, not
+text) or guesses a filename ad-hoc per directory, so the wrong file — or none — is served. The fix
+is ALWAYS the same shape; do NOT invent a new per-dir lookup:
+
+1. **Key on the most specific dimension the content varies by.** Mark-scheme examples vary by
+   TEXT/anthology (L&R ≠ W&L), not by subject (`poetry_anthology`). A selector keyed on subject
+   serves cross-anthology content — that IS the bug. Key on `state.text`; fall back to subject only
+   as a last resort.
+2. **Resolve through the ONE canonical slug ladder**, never a bare filename:
+   `{text}.md · {text}_poetry.md · {canonical(text)}.md · {canonical(text)}_poetry.md`, where
+   `canonical()` = `$SLUG_ALIASES`. Reference impl: `SWML_Quiz_Bank::parse_sections_text()` (MSQ,
+   v963) + `parse_sections_msa()` (MSA). New bank/template dir → reuse this ladder, don't re-derive.
+3. **`file_exists()`-driven, first match wins, graceful fallback.** No hard-coded filename per slug
+   form; add a `$SLUG_ALIASES` line for a genuinely new divergence.
+4. **Filenames use the canonical slug** (the form the FQ/MSA banks + live user_meta already use —
+   e.g. `love_relationships_poetry`, not `love_relationships`). Verify against an existing per-text
+   bank in a sibling dir before authoring.
+5. **Fail loud on a miss** (`error_log`/`console.warn` naming the slug tried) — a missing per-text
+   file means "author the bank / add the alias", never a code fork or a silent generic fallback that
+   reads as success.
+6. **id/scoring namespaces follow the source** — a per-text quiz stamps `msq:{text}:{board}:{q_num}`
+   (not `{subject}:…`) so the stateless resume-scorer rebuilds from the right pool.
+
 ## DUAL CHAT PIPELINE
 
 WML has two separate chat systems:

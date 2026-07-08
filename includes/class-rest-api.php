@@ -845,7 +845,9 @@ class SWML_REST_API {
             }
             $picked = SWML_Quiz_Bank::pick_session_fq($bank_text, $count, $stage, $kind);
         } else {
-            $picked = SWML_Quiz_Bank::pick_session($subject, $board, $count);
+            // v7.19.963: pass $text so the mark-scheme quiz resolves the per-TEXT bank
+            // (correct in-anthology/in-text examples) before the subject-generic fallback.
+            $picked = SWML_Quiz_Bank::pick_session($subject, $board, $count, $text);
         }
         if (empty($picked)) {
             return rest_ensure_response(['success' => false, 'code' => 'no_questions',
@@ -1070,6 +1072,15 @@ class SWML_REST_API {
             $candidates[] = SWML_Quiz_Bank::questions_for_fq($parts[1]);
             if (!empty($p['text'])) {
                 $candidates[] = SWML_Quiz_Bank::questions_for_fq(sanitize_text_field($p['text']));
+            }
+        } elseif ($parts[0] === 'msq') {
+            // v7.19.963: per-text mark-scheme-quiz ids "msq:<text>:<board>:<q_num>".
+            $candidates[] = SWML_Quiz_Bank::questions_for_text($parts[1], $parts[2] ?? ($p['board'] ?? ''));
+            if (!empty($p['text'])) {
+                $candidates[] = SWML_Quiz_Bank::questions_for_text(
+                    sanitize_text_field($p['text']),
+                    sanitize_text_field($p['board'] ?? ($parts[2] ?? ''))
+                );
             }
         } else {
             $candidates[] = SWML_Quiz_Bank::questions_for($parts[0], $parts[1]);

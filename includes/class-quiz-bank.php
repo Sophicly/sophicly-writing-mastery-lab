@@ -285,10 +285,53 @@ class SWML_Quiz_Bank {
      * (with keys + feedback) — the caller must strip keys before sending to
      * the client.
      */
-    public static function pick_session($subject, $board, $n = 5) {
+    public static function pick_session($subject, $board, $n = 5, $text = '') {
+        // v7.19.963 (Neil — mark-scheme examples MUST come from the student's own text/anthology,
+        // never a generic cross-anthology bank): prefer a per-TEXT mark-scheme-quiz bank resolved
+        // through the ONE canonical slug ladder, fall back to the subject-generic bank ONLY when
+        // none exists. Per-text ids get the `msq:{text}:{board}` namespace so resume-scoring
+        // (resolve_quiz_question) routes to the right pool. When no per-text bank is authored yet,
+        // the generic bank serves (still cross-anthology — that's a chat-B authoring gap, tracked).
+        if ($text !== '' && $text !== null) {
+            $tpool = self::questions_for_text($text, $board);
+            if (!empty($tpool)) {
+                return self::pick_from_pool($tpool, 'msq:' . sanitize_key((string) $text) . ':' . sanitize_key($board), $n);
+            }
+        }
         $pool = self::questions_for($subject, $board);
         if (empty($pool)) return [];
         return self::pick_from_pool($pool, sanitize_key($subject) . ':' . sanitize_key($board), $n);
+    }
+
+    /**
+     * v7.19.963: per-TEXT mark-scheme-QUIZ bank resolution — THE one canonical slug ladder
+     * (mirrors parse_sections_msa; NEVER an ad-hoc per-dir filename guess). Candidates in order:
+     *   {text}.md · {text}_poetry.md · {canonical(text)}.md · {canonical(text)}_poetry.md
+     * canonical() = the $SLUG_ALIASES registry (class-rest-api.php — the single slug source of
+     * truth). Returns [] when no per-text bank exists → caller falls back to the subject bank.
+     */
+    public static function parse_sections_text($text) {
+        $text = (string) $text;
+        if ($text === '') return [];
+        $aliases = class_exists('SWML_REST_API') ? SWML_REST_API::slug_aliases() : [];
+        $canon   = $aliases[$text] ?? $text;
+        $slugs = array_values(array_unique(array_filter([
+            sanitize_file_name($text),
+            sanitize_file_name($text) . '_poetry',
+            sanitize_file_name($canon),
+            sanitize_file_name($canon) . '_poetry',
+        ])));
+        foreach ($slugs as $slug) {
+            if ($slug === '') continue;
+            $path = self::dir() . $slug . '.md';
+            if (file_exists($path)) return self::parse_file($path);
+        }
+        return [];
+    }
+
+    public static function questions_for_text($text, $board) {
+        $sections = self::parse_sections_text($text);
+        return empty($sections) ? [] : self::resolve_board($sections, $board);
     }
 
     /** FQ: text-keyed, single-section pool (board-agnostic). */
