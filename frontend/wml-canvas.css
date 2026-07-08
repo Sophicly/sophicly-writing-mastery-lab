@@ -11812,6 +11812,18 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     cursor: default;
 }
 
+/* v7.19.971: poetry CN one-doc — per-poem groups are display-only during the FQ
+   (render-time task lock, stamped by the section NodeView at construction; never
+   persisted). CSS enforcement per the display-lock precedent above: no caret, no
+   clicks into the content. The collapse chevron stays live — it sits outside
+   .swml-section-content. */
+.swml-section-block.swml-task-locked > .swml-section-content {
+    pointer-events: none;
+    caret-color: transparent;
+    user-select: none;
+}
+.swml-section-block.swml-task-locked { cursor: default; }
+
 /* v7.19.953 (Neil): LIGHT-THEME lock icons — the white-stroke data-URIs above are for the
    dark theme; pseudo-element images can't inherit currentColor, so each content: site gets
    an ink-stroke twin here. Keep in sync with the dark rules + WML.lockIconSVG. */

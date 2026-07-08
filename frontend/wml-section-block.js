@@ -284,11 +284,27 @@
             // planning boards) keep their current non-collapsible render. Default = expanded
             // (localStorage per page+label, same as every collapsible); the FQ autofill
             // auto-expands the section it files into (v912 fill-visibility law).
+            // v7.19.971: gate = the poetry-CN doc FAMILY (isPoetryCnDoc — forms organiser
+            // + per-poem groups, one doc per anthology), with the legacy poetic_forms
+            // scope kept as fallback for stale bundles. Never a literal task name.
             let _isOrganiserDoc = false;
             try {
-                _isOrganiserDoc = !!(window.WML && typeof window.WML.canvasDocScope === 'function'
-                    && window.WML.canvasDocScope().text === 'poetic_forms');
+                _isOrganiserDoc = !!(window.WML && (
+                    (typeof window.WML.isPoetryCnDoc === 'function' && window.WML.isPoetryCnDoc())
+                    || (typeof window.WML.canvasDocScope === 'function' && window.WML.canvasDocScope().text === 'poetic_forms')));
             } catch (_) { _isOrganiserDoc = false; }
+            // v7.19.971: per-poem section-group detection — by the STABLE poem_ fieldId
+            // prefix in the node model (content-addressed; data-* attrs on the wrapper
+            // don't survive the HTML round-trip, fieldIds do).
+            let _isPoemGroup = false;
+            if (_isOrganiserDoc && type === 'plan') {
+                try {
+                    node.descendants((n) => {
+                        if (n.type && n.type.name === 'inputField' && /^poem_/.test(String((n.attrs && n.attrs.fieldId) || ''))) _isPoemGroup = true;
+                        return !_isPoemGroup;
+                    });
+                } catch (_) { _isPoemGroup = false; }
+            }
             const _collapsible = type === 'feedback' || type === 'scores'
                 || (type === 'action' && (_cvLabel === 'Self-Assessment' || _cvLabel === 'Action Plan'))
                 || (type === 'plan' && _isOrganiserDoc);
@@ -349,9 +365,27 @@
 
                 let COLLAPSE_KEY = '';
                 try { COLLAPSE_KEY = 'swml_fbcollapse:' + location.pathname + ':' + fbLabel; } catch (_) { COLLAPSE_KEY = ''; }
+                // v7.19.971: per-poem groups default COLLAPSED (Neil ruling — 15 poem rows
+                // are a map of the anthology; the poem being worked on auto-expands via the
+                // v912 fill-visibility law). A student's explicit toggle ('0') still wins.
                 let collapsed = false;
-                try { collapsed = COLLAPSE_KEY && localStorage.getItem(COLLAPSE_KEY) === '1'; } catch (_) { collapsed = false; }
+                try {
+                    const _stored = COLLAPSE_KEY ? localStorage.getItem(COLLAPSE_KEY) : null;
+                    collapsed = _stored === '1' || (_stored === null && _isPoemGroup);
+                } catch (_) { collapsed = _isPoemGroup; }
                 if (collapsed) dom.classList.add('swml-fb-collapsed');
+
+                // v7.19.971: render-time task lock — during the FQ the per-poem groups are
+                // CN-lesson territory: display-only. Class stamped at NodeView CONSTRUCTION
+                // (part of the created DOM, before PM mounts it — no post-mount mutation,
+                // §PM NodeView law), derived from state.task on each render and NEVER
+                // persisted (a lock baked into saved HTML would freeze the CN lesson —
+                // the v955 one-doc law). Enforcement is CSS (the display-lock precedent).
+                try {
+                    if (_isPoemGroup && window.WML && window.WML.state && window.WML.state.task === 'foundational_quiz') {
+                        dom.classList.add('swml-task-locked');
+                    }
+                } catch (_) { /* never block render */ }
 
                 // v7.19.925: ANY section that carries the collapse chevron stamps this class —
                 // the completion-tick clearance (right:44px) keys off it, so the tick can never

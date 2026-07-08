@@ -1377,7 +1377,7 @@ window.WML = (function() {
             // attempt-counter concern is gone — quizzes have no attempt model
             // since v7.19.954 (mastery rounds, attempt locked to 1).
             canvasStorageSuffix: '_cn',
-            canvasTextSource: 'fqBank',   // canvas text = state.fqBank || state.text
+            canvasTextSource: 'fqBank',   // canvas text = state.fqBank || state.text (v7.19.971: POETRY excluded in canvasDocScope — poetry FQs land on the per-anthology one-doc)
             canvasTopicPin: 2,            // Topic 2 = the Conceptual Notes slot
             documentTemplate: 'conceptual_notes',   // same doc — concept sections become read-only in render
             chatHeaderLabel: 'Foundational Quiz',
@@ -1639,10 +1639,20 @@ window.WML = (function() {
         const cfg = getExerciseConfig(state.task);
         const scope = { text: state.text, topic: state.topicNumber };
         if (cfg && cfg.canvasTextSource === 'fqBank' && state.fqBank) {
-            scope.text = state.fqBank;
+            // v7.19.971 (Neil ruling, poetry CN one-doc): POETRY FQ lessons land on the
+            // per-anthology Conceptual Notes doc — the bank override would fork them onto
+            // the legacy shared poetic_forms doc (superseded design). Non-poetry FQs keep
+            // the override untouched (Neil scope guard: this restructure is poetry ONLY).
+            if (!isPoetrySubject()) scope.text = state.fqBank;
         }
         if (cfg && typeof cfg.canvasTopicPin === 'number') {
             scope.topic = cfg.canvasTopicPin;
+        }
+        // v7.19.971: per-poem CN lessons (e.g. EDEN ROCK) carry their own bridge topic —
+        // pin poetry CN to the Topic-2 slot so every consumer opens the ONE anthology doc.
+        // Poetry only (scope guard): novel/drama CN lessons keep their bridged topic.
+        if (state.task === 'conceptual_notes' && isPoetrySubject()) {
+            scope.topic = 2;
         }
         return scope;
     }
@@ -3229,7 +3239,7 @@ window.WML = (function() {
         CONCEPTUAL_NOTES_ELEMENTS, POETRY_CN_ELEMENTS, NONFICTION_CN_ELEMENTS,
         QUOTE_ANALYSIS_ELEMENTS, MODEL_ANSWER_ELEMENTS, PLAN_ELEMENTS,
         // Helpers
-        isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject,
+        isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject, isPoetryCnDoc,
         getSteps, getElements, getExerciseConfig, getCwStepDef, resolveStorageSuffix, resolveCanvasSuffix, canvasDocScope,
         // Exercise manifest
         EXERCISE_MANIFEST,

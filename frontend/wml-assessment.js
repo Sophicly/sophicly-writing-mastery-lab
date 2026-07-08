@@ -29745,20 +29745,30 @@
             var isNF = WML.isNonfictionSubject();
             var isPo = WML.isPoetrySubject();
             var isFQ = WML.state && WML.state.task === 'foundational_quiz';
-            // v7.19.955: Poetic Forms knowledge organiser — when the doc's canonical
-            // identity is the shared poetic_forms notes doc (FQ bank override, or a
-            // CN lesson reading the same key), render one section per FORM with the
+            // v7.19.955: Poetic Forms knowledge organiser — one section per FORM with the
             // four mastery slots the quiz autofills (Definition · Features · Effects
             // · Form & Meaning — pre-authored concept notes, unlocked on a correct
             // answer). fieldIds pf_{form}_{slot} are the autofill contract; the form
             // slugs mirror the slugified concept-notes headings (@form token, chat B).
-            if (WML.canvasDocScope && WML.canvasDocScope().text === 'poetic_forms') {
+            // v7.19.971 (Neil ruling 2026-07-08, poetry CN ONE-DOC): the organiser is now
+            // the FIRST HALF of the per-anthology Poetry Conceptual Notes document —
+            // followed by one collapsible section-group per anthology poem (poem-name
+            // dividers, Neil round-2 ruling: no Part meta-labels). Gate = isPoetryCnDoc()
+            // (doc family), never the legacy text==='poetic_forms' scope. Poem list =
+            // swmlConfig.anthologyPoems (the SAME list the poem quizzes use — single
+            // source of truth); no list (unseen_poetry) → forms + General Notes only.
+            // fieldId contract (chat-B sidecar join): poem_{poem_id}_{sub} + _quotes,
+            // sub ∈ speaker · context · form · structure · themes · purpose · message.
+            if (WML.isPoetryCnDoc && WML.isPoetryCnDoc()) {
+                var pcnPoems = _poetryAnthologyPoems();
                 html += sectionHTML('question', 'About This Exercise', false, null,
-                    '<h2>Poetic Forms — Knowledge Organiser</h2>' +
+                    '<h2>Poetry Conceptual Notes</h2>' +
                     (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
-                    '<p>Every poetic form you master in the quiz writes its own concept note into this organiser — ' +
-                    'what the form <strong>is</strong>, its <strong>features</strong>, its <strong>effects</strong>, and how ' +
-                    '<strong>form shapes meaning</strong>. These notes are yours to build on in Conceptual Notes later.</p>');
+                    '<p>Your living reference for this anthology, built in two halves. The quiz fills the ' +
+                    '<strong>Poetic Forms</strong> organiser as you master each form — what it <strong>is</strong>, its ' +
+                    '<strong>features</strong>, its <strong>effects</strong>, and how <strong>form shapes meaning</strong>. ' +
+                    'Then, in Conceptual Notes, you and Sophia study the anthology poem by poem — speaker, context, form, ' +
+                    'language, themes, purpose, and the big message, each anchored to key quotes.</p>');
                 html += dividerHTML('GENERAL NOTES');
                 html += sectionHTML('plan', 'General Notes', true, null,
                     '<h3>General Notes</h3>' +
@@ -29788,6 +29798,31 @@
                         // would freeze the CN lesson's sections forever (one-doc law).
                         html += sectionHTML('plan', f[1], true, null, inner);
                     });
+                });
+                // ── Per-poem section-groups (Neil ruling: pre-built + collapsed, one per
+                // anthology poem; the student picks a poem in the CN chat and Sophia files
+                // notes + 1–3 key quotes per element into that poem's stable fieldIds).
+                var pcnSubs = [
+                    ['speaker', 'Speaker', 'Who is the speaker? What is their perspective, tone, and emotional state?'],
+                    ['context', 'Historical Context', 'When was this written? What historical, social, or biographical context shapes the poem’s meaning?'],
+                    ['form', 'Form', 'What poetic form is used (sonnet, dramatic monologue, free verse, etc.)? Why does this form suit the content?'],
+                    ['structure', 'Structure & Language', 'How is the poem structured? What techniques, imagery, and language choices create meaning?'],
+                    ['themes', 'Themes', 'What are the key themes? How are they developed across the poem?'],
+                    ['purpose', 'Poet’s Purpose', 'What is the poet trying to achieve? How do they want the reader to think or feel?'],
+                    ['message', 'The Big Message', 'What is the overarching message? What does this poem reveal about the human experience?'],
+                ];
+                pcnPoems.forEach(function (poem) {
+                    var pid = String(poem.id || '');
+                    if (!pid) return;
+                    html += dividerHTML(poem.title || pid);
+                    var pInner = '<h3>' + escapeHTML(poem.title || pid) + '</h3>' +
+                        (poem.poet ? '<p><em>' + escapeHTML(poem.poet) + '</em></p>' : '');
+                    pcnSubs.forEach(function (s) {
+                        pInner += '<p><strong>' + s[1] + '</strong></p>' +
+                            inputHTML(s[2], 'poem_' + pid + '_' + s[0]) +
+                            inputHTML('Key quotes (1–3).', 'poem_' + pid + '_' + s[0] + '_quotes');
+                    });
+                    html += sectionHTML('plan', poem.title || pid, true, null, pInner);
                 });
                 html += buildSignoffSection();
                 return html;
@@ -29889,6 +29924,28 @@
         // v7.15.83: tutor sign-off available on every exam-prep doc (optional affordance)
         if (html) html += buildSignoffSection();
         return html || '<p></p>';
+    }
+
+    // v7.19.971: poem list for the poetry CN one-doc — swmlConfig.anthologyPoems is the
+    // single source of truth ({board}|{anthology} keyed, server-seeded + admin-overridable,
+    // the SAME list the poem quizzes draw from so quiz entities and doc sections can never
+    // diverge). Tries the doc's canonical text plus the _poetry suffix drift both ways.
+    // Fail LOUD on a real anthology miss (author the list, never a silent generic doc);
+    // unseen_poetry legitimately has no list → forms + General Notes only, no warning.
+    function _poetryAnthologyPoems() {
+        var map = (window.swmlConfig && window.swmlConfig.anthologyPoems) || {};
+        var board = String(state.board || '').toLowerCase();
+        var t = '';
+        try { t = String(WML.canvasDocScope().text || ''); } catch (_) { t = String(state.text || ''); }
+        var tries = [t, t.replace(/_poetry$/, ''), t + '_poetry'];
+        for (var i = 0; i < tries.length; i++) {
+            var row = map[board + '|' + tries[i]];
+            if (Array.isArray(row) && row.length) return row;
+        }
+        if (state.subject === 'poetry_anthology') {
+            console.warn('[WML poetry-CN] no poem list for "' + board + '|' + t + '" — rendering forms + General Notes only. Author the anthology poem list (get_anthology_poems_map / swml_poems_ option).');
+        }
+        return [];
     }
 
     /**
