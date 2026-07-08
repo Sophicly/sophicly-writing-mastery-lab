@@ -2853,7 +2853,7 @@ window.WML = (function() {
     // wml-assessment.js) PLUS the tally form the rebuilt Penalty Ledger / code-tallied Trend
     // emit ("**F1 — name** ×5 = −2.5" / "F1 ×8: …"). Line-anchored; the map gates which
     // codes actually chip, so lookalikes ("Q2 ×2") fall through harmlessly.
-    const _LEARN_LINE_RE = /(^|\n)([ \t]*(?:[·•*-][ \t]*)?\*{0,2}([A-Z]{1,3}\d(?:-[A-Z]+)?)\*{0,2}(?:[^(\n]{0,60}\((?:−|-|–)[ \t]*[\d.]+\)|[^\n×]{0,60}×\d+)[^\n]*)/g;
+    const _LEARN_LINE_RE = /(^|\n)([ \t]*(?:[·•*-][ \t]*)?\*{0,2}([A-Z]{1,3}\d(?:-[A-Z]+)?)\*{0,2}(?:[^\n]{0,80}?\((?:−|-|–)[ \t]*[\d.]+\)|[^\n×]{0,60}×\d+)[^\n]*)/g;
     // N1 needs the technique the student misnamed. Canonical name set = the GENERATED
     // protocols/shared/reference/table-of-techniques.md headings, localized as
     // swmlConfig.techniqueNames. One combined regex, longest-first so "Extended Metaphor"
@@ -2874,6 +2874,20 @@ window.WML = (function() {
         }
         const m = text.match(_techMatcher.re);
         return m ? (_techMatcher.canon[m[0].toLowerCase()] || null) : null;
+    }
+    // v7.19.950 (Neil): ALL distinct techniques in a line, document order. An N1 line names
+    // both the MISNAMED technique and the GENUINE device in its Fix ("…not sibilance…the
+    // genuine device here is parallelism") — the student should get a chip for each.
+    function _resolveTechniqueNames(text) {
+        if (!_resolveTechniqueName(text)) return [];   // builds _techMatcher + fast bail
+        const re = new RegExp(_techMatcher.re.source, 'gi');
+        const out = [], seen = {};
+        let m;
+        while ((m = re.exec(String(text))) !== null) {
+            const canon = _techMatcher.canon[m[0].toLowerCase()];
+            if (canon && !seen[canon]) { seen[canon] = true; out.push(canon); }
+        }
+        return out;
     }
     // v7.19.949: RAW resolver — map lookup + N1 technique resolution, NO availability gate.
     // The persisted in-doc chip nodes use this (they must be written even where the
@@ -2896,13 +2910,22 @@ window.WML = (function() {
         if (chip.dest === 'toolkit') return (window.SophiclyToolkit && window.SophiclyToolkit.open) ? chip : null;
         return (window.SophiclyTable && window.SophiclyTable.open) ? chip : null;
     }
-    // v7.19.949: line → chip descriptor for the in-doc healer (wml-assessment's
+    // v7.19.949/950: line → chip descriptorS for the in-doc healer (wml-assessment's
     // _healLearnChips). Ungated (see _resolveLearnChipRaw); same rendered-block detection
-    // shape as appendLearnChips. Null when the line isn't a chip-eligible penalty line.
-    function learnChipForLine(text) {
+    // shape as appendLearnChips. Empty array when the line isn't chip-eligible. v950: N1
+    // lines yield ONE chip PER distinct technique named (misnamed + the genuine device in
+    // the Fix); other codes stay single-chip.
+    function learnChipsForLine(text) {
         const t = String(text || '').trim();
         const m = t.match(_LEARN_BLOCK_RE);
-        return m ? _resolveLearnChipRaw(m[1], t) : null;
+        if (!m) return [];
+        const map = PENALTY_LEARN_MAP[m[1]];
+        if (!map) return [];
+        if (map.dest !== 'table') {
+            const one = _resolveLearnChipRaw(m[1], t);
+            return one ? [one] : [];
+        }
+        return _resolveTechniqueNames(t).map(name => ({ dest: 'table', arg: name, label: name }));
     }
     // Raw-text phase (start of formatAI): append a ⟦SWML_LEARN:dest:arg:label⟧ token to each
     // chip-eligible penalty line. Colon-delimited — technique names never carry colons, and
@@ -2943,7 +2966,7 @@ window.WML = (function() {
     }
     // Rendered-block detection shape shared by the two DOM-phase consumers below —
     // textContent form (no markdown asterisks / leading bullet chars).
-    const _LEARN_BLOCK_RE = /^([A-Z]{1,3}\d(?:-[A-Z]+)?)(?:[^(]{0,60}\((?:−|-|–)\s*[\d.]+\)|[^×]{0,60}×\d+)/;
+    const _LEARN_BLOCK_RE = /^([A-Z]{1,3}\d(?:-[A-Z]+)?)(?:.{0,80}?\((?:−|-|–)\s*[\d.]+\)|[^×]{0,60}×\d+)/;
     // DOM phase for non-PM clones (the pop-out Feedback pad; PM doc itself stays chip-free
     // v1). Same detection on textContent — rendered blocks have no markdown asterisks or
     // leading bullet chars. Idempotent: a block that already carries a chip is skipped.
@@ -3171,7 +3194,7 @@ window.WML = (function() {
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
         parseProgressBeat, progressChipHTML, withProgressChip,
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
-        learnChipForLine,   // v7.19.949: ungated line→chip resolver for the in-doc healer
+        learnChipsForLine,  // v7.19.949/950: ungated line→chips resolver for the in-doc healer
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)
         isTopicFlow,
         // Rendering

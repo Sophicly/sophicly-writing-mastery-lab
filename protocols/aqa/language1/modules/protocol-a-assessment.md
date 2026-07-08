@@ -155,22 +155,30 @@ the code, the deduction and the one-line Fix are the ENTIRE display.
 read any older W1 as F1) — with the ANALYTICAL-VERB TIER LIST (v7.19.923, Neil Run-8 ruling:
 F1/T1 are DETERMINISTIC — judge every analytical verb against these three tiers so the same
 verb gets the same ruling every run):**
-- **BANNED — F1 (−0.5; the "shows" family — asserts a meaning without analysing):**
-  "shows/showing/shown", "tells us", "is about", "acts as (a symbol of)", "is/to be symbolic
-  of" (bare assertion), "creates the idea that", "represents that" (bare assertion),
-  "illustrates", "aims to [verb]", "seems to/appears to [verb]" (hedge-verb replacing
-  analysis — distinct from REQUIRED evaluative tentativeness such as "arguably"/"perhaps",
-  which is never penalised).
+- **BANNED — F1 (−0.5; the "shows" family — asserts a meaning without analysing).** Display
+  name for every F1 line: **"weak analytical (inference) verb"** (v7.19.950 — matches the
+  Toolkit's Inference Verbs word bank the Learn chip opens):
+  "shows/showing/shown" (incl. "this shows that"), "tells us", "is about", "acts as (a symbol
+  of)", "is/to be symbolic of" (bare assertion), "creates the idea that", "represents that"
+  (bare assertion). **v7.19.950 Neil ruling — F1 is the "shows" family of EMPTY ASSERTIONS
+  ONLY:** "aims to [verb]" and "seems to/appears to [verb]" are UN-TIERED (hedges, not empty
+  assertions — and evaluative tentativeness like "arguably"/"perhaps" is REQUIRED elsewhere;
+  never penalise them as verbs).
 - **WEAK — T1 (−0.5; imprecise, non-analytical):** uses, has, goes, gets, says, makes, does.
 - **STRONG — never penalised:** reveals, demonstrates, conveys, suggests, depicts, portrays,
-  emphasises, highlights, evokes, underscores, reinforces, critiques, challenges, exposes,
-  examines, establishes, crafts, constructs, frames, positions, foregrounds, mirrors,
-  juxtaposes, interrogates, crystallises, embodies, externalises, distils, encapsulates,
-  heightens.
+  illustrates (v7.19.950 Neil ruling — consistent with depicts/portrays; supersedes the v923
+  BANNED placement), emphasises, highlights, evokes, underscores, reinforces, critiques,
+  challenges, exposes, examines, establishes, crafts, constructs, frames, positions,
+  foregrounds, mirrors, juxtaposes, interrogates, crystallises, embodies, externalises,
+  distils, encapsulates, heightens.
 - **Any verb on NO tier: NO penalty by default** (ANTI-FABRICATION — never fill slots).
   Charge F1/T1 on an unlisted verb ONLY when it plainly asserts without analysing AND you can
   name which tier definition it meets.
 One code per fault, never both on the same verb.
+**UNIT-SCOPE LAW (v7.19.950 — Neil live 2026-07-08):** a penalty quotes ONLY from the unit
+being marked. The SAME phrase can never be charged in two units — if the quoted words are not
+in THIS unit's submitted text, the fault does not exist HERE (the engine dedupes duplicate
+charges as a net; don't rely on it).
 
 **Internal AI Note — N1 RULING STANDARD (technique names are judged by their CONCEPTUAL
 definition — v7.19.923, Neil Run-8 ruling):** before charging N1 (or crediting a sound-pattern
@@ -218,7 +226,7 @@ descriptor exists for what you need, say "no descriptor available" — never fab
    (**(T) Topic Sentence:** … **(A) Author's Purpose:** …). Sentences 2–3 lines, varied starters,
    never "the/this/these" openers, **never ANY banned- or weak-tier verb — run the
    ANALYTICAL-VERB TIER LIST over every gold sentence; golds model the STRONG tier only**
-   (a gold containing "shows"/"illustrates"/"seems to" unteaches the very habit we penalise).
+   (a gold containing "shows"/"seems to"/"aims to" unteaches the very habit we penalise).
    Silently self-check each gold sentence-by-sentence against this order AND the verb tiers
    before emitting; rewrite if out of position.
    **GOLD DISTINCTNESS (Neil, 2026-07-07):** across ALL gold models within a question — both
@@ -629,7 +637,7 @@ In order:
    - **Extra/missing-paragraph note** if applicable (Tier 1 estimates or Tier 2 zeros restated).
    - **Word-count advice** if the Q5 ceiling applied.
    - **Penalty & Ceiling Ledger:** sum every penalty actually deducted across the paper, grouped
-     by code with its PLAIN-ENGLISH name and count (e.g. "F1 — weak analytical verb ×5 = −2.5 ·
+     by code with its PLAIN-ENGLISH name and count (e.g. "F1 — weak analytical (inference) verb ×5 = −2.5 ·
      P1 — comma splice ×2 = −1.0 — total −4.5 marks"; never a bare code), **each code followed
      by its itemised instances — location + verbatim phrase + the fix** (e.g. "Q2 ¶1: 'creates
      the idea of' → 'crystallises' · Q4 BP2: 'aims to' → 'urges'") so the student can find and
@@ -689,7 +697,7 @@ In order:
    - `analytics-repeated-errors` — the error pattern that recurred across questions, from your
      marking. PRECISION RULE (Neil, 2026-07-04): pair EACH verbatim phrase with its exact
      location — never a pooled list (e.g. "Weak analytical verbs — Q2 ¶1: 'creates the idea
-     of' · Q3 ¶2: 'aims to' · Q4 BP1: 'illustrates'").
+     of' · Q3 ¶2: 'aims to' · Q4 BP1: 'acts as'").
    - `analytics-improvements` — what measurably improved across the paper (or vs a previous
      attempt if one exists).
    - `analytics-challenges` — the one or two biggest challenges, named plainly.

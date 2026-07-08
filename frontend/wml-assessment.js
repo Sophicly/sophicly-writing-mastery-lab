@@ -3033,7 +3033,7 @@
     function _healLearnChips() {
         try {
             if (!canvasEditor || canvasEditor.isDestroyed) return;
-            if (!(WML && typeof WML.learnChipForLine === 'function')) return;
+            if (!(WML && typeof WML.learnChipsForLine === 'function')) return;
             if (!(canvasEditor.schema && canvasEditor.schema.nodes && canvasEditor.schema.nodes.learnChip)) return;
             _stampLearnChipDests();
             const inserts = [];
@@ -3042,16 +3042,30 @@
                 if (((node.attrs && node.attrs.sectionType) || '') !== 'feedback') return false;
                 node.descendants((child, childPos) => {
                     if (!child.isTextblock) return true;
-                    const last = child.childCount ? child.child(child.childCount - 1) : null;
-                    if (last && last.type.name === 'learnChip') return false;
-                    const chip = WML.learnChipForLine(child.textContent);
-                    if (chip) inserts.push({ at: pos + 1 + childPos + child.nodeSize - 1, chip: chip });
+                    // v950: set-diff idempotence — a line may need N chips (N1 names the
+                    // misnamed technique AND the genuine device); collect the trailing chips
+                    // already present and insert only the missing ones, so pre-950 single-chip
+                    // lines upgrade in place.
+                    const present = {};
+                    for (let k = child.childCount - 1; k >= 0; k--) {
+                        const inl = child.child(k);
+                        if (inl.type.name !== 'learnChip') break;
+                        present[inl.attrs.dest + ':' + inl.attrs.arg] = true;
+                    }
+                    const missing = WML.learnChipsForLine(child.textContent)
+                        .filter(c => !present[c.dest + ':' + c.arg]);
+                    const at = pos + 1 + childPos + child.nodeSize - 1;
+                    // reversed: same-position inserts each land BEFORE the previous one,
+                    // so pushing in reverse renders the chips in document order.
+                    missing.slice().reverse().forEach(chip => inserts.push({ at: at, chip: chip }));
                     return false;
                 });
                 return false;
             });
             if (!inserts.length) return;
-            inserts.sort((a, b) => b.at - a.at); // descending: earlier positions stay valid
+            // Descending: earlier positions stay valid. Same-position chips (one line needing
+            // two) insert stably — the sort is stable in v8, later-listed chip lands last.
+            inserts.sort((a, b) => b.at - a.at);
             inserts.forEach(i => {
                 canvasEditor.commands.insertContentAt(i.at, {
                     type: 'learnChip',
@@ -3366,7 +3380,7 @@
             const editorEl = document.getElementById('swml-tiptap-editor');
             if (!editorEl) return null;
             const SKIP = /^(Overall Feedback|Analytics|Self-Assessment|Action Plan|Score Summary)/i;
-            const penRe = /^([A-Z]{1,3}\d(?:-[A-Z]+)?)[^(]{0,60}\((?:−|-|–)\s*([\d.]+)\)(.*)$/;
+            const penRe = /^([A-Z]{1,3}\d(?:-[A-Z]+)?).{0,80}?\((?:−|-|–)\s*([\d.]+)\)(.*)$/;
             const headRe = /^Mark\s+Breakdown\s*[—–-]+\s*((?:Body\s+Paragraph|Paragraph)\s*\d+|Introduction|Conclusion|.{1,40})$/i;
             const cards = {};
             let found = 0;
@@ -3397,6 +3411,12 @@
                     const fm = rest.match(/Fix:\s*["“”]([^"“”]{1,140})["“”]/i);
                     const key = base + '|' + para;
                     if (!cards[key]) cards[key] = { q: base, codes: [] };
+                    // v7.19.950 (Neil live: every ledger instance listed TWICE, tally ×22
+                    // instead of ×11): a doc whose box holds a duplicated card region (the
+                    // v706 title-drift re-file class) yields every penalty line twice here.
+                    // Same code + same quote in one card is NEVER two real faults ("one code
+                    // per fault") — dedupe at parse so the rebuilt ledger/Trend can't double.
+                    if (cards[key].codes.some(c => c.code === pm[1] && c.quote === (qm ? qm[1] : ''))) return;
                     cards[key].codes.push({ code: pm[1], val: parseFloat(pm[2]), quote: qm ? qm[1] : '', fix: fm ? fm[1] : '' });
                     found++;
                 });
@@ -3416,7 +3436,7 @@
     let _reflectRepairCount = 0;
     // v7.19.854: UNIVERSAL registry names (Neil — one registry, all papers; W1 retired →
     // F1). Legacy codes kept so older transcripts/replays still render a plain name.
-    const _PEN_NAMES = { F1: 'weak analytical verb ("shows" family)', T1: 'imprecise analytical verb',
+    const _PEN_NAMES = { F1: 'weak analytical (inference) verb ("shows" family)', T1: 'imprecise analytical (inference) verb',
         N1: 'technique naming too micro/inaccurate', C1: 'clarity/flow',
         H1: 'hanging/mis-punctuated quote', P1: 'comma splice/run-on', S1: 'weak sentence starters',
         S2: 'underdeveloped sentence', D1: 'lacks sustained detail', B1: 'beyond text boundaries',
@@ -3518,12 +3538,16 @@
     // registry — protocols/aqa/*/modules/protocol-a-assessment.md + knowledge-penalties.md).
     // BANNED = the F1 family; WEAK = the T1 family. A charged F1/T1 must quote a phrase
     // containing at least one of its tier's triggers, or the charge is unsupportable.
-    const _F1_BANNED_RE = /\b(?:shows?|showing|shown|tells us|is about|acts as|symbolic of|to be symbolic|creates? the idea|represents? that|illustrat\w*|aims? to|seems? to|appears? to)\b/i;
+    // v7.19.950 (Neil ruling): F1 = the "shows" family of EMPTY ASSERTIONS only.
+    // "illustrates" → STRONG tier (consistent with depicts/portrays); "aims to"/"seems to"/
+    // "appears to" → UN-TIERED (hedges, not empty assertions; evaluative tentativeness is
+    // REQUIRED elsewhere). A charge quoting only those is now unsupportable → stripped.
+    const _F1_BANNED_RE = /\b(?:shows?|showing|shown|tells us|is about|acts as|symbolic of|to be symbolic|creates? the idea|represents? that)\b/i;
     const _T1_WEAK_RE = /\b(?:uses?|using|has|have|goes|gets?|says?|makes?|does)\b/i;
     function _stripStrongVerbPenalties(text) {
         try {
             let n = 0;
-            const outText = String(text).replace(/(^|\n)[ \t]*(?:[·•*-][ \t]*)?\*{0,2}(F1|T1)\*{0,2}[^(\n]{0,60}\((?:−|-|–)[ \t]*[\d.]+\)[^\n]*/g, (whole, lead, code) => {
+            const outText = String(text).replace(/(^|\n)[ \t]*(?:[·•*-][ \t]*)?\*{0,2}(F1|T1)\*{0,2}[^\n]{0,80}?\((?:−|-|–)[ \t]*[\d.]+\)[^\n]*/g, (whole, lead, code) => {
                 const flat = whole.replace(/\*/g, '');
                 const qm = flat.match(/["“”]([^"“”]{1,140})["“”]/);   // first quoted phrase = the charged wording
                 if (!qm) return whole;
@@ -3561,7 +3585,7 @@
             const doc = _docPlainText();
             if (!doc || doc.length < 40) return text;   // no doc context → never strip
             let n = 0;
-            const outText = String(text).replace(/(^|\n)[ \t]*(?:[·•*-][ \t]*)?\*{0,2}([A-Z]{1,3}\d(?:-[A-Z]{2,6})?)\*{0,2}[^(\n]{0,60}\((?:−|-|–)[ \t]*[\d.]+\)[^\n]*/g, (whole, lead, code) => {
+            const outText = String(text).replace(/(^|\n)[ \t]*(?:[·•*-][ \t]*)?\*{0,2}([A-Z]{1,3}\d(?:-[A-Z]{2,6})?)\*{0,2}[^\n]{0,80}?\((?:−|-|–)[ \t]*[\d.]+\)[^\n]*/g, (whole, lead, code) => {
                 const flat = whole.replace(/\*/g, '');
                 const qm = flat.match(/["“”]([^"“”]{1,160})["“”]/);
                 if (!qm) return whole;                      // quote-less charge → stands (protocol governs)
@@ -3574,6 +3598,56 @@
             });
             if (n) console.warn('WML MarkAudit: verbatim-quote net removed ' + n + ' fabricated-quote penalt' + (n === 1 ? 'y' : 'ies') + ' — card totals recomputed without ' + (n === 1 ? 'it' : 'them'));
             return outText;
+        } catch (_) { return text; }
+    }
+    // v7.19.950: DUPLICATE-PENALTY NET (Neil live 2026-07-08 — the SAME F1 charge, same
+    // quoted phrase, appeared under BOTH "Q4 — Body Paragraph 3" AND "Q4 — Conclusion";
+    // the phrase exists only in the conclusion). Protocol law: a penalty quotes from THE
+    // UNIT BEING MARKED — but the v932 verbatim net checks the WHOLE doc, so a charge
+    // quoting ANOTHER unit's words slips through whenever the phrase exists anywhere.
+    // This net dedupes (code + normalised quote) across the reply: among duplicate charges,
+    // each occurrence is tested against ITS OWN region's student excerpt (the "> …"
+    // blockquote block nearest above it); occurrences whose excerpt does NOT contain the
+    // quote are stripped when at least one sibling occurrence's excerpt DOES. Runs BEFORE
+    // the card auditor, so card totals/ledger/Trend recompute without the fabricated charge.
+    // Conservative: unique charges untouched; no excerpt context or no occurrence matching
+    // its own excerpt (truncated excerpts) → everything stands.
+    function _stripDuplicatePenalties(text) {
+        try {
+            const lines = String(text).split('\n');
+            const penRe = /^[ \t]*(?:[·•*-][ \t]*)?\*{0,2}([A-Z]{1,3}\d(?:-[A-Z]{2,6})?)\*{0,2}[^\n]{0,80}?\((?:−|-|–)[ \t]*[\d.]+\)/;
+            const occ = {};
+            let lastExcerpt = '';
+            for (let i = 0; i < lines.length; i++) {
+                const ln = lines[i];
+                if (/^\s*>/.test(ln)) {
+                    let ex = ln.replace(/^\s*>\s?/, '');
+                    while (i + 1 < lines.length && /^\s*>/.test(lines[i + 1])) { i++; ex += ' ' + lines[i].replace(/^\s*>\s?/, ''); }
+                    lastExcerpt = _normQuote(ex);
+                    continue;
+                }
+                const pm = ln.match(penRe);
+                if (!pm) continue;
+                const qm = ln.replace(/\*/g, '').match(/["“”]([^"“”]{1,160})["“”]/);
+                if (!qm) continue;
+                const frag = _normQuote(qm[1]);
+                if (frag.length < 12) continue;
+                const key = pm[1] + '|' + frag;
+                (occ[key] = occ[key] || []).push({ idx: i, excerpt: lastExcerpt });
+            }
+            const drop = {};
+            Object.keys(occ).forEach(key => {
+                const list = occ[key];
+                if (list.length < 2) return;
+                const frag = key.slice(key.indexOf('|') + 1);
+                const inOwn = list.map(o => !!o.excerpt && o.excerpt.indexOf(frag) !== -1);
+                if (!inOwn.some(Boolean)) return;   // ambiguous → all stand (fail-safe)
+                list.forEach((o, j) => { if (!inOwn[j]) drop[o.idx] = key; });
+            });
+            const hits = Object.keys(drop);
+            if (!hits.length) return text;
+            hits.forEach(k => console.warn('WML MarkAudit: duplicate penalty stripped — quoted phrase belongs to another unit: ' + drop[k]));
+            return lines.filter((_, i) => !drop[i]).join('\n');
         } catch (_) { return text; }
     }
     function _auditAssessmentArithmetic(reply) {
@@ -3631,6 +3705,10 @@
             out = _stripStrongVerbPenalties(out);
             // ---- Pass 0c (v7.19.932): VERBATIM-QUOTE NET — see _stripUnverbatimPenalties.
             out = _stripUnverbatimPenalties(out);
+            // ---- Pass 0d (v7.19.950): DUPLICATE-PENALTY NET — same charge quoting another
+            // unit's words (passes 0c because the phrase IS in the doc — just not in the
+            // unit being marked). See _stripDuplicatePenalties.
+            out = _stripDuplicatePenalties(out);
             // ---- Pass 1: each card — recompute total from its own table ----
             out = out.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
                 let meta = null;
@@ -3686,7 +3764,7 @@
                 const penLine = body.match(/Total penalties:?\*{0,2}\s*[−–-]\s*([\d.]+)/i);
                 if (penLine) pen = parseFloat(penLine[1]);
                 else {
-                    let pm; const penRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}[A-Z]{1,3}\d(?:-[A-Z]+)?\*{0,2}[^(\n]{0,60}\([−–-]\s*([\d.]+)\)/g;
+                    let pm; const penRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}[A-Z]{1,3}\d(?:-[A-Z]+)?\*{0,2}[^\n]{0,80}?\([−–-]\s*([\d.]+)\)/g;
                     while ((pm = penRe.exec(body)) !== null) pen += parseFloat(pm[1]);
                 }
                 // v7.19.854 FAIL-OPEN GUARD (engineer out the failure class): if the card
@@ -3705,12 +3783,15 @@
                 // fix) — a count alone gave the student nothing to find and correct.
                 {
                     const codes = [];
-                    let cm; const codeRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}([A-Z]{1,3}\d(?:-[A-Z]+)?)\*{0,2}[^(\n]{0,60}\((?:−|-|–)\s*([\d.]+)\)(:?[^\n]*)/g;
+                    let cm; const codeRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}([A-Z]{1,3}\d(?:-[A-Z]+)?)\*{0,2}[^\n]{0,80}?\((?:−|-|–)\s*([\d.]+)\)(:?[^\n]*)/g;
                     while ((cm = codeRe.exec(body)) !== null) {
                         const rest = cm[3] || '';
                         const qm = rest.match(/["“”]([^"“”]{1,90})["“”]/);
                         const fm = rest.match(/Fix:\s*["“”]([^"“”]{1,140})["“”]/i);
-                        codes.push({ code: cm[1], val: parseFloat(cm[2]), quote: qm ? qm[1] : '', fix: fm ? fm[1] : '' });
+                        // v7.19.950: dedupe (code+quote) within a card — see _penLedgerCardsFromDoc.
+                        const _q = qm ? qm[1] : '';
+                        if (codes.some(c => c.code === cm[1] && c.quote === _q)) continue;
+                        codes.push({ code: cm[1], val: parseFloat(cm[2]), quote: _q, fix: fm ? fm[1] : '' });
                     }
                     _penLedgerCards[qKey + '|' + String((meta && meta.para) || '')] = { q: qKey, codes: codes };
                 }

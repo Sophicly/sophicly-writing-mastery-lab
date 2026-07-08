@@ -368,7 +368,7 @@ code-owned source.
   on mount (staggered past tryServerLoad), every overlay rebuild, and post-`applyAssessmentFeedback`
   — idempotent (line whose last inline is already a learnChip skips), so it equally covers
   STALE pre-949 docs, fresh fills, and reseed-seeded fbdiscuss copies. Resolution =
-  `WML.learnChipForLine` (wml-core): the v922 detection shape + `PENALTY_LEARN_MAP`,
+  `WML.learnChipsForLine` (wml-core, v950: N1 yields one chip PER technique named — misnamed + the genuine device): the v922 detection shape + `PENALTY_LEARN_MAP`,
   **UNGATED** — chips persist even where a destination global isn't deployed; visibility is
   view-gated by editor root attrs (`data-swml-learn-toolkit/-table`, stamped by
   `_stampLearnChipDests`) + CSS, so chips on existing docs light up the day a destination
