@@ -9700,9 +9700,13 @@
                 else                              body += '\n\n*Type the letter of your answer, e.g. `B`.*';
                 // v7.19.783: ranking + true_false render their OWN widget (appendRankButtons /
                 // appendQuickButtons) — suppress the generic quick-action auto-detector for those
-                // bubbles, else it parses the option lines into a DUPLICATE button set. MCQ /
-                // select_all have no explicit widget and rely on the detector, so keep it on.
-                aiBubble(body, { suppressActions: (q.type === 'ranking' || q.type === 'true_false') });
+                // bubbles, else it parses the option lines into a DUPLICATE button set.
+                // v7.19.953 (Neil, poetic_forms live run): MCQ now renders EXPLICIT letter
+                // buttons too — the auto-detector skips option sets whose average label length
+                // is >55 chars (deliberately, for summaries), so long-option MCQs silently lost
+                // their tap buttons and fell back to type-the-letter. Deterministic widget,
+                // no detector dependency. select_all keeps the detector (multi-select UI).
+                aiBubble(body, { suppressActions: (q.type === 'ranking' || q.type === 'true_false' || q.type === 'mcq') });
                 _quizBeatChip(q);   // v7.19.952: progress chip on every question bubble
                 // v7.19.580: True/False has no options array → no auto-buttons. Add explicit
                 // True / False quick-action buttons (parity with the MCQ option buttons).
@@ -9711,6 +9715,8 @@
                 } else if (q.type === 'ranking') {
                     // v7.19.749: tap-to-rank buttons (typing the order still works too).
                     appendRankButtons(q);
+                } else if (q.type === 'mcq' && q.options && q.options.length) {
+                    appendQuickButtons(q.options.map(o => ({ label: o.letter, value: o.letter })));
                 }
                 // v7.19.743: MSA has 14 sidebar steps (Setup=1, Q1-10=2-11, Results=12…) — drive
                 // the real step (Qn → n+1), no 7-cap. MSQ/FQ keep the 7-step cap.
@@ -10034,8 +10040,12 @@
                          : 'mark_scheme';
                 round = 1; roundResults = []; msaAttempts = [];
                 if (quizType === 'foundational') {
-                    const tname = (state.textLabel || state.text || '').replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                    aiBubble(`Welcome to your **Foundational Quiz**${tname ? ' — ' + tname : ''}. 👋 Five quick questions to check your overall understanding now you've read the text. I'll hold all the feedback to the **end of the round** — that's how the real exam works, and how it sticks. 🧠\n\n🎯 **Every round you complete counts toward your grade**, so give each one your best. **Aim for 100%** — if you miss any, just take a fresh set of 5 until you ace a whole round. Jot anything worth keeping into **General Notes**. Stuck on a question? Just **ask me** and I'll help you think it through.`);
+                    // v7.19.953 (Neil): title from the OVERRIDE bank when one is set (a
+                    // poetic_forms lesson said "— Love Relationships Poetry"), and no hardcoded
+                    // question count — staged banks serve the full part (10/15/18), not 5.
+                    const _fqSrc = state.fqBank || state.textLabel || state.text || '';
+                    const tname = String(_fqSrc).replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    aiBubble(`Welcome to your **Foundational Quiz**${tname ? ' — ' + tname : ''}. 👋 A quick round of questions to check your overall understanding now you've read the text. I'll hold all the feedback to the **end of the round** — that's how the real exam works, and how it sticks. 🧠\n\n🎯 **Every round you complete counts toward your grade**, so give each one your best. **Aim for 100%** — if you miss any, just take a fresh round until you ace a whole one. Jot anything worth keeping into **General Notes**. Stuck on a question? Just **ask me** and I'll help you think it through.`);
                 } else if (quizType === 'mark_scheme_assessment') {
                     // v7.19.739: MSA Final — one graded set of 10 (×2 = /20), examiner-thinking, no mastery loop.
                     const board = (state.board || '').toUpperCase().replace(/-/g, ' ');
