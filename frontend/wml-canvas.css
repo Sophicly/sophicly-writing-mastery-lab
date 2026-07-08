@@ -5249,15 +5249,14 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 
 /* Section label badge (::before) */
-/* v7.19.969 (Neil): inline-flex + align-items:center — the lock data-URI in content: is a
-   replaced image that sits bottom-on-baseline under inline-block, so its middle rode ~4px
-   above the 10px text's middle. Flex centres image + text runs geometrically; the literal
-   spaces in content: collapse as whitespace-only flex items, so gap owns the spacing. */
+/* v7.19.972 (Neil): v969's inline-flex centring REVERTED — browsers wrap a pseudo-element's
+   content: image + text into ONE anonymous flex item, so align-items never separated the
+   icon from the text and it still rode high. The lock is now a BACKGROUND layer on the
+   lock rules (see "lock icon as background layer" block below): background-position centres
+   it to the pixel; content: on lock rules carries text only. */
 .swml-section-block::before {
     content: counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+    display: inline-block;
     position: absolute;
     top: -10px;
     left: 12px;
@@ -5296,7 +5295,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 /* Read-only complete sections keep the lock icon (v7.19.952: 🔒 → tabler lock, Neil) */
 .swml-section-readonly[data-section-complete="true"]::before {
-    content: '✓ ' url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.92)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
+    content: '✓ ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
 }
 /* v7.19.487: top-right completion tick on EDITABLE sections — appears automatically
    when all the section's elements are filled (data-section-complete). Quiet, scholarly
@@ -6178,10 +6177,10 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 /* Lock icon for read-only (v7.19.952: 🔒 → tabler lock, Neil) */
 .swml-section-readonly::before {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.92)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
+    content: counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
 }
 .swml-section-readonly.swml-section-question::before {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.92)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' counter(swml-major) '. ' attr(data-section-label);
+    content: counter(swml-major) '. ' attr(data-section-label);
 }
 
 /* v7.19.897 (Neil): ASSESSMENT-DOC section tabs = the JS-stamped data-section-num (the SAME
@@ -6201,10 +6200,10 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     content: '✓ ' attr(data-section-num) attr(data-section-label);
 }
 .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)::before {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.92)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' attr(data-section-num) attr(data-section-label); /* v7.19.952: 🔒 → tabler lock */
+    content: attr(data-section-num) attr(data-section-label); /* v7.19.952: 🔒 → tabler lock */
 }
 .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)[data-section-complete="true"]::before {
-    content: '✓ ' url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.92)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' attr(data-section-num) attr(data-section-label); /* v7.19.952: 🔒 → tabler lock */
+    content: '✓ ' attr(data-section-num) attr(data-section-label); /* v7.19.952: 🔒 → tabler lock */
 }
 
 /* Headings inside sections */
@@ -11803,7 +11802,7 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.92)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' attr(data-section-num) attr(data-section-label) ' — read-only · edit in the previous step';
+    content: attr(data-section-num) attr(data-section-label) ' — read-only · edit in the previous step';
 }
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-response,
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan,
@@ -11833,27 +11832,56 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
 .swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
 .swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(30,32,40,0.75)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' attr(data-section-num) attr(data-section-label) ' — read-only · edit in the previous step';
+    content: attr(data-section-num) attr(data-section-label) ' — read-only · edit in the previous step';
 }
 [data-swml-theme="light"] .swml-section-readonly::before,
 .swml-canvas-light .swml-section-readonly::before {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(30,32,40,0.75)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
+    content: counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
 }
 [data-swml-theme="light"] .swml-section-readonly.swml-section-question::before,
 .swml-canvas-light .swml-section-readonly.swml-section-question::before {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(30,32,40,0.75)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' counter(swml-major) '. ' attr(data-section-label);
+    content: counter(swml-major) '. ' attr(data-section-label);
 }
 [data-swml-theme="light"] .swml-section-readonly[data-section-complete="true"]::before,
 .swml-canvas-light .swml-section-readonly[data-section-complete="true"]::before {
-    content: '✓ ' url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(30,32,40,0.75)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
+    content: '✓ ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
 }
 [data-swml-theme="light"] .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)::before,
 .swml-canvas-light .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)::before {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(30,32,40,0.75)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' attr(data-section-num) attr(data-section-label);
+    content: attr(data-section-num) attr(data-section-label);
 }
 [data-swml-theme="light"] .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)[data-section-complete="true"]::before,
 .swml-canvas-light .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)[data-section-complete="true"]::before {
-    content: '✓ ' url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(30,32,40,0.75)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' attr(data-section-num) attr(data-section-label);
+    content: '✓ ' attr(data-section-num) attr(data-section-label);
+}
+
+/* v7.19.972 (Neil): lock icon as BACKGROUND layer — a content: image is a replaced box
+   glued to the text baseline (its middle always rides above a 10px label's middle), and
+   flex can't separate it from the text (browsers wrap a pseudo's content into ONE
+   anonymous flex item). A background-image centres to the pixel: y=center puts the icon's
+   middle on the pill's middle (= the text's middle); x=7px sits it slightly left of the
+   old text start. The pill content: rules above carry TEXT ONLY. Divider ::before lines
+   are immune (their background/padding are !important). Keep both data-URIs in sync with
+   WML.lockIconSVG. */
+.swml-section-readonly::before,
+#swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
+#swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
+#swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.92)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+    background-position: 7px center;
+    padding-left: 26px;
+}
+[data-swml-theme="light"] .swml-section-readonly::before,
+.swml-canvas-light .swml-section-readonly::before,
+[data-swml-theme="light"] #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
+[data-swml-theme="light"] #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
+[data-swml-theme="light"] #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before,
+.swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
+.swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
+.swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(30,32,40,0.75)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E");
 }
 [data-swml-theme="light"] .swml-outline-input.swml-outline-locked::after,
 .swml-canvas-light .swml-outline-input.swml-outline-locked::after {
