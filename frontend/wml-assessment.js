@@ -7239,6 +7239,17 @@
         // v7.15.20: Attempt badge — injected/updated dynamically after attempt resolution
         // (state.attempt is 0 at build time; resolved later via server or sessionStorage)
         function _updateAttemptBadge() {
+            // v7.19.954 (Neil ruling 2026-07-08): QUIZZES HAVE NO ATTEMPT MODEL — they run
+            // mastery rounds, not attempts; no "Attempt N" badge on any quiz task. Self-guard
+            // (canvas task-scoping rule 1): the gate lives IN the function — the v633 gate
+            // only guarded the build-time call, so the async attempt-resolution chain
+            // (L15617/15755) re-injected the badge on Neil's poetry FQ lesson. Also REMOVES
+            // a badge a pre-gate call already injected.
+            if (['foundational_quiz', 'mark_scheme', 'mark_scheme_unit', 'mark_scheme_assessment'].includes(state.task)) {
+                const _b = protoBadges.querySelector('.swml-attempt-badge');
+                if (_b) _b.remove();
+                return;
+            }
             if (state.attempt < 1) return;
             // v7.17.11: hide attempt badge inside numbered topic flow — topic number carries the identity there.
             if (WML.isTopicFlow && WML.isTopicFlow()) return;
@@ -9372,6 +9383,7 @@
                     const d = JSON.parse(raw);
                     if (!d || !Array.isArray(d.qs) || !d.qs.length) return false;
                     qs = d.qs; idx = d.idx || 0; total = d.total || d.qs.length;
+                    _syncFqSidebar();   // v7.19.954: resumed rounds re-derive the sidebar length too
                     round = d.round || 1; roundResults = Array.isArray(d.roundResults) ? d.roundResults : [];
                     msaAttempts = Array.isArray(d.msaAttempts) ? d.msaAttempts : [];
                     predictedScore = (typeof d.predictedScore === 'number') ? d.predictedScore : null;
@@ -9664,6 +9676,21 @@
                 return `**Now capture it in the document on the left (once).** Your goal, the ONE pattern across your attempts, and your action plan.${journey} That written reflection is what makes the strategy stick.`;
             }
 
+            // v7.19.954 (Neil): the FQ sidebar step list derives from the SERVED round, not the
+            // fixed 5-Q shape — staged banks serve 10/15/18. Stamp state.fqRoundTotal and
+            // re-render the step list (same _renderSidebarSteps the panel build uses). Runs on
+            // fresh rounds AND resume; no-op when the length hasn't changed.
+            function _syncFqSidebar() {
+                if (quizType !== 'foundational' || !total) return;
+                try {
+                    if (state.fqRoundTotal === total) return;
+                    state.fqRoundTotal = total;
+                    const sp = document.getElementById('swml-progress-steps');
+                    const gs = (window.WML && typeof window.WML.getSteps === 'function') ? window.WML.getSteps() : null;
+                    if (sp && gs && gs.length) _renderSidebarSteps(sp, gs);
+                } catch (e) { /* sidebar is best-effort, never block the round */ }
+            }
+
             // v7.19.952: quiz progress chip (Chat-B bug 2 — FQ had no progress bar while the
             // assessment flows do). Same minimal chip component (WML.progressChipHTML) injected
             // the same way (_syncMarkingBeatChip shape); count is frontend-authoritative
@@ -9719,8 +9746,10 @@
                     appendQuickButtons(q.options.map(o => ({ label: o.letter, value: o.letter })));
                 }
                 // v7.19.743: MSA has 14 sidebar steps (Setup=1, Q1-10=2-11, Results=12…) — drive
-                // the real step (Qn → n+1), no 7-cap. MSQ/FQ keep the 7-step cap.
-                try { updateProgress(quizType === 'mark_scheme_assessment' ? (idx + 2) : Math.min(idx + 2, 7)); } catch (e) {}
+                // the real step (Qn → n+1), no 7-cap. v7.19.954: FQ sidebar is DYNAMIC now
+                // (Welcome + Q1..Qn + Results from the served round) — no cap either. MSQ keeps
+                // its fixed 7-step model (always 5-Q rounds).
+                try { updateProgress(quizType === 'mark_scheme' ? Math.min(idx + 2, 7) : (idx + 2)); } catch (e) {}
                 persist();
             }
 
@@ -9850,8 +9879,9 @@
                     body += '\n';
                 });
                 aiBubble(body);
-                // v7.19.743: MSA → mark the "Results & Grade" step (12); MSQ/FQ → step 7.
-                try { updateProgress(quizType === 'mark_scheme_assessment' ? 12 : 7); } catch (e) {}
+                // v7.19.743: MSA → mark the "Results & Grade" step (12); MSQ → step 7.
+                // v7.19.954: FQ's Results step = total+2 (dynamic sidebar).
+                try { updateProgress(quizType === 'mark_scheme_assessment' ? 12 : quizType === 'foundational' ? ((total || (qs && qs.length) || 5) + 2) : 7); } catch (e) {}
 
                 busy = true; showCanvasTyping();
                 let qr = null;
@@ -10022,6 +10052,7 @@
                         return;
                     }
                     qs = res.questions; total = res.total || qs.length; idx = 0; roundResults = []; active = true;
+                    _syncFqSidebar();        // v7.19.954: sidebar steps follow the served round length
                     qs.forEach(_shuffleQ);   // v7.19.727: randomise option order for THIS round (persisted, so resume keeps it)
                     persist();
                     renderQ();

@@ -1646,7 +1646,20 @@ window.WML = (function() {
         if (state.task === 'exam_question') return EXAM_QUESTION_STEPS;
         if (state.task === 'memory_practice') return MEMORY_PRACTICE_STEPS;
         if (state.task === 'verbal_rehearsal') return QUOTE_ANALYSIS_STEPS;
-        if (state.task === 'foundational_quiz') return FOUNDATIONAL_QUIZ_STEPS;
+        if (state.task === 'foundational_quiz') {
+            // v7.19.954 (Neil): DYNAMIC — staged banks serve the full part (10/15/18 Q), not
+            // always 5. The quiz controller stamps state.fqRoundTotal from the server-picked
+            // round and re-renders the sidebar; before that (first paint) the default-5 shape
+            // renders. Derived, never hardcoded per bank (the dynamic-universal law).
+            const _fqN = parseInt(state.fqRoundTotal, 10) || 0;
+            if (_fqN > 0) {
+                const steps = [{ step: 1, label: 'Welcome' }];
+                for (let i = 1; i <= _fqN; i++) steps.push({ step: i + 1, label: 'Q' + i });
+                steps.push({ step: _fqN + 2, label: 'Results' });
+                return steps;
+            }
+            return FOUNDATIONAL_QUIZ_STEPS;
+        }
         // v7.18.17: mark_scheme has 14 sidebar steps (Setup + Q1-Q10 + Results +
         // Feedback + Action Plan). Pull straight from the manifest so the
         // universal step-marker handler at wml-assessment.js:2545 validates

@@ -7606,6 +7606,7 @@ Before marking the introduction, ask the student to confirm their essay structur
             // previous lesson would serve the wrong bank on this lesson's quiz start.
             state.fqBank      = cfg.fqBank  || '';
             state.fqStage     = cfg.fqStage || 0;
+            state.fqRoundTotal = 0;  // v7.19.954: dynamic FQ sidebar length — never leak across lessons
             // v7.17.20: SPA re-init must pipe cfg.step (multi-step tasks like
             // mark_scheme_unit). Otherwise state.step leaks across lessons.
             state.step        = cfg.step    || 0;
