@@ -7349,6 +7349,27 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     gap: 8px 16px;
     margin: 2px 0;
 }
+/* v7.19.957 (Neil live review): inside a category group each skill is its OWN row —
+   label left, dropdown RIGHT-aligned (the old overlay's uniform right rag). The
+   left-packed inline pairs read as messy once categories landed. */
+.swml-ctl-group .swml-ctl-item {
+    flex: 1 0 100%;
+    justify-content: space-between;
+}
+/* v7.19.957 (Neil live review): the Self-Assessment section's RAW doc paragraphs
+   (h3 categories + "Skill: — / 5" lines) are the ctl-row's derivation + persistence
+   layer, NOT display — since the v951 naturalization the widget groups + headline
+   strip ARE the whole UI. Expanding the section (chevron / collapse-all) exposed the
+   duplicate "old structure". Hide the content layer permanently and drop the now
+   meaningless chevron; the section renders identically in both collapse states, so
+   collapse-all's class toggle on it is a harmless no-op. The paragraphs stay in the
+   DOM/doc — dropdown writes, extraction and AI payload reads are untouched. */
+.swml-section-block[data-section-label="Self-Assessment"] > .swml-section-content {
+    display: none !important;
+}
+.swml-section-block[data-section-label="Self-Assessment"] > .swml-fb-toggle {
+    display: none;
+}
 .swml-ctl-group-title {
     flex: 1 0 100%;
     font-size: 10px;

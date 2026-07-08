@@ -229,6 +229,12 @@ by one consumer (the FQ-time lock died in .955 for exactly this reason).
   `.swml-ctl-group` (full-width, small-caps `.swml-ctl-group-title`) per category, items
   wrapping beneath. DERIVED from the doc — new papers' categories appear with zero wiring.
   Groups live INSIDE `.swml-ctl-row`, so every clone/baseline strip law holds by construction.
+  **v957 (Neil live review):** the SA section's RAW doc paragraphs (h3s + "Skill: — / 5" lines)
+  are DATA ONLY — permanently CSS-hidden (`> .swml-section-content { display:none }`), chevron
+  hidden with them; the ctl-groups + headline strip are the entire visible UI (expanding used
+  to reveal the duplicate "old structure"). The paragraphs stay in the DOM/doc: dropdown
+  writes, extraction and AI-payload reads are untouched. Inside a ctl-group each skill is its
+  own full-width row, label left / dropdown RIGHT-aligned (uniform right rag).
 - **Display-lock indicator lives IN the section-label pill (v952).** The v947 banner rode
   `::before` — the SAME pseudo-element the section-label pill owns — so it REPLACED the pill,
   inherited its loud styling and lost the section name (Neil live review). The rule now

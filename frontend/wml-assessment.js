@@ -9707,7 +9707,12 @@
                     state.fqRoundTotal = total;
                     const sp = document.getElementById('swml-progress-steps');
                     const gs = (window.WML && typeof window.WML.getSteps === 'function') ? window.WML.getSteps() : null;
-                    if (sp && gs && gs.length) _renderSidebarSteps(sp, gs);
+                    // v7.19.957 (Neil live): CLEAR before render — _renderSidebarSteps only
+                    // APPENDS (caller-clears contract, see _applyServerSidebar). Without the
+                    // clear the default 5-Q list from the panel build stayed above the dynamic
+                    // list, so the sidebar showed BOTH (Welcome+Q1..Q5+Results, then
+                    // Welcome+Q1..Q10+Results).
+                    if (sp && gs && gs.length) { sp.innerHTML = ''; _renderSidebarSteps(sp, gs); }
                 } catch (e) { /* sidebar is best-effort, never block the round */ }
             }
 
@@ -9913,6 +9918,16 @@
                         .map(r => ({ field: 'pf_' + r.res.note.form + '_' + r.res.note.slot, value: r.res.note.text }));
                     if (noteFills.length) {
                         _applyFieldValueSets(noteFills);
+                        // v7.19.957: fill-visibility law (v912) — a section that just received
+                        // a note must not stay collapsed; auto-expand each filled form section.
+                        noteFills.forEach(nf => {
+                            try {
+                                const _host = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+                                const _fld = _host && _host.querySelector('[data-input-field][data-field-id="' + nf.field + '"]');
+                                const _sec = _fld && _fld.closest('.swml-section-block');
+                                if (_sec) _sec.classList.remove('swml-fb-collapsed');
+                            } catch (_) { /* display-only, never block */ }
+                        });
                         aiBubble('📒 **' + noteFills.length + ' concept note' + (noteFills.length > 1 ? 's' : '') +
                             ' added to your Knowledge Organiser** — every form you master writes its key fact into the document, ready to build on in Conceptual Notes.');
                     }

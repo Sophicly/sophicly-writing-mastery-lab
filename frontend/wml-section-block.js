@@ -277,8 +277,21 @@
             const _STRIP_MODE = { 'Analytics': 'always', 'Self-Assessment': 'always', 'Action Plan': 'always', 'Overall Feedback': 'always', 'Score Summary': 'always' };
             // v7.19.926 (Neil Run 9): Score Summary ('scores') collapses too, with a
             // Total·%·Grade preview strip (builder in wml-assessment's _renderSectionStrips).
+            // v7.19.957 (Neil): the Poetic Forms Knowledge Organiser's 'plan' sections (one
+            // per form, ×11 + General Notes) collapse too — long reference doc, students tidy
+            // mastered forms away. Scoped by the doc's canonical identity (canvasDocScope),
+            // NOT by type alone: 'plan' sections in every other doc (CN concept sections,
+            // planning boards) keep their current non-collapsible render. Default = expanded
+            // (localStorage per page+label, same as every collapsible); the FQ autofill
+            // auto-expands the section it files into (v912 fill-visibility law).
+            let _isOrganiserDoc = false;
+            try {
+                _isOrganiserDoc = !!(window.WML && typeof window.WML.canvasDocScope === 'function'
+                    && window.WML.canvasDocScope().text === 'poetic_forms');
+            } catch (_) { _isOrganiserDoc = false; }
             const _collapsible = type === 'feedback' || type === 'scores'
-                || (type === 'action' && (_cvLabel === 'Self-Assessment' || _cvLabel === 'Action Plan'));
+                || (type === 'action' && (_cvLabel === 'Self-Assessment' || _cvLabel === 'Action Plan'))
+                || (type === 'plan' && _isOrganiserDoc);
             if (_collapsible) {
                 const contentDOM = document.createElement('div');
                 contentDOM.className = 'swml-section-content';
