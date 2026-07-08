@@ -6217,6 +6217,60 @@
         }
     }
 
+    // v7.19.977: TOC super-group heal. Pre-v973 poetry-CN docs predate the
+    // "Conceptual Notes" section-header that OPENS the poem super-group; without
+    // it every anthology poem's divider sits at the top level and floods the
+    // outline/TOC (the v123 tier nests dividers UNDER the nearest preceding
+    // section-header). Inject the header before the first poem divider. Same
+    // targeted-insert / idempotent / hydration-gated law as the Comparisons heal
+    // (memory feedback_wml_doc_mutations_on_load_are_dangerous) — PM transaction
+    // only, never a raw DOM write (PM NodeView foreign-mutation loop).
+    function _healPoetryCnTocHeader(editor) {
+        try {
+            if (!editor || !editor.state || !editor.chain) return;
+            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            // Idempotent: bail if a section-header already opens the doc's poem half.
+            let hasHeader = false;
+            editor.state.doc.descendants((n) => {
+                if (hasHeader) return false;
+                if (n.type && n.type.name === 'sectionBlock' && n.attrs && n.attrs.sectionType === 'section-header') hasHeader = true;
+            });
+            if (hasHeader) return;
+            // First poem group = first 'plan' sectionBlock holding a poem_* field.
+            let firstPoemPos = -1;
+            editor.state.doc.descendants((node, pos) => {
+                if (firstPoemPos >= 0) return false;
+                if (!node.type || node.type.name !== 'sectionBlock') return;
+                if ((node.attrs && node.attrs.sectionType) !== 'plan') return false;
+                let isPoem = false;
+                node.descendants((c) => {
+                    if (isPoem) return false;
+                    if (c.type && c.type.name === 'inputField'
+                        && /^poem_.+?_(speaker|context|form|structure|themes|purpose|message|comparisons)(?:_quotes)?$/.test(String((c.attrs && c.attrs.fieldId) || ''))) isPoem = true;
+                });
+                if (isPoem) firstPoemPos = pos;
+                return false;
+            });
+            if (firstPoemPos < 0) return; // no poem groups — nothing to wrap
+            // The poem's title divider = last 'divider' sectionBlock before it (poem
+            // groups are emitted after every forms STAGE divider, so the closest
+            // preceding divider is this poem's own title divider).
+            let dividerPos = -1;
+            editor.state.doc.descendants((node, pos) => {
+                if (pos >= firstPoemPos) return false;
+                if (node.type && node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'divider') dividerPos = pos;
+            });
+            const insertAt = dividerPos >= 0 ? dividerPos : firstPoemPos;
+            const html = sectionHTML('section-header', 'Conceptual Notes', false, null,
+                '<h2>Conceptual Notes — The Poems</h2>' +
+                '<p><em>One section per poem. In your Conceptual Notes lesson you’ll pick a poem and build its notes with Sophia — speaker, context, form, structure &amp; language, themes, purpose, and the big message, each anchored to 1–3 key quotes. During the quiz these sections stay locked.</em></p>');
+            editor.chain().insertContentAt(insertAt, html).run();
+            console.log('[WML poetry-CN] healed TOC super-group header at pos', insertAt);
+        } catch (e) {
+            console.warn('[WML poetry-CN] TOC header heal failed (doc untouched beyond applied inserts)', e);
+        }
+    }
+
     // Fire a silent API call to generate statements for any stale qIds on
     // this editor's canvas. Runs once per onCreate — if statements are
     // already populated, no-op. Used for diagnostic (no chat UI) + back-fill
@@ -21525,8 +21579,8 @@
                 setTimeout(() => { try { _healLearnChips(); } catch (_) {} }, 3500);
                 // v7.19.976: poetry-CN Comparisons heal — same staggered/idempotent shape
                 // (second pass covers the async server setContent replacing the first-pass doc).
-                setTimeout(() => { try { _healPoetryCnComparisons(editor); } catch (_) {} }, 1800);
-                setTimeout(() => { try { _healPoetryCnComparisons(editor); } catch (_) {} }, 3800);
+                setTimeout(() => { try { _healPoetryCnComparisons(editor); _healPoetryCnTocHeader(editor); } catch (_) {} }, 1800);
+                setTimeout(() => { try { _healPoetryCnComparisons(editor); _healPoetryCnTocHeader(editor); } catch (_) {} }, 3800);
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
