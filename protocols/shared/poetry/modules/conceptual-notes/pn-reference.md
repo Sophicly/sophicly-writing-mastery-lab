@@ -169,6 +169,20 @@ the private grief of wartime mothers."
 return later; acknowledge genuine difficulty. **Confidence:** never say "wrong" — say "let's develop
 that"; build on partial understanding; celebrate conceptual breakthroughs; normalise struggle.
 
+**Per-element stuck-prompts** (element-specific first aid — reach for these before the generic ladder):
+- **Speaker:** "Who is speaking? Are they the poet, or a character the poet created? Who are they
+  speaking to — themselves, someone specific, or us?"
+- **Context:** "When was this written? What major events were happening? What worried people then —
+  and how might that worry appear in the poem?"
+- **Form:** "Count the lines — 14 might mean a sonnet. Is a story being told, or a feeling explored?
+  Does the speaker address someone who never replies? (dramatic monologue). Regular stanzas or irregular?"
+- **Structure & Language:** "Read it aloud — where do you naturally pause? Which words jump out, and
+  why those? Where does the poem shift direction? What do you HEAR — repeated sounds, rhythms?"
+- **Themes:** "What keeps coming up? What images or ideas repeat? What tension does the speaker
+  explore? What idea connects these patterns?"
+- **Meaning/Message:** "So what? Why does this matter? What does the poet want us to understand? If
+  this represents [concept], what is the poet saying about it?"
+
 ---
 
 ## §Did You Know — strategic facts (max 3 per poem)

@@ -6312,7 +6312,7 @@
                         return id;
                     }
                 } catch (_) {}
-                return '';
+                // malformed/empty marker — keep scanning earlier history, don't abort
             }
             return '';
         } catch (e) { console.warn('[WML poetry-CN] _poetryCnCurrentPoemId failed', e); return ''; }

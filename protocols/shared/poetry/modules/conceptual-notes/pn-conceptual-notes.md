@@ -136,7 +136,10 @@ embody? Optionally use the speaker-type lens (Observer / Confessor / Witness / L
 Protester — see `pn-reference.md` §Speaker Types) as a thinking aid, and note any shift from the
 poem's opening to its close. Collect 1–3 quotes; do technique work on at least one. Then trace the
 emotional engagement (how the poet positions us to FEEL toward the speaker) and where the poem
-ARRIVES by its close (an insight, a shift, a refusal to resolve).
+ARRIVES by its close (an insight, a shift, a refusal to resolve). **Conditional — other voices:**
+if the poem contains another figure, addressee, or silent listener (e.g. the envoy in *My Last
+Duchess*), ask how their presence illuminates the poem's meaning and collect a quote; if it is a
+single self-contained voice, name that isolation as itself meaningful and move on.
 
 ### Element 2 — HISTORICAL CONTEXT  (files → `poem_{id}_context`)
 When and where was it written; what social, historical, or biographical forces shape it? Distinguish
@@ -150,7 +153,10 @@ What poetic form is it (see the 10-form quick-reference in `pn-reference.md` §F
 naming to the **Effect Chain**: FORM → FOCUS → EMOTION → COGNITION → ACTION — how the form itself
 shapes meaning (a war poem in sonnet form signifies differently from the same content in free
 verse). Note hybrid/blended forms where present (establish the primary form, then secondary
-features, then WHY the poet blends them). Collect evidence quotes.
+features, then WHY the poet blends them). Collect evidence quotes. Pose a form-SPECIFIC Socratic
+question built from that form's row in the quick-reference (e.g. for a sonnet: "where is the volta,
+and what does the turn do to the argument?"; for a dramatic monologue: "what does the speaker reveal
+that they don't intend to?") — don't ask a generic "what's the form?" once it's named.
 
 ### Element 4 — STRUCTURE & LANGUAGE  (files → `poem_{id}_structure`)
 Form is the blueprint; structure & language are the bricks and mortar. Identify the three most
@@ -175,8 +181,9 @@ the poet succeeds. Tentative language throughout. Collect a purpose-serving quot
 Synthesise everything into one statement: "Through the speaker's perspective in [poem], [poet]
 argues that…" — referencing context, the primary theme, the purpose, and the emotional/intellectual
 experience, specific to THIS poem. Stress-test it (does it explain WHY the perspective, WHAT we
-understand, HOW it met its context, WHY we feel what we feel?). Collect the quote that best
-encapsulates the whole poem.
+understand, HOW it met its context, WHY we feel what we feel?). Reject platitudes — not "it teaches
+us to be kind" but a specific, defensible claim about human nature, society, or morality that only
+THIS poem makes. Collect the quote that best encapsulates the whole poem.
 
 ### Element 8 — COMPARISONS  (files → `poem_{id}_comparisons`)
 **[AI_INTERNAL]** The exam is comparative — this element is FIRST-CLASS and filed like every other,

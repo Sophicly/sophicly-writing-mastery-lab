@@ -1367,6 +1367,12 @@ class SWML_Protocol_Router {
                     error_log("WML Poetry-CN: poem text MISSING id={$sel_id} in swml_poems_{$board}_{$anthology}");
                     $b .= "\n**POEM TEXT UNAVAILABLE** for this poem — tell the student it isn't loaded yet and ask them to report it; do NOT quote from memory or invent lines.\n";
                 }
+            } else {
+                // Fail loud on an id that isn't in the roster (stale/mismatched selection —
+                // the canvas-slug-drift class). Never silently re-show the picker as if no
+                // choice was made: name the failure so the model can recover cleanly.
+                error_log("WML Poetry-CN: selected id={$sel_id} NOT in roster for {$board}|{$anthology} — stale/mismatched selection");
+                $b .= "\n**SELECTION NOT RECOGNISED.** The poem id the session sent (`{$sel_id}`) is not in this anthology's roster above. Do NOT invent or guess a poem — re-present the picker from the roster and ask the student to choose again.\n";
             }
         } else {
             $b .= "\nNo poem selected yet — present the picker (two-step disclosure: ~5 recommended if a recommended list is provided, then \"See all poems…\") and wait for the student's choice.\n";
