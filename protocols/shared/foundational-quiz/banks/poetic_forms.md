@@ -22,6 +22,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 1. **Type: MCQ [Tests Recognising Forms]**
    @part:1
+   @form:ballad
    * **Question:** Which form originated in oral folk culture, uses quatrains in an alternating rhythm, and relies on strong repetition to aid memorability?
    * **Options:** A) The ballad, B) The ode, C) Interior monologue, D) Dramatic monologue
    * **Correct:** A
@@ -32,6 +33,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 2. **Type: MCQ [Tests Recognising Forms]**
    @part:1
+   @form:epic
    * **Question:** Which form is characterised by great length, elevated style, heroic deeds, and often an opening that begins in the middle of the action?
    * **Options:** A) The elegy, B) The epic, C) The lyric, D) Free verse
    * **Correct:** B
@@ -42,6 +44,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 3. **Type: MCQ [Tests Recognising Forms]**
    @part:1
+   @form:lyric
    * **Question:** Which form prioritises musicality and the poet's own inner feelings over telling a story?
    * **Options:** A) The narrative poem, B) The epic, C) The lyric, D) The ballad
    * **Correct:** C
@@ -52,6 +55,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 4. **Type: True-False [Tests Recognising Forms]**
    @part:2
+   @form:elegy
    * **Question:** An elegy is a poem of mourning that explores loss and often moves towards some form of consolation.
    * **Answer:** True
    * **Feedback:** ✓ Correct. The elegy processes grief — for a death, a relationship, or a way of life — and traditionally works towards comfort or acceptance.
@@ -59,6 +63,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 5. **Type: Fill [Tests Recognising Forms]**
    @part:2
+   @form:ode
    * **Question:** A formal, elevated poem of praise for its subject, often using apostrophe and complex rhyme, is called an [BLANK].
    * **Answer:** ode
    * **Feedback:** ✓ Correct. The ode raises its subject — an object, a season, an idea — to something worthy of contemplation through elevated language.
@@ -75,6 +80,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 7. **Type: MCQ [Tests Recognising Forms]**
    @part:2
+   @form:dramatic_monologue
    * **Question:** A poem in which a single speaker addresses a silent listener, unintentionally revealing their true character through what they say, is called a...
    * **Options:** A) Dramatic monologue, B) Interior monologue, C) Elegy, D) Epic
    * **Correct:** A
@@ -85,6 +91,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 8. **Type: MCQ [Tests Recognising Forms]**
    @part:3
+   @form:interior_monologue
    * **Question:** Which form presents a character's raw, unfiltered private thought, with no addressed listener and no performance for an audience?
    * **Options:** A) Dramatic monologue, B) Interior monologue, C) Ballad, D) Ode
    * **Correct:** B
@@ -95,6 +102,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 9. **Type: True-False [Tests Recognising Forms]**
    @part:3
+   @form:free_verse
    * **Question:** Free verse has no fixed metre and no set rhyme scheme.
    * **Answer:** True
    * **Feedback:** ✓ Correct. Free verse abandons regular metre and rhyme, and that openness can itself carry meaning.
@@ -102,6 +110,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 10. **Type: Fill [Tests Recognising Forms]**
    @part:3
+   @form:narrative
    * **Question:** A poem that tells a story through characters, plot and setting is broadly called a [BLANK] poem.
    * **Answer:** narrative
    * **Feedback:** ✓ Correct. A narrative poem's central purpose is storytelling, following characters through a sequence of events.
@@ -109,6 +118,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 11. **Type: MCQ [Tests Recognising Forms]**
    @part:1
+   @form:epic
    * **Question:** Which form is defined by great length, elevated style and a hero's journey, often beginning in the middle of the action?
    * **Options:** A) The lyric, B) The epic, C) The elegy, D) Narrative form
    * **Correct:** B
@@ -119,6 +129,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 12. **Type: MCQ [Tests Recognising Forms]**
    @part:2
+   @form:sonnet
    * **Question:** Which form is fourteen lines long and organised around a turn, or volta, in its argument or feeling?
    * **Options:** A) The ballad, B) The sonnet, C) Narrative form, D) The lyric
    * **Correct:** B
@@ -129,6 +140,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 13. **Type: MCQ [Tests Form Features]**
    @part:1
+   @form:ballad
    * **Question:** Traditional ballad metre alternates which two line lengths, typically within rhyming quatrains?
    * **Options:** A) Iambic tetrameter and iambic trimeter, B) Iambic pentameter throughout, C) A single unrhymed long line repeated, D) Irregular free verse lines
    * **Correct:** A
@@ -139,6 +151,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 14. **Type: MCQ [Tests Form Features]**
    @part:1
+   @form:epic
    * **Question:** Which structural features are typical of epic poetry in the English tradition?
    * **Options:** A) Blank verse and an opening that begins in the middle of the action, B) Strict fourteen-line stanzas with a single rhyming couplet, C) Short, songlike quatrains built for oral memorability, D) Compound words that mimic a child's speech
    * **Correct:** A
@@ -149,6 +162,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 15. **Type: MCQ [Tests Form Features]**
    @part:1
+   @form:lyric
    * **Question:** Which combination of features defines the lyric form?
    * **Options:** A) A shorter, subjective poem built on musicality, rhythm and rich figurative language, B) A lengthy, panoramic poem recounting heroic deeds across vast settings, C) A poem structured entirely around characters, plot and setting, D) A poem entirely without metre, rhyme, or figurative language
    * **Correct:** A
@@ -159,6 +173,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 16. **Type: True-False [Tests Form Features]**
    @part:2
+   @form:elegy
    * **Question:** An elegy has no formal structural conventions at all and is always written in irregular free verse.
    * **Answer:** False
    * **Feedback:** ✓ Correct. An elegy typically relies on a formal structure — iambic pentameter, couplets, or a set stanza pattern — rather than always being written in irregular free verse.
@@ -166,6 +181,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 17. **Type: Fill [Tests Form Features]**
    @part:2
+   @form:ode
    * **Question:** Direct address to the poem's subject, used to elevate and dwell on it, is a device the ode relies on called [BLANK].
    * **Answer:** apostrophe
    * **Feedback:** ✓ Correct. Apostrophe — speaking directly to the subject, whether an object, season or idea — is one of the ode's defining formal devices.
@@ -173,6 +189,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 18. **Type: Select All [Tests Form Features]**
    @part:2
+   @form:sonnet
    * **Question:** Which statements correctly describe the two main sonnet types?
    * **Options:** A) The Petrarchan sonnet divides into an eight-line octave that poses a problem and a six-line sestet that offers a resolution, B) The Shakespearean sonnet divides into three four-line quatrains followed by a two-line couplet that delivers a summary, C) Both sonnet types abandon rhyme entirely and rely on varied, unpatterned line lengths instead, D) Both sonnet types run to twenty lines, divided into five rhyming quatrains
    * **Correct:** A, B
@@ -183,6 +200,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 19. **Type: MCQ [Tests Form Features]**
    @part:2
+   @form:dramatic_monologue
    * **Question:** Which feature is central to the structure of a dramatic monologue?
    * **Options:** A) A single speaker addressing a silent, implied listener within a specific dramatic situation, B) An unrhymed, elevated address recounting deeds across a vast timescale, C) No addressed listener at all, only raw stream of consciousness, D) A chorus of multiple speakers responding to one another
    * **Correct:** A
@@ -193,6 +211,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 20. **Type: MCQ [Tests Form Features]**
    @part:3
+   @form:interior_monologue
    * **Question:** What structurally distinguishes interior monologue from dramatic monologue?
    * **Options:** A) Interior monologue has no addressed listener, presenting raw, unfiltered thought rather than a performed address, B) Interior monologue always rhymes in alternating quatrains, C) Interior monologue is always exactly fourteen lines long, D) Interior monologue requires a chorus of multiple narrators
    * **Correct:** A
@@ -203,6 +222,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 21. **Type: True-False [Tests Form Features]**
    @part:3
+   @form:free_verse
    * **Question:** Free verse abandons a fixed metrical pattern and a set rhyme scheme, although it may still use occasional rhyme or other poetic devices.
    * **Answer:** True
    * **Feedback:** ✓ Correct. Free verse drops regular metre and set rhyme, though it can still draw on devices such as imagery, symbolism or occasional rhyme.
@@ -210,6 +230,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 22. **Type: Fill [Tests Form Features]**
    @part:3
+   @form:narrative
    * **Question:** Narrative poems, which tell a story through characters and plot, often make use of [BLANK] to bring events and characters to life.
    * **Answer:** dialogue
    * **Feedback:** ✓ Correct. Dialogue lets narrative poems dramatise their events directly through characters' own words.
@@ -217,6 +238,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 23. **Type: MCQ [Tests Form Features]**
    @part:3
+   @form:free_verse
    * **Question:** Which feature most clearly distinguishes free verse from fixed forms like the sonnet or ballad?
    * **Options:** A) It abandons a set metrical pattern and rhyme scheme, though it may still use occasional rhyme or other devices, B) It is fixed to exactly fourteen lines built around a single turning point, C) It alternates four-beat and three-beat lines within rhyming quatrains, D) It recounts heroic deeds on a grand scale in elevated, unrhymed verse
    * **Correct:** A
@@ -237,6 +259,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 25. **Type: MCQ [Tests Form Effects]**
    @part:1
+   @form:ballad
    * **Question:** What effect does the ballad's driving, regular rhythm typically have on the reader?
    * **Options:** A) It creates a somatic empathy, synchronising the reader's pulse with the story's momentum towards its conclusion, B) It slows the reader down into a meditative, contemplative pace, C) It forces the reader to judge a speaker's hidden motives like a detective, D) It removes all sense of rhythm, leaving the reader disoriented
    * **Correct:** A
@@ -247,6 +270,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 26. **Type: MCQ [Tests Form Effects]**
    @part:1
+   @form:epic
    * **Question:** What effect does the epic's vast scale and elevated style typically have on the reader?
    * **Options:** A) A sense of awe and admiration at witnessing something monumental, B) An intimate, uncomfortable sense of eavesdropping on private thought, C) Uncomfortable complicity with a speaker's hidden confession, D) A fragmented, disoriented sense of time
    * **Correct:** A
@@ -257,6 +281,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 27. **Type: MCQ [Tests Form Effects]**
    @part:1
+   @form:lyric
    * **Question:** What cognitive effect can lyric poetry have on a reader processing strong emotion?
    * **Options:** A) It can act as a container for grief, helping the reader process and validate strong feeling, B) It forces the reader to resolve a logical argument as though it were proven fact, C) It positions the reader as a detective decoding a speaker's hidden guilt, D) It disorients the reader through constantly shifting, unstable perspective
    * **Correct:** A
@@ -267,6 +292,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 28. **Type: True-False [Tests Form Effects]**
    @part:2
+   @form:elegy
    * **Question:** An elegy makes grief communal, inviting the reader to share in mourning and to reflect on mortality and loss.
    * **Answer:** True
    * **Feedback:** ✓ Correct. The elegy shares grief with the reader, offering a space to process mortality and find meaning in loss.
@@ -274,6 +300,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 29. **Type: Fill [Tests Form Effects]**
    @part:2
+   @form:ode
    * **Question:** The ode's dense, elevated language slows the reader's pace, inducing a calm, focused state of [BLANK] on its subject.
    * **Answer:** contemplation
    * **Feedback:** ✓ Correct. The ode's complex rhyme and heavy syllables force a meditative pace, so the reader's attention settles into deep contemplation.
@@ -281,6 +308,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 30. **Type: Select All [Tests Form Effects]**
    @part:2
+   @form:sonnet
    * **Question:** Which statements correctly describe an effect of the sonnet form?
    * **Options:** A) The sonnet creates tension as passion strains against the poem's structural walls, releasing at the turn, B) The sonnet trains the reader to accept a resolved argument as though it were logically proven, C) The sonnet's tightly organised structure has, in some cases, been used to voice serious political dissent, D) The sonnet's chief effect is to disorient the reader through constantly shifting, unpredictable line lengths
    * **Correct:** A, B, C
@@ -290,6 +318,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 31. **Type: MCQ [Tests Form Effects]**
    @part:2
+   @form:dramatic_monologue
    * **Question:** What role does the dramatic monologue's structure typically place the reader in?
    * **Options:** A) A kind of judge or detective, decoding the truth a speaker unintentionally reveals, B) A passive witness to a monumental, heroic event, C) A mourner sharing communally in a speaker's grief, D) A performer reciting a formal address of praise
    * **Correct:** A
@@ -300,6 +329,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 32. **Type: MCQ [Tests Form Effects]**
    @part:3
+   @form:interior_monologue
    * **Question:** What effect does interior monologue's unmediated access to a character's thought typically create?
    * **Options:** A) Intimate connection with the character, or a sense of uncomfortable voyeurism, B) A meditative, slowed pace of contemplation, C) A sense of awe at witnessing a heroic deed, D) Catharsis following a plot's rising tension and resolution
    * **Correct:** A
@@ -310,6 +340,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 33. **Type: True-False [Tests Form Effects]**
    @part:3
+   @form:free_verse
    * **Question:** Free verse's rejection of fixed rules only ever produces disorientation, and it has no capacity to validate marginalised voices or challenge established norms.
    * **Answer:** False
    * **Feedback:** ✓ Correct. Free verse's break from fixed rules can in fact validate marginalised voices and challenge established norms and canons, alongside its effects of authenticity and immediacy.
@@ -317,6 +348,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 34. **Type: Fill [Tests Form Effects]**
    @part:3
+   @form:narrative
    * **Question:** As a narrative poem's plot builds towards resolution, readers often feel identification with its characters, tension, suspense, and eventual [BLANK].
    * **Answer:** catharsis
    * **Feedback:** ✓ Correct. Catharsis — the emotional release that follows tension and suspense — is a key effect of narrative form as its plot resolves.
@@ -324,6 +356,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 35. **Type: MCQ [Tests Form Effects]**
    @part:3
+   @form:hybrid_forms
    * **Question:** What effect can occur when a poet deliberately blends two forms within a single poem?
    * **Options:** A) It can produce complex, sometimes contradictory effects that neither form alone would create, B) It always cancels out the effects of both forms, leaving the reader with no response at all, C) It automatically weakens the poem, since mixing forms is a sign of technical failure, D) It has no effect at all — a reader cannot perceive when forms are combined
    * **Correct:** A
@@ -354,6 +387,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 38. **Type: MCQ [Tests Forms & Meaning]**
    @part:3
+   @form:hybrid_forms
    * **Question:** What does "hybridity" mean when analysing a poem's form?
    * **Options:** A) When a poet blends two or more forms together, creating complex, sometimes contradictory effects, B) When a poem is translated from one language into another, C) When a poem is set to music and performed aloud, D) When a poem strictly follows only one traditional form without variation
    * **Correct:** A
@@ -441,6 +475,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
 
 48. **Type: MCQ [Tests Forms & Meaning]**
    @part:3
+   @form:hybrid_forms
    * **Question:** Why might a poet combine features of dramatic monologue and interior monologue within the same poem?
    * **Options:** A) To let a speaker address someone directly while also revealing raw, unfiltered private thought, creating a more complex psychological effect, B) To ensure the poem has no speaker or listener of any kind, C) To guarantee the poem follows a strict fourteen-line structure, D) To remove any possibility of the reader accessing the speaker's inner thoughts
    * **Correct:** A
