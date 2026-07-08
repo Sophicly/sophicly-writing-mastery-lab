@@ -7843,17 +7843,22 @@
             // construction, never a per-bubble fix (the SA-only align was the §9.1 narrow-scope
             // bug that made this recur here). getBoundingClientRect delta = offsetParent-safe.
             if (!chatMessages._suppressScroll) {
-                requestAnimationFrame(() => {
+                const _alignTop = () => {
                     try {
-                        const tallerThanView = bubble.offsetHeight > (chatMessages.clientHeight - 8);
-                        if (tallerThanView) {
+                        if (bubble.offsetHeight > (chatMessages.clientHeight - 8)) {
                             const d = bubble.getBoundingClientRect().top - chatMessages.getBoundingClientRect().top;
                             chatMessages.scrollTop = Math.max(0, chatMessages.scrollTop + d - 8);
                         } else {
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                         }
                     } catch (_) { chatMessages.scrollTop = chatMessages.scrollHeight; }
-                });
+                };
+                requestAnimationFrame(_alignTop);
+                // v7.19.965 (Neil — still sat low): quiz option buttons (appendQuickButtons/Bar/
+                // Rank/True-False) append ~50ms AFTER the message and grow the bubble PAST the
+                // viewport — the single rAF measure fired before that, so the message scrolled to
+                // the bottom and its top slid above the fold. Re-align once deferred content settles.
+                setTimeout(_alignTop, 240);
             }
         }
 

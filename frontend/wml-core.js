@@ -1694,7 +1694,20 @@ window.WML = (function() {
             const _fqN = parseInt(state.fqRoundTotal, 10) || 0;
             if (_fqN > 0) {
                 const steps = [{ step: 1, label: 'Welcome' }];
-                for (let i = 1; i <= _fqN; i++) steps.push({ step: i + 1, label: 'Q' + i });
+                // v7.19.965 (Neil — universal): chunk a long question list into collapsible
+                // groups of 5 ('Questions 1-5', '6-10', …) exactly like the MSA sidebar, so the
+                // completed group collapses and the active one expands (no endless flat list).
+                // Same `group:` field the shared _renderSidebarSteps accordion already consumes —
+                // one renderer, every quiz. Short rounds (≤5) stay flat. Welcome + Results ungrouped.
+                const _group = _fqN > 5;
+                for (let i = 1; i <= _fqN; i++) {
+                    const st = { step: i + 1, label: 'Q' + i };
+                    if (_group) {
+                        const lo = Math.floor((i - 1) / 5) * 5 + 1;
+                        st.group = 'Questions ' + lo + '-' + Math.min(lo + 4, _fqN);
+                    }
+                    steps.push(st);
+                }
                 steps.push({ step: _fqN + 2, label: 'Results' });
                 return steps;
             }

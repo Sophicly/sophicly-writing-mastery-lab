@@ -4451,7 +4451,7 @@
         // the start). Same fix as the canvas pipeline's addChatMessage — kept identical so the
         // two pipelines can't drift. Short messages that fit still scroll to bottom.
         if (!silent) {
-            requestAnimationFrame(() => {
+            const _alignTop = () => {
                 try {
                     if (bubble.offsetHeight > (msgs.clientHeight - 8)) {
                         const d = bubble.getBoundingClientRect().top - msgs.getBoundingClientRect().top;
@@ -4460,7 +4460,9 @@
                         msgs.scrollTop = msgs.scrollHeight;
                     }
                 } catch (_) { msgs.scrollTop = msgs.scrollHeight; }
-            });
+            };
+            requestAnimationFrame(_alignTop);
+            setTimeout(_alignTop, 240);   // v7.19.965: re-align after any deferred content (parity with canvas pipeline)
         }
 
         // Timer detection for Random Quote Analysis
