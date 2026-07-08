@@ -7843,22 +7843,26 @@
             // construction, never a per-bubble fix (the SA-only align was the §9.1 narrow-scope
             // bug that made this recur here). getBoundingClientRect delta = offsetParent-safe.
             if (!chatMessages._suppressScroll) {
-                const _alignTop = () => {
-                    try {
-                        if (bubble.offsetHeight > (chatMessages.clientHeight - 8)) {
-                            const d = bubble.getBoundingClientRect().top - chatMessages.getBoundingClientRect().top;
-                            chatMessages.scrollTop = Math.max(0, chatMessages.scrollTop + d - 8);
-                        } else {
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
-                        }
-                    } catch (_) { chatMessages.scrollTop = chatMessages.scrollHeight; }
+                // v7.19.966 (Neil — "make it scroll smoothly to the top, not jerky"). The jerk was
+                // TWO instant scrolls: align, then re-align when the quiz option buttons
+                // (appendQuickButtons, ~50ms later) grow the bubble past the viewport. Now: at most
+                // ONE smooth glide. rAF only snaps an ALREADY-tall message's top into view (instant,
+                // imperceptible); a message that still FITS is left alone so a later grow can't cause
+                // a bottom→top jump. After the options settle, ONE smooth scrollTo the final target.
+                const _target = () => {
+                    if (bubble.offsetHeight > (chatMessages.clientHeight - 8)) {
+                        const d = bubble.getBoundingClientRect().top - chatMessages.getBoundingClientRect().top;
+                        return Math.max(0, chatMessages.scrollTop + d - 8);
+                    }
+                    return chatMessages.scrollHeight;
                 };
-                requestAnimationFrame(_alignTop);
-                // v7.19.965 (Neil — still sat low): quiz option buttons (appendQuickButtons/Bar/
-                // Rank/True-False) append ~50ms AFTER the message and grow the bubble PAST the
-                // viewport — the single rAF measure fired before that, so the message scrolled to
-                // the bottom and its top slid above the fold. Re-align once deferred content settles.
-                setTimeout(_alignTop, 240);
+                requestAnimationFrame(() => { try { if (bubble.offsetHeight > (chatMessages.clientHeight - 8)) chatMessages.scrollTop = _target(); } catch (_) {} });
+                setTimeout(() => {
+                    try {
+                        const t = _target();
+                        if (Math.abs(t - chatMessages.scrollTop) > 4) chatMessages.scrollTo({ top: t, behavior: 'smooth' });
+                    } catch (_) { chatMessages.scrollTop = chatMessages.scrollHeight; }
+                }, 240);
             }
         }
 
@@ -9957,7 +9961,12 @@
                 roundResults.forEach((r, i) => {
                     // v7.19.740: ◐ for partial credit (fill near-miss) so the review matches the score.
                     const mark = (r.res && r.res.correct) ? '✓' : ((r.res && r.res.partial) ? '◐' : '✗');
-                    body += `**${i + 1}. ${mark}**  Your answer: \`${r.answer}\``;
+                    // v7.19.966 (Neil — the review must be SELF-CONTAINED): show the QUESTION, not
+                    // just its number, so the student can see what they got wrong without scrolling
+                    // up. Universal — every quiz type (FQ/MSQ/MSA) reveals through this one builder.
+                    const _qtext = (r.q && r.q.question) ? String(r.q.question).trim() : '';
+                    body += `**${i + 1}. ${mark}**` + (_qtext ? `  ${_qtext}` : '');
+                    body += `\n\nYour answer: \`${r.answer}\``;
                     if (r.res && r.res.partial) body += `  — **${r.res.marks}/${r.res.max}** (right idea, imprecise form)`;
                     if (!(r.res && r.res.correct)) body += `  —  correct: **${r.res ? _toDisp(r.res.correctKey, r.q) : '?'}**`;
                     body += `\n${(r.res && r.res.feedback) || ''}\n`;

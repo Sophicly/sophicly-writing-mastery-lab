@@ -4451,18 +4451,23 @@
         // the start). Same fix as the canvas pipeline's addChatMessage — kept identical so the
         // two pipelines can't drift. Short messages that fit still scroll to bottom.
         if (!silent) {
-            const _alignTop = () => {
-                try {
-                    if (bubble.offsetHeight > (msgs.clientHeight - 8)) {
-                        const d = bubble.getBoundingClientRect().top - msgs.getBoundingClientRect().top;
-                        msgs.scrollTop = Math.max(0, msgs.scrollTop + d - 8);
-                    } else {
-                        msgs.scrollTop = msgs.scrollHeight;
-                    }
-                } catch (_) { msgs.scrollTop = msgs.scrollHeight; }
+            // v7.19.966: at most ONE smooth glide (parity with the canvas pipeline) — see that
+            // comment. rAF snaps only an already-tall message's top; a fitting one is left so a
+            // later grow can't jump; after settle, one smooth scrollTo the final target.
+            const _target = () => {
+                if (bubble.offsetHeight > (msgs.clientHeight - 8)) {
+                    const d = bubble.getBoundingClientRect().top - msgs.getBoundingClientRect().top;
+                    return Math.max(0, msgs.scrollTop + d - 8);
+                }
+                return msgs.scrollHeight;
             };
-            requestAnimationFrame(_alignTop);
-            setTimeout(_alignTop, 240);   // v7.19.965: re-align after any deferred content (parity with canvas pipeline)
+            requestAnimationFrame(() => { try { if (bubble.offsetHeight > (msgs.clientHeight - 8)) msgs.scrollTop = _target(); } catch (_) {} });
+            setTimeout(() => {
+                try {
+                    const t = _target();
+                    if (Math.abs(t - msgs.scrollTop) > 4) msgs.scrollTo({ top: t, behavior: 'smooth' });
+                } catch (_) { msgs.scrollTop = msgs.scrollHeight; }
+            }, 240);
         }
 
         // Timer detection for Random Quote Analysis
