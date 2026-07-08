@@ -3788,7 +3788,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     position: relative;
 }
 .swml-canvas-locked::after {
-    content: '🔒 Read Only';
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgb(139,143,158)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' Read Only'; /* v7.19.952: 🔒 → tabler lock (Neil) */
     position: absolute;
     top: 8px; right: 8px;
     font-size: 10px;
@@ -5288,9 +5288,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-section-signoff[data-section-complete="true"]::before {
     content: '✓ ' counter(swml-major) '. ' attr(data-section-label);
 }
-/* Read-only complete sections keep the lock icon */
+/* Read-only complete sections keep the lock icon (v7.19.952: 🔒 → tabler lock, Neil) */
 .swml-section-readonly[data-section-complete="true"]::before {
-    content: '✓ 🔒 ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
+    content: '✓ ' url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='rgb(139,143,158)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
 }
 /* v7.19.487: top-right completion tick on EDITABLE sections — appears automatically
    when all the section's elements are filled (data-section-complete). Quiet, scholarly
@@ -6170,12 +6170,12 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: rgba(28, 217, 145, 0.14);
     color: #17805a;
 }
-/* Lock icon for read-only */
+/* Lock icon for read-only (v7.19.952: 🔒 → tabler lock, Neil) */
 .swml-section-readonly::before {
-    content: '🔒 ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='rgb(139,143,158)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
 }
 .swml-section-readonly.swml-section-question::before {
-    content: '🔒 ' counter(swml-major) '. ' attr(data-section-label);
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='rgb(139,143,158)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' counter(swml-major) '. ' attr(data-section-label);
 }
 
 /* v7.19.897 (Neil): ASSESSMENT-DOC section tabs = the JS-stamped data-section-num (the SAME
@@ -6195,10 +6195,10 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     content: '✓ ' attr(data-section-num) attr(data-section-label);
 }
 .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)::before {
-    content: '🔒 ' attr(data-section-num) attr(data-section-label);
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='rgb(139,143,158)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' attr(data-section-num) attr(data-section-label); /* v7.19.952: 🔒 → tabler lock */
 }
 .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)[data-section-complete="true"]::before {
-    content: '✓ 🔒 ' attr(data-section-num) attr(data-section-label);
+    content: '✓ ' url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='rgb(139,143,158)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' attr(data-section-num) attr(data-section-label); /* v7.19.952: 🔒 → tabler lock */
 }
 
 /* Headings inside sections */
@@ -6963,7 +6963,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     box-shadow: none;
 }
 .swml-outline-input.swml-outline-locked::after {
-    content: "🔒 set in Step 2";
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgb(139,143,158)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") " set in Step 2"; /* v7.19.952: 🔒 → tabler lock (Neil) */
     display: block;
     font-size: 10px;
     color: rgba(255,255,255,0.3);
@@ -7338,6 +7338,27 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 [data-swml-theme="light"] .swml-ctl-label,
 .swml-canvas-light .swml-ctl-label { color: rgba(20, 22, 28, 0.55); }
+
+/* v7.19.952 (Neil): categorised widget groups inside a ctl row — one full-width block per
+   doc <h3> category (Self-Assessment), small-caps title line, items wrapping beneath. */
+.swml-ctl-group {
+    flex: 1 0 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    margin: 2px 0;
+}
+.swml-ctl-group-title {
+    flex: 1 0 100%;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.38);
+}
+[data-swml-theme="light"] .swml-ctl-group-title,
+.swml-canvas-light .swml-ctl-group-title { color: rgba(20, 22, 28, 0.4); }
 
 .swml-dropdown-select {
     appearance: none;
@@ -11739,32 +11760,19 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 /* ── v7.19.947: DISPLAY-LOCK (Neil ruling 2026-07-08). Assessment + discuss-feedback
    lessons show student prose (response/plan/outline sections) READ-ONLY — it is edited
    only in its authoring lesson, and the reseed chain carries edits forward until marking.
-   JS input handlers enforce the lock (_swmlNodeLocked display-lock branch); this renders
-   the "go back" indicator above each locked section. Keyed off the editor-root attribute
-   set at mount (view-state — never serialised into the doc). */
+   JS input handlers enforce the lock (_swmlNodeLocked display-lock branch). Keyed off the
+   editor-root attribute set at mount (view-state — never serialised into the doc).
+   v7.19.952 (Neil live review): the v947 rule REPLACED the section-label pill (::before is
+   the pill's pseudo-element — higher specificity swapped its content for a long banner that
+   inherited the pill's loud styling AND lost the section name). Now the indicator lives IN
+   the pill: lock icon + the section's own number/label + a short read-only note — the
+   compact CW-outline style ("set in Step 2") Neil prefers. Assessment docs always carry
+   .swml-canvas-diagnostic, so data-section-num is stamped; attr() of a missing attr
+   renders empty, so any non-stamped doc degrades to icon + label + note. */
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before {
-    content: 'Read-only in this lesson — to make changes, go back to the previous writing step. Your edits appear here automatically until marking is complete.';
-    display: block;
-    font-size: 11.5px;
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.55);
-    background: rgba(83, 51, 237, 0.10);
-    border-left: 2px solid rgba(83, 51, 237, 0.45);
-    border-radius: 0 6px 6px 0;
-    padding: 6px 12px;
-    margin: 0 0 12px;
-}
-.swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
-.swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
-.swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before,
-[data-swml-theme="light"] #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
-[data-swml-theme="light"] #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
-[data-swml-theme="light"] #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before {
-    color: rgba(20, 22, 28, 0.6);
-    background: rgba(83, 51, 237, 0.07);
-    border-left-color: rgba(83, 51, 237, 0.4);
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgb(139,143,158)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") ' ' attr(data-section-num) attr(data-section-label) ' — read-only · edit in the previous step';
 }
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-response,
 #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan,

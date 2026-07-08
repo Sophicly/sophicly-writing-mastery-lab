@@ -83,6 +83,11 @@
         if (embedConfig.text)    state.text    = embedConfig.text;
         if (embedConfig.task)    state.task    = embedConfig.task;
         if (embedConfig.topic)   state.topicNumber = embedConfig.topic;
+        // v7.19.952: per-lesson FQ bank/stage overrides from the bridge picker — sent on
+        // quiz/start so the REST picker serves the OVERRIDE bank (e.g. poetic_forms on a
+        // poem-anthology course) filtered to the lesson's stage. Absent → course text, whole bank.
+        if (embedConfig.fqBank)  state.fqBank  = embedConfig.fqBank;
+        if (embedConfig.fqStage) state.fqStage = embedConfig.fqStage;
         // v7.17.15: bridge-provided step (mark_scheme_unit Quiz=1, FYW=2)
         if (embedConfig.step)    state.step    = embedConfig.step;
         // v7.18.21: capture original bridge step into state.bridgeStep for
@@ -645,7 +650,7 @@
             inner.appendChild(el('h2', { textContent: 'Writing Mastery Lab' }));
 
             const card = el('div', { className: 'swml-upgrade-card' });
-            card.appendChild(el('div', { className: 'swml-upgrade-icon', textContent: '🔒' }));
+            card.appendChild(el('div', { className: 'swml-upgrade-icon', innerHTML: WML.lockIconSVG(34) })); // v7.19.952: 🔒 → tabler lock (Neil)
             card.appendChild(el('h3', { textContent: 'Upgrade to unlock the Writing Mastery Lab', style: { margin: '12px 0 8px', fontSize: '18px' } }));
             card.appendChild(el('p', { textContent: 'Get access to AI-powered essay planning, assessment, polishing, model answers, and exam preparation across all exam boards.', style: { fontSize: '13px', opacity: '0.7', lineHeight: '1.5', margin: '0 0 16px' } }));
 
@@ -7597,6 +7602,10 @@ Before marking the introduction, ask the student to confirm their essay structur
             state.text        = cfg.text    || '';
             state.task        = cfg.task    || '';
             state.topicNumber = cfg.topic   || 0;
+            // v7.19.952: FQ overrides re-set unconditionally — a stale fqBank from a
+            // previous lesson would serve the wrong bank on this lesson's quiz start.
+            state.fqBank      = cfg.fqBank  || '';
+            state.fqStage     = cfg.fqStage || 0;
             // v7.17.20: SPA re-init must pipe cfg.step (multi-step tasks like
             // mark_scheme_unit). Otherwise state.step leaks across lessons.
             state.step        = cfg.step    || 0;

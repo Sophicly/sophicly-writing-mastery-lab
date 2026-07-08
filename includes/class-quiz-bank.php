@@ -251,9 +251,20 @@ class SWML_Quiz_Bank {
         $pool = self::questions_for_fq($text);
         if (empty($pool)) return [];
 
-        $key = ($stage_kind === 'part') ? 'part' : 'set';
-        $has_tokens = false;
-        foreach ($pool as $q) { if (isset($q[$key]) && $q[$key] !== null) { $has_tokens = true; break; } }
+        // v7.19.952: the stage-token namespace follows the BANK, not the caller's param name.
+        // The bridge unified both families to fq_stage=N (v2.31.109), so a poetic_forms lesson
+        // arrives as kind='set' while its bank stages by @part:N — filtering by the param name
+        // matched nothing and served the whole bank. Detect which token the bank actually
+        // carries; the caller's kind only breaks the tie if a bank ever carries both.
+        $has_part = false; $has_set = false;
+        foreach ($pool as $q) {
+            if (isset($q['part']) && $q['part'] !== null) $has_part = true;
+            if (isset($q['set'])  && $q['set']  !== null) $has_set  = true;
+            if ($has_part && $has_set) break;
+        }
+        $key = ($has_part && $has_set) ? (($stage_kind === 'part') ? 'part' : 'set')
+             : ($has_part ? 'part' : 'set');
+        $has_tokens = $has_part || $has_set;
 
         $serve = $pool;
         if ($has_tokens && $stage !== null && (int) $stage > 0) {

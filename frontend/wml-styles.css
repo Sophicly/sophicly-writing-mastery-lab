@@ -1427,6 +1427,11 @@ body.swml-page {
     display: inline-block; vertical-align: -0.28em;
     margin: 0 0.08em;
 }
+/* v7.19.952 (Neil): the canonical tabler lock (WML.lockIconSVG) — stroke uses currentColor,
+   so it takes the host's text colour; just seat it on the baseline. */
+.swml-lock-ico {
+    display: inline-block; vertical-align: -0.12em;
+}
 .swml-quick-btn svg {
     display: inline-block; vertical-align: middle; margin-right: 4px; flex-shrink: 0;
     color: currentColor;

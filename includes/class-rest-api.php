@@ -828,7 +828,22 @@ class SWML_REST_API {
             $fq_stage = isset($p['fq_stage']) ? absint($p['fq_stage']) : 0;
             $stage    = $fq_part ?: ($fq_stage ?: null);
             $kind     = $fq_part ? 'part' : 'set';
-            $picked = SWML_Quiz_Bank::pick_session_fq($text, $count, $stage, $kind);
+            // v7.19.952: per-lesson fq_bank OVERRIDE (bridge picker → embed config → client).
+            // The bridge saved this all along; WML dropped it at this boundary, so a
+            // poetic_forms lesson on a poem-anthology course served the course's own poem
+            // bank (Chat-B bug handoff 2026-07-08). Override wins when it resolves to a real
+            // bank; an unresolvable value falls back to the course text + logs — fail loud,
+            // never silently serve the wrong bank.
+            $bank_text = $text;
+            $fq_bank   = isset($p['fq_bank']) ? $this->normalize_text_slug(sanitize_text_field($p['fq_bank'])) : '';
+            if ($fq_bank !== '' && $fq_bank !== $text) {
+                if (SWML_Quiz_Bank::questions_for_fq($fq_bank)) {
+                    $bank_text = $fq_bank;
+                } else {
+                    error_log('WML FQ: fq_bank override "' . $fq_bank . '" resolves to no bank — falling back to course text "' . $text . '"');
+                }
+            }
+            $picked = SWML_Quiz_Bank::pick_session_fq($bank_text, $count, $stage, $kind);
         } else {
             $picked = SWML_Quiz_Bank::pick_session($subject, $board, $count);
         }

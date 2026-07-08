@@ -199,6 +199,20 @@ architecture — the five steps ARE the architecture.
   `.swml-popover` (closed on scroll). NEW-READER LAW: a whole-section DOM text read must go
   through `_sectionContentOf(sec)` (the `.swml-section-content` child) or control-row widget
   text pollutes it; clone-based readers strip `.swml-ctl-row` (see `_stripChipsFromClone`).
+  **v952 (Neil live review of v951):** the Self-Assessment fill is CATEGORISED — it walks the
+  section's own `<h3>` headings (buildSelfAssessmentSection structure) and renders one
+  `.swml-ctl-group` (full-width, small-caps `.swml-ctl-group-title`) per category, items
+  wrapping beneath. DERIVED from the doc — new papers' categories appear with zero wiring.
+  Groups live INSIDE `.swml-ctl-row`, so every clone/baseline strip law holds by construction.
+- **Display-lock indicator lives IN the section-label pill (v952).** The v947 banner rode
+  `::before` — the SAME pseudo-element the section-label pill owns — so it REPLACED the pill,
+  inherited its loud styling and lost the section name (Neil live review). The rule now
+  composes the pill itself: tabler lock (data-URI) + `attr(data-section-num)` +
+  `attr(data-section-label)` + ' — read-only · edit in the previous step'. ::before/::after on
+  section blocks are OWNED (label pill / completion tick) — never mount an indicator on them;
+  compose the pill content instead. Lock icons are the ONE tabler lock everywhere
+  (`WML.lockIconSVG` in JS · same paths as data-URI in CSS `content:` · icons/emoji/padlock.svg
+  for the chat emoji layer) — change all three together.
 - **Collapsibles are a CAPABILITY (v925/926):** the NodeView stamps `.swml-collapsible` wherever
   it installs a chevron; completion-tick clearance, `position:relative`, and the collapse-all
   button all key off that class — never an enumerated list of section types. Score Summary joined

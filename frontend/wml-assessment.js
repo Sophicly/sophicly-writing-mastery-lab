@@ -9664,6 +9664,26 @@
                 return `**Now capture it in the document on the left (once).** Your goal, the ONE pattern across your attempts, and your action plan.${journey} That written reflection is what makes the strategy stick.`;
             }
 
+            // v7.19.952: quiz progress chip (Chat-B bug 2 — FQ had no progress bar while the
+            // assessment flows do). Same minimal chip component (WML.progressChipHTML) injected
+            // the same way (_syncMarkingBeatChip shape); count is frontend-authoritative
+            // (q.seq / q.total from the server-picked set), never model-declared. Universal
+            // across all three quiz types — one render path, one chip.
+            function _quizBeatChip(q) {
+                try {
+                    if (typeof WML === 'undefined' || !WML.progressChipHTML) return;
+                    const host = document.getElementById('swml-canvas-chat-messages');
+                    if (!host) return;
+                    const section = (quizType === 'mark_scheme_assessment') ? 'Mark Scheme Assessment'
+                                  : (quizType === 'foundational') ? ('Foundational Quiz · Round ' + round)
+                                  : ('Mark Scheme Quiz · Round ' + round);
+                    const bodies = host.querySelectorAll('.swml-bubble.ai .swml-bubble-body');
+                    const body = bodies[bodies.length - 1];
+                    if (!body || body.querySelector('.swml-beat')) return;
+                    body.insertAdjacentHTML('afterbegin', WML.progressChipHTML({ section: section, step: q.seq, total: q.total }));
+                } catch (_) { /* chip is best-effort, never block the question */ }
+            }
+
             function renderQ() {
                 if (idx >= qs.length) { endRound(); return; }
                 const q = qs[idx];
@@ -9683,6 +9703,7 @@
                 // bubbles, else it parses the option lines into a DUPLICATE button set. MCQ /
                 // select_all have no explicit widget and rely on the detector, so keep it on.
                 aiBubble(body, { suppressActions: (q.type === 'ranking' || q.type === 'true_false') });
+                _quizBeatChip(q);   // v7.19.952: progress chip on every question bubble
                 // v7.19.580: True/False has no options array → no auto-buttons. Add explicit
                 // True / False quick-action buttons (parity with the MCQ option buttons).
                 if (q.type === 'true_false') {
@@ -9977,6 +9998,12 @@
                         attempt: (quizType === 'mark_scheme_assessment') ? (msaAttempts.length + 1) : (state.attempt || 1),
                         count: (quizType === 'mark_scheme_assessment' ? 10 : 5),  // v7.19.739: MSA Final = 10 Qs × 2 = /20
                         quiz_type: quizType,
+                        // v7.19.952: per-lesson FQ overrides (bridge picker via embed config).
+                        // fq_bank: REST serves THIS bank instead of the course text (validated
+                        // server-side, fail-loud fallback). fq_stage: filters to the bank's own
+                        // @part/@set stage. Sent for FQ only — MSQ/MSA ignore them.
+                        fq_bank: (quizType === 'foundational') ? (state.fqBank || '') : '',
+                        fq_stage: (quizType === 'foundational') ? (state.fqStage || 0) : 0,
                         topic_number: (state.topicNumber || 0),  // v7.19.741: stamp THIS lesson's topic (not a stale session one) so the grade maps to the right LD lesson
                         // v7.19.744 anti-repeat: on a re-sit, tell the picker which Qs the LAST
                         // attempt served so it rotates fresh ones where the pool allows.
@@ -22911,23 +22938,43 @@
                 _rowFillEnd(row, sig);
             });
 
-            // ── Self-Assessment Dropdowns (1-5 scale) — ONE row of labelled dropdowns at the
-            // section top (the per-paragraph floating anchors are gone with the layer) ──
+            // ── Self-Assessment Dropdowns (1-5 scale) — CATEGORISED groups at the section top
+            // (Neil 2026-07-08: the v951 flat row lost the doc's own categories). The SA section
+            // already carries its structure as <h3> category headings (buildSelfAssessmentSection:
+            // Introduction / Body Paragraphs / Conclusion / Academic Writing / Q5 / SPaG) — walk
+            // h3+p in DOM order and group each skill under the heading above it. DERIVED from the
+            // doc, zero per-paper wiring: a new paper's SA categories appear here automatically. ──
             const selfAssessSection = editor.querySelector('[data-section-label="Self-Assessment"]');
             if (selfAssessSection) {
                 const saRow = _ctlRowOf(selfAssessSection);
                 const skills = [];
-                selfAssessSection.querySelectorAll('p').forEach(p => {
-                    const txt = p.textContent || '';
+                let _saCat = '';
+                _sectionContentOf(selfAssessSection).querySelectorAll('h3, p').forEach(node => {
+                    if (node.tagName === 'H3') { _saCat = (node.textContent || '').trim(); return; }
+                    const txt = node.textContent || '';
                     // Match "Skill: — / 5" or "Skill: N / 5" pattern
                     const saMatch = txt.match(/^(.+?):\s*(?:—|(\d))\s*\/\s*5$/);
                     if (!saMatch) return;
-                    skills.push({ skillName: saMatch[1].trim(), currentVal: saMatch[2] ? parseInt(saMatch[2]) : 0 });
+                    skills.push({ skillName: saMatch[1].trim(), currentVal: saMatch[2] ? parseInt(saMatch[2]) : 0, cat: _saCat });
                 });
-                const saSig = 'sa|' + skills.map(s => s.skillName + ':' + s.currentVal).join('|');
+                const saSig = 'sa|' + skills.map(s => s.cat + '>' + s.skillName + ':' + s.currentVal).join('|');
                 if (saRow && skills.length && saRow.dataset.sig !== saSig) {
                     _rowFillStart(saRow);
-                    skills.forEach(({ skillName, currentVal }) => {
+                    let _saGroup = null, _saGroupCat = null;
+                    skills.forEach(({ skillName, currentVal, cat }) => {
+                        if (!_saGroup || cat !== _saGroupCat) {
+                            _saGroup = document.createElement('div');
+                            _saGroup.className = 'swml-ctl-group';
+                            _saGroup.setAttribute('contenteditable', 'false');
+                            if (cat) {
+                                const t = document.createElement('span');
+                                t.className = 'swml-ctl-group-title';
+                                t.textContent = cat;
+                                _saGroup.appendChild(t);
+                            }
+                            saRow.appendChild(_saGroup);
+                            _saGroupCat = cat;
+                        }
                         // Build SA options: dash + 1..5 with skill-specific descriptors
                         const descriptors = SA_DESCRIPTORS[skillName];
                         const SA_FALLBACK = ['—', '1 – Basic', '2 – Developing', '3 – Secure', '4 – Good', '5 – Perceptive'];
@@ -22982,7 +23029,7 @@
                         item.className = 'swml-ctl-item';
                         item.appendChild(_ctlLabel(skillName));
                         item.appendChild(saWidget);
-                        saRow.appendChild(item);
+                        _saGroup.appendChild(item);
                     });
                     _rowFillEnd(saRow, saSig);
                 }
@@ -23308,7 +23355,7 @@
 
                 const signBtn = document.createElement('button');
                 signBtn.className = 'swml-signoff-btn';
-                signBtn.textContent = '🔒 Sign Off';
+                signBtn.innerHTML = WML.lockIconSVG(11) + ' Sign Off'; // v7.19.952: 🔒 → tabler lock (Neil)
                 signBtn.disabled = true;
                 signBtn.style.opacity = '0.5';
                 signBtn.style.cursor = 'not-allowed';
@@ -23319,7 +23366,7 @@
                     signBtn.disabled = !ready;
                     signBtn.style.opacity = ready ? '' : '0.5';
                     signBtn.style.cursor = ready ? '' : 'not-allowed';
-                    signBtn.textContent = ready ? '✍ Sign Off' : '🔒 Sign Off';
+                    signBtn.innerHTML = ready ? '✍ Sign Off' : (WML.lockIconSVG(11) + ' Sign Off'); // v7.19.952: 🔒 → tabler lock
                     marksHint.style.display = (checkbox.checked && !marksReady) ? '' : 'none';
                     if (!ready) signBtn.dataset.confirming = 'false';
                 };

@@ -2236,9 +2236,13 @@ window.WML = (function() {
             const rail = el('div', { className: 'swml-stepper-rail' }, [circle, line].filter(Boolean));
 
             // Card (reuses glassmorphic card style)
+            // v7.19.952: 🔒 → tabler lock SVG (Neil). Custom statusLabel stays textContent;
+            // the defaults are code-owned strings, safe as innerHTML.
             const statusTag = el('span', {
                 className: 'swml-status-tag ' + (step.status === 'complete' ? 'complete' : step.status === 'active' ? 'in-progress' : step.status === 'locked' ? 'not-started' : 'not-started'),
-                textContent: step.statusLabel || (step.status === 'complete' ? '✓ Complete' : step.status === 'active' ? '◐ In progress' : step.status === 'locked' ? '🔒 Locked' : '○ Not started')
+                ...(step.statusLabel
+                    ? { textContent: step.statusLabel }
+                    : { innerHTML: (step.status === 'complete' ? '✓ Complete' : step.status === 'active' ? '◐ In progress' : step.status === 'locked' ? lockIconSVG(10) + ' Locked' : '○ Not started') })
             });
             if (step.statusTagId) statusTag.id = step.statusTagId;
 
@@ -2784,6 +2788,17 @@ window.WML = (function() {
         return html;
     }
 
+    // v7.19.952 (Neil): ONE canonical lock icon — tabler lock-square-rounded (the SVG Neil
+    // supplied, frontend/icons/tabler-lock-square-rounded-line.svg) — for EVERY lock indicator
+    // in JS-built DOM, replacing the 🔒 emoji. stroke='currentColor' → inherits the host's
+    // text colour on both themes. CSS content: sites carry the same paths as a data-URI
+    // (pseudo-element images can't inherit currentColor); the chat emoji layer swaps via
+    // icons/emoji/padlock.svg (same drawing). Keep all three in sync if the icon ever changes.
+    function lockIconSVG(size) {
+        const s = size || 12;
+        return '<svg class="swml-lock-ico" xmlns="http://www.w3.org/2000/svg" width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"/><path d="M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z"/><path d="M10 11v-2a2 2 0 1 1 4 0v2"/></svg>';
+    }
+
     // v7.19.916 (Neil dislikes emojis, pt2): decorative emojis → brand illustrative SVG icons
     // (frontend/icons/emoji/, hand-picked from Neil's "SVG Icons for Sophicly" pack; 📊 chart is
     // the icon Neil attached). DISPLAY layer only — runs on rendered chat HTML; raw chatHistory
@@ -3192,7 +3207,7 @@ window.WML = (function() {
         // Text processing
         stripAIInternals, detectAssessmentStep, formatAI, svgifyStatusGlyphs, countWords,
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
-        parseProgressBeat, progressChipHTML, withProgressChip,
+        parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG,
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
         learnChipsForLine,  // v7.19.949/950: ungated line→chips resolver for the in-doc healer
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)

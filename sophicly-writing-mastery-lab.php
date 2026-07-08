@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.951
+ * Version: 7.19.952
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.951');
+define('SWML_VERSION', '7.19.952');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -584,6 +584,9 @@ class Sophicly_Writing_Mastery_Lab {
         $task    = sanitize_key($atts['task']);
         $phase   = sanitize_key($atts['phase']);
         $topic   = absint($atts['topic']);
+        // v7.19.952: per-lesson FQ bank/stage overrides — bridge-only fields (no shortcode attr).
+        $fq_bank  = '';
+        $fq_stage = 0;
         // v7.17.16: shortcode step attribute (bridge emits this alongside task for mark_scheme_unit).
         // Bridge option at line ~548 still wins (authoritative); shortcode value acts as fallback
         // when the bridge option lookup misses (e.g. new lesson not yet mapped).
@@ -651,6 +654,16 @@ class Sophicly_Writing_Mastery_Lab {
             if (!empty($bridge_entry['wml_step'])) {
                 $step = absint($bridge_entry['wml_step']);
             }
+            // v7.19.952: per-lesson FQ overrides (bridge picker "FQ bank" + "FQ Stage" fields,
+            // bridge v2.31.107/109). The bridge has saved these into this SAME option all along —
+            // WML never read them, so the override was silently dropped and the course's own
+            // poem bank was served un-staged (Neil's poetic_forms lesson, Chat-B bug handoff).
+            if (!empty($bridge_entry['fq_bank'])) {
+                $fq_bank = sanitize_file_name($bridge_entry['fq_bank']);
+            }
+            if (!empty($bridge_entry['fq_stage'])) {
+                $fq_stage = absint($bridge_entry['fq_stage']);
+            }
         }
 
         // v7.19.1: dropped v7.19.0 FYW post-title regex heuristic. It never fired
@@ -700,6 +713,8 @@ class Sophicly_Writing_Mastery_Lab {
             'board'       => $board,
             'subject'     => $subject,
             'text'        => $text,
+            'fqBank'      => $fq_bank,   // v7.19.952: per-lesson FQ bank override (bridge)
+            'fqStage'     => $fq_stage,  // v7.19.952: per-lesson FQ stage (bridge, unified fq_stage=N)
         ];
 
 
