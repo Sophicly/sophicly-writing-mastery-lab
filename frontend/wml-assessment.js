@@ -9456,11 +9456,16 @@
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
             function appendQuickBar(label, onClick) {
+                // v7.19.961: capture the target bubble NOW, not inside the timeout — else a
+                // bubble/re-render in the 50ms window steals lastElementChild and the buttons
+                // vanish (Neil live: no post-round menu after a mastery finish). isConnected
+                // guard falls back to the current last if the captured node got re-rendered out.
+                const target = chatMessages.lastElementChild;
                 setTimeout(() => {
                     const bar = el('div', { className: 'swml-quick-actions' });
                     bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: label,
                         onClick: () => { bar.remove(); onClick(); } }));
-                    const last = chatMessages.lastElementChild;
+                    const last = (target && target.isConnected) ? target : chatMessages.lastElementChild;
                     if (last) { const bc = last.querySelector('.swml-bubble-content') || last; bc.appendChild(bar); }
                 }, 50);
             }
@@ -9468,13 +9473,16 @@
             // Default action submits `value` as a typed answer via handleTurn (used for the
             // True/False buttons + the end-of-round Next/Ask/Finish menu).
             function appendQuickButtons(opts) {
+                // v7.19.961: capture the target bubble NOW (see appendQuickBar) — the 50ms
+                // race dropped the post-round menu on a mastery finish (Neil live).
+                const target = chatMessages.lastElementChild;
                 setTimeout(() => {
                     const bar = el('div', { className: 'swml-quick-actions' });
                     opts.forEach(o => {
                         bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: o.label,
                             onClick: () => { bar.remove(); if (o.onClick) o.onClick(); else handleTurn(o.value); } }));
                     });
-                    const last = chatMessages.lastElementChild;
+                    const last = (target && target.isConnected) ? target : chatMessages.lastElementChild;
                     if (last) { const bc = last.querySelector('.swml-bubble-content') || last; bc.appendChild(bar); }
                 }, 50);
             }
@@ -9527,11 +9535,26 @@
             function showRoundMenu() {
                 const nextLabel = lastMastered ? 'Try another round' : 'Start the next round →';
                 appendQuickButtons([
-                    { label: nextLabel, onClick: () => { betweenRounds = false; round++; startRound(); } },
-                    { label: 'Ask a question', onClick: () => { aiBubble('Of course — type your question about any of those 5 and I’ll talk it through. 😊'); } },
+                    // v7.19.961 (Neil): another round goes through a confirm gate first.
+                    { label: nextLabel, onClick: () => { _confirmAnotherRound(); } },
+                    { label: 'Ask a question', onClick: () => { aiBubble('Of course — type your question about any of those questions and I’ll talk it through. 😊'); } },
                     // Finish stays controller-owned (betweenRounds true) so any later typing routes to
                     // clarify, NOT the legacy LLM quiz. The server round is already finalised.
                     { label: 'Finish', onClick: () => { aiBubble('Well done today — every round you finish builds your foundations. Keep going! 👋'); } },
+                ]);
+            }
+            // v7.19.961 (Neil): before a fresh round, remind the student every attempt counts
+            // and the round must be FINISHED for full marks, then require an explicit confirm —
+            // so nobody half-starts a round and tanks an attempt by accident.
+            function _confirmAnotherRound() {
+                const nextRound = round + 1;
+                aiBubble('Ready for round ' + nextRound + '? Two things before you start:\n\n' +
+                    '- **Every attempt counts** toward your grade — including this one.\n' +
+                    '- **Finish the whole round** to earn full marks; leaving it part-way records it incomplete.\n\n' +
+                    'Aim for 100% and you lock it in. Start when you’re ready. 💪');
+                appendQuickButtons([
+                    { label: 'Start round ' + nextRound + ' →', onClick: () => { betweenRounds = false; round++; startRound(); } },
+                    { label: 'Not yet', onClick: () => { aiBubble('No rush — take your time. Tap “' + (lastMastered ? 'Try another round' : 'Start the next round') + '” whenever you’re ready. 😊'); showRoundMenu(); } },
                 ]);
             }
             // v7.19.740: MSA post-attempt menu — Try again (fresh 10) until Grade 9, then Ask/Finish.
@@ -10025,7 +10048,7 @@
                     const rtxt = round === 1 ? 'on your first round' : `in ${round} rounds`;
                     const tail = qr ? ` (${qr.percentage}%) — Grade ${qr.grade}` : '';
                     const how = isFq ? "That's foundations locked in." : "That's exactly how the mark scheme sticks.";
-                    aiBubble(`🎉 **Mastery!** A perfect **5/5${tail}**, ${rtxt}. ${how} Your result card is in the document on the left.`);
+                    aiBubble(`🎉 **Mastery!** A perfect **${n}/${n}${tail}**, ${rtxt}. ${how} Your result card is in the document on the left.`);
                     // v7.19.580 (FQ): offer Ask / Finish (+ another round) instead of dead-ending.
                     // active stays TRUE so post-round typing routes to clarify, never the legacy LLM quiz.
                     if (isFq) { betweenRounds = true; showRoundMenu(); }
@@ -31630,7 +31653,10 @@
                   + '<p class="swml-qr-line"><strong>Score:</strong> ' + score + ' / ' + max + '  &middot;  ' + pct + '%</p>'
                   + '<p class="swml-qr-line"><strong>GCSE Grade:</strong> ' + grade + '</p>';
         if (isMastery && rounds && rounds > 0) {
-            inner += '<p class="swml-qr-line"><strong>Mastery:</strong> 5 / 5 in ' + rounds + ' round' + (rounds === 1 ? '' : 's') + '</p>';
+            // v7.19.961: was hardcoded "5 / 5" — wrong for any round size other than 5
+            // (Neil live: a 10-Q forms round showed "5 / 5"). The Score line above already
+            // carries the real fraction + %; the mastery line only adds rounds-to-mastery.
+            inner += '<p class="swml-qr-line"><strong>Mastered</strong> in ' + rounds + ' round' + (rounds === 1 ? '' : 's') + '</p>';
         }
         return sectionHTML('quizresult', title, false, null, inner);
     }
@@ -31736,6 +31762,13 @@
             // v7.19.740: the MSA is an ASSESSMENT, not a quiz — relabel the shared card copy.
             if (state.task === 'mark_scheme') {
                 card.innerHTML = card.innerHTML.replace(/Quiz Result/gi, 'Mark Scheme Assessment — Result');
+            }
+            // v7.19.961: the FQ shares the card too — "Mark Scheme Mastery" is wrong on a
+            // foundational quiz (Neil live). Relabel to the FQ's own copy.
+            if (state.task === 'foundational_quiz') {
+                card.innerHTML = card.innerHTML
+                    .replace(/Mark Scheme Mastery/gi, 'Foundational Quiz — Mastery')
+                    .replace(/Quiz Result/gi, 'Foundational Quiz — Result');
             }
 
             if (state.task === 'foundational_quiz') {

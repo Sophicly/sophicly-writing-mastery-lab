@@ -399,6 +399,24 @@ class SWML_Quiz_Bank {
      * caller MUST strip keys before sending to the client. Shared by MSQ + FQ.
      */
     private static function pick_from_pool($pool, $id_prefix, $n = 5, $avoid = []) {
+        // v7.19.961 (Neil — no duplicate questions in any round): drop duplicate question
+        // STEMS from the pool BEFORE picking. Universal — every quiz AND assessment draws
+        // through here, so the guard lives at the root, not per-quiz. Normalises case /
+        // whitespace / punctuation so a re-typed duplicate is caught; keeps the FIRST
+        // occurrence (bank order). Same-concept-different-wording near-dupes are a bank-
+        // authoring concern (handed to chat B), not catchable from the stem alone.
+        $seen_stems = [];
+        $deduped = [];
+        foreach ($pool as $q) {
+            $stem = strtolower(preg_replace('/\s+/', ' ', trim(preg_replace('/[^a-z0-9]+/i', ' ', (string) ($q['question'] ?? '')))));
+            if ($stem !== '' && isset($seen_stems[$stem])) continue;   // exact/near-duplicate stem — skip
+            if ($stem !== '') $seen_stems[$stem] = true;
+            $deduped[] = $q;
+        }
+        if (count($deduped) < count($pool) && function_exists('error_log')) {
+            error_log('WML quiz: pick_from_pool dropped ' . (count($pool) - count($deduped)) . ' duplicate-stem question(s) from "' . $id_prefix . '" pool (' . count($pool) . ' → ' . count($deduped) . ').');
+        }
+        $pool = $deduped;
         $n = max(1, min($n, count($pool)));
         $avoid = array_flip(array_map('intval', (array) $avoid));   // q_num set served last attempt
 
