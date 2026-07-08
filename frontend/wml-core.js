@@ -2825,14 +2825,29 @@ window.WML = (function() {
     //             deploy with ZERO WML change; contract asks in the 2026-07-07 handoff)
     //   K1      → destination TBD (contract ask open) — no entry, so no chip.
     // NEVER a bare open() — it resolves to document.open and blanks the page (notes gotcha).
+    // v7.19.949 SLUG LAW (Neil live test 2026-07-08 — F1 chips opened the toolkit LANDING):
+    // every toolkit arg MUST be a section id from the notes toolkit's SECTIONS registry
+    // (sophicly-notes/assets/js/sophicly-toolkit.js; tkNavigate resolves 'fix-'+slug then the
+    // bare slug, unknown → landing + console.warn). 'inference-verbs' was never a section id —
+    // the real id is 'wb-verbs'. Verify against SECTIONS before adding any entry.
+    // v949 additions from Neil's live staging docs (uid 1355/1352): W1 = the RETIRED lit form
+    // of F1 (registry v854 says read W1 as F1 — lit protocols still emit it; protocol-side fix
+    // queued for the port arc), M1 plot-retell → Fix-My-Writing 'topic-sentence' ("plot retell
+    // into a conceptual claim"), I1 imprecise interpretation → 'close-analysis', D1 lacks
+    // sustained detail → 'finegrained'. S1 (sentence starters) has NO toolkit home yet —
+    // deliberately unmapped (proposal with Neil).
     const PENALTY_LEARN_MAP = {
-        F1: { dest: 'toolkit', arg: 'inference-verbs', label: 'Inference Verbs' },
-        T1: { dest: 'toolkit', arg: 'inference-verbs', label: 'Inference Verbs' },
+        F1: { dest: 'toolkit', arg: 'wb-verbs', label: 'Inference Verbs' },
+        T1: { dest: 'toolkit', arg: 'wb-verbs', label: 'Inference Verbs' },
+        W1: { dest: 'toolkit', arg: 'wb-verbs', label: 'Inference Verbs' },
         N1: { dest: 'table' },   // arg = technique name resolved from the penalty line itself
         // v7.19.939: K1 → the notes chat's new Toolkit section (built 2026-07-07, staging
         // v2.6.62; id FROZEN). Feature-detected — dormant until their prod push, lights up
-        // automatically after (the v922 dormant-half pattern). Closes the last unmapped code.
+        // automatically after (the v922 dormant-half pattern).
         K1: { dest: 'toolkit', arg: 'evaluative-keywords', label: 'Evaluative Keywords' },
+        M1: { dest: 'toolkit', arg: 'topic-sentence', label: 'Topic Sentences' },
+        I1: { dest: 'toolkit', arg: 'close-analysis', label: 'Close Analysis' },
+        D1: { dest: 'toolkit', arg: 'finegrained', label: 'Fine-Grained Analysis' },
     };
     // Detection = the pen-ledger codeRe shape (keep in sync with _penLedgerCards' codeRe in
     // wml-assessment.js) PLUS the tally form the rebuilt Penalty Ledger / code-tallied Trend
@@ -2860,18 +2875,34 @@ window.WML = (function() {
         const m = text.match(_techMatcher.re);
         return m ? (_techMatcher.canon[m[0].toLowerCase()] || null) : null;
     }
-    // Map + availability gate → chip descriptor or null. Gating at render keeps the
-    // toolkit half dormant until its global ships, and never renders a dead button.
-    function _learnChipFor(code, context) {
+    // v7.19.949: RAW resolver — map lookup + N1 technique resolution, NO availability gate.
+    // The persisted in-doc chip nodes use this (they must be written even where the
+    // destination global isn't loaded yet — visibility is gated at VIEW time by the editor
+    // root attrs + CSS, so chips light up on existing docs the day a destination ships).
+    function _resolveLearnChipRaw(code, context) {
         const map = PENALTY_LEARN_MAP[code];
-        if (!map || typeof window === 'undefined') return null;
-        if (map.dest === 'toolkit') {
-            if (!(window.SophiclyToolkit && window.SophiclyToolkit.open)) return null;
-            return { dest: 'toolkit', arg: map.arg, label: map.label };
-        }
-        if (!(window.SophiclyTable && window.SophiclyTable.open)) return null;
+        if (!map) return null;
+        if (map.dest === 'toolkit') return { dest: 'toolkit', arg: map.arg, label: map.label };
         const name = _resolveTechniqueName(context);
         return name ? { dest: 'table', arg: name, label: name } : null;
+    }
+    // Map + availability gate → chip descriptor or null. Gating at render keeps the
+    // toolkit half dormant until its global ships, and never renders a dead button.
+    // (Chat bubbles + pad clones — transient surfaces, so render-time gating is correct.)
+    function _learnChipFor(code, context) {
+        if (typeof window === 'undefined') return null;
+        const chip = _resolveLearnChipRaw(code, context);
+        if (!chip) return null;
+        if (chip.dest === 'toolkit') return (window.SophiclyToolkit && window.SophiclyToolkit.open) ? chip : null;
+        return (window.SophiclyTable && window.SophiclyTable.open) ? chip : null;
+    }
+    // v7.19.949: line → chip descriptor for the in-doc healer (wml-assessment's
+    // _healLearnChips). Ungated (see _resolveLearnChipRaw); same rendered-block detection
+    // shape as appendLearnChips. Null when the line isn't a chip-eligible penalty line.
+    function learnChipForLine(text) {
+        const t = String(text || '').trim();
+        const m = t.match(_LEARN_BLOCK_RE);
+        return m ? _resolveLearnChipRaw(m[1], t) : null;
     }
     // Raw-text phase (start of formatAI): append a ⟦SWML_LEARN:dest:arg:label⟧ token to each
     // chip-eligible penalty line. Colon-delimited — technique names never carry colons, and
@@ -2938,37 +2969,13 @@ window.WML = (function() {
             });
         } catch (e) { console.warn('WML learn-chip: DOM inject skipped —', e && e.message); }
     }
-    // v7.19.948 (Neil ruling 2026-07-07): chips-in-DOC. Scan a feedback box's rendered
-    // content and return DEDUPED chip descriptors — the caller (wml-assessment's
-    // _renderLearnChipRows) renders them into the box's PM-firewalled chip row, never into
-    // PM content itself (schema drops <button> — the v898 fbGlyph lesson). Same detection
-    // + _learnChipFor gating as every other surface, so dormant destinations stay dormant
-    // and new penalty codes light up via PENALTY_LEARN_MAP alone — zero per-protocol wiring.
-    function collectLearnChips(rootEl) {
-        const out = [];
-        try {
-            if (!rootEl || !rootEl.querySelectorAll) return out;
-            const seen = {};
-            rootEl.querySelectorAll('p, li').forEach(bl => {
-                const t = (bl.textContent || '').trim();
-                const m = t.match(_LEARN_BLOCK_RE);
-                if (!m) return;
-                const chip = _learnChipFor(m[1], t);
-                if (!chip) return;
-                const key = chip.dest + ':' + chip.arg;
-                if (seen[key]) return;
-                seen[key] = true;
-                out.push(chip);
-            });
-        } catch (e) { console.warn('WML learn-chip: collect skipped —', e && e.message); }
-        return out;
-    }
-    // ONE delegated click for every chip surface (bubbles, pad). Window-level guard so the
+    // ONE delegated click for every chip surface (bubbles, pad, in-doc chip nodes). Window-
+    // level guard so the
     // two-bundle double-load / SPA re-run can't bind twice (the __swmlBooted lesson).
     if (typeof document !== 'undefined' && !window.__swmlLearnChipBound) {
         window.__swmlLearnChipBound = true;
         document.addEventListener('click', function (e) {
-            const b = e.target && e.target.closest && e.target.closest('.swml-learn-chip');
+            const b = e.target && e.target.closest && e.target.closest('.swml-learn-chip, .swml-learn-chip-node');
             if (!b) return;
             e.preventDefault(); e.stopPropagation();
             const dest = b.getAttribute('data-learn-dest') || '';
@@ -3164,7 +3171,7 @@ window.WML = (function() {
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
         parseProgressBeat, progressChipHTML, withProgressChip,
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
-        collectLearnChips,  // v7.19.948: chip descriptors for the in-doc firewalled chip rows
+        learnChipForLine,   // v7.19.949: ungated line→chip resolver for the in-doc healer
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)
         isTopicFlow,
         // Rendering

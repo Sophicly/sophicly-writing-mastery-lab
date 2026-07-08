@@ -2084,6 +2084,9 @@
             // view (once, on fill = "section enter"). Honours prefers-reduced-motion; scrolls the
             // canvas, not the page. Targets the box for the FIRST card's question (the one being marked).
             if (wrote) {
+                // v7.19.949: chip the just-filed penalty lines in place (idempotent txn pass;
+                // runs BEFORE the scroll so the target rect maths sees final content).
+                try { _healLearnChips(); } catch (_) { /* heal is best-effort */ }
                 try {
                     // v7.19.758: match by the canonical _paraKey, NOT the first digit —
                     // Intro/Conclusion have no digit and silently never scrolled.
@@ -3003,42 +3006,63 @@
         } catch (e) { console.warn('WML section strips: skipped —', e && e.message); }
     }
     try { window.WML = window.WML || {}; window.WML.renderAnalyticsReadout = _renderSectionStrips; } catch (_) {}
-    // ── v7.19.948 (Neil): Fix→Learn chips INSIDE the doc's feedback boxes ──────────────
-    // Fills every .swml-learn-chip-row (the PM-firewalled footer the collapsible-section
-    // NodeView mounts, wml-section-block.js) from that box's OWN penalty lines via
-    // WML.collectLearnChips — content-driven + PENALTY_LEARN_MAP-gated, so any board/paper/
-    // future protocol chips for free and dormant destinations render nothing. Same markup
-    // as the chat/pad chips → the ONE document-level delegated click in wml-core handles
-    // them (capture phase — works in v947 display-locked lessons too). Idempotent via a
-    // data-sig compare (innerHTML readback normalises entities, so compare the signature,
-    // not the markup); routed through the derived-card circuit-breaker per the PM NodeView
-    // law (CLAUDE.md rule 5).
-    function _renderLearnChipRows() {
+    // ── v7.19.949 (Neil): Fix→Learn chips IN CONTEXT — at the end of the penalty line ───
+    // (Replaces v948's box-bottom rows: Neil live test — a pooled row reads as detached from
+    // the penalties it belongs to.) The chip is a REAL inline atom node (learnChip, the
+    // FbGlyph mold) appended to each chip-eligible penalty line inside feedback boxes, via
+    // PM TRANSACTIONS only — never a DOM write (PM law). Healer semantics: runs on mount,
+    // overlay rebuild and post-fill; idempotent (a line whose last inline is already a
+    // learnChip is skipped); covers STALE docs (pre-949 marked assessments), fresh fills,
+    // and reseed-seeded fbdiscuss copies alike. Detection is content-driven + map-gated
+    // (WML.learnChipForLine — ungated resolver, so chips persist even where a destination
+    // global isn't deployed; view-time CSS gating below decides visibility).
+    function _stampLearnChipDests() {
         try {
-            const rows = document.querySelectorAll('.swml-learn-chip-row');
-            if (!rows.length) return;
-            if (!_derivedCardFillOk('learnchips')) return;
-            if (!(window.WML && typeof window.WML.collectLearnChips === 'function')) return;
-            const attr = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-            rows.forEach(row => {
-                const sec = row.closest('.swml-section-block');
-                const content = sec ? sec.querySelector('.swml-section-content') : null;
-                const chips = content ? window.WML.collectLearnChips(content) : [];
-                const sig = chips.map(c => c.dest + ':' + c.arg).join('|');
-                if (row.getAttribute('data-sig') !== sig) {
-                    row.setAttribute('data-sig', sig);
-                    row.innerHTML = chips.map(c =>
-                        '<button type="button" class="swml-learn-chip" data-learn-dest="' + attr(c.dest)
-                        + '" data-learn-arg="' + attr(c.arg) + '" title="Open '
-                        + (c.dest === 'table' ? 'the Table of Techniques' : 'the Mastery Toolkit')
-                        + '">Learn: ' + attr(c.label) + ' →</button>').join('');
-                }
-                const want = sig ? '' : 'none';
-                if (row.style.display !== want) row.style.display = want;
-            });
-        } catch (e) { console.warn('WML learn-chip rows: skipped —', e && e.message); }
+            const root = document.getElementById('swml-tiptap-editor');
+            if (!root) return;
+            const tk = !!(window.SophiclyToolkit && window.SophiclyToolkit.open);
+            const tb = !!(window.SophiclyTable && window.SophiclyTable.open);
+            if (tk !== root.hasAttribute('data-swml-learn-toolkit')) {
+                if (tk) root.setAttribute('data-swml-learn-toolkit', '1'); else root.removeAttribute('data-swml-learn-toolkit');
+            }
+            if (tb !== root.hasAttribute('data-swml-learn-table')) {
+                if (tb) root.setAttribute('data-swml-learn-table', '1'); else root.removeAttribute('data-swml-learn-table');
+            }
+        } catch (_) { /* view-state only */ }
     }
-    try { window.WML.renderLearnChipRows = _renderLearnChipRows; } catch (_) {}
+    function _healLearnChips() {
+        try {
+            if (!canvasEditor || canvasEditor.isDestroyed) return;
+            if (!(WML && typeof WML.learnChipForLine === 'function')) return;
+            if (!(canvasEditor.schema && canvasEditor.schema.nodes && canvasEditor.schema.nodes.learnChip)) return;
+            _stampLearnChipDests();
+            const inserts = [];
+            canvasEditor.state.doc.descendants((node, pos) => {
+                if (node.type.name !== 'sectionBlock') return true;
+                if (((node.attrs && node.attrs.sectionType) || '') !== 'feedback') return false;
+                node.descendants((child, childPos) => {
+                    if (!child.isTextblock) return true;
+                    const last = child.childCount ? child.child(child.childCount - 1) : null;
+                    if (last && last.type.name === 'learnChip') return false;
+                    const chip = WML.learnChipForLine(child.textContent);
+                    if (chip) inserts.push({ at: pos + 1 + childPos + child.nodeSize - 1, chip: chip });
+                    return false;
+                });
+                return false;
+            });
+            if (!inserts.length) return;
+            inserts.sort((a, b) => b.at - a.at); // descending: earlier positions stay valid
+            inserts.forEach(i => {
+                canvasEditor.commands.insertContentAt(i.at, {
+                    type: 'learnChip',
+                    attrs: { dest: i.chip.dest, arg: i.chip.arg, label: i.chip.label },
+                });
+            });
+            console.log('[WML learn-chip] healed ' + inserts.length + ' in-context chip(s)');
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) { console.warn('WML learn-chip heal: skipped —', e && e.message); }
+    }
+    try { window.WML.healLearnChips = _healLearnChips; } catch (_) {}
     function _fireClosingFiling() {
         if (_closingFilingFired) return;
         _closingFilingFired = true;
@@ -13410,10 +13434,10 @@
         function _stripChipsFromClone(node) {
             if (!node || !node.querySelectorAll) return node;
             node.querySelectorAll('.swml-section-select-all').forEach(c => c.remove());
-            // v7.19.948: the in-doc Fix→Learn chip row must not clone into the pads — the
+            // v7.19.949: the in-doc Learn-chip NODES must not clone into the pads — the
             // feedback pad keeps its own v922 inline chips (appendLearnChips), so a cloned
-            // row would double them.
-            node.querySelectorAll('.swml-learn-chip-row').forEach(c => c.remove());
+            // chip span would double them.
+            node.querySelectorAll('.swml-learn-chip-node').forEach(c => c.remove());
             return node;
         }
 
@@ -18116,6 +18140,57 @@
             },
         });
 
+        // v7.19.949 (Neil ruling 2026-07-08): in-CONTEXT Fix→Learn chip — an inline atom node
+        // at the END of the penalty line it belongs to (the FbGlyph mold: taught to the schema,
+        // so it survives insertion AND the save→reload round-trip; v948's box-bottom rows are
+        // retired). Injected by _healLearnChips (PM transactions only — never a DOM write).
+        // The pill text renders via CSS ::before from data-learn-label, so the node contributes
+        // ZERO textContent — every text consumer (auditor, ledger, seeds, copy-paste export,
+        // clone-and-measure detectors) is untouched BY CONSTRUCTION. Clicks ride wml-core's ONE
+        // delegated capture-phase handler (.swml-learn-chip-node). Visibility is gated at VIEW
+        // time by editor root attrs (data-swml-learn-toolkit/-table) + CSS — chips persist even
+        // where a destination global isn't deployed yet and light up the day it ships.
+        const LearnChip = Node.create({
+            name: 'learnChip',
+            inline: true,
+            group: 'inline',
+            atom: true,
+            selectable: false,
+            draggable: false,
+            addAttributes() {
+                return {
+                    dest: {
+                        default: 'toolkit',
+                        parseHTML: el => el.getAttribute('data-learn-dest') || 'toolkit',
+                        renderHTML: attrs => ({ 'data-learn-dest': attrs.dest }),
+                    },
+                    arg: {
+                        default: '',
+                        parseHTML: el => el.getAttribute('data-learn-arg') || '',
+                        renderHTML: attrs => ({ 'data-learn-arg': attrs.arg }),
+                    },
+                    label: {
+                        default: '',
+                        parseHTML: el => el.getAttribute('data-learn-label') || '',
+                        renderHTML: attrs => ({ 'data-learn-label': attrs.label }),
+                    },
+                };
+            },
+            parseHTML() { return [{ tag: 'span[data-learn-chip]' }]; },
+            renderHTML({ HTMLAttributes }) {
+                const label = HTMLAttributes['data-learn-label'] || '';
+                const dest = HTMLAttributes['data-learn-dest'] || 'toolkit';
+                return ['span', Object.assign({}, HTMLAttributes, {
+                    'data-learn-chip': '1',
+                    class: 'swml-learn-chip-node',
+                    role: 'link',
+                    tabindex: '0',
+                    'aria-label': 'Learn: ' + label,
+                    title: 'Open ' + (dest === 'table' ? 'the Table of Techniques' : 'the Mastery Toolkit'),
+                })];
+            },
+        });
+
         // Custom Comment Mark — wraps selected text with a comment ID
         const CommentMark = Mark.create({
             name: 'comment',
@@ -20544,6 +20619,7 @@
                 SelectField,
                 ClozeCheck,
                 FbGlyph, // v7.19.898: feedback status-badge inline node (SVG in cards)
+                LearnChip, // v7.19.949: in-context Fix→Learn chip inline node (penalty lines)
                 // v7.14.76: PaginationPlus DISABLED — continuous scroll mode.
                 // Eliminates scroll-jump bugs, criteria splitting across page breaks,
                 // and NodeView recreation issues. Pages added no pedagogical value
@@ -20883,6 +20959,12 @@
                         if (removed > 0) _sectionCount = countSections(editor.state.doc);
                     } catch (e) { console.warn('[WML v7.19.127] deferred strip failed', e); }
                 }, 1200);
+                // v7.19.949: in-context Learn-chip heal on mount — staggered so the async
+                // server doc (tryServerLoad → setContent, which fires AFTER onCreate) lands
+                // first. Idempotent + txn-based, so a double-fire on an already-chipped doc
+                // is a no-op. Covers stale pre-949 marked docs and reseeded fbdiscuss copies.
+                setTimeout(() => { try { _healLearnChips(); } catch (_) {} }, 1500);
+                setTimeout(() => { try { _healLearnChips(); } catch (_) {} }, 3500);
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
@@ -22937,7 +23019,7 @@
             // .swml-ana-strip the feedback nodeView mounts) — refresh it on every overlay
             // rebuild so it tracks new marks at the old cadence. No absolute overlay.
             _renderSectionStrips();   // v7.19.920: fills every headline strip (self-guarding), not just Analytics
-            _renderLearnChipRows();   // v7.19.948: in-doc Fix→Learn chip rows track new marks at the same cadence
+            _healLearnChips();        // v7.19.949: in-context chips heal at the same cadence (idempotent, txn-based)
 
             // ── Tutor Sign-off UI (v7.19.828: IN-FLOW — the progress-card technique) ──
             // The old .swml-dropdown-overlay-signoff lived in the absolute dropdown layer

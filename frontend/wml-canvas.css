@@ -11616,17 +11616,39 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-section-block.swml-fb-collapsed .swml-section-content {
     display: none;
 }
-/* v7.19.948: in-doc Fix→Learn chip row — PM-firewalled footer after the content
-   (filled by wml-assessment's _renderLearnChipRows). Chip pill styling itself lives in
-   wml-styles.css (.swml-learn-chip, shared with chat + pad). Hidden while collapsed —
-   the detail belongs with the content; the headline strip stays the collapsed preview.
-   !important wins over the fill's inline display:'' write. */
-.swml-learn-chip-row {
-    display: flex; flex-wrap: wrap; gap: 6px;
-    margin-top: 8px;
+/* v7.19.949: in-CONTEXT Fix→Learn chip — the learnChip inline atom node at the end of its
+   penalty line (span.swml-learn-chip-node, healed in by _healLearnChips). The pill text
+   renders from data-learn-label via ::before, so the node itself carries ZERO textContent —
+   copy-paste exports and every text consumer stay clean. Pill visual matches the chat/pad
+   .swml-learn-chip (wml-styles.css). Destination availability is view-gated by the editor
+   root attrs _stampLearnChipDests sets — a persisted chip whose destination isn't deployed
+   on this site simply stays hidden until it ships. */
+.swml-learn-chip-node {
+    display: inline-flex; align-items: center;
+    margin-left: 8px; padding: 2px 9px 3px;
+    border-radius: 999px; cursor: pointer;
+    font-size: 11px; font-weight: 600; line-height: 1.4;
+    color: var(--swml-purple, #5333ed); background: rgba(83, 51, 237, 0.10);
+    vertical-align: baseline; white-space: nowrap;
+    -webkit-user-select: none; user-select: none;
+    transition: background 0.15s ease;
 }
-.swml-learn-chip-row .swml-learn-chip { margin-left: 0; }
-.swml-section-block.swml-fb-collapsed .swml-learn-chip-row { display: none !important; }
+.swml-learn-chip-node::before { content: 'Learn: ' attr(data-learn-label) ' \2192'; }
+.swml-learn-chip-node:hover { background: rgba(83, 51, 237, 0.18); }
+/* canvas is dark by default (matches the chat chips' dark palette); light theme overrides */
+.swml-learn-chip-node { color: #a99cf5; background: rgba(139, 123, 247, 0.16); }
+.swml-learn-chip-node:hover { background: rgba(139, 123, 247, 0.26); }
+.swml-canvas-light .swml-learn-chip-node,
+[data-swml-theme="light"] .swml-learn-chip-node {
+    color: var(--swml-purple, #5333ed); background: rgba(83, 51, 237, 0.10);
+}
+.swml-canvas-light .swml-learn-chip-node:hover,
+[data-swml-theme="light"] .swml-learn-chip-node:hover { background: rgba(83, 51, 237, 0.18); }
+/* availability gate: hide chips whose destination global isn't on this page */
+#swml-tiptap-editor:not([data-swml-learn-toolkit]) .swml-learn-chip-node[data-learn-dest="toolkit"],
+#swml-tiptap-editor:not([data-swml-learn-table]) .swml-learn-chip-node[data-learn-dest="table"] {
+    display: none;
+}
 /* the absolute .swml-fb-toggle needs a positioned ancestor on the action forms too */
 .swml-section-block[data-section-type="action"] { position: relative; }
 /* v7.19.926 UNIVERSAL: any chevron-carrying section is its toggle's positioned ancestor —

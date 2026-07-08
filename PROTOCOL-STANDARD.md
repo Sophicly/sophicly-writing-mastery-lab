@@ -567,6 +567,14 @@ provenance + scroll (830/839/844) · chat fetch retry + full-label lettered opti
 chat-furniture strip (829) · caps registry parity (`wml-assessment.js` board caps map ~22889 —
 verify the paper's entry + marks).
 
+**PENALTY-CODE ↔ LEARN-CHIP PARITY (v7.19.949 — the W1/M1 lesson):** list every penalty code
+this paper's protocol can emit; each has a `PENALTY_LEARN_MAP` entry (wml-core.js) or a ruled
+no-chip. Toolkit args MUST be verified section ids from the notes toolkit SECTIONS registry
+(unknown id → toolkit opens the LANDING silently — the F1 'inference-verbs' bug). Retired code
+forms still emitted by older protocol text (lit W1 = F1) get an alias entry AND a protocol-side
+fix in the port. Codes are detected from the doc/chat penalty lines at runtime — no per-paper
+wiring beyond the map entry.
+
 ### E2 — ENGINE-ENABLE (the ONLY engine edits a port makes: registered per-paper switches)
 Subject-literal lists that every language-paper port must extend (A11 registered surfaces — as of
 852 they name language1 forms only):

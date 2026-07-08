@@ -353,28 +353,35 @@ code-owned source.
   Toolkit destinations. Tagging happens at the TOP of `formatAI` (matches code-form AND ×N tally
   lines) so it sees raw text; the button is injected AFTER svgifyEmojis; `<pre>/<code>` tokens
   are dropped from matching. The pad gets chips via `WML.appendLearnChips` on non-PM clones; the
-  PM doc got its own firewalled rows at v948 (next bullet). ONE delegated click handler, NEVER a
+  PM doc got in-context chip NODES at v949 (next bullet). ONE delegated click handler, NEVER a
   bare `open()` per chip. The two
   destination halves are **feature-detected dormant** — the Toolkit half lit up the day the
   notes plugin deployed, with ZERO WML change (proof of the pattern: integrate by detection,
   not by coordinated deploys). Technique-name resolution: 245 names from the GENERATED
   `protocols/shared/reference/table-of-techniques.md` — hosted in THIS tree, re-sync on
   regeneration (§9.8) — PHP filemtime-cached into `swmlConfig`.
-- **Fix→Learn chips IN THE DOC (v948, Neil ruling 2026-07-07/08):** the doc is the primary home
-  (chat is transient). Every collapsible section NodeView mounts a PM-firewalled
-  `.swml-learn-chip-row` AFTER its contentDOM (the anaStrip/progress-card technique:
-  contenteditable=false, covered by `ignoreMutation` — never PM content; the schema drops
-  `<button>`). `_renderLearnChipRows` (wml-assessment, exported `WML.renderLearnChipRows`)
-  fills every row from that box's OWN penalty lines via `WML.collectLearnChips` (wml-core —
-  the v922 detection + `_learnChipFor` gating, deduped by dest:arg) on NodeView (re)mount
-  (rAF/250/800) + every overlay rebuild (the strips cadence). Content-driven + map-gated =
-  dynamic/universal: zero per-protocol wiring; boxes with no penalty lines keep an empty
-  hidden row. Idempotent via `data-sig` compare (innerHTML readback normalises entities —
-  never compare markup); routed through `_derivedCardFillOk('learnchips')` (§3 PM law rule 5).
-  Rows hide while collapsed (the strip is the collapsed preview) and are STRIPPED from pad
-  clones (`_stripChipsFromClone`) — the pad keeps its v922 inline chips, never both. Clicks
-  ride the ONE v922 delegated document-level handler (capture phase — works inside v947
-  display-locked lessons).
+- **Fix→Learn chips IN CONTEXT, in the doc (v949 — supersedes v948's box-bottom rows; Neil
+  live test 2026-07-08: a pooled row reads as detached from its penalties):** the chip is a
+  REAL inline atom node (`learnChip`, the fbGlyph mold — taught to the schema so it survives
+  insertion + save→reload) at the END of the penalty line it belongs to. `_healLearnChips`
+  (wml-assessment, exported `WML.healLearnChips`) injects them via **PM transactions only**
+  on mount (staggered past tryServerLoad), every overlay rebuild, and post-`applyAssessmentFeedback`
+  — idempotent (line whose last inline is already a learnChip skips), so it equally covers
+  STALE pre-949 docs, fresh fills, and reseed-seeded fbdiscuss copies. Resolution =
+  `WML.learnChipForLine` (wml-core): the v922 detection shape + `PENALTY_LEARN_MAP`,
+  **UNGATED** — chips persist even where a destination global isn't deployed; visibility is
+  view-gated by editor root attrs (`data-swml-learn-toolkit/-table`, stamped by
+  `_stampLearnChipDests`) + CSS, so chips on existing docs light up the day a destination
+  ships. The pill label renders via CSS `::before` from `data-learn-label` → the node carries
+  **ZERO textContent** — auditor/ledger/seed/copy-paste text consumers untouched BY
+  CONSTRUCTION (this also retired the v922 paste-bleed for doc chips). Clicks ride the ONE
+  v922 delegated capture-phase handler (`.swml-learn-chip-node` added to its selector — works
+  in v947 display-locked lessons). Pad clones strip the node spans (`_stripChipsFromClone`) —
+  the pad keeps its v922 inline chips, never both.
+- **SLUG LAW (v949 — the F1-opened-the-landing bug):** every `PENALTY_LEARN_MAP` toolkit arg
+  MUST be a section id from the notes toolkit's SECTIONS registry (tkNavigate: `fix-`+slug,
+  then bare slug, unknown → landing + warn). Verify against the registry before adding an
+  entry; every penalty code a protocol can emit gets a map entry or a ruled no-chip.
 - Known cosmetic bleed: chip labels appear in copy-pasted doc exports ("Learn: … →"). Accepted
   for now; revisit if Neil exports for parents (§9.9).
 

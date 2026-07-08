@@ -284,28 +284,6 @@
                 contentDOM.className = 'swml-section-content';
                 dom.appendChild(contentDOM);
 
-                // v7.19.948 (Neil): Fix→Learn chips INSIDE the doc's feedback boxes — the doc
-                // is what students review repeatedly; chat is transient. A PM-firewalled row
-                // AFTER the content (the anaStrip/progress-card technique): wml-assessment's
-                // _renderLearnChipRows scans the box's penalty lines and fills it on every
-                // (re)mount + overlay rebuild. Content-driven, so boxes with no penalty lines
-                // (scores, SA/AP forms, Analytics) just keep an empty hidden row.
-                const chipRow = document.createElement('div');
-                chipRow.className = 'swml-learn-chip-row';
-                chipRow.setAttribute('contenteditable', 'false');
-                chipRow.style.display = 'none';
-                dom.appendChild(chipRow);
-                const _fillChips = () => {
-                    try {
-                        if (window.WML && typeof window.WML.renderLearnChipRows === 'function') {
-                            window.WML.renderLearnChipRows();
-                        }
-                    } catch (_) { /* ignore */ }
-                };
-                requestAnimationFrame(_fillChips);
-                setTimeout(_fillChips, 250);
-                setTimeout(_fillChips, 800);
-
                 const fbLabel = _cvLabel;
 
                 // v7.19.913: headline readout strip — IN-FLOW (the progress-card/sign-off
@@ -394,8 +372,6 @@
                         // v7.19.913: the in-flow Analytics readout strip is derived display —
                         // firewall its fills like the progress card / sign-off UI.
                         if (anaStrip && (anaStrip === mutation.target || anaStrip.contains(mutation.target))) return true;
-                        // v7.19.948: the Fix→Learn chip row is derived display — same firewall.
-                        if (chipRow === mutation.target || chipRow.contains(mutation.target)) return true;
                         return toggle === mutation.target || toggle.contains(mutation.target);
                     },
                 };
