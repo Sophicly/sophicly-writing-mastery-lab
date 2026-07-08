@@ -553,7 +553,11 @@ lies. Net: derive EVERY count from the live set — `roundResults.length` / serv
 `q.total` — never a literal. Residual: any new count literal in quiz copy, the result card, the
 clear-warnings, or the sidebar. **Corollary (first-paint, Neil): the sidebar must know the round
 size at BOOT (server-injected) so it shows the real journey immediately — never a placeholder step
-count that changes to the true one after the quiz starts.**
+count that changes to the true one after the quiz starts. BUILT v968: the embed config computes
+`fqRoundSize` server-side through the SAME code the round is served by (`fq_round_size` → shared
+`fq_stage_subset` + `dedupe_stems`, effective-bank + canonical-slug resolution) and boot stamps
+`state.fqRoundTotal`; `_syncFqSidebar` stays as the self-heal. Any future round-composition change
+must keep serving and counting on the shared helpers — a fork makes the first paint lie.**
 
 **16. Deferred DOM-attach race** (post-round menu, v961, Neil 2026-07-08).
 Trigger: UI appended inside a `setTimeout` that resolves `chatMessages.lastElementChild` at

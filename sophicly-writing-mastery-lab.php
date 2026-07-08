@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.967
+ * Version: 7.19.968
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.967');
+define('SWML_VERSION', '7.19.968');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -759,6 +759,29 @@ class Sophicly_Writing_Mastery_Lab {
         // so we also enqueue here as fallback. Footer scripts still work from the_content. (v7.13.13)
         $this->enqueue_embed_assets();
 
+        // v7.19.968 (Neil C — sidebar correct from FIRST PAINT): compute the FQ round size
+        // the server will actually serve for this lesson (same effective-bank resolution as
+        // /quiz/start — fq_bank override first, course text fallback, §9.14; same canonical
+        // slug registry; same stage subset + stem-dedup via fq_round_size) and inject it at
+        // boot, so getSteps() renders the real Q count immediately — never a 5-step
+        // placeholder that changes once the round starts. 0 = no bank resolved → the client
+        // keeps its default shape and the quiz controller's _syncFqSidebar self-heals.
+        $fq_round_size = 0;
+        if ($task === 'foundational_quiz' && class_exists('SWML_Quiz_Bank')) {
+            $_canon = function ($s) {
+                return class_exists('SWML_REST_API') ? SWML_REST_API::canonical_slug($s) : $s;
+            };
+            $_bank_slug = '';
+            if ($fq_bank !== '' && SWML_Quiz_Bank::questions_for_fq($_canon($fq_bank))) {
+                $_bank_slug = $_canon($fq_bank);
+            } elseif (!empty($text)) {
+                $_bank_slug = $_canon($text);
+            }
+            if ($_bank_slug !== '') {
+                $fq_round_size = SWML_Quiz_Bank::fq_round_size($_bank_slug, $fq_stage ?: null, 'set');
+            }
+        }
+
         // Build the embedded config — JS reads this instead of URL params
         $embed_config = [
             'embedded'    => true,
@@ -774,6 +797,7 @@ class Sophicly_Writing_Mastery_Lab {
             'text'        => $text,
             'fqBank'      => $fq_bank,   // v7.19.952: per-lesson FQ bank override (bridge)
             'fqStage'     => $fq_stage,  // v7.19.952: per-lesson FQ stage (bridge, unified fq_stage=N)
+            'fqRoundSize' => $fq_round_size, // v7.19.968: boot-time round size (first-paint sidebar)
         ];
 
 

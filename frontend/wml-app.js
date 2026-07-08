@@ -88,6 +88,10 @@
         // poem-anthology course) filtered to the lesson's stage. Absent → course text, whole bank.
         if (embedConfig.fqBank)  state.fqBank  = embedConfig.fqBank;
         if (embedConfig.fqStage) state.fqStage = embedConfig.fqStage;
+        // v7.19.968 (Neil C): server-computed FQ round size → the sidebar shows the REAL
+        // step count from FIRST PAINT (no 5-step placeholder that morphs mid-lesson). The
+        // quiz controller's _syncFqSidebar remains the self-heal if the served round differs.
+        if (embedConfig.fqRoundSize) state.fqRoundTotal = parseInt(embedConfig.fqRoundSize, 10) || 0;
         // v7.17.15: bridge-provided step (mark_scheme_unit Quiz=1, FYW=2)
         if (embedConfig.step)    state.step    = embedConfig.step;
         // v7.18.21: capture original bridge step into state.bridgeStep for
@@ -7628,7 +7632,10 @@ Before marking the introduction, ask the student to confirm their essay structur
             // previous lesson would serve the wrong bank on this lesson's quiz start.
             state.fqBank      = cfg.fqBank  || '';
             state.fqStage     = cfg.fqStage || 0;
-            state.fqRoundTotal = 0;  // v7.19.954: dynamic FQ sidebar length — never leak across lessons
+            // v7.19.954: dynamic FQ sidebar length — never leak across lessons.
+            // v7.19.968 (Neil C): seed from the server-computed round size so SPA-navigated
+            // FQ lessons also paint the real step count immediately (0 when not an FQ lesson).
+            state.fqRoundTotal = parseInt(cfg.fqRoundSize, 10) || 0;
             // v7.17.20: SPA re-init must pipe cfg.step (multi-step tasks like
             // mark_scheme_unit). Otherwise state.step leaks across lessons.
             state.step        = cfg.step    || 0;

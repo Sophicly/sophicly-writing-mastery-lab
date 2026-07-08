@@ -10137,6 +10137,10 @@
                 let qr = null;
                 try {
                     const res = await apiPost(API.quizFinish, { rounds: round, mastered: mastered,
+                        // v7.19.968 (B): the served question ids — the server rebuilds the round's
+                        // @form set from these when the volatile bank-meta slot is gone (resume),
+                        // so the mastery organiser-fill survives a resumed round.
+                        ids: roundResults.map(r => (r.q && r.q.id) ? r.q.id : null).filter(Boolean),
                         // v7.19.747: send the committed /20 prediction so PHP persists the
                         // predicted-vs-actual calibration record for the dashboard (MSA only).
                         predicted: (quizType === 'mark_scheme_assessment' ? predictedScore : null) });
@@ -10147,6 +10151,27 @@
                         if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
                         if (typeof saveCanvasContent === 'function') saveCanvasContent();
                     }
+                    // v7.19.968 (Neil B — "just have it in there"): mastery COMPLETES the
+                    // knowledge organiser — every slot of every form this round covered, from
+                    // the bank's sidecar. The per-answer noteFills above already filed the
+                    // tested slots; this fills the rest. Same idempotent, auto-fill-provenance
+                    // path (_applyFieldValueSets) — a student's own edit is never clobbered.
+                    try {
+                        const mn = (res && res.success && Array.isArray(res.masteryNotes)) ? res.masteryNotes : [];
+                        if (mn.length) {
+                            _applyFieldValueSets(mn.map(x => ({ field: x.field, value: x.text })));
+                            const _host2 = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+                            mn.forEach(x => {
+                                try {
+                                    const _fld = _host2 && _host2.querySelector('[data-input-field][data-field-id="' + x.field + '"]');
+                                    const _sec = _fld && _fld.closest('.swml-section-block');
+                                    if (_sec) _sec.classList.remove('swml-fb-collapsed');
+                                } catch (_) { /* display-only, never block */ }
+                            });
+                            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                            aiBubble('📒 **Knowledge Organiser complete** — mastering the round filed every concept note for the forms you were tested on. Anything you wrote yourself stays exactly as you wrote it.');
+                        }
+                    } catch (e) { console.warn('WML FQ: mastery-notes autofill failed (non-fatal)', e && e.message); }
                 } catch (e) { removeCanvasTyping(); }
                 finally { resetSend(); }
 

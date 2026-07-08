@@ -363,7 +363,17 @@ class SWML_Quiz_Bank {
     public static function pick_session_fq($text, $n = 5, $stage = null, $stage_kind = 'set') {
         $pool = self::questions_for_fq($text);
         if (empty($pool)) return [];
+        $serve = self::fq_stage_subset($pool, $text, $stage, $stage_kind);
+        // n = count($serve) → pick_from_pool returns the ENTIRE served set, shuffled + id-stamped.
+        return self::pick_from_pool($serve, 'fq:' . sanitize_key((string) $text), count($serve));
+    }
 
+    /**
+     * v7.19.968: the FQ stage-subset selection, extracted so pick_session_fq (the served
+     * round) and fq_round_size (the boot-time sidebar count) run the SAME code — a fork
+     * here would make the first-paint sidebar lie about the round (§9.8 cross-copy drift).
+     */
+    private static function fq_stage_subset($pool, $text, $stage, $stage_kind) {
         // v7.19.952: the stage-token namespace follows the BANK, not the caller's param name.
         // The bridge unified both families to fq_stage=N (v2.31.109), so a poetic_forms lesson
         // arrives as kind='set' while its bank stages by @part:N — filtering by the param name
@@ -391,9 +401,21 @@ class SWML_Quiz_Bank {
                 error_log('WML FQ: stage ' . $key . '=' . $stage . ' matched 0 questions in bank "' . $text . '" — serving whole bank instead');
             }
         }
+        return $serve;
+    }
 
-        // n = count($serve) → pick_from_pool returns the ENTIRE served set, shuffled + id-stamped.
-        return self::pick_from_pool($serve, 'fq:' . sanitize_key((string) $text), count($serve));
+    /**
+     * v7.19.968 (Neil C — sidebar correct from FIRST PAINT): the number of questions
+     * pick_session_fq would serve for (bank, stage) — same stage subset, same stem-dedup,
+     * no shuffle/id side effects. The embed config injects this at boot so the sidebar
+     * renders the real step count immediately, never a 5-step placeholder that re-renders
+     * to 10/15/18 once the round starts. 0 = no bank (caller falls back to the default shape).
+     */
+    public static function fq_round_size($text, $stage = null, $stage_kind = 'set') {
+        $pool = self::questions_for_fq($text);
+        if (empty($pool)) return 0;
+        $serve = self::fq_stage_subset($pool, $text, $stage, $stage_kind);
+        return count(self::dedupe_stems($serve, '', false));
     }
 
     /**
@@ -449,13 +471,17 @@ class SWML_Quiz_Bank {
      * fill round-robin. Returns FULL question objects (keys + feedback) — the
      * caller MUST strip keys before sending to the client. Shared by MSQ + FQ.
      */
-    private static function pick_from_pool($pool, $id_prefix, $n = 5, $avoid = []) {
-        // v7.19.961 (Neil — no duplicate questions in any round): drop duplicate question
-        // STEMS from the pool BEFORE picking. Universal — every quiz AND assessment draws
-        // through here, so the guard lives at the root, not per-quiz. Normalises case /
-        // whitespace / punctuation so a re-typed duplicate is caught; keeps the FIRST
-        // occurrence (bank order). Same-concept-different-wording near-dupes are a bank-
-        // authoring concern (handed to chat B), not catchable from the stem alone.
+    /**
+     * v7.19.961 (Neil — no duplicate questions in any round): drop duplicate question
+     * STEMS from a pool. Universal — every quiz AND assessment draws through
+     * pick_from_pool, so the guard lives at the root, not per-quiz. Normalises case /
+     * whitespace / punctuation so a re-typed duplicate is caught; keeps the FIRST
+     * occurrence (bank order). Same-concept-different-wording near-dupes are a bank-
+     * authoring concern (handed to chat B), not catchable from the stem alone.
+     * v7.19.968: extracted so fq_round_size counts the SAME post-dedup pool the round
+     * will serve ($log=false there — the serve-time call is the one that reports).
+     */
+    private static function dedupe_stems($pool, $id_prefix = '', $log = true) {
         $seen_stems = [];
         $deduped = [];
         foreach ($pool as $q) {
@@ -464,10 +490,14 @@ class SWML_Quiz_Bank {
             if ($stem !== '') $seen_stems[$stem] = true;
             $deduped[] = $q;
         }
-        if (count($deduped) < count($pool) && function_exists('error_log')) {
+        if ($log && count($deduped) < count($pool) && function_exists('error_log')) {
             error_log('WML quiz: pick_from_pool dropped ' . (count($pool) - count($deduped)) . ' duplicate-stem question(s) from "' . $id_prefix . '" pool (' . count($pool) . ' → ' . count($deduped) . ').');
         }
-        $pool = $deduped;
+        return $deduped;
+    }
+
+    private static function pick_from_pool($pool, $id_prefix, $n = 5, $avoid = []) {
+        $pool = self::dedupe_stems($pool, $id_prefix, true);
         $n = max(1, min($n, count($pool)));
         $avoid = array_flip(array_map('intval', (array) $avoid));   // q_num set served last attempt
 

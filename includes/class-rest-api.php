@@ -64,6 +64,15 @@ class SWML_REST_API {
      * Idempotent — passing a canonical slug returns it unchanged.
      */
     private function normalize_text_slug($text) {
+        return self::canonical_slug($text);
+    }
+
+    /**
+     * v7.19.968: public static form of the ONE slug registry so non-REST callers
+     * (embed config's boot-time FQ round size) resolve through the SAME ladder —
+     * never a second alias table (§9.11 slug drift / TEXT-SLUG REGISTRY SOP).
+     */
+    public static function canonical_slug($text) {
         if (!is_string($text) || $text === '') return $text;
         return self::$SLUG_ALIASES[$text] ?? $text;
     }
@@ -1024,6 +1033,47 @@ class SWML_REST_API {
             update_user_meta($user_id, 'sophicly_msa_calibration', wp_slash(wp_json_encode($cal)));
         }
 
+        // v7.19.968 (Neil B — "just have it in there"): on FQ MASTERY the knowledge
+        // organiser must end COMPLETE — every slot of every @form entity the round
+        // covered, not only the single slot each question happened to test. Return the
+        // full sidecar set; the client files it through the same idempotent,
+        // student-edit-wins fill path as the per-answer notes. Resume-proof: the
+        // volatile bank-meta slot may already be gone (v643 class), so fall back to
+        // the client-sent question ids (fq:{bank}:{q_num}) and rebuild from the pool.
+        $mastery_notes = [];
+        if ($mastered && class_exists('SWML_Quiz_Bank')) {
+            $ids = [];
+            if (is_array($ms_bank) && !empty($ms_bank['questions'])) {
+                foreach ($ms_bank['questions'] as $bq) $ids[] = (string) ($bq['id'] ?? '');
+            } elseif (!empty($p['ids']) && is_array($p['ids'])) {
+                $ids = array_map('sanitize_text_field', $p['ids']);
+            }
+            $fq_slug = ''; $q_nums = [];
+            foreach ($ids as $bid) {
+                $bits = explode(':', $bid);
+                if (($bits[0] ?? '') !== 'fq' || count($bits) < 3) { $fq_slug = ''; break; } // FQ-only contract
+                if ($fq_slug === '') $fq_slug = $bits[1];
+                $q_nums[(int) end($bits)] = true;
+            }
+            if ($fq_slug !== '' && !empty($q_nums)) {
+                $forms = [];
+                foreach (SWML_Quiz_Bank::questions_for_fq($fq_slug) as $pq) {
+                    if (!empty($pq['form']) && isset($q_nums[(int) ($pq['q_num'] ?? 0)])) $forms[$pq['form']] = true;
+                }
+                if (!empty($forms)) {
+                    $cnotes = SWML_Quiz_Bank::concept_notes_for($fq_slug);
+                    foreach (array_keys($forms) as $f) {
+                        foreach ((array) ($cnotes[$f] ?? []) as $slot => $txt) {
+                            if ($txt !== '') $mastery_notes[] = ['field' => 'pf_' . $f . '_' . $slot, 'text' => $txt];
+                        }
+                    }
+                    if (empty($mastery_notes) && function_exists('error_log')) {
+                        error_log('WML FQ: mastery notes EMPTY for bank "' . $fq_slug . '" — missing .concept-notes.md sidecar? (organiser autofill skipped)');
+                    }
+                }
+            }
+        }
+
         return rest_ensure_response([
             'success'    => true,
             'quizResult' => [
@@ -1036,6 +1086,8 @@ class SWML_REST_API {
                 'ms_confidence' => $ms_conf,   // 1-5 or null — MSA calibration reflection
             ],
             'categoriesWithErrors' => $summary['categories_with_errors'] ?? [],
+            // v7.19.968: complete (form × slot) note set on FQ mastery ([] otherwise)
+            'masteryNotes' => $mastery_notes,
         ]);
     }
 
