@@ -1364,11 +1364,21 @@ window.WML = (function() {
             protocolSource: 'shared',
             protocolTask: 'foundational_quiz',
             completionType: 'code_word',            // [QUIZ_COMPLETE] marks done
-            // v7.15.99: FQ uses its own suffix again. Previous shared-suffix
-            // approach entangled attempt counters. General Notes now persists
-            // across FQ ↔ CN via a dedicated user-meta mirror (see class-rest-api.php
-            // handle_save_canvas / handle_load_canvas General Notes handling).
+            // Chat history stays per-FQ-lesson under _fq.
             storageSuffix: '_fq',
+            // v7.19.955 (Neil rulings 2026-07-07/08): ONE doc serves the CN lesson
+            // AND the FQ — the FQ's canvas doc IS the Conceptual Notes doc, so
+            // quiz mastery can autofill notes the student builds on in Topic 2.
+            // Doc identity remaps via canvasDocScope(): suffix _cn, text follows
+            // the served BANK (state.fqBank — e.g. poetic_forms, the one shared
+            // forms organiser across courses), topic pinned to the CN slot (2).
+            // Chat + grade filing keep the lesson's own identity (v7.19.952 law:
+            // the bank override never re-keys grades). v7.15.99's separate-_fq
+            // attempt-counter concern is gone — quizzes have no attempt model
+            // since v7.19.954 (mastery rounds, attempt locked to 1).
+            canvasStorageSuffix: '_cn',
+            canvasTextSource: 'fqBank',   // canvas text = state.fqBank || state.text
+            canvasTopicPin: 2,            // Topic 2 = the Conceptual Notes slot
             documentTemplate: 'conceptual_notes',   // same doc — concept sections become read-only in render
             chatHeaderLabel: 'Foundational Quiz',
             sidebarSteps: null,
@@ -1616,6 +1626,25 @@ window.WML = (function() {
             return cfg.canvasStorageSuffixForPhase(phase);
         }
         return resolveStorageSuffix(task, phase);
+    }
+
+    // v7.19.955: Canonical canvas-doc identity (text + topic). Tasks whose canvas
+    // doc IS another lesson's document (foundational_quiz → the Conceptual Notes
+    // doc) remap text/topic here, the same single-layer way resolveCanvasSuffix
+    // remaps the suffix. Canvas load/save/signoff call sites must key off this,
+    // never raw state.text / state.topicNumber — otherwise the two consumers of
+    // the shared doc fork into separate meta keys again. Chat storage, quiz
+    // scoring and grade filing deliberately keep the lesson's OWN identity.
+    function canvasDocScope() {
+        const cfg = getExerciseConfig(state.task);
+        const scope = { text: state.text, topic: state.topicNumber };
+        if (cfg && cfg.canvasTextSource === 'fqBank' && state.fqBank) {
+            scope.text = state.fqBank;
+        }
+        if (cfg && typeof cfg.canvasTopicPin === 'number') {
+            scope.topic = cfg.canvasTopicPin;
+        }
+        return scope;
     }
 
     // Active config based on current task
@@ -3177,7 +3206,7 @@ window.WML = (function() {
         QUOTE_ANALYSIS_ELEMENTS, MODEL_ANSWER_ELEMENTS, PLAN_ELEMENTS,
         // Helpers
         isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject,
-        getSteps, getElements, getExerciseConfig, getCwStepDef, resolveStorageSuffix, resolveCanvasSuffix,
+        getSteps, getElements, getExerciseConfig, getCwStepDef, resolveStorageSuffix, resolveCanvasSuffix, canvasDocScope,
         // Exercise manifest
         EXERCISE_MANIFEST,
         // Creative Writing

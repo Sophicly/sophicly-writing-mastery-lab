@@ -80,6 +80,62 @@ class SWML_Quiz_Bank {
         return self::parse_file(self::fq_dir() . sanitize_file_name((string) $text) . '.md');
     }
 
+    /**
+     * v7.19.955: Parse a bank's `.concept-notes.md` sidecar into
+     * [ entity_slug => [ slot => text ] ]. The sidecar carries the pre-authored
+     * one-line concept notes the FQ autofills into the knowledge organiser when
+     * the student answers that entity's question correctly (Neil 2026-07-08:
+     * "correct answers auto-fill the document"). Shape:
+     *   ### <Entity Heading>          → slug: lowercase, non-alnum → _
+     *   - **<Slot Label>:** <text>    → slot keys below
+     * Slot labels map to the four organiser slots; the map doubles as the
+     * category→slot bridge for handle_quiz_answer (bank [Tests …] categories).
+     */
+    public static function concept_notes_for($text) {
+        static $cache = [];
+        $text = sanitize_file_name((string) $text);
+        if (isset($cache[$text])) return $cache[$text];
+        $path = self::fq_dir() . $text . '.concept-notes.md';
+        $out = [];
+        if (file_exists($path)) {
+            $slot_map = [
+                'definition'     => 'definition',
+                'features'       => 'features',
+                'effects'        => 'effects',
+                'form & meaning' => 'meaning',
+                'meaning'        => 'meaning',
+            ];
+            $cur = '';
+            foreach (preg_split('/\r\n|\r|\n/', (string) file_get_contents($path)) as $ln) {
+                if (preg_match('/^###\s+(.+?)\s*$/', $ln, $m)) {
+                    $cur = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '_', trim($m[1])), '_'));
+                    continue;
+                }
+                if ($cur && preg_match('/^\s*-\s*\*\*(.+?):\*\*\s*(.+)$/', $ln, $m)) {
+                    $slot = $slot_map[strtolower(trim($m[1]))] ?? '';
+                    if ($slot) $out[$cur][$slot] = self::clean($m[2]);
+                }
+            }
+        }
+        $cache[$text] = $out;
+        return $out;
+    }
+
+    /**
+     * v7.19.955: Map a bank question's [Tests …] category to its organiser slot.
+     * poetic_forms categories; unknown category → '' (no autofill — fail quiet
+     * here is correct: the note is a bonus artefact, never quiz-blocking).
+     */
+    public static function concept_slot_for_category($category) {
+        $map = [
+            'recognising forms' => 'definition',
+            'form features'     => 'features',
+            'form effects'      => 'effects',
+            'forms & meaning'   => 'meaning',
+        ];
+        return $map[strtolower(trim((string) $category))] ?? '';
+    }
+
     /** Parse a bank markdown file at $path into [ section_label => [questions] ]. */
     public static function parse_file($path) {
         if (!file_exists($path)) return [];
@@ -130,6 +186,7 @@ class SWML_Quiz_Bank {
                     'max_marks' => 2,
                     'set'       => null, // v7.19.899: poem-quiz reading STAGE (@set:N) — bridge fq_stage
                     'part'      => null, // v7.19.899: forms-quiz STAGE (@part:N) — bridge fq_part
+                    'form'      => '',   // v7.19.955: concept-note ENTITY (@form:slug) — autofill target
                 ];
                 continue;
             }
@@ -140,6 +197,11 @@ class SWML_Quiz_Bank {
             // every stage served at once. @set = poem reading-stage; @part = poetic-form stage.
             if (preg_match('/^\s*@set:(\d+)\s*$/i', $ln, $m))  { $q['set']  = (int) $m[1]; continue; }
             if (preg_match('/^\s*@part:(\d+)\s*$/i', $ln, $m)) { $q['part'] = (int) $m[1]; continue; }
+            // v7.19.955: concept-note entity token — which form (later: poem) this question
+            // tests. Slug = slugified `### <Heading>` of the bank's .concept-notes.md sidecar.
+            // Kept OUT of the [Tests …] stratification key (same law as @set/@part). Questions
+            // without the token (general poetry-literacy Qs) simply never autofill — by design.
+            if (preg_match('/^\s*@form:([a-z0-9_]+)\s*$/i', $ln, $m)) { $q['form'] = strtolower($m[1]); continue; }
 
             if (preg_match('/^\s*\*\s*\*\*Question:\*\*\s*(.+)$/i', $ln, $m)) { $q['question'] = self::clean($m[1]); continue; }
             if (preg_match('/^\s*\*\s*\*\*Options:\*\*\s*(.+)$/i', $ln, $m)) {

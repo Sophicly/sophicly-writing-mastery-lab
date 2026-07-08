@@ -175,6 +175,31 @@ the marker in the protocol + B-COMMON §12, add ONE self-guarding extractor call
 pipelines, resolve targets by canonical key, write via PM transaction, store for replay. No new
 architecture — the five steps ARE the architecture.
 
+## §2c. QUIZ→DOC AUTOFILL + THE ONE-DOC LAW (v7.19.955 — Neil rulings 2026-07-07/08)
+
+**Quizzes are programmatic end-to-end**, so their auto-fill needs no marker: CODE is the emitter.
+The parsed-marker core of `applyFieldSets` is extracted as `_applyFieldValueSets(sets)` — code
+callers file `{field, value}` pairs through the exact same steps 3–5 above (canonical fieldId,
+PM transaction, idempotent, auto-fill provenance so a student edit is never clobbered). Never
+fork a second write path for a code-driven fill; call the core.
+
+**The FQ concept-note contract** (the first instance): bank questions carry `@form:<slug>` (slug
+= slugified `###` heading of the bank's `.concept-notes.md` sidecar, kept OUT of the `[Tests …]`
+stratification key); `/quiz/answer` attaches `note:{form,slot,text}` on a CORRECT answer (slot
+from the question's own category); the controller files every note at the **REVEAL turn only** —
+a mid-quiz fill would leak the correctness the quiz deliberately withholds. Tokenless questions
+never autofill (by design); a tagged question with no sidecar note `error_log`s loudly.
+
+**ONE-DOC LAW (FQ ↔ Conceptual Notes):** the FQ's canvas doc IS the CN doc. Doc identity resolves
+through `WML.canvasDocScope()` (wml-core) — the text/topic twin of `resolveCanvasSuffix`: FQ maps
+to suffix `_cn`, text = `state.fqBank || state.text` (the served BANK — poetic_forms is ONE shared
+organiser across courses), topic pinned to the CN slot (2). EVERY canvas load/save/signoff/attempts
+call keys off this scope, never raw `state.text`/`state.topicNumber` — a raw read forks the shared
+doc back into separate keys. Chat storage, quiz scoring and grade filing keep the LESSON's own
+identity (the v7.19.952 law: the bank override never re-keys grades). Corollary: **editable-ness
+is BAKED into persisted section HTML**, so a shared doc must never be seeded with locked sections
+by one consumer (the FQ-time lock died in .955 for exactly this reason).
+
 ## §3. THE CANVAS DOC — ProseMirror law + the section model
 
 - Sections are `sectionBlock` nodes rendered by NodeViews (wml-section-block.js). Types:

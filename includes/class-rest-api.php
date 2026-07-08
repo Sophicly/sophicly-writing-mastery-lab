@@ -902,6 +902,28 @@ class SWML_REST_API {
         if (!$q) return rest_ensure_response(['success' => false, 'code' => 'unknown_question']);
 
         $res    = SWML_Quiz_Bank::score($q, $answer);
+
+        // v7.19.955: concept-note payload. When a CORRECT answer's question carries
+        // a @form entity token, attach the pre-authored note for (entity, category
+        // slot) from the bank's .concept-notes.md sidecar — the client files it into
+        // the knowledge organiser at the REVEAL turn (never mid-quiz). Missing
+        // sidecar/slot logs loudly but never blocks scoring (note = bonus artefact).
+        $note = null;
+        if (!empty($res['correct']) && !empty($q['form']) && strpos($q_id, 'fq:') === 0) {
+            $id_parts  = explode(':', $q_id);
+            $bank_text = $id_parts[1] ?? '';
+            $slot      = SWML_Quiz_Bank::concept_slot_for_category($q['category'] ?? '');
+            if ($bank_text && $slot) {
+                $cnotes = SWML_Quiz_Bank::concept_notes_for($bank_text);
+                $ntext  = $cnotes[$q['form']][$slot] ?? '';
+                if ($ntext !== '') {
+                    $note = ['form' => $q['form'], 'slot' => $slot, 'text' => $ntext];
+                } else {
+                    error_log("WML FQ: no concept note for form={$q['form']} slot={$slot} bank={$bank_text} — autofill skipped");
+                }
+            }
+        }
+
         $engine = SWML_Quiz_Engine::instance();
         $acc    = $engine->record_question($user_id, [
             'q_num'         => $q['q_num'],
@@ -925,6 +947,8 @@ class SWML_REST_API {
             'feedback'   => $res['feedback'],
             'correctKey' => $res['correctKey'],
             'whyWrong'   => $res['whyWrong'] ?? [],
+            // v7.19.955: concept-note autofill payload (null unless correct + @form-tagged)
+            'note'       => $note,
             // v7.19.646: null-safe — on the stateless resolver path $bank is null and
             // pool questions carry no 'seq'. count(null) was a PHP 8 TypeError fatal
             // (the real cause of "couldn't record that one" on resumed rounds).
@@ -2406,12 +2430,27 @@ class SWML_REST_API {
         // v7.19.321: surface the latest persisted Quiz Result so the frontend
         // renders the in-doc Quiz Result card on (re)load. v7.19.323: also the
         // Foundational quiz (_fq doc, reads its user_meta source).
+        // v7.19.955: FQ docs now load under the Conceptual-Notes identity
+        // (suffix _cn, bank text, Topic 2) — the quiz result stays keyed by the
+        // QUIZ identity (course text + lesson topic), which the client passes
+        // as quiz=foundational + quiz_text/quiz_topic on FQ loads.
         $quiz_result = null;
-        if (class_exists('SWML_Quiz_Engine') && ($suffix === '_msu' || $suffix === '_fq')) {
-            $quiz_result = SWML_Quiz_Engine::instance()->get_persisted_result(
-                $user_id, $board, $text, $topic_number, $attempt,
-                $suffix === '_fq' ? 'foundational' : 'mark_scheme'
-            );
+        $quiz_hint   = sanitize_text_field($request->get_param('quiz') ?? '');
+        if (class_exists('SWML_Quiz_Engine')) {
+            if ($suffix === '_msu' || $suffix === '_fq') {
+                $quiz_result = SWML_Quiz_Engine::instance()->get_persisted_result(
+                    $user_id, $board, $text, $topic_number, $attempt,
+                    $suffix === '_fq' ? 'foundational' : 'mark_scheme'
+                );
+            } elseif ($suffix === '_cn' && $quiz_hint === 'foundational') {
+                $q_text  = $this->normalize_text_slug(sanitize_text_field($request->get_param('quiz_text') ?? ''));
+                $q_topic = absint($request->get_param('quiz_topic') ?? 0);
+                if ($q_text) {
+                    $quiz_result = SWML_Quiz_Engine::instance()->get_persisted_result(
+                        $user_id, $board, $q_text, $q_topic ?: null, $attempt, 'foundational'
+                    );
+                }
+            }
         }
 
         return rest_ensure_response([

@@ -2217,6 +2217,19 @@
                 if (fid && val) sets.push({ field: fid, value: val });
             }
             if (!sets.length) return;
+            _applyFieldValueSets(sets);
+        } catch (e) {
+            console.warn('WML FieldSet: error (non-fatal)', e && e.message);
+        }
+    }
+
+    // v7.19.955: parsed-marker core of applyFieldSets, extracted so CODE callers
+    // (FQ concept-note autofill) can file values through the exact same PM path —
+    // same idempotence, same auto-fill provenance (student edits always win) —
+    // without round-tripping through a synthetic @FIELD_SET string.
+    function _applyFieldValueSets(sets) {
+        try {
+            if (!sets || !sets.length || !canvasEditor) return;
             let wrote = false;
             sets.forEach(s => {
                 // v7.19.872: student's own target-grade choice wins over the AI's re-guess.
@@ -4200,12 +4213,14 @@
             // v7.15.78: phase-aware suffix resolution
             // v7.15.112: Attempts endpoint tracks doc attempts → canvas suffix
             const suffix = _attemptSuffixFor(WML.resolveCanvasSuffix(state.task, state.phase));
-            const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(suffix)}`;
+            // v7.19.955: attempts index tracks the DOC — key by the canonical doc scope
+            const _ctxScope = WML.canvasDocScope();
+            const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_ctxScope.text)}&topicNumber=${_ctxScope.topic || ''}&suffix=${encodeURIComponent(suffix)}`;
             const res = await fetch(url, { headers }).then(r => r.json());
             if (res && res.success && res.attempts && res.attempts.current) {
                 state.attempt = res.attempts.current;
                 // v7.15.114: persist hint for sibling lesson mounts
-                _writeCurrentAttemptHint(state.board, state.text, state.topicNumber, WML.resolveCanvasSuffix(state.task, state.phase), state.attempt);
+                _writeCurrentAttemptHint(state.board, _ctxScope.text, _ctxScope.topic, WML.resolveCanvasSuffix(state.task, state.phase), state.attempt);
             } else if (!state.attempt) {
                 state.attempt = 1;
             }
@@ -4796,8 +4811,10 @@
         // v7.15.112: Attempts menu tracks canvas doc attempts.
         const rawSuffix = WML.resolveCanvasSuffix ? (WML.resolveCanvasSuffix(state.task, state.phase) || '') : '';
         const wireSuffix = _attemptSuffixFor(rawSuffix);
+        // v7.19.955: doc-scoped identity (FQ → CN doc)
+        const _menuScope = WML.canvasDocScope();
         try {
-            const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(wireSuffix)}`;
+            const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_menuScope.text)}&topicNumber=${_menuScope.topic || ''}&suffix=${encodeURIComponent(wireSuffix)}`;
             const res = await fetch(url, { headers }).then(r => r.json());
             if (!res || !res.success || !res.attempts) {
                 console.warn('WML: attempts fetch failed for sidebar menu');
@@ -6966,12 +6983,15 @@
         // v7.15.112: Canvas doc uses canvasStorageSuffix when task defines it
         // (Phase 2 tasks share `_redraft` doc even though chat may be isolated).
         const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
+        // v7.19.955: text/topic via the canonical doc scope (FQ → CN doc identity)
+        // so the localStorage key matches the server meta key it hydrates against.
+        const _scope = WML.canvasDocScope();
         const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
         // v7.17.38: project-scope CW canvas the same way as CHAT_SAVE_KEY
         // so switching projects doesn't leak prior project's saved doc.
         const cwP = (state.task && state.task.startsWith('cw_') && state.cwProjectId)
             ? `__p${state.cwProjectId}` : '';
-        return `swml_canvas_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}${cwP}`;
+        return `swml_canvas_${state.board}_${_scope.text}_${_scope.topic || 'free'}${suffix}${att}${cwP}`;
     };
     // v7.18.21: Chat storage suffix helper. Wraps WML.resolveStorageSuffix and
     // appends a bridge-step disambiguator for mark_scheme_unit so Quiz (step=1)
@@ -9879,6 +9899,24 @@
                     body += '\n';
                 });
                 aiBubble(body);
+                // v7.19.955: concept-note autofill (Neil 2026-07-08 — "correct answers
+                // auto-fill the document"). Each CORRECT answer whose bank question
+                // carries a @form token files its pre-authored concept note into the
+                // knowledge organiser's matching pf_{form}_{slot} field — HERE on the
+                // reveal turn, never per-answer mid-quiz (a mid-quiz fill would leak
+                // the correctness the quiz deliberately withholds until results).
+                // Files through _applyFieldValueSets: PM transaction, idempotent,
+                // auto-fill provenance — a student's own edit is never clobbered.
+                try {
+                    const noteFills = roundResults
+                        .filter(r => r.res && r.res.correct && r.res.note && r.res.note.form && r.res.note.slot && r.res.note.text)
+                        .map(r => ({ field: 'pf_' + r.res.note.form + '_' + r.res.note.slot, value: r.res.note.text }));
+                    if (noteFills.length) {
+                        _applyFieldValueSets(noteFills);
+                        aiBubble('📒 **' + noteFills.length + ' concept note' + (noteFills.length > 1 ? 's' : '') +
+                            ' added to your Knowledge Organiser** — every form you master writes its key fact into the document, ready to build on in Conceptual Notes.');
+                    }
+                } catch (e) { console.warn('WML FQ: concept-note autofill failed (non-fatal)', e && e.message); }
                 // v7.19.743: MSA → mark the "Results & Grade" step (12); MSQ → step 7.
                 // v7.19.954: FQ's Results step = total+2 (dynamic sidebar).
                 try { updateProgress(quizType === 'mark_scheme_assessment' ? 12 : quizType === 'foundational' ? ((total || (qs && qs.length) || 5) + 2) : 7); } catch (e) {}
@@ -13191,10 +13229,12 @@
                     // v7.14.78: Include suffix so the correct server key is cleared
                     // v7.15.112: canvas suffix (shared Phase 2 doc)
                     const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
+                    // v7.19.955: reset the SCOPED doc (FQ → CN doc identity)
+                    const _resetScope = WML.canvasDocScope();
                     fetch(API.canvasSave, {
                         method: 'POST', headers,
                         // v7.17.39: reset also scoped by cw_project_id so only the current project's server doc clears
-                        body: JSON.stringify(Object.assign({ board: state.board, text: state.text, html: '', wordCount: 0, topicNumber: state.topicNumber || null, suffix: suffix }, cwScopeBody()))
+                        body: JSON.stringify(Object.assign({ board: state.board, text: _resetScope.text, html: '', wordCount: 0, topicNumber: _resetScope.topic || null, suffix: suffix }, cwScopeBody()))
                     }).catch(() => {});
                     // Clear outline checkbox state
                     _outlineCheckState.clear();
@@ -15596,7 +15636,9 @@
                     // v7.15.112: canvas load uses canvas-context suffix
                     const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
                     const att = state.attempt || 1;
-                    const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
+                    // v7.19.955: doc-scoped identity (FQ → CN doc)
+                    const _swScope = WML.canvasDocScope();
+                    const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_swScope.text)}${_swScope.topic ? '&topicNumber=' + _swScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
                     const res = await fetch(url, { headers }).then(r => r.json());
                     // v7.15.100: Capture General Notes from this load so the splice
                     // step below runs on the fresh-attempt template (otherwise the
@@ -15691,7 +15733,9 @@
                                     // the normal pipeline so the stale localStorage copy is replaced and
                                     // cannot win a future local-vs-server gate.
                                     const _dvSuffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
-                                    const _dvUrl = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(_dvSuffix)}&attempt=${state.attempt}${cwScopeQuery()}`;
+                                    // v7.19.955: doc-scoped identity (FQ → CN doc)
+                                    const _dvScope = WML.canvasDocScope();
+                                    const _dvUrl = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_dvScope.text)}${_dvScope.topic ? '&topicNumber=' + _dvScope.topic : ''}&suffix=${encodeURIComponent(_dvSuffix)}&attempt=${state.attempt}${cwScopeQuery()}`;
                                     const _dvRes = await fetch(_dvUrl, { headers }).then(r => r.json());
                                     const _dvServerHtml = (_dvRes && _dvRes.success && _dvRes.doc && _dvRes.doc.html) ? _dvRes.doc.html : '';
                                     const _dvHtml = _dvServerHtml || (loadCanvasContent() || '');
@@ -23427,11 +23471,13 @@
                         // v7.15.84: when tutor reviews a student, send targetUserId (the student),
                         // not the tutor's own userId — REST rejects self-signoff otherwise.
                         const targetStudentId = config.targetUserId || config.reviewStudentId || config.userId;
+                        // v7.19.955: doc-scoped identity (FQ → CN doc)
+                        const _sgScope = WML.canvasDocScope();
                         fetch(config.restUrl + 'canvas/signoff', {
                             method: 'POST', headers,
                             body: JSON.stringify({
-                                board: state.board, text: state.text,
-                                topicNumber: state.topicNumber || null,
+                                board: state.board, text: _sgScope.text,
+                                topicNumber: _sgScope.topic || null,
                                 // v7.15.112: sign-off stamps the canvas doc
                                 suffix: WML.resolveCanvasSuffix(state.task, state.phase) || '',
                                 studentId: targetStudentId,
@@ -23497,7 +23543,9 @@
             // v7.15.84: pass studentId so tutor review sees the student's signoff
             if (refetch || !_signoffLoadPromise) {
                 const loadTargetId = config.targetUserId || config.reviewStudentId || config.userId;
-                _signoffLoadPromise = fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.resolveCanvasSuffix(state.task, state.phase) || '')}&studentId=${encodeURIComponent(loadTargetId)}&task=${encodeURIComponent(state.task || '')}`, { headers })
+                // v7.19.955: doc-scoped identity (FQ → CN doc)
+                const _soScope = WML.canvasDocScope();
+                _signoffLoadPromise = fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_soScope.text)}${_soScope.topic ? '&topicNumber=' + _soScope.topic : ''}&suffix=${encodeURIComponent(WML.resolveCanvasSuffix(state.task, state.phase) || '')}&studentId=${encodeURIComponent(loadTargetId)}&task=${encodeURIComponent(state.task || '')}`, { headers })
                     .then(r => r.ok ? r.json() : null)
                     .catch(() => null);
             }
@@ -29446,11 +29494,58 @@
             var isNF = WML.isNonfictionSubject();
             var isPo = WML.isPoetrySubject();
             var isFQ = WML.state && WML.state.task === 'foundational_quiz';
+            // v7.19.955: Poetic Forms knowledge organiser — when the doc's canonical
+            // identity is the shared poetic_forms notes doc (FQ bank override, or a
+            // CN lesson reading the same key), render one section per FORM with the
+            // four mastery slots the quiz autofills (Definition · Features · Effects
+            // · Form & Meaning — pre-authored concept notes, unlocked on a correct
+            // answer). fieldIds pf_{form}_{slot} are the autofill contract; the form
+            // slugs mirror the slugified concept-notes headings (@form token, chat B).
+            if (WML.canvasDocScope && WML.canvasDocScope().text === 'poetic_forms') {
+                html += sectionHTML('question', 'About This Exercise', false, null,
+                    '<h2>Poetic Forms — Knowledge Organiser</h2>' +
+                    (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
+                    '<p>Every poetic form you master in the quiz writes its own concept note into this organiser — ' +
+                    'what the form <strong>is</strong>, its <strong>features</strong>, its <strong>effects</strong>, and how ' +
+                    '<strong>form shapes meaning</strong>. These notes are yours to build on in Conceptual Notes later.</p>');
+                html += dividerHTML('GENERAL NOTES');
+                html += sectionHTML('plan', 'General Notes', true, null,
+                    '<h3>General Notes</h3>' +
+                    inputHTML('Free notes — anything you want to remember about poetic form.', 'cn_general_notes') +
+                    inputHTML('Key quotes', 'cn_general_notes_quotes'));
+                var pfUnits = [
+                    { n: 1, forms: [['ballad', 'Ballad'], ['epic', 'Epic'], ['lyric', 'Lyric']] },
+                    { n: 2, forms: [['elegy', 'Elegy'], ['ode', 'Ode'], ['sonnet', 'Sonnet'], ['dramatic_monologue', 'Dramatic Monologue']] },
+                    { n: 3, forms: [['free_verse', 'Free Verse'], ['narrative', 'Narrative'], ['hybrid_forms', 'Hybrid Forms'], ['interior_monologue', 'Interior Monologue']] },
+                ];
+                var pfSlots = [
+                    ['definition', 'Definition', 'What is this form? (fills when you master recognising it)'],
+                    ['features', 'Features', 'Structural features. (fills when you master its features)'],
+                    ['effects', 'Effects', 'Effects on the reader. (fills when you master its effects)'],
+                    ['meaning', 'Form & Meaning', 'How the form shapes meaning. (fills when you master form-and-meaning)'],
+                ];
+                pfUnits.forEach(function (u) {
+                    html += dividerHTML('STAGE ' + u.n + ' — ' + u.forms.map(function (f) { return f[1].toUpperCase(); }).join(' · '));
+                    u.forms.forEach(function (f) {
+                        var inner = '<h3>' + f[1] + '</h3>';
+                        pfSlots.forEach(function (s) {
+                            inner += '<p><strong>' + s[1] + '</strong></p>' + inputHTML(s[2], 'pf_' + f[0] + '_' + s[0]);
+                        });
+                        inner += inputHTML('My own notes on the ' + f[1].toLowerCase() + '.', 'pf_' + f[0] + '_notes');
+                        // Always editable: the doc is SHARED with the CN lesson, and
+                        // editable-ness is baked into persisted HTML — an FQ-time lock
+                        // would freeze the CN lesson's sections forever (one-doc law).
+                        html += sectionHTML('plan', f[1], true, null, inner);
+                    });
+                });
+                html += buildSignoffSection();
+                return html;
+            }
             var cnTitle = isFQ
                 ? 'Foundational Quiz'
                 : (isNF ? 'Nonfiction Conceptual Notes' : (isPo ? 'Poetry Conceptual Notes' : 'Grade 9 Conceptual Notes'));
             var cnDesc = isFQ
-                ? 'This is your foundational recall quiz — a light warm-up before Topic 1. Sophia will ask 5 short questions about the text and give you instant feedback. The concept sections below are <strong>locked</strong> at this stage — you\u2019ll fill them in during Topic 2 (Conceptual Notes). Use <strong>General Notes</strong> for any reflections you want to keep.'
+                ? 'This is your foundational recall quiz — mastery rounds on the key ideas: answer in the chat, retake until every answer lands. This document is your <strong>Conceptual Notes</strong>: what you master here becomes notes you build on in Topic 2. Use <strong>General Notes</strong> for any reflections you want to keep.'
                 : isNF
                     ? 'Build deep understanding of the writer\u2019s voice, purpose, and techniques. These notes explore how the writer communicates their perspective and why it matters.'
                     : isPo
@@ -29504,8 +29599,11 @@
                 // of the section block. TipTap strips arbitrary wrapper <div>s,
                 // so layout is driven by CSS — the section uses :has() to flex
                 // its children side-by-side when it contains a *_quotes input.
-                // v7.15.93: concept sections are read-only during foundational quiz.
-                html += sectionHTML('plan', c.label, !isFQ, null,
+                // v7.15.93 locked concept sections during the FQ. v7.19.955: the FQ
+                // and the CN lesson now share ONE doc, and editable-ness is BAKED
+                // into persisted section HTML — an FQ-time lock seeded first would
+                // freeze the CN lesson's sections forever. Always editable.
+                html += sectionHTML('plan', c.label, true, null,
                     '<h3>' + c.label + '</h3>' +
                     inputHTML(c.prompt, fieldId) +
                     inputHTML('Key quotes', quotesFieldId));
@@ -30183,10 +30281,13 @@
         // save would POST task-A's html under task-B's suffix — observed:
         // Memory Practice HTML written to the exam_question (_eq) key.
         // Snapshotting keeps suffix + content consistent regardless of nav.
+        // v7.19.955: doc identity via the canonical scope — FQ saves into the
+        // Conceptual Notes doc (bank text, Topic 2 pin), matching tryServerLoad.
+        const _saveScope = WML.canvasDocScope();
         const snap = {
             board: state.board,
-            text: state.text,
-            topicNumber: state.topicNumber || null,
+            text: _saveScope.text,
+            topicNumber: _saveScope.topic || null,
             task: state.task,
             // v7.15.112: server canvas save keyed by canvas-context suffix
             suffix: WML.resolveCanvasSuffix(state.task, state.phase) || '',
@@ -30511,6 +30612,9 @@
         try {
             // v7.15.112: tryServerLoad pulls canvas doc → canvas-context suffix
             const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
+            // v7.19.955: doc identity (text/topic) via the canonical scope — FQ's
+            // canvas doc IS the Conceptual Notes doc (bank text, Topic 2 pin).
+            const _docScope = WML.canvasDocScope();
             // Tutor review mode: load student's canvas via review endpoint (v7.15.2)
             let url;
             const att = state.attempt || 1;
@@ -30524,10 +30628,16 @@
                 ['planning', 'outlining', 'polishing', 'assessment', 'redraft_assessment', 'feedback_discussion'].includes(state.task)
                 || (state.task && state.task.startsWith('cw_'))
             ) ? '&seedFromSiblings=1' : '';
+            // v7.19.955: FQ doc loads under the CN identity, but its persisted Quiz
+            // Result is keyed by the QUIZ identity (course text + lesson topic) —
+            // pass it separately so the in-doc result card still surfaces.
+            const _quizIdent = (state.task === 'foundational_quiz')
+                ? `&quiz=foundational&quiz_text=${encodeURIComponent(state.text)}&quiz_topic=${state.topicNumber || 0}`
+                : '';
             if (state.reviewMode && state.reviewStudentId) {
-                url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
+                url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
             } else {
-                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}`;
+                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}${_quizIdent}`;
             }
             // v7.19.136 instrumentation — record the URL we're about to fetch
             try { console.log('[WML load-debug v7.19.136] tryServerLoad fetch', { url: url, task: state.task, phase: state.phase, attempt: state.attempt, suffix: suffix }); } catch (_) {}

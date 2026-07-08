@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.954
+ * Version: 7.19.955
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.954');
+define('SWML_VERSION', '7.19.955');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -504,6 +504,8 @@ class Sophicly_Writing_Mastery_Lab {
         // Fall back to lesson post meta
         if (empty($board))   $board   = get_post_meta($unit_id, '_sophicly_exam_board', true);
         if (empty($subject)) $subject = get_post_meta($unit_id, '_sophicly_literature_type', true);
+        // v7.19.955: category 'poetry' → WML subject id (poetry_anthology / unseen_poetry)
+        $subject = self::subject_from_course_category($subject, $text);
 
         // If no task specified, try to infer from course_type + lit_type
         if (empty($task)) {
@@ -630,6 +632,10 @@ class Sophicly_Writing_Mastery_Lab {
                 $subject = str_replace('-', '_', $paper_slug);
             }
         }
+
+        // v7.19.955: same derivation for poetry — course-map category is 'poetry',
+        // WML subject ids are 'poetry_anthology' / 'unseen_poetry'.
+        $subject = self::subject_from_course_category($subject, $text);
 
         // 2. Bridge mapping is AUTHORITATIVE (v7.17.15)
         // Admin UI mappings override hardcoded shortcode attributes. Previously the
@@ -1137,6 +1143,26 @@ class Sophicly_Writing_Mastery_Lab {
             }
         }
         return [];
+    }
+
+    /**
+     * v7.19.955: Derive the WML subject id from a course-map category.
+     *
+     * The course map / Course Context metabox store category 'poetry' for EVERY
+     * poetry course, but the frontend (isPoetrySubject) and the protocol router
+     * key on 'poetry_anthology' / 'unseen_poetry'. Nothing normalised between the
+     * two vocabularies, so every embedded poetry lesson booted with a subject no
+     * poetry gate matched — the CN/FQ doc rendered the novel/drama shape (Neil
+     * live run, 2026-07-08) and the router's poetry protocol maps all missed.
+     * Same canonical-layer pattern as the v7.15.29 language→language_pN block.
+     * (Known sibling mismatch: category '20th_century' vs subject 'modern_text'
+     * — live lessons work today via text-slug keying, deliberately untouched.)
+     */
+    private static function subject_from_course_category($subject, $text) {
+        if ($subject === 'poetry') {
+            return ($text === 'unseen_poetry') ? 'unseen_poetry' : 'poetry_anthology';
+        }
+        return $subject;
     }
 
     /**
