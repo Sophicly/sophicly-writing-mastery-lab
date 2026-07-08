@@ -14136,14 +14136,43 @@
                 renderBody(0);
             } else if (srcEl) {
                 body.appendChild(_stripChipsFromClone(srcEl.cloneNode(true)));
-            } else if (sourceEls.length > 0) {
+            } else if (isNotesMode) {
+                // v7.19.975 (Neil): notes pad — each section under its own collapse header,
+                // independent of the live doc's collapse state, + a Collapse/Expand-all
+                // toggle in the panel header (replaces the essay/feedback pad toggles,
+                // which have no meaning in a notes doc). Pure pad DOM — zero PM footprint.
+                const _noteItems = [];
                 sourceEls.forEach(src => {
+                    const item = el('div', { className: 'swml-notes-item' });
+                    const head = el('button', { className: 'swml-notes-item-head', type: 'button' });
+                    head.innerHTML = '<span class="swml-notes-item-chev">▾</span> ' +
+                        (src.getAttribute('data-section-label') || 'Notes');
+                    const bodyWrap = el('div', { className: 'swml-notes-item-body' });
                     const c = _stripChipsFromClone(src.cloneNode(true));
-                    // v7.19.974: notes pad — clones of collapsed / FQ-locked sections must
-                    // still READ in the pad; the classes only make sense in the live doc.
-                    if (isNotesMode) c.classList.remove('swml-fb-collapsed', 'swml-task-locked');
-                    body.appendChild(c);
+                    // clones of collapsed / FQ-locked sections must still READ in the pad;
+                    // those classes only make sense in the live doc.
+                    c.classList.remove('swml-fb-collapsed', 'swml-task-locked');
+                    bodyWrap.appendChild(c);
+                    head.addEventListener('click', () => item.classList.toggle('swml-notes-collapsed'));
+                    item.appendChild(head);
+                    item.appendChild(bodyWrap);
+                    body.appendChild(item);
+                    _noteItems.push(item);
                 });
+                const collapseAllBtn = el('button', {
+                    className: 'swml-extract-tab',
+                    textContent: 'Collapse all',
+                    style: { marginLeft: '8px', fontSize: '10px', padding: '3px 8px' },
+                    onClick: (e) => {
+                        e.stopPropagation();
+                        const anyOpen = _noteItems.some(it => !it.classList.contains('swml-notes-collapsed'));
+                        _noteItems.forEach(it => it.classList.toggle('swml-notes-collapsed', anyOpen));
+                        collapseAllBtn.textContent = anyOpen ? 'Expand all' : 'Collapse all';
+                    }
+                });
+                header.insertBefore(collapseAllBtn, header.querySelector('.swml-extract-panel-close'));
+            } else if (sourceEls.length > 0) {
+                sourceEls.forEach(src => body.appendChild(_stripChipsFromClone(src.cloneNode(true))));
             } else {
                 // v7.15.21: Prefer the Essay Question section, not the first question section (which is "About This Exercise")
                 const essayQEl = editorEl.querySelector('[data-section-type="question"][data-section-label="Essay Question"]')
@@ -14256,8 +14285,10 @@
                 });
                 header.insertBefore(btn, header.querySelector('.swml-extract-panel-close'));
             };
-            if (!isEssayMode) _addPadToggle('essay', _workPad, { top: '110px', right: '48px' });
-            if (!isFeedbackMode) _addPadToggle('feedback', 'Feedback', { top: '140px', right: '76px' });
+            // v7.19.975 (Neil): notes docs have no essay/response or filed feedback —
+            // those pad toggles are meaningless there (Collapse all lives in their spot).
+            if (!isEssayMode && !isNotesMode) _addPadToggle('essay', _workPad, { top: '110px', right: '48px' });
+            if (!isFeedbackMode && !isNotesMode) _addPadToggle('feedback', 'Feedback', { top: '140px', right: '76px' });
         }
 
         // v7.19.914 (Neil): expose the "My Response" pad opener to the module-scope SA walk
@@ -29841,6 +29872,9 @@
                     ['themes', 'Themes', 'What are the key themes? How are they developed across the poem?'],
                     ['purpose', 'Poet’s Purpose', 'What is the poet trying to achieve? How do they want the reader to think or feel?'],
                     ['message', 'The Big Message', 'What is the overarching message? What does this poem reveal about the human experience?'],
+                    // v7.19.975 (Neil): the exam question is COMPARATIVE — every poem needs
+                    // a home for "which poems pair with this one, and on what grounds".
+                    ['comparisons', 'Comparisons', 'Which anthology poems pair well with this one — and on what grounds (shared theme, contrasting method, different feeling)?'],
                 ];
                 pcnPoems.forEach(function (poem) {
                     var pid = String(poem.id || '');

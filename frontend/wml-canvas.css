@@ -4628,6 +4628,22 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     box-shadow: inset 0 2px 1px -1px rgba(255,255,255,0.1), inset 0 2px 3px rgba(0,0,0,0.08), 0 1px 0 1px rgba(0,0,0,0.3);
 }
 .swml-extract-btn svg { flex-shrink: 0; display: inline-block; vertical-align: middle; }
+/* v7.19.975: My Notes pad — per-section collapse headers, independent of the live doc */
+.swml-notes-item { margin: 0 0 10px; }
+.swml-notes-item-head {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    background: rgba(255,255,255,0.05); border: none; border-radius: 4px;
+    color: rgba(255,255,255,0.75); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase; padding: 6px 10px; margin: 0 0 6px;
+}
+.swml-notes-item-head:hover { background: rgba(255,255,255,0.09); }
+.swml-notes-item-chev { display: inline-block; transition: transform 0.15s ease; }
+.swml-notes-collapsed .swml-notes-item-chev { transform: rotate(-90deg); }
+.swml-notes-collapsed .swml-notes-item-body { display: none; }
+[data-swml-theme="light"] .swml-notes-item-head,
+.swml-canvas-light .swml-notes-item-head { background: rgba(0,0,0,0.05); color: rgba(30,32,40,0.75); }
+[data-swml-theme="light"] .swml-notes-item-head:hover,
+.swml-canvas-light .swml-notes-item-head:hover { background: rgba(0,0,0,0.09); }
 .swml-extract-btn:hover { color: #51dacf; transform: translateY(-1px); }
 .swml-extract-btn:active { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
 .swml-extract-btn.active { color: #51dacf; background: rgba(81,218,207,0.15); }
