@@ -185,10 +185,20 @@ architecture — the five steps ARE the architecture.
   live in a **firewalled element** (`ignoreMutation` covers it AND attribute writes on the
   wrapper dom — the v866 rule) with **idempotent writes** (compare before write) and, for
   repeated fills, the `_derivedCardFillOk` circuit breaker.
-- **In-flow beats absolute (the v828/v913 settlement):** derived UI belongs IN-FLOW inside its
-  section via a firewalled child (progress card → sign-off UI → analytics strip all migrated to
-  this shape) — absolute overlays in `dropdownLayer` drift on resize/zoom and clip. Only true
-  overlays (dropdown selectors positioned over text) stay absolute.
+- **In-flow beats absolute — SETTLED FULLY at v951 (Neil ruling 2026-07-08).** ALL section
+  widgets are IN-FLOW firewalled children now: progress card (v497) → sign-off UI (v828) →
+  analytics strip (v913) → **the whole marking widget set (v951)**. `_renderControlRows`
+  (wml-assessment.js) fills each collapsible section's `.swml-ctl-row` — per-box mark selector
+  + Predicted·Actual·Δ readout, Self-Assessment dropdowns, Score-Summary grade row, Action-Plan
+  grade goal, Analytics opt-outs. Fills are SIG-IDEMPOTENT (`data-sig` from the underlying
+  values → mount-storm refills are no-ops), breaker-guarded (`_derivedCardFillOk('ctlrows')`),
+  and handlers re-resolve their target paragraphs at CLICK time. `dropdownLayer`,
+  `positionDropdownOverlays` and the scroll/resize/RO/accordion re-anchor wiring are GONE —
+  nothing is positioned any more. Only two absolutes remain: the transfer-button layer
+  (`transferLayer`, next naturalization candidate) and the transient body-portaled
+  `.swml-popover` (closed on scroll). NEW-READER LAW: a whole-section DOM text read must go
+  through `_sectionContentOf(sec)` (the `.swml-section-content` child) or control-row widget
+  text pollutes it; clone-based readers strip `.swml-ctl-row` (see `_stripChipsFromClone`).
 - **Collapsibles are a CAPABILITY (v925/926):** the NodeView stamps `.swml-collapsible` wherever
   it installs a chevron; completion-tick clearance, `position:relative`, and the collapse-all
   button all key off that class — never an enumerated list of section types. Score Summary joined

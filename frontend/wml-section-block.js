@@ -309,6 +309,31 @@
                     setTimeout(_fillAna, 250);
                     setTimeout(_fillAna, 800);
                 }
+
+                // v7.19.951: in-flow CONTROL ROW (overlay naturalization, Neil ruling
+                // 2026-07-08) — the mark selector + Predicted·Actual·Δ readout, SA dropdowns,
+                // grade / grade-goal / opt-out pill rows all render HERE, inside the section,
+                // instead of the old absolutely-positioned .swml-dropdown-layer that detached
+                // on fast scroll. Same PM-firewalled derived-display technique as the
+                // ana-strip above; wml-assessment fills it via WML.renderControlRows
+                // (sig-idempotent) on (re)mount + every overlay rebuild. Starts hidden —
+                // stays hidden when the fill finds nothing for this section.
+                const ctlRow = document.createElement('div');
+                ctlRow.className = 'swml-ctl-row';
+                ctlRow.setAttribute('contenteditable', 'false');
+                ctlRow.style.display = 'none';
+                dom.insertBefore(ctlRow, contentDOM);
+                const _fillCtl = () => {
+                    try {
+                        if (window.WML && typeof window.WML.renderControlRows === 'function') {
+                            window.WML.renderControlRows();
+                        }
+                    } catch (_) { /* ignore */ }
+                };
+                requestAnimationFrame(_fillCtl);
+                setTimeout(_fillCtl, 250);
+                setTimeout(_fillCtl, 800);
+
                 let COLLAPSE_KEY = '';
                 try { COLLAPSE_KEY = 'swml_fbcollapse:' + location.pathname + ':' + fbLabel; } catch (_) { COLLAPSE_KEY = ''; }
                 let collapsed = false;
@@ -372,6 +397,9 @@
                         // v7.19.913: the in-flow Analytics readout strip is derived display —
                         // firewall its fills like the progress card / sign-off UI.
                         if (anaStrip && (anaStrip === mutation.target || anaStrip.contains(mutation.target))) return true;
+                        // v7.19.951: the in-flow control row is derived display too — its fills
+                        // (widgets, data-sig, display toggles) must never reach PM's DOMObserver.
+                        if (ctlRow === mutation.target || ctlRow.contains(mutation.target)) return true;
                         return toggle === mutation.target || toggle.contains(mutation.target);
                     },
                 };

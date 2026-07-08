@@ -4804,8 +4804,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-diagnostic [data-section-type="divider"][data-section-label*="SIGN-OFF"] {
     display: none !important;
 }
-/* v7.14.23: Hide dropdown overlays (scores, self-assessment, sign-off) in diagnostic mode */
-.swml-canvas-diagnostic .swml-dropdown-layer { display: none !important; }
+/* v7.14.23: hide marking widgets in diagnostic mode (v7.19.951: in-flow control rows now).
+   Also flatten the feedback header band — with no row there is nothing to reserve for. */
+.swml-canvas-diagnostic .swml-ctl-row { display: none !important; }
+.swml-canvas-diagnostic .swml-section-feedback { padding-top: 16px !important; }
 /* Notice section: visible in diagnostic, hidden in assessment */
 .swml-section-notice {
     border-left-color: rgba(81, 218, 207, 0.3) !important;
@@ -6053,9 +6055,10 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-section-feedback {
     border-left-color: #ffb432;
     background: rgba(255, 180, 50, 0.1);
-    /* v7.19.611: reserve a header band so the calibration readout + mark selector sit on their
-       OWN line below the label tab (were crammed beside the badge, colliding with tick/chevron). */
-    padding-top: 44px !important;
+    /* v7.19.951: the v611 44px reserved band is gone — the calibration readout + mark
+       selector are an IN-FLOW .swml-ctl-row now, which occupies real layout space. A
+       smaller band keeps the row clear of the absolute label tab. */
+    padding-top: 26px !important;
 }
 .swml-section-feedback::before {
     background: rgba(255, 180, 50, 0.35);
@@ -7305,25 +7308,36 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-checklist-item[data-checked="true"] .swml-checklist-text { color: rgba(0,0,0,0.4); }
 
 /* ══════════════════════════════════════════
- *  SECTION DROPDOWN OVERLAYS (v7.11.9)
+ *  SECTION CONTROL ROWS (v7.19.951 — replaces the absolute dropdown-overlay layer)
  * ══════════════════════════════════════════ */
 
-/* Overlay layer sits inside docWrap, outside ProseMirror */
-.swml-dropdown-layer {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    pointer-events: none;
-    z-index: 5;
-}
-
-/* Individual dropdown overlay — positioned per feedback section */
-.swml-dropdown-overlay {
-    pointer-events: auto;
-    position: absolute;
+/* In-flow, PM-firewalled widget row mounted by the collapsible sectionBlock NodeView
+   between the ana-strip and the content. Occupies real layout space — no positioning
+   pass; it moves with its section. Hidden (inline display:none) until a fill lands. */
+.swml-ctl-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0;
+    gap: 8px 16px;
+    margin: 2px 0 10px;
+    cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
 }
+.swml-ctl-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.swml-ctl-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+}
+[data-swml-theme="light"] .swml-ctl-label,
+.swml-canvas-light .swml-ctl-label { color: rgba(20, 22, 28, 0.55); }
 
 .swml-dropdown-select {
     appearance: none;
@@ -11630,7 +11644,10 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     font-size: 11px; font-weight: 600; line-height: 1.4;
     color: var(--swml-purple, #5333ed); background: rgba(83, 51, 237, 0.10);
     vertical-align: baseline; white-space: nowrap;
-    -webkit-user-select: none; user-select: none;
+    /* v7.19.951: user-select:none REMOVED (Neil highlight bug) — the browser could not END
+       a drag-selection on the chip, so it skipped past to the next selectable position and
+       the selection grabbed the line below. contenteditable=false (set in renderHTML) makes
+       the chip an atomic island instead; it copies as an empty span (zero textContent). */
     transition: background 0.15s ease;
 }
 .swml-learn-chip-node::before { content: 'Learn: ' attr(data-learn-label) ' \2192'; }

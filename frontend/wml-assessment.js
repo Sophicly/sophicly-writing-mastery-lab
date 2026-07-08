@@ -519,16 +519,9 @@
                             // never grow the whole list past the viewport.
                             if (body) { body.style.maxHeight = 'min(42vh, 480px)'; body.style.overflowY = 'auto'; }
                         }
-                        // v7.19.758: re-anchor the doc's absolutely-positioned mark + calib-readout
-                        // overlays after the 0.3s max-height transition. An accordion expand reflows
-                        // the panel but fires neither the scroll nor resize listener that positions
-                        // them, so the "Predicted · Actual · Δ" row drifted off its box until the next
-                        // scroll. Re-running positionDropdownOverlays redraws them in place (it also
-                        // resets each overlay's display, so a hidden one re-shows).
-                        if (typeof _positionOverlaysRef === 'function') {
-                            requestAnimationFrame(() => { try { _positionOverlaysRef(); } catch (_) {} });
-                            setTimeout(() => { try { _positionOverlaysRef(); } catch (_) {} }, 330);
-                        }
+                        // (v7.19.951: the v758 re-anchor pass is gone — mark/calib widgets are
+                        // in-flow control rows inside their sections; an accordion reflow moves
+                        // them with the doc automatically.)
                     }
                 }, [
                     el('span', { className: 'swml-step-group-title', textContent: group.label }),
@@ -3389,7 +3382,7 @@
                 const base = lbl.replace(/^Feedback:\s*/i, '')
                     .replace(/\s*\(\s*(?:—|\d+(?:\.\d+)?)\s*\/\s*\d+\s*\)\s*$/, '').trim();
                 if (!base || SKIP.test(base)) return;
-                const whole = (sec.textContent || '').trim();
+                const whole = (_sectionContentOf(sec).textContent || '').trim(); // v7.19.951: skip control-row chrome
                 if (!whole || /will appear after assessment|will be assessed here|appear here after/i.test(whole)) return;
                 let para = '';
                 sec.querySelectorAll('p, li, h3, h4').forEach(bl => {
@@ -3460,6 +3453,20 @@
     // visible ceiling sentence. Diagnostic assessments only — redraft = HALT rule.
     let _lastQWordCounts = {};   // qId → code-counted words, set by the injection builder
     let _lastCanvasReplyForSidebar = '';   // v7.19.846: latest raw reply — sidebar live-beat reads its "Type Y for …" gate
+    // v7.19.951: a collapsible section's DOM carries NodeView chrome OUTSIDE its PM content
+    // (.swml-ana-strip readout, .swml-ctl-row widgets, collapse toggle). Any text consumer
+    // that reads a WHOLE section element must read the .swml-section-content child instead,
+    // or the widget text ("Predicted — · Actual —", pill digits, SA descriptors) pollutes
+    // placeholder checks, AI payloads and extraction. Sections without the wrapper
+    // (plan/response/…) return themselves — behaviour unchanged there.
+    function _sectionContentOf(sec) {
+        if (!sec || !sec.children) return sec;
+        for (let i = 0; i < sec.children.length; i++) {
+            const c = sec.children[i];
+            if (c.classList && c.classList.contains('swml-section-content')) return c;
+        }
+        return sec;
+    }
     function _q5DomWordCount() {
         let words = 0;
         try {
@@ -8546,7 +8553,7 @@
                                 sections.forEach(section => {
                                     const type = section.getAttribute('data-section-type') || '';
                                     const label = section.getAttribute('data-section-label') || '';
-                                    const text = section.textContent?.trim() || '';
+                                    const text = _sectionContentOf(section).textContent?.trim() || ''; // v7.19.951: skip control-row chrome
                                     if (type === 'divider') return;
                                     if (!text) {
                                         // v7.19.421: same empty-marker rule as getDocumentText —
@@ -11864,7 +11871,7 @@
                 if (!wpPanel.classList.contains('swml-resources-open')) return;
                 if (wpFloating || _wpJustResized) return;
                 if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger')) return;
-                if (e.target.closest('.swml-dropdown-overlay, .swml-dropdown-select')) return;
+                if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return; // v7.19.951: widgets live in in-flow control rows now (+ body-portaled popovers)
                 wpPanel.classList.remove('swml-resources-open');
                 wpTrigger.classList.remove('is-active');
             });
@@ -12206,7 +12213,7 @@
             if (_olJustResized) return;
             if (outlinePanel.contains(e.target) || outlineBtn.contains(e.target)) return;
             // Don't close when interacting with score dropdowns (v7.12.38)
-            if (e.target.closest('.swml-dropdown-overlay, .swml-dropdown-select')) return;
+            if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return; // v7.19.951: widgets live in in-flow control rows now (+ body-portaled popovers)
             toggleOutlinePanel(false);
         });
         // v7.19.92: short-lived flag set on resize end, cleared by next tick.
@@ -12456,7 +12463,7 @@
                 if (!resPanel.classList.contains('swml-resources-open')) return;
                 if (resFloating || _resJustResized) return;
                 if (resPanel.contains(e.target) || e.target.closest('.swml-resources-trigger')) return;
-                if (e.target.closest('.swml-dropdown-overlay, .swml-dropdown-select')) return;
+                if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return; // v7.19.951: widgets live in in-flow control rows now (+ body-portaled popovers)
                 resPanel.classList.remove('swml-resources-open');
                 const _rt = (contentWrap.querySelector && contentWrap.querySelector('.swml-resources-trigger'));
                 if (_rt) _rt.classList.remove('is-active');
@@ -13130,7 +13137,6 @@
                         // Re-run topic template injection, then rebuild dropdowns
                         tryTopicTemplate().then(() => {
                             applyQuizResultToEditor();
-                            if (dropdownLayer) { dropdownLayer.remove(); dropdownLayer = null; }
                             if (transferLayer) { transferLayer.remove(); transferLayer = null; }
                             setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 200);
                         });
@@ -13519,6 +13525,11 @@
             // feedback pad keeps its own v922 inline chips (appendLearnChips), so a cloned
             // chip span would double them.
             node.querySelectorAll('.swml-learn-chip-node').forEach(c => c.remove());
+            // v7.19.951: the in-flow control row must not clone into the pads either — the
+            // feedback pad rebuilds its own static Predicted·Actual·Δ line, and a cloned mark
+            // widget would be a dead (listener-less) UI. Ana-strips DO stay: _renderSectionStrips
+            // targets every .swml-ana-strip in the document, pad clones included (v7.19.928).
+            node.querySelectorAll('.swml-ctl-row').forEach(c => c.remove());
             return node;
         }
 
@@ -13588,7 +13599,7 @@
                 const fbEls = editorEl.querySelectorAll('.swml-section-block.swml-collapsible');
                 let fbAdded = 0;
                 fbEls.forEach((f, i) => {
-                    const txt = (f.textContent || '').trim();
+                    const txt = (_sectionContentOf(f).textContent || '').trim(); // v7.19.951: skip control-row chrome — an EMPTY box with a mark widget must still read as placeholder
                     if (!txt || /will appear after assessment|will be assessed here|appear here after/i.test(txt)) return;
                     const fLbl = f.getAttribute('data-section-label') || ('Feedback ' + (i + 1));
                     body.appendChild(el('div', { className: 'swml-extract-essay-heading', textContent: fLbl }));
@@ -18268,6 +18279,15 @@
                     tabindex: '0',
                     'aria-label': 'Learn: ' + label,
                     title: 'Open ' + (dest === 'table' ? 'the Table of Techniques' : 'the Mastery Toolkit'),
+                    // v7.19.951 (Neil highlight bug): an explicit non-editable island. With the
+                    // old CSS user-select:none the browser could not END a drag-selection on the
+                    // chip, so selecting a penalty line skipped PAST it to the next selectable
+                    // position — visually grabbing the line below (N1 → "Q4 ¶3"). contenteditable
+                    // =false + selectable text-flow (user-select removed in wml-canvas.css) makes
+                    // the chip an atomic island the selection can stop after, the standard
+                    // PM/TipTap mention-chip shape. The chip still copies as an empty span
+                    // (zero textContent by construction).
+                    contenteditable: 'false',
                 })];
             },
         });
@@ -22237,7 +22257,6 @@
             return 'swml-tier-' + grade;
         }
 
-        let dropdownLayer = null;
         let gradeOverride = null; // When set (1-9), overrides auto-calculated grade
 
         // ══════════════════════════════════════════════════════════════
@@ -22676,23 +22695,58 @@
             return wrap;
         }
 
-        function buildDropdownOverlays(container) {
+        // v7.19.951: IN-FLOW CONTROL ROWS (overlay naturalization — Neil ruling 2026-07-08).
+        // Replaces the absolutely-positioned .swml-dropdown-layer (v7.11.9→v7.19.950), which
+        // detached from its sections on fast scroll and needed a whole positioning pass
+        // (scroll/resize/ResizeObserver/accordion re-anchor). Every widget family — per-box
+        // mark selector + Predicted·Actual·Δ readout, Self-Assessment dropdowns, Score-Summary
+        // grade row, Action-Plan grade goal, Analytics opt-outs — now renders into its
+        // section's own .swml-ctl-row: a PM-firewalled child the collapsible sectionBlock
+        // NodeView mounts between the ana-strip and the content (wml-section-block.js), so it
+        // occupies real layout space and moves with its section. No positioning pass exists.
+        // Fills are SIG-IDEMPOTENT (rebuild only when the underlying values change → NodeView
+        // mount-storm refills are no-ops, and an open popover is only closed when ITS row is
+        // genuinely rebuilt) and breaker-guarded (_derivedCardFillOk, PM law rule 5). Handlers
+        // re-resolve their target paragraphs at CLICK time — a built-time element can be a
+        // detached pre-redraw node.
+        function _renderControlRows() {
             if (!canvasEditor) return;
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
-            // v7.19.608: expose recompute+rebuild to the top-level calibration auto-set
-            // (recalculateScoreSummary + buildDropdownOverlays are nested here, out of its scope).
-            _scoreOverlaysRefresh = function () { try { recalculateScoreSummary(); } catch (_) {} try { buildDropdownOverlays(); } catch (_) {} };
+            if (!_derivedCardFillOk('ctlrows')) return;
 
-            // Remove existing overlay layer + any open popover
-            if (dropdownLayer) dropdownLayer.remove();
-            _swmlClosePopover();
-            dropdownLayer = el('div', { className: 'swml-dropdown-layer' });
-            dropdownLayer.style.cssText = 'position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:5;visibility:hidden;';
-            // Insert into docWrap (sibling position to editor, outside ProseMirror)
-            const dw = editor.closest('.swml-canvas-doc');
-            if (!dw) return;
-            dw.appendChild(dropdownLayer);
+            const _ctlRowOf = (section) => {
+                for (let i = 0; i < section.children.length; i++) {
+                    const c = section.children[i];
+                    if (c.classList && c.classList.contains('swml-ctl-row')) return c;
+                }
+                return null;
+            };
+            const _rowFillStart = (row) => {
+                // Close an open popover ONLY when the row that owns its trigger is being
+                // replaced — an unrelated rebuild must not yank the dropdown shut.
+                try {
+                    if (_swmlOpenPopover) {
+                        const oid = _swmlOpenPopover.dataset.ownerId;
+                        if (oid && Array.from(row.querySelectorAll('.swml-popover-trigger')).some(t => t.dataset.ownerId === oid)) {
+                            _swmlClosePopover();
+                        }
+                    }
+                } catch (_) { /* never block the fill */ }
+                row.textContent = '';
+            };
+            const _rowFillEnd = (row, sig) => {
+                row.dataset.sig = sig;
+                const want = row.childNodes.length ? 'flex' : 'none';
+                if (row.style.display !== want) row.style.display = want; // idempotent write (PM law rule 4)
+            };
+            const _ctlLabel = (text) => {
+                const lab = document.createElement('span');
+                lab.className = 'swml-ctl-label';
+                lab.setAttribute('contenteditable', 'false');
+                lab.textContent = text;
+                return lab;
+            };
 
             // v7.19.191: scroll-preserve wrapper for any handler that mutates
             // score/grade/SA DOM. Captures scrollTop + blurs active element
@@ -22725,19 +22779,33 @@
             // Lit → a half-step dropdown (Neil's choice) + decimal-aware parsing throughout.
             const _halfMarks = !/^language/.test((state.subject || '').toLowerCase());
             const feedbackSections = editor.querySelectorAll('[data-section-type="feedback"]');
-            feedbackSections.forEach((section, idx) => {
+            feedbackSections.forEach((section) => {
                 const label = section.getAttribute('data-section-label') || '';
                 const match = label.match(/^(Feedback:\s*.+?)\s*\((?:—|(\d+(?:\.\d+)?))\s*\/\s*(\d+)\)$/);
+                // Non-mark boxes (Overall Feedback, CW feedback, Analytics) are NOT this
+                // family's rows — leave them untouched (Analytics is filled by the opt-outs
+                // family below; the rest stay hidden).
                 if (!match) return;
 
                 const baseName = match[1].trim();
                 const currentMarks = match[2] !== undefined ? parseFloat(match[2]) : -1; // -1 = dash/unset
                 const maxMarks = parseInt(match[3]);
 
-                const wrapper = document.createElement('div');
-                wrapper.className = 'swml-dropdown-overlay';
-                wrapper.style.pointerEvents = 'auto';
-                wrapper.dataset.sectionIdx = idx;
+                const row = _ctlRowOf(section);
+                if (!row) return; // nodeView not mounted yet — its mount fill re-runs this pass
+
+                // v7.19.700/701: calibration key resolved up front (name-first, Intro/Conclusion
+                // included) so the prediction can sit in the row's sig — the readout rebuilds
+                // the moment a prediction or mark lands, and only then.
+                let _qForCalib = null, _pred = null;
+                try {
+                    _qForCalib = _paraKey(baseName);
+                    if (_qForCalib) _pred = _getPredicted(_qForCalib);
+                } catch (_) { /* readout degrades to placeholders */ }
+
+                const sig = 'fb|' + baseName + '|' + currentMarks + '/' + maxMarks + '|' + _pred + '|' + _halfMarks;
+                if (row.dataset.sig === sig) return;
+                _rowFillStart(row);
 
                 const onMarkChange = (rawVal) => {
                     const numVal = parseFloat(rawVal); // v7.19.707: parseFloat — lit half-marks (0.5)
@@ -22804,21 +22872,13 @@
                 }
                 // v7.19.608: calibration readout — Predicted · Actual · Δ (tolerance colour).
                 // Predicted is calibration-only (from the chat prediction); actual = the live label
-                // mark. Shows above the actual pill so the student sees the gap at the section top.
+                // mark. Sits LEFT of the mark widget on the row (same order as the old overlay).
                 try {
-                    // v7.19.700: Intro/Conclusion have no digit in their label, so the old
-                    // digit-only key dropped them from the calibration readout — Body 1/2/3
-                    // showed Predicted·Actual·Δ but Introduction/Conclusion didn't (Neil). Give
-                    // them stable non-numeric keys so the readout renders for EVERY marked
-                    // paragraph; _predKey is string-keyed, so 'Intro'/'Conclusion' sit alongside
-                    // the numeric body keys.
-                    const _qForCalib = _paraKey(baseName); // v7.19.701: single canonical resolver (name-first)
                     if (_qForCalib) {
                         // v7.19.609: ALWAYS render the calibration readout so the Predicted · Actual · Δ
                         // structure is visible even before a prediction/mark exists (— placeholders).
                         // Predicted is READ-ONLY here (committed in chat before the mark is revealed —
                         // hypercorrection); the box only displays it.
-                        const _pred = _getPredicted(_qForCalib);
                         const calibEl = document.createElement('div');
                         calibEl.className = 'swml-calib-readout';
                         // v7.19.928: colors THEME-OWNED via .swml-calib-readout CSS — the old
@@ -22842,80 +22902,90 @@
                         }
                         const sep = '<span style="opacity:0.3">·</span>';
                         calibEl.innerHTML = predTxt + sep + actTxt + sep + deltaTxt;
-                        // append BEFORE the widget is appended below → calibEl ends up the first
-                        // child (above the pill). (insertBefore(…, widget) would throw here — widget
-                        // isn't a child of wrapper yet — and the throw was silently eating the readout.)
-                        wrapper.appendChild(calibEl);
+                        row.appendChild(calibEl);
                         console.log('[WML calib] readout Q' + _qForCalib + ' pred=' + _pred + ' act=' + currentMarks);
                     }
                 } catch (e) { console.warn('[WML calib] readout error', e && e.message); }
 
-                wrapper.appendChild(widget);
-                dropdownLayer.appendChild(wrapper);
+                row.appendChild(widget);
+                _rowFillEnd(row, sig);
             });
 
-            // ── Self-Assessment Dropdowns (1-5 scale) ──
+            // ── Self-Assessment Dropdowns (1-5 scale) — ONE row of labelled dropdowns at the
+            // section top (the per-paragraph floating anchors are gone with the layer) ──
             const selfAssessSection = editor.querySelector('[data-section-label="Self-Assessment"]');
             if (selfAssessSection) {
-                selfAssessSection.querySelectorAll('p').forEach((p, pIdx) => {
+                const saRow = _ctlRowOf(selfAssessSection);
+                const skills = [];
+                selfAssessSection.querySelectorAll('p').forEach(p => {
                     const txt = p.textContent || '';
                     // Match "Skill: — / 5" or "Skill: N / 5" pattern
                     const saMatch = txt.match(/^(.+?):\s*(?:—|(\d))\s*\/\s*5$/);
                     if (!saMatch) return;
-                    const skillName = saMatch[1].trim();
-                    const currentVal = saMatch[2] ? parseInt(saMatch[2]) : 0;
-
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-sa';
-                    wrapper.style.pointerEvents = 'auto';
-                    wrapper.dataset.saIdx = pIdx;
-                    wrapper.dataset.skill = skillName;
-
-                    // Build SA options: dash + 1..5 with skill-specific descriptors
-                    const descriptors = SA_DESCRIPTORS[skillName];
-                    const SA_FALLBACK = ['—', '1 – Basic', '2 – Developing', '3 – Secure', '4 – Good', '5 – Perceptive'];
-                    const saOpts = [];
-                    for (let v = 0; v <= 5; v++) {
-                        const label = v === 0 ? '—' : descriptors ? `${v}: ${descriptors[v - 1]}` : SA_FALLBACK[v];
-                        saOpts.push({ value: v, label, isDash: v === 0 });
-                    }
-                    const handleSAChange = (rawVal) => {
-                        const intVal = parseInt(rawVal);
-                        const newVal = intVal === 0 ? null : intVal;
-                        const newText = `${skillName}: ${newVal || '—'} / 5`;
-                        // v7.19.191: scroll-preserve guard around SA mutation + recalc + outline update.
-                        _withScrollPreserve(() => {
-                            if (!p.querySelector('em')) {
-                                // v7.19.766: write via a PM transaction (the old p.textContent
-                                // DOM write was reverted by ProseMirror → never saved / never
-                                // greened). Locate by skill name + the "/ 5" suffix (excludes the
-                                // "Rate your confidence…" prompt, which has no "/ 5").
-                                _setParagraphContentViaPM(
-                                    t => t.indexOf(skillName + ':') === 0 && /\/\s*5\s*$/.test(t),
-                                    [{ text: newText }]
-                                );
-                            }
-                            recalculateScoreSummary();
-                            if (typeof updateOutline === 'function') updateOutline();
-                            if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion();
-                            // v7.19.765: PERSIST. The SA write is an overlay-driven DOM change that
-                            // does NOT fire the editor onUpdate, so the ratings never autosaved — they
-                            // vanished on refresh (Neil 2026-06-30). saveCanvasContent serialises the
-                            // doc (getHTML) + persists, also graduating the seeded _assessment doc.
-                            if (typeof saveCanvasContent === 'function') saveCanvasContent();
-                        });
-                    };
-
-                    const saWidget = createSwmlPopoverDropdown({
-                        options: saOpts.map(o => ({ value: o.value, label: o.label })),
-                        currentValue: currentVal,
-                        onChange: handleSAChange,
-                        extraClass: 'swml-popover-sa',
-                        valueLabelFn: (v, opt) => v === 0 ? '—' : (opt ? opt.label : String(v)),
-                    });
-                    wrapper.appendChild(saWidget);
-                    dropdownLayer.appendChild(wrapper);
+                    skills.push({ skillName: saMatch[1].trim(), currentVal: saMatch[2] ? parseInt(saMatch[2]) : 0 });
                 });
+                const saSig = 'sa|' + skills.map(s => s.skillName + ':' + s.currentVal).join('|');
+                if (saRow && skills.length && saRow.dataset.sig !== saSig) {
+                    _rowFillStart(saRow);
+                    skills.forEach(({ skillName, currentVal }) => {
+                        // Build SA options: dash + 1..5 with skill-specific descriptors
+                        const descriptors = SA_DESCRIPTORS[skillName];
+                        const SA_FALLBACK = ['—', '1 – Basic', '2 – Developing', '3 – Secure', '4 – Good', '5 – Perceptive'];
+                        const saOpts = [];
+                        for (let v = 0; v <= 5; v++) {
+                            const label = v === 0 ? '—' : descriptors ? `${v}: ${descriptors[v - 1]}` : SA_FALLBACK[v];
+                            saOpts.push({ value: v, label, isDash: v === 0 });
+                        }
+                        const handleSAChange = (rawVal) => {
+                            const intVal = parseInt(rawVal);
+                            const newVal = intVal === 0 ? null : intVal;
+                            const newText = `${skillName}: ${newVal || '—'} / 5`;
+                            // v7.19.191: scroll-preserve guard around SA mutation + recalc + outline update.
+                            _withScrollPreserve(() => {
+                                // v7.19.951: re-resolve the live paragraph at CLICK time — the
+                                // build-time element can be a detached pre-redraw node.
+                                const ed = document.getElementById('swml-tiptap-editor');
+                                const sec = ed && ed.querySelector('[data-section-label="Self-Assessment"]');
+                                const pLive = sec && Array.from(sec.querySelectorAll('p')).find(x => {
+                                    const t = (x.textContent || '').trim();
+                                    return t.indexOf(skillName + ':') === 0 && /\/\s*5\s*$/.test(t);
+                                });
+                                if (!pLive || !pLive.querySelector('em')) {
+                                    // v7.19.766: write via a PM transaction (the old p.textContent
+                                    // DOM write was reverted by ProseMirror → never saved / never
+                                    // greened). Locate by skill name + the "/ 5" suffix (excludes the
+                                    // "Rate your confidence…" prompt, which has no "/ 5").
+                                    _setParagraphContentViaPM(
+                                        t => t.indexOf(skillName + ':') === 0 && /\/\s*5\s*$/.test(t),
+                                        [{ text: newText }]
+                                    );
+                                }
+                                recalculateScoreSummary();
+                                if (typeof updateOutline === 'function') updateOutline();
+                                if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion();
+                                // v7.19.765: PERSIST. The SA write is a widget-driven change that
+                                // does NOT fire the editor onUpdate, so the ratings never autosaved — they
+                                // vanished on refresh (Neil 2026-06-30). saveCanvasContent serialises the
+                                // doc (getHTML) + persists, also graduating the seeded _assessment doc.
+                                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                            });
+                        };
+
+                        const saWidget = createSwmlPopoverDropdown({
+                            options: saOpts.map(o => ({ value: o.value, label: o.label })),
+                            currentValue: currentVal,
+                            onChange: handleSAChange,
+                            extraClass: 'swml-popover-sa',
+                            valueLabelFn: (v, opt) => v === 0 ? '—' : (opt ? opt.label : String(v)),
+                        });
+                        const item = document.createElement('span');
+                        item.className = 'swml-ctl-item';
+                        item.appendChild(_ctlLabel(skillName));
+                        item.appendChild(saWidget);
+                        saRow.appendChild(item);
+                    });
+                    _rowFillEnd(saRow, saSig);
+                }
             }
 
             // ── Score Summary Grade Dropdown ──
@@ -22925,50 +22995,61 @@
                 const gradePara = Array.from(scoresSection.querySelectorAll('p')).find(p =>
                     p.querySelector('em')?.textContent?.includes('Grade:') || p.textContent?.startsWith('Grade:')
                 );
-                if (gradePara) {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-grade';
-                    wrapper.style.pointerEvents = 'auto';
-
-                    // Build options: Auto + Grades 9 → 1
-                    const gradeOpts = [{ value: 'auto', label: 'Auto', isAuto: true }];
-                    for (let g = 9; g >= 1; g--) gradeOpts.push({ value: g, label: String(g) });
+                const gRow = _ctlRowOf(scoresSection);
+                if (gradePara && gRow) {
                     const currentGrade = gradeOverride ? gradeOverride : 'auto';
+                    // resolved auto grade sits in the sig so the v612 ring tracks recalcs
+                    const cg = (gradePara.textContent.match(/Grade:\s*([1-9])/) || [])[1] || '';
+                    const gSig = 'grade|' + currentGrade + '|' + cg;
+                    if (gRow.dataset.sig !== gSig) {
+                        _rowFillStart(gRow);
 
-                    const handleGradeChange = (rawVal) => {
-                        // v7.19.191: scroll-preserve guard around grade override mutation.
-                        _withScrollPreserve(() => {
-                            if (rawVal === 'auto') {
-                                gradeOverride = null;
-                                recalculateScoreSummary();
-                            } else {
-                                gradeOverride = parseInt(rawVal);
-                                gradePara.innerHTML = `<em>Grade:</em> ${gradeOverride} (tutor override)`;
-                            }
+                        // Build options: Auto + Grades 9 → 1
+                        const gradeOpts = [{ value: 'auto', label: 'Auto', isAuto: true }];
+                        for (let g = 9; g >= 1; g--) gradeOpts.push({ value: g, label: String(g) });
+
+                        const handleGradeChange = (rawVal) => {
+                            // v7.19.191: scroll-preserve guard around grade override mutation.
+                            _withScrollPreserve(() => {
+                                if (rawVal === 'auto') {
+                                    gradeOverride = null;
+                                    recalculateScoreSummary();
+                                } else {
+                                    gradeOverride = parseInt(rawVal);
+                                    // v7.19.951: re-resolve the live Grade paragraph at click time
+                                    const ed = document.getElementById('swml-tiptap-editor');
+                                    const sc = ed && ed.querySelector('[data-section-type="scores"]');
+                                    const gp = sc && Array.from(sc.querySelectorAll('p')).find(p =>
+                                        p.querySelector('em')?.textContent?.includes('Grade:') || p.textContent?.startsWith('Grade:')
+                                    );
+                                    if (gp) gp.innerHTML = `<em>Grade:</em> ${gradeOverride} (tutor override)`;
+                                }
+                            });
+                        };
+
+                        const gradeWidget = createSwmlPillRow({
+                            options: gradeOpts,
+                            currentValue: currentGrade,
+                            onChange: handleGradeChange,
+                            extraClass: 'swml-pill-row-grade',
+                            // v7.19.169: each grade pill colored as its own tier (G9 dark purple, etc).
+                            tierFn: (opt) => opt.isAuto ? null : String(opt.value),
                         });
-                    };
-
-                    const gradeWidget = createSwmlPillRow({
-                        options: gradeOpts,
-                        currentValue: currentGrade,
-                        onChange: handleGradeChange,
-                        extraClass: 'swml-pill-row-grade',
-                        // v7.19.169: each grade pill colored as its own tier (G9 dark purple, etc).
-                        tierFn: (opt) => opt.isAuto ? null : String(opt.value),
-                    });
-                    // v7.19.612: in Auto mode, ALSO ring the numeric pill matching the computed
-                    // grade so the tutor sees which grade Auto resolved to (the "Grade: N" text
-                    // already carries it — single source; we just surface it on the selector).
-                    // Neil flag 2026-06-22: "calculated grade 5 but the pill didn't select it".
-                    if (currentGrade === 'auto') {
-                        const cg = (gradePara.textContent.match(/Grade:\s*([1-9])/) || [])[1];
-                        if (cg) {
+                        // v7.19.612: in Auto mode, ALSO ring the numeric pill matching the computed
+                        // grade so the tutor sees which grade Auto resolved to (the "Grade: N" text
+                        // already carries it — single source; we just surface it on the selector).
+                        // Neil flag 2026-06-22: "calculated grade 5 but the pill didn't select it".
+                        if (currentGrade === 'auto' && cg) {
                             const tgt = gradeWidget.querySelector('.swml-pill[data-value="' + cg + '"]');
                             if (tgt) tgt.classList.add('swml-pill-auto-resolved');
                         }
+                        const gItem = document.createElement('span');
+                        gItem.className = 'swml-ctl-item';
+                        gItem.appendChild(_ctlLabel('Grade'));
+                        gItem.appendChild(gradeWidget);
+                        gRow.appendChild(gItem);
+                        _rowFillEnd(gRow, gSig);
                     }
-                    wrapper.appendChild(gradeWidget);
-                    dropdownLayer.appendChild(wrapper);
                 }
             }
 
@@ -22985,11 +23066,8 @@
                 );
                 const gradeGoalField = actionPlanSection.querySelector('[data-field-id="action-grade-goal"]');
                 const goalAnchor = gradeGoalPara || gradeGoalField;
-                if (goalAnchor) {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-gradegoal';
-                    wrapper.style.pointerEvents = 'auto';
-
+                const goalRow = _ctlRowOf(actionPlanSection);
+                if (goalAnchor && goalRow) {
                     // Recover current value from either shape
                     let currentVal = 0;
                     if (gradeGoalPara) {
@@ -23000,37 +23078,48 @@
                         const m = stored.match(/(\d)/);
                         if (m) currentVal = parseInt(m[1]);
                     }
-                    const goalOpts = [{ value: 0, label: '—', isDash: true }];
-                    for (let g = 9; g >= 1; g--) goalOpts.push({ value: g, label: String(g) });
+                    const goalSig = 'goal|' + currentVal;
+                    if (goalRow.dataset.sig !== goalSig) {
+                        _rowFillStart(goalRow);
+                        const goalOpts = [{ value: 0, label: '—', isDash: true }];
+                        for (let g = 9; g >= 1; g--) goalOpts.push({ value: g, label: String(g) });
 
-                    const handleGoalChange = (rawVal) => {
-                        const v = parseInt(rawVal);
-                        const scrollContainer = editor.closest('.swml-canvas-content');
-                        const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-                        if (gradeGoalPara) {
-                            gradeGoalPara.innerHTML = `<em>Your target grade:</em> ${v || '—'}`;
-                        } else if (gradeGoalField) {
-                            // v7.19.759: persist through a real PM transaction so selecting the
-                            // pill FILLS the "Your target grade" box (no re-typing) and survives
-                            // save/reload. The old raw .textContent write was discarded by the
-                            // InputField nodeView re-render, so the box stayed empty (Neil).
-                            _setInputFieldText('action-grade-goal', v ? `Grade ${v}` : '');
-                        }
-                        requestAnimationFrame(() => {
-                            if (scrollContainer) scrollContainer.scrollTop = scrollTop;
+                        const handleGoalChange = (rawVal) => {
+                            const v = parseInt(rawVal);
+                            // v7.19.191-family scroll preserve + v7.19.951 click-time re-resolution
+                            _withScrollPreserve(() => {
+                                const ed = document.getElementById('swml-tiptap-editor');
+                                const ap = ed && ed.querySelector('[data-section-label="Action Plan"]');
+                                const para = ap && Array.from(ap.querySelectorAll('p')).find(p =>
+                                    p.querySelector('em')?.textContent?.includes('target grade') || p.textContent?.includes('target grade')
+                                );
+                                if (para) {
+                                    para.innerHTML = `<em>Your target grade:</em> ${v || '—'}`;
+                                } else if (ap && ap.querySelector('[data-field-id="action-grade-goal"]')) {
+                                    // v7.19.759: persist through a real PM transaction so selecting the
+                                    // pill FILLS the "Your target grade" box (no re-typing) and survives
+                                    // save/reload. The old raw .textContent write was discarded by the
+                                    // InputField nodeView re-render, so the box stayed empty (Neil).
+                                    _setInputFieldText('action-grade-goal', v ? `Grade ${v}` : '');
+                                }
+                            });
+                        };
+
+                        const goalWidget = createSwmlPillRow({
+                            options: goalOpts,
+                            currentValue: currentVal,
+                            onChange: handleGoalChange,
+                            extraClass: 'swml-pill-row-grade',
+                            // v7.19.169: target-grade pills colored as their own tier.
+                            tierFn: (opt) => opt.isDash ? null : String(opt.value),
                         });
-                    };
-
-                    const goalWidget = createSwmlPillRow({
-                        options: goalOpts,
-                        currentValue: currentVal,
-                        onChange: handleGoalChange,
-                        extraClass: 'swml-pill-row-grade',
-                        // v7.19.169: target-grade pills colored as their own tier.
-                        tierFn: (opt) => opt.isDash ? null : String(opt.value),
-                    });
-                    wrapper.appendChild(goalWidget);
-                    dropdownLayer.appendChild(wrapper);
+                        const goalItem = document.createElement('span');
+                        goalItem.className = 'swml-ctl-item';
+                        goalItem.appendChild(_ctlLabel('Target grade'));
+                        goalItem.appendChild(goalWidget);
+                        goalRow.appendChild(goalItem);
+                        _rowFillEnd(goalRow, goalSig);
+                    }
                 }
             }
 
@@ -23042,13 +23131,13 @@
                 const optOutPara = Array.from(analyticsSection.querySelectorAll('p')).find(p =>
                     p.querySelector('em')?.textContent?.includes('Number of opt-outs') || p.textContent?.includes('Number of opt-outs')
                 );
-                if (optOutPara) {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-optouts';
-                    wrapper.style.pointerEvents = 'auto';
-
+                const optRow = _ctlRowOf(analyticsSection);
+                if (optOutPara && optRow) {
                     const currentMatch = optOutPara.textContent.match(/opt-outs:\s*(\d+)/);
                     const currentOptVal = currentMatch ? parseInt(currentMatch[1]) : -1;
+                    const optSig = 'opt|' + currentOptVal;
+                    if (optRow.dataset.sig === optSig) { /* unchanged */ } else {
+                    _rowFillStart(optRow);
                     const optOpts = [{ value: -1, label: '—', isDash: true }];
                     for (let n = 0; n <= 10; n++) optOpts.push({ value: n, label: String(n) });
 
@@ -23082,10 +23171,30 @@
                         onChange: handleOptChange,
                         extraClass: 'swml-pill-row-optouts',
                     });
-                    wrapper.appendChild(optWidget);
-                    dropdownLayer.appendChild(wrapper);
+                    const optItem = document.createElement('span');
+                    optItem.className = 'swml-ctl-item';
+                    optItem.appendChild(_ctlLabel('Opt-outs this attempt'));
+                    optItem.appendChild(optWidget);
+                    optRow.appendChild(optItem);
+                    _rowFillEnd(optRow, optSig);
+                    }
                 }
             }
+        }
+
+        function buildDropdownOverlays(container) {
+            if (!canvasEditor) return;
+            const editor = document.getElementById('swml-tiptap-editor');
+            if (!editor) return;
+            // v7.19.608: expose recompute+rebuild to the top-level calibration auto-set
+            // (recalculateScoreSummary + buildDropdownOverlays are nested here, out of its scope).
+            _scoreOverlaysRefresh = function () { try { recalculateScoreSummary(); } catch (_) {} try { buildDropdownOverlays(); } catch (_) {} };
+
+            // v7.19.951: widgets render into each section's in-flow PM-firewalled control row
+            // (see _renderControlRows above) — there is no absolute layer and no positioning
+            // pass any more. NodeView (re)mounts also call this fill directly via
+            // WML.renderControlRows (sig-idempotent, so mount storms are no-ops).
+            _renderControlRows();
 
             // ── Analytics: code-owned tier-coloured readout (v7.19.893) ──
             // Strongest area / Most marks lost / Calibration, from the SAME auditor-marked feedback
@@ -23112,65 +23221,20 @@
             // Overlay rebuilds re-render it here with a sign-off refetch (old cadence).
             renderSignoffInline(true);
 
-            // Position overlays
-            // v7.19.482: run again across the next frames + a short settle delay. On a
-            // freshly-rendered CW doc the section rects can still be unsettled on the
-            // first pass (section-block nodeViews / fonts / zoom mount after this call),
-            // which dropped the sign-off overlay to the doc top — it floated over the
-            // content above its section (seen intermittently on Step 2). Re-running after
-            // layout settles anchors it correctly. Cheap + idempotent.
-            positionDropdownOverlays();
-            requestAnimationFrame(() => { requestAnimationFrame(() => positionDropdownOverlays()); });
-            setTimeout(() => positionDropdownOverlays(), 300);
-            // Reposition on scroll + resize (v7.19.168 — resize listener added to fix
-            // drift bug where dropdowns lost position when window resized)
-            container.addEventListener('scroll', () => {
-                positionDropdownOverlays();
-                _swmlClosePopover();
-            }, { passive: true });
-            // v7.19.920 (Neil Run 8): the resize listener + ResizeObserver were BOUND ONCE
-            // (window._swml*Bound guards) capturing the FIRST render's positionDropdownOverlays
-            // closure and observing the FIRST render's nodes — after any canvas rebuild / SPA
-            // nav they repositioned a dead layer while the live overlays sat stale until a
-            // scroll (whose listener IS rebound per render) fired. The run-once-guard landmine
-            // class (reference_wml_focus_inline_iife_reruns_every_nav). Fix: window-level
-            // indirection re-assigned every render + observer rebound to the CURRENT nodes.
-            window._swmlPositionOverlaysLive = () => {
-                positionDropdownOverlays();
-                _swmlClosePopover();
-            };
-            if (!window._swmlOverlayResizeBound) {
-                let resizeRaf = 0;
-                window.addEventListener('resize', () => {
-                    if (resizeRaf) cancelAnimationFrame(resizeRaf);
-                    resizeRaf = requestAnimationFrame(() => {
-                        try { if (window._swmlPositionOverlaysLive) window._swmlPositionOverlaysLive(); } catch (_) {}
-                    });
-                }, { passive: true });
-                window._swmlOverlayResizeBound = true;
+            // v7.19.951: no positioning pass — the rows are in-flow and move with their
+            // sections in the same paint. The one screen-anchored element left is an OPEN
+            // popover (body-portaled at the trigger's rect): close it on doc scroll, exactly
+            // as before. `container` is only passed on full canvas renders (refresh calls
+            // via _scoreOverlaysRefresh pass nothing), so this binds once per render.
+            if (container) {
+                container.addEventListener('scroll', () => { _swmlClosePopover(); }, { passive: true });
             }
-            // v7.19.174: ResizeObserver on canvas overlay AND canvas-doc catches
-            // container size changes that don't fire window.resize — fullscreen
-            // toggle (overlay), sidebar collapse/expand / content flex transition (doc).
-            // Doc is critical: overlay resizes instantly, but .swml-canvas-doc
-            // animates via 0.6s flex transition (wml-canvas.css line 252) — RO
-            // fires on every transition frame, last fire = final size.
-            // v7.19.920: rebound EVERY render to the current nodes (see note above).
-            if (typeof ResizeObserver !== 'undefined') {
-                try { if (window._swmlOverlayResizeObserver) window._swmlOverlayResizeObserver.disconnect(); } catch (_) {}
-                const canvasOverlay = document.getElementById('swml-canvas-overlay');
-                const canvasDoc = document.querySelector('.swml-canvas-doc');
-                let roRaf = 0;
-                const ro = new ResizeObserver(() => {
-                    if (roRaf) cancelAnimationFrame(roRaf);
-                    roRaf = requestAnimationFrame(() => {
-                        try { if (window._swmlPositionOverlaysLive) window._swmlPositionOverlaysLive(); } catch (_) {}
-                    });
-                });
-                if (canvasOverlay) ro.observe(canvasOverlay);
-                if (canvasDoc) ro.observe(canvasDoc);
-                if (canvasOverlay || canvasDoc) window._swmlOverlayResizeObserver = ro;
-            }
+            // v7.19.920's window-level resize/RO indirection is gone with the layer; clean up
+            // a live observer left by a pre-951 bundle on SPA sites (same session, old canvas).
+            try {
+                if (window._swmlOverlayResizeObserver) { window._swmlOverlayResizeObserver.disconnect(); window._swmlOverlayResizeObserver = null; }
+                window._swmlPositionOverlaysLive = null;
+            } catch (_) { /* ignore */ }
         }
 
         // ── Tutor Sign-off UI, IN-FLOW (v7.19.828 — the progress-card technique) ──
@@ -23364,148 +23428,12 @@
         }
         // NodeView (re)mount hook — cache-reusing fill (see wml-section-block.js signoff branch).
         try { window.WML = window.WML || {}; window.WML.renderSignoffUI = () => renderSignoffInline(false); } catch (_) { /* ignore */ }
+        // v7.19.951: NodeView (re)mount hook for the in-flow control rows (sig-idempotent —
+        // a mount storm re-runs this cheaply; only rows whose values changed rebuild).
+        try { window.WML = window.WML || {}; window.WML.renderControlRows = () => _renderControlRows(); } catch (_) { /* ignore */ }
 
-        function positionDropdownOverlays() {
-            if (!dropdownLayer) return;
-            const editor = document.getElementById('swml-tiptap-editor');
-            if (!editor) return;
-            const dw = editor.closest('.swml-canvas-doc');
-            if (!dw) return;
-            const dwRect = dw.getBoundingClientRect();
-            // getBoundingClientRect returns screen-space (post-transform) coords.
-            // The overlay layer is inside docWrap which is scaled by canvasZoom.
-            // Divide by zoom to convert back to docWrap's unscaled coordinate space.
-            const z = canvasZoom || 1;
-
-            // ── Position feedback dropdowns ──
-            const feedbackSections = editor.querySelectorAll('[data-section-type="feedback"]');
-            const fbOverlays = dropdownLayer.querySelectorAll('.swml-dropdown-overlay:not(.swml-dropdown-overlay-sa)');
-            let fbIdx = 0;
-            feedbackSections.forEach(section => {
-                const label = section.getAttribute('data-section-label') || '';
-                if (!label.match(/\((?:—|\d+(?:\.\d+)?)\s*\/\s*\d+\)$/)) return; // v7.19.708: half-mark aware (was \d+ → a 1.5/8 lit box was SKIPPED, desyncing overlay→section so Body 1's readout landed on Body 2)
-                const overlay = fbOverlays[fbIdx];
-                if (!overlay) return;
-                fbIdx++;
-                const sRect = section.getBoundingClientRect();
-                // v7.19.611: readout + mark selector on their OWN line, just below the label tab
-                // (was beside the badge on the tab row, colliding with the tick/chevron). The
-                // section reserves a top band (padding-top in CSS) so this can't overlap content.
-                const top = (sRect.top - dwRect.top) / z + 14;
-                const left = (sRect.left - dwRect.left) / z + 12;
-                overlay.style.cssText = `position:absolute;top:${top}px;left:${left}px;display:flex;align-items:center;gap:14px;pointer-events:auto;z-index:5;`;
-            });
-
-            // ── Position self-assessment dropdowns ──
-            const saOverlays = dropdownLayer.querySelectorAll('.swml-dropdown-overlay-sa');
-            const selfAssessSection = editor.querySelector('[data-section-label="Self-Assessment"]');
-            if (selfAssessSection && saOverlays.length > 0) {
-                const saRect = selfAssessSection.getBoundingClientRect();
-                let saIdx = 0;
-                selfAssessSection.querySelectorAll('p').forEach(p => {
-                    const txt = p.textContent || '';
-                    if (!txt.match(/^.+?:\s*(?:—|\d)\s*\/\s*5$/)) return;
-                    const overlay = saOverlays[saIdx];
-                    if (!overlay) return;
-                    saIdx++;
-                    const pRect = p.getBoundingClientRect();
-                    // If paragraph height is unusually large (>50px), it spans a page break.
-                    // Use bottom edge minus small offset instead of center.
-                    let top;
-                    if (pRect.height / z > 50) {
-                        top = (pRect.bottom - dwRect.top) / z - 18;
-                    } else {
-                        top = (pRect.top - dwRect.top) / z + (pRect.height / z / 2) - 10;
-                    }
-                    const right = (dwRect.right - saRect.right) / z + 24;
-                    overlay.style.cssText = `position:absolute;top:${top}px;right:${right}px;pointer-events:auto;z-index:5;`;
-                });
-            }
-
-            // ── Position grade dropdown ──
-            const gradeOverlay = dropdownLayer.querySelector('.swml-dropdown-overlay-grade');
-            if (gradeOverlay) {
-                const scoresSection = editor.querySelector('[data-section-type="scores"]');
-                if (scoresSection) {
-                    const gradePara = Array.from(scoresSection.querySelectorAll('p')).find(p =>
-                        p.querySelector('em')?.textContent?.includes('Grade:') || p.textContent?.startsWith('Grade:')
-                    );
-                    if (gradePara) {
-                        const pRect = gradePara.getBoundingClientRect();
-                        const scRect = scoresSection.getBoundingClientRect();
-                        // If paragraph spans a page break, use bottom edge (v7.12.39)
-                        let top;
-                        if (pRect.height / z > 50) {
-                            top = (pRect.bottom - dwRect.top) / z - 18;
-                        } else {
-                            top = (pRect.top - dwRect.top) / z + (pRect.height / z / 2) - 10;
-                        }
-                        const right = (dwRect.right - scRect.right) / z + 24;
-                        gradeOverlay.style.cssText = `position:absolute;top:${top}px;right:${right}px;pointer-events:auto;z-index:5;`;
-                    }
-                }
-            }
-
-            // ── Position grade goal dropdown ──
-            // v7.19.169: also handle new input-field shape (data-field-id="action-grade-goal").
-            const gradeGoalOverlay = dropdownLayer.querySelector('.swml-dropdown-overlay-gradegoal');
-            if (gradeGoalOverlay) {
-                const actionPlanSection = editor.querySelector('[data-section-label="Action Plan"]');
-                if (actionPlanSection) {
-                    const gradeGoalPara = Array.from(actionPlanSection.querySelectorAll('p')).find(p =>
-                        p.querySelector('em')?.textContent?.includes('target grade') || p.textContent?.includes('target grade')
-                    );
-                    const gradeGoalField = actionPlanSection.querySelector('[data-field-id="action-grade-goal"]');
-                    let anchorEl = gradeGoalPara;
-                    if (!anchorEl && gradeGoalField) {
-                        // New shape: anchor on the H3 heading "Grade Goal" sibling above the input.
-                        const h3 = Array.from(actionPlanSection.querySelectorAll('h3')).find(h => h.textContent.trim() === 'Grade Goal');
-                        anchorEl = h3 || gradeGoalField;
-                    }
-                    if (anchorEl) {
-                        const pRect = anchorEl.getBoundingClientRect();
-                        const apRect = actionPlanSection.getBoundingClientRect();
-                        let top;
-                        if (pRect.height / z > 50) {
-                            top = (pRect.bottom - dwRect.top) / z - 18;
-                        } else {
-                            top = (pRect.top - dwRect.top) / z + (pRect.height / z / 2) - 10;
-                        }
-                        const right = (dwRect.right - apRect.right) / z + 24;
-                        gradeGoalOverlay.style.cssText = `position:absolute;top:${top}px;right:${right}px;pointer-events:auto;z-index:5;`;
-                    }
-                }
-            }
-
-            // ── Position opt-outs counter (v7.19.169) ──
-            const optOutsOverlay = dropdownLayer.querySelector('.swml-dropdown-overlay-optouts');
-            if (optOutsOverlay) {
-                const analyticsSection = editor.querySelector('[data-section-label="Analytics"]');
-                if (analyticsSection) {
-                    const optOutPara = Array.from(analyticsSection.querySelectorAll('p')).find(p =>
-                        p.querySelector('em')?.textContent?.includes('Number of opt-outs') || p.textContent?.includes('Number of opt-outs')
-                    );
-                    if (optOutPara) {
-                        const pRect = optOutPara.getBoundingClientRect();
-                        const anRect = analyticsSection.getBoundingClientRect();
-                        let top;
-                        if (pRect.height / z > 50) {
-                            top = (pRect.bottom - dwRect.top) / z - 18;
-                        } else {
-                            top = (pRect.top - dwRect.top) / z + (pRect.height / z / 2) - 10;
-                        }
-                        const right = (dwRect.right - anRect.right) / z + 24;
-                        optOutsOverlay.style.cssText = `position:absolute;top:${top}px;right:${right}px;pointer-events:auto;z-index:5;`;
-                    }
-                }
-            }
-
-            // (v7.19.828: sign-off UI is IN-FLOW inside its section now — no positioning pass.)
-            // (v7.19.913: Analytics readout is IN-FLOW inside its section now — no positioning pass.)
-
-            // Show layer after first positioning pass (prevents flash at wrong position on load)
-            if (dropdownLayer.style.visibility === 'hidden') dropdownLayer.style.visibility = 'visible';
-        }
+        // (v7.19.951: positionDropdownOverlays is GONE — the widgets are in-flow control rows
+        // inside their sections (see _renderControlRows); there is nothing left to position.)
 
         function updateSectionNodeLabel(domEl, newLabel) {
             if (!canvasEditor) return;
@@ -23746,7 +23674,8 @@
             // v7.19.170: when in Auto mode, tint the Auto pill with the
             // currently-computed grade tier so Neil can see the live grade
             // reflected on the pill itself.
-            const autoPill = dropdownLayer && dropdownLayer.querySelector('.swml-pill-auto');
+            // v7.19.951: the Auto pill lives in the Score-Summary section's in-flow control row now
+            const autoPill = editor.querySelector('.swml-ctl-row .swml-pill-auto');
             if (autoPill) {
                 autoPill.classList.remove(
                     'swml-tier-1', 'swml-tier-2', 'swml-tier-3',
@@ -23791,7 +23720,6 @@
         // recalc is idempotent (reads DOM + module vars fresh), so extra calls are safe.
         _recalcScoreSummaryRef = recalculateScoreSummary;
         _gradeFromPctRef = getGradeFromPercentage;   // v7.19.758: expose canonical bander to module-level _deterministicDocGrade
-        _positionOverlaysRef = positionDropdownOverlays; // v7.19.758: let the sidebar-accordion toggle re-anchor doc overlays
         recalculateScoreSummary();
 
         // ── Document Data Extraction (v7.11.9) ──
@@ -23812,8 +23740,11 @@
                     maxMarks = parseInt(marksMatch[2]);
                 }
 
-                const contentText = section.textContent?.trim() || '';
-                const contentHTML = section.innerHTML || '';
+                // v7.19.951: read the PM content wrapper, not the whole section — the in-flow
+                // control row / ana-strip chrome must never enter extraction.
+                const _extractSrc = _sectionContentOf(section);
+                const contentText = _extractSrc.textContent?.trim() || '';
+                const contentHTML = _extractSrc.innerHTML || '';
 
                 // v7.14.28: Extract InputField + OutlineRow values as structured key-value data
                 const inputFields = {};
@@ -23951,7 +23882,7 @@
                 zoomWrap.style.display = 'flex';
             }
             // Reposition dropdown overlays + transfer buttons after zoom
-            requestAnimationFrame(function() { positionDropdownOverlays(); positionTransferOverlays(); });
+            requestAnimationFrame(function() { positionTransferOverlays(); });
         }
 
         // ── Pan + Zoom Transform (v7.12.41, v7.12.50 centering fix) ──
@@ -24073,7 +24004,7 @@
                 panTargetX = panOffsetX;
                 panVelocity = -e.deltaX * 0.4; // track velocity for momentum
                 updateDocTransform();
-                requestAnimationFrame(function() { positionDropdownOverlays(); positionTransferOverlays(); });
+                requestAnimationFrame(function() { positionTransferOverlays(); });
 
                 // Reset gesture state after 120ms of no horizontal input
                 clearTimeout(panGestureTimer);
@@ -24115,7 +24046,7 @@
             if (isPanning) {
                 isPanning = false;
                 contentWrap.classList.remove('swml-panning-active');
-                requestAnimationFrame(function() { positionDropdownOverlays(); positionTransferOverlays(); });
+                requestAnimationFrame(function() { positionTransferOverlays(); });
             }
         });
 
@@ -24128,7 +24059,7 @@
             panVelocity = 0;
             if (panAnimFrame) { cancelAnimationFrame(panAnimFrame); panAnimFrame = 0; }
             updateDocTransform(true); // animate = true
-            requestAnimationFrame(function() { positionDropdownOverlays(); positionTransferOverlays(); });
+            requestAnimationFrame(function() { positionTransferOverlays(); });
         });
     }
 
@@ -25661,7 +25592,7 @@
             // count total−baseline = 0 forever (which in turn short-circuited
             // the assessment greeting to the "you haven't written your response"
             // redirect at line ~5223 and prevented the AI /chat call from firing).
-            clone.querySelectorAll('h3, [data-input-field]').forEach(el => el.remove());
+            clone.querySelectorAll('h3, [data-input-field], .swml-ctl-row, .swml-ana-strip').forEach(el => el.remove()); // v7.19.951: + NodeView chrome
             const text = clone.textContent || '';
             const words = text.trim().split(/\s+/).filter(w => w.length > 0);
             total += words.length;
@@ -25680,7 +25611,7 @@
             responseSections.forEach(section => {
                 const clone = section.cloneNode(true);
                 // v7.15.115: same InputField strip — see note above.
-                clone.querySelectorAll('h3, [data-input-field]').forEach(el => el.remove());
+                clone.querySelectorAll('h3, [data-input-field], .swml-ctl-row, .swml-ana-strip').forEach(el => el.remove()); // v7.19.951: + NodeView chrome
                 const text = clone.textContent || '';
                 const words = text.trim().split(/\s+/).filter(w => w.length > 0);
                 respTotal += words.length;
@@ -25704,7 +25635,7 @@
         sections.forEach(section => {
             const type = section.getAttribute('data-section-type') || '';
             const label = section.getAttribute('data-section-label') || '';
-            const text = section.textContent?.trim() || '';
+            const text = _sectionContentOf(section).textContent?.trim() || ''; // v7.19.951: skip control-row chrome
             if (type === 'divider') return;
             if (!text) {
                 // v7.19.421: empty sections used to be silently DROPPED from the AI
@@ -30079,11 +30010,10 @@
     // v7.19.247: hoisted recalc ref — assigned inside canvas builder, called from
     // tryServerLoad so real Score-Summary dates paint after an async server load.
     let _recalcScoreSummaryRef = null;
-    // v7.19.758: hoisted refs to builder-scoped fns so module-level helpers can reach them.
+    // v7.19.758: hoisted ref to a builder-scoped fn so module-level helpers can reach it.
     // _gradeFromPctRef → _deterministicDocGrade bands with the canonical getGradeFromPercentage.
-    // _positionOverlaysRef → the sidebar-accordion toggle re-anchors the doc mark/calib overlays.
+    // (v7.19.951: _positionOverlaysRef removed — widgets are in-flow, nothing to re-anchor.)
     let _gradeFromPctRef = null;
-    let _positionOverlaysRef = null;
     // v7.19.768: hoisted ref to the scroll-index island's buildIndexList so the async
     // server-load completion can REBUILD it. The island captures section positions at
     // canvas-build time — i.e. on the TEMPLATE, BEFORE the server doc lands via setContent
