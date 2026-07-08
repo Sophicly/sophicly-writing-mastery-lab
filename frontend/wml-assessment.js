@@ -7896,7 +7896,7 @@
                     _ctlRecord
                         ? 'You\u2019re mid-' + _ctlNoun + ' on the ' + _ctlLabel + ' (' + _quizCtl.answered + ' of ' + _quizCtl.roundSize + ' answered). Clearing now ENDS this ' + _ctlNoun + ' \u2014 unanswered questions score 0, so this attempt will be recorded as ' + _proj.score + '/' + _proj.max + ' (' + _proj.pct + '% \u00b7 Grade ' + _proj.grade + ') and it counts toward your average grade. You\u2019ll usually score higher by finishing first \u2014 every attempt counts, so just see it through. Clear anyway?'
                         : (state.task === 'foundational_quiz' && !_fqDeterministic() && _fqIsMidRound(canvasChatHistory))
-                            ? 'You\u2019re mid-round on this quiz. Clearing now ENDS the round and records it as incomplete (0 marks) \u2014 and it still counts toward your grade. You\u2019ll score far higher by finishing: answer all 5, see your feedback, then run another round if you want 100%. (In the real exam there are no restarts.) Clear anyway?'
+                            ? 'You\u2019re mid-round on this quiz. Clearing now ENDS the round and records it as incomplete (0 marks) \u2014 and it still counts toward your grade. You\u2019ll score far higher by finishing: answer every question, see your feedback, then run another round if you want 100%. (In the real exam there are no restarts.) Clear anyway?'
                         : (state.task === 'foundational_quiz' && !_fqDeterministic())
                             ? 'Heads up \u2014 clearing the chat ends this quiz round. Finishing it and learning from your results beats restarting to chase a better start; in the real exam there are no restarts, so it\u2019s worth building that discipline now. You can always run another fresh round afterwards \u2014 the goal is 100%. Clear anyway?'
                         // v7.19.637: AI-path Mark Scheme Quiz (step 1, no deterministic controller).
@@ -7904,7 +7904,7 @@
                         // restart still wastes the round. Discipline warning (no client-side
                         // projected score available on this path; finishing is always better).
                         : (state.task === 'mark_scheme_unit' && (state.step === 1 || state.bridgeStep === 1))
-                            ? 'Clearing now ends this Mark Scheme Quiz round. Every round counts toward your grade, so you\u2019ll score higher by finishing \u2014 answer all 5, then see your full feedback at the end. (In the real exam there are no restarts.) Clear anyway?'
+                            ? 'Clearing now ends this Mark Scheme Quiz round. Every round counts toward your grade, so you\u2019ll score higher by finishing \u2014 answer every question, then see your full feedback at the end. (In the real exam there are no restarts.) Clear anyway?'
                             : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
                     async () => {
                         if (_ctlRecord) await _quizCtl.abandonRound();
@@ -9649,24 +9649,49 @@
             // self-regulation level, never ability praise; ONE focus; self-referenced delta;
             // "not yet" framing; SDT competence). Per-category next-step actions in the mark
             // scheme's own vocabulary.
-            const MSA_ACTIONS = {
+            // v7.19.967: actions are BOARD+SUBJECT-keyed (§9.1 board-mismatch — Neil's Lang P1
+            // transcript: the Action Plan said "reread the Level 6 descriptor", but Level 6 is
+            // AQA LITERATURE; AQA Language marks Levels 1–4 and assesses AO5/AO6 on writing).
+            // Only the AQA wording is verified against the real mark schemes, so only AQA gets
+            // a specific map; every other board gets an honest generic pointer to ITS top band —
+            // never a named Level we haven't verified (the chat-B AO-matrix owns those).
+            const MSA_ACTIONS_LIT = {
                 AO1: 'when an answer only retells character or plot, mark it down — Level 6 AO1 wants a *conceptualised* argument with *judicious* references.',
                 AO2: 'when an answer only *names* a method, score it lower — Level 6 AO2 wants *analysis* with *exploration of the effects*.',
                 AO3: 'when context sits as a bolt-on fact, mark it down — Level 6 AO3 wants *specific, detailed links* between context, text and task.',
                 AO4: 'judge accuracy in the service of meaning — AO4 rewards *consistently accurate* spelling and punctuation and *controlled* vocabulary and sentence structures.',
                 Vocabulary: 'pin the EXACT mark-scheme word — e.g. *conceptualised* not "conceptual", *judiciously* not "judicial". The precise term IS the mark.',
             };
-            const _msaAction = (cat) => MSA_ACTIONS[cat] || 'reread the Level 6 descriptor for that strand and match its exact wording.';
+            const MSA_ACTIONS_LANG = {
+                AO1: 'when an answer only copies or paraphrases the text, mark it down — Level 4 AO1 wants *perceptive* inference and *judicious* selection of evidence from the right lines.',
+                AO2: 'when an answer only *names* a method, score it lower — Level 4 AO2 wants *perceptive, detailed analysis* of the *effects* of the writer’s choices, with judicious detail.',
+                AO3: 'when the two texts sit in separate blocks, mark it down — Level 4 AO3 compares ideas and perspectives *perceptively*, analysing how the writers’ methods differ.',
+                AO4: 'when an evaluation only agrees or lists techniques, mark it down — Level 4 AO4 *evaluates critically and in detail* the effect(s) on the reader, rooted in the text.',
+                AO5: 'judge content and organisation together — Level 4 AO5 wants *compelling* ideas, *convincing* communication and *varied, inventive* structural features.',
+                AO6: 'judge accuracy in the service of meaning — Level 4 AO6 rewards a *full range of sentence forms for effect*, a *wide range of punctuation* and consistently accurate spelling.',
+                Vocabulary: 'pin the EXACT mark-scheme word — e.g. *perceptive* not "insightful", *judicious* not "well-chosen". The precise term IS the mark.',
+            };
+            const _msaIsLang = () => /^language/.test(String(state.subject || '').toLowerCase());
+            const _msaTopBand = () => (String(state.board || '').toLowerCase() === 'aqa')
+                ? (_msaIsLang() ? 'Level 4' : 'Level 6') : 'top-band';
+            const _msaAction = (cat) => {
+                const map = _msaIsLang() ? MSA_ACTIONS_LANG : MSA_ACTIONS_LIT;
+                if (String(state.board || '').toLowerCase() === 'aqa' && map[cat]) return map[cat];
+                return 'reread the ' + _msaTopBand() + ' descriptor for that strand in your board’s mark scheme and match its exact wording.';
+            };
             function _msaWeakest(byCat) {
                 // v7.19.745: only a GENUINE weakness (a dropped mark, rate < 1.0) counts.
                 // Init lowest at 1 so a category at full marks is never tagged "weakest"
                 // (the 20/20 bug: every AO at rate 1.0 was flagged AO2 3/3 as weakest).
-                let weak = null, lowest = 1;
+                // v7.19.967: returns ALL joint-weakest categories as an array (Neil §4c: an
+                // AO5/AO6 tie must name both, never just the first seen). [] = no dropped marks.
+                let lowest = 1;
                 Object.keys(byCat).forEach(c => {
                     const t = byCat[c].total || 1, r = byCat[c].right / t;
-                    if (r < 1 && r < lowest) { lowest = r; weak = c; }
+                    if (r < 1 && r < lowest) lowest = r;
                 });
-                return weak;
+                if (lowest >= 1) return [];
+                return Object.keys(byCat).filter(c => (byCat[c].right / (byCat[c].total || 1)) === lowest);
             }
             // v7.19.746: maps the start-of-unit mark-scheme CONFIDENCE self-rating (1-5)
             // against the actual grade (1-9) and frames the gap as INSIGHT, never a score
@@ -9706,7 +9731,11 @@
             // tutor, and keep completing the steps in order for repeated mark-scheme review.
             function buildMsaActionPlan(attempts, reachedTop, weak) {
                 const L = [];
-                if (!reachedTop && weak) L.push(`**Sharpen this first (${weak}):** ${_msaAction(weak)}`);
+                if (!reachedTop && weak && weak.length) {
+                    L.push(`**Sharpen this first (${weak[0]}):** ${_msaAction(weak[0])}`);
+                    // v7.19.967 (§4c): a joint-weakest tie names EVERY tied strand, one line each.
+                    weak.slice(1).forEach(c => L.push(`**Joint-weakest (${c}):** ${_msaAction(c)}`));
+                }
                 L.push(`**1. Target it in your own writing.** Take what the mark scheme rewards and decide what to aim for in your next essay — write *toward* the descriptor, not just about the text.`);
                 L.push(`**2. Mark your own writing, then calibrate with your tutor.** Practise spotting where you would gain and lose marks in your own response, then talk it through with your tutor to refine that judgement.`);
                 L.push(`**3. Keep moving through the steps in order.** You will meet the mark scheme and your own writing again and again across the programme — each pass deepens the same judgement. Completing each step in sequence is what builds it.`);
@@ -9715,12 +9744,13 @@
             function buildMsaFeedForward(attempts, reachedTop, msConf, weak) {
                 const cur = attempts[attempts.length - 1];
                 const prev = attempts.length > 1 ? attempts[attempts.length - 2] : null;
-                if (!weak) weak = _msaWeakest(cur.byCat);
+                if (!weak || !weak.length) weak = _msaWeakest(cur.byCat);
+                const w0 = (weak && weak.length) ? weak[0] : null;   // v7.19.967: weak is an array now
                 const L = [];
                 L.push('**Where you’re aiming:** Grade 9 = matching the mark scheme’s exact descriptor language. That’s the bar.');
                 let back = `**This attempt:** ${cur.score}/${cur.max} → **Grade ${cur.grade}**.`;
-                if (prev && weak && prev.byCat[weak]) {
-                    back += ` Last attempt ${weak} was ${prev.byCat[weak].right}/${prev.byCat[weak].total}; this time ${cur.byCat[weak].right}/${cur.byCat[weak].total}` + (reachedTop ? '.' : ' — not yet at 9, but moving.');
+                if (prev && w0 && prev.byCat[w0]) {
+                    back += ` Last attempt ${w0} was ${prev.byCat[w0].right}/${prev.byCat[w0].total}; this time ${cur.byCat[w0].right}/${cur.byCat[w0].total}` + (reachedTop ? '.' : ' — not yet at 9, but moving.');
                 } else if (prev) {
                     const dg = cur.grade - prev.grade;
                     back += dg > 0 ? ` Up from Grade ${prev.grade} — moving.` : (dg < 0 ? ` (Grade ${prev.grade} last time.)` : ` Same as last time — let’s shift it.`);
@@ -9744,9 +9774,11 @@
                     if (improved.length) cross += `you’ve improved on **${improved.join(', ')}** since you started.`;
                     if (cross) L.push('**Across your attempts:** ' + cross.charAt(0).toUpperCase() + cross.slice(1).trim());
                 }
-                if (weak) {
+                if (weak && weak.length) {
                     // v7.19.746: the "one thing" next-step moved to the Action Plan (feed-forward).
-                    L.push(`**Weakest this time:** ${weak} (${cur.byCat[weak].right}/${cur.byCat[weak].total}).`);
+                    // v7.19.967 (§4c): a tie lists every joint-weakest strand, not just the first.
+                    const parts = weak.map(c => `${c} (${cur.byCat[c].right}/${cur.byCat[c].total})`).join(' & ');
+                    L.push(`**${weak.length > 1 ? 'Joint-weakest' : 'Weakest'} this time:** ${parts}.`);
                 } else {
                     // v7.19.745: no dropped marks — affirm full coverage instead of mislabelling
                     // a perfect AO as the "weakest".
@@ -9871,6 +9903,14 @@
                 chatTextarea.style.height = '40px';
                 chatSendBtn.style.opacity = '0.4';
                 chatSendBtn.style.pointerEvents = 'none';
+                // v7.19.967 (Neil): answer CORRECTION — deterministic intent detection, code
+                // re-scores (§9 name-guard: the AI never touches marks; previously "I meant D"
+                // fell to routeHelp where Sophia FALSELY implied it would be fixed). Runs BEFORE
+                // the prediction gate so "change Q3 to D" at the MSA predict step isn't eaten by
+                // _capturePrediction as a stray number — feedback is still unrevealed there, so
+                // correcting is fair. Post-reveal (betweenRounds) it's an honest no, in code.
+                const _corr = _detectCorrection(msg);
+                if (_corr) { await _applyCorrection(_corr); return; }
                 // v7.19.747: awaiting the MSA /20 prediction — capture this typed number as the
                 // prediction (before any reveal), not as a quiz answer or a clarification.
                 if (awaitingPrediction) { _capturePrediction(msg); return; }
@@ -9910,6 +9950,77 @@
                     removeCanvasTyping();
                     aiBubble("Sorry — something went wrong recording that. Try again in a moment.");
                     appendQuickBar('Show the question again', renderQ);
+                } finally {
+                    resetSend();
+                }
+            }
+
+            // v7.19.967 (Neil): a mistyped answer was UNCORRECTABLE — and "I meant D" routed to
+            // Sophia, who falsely implied she'd fix it. Detection is DETERMINISTIC (regex, never
+            // the AI). Forms: "change/correct Q3 to D" · "Q3 should be D" · "for Q3 I meant D" ·
+            // bare "I meant D" (= the last answered question). A recognisable fix-my-answer
+            // INTENT that doesn't parse returns {intent:true} so the reply is honest coaching on
+            // the exact format — never an AI turn that pretends. Returns null when nothing has
+            // been answered yet (nothing to correct).
+            function _detectCorrection(raw) {
+                const t = String(raw || '').trim();
+                if (!t || !roundResults.length) return null;
+                let m = t.match(/^(?:can\s+(?:you|i)\s+)?(?:please\s+)?(?:change|switch|correct|update|make)\s+(?:my\s+answer\s+(?:to|for|on)\s+)?q(?:uestion)?\s*(\d{1,2})\s*(?:to|into|→|->|:|=)\s*(.+?)\s*[.!?]*$/i)
+                    || t.match(/^q(?:uestion)?\s*(\d{1,2})\s+should\s+(?:be|have\s+been)\s+(.+?)\s*[.!?]*$/i)
+                    || t.match(/^(?:for\s+|on\s+)?q(?:uestion)?\s*(\d{1,2})[,:]?\s+i\s+meant(?:\s+to\s+(?:put|say|pick|choose|answer))?\s*[:\-]?\s*(.+?)\s*[.!?]*$/i);
+                if (m) return { qNum: parseInt(m[1], 10), ans: m[2] };
+                m = t.match(/^(?:sorry[,!]?\s+)?(?:no[,]?\s+)?i\s+meant(?:\s+to\s+(?:put|say|pick|choose|answer))?\s*[:\-]?\s*(.+?)\s*[.!?]*$/i);
+                if (m) return { qNum: roundResults.length, ans: m[1] };
+                // Fix-my-answer intent without a parseable target/answer → coach the format.
+                if (/\b(wrong\s+answer|mistyped|typo|meant\s+to\s+(?:put|pick|choose|press|tap)|change\s+my\s+answer|answered\s+wrong(?:ly)?|(?:clicked|pressed|tapped)\s+the\s+wrong)\b/i.test(t)) return { intent: true };
+                return null;
+            }
+            // Apply a correction: validate against the target question's type, re-score through
+            // the SAME server endpoint (record_question is an idempotent upsert keyed by q_num —
+            // the re-submit OVERWRITES the earlier mark and recomputes totals, never double-
+            // counts), replace roundResults[k-1], persist. Mid-round only: feedback is withheld
+            // to round-end, so a correction has no exam-integrity cost; after the reveal the
+            // answer is an honest no (they've seen the answers).
+            async function _applyCorrection(corr) {
+                if (betweenRounds) {
+                    aiBubble('This ' + (quizType === 'mark_scheme_assessment' ? 'assessment' : 'round') + ' is already finished and marked, so answers can’t be changed now — corrections only work before the results are revealed. Run a fresh one and it counts anew. 💪');
+                    (quizType === 'mark_scheme_assessment') ? showMsaMenu() : showRoundMenu();
+                    resetSend(); return;
+                }
+                if (corr.intent) {
+                    aiBubble('You can fix an answer any time before the results — tell me exactly like this: **"change Q2 to D"** (or just **"I meant D"** for the one you’ve just answered).');
+                    resetSend(); return;
+                }
+                const k = corr.qNum;
+                if (!(k >= 1 && k <= roundResults.length)) {
+                    aiBubble('I can only change an answer you’ve already given — so far that’s ' + (roundResults.length === 1 ? 'Q1' : 'Q1–Q' + roundResults.length) + '.');
+                    resetSend(); return;
+                }
+                const rr = roundResults[k - 1], q = rr.q;
+                let ans = String(corr.ans || '').replace(/^['"`]+|['"`]+$/g, '').replace(/^(?:option|letter)\s+/i, '').trim();
+                if (q.type === 'mcq' || q.type === 'select_all' || q.type === 'ranking') {
+                    ans = ans.toUpperCase().replace(/\s*,\s*/g, ', ');
+                    if (!/^[A-G](,\s[A-G])*$/.test(ans)) { aiBubble('For Q' + k + ' give me the letter(s) — e.g. **"change Q' + k + ' to D"**.'); resetSend(); return; }
+                } else if (q.type === 'true_false') {
+                    if (!/^(true|false|t|f)$/i.test(ans)) { aiBubble('Q' + k + ' is True/False — try **"change Q' + k + ' to True"**.'); resetSend(); return; }
+                } else if (!ans) {
+                    aiBubble('Tell me the new answer too — e.g. **"change Q' + k + ' to metaphor"**.'); resetSend(); return;
+                }
+                busy = true; showCanvasTyping();
+                try {
+                    const res = await apiPost(API.quizAnswer, { id: q.id, answer: _toOrig(ans, q),
+                        board: state.board, subject: state.subject, text: state.text, quiz_type: quizType });
+                    removeCanvasTyping();
+                    if (!res || !res.success) { aiBubble('Sorry — I couldn’t update that one. Try again in a moment.'); return; }
+                    roundResults[k - 1] = { q, res, answer: ans };
+                    persist();
+                    aiBubble('✅ **Updated Q' + k + ' → ' + ans + '.** Your earlier answer is replaced — feedback still comes at the end, as usual.');
+                    if (awaitingPrediction) aiBubble('Now, back to your prediction — how many marks out of **20** do you think you earned?');
+                    else if (idx < qs.length) renderQ();
+                    else await endRound();
+                } catch (e) {
+                    removeCanvasTyping();
+                    aiBubble('Sorry — something went wrong updating that. Try again in a moment.');
                 } finally {
                     resetSend();
                 }
@@ -9955,6 +10066,16 @@
                 const n = roundResults.length;
                 const correctN = roundResults.filter(r => r.res && r.res.correct).length;
                 const mastered = (n > 0 && correctN === n);
+                // v7.19.967 (Neil 0c): expand an MCQ letter to its option text so each review
+                // line is fully self-contained — the student shouldn't have to scroll up to
+                // decode "correct: B". MCQ only: True/False is self-evident; ranking/select-all
+                // expansions would swamp the line. Letters here are DISPLAY letters (post-
+                // shuffle), matching q.options as the student saw them.
+                const _optText = (q, letter) => {
+                    if (!q || q.type !== 'mcq' || !Array.isArray(q.options)) return '';
+                    const o = q.options.find(o2 => String(o2.letter).toUpperCase() === String(letter || '').trim().toUpperCase());
+                    return o ? ' — ' + o.text : '';
+                };
                 let body = (quizType === 'mark_scheme_assessment')
                     ? `**Assessment review — ${correctN}/${n} correct**\n\n`
                     : `**Round ${round} review — ${correctN}/${n} correct**\n\n`;
@@ -9966,9 +10087,12 @@
                     // up. Universal — every quiz type (FQ/MSQ/MSA) reveals through this one builder.
                     const _qtext = (r.q && r.q.question) ? String(r.q.question).trim() : '';
                     body += `**${i + 1}. ${mark}**` + (_qtext ? `  ${_qtext}` : '');
-                    body += `\n\nYour answer: \`${r.answer}\``;
+                    body += `\n\nYour answer: \`${r.answer}\`${_optText(r.q, r.answer)}`;
                     if (r.res && r.res.partial) body += `  — **${r.res.marks}/${r.res.max}** (right idea, imprecise form)`;
-                    if (!(r.res && r.res.correct)) body += `  —  correct: **${r.res ? _toDisp(r.res.correctKey, r.q) : '?'}**`;
+                    if (!(r.res && r.res.correct)) {
+                        const _ck = r.res ? _toDisp(r.res.correctKey, r.q) : '?';
+                        body += `\ncorrect: **${_ck}**${_optText(r.q, _ck)}`;
+                    }
                     body += `\n${(r.res && r.res.feedback) || ''}\n`;
                     // Blake-Harvard why-wrong glosses: on a wrong answer, explain why
                     // each distractor is wrong (server sends them only when wrong).

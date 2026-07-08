@@ -568,7 +568,28 @@ Trigger: a round can serve two questions testing the same thing. Symptom: the sa
 quiz AND assessment draws through it; fail-loud `error_log` when dupes are dropped. Residual:
 same-concept-different-wording near-dupes (not stem-catchable) = a bank-authoring audit (chat B).
 
-**18. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
+**18. Board-mismatch copy** (the "Level 6 on Language" class, v967, Neil 2026-07-08).
+Trigger: student-facing marking copy hardcodes ONE board/subject's mark-scheme facts (a Level
+number, an AO set, a descriptor word) on a surface that serves every board and subject. Symptom:
+an AQA LANGUAGE student is told to "reread the Level 6 descriptor" — Level 6 is AQA LITERATURE;
+Language marks Levels 1–4 and assesses AO5/AO6. The claim is confidently WRONG, which is worse
+than vague. Net: key such copy on (board, subject-family); serve a specific claim ONLY where the
+wording is verified against the real mark scheme (`MSA_ACTIONS_LIT` / `MSA_ACTIONS_LANG`, AQA
+only); every unverified combination gets an honest generic pointer to ITS top band — NEVER a
+named Level. Residual: any new student-facing string that names a Level/AO without a board key;
+the chat-B AO-matrix is the verification source for extending the maps.
+
+**19. Dishonest capability implication** (the "I meant D" class, v967, Neil 2026-07-08).
+Trigger: a typed message expresses an intent the code can't (or won't) act on, and it routes to
+the AI, which replies as if the thing will happen. Symptom: a student mistypes an answer, types
+"I meant D", Sophia warmly implies it's fixed — it isn't; the wrong mark stands. Net: detect the
+intent DETERMINISTICALLY before any AI routing and either DO it in code (mid-round correction:
+regex-detected, re-scored through the idempotent `record_question` upsert, `roundResults`
+replaced) or say honestly in code that it can't be done (post-reveal). Residual: any other typed
+intent that falls through to the AI with an implied promise — audit `routeHelp` prompts when
+adding capabilities.
+
+**20. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
 the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
 (#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract
 TBD). See `~/.claude/handoffs/open/wml-backlog.md`.
