@@ -6508,6 +6508,23 @@
     // leaks). The walk is a fixed 8-element spine; the current step = (filled note-fields for this
     // poem) + 1, capped at 8. Always present, always clean, survives refresh (stored on history).
     // Returns null off a poetry-CN walk / before a poem is chosen (welcome + picker show no bar).
+    // v7.19.990: ONE strip for the model's raw progress lines (📌 pin + improvised bars) — used
+    // by BOTH live handlers AND both replay loops (the pin leaked on replay because only the live
+    // path stripped it).
+    function _stripRawProgressLines(text) {
+        return String(text || '')
+            .replace(/^[^\n]*📌[^\n]*$/gm, '')
+            .replace(/^[ \t>]*[▮▯█▓▒░■□▪▫◼◻◾◽⬛⬜▰▱][^\n]*$/gm, '');
+    }
+    // v7.19.990: ONE chip block, the FQ gold-standard shape (Neil): top-liner (task · context)
+    // + gradient bar + a BOLD position heading underneath ("Round 1 · Question 1 of 10" ↔
+    // "Element 1 of 8 · Speaker"). Every chip render (live + replay) goes through this.
+    function _beatChipBlock(beat) {
+        if (!beat || typeof WML === 'undefined' || !WML.progressChipHTML) return '';
+        var h = WML.progressChipHTML(beat);
+        if (beat.heading) h += '<p><strong>' + beat.heading + '</strong></p>';
+        return h;
+    }
     function _poetryCnWalkBeat(hist) {
         try {
             if (!_poetryCnPickerActive()) return null;
@@ -6533,7 +6550,13 @@
                 var poems = _poetryAnthologyPoems();
                 for (var j = 0; j < poems.length; j++) { if (poems[j].id === pid) { title = poems[j].title; break; } }
             } catch (_) {}
-            return { section: (title ? title + ' · ' : '') + LABELS[step - 1], step: step, total: 8 };
+            // FQ gold-standard shape: top-liner = task · context ("Foundational Quiz · Round 1"),
+            // bold heading under the bar = position ("Round 1 · Question 1 of 10").
+            return {
+                section: 'Conceptual Notes · ' + (title || 'Your poem'),
+                step: step, total: 8,
+                heading: 'Element ' + step + ' of 8 · ' + LABELS[step - 1],
+            };
         } catch (e) { console.warn('[WML poetry-CN] _poetryCnWalkBeat failed', e); return null; }
     }
 
@@ -9202,7 +9225,7 @@
                     let cleanReply = stripAIInternals(res.reply);
                     // v7.19.989: hard-strip the raw progress breadcrumb + any improvised bar at the
                     // SOURCE too (belt-and-braces with withProgressChip — the pin must never show).
-                    cleanReply = cleanReply.replace(/^[^\n]*📌[^\n]*$/gm, '').replace(/^[ \t>]*[▮▯█▓▒░■□▪▫◼◻◾◽⬛⬜▰▱][^\n]*$/gm, '');
+                    cleanReply = _stripRawProgressLines(cleanReply);
                     let formatted = formatAI(cleanReply);
                     // v7.19.987/989: walk beat-chip. CN is CODE-DERIVED (deterministic, always present
                     // like the FQ controller — never the model's flaky pin: _poetryCnWalkBeat); other
@@ -9211,7 +9234,7 @@
                     const _walkBeat = _taskModelChipOk()
                         ? (_poetryCnPickerActive() ? _poetryCnWalkBeat(canvasChatHistory) : (WML.parseProgressBeat ? WML.parseProgressBeat(res.reply) : null))
                         : null;
-                    if (_walkBeat && WML.progressChipHTML) formatted = WML.progressChipHTML(_walkBeat) + formatted;
+                    if (_walkBeat) formatted = _beatChipBlock(_walkBeat) + formatted;
                     addChatMessage(formatted, 'ai', cleanReply);
                     canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
                     if (res.chatId) canvasChatId = res.chatId;
@@ -15837,17 +15860,26 @@
                     } catch (e) {
                         console.warn('WML v7.17.57 hoist failed', e);
                     }
-                    savedChat.history.forEach(msg => {
+                    // v7.19.990: CN's replay chip is CODE-DERIVED from the doc on the LAST AI
+                    // message (the SOP: progress from code/doc state, never the model / a persisted
+                    // field the server may drop — the chip vanished on navigate-back). Other tasks
+                    // keep their stored msg.beat. Raw pin/bar lines are stripped on replay too
+                    // (they leaked — only the live path stripped them).
+                    let _lastAiIdx = -1;
+                    savedChat.history.forEach((m, i) => { if (m.role === 'assistant' && !m.hidden) _lastAiIdx = i; });
+                    const _cnReplayBeat = _poetryCnPickerActive() ? _poetryCnWalkBeat(savedChat.history) : null;
+                    savedChat.history.forEach((msg, _i) => {
                         // v7.15.5: Skip rendering hidden context messages
                         if (msg.hidden) {
                             tp.canvasChatHistory.push(msg);
                             return;
                         }
                         if (msg.role === 'assistant') {
-                            const clean = stripAIInternals(msg.content);
-                            // v7.19.911: re-render the stored beat-chip on refresh replay.
+                            const clean = _stripRawProgressLines(stripAIInternals(msg.content));
+                            // v7.19.911/990: re-render the beat-chip on refresh replay.
                             let _h = formatAI(clean);
-                            if (msg.beat && typeof WML !== 'undefined' && WML.progressChipHTML) _h = WML.progressChipHTML(msg.beat) + _h;
+                            const _rb = (_cnReplayBeat && _i === _lastAiIdx) ? _cnReplayBeat : msg.beat;
+                            if (_rb) _h = _beatChipBlock(_rb) + _h;
                             tp.addChatMessage(_h, 'ai', clean);
                         } else if (msg.role === 'user') {
                             tp.addChatMessage(msg.content, 'user');
@@ -17994,13 +18026,13 @@
                                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
                                     let cleanReply = stripAIInternals(res.reply);
                                     // v7.19.989: hard-strip raw breadcrumb + bar at source (twin).
-                                    cleanReply = cleanReply.replace(/^[^\n]*📌[^\n]*$/gm, '').replace(/^[ \t>]*[▮▯█▓▒░■□▪▫◼◻◾◽⬛⬜▰▱][^\n]*$/gm, '');
+                                    cleanReply = _stripRawProgressLines(cleanReply);
                                     let formatted = formatAI(cleanReply);
                                     // v7.19.987/989: walk beat-chip — CN code-derived, else parse pin (twin of pipeline 1).
                                     const _walkBeat = _taskModelChipOk()
                                         ? (_poetryCnPickerActive() ? _poetryCnWalkBeat(canvasChatHistory) : (WML.parseProgressBeat ? WML.parseProgressBeat(res.reply) : null))
                                         : null;
-                                    if (_walkBeat && WML.progressChipHTML) formatted = WML.progressChipHTML(_walkBeat) + formatted;
+                                    if (_walkBeat) formatted = _beatChipBlock(_walkBeat) + formatted;
                                     addChatMessage(formatted, 'ai', cleanReply);
                                     canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
                                     if (res.chatId) canvasChatId = res.chatId;
@@ -18349,17 +18381,23 @@
                                         if (hasSavedChat) {
                                             // Resume: replay all saved messages silently
                                             console.log('WML Canvas: Resuming chat with', savedChat.count, 'messages');
-                                            savedChat.history.forEach(msg => {
+                                            // v7.19.990: CN replay chip code-derived on last AI msg;
+                                            // strip raw pin/bar on replay (twin of pipeline 1 — see there).
+                                            let _lastAiIdx2 = -1;
+                                            savedChat.history.forEach((m, i) => { if (m.role === 'assistant' && !m.hidden) _lastAiIdx2 = i; });
+                                            const _cnReplayBeat2 = _poetryCnPickerActive() ? _poetryCnWalkBeat(savedChat.history) : null;
+                                            savedChat.history.forEach((msg, _i) => {
                                                 // v7.15.5: Skip rendering hidden context messages (still kept in history for AI)
                                                 if (msg.hidden) {
                                                     canvasChatHistory.push(msg);
                                                     return;
                                                 }
                                                 if (msg.role === 'assistant') {
-                                                    const clean = stripAIInternals(msg.content);
-                                                    // v7.19.911: re-render the stored beat-chip on refresh replay (twin).
+                                                    const clean = _stripRawProgressLines(stripAIInternals(msg.content));
+                                                    // v7.19.911/990: re-render the beat-chip on refresh replay (twin).
                                                     let _h = formatAI(clean);
-                                                    if (msg.beat && typeof WML !== 'undefined' && WML.progressChipHTML) _h = WML.progressChipHTML(msg.beat) + _h;
+                                                    const _rb = (_cnReplayBeat2 && _i === _lastAiIdx2) ? _cnReplayBeat2 : msg.beat;
+                                                    if (_rb) _h = _beatChipBlock(_rb) + _h;
                                                     addChatMessage(_h, 'ai', clean);
                                                 } else if (msg.role === 'user') {
                                                     addChatMessage(msg.content, 'user');
