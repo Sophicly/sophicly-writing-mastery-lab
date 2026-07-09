@@ -6429,7 +6429,7 @@
             onClick: function () { bar.remove(); _renderPoetryCnPicker(ctx); } }));
         _poetryCnAppendBar(ctx, bar);
     }
-    function _renderPoetryCnPicker(ctx) {
+    function _renderPoetryCnPicker(ctx, opts) {
         try {
             if (!ctx || !ctx.chatMessages || !ctx.addChatMessage) { console.warn('[WML poetry-CN] picker ctx missing'); return; }
             var poems = _poetryAnthologyPoems();
@@ -6445,10 +6445,28 @@
             var remaining = poems.filter(function (p) { return done.indexOf(p.id) === -1; });
             var allDone = remaining.length === 0;
             var list = allDone ? poems : remaining;
-            var welcome = allDone
-                ? 'You’ve built Conceptual Notes for every poem here. Pick any poem to revisit and refine its notes.'
-                : 'Pick a poem and we’ll build its Conceptual Notes together — one element at a time. There’s no set order; most students focus on a handful of their own choosing.';
-            ctx.addChatMessage('<p>' + welcome + '</p>', 'ai', welcome, { suppressActions: true });
+            // v7.19.985 (Neil): the opening needs a real greeting + WHY conceptual notes matter
+            // (concepts, not description, are where the marks — and the lost marks — live). Full
+            // explanation only on the FIRST render (opts.intro); the loop / change-poem / resume
+            // re-renders stay short so the rationale isn't repeated every poem.
+            var fn = '';
+            try { fn = (config.userName || '').split(' ')[0] || ''; } catch (_) {}
+            var welcomeHTML, welcomePlain;
+            if (allDone) {
+                welcomePlain = 'You’ve built Conceptual Notes for every poem here. Pick any poem to revisit and refine its notes.';
+                welcomeHTML = '<p>' + welcomePlain + '</p>';
+            } else if (opts && opts.intro) {
+                var hi = fn ? 'Hi ' + fn + ' — welcome' : 'Welcome';
+                welcomePlain = hi + ' to your Conceptual Notes. In the exam you won’t have time to write a full essay on every poem, so instead we build sharp, concept-led notes on as many as you can. The marks live in the ideas beneath a poem — what it really argues about love, loss, power or identity — not in retelling what happens; that’s exactly where most students lose ground, and it’s what these notes train. Pick a poem below and we’ll build its notes together, one element at a time — speaker, context, form, and so on. There’s no set order; most students focus on a handful of their own choosing.';
+                welcomeHTML =
+                    '<p>' + hi + ' to your <strong>Conceptual Notes</strong>.</p>' +
+                    '<p>In the exam you won’t have time to write a full essay on every poem — so instead we build sharp, concept-led notes on as many as you can. The marks live in the <em>ideas beneath</em> a poem — what it really argues about love, loss, power or identity — not in retelling what happens. That’s exactly where most students lose ground, and it’s what these notes train.</p>' +
+                    '<p>Pick a poem below and we’ll build its notes together, one element at a time — speaker, context, form, and so on. There’s no set order; most students focus on a handful of their own choosing.</p>';
+            } else {
+                welcomePlain = 'Pick a poem and we’ll build its Conceptual Notes together — one element at a time.';
+                welcomeHTML = '<p>' + welcomePlain + '</p>';
+            }
+            ctx.addChatMessage(welcomeHTML, 'ai', welcomePlain, { suppressActions: true });
             var bar = el('div', { className: 'swml-quick-actions swml-poem-picker' });
             list.forEach(function (p) {
                 var label = p.title + (p.poet ? ' — ' + p.poet : '') + (allDone ? '  ✓' : '');
@@ -8301,7 +8319,7 @@
                         // (mirror the boot gate). currentPoemId is cleared by the fresh chat, so no
                         // poem is active → the picker opens from the top. Do NOT silent-send the AI.
                         state.currentPoemId = '';
-                        setTimeout(() => { _renderPoetryCnPicker({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }); }, 200);
+                        setTimeout(() => { _renderPoetryCnPicker({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }, { intro: true }); }, 200);
                         } else if (isExamPrep) {
                         // v7.15.9: Exam prep exercises get a fresh protocol-driven start, not the generic assessment greeting
                         setTimeout(() => {
@@ -16213,7 +16231,7 @@
                     // v7.19.983: poetry-anthology Conceptual Notes — programmatic poem picker
                     // (no AI opening turn). Replaces the LLM welcome + poem list Neil flagged as
                     // laggy. Poem click sets currentPoemId + silent-sends the walk-start directive.
-                    setTimeout(() => { _renderPoetryCnPicker(tp); }, 400);
+                    setTimeout(() => { _renderPoetryCnPicker(tp, { intro: true }); }, 400);
                 } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
                     // v7.17.71: ROLLBACK of v7.17.70 _isQuizResume gate. Original always-send
@@ -18344,7 +18362,7 @@
                                             // v7.19.983: poetry-anthology Conceptual Notes — programmatic
                                             // poem picker (no AI opening turn). Twin of the pipeline-A boot
                                             // branch; must precede isExamPrep (conceptual_notes ∈ EXAM_PREP_TASKS).
-                                            setTimeout(() => { _renderPoetryCnPicker({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }); }, 400);
+                                            setTimeout(() => { _renderPoetryCnPicker({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }, { intro: true }); }, 400);
                                         } else if (isExamPrep) {
                                             // v7.15.8: Mode selection for essay_plan / model_answer when no mode pre-set
                                             const needsModeSelect = !state.planningMode && (state.task === 'essay_plan' || state.task === 'model_answer');
