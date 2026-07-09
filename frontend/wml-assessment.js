@@ -6681,12 +6681,12 @@
                 Object.keys(_poemCardOpen).forEach(k => { delete _poemCardOpen[k]; });
                 _renderPoemCards();
             } catch (_) {}
-            canvasSilentSend = true;
-            // @POEM_SELECTED rides the hidden user turn (persists → resume recovery); the
-            // human line is the go-signal. current_poem_id is already set, so the router
-            // injects this poem's text on this turn and the walk opens on the speaker.
-            ctx.chatTextarea.value = 'I’ve chosen “' + poem.title + '” — let’s begin building its Conceptual Notes, starting with the speaker.\n@POEM_SELECTED{"id":"' + poem.id + '"}';
-            (ctx.sendCanvasMessageQueued || ctx.sendCanvasMessage)();
+            // v7.19.995 (§A16): the v983 start directive is GONE — the Speaker opener card
+            // renders INSTANTLY (zero AI calls until the student answers). @POEM_SELECTED now
+            // rides the opener's submit (same hidden-turn persistence); a free-typed turn is
+            // covered by _poetryCnEnsurePoemMarker in both send paths, so the poem identity
+            // can never be lost to a refresh either way.
+            _maybePoetryCnOpener(ctx, null, { start: true });
         } catch (e) { console.warn('[WML poetry-CN] start-poem failed', e); }
     }
     function _poetryCnConfirmPoem(ctx, poem) {
@@ -6821,6 +6821,180 @@
                 heading: SPINE[step - 1].label,
             };
         } catch (e) { console.warn('[WML poetry-CN] _poetryCnWalkBeat failed', e); return null; }
+    }
+
+    // v7.19.995 (PROTOCOL-STANDARD §A16 programmatic-first — Neil rulings locked 2026-07-09):
+    // designed FIRST-QUESTIONS for the clean-choice elements (speaker / form / purpose). Code
+    // renders the question + stance buttons + a "how do you know?" justification; ONE silent
+    // send carries stance + reasoning (+ @POEM_SELECTED on the speaker card, which REPLACES
+    // the v983 start directive — zero AI calls until the student answers). The model takes the
+    // Socratic follow-up (protocol: engage the APPLICATION, never re-ask the opener).
+    // Trigger is CODE-DERIVED — first unfilled spine element for the active poem, from the doc
+    // (feedback_canvas_progress_code_derived_not_model_pin); answered-state is the persisted
+    // @ELEMENT_STANCE marker (resume-safe history scan, the @POEM_SELECTED law). Capability
+    // gate = WML.POETRY_CN_OPENERS[slug] — elements without an entry stay AI-Socratic. NO
+    // "I'm not sure" button by ruling (stuck students type it → the AI scaffolds). Module
+    // scope; ctx carries per-pipeline locals (the v978 scope trap), hist passed explicitly.
+    function _poetryCnStanceGiven(hist, pid, slug) {
+        try {
+            if (!Array.isArray(hist)) return false;
+            var re = /@ELEMENT_STANCE\s*(\{[^}]*\})/g;
+            for (var i = hist.length - 1; i >= 0; i--) {
+                var c = hist[i] && hist[i].content;
+                if (!c || c.indexOf('@ELEMENT_STANCE') === -1) continue;
+                var m; re.lastIndex = 0;
+                while ((m = re.exec(c)) !== null) {
+                    try {
+                        var o = JSON.parse(m[1]);
+                        if (o && o.poem === pid && o.el === slug) return true;
+                    } catch (_) {}
+                }
+            }
+            return false;
+        } catch (_) { return false; }
+    }
+    // First unfilled spine element for this poem, in SPINE order (doc-derived — same
+    // derivation as _poetryCnWalkBeat, but positional rather than a count).
+    function _poetryCnFirstUnfilledElement(pid) {
+        try {
+            if (!canvasEditor || !pid) return '';
+            var SPINE = (typeof WML !== 'undefined' && WML.POETRY_CN_SPINE) || [];
+            if (!SPINE.length) return '';
+            var ELS = SPINE.map(function (e) { return e.slug; });
+            var seen = {};
+            var elRe = new RegExp('^poem_(.+?)_(' + ELS.join('|') + ')$');
+            canvasEditor.state.doc.descendants(function (n) {
+                if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) {
+                    var m = elRe.exec(String(n.attrs.fieldId));
+                    if (m && m[1] === pid && (n.textContent || '').trim().length > 0) seen[m[2]] = true;
+                }
+            });
+            for (var i = 0; i < ELS.length; i++) { if (!seen[ELS[i]]) return ELS[i]; }
+            return '';
+        } catch (e) { console.warn('[WML poetry-CN] first-unfilled failed', e); return ''; }
+    }
+    function _poetryCnOpenerPending(hist) {
+        try {
+            if (!_poetryCnPickerActive()) return null;
+            if (window.state && state.reviewMode) return null;
+            var pid = _poetryCnActivePoemId(hist);
+            if (!pid) return null;
+            var slug = _poetryCnFirstUnfilledElement(pid);
+            if (!slug) return null;
+            var cfg = (typeof WML !== 'undefined' && WML.POETRY_CN_OPENERS) ? WML.POETRY_CN_OPENERS[slug] : null;
+            if (!cfg) return null; // capability gate — this element keeps its AI-Socratic opening
+            if (_poetryCnStanceGiven(hist, pid, slug)) return null; // answered → the AI walk owns it
+            return { pid: pid, slug: slug, cfg: cfg };
+        } catch (e) { console.warn('[WML poetry-CN] opener-pending failed', e); return null; }
+    }
+    // A free-typed turn while a poem is active must still persist the poem identity — the
+    // v983 start directive used to guarantee @POEM_SELECTED landed in history before any
+    // student turn; the opener defers that send, so BOTH pipelines wrap the outgoing message
+    // through this (self-guarding no-op everywhere else). Without it, a student who ignores
+    // the card and types free text loses the active poem on refresh (named failure mode).
+    function _poetryCnEnsurePoemMarker(text, hist) {
+        try {
+            if (!text || !String(text).trim()) return text;
+            if (!_poetryCnPickerActive()) return text;
+            var pid = (window.state && state.currentPoemId) ? String(state.currentPoemId) : '';
+            if (!pid) return text;
+            if (String(text).indexOf('@POEM_SELECTED') !== -1) return text;
+            if (Array.isArray(hist)) {
+                for (var i = hist.length - 1; i >= 0; i--) {
+                    var c = hist[i] && hist[i].content;
+                    if (c && c.indexOf('@POEM_SELECTED') !== -1) return text;
+                }
+            }
+            console.log('[WML poetry-CN] appending @POEM_SELECTED to free-typed turn →', pid);
+            return text + '\n@POEM_SELECTED' + JSON.stringify({ id: pid });
+        } catch (_) { return text; }
+    }
+    function _poetryCnOpenerCard(ctx, pending, opts) {
+        var pid = pending.pid, slug = pending.slug, cfg = pending.cfg;
+        var title = '';
+        try {
+            var poems = _poetryAnthologyPoems();
+            for (var i = 0; i < poems.length; i++) { if (poems[i].id === pid) { title = poems[i].title; break; } }
+        } catch (_) {}
+        var elLabel = slug;
+        try {
+            (WML.POETRY_CN_SPINE || []).forEach(function (e) { if (e.slug === slug) elLabel = e.label; });
+        } catch (_) {}
+        var card = el('div', { className: 'swml-cn-opener' });
+        card.setAttribute('data-okey', pid + ':' + slug);
+        if (opts && opts.start) {
+            card.appendChild(el('div', { className: 'swml-cn-opener-framing',
+                textContent: 'Let’s build your notes on “' + (title || 'your poem') + '” — first, the ' + elLabel.toLowerCase() + '.' }));
+        }
+        card.appendChild(el('div', { className: 'swml-cn-opener-q',
+            textContent: String(cfg.question || '').replace('{title}', title || 'this poem') }));
+        var chosen = null; // el() binds via addEventListener — override via variable, never .onclick
+        var grid = el('div', { className: 'swml-cn-opener-stances' });
+        var ta = el('textarea', { className: 'swml-cn-opener-justify', placeholder: cfg.justify || 'How do you know?' });
+        ta.rows = 2;
+        var send = el('button', { className: 'swml-quick-btn swml-cn-opener-send', textContent: 'Send' });
+        var refresh = function () {
+            var ok = !!chosen && !!ta.value.trim();
+            send.disabled = !ok;
+            send.classList.toggle('swml-cn-opener-send-ready', ok);
+        };
+        (cfg.stances || []).forEach(function (s) {
+            var b = el('button', { className: 'swml-quick-btn swml-cn-opener-stance', textContent: s.label,
+                onClick: function () {
+                    chosen = s;
+                    // single-select: reuse the established toggle-on look (teal ✓, v7.12.6)
+                    grid.querySelectorAll('.swml-cn-opener-stance').forEach(function (x) { x.classList.remove('swml-quick-toggle-on'); });
+                    b.classList.add('swml-quick-toggle-on');
+                    refresh();
+                } });
+            grid.appendChild(b);
+        });
+        ta.addEventListener('input', refresh);
+        card.appendChild(grid);
+        card.appendChild(ta);
+        card.appendChild(send);
+        refresh();
+        send.addEventListener('click', function () {
+            if (!chosen || !ta.value.trim()) return;
+            var reason = ta.value.trim();
+            // Collapse the live card to a done summary (the send is silent — the card IS the
+            // student's visible answer, matching the picker's no-user-bubble UX).
+            card.classList.add('swml-cn-opener-done');
+            card.innerHTML = '';
+            card.appendChild(el('div', { className: 'swml-cn-opener-summary',
+                textContent: '✓ ' + chosen.label + ' — ' + reason }));
+            var lines = [
+                'My stance on the ' + elLabel + ' of “' + (title || 'this poem') + '”: ' + chosen.label + '.',
+                'How I know: ' + reason,
+            ];
+            if (slug === 'speaker') lines.push('@POEM_SELECTED' + JSON.stringify({ id: pid }));
+            lines.push('@ELEMENT_STANCE' + JSON.stringify({ poem: pid, el: slug, stance: chosen.id }));
+            canvasSilentSend = true;
+            ctx.chatTextarea.value = lines.join('\n');
+            (ctx.sendCanvasMessageQueued || ctx.sendCanvasMessage)();
+        });
+        return card;
+    }
+    // Render-if-pending. Idempotent per (poem, element); removes stale UNDONE cards for other
+    // keys. Runs after every canvas reply + on resume in BOTH pipelines — self-guarding no-op
+    // off a poetry-CN walk. Fail-soft by design: if the model disobeys the protocol and asks
+    // its own opener question, the card still renders beneath it (worst case = a duplicate
+    // question, never a dead-end).
+    function _maybePoetryCnOpener(ctx, hist, opts) {
+        try {
+            if (!ctx || !ctx.chatMessages || !ctx.chatTextarea) return;
+            var pending = _poetryCnOpenerPending(hist);
+            var key = pending ? (pending.pid + ':' + pending.slug) : '';
+            var live = ctx.chatMessages.querySelectorAll('.swml-cn-opener:not(.swml-cn-opener-done)');
+            var already = false;
+            live.forEach(function (c) {
+                if (pending && c.getAttribute('data-okey') === key) { already = true; }
+                else { c.remove(); } // stale (element moved on / poem changed / no longer pending)
+            });
+            if (!pending || already) return;
+            console.log('[WML poetry-CN] opener →', key);
+            _poetryCnAppendBar(ctx, _poetryCnOpenerCard(ctx, pending, opts));
+        } catch (e) { console.warn('[WML poetry-CN] _maybePoetryCnOpener failed', e); }
     }
 
     // Fire a silent API call to generate statements for any stale qIds on
@@ -9135,7 +9309,9 @@
 
         // sendCanvasMessage — AI Engine chat
         async function sendCanvasMessage() {
-            const msg = chatTextarea.value.trim();
+            // v7.19.995: free-typed turn on an active poetry-CN poem still persists the poem
+            // identity (self-guarding no-op everywhere else — see _poetryCnEnsurePoemMarker).
+            const msg = _poetryCnEnsurePoemMarker(chatTextarea.value.trim(), canvasChatHistory);
             if (!msg || canvasChatLoading) return;
 
             // v7.19.575: UNIVERSAL — if a clear (any task) marked a fresh conversation,
@@ -9864,6 +10040,13 @@
                         applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored field/row-fill (Phase 3)
                         _extractPoemSelected(res.reply); // v7.19.978: poetry-CN poem-choice marker (self-guarding)
                         _maybePoetryCnLoop({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }); // v7.19.983: poem complete → re-show programmatic picker
+                        { // v7.19.995: designed element opener (self-guarding, idempotent). Delayed
+                          // re-check because applyFieldSets can land fills asynchronously — without
+                          // it the form/purpose card could miss the turn its trigger element filled on.
+                            const _octx = { chatMessages, addChatMessage, chatTextarea, sendCanvasMessage, sendCanvasMessageQueued };
+                            _maybePoetryCnOpener(_octx, canvasChatHistory);
+                            setTimeout(() => _maybePoetryCnOpener(_octx, canvasChatHistory), 800);
+                        }
                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                             const _r = res.reply;
                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
@@ -16229,6 +16412,10 @@
                     // (never saved), so it must be re-rendered on resume.
                     if (_poetryCnPickerActive() && !_poetryCnActivePoemId(tp.canvasChatHistory)) {
                         setTimeout(() => { _renderPoetryCnPicker(tp); }, 400);
+                    } else if (_poetryCnPickerActive()) {
+                        // v7.19.995: active poem resumed mid-element — if its opener was never
+                        // answered (refresh before submit), re-render it (DOM-only, never saved).
+                        setTimeout(() => { _maybePoetryCnOpener(tp, tp.canvasChatHistory); }, 400);
                     }
 
                     // v7.17.59: Hoisted greeting regen + grade buttons UP — was
@@ -18138,7 +18325,9 @@
                         }
 
                         async function sendCanvasMessage() {
-                            const msg = chatTextarea.value.trim();
+                            // v7.19.995: free-typed turn on an active poetry-CN poem still persists
+                            // the poem identity (self-guarding — see _poetryCnEnsurePoemMarker).
+                            const msg = _poetryCnEnsurePoemMarker(chatTextarea.value.trim(), canvasChatHistory);
                             if (!msg || canvasChatLoading) return;
 
                             // v7.19.575: UNIVERSAL — if a clear marked a fresh conversation, send
@@ -18381,6 +18570,11 @@
                                         applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored field/row-fill (Phase 3)
                                         _extractPoemSelected(res.reply); // v7.19.978: poetry-CN poem-choice marker (twin, self-guarding)
                                         _maybePoetryCnLoop({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }); // v7.19.983: poem complete → re-show programmatic picker (twin)
+                                        { // v7.19.995 (twin): designed element opener + delayed fill-race re-check.
+                                            const _octx = { chatMessages, addChatMessage, chatTextarea, sendCanvasMessage, sendCanvasMessageQueued };
+                                            _maybePoetryCnOpener(_octx, canvasChatHistory);
+                                            setTimeout(() => _maybePoetryCnOpener(_octx, canvasChatHistory), 800);
+                                        }
                                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                                             const _r = res.reply;
                                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
@@ -18741,6 +18935,9 @@
                                             // in-progress poem just replays + continues.
                                             if (_poetryCnPickerActive() && !_poetryCnActivePoemId(canvasChatHistory)) {
                                                 setTimeout(() => { _renderPoetryCnPicker({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }); }, 400);
+                                            } else if (_poetryCnPickerActive()) {
+                                                // v7.19.995 (twin): unanswered element opener re-renders on resume.
+                                                setTimeout(() => { _maybePoetryCnOpener({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessage, sendCanvasMessageQueued }, canvasChatHistory); }, 400);
                                             }
 
                                             // v7.14.44: Re-add grade quick action buttons if chat only has the greeting

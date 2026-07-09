@@ -734,6 +734,57 @@ window.WML = (function() {
     ];
     const POETRY_CN_STEPS = POETRY_CN_SPINE.map((e, i) => ({ step: i + 1, label: e.label }));
 
+    // v7.19.995 (PROTOCOL-STANDARD §A16 programmatic-first, Neil rulings 2026-07-09): designed
+    // FIRST-QUESTIONS for the clean-choice CN elements. Code renders the question + stance
+    // buttons + a "how do you know?" justification; the model only takes the Socratic
+    // follow-up. Keyed by spine slug — an element WITHOUT an entry keeps its AI-Socratic
+    // opening (capability gate, never a task-name check). Stance lists mirror the protocol's
+    // own menus (pn-reference.md §Speaker Types / §Form table / §Purpose menu) — if a menu
+    // changes there, change it HERE in the same commit. NO "I'm not sure" option by ruling
+    // (stuck students type it → the AI scaffolds).
+    const POETRY_CN_OPENERS = {
+        speaker: {
+            question: 'Who is speaking in “{title}”?',
+            stances: [
+                { id: 'poet',       label: 'The poet’s own voice' },
+                { id: 'persona',    label: 'A created persona (a character)' },
+                { id: 'observer',   label: 'An observer / narrator' },
+                { id: 'collective', label: 'A collective voice (“we”)' },
+            ],
+            justify: 'How do you know? Point to a line or moment in the poem…',
+        },
+        form: {
+            question: 'What is the primary poetic form of “{title}”? Many poems blend forms — pick the dominant one.',
+            stances: [
+                { id: 'ballad',             label: 'Ballad' },
+                { id: 'dramatic_monologue', label: 'Dramatic monologue' },
+                { id: 'elegy',              label: 'Elegy' },
+                { id: 'epic',               label: 'Epic' },
+                { id: 'free_verse',         label: 'Free verse' },
+                { id: 'interior_monologue', label: 'Interior monologue' },
+                { id: 'lyric',              label: 'Lyric' },
+                { id: 'narrative',          label: 'Narrative' },
+                { id: 'ode',                label: 'Ode' },
+                { id: 'sonnet',             label: 'Sonnet' },
+            ],
+            justify: 'How do you know? Which features point to that form…',
+        },
+        purpose: {
+            question: 'What was the poet’s primary purpose in writing “{title}”?',
+            stances: [
+                { id: 'entertain',   label: 'To entertain — engage us emotionally' },
+                { id: 'instruct',    label: 'To instruct — teach a moral lesson' },
+                { id: 'critique',    label: 'To critique — expose societal problems' },
+                { id: 'warn',        label: 'To warn — prevent future mistakes' },
+                { id: 'explore',     label: 'To explore — investigate human nature' },
+                { id: 'persuade',    label: 'To persuade — change beliefs or behaviour' },
+                { id: 'commemorate', label: 'To commemorate — preserve memory or honour' },
+                { id: 'witness',     label: 'To bear witness — make the unseen visible' },
+            ],
+            justify: 'How do you know? Which moment in the poem serves that purpose…',
+        },
+    };
+
     const NONFICTION_CN_STEPS = [
         { step: 1, label: 'S1 Writer\'s Voice' },
         { step: 2, label: 'S2 Context' },
@@ -3297,7 +3348,7 @@ window.WML = (function() {
         NONFICTION_ANTHOLOGY_BY_BOARD, BOARD_TEXT_FILTER, AUTHOR_MAP, SECTION_COLOURS, getTextLabel, isSkipTextSelect,
         // Step arrays
         PLAN_STEPS, ASSESSMENT_STEPS, POLISHING_STEPS, QUOTE_ANALYSIS_STEPS,
-        CONCEPTUAL_NOTES_STEPS, POETRY_CN_STEPS, POETRY_CN_SPINE, NONFICTION_CN_STEPS,
+        CONCEPTUAL_NOTES_STEPS, POETRY_CN_STEPS, POETRY_CN_SPINE, POETRY_CN_OPENERS, NONFICTION_CN_STEPS,
         ESSAY_PLAN_STEPS, MODEL_ANSWER_STEPS, ESSAY_PLAN_RECALL_STEPS,
         MODEL_ANSWER_ADVANCED_STEPS, EXAM_QUESTION_STEPS, MEMORY_PRACTICE_STEPS,
         FOUNDATIONAL_QUIZ_STEPS,

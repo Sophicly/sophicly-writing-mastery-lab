@@ -222,6 +222,27 @@ separates Level 3 from Level 4"), never generic praise. The student should never
 what a point is FOR. "How does this get me to the Grade 9?" must be answerable from every element
 on the page.
 
+## A16. Programmatic-first questions (Neil, 2026-07-09)
+
+When writing or refactoring ANY protocol, ask of every question/turn: **could code own this instead
+of the model?** Wherever a turn is a fixed, designed question with a bounded answer space — a
+picker, a stance choice from a known list, a quiz item, a confirm, a "which one next?" — the
+frontend renders it programmatically and the model only takes over where judgment starts (the
+Socratic follow-up, the synthesis, the marking). Every code-owned turn = one fewer API call, and
+caching does NOT make calls free: cached input still bills at cached-read rate, output always bills
+in full, and every call adds latency + nondeterminism.
+
+Not everything can be programmatic — open exploration, synthesis, and marking are the model's job;
+never force a designed question where the answer space is genuinely open. But the burden of proof
+runs the other way: a protocol turn stays AI-owned only when it NEEDS judgment.
+
+Precedents (the molds): FQ/MSQ/MSA quiz engine (fully programmatic), poetry-CN poem picker
+(v7.19.983), poetry-CN element openers — Speaker/Form/Purpose stance cards (v7.19.995). Pattern:
+designed question + option buttons + free-text justification where pedagogy needs it → ONE message
+to the model carrying the student's stance + reasoning (marker-tagged, resume-safe) → model does
+the Socratic follow-up. Protocol side: tell the model which first-questions are frontend-owned —
+what to SKIP (asking the designed question) AND what to still do (the full development + filing).
+
 ---
 
 # PART B — ASSESSMENT PROTOCOL SPEC

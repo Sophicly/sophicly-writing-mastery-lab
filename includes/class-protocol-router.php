@@ -1375,7 +1375,11 @@ class SWML_Protocol_Router {
                 // sets current_poem_id AND injects the text on THIS turn — so the "say ready"
                 // handshake is already done. Begin the walk directly; a second greeting or a
                 // "say ready" here is a dead turn (engine-out the router-vs-protocol conflict).
-                $b .= "Skip the picker — walk THIS poem. The student has ALREADY chosen it and is ready; the full text is below. Open DIRECTLY with Element 1 (the speaker) — one short orienting line naming the poem, then your first speaker question. Do NOT greet again, do NOT ask them to \"say ready\", do NOT re-present the picker. File every element into these EXACT fieldIds:\n";
+                // v7.19.995 (§A16): the speaker/form/purpose FIRST-QUESTIONS are now asked by the
+                // FRONTEND (designed stance cards) — the student's turn arrives WITH their stance
+                // (@ELEMENT_STANCE) + reasoning. Preamble must match the protocol here or the
+                // model re-asks the opener (the v985 router-vs-protocol conflict class).
+                $b .= "Skip the picker — walk THIS poem. The student has ALREADY chosen it; the full text is below. Their message arrives WITH their speaker stance and reasoning (an @ELEMENT_STANCE line — the interface asked the designed question with buttons). Respond DIRECTLY to that stance Socratically (probe their evidence, develop it conceptually) — do NOT greet again, do NOT ask them to \"say ready\", do NOT re-ask who is speaking, do NOT re-present the picker. Likewise the interface asks the FIRST question of the form and purpose elements: after filing context, bridge one line to Form and END your message; after filing themes, bridge one line to Purpose and END your message. File every element into these EXACT fieldIds:\n";
                 foreach (['speaker', 'context', 'form', 'structure', 'themes', 'purpose', 'message', 'comparisons'] as $el) {
                     $b .= "- poem_{$sel_id}_{$el}  (notes)  ·  poem_{$sel_id}_{$el}_quotes  (1–3 quotes)\n";
                 }
