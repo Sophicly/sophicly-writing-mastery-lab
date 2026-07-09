@@ -10355,15 +10355,17 @@
             // off the identical scope — one clobber-proof identity, client and server, for
             // FQ/MSQ/MSA uniformly (MSQ/MSA are stage 0 → suffix `_s0`, still unique).
             const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, (state.fqBank || state.text), (state.attempt || 1), 's' + (state.fqStage || 0)].join('_');
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts, predictedScore, awaitingPrediction })); } catch (e) {} }
-            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function persist() { try { console.log('[WML quiz-diag] PERSIST key=' + lsKey() + ' idx=' + idx + ' total=' + total + ' round=' + round + ' fqStage=' + state.fqStage + ' fqBank=' + state.fqBank); localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts, predictedScore, awaitingPrediction })); } catch (e) {} }
+            function clearPersist() { try { console.log('[WML quiz-diag] CLEAR-PERSIST key=' + lsKey()); localStorage.removeItem(lsKey()); } catch (e) {} }
             function rehydrate(opts) {
                 if (opts && opts.quizType) quizType = (opts.quizType === 'foundational') ? 'foundational' : (opts.quizType === 'mark_scheme_assessment') ? 'mark_scheme_assessment' : 'mark_scheme';
                 try {
                     const raw = localStorage.getItem(lsKey());
+                    console.log('[WML quiz-diag] REHYDRATE key=' + lsKey() + ' found=' + (!!raw) + ' fqStage=' + state.fqStage + ' fqBank=' + state.fqBank + ' quizType=' + quizType);
                     if (!raw) return false;
                     const d = JSON.parse(raw);
                     if (!d || !Array.isArray(d.qs) || !d.qs.length) return false;
+                    console.log('[WML quiz-diag] REHYDRATE hit idx=' + (d.idx || 0) + ' total=' + (d.total || d.qs.length) + ' round=' + (d.round || 1));
                     qs = d.qs; idx = d.idx || 0; total = d.total || d.qs.length;
                     _syncFqSidebar();   // v7.19.954: resumed rounds re-derive the sidebar length too
                     round = d.round || 1; roundResults = Array.isArray(d.roundResults) ? d.roundResults : [];
@@ -10846,6 +10848,7 @@
             // Score in code, but WITHHOLD feedback until the round ends. Just record
             // and move straight to the next question.
             async function recordAnswer(msg, q) {
+                console.log('[WML quiz-diag] RECORD-ANSWER start id=' + (q && q.id) + ' qsid=' + lsKey());
                 busy = true; showCanvasTyping();
                 try {
                     // v7.19.643: send the quiz context so the server can rebuild this
@@ -10855,12 +10858,15 @@
                         board: state.board, subject: state.subject, text: state.text, quiz_type: quizType, qsid: lsKey() });
                     removeCanvasTyping();
                     if (!res || !res.success) {
+                        console.warn('[WML quiz-diag] RECORD-ANSWER FAILED res=', res);
                         aiBubble("Sorry — I couldn't record that one. Type your answer again (e.g. a letter for multiple choice).");
                         appendQuickBar('Show the question again', renderQ);
                         return;
                     }
                     roundResults.push({ q, res, answer: msg });
-                    idx++; persist();
+                    idx++;
+                    console.log('[WML quiz-diag] RECORD-ANSWER ok idx→' + idx + ' running=' + (res.running ? (res.running.score + '/' + res.running.max) : '?'));
+                    persist();
                     if (idx >= qs.length) { await endRound(); }
                     else renderQ();   // no mid-round feedback — next question
                 } catch (e) {
@@ -16451,6 +16457,7 @@
                         tp.quizCtl.tryResume();
                     }
                     // v7.19.579: FQ (banked text) resumes its deterministic round the same way.
+                    console.log('[WML quiz-diag] FQ resume gate: _fqDeterministic=' + _fqDeterministic() + ' hasQuizCtl=' + (!!tp.quizCtl) + ' task=' + state.task + ' fqStage=' + state.fqStage + ' fqBank=' + state.fqBank + ' text=' + state.text);
                     if (_fqDeterministic() && tp.quizCtl) {
                         tp.quizCtl.tryResume({ quizType: 'foundational' });
                     }
