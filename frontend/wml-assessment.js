@@ -6339,7 +6339,10 @@
     function _poetryCnDonePoemIds() {
         try {
             if (!canvasEditor || !(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return [];
-            const ELS = ['speaker', 'context', 'form', 'structure', 'themes', 'purpose', 'message', 'comparisons'];
+            // v7.19.991: slugs from THE canonical spine (WML.POETRY_CN_SPINE) — literal
+            // fallback only if core hasn't exported it (never brick done-detection).
+            const ELS = (WML.POETRY_CN_SPINE || []).map(e => e.slug);
+            if (!ELS.length) ELS.push('speaker', 'context', 'form', 'structure', 'themes', 'purpose', 'message', 'comparisons');
             const filled = {};
             canvasEditor.state.doc.descendants((n) => {
                 if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) {
@@ -6531,31 +6534,37 @@
             var pid = (window.state && state.currentPoemId) ? String(state.currentPoemId)
                 : _poetryCnCurrentPoemId(hist);
             if (!pid) return null;
-            var ELS = ['speaker', 'context', 'form', 'structure', 'themes', 'purpose', 'message', 'comparisons'];
-            var LABELS = ['Speaker', 'Context', 'Form', 'Structure & Language', 'Themes', 'Purpose', 'Message', 'Comparisons'];
+            // v7.19.991: derive from THE canonical spine (WML.POETRY_CN_SPINE) — never a
+            // local copy (four hand-copies of this list drifted the sidebar to 7 elements).
+            var SPINE = (typeof WML !== 'undefined' && WML.POETRY_CN_SPINE) || [];
+            if (!SPINE.length) return null;
+            var ELS = SPINE.map(function (e) { return e.slug; });
             var seen = {};
+            var elRe = new RegExp('^poem_(.+?)_(' + ELS.join('|') + ')$');
             if (canvasEditor) {
                 canvasEditor.state.doc.descendants(function (n) {
                     if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) {
-                        var m = /^poem_(.+?)_(speaker|context|form|structure|themes|purpose|message|comparisons)$/.exec(String(n.attrs.fieldId));
+                        var m = elRe.exec(String(n.attrs.fieldId));
                         if (m && m[1] === pid && (n.textContent || '').trim().length > 0) seen[m[2]] = true;
                     }
                 });
             }
             var filled = 0;
             for (var i = 0; i < ELS.length; i++) { if (seen[ELS[i]]) filled++; }
-            var step = Math.min(filled + 1, 8);
+            var step = Math.min(filled + 1, SPINE.length);
             var title = '';
             try {
                 var poems = _poetryAnthologyPoems();
                 for (var j = 0; j < poems.length; j++) { if (poems[j].id === pid) { title = poems[j].title; break; } }
             } catch (_) {}
-            // FQ gold-standard shape: top-liner = task · context ("Foundational Quiz · Round 1"),
-            // bold heading under the bar = position ("Round 1 · Question 1 of 10").
+            // v7.19.991 (Neil ruling — no redundant info): top-liner = the POEM only (the
+            // sidebar already says Conceptual Notes); count = "Element N of 8" ONCE (unit
+            // word, not a second "Step" count); bold heading = the element name only.
             return {
-                section: 'Conceptual Notes · ' + (title || 'Your poem'),
-                step: step, total: 8,
-                heading: 'Element ' + step + ' of 8 · ' + LABELS[step - 1],
+                section: title || 'Your poem',
+                step: step, total: SPINE.length,
+                unit: 'Element',
+                heading: SPINE[step - 1].label,
             };
         } catch (e) { console.warn('[WML poetry-CN] _poetryCnWalkBeat failed', e); return null; }
     }

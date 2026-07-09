@@ -713,15 +713,24 @@ window.WML = (function() {
         { step: 5, label: 'Next Steps' },
     ];
 
-    const POETRY_CN_STEPS = [
-        { step: 1, label: 'S1 Speaker' },
-        { step: 2, label: 'S2 Context' },
-        { step: 3, label: 'S3 Form' },
-        { step: 4, label: 'S4 Techniques' },
-        { step: 5, label: 'S5 Themes' },
-        { step: 6, label: 'S6 Purpose' },
-        { step: 7, label: 'S7 Message' },
+    // v7.19.991 (Neil SOP): THE canonical poetry-CN element spine — ONE definition, every
+    // consumer derives (sidebar steps, chat beat-chip, done-poem detection). Order + slugs
+    // are FROZEN to the doc fieldIds (poem_{id}_{slug}) and the protocol walk
+    // (pn-conceptual-notes.md). The pre-991 sidebar hand-listed 7 steps (missing
+    // Comparisons, stale 'Techniques' label) — exactly the drift a single spine prevents.
+    // (Named SPINE: the legacy 7-item POETRY_CN_ELEMENTS below — old chat-protocol element
+    // tracker, cn_section_N types — is ALSO stale-7; left untouched, superseded by this.)
+    const POETRY_CN_SPINE = [
+        { slug: 'speaker',     label: 'Speaker' },
+        { slug: 'context',     label: 'Context' },
+        { slug: 'form',        label: 'Form' },
+        { slug: 'structure',   label: 'Structure & Language' },
+        { slug: 'themes',      label: 'Themes' },
+        { slug: 'purpose',     label: 'Purpose' },
+        { slug: 'message',     label: 'Message' },
+        { slug: 'comparisons', label: 'Comparisons' },
     ];
+    const POETRY_CN_STEPS = POETRY_CN_SPINE.map((e, i) => ({ step: i + 1, label: e.label }));
 
     const NONFICTION_CN_STEPS = [
         { step: 1, label: 'S1 Writer\'s Voice' },
@@ -3182,11 +3191,14 @@ window.WML = (function() {
         const pct = Math.max(0, Math.min(100, _p || 0));
         const esc = (t) => String(t == null ? '' : t).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
         const section = beat.section ? '<span class="swml-beat-section">' + esc(beat.section) + '</span>' : '';
-        // Step count rendered "Step 4 of 5" with the current number weighted.
+        // v7.19.991: count word follows the walk's own vocabulary (beat.unit — 'Element' for
+        // CN, default 'Step') so the chip never says "Step" of a thing the protocol calls
+        // something else (Neil: 'Step 1 of 8' + 'Element 1 of 8' side by side read as two counts).
+        const unitWord = esc(beat.unit || 'Step');
         const stepLabel = (beat.step != null && beat.total != null)
-            ? '<span class="swml-beat-step">Step <b>' + beat.step + '</b> of ' + beat.total + '</span>'
+            ? '<span class="swml-beat-step">' + unitWord + ' <b>' + beat.step + '</b> of ' + beat.total + '</span>'
             : '<span class="swml-beat-step">' + pct + '%</span>';
-        const aria = (beat.section ? esc(beat.section) + ' — ' : '') + (beat.step != null ? 'step ' + beat.step + ' of ' + beat.total : pct + '%');
+        const aria = (beat.section ? esc(beat.section) + ' — ' : '') + (beat.step != null ? unitWord.toLowerCase() + ' ' + beat.step + ' of ' + beat.total : pct + '%');
         return '<div class="swml-beat" role="status" aria-label="' + aria + '">'
             + '<div class="swml-beat-top">' + section + stepLabel + '</div>'
             + '<div class="swml-beat-track"><div class="swml-beat-fill" style="width:' + pct + '%"></div></div>'
@@ -3250,7 +3262,7 @@ window.WML = (function() {
         NONFICTION_ANTHOLOGY_BY_BOARD, BOARD_TEXT_FILTER, AUTHOR_MAP, SECTION_COLOURS, getTextLabel, isSkipTextSelect,
         // Step arrays
         PLAN_STEPS, ASSESSMENT_STEPS, POLISHING_STEPS, QUOTE_ANALYSIS_STEPS,
-        CONCEPTUAL_NOTES_STEPS, POETRY_CN_STEPS, NONFICTION_CN_STEPS,
+        CONCEPTUAL_NOTES_STEPS, POETRY_CN_STEPS, POETRY_CN_SPINE, NONFICTION_CN_STEPS,
         ESSAY_PLAN_STEPS, MODEL_ANSWER_STEPS, ESSAY_PLAN_RECALL_STEPS,
         MODEL_ANSWER_ADVANCED_STEPS, EXAM_QUESTION_STEPS, MEMORY_PRACTICE_STEPS,
         FOUNDATIONAL_QUIZ_STEPS,
