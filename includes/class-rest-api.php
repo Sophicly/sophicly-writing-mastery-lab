@@ -954,6 +954,10 @@ class SWML_REST_API {
         $board   = sanitize_text_field($p['board']   ?? '');
         $subject = sanitize_text_field($p['subject'] ?? '');
         $text    = sanitize_text_field($p['text']    ?? '');
+        // v7.19.999: quiz-session scope — the client's canonical session id (== its resume
+        // sidecar key). Scopes BOTH the engine accumulator and the bank meta so staged FQ
+        // stages / cross-lesson quiz switches never clobber each other. '' = legacy slot.
+        $qsid    = isset($p['qsid']) ? sanitize_key($p['qsid']) : '';
         // v7.19.823: normalize at the REST boundary for the quiz paths too — FQ/MSA
         // resolve their bank FILE by this slug, and the lesson's raw slug (bridge
         // text-post or picker id) may be an alias form (omam vs of_mice_and_men…).
@@ -1025,12 +1029,12 @@ class SWML_REST_API {
         // is stamped with THIS lesson, not a stale session topic (which mis-mapped MSA grades
         // to the wrong LearnDash lesson). Null when absent → engine falls back to the session.
         $topic = isset($p['topic_number']) ? absint($p['topic_number']) : null;
-        $engine->start($user_id, $is_msa ? 'mark_scheme_assessment' : ($is_fq ? 'foundational' : 'mark_scheme'), count($picked), $board, $text, $attempt, $topic);
+        $engine->start($user_id, $is_msa ? 'mark_scheme_assessment' : ($is_fq ? 'foundational' : 'mark_scheme'), count($picked), $board, $text, $attempt, $topic, $qsid);
 
         // Persist the picked set WITH keys server-side; client never sees keys.
         // v7.19.997: fq_stage rides the bank meta so /quiz/finish can key the persisted
         // result per STAGE (staged poetry FQ — each stage gets its own result card).
-        update_user_meta($user_id, self::QUIZ_BANK_META . $user_id,
+        update_user_meta($user_id, $this->quiz_bank_key($user_id, $qsid),
             wp_slash(wp_json_encode(['board' => $board, 'subject' => $subject, 'text' => $text,
                                      'attempt' => $attempt,
                                      'fq_stage' => ($is_fq && !empty($stage)) ? (int) $stage : 0,
@@ -1053,8 +1057,9 @@ class SWML_REST_API {
         $user_id = get_current_user_id();
         $q_id    = sanitize_text_field($p['id'] ?? '');
         $answer  = is_string($p['answer'] ?? null) ? trim($p['answer']) : '';
+        $qsid    = isset($p['qsid']) ? sanitize_key($p['qsid']) : '';  // v7.19.999: quiz-session scope
 
-        $bank = $this->read_quiz_bank($user_id);
+        $bank = $this->read_quiz_bank($user_id, $qsid);
         $q = null;
         if ($bank && !empty($bank['questions'])) {
             foreach ($bank['questions'] as $cand) {
@@ -1100,7 +1105,7 @@ class SWML_REST_API {
             'category'      => $q['category'],
             'correct'       => $res['correctKey'],
             'student_answer' => $answer,
-        ]);
+        ], $qsid);
         $running = [
             'score' => $acc['score_running'] ?? 0,
             'max'   => $acc['max_running']   ?? 0,
@@ -1139,17 +1144,18 @@ class SWML_REST_API {
         // rounds-to-mastery only stamped when the round actually hit 5/5.
         $mastered = !empty($p['mastered']);
         $rounds   = $mastered ? max(1, absint($p['rounds'] ?? 1)) : 0;
+        $qsid     = isset($p['qsid']) ? sanitize_key($p['qsid']) : '';  // v7.19.999: quiz-session scope
         // v7.19.746: read the picked-session TEXT before finalize deletes the bank meta,
         // so we can attach the student's mark-scheme CONFIDENCE self-rating (per-text, from
         // the [sophicly_mark_scheme_understanding] survey, keyed by the SAME text slug WML
         // uses) for the MSA calibration reflection. Self-rating, never a grade signal.
-        $ms_bank = $this->read_quiz_bank($user_id);
+        $ms_bank = $this->read_quiz_bank($user_id, $qsid);
         $ms_text = is_array($ms_bank) ? sanitize_key((string) ($ms_bank['text'] ?? '')) : '';
         // v7.19.997: staged FQ — the stage rides the bank meta (set at /quiz/start) into
         // finalize so persistence keys per stage and the result card knows its stage.
         $fq_stage = is_array($ms_bank) ? (int) ($ms_bank['fq_stage'] ?? 0) : 0;
-        $summary  = SWML_Quiz_Engine::instance()->finalize($user_id, 0, $rounds, ['fq_stage' => $fq_stage]);
-        delete_user_meta($user_id, self::QUIZ_BANK_META . $user_id);
+        $summary  = SWML_Quiz_Engine::instance()->finalize($user_id, 0, $rounds, ['fq_stage' => $fq_stage], $qsid);
+        delete_user_meta($user_id, $this->quiz_bank_key($user_id, $qsid));
 
         if (!$summary) return rest_ensure_response(['success' => false, 'code' => 'finalize_failed']);
 
@@ -1315,9 +1321,26 @@ class SWML_REST_API {
         return null;
     }
 
+    /**
+     * v7.19.999: the picked-session bank meta is scoped per quiz-session (qsid — same
+     * canonical id the client uses for its resume sidecar + the accumulator), so two
+     * quizzes in flight (staged FQ stages, cross-lesson switches) don't clobber each
+     * other's question set. Empty qsid = the legacy single per-user slot.
+     */
+    private function quiz_bank_key($user_id, $qsid = '') {
+        return self::QUIZ_BANK_META . $user_id . ($qsid !== '' ? '__' . sanitize_key($qsid) : '');
+    }
+
     /** Decode the stored picked-session meta (with keys). Returns null if none. */
-    private function read_quiz_bank($user_id) {
-        $raw = get_user_meta($user_id, self::QUIZ_BANK_META . $user_id, true);
+    private function read_quiz_bank($user_id, $qsid = '') {
+        $raw = get_user_meta($user_id, $this->quiz_bank_key($user_id, $qsid), true);
+        // v7.19.999: cross-deploy fallback — a round picked before this scoped-key change
+        // stored its bank under the legacy un-scoped slot. Read it so a resumed round's
+        // mastery-notes / bank lookups still resolve. (Per-question SCORING already has a
+        // stronger stateless-by-id fallback, v643, so this is only the bonus path.)
+        if (empty($raw) && $qsid !== '') {
+            $raw = get_user_meta($user_id, $this->quiz_bank_key($user_id, ''), true);
+        }
         if (empty($raw)) return null;
         if (is_array($raw)) return $raw;
         $d = json_decode($raw, true);

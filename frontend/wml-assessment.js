@@ -10346,7 +10346,15 @@
             // not state.text — else a forms FQ (fqBank=poetic_forms) and a poem FQ on the same
             // anthology both key on the course text and clobber each other's resume state.
             // Empty fqBank (MSQ/MSA/poem-FQ) falls back to state.text → byte-identical to before.
-            const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, (state.fqBank || state.text), (state.attempt || 1)].join('_');
+            // v7.19.999: STAGE is part of the quiz-session identity — staged FQ (the 3
+            // poetry stages, bridge-mapped) are 3 SEPARATE quizzes on the same bank, so
+            // without the stage they shared ONE resume sidecar and clobbered each other
+            // (open stage 2 → stage 1's resume gone → answer fell through to the AI =
+            // generic coaching, progress chip vanished). This same string IS the canonical
+            // quiz-session-id (qsid) sent to the server so the accumulator + bank meta key
+            // off the identical scope — one clobber-proof identity, client and server, for
+            // FQ/MSQ/MSA uniformly (MSQ/MSA are stage 0 → suffix `_s0`, still unique).
+            const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, (state.fqBank || state.text), (state.attempt || 1), 's' + (state.fqStage || 0)].join('_');
             function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts, predictedScore, awaitingPrediction })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function rehydrate(opts) {
@@ -10844,7 +10852,7 @@
                     // question from its source pool when the per-user bank slot has been
                     // lost (resume / another quiz reused or finished the slot).
                     const res = await apiPost(API.quizAnswer, { id: q.id, answer: _toOrig(msg, q),
-                        board: state.board, subject: state.subject, text: state.text, quiz_type: quizType });
+                        board: state.board, subject: state.subject, text: state.text, quiz_type: quizType, qsid: lsKey() });
                     removeCanvasTyping();
                     if (!res || !res.success) {
                         aiBubble("Sorry — I couldn't record that one. Type your answer again (e.g. a letter for multiple choice).");
@@ -10918,7 +10926,7 @@
                 busy = true; showCanvasTyping();
                 try {
                     const res = await apiPost(API.quizAnswer, { id: q.id, answer: _toOrig(ans, q),
-                        board: state.board, subject: state.subject, text: state.text, quiz_type: quizType });
+                        board: state.board, subject: state.subject, text: state.text, quiz_type: quizType, qsid: lsKey() });
                     removeCanvasTyping();
                     if (!res || !res.success) { aiBubble('Sorry — I couldn’t update that one. Try again in a moment.'); return; }
                     roundResults[k - 1] = { q, res, answer: ans };
@@ -11050,6 +11058,7 @@
                 let qr = null;
                 try {
                     const res = await apiPost(API.quizFinish, { rounds: round, mastered: mastered,
+                        qsid: lsKey(),  // v7.19.999: finalize reads THIS session's scoped accumulator
                         // v7.19.968 (B): the served question ids — the server rebuilds the round's
                         // @form set from these when the volatile bank-meta slot is gone (resume),
                         // so the mastery organiser-fill survives a resumed round.
@@ -11216,6 +11225,7 @@
                 busy = true; showCanvasTyping();
                 try {
                     const res = await apiPost(API.quizStart, {
+                        qsid: lsKey(),  // v7.19.999: scope the accumulator + bank meta to THIS quiz session
                         board: state.board, subject: state.subject, text: state.text || '',
                         // v7.19.750: MSA re-sits must each carry a DISTINCT attempt # so the grade
                         // row isn't overwritten (G8 clobbering G9). msaAttempts holds the COMPLETED
@@ -11295,9 +11305,9 @@
                 if (!active) return;
                 try {
                     for (let i = idx; i < qs.length; i++) {
-                        try { await apiPost(API.quizAnswer, { id: qs[i].id, answer: '' }); } catch (e) {}
+                        try { await apiPost(API.quizAnswer, { id: qs[i].id, answer: '', board: state.board, subject: state.subject, text: state.text, quiz_type: quizType, qsid: lsKey() }); } catch (e) {}
                     }
-                    const res = await apiPost(API.quizFinish, { rounds: round, mastered: false });
+                    const res = await apiPost(API.quizFinish, { rounds: round, mastered: false, qsid: lsKey() });
                     if (res && res.success && res.quizResult) {
                         _pendingQuizResult = res.quizResult;
                         if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
@@ -11309,6 +11319,11 @@
 
             return {
                 start, reset, abandonRound, handleTurn, tryResume: rehydrate,
+                // v7.19.999: canonical quiz-session-id — the SAME string as the resume
+                // sidecar key, sent to the server (qsid) so accumulator + bank meta scope
+                // to this exact quiz session. Reflects the CURRENT quizType/stage at call
+                // time (quizType is set before any api call in start()/rehydrate()).
+                sessionId: lsKey,
                 get active() { return active; },
                 get midRound() { return active && qs.length > 0 && idx < qs.length; },
                 get answered() { return active ? roundResults.length : 0; },

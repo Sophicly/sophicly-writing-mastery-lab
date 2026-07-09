@@ -59,15 +59,42 @@ class SWML_Quiz_Engine {
     //  ACCUMULATOR CRUD
     // ─────────────────────────────────────────────────────────────────────
 
-    private function meta_key($user_id) {
-        return self::META_KEY_PREFIX . absint($user_id);
+    // v7.19.999: UNIVERSAL quiz-session scope. The accumulator was a SINGLE per-user
+    // slot, so any two quizzes "in flight" at once (the 3 staged poetry FQ stages, or a
+    // student switching quiz lessons mid-round) clobbered each other's running total +
+    // final grade. $scope = the client's canonical quiz-session-id (qsid — same string
+    // as its resume sidecar key: type+board+subject+bank+attempt+stage). Empty scope =
+    // the LEGACY un-scoped slot (the AI-driven marker path still uses it, unchanged).
+    // Deterministic FQ/MSQ/MSA all pass a real qsid → one clobber-proof slot each.
+    private function meta_key($user_id, $scope = '') {
+        $key = self::META_KEY_PREFIX . absint($user_id);
+        if ($scope !== '') $key .= '__' . sanitize_key($scope);
+        return $key;
     }
 
     /**
      * Read the current accumulator. Returns null if no active quiz.
      */
-    public function get_accumulator($user_id) {
-        $raw = get_user_meta($user_id, $this->meta_key($user_id), true);
+    public function get_accumulator($user_id, $scope = '') {
+        $raw = get_user_meta($user_id, $this->meta_key($user_id, $scope), true);
+        // v7.19.999: one-shot migration — a quiz already in flight when this scoped-key
+        // change deployed still has its accumulator under the legacy un-scoped key. The
+        // pre-deploy single slot IS this student's active quiz, so adopt it into the
+        // scoped key (a resumed round keeps its running total). Fires only when the
+        // scoped slot is empty AND a legacy slot exists — and get_accumulator(scope) is
+        // only reached AFTER /quiz/start wrote the scoped slot, so on a NORMAL flow this
+        // never fires; it triggers solely on a cross-deploy resume. After one cycle the
+        // legacy slot is gone.
+        if (empty($raw) && $scope !== '') {
+            $legacy_raw = get_user_meta($user_id, $this->meta_key($user_id, ''), true);
+            if (!empty($legacy_raw)) {
+                update_user_meta($user_id, $this->meta_key($user_id, $scope),
+                    is_array($legacy_raw) ? wp_slash(wp_json_encode($legacy_raw)) : wp_slash((string) $legacy_raw));
+                delete_user_meta($user_id, $this->meta_key($user_id, ''));
+                error_log("[WML Quiz Engine] migrated legacy accumulator → scope={$scope} uid={$user_id}");
+                $raw = get_user_meta($user_id, $this->meta_key($user_id, $scope), true);
+            }
+        }
         if (empty($raw)) return null;
         if (is_array($raw)) return $raw;
         $decoded = json_decode($raw, true);
@@ -78,25 +105,29 @@ class SWML_Quiz_Engine {
         return is_array($decoded) ? $decoded : null;
     }
 
-    private function save_accumulator($user_id, $accumulator) {
+    private function save_accumulator($user_id, $accumulator, $scope = '') {
         return update_user_meta(
             $user_id,
-            $this->meta_key($user_id),
+            $this->meta_key($user_id, $scope),
             wp_slash(wp_json_encode($accumulator))
         );
     }
 
-    private function clear_accumulator($user_id) {
-        delete_user_meta($user_id, $this->meta_key($user_id));
+    private function clear_accumulator($user_id, $scope = '') {
+        delete_user_meta($user_id, $this->meta_key($user_id, $scope));
     }
 
     /**
      * v7.19.577: public reset — wipes the active quiz accumulator so the next turn
      * carries NO "QUIZ STATE" block (the AI starts the quiz fresh). Called by the
      * chat-clear endpoint so clearing the chat is a genuine fresh start for quizzes.
+     * v7.19.999: clears the LEGACY un-scoped slot (AI-marker path). The deterministic
+     * scoped accumulators self-manage — /quiz/start resets on a fresh round and
+     * /quiz/finish clears on abandon — so a per-stage clear never nukes a sibling
+     * stage's in-flight quiz.
      */
-    public function reset_user($user_id) {
-        $this->clear_accumulator($user_id);
+    public function reset_user($user_id, $scope = '') {
+        $this->clear_accumulator($user_id, $scope);
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -106,7 +137,7 @@ class SWML_Quiz_Engine {
     /**
      * Start a new quiz attempt. Resets any previous accumulator.
      */
-    public function start($user_id, $quiz_type, $total_questions, $board, $text, $attempt_number = 1, $topic_number = null) {
+    public function start($user_id, $quiz_type, $total_questions, $board, $text, $attempt_number = 1, $topic_number = null, $scope = '') {
         $session = SWML_Session_Manager::get_active_session($user_id);
         $session_id   = $session['session_id']            ?? '';
         // v7.19.741: prefer the CURRENT lesson's topic_number passed explicitly by the caller
@@ -148,18 +179,18 @@ class SWML_Quiz_Engine {
             $accumulator['attempt_number'] = $seq;
         }
 
-        $this->save_accumulator($user_id, $accumulator);
-        error_log("[WML Quiz Engine] start uid={$user_id} type={$accumulator['quiz_type']} total={$accumulator['total_questions']} board={$accumulator['board']} text={$accumulator['text']} attempt={$accumulator['attempt_number']}");
+        $this->save_accumulator($user_id, $accumulator, $scope);
+        error_log("[WML Quiz Engine] start uid={$user_id} type={$accumulator['quiz_type']} total={$accumulator['total_questions']} board={$accumulator['board']} text={$accumulator['text']} attempt={$accumulator['attempt_number']} scope={$scope}");
         return $accumulator;
     }
 
     /**
      * Record a single question's result. Updates running totals.
      */
-    public function record_question($user_id, $args) {
-        $accumulator = $this->get_accumulator($user_id);
+    public function record_question($user_id, $args, $scope = '') {
+        $accumulator = $this->get_accumulator($user_id, $scope);
         if (!$accumulator) {
-            error_log("[WML Quiz Engine] record_question called with no active accumulator (uid={$user_id})");
+            error_log("[WML Quiz Engine] record_question called with no active accumulator (uid={$user_id} scope={$scope})");
             return null;
         }
 
@@ -198,8 +229,8 @@ class SWML_Quiz_Engine {
             $accumulator['total_questions']
         );
 
-        $this->save_accumulator($user_id, $accumulator);
-        error_log("[WML Quiz Engine] record_question uid={$user_id} q={$q_num} {$marks_awarded}/{$max_marks} running={$accumulator['score_running']}/{$accumulator['max_running']}");
+        $this->save_accumulator($user_id, $accumulator, $scope);
+        error_log("[WML Quiz Engine] record_question uid={$user_id} q={$q_num} {$marks_awarded}/{$max_marks} running={$accumulator['score_running']}/{$accumulator['max_running']} scope={$scope}");
         return $accumulator;
     }
 
@@ -211,10 +242,10 @@ class SWML_Quiz_Engine {
      * The $grade_equivalent argument is retained only for the deprecated
      * record_quiz_score shim signature and is ignored for derivation.
      */
-    public function finalize($user_id, $grade_equivalent = 0, $rounds = 0, $extra = []) {
-        $accumulator = $this->get_accumulator($user_id);
+    public function finalize($user_id, $grade_equivalent = 0, $rounds = 0, $extra = [], $scope = '') {
+        $accumulator = $this->get_accumulator($user_id, $scope);
         if (!$accumulator) {
-            error_log("[WML Quiz Engine] finalize called with no active accumulator (uid={$user_id})");
+            error_log("[WML Quiz Engine] finalize called with no active accumulator (uid={$user_id} scope={$scope})");
             return null;
         }
         // v7.19.997: caller-supplied extras (e.g. fq_stage from the bank meta) ride the
@@ -254,8 +285,8 @@ class SWML_Quiz_Engine {
             error_log("[WML Quiz Engine] finalize NO PERSISTENCE for quiz_type={$accumulator['quiz_type']} uid={$user_id} (add persist_{$accumulator['quiz_type']} method)");
         }
 
-        $this->clear_accumulator($user_id);
-        error_log("[WML Quiz Engine] finalize uid={$user_id} type={$summary['quiz_type']} score={$score}/{$max} pct={$percentage} grade={$grade}");
+        $this->clear_accumulator($user_id, $scope);
+        error_log("[WML Quiz Engine] finalize uid={$user_id} type={$summary['quiz_type']} score={$score}/{$max} pct={$percentage} grade={$grade} scope={$scope}");
         return $summary;
     }
 
