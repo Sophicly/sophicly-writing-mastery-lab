@@ -119,11 +119,11 @@ Parsed deterministically (keys + feedback stripped before reaching the client). 
 14. **Type: Select All That Apply \[Tests AO3 Integration\]**
     * **Question:** Which build "specific, detailed links between context, text and task" for DNA? (Select all that apply)
     * **Options:** A) Reading Kelly's ordinary, unglamorous gang through the mid-2000s panic about feral youth — atrocity authored by recognisable adolescents, not monsters, B) Linking the play's writing for young people to perform to its force as a mirror held up to real peer-group cruelty, C) Using the 2000s anxiety about youth cruelty to explain why the gang's violence feels casual and everyday, D) Listing the year DNA was written with no link to the play.
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Each linked reading makes context drive interpretation — the feral-youth panic, the play's performing audience, the everyday casualness of the cruelty. A bare composition date is bolt-on context that earns little; the band rewards context that drives the concept.
-   * **AO:** AO3
-   * **Why D:** A standalone date with no link to text or task is the classic bolt-on error the descriptor discourages.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Each linked reading makes context drive interpretation — the feral-youth panic, the play's performing audience, the everyday casualness of the cruelty. A bare composition date is bolt-on context that earns little; the band rewards context that drives the concept.
+    * **AO:** AO3
+    * **Why D:** A standalone date with no link to text or task is the classic bolt-on error the descriptor discourages.
 15. **Type: MCQ \[Tests AO2 Verb Ladder\]**
     * **Question:** One response "examines" how Kelly's fractured Jan-and-Mark framing works. Another reads it as a sustained pattern that stages a community narrating catastrophe before it can feel it, exploring several effects. For AO2, what single move takes the second to Level 6?
     * **Options:** A) It quotes more of their dialogue to widen its evidence, B) It moves from examination of the method to exploration of the effects of the writer's methods to create meanings, C) It deploys rarer critical terminology, D) It develops the point across longer paragraphs.
