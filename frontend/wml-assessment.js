@@ -6680,6 +6680,7 @@
     }
     function _poetryCnStartPoem(ctx, poem) {
         try {
+            console.log('[WML CN-diag] startPoem poem.id=' + (poem && poem.id) + ' poem.title=' + (poem && poem.title) + ' keys=' + (poem ? Object.keys(poem).join(',') : 'NO-POEM'));
             if (window.state) state.currentPoemId = poem.id;
             _poetryCnScrollToPoem(poem.id); // v7.19.984: jump the doc to this poem's section + expand
             // v7.19.992 (Neil ruling): the ACTIVE poem's read-along card auto-expands,
