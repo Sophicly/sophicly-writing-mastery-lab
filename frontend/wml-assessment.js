@@ -6883,13 +6883,18 @@
     }
     function _poetryCnOpenerPending(hist) {
         try {
-            if (!_poetryCnPickerActive()) return null;
+            var _pa = _poetryCnPickerActive();
+            var _pid = _poetryCnActivePoemId(hist);
+            var _slug = _pid ? _poetryCnFirstUnfilledElement(_pid) : '';
+            var _cfg = _slug && (typeof WML !== 'undefined' && WML.POETRY_CN_OPENERS) ? WML.POETRY_CN_OPENERS[_slug] : null;
+            console.log('[WML CN-diag] pending gates: pickerActive=' + _pa + ' reviewMode=' + (window.state && state.reviewMode) + ' pid=' + _pid + ' currentPoemId=' + (window.state && state.currentPoemId) + ' canvasEditor=' + (!!canvasEditor) + ' isPoetryCnDoc=' + (WML.isPoetryCnDoc && WML.isPoetryCnDoc()) + ' slug=' + _slug + ' hasCfg=' + (!!_cfg) + ' stanceGiven=' + (_pid && _slug ? _poetryCnStanceGiven(hist, _pid, _slug) : 'n/a'));
+            if (!_pa) return null;
             if (window.state && state.reviewMode) return null;
-            var pid = _poetryCnActivePoemId(hist);
+            var pid = _pid;
             if (!pid) return null;
-            var slug = _poetryCnFirstUnfilledElement(pid);
+            var slug = _slug;
             if (!slug) return null;
-            var cfg = (typeof WML !== 'undefined' && WML.POETRY_CN_OPENERS) ? WML.POETRY_CN_OPENERS[slug] : null;
+            var cfg = _cfg;
             if (!cfg) return null; // capability gate — this element keeps its AI-Socratic opening
             if (_poetryCnStanceGiven(hist, pid, slug)) return null; // answered → the AI walk owns it
             return { pid: pid, slug: slug, cfg: cfg };
@@ -7000,6 +7005,7 @@
     // question, never a dead-end).
     function _maybePoetryCnOpener(ctx, hist, opts) {
         try {
+            console.log('[WML CN-diag] maybeOpener called: ctx=' + (!!ctx) + ' chatMessages=' + (!!(ctx && ctx.chatMessages)) + ' chatTextarea=' + (!!(ctx && ctx.chatTextarea)) + ' start=' + (!!(opts && opts.start)) + ' histArray=' + Array.isArray(hist));
             if (!ctx || !ctx.chatMessages || !ctx.chatTextarea) return;
             var pending = _poetryCnOpenerPending(hist);
             var key = pending ? (pending.pid + ':' + pending.slug) : '';
