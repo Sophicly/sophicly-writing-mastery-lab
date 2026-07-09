@@ -3152,17 +3152,18 @@ window.WML = (function() {
             if (barM) pct = parseInt(barM[1], 10);
         }
         if (pct != null) pct = Math.max(0, Math.min(100, pct));
-        // Section label = the pin minus 📌, minus the count token (any vocab, wherever it sits —
-        // CN's is mid-label: "Walking Away — Element 1 of 8: Speaker"), tidied of orphan separators.
-        let label = crumbLine
+        // Section label = the pin minus 📌 and minus EVERY count token — "Element 1 of 8" AND a
+        // bare redundant "Step 1" (the model often emits both, e.g. "…Element 1 of 8: Speaker >
+        // Step 1"). Split on › > — only (keep ":" so "Part B.1: Structure" survives), then strip
+        // orphan separators/colons left behind per segment and drop the empties.
+        const rawLabel = crumbLine
             .replace(/📌\s*/, '')
-            .replace(/(?:Step|Element|Part|Question|Stage|Poem)\s+\d+\s+of\s+\d+/gi, '')
-            .replace(/\s*[—–-]\s*:/g, ':')
-            .replace(/(?:&gt;|›|>|:|—|–|-)\s*$/g, '')
-            .replace(/\s{2,}/g, ' ')
-            .trim();
-        const parts = label.split(/\s*(?:&gt;|›|>)\s*/).filter(Boolean);
-        let task = '', section = label;
+            .replace(/(?:Step|Element|Part|Question|Stage|Poem)\s+\d+(?:\s+of\s+\d+)?/gi, '');
+        const parts = rawLabel
+            .split(/\s*(?:&gt;|›|>|—|–)\s*/)
+            .map(p => p.replace(/^[\s:—–>-]+|[\s:—–>-]+$/g, '').replace(/\s{2,}/g, ' ').trim())
+            .filter(Boolean);
+        let task = '', section = '';
         if (parts.length >= 2) { task = parts[0]; section = parts.slice(1).join(' · '); }
         else if (parts.length === 1) { section = parts[0]; }
         if (pct == null && !section) return null;
@@ -3215,8 +3216,8 @@ window.WML = (function() {
             // bars instead of "Step N of M" + "[Progress bar:]") slipped past the Planning/
             // Assessment-keyed strips → raw ASCII leaked. Universal, no task-name gate; the beat-
             // chip (added by the caller) replaces it.
-            .replace(/<p>\s*📌[\s\S]*?<\/p>/gi, '')
-            .replace(/<p>\s*[▮▯█▓▒░■□▪▫◼◻◾◽⬛⬜▰▱][\s\S]*?<\/p>/gi, '')
+            .replace(/<p>(?:(?!<\/p>)[\s\S])*?📌(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '')
+            .replace(/<p>(?:(?!<\/p>)[\s\S])*?[▮▯█▓▒░■□▪▫◼◻◾◽⬛⬜▰▱]{2,}(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '')
             .replace(/[▮▯█▓▒░■□▪▫◼◻◾◽⬛⬜▰▱]{2,}\s*\d{0,3}\s*%?/g, '');
     }
 
