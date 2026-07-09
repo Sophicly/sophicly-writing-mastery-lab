@@ -476,22 +476,70 @@ class SWML_Quiz_Bank {
      * STEMS from a pool. Universal — every quiz AND assessment draws through
      * pick_from_pool, so the guard lives at the root, not per-quiz. Normalises case /
      * whitespace / punctuation so a re-typed duplicate is caught; keeps the FIRST
-     * occurrence (bank order). Same-concept-different-wording near-dupes are a bank-
-     * authoring concern (handed to chat B), not catchable from the stem alone.
+     * occurrence (bank order).
      * v7.19.968: extracted so fq_round_size counts the SAME post-dedup pool the round
      * will serve ($log=false there — the serve-time call is the one that reports).
+     * v7.19.994 (Neil live: two "epic" questions in one round): NEAR-duplicate pass —
+     * a paraphrased stem testing the SAME recall is a duplicate too. Rule: identical
+     * answer signature (the correct OPTION TEXTS, not letters — letters shuffle; or the
+     * fill/true-false answer) AND stem token-overlap (Jaccard) ≥ 0.5 → drop the later
+     * one. No bank metadata needed (works for poem banks where @form is the whole poem
+     * and for banks with none), deterministic greedy in bank order — fq_round_size and
+     * the served round always agree (§9.8 first-paint law). Distinct questions about
+     * the same answer (definition vs features vs effects) share few stem tokens and
+     * survive; genuine paraphrases collapse. Dropped near-dupes are logged with both
+     * question numbers — an authoring signal to merge them in the bank.
      */
     private static function dedupe_stems($pool, $id_prefix = '', $log = true) {
+        $tokens_of = function ($stem) {
+            $t = array_values(array_filter(explode(' ', $stem), function ($w) { return strlen($w) >= 3; }));
+            return array_unique($t);
+        };
+        $answer_sig = function ($q) {
+            $type = strtolower((string) ($q['type'] ?? ''));
+            if (!empty($q['options']) && !empty($q['correct'])) {
+                $vals = [];
+                foreach ((array) $q['correct'] as $letter) {
+                    $letter = strtoupper(trim((string) $letter));
+                    if (isset($q['options'][$letter])) $vals[] = strtolower(trim((string) $q['options'][$letter]));
+                }
+                sort($vals);
+                return $type . '|' . implode('|', $vals);
+            }
+            return $type . '|' . strtolower(trim((string) ($q['answer'] ?? '')));
+        };
         $seen_stems = [];
+        $kept_by_sig = [];   // answer-sig → [ [tokens, q_num], … ] of kept questions
         $deduped = [];
+        $near_dropped = [];
         foreach ($pool as $q) {
             $stem = strtolower(preg_replace('/\s+/', ' ', trim(preg_replace('/[^a-z0-9]+/i', ' ', (string) ($q['question'] ?? '')))));
-            if ($stem !== '' && isset($seen_stems[$stem])) continue;   // exact/near-duplicate stem — skip
-            if ($stem !== '') $seen_stems[$stem] = true;
+            if ($stem !== '' && isset($seen_stems[$stem])) continue;   // exact duplicate stem — skip
+            // near-duplicate: same answer signature + high stem-token overlap
+            $sig = $stem !== '' ? $answer_sig($q) : '';
+            $toks = $stem !== '' ? $tokens_of($stem) : [];
+            $is_near_dup = false;
+            if ($sig !== '' && !empty($toks) && !empty($kept_by_sig[$sig])) {
+                foreach ($kept_by_sig[$sig] as $kept) {
+                    $inter = count(array_intersect($toks, $kept[0]));
+                    $union = count($toks) + count($kept[0]) - $inter;
+                    if ($union > 0 && ($inter / $union) >= 0.5) {
+                        $is_near_dup = true;
+                        $near_dropped[] = 'q' . ($q['q_num'] ?? '?') . '≈q' . $kept[1];
+                        break;
+                    }
+                }
+            }
+            if ($is_near_dup) continue;
+            if ($stem !== '') {
+                $seen_stems[$stem] = true;
+                if ($sig !== '') $kept_by_sig[$sig][] = [$toks, ($q['q_num'] ?? '?')];
+            }
             $deduped[] = $q;
         }
         if ($log && count($deduped) < count($pool) && function_exists('error_log')) {
-            error_log('WML quiz: pick_from_pool dropped ' . (count($pool) - count($deduped)) . ' duplicate-stem question(s) from "' . $id_prefix . '" pool (' . count($pool) . ' → ' . count($deduped) . ').');
+            error_log('WML quiz: pick_from_pool dropped ' . (count($pool) - count($deduped)) . ' duplicate question(s) from "' . $id_prefix . '" pool (' . count($pool) . ' → ' . count($deduped) . ')'
+                . (!empty($near_dropped) ? ' — near-dupes (same answer + ≥50% shared stem tokens, MERGE IN BANK): ' . implode(', ', $near_dropped) : '') . '.');
         }
         return $deduped;
     }

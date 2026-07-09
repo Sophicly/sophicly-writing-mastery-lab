@@ -6419,13 +6419,24 @@
         const t = String(text || '').replace(/\r\n?/g, '\n').trim();
         const hasSingleBreaks = /[^\n]\n[^\n]/.test(t);
         const stanzas = hasSingleBreaks ? t.split(/\n{2,}/) : [t.replace(/\n{2,}/g, '\n')];
+        // v7.19.994 (Neil): two more import artifacts cleaned per LINE, deterministically:
+        //   · anthology line-numbers baked into the text ("10 with a hiding…",
+        //     "15 to fall or fly.") — a leading integer that is a multiple of 5
+        //     (the anthology numbering convention) followed by a space is stripped;
+        //   · markdown residue — backslash escapes (\! → !) and *emphasis* asterisks.
+        // Same rules belong in the queued poem-data re-author pass (root); this keeps
+        // every card clean meanwhile and is harmless once the data is fixed.
+        const cleanLine = (line) => line
+            .replace(/^(\d{1,3})\s+/, (m, n) => (parseInt(n, 10) % 5 === 0 ? '' : m))
+            .replace(/\\([!*'".,;:?\-])/g, '$1')
+            .replace(/\*([^*]+)\*/g, '$1');
         bodyEl.textContent = '';
         stanzas.forEach((st) => {
             const p = document.createElement('p');
             p.className = 'swml-poem-stanza';
             st.split('\n').forEach((line, i) => {
                 if (i) p.appendChild(document.createElement('br'));
-                p.appendChild(document.createTextNode(line));
+                p.appendChild(document.createTextNode(cleanLine(line)));
             });
             bodyEl.appendChild(p);
         });
