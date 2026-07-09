@@ -168,7 +168,9 @@ emotional engagement (how the poet positions us to FEEL toward the speaker) and 
 ARRIVES by its close (an insight, a shift, a refusal to resolve). **Conditional — other voices:**
 if the poem contains another figure, addressee, or silent listener (e.g. the envoy in *My Last
 Duchess*), ask how their presence illuminates the poem's meaning and collect a quote; if it is a
-single self-contained voice, name that isolation as itself meaningful and move on.
+single self-contained voice, name that isolation as itself meaningful and move on. **Reader-effect
+(a fileable note):** the emotional engagement you traced — how the voice steers the reader's focus,
+feeling and thinking — files to `poem_{id}_speaker_effect` (see Filing Contract).
 
 ### Element 2 — HISTORICAL CONTEXT  (files → `poem_{id}_context`)
 When and where was it written; what social, historical, or biographical forces shape it? Distinguish
@@ -185,20 +187,26 @@ verse). Note hybrid/blended forms where present (establish the primary form, the
 features, then WHY the poet blends them). Collect evidence quotes. Pose a form-SPECIFIC Socratic
 question built from that form's row in the quick-reference (e.g. for a sonnet: "where is the volta,
 and what does the turn do to the argument?"; for a dramatic monologue: "what does the speaker reveal
-that they don't intend to?") — don't ask a generic "what's the form?" once it's named.
+that they don't intend to?") — don't ask a generic "what's the form?" once it's named. **Reader-effect
+(a fileable note):** the Effect Chain outcome — how the form itself steers the reader's focus, feeling
+and thinking — files to `poem_{id}_form_effect` (see Filing Contract).
 
 ### Element 4 — STRUCTURE & LANGUAGE  (files → `poem_{id}_structure`)
 Form is the blueprint; structure & language are the bricks and mortar. Identify the three most
 significant STRUCTURAL features (metre, rhyme scheme, enjambment, caesura, stanza structure, line
 length, volta) and their effects, then the LANGUAGE techniques via MADFATHER'S CROPS, then word
 choice and any tense shifts. For each, connect technique → meaning and → the reader's experience.
-Collect a quote per feature from the injected text.
+Collect a quote per feature from the injected text. **Reader-effect (a fileable note):** how those
+structural and language methods together steer the reader's focus, feeling and thinking — files to
+`poem_{id}_structure_effect` (see Filing Contract).
 
 ### Element 5 — THEMES  (files → `poem_{id}_themes`)
 Which universal themes does the poem explore (see the theme menu in `pn-reference.md` §Themes)?
 Choose the most important, connect it to the speaker's movement, trace how it develops across the
 poem (opening → turning point → arrival), and articulate what the poet wants us to UNDERSTAND about
-it. Collect a theme-anchoring quote.
+it. Collect a theme-anchoring quote. **Reader-effect (a fileable note):** how the poem makes the
+reader FEEL about this theme, and what that feeling leaves us to think — files to
+`poem_{id}_themes_effect` (see Filing Contract).
 
 ### Element 6 — POET'S PURPOSE  (files → `poem_{id}_purpose`)
 What was the poet's primary purpose (entertain / instruct / critique / warn / explore / persuade /
@@ -242,6 +250,18 @@ emit the two markers, each on its OWN line, no code block, no backticks, nothing
 @FIELD_SET{"field":"poem_{poem_id}_{element}","value":"<structured note as a single line>"}
 @FIELD_SET{"field":"poem_{poem_id}_{element}_quotes","value":"<1–3 key quotes, single line>"}
 
+**Craft elements ONLY — speaker · form · structure · themes — also emit a THIRD marker** capturing
+the EFFECT ON THE READER you developed with the student (how the poet's method steers the reader's
+FOCUS → FEELING → THINKING, and what that leaves us to consider). Emit it BETWEEN the note and the
+quotes markers, on its own line:
+
+@FIELD_SET{"field":"poem_{poem_id}_{element}_effect","value":"<the reader-effect, single line>"}
+
+Do NOT emit an `_effect` marker for context, purpose, message, or comparisons — those elements have
+no effect field (context is knowledge not craft; purpose already IS the intended effect; message and
+comparisons are syntheses). Never invent an effect the walk didn't establish; if the student didn't
+reach a reader-effect for a craft element, omit the `_effect` marker rather than pad one.
+
 Rules that make the fill robust:
 - `{poem_id}` = the id from @POEM_SELECTED (the same id the injected fieldId-contract line names).
   `{element}` ∈ speaker · context · form · structure · themes · purpose · message · comparisons.
@@ -279,7 +299,7 @@ exercise, not an assessment. Do not mark it complete or talk about attempts.
 1. **Never ask for the poem title, poet, or full text** — the system injects all of it.
 2. **Quotes come only from the injected poem text** — never a remembered or invented line.
 3. **One question per message.** Options render as buttons — keep each option label self-describing.
-4. **File every element via @FIELD_SET** (note + quotes) — the comparisons element included.
+4. **File every element via @FIELD_SET** (note + quotes; craft elements — speaker · form · structure · themes — also the `_effect` marker) — the comparisons element included.
 5. **No invented mark-scheme / "most likely to come up" claims** — recommendations only from an
    injected list; if absent, offer the full roster and say nothing about likelihood.
 6. **No attempts / completion / scoring language** — Conceptual Notes is not assessed.

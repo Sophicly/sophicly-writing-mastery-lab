@@ -6198,6 +6198,16 @@
         return true;
     }
 
+    // v7.20.6 (Neil): "Effect on the Reader" is a first-class field on the CRAFT elements —
+    // the elements where an authorial method acts on the reader (focus → feeling → thought →
+    // action). Knowledge/synthesis elements (context, purpose, message, comparisons) don't get
+    // one: context is knowledge not craft; purpose IS intended-effect already; message/comparisons
+    // are syntheses that inherit the per-element effects. Note: "Structure & Language" is one fused
+    // element (`structure`), so this is 4 rows, not 5. ONE canonical layer — template + migration
+    // both read these two constants (never a hand-copied list).
+    const POEM_EFFECT_ELS = ['speaker', 'form', 'structure', 'themes'];
+    const POEM_EFFECT_PROMPT = 'Effect on the reader — how do the poet’s methods steer the reader’s focus, feeling and thinking here?';
+
     // v7.19.976 (Neil): heal pre-975 poetry CN docs — inject the Comparisons subsection
     // (poem_{id}_comparisons + _quotes) at the end of any poem group that lacks it.
     // TARGETED insertContentAt heal per migrateDocument's own v818 law (never setContent
@@ -6239,6 +6249,42 @@
             console.log('[WML poetry-CN] healed Comparisons into', targets.length, 'poem group(s)');
         } catch (e) {
             console.warn('[WML poetry-CN] Comparisons heal failed (doc untouched beyond applied inserts)', e);
+        }
+    }
+
+    // v7.20.6 (Neil): heal pre-206 poetry CN docs — inject the "Effect on the Reader" field
+    // into every craft element (speaker/form/structure/themes) that lacks it, positioned
+    // BETWEEN that element's notes field and its Key-quotes field. Same law as the Comparisons
+    // heal: TARGETED insertContentAt (never setContent), idempotent (keyed on the _effect fieldId
+    // existing), ADDITIVE only, gated to the poetry-CN doc family, hydration-staggered after
+    // onCreate. Anchor = the notes field node (`poem_{pid}_{el}`, always present); insert the
+    // effect row immediately AFTER it so it lands above Key quotes.
+    function _healPoetryCnEffects(editor) {
+        try {
+            if (!editor || !editor.state || !editor.chain) return;
+            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            const fieldIds = new Set();
+            editor.state.doc.descendants((n) => {
+                if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) fieldIds.add(n.attrs.fieldId);
+            });
+            if (!fieldIds.size) return; // empty/placeholder doc — template covers it
+            const targets = [];
+            editor.state.doc.descendants((node, pos) => {
+                if (!node.type || node.type.name !== 'inputField') return;
+                const fid = String((node.attrs && node.attrs.fieldId) || '');
+                const m = /^poem_(.+?)_(speaker|form|structure|themes)$/.exec(fid);
+                if (!m) return;
+                if (fieldIds.has(fid + '_effect')) return; // already healed
+                targets.push({ pos: pos, size: node.nodeSize, fid: fid });
+            });
+            if (!targets.length) return;
+            targets.sort((a, b) => b.pos - a.pos); // descending — earlier positions stay valid
+            targets.forEach((t) => {
+                editor.chain().insertContentAt(t.pos + t.size, inputHTML(POEM_EFFECT_PROMPT, t.fid + '_effect')).run();
+            });
+            console.log('[WML poetry-CN] healed Effect-on-reader into', targets.length, 'craft element(s)');
+        } catch (e) {
+            console.warn('[WML poetry-CN] Effect heal failed (doc untouched beyond applied inserts)', e);
         }
     }
 
@@ -6536,6 +6582,7 @@
         if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
         try { _healPoetryCnShape(editor); } catch (_) {}
         try { _healPoetryCnComparisons(editor); } catch (_) {}
+        try { _healPoetryCnEffects(editor); } catch (_) {}
         try { _healPoetryCnTocHeader(editor); } catch (_) {}
         try { _applyCnMergeFields(); } catch (_) {}
         try { _renderPoemCards(); } catch (_) {}
@@ -6675,6 +6722,11 @@
             var sec = fld && fld.closest('.swml-section-block');
             if (!sec) { console.warn('[WML poetry-CN] no doc section for poem', pid); return; }
             if (sec.classList.contains('swml-fb-collapsed')) sec.classList.remove('swml-fb-collapsed');
+            // v7.20.6 (Neil): PERSIST the open state. A later FieldSet write rebuilds this
+            // NodeView, which re-reads the default-collapsed rule and would snap the poem shut
+            // mid-element unless localStorage says '0'. Write the SAME key the manual chevron
+            // uses (stamped on the wrapper as data-collapse-key) — no fragile key reconstruction.
+            try { var _ck = sec.dataset && sec.dataset.collapseKey; if (_ck) localStorage.setItem(_ck, '0'); } catch (_) { /* storage off */ }
             requestAnimationFrame(function () { _swmlScrollToTop(sec, 24); });
         } catch (e) { console.warn('[WML poetry-CN] scroll-to-poem failed', e); }
     }
@@ -30958,6 +31010,11 @@
                     pcnSubs.forEach(function (s) {
                         pInner += '<p><strong>' + s[1] + '</strong></p>' +
                             inputHTML(s[2], 'poem_' + pid + '_' + s[0]) +
+                            // v7.20.6: Effect-on-reader field on the craft elements only, BETWEEN
+                            // the notes and the key quotes (reason the effect, then anchor it).
+                            (POEM_EFFECT_ELS.indexOf(s[0]) !== -1
+                                ? inputHTML(POEM_EFFECT_PROMPT, 'poem_' + pid + '_' + s[0] + '_effect')
+                                : '') +
                             inputHTML('Key quotes (1–3).', 'poem_' + pid + '_' + s[0] + '_quotes');
                     });
                     html += sectionHTML('plan', poem.title || pid, true, null, pInner);

@@ -388,6 +388,12 @@
 
                 let COLLAPSE_KEY = '';
                 try { COLLAPSE_KEY = 'swml_fbcollapse:' + location.pathname + ':' + fbLabel; } catch (_) { COLLAPSE_KEY = ''; }
+                // v7.20.6 (Neil): expose the collapse-key on the wrapper so a programmatic
+                // expand (poetry-CN poem-open) can PERSIST '0' the same way the manual chevron
+                // does. Without this, a fill-driven NodeView redraw re-reads the default-collapsed
+                // rule (391) and snaps an open poem shut mid-element. Construction-time attr,
+                // covered by the wrapper-attr firewall (471). Idempotent same-value write.
+                try { if (COLLAPSE_KEY && dom.dataset.collapseKey !== COLLAPSE_KEY) dom.dataset.collapseKey = COLLAPSE_KEY; } catch (_) { /* dataset off */ }
                 // v7.19.971: per-poem groups default COLLAPSED (Neil ruling — 15 poem rows
                 // are a map of the anthology; the poem being worked on auto-expands via the
                 // v912 fill-visibility law). A student's explicit toggle ('0') still wins.
