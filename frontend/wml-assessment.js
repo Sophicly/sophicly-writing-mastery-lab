@@ -10389,7 +10389,35 @@
                         setTimeout(() => { try { showMsaMenu(); } catch (e) {} }, 60);
                         return true;
                     }
-                    if (active) console.log('WML MSQ: resumed round ' + round + ' at Q' + (idx + 1) + '/' + total);
+                    if (active) {
+                        console.log('WML MSQ: resumed round ' + round + ' at Q' + (idx + 1) + '/' + total);
+                        // v7.20.1 ROOT FIX (Neil staging 2026-07-09): a mid-round resume restored
+                        // the controller STATE but not its UI. The chat was replayed from saved
+                        // TEXT, so the current question showed (a) NO progress chip (the chip is
+                        // ephemeral DOM, never persisted → "progress bar disappears") and (b) the
+                        // GENERIC auto-detected answer buttons, which send the full label to the AI
+                        // path instead of the controller's own buttons that send the bare value to
+                        // handleTurn → the answer never scored ("falls back to generic AI quiz").
+                        // Fix: drop the stale replayed question bubble and re-render the current
+                        // question through renderQ, so the controller owns the turn — its progress
+                        // chip AND its deterministic scoring buttons (which call handleTurn directly,
+                        // bypassing the sendCanvasMessage gate) are both restored. One move, both bugs.
+                        try {
+                            const _host = document.getElementById('swml-canvas-chat-messages');
+                            if (_host) {
+                                const _ai = _host.querySelectorAll('.swml-bubble.ai');
+                                const _last = _ai[_ai.length - 1];
+                                if (_last) _last.remove();
+                            }
+                            // renderQ re-adds the current question to canvasChatHistory + saves, so
+                            // drop the trailing (current) assistant message first — else the question
+                            // would duplicate in history and accumulate on every subsequent resume.
+                            for (let _i = canvasChatHistory.length - 1; _i >= 0; _i--) {
+                                if (canvasChatHistory[_i] && canvasChatHistory[_i].role === 'assistant') { canvasChatHistory.splice(_i, 1); break; }
+                            }
+                            renderQ();
+                        } catch (_re) { console.warn('[WML quiz-diag] resume re-render failed', _re && _re.message); }
+                    }
                     return active;
                 } catch (e) { return false; }
             }
