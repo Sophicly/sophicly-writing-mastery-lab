@@ -6747,6 +6747,28 @@
             // covered by _poetryCnEnsurePoemMarker in both send paths, so the poem identity
             // can never be lost to a refresh either way.
             _maybePoetryCnOpener(ctx, null, { start: true });
+            // v7.20.8 (Neil live): THE START PATH MUST ALWAYS PRODUCE A TURN. Opener cards are
+            // capability-gated (speaker/form/purpose only) — starting a poem whose first
+            // unfilled element has NO card (mid-walk re-entry after a chat clear; all-done
+            // revisit) rendered NOTHING: dead chat. Second member of the v7.20.5 class (pid
+            // bail was the first). Catch-all, not a per-element guard: if no live opener card
+            // landed for ANY reason, the AI takes the turn via a silent directive naming the
+            // resume element (code-derived from the doc, same derivation as the walk chip).
+            try {
+                var liveCard = ctx.chatMessages && ctx.chatMessages.querySelector('.swml-cn-opener:not(.swml-cn-opener-done)');
+                if (!liveCard && ctx.chatTextarea) {
+                    var nextSlug = _poetryCnFirstUnfilledElement(poem.id);
+                    var nextLabel = nextSlug;
+                    try { (WML.POETRY_CN_SPINE || []).forEach(function (e) { if (e.slug === nextSlug) nextLabel = e.label; }); } catch (_) {}
+                    var dir = nextSlug
+                        ? 'I’m continuing my Conceptual Notes on “' + (poem.title || poem.id) + '” — some elements are already filed in my document, so no stance card was shown. Pick up the walk at the ' + nextLabel + ' element (do not re-ask elements that are already filed).'
+                        : 'All eight elements of “' + (poem.title || poem.id) + '” are already filed — I’d like to review and refine my notes. Ask me which element I want to revisit.';
+                    canvasSilentSend = true;
+                    ctx.chatTextarea.value = dir + '\n@POEM_SELECTED' + JSON.stringify({ id: poem.id });
+                    (ctx.sendCanvasMessageQueued || ctx.sendCanvasMessage)();
+                    console.log('[WML poetry-CN] start fallback → AI-led turn at element:', nextSlug || '(all filed)');
+                }
+            } catch (e2) { console.warn('[WML poetry-CN] start fallback failed', e2); }
         } catch (e) { console.warn('[WML poetry-CN] start-poem failed', e); }
     }
     function _poetryCnConfirmPoem(ctx, poem) {
