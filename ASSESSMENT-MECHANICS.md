@@ -414,6 +414,17 @@ code-owned source.
   `reference_wml_canvas_blank_on_refresh_stale_template_wipe`,
   `reference_focus_spa_stale_render_remount_pingpong`).
 
+## §7b. DETERMINISTIC QUIZ STATE — one session identity + resume re-renders the UI (v999 / v7.20.1)
+
+The deterministic quiz controller (`_quizCtl` — FQ, MSQ, MSA all share it) has two settled laws. Both bit on staging (Neil 2026-07-09) because they are invisible until a student has TWO quizzes in flight and navigates between them. Full story: memory `reference_wml_quiz_session_identity_and_resume_ui`.
+
+1. **ONE canonical quiz-session identity (`qsid`) scopes EVERY store.** A quiz keeps live state in three places — the client resume sidecar (`lsKey()`), the server accumulator (`wml_quiz_active_{uid}`, which drives the running total AND `finalize()`'s grade), and the server bank meta (`wml_quiz_bank_{uid}`). These were single-per-user slots → two in-flight quizzes clobbered each other. `lsKey()` IS the `qsid`, sent to `/quiz/start·/answer·/finish` (`_quizCtl.sessionId`); the server keys accumulator + bank meta off `__{qsid}` (`$scope` param, `''` = legacy AI-marker slot). Format: `swml_{fq|msq|msa}_{board}_{subject}_{fqBank||text}_{attempt}_s{stage}`.
+   - **STAGE is part of identity. Poetry FQ is UNIQUE — it is STAGED (3 stages, bridge `fq_stage=1|2|3`), each a SEPARATE quiz (`_s1/_s2/_s3`). Every other text (Macbeth, single poems, prose) is single-stage → `fqStage=0` → `_s0`.** Any new quiz/bank must put its distinguishing dimension into `qsid` or two in-flight instances corrupt each other's grade.
+   - Deterministic answers bypass the router and help turns are gated off quiz-state, so `build_state_block` stays on the legacy slot — no router change.
+
+2. **RESUME re-renders the current question; it does NOT just restore state.** `rehydrate()` restoring `idx/qs/round` is necessary but NOT sufficient. On resume the chat is replayed from SAVED TEXT, so the current question comes back with (a) NO progress chip — the chip is ephemeral DOM, never persisted → "progress bar disappears"; and (b) the GENERIC auto-detected answer buttons, which send the full option label to `sendCanvasMessage` → the AI path, not the controller's own buttons (bare value → `handleTurn`, scored) → the answer never scores → "falls back to a generic AI quiz". FIX (in `rehydrate` mid-round tail): drop the trailing replayed question bubble + its `canvasChatHistory` entry (else it duplicates every resume) and call `renderQ()` so the controller re-owns the turn — chip + deterministic scoring buttons (which call `handleTurn` DIRECTLY, bypassing the send-gate) both return.
+   - **General rule: a deterministic controller's interactive UI (chips, scoring buttons, widgets) is NOT in the saved transcript — the controller must RE-EMIT it on resume, never inherit it from the replay.** The replayed transcript's generic quick-action detector is the trap: its buttons route to the AI.
+
 ## §8. THE DISPLAY LAYER — presentation never touches the data
 
 - **svgifyEmojis (v916):** emojis render as inline SVGs at DISPLAY time only. Raw history keeps
