@@ -7,9 +7,9 @@ every worked example comes from Golding's novel (Ralph, Jack, Piggy, Simon, the 
 island), never another modern text.
 
 **Mark-scheme facts are identical to the shared AQA modern-text grid** (30 marks: AO1 12 / AO2 12 / AO3 6;
-six levels; verbatim AQA band descriptors) — reused unchanged from the vetted `mark-scheme-assessment/banks/lord_of_the_flies.md`
-source. AO4 (SPaG) is NOT assessed on the AQA modern text question. Only the EXAMPLES are scoped to *Lord
-of the Flies*.
+six levels; verbatim AQA band descriptors) plus AO4 technical accuracy (4 marks on a separate strand — AO4
+IS assessed on Paper 2 Section A, per the AQA mark scheme "AO4 will be assessed on Section A only"; total
+34). Only the EXAMPLES are scoped to *Lord of the Flies*.
 
 Parsed deterministically (keys + feedback stripped before reaching the client). All questions worth 2 marks
 each.
@@ -18,13 +18,13 @@ each.
 
 1. **Type: MCQ \[Tests AO Weighting\]**
    * **Question:** How is the AQA GCSE Modern Text question (Lord of the Flies) marked?
-   * **Options:** A) AO1=12, AO2=12, AO3=6 (total 30), B) AO2 only, C) AO3 only, D) AO4 SPaG only.
+   * **Options:** A) AO1=12, AO2=12, AO3=6 (total 30), with AO4 technical accuracy adding 4 marks, B) AO2 only, C) AO3 only, D) AO1 alone out of 30.
    * **Correct:** A
-   * **Feedback:** ✓ Correct. The AQA modern text question is 30 marks: 12 for argument (AO1), 12 for methods (AO2), 6 for context (AO3). AO4 (SPaG) is not assessed on this question at all.
+   * **Feedback:** ✓ Correct. The AQA modern text question is a 30-mark level grid — 12 for argument (AO1), 12 for methods (AO2), 6 for context (AO3) — with a further 4 marks for AO4 technical accuracy (spelling, punctuation and a range of vocabulary and sentence structures).
    * **AO:** AO1
    * **Why B:** Method analysis matters greatly here, but believing AO2 is marked alone ignores the equal 12 marks for argument and the 6 for context.
-   * **Why C:** Context feels central, yet AO3 is the smallest strand at just 6 of the 30 marks — never the whole allocation.
-   * **Why D:** SPaG is assessed on some Literature questions, which makes this tempting, but AO4 does not apply to the AQA modern text question.
+   * **Why C:** Context feels central, yet AO3 is the smallest content strand at just 6 of the 30 marks — never the whole allocation.
+   * **Why D:** Argument is the joint-heaviest strand, but AO1 is worth 12 of the 30-mark grid, not the entire allocation.
 2. **Type: Fill-in-the-Blank \[Tests Level 6 Label\]**
    * **Question:** AQA Level 6 (26–30) for the modern text is headed "Convincing, critical analysis and \[BLANK\]".
    * **Answer:** Exploration
@@ -32,10 +32,10 @@ each.
    * **AO:** AO1
    * **WhyWrong:** "Evaluation" or "analysis" name the skills, but AQA's exact Level 6 heading pairs "analysis" with "exploration".
 3. **Type: MCQ \[Tests Context Weighting\]**
-   * **Question:** AO3 is worth 6 marks on the AQA modern text question — the lightest of its three assessed strands (AO1 12, AO2 12, AO3 6). How should you treat context in a Lord of the Flies essay?
+   * **Question:** AO3 is worth 6 marks on the AQA modern text question — the lightest strand of its 30-mark content grid (AO1 12, AO2 12, AO3 6). How should you treat context in a Lord of the Flies essay?
    * **Options:** A) Skip it entirely, B) Integrate it lightly where it drives Golding's concept — don't dump a history paragraph, C) Write a full paragraph of post-war history before the analysis, D) Double the AO3 effort to compensate.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. AO3 is the lightest of the three strands here (6 of 30). Integrate it briefly where it genuinely drives Golding's concept — his post-war pessimism making the boys' collapse feel inevitable — not as a standalone paragraph.
+   * **Feedback:** ✓ Correct. AO3 is the lightest of the three content strands here (6 of 30). Integrate it briefly where it genuinely drives Golding's concept — his post-war pessimism making the boys' collapse feel inevitable — not as a standalone paragraph.
    * **AO:** AO3
    * **Why A:** Because AO3 is the smallest strand it can seem skippable, but ignoring it surrenders 6 marks that light, well-placed context would secure.
    * **Why C:** A history paragraph feels thorough, yet bolt-on background scores poorly — context must serve the analysis, not sit beside it.
@@ -198,3 +198,12 @@ each.
     * **Feedback:** ✓ Correct. The sow's head is the AO2 method — a symbol; the mark comes from tying it to its effect: Golding externalises the boys' own savagery so the internal evil takes on a monstrous outward shape. Naming "symbol" alone is feature-spotting.
     * **AO:** AO2
     * **WhyWrong:** "Metaphor" or "image" name related devices, but the specific method here is a symbol — the pig's head standing for the evil within the boys.
+24. **Type: MCQ \[Tests AO4\]**
+    * **Question:** What does AO4 assess on the AQA English Literature modern-text question (Lord of the Flies)?
+    * **Options:** A) Evaluation of Golding's success, B) Comparison with another modern text, C) Technical accuracy — spelling, punctuation and a range of vocabulary and sentence structures, D) Personal response to the ending.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. In Literature, AO4 is strictly technical accuracy (SPaG) — accurate spelling and punctuation plus varied, purposeful vocabulary and sentence structures, worth 4 marks on this question. "Evaluation" is a Language-paper skill.
+    * **AO:** AO4
+    * **Why A:** Evaluation is tempting because it is an AO4 skill on the Language papers, but in Literature AO4 means technical accuracy only.
+    * **Why B:** Comparison is not what AO4 rewards on this section.
+    * **Why D:** Personal response lives inside AO1 here, not AO4.

@@ -6,12 +6,12 @@ slug ladder (`tkam.md`) — this bank REPLACES the generic `modern_text.md` for 
 worked example is drawn from *To Kill a Mockingbird* (Scout, Atticus, Tom Robinson, Boo Radley,
 Maycomb; the mockingbird motif; prejudice, justice and moral growth), never another modern text.
 
-**Mark-scheme facts mirror the vetted MSA bank** (`mark-scheme-assessment/banks/tkam.md`), which is
-the source of truth: the AQA Modern Text question is marked on **AO1 + AO2 + AO3 only — no AO4/SPaG
-on this question** — across **six levels** (Level 1 up to Level 6), each carrying banded AO1, AO2 and
-AO3 descriptors. Band vocabulary ("conceptualised", "judicious", "critical", "exploration") and the
-level descriptors are reused verbatim from the MSA. The AO split (AO1 12 / AO2 12 / AO3 6, total 30)
-follows the sibling vetted banks (the L&R quiz and the generic `modern_text.md` content grid). Only
+**Mark-scheme facts follow the vetted AQA Modern Texts grid**: a 30-mark content grid — **AO1 12 /
+AO2 12 / AO3 6** — across **six levels** (Level 1 up to Level 6), each carrying banded AO1, AO2 and
+AO3 descriptors, **plus AO4 technical accuracy (4 marks on a separate strand — AO4 IS assessed on
+Paper 2 Section A, per the AQA mark scheme "AO4 will be assessed on Section A only"; total 34)**.
+Band vocabulary ("conceptualised", "judicious", "critical", "exploration") and the level descriptors
+are reused verbatim from the vetted sibling banks (the generic `modern_text.md` content grid). Only
 the EXAMPLES are scoped to *To Kill a Mockingbird*.
 
 Parsed deterministically (keys + feedback stripped before reaching the client). All questions worth
@@ -21,12 +21,12 @@ Parsed deterministically (keys + feedback stripped before reaching the client). 
 
 1. **Type: MCQ \[Tests AO Weighting\]**
    * **Question:** How is the AQA GCSE English Literature Modern Text question (Paper 2, Section A) on To Kill a Mockingbird marked?
-   * **Options:** A) AO1=12, AO2=12, AO3=6 (total 30, across six levels), B) AO2 methods only, C) AO4 SPaG only, D) AO1 argument alone, out of 30.
+   * **Options:** A) AO1=12, AO2=12, AO3=6 (total 30, across six levels), with AO4 technical accuracy adding 4 marks, B) AO2 methods only, C) AO3 context only, D) AO1 argument alone, out of 30.
    * **Correct:** A
-   * **Feedback:** ✓ Correct. The AQA Modern Text question is 30 marks: 12 for argument (AO1), 12 for methods (AO2), 6 for context (AO3), marked across six levels. AO4 (SPaG) is not assessed on this question.
+   * **Feedback:** ✓ Correct. The AQA Modern Text question is a 30-mark level grid — 12 for argument (AO1), 12 for methods (AO2), 6 for context (AO3), marked across six levels — with a further 4 marks for AO4 technical accuracy (spelling, punctuation and a range of vocabulary and sentence structures).
    * **AO:** AO1
    * **Why B:** Methods matter greatly, but believing AO2 is marked alone ignores the equal 12 marks for argument and the 6 for context.
-   * **Why C:** SPaG is assessed on some Literature questions, which makes this tempting, but AO4 does not apply to the Modern Text question.
+   * **Why C:** Context feels central to a novel about 1930s Alabama, yet AO3 is the smallest content strand at just 6 of the 30 marks — never the whole allocation.
    * **Why D:** Argument is the joint-heaviest strand at 12 marks, yet it shares the 30 with methods (12) and context (6) — never the whole allocation.
 2. **Type: Fill-in-the-Blank \[Tests AO1 Response\]**
    * **Question:** AQA Level 6 AO1 rewards a "critical, exploratory, \[BLANK\] response to task and whole text".
@@ -35,10 +35,10 @@ Parsed deterministically (keys + feedback stripped before reaching the client). 
    * **AO:** AO1
    * **WhyWrong:** "Detailed" or "developed" describe lower bands; the exact AQA Level 6 word is "conceptualised" — treating the novel as the vehicle for a concept.
 3. **Type: MCQ \[Tests Context Weighting\]**
-   * **Question:** AO3 is worth 6 marks on the AQA Modern Text question — the lightest of its three assessed strands (AO1 12, AO2 12, AO3 6). How should you treat context?
+   * **Question:** AO3 is worth 6 marks on the AQA Modern Text question — the lightest strand of its 30-mark content grid (AO1 12, AO2 12, AO3 6). How should you treat context?
    * **Options:** A) Skip it entirely, B) Integrate it briefly where it genuinely drives Lee's concept — e.g. the segregation of the 1930s South making Tom Robinson's conviction feel inevitable, C) Write a standalone history paragraph on the 1930s before the analysis, D) Double the AO3 effort to compensate for its low weight.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. AO3 is the lightest strand here (6 of 30). Integrate it where it genuinely drives the concept — the racial injustice of 1930s Alabama makes Maycomb's verdict feel decided before the trial begins — never as a bolt-on paragraph.
+   * **Feedback:** ✓ Correct. AO3 is the lightest content strand here (6 of 30). Integrate it where it genuinely drives the concept — the racial injustice of 1930s Alabama makes Maycomb's verdict feel decided before the trial begins — never as a bolt-on paragraph.
    * **AO:** AO3
    * **Why A:** Because AO3 is the smallest strand it can seem skippable, but ignoring it surrenders 6 marks that light, well-placed context would secure.
    * **Why C:** A standalone history paragraph feels thorough, yet bolt-on background scores poorly — context must drive the analysis, not sit beside it.
@@ -192,3 +192,12 @@ Parsed deterministically (keys + feedback stripped before reaching the client). 
     * **Why A:** Four levels matches some shorter mark schemes, but the AQA Modern Text question is banded into six.
     * **Why B:** Five levels is an Edexcel pattern; AQA's 30-mark grid runs to six.
     * **Why D:** Nine is the GCSE grade scale, not the number of marking levels.
+23. **Type: MCQ \[Tests AO4\]**
+    * **Question:** What does AO4 assess on the AQA English Literature Modern Text question (To Kill a Mockingbird)?
+    * **Options:** A) Evaluation of Lee's success, B) Comparison with another modern text, C) Technical accuracy — spelling, punctuation and a range of vocabulary and sentence structures, D) Personal response to the ending.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. In Literature, AO4 is strictly technical accuracy (SPaG) — accurate spelling and punctuation plus varied, purposeful vocabulary and sentence structures, worth 4 marks on this question. "Evaluation" is a Language-paper skill.
+    * **AO:** AO4
+    * **Why A:** Evaluation is tempting because it is an AO4 skill on the Language papers, but in Literature AO4 means technical accuracy only.
+    * **Why B:** Comparison is not what AO4 rewards on this section.
+    * **Why D:** Personal response lives inside AO1 here, not AO4.
