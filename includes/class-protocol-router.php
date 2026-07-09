@@ -1380,8 +1380,14 @@ class SWML_Protocol_Router {
                 // (@ELEMENT_STANCE) + reasoning. Preamble must match the protocol here or the
                 // model re-asks the opener (the v985 router-vs-protocol conflict class).
                 $b .= "Skip the picker — walk THIS poem. The student has ALREADY chosen it; the full text is below. Their message arrives WITH their speaker stance and reasoning (an @ELEMENT_STANCE line — the interface asked the designed question with buttons). Respond DIRECTLY to that stance Socratically (probe their evidence, develop it conceptually) — do NOT greet again, do NOT ask them to \"say ready\", do NOT re-ask who is speaking, do NOT re-present the picker. Likewise the interface asks the FIRST question of the form and purpose elements: after filing context, bridge one line to Form and END your message; after filing themes, bridge one line to Purpose and END your message. File every element into these EXACT fieldIds:\n";
+                // v7.20.6 (Neil): craft elements also carry an Effect-on-the-Reader field —
+                // MUST be named here or the "EXACT fieldIds" contract (closest to the turn)
+                // overrides the protocol's third-marker rule and the model never files it.
+                $effect_els = ['speaker', 'form', 'structure', 'themes'];
                 foreach (['speaker', 'context', 'form', 'structure', 'themes', 'purpose', 'message', 'comparisons'] as $el) {
-                    $b .= "- poem_{$sel_id}_{$el}  (notes)  ·  poem_{$sel_id}_{$el}_quotes  (1–3 quotes)\n";
+                    $b .= "- poem_{$sel_id}_{$el}  (notes)"
+                        . (in_array($el, $effect_els, true) ? "  ·  poem_{$sel_id}_{$el}_effect  (effect on the reader — how the method steers focus/feeling/thinking)" : '')
+                        . "  ·  poem_{$sel_id}_{$el}_quotes  (1–3 quotes)\n";
                 }
                 if (trim($poem_text) !== '') {
                     $b .= "\n#### Full text of {$sel['title']} — quote ONLY from this:\n";
@@ -3504,7 +3510,7 @@ TEMPLATE;
                 $preamble .= "1. One question per message. Wait for the answer, give brief feedback, then ask the next. Never combine questions.\n";
                 $preamble .= "2. Never re-send the welcome. Once a poem is selected, never re-ask which poem.\n";
                 $preamble .= "3. Filing is AUTOMATED via @FIELD_SET markers (see the protocol). There is NO function to call and NOTHING for the student to copy anywhere. Never say 'workbook', 'save', 'panel', 'querying', 'loading', or mention any technical issue.\n";
-                $preamble .= "4. Follow the protocol exactly: picker (two-step disclosure) → per-poem element walk (speaker → … → comparisons) → @FIELD_SET filing (note + 1–3 quotes) per element → next-poem loop.\n";
+                $preamble .= "4. Follow the protocol exactly: picker (two-step disclosure) → per-poem element walk (speaker → … → comparisons) → @FIELD_SET filing (note + 1–3 quotes; craft elements — speaker/form/structure/themes — also the _effect field) per element → next-poem loop.\n";
                 $preamble .= "5. Quote ONLY from the injected poem text. No attempts, no scoring, no completion — Conceptual Notes is a building exercise.\n\n";
             } else {
             $preamble .= "\n### CRITICAL RULES FOR CONCEPTUAL NOTES SESSION\n";
