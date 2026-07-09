@@ -3767,8 +3767,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     flex-direction: column;
     gap: 8px;
 }
+/* v7.19.996: light card = white elevated surface (the grey wash read flat); scope via
+   the canvas light class AND the theme attr (both forms exist in the wild). */
+.swml-canvas-light .swml-cn-opener,
 [data-swml-theme="light"] .swml-cn-opener {
-    background: rgba(0, 0, 0, 0.04);
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(44, 0, 62, 0.08);
 }
 .swml-cn-opener-framing {
     font-size: 12px;
@@ -3784,8 +3788,41 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
 }
+.swml-cn-opener-tarow {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+}
+.swml-cn-opener-mic {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.15s;
+}
+.swml-cn-opener-mic:hover {
+    background: rgba(255, 255, 255, 0.14);
+    transform: translateY(-1px);
+}
+.swml-canvas-light .swml-cn-opener-mic,
+[data-swml-theme="light"] .swml-cn-opener-mic {
+    background: rgba(83, 51, 237, 0.08);
+    color: #5333ed;
+}
+.swml-canvas-light .swml-cn-opener-mic:hover,
+[data-swml-theme="light"] .swml-cn-opener-mic:hover {
+    background: rgba(83, 51, 237, 0.9);
+    color: #fff;
+}
 .swml-cn-opener-justify {
-    width: 100%;
+    flex: 1;
     resize: vertical;
     min-height: 44px;
     font-size: 12px;
@@ -3797,8 +3834,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: inherit;
     font-family: inherit;
 }
+.swml-canvas-light .swml-cn-opener-justify,
 [data-swml-theme="light"] .swml-cn-opener-justify {
-    background: rgba(0, 0, 0, 0.06);
+    background: rgba(83, 51, 237, 0.05);
 }
 .swml-cn-opener-send {
     align-self: flex-end;
@@ -8742,9 +8780,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     border-color: rgba(83,51,237,0.2) !important;
     color: #5333ed !important;
 }
+/* v7.19.996 (Neil): light hover was a faint wash — match the DARK hover's semantics
+   (fills brand purple, text goes white, lifts) so the effect actually reads. */
 .swml-canvas-light .swml-quick-btn:hover {
-    background: rgba(83,51,237,0.15) !important;
-    border-color: rgba(83,51,237,0.35) !important;
+    background: rgba(83,51,237,0.9) !important;
+    border-color: rgba(83,51,237,0.9) !important;
+    color: #fff !important;
+    transform: translateY(-1px);
 }
 /* Multi-select toggle-on for canvas light mode (v7.12.6) */
 .swml-canvas-light .swml-quick-btn.swml-quick-toggle-on {
@@ -8752,8 +8794,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     border-color: rgba(81,218,207,0.6) !important;
     color: #fff !important;
 }
+/* v7.19.996 (Neil): tick stays LIGHT on the teal fill — the dark-purple tick read badly. */
 .swml-canvas-light .swml-quick-btn.swml-quick-toggle-on::before {
-    color: #2c003e;
+    color: #fff;
 }
 
 /* ── Fix 9: Quoted text visibility in feedback sections + chat ── */

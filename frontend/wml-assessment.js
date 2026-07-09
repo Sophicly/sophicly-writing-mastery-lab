@@ -5224,19 +5224,27 @@
             document.head.appendChild(st);
         }
         let rec = null, listening = false, baseText = '', finalText = '';
+        // v7.19.996: restore the textarea's OWN placeholder on idle (was a reflect-panel
+        // hardcode — this helper is now the ONE mic attach for every free-text card).
+        const basePlaceholder = textarea.getAttribute('placeholder') || '';
+        // '' restores class-driven styling when the button carries no inline background/colour
+        const baseBg = micBtn.style.background || '';
+        const baseColor = micBtn.style.color || '';
         const setLive = () => {
             listening = true;
             micBtn.style.background = '#ff5470';
+            micBtn.style.color = '#fff'; // icon always light on the live-red fill
             micBtn.classList.add('swml-mic-live');
             micBtn.innerHTML = SVG_MIC_STOP || SVG_MIC;
             textarea.setAttribute('placeholder', 'Listening… speak now');
         };
         const setIdle = () => {
             listening = false;
-            micBtn.style.background = 'rgba(255,255,255,0.08)';
+            micBtn.style.background = baseBg;
+            micBtn.style.color = baseColor;
             micBtn.classList.remove('swml-mic-live');
             micBtn.innerHTML = SVG_MIC;
-            textarea.setAttribute('placeholder', 'What were you trying to show? (type or use the mic)');
+            textarea.setAttribute('placeholder', basePlaceholder);
         };
         micBtn.addEventListener('click', () => {
             if (listening && rec) { rec.stop(); return; }
@@ -6950,12 +6958,22 @@
             grid.appendChild(b);
         });
         ta.addEventListener('input', refresh);
+        // v7.19.996 (Neil SOP: every student free-text card gets a mic — speaking beats
+        // typing for volume + speed). ONE shared attach (_attachPanelMic: live pulse,
+        // interim transcript, placeholder swap); onChange = refresh so dictation enables Send.
+        var mic = el('button', { className: 'swml-cn-opener-mic', innerHTML: SVG_MIC, title: 'Speak your answer' });
+        mic.type = 'button';
+        _attachPanelMic(ta, mic, refresh);
+        var taRow = el('div', { className: 'swml-cn-opener-tarow' });
+        taRow.appendChild(ta);
+        taRow.appendChild(mic);
         card.appendChild(grid);
-        card.appendChild(ta);
+        card.appendChild(taRow);
         card.appendChild(send);
         refresh();
         send.addEventListener('click', function () {
             if (!chosen || !ta.value.trim()) return;
+            try { if (mic._swmlStopMic) mic._swmlStopMic(); } catch (_) {} // close an in-flight dictation
             var reason = ta.value.trim();
             // Collapse the live card to a done summary (the send is silent — the card IS the
             // student's visible answer, matching the picker's no-user-bubble UX).
