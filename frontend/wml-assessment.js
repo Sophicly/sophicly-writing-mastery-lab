@@ -6553,7 +6553,7 @@
             let id = '';
             try { const o = JSON.parse(m[1]); id = (o && typeof o.id === 'string') ? o.id.trim() : ''; } catch (_) { return; }
             if (!id) return;
-            if (window.state) state.currentPoemId = id;
+            if (state) state.currentPoemId = id;
             console.log('[WML poetry-CN] poem selected →', id);
         } catch (e) { console.warn('[WML poetry-CN] _extractPoemSelected failed', e); }
     }
@@ -6566,7 +6566,7 @@
     function _poetryCnCurrentPoemId(hist) {
         try {
             if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return '';
-            if (window.state && state.currentPoemId) return state.currentPoemId;
+            if (state && state.currentPoemId) return state.currentPoemId;
             if (!Array.isArray(hist)) return '';
             for (let i = hist.length - 1; i >= 0; i--) {
                 const c = hist[i] && hist[i].content;
@@ -6577,7 +6577,7 @@
                     const o = JSON.parse(m[1]);
                     if (o && o.id) {
                         const id = String(o.id).trim();
-                        if (window.state) state.currentPoemId = id;
+                        if (state) state.currentPoemId = id;
                         console.log('[WML poetry-CN] resolved current poem from history →', id);
                         return id;
                     }
@@ -6640,7 +6640,7 @@
     // beat was removed). Capability boundary — a deny-list of self-authoritative tasks, NOT a
     // per-protocol allow-list, so every future walk protocol gets the chip for free.
     function _taskModelChipOk() {
-        var t = (window.state && state.task) || '';
+        var t = (state && state.task) || '';
         return t !== 'assessment' && t !== 'mark_scheme' && t !== 'mark_scheme_unit'
             && t !== 'mark_scheme_assessment' && t !== 'foundational_quiz';
     }
@@ -6680,8 +6680,7 @@
     }
     function _poetryCnStartPoem(ctx, poem) {
         try {
-            console.log('[WML CN-diag] startPoem poem.id=' + (poem && poem.id) + ' poem.title=' + (poem && poem.title) + ' keys=' + (poem ? Object.keys(poem).join(',') : 'NO-POEM'));
-            if (window.state) state.currentPoemId = poem.id;
+            if (poem && poem.id) state.currentPoemId = poem.id;
             _poetryCnScrollToPoem(poem.id); // v7.19.984: jump the doc to this poem's section + expand
             // v7.19.992 (Neil ruling): the ACTIVE poem's read-along card auto-expands,
             // the others collapse — reset explicit toggles so the default (open =
@@ -6761,7 +6760,7 @@
     function _maybePoetryCnLoop(ctx) {
         try {
             if (!_poetryCnPickerActive()) return;
-            var cur = (window.state && state.currentPoemId) ? String(state.currentPoemId) : '';
+            var cur = (state && state.currentPoemId) ? String(state.currentPoemId) : '';
             if (!cur) return;
             if (_poetryCnDonePoemIds().indexOf(cur) === -1) return; // not finished yet
             state.currentPoemId = '';
@@ -6794,7 +6793,7 @@
     function _poetryCnWalkBeat(hist) {
         try {
             if (!_poetryCnPickerActive()) return null;
-            var pid = (window.state && state.currentPoemId) ? String(state.currentPoemId)
+            var pid = (state && state.currentPoemId) ? String(state.currentPoemId)
                 : _poetryCnCurrentPoemId(hist);
             if (!pid) return null;
             // v7.19.991: derive from THE canonical spine (WML.POETRY_CN_SPINE) — never a
@@ -6884,18 +6883,13 @@
     }
     function _poetryCnOpenerPending(hist) {
         try {
-            var _pa = _poetryCnPickerActive();
-            var _pid = _poetryCnActivePoemId(hist);
-            var _slug = _pid ? _poetryCnFirstUnfilledElement(_pid) : '';
-            var _cfg = _slug && (typeof WML !== 'undefined' && WML.POETRY_CN_OPENERS) ? WML.POETRY_CN_OPENERS[_slug] : null;
-            console.log('[WML CN-diag] pending gates: pickerActive=' + _pa + ' reviewMode=' + (window.state && state.reviewMode) + ' pid=' + _pid + ' currentPoemId=' + (window.state && state.currentPoemId) + ' canvasEditor=' + (!!canvasEditor) + ' isPoetryCnDoc=' + (WML.isPoetryCnDoc && WML.isPoetryCnDoc()) + ' slug=' + _slug + ' hasCfg=' + (!!_cfg) + ' stanceGiven=' + (_pid && _slug ? _poetryCnStanceGiven(hist, _pid, _slug) : 'n/a'));
-            if (!_pa) return null;
-            if (window.state && state.reviewMode) return null;
-            var pid = _pid;
+            if (!_poetryCnPickerActive()) return null;
+            if (state.reviewMode) return null;
+            var pid = _poetryCnActivePoemId(hist);
             if (!pid) return null;
-            var slug = _slug;
+            var slug = _poetryCnFirstUnfilledElement(pid);
             if (!slug) return null;
-            var cfg = _cfg;
+            var cfg = (typeof WML !== 'undefined' && WML.POETRY_CN_OPENERS) ? WML.POETRY_CN_OPENERS[slug] : null;
             if (!cfg) return null; // capability gate — this element keeps its AI-Socratic opening
             if (_poetryCnStanceGiven(hist, pid, slug)) return null; // answered → the AI walk owns it
             return { pid: pid, slug: slug, cfg: cfg };
@@ -6910,7 +6904,7 @@
         try {
             if (!text || !String(text).trim()) return text;
             if (!_poetryCnPickerActive()) return text;
-            var pid = (window.state && state.currentPoemId) ? String(state.currentPoemId) : '';
+            var pid = (state && state.currentPoemId) ? String(state.currentPoemId) : '';
             if (!pid) return text;
             if (String(text).indexOf('@POEM_SELECTED') !== -1) return text;
             if (Array.isArray(hist)) {
@@ -7006,7 +7000,6 @@
     // question, never a dead-end).
     function _maybePoetryCnOpener(ctx, hist, opts) {
         try {
-            console.log('[WML CN-diag] maybeOpener called: ctx=' + (!!ctx) + ' chatMessages=' + (!!(ctx && ctx.chatMessages)) + ' chatTextarea=' + (!!(ctx && ctx.chatTextarea)) + ' start=' + (!!(opts && opts.start)) + ' histArray=' + Array.isArray(hist));
             if (!ctx || !ctx.chatMessages || !ctx.chatTextarea) return;
             var pending = _poetryCnOpenerPending(hist);
             var key = pending ? (pending.pid + ':' + pending.slug) : '';
@@ -7082,10 +7075,10 @@
                     // protocol load. Future multi-board MSQ will need to derive from spec.
                     const freshSessionId = 'auto_msq_' + qId + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
                     const detectedState = {
-                        board: (window.state && state.board) || '(unset)',
-                        subject: (window.state && state.subject) || '(unset)',
-                        text: (window.state && state.text) || '(unset)',
-                        task: (window.state && state.task) || '(unset)',
+                        board: (state && state.board) || '(unset)',
+                        subject: (state && state.subject) || '(unset)',
+                        text: (state && state.text) || '(unset)',
+                        task: (state && state.task) || '(unset)',
                     };
                     const payload = {
                         message: prompt,
@@ -7094,7 +7087,7 @@
                         session_id: freshSessionId,
                         board: 'aqa',
                         subject: 'language2',
-                        text: (window.state && state.text) || '',
+                        text: (state && state.text) || '',
                         task: 'assessment',
                         step: 0,
                     };
