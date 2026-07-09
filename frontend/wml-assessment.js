@@ -7861,6 +7861,17 @@
         if (state.task === 'mark_scheme_unit' && state.bridgeStep) {
             suffix = suffix + '_s' + state.bridgeStep;
         }
+        // v7.19.998: staged-FQ per-stage chat identity. Staged FQ lessons on ONE text
+        // (same/absent topic) share board+text+topic+suffix, so their chat meta_keys
+        // collided — opening stage 2 replayed stage 1's history. Same disambiguation
+        // shape as mark_scheme_unit above: fork the suffix per stage so the server
+        // (which keys chat_meta_key on `suffix` verbatim) produces a distinct meta_key,
+        // no schema change. RULING (handoff 2026-07-10): stage 1 KEEPS the legacy
+        // un-staged `_fq` key (its pre-fix history), so only stages ≥2 fork — zero data
+        // movement, no migration. Canvas doc stays SHARED across stages (one organiser).
+        if (state.task === 'foundational_quiz' && (state.fqStage || 0) >= 2) {
+            suffix = suffix + '_st' + state.fqStage;
+        }
         return suffix;
     };
     const CHAT_SAVE_KEY = () => {
@@ -8211,7 +8222,16 @@
                 // exactly like the Language/server-sidebar path — no generic flash (Neil).
                 protoSteps.style.display = 'none';   // hide until the granular model paints
             } else {
-                const assessSteps = canvasSidebarSteps || (_gs && _gs.length ? _gs.map((s, i) => ({ step: i + 1, label: s.label })) : [
+                // v7.19.998: preserve `group` (+ `display`) — this FIRST-PAINT map was
+                // dropping the group field getSteps() computes for staged FQ, so the
+                // opening sidebar rendered a FLAT Q1..QN list. It only re-grouped when
+                // _syncFqSidebar's server re-stamp fired (state.fqRoundTotal !== served
+                // total); a stage whose boot fqRoundSize already equalled the served
+                // round hit the early-return there and stayed flat forever (stage-2 bug).
+                // Carrying `group` here makes the opening paint group correctly for every
+                // stage, independent of the boot-preset coincidence. No-op for tasks
+                // whose steps carry no group (undefined) — one render path, every quiz.
+                const assessSteps = canvasSidebarSteps || (_gs && _gs.length ? _gs.map((s, i) => ({ step: i + 1, label: s.label, group: s.group, display: s.display })) : [
                     { step: 1, label: 'Setup & Details' },
                     { step: 2, label: 'Goal Setting' },
                     { step: 3, label: 'Self-Reflection' },
