@@ -1379,15 +1379,15 @@ class SWML_Protocol_Router {
                 // FRONTEND (designed stance cards) — the student's turn arrives WITH their stance
                 // (@ELEMENT_STANCE) + reasoning. Preamble must match the protocol here or the
                 // model re-asks the opener (the v985 router-vs-protocol conflict class).
-                $b .= "Skip the picker — walk THIS poem. The student has ALREADY chosen it; the full text is below. Their message USUALLY arrives WITH their speaker stance and reasoning (an @ELEMENT_STANCE line — the interface asked the designed question with buttons); respond DIRECTLY to that stance Socratically (probe their evidence, develop it conceptually). If INSTEAD their message says they are CONTINUING a poem with elements already filed (no stance line), resume the walk at the element the message names — never restart at speaker, never re-ask a filed element. Either way: do NOT greet again, do NOT ask them to \"say ready\", do NOT re-ask who is speaking, do NOT re-present the picker. Likewise the interface asks the FIRST question of the form and purpose elements: after filing context, bridge one line to Form and END your message; after filing themes, bridge one line to Purpose and END your message. File every element into these EXACT fieldIds:\n";
+                $b .= "Skip the picker — walk THIS poem. The student has ALREADY chosen it; the full text is below. Their message USUALLY arrives WITH their speaker stance and reasoning (an @ELEMENT_STANCE line — the interface asked the designed question with buttons); respond DIRECTLY to that stance Socratically (probe their evidence, develop it conceptually). If INSTEAD their message says they are CONTINUING or REVISITING a poem with elements already filed (no stance line), do exactly what it directs: resume the walk at the element it names, or deepen the filed element it asks to revisit (build on the existing note, then re-file it) — never restart at speaker uninvited, never re-walk elements the message didn't name. Either way: do NOT greet again, do NOT ask them to \"say ready\", do NOT re-ask who is speaking, do NOT re-present the picker. Likewise the interface asks the FIRST question of the form and purpose elements: after filing context, bridge one line to Form and END your message; after filing themes, bridge one line to Purpose and END your message. File every element into these EXACT fieldIds:\n";
                 // v7.20.6 (Neil): craft elements also carry an Effect-on-the-Reader field —
                 // MUST be named here or the "EXACT fieldIds" contract (closest to the turn)
                 // overrides the protocol's third-marker rule and the model never files it.
                 $effect_els = ['speaker', 'form', 'structure', 'themes'];
                 foreach (['speaker', 'context', 'form', 'structure', 'themes', 'purpose', 'message', 'comparisons'] as $el) {
-                    $b .= "- poem_{$sel_id}_{$el}  (notes)"
+                    $b .= "- poem_{$sel_id}_{$el}  (notes)  ·  poem_{$sel_id}_{$el}_quotes  (1–3 quotes)"
                         . (in_array($el, $effect_els, true) ? "  ·  poem_{$sel_id}_{$el}_effect  (effect on the reader — how the method steers focus/feeling/thinking)" : '')
-                        . "  ·  poem_{$sel_id}_{$el}_quotes  (1–3 quotes)\n";
+                        . "\n";
                 }
                 if (trim($poem_text) !== '') {
                     $b .= "\n#### Full text of {$sel['title']} — quote ONLY from this:\n";

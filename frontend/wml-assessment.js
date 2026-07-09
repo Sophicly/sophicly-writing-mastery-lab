@@ -6253,12 +6253,12 @@
     }
 
     // v7.20.6 (Neil): heal pre-206 poetry CN docs — inject the "Effect on the Reader" field
-    // into every craft element (speaker/form/structure/themes) that lacks it, positioned
-    // BETWEEN that element's notes field and its Key-quotes field. Same law as the Comparisons
-    // heal: TARGETED insertContentAt (never setContent), idempotent (keyed on the _effect fieldId
-    // existing), ADDITIVE only, gated to the poetry-CN doc family, hydration-staggered after
-    // onCreate. Anchor = the notes field node (`poem_{pid}_{el}`, always present); insert the
-    // effect row immediately AFTER it so it lands above Key quotes.
+    // into every craft element (speaker/form/structure/themes) that lacks it. v7.20.9: the field
+    // sits AFTER Key quotes (student writing order: concept → quote → effect), so the anchor is
+    // the QUOTES field; a reorder pass also MOVES any v7.20.6-staging effect field that landed
+    // before its quotes (content-preserving node JSON — a filled effect survives the move).
+    // Same law as the Comparisons heal: TARGETED insertContentAt (never setContent), idempotent,
+    // ADDITIVE only, gated to the poetry-CN doc family, hydration-staggered after onCreate.
     function _healPoetryCnEffects(editor) {
         try {
             if (!editor || !editor.state || !editor.chain) return;
@@ -6268,21 +6268,51 @@
                 if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) fieldIds.add(n.attrs.fieldId);
             });
             if (!fieldIds.size) return; // empty/placeholder doc — template covers it
+            // Pass 1 — INSERT missing effect fields, anchored right after the quotes field.
             const targets = [];
             editor.state.doc.descendants((node, pos) => {
                 if (!node.type || node.type.name !== 'inputField') return;
                 const fid = String((node.attrs && node.attrs.fieldId) || '');
-                const m = /^poem_(.+?)_(speaker|form|structure|themes)$/.exec(fid);
+                const m = /^poem_(.+?)_(speaker|form|structure|themes)_quotes$/.exec(fid);
                 if (!m) return;
-                if (fieldIds.has(fid + '_effect')) return; // already healed
-                targets.push({ pos: pos, size: node.nodeSize, fid: fid });
+                const efid = 'poem_' + m[1] + '_' + m[2] + '_effect';
+                if (fieldIds.has(efid)) return; // already present (reorder pass handles position)
+                targets.push({ pos: pos, size: node.nodeSize, efid: efid });
             });
-            if (!targets.length) return;
             targets.sort((a, b) => b.pos - a.pos); // descending — earlier positions stay valid
             targets.forEach((t) => {
-                editor.chain().insertContentAt(t.pos + t.size, inputHTML(POEM_EFFECT_PROMPT, t.fid + '_effect')).run();
+                editor.chain().insertContentAt(t.pos + t.size, inputHTML(POEM_EFFECT_PROMPT, t.efid)).run();
             });
-            console.log('[WML poetry-CN] healed Effect-on-reader into', targets.length, 'craft element(s)');
+            if (targets.length) console.log('[WML poetry-CN] healed Effect-on-reader into', targets.length, 'craft element(s)');
+            // Pass 2 — REORDER a misplaced effect (v7.20.6 staging shape: effect BEFORE quotes).
+            // One move per iteration, re-scan between (positions shift); bounded guard. The node's
+            // JSON rides the move so filled content + attrs survive exactly.
+            let moved = 0, guard = 0;
+            while (guard++ < 80) {
+                const fields = {};
+                editor.state.doc.descendants((node, pos) => {
+                    if (node.type && node.type.name === 'inputField' && node.attrs && node.attrs.fieldId) {
+                        fields[node.attrs.fieldId] = { pos: pos, size: node.nodeSize, json: node.toJSON() };
+                    }
+                });
+                let op = null;
+                for (const fid of Object.keys(fields)) {
+                    const m = /^poem_(.+?)_(speaker|form|structure|themes)_effect$/.exec(fid);
+                    if (!m) continue;
+                    const q = fields['poem_' + m[1] + '_' + m[2] + '_quotes'];
+                    const e = fields[fid];
+                    if (q && e.pos < q.pos) { op = { e: e, q: q }; break; }
+                }
+                if (!op) break;
+                // Delete the effect node, then insert its JSON after quotes. Within one chain the
+                // second position is post-delete: quotes has shifted left by the effect's size.
+                editor.chain()
+                    .deleteRange({ from: op.e.pos, to: op.e.pos + op.e.size })
+                    .insertContentAt(op.q.pos + op.q.size - op.e.size, op.e.json)
+                    .run();
+                moved++;
+            }
+            if (moved) console.log('[WML poetry-CN] reordered', moved, 'Effect field(s) to sit after Key quotes');
         } catch (e) {
             console.warn('[WML poetry-CN] Effect heal failed (doc untouched beyond applied inserts)', e);
         }
@@ -6730,6 +6760,67 @@
             requestAnimationFrame(function () { _swmlScrollToTop(sec, 24); });
         } catch (e) { console.warn('[WML poetry-CN] scroll-to-poem failed', e); }
     }
+    // v7.20.9 (Neil UX ruling): programmatic RE-ENTRY card for a poem with filed elements —
+    // shown when Start lands on an element with no opener card (mid-walk re-entry after a
+    // chat clear; all-done revisit). Continue (primary) resumes at the next unfilled element;
+    // Revisit lists the FILED elements to deepen one (the AI's re-file replaces its own earlier
+    // auto-fill via hash provenance — a student's hand-edit always wins). No Wipe by ruling:
+    // destructive surface for a rare need; fields stay hand-editable. Returns true if rendered
+    // (0 filled elements → false: the blind continue directive reads better than a "0 of 8" card).
+    function _poetryCnReentryCard(ctx, poem) {
+        var pid = poem && poem.id;
+        if (!pid || !ctx || !ctx.chatMessages || !ctx.addChatMessage || !ctx.chatTextarea) return false;
+        var SPINE = (typeof WML !== 'undefined' && WML.POETRY_CN_SPINE) || [];
+        if (!SPINE.length) return false;
+        var filled = _poetryCnFilledElements(pid);
+        if (!filled.length) return false;
+        var title = poem.title || pid;
+        var labelOf = function (slug) {
+            var l = slug;
+            SPINE.forEach(function (e) { if (e.slug === slug) l = e.label; });
+            return l;
+        };
+        var silentSend = function (text) {
+            canvasSilentSend = true;
+            ctx.chatTextarea.value = text + '\n@POEM_SELECTED' + JSON.stringify({ id: pid });
+            (ctx.sendCanvasMessageQueued || ctx.sendCanvasMessage)();
+        };
+        var nextSlug = _poetryCnFirstUnfilledElement(pid);
+        var allDone = !nextSlug;
+        var msg = allDone
+            ? 'Welcome back — all ' + SPINE.length + ' elements of “' + title + '” are filed. Pick an element below to revisit and deepen.'
+            : 'Welcome back — you’ve filed ' + filled.length + ' of ' + SPINE.length + ' elements for “' + title + '”.';
+        ctx.addChatMessage('<p>' + msg + '</p>', 'ai', msg, { suppressActions: true });
+        var bar = el('div', { className: 'swml-quick-actions' });
+        var revisitRow = function () {
+            bar.innerHTML = '';
+            filled.forEach(function (slug) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✎ ' + labelOf(slug),
+                    onClick: function () {
+                        bar.remove();
+                        silentSend('I’d like to revisit and deepen my ' + labelOf(slug) + ' notes on “' + title + '” — my current note is already in the document. Engage me Socratically on strengthening THAT element (don’t discard what’s there; we’re building on it), then re-file it when I’m happy.');
+                    } }));
+            });
+            if (!allDone) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '↩ Back',
+                    onClick: function () { mainRow(); } }));
+            }
+        };
+        var mainRow = function () {
+            bar.innerHTML = '';
+            bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '▶ Continue — next: ' + labelOf(nextSlug),
+                onClick: function () {
+                    bar.remove();
+                    silentSend('I’m continuing my Conceptual Notes on “' + title + '” — some elements are already filed in my document. Pick up the walk at the ' + labelOf(nextSlug) + ' element (do not re-ask elements that are already filed).');
+                } }));
+            bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✎ Revisit a filed element',
+                onClick: function () { revisitRow(); } }));
+        };
+        if (allDone) revisitRow(); else mainRow();
+        _poetryCnAppendBar(ctx, bar);
+        console.log('[WML poetry-CN] re-entry card →', filled.length, 'filed, next:', nextSlug || '(all filed)');
+        return true;
+    }
     function _poetryCnStartPoem(ctx, poem) {
         try {
             if (poem && poem.id) state.currentPoemId = poem.id;
@@ -6752,21 +6843,28 @@
             // unfilled element has NO card (mid-walk re-entry after a chat clear; all-done
             // revisit) rendered NOTHING: dead chat. Second member of the v7.20.5 class (pid
             // bail was the first). Catch-all, not a per-element guard: if no live opener card
-            // landed for ANY reason, the AI takes the turn via a silent directive naming the
-            // resume element (code-derived from the doc, same derivation as the walk chip).
+            // landed for ANY reason, the turn is still produced —
+            // v7.20.9 (Neil UX ruling): via the programmatic RE-ENTRY card (Continue at the
+            // next element / Revisit a filed one — §A16 code-owned, zero AI calls until the
+            // student picks). Falls through to the blind v7.20.8 directive only if even the
+            // card can't render, so the law holds under every failure.
             try {
                 var liveCard = ctx.chatMessages && ctx.chatMessages.querySelector('.swml-cn-opener:not(.swml-cn-opener-done)');
                 if (!liveCard && ctx.chatTextarea) {
-                    var nextSlug = _poetryCnFirstUnfilledElement(poem.id);
-                    var nextLabel = nextSlug;
-                    try { (WML.POETRY_CN_SPINE || []).forEach(function (e) { if (e.slug === nextSlug) nextLabel = e.label; }); } catch (_) {}
-                    var dir = nextSlug
-                        ? 'I’m continuing my Conceptual Notes on “' + (poem.title || poem.id) + '” — some elements are already filed in my document, so no stance card was shown. Pick up the walk at the ' + nextLabel + ' element (do not re-ask elements that are already filed).'
-                        : 'All eight elements of “' + (poem.title || poem.id) + '” are already filed — I’d like to review and refine my notes. Ask me which element I want to revisit.';
-                    canvasSilentSend = true;
-                    ctx.chatTextarea.value = dir + '\n@POEM_SELECTED' + JSON.stringify({ id: poem.id });
-                    (ctx.sendCanvasMessageQueued || ctx.sendCanvasMessage)();
-                    console.log('[WML poetry-CN] start fallback → AI-led turn at element:', nextSlug || '(all filed)');
+                    var rendered = false;
+                    try { rendered = _poetryCnReentryCard(ctx, poem); } catch (_) { rendered = false; }
+                    if (!rendered) {
+                        var nextSlug = _poetryCnFirstUnfilledElement(poem.id);
+                        var nextLabel = nextSlug;
+                        try { (WML.POETRY_CN_SPINE || []).forEach(function (e) { if (e.slug === nextSlug) nextLabel = e.label; }); } catch (_) {}
+                        var dir = nextSlug
+                            ? 'I’m continuing my Conceptual Notes on “' + (poem.title || poem.id) + '” — some elements are already filed in my document, so no stance card was shown. Pick up the walk at the ' + nextLabel + ' element (do not re-ask elements that are already filed).'
+                            : 'All eight elements of “' + (poem.title || poem.id) + '” are already filed — I’d like to review and refine my notes. Ask me which element I want to revisit.';
+                        canvasSilentSend = true;
+                        ctx.chatTextarea.value = dir + '\n@POEM_SELECTED' + JSON.stringify({ id: poem.id });
+                        (ctx.sendCanvasMessageQueued || ctx.sendCanvasMessage)();
+                        console.log('[WML poetry-CN] start fallback → AI-led turn at element:', nextSlug || '(all filed)');
+                    }
                 }
             } catch (e2) { console.warn('[WML poetry-CN] start fallback failed', e2); }
         } catch (e) { console.warn('[WML poetry-CN] start-poem failed', e); }
@@ -6935,13 +7033,14 @@
             return false;
         } catch (_) { return false; }
     }
-    // First unfilled spine element for this poem, in SPINE order (doc-derived — same
-    // derivation as _poetryCnWalkBeat, but positional rather than a count).
-    function _poetryCnFirstUnfilledElement(pid) {
+    // Filled spine elements for this poem, in SPINE order (doc-derived — same derivation
+    // as _poetryCnWalkBeat). v7.20.9: ONE canonical scan; first-unfilled + the re-entry
+    // card both derive from it.
+    function _poetryCnFilledElements(pid) {
         try {
-            if (!canvasEditor || !pid) return '';
+            if (!canvasEditor || !pid) return [];
             var SPINE = (typeof WML !== 'undefined' && WML.POETRY_CN_SPINE) || [];
-            if (!SPINE.length) return '';
+            if (!SPINE.length) return [];
             var ELS = SPINE.map(function (e) { return e.slug; });
             var seen = {};
             var elRe = new RegExp('^poem_(.+?)_(' + ELS.join('|') + ')$');
@@ -6951,7 +7050,18 @@
                     if (m && m[1] === pid && (n.textContent || '').trim().length > 0) seen[m[2]] = true;
                 }
             });
-            for (var i = 0; i < ELS.length; i++) { if (!seen[ELS[i]]) return ELS[i]; }
+            return ELS.filter(function (s) { return seen[s]; });
+        } catch (e) { console.warn('[WML poetry-CN] filled-elements failed', e); return []; }
+    }
+    // First unfilled spine element for this poem, in SPINE order.
+    function _poetryCnFirstUnfilledElement(pid) {
+        try {
+            var SPINE = (typeof WML !== 'undefined' && WML.POETRY_CN_SPINE) || [];
+            if (!SPINE.length || !pid) return '';
+            var filled = _poetryCnFilledElements(pid);
+            for (var i = 0; i < SPINE.length; i++) {
+                if (filled.indexOf(SPINE[i].slug) === -1) return SPINE[i].slug;
+            }
             return '';
         } catch (e) { console.warn('[WML poetry-CN] first-unfilled failed', e); return ''; }
     }
@@ -31032,12 +31142,13 @@
                     pcnSubs.forEach(function (s) {
                         pInner += '<p><strong>' + s[1] + '</strong></p>' +
                             inputHTML(s[2], 'poem_' + pid + '_' + s[0]) +
-                            // v7.20.6: Effect-on-reader field on the craft elements only, BETWEEN
-                            // the notes and the key quotes (reason the effect, then anchor it).
+                            inputHTML('Key quotes (1–3).', 'poem_' + pid + '_' + s[0] + '_quotes') +
+                            // v7.20.9 (Neil): Effect-on-reader field on the craft elements only,
+                            // AFTER the key quotes — the writing order students actually use:
+                            // concept → quote → effect (effect reasons FROM the evidence).
                             (POEM_EFFECT_ELS.indexOf(s[0]) !== -1
                                 ? inputHTML(POEM_EFFECT_PROMPT, 'poem_' + pid + '_' + s[0] + '_effect')
-                                : '') +
-                            inputHTML('Key quotes (1–3).', 'poem_' + pid + '_' + s[0] + '_quotes');
+                                : '');
                     });
                     html += sectionHTML('plan', poem.title || pid, true, null, pInner);
                 });

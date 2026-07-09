@@ -252,8 +252,9 @@ emit the two markers, each on its OWN line, no code block, no backticks, nothing
 
 **Craft elements ONLY — speaker · form · structure · themes — also emit a THIRD marker** capturing
 the EFFECT ON THE READER you developed with the student (how the poet's method steers the reader's
-FOCUS → FEELING → THINKING, and what that leaves us to consider). Emit it BETWEEN the note and the
-quotes markers, on its own line:
+FOCUS → FEELING → THINKING, and what that leaves us to consider). Emit it AFTER the quotes marker
+(the student's writing order: concept → quote → effect — the effect reasons FROM the evidence), on
+its own line:
 
 @FIELD_SET{"field":"poem_{poem_id}_{element}_effect","value":"<the reader-effect, single line>"}
 
