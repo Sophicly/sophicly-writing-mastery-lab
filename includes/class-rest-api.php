@@ -144,6 +144,16 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.19.986: poem texts for the current course — the poetry Conceptual-Notes doc
+        // prints each poem so students can read while they take notes. Full poem_text is
+        // deliberately kept OFF the swmlConfig page embed (bloat), so the client fetches it
+        // on demand here. Resolves board+text through the SAME canonical slug ladder + the
+        // swml_poems_* option lookup the router uses (build_poetry_cn_injection).
+        register_rest_route($namespace, '/poems', [
+            'methods' => 'GET', 'callback' => [$this, 'get_poems'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Chat proxy
         register_rest_route($namespace, '/chat', [
             'methods' => 'POST', 'callback' => [$this, 'handle_chat'],
@@ -632,6 +642,44 @@ class SWML_REST_API {
         return rest_ensure_response(SWML_Session_Manager::get_student_reminders(
             get_current_user_id(), sanitize_text_field($request->get_param('text') ?? '')
         ));
+    }
+
+    /**
+     * v7.19.986: current course's poems WITH full text, so the poetry Conceptual-Notes
+     * doc can print each poem for the student to read while taking notes. Resolves
+     * board+text through the canonical slug ladder + swml_poems_* option lookup — the
+     * SAME source the router injects from (build_poetry_cn_injection). Fetched on demand
+     * because full poem_text is deliberately kept off the swmlConfig page embed (bloat).
+     */
+    public function get_poems($request) {
+        $board = sanitize_key($request->get_param('board') ?? '');
+        $text  = (string) ($request->get_param('text') ?? '');
+        if ($board === '' || $text === '') {
+            return rest_ensure_response(['success' => false, 'poems' => [], 'reason' => 'missing board/text']);
+        }
+        $canon = self::canonical_slug($text);
+        $cands = [];
+        foreach ([$text, $canon, preg_replace('/_poetry$/', '', $text), $text . '_poetry',
+                  preg_replace('/_poetry$/', '', (string) $canon), $canon . '_poetry'] as $c) {
+            $c = (string) $c;
+            if ($c !== '' && !in_array($c, $cands, true)) $cands[] = $c;
+        }
+        $rows = [];
+        foreach ($cands as $c) {
+            $opt = get_option('swml_poems_' . $board . '_' . $c, []);
+            if (is_array($opt) && !empty($opt)) { $rows = $opt; break; }
+        }
+        $poems = [];
+        foreach ((array) $rows as $r) {
+            if (!is_array($r) || empty($r['id'])) continue;
+            $poems[] = [
+                'id'        => sanitize_key($r['id']),
+                'title'     => trim((string) ($r['title'] ?? ''), "* \t"),
+                'poet'      => trim((string) ($r['poet'] ?? ''), "* \t"),
+                'poem_text' => (string) ($r['poem_text'] ?? ''),
+            ];
+        }
+        return rest_ensure_response(['success' => !empty($poems), 'poems' => $poems]);
     }
 
     public function check_auth() { return is_user_logged_in() && get_current_user_id() > 0; }
