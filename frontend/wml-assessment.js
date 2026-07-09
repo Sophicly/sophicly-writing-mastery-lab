@@ -6406,6 +6406,45 @@
                 console.warn('[WML poetry-CN] poem-text fetch failed (will retry on next render)', e && e.message);
             });
     }
+    // v7.19.993: poem body renderer — stanza-aware, hallucination-free. The admin
+    // poem options currently carry a markdown-import artifact: EVERY line is
+    // double-spaced (\n\n), so no stanza information survives (verified: when_we_two_parted
+    // has 31 uniform \n\n runs and zero single \n). Deterministic rule:
+    //   · text has single-\n line breaks → real structure: \n = line, blank line = stanza gap
+    //   · text is uniformly double-spaced → artifact: collapse to single line breaks, one block
+    // When the poem options are re-authored with true stanza breaks (queued data pass),
+    // this renderer upgrades automatically — no code change. All text lands via
+    // createTextNode (escaped by construction).
+    function _renderPoemBody(bodyEl, text) {
+        const t = String(text || '').replace(/\r\n?/g, '\n').trim();
+        const hasSingleBreaks = /[^\n]\n[^\n]/.test(t);
+        const stanzas = hasSingleBreaks ? t.split(/\n{2,}/) : [t.replace(/\n{2,}/g, '\n')];
+        bodyEl.textContent = '';
+        stanzas.forEach((st) => {
+            const p = document.createElement('p');
+            p.className = 'swml-poem-stanza';
+            st.split('\n').forEach((line, i) => {
+                if (i) p.appendChild(document.createElement('br'));
+                p.appendChild(document.createTextNode(line));
+            });
+            bodyEl.appendChild(p);
+        });
+    }
+    // v7.19.993: scroll the doc to the section holding a fieldId (display-only; used by
+    // the FQ organiser autofill so the student SEES notes landing — same visibility
+    // rationale as the v839 Action-Plan scroll). Deferred a tick so the PM write +
+    // section expand settle first.
+    function _scrollDocToField(fieldId) {
+        if (!fieldId) return;
+        setTimeout(() => {
+            try {
+                const host = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+                const fld = host && host.querySelector('[data-input-field][data-field-id="' + fieldId + '"]');
+                const sec = fld && fld.closest('.swml-section-block');
+                if (sec) _swmlScrollToTop(sec, 24);
+            } catch (_) { /* never block the fill */ }
+        }, 350);
+    }
     // Fill every .swml-poem-card (created by the SectionBlock NodeView inside poem
     // groups, OUTSIDE the PM content hole and firewalled by its ignoreMutation).
     // Idempotent writes only (sig-guarded innerHTML, class checks) — §PM NodeView law.
@@ -6432,7 +6471,9 @@
                     head.type = 'button';
                     head.className = 'swml-poem-card-head';
                     head.setAttribute('contenteditable', 'false');
-                    head.innerHTML = '<span class="swml-poem-card-chev" aria-hidden="true"></span>' +
+                    // v7.19.993 (Neil): plus icon, not a chevron — matches the site's accordion
+                    // convention (LearnDash transcript etc.); rotates to × when open (CSS).
+                    head.innerHTML = '<span class="swml-poem-card-plus" aria-hidden="true"></span>' +
                         '<span class="swml-poem-card-title">Read the poem</span>' +
                         (poem && poem.poet ? '<span class="swml-poem-card-poet">' + escapeHTML(poem.poet) + '</span>' : '');
                     head.addEventListener('mousedown', (ev) => { ev.preventDefault(); ev.stopPropagation(); });
@@ -6442,18 +6483,21 @@
                         _poemCardOpen[pid] = !card.classList.contains('swml-poem-open');
                         card.classList.toggle('swml-poem-open', _poemCardOpen[pid]);
                     });
+                    // v7.19.993: animated reveal wrapper (grid-rows 0fr→1fr) — smooth open/close.
+                    const reveal = document.createElement('div');
+                    reveal.className = 'swml-poem-card-reveal';
                     const body = document.createElement('div');
                     body.className = 'swml-poem-card-body';
                     if (poem && poem.poem_text) {
-                        // textContent = escaped by construction; pre-wrap CSS keeps the lineation.
-                        body.textContent = poem.poem_text;
+                        _renderPoemBody(body, poem.poem_text);
                     } else if (_poemTextsFetchState === 'done') {
                         body.innerHTML = '<em class="swml-poem-card-missing">Poem text unavailable — please report this so we can add it.</em>';
                     } else {
                         body.innerHTML = '<em class="swml-poem-card-missing">Loading poem…</em>';
                     }
+                    reveal.appendChild(body);
                     card.appendChild(head);
-                    card.appendChild(body);
+                    card.appendChild(reveal);
                 }
                 // Default: only the ACTIVE poem's card open (Neil ruling — pairs with the
                 // v984 scroll-to-section); an explicit student toggle wins for the session.
@@ -10752,6 +10796,10 @@
                                 if (_sec) _sec.classList.remove('swml-fb-collapsed');
                             } catch (_) { /* display-only, never block */ }
                         });
+                        // v7.19.993 (Neil): SHOW the filing happening — scroll the doc to the
+                        // first section that just received a note, else a student watching the
+                        // chat never learns the organiser is filling in.
+                        _scrollDocToField(noteFills[0].field);
                         aiBubble('📒 **' + noteFills.length + ' concept note' + (noteFills.length > 1 ? 's' : '') +
                             ' added to your Knowledge Organiser** — every form you master writes its key fact into the document, ready to build on in Conceptual Notes.');
                     }
@@ -10795,6 +10843,8 @@
                                     if (_sec) _sec.classList.remove('swml-fb-collapsed');
                                 } catch (_) { /* display-only, never block */ }
                             });
+                            // v7.19.993 (Neil): scroll to the first filled section (see noteFills note).
+                            _scrollDocToField(mn[0].field);
                             if (typeof saveCanvasContent === 'function') saveCanvasContent();
                             aiBubble('📒 **Knowledge Organiser complete** — mastering the round filed every concept note for the forms you were tested on. Anything you wrote yourself stays exactly as you wrote it.');
                         }

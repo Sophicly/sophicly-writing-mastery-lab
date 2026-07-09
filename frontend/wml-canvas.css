@@ -11921,75 +11921,94 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='rgba(30,32,40,0.75)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E") " set in Step 2";
 }
 
-/* ── v7.19.992: poetry-CN read-along poem card ─────────────────────────────
+/* ── v7.19.992/993: poetry-CN read-along poem card ─────────────────────────
    Derived display filled by WML.renderPoemCards (GET /poems) inside each poem
-   group's SectionBlock NodeView — NEVER part of the persisted doc. Collapsible;
-   the active poem's card auto-expands. Dark theme is the default (WML canvas),
-   light overrides follow the file's [data-swml-theme] / .swml-canvas-light idiom. */
+   group's SectionBlock NodeView — NEVER part of the persisted doc. v993 (Neil):
+   NO outline stroke (soft fill only — house rule), top margin clears the
+   section's completion tick + chevron (top:10 right:44/8, 22-26px tall), PLUS
+   icon accordion (site convention — LearnDash transcript) rotating to × with a
+   smooth grid-rows reveal. Dark default; light overrides per file idiom. */
 .swml-poem-card {
-    margin: 6px 0 10px;
+    margin: 32px 0 12px;         /* clears the section's top-right tick + chevron row */
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-left: 3px solid rgba(83,51,237,0.55);
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.045);
     overflow: hidden;
 }
 .swml-poem-card:empty { display: none; } /* unfilled slot reserves no space */
 .swml-poem-card-head {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    padding: 7px 12px;
+    padding: 9px 14px;
     border: none;
     background: transparent;
-    color: rgba(255,255,255,0.65);
+    color: rgba(255,255,255,0.68);
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.02em;
     cursor: pointer;
     text-align: left;
 }
-.swml-poem-card-head:hover { background: rgba(255,255,255,0.05); }
-.swml-poem-card-chev::before {
-    content: '▾';
-    display: inline-block;
-    transform: rotate(-90deg);
-    transition: transform 0.15s ease;
+.swml-poem-card-head:hover { background: rgba(255,255,255,0.045); }
+/* plus icon → rotates 45° to × when open (site accordion convention) */
+.swml-poem-card-plus {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    flex: 0 0 12px;
+    transition: transform 0.25s ease;
 }
-.swml-poem-open .swml-poem-card-chev::before { transform: rotate(0deg); }
+.swml-poem-card-plus::before,
+.swml-poem-card-plus::after {
+    content: '';
+    position: absolute;
+    background: currentColor;
+    border-radius: 1px;
+}
+.swml-poem-card-plus::before { left: 0; right: 0; top: 5px; height: 2px; }
+.swml-poem-card-plus::after  { top: 0; bottom: 0; left: 5px; width: 2px; }
+.swml-poem-open .swml-poem-card-plus { transform: rotate(45deg); }
 .swml-poem-card-poet {
     margin-left: auto;
     font-weight: 400;
     font-style: italic;
     color: rgba(255,255,255,0.4);
 }
+/* smooth height animation: grid rows 0fr ↔ 1fr */
+.swml-poem-card-reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+}
+.swml-poem-open .swml-poem-card-reveal { grid-template-rows: 1fr; }
 .swml-poem-card-body {
-    display: none;
-    padding: 4px 16px 14px;
-    white-space: pre-wrap;       /* poem lineation survives (text is set via textContent) */
+    min-height: 0;
+    overflow: hidden;
+    padding: 0 18px;
     font-size: 13.5px;
-    line-height: 1.65;
+    line-height: 1.6;
     color: rgba(255,255,255,0.78);
+}
+.swml-poem-open .swml-poem-card-body {
     max-height: 420px;
     overflow-y: auto;
     overscroll-behavior: contain;
 }
-.swml-poem-open .swml-poem-card-body { display: block; }
-.swml-poem-card-missing { color: rgba(255,255,255,0.4); font-size: 12px; }
+/* stanzas: tight lines inside, one quiet gap between (renderer builds <p><br> structure) */
+.swml-poem-stanza { margin: 0 0 14px; }
+.swml-poem-card-body .swml-poem-stanza:first-child { margin-top: 4px; }
+.swml-poem-card-body .swml-poem-stanza:last-child { margin-bottom: 14px; }
+.swml-poem-card-missing { display: block; padding: 4px 0 12px; color: rgba(255,255,255,0.4); font-size: 12px; }
 /* collapsed poem section hides its card (the card sits OUTSIDE .swml-section-content) */
 .swml-section-block.swml-fb-collapsed .swml-poem-card { display: none; }
 /* light theme */
 [data-swml-theme="light"] .swml-poem-card,
-.swml-canvas-light .swml-poem-card {
-    border-color: rgba(0,0,0,0.08);
-    border-left-color: rgba(83,51,237,0.45);
-    background: rgba(0,0,0,0.025);
-}
+.swml-canvas-light .swml-poem-card { background: rgba(0,0,0,0.035); }
 [data-swml-theme="light"] .swml-poem-card-head,
 .swml-canvas-light .swml-poem-card-head { color: rgba(30,32,40,0.7); }
 [data-swml-theme="light"] .swml-poem-card-head:hover,
-.swml-canvas-light .swml-poem-card-head:hover { background: rgba(0,0,0,0.04); }
+.swml-canvas-light .swml-poem-card-head:hover { background: rgba(0,0,0,0.035); }
 [data-swml-theme="light"] .swml-poem-card-poet,
 .swml-canvas-light .swml-poem-card-poet { color: rgba(30,32,40,0.45); }
 [data-swml-theme="light"] .swml-poem-card-body,
@@ -12000,4 +12019,6 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 /* v7.19.992: notes-pad two-tier grouping — nested items indent inside the
    Foundational Notes group; cloned poem cards stay readable in the pad. */
 .swml-notes-group > .swml-notes-item-body { padding-left: 14px; }
-.swml-extract-panel-body .swml-poem-card { margin: 4px 0 8px; }
+/* pad clones keep the section's completion tick (::after rides the cloned class),
+   so the card keeps clearance there too — just slightly tighter than the doc. */
+.swml-extract-panel-body .swml-poem-card { margin: 26px 0 8px; }
