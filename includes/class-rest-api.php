@@ -1028,9 +1028,13 @@ class SWML_REST_API {
         $engine->start($user_id, $is_msa ? 'mark_scheme_assessment' : ($is_fq ? 'foundational' : 'mark_scheme'), count($picked), $board, $text, $attempt, $topic);
 
         // Persist the picked set WITH keys server-side; client never sees keys.
+        // v7.19.997: fq_stage rides the bank meta so /quiz/finish can key the persisted
+        // result per STAGE (staged poetry FQ — each stage gets its own result card).
         update_user_meta($user_id, self::QUIZ_BANK_META . $user_id,
             wp_slash(wp_json_encode(['board' => $board, 'subject' => $subject, 'text' => $text,
-                                     'attempt' => $attempt, 'questions' => $picked])));
+                                     'attempt' => $attempt,
+                                     'fq_stage' => ($is_fq && !empty($stage)) ? (int) $stage : 0,
+                                     'questions' => $picked])));
 
         $total  = count($picked);
         $public = array_map(function ($q) use ($total) {
@@ -1141,7 +1145,10 @@ class SWML_REST_API {
         // uses) for the MSA calibration reflection. Self-rating, never a grade signal.
         $ms_bank = $this->read_quiz_bank($user_id);
         $ms_text = is_array($ms_bank) ? sanitize_key((string) ($ms_bank['text'] ?? '')) : '';
-        $summary  = SWML_Quiz_Engine::instance()->finalize($user_id, 0, $rounds);
+        // v7.19.997: staged FQ — the stage rides the bank meta (set at /quiz/start) into
+        // finalize so persistence keys per stage and the result card knows its stage.
+        $fq_stage = is_array($ms_bank) ? (int) ($ms_bank['fq_stage'] ?? 0) : 0;
+        $summary  = SWML_Quiz_Engine::instance()->finalize($user_id, 0, $rounds, ['fq_stage' => $fq_stage]);
         delete_user_meta($user_id, self::QUIZ_BANK_META . $user_id);
 
         if (!$summary) return rest_ensure_response(['success' => false, 'code' => 'finalize_failed']);
@@ -1236,6 +1243,7 @@ class SWML_REST_API {
                 'grade'      => $summary['grade'],
                 'rounds'     => (int) ($summary['rounds'] ?? 0),
                 'mastery'    => ((int) ($summary['rounds'] ?? 0) > 0),
+                'stage'      => $fq_stage, // v7.19.997: 0 = unstaged
                 'ms_confidence' => $ms_conf,   // 1-5 or null — MSA calibration reflection
             ],
             'categoriesWithErrors' => $summary['categories_with_errors'] ?? [],
@@ -2679,21 +2687,26 @@ class SWML_REST_API {
         // (suffix _cn, bank text, Topic 2) — the quiz result stays keyed by the
         // QUIZ identity (course text + lesson topic), which the client passes
         // as quiz=foundational + quiz_text/quiz_topic on FQ loads.
-        $quiz_result = null;
-        $quiz_hint   = sanitize_text_field($request->get_param('quiz') ?? '');
+        $quiz_result  = null;
+        $quiz_results = null; // v7.19.997: per-stage FQ results (one card per stage)
+        $quiz_hint    = sanitize_text_field($request->get_param('quiz') ?? '');
         if (class_exists('SWML_Quiz_Engine')) {
             if ($suffix === '_msu' || $suffix === '_fq') {
                 $quiz_result = SWML_Quiz_Engine::instance()->get_persisted_result(
                     $user_id, $board, $text, $topic_number, $attempt,
                     $suffix === '_fq' ? 'foundational' : 'mark_scheme'
                 );
+                if ($suffix === '_fq') {
+                    $quiz_results = SWML_Quiz_Engine::instance()->get_persisted_results_fq($user_id, $board, $text);
+                }
             } elseif ($suffix === '_cn' && $quiz_hint === 'foundational') {
                 $q_text  = $this->normalize_text_slug(sanitize_text_field($request->get_param('quiz_text') ?? ''));
                 $q_topic = absint($request->get_param('quiz_topic') ?? 0);
                 if ($q_text) {
-                    $quiz_result = SWML_Quiz_Engine::instance()->get_persisted_result(
+                    $quiz_result  = SWML_Quiz_Engine::instance()->get_persisted_result(
                         $user_id, $board, $q_text, $q_topic ?: null, $attempt, 'foundational'
                     );
+                    $quiz_results = SWML_Quiz_Engine::instance()->get_persisted_results_fq($user_id, $board, $q_text);
                 }
             }
         }
@@ -2706,6 +2719,7 @@ class SWML_REST_API {
             // v7.19.992: scattered-siblings merge sidecar (poetry-CN family; [] otherwise).
             'mergeFields'         => $merge_fields,
             'quizResult'          => $quiz_result,
+            'quizResults'         => $quiz_results, // v7.19.997: per-stage FQ array (null elsewhere)
             // v7.19.263: drives the header "previous stage updated" dot.
             'pullUpdateAvailable' => $this->pull_update_available($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id),
             // v7.19.854: family-first leniency flag (Neil) — frontend keys the WC

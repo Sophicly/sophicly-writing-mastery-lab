@@ -8113,6 +8113,12 @@
         if (sidebarPhaseLabel) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: sidebarPhaseLabel }));
         }
+        // v7.19.997 (Neil): staged FQ (poetry forms / poem quizzes) — surface the
+        // bridge-mapped stage as its own badge; without it three staged lessons on one
+        // text read identically in the sidebar.
+        if (state.task === 'foundational_quiz' && state.fqStage) {
+            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Stage ' + state.fqStage }));
+        }
         // v7.15.20: Attempt badge — injected/updated dynamically after attempt resolution
         // (state.attempt is 0 at build time; resolved later via server or sessionStorage)
         function _updateAttemptBadge() {
@@ -31929,6 +31935,7 @@
     // in-doc Quiz Result card. Applied to the editor AFTER tryTopicTemplate so
     // the card survives the MSU template enforcer. Null when no result yet.
     let _pendingQuizResult = null;
+    let _pendingQuizResults = null; // v7.19.997: staged-FQ per-stage array from /canvas/load
     // v7.19.575: UNIVERSAL fresh-conversation lever (was FQ-only in v573). The MeowApps AI
     // Engine is the authoritative conversation keeper (keyed by chatId); clearing WML's
     // history/meta does NOT reset it, so reusing the old chatId silently resumes the stale
@@ -32036,6 +32043,9 @@
             }
             // v7.19.321: capture the persisted Quiz Result for the in-doc card.
             _pendingQuizResult = (res && res.quizResult) ? res.quizResult : null;
+            // v7.19.997: staged FQ — capture the per-stage array so EVERY stage's card
+            // re-projects on load (one card above each stage), not just the latest.
+            _pendingQuizResults = (res && Array.isArray(res.quizResults) && res.quizResults.length) ? res.quizResults : null;
             // v7.19.992: capture the scattered-siblings merge sidecar (poetry-CN doc-fork
             // repair) and fire the CN heal chain right after this load settles — the
             // onCreate staggered timers cover most cases, this covers a slow network
@@ -32179,7 +32189,12 @@
                     // _pendingQuizResult was captured above from /canvas/load, so re-project it
                     // here so it self-heals on every reopen. applyQuizResultToEditor self-guards
                     // (no-ops unless _pendingQuizResult + a quiz task + canvasEditor present).
-                    if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
+                    // v7.19.997: staged FQ — project EVERY stage's card (the per-stage array),
+                    // oldest→newest; each apply upserts only its own stage's card.
+                    if (Array.isArray(_pendingQuizResults) && _pendingQuizResults.length
+                        && typeof applyQuizResultToEditor === 'function') {
+                        _pendingQuizResults.forEach(r => { _pendingQuizResult = r; applyQuizResultToEditor(); });
+                    } else if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
                     // v7.19.765: GRADUATE a seeded ASSESSMENT doc. A seed (is_seed) is read-only
                     // server-side; the design relies on "the first autosave persists it" — but the
                     // assessment's only inputs (Self-Assessment dropdowns, opt-out pill, Analytics
@@ -33081,12 +33096,30 @@
         try {
             const tmp = document.createElement('div');
             tmp.innerHTML = canvasEditor.getHTML() || '';
-            tmp.querySelectorAll('[data-section-type="quizresult"]').forEach(n => n.remove());
+            // v7.19.997: STAGED FQ (poetry forms/poem quizzes) keeps ONE card PER STAGE
+            // (Neil: "stage one result above stage one…"). A staged result replaces only
+            // ITS stage's card; other stages' cards stay. Non-FQ tasks and unstaged FQ
+            // keep single-card semantics (strip all / strip unstaged).
+            const _stg = (state.task === 'foundational_quiz') ? (parseInt(result.stage, 10) || 0) : -1;
+            // Stage of an EXISTING card: attr when fresh, else the "· Stage N" title text —
+            // PM round-trips can drop unknown attrs (the divider-label landmine), the title
+            // text always survives, so stale cards can never dodge their replacement.
+            const _cardStage = (n) => {
+                const a = parseInt(n.getAttribute('data-stage') || '', 10);
+                if (a > 0) return a;
+                const m = /·\s*Stage\s*(\d+)/i.exec(n.textContent || '');
+                return m ? parseInt(m[1], 10) : 0;
+            };
+            tmp.querySelectorAll('[data-section-type="quizresult"]').forEach(n => {
+                if (_stg === -1) { n.remove(); return; }
+                if (_cardStage(n) === _stg) n.remove();
+            });
 
             const wrap = document.createElement('div');
             wrap.innerHTML = renderQuizResultSectionHTML(result);
             const card = wrap.firstElementChild;
             if (!card) return;
+            if (_stg > 0) card.setAttribute('data-stage', String(_stg));
             // v7.19.740: the MSA is an ASSESSMENT, not a quiz — relabel the shared card copy.
             if (state.task === 'mark_scheme') {
                 card.innerHTML = card.innerHTML.replace(/Quiz Result/gi, 'Mark Scheme Assessment — Result');
@@ -33097,19 +33130,36 @@
                 card.innerHTML = card.innerHTML
                     .replace(/Mark Scheme Mastery/gi, 'Foundational Quiz — Mastery')
                     .replace(/Quiz Result/gi, 'Foundational Quiz — Result');
+                // v7.19.997: name the stage on the card so the three cards read apart.
+                if (_stg > 0) {
+                    card.innerHTML = card.innerHTML
+                        .replace(/(Foundational Quiz — (?:Result|Mastery))/, '$1 · Stage ' + _stg);
+                }
             }
 
             if (state.task === 'foundational_quiz') {
-                // v7.19.566: place the grade card directly UNDER the General Notes
-                // section (Neil) — i.e. before the divider that follows General Notes.
-                // FQ doc has no "Forging Your Weapon" anchor; fall back to top of doc
-                // if the General Notes divider can't be located.
+                // v7.19.997: a STAGED result sits directly ABOVE its own stage — before the
+                // divider whose label starts "STAGE {N}". Fall back to the legacy spot when
+                // the doc has no such divider (unstaged organiser).
                 const _divs = Array.from(tmp.querySelectorAll('[data-section-type="divider"]'));
-                const _gn = _divs.findIndex(d => /GENERAL\s*NOTES/i.test((d.getAttribute('data-section-label') || '') + ' ' + (d.textContent || '')));
-                const _next = (_gn >= 0) ? _divs[_gn + 1] : null;
-                if (_next && _next.parentNode) _next.parentNode.insertBefore(card, _next);
-                else if (tmp.firstChild) tmp.insertBefore(card, tmp.firstChild);
-                else tmp.appendChild(card);
+                let _placed = false;
+                if (_stg > 0) {
+                    const _sre = new RegExp('\\bSTAGE\\s*' + _stg + '\\b', 'i');
+                    const _sd = _divs.find(d => _sre.test((d.getAttribute('data-section-label') || '') + ' ' + (d.textContent || '')));
+                    if (_sd && _sd.parentNode) { _sd.parentNode.insertBefore(card, _sd); _placed = true; }
+                    else console.warn('[WML FQ] no "STAGE ' + _stg + '" divider in doc — result card falls back to the top slot');
+                }
+                if (!_placed) {
+                    // v7.19.566: place the grade card directly UNDER the General Notes
+                    // section (Neil) — i.e. before the divider that follows General Notes.
+                    // FQ doc has no "Forging Your Weapon" anchor; fall back to top of doc
+                    // if the General Notes divider can't be located.
+                    const _gn = _divs.findIndex(d => /GENERAL\s*NOTES/i.test((d.getAttribute('data-section-label') || '') + ' ' + (d.textContent || '')));
+                    const _next = (_gn >= 0) ? _divs[_gn + 1] : null;
+                    if (_next && _next.parentNode) _next.parentNode.insertBefore(card, _next);
+                    else if (tmp.firstChild) tmp.insertBefore(card, tmp.firstChild);
+                    else tmp.appendChild(card);
+                }
             } else if (state.task === 'mark_scheme') {
                 // v7.19.741: MSA Final — place the auto Score · % · Grade card INSIDE
                 // "2. HOW AM I GOING? (Feed-Back)", right under that divider, where the old

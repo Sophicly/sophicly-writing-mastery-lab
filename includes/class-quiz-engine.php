@@ -211,12 +211,15 @@ class SWML_Quiz_Engine {
      * The $grade_equivalent argument is retained only for the deprecated
      * record_quiz_score shim signature and is ignored for derivation.
      */
-    public function finalize($user_id, $grade_equivalent = 0, $rounds = 0) {
+    public function finalize($user_id, $grade_equivalent = 0, $rounds = 0, $extra = []) {
         $accumulator = $this->get_accumulator($user_id);
         if (!$accumulator) {
             error_log("[WML Quiz Engine] finalize called with no active accumulator (uid={$user_id})");
             return null;
         }
+        // v7.19.997: caller-supplied extras (e.g. fq_stage from the bank meta) ride the
+        // accumulator into the persist dispatch — staged FQ results key per stage.
+        if (!empty($extra) && is_array($extra)) $accumulator = array_merge($accumulator, $extra);
 
         $this->recompute_totals($accumulator);
         $score = (float) $accumulator['score_running'];
@@ -353,6 +356,38 @@ class SWML_Quiz_Engine {
     }
 
     /**
+     * v7.19.997: ALL persisted FQ results for a doc — the unstaged key + every
+     * per-stage key (staged poetry FQ) — each with its 'stage', sorted oldest→newest
+     * by last_attempt_at so the caller can project one card per stage AND take the
+     * latest with end(). Empty array when none.
+     */
+    public function get_persisted_results_fq($user_id, $board, $text) {
+        $raw  = get_user_meta($user_id, 'swml_foundational_quiz_results', true);
+        $all  = is_string($raw) ? (json_decode($raw, true) ?: []) : (is_array($raw) ? $raw : []);
+        $base = sanitize_key($board) . '_' . sanitize_key($text);
+        $rows = [];
+        foreach ($all as $k => $r) {
+            if (!is_array($r)) continue;
+            if ($k === $base) { $stage = (int) ($r['stage'] ?? 0); }
+            elseif (preg_match('/^' . preg_quote($base, '/') . '_s(\d+)$/', (string) $k, $m)) { $stage = (int) $m[1]; }
+            else { continue; }
+            $score = (float) ($r['last_score'] ?? 0);
+            $max   = (float) ($r['best_score_max'] ?? 0);
+            if ($max <= 0) continue;
+            $rows[] = [
+                'score'      => $score,
+                'max'        => $max,
+                'percentage' => isset($r['last_percentage']) ? (int) $r['last_percentage'] : (int) round(($score / $max) * 100),
+                'grade'      => (int) ($r['last_grade'] ?? 0),
+                'stage'      => $stage,
+                'at'         => (string) ($r['last_attempt_at'] ?? ''),
+            ];
+        }
+        usort($rows, function ($a, $b) { return strcmp($a['at'], $b['at']); });
+        return $rows;
+    }
+
+    /**
      * Latest persisted Quiz Result for a doc, read back so the frontend card
      * survives a page reload. Returns ['score','max','percentage','grade'] or
      * null. v7.19.321; v7.19.323 quiz_type-aware (foundational reads its richer
@@ -360,21 +395,14 @@ class SWML_Quiz_Engine {
      */
     public function get_persisted_result($user_id, $board, $text, $topic, $attempt = 1, $quiz_type = 'mark_scheme') {
         if ($quiz_type === 'foundational') {
-            $raw = get_user_meta($user_id, 'swml_foundational_quiz_results', true);
-            $all = is_string($raw) ? (json_decode($raw, true) ?: []) : (is_array($raw) ? $raw : []);
-            $r   = $all[sanitize_key($board) . '_' . sanitize_key($text)] ?? null;
-            if (!is_array($r)) return null;
-            $score = (float) ($r['last_score'] ?? 0);
-            $max   = (float) ($r['best_score_max'] ?? 0);
-            if ($max <= 0) return null;
-            return [
-                'score'      => $score,
-                'max'        => $max,
-                'percentage' => isset($r['last_percentage']) ? (int) $r['last_percentage'] : (int) round(($score / $max) * 100),
-                'grade'      => (int) ($r['last_grade'] ?? 0),
-            ];
+            // v7.19.997: staged FQ persists per-stage keys — the single-result read
+            // returns the LATEST across the unstaged key + every stage key.
+            $rows = $this->get_persisted_results_fq($user_id, $board, $text);
+            if (empty($rows)) return null;
+            return end($rows); // sorted oldest→newest
         }
         // v7.19.739: MSA Final reads its own session_records row (task='mark_scheme'),
+        // (FQ handled above — see get_persisted_results_fq.)
         // distinct from the MSQ drill's 'mark_scheme_unit'. Contingent on the
         // student-data listener writing task='mark_scheme' for the '_msa' suffix.
         $ms_task = ($quiz_type === 'mark_scheme_assessment') ? 'mark_scheme' : 'mark_scheme_unit';
@@ -581,7 +609,11 @@ class SWML_Quiz_Engine {
         $text  = $accumulator['text'];
         $score_int = (int) round($summary['score']);
         $max_int   = (int) round($summary['max']);
-        $key   = $board . '_' . $text;
+        // v7.19.997: staged FQ (poetry forms/poem quizzes) keys per STAGE so every stage
+        // keeps its own latest/best result (one card per stage in the doc). Unstaged quizzes
+        // keep the legacy {board}_{text} key — existing rows untouched.
+        $stage = (int) ($accumulator['fq_stage'] ?? 0);
+        $key   = $board . '_' . $text . ($stage > 0 ? '_s' . $stage : '');
 
         $raw  = get_user_meta($user_id, 'swml_foundational_quiz_results', true);
         $all  = is_string($raw) ? (json_decode($raw, true) ?: []) : (is_array($raw) ? $raw : []);
@@ -603,6 +635,7 @@ class SWML_Quiz_Engine {
             'last_percentage' => $summary['percentage'],
             'last_grade'      => (string) $summary['grade'],
             'last_categories' => $cats_str,
+            'stage'           => $stage, // v7.19.997: 0 = unstaged
         ];
 
         update_user_meta(
