@@ -6392,9 +6392,26 @@
         (bc || host).appendChild(bar);
         host.scrollTop = host.scrollHeight;
     }
+    // v7.19.984 (Neil): on poem selection, jump the DOC to that poem's section and expand
+    // it if collapsed — so the student sees where their notes will land. Locate the section
+    // by its guaranteed first field (poem_{id}_speaker) → nearest section block. Expand via
+    // the proven-safe v957 pattern (idempotent classList — CLAUDE.md PM rule #4), scroll via
+    // the canonical _swmlScrollToTop. Fail-safe: warns + no-ops if the section isn't found.
+    function _poetryCnScrollToPoem(pid) {
+        try {
+            var host = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+            if (!host || !pid) return;
+            var fld = host.querySelector('[data-input-field][data-field-id="poem_' + pid + '_speaker"]');
+            var sec = fld && fld.closest('.swml-section-block');
+            if (!sec) { console.warn('[WML poetry-CN] no doc section for poem', pid); return; }
+            if (sec.classList.contains('swml-fb-collapsed')) sec.classList.remove('swml-fb-collapsed');
+            requestAnimationFrame(function () { _swmlScrollToTop(sec, 24); });
+        } catch (e) { console.warn('[WML poetry-CN] scroll-to-poem failed', e); }
+    }
     function _poetryCnStartPoem(ctx, poem) {
         try {
             if (window.state) state.currentPoemId = poem.id;
+            _poetryCnScrollToPoem(poem.id); // v7.19.984: jump the doc to this poem's section + expand
             canvasSilentSend = true;
             // @POEM_SELECTED rides the hidden user turn (persists → resume recovery); the
             // human line is the go-signal. current_poem_id is already set, so the router
