@@ -6357,6 +6357,106 @@
         } catch (e) { console.warn('[WML poetry-CN] _poetryCnDonePoemIds failed', e); return []; }
     }
 
+    // v7.19.983: PROGRAMMATIC poetry-CN poem picker — replaces the AI-generated opening
+    // (slow welcome + LLM-written poem list) with an instant deterministic controller, the
+    // FQ/MSQ pattern (feedback_quizzes_programmatic_autofill_and_no_attempts). The poem list
+    // is client-side (_poetryAnthologyPoems); a click sets state.currentPoemId + silent-sends
+    // a start directive carrying @POEM_SELECTED. The marker persists in the HIDDEN user turn
+    // (sendCanvasMessage L8784) → a mid-walk refresh recovers the active poem via
+    // _poetryCnCurrentPoemId's history scan and never dumps back to the picker. currentPoemId
+    // set client-side → the router injects THIS poem's text on the SAME turn ("walk THIS
+    // poem"), so no extra "say ready" round-trip. Module scope so BOTH canvas pipelines +
+    // post-clear reuse it; ctx carries the per-pipeline locals (chatMessages/addChatMessage/
+    // chatTextarea/send are closure-locals, NOT module scope — the v978 scope trap). tp
+    // exposes the same key names, so a tp pipeline passes `tp` as ctx directly.
+    // Poetry-ANTHOLOGY CN only; non-anthology CN (poetic_forms/unseen) keeps the AI path.
+    function _poetryCnPickerActive() {
+        try { return state.task === 'conceptual_notes' && state.subject === 'poetry_anthology'; }
+        catch (_) { return false; }
+    }
+    // The poem the walk is currently building: resolved currentPoemId UNLESS it is already
+    // complete (finished → no active poem → show the picker). '' means "show the picker".
+    function _poetryCnActivePoemId(hist) {
+        try {
+            if (!_poetryCnPickerActive()) return '';
+            var id = _poetryCnCurrentPoemId(hist);
+            if (!id) return '';
+            return _poetryCnDonePoemIds().indexOf(id) === -1 ? id : '';
+        } catch (_) { return ''; }
+    }
+    function _poetryCnAppendBar(ctx, bar) {
+        var host = ctx && ctx.chatMessages;
+        if (!host) return;
+        var last = host.lastElementChild;
+        var bc = last && (last.querySelector('.swml-bubble-content') || last);
+        (bc || host).appendChild(bar);
+        host.scrollTop = host.scrollHeight;
+    }
+    function _poetryCnStartPoem(ctx, poem) {
+        try {
+            if (window.state) state.currentPoemId = poem.id;
+            canvasSilentSend = true;
+            // @POEM_SELECTED rides the hidden user turn (persists → resume recovery); the
+            // human line is the go-signal. current_poem_id is already set, so the router
+            // injects this poem's text on this turn and the walk opens on the speaker.
+            ctx.chatTextarea.value = 'I’ve chosen “' + poem.title + '” — let’s begin building its Conceptual Notes, starting with the speaker.\n@POEM_SELECTED{"id":"' + poem.id + '"}';
+            (ctx.sendCanvasMessageQueued || ctx.sendCanvasMessage)();
+        } catch (e) { console.warn('[WML poetry-CN] start-poem failed', e); }
+    }
+    function _poetryCnConfirmPoem(ctx, poem) {
+        // Neil ask #3: chosen poem → a Start button + a Change-poem button.
+        var bar = el('div', { className: 'swml-quick-actions' });
+        bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '▶ Start “' + poem.title + '”',
+            onClick: function () { bar.remove(); _poetryCnStartPoem(ctx, poem); } }));
+        bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '↩ Change poem',
+            onClick: function () { bar.remove(); _renderPoetryCnPicker(ctx); } }));
+        _poetryCnAppendBar(ctx, bar);
+    }
+    function _renderPoetryCnPicker(ctx) {
+        try {
+            if (!ctx || !ctx.chatMessages || !ctx.addChatMessage) { console.warn('[WML poetry-CN] picker ctx missing'); return; }
+            var poems = _poetryAnthologyPoems();
+            if (!poems.length) {
+                // DATA MISS on a poetry_anthology course — fail loud, never a silent AI picker
+                // (mirrors the router's ROSTER-UNAVAILABLE gate).
+                var warnHTML = '<div style="padding:10px 14px;background:rgba(241,196,15,0.08);border-left:3px solid rgba(241,196,15,0.4);border-radius:0 8px 8px 0;font-size:13px">Your poem list isn’t available right now. Please report this to your tutor so it can be restored — I won’t guess a list.</div>';
+                ctx.addChatMessage(warnHTML, 'ai', 'Your poem list isn’t available right now — please report this to your tutor.', { suppressActions: true });
+                console.warn('[WML poetry-CN] picker: empty roster on a poetry_anthology course — refusing AI-picker fallback');
+                return;
+            }
+            var done = _poetryCnDonePoemIds();
+            var remaining = poems.filter(function (p) { return done.indexOf(p.id) === -1; });
+            var allDone = remaining.length === 0;
+            var list = allDone ? poems : remaining;
+            var welcome = allDone
+                ? 'You’ve built Conceptual Notes for every poem here. Pick any poem to revisit and refine its notes.'
+                : 'Pick a poem and we’ll build its Conceptual Notes together — one element at a time. There’s no set order; most students focus on a handful of their own choosing.';
+            ctx.addChatMessage('<p>' + welcome + '</p>', 'ai', welcome, { suppressActions: true });
+            var bar = el('div', { className: 'swml-quick-actions swml-poem-picker' });
+            list.forEach(function (p) {
+                var label = p.title + (p.poet ? ' — ' + p.poet : '') + (allDone ? '  ✓' : '');
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: label,
+                    onClick: function () { bar.remove(); _poetryCnConfirmPoem(ctx, p); } }));
+            });
+            _poetryCnAppendBar(ctx, bar);
+        } catch (e) { console.warn('[WML poetry-CN] _renderPoetryCnPicker failed', e); }
+    }
+    // Next-poem loop: after a canvas AI reply's @FIELD_SETs are applied, if the active poem
+    // just completed all eight elements, clear the selection + re-show the picker (minus the
+    // finished poem) instead of waiting on the AI to re-list. Self-guarding + idempotent
+    // (clears currentPoemId so a re-applied reply can't double-fire). Runs in BOTH pipelines.
+    function _maybePoetryCnLoop(ctx) {
+        try {
+            if (!_poetryCnPickerActive()) return;
+            var cur = (window.state && state.currentPoemId) ? String(state.currentPoemId) : '';
+            if (!cur) return;
+            if (_poetryCnDonePoemIds().indexOf(cur) === -1) return; // not finished yet
+            state.currentPoemId = '';
+            console.log('[WML poetry-CN] poem complete → re-showing picker', cur);
+            setTimeout(function () { _renderPoetryCnPicker(ctx); }, 400);
+        } catch (e) { console.warn('[WML poetry-CN] _maybePoetryCnLoop failed', e); }
+    }
+
     // Fire a silent API call to generate statements for any stale qIds on
     // this editor's canvas. Runs once per onCreate — if statements are
     // already populated, no-op. Used for diagnostic (no chat UI) + back-fill
@@ -8179,6 +8279,12 @@
                                 renderCanvasWorkspace();
                             }
                         }, 200);
+                        } else if (_poetryCnPickerActive()) {
+                        // v7.19.983: poetry-CN chat-clear → re-render the programmatic picker fresh
+                        // (mirror the boot gate). currentPoemId is cleared by the fresh chat, so no
+                        // poem is active → the picker opens from the top. Do NOT silent-send the AI.
+                        state.currentPoemId = '';
+                        setTimeout(() => { _renderPoetryCnPicker({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }); }, 200);
                         } else if (isExamPrep) {
                         // v7.15.9: Exam prep exercises get a fresh protocol-driven start, not the generic assessment greeting
                         setTimeout(() => {
@@ -9380,6 +9486,7 @@
                         applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
                         applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored field/row-fill (Phase 3)
                         _extractPoemSelected(res.reply); // v7.19.978: poetry-CN poem-choice marker (self-guarding)
+                        _maybePoetryCnLoop({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }); // v7.19.983: poem complete → re-show programmatic picker
                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                             const _r = res.reply;
                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
@@ -15685,6 +15792,13 @@
                     if (state.task === 'cw_step_1' && tp.cwProfileCtl) {
                         tp.cwProfileCtl.tryResume();
                     }
+                    // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
+                    // (student types on); only re-surface the programmatic picker when NO poem is
+                    // active (last poem finished, or none picked yet). The picker bubble is DOM-only
+                    // (never saved), so it must be re-rendered on resume.
+                    if (_poetryCnPickerActive() && !_poetryCnActivePoemId(tp.canvasChatHistory)) {
+                        setTimeout(() => { _renderPoetryCnPicker(tp); }, 400);
+                    }
 
                     // v7.17.59: Hoisted greeting regen + grade buttons UP — was
                     // post-await (3-5s gap during which the un-styled bubble was
@@ -16078,6 +16192,11 @@
                         console.log('WML v7.19.579: FQ — deterministic controller start');
                         if (tp.quizCtl) tp.quizCtl.start({ quizType: 'foundational' });
                     }, 400);
+                } else if (_poetryCnPickerActive() && !state.reviewMode) {
+                    // v7.19.983: poetry-anthology Conceptual Notes — programmatic poem picker
+                    // (no AI opening turn). Replaces the LLM welcome + poem list Neil flagged as
+                    // laggy. Poem click sets currentPoemId + silent-sends the walk-start directive.
+                    setTimeout(() => { _renderPoetryCnPicker(tp); }, 400);
                 } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
                     // v7.17.71: ROLLBACK of v7.17.70 _isQuizResume gate. Original always-send
@@ -17816,6 +17935,7 @@
                                         applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
                                         applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored field/row-fill (Phase 3)
                                         _extractPoemSelected(res.reply); // v7.19.978: poetry-CN poem-choice marker (twin, self-guarding)
+                                        _maybePoetryCnLoop({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }); // v7.19.983: poem complete → re-show programmatic picker (twin)
                                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                                             const _r = res.reply;
                                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
@@ -18165,6 +18285,13 @@
                                                 } catch (err) { console.warn('WML Canvas: extraction chain failed:', err); }
                                             }
 
+                                            // v7.19.983: poetry-CN resume (twin) — re-surface the
+                                            // programmatic picker only when no poem is active; an
+                                            // in-progress poem just replays + continues.
+                                            if (_poetryCnPickerActive() && !_poetryCnActivePoemId(canvasChatHistory)) {
+                                                setTimeout(() => { _renderPoetryCnPicker({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }); }, 400);
+                                            }
+
                                             // v7.14.44: Re-add grade quick action buttons if chat only has the greeting
                                             // (grade buttons are DOM elements that don't persist in saved history)
                                             const userMsgs = savedChat.history.filter(m => m.role === 'user');
@@ -18196,6 +18323,11 @@
 
                                             // Scroll to bottom after replay
                                             setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 150);
+                                        } else if (_poetryCnPickerActive()) {
+                                            // v7.19.983: poetry-anthology Conceptual Notes — programmatic
+                                            // poem picker (no AI opening turn). Twin of the pipeline-A boot
+                                            // branch; must precede isExamPrep (conceptual_notes ∈ EXAM_PREP_TASKS).
+                                            setTimeout(() => { _renderPoetryCnPicker({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }); }, 400);
                                         } else if (isExamPrep) {
                                             // v7.15.8: Mode selection for essay_plan / model_answer when no mode pre-set
                                             const needsModeSelect = !state.planningMode && (state.task === 'essay_plan' || state.task === 'model_answer');
