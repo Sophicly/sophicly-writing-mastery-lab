@@ -6374,6 +6374,18 @@
         try { return state.task === 'conceptual_notes' && state.subject === 'poetry_anthology'; }
         catch (_) { return false; }
     }
+    // v7.19.987: which canvas tasks render the model's per-turn progress as the designed beat-chip.
+    // AI-WALK tasks (Conceptual Notes, planning, exam-prep walks…) — the model's "X of Y" pin IS the
+    // authoritative step, so chip it. EXCLUDE the marking family (assessment / mark_scheme*) and the
+    // deterministic quiz (foundational_quiz): their progress is code/sidebar-authoritative and a
+    // model-beat chip there would render before the turn's fill lands (the v907 reason the model
+    // beat was removed). Capability boundary — a deny-list of self-authoritative tasks, NOT a
+    // per-protocol allow-list, so every future walk protocol gets the chip for free.
+    function _taskModelChipOk() {
+        var t = (window.state && state.task) || '';
+        return t !== 'assessment' && t !== 'mark_scheme' && t !== 'mark_scheme_unit'
+            && t !== 'mark_scheme_assessment' && t !== 'foundational_quiz';
+    }
     // The poem the walk is currently building: resolved currentPoemId UNLESS it is already
     // complete (finished → no active poem → show the picker). '' means "show the picker".
     function _poetryCnActivePoemId(hist) {
@@ -9155,9 +9167,16 @@
                     // so chat, doc cards, sidebar and Score Summary all read corrected numbers.
                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
                     const cleanReply = stripAIInternals(res.reply);
-                    const formatted = formatAI(cleanReply);
+                    let formatted = formatAI(cleanReply);
+                    // v7.19.987: universal walk beat-chip — replace the model's raw ASCII progress
+                    // with the designed chip. parseProgressBeat now reads Step/Element/Part/… N of M
+                    // (from the RAW reply, before stripAIInternals may drop the pin). Stored on the
+                    // history message so a refresh replay re-renders it (the v911 pattern). Marking
+                    // family excluded via _taskModelChipOk (its progress is sidebar-authoritative).
+                    const _walkBeat = (_taskModelChipOk() && WML.parseProgressBeat) ? WML.parseProgressBeat(res.reply) : null;
+                    if (_walkBeat && WML.progressChipHTML) formatted = WML.progressChipHTML(_walkBeat) + formatted;
                     addChatMessage(formatted, 'ai', cleanReply);
-                    canvasChatHistory.push({ role: 'assistant', content: res.reply });
+                    canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
                     if (res.chatId) canvasChatId = res.chatId;
                     if (res.method) console.log('WML Canvas:', res.method, 'model:', res.model);
                     saveCanvasChat(canvasChatHistory, canvasChatId);
@@ -17937,9 +17956,12 @@
                                     // v7.19.832: deterministic mark integrity (see pipeline 1 twin).
                                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
                                     const cleanReply = stripAIInternals(res.reply);
-                                    const formatted = formatAI(cleanReply);
+                                    let formatted = formatAI(cleanReply);
+                                    // v7.19.987: universal walk beat-chip (twin of pipeline 1 — see there).
+                                    const _walkBeat = (_taskModelChipOk() && WML.parseProgressBeat) ? WML.parseProgressBeat(res.reply) : null;
+                                    if (_walkBeat && WML.progressChipHTML) formatted = WML.progressChipHTML(_walkBeat) + formatted;
                                     addChatMessage(formatted, 'ai', cleanReply);
-                                    canvasChatHistory.push({ role: 'assistant', content: res.reply });
+                                    canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
                                     if (res.chatId) canvasChatId = res.chatId;
                                     if (res.method) console.log('WML Canvas:', res.method, 'model:', res.model);
                                     // Persist chat for resume

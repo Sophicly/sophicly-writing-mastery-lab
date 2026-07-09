@@ -3136,7 +3136,11 @@ window.WML = (function() {
         // separate "[Progress bar: …NN%]" line.
         const crumbLine = (s.match(/📌[^\n]*/) || [''])[0];
         if (!crumbLine) return null;
-        const stepM = crumbLine.match(/Step\s+(\d+)\s+of\s+(\d+)/i);
+        // v7.19.987: accept the count vocab protocols actually use, not just "Step". Conceptual
+        // Notes walks "Element N of 8"; others may say Part/Question/Stage/Poem. Keying on the
+        // "Step" literal alone is why CN's progress slipped past the universal chip (task-name /
+        // naming-drift bug class) → root-fixed here so ANY protocol's "X of Y" is recognised.
+        const stepM = crumbLine.match(/(?:Step|Element|Part|Question|Stage|Poem)\s+(\d+)\s+of\s+(\d+)/i);
         let step = null, total = null, pct = null;
         if (stepM) {
             step = parseInt(stepM[1], 10);
@@ -3148,10 +3152,14 @@ window.WML = (function() {
             if (barM) pct = parseInt(barM[1], 10);
         }
         if (pct != null) pct = Math.max(0, Math.min(100, pct));
-        // Section label = the pin minus 📌, minus a trailing "> Step N of M".
+        // Section label = the pin minus 📌, minus the count token (any vocab, wherever it sits —
+        // CN's is mid-label: "Walking Away — Element 1 of 8: Speaker"), tidied of orphan separators.
         let label = crumbLine
             .replace(/📌\s*/, '')
-            .replace(/\s*(?:&gt;|›|>)\s*Step\s+\d+\s+of\s+\d+\s*$/i, '')
+            .replace(/(?:Step|Element|Part|Question|Stage|Poem)\s+\d+\s+of\s+\d+/gi, '')
+            .replace(/\s*[—–-]\s*:/g, ':')
+            .replace(/(?:&gt;|›|>|:|—|–|-)\s*$/g, '')
+            .replace(/\s{2,}/g, ' ')
             .trim();
         const parts = label.split(/\s*(?:&gt;|›|>)\s*/).filter(Boolean);
         let task = '', section = label;
@@ -3201,7 +3209,15 @@ window.WML = (function() {
         return html
             .replace(/<div class="swml-step-header">[\s\S]*?<\/div>/gi, '')
             .replace(/<span class="swml-step-blocks">[\s\S]*?swml-step-blocks-label">[^<]*<\/span>\s*<\/span>/gi, '')
-            .replace(/<div class="swml-chat-progress-bar">[\s\S]*?swml-chat-progress-label">[^<]*<\/span>\s*<\/div>/gi, '');
+            .replace(/<div class="swml-chat-progress-bar">[\s\S]*?swml-chat-progress-label">[^<]*<\/span>\s*<\/div>/gi, '')
+            // v7.19.987: also strip the RAW model breadcrumb + ANY improvised bar the task-gated
+            // stylers missed. Conceptual Notes (and any protocol using "Element N of 8" + box-char
+            // bars instead of "Step N of M" + "[Progress bar:]") slipped past the Planning/
+            // Assessment-keyed strips → raw ASCII leaked. Universal, no task-name gate; the beat-
+            // chip (added by the caller) replaces it.
+            .replace(/<p>\s*📌[\s\S]*?<\/p>/gi, '')
+            .replace(/<p>\s*[▮▯█▓▒░■□▪▫◼◻◾◽⬛⬜▰▱][\s\S]*?<\/p>/gi, '')
+            .replace(/[▮▯█▓▒░■□▪▫◼◻◾◽⬛⬜▰▱]{2,}\s*\d{0,3}\s*%?/g, '');
     }
 
     function renderLogo() {
