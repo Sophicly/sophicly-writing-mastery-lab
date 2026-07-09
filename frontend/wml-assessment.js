@@ -6503,6 +6503,39 @@
             setTimeout(function () { _renderPoetryCnPicker(ctx); }, 400);
         } catch (e) { console.warn('[WML poetry-CN] _maybePoetryCnLoop failed', e); }
     }
+    // v7.19.989 (Neil): CN progress must be CODE-DERIVED like the FQ controller — not parsed from
+    // the model's pin (which it emits inconsistently → chip flickers / vanishes, and the raw pin
+    // leaks). The walk is a fixed 8-element spine; the current step = (filled note-fields for this
+    // poem) + 1, capped at 8. Always present, always clean, survives refresh (stored on history).
+    // Returns null off a poetry-CN walk / before a poem is chosen (welcome + picker show no bar).
+    function _poetryCnWalkBeat(hist) {
+        try {
+            if (!_poetryCnPickerActive()) return null;
+            var pid = (window.state && state.currentPoemId) ? String(state.currentPoemId)
+                : _poetryCnCurrentPoemId(hist);
+            if (!pid) return null;
+            var ELS = ['speaker', 'context', 'form', 'structure', 'themes', 'purpose', 'message', 'comparisons'];
+            var LABELS = ['Speaker', 'Context', 'Form', 'Structure & Language', 'Themes', 'Purpose', 'Message', 'Comparisons'];
+            var seen = {};
+            if (canvasEditor) {
+                canvasEditor.state.doc.descendants(function (n) {
+                    if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) {
+                        var m = /^poem_(.+?)_(speaker|context|form|structure|themes|purpose|message|comparisons)$/.exec(String(n.attrs.fieldId));
+                        if (m && m[1] === pid && (n.textContent || '').trim().length > 0) seen[m[2]] = true;
+                    }
+                });
+            }
+            var filled = 0;
+            for (var i = 0; i < ELS.length; i++) { if (seen[ELS[i]]) filled++; }
+            var step = Math.min(filled + 1, 8);
+            var title = '';
+            try {
+                var poems = _poetryAnthologyPoems();
+                for (var j = 0; j < poems.length; j++) { if (poems[j].id === pid) { title = poems[j].title; break; } }
+            } catch (_) {}
+            return { section: (title ? title + ' · ' : '') + LABELS[step - 1], step: step, total: 8 };
+        } catch (e) { console.warn('[WML poetry-CN] _poetryCnWalkBeat failed', e); return null; }
+    }
 
     // Fire a silent API call to generate statements for any stale qIds on
     // this editor's canvas. Runs once per onCreate — if statements are
@@ -9166,14 +9199,18 @@
                     // recompute card arithmetic + re-band %/grades on the canonical ladder,
                     // so chat, doc cards, sidebar and Score Summary all read corrected numbers.
                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
-                    const cleanReply = stripAIInternals(res.reply);
+                    let cleanReply = stripAIInternals(res.reply);
+                    // v7.19.989: hard-strip the raw progress breadcrumb + any improvised bar at the
+                    // SOURCE too (belt-and-braces with withProgressChip — the pin must never show).
+                    cleanReply = cleanReply.replace(/^[^\n]*📌[^\n]*$/gm, '').replace(/^[ \t>]*[▮▯█▓▒░■□▪▫◼◻◾◽⬛⬜▰▱][^\n]*$/gm, '');
                     let formatted = formatAI(cleanReply);
-                    // v7.19.987: universal walk beat-chip — replace the model's raw ASCII progress
-                    // with the designed chip. parseProgressBeat now reads Step/Element/Part/… N of M
-                    // (from the RAW reply, before stripAIInternals may drop the pin). Stored on the
-                    // history message so a refresh replay re-renders it (the v911 pattern). Marking
-                    // family excluded via _taskModelChipOk (its progress is sidebar-authoritative).
-                    const _walkBeat = (_taskModelChipOk() && WML.parseProgressBeat) ? WML.parseProgressBeat(res.reply) : null;
+                    // v7.19.987/989: walk beat-chip. CN is CODE-DERIVED (deterministic, always present
+                    // like the FQ controller — never the model's flaky pin: _poetryCnWalkBeat); other
+                    // walk tasks parse the AI pin. Stored on history so a refresh replay re-renders it
+                    // (v911). Marking family excluded via _taskModelChipOk (sidebar-authoritative).
+                    const _walkBeat = _taskModelChipOk()
+                        ? (_poetryCnPickerActive() ? _poetryCnWalkBeat(canvasChatHistory) : (WML.parseProgressBeat ? WML.parseProgressBeat(res.reply) : null))
+                        : null;
                     if (_walkBeat && WML.progressChipHTML) formatted = WML.progressChipHTML(_walkBeat) + formatted;
                     addChatMessage(formatted, 'ai', cleanReply);
                     canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
@@ -17955,10 +17992,14 @@
                                 if (res.success && res.reply) {
                                     // v7.19.832: deterministic mark integrity (see pipeline 1 twin).
                                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
-                                    const cleanReply = stripAIInternals(res.reply);
+                                    let cleanReply = stripAIInternals(res.reply);
+                                    // v7.19.989: hard-strip raw breadcrumb + bar at source (twin).
+                                    cleanReply = cleanReply.replace(/^[^\n]*📌[^\n]*$/gm, '').replace(/^[ \t>]*[▮▯█▓▒░■□▪▫◼◻◾◽⬛⬜▰▱][^\n]*$/gm, '');
                                     let formatted = formatAI(cleanReply);
-                                    // v7.19.987: universal walk beat-chip (twin of pipeline 1 — see there).
-                                    const _walkBeat = (_taskModelChipOk() && WML.parseProgressBeat) ? WML.parseProgressBeat(res.reply) : null;
+                                    // v7.19.987/989: walk beat-chip — CN code-derived, else parse pin (twin of pipeline 1).
+                                    const _walkBeat = _taskModelChipOk()
+                                        ? (_poetryCnPickerActive() ? _poetryCnWalkBeat(canvasChatHistory) : (WML.parseProgressBeat ? WML.parseProgressBeat(res.reply) : null))
+                                        : null;
                                     if (_walkBeat && WML.progressChipHTML) formatted = WML.progressChipHTML(_walkBeat) + formatted;
                                     addChatMessage(formatted, 'ai', cleanReply);
                                     canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
