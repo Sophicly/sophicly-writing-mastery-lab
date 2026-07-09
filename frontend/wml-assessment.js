@@ -4541,11 +4541,13 @@
         const startNewAttempt = async () => {
             let _newNum = 0;
             try {
+                // v7.19.992: attempt identity = the doc's canonical scope (see attUrl note).
+                const _naScope = WML.canvasDocScope();
                 const res = await fetch(API.attemptsNew, {
                     method: 'POST', headers,
                     body: JSON.stringify({
-                        board: state.board, text: state.text,
-                        topicNumber: state.topicNumber || null,
+                        board: state.board, text: _naScope.text,
+                        topicNumber: _naScope.topic || null,
                         suffix: _attemptSuffixFor(opts.suffix || ''),
                         lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '', // v7.17.36
                     })
@@ -4556,7 +4558,7 @@
                     sessionStorage.setItem('swml_new_attempt', String(state.attempt));
                     // v7.15.114: persist cross-lesson hint so sibling lessons
                     // in the same topic pick up the new attempt on next mount
-                    _writeCurrentAttemptHint(state.board, state.text, state.topicNumber, opts.suffix || '', state.attempt);
+                    _writeCurrentAttemptHint(state.board, _naScope.text, _naScope.topic, opts.suffix || '', state.attempt);
                 }
             } catch (e) {
                 console.warn('WML Attempt: new attempt failed', e.message);
@@ -6286,6 +6288,196 @@
         }
     }
 
+    // ── v7.19.992: poetry-CN DOC-FORK REPAIR + POEMS-IN-DOC ─────────────────────
+    //
+    // Neil live 2026-07-09: "old document, notes gone". Root: the unified anthology
+    // key holds a STALE doc created under the pre-971 per-poem template (7 generic
+    // cn_section_N boxes — no pf_* organiser, no poem groups), while the student's
+    // real content sits scattered on historical sibling keys (_fq / no-topic _cn /
+    // board poetic_forms organiser). Repair = three cooperating, idempotent passes:
+    //   1. _healPoetryCnShape   — rebuild a stale-shape doc from the CURRENT one-doc
+    //                             template, carrying every filled field over.
+    //   2. _applyCnMergeFields  — fill EMPTY fields from the server's mergeFields
+    //                             sidecar (load_canvas gathers the sibling keys;
+    //                             student content always wins; old keys untouched).
+    //   3. _renderPoemCards     — derived read-only poem card at the top of each poem
+    //                             group (display-only, NEVER persisted in the doc —
+    //                             texts come from GET /poems, so admin edits propagate
+    //                             and autosaves stay slim).
+    // All doc writes are PM transactions; the poem card is NodeView-firewalled
+    // derived display (§PM NodeView law).
+
+    // v7.19.992: pending rebaseline flag — set when the shape-heal rebuilt the doc, so
+    // the next autosave sends rebaselineTemplate:1 (the stored set-once baseline
+    // describes the OLD template; server accepts the overwrite for _cn only).
+    let _cnRebaselinePending = false;
+    // v7.19.992: server mergeFields sidecar, captured by tryServerLoad per load.
+    let _pendingCnMergeFields = null;
+
+    // 1) Stale-shape rebuild. A one-doc poetry-CN doc ALWAYS carries pf_* organiser
+    // fields; a doc without any (but with other inputFields) is the pre-971 template.
+    function _healPoetryCnShape(editor) {
+        try {
+            if (!editor || !editor.state || !editor.commands) return;
+            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            if (state.reviewMode) return; // tutors see the stored doc as-is
+            let hasPf = false, fieldCount = 0;
+            const carried = [];
+            const fold = [];
+            editor.state.doc.descendants((n) => {
+                if (!n.type || n.type.name !== 'inputField') return;
+                const fid = String((n.attrs && n.attrs.fieldId) || '');
+                if (!fid) return;
+                fieldCount++;
+                if (/^pf_/.test(fid)) { hasPf = true; return; }
+                const val = (n.textContent || '').trim();
+                if (!val) return;
+                if (/^cn_section_\d+(_quotes)?$/.test(fid)) fold.push(val);
+                else carried.push({ field: fid, value: val });
+            });
+            if (hasPf || fieldCount === 0) return; // one-doc shape already / empty doc (template path owns it)
+            const poems = _poetryAnthologyPoems();
+            if (!poems.length) {
+                console.warn('[WML poetry-CN] stale-shape doc detected but no poem list resolves — shape-heal skipped, doc untouched');
+                return;
+            }
+            // Legacy 7-section values can't be attributed to one poem — recover them
+            // into General Notes rather than drop them (never lose a filled field).
+            if (fold.length) carried.push({ field: 'cn_general_notes', value: 'Recovered notes (from an earlier notes layout): ' + fold.join(' • ') });
+            const template = getExamPrepDocTemplate(state.task);
+            if (!template || template.indexOf('pf_') === -1) {
+                console.warn('[WML poetry-CN] shape-heal: current template did not build the one-doc layout — aborted, doc untouched');
+                return;
+            }
+            _migrationActive = true;
+            try { editor.commands.setContent(template, false); }
+            finally { _migrationActive = false; }
+            snapshotTemplateBaseline(editor);
+            _cnRebaselinePending = true;
+            console.log('[WML poetry-CN] SHAPE-HEAL: stale pre-one-doc layout rebuilt from current template —', carried.length, 'filled field(s) carried over');
+            if (carried.length) _applyFieldValueSets(carried);
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('[WML poetry-CN] shape-heal failed (doc untouched)', e);
+        }
+    }
+
+    // 2) Apply the server's scattered-siblings sidecar. _applyFieldValueSets fills
+    // inputFields ONLY while empty (student content wins) — idempotent on every load.
+    function _applyCnMergeFields() {
+        try {
+            const sets = _pendingCnMergeFields;
+            if (!sets || !sets.length) return;
+            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            if (state.reviewMode) return;
+            _pendingCnMergeFields = null; // consume — reapplied fresh on next load
+            console.log('[WML poetry-CN] applying', sets.length, 'merge candidate(s) from scattered sibling docs (empty fields only)');
+            _applyFieldValueSets(sets.map(s => ({ field: s.field, value: s.value })));
+        } catch (e) {
+            console.warn('[WML poetry-CN] sibling merge failed (non-fatal)', e);
+        }
+    }
+
+    // 3) Poem cards — derived display, one per poem group, filled from GET /poems.
+    const _poemTexts = {};          // poem id → {id,title,poet,poem_text}
+    let _poemTextsFetchState = '';  // '' | 'loading' | 'done'
+    const _poemCardOpen = {};       // pid → explicit student toggle (wins over the default)
+    function _ensurePoemTexts() {
+        if (_poemTextsFetchState !== '') return;
+        if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+        _poemTextsFetchState = 'loading';
+        let scopeText = state.text;
+        try { scopeText = WML.canvasDocScope().text || state.text; } catch (_) {}
+        fetch(`${API.poems}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(scopeText)}`, { headers })
+            .then(r => r.json())
+            .then(res => {
+                _poemTextsFetchState = 'done';
+                if (res && res.success && Array.isArray(res.poems) && res.poems.length) {
+                    res.poems.forEach(p => { if (p && p.id) _poemTexts[p.id] = p; });
+                    console.log('[WML poetry-CN] poem texts loaded:', res.poems.length);
+                } else {
+                    // Fail-loud: cards render their "unavailable" note; sync the option.
+                    console.warn('[WML poetry-CN] GET /poems returned no texts for', state.board, scopeText, '— author/sync the swml_poems_ option');
+                }
+                _renderPoemCards();
+            })
+            .catch(e => {
+                _poemTextsFetchState = ''; // allow retry on next render pass
+                console.warn('[WML poetry-CN] poem-text fetch failed (will retry on next render)', e && e.message);
+            });
+    }
+    // Fill every .swml-poem-card (created by the SectionBlock NodeView inside poem
+    // groups, OUTSIDE the PM content hole and firewalled by its ignoreMutation).
+    // Idempotent writes only (sig-guarded innerHTML, class checks) — §PM NodeView law.
+    function _renderPoemCards() {
+        try {
+            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            const host = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+            if (!host) return;
+            const cards = host.querySelectorAll('.swml-poem-card');
+            if (!cards.length) return;
+            _ensurePoemTexts();
+            cards.forEach((card) => {
+                const sec = card.closest('.swml-section-block');
+                const fld = sec && sec.querySelector('[data-input-field][data-field-id^="poem_"]');
+                const m = fld && /^poem_(.+?)_(speaker|context|form|structure|themes|purpose|message|comparisons)(?:_quotes)?$/.exec(fld.getAttribute('data-field-id') || '');
+                const pid = m ? m[1] : '';
+                if (!pid) { if (card.style.display !== 'none') card.style.display = 'none'; return; }
+                const poem = _poemTexts[pid];
+                const sig = pid + ':' + (poem && poem.poem_text ? poem.poem_text.length : (_poemTextsFetchState === 'done' ? 'missing' : 'pending'));
+                if (card.getAttribute('data-sig') !== sig) {
+                    card.setAttribute('data-sig', sig);
+                    card.textContent = '';
+                    const head = document.createElement('button');
+                    head.type = 'button';
+                    head.className = 'swml-poem-card-head';
+                    head.setAttribute('contenteditable', 'false');
+                    head.innerHTML = '<span class="swml-poem-card-chev" aria-hidden="true"></span>' +
+                        '<span class="swml-poem-card-title">Read the poem</span>' +
+                        (poem && poem.poet ? '<span class="swml-poem-card-poet">' + escapeHTML(poem.poet) + '</span>' : '');
+                    head.addEventListener('mousedown', (ev) => { ev.preventDefault(); ev.stopPropagation(); });
+                    head.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        _poemCardOpen[pid] = !card.classList.contains('swml-poem-open');
+                        card.classList.toggle('swml-poem-open', _poemCardOpen[pid]);
+                    });
+                    const body = document.createElement('div');
+                    body.className = 'swml-poem-card-body';
+                    if (poem && poem.poem_text) {
+                        // textContent = escaped by construction; pre-wrap CSS keeps the lineation.
+                        body.textContent = poem.poem_text;
+                    } else if (_poemTextsFetchState === 'done') {
+                        body.innerHTML = '<em class="swml-poem-card-missing">Poem text unavailable — please report this so we can add it.</em>';
+                    } else {
+                        body.innerHTML = '<em class="swml-poem-card-missing">Loading poem…</em>';
+                    }
+                    card.appendChild(head);
+                    card.appendChild(body);
+                }
+                // Default: only the ACTIVE poem's card open (Neil ruling — pairs with the
+                // v984 scroll-to-section); an explicit student toggle wins for the session.
+                const want = (pid in _poemCardOpen) ? !!_poemCardOpen[pid] : (String(state.currentPoemId || '') === pid);
+                if (card.classList.contains('swml-poem-open') !== want) card.classList.toggle('swml-poem-open', want);
+            });
+        } catch (e) {
+            console.warn('[WML poetry-CN] renderPoemCards failed (non-fatal)', e && e.message);
+        }
+    }
+    WML.renderPoemCards = _renderPoemCards;
+
+    // Orchestrator — ONE entry point so ordering is fixed: shape first (creates the
+    // fields), then the additive heals, then the sibling merge (needs the fields),
+    // then the poem cards. Every pass is idempotent; safe to call repeatedly.
+    function _runPoetryCnHeals(editor) {
+        if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+        try { _healPoetryCnShape(editor); } catch (_) {}
+        try { _healPoetryCnComparisons(editor); } catch (_) {}
+        try { _healPoetryCnTocHeader(editor); } catch (_) {}
+        try { _applyCnMergeFields(); } catch (_) {}
+        try { _renderPoemCards(); } catch (_) {}
+    }
+
     // v7.19.978: poetry-CN poem-selection support. The walk (pn-conceptual-notes.md)
     // emits @POEM_SELECTED{"id":"..."} when the student picks a poem; the id drives the
     // router's poem-text + fieldId-contract injection on the NEXT turn. Extractor runs in
@@ -6427,6 +6619,13 @@
         try {
             if (window.state) state.currentPoemId = poem.id;
             _poetryCnScrollToPoem(poem.id); // v7.19.984: jump the doc to this poem's section + expand
+            // v7.19.992 (Neil ruling): the ACTIVE poem's read-along card auto-expands,
+            // the others collapse — reset explicit toggles so the default (open =
+            // current poem) applies, then repaint the cards.
+            try {
+                Object.keys(_poemCardOpen).forEach(k => { delete _poemCardOpen[k]; });
+                _renderPoemCards();
+            } catch (_) {}
             canvasSilentSend = true;
             // @POEM_SELECTED rides the hidden user turn (persists → resume recovery); the
             // human line is the go-signal. current_poem_id is already set, so the router
@@ -14562,7 +14761,7 @@
                 // toggle in the panel header (replaces the essay/feedback pad toggles,
                 // which have no meaning in a notes doc). Pure pad DOM — zero PM footprint.
                 const _noteItems = [];
-                sourceEls.forEach(src => {
+                const _mkNoteItem = (src, parent) => {
                     const item = el('div', { className: 'swml-notes-item' });
                     const head = el('button', { className: 'swml-notes-item-head', type: 'button' });
                     head.innerHTML = '<span class="swml-notes-item-chev">▾</span> ' +
@@ -14572,12 +14771,48 @@
                     // clones of collapsed / FQ-locked sections must still READ in the pad;
                     // those classes only make sense in the live doc.
                     c.classList.remove('swml-fb-collapsed', 'swml-task-locked');
+                    // v7.19.992: cloned poem cards open by default — the pad is a reading
+                    // surface (students answer element questions from it). The cloned head
+                    // button's listener died with cloneNode; a pad-level delegate below
+                    // restores the toggle.
+                    c.querySelectorAll('.swml-poem-card').forEach(pc => pc.classList.add('swml-poem-open'));
                     bodyWrap.appendChild(c);
                     head.addEventListener('click', () => item.classList.toggle('swml-notes-collapsed'));
                     item.appendChild(head);
                     item.appendChild(bodyWrap);
-                    body.appendChild(item);
+                    parent.appendChild(item);
                     _noteItems.push(item);
+                };
+                // v7.19.992 (Neil): two-tier grouping for the poetry one-doc — the forms
+                // organiser + General Notes nest under ONE "Foundational Notes" group;
+                // each poem keeps its own top-level row (a poem IS its section). Docs
+                // without poem sections (novel/drama CN, nonfiction) keep the flat list.
+                const _isPoemSec = (s) => !!s.querySelector('[data-input-field][data-field-id^="poem_"]');
+                const _foundational = sourceEls.filter(s => !_isPoemSec(s));
+                const _poemSecs = sourceEls.filter(_isPoemSec);
+                if (_foundational.length && _poemSecs.length) {
+                    const group = el('div', { className: 'swml-notes-item swml-notes-group swml-notes-collapsed' });
+                    const ghead = el('button', { className: 'swml-notes-item-head', type: 'button' });
+                    ghead.innerHTML = '<span class="swml-notes-item-chev">▾</span> Foundational Notes';
+                    const gbody = el('div', { className: 'swml-notes-item-body' });
+                    ghead.addEventListener('click', () => group.classList.toggle('swml-notes-collapsed'));
+                    group.appendChild(ghead);
+                    group.appendChild(gbody);
+                    body.appendChild(group);
+                    _noteItems.push(group);
+                    _foundational.forEach(src => _mkNoteItem(src, gbody));
+                    _poemSecs.forEach(src => _mkNoteItem(src, body));
+                } else {
+                    sourceEls.forEach(src => _mkNoteItem(src, body));
+                }
+                // v7.19.992: delegated poem-card toggle (clones carry no listeners).
+                body.addEventListener('click', (ev) => {
+                    const h = ev.target && ev.target.closest && ev.target.closest('.swml-poem-card-head');
+                    if (!h || !body.contains(h)) return;
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    const pc = h.closest('.swml-poem-card');
+                    if (pc) pc.classList.toggle('swml-poem-open');
                 });
                 const collapseAllBtn = el('button', {
                     className: 'swml-extract-tab',
@@ -14729,10 +14964,11 @@
                 // with at least one filled field (all of them when nothing's filled yet),
                 // stacked in one scrollable read-only pad.
                 if (state.task === 'conceptual_notes' || state.task === 'foundational_quiz') {
-                    const _plans = Array.from(editorEl.querySelectorAll('[data-section-type="plan"]'));
-                    const _filled = _plans.filter(sec =>
-                        Array.from(sec.querySelectorAll('[data-input-field]')).some(f => (f.textContent || '').trim().length > 0));
-                    const _show = _filled.length ? _filled : _plans;
+                    // v7.19.992 (Neil): EVERY note section rides the pad, filled or not —
+                    // students read the poems from their sections here (the poem cards clone
+                    // in with them), so filtering to filled sections hid exactly what they
+                    // need while answering. Collapse-all keeps the long list navigable.
+                    const _show = Array.from(editorEl.querySelectorAll('[data-section-type="plan"]'));
                     if (_show.length) { spawnExtractPanel(_show, 'notes', { top: '60px', right: '20px' }); return; }
                 }
 
@@ -15306,7 +15542,7 @@
                             // Switch on server
                             // v7.15.47: Mode-aware suffix so guided stays on the topic-level index.
                             await fetch(API.attemptsSwitch, { method: 'POST', headers,
-                                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _attemptSuffixFor(suffix), attempt: a.num })
+                                body: JSON.stringify((() => { const _s = WML.canvasDocScope(); return { board: state.board, text: _s.text, topicNumber: _s.topic || null, suffix: _attemptSuffixFor(suffix), attempt: a.num }; })())
                             }).catch(() => {});
                             overlay.remove();
                             // Clear local cache so tryServerLoad picks up the right attempt
@@ -15351,11 +15587,13 @@
                             await _showModeSelector();
                         }
                         try {
+                            // v7.19.992: attempt identity = the doc's canonical scope.
+                            const _anScope = WML.canvasDocScope();
                             const res = await fetch(API.attemptsNew, { method: 'POST', headers,
                                 body: JSON.stringify({
                                     board: state.board,
-                                    text: state.text,
-                                    topicNumber: state.topicNumber || null,
+                                    text: _anScope.text,
+                                    topicNumber: _anScope.topic || null,
                                     suffix: _attemptSuffixFor(suffix),
                                     planningMode: state.planningMode || '',
                                     lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '', // v7.17.36
@@ -16436,7 +16674,14 @@
                         // mode keeps per-exercise counters via the exercise's suffix.
                         // v7.15.112: canvas-context suffix (shared Phase 2 doc)
                         const suffix = _attemptSuffixFor(WML.resolveCanvasSuffix(state.task, state.phase));
-                        const attUrl = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(suffix)}`;
+                        // v7.19.992 (doc-fork root fix): the attempt index is the CANVAS DOC's
+                        // attempt pointer, so it must key off the doc's canonical identity
+                        // (canvasDocScope), never the lesson's raw text/topic. The poetry FQ
+                        // lesson (topic 0) and its CN siblings (topic 2) share ONE doc — two
+                        // lesson-keyed counters resolved different attempts and forked the doc
+                        // (_t2_cn vs _t2_cn__a2: Neil's "old document, notes gone").
+                        const _attScope = WML.canvasDocScope();
+                        const attUrl = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_attScope.text)}&topicNumber=${_attScope.topic || ''}&suffix=${encodeURIComponent(suffix)}`;
                         console.log('WML Attempt: fetching', attUrl);
                         const attRes = await fetch(attUrl, { headers }).then(r => r.json());
                         console.log('WML Attempt: server response', attRes);
@@ -16452,7 +16697,7 @@
                             const _serverAttempt = idx.current || 1;
                             const _needsReload = (_seededAttempt > 0 && _seededAttempt !== _serverAttempt);
                             if (!state.attempt || state.attempt < 1) state.attempt = _serverAttempt;
-                            _writeCurrentAttemptHint(state.board, state.text, state.topicNumber, WML.resolveCanvasSuffix(state.task, state.phase), state.attempt);
+                            _writeCurrentAttemptHint(state.board, _attScope.text, _attScope.topic, WML.resolveCanvasSuffix(state.task, state.phase), state.attempt);
                             if (_needsReload) {
                                 state.attempt = _serverAttempt;
                                 console.log('WML: Attempt hint diverged from server — reloading canvas at attempt', _serverAttempt);
@@ -21409,7 +21654,12 @@
             const _rawSuffix = (WML && typeof WML.resolveCanvasSuffix === 'function')
                 ? WML.resolveCanvasSuffix(state.task, state.phase)
                 : '';
-            const _hint = _readCurrentAttemptHint(state.board, state.text, state.topicNumber, _rawSuffix);
+            // v7.19.992: hint identity = the DOC's canonical scope (matches the writes),
+            // so doc-remapped tasks (poetry FQ → CN doc) read the same hint their CN
+            // siblings wrote instead of a lesson-keyed hint that forks the attempt.
+            let _hintScope = { text: state.text, topic: state.topicNumber };
+            try { if (WML && typeof WML.canvasDocScope === 'function') _hintScope = WML.canvasDocScope(); } catch (_) {}
+            const _hint = _readCurrentAttemptHint(state.board, _hintScope.text, _hintScope.topic, _rawSuffix);
             if (_hint > 0) {
                 state.attempt = _hint;
                 console.log('WML: Attempt pre-resolved from sessionStorage hint →', state.attempt);
@@ -21950,10 +22200,13 @@
                 // is a no-op. Covers stale pre-949 marked docs and reseeded fbdiscuss copies.
                 setTimeout(() => { try { _healLearnChips(); } catch (_) {} }, 1500);
                 setTimeout(() => { try { _healLearnChips(); } catch (_) {} }, 3500);
-                // v7.19.976: poetry-CN Comparisons heal — same staggered/idempotent shape
+                // v7.19.976: poetry-CN heal chain — same staggered/idempotent shape
                 // (second pass covers the async server setContent replacing the first-pass doc).
-                setTimeout(() => { try { _healPoetryCnComparisons(editor); _healPoetryCnTocHeader(editor); } catch (_) {} }, 1800);
-                setTimeout(() => { try { _healPoetryCnComparisons(editor); _healPoetryCnTocHeader(editor); } catch (_) {} }, 3800);
+                // v7.19.992: ONE orchestrator (_runPoetryCnHeals) — shape rebuild first, then
+                // the additive heals, then the sibling merge + poem cards. tryServerLoad also
+                // fires it right after its setContent (slow-network backstop).
+                setTimeout(() => { try { _runPoetryCnHeals(editor); } catch (_) {} }, 1800);
+                setTimeout(() => { try { _runPoetryCnHeals(editor); } catch (_) {} }, 3800);
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
@@ -30473,17 +30726,14 @@
     // Fail LOUD on a real anthology miss (author the list, never a silent generic doc);
     // unseen_poetry legitimately has no list → forms + General Notes only, no warning.
     function _poetryAnthologyPoems() {
-        var map = (window.swmlConfig && window.swmlConfig.anthologyPoems) || {};
-        var board = String(state.board || '').toLowerCase();
+        // v7.19.992: resolve through THE canonical lookup (WML.anthologyPoemsFor — the
+        // same helper the doc-identity layer keys on), never an ad-hoc map walk here.
         var t = '';
         try { t = String(WML.canvasDocScope().text || ''); } catch (_) { t = String(state.text || ''); }
-        var tries = [t, t.replace(/_poetry$/, ''), t + '_poetry'];
-        for (var i = 0; i < tries.length; i++) {
-            var row = map[board + '|' + tries[i]];
-            if (Array.isArray(row) && row.length) return row;
-        }
+        var row = (WML.anthologyPoemsFor && WML.anthologyPoemsFor(t)) || [];
+        if (row.length) return row;
         if (state.subject === 'poetry_anthology') {
-            console.warn('[WML poetry-CN] no poem list for "' + board + '|' + t + '" — rendering forms + General Notes only. Author the anthology poem list (get_anthology_poems_map / swml_poems_ option).');
+            console.warn('[WML poetry-CN] no poem list for "' + String(state.board || '').toLowerCase() + '|' + t + '" — rendering forms + General Notes only. Author the anthology poem list (get_anthology_poems_map / swml_poems_ option).');
         }
         return [];
     }
@@ -31190,6 +31440,10 @@
                 const _out = {};
                 if (_bEl && typeof _bEl._swmlTemplateBaseline === 'number') _out.templateBaseline = _bEl._swmlTemplateBaseline;
                 if (_bEl && typeof _bEl._swmlResponseBaseline === 'number') _out.responseBaseline = _bEl._swmlResponseBaseline;
+                // v7.19.992: the poetry-CN shape-heal rebuilt the doc from the current
+                // template — tell the server to overwrite the stale set-once baseline
+                // (accepted for suffix _cn only). One-shot: cleared after this save body.
+                if (_cnRebaselinePending && snap.suffix === '_cn') { _out.rebaselineTemplate = 1; _cnRebaselinePending = false; }
                 return _out;
             })(),
             // v7.17.73 / v7.18.19: Score piggyback. Spread-only-when-set keeps every
@@ -31506,6 +31760,14 @@
             }
             // v7.19.321: capture the persisted Quiz Result for the in-doc card.
             _pendingQuizResult = (res && res.quizResult) ? res.quizResult : null;
+            // v7.19.992: capture the scattered-siblings merge sidecar (poetry-CN doc-fork
+            // repair) and fire the CN heal chain right after this load settles — the
+            // onCreate staggered timers cover most cases, this covers a slow network
+            // (server doc landing after the 3.8s pass would otherwise stay unhealed).
+            _pendingCnMergeFields = (res && Array.isArray(res.mergeFields) && res.mergeFields.length) ? res.mergeFields : null;
+            if (WML.isPoetryCnDoc && WML.isPoetryCnDoc()) {
+                setTimeout(() => { try { _runPoetryCnHeals(canvasEditor); } catch (_) {} }, 600);
+            }
             // v7.19.263: surface the "previous stage updated" dot. False unless the
             // server reports the upstream stage changed since last pull/dismiss.
             _updatePullDot(!!(res && res.pullUpdateAvailable));

@@ -657,18 +657,7 @@ class SWML_REST_API {
         if ($board === '' || $text === '') {
             return rest_ensure_response(['success' => false, 'poems' => [], 'reason' => 'missing board/text']);
         }
-        $canon = self::canonical_slug($text);
-        $cands = [];
-        foreach ([$text, $canon, preg_replace('/_poetry$/', '', $text), $text . '_poetry',
-                  preg_replace('/_poetry$/', '', (string) $canon), $canon . '_poetry'] as $c) {
-            $c = (string) $c;
-            if ($c !== '' && !in_array($c, $cands, true)) $cands[] = $c;
-        }
-        $rows = [];
-        foreach ($cands as $c) {
-            $opt = get_option('swml_poems_' . $board . '_' . $c, []);
-            if (is_array($opt) && !empty($opt)) { $rows = $opt; break; }
-        }
+        $rows = self::poems_option_rows($board, $text);
         $poems = [];
         foreach ((array) $rows as $r) {
             if (!is_array($r) || empty($r['id'])) continue;
@@ -680,6 +669,122 @@ class SWML_REST_API {
             ];
         }
         return rest_ensure_response(['success' => !empty($poems), 'poems' => $poems]);
+    }
+
+    /**
+     * v7.19.992: THE server-side anthology-poems resolver — canonical slug ladder +
+     * swml_poems_{board}_{anthology} option lookup, extracted from get_poems (v986) so
+     * every consumer (the /poems endpoint, the poetry-CN merge gate) resolves the same
+     * way. Returns the raw option rows, [] when the text is not a poetry anthology.
+     */
+    public static function poems_option_rows($board, $text) {
+        $board = sanitize_key($board);
+        $text  = (string) $text;
+        if ($board === '' || $text === '') return [];
+        $canon = self::canonical_slug($text);
+        $cands = [];
+        foreach ([$text, $canon, preg_replace('/_poetry$/', '', $text), $text . '_poetry',
+                  preg_replace('/_poetry$/', '', (string) $canon), $canon . '_poetry'] as $c) {
+            $c = (string) $c;
+            if ($c !== '' && !in_array($c, $cands, true)) $cands[] = $c;
+        }
+        foreach ($cands as $c) {
+            $opt = get_option('swml_poems_' . $board . '_' . $c, []);
+            if (is_array($opt) && !empty($opt)) return $opt;
+        }
+        return [];
+    }
+
+    /**
+     * v7.19.992 (doc-fork repair): extract non-empty field values from a saved canvas
+     * doc's HTML, keyed by data-field-id. Plain text (the same shape _applyFieldValueSets
+     * writes client-side). $prefix_filter limits to one fieldId family (e.g. 'pf_').
+     */
+    private static function extract_canvas_field_values($html, $prefix_filter = '') {
+        if (empty($html)) return [];
+        libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->loadHTML('<?xml encoding="UTF-8"?><div id="__wrap__">' . $html . '</div>', LIBXML_NOERROR | LIBXML_NOWARNING);
+        $xp  = new \DOMXPath($dom);
+        $out = [];
+        $nodes = $xp->query('//*[@data-field-id]');
+        if ($nodes !== false) {
+            foreach ($nodes as $node) {
+                $fid = (string) $node->getAttribute('data-field-id');
+                if ($fid === '') continue;
+                if ($prefix_filter !== '' && strpos($fid, $prefix_filter) !== 0) continue;
+                $val = trim(preg_replace('/\s+/u', ' ', (string) $node->textContent));
+                if ($val === '') continue;
+                $out[$fid] = $val;
+            }
+        }
+        libxml_clear_errors();
+        return $out;
+    }
+
+    /**
+     * v7.19.992 (doc-fork repair, Neil's "old document, notes gone"): gather filled field
+     * values from every SIBLING key the one anthology CN doc historically forked across —
+     *   · {board}_{text}_fq            (pre-v955: FQ kept its own _fq canvas doc)
+     *   · {board}_{text}_cn            (pre-topic-pin: no-topic CN saves)
+     *   · {board}_{text}_t{N}_cn N≠2   (pre-v971: per-poem CN lessons carried own topics)
+     *   · {board}_poetic_forms_t2_cn   (pre-v971 fqBank override — pf_* organiser fields ONLY)
+     * plus attempt (__aN) variants of each. Returned as a mergeFields sidecar the client
+     * applies via _applyFieldValueSets (EMPTY-FIELD FILL ONLY — student content always
+     * wins). The old keys are never deleted (backup). Legacy 7-section values
+     * (cn_section_N) can't be attributed to a poem — folded into one labelled General
+     * Notes recovery line rather than dropped. cn_general_notes itself is owned by the
+     * shared mirror (suffix_uses_general_notes) and skipped here. Fail-loud: logs every
+     * merge source. Universal: gate = poems_option_rows (any anthology, zero per-board code).
+     */
+    private function poetry_cn_merge_fields($user_id, $board, $text, $attempt, $exclude_key) {
+        if (empty(self::poems_option_rows($board, $text))) return [];
+        $vals = [];
+        $sources_hit = [];
+        $take = function ($meta_key, $filter) use ($user_id, $exclude_key, &$vals, &$sources_hit) {
+            if ($meta_key === $exclude_key) return;
+            $raw = get_user_meta($user_id, $meta_key, true);
+            if (empty($raw)) return;
+            $doc = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+            if (!is_array($doc) || empty($doc['html'])) return;
+            $fields = self::extract_canvas_field_values($doc['html'], $filter);
+            $got = 0;
+            foreach ($fields as $fid => $v) {
+                if (!isset($vals[$fid])) { $vals[$fid] = $v; $got++; }
+            }
+            if ($got > 0) $sources_hit[] = $meta_key . '(+' . $got . ')';
+        };
+        $att_variants = array_values(array_unique(['', ($attempt > 1 ? '__a' . (int) $attempt : ''), '__a2', '__a3']));
+        $bases = [];
+        $bases[] = ['swml_canvas_' . $board . '_' . $text . '_t2_cn', ''];
+        $bases[] = ['swml_canvas_' . $board . '_' . $text . '_fq', ''];
+        $bases[] = ['swml_canvas_' . $board . '_' . $text . '_cn', ''];
+        for ($t = 1; $t <= 12; $t++) {
+            if ($t === 2) continue;
+            $bases[] = ['swml_canvas_' . $board . '_' . $text . '_t' . $t . '_cn', ''];
+        }
+        $bases[] = ['swml_canvas_' . $board . '_poetic_forms_t2_cn', 'pf_'];
+        foreach ($bases as $b) {
+            foreach ($att_variants as $v) {
+                $take($b[0] . $v, $b[1]); // $take skips $exclude_key (the key being loaded)
+            }
+        }
+        // Legacy 7-section values → one labelled recovery line (unattributable per poem).
+        $fold = [];
+        foreach ($vals as $fid => $v) {
+            if (preg_match('/^cn_section_\d+(_quotes)?$/', $fid)) { $fold[] = $v; unset($vals[$fid]); }
+        }
+        // The shared General-Notes mirror owns these two (spliced on every load).
+        unset($vals['cn_general_notes'], $vals['cn_general_notes_quotes']);
+        if (!empty($fold)) {
+            $vals['cn_general_notes'] = 'Recovered notes (from an earlier notes layout): ' . implode(' • ', $fold);
+        }
+        $out = [];
+        foreach ($vals as $fid => $v) $out[] = ['field' => $fid, 'value' => $v];
+        if (!empty($out)) {
+            error_log('WML poetry-CN merge: user=' . $user_id . ' → ' . count($out) . ' candidate field(s) from [' . implode(', ', $sources_hit) . '] into ' . $exclude_key);
+        }
+        return $out;
     }
 
     public function check_auth() { return is_user_logged_in() && get_current_user_id() > 0; }
@@ -2063,6 +2168,15 @@ class SWML_REST_API {
         } elseif ($response_baseline !== null) {
             $doc['responseBaseline'] = $response_baseline;
         }
+        // v7.19.992: EXPLICIT re-baseline — sent ONLY by the poetry-CN shape-heal after it
+        // rebuilds a stale old-template doc into the one-doc layout (the stored baseline
+        // describes the OLD template; keeping it set-once would inflate the student's word
+        // count by the template delta forever). Scoped to the CN doc family; ordinary
+        // resume-saves never send the flag, so the set-once safety above still holds.
+        if (!empty($params['rebaselineTemplate']) && $suffix === '_cn') {
+            if ($template_baseline !== null) $doc['templateBaseline'] = $template_baseline;
+            if ($response_baseline !== null) $doc['responseBaseline'] = $response_baseline;
+        }
 
         // v7.19.146 safeguard #2: reject empty-overwrite of a populated canvas.
         // Prevents catastrophic data loss from a misfired save (editor unmount race,
@@ -2206,6 +2320,17 @@ class SWML_REST_API {
         }
 
         $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+
+        // v7.19.992 (doc-fork repair): for the poetry-CN doc family, gather filled field
+        // values scattered across the historical sibling keys (_fq / no-topic _cn /
+        // per-poem-topic _cn / board poetic_forms organiser) as a mergeFields sidecar.
+        // The client applies them into EMPTY fields only (after its shape-heal), so the
+        // student's live doc always wins and the merge is idempotent. Rides every CN-family
+        // load — already-merged docs have the fields filled, so replays no-op. Gate:
+        // suffix _cn + the text resolves to a populated poems option (any anthology).
+        $merge_fields = ($suffix === '_cn')
+            ? $this->poetry_cn_merge_fields($user_id, $board, $text, $attempt, $meta_key)
+            : [];
 
         // v7.15.99: Read shared General Notes mirror for conceptual-notes doc family.
         // Returned in the response regardless of canvas doc presence so the client
@@ -2440,6 +2565,9 @@ class SWML_REST_API {
                 'doc'          => null,
                 'attempt'      => $attempt,
                 'generalNotes' => $general_notes,
+                // v7.19.992: fresh CN doc (client renders the template) still receives the
+                // scattered-siblings merge so recovered notes land in the new doc too.
+                'mergeFields'  => $merge_fields,
             ]);
         }
 
@@ -2575,6 +2703,8 @@ class SWML_REST_API {
             'doc'                 => $doc,
             'attempt'             => $attempt,
             'generalNotes'        => $general_notes,
+            // v7.19.992: scattered-siblings merge sidecar (poetry-CN family; [] otherwise).
+            'mergeFields'         => $merge_fields,
             'quizResult'          => $quiz_result,
             // v7.19.263: drives the header "previous stage updated" dot.
             'pullUpdateAvailable' => $this->pull_update_available($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id),

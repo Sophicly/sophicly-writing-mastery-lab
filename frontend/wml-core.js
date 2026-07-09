@@ -195,6 +195,8 @@ window.WML = (function() {
         tutorComment:  config.restUrl + 'canvas/tutor-comment', // v7.19.538: was API.base (undefined) → 404
         studentComment: config.restUrl + 'canvas/student-comment', // v7.19.559: student persists feedback responses to own doc
         foundationalQuizResult: config.restUrl + 'foundational-quiz/result',
+        // v7.19.992: current course's poem texts (poetry CN poem cards — v986 endpoint)
+        poems:         config.restUrl + 'poems',
         // v7.19.323: deterministic code-scored mark-scheme quiz (Bug #1 root fix)
         quizStart:     config.restUrl + 'quiz/start',
         quizAnswer:    config.restUrl + 'quiz/answer',
@@ -1652,7 +1654,8 @@ window.WML = (function() {
             // per-anthology Conceptual Notes doc — the bank override would fork them onto
             // the legacy shared poetic_forms doc (superseded design). Non-poetry FQs keep
             // the override untouched (Neil scope guard: this restructure is poetry ONLY).
-            if (!isPoetrySubject()) scope.text = state.fqBank;
+            // v7.19.992: durable check — subject timing must never fork the doc identity.
+            if (!isPoetryAnthologyDoc()) scope.text = state.fqBank;
         }
         if (cfg && typeof cfg.canvasTopicPin === 'number') {
             scope.topic = cfg.canvasTopicPin;
@@ -1660,11 +1663,36 @@ window.WML = (function() {
         // v7.19.971: per-poem CN lessons (e.g. EDEN ROCK) carry their own bridge topic —
         // pin poetry CN to the Topic-2 slot so every consumer opens the ONE anthology doc.
         // Poetry only (scope guard): novel/drama CN lessons keep their bridged topic.
-        if (state.task === 'conceptual_notes' && isPoetrySubject()) {
+        if (state.task === 'conceptual_notes' && isPoetryAnthologyDoc()) {
             scope.topic = 2;
         }
         return scope;
     }
+
+    // v7.19.992 (doc-fork root fix): THE canonical anthology-poems lookup. Resolves the
+    // swmlConfig.anthologyPoems map (built server-side from every populated
+    // swml_poems_{board}_{anthology} option — new anthology = author the option, zero
+    // code) for a text slug via the same dash-ladder the server uses. Every consumer
+    // (doc-identity checks here, the CN template's per-poem groups, poem cards, the CN
+    // walk) resolves through THIS — never an ad-hoc map[...] lookup.
+    function anthologyPoemsFor(text) {
+        const map = (window.swmlConfig && window.swmlConfig.anthologyPoems) || {};
+        const board = String(state.board || '').toLowerCase();
+        const t = String(text || state.text || '');
+        const tries = [t, t.replace(/_poetry$/, ''), t + '_poetry'];
+        for (let i = 0; i < tries.length; i++) {
+            const row = map[board + '|' + tries[i]];
+            if (Array.isArray(row) && row.length) return row;
+        }
+        return [];
+    }
+    // v7.19.992: DURABLE poetry-anthology detection for the doc-identity layer.
+    // state.subject is mutable boot state — on odd access paths (course-map miss,
+    // SPA-nav timing) it can be empty/late, and a false negative silently forks the
+    // one-doc onto the legacy poetic_forms key (Neil's "old document, notes gone").
+    // The poem list is a durable fact: course text resolves to a populated anthology
+    // ⇒ this IS a poetry anthology, whatever state.subject currently says.
+    const isPoetryAnthologyDoc = () => isPoetrySubject() || anthologyPoemsFor().length > 0;
 
     // Active config based on current task
     // prose_anthology uses Literature CN, not Poetry CN
@@ -1696,7 +1724,11 @@ window.WML = (function() {
     // doc). Per-poem groups render only when a poem list is present (unseen_poetry has
     // none → forms + General Notes only).
     const isPoetryCnDoc = () => {
-        if (isPoetrySubject() && (state.task === 'conceptual_notes' || state.task === 'foundational_quiz')) return true;
+        // v7.19.992: keyed on the DURABLE anthology check (poem list resolves for the
+        // course text), not just the mutable state.subject — same root fix as
+        // canvasDocScope. A subject-timing miss here rendered the OLD 7-section CN
+        // template into the unified doc (the stale-shape docs the shape-heal repairs).
+        if (isPoetryAnthologyDoc() && (state.task === 'conceptual_notes' || state.task === 'foundational_quiz')) return true;
         try { return canvasDocScope().text === 'poetic_forms'; } catch (_) { return false; }
     };
     function getSteps() {
@@ -1749,7 +1781,9 @@ window.WML = (function() {
         }
         if (state.task === 'conceptual_notes') {
             if (isNonfictionSubject()) return NONFICTION_CN_STEPS;
-            return isPoetrySubject() ? POETRY_CN_STEPS : CONCEPTUAL_NOTES_STEPS;
+            // v7.19.992: durable anthology check — the sidebar spine must match the doc
+            // (canvasDocScope keys on the same helper; a subject-timing miss forked them).
+            return isPoetryAnthologyDoc() ? POETRY_CN_STEPS : CONCEPTUAL_NOTES_STEPS;
         }
         if (state.task === 'essay_plan') return state.planningMode === 'A' ? ESSAY_PLAN_RECALL_STEPS : ESSAY_PLAN_STEPS;
         if (state.task === 'model_answer') return state.planningMode === 'C' ? MODEL_ANSWER_ADVANCED_STEPS : MODEL_ANSWER_STEPS;
@@ -1761,7 +1795,8 @@ window.WML = (function() {
         if (state.task === 'exam_question') return EXAM_QUESTION_ELEMENTS;
         if (state.task === 'conceptual_notes') {
             if (isNonfictionSubject()) return NONFICTION_CN_ELEMENTS;
-            return isPoetrySubject() ? POETRY_CN_ELEMENTS : CONCEPTUAL_NOTES_ELEMENTS;
+            // v7.19.992: durable anthology check (matches getSteps + canvasDocScope).
+            return isPoetryAnthologyDoc() ? POETRY_CN_ELEMENTS : CONCEPTUAL_NOTES_ELEMENTS;
         }
         if (state.task === 'verbal_rehearsal') return QUOTE_ANALYSIS_ELEMENTS;
         if (state.task === 'model_answer') return MODEL_ANSWER_ELEMENTS;
@@ -3272,6 +3307,7 @@ window.WML = (function() {
         QUOTE_ANALYSIS_ELEMENTS, MODEL_ANSWER_ELEMENTS, PLAN_ELEMENTS,
         // Helpers
         isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject, isPoetryCnDoc,
+        anthologyPoemsFor, isPoetryAnthologyDoc,
         getSteps, getElements, getExerciseConfig, getCwStepDef, resolveStorageSuffix, resolveCanvasSuffix, canvasDocScope,
         // Exercise manifest
         EXERCISE_MANIFEST,

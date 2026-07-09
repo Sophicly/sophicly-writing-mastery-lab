@@ -352,6 +352,29 @@
                 ctlRow.setAttribute('contenteditable', 'false');
                 ctlRow.style.display = 'none';
                 dom.insertBefore(ctlRow, contentDOM);
+
+                // v7.19.992: read-along POEM CARD — per-poem groups only. Derived display
+                // (the anaStrip/progress-card technique): an empty firewalled slot here,
+                // filled by wml-assessment's WML.renderPoemCards from GET /poems (poem
+                // texts are NEVER persisted into the student doc — admin edits propagate,
+                // autosaves stay slim). Collapsible; the active poem auto-expands.
+                let poemCard = null;
+                if (_isPoemGroup) {
+                    poemCard = document.createElement('div');
+                    poemCard.className = 'swml-poem-card';
+                    poemCard.setAttribute('contenteditable', 'false');
+                    dom.insertBefore(poemCard, contentDOM);
+                    const _fillPoem = () => {
+                        try {
+                            if (window.WML && typeof window.WML.renderPoemCards === 'function') {
+                                window.WML.renderPoemCards();
+                            }
+                        } catch (_) { /* ignore */ }
+                    };
+                    requestAnimationFrame(_fillPoem);
+                    setTimeout(_fillPoem, 250);
+                    setTimeout(_fillPoem, 800);
+                }
                 const _fillCtl = () => {
                     try {
                         if (window.WML && typeof window.WML.renderControlRows === 'function') {
@@ -458,6 +481,9 @@
                         // v7.19.951: the in-flow control row is derived display too — its fills
                         // (widgets, data-sig, display toggles) must never reach PM's DOMObserver.
                         if (ctlRow === mutation.target || ctlRow.contains(mutation.target)) return true;
+                        // v7.19.992: the poem card is derived display (renderPoemCards fills +
+                        // toggles it) — firewall it or every fill is a foreign mutation (§PM law).
+                        if (poemCard && (poemCard === mutation.target || poemCard.contains(mutation.target))) return true;
                         return toggle === mutation.target || toggle.contains(mutation.target);
                     },
                 };
