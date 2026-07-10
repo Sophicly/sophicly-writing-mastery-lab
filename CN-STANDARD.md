@@ -46,6 +46,29 @@ All three families load the shared spine (`modules/socratic-core.md`, `session-m
 
 **§2.5 — Filing is `@FIELD_SET` markers** (function-calling is disabled WML-wide). The per-session injected fieldId contract (router `build_poetry_cn_injection` shape) must name EVERY fileable field including `_effect` — an injected "EXACT fieldIds" list that omits a field overrides the protocol and the model never files it (v7.20.7 lesson). **Revisit / gap-completion turns re-file ONLY the field(s) worked on** — never re-emit an element's other markers with guessed values. The client writer is generic (matches any fieldId in the doc), fails loud on a miss, fills-only-while-empty with hash provenance: the AI's re-file replaces its own earlier auto-fill; a student hand-edit ALWAYS wins.
 
+**§2.6 — STAGED anthology delivery (Neil rulings 2026-07-10).** An anthology CN is not one
+sitting — students work it in STAGES (the poetry-FQ staging pattern: bridge stage param, e.g.
+`cn_stage=N`; stage-scoped chat suffix per the quiz-session-identity law; roster sliced per
+stage). The rule: **a stage = one honest sitting.** Ruled sizes:
+
+| Anthology | Items | Per stage | Stages |
+|---|---|---|---|
+| GCSE poetry anthologies (AQA/Edexcel/Eduqas/OCR) | 15 | 3 poems | 5 |
+| Edexcel IGCSE Lang P1 (nonfiction) | 10 | 2 texts | 5 |
+| Edexcel IGCSE Lang P2 (poetry+prose) | 5+5 | 1 poem + 1 prose | 5 |
+| Edexcel IGCSE Lit P1 (poetry) | 16 | 4 poems (recommended — avoids an orphan 1-poem stage 6; pending Neil confirm) | 4 |
+
+Design note: stage completion = all stage-roster items done (the done-poem derivation, sliced);
+re-entry, gap-targeting and the picker all scope to the ACTIVE stage's roster. Bridge/LD
+topic-sync changes ride the staged-CN design (backlog item, wml-backlog.md 2026-07-09).
+
+**§2.7 — Which boards have anthology-register CN.** Edexcel IGCSE Spec A is the ONLY board
+whose LANGUAGE papers are anthology-based (P1 nonfiction / P2 poetry+prose — data authored,
+both envs, verified 2026-07-10). All other boards' Language papers are unseen-text. Literature
+poetry anthologies: all boards. Watch: Cambridge IGCSE Literature uses Songs of Ourselves
+(poetry) and potentially Stories of Ourselves (PROSE anthology) — the prose-anthology register
+built for Edexcel IGCSE gets reused there.
+
 ---
 
 ## §3 — PACE: DEEP, NEVER DRAGGING (programme principle)
