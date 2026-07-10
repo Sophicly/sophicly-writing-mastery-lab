@@ -6760,6 +6760,29 @@
             requestAnimationFrame(function () { _swmlScrollToTop(sec, 24); });
         } catch (e) { console.warn('[WML poetry-CN] scroll-to-poem failed', e); }
     }
+    // v7.20.10 (Neil): EMPTY companion boxes on FILLED elements — the re-entry card's
+    // gap-targeting source. An element counts as filled by its notes field; its _quotes
+    // (all elements) and _effect (craft elements) boxes are gaps while empty. Doc-derived,
+    // code-owned (§A16) — existence-guarded so non-craft elements never report an effect gap.
+    function _poetryCnElementGaps(pid) {
+        try {
+            if (!canvasEditor || !pid) return [];
+            var vals = {};
+            canvasEditor.state.doc.descendants(function (n) {
+                if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) {
+                    vals[n.attrs.fieldId] = (n.textContent || '').trim().length > 0;
+                }
+            });
+            var gaps = [];
+            _poetryCnFilledElements(pid).forEach(function (slug) {
+                var q = 'poem_' + pid + '_' + slug + '_quotes';
+                var e = 'poem_' + pid + '_' + slug + '_effect';
+                if ((q in vals) && !vals[q]) gaps.push({ slug: slug, kind: 'quotes' });
+                if ((e in vals) && !vals[e]) gaps.push({ slug: slug, kind: 'effect' });
+            });
+            return gaps;
+        } catch (err) { console.warn('[WML poetry-CN] gap scan failed', err); return []; }
+    }
     // v7.20.9 (Neil UX ruling): programmatic RE-ENTRY card for a poem with filed elements —
     // shown when Start lands on an element with no opener card (mid-walk re-entry after a
     // chat clear; all-done revisit). Continue (primary) resumes at the next unfilled element;
@@ -6787,38 +6810,61 @@
         };
         var nextSlug = _poetryCnFirstUnfilledElement(pid);
         var allDone = !nextSlug;
+        // v7.20.10 (Neil): the card is GAP-AWARE — empty companion boxes on filed elements
+        // get named + targeted buttons, so a revisit lands on the one box that needs work
+        // instead of "somewhere in the middle". Continue stays primary (time is the scarce
+        // resource); a full generic revisit remains behind "Revisit a filed element".
+        var gaps = _poetryCnElementGaps(pid);
+        var kindLabel = function (k) { return k === 'quotes' ? 'Key quotes' : 'Effect on the reader'; };
+        var gapNote = '';
+        if (gaps.length === 1) gapNote = ' In ' + labelOf(gaps[0].slug) + ', your ' + kindLabel(gaps[0].kind) + ' box is still empty.';
+        else if (gaps.length > 1) gapNote = ' A few filed elements still have empty boxes — the quickest marks are there.';
         var msg = allDone
-            ? 'Welcome back — all ' + SPINE.length + ' elements of “' + title + '” are filed. Pick an element below to revisit and deepen.'
-            : 'Welcome back — you’ve filed ' + filled.length + ' of ' + SPINE.length + ' elements for “' + title + '”.';
+            ? 'Welcome back — all ' + SPINE.length + ' elements of “' + title + '” are filed.' + (gapNote || ' Pick an element below to revisit and deepen.')
+            : 'Welcome back — you’ve filed ' + filled.length + ' of ' + SPINE.length + ' elements for “' + title + '”.' + gapNote;
         ctx.addChatMessage('<p>' + msg + '</p>', 'ai', msg, { suppressActions: true });
         var bar = el('div', { className: 'swml-quick-actions' });
+        var gapSend = function (g) {
+            bar.remove();
+            silentSend('In my ' + labelOf(g.slug) + ' notes on “' + title + '”, the ' + kindLabel(g.kind) + ' box is still empty. First recap my existing ' + labelOf(g.slug) + ' note in one line so we’re oriented, then work with me on JUST that box — '
+                + (g.kind === 'quotes'
+                    ? 'choosing 1–3 precise quotes from the poem that anchor the note'
+                    : 'how the poet’s method steers the reader’s focus, feeling and thinking')
+                + ' — and file it to poem_' + pid + '_' + g.slug + '_' + g.kind + ' when I’m happy. Do not re-walk the rest of the element.'
+                + '\n@ELEMENT_REVISIT' + JSON.stringify({ poem: pid, el: g.slug }));
+        };
         var revisitRow = function () {
             bar.innerHTML = '';
             filled.forEach(function (slug) {
                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✎ ' + labelOf(slug),
                     onClick: function () {
                         bar.remove();
-                        silentSend('I’d like to revisit and deepen my ' + labelOf(slug) + ' notes on “' + title + '” — my current note is already in the document. Engage me Socratically on strengthening THAT element (don’t discard what’s there; we’re building on it), then re-file it when I’m happy.');
+                        silentSend('I’d like to revisit my ' + labelOf(slug) + ' notes on “' + title + '”. Start by recapping my current note in one or two lines, then ask me ONE targeted question to deepen it. If you judge the note already strong, say so honestly and recommend I move on to an unfilled element instead — my time is limited. Re-file the element when I’m happy; never discard what’s there.'
+                            + '\n@ELEMENT_REVISIT' + JSON.stringify({ poem: pid, el: slug }));
                     } }));
             });
-            if (!allDone) {
-                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '↩ Back',
-                    onClick: function () { mainRow(); } }));
-            }
+            bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '↩ Back',
+                onClick: function () { mainRow(); } }));
         };
         var mainRow = function () {
             bar.innerHTML = '';
-            bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '▶ Continue — next: ' + labelOf(nextSlug),
-                onClick: function () {
-                    bar.remove();
-                    silentSend('I’m continuing my Conceptual Notes on “' + title + '” — some elements are already filed in my document. Pick up the walk at the ' + labelOf(nextSlug) + ' element (do not re-ask elements that are already filed).');
-                } }));
+            if (!allDone) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '▶ Continue — next: ' + labelOf(nextSlug),
+                    onClick: function () {
+                        bar.remove();
+                        silentSend('I’m continuing my Conceptual Notes on “' + title + '” — some elements are already filed in my document. Pick up the walk at the ' + labelOf(nextSlug) + ' element (do not re-ask elements that are already filed).');
+                    } }));
+            }
+            gaps.slice(0, 3).forEach(function (g) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✎ ' + labelOf(g.slug) + ' — add ' + kindLabel(g.kind),
+                    onClick: function () { gapSend(g); } }));
+            });
             bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✎ Revisit a filed element',
                 onClick: function () { revisitRow(); } }));
         };
-        if (allDone) revisitRow(); else mainRow();
+        mainRow();
         _poetryCnAppendBar(ctx, bar);
-        console.log('[WML poetry-CN] re-entry card →', filled.length, 'filed, next:', nextSlug || '(all filed)');
+        console.log('[WML poetry-CN] re-entry card →', filled.length, 'filed,', gaps.length, 'gap(s), next:', nextSlug || '(all filed)');
         return true;
     }
     function _poetryCnStartPoem(ctx, poem) {
@@ -6986,6 +7032,33 @@
             var filled = 0;
             for (var i = 0; i < ELS.length; i++) { if (seen[ELS[i]]) filled++; }
             var step = Math.min(filled + 1, SPINE.length);
+            // v7.20.10 (Neil): REVISIT awareness — revisiting Speaker showed "Element 2 ·
+            // Context" because the chip always points at the next UNFILLED element. A revisit
+            // turn persists @ELEMENT_REVISIT (hidden student turn, same law as @ELEMENT_STANCE);
+            // the chip pins to that element until a LATER message re-files it (any @FIELD_SET
+            // for the element or its companion boxes), then reverts to next-unfilled. Still
+            // 100% code-derived — the model never draws the pin.
+            try {
+                if (Array.isArray(hist)) {
+                    var rvEl = '', rvIdx = -1;
+                    for (var h = hist.length - 1; h >= 0; h--) {
+                        var cc = hist[h] && hist[h].content;
+                        if (!cc || cc.indexOf('@ELEMENT_REVISIT') === -1) continue;
+                        var rm = /@ELEMENT_REVISIT\s*(\{[^}]*\})/.exec(cc);
+                        if (rm) { try { var ro = JSON.parse(rm[1]); if (ro && ro.poem === pid && ro.el) { rvEl = String(ro.el); rvIdx = h; } } catch (_) {} }
+                        break; // latest marker decides, matching or not
+                    }
+                    if (rvEl) {
+                        var refiled = false;
+                        for (var h2 = rvIdx + 1; h2 < hist.length; h2++) {
+                            var c2 = hist[h2] && hist[h2].content;
+                            if (c2 && c2.indexOf('"field":"poem_' + pid + '_' + rvEl) !== -1) { refiled = true; break; }
+                        }
+                        var ri = ELS.indexOf(rvEl);
+                        if (!refiled && ri !== -1) step = ri + 1;
+                    }
+                }
+            } catch (_) { /* chip falls back to next-unfilled */ }
             var title = '';
             try {
                 var poems = _poetryAnthologyPoems();

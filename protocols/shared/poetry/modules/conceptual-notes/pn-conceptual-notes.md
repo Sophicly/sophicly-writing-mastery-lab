@@ -258,6 +258,11 @@ its own line:
 
 @FIELD_SET{"field":"poem_{poem_id}_{element}_effect","value":"<the reader-effect, single line>"}
 
+**REVISIT / gap-completion turns re-file ONLY what was worked on.** When the student's message
+targets one element (a revisit) or one empty box (quotes / effect), emit @FIELD_SET for THAT
+field (or fields) only — never re-emit the element's other markers: their values live in the
+document already, and a re-emitted guess would overwrite nothing but can contradict what's there.
+
 Do NOT emit an `_effect` marker for context, purpose, message, or comparisons — those elements have
 no effect field (context is knowledge not craft; purpose already IS the intended effect; message and
 comparisons are syntheses). Never invent an effect the walk didn't establish; if the student didn't
