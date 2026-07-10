@@ -6760,6 +6760,79 @@
             requestAnimationFrame(function () { _swmlScrollToTop(sec, 24); });
         } catch (e) { console.warn('[WML poetry-CN] scroll-to-poem failed', e); }
     }
+    // v7.20.12 (Neil): EFFECT LENS CARD — code-owned four-fold effects elicitation (§A16 +
+    // ownership law: the student picks the lens(es) BEFORE the AI says a word, so the insight
+    // is theirs). Multi-select chips (focus/emotion/thoughts/actions, plain language — never an
+    // abstract effect question) + "what did you notice?" free text with mic (SOP). One silent
+    // send carries lenses + noticing + @ELEMENT_REVISIT{box:'effect'} + @POEM_SELECTED; the AI
+    // probes WITHIN the picked lenses (protocol §EFFECTS) and files the box. Same el()/mic/CSS
+    // shape as the opener stance card.
+    function _poetryCnEffectLensCard(ctx, o) {
+        var LENSES = [
+            { id: 'focus',    label: 'Focus — what it makes you look at' },
+            { id: 'emotion',  label: 'Emotion — what it makes you feel' },
+            { id: 'thoughts', label: 'Thoughts — what it makes you think' },
+            { id: 'actions',  label: 'Actions — what it might change in you' },
+        ];
+        var card = el('div', { className: 'swml-cn-opener' });
+        card.setAttribute('data-okey', o.pid + ':' + o.slug + ':effect');
+        card.appendChild(el('div', { className: 'swml-cn-opener-framing',
+            textContent: o.elLabel + ' — Effect on the reader.' }));
+        card.appendChild(el('div', { className: 'swml-cn-opener-q',
+            textContent: 'Where does the poet’s method land on you, the reader? Pick the effect(s) you noticed — one or more.' }));
+        var chosen = {};
+        var grid = el('div', { className: 'swml-cn-opener-stances' });
+        var ta = el('textarea', { className: 'swml-cn-opener-justify', placeholder: 'What did you notice? How do you know?' });
+        ta.rows = 2;
+        var send = el('button', { className: 'swml-quick-btn swml-cn-opener-send', textContent: 'Send' });
+        var refresh = function () {
+            var ok = Object.keys(chosen).length > 0 && !!ta.value.trim();
+            send.disabled = !ok;
+            send.classList.toggle('swml-cn-opener-send-ready', ok);
+        };
+        LENSES.forEach(function (l) {
+            var b = el('button', { className: 'swml-quick-btn swml-cn-opener-stance', textContent: l.label,
+                onClick: function () {
+                    if (chosen[l.id]) { delete chosen[l.id]; b.classList.remove('swml-quick-toggle-on'); }
+                    else { chosen[l.id] = l; b.classList.add('swml-quick-toggle-on'); }
+                    refresh();
+                } });
+            grid.appendChild(b);
+        });
+        ta.addEventListener('input', refresh);
+        var mic = el('button', { className: 'swml-cn-opener-mic', innerHTML: SVG_MIC, title: 'Speak your answer' });
+        mic.type = 'button';
+        _attachPanelMic(ta, mic, refresh);
+        var taRow = el('div', { className: 'swml-cn-opener-tarow' });
+        taRow.appendChild(ta);
+        taRow.appendChild(mic);
+        card.appendChild(grid);
+        card.appendChild(taRow);
+        card.appendChild(send);
+        refresh();
+        send.addEventListener('click', function () {
+            var picks = LENSES.filter(function (l) { return chosen[l.id]; }).map(function (l) { return l.label; });
+            if (!picks.length || !ta.value.trim()) return;
+            try { if (mic._swmlStopMic) mic._swmlStopMic(); } catch (_) {}
+            var noticing = ta.value.trim();
+            card.classList.add('swml-cn-opener-done');
+            card.innerHTML = '';
+            card.appendChild(el('div', { className: 'swml-cn-opener-summary',
+                textContent: '✓ ' + picks.join(' · ') + ' — ' + noticing }));
+            var lines = [
+                'On the ' + o.elLabel + ' of “' + o.title + '”, the reader-effect(s) I noticed: ' + picks.join('; ') + '.',
+                'What I noticed: ' + noticing,
+                'Probe within my chosen lens(es) only — plain language, the four-fold chain (focus → emotion → thought → action). Help me sharpen this into an effect note built from MY ideas: polish my wording, never add a concept I didn’t reach. File it to poem_' + o.pid + '_' + o.slug + '_effect when I’m happy — one or two exchanges.',
+                '@ELEMENT_REVISIT' + JSON.stringify({ poem: o.pid, el: o.slug, box: 'effect' }),
+                '@POEM_SELECTED' + JSON.stringify({ id: o.pid }),
+            ];
+            canvasSilentSend = true;
+            ctx.chatTextarea.value = lines.join('\n');
+            (ctx.sendCanvasMessageQueued || ctx.sendCanvasMessage)();
+        });
+        _poetryCnAppendBar(ctx, card);
+        return card;
+    }
     // v7.20.10 (Neil): EMPTY companion boxes on FILLED elements — the re-entry card's
     // gap-targeting source. An element counts as filled by its notes field; its _quotes
     // (all elements) and _effect (craft elements) boxes are gaps while empty. Doc-derived,
@@ -6827,15 +6900,18 @@
         var gapSend = function (g) {
             bar.remove();
             // v7.20.11 (Neil PACE principle): converge FAST on a gap — the concept already
-            // lives in the note; we're capturing evidence/effect, not re-teaching. Quotes:
-            // Sophia proposes candidates as lettered options (auto-render as buttons) so one
-            // click can finish it. Effect: ONE question. Never a fresh walk.
+            // lives in the note; we're capturing evidence/effect, not re-teaching.
+            // v7.20.12: EFFECT gaps get the code-owned four-fold LENS CARD (student picks the
+            // lens before the AI says a word — ownership); QUOTES gaps stay AI-led: Sophia
+            // proposes candidates as lettered options (auto-render as buttons), one click files.
+            if (g.kind === 'effect') {
+                _poetryCnEffectLensCard(ctx, { pid: pid, slug: g.slug, elLabel: labelOf(g.slug), title: title });
+                return;
+            }
             silentSend('In my ' + labelOf(g.slug) + ' notes on “' + title + '”, the ' + kindLabel(g.kind) + ' box is still empty. Recap my existing ' + labelOf(g.slug) + ' note in one line so we’re oriented, then work ONLY on that box. '
-                + (g.kind === 'quotes'
-                    ? 'Suggest 2–3 candidate quotes FROM THE POEM that best anchor my note, as lettered options (A / B / C) with a one-line reason each — I’ll pick one or more, ask for different ones, or type my own. File my picks'
-                    : 'Ask me ONE question on how the poet’s method steers the reader’s focus, feeling and thinking — I already hold the concept; we’re capturing its effect, not re-teaching it. File my answer')
+                + 'Suggest 2–3 candidate quotes FROM THE POEM that best anchor my note, as lettered options (A / B / C) with a one-line reason each — I’ll pick one or more, ask for different ones, or type my own. File my picks'
                 + ' to poem_' + pid + '_' + g.slug + '_' + g.kind + ' and we’re done — keep this to one or two exchanges. Do not re-walk the rest of the element.'
-                + '\n@ELEMENT_REVISIT' + JSON.stringify({ poem: pid, el: g.slug }));
+                + '\n@ELEMENT_REVISIT' + JSON.stringify({ poem: pid, el: g.slug, box: g.kind }));
         };
         var revisitRow = function () {
             bar.innerHTML = '';
@@ -7042,14 +7118,15 @@
             // the chip pins to that element until a LATER message re-files it (any @FIELD_SET
             // for the element or its companion boxes), then reverts to next-unfilled. Still
             // 100% code-derived — the model never draws the pin.
+            var rvHeadingBox = '';
             try {
                 if (Array.isArray(hist)) {
-                    var rvEl = '', rvIdx = -1;
+                    var rvEl = '', rvIdx = -1, rvBox = '';
                     for (var h = hist.length - 1; h >= 0; h--) {
                         var cc = hist[h] && hist[h].content;
                         if (!cc || cc.indexOf('@ELEMENT_REVISIT') === -1) continue;
                         var rm = /@ELEMENT_REVISIT\s*(\{[^}]*\})/.exec(cc);
-                        if (rm) { try { var ro = JSON.parse(rm[1]); if (ro && ro.poem === pid && ro.el) { rvEl = String(ro.el); rvIdx = h; } } catch (_) {} }
+                        if (rm) { try { var ro = JSON.parse(rm[1]); if (ro && ro.poem === pid && ro.el) { rvEl = String(ro.el); rvIdx = h; rvBox = String(ro.box || ''); } } catch (_) {} }
                         break; // latest marker decides, matching or not
                     }
                     if (rvEl) {
@@ -7059,7 +7136,12 @@
                             if (c2 && c2.indexOf('"field":"poem_' + pid + '_' + rvEl) !== -1) { refiled = true; break; }
                         }
                         var ri = ELS.indexOf(rvEl);
-                        if (!refiled && ri !== -1) step = ri + 1;
+                        // v7.20.12 (Neil): the chip names the BOX being worked on, not just the
+                        // element — "Speaker — Effect on the reader", from the marker's box field.
+                        if (!refiled && ri !== -1) {
+                            step = ri + 1;
+                            if (rvBox) rvHeadingBox = rvBox === 'effect' ? 'Effect on the reader' : 'Key quotes';
+                        }
                     }
                 }
             } catch (_) { /* chip falls back to next-unfilled */ }
@@ -7075,7 +7157,7 @@
                 section: title || 'Your poem',
                 step: step, total: SPINE.length,
                 unit: 'Element',
-                heading: SPINE[step - 1].label,
+                heading: SPINE[step - 1].label + (rvHeadingBox ? ' — ' + rvHeadingBox : ''),
             };
         } catch (e) { console.warn('[WML poetry-CN] _poetryCnWalkBeat failed', e); return null; }
     }
