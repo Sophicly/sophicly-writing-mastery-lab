@@ -785,6 +785,83 @@ window.WML = (function() {
         },
     };
 
+    // v7.20.15: CN FAMILY REGISTRY (CN-STANDARD + Part B Phase 1 build plan, Neil rulings
+    // 2026-07-10). ONE canonical definition per CN family — spine (slug order is FROZEN to
+    // the doc fieldIds {prefix}_{itemId}_{slug} and the family's walk protocol), craft set
+    // (which elements carry an _effect box — §2.2 craft test), depth register, roster kind
+    // ('anthology' = multi-item picker; 'single' = the course text, no picker) and openers
+    // (frontend-owned first questions — absent slug/family = AI-Socratic open; capability
+    // gate, never a task-name check). Consumers DERIVE from the family object (regexes,
+    // sidebar steps, chip, done-detection, heals, template rows) — never hand-copy a slug
+    // list (the one-canonical-spine law; four hand-copies drifted the sidebar pre-991).
+    // PHP twin: the registry in class-rest-api.php build_cn_injection() — keep in lockstep.
+    const LIT_CN_SPINE = [
+        { slug: 'protagonist', label: 'Protagonist' },
+        { slug: 'context',     label: 'Historical Context' },
+        { slug: 'plot',        label: 'Plot Type' },
+        { slug: 'genre',       label: 'Genre' },
+        { slug: 'themes',      label: 'Themes' },
+        { slug: 'purpose',     label: 'Author’s Purpose' },
+        { slug: 'message',     label: 'Overall Message' },
+    ];
+    const NONFICTION_CN_SPINE = [
+        { slug: 'voice',      label: 'Writer’s Voice' },
+        { slug: 'context',    label: 'Context' },
+        { slug: 'structure',  label: 'Structure' },
+        { slug: 'texttype',   label: 'Text Type & Form' },
+        { slug: 'techniques', label: 'Techniques' },
+        { slug: 'themes',     label: 'Themes' },
+        { slug: 'purpose',    label: 'Purpose' },
+        { slug: 'message',    label: 'Message' },
+    ];
+    const PROSE_CN_SPINE = [
+        { slug: 'narrator',  label: 'Narrator & Voice' },
+        { slug: 'context',   label: 'Context' },
+        { slug: 'structure', label: 'Form & Structure' },
+        { slug: 'language',  label: 'Language' },
+        { slug: 'themes',    label: 'Themes' },
+        { slug: 'purpose',   label: 'Purpose' },
+        { slug: 'message',   label: 'Message' },
+    ];
+    // moldReady = this family's one-doc template + shape-heal have SHIPPED. The unified-doc
+    // machinery (heals, cards, chip, done-detection, picker) gates on it — never on a family
+    // name — so a family switches on by flipping ONE flag when its doc surface exists, and
+    // legacy-shape docs (lit cn_section_N, old nfcn) stay untouched until then.
+    const CN_FAMILIES = {
+        poetry: {
+            id: 'poetry', prefix: 'poem', spine: POETRY_CN_SPINE,
+            craft: ['speaker', 'form', 'structure', 'themes'],
+            depth: 'light', roster: 'anthology', openers: POETRY_CN_OPENERS,
+            moldReady: true,
+        },
+        literature: {
+            id: 'literature', prefix: 'lit', spine: LIT_CN_SPINE,
+            craft: ['protagonist', 'plot', 'genre', 'themes'],
+            depth: 'deep', roster: 'single', openers: null,
+            moldReady: false, // flips in Part B step 2 (Macbeth template + carry-heal)
+        },
+        nonfiction: {
+            id: 'nonfiction', prefix: 'nf', spine: NONFICTION_CN_SPINE,
+            craft: ['voice', 'structure', 'texttype', 'techniques', 'themes'],
+            depth: 'light', roster: 'anthology', openers: null,
+            moldReady: false, // flips in Part B Phase 2 (light-walk template ships)
+        },
+        prose: {
+            id: 'prose', prefix: 'prose', spine: PROSE_CN_SPINE,
+            craft: ['narrator', 'structure', 'language', 'themes'],
+            depth: 'light', roster: 'anthology', openers: null,
+            moldReady: false, // flips in Part B Phase 2 (light-walk template ships)
+        },
+    };
+    // Derived fieldId regexes — THE only place CN fieldId shapes are constructed. kind:
+    // 'notes' matches bare element fields only; 'any' also matches _quotes/_effect boxes.
+    const cnFieldRe = (fam, kind) => {
+        const alt = fam.spine.map((e) => e.slug).join('|');
+        return kind === 'any'
+            ? new RegExp('^' + fam.prefix + '_(.+?)_(' + alt + ')(?:_(quotes|effect))?$')
+            : new RegExp('^' + fam.prefix + '_(.+?)_(' + alt + ')$');
+    };
+
     const NONFICTION_CN_STEPS = [
         { step: 1, label: 'S1 Writer\'s Voice' },
         { step: 2, label: 'S2 Context' },
@@ -1781,6 +1858,20 @@ window.WML = (function() {
         // template into the unified doc (the stale-shape docs the shape-heal repairs).
         if (isPoetryAnthologyDoc() && (state.task === 'conceptual_notes' || state.task === 'foundational_quiz')) return true;
         try { return canvasDocScope().text === 'poetic_forms'; } catch (_) { return false; }
+    };
+    // v7.20.15: THE CN family resolver — returns the CN_FAMILIES entry for the current
+    // doc/task, or null off a CN surface. Poetry keeps its battle-tested durable check
+    // (isPoetryCnDoc — includes the foundational_quiz organiser + poetic_forms scope);
+    // the others key on the conceptual_notes task + subject. Order matters: poetry's
+    // doc-level check wins over subject (the shared organiser doc law, v992).
+    const cnFamily = () => {
+        if (isPoetryCnDoc()) return CN_FAMILIES.poetry;
+        if (state.task !== 'conceptual_notes') return null;
+        if (isNonfictionSubject()) return CN_FAMILIES.nonfiction;
+        if (state.subject === 'prose_anthology') return CN_FAMILIES.prose;
+        // NOTE: edexcel-igcse language2 (mixed 5-poem + 5-prose roster) is deliberately
+        // unmapped until the Phase 2 wiring designs its per-item family split.
+        return CN_FAMILIES.literature;
     };
     function getSteps() {
         if (state.task === 'assessment') return ASSESSMENT_STEPS;
@@ -3374,6 +3465,8 @@ window.WML = (function() {
         // Helpers
         isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject, isPoetryCnDoc,
         anthologyPoemsFor, isPoetryAnthologyDoc,
+        // CN family registry (v7.20.15)
+        CN_FAMILIES, LIT_CN_SPINE, NONFICTION_CN_SPINE, PROSE_CN_SPINE, cnFamily, cnFieldRe,
         getSteps, getElements, getExerciseConfig, getCwStepDef, resolveStorageSuffix, resolveCanvasSuffix, canvasDocScope,
         // Exercise manifest
         EXERCISE_MANIFEST,

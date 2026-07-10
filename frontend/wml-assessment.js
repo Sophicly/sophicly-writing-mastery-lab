@@ -6208,6 +6208,21 @@
     const POEM_EFFECT_ELS = ['speaker', 'form', 'structure', 'themes'];
     const POEM_EFFECT_PROMPT = 'Effect on the reader — how do the poet’s methods steer the reader’s focus, feeling and thinking here?';
 
+    // v7.20.15 (Part B step 1): CN family resolution — THE gate for all unified-doc CN
+    // machinery below. _cnMoldFam() returns the registry family (WML.CN_FAMILIES) only when
+    // its one-doc template + shape-heal have shipped (fam.moldReady) — today poetry only, so
+    // behaviour is identical to the old isPoetryCnDoc() gates; literature/nonfiction/prose
+    // switch on by flipping their flag when their doc surface lands, never by editing these
+    // functions. FieldId regexes derive from the family (WML.cnFieldRe / fam.spine /
+    // fam.craft / fam.prefix) — never a hand-written poem_ alternation literal.
+    function _cnFam() {
+        try { return (WML.cnFamily && WML.cnFamily()) || null; } catch (_) { return null; }
+    }
+    function _cnMoldFam() {
+        const f = _cnFam();
+        return (f && f.moldReady) ? f : null;
+    }
+
     // v7.19.976 (Neil): heal pre-975 poetry CN docs — inject the Comparisons subsection
     // (poem_{id}_comparisons + _quotes) at the end of any poem group that lacks it.
     // TARGETED insertContentAt heal per migrateDocument's own v818 law (never setContent
@@ -6217,12 +6232,18 @@
     function _healPoetryCnComparisons(editor) {
         try {
             if (!editor || !editor.state || !editor.chain) return;
-            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            const fam = _cnMoldFam();
+            // Capability gate: only families whose SPINE ends in a comparisons element.
+            if (!fam || !fam.spine.some((e) => e.slug === 'comparisons')) return;
             const fieldIds = new Set();
             editor.state.doc.descendants((n) => {
                 if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) fieldIds.add(n.attrs.fieldId);
             });
             if (!fieldIds.size) return; // empty/placeholder doc — template covers it
+            // Non-comparisons spine slugs (+ optional _quotes) identify a group missing the tail.
+            const bodyRe = new RegExp('^' + fam.prefix + '_(.+?)_('
+                + fam.spine.map((e) => e.slug).filter((s) => s !== 'comparisons').join('|')
+                + ')(?:_quotes)?$');
             const targets = [];
             editor.state.doc.descendants((node, pos) => {
                 if (!node.type || node.type.name !== 'sectionBlock') return;
@@ -6231,19 +6252,19 @@
                 node.descendants((c) => {
                     if (pid) return false;
                     if (c.type && c.type.name === 'inputField') {
-                        const m = /^poem_(.+?)_(speaker|context|form|structure|themes|purpose|message)(?:_quotes)?$/.exec(String((c.attrs && c.attrs.fieldId) || ''));
+                        const m = bodyRe.exec(String((c.attrs && c.attrs.fieldId) || ''));
                         if (m) pid = m[1];
                     }
                 });
-                if (pid && !fieldIds.has('poem_' + pid + '_comparisons')) targets.push({ pos: pos, size: node.nodeSize, pid: pid });
+                if (pid && !fieldIds.has(fam.prefix + '_' + pid + '_comparisons')) targets.push({ pos: pos, size: node.nodeSize, pid: pid });
                 return false;
             });
             if (!targets.length) return;
             targets.sort((a, b) => b.pos - a.pos); // descending — earlier positions stay valid
             targets.forEach((t) => {
                 const html = '<p><strong>Comparisons</strong></p>' +
-                    inputHTML('Which anthology poems pair well with this one — and on what grounds (shared theme, contrasting method, different feeling)?', 'poem_' + t.pid + '_comparisons') +
-                    inputHTML('Key quotes (1–3).', 'poem_' + t.pid + '_comparisons_quotes');
+                    inputHTML('Which anthology poems pair well with this one — and on what grounds (shared theme, contrasting method, different feeling)?', fam.prefix + '_' + t.pid + '_comparisons') +
+                    inputHTML('Key quotes (1–3).', fam.prefix + '_' + t.pid + '_comparisons_quotes');
                 editor.chain().insertContentAt(t.pos + t.size - 1, html).run();
             });
             console.log('[WML poetry-CN] healed Comparisons into', targets.length, 'poem group(s)');
@@ -6262,7 +6283,10 @@
     function _healPoetryCnEffects(editor) {
         try {
             if (!editor || !editor.state || !editor.chain) return;
-            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            const fam = _cnMoldFam();
+            if (!fam) return;
+            const craftQuotesRe = new RegExp('^' + fam.prefix + '_(.+?)_(' + fam.craft.join('|') + ')_quotes$');
+            const craftEffectRe = new RegExp('^' + fam.prefix + '_(.+?)_(' + fam.craft.join('|') + ')_effect$');
             const fieldIds = new Set();
             editor.state.doc.descendants((n) => {
                 if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) fieldIds.add(n.attrs.fieldId);
@@ -6273,9 +6297,9 @@
             editor.state.doc.descendants((node, pos) => {
                 if (!node.type || node.type.name !== 'inputField') return;
                 const fid = String((node.attrs && node.attrs.fieldId) || '');
-                const m = /^poem_(.+?)_(speaker|form|structure|themes)_quotes$/.exec(fid);
+                const m = craftQuotesRe.exec(fid);
                 if (!m) return;
-                const efid = 'poem_' + m[1] + '_' + m[2] + '_effect';
+                const efid = fam.prefix + '_' + m[1] + '_' + m[2] + '_effect';
                 if (fieldIds.has(efid)) return; // already present (reorder pass handles position)
                 targets.push({ pos: pos, size: node.nodeSize, efid: efid });
             });
@@ -6297,9 +6321,9 @@
                 });
                 let op = null;
                 for (const fid of Object.keys(fields)) {
-                    const m = /^poem_(.+?)_(speaker|form|structure|themes)_effect$/.exec(fid);
+                    const m = craftEffectRe.exec(fid);
                     if (!m) continue;
-                    const q = fields['poem_' + m[1] + '_' + m[2] + '_quotes'];
+                    const q = fields[fam.prefix + '_' + m[1] + '_' + m[2] + '_quotes'];
                     const e = fields[fid];
                     if (q && e.pos < q.pos) { op = { e: e, q: q }; break; }
                 }
@@ -6670,15 +6694,17 @@
     // finished poems (design: done-ness from filled fields). Sent in the canvas payload.
     function _poetryCnDonePoemIds() {
         try {
-            if (!canvasEditor || !(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return [];
-            // v7.19.991: slugs from THE canonical spine (WML.POETRY_CN_SPINE) — literal
-            // fallback only if core hasn't exported it (never brick done-detection).
-            const ELS = (WML.POETRY_CN_SPINE || []).map(e => e.slug);
-            if (!ELS.length) ELS.push('speaker', 'context', 'form', 'structure', 'themes', 'purpose', 'message', 'comparisons');
+            const fam = _cnMoldFam();
+            if (!canvasEditor || !fam) return [];
+            // v7.20.15: slugs + notes-field regex derive from THE registry family — done-ness
+            // = every spine NOTES field non-empty for the item (quotes/effect optional).
+            const ELS = fam.spine.map(e => e.slug);
+            const notesRe = (WML.cnFieldRe && WML.cnFieldRe(fam, 'notes'))
+                || new RegExp('^' + fam.prefix + '_(.+?)_(' + ELS.join('|') + ')$');
             const filled = {};
             canvasEditor.state.doc.descendants((n) => {
                 if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) {
-                    const m = /^poem_(.+?)_(speaker|context|form|structure|themes|purpose|message|comparisons)$/.exec(String(n.attrs.fieldId));
+                    const m = notesRe.exec(String(n.attrs.fieldId));
                     if (m && (n.textContent || '').trim().length > 0) {
                         (filled[m[1]] = filled[m[1]] || {})[m[2]] = true;
                     }
@@ -6822,7 +6848,7 @@
             var lines = [
                 'On the ' + o.elLabel + ' of “' + o.title + '”, the reader-effect(s) I noticed: ' + picks.join('; ') + '.',
                 'What I noticed: ' + noticing,
-                'Probe within my chosen lens(es) only — plain language, the four-fold chain (focus → emotion → thought → action). Help me sharpen this into an effect note built from MY ideas: polish my wording, never add a concept I didn’t reach. File it to poem_' + o.pid + '_' + o.slug + '_effect when I’m happy — one or two exchanges.',
+                'Probe within my chosen lens(es) only — plain language, the four-fold chain (focus → emotion → thought → action). Help me sharpen this into an effect note built from MY ideas: polish my wording, never add a concept I didn’t reach. File it to ' + (_cnMoldFam() || { prefix: 'poem' }).prefix + '_' + o.pid + '_' + o.slug + '_effect when I’m happy — one or two exchanges.',
                 '@ELEMENT_REVISIT' + JSON.stringify({ poem: o.pid, el: o.slug, box: 'effect' }),
                 '@POEM_SELECTED' + JSON.stringify({ id: o.pid }),
             ];
@@ -6846,10 +6872,11 @@
                     vals[n.attrs.fieldId] = (n.textContent || '').trim().length > 0;
                 }
             });
+            var pfx = (_cnMoldFam() || { prefix: 'poem' }).prefix;
             var gaps = [];
             _poetryCnFilledElements(pid).forEach(function (slug) {
-                var q = 'poem_' + pid + '_' + slug + '_quotes';
-                var e = 'poem_' + pid + '_' + slug + '_effect';
+                var q = pfx + '_' + pid + '_' + slug + '_quotes';
+                var e = pfx + '_' + pid + '_' + slug + '_effect';
                 if ((q in vals) && !vals[q]) gaps.push({ slug: slug, kind: 'quotes' });
                 if ((e in vals) && !vals[e]) gaps.push({ slug: slug, kind: 'effect' });
             });
@@ -6866,7 +6893,8 @@
     function _poetryCnReentryCard(ctx, poem) {
         var pid = poem && poem.id;
         if (!pid || !ctx || !ctx.chatMessages || !ctx.addChatMessage || !ctx.chatTextarea) return false;
-        var SPINE = (typeof WML !== 'undefined' && WML.POETRY_CN_SPINE) || [];
+        var _fam = _cnMoldFam();
+        var SPINE = _fam ? _fam.spine : [];
         if (!SPINE.length) return false;
         var filled = _poetryCnFilledElements(pid);
         if (!filled.length) return false;
@@ -6910,7 +6938,7 @@
             }
             silentSend('In my ' + labelOf(g.slug) + ' notes on “' + title + '”, the ' + kindLabel(g.kind) + ' box is still empty. Recap my existing ' + labelOf(g.slug) + ' note in one line so we’re oriented, then work ONLY on that box. '
                 + 'Suggest 2–3 candidate quotes FROM THE POEM that best anchor my note, as lettered options (A / B / C) with a one-line reason each — I’ll pick one or more, ask for different ones, or type my own. File my picks'
-                + ' to poem_' + pid + '_' + g.slug + '_' + g.kind + ' and we’re done — keep this to one or two exchanges. Do not re-walk the rest of the element.'
+                + ' to ' + _fam.prefix + '_' + pid + '_' + g.slug + '_' + g.kind + ' and we’re done — keep this to one or two exchanges. Do not re-walk the rest of the element.'
                 + '\n@ELEMENT_REVISIT' + JSON.stringify({ poem: pid, el: g.slug, box: g.kind }));
         };
         var revisitRow = function () {
@@ -6982,7 +7010,7 @@
                     if (!rendered) {
                         var nextSlug = _poetryCnFirstUnfilledElement(poem.id);
                         var nextLabel = nextSlug;
-                        try { (WML.POETRY_CN_SPINE || []).forEach(function (e) { if (e.slug === nextSlug) nextLabel = e.label; }); } catch (_) {}
+                        try { ((_cnMoldFam() || {}).spine || []).forEach(function (e) { if (e.slug === nextSlug) nextLabel = e.label; }); } catch (_) {}
                         var dir = nextSlug
                             ? 'I’m continuing my Conceptual Notes on “' + (poem.title || poem.id) + '” — some elements are already filed in my document, so no stance card was shown. Pick up the walk at the ' + nextLabel + ' element (do not re-ask elements that are already filed).'
                             : 'All eight elements of “' + (poem.title || poem.id) + '” are already filed — I’d like to review and refine my notes. Ask me which element I want to revisit.';
@@ -7105,13 +7133,15 @@
             var pid = (state && state.currentPoemId) ? String(state.currentPoemId)
                 : _poetryCnCurrentPoemId(hist);
             if (!pid) return null;
-            // v7.19.991: derive from THE canonical spine (WML.POETRY_CN_SPINE) — never a
-            // local copy (four hand-copies of this list drifted the sidebar to 7 elements).
-            var SPINE = (typeof WML !== 'undefined' && WML.POETRY_CN_SPINE) || [];
-            if (!SPINE.length) return null;
+            // v7.20.15: derive from THE registry family (WML.CN_FAMILIES via _cnMoldFam) —
+            // never a local copy (four hand-copies of this list drifted the sidebar to 7
+            // elements pre-991; the registry is now the one canonical layer).
+            var fam = _cnMoldFam();
+            if (!fam) return null;
+            var SPINE = fam.spine;
             var ELS = SPINE.map(function (e) { return e.slug; });
             var seen = {};
-            var elRe = new RegExp('^poem_(.+?)_(' + ELS.join('|') + ')$');
+            var elRe = new RegExp('^' + fam.prefix + '_(.+?)_(' + ELS.join('|') + ')$');
             if (canvasEditor) {
                 canvasEditor.state.doc.descendants(function (n) {
                     if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) {
@@ -7209,11 +7239,11 @@
     function _poetryCnFilledElements(pid) {
         try {
             if (!canvasEditor || !pid) return [];
-            var SPINE = (typeof WML !== 'undefined' && WML.POETRY_CN_SPINE) || [];
-            if (!SPINE.length) return [];
-            var ELS = SPINE.map(function (e) { return e.slug; });
+            var fam = _cnMoldFam();
+            if (!fam) return [];
+            var ELS = fam.spine.map(function (e) { return e.slug; });
             var seen = {};
-            var elRe = new RegExp('^poem_(.+?)_(' + ELS.join('|') + ')$');
+            var elRe = new RegExp('^' + fam.prefix + '_(.+?)_(' + ELS.join('|') + ')$');
             canvasEditor.state.doc.descendants(function (n) {
                 if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) {
                     var m = elRe.exec(String(n.attrs.fieldId));
@@ -7226,7 +7256,8 @@
     // First unfilled spine element for this poem, in SPINE order.
     function _poetryCnFirstUnfilledElement(pid) {
         try {
-            var SPINE = (typeof WML !== 'undefined' && WML.POETRY_CN_SPINE) || [];
+            var fam = _cnMoldFam();
+            var SPINE = fam ? fam.spine : [];
             if (!SPINE.length || !pid) return '';
             var filled = _poetryCnFilledElements(pid);
             for (var i = 0; i < SPINE.length; i++) {
@@ -7280,7 +7311,7 @@
         } catch (_) {}
         var elLabel = slug;
         try {
-            (WML.POETRY_CN_SPINE || []).forEach(function (e) { if (e.slug === slug) elLabel = e.label; });
+            ((_cnMoldFam() || {}).spine || []).forEach(function (e) { if (e.slug === slug) elLabel = e.label; });
         } catch (_) {}
         var card = el('div', { className: 'swml-cn-opener' });
         card.setAttribute('data-okey', pid + ':' + slug);
