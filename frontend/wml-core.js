@@ -2032,17 +2032,21 @@ window.WML = (function() {
         return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     }
     function getTheme() {
-        // Manual override takes priority (v7.14.21: localStorage for persistence across sessions)
+        // v7.20.13: ONE theme store. The site's `theme-preference` (sessionStorage, then the
+        // durable cookie the toggle writes) is the source of truth. WML's old PRIVATE key
+        // (swml-theme-manual) made the observer below FIGHT the site toggle: a stale key +
+        // any DOM mutation → applyTheme → themeToggle.setTheme → the whole SITE flipped back
+        // seconds after the user chose a theme (Neil, LearnDash, 2026-07-10). Private key is
+        // now a last-resort legacy fallback only.
         try {
-            const manual = localStorage.getItem('swml-theme-manual');
-            if (manual) return manual;
-            // Migrate from old sessionStorage key
-            const oldManual = sessionStorage.getItem('swml-theme-manual');
-            if (oldManual) {
-                localStorage.setItem('swml-theme-manual', oldManual);
-                sessionStorage.removeItem('swml-theme-manual');
-                return oldManual;
-            }
+            const shared = sessionStorage.getItem('theme-preference');
+            if (shared === 'dark' || shared === 'light') return shared;
+            const ck = document.cookie.match(/(?:^|;\s*)theme-preference=(dark|light)/);
+            if (ck) return ck[1];
+        } catch(e) {}
+        try {
+            const manual = localStorage.getItem('swml-theme-manual') || sessionStorage.getItem('swml-theme-manual');
+            if (manual === 'dark' || manual === 'light') return manual;
         } catch(e) {}
         return getSystemTheme();
     }
@@ -2065,15 +2069,23 @@ window.WML = (function() {
             toggle.setAttribute('aria-pressed', isDark ? 'false' : 'true');
             toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
         }
-        // Sync with site-wide theme toggle if available
-        if (window.themeToggle) {
+        // Sync with the site-wide toggle ONLY when the page actually disagrees (v7.20.13).
+        // Unconditional setTheme was the write-back edge of the revert loop: the observer
+        // fires on every DOM mutation, and each call re-stamped the whole site's theme.
+        // WML FOLLOWS the page; it only drives it from its own toggle (hidden when embedded).
+        if (window.themeToggle && document.documentElement.getAttribute('data-theme') !== theme) {
             window.themeToggle.setTheme(theme);
         }
     }
     function toggleTheme() {
         const newTheme = getTheme() === 'dark' ? 'light' : 'dark';
-        // Save as manual override (v7.14.21: localStorage for persistence)
-        try { localStorage.setItem('swml-theme-manual', newTheme); } catch(e) {}
+        // v7.20.13: persist to the SHARED store (session + the durable cookie the site toggle
+        // uses) and retire the private key so a stale copy can never fight the site again.
+        try {
+            sessionStorage.setItem('theme-preference', newTheme);
+            document.cookie = 'theme-preference=' + newTheme + ';path=/;max-age=31536000;SameSite=Lax';
+        } catch(e) {}
+        try { localStorage.removeItem('swml-theme-manual'); sessionStorage.removeItem('swml-theme-manual'); } catch(e) {}
         applyTheme(newTheme);
     }
     // Apply theme on load (respects system preference)
@@ -2092,11 +2104,14 @@ window.WML = (function() {
     });
     themeObserver.observe(document.body, { childList: true, subtree: true });
 
-    // Listen for system preference changes (only applies if no manual override)
+    // Listen for system preference changes (only applies when the user has no saved choice)
     window.matchMedia?.('(prefers-color-scheme: light)').addEventListener('change', () => {
         try {
-            // v7.15.1: Check localStorage (not sessionStorage) — manual override migrated in v7.14.21
-            if (!localStorage.getItem('swml-theme-manual')) {
+            // v7.20.13: check the SHARED store (session/cookie) — a saved site preference wins over the OS.
+            const saved = sessionStorage.getItem('theme-preference')
+                || (document.cookie.match(/(?:^|;\s*)theme-preference=(dark|light)/) || [])[1]
+                || localStorage.getItem('swml-theme-manual');
+            if (!saved) {
                 applyTheme(getSystemTheme());
             }
         } catch(e) {
