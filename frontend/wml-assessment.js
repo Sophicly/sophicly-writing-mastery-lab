@@ -7019,7 +7019,10 @@
             var done = _poetryCnDonePoemIds();
             var remaining = poems.filter(function (p) { return done.indexOf(p.id) === -1; });
             var allDone = remaining.length === 0;
-            var list = allDone ? poems : remaining;
+            // v7.20.14 (Neil): always show the FULL roster, not just remaining — completed poems
+            // stay visible with a ✓ so students see progress mid-stage, not only once everything
+            // is done. Clicking a done poem still revisits it (same path allDone already used).
+            var list = poems;
             // v7.19.985 (Neil): the opening needs a real greeting + WHY conceptual notes matter
             // (concepts, not description, are where the marks — and the lost marks — live). Full
             // explanation only on the FIRST render (opts.intro); the loop / change-poem / resume
@@ -7041,10 +7044,18 @@
                 welcomePlain = 'Pick a poem and we’ll build its Conceptual Notes together — one element at a time.';
                 welcomeHTML = '<p>' + welcomePlain + '</p>';
             }
+            // v7.20.14 (Neil): mid-stage progress tally ("2 of 5 completed") — motivation signal,
+            // only shown once at least one poem is done and it isn't the allDone message already.
+            if (!allDone && done.length > 0) {
+                var tallyPlain = done.length + ' of ' + poems.length + ' poems completed so far.';
+                welcomePlain += ' ' + tallyPlain;
+                welcomeHTML += '<p>' + tallyPlain + '</p>';
+            }
             ctx.addChatMessage(welcomeHTML, 'ai', welcomePlain, { suppressActions: true });
             var bar = el('div', { className: 'swml-quick-actions swml-poem-picker' });
             list.forEach(function (p) {
-                var label = p.title + (p.poet ? ' — ' + p.poet : '') + (allDone ? '  ✓' : '');
+                var isDone = done.indexOf(p.id) !== -1;
+                var label = p.title + (p.poet ? ' — ' + p.poet : '') + (isDone ? '  ✓' : '');
                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: label,
                     onClick: function () { bar.remove(); _poetryCnConfirmPoem(ctx, p); } }));
             });
