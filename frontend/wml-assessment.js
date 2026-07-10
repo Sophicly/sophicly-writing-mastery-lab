@@ -6826,11 +6826,15 @@
         var bar = el('div', { className: 'swml-quick-actions' });
         var gapSend = function (g) {
             bar.remove();
-            silentSend('In my ' + labelOf(g.slug) + ' notes on “' + title + '”, the ' + kindLabel(g.kind) + ' box is still empty. First recap my existing ' + labelOf(g.slug) + ' note in one line so we’re oriented, then work with me on JUST that box — '
+            // v7.20.11 (Neil PACE principle): converge FAST on a gap — the concept already
+            // lives in the note; we're capturing evidence/effect, not re-teaching. Quotes:
+            // Sophia proposes candidates as lettered options (auto-render as buttons) so one
+            // click can finish it. Effect: ONE question. Never a fresh walk.
+            silentSend('In my ' + labelOf(g.slug) + ' notes on “' + title + '”, the ' + kindLabel(g.kind) + ' box is still empty. Recap my existing ' + labelOf(g.slug) + ' note in one line so we’re oriented, then work ONLY on that box. '
                 + (g.kind === 'quotes'
-                    ? 'choosing 1–3 precise quotes from the poem that anchor the note'
-                    : 'how the poet’s method steers the reader’s focus, feeling and thinking')
-                + ' — and file it to poem_' + pid + '_' + g.slug + '_' + g.kind + ' when I’m happy. Do not re-walk the rest of the element.'
+                    ? 'Suggest 2–3 candidate quotes FROM THE POEM that best anchor my note, as lettered options (A / B / C) with a one-line reason each — I’ll pick one or more, ask for different ones, or type my own. File my picks'
+                    : 'Ask me ONE question on how the poet’s method steers the reader’s focus, feeling and thinking — I already hold the concept; we’re capturing its effect, not re-teaching it. File my answer')
+                + ' to poem_' + pid + '_' + g.slug + '_' + g.kind + ' and we’re done — keep this to one or two exchanges. Do not re-walk the rest of the element.'
                 + '\n@ELEMENT_REVISIT' + JSON.stringify({ poem: pid, el: g.slug }));
         };
         var revisitRow = function () {
@@ -6839,7 +6843,7 @@
                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✎ ' + labelOf(slug),
                     onClick: function () {
                         bar.remove();
-                        silentSend('I’d like to revisit my ' + labelOf(slug) + ' notes on “' + title + '”. Start by recapping my current note in one or two lines, then ask me ONE targeted question to deepen it. If you judge the note already strong, say so honestly and recommend I move on to an unfilled element instead — my time is limited. Re-file the element when I’m happy; never discard what’s there.'
+                        silentSend('I’d like to revisit my ' + labelOf(slug) + ' notes on “' + title + '”. Recap my current note in one or two lines, then ask what SPECIFICALLY I want to strengthen — offer 2–3 lettered options drawn from my note (e.g. sharpen the concept, a stronger quote, the reader-effect) plus a final option “Happy with it — move on”. Go deep ONLY on what I choose. If the note is already strong, say so honestly and recommend moving on — my time is limited. Re-file when I’m happy; never discard what’s there.'
                             + '\n@ELEMENT_REVISIT' + JSON.stringify({ poem: pid, el: slug }));
                     } }));
             });
