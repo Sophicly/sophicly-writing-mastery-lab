@@ -1869,6 +1869,10 @@ window.WML = (function() {
         if (state.task !== 'conceptual_notes') return null;
         if (isNonfictionSubject()) return CN_FAMILIES.nonfiction;
         if (state.subject === 'prose_anthology') return CN_FAMILIES.prose;
+        // v7.20.16: NON-anthology poetry (unseen / poetic_forms) is a poetry subject but not
+        // the mold — it must NOT fall through to literature (that would mis-gate the lit
+        // re-layout heal onto a poetry doc). Return null: it's a CN surface with no mold family.
+        if (isPoetrySubject()) return null;
         // NOTE: edexcel-igcse language2 (mixed 5-poem + 5-prose roster) is deliberately
         // unmapped until the Phase 2 wiring designs its per-item family split.
         return CN_FAMILIES.literature;
