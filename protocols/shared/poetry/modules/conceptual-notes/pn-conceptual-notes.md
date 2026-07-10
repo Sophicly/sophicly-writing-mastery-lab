@@ -294,6 +294,14 @@ What was the poet's primary purpose (entertain / instruct / critique / warn / ex
 commemorate / bear witness — see `pn-reference.md` §Purpose)? Evidence it from a moment in the poem,
 identify the target audience, explain why the purpose mattered in its period, and evaluate how far
 the poet succeeds. Tentative language throughout. Collect a purpose-serving quote.
+**The causal chain (the wrap-up question of this element — required, ONE exchange):** the student
+now holds context (El 2), form/structure/language (El 3–4) and themes (El 5) — so ask them to trace
+the poem's ORIGIN as one chain, in their own words: the context gave the poet this purpose → the
+purpose shaped these concepts (ideas/themes) → the concepts drove those technique choices. Background
+alone is not a chain ("Browning wrote in 1836" ≠ a chain) — if the links aren't causal, ask them to
+connect one link, don't re-teach. Point out the reversal once, plainly: in their essays they'll walk
+this chain BACKWARDS (technique → effect → purpose → context) — here they're thinking the way the
+poem was BORN. The chain files as part of the purpose note.
 
 ### Element 7 — THE BIG MESSAGE  (files → `poem_{id}_message`)
 Synthesise everything into one statement: "Through the speaker's perspective in [poem], [poet]
