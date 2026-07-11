@@ -7397,6 +7397,146 @@
             return gaps;
         } catch (e) { console.warn('[WML lit-CN] section-gaps failed', e); return []; }
     }
+    // v7.20.23: LIT CN chip — twin of _poetryCnWalkBeat, keyed on cn_section_N (no poem, single
+    // text). step = filled-count + 1 (cap n) — the lit walk runs the fixed spine IN ORDER
+    // (AI-led, openers:null), so filled is contiguous and step == first-unfilled index; heading
+    // = spine[step-1].label; top-liner = the text title. CODE-DERIVED (doc scan), never a pin.
+    function _litCnWalkBeat() {
+        try {
+            if (!_litCnActive()) return null;
+            var fam = _cnMoldFam();
+            if (!fam || !fam.spine || !fam.spine.length) return null;
+            var SPINE = fam.spine;
+            var filled = _litCnFilledSections().length;
+            var step = Math.min(filled + 1, SPINE.length);
+            var title = '';
+            try { title = state.textName || state.text || ''; } catch (_) {}
+            return {
+                section: title || 'Your text',
+                step: step, total: SPINE.length,
+                unit: 'Section',
+                heading: SPINE[step - 1].label,
+            };
+        } catch (e) { console.warn('[WML lit-CN] walk-beat failed', e); return null; }
+    }
+    // THE CN chip dispatcher (one canonical layer): route by the mold family, never a literal
+    // task/subject check at the call site. poetry → _poetryCnWalkBeat (self-gates on the picker
+    // + active poem); literature → _litCnWalkBeat. nf/prose inherit poetry's default once moldReady
+    // (their walk-beat self-gates too). Returns null off a CN walk.
+    function _cnWalkBeat(hist) {
+        var fam = _cnMoldFam();
+        if (!fam) return null;
+        if (fam.id === 'literature') return _litCnWalkBeat();
+        return _poetryCnWalkBeat(hist);
+    }
+    // CN-walk chip gate = the UNION of the two code-derived-chip families, so poetry behaviour is
+    // byte-identical (poetic_forms / unseen poetry — poetry family but NOT picker-active — keep
+    // their old AI-pin chip via the ternary's else). NOT a bare _cnMoldFam() check: that would flip
+    // poetic_forms from the model pin to no chip (it's moldReady poetry but _poetryCnWalkBeat
+    // self-gates to null off the anthology picker).
+    function _cnWalkActive() {
+        return _poetryCnPickerActive() || _litCnActive();
+    }
+    // v7.20.23: LIT CN re-entry card — twin of _poetryCnReentryCard, no poem / no @POEM_SELECTED.
+    // Shown on resume (DOM-only, never saved) and on a fresh start that lands mid-walk. Continue
+    // (primary) resumes at the next unfilled section; gap buttons target an empty quotes/effect box
+    // on a filed section; Revisit lists filed sections to deepen one. Returns false when 0 sections
+    // are filed (the blind AI directive reads better than a "0 of 7" card — same rule as poetry).
+    function _litCnReentryCard(ctx) {
+        if (!ctx || !ctx.chatMessages || !ctx.addChatMessage || !ctx.chatTextarea) return false;
+        var fam = _cnMoldFam();
+        var SPINE = fam ? fam.spine : [];
+        if (!SPINE.length) return false;
+        var filled = _litCnFilledSections(); // 1-based indices, spine order
+        if (!filled.length) return false;
+        var title = state.textName || state.text || 'your text';
+        var labelOf = function (num) { return (SPINE[num - 1] && SPINE[num - 1].label) || ('Section ' + num); };
+        var kindLabel = function (k) { return k === 'quotes' ? 'Key quotes' : 'Effect on the reader'; };
+        var silentSend = function (text) {
+            canvasSilentSend = true;
+            ctx.chatTextarea.value = text;
+            (ctx.sendCanvasMessageQueued || ctx.sendCanvasMessage)();
+        };
+        var nextIdx = _litCnFirstUnfilledSection(); // 0 = all filled
+        var allDone = nextIdx === 0;
+        var gaps = _litCnSectionGaps().map(function (fid) {
+            var m = /^cn_section_(\d+)_(quotes|effect)$/.exec(fid);
+            return m ? { num: parseInt(m[1], 10), kind: m[2] } : null;
+        }).filter(Boolean);
+        var gapNote = '';
+        if (gaps.length === 1) gapNote = ' In ' + labelOf(gaps[0].num) + ', your ' + kindLabel(gaps[0].kind) + ' box is still empty.';
+        else if (gaps.length > 1) gapNote = ' A few filed sections still have empty boxes — the quickest marks are there.';
+        var msg = allDone
+            ? 'Welcome back — all ' + SPINE.length + ' sections of “' + title + '” are filed.' + (gapNote || ' Pick a section below to revisit and deepen.')
+            : 'Welcome back — you’ve filed ' + filled.length + ' of ' + SPINE.length + ' sections for “' + title + '”.' + gapNote;
+        ctx.addChatMessage('<p>' + msg + '</p>', 'ai', msg, { suppressActions: true });
+        var bar = el('div', { className: 'swml-quick-actions' });
+        var mainRow, revisitRow;
+        var gapSend = function (g) {
+            bar.remove();
+            silentSend('In my ' + labelOf(g.num) + ' notes on “' + title + '”, the ' + kindLabel(g.kind) + ' box is still empty. Recap my existing ' + labelOf(g.num) + ' note in one line so we’re oriented, then work ONLY on that box. '
+                + (g.kind === 'quotes'
+                    ? 'Suggest 2–3 candidate quotes FROM THE TEXT that best anchor my note, as lettered options (A / B / C) with a one-line reason each — I’ll pick one or more, ask for different ones, or type my own. File my picks to cn_section_' + g.num + '_quotes'
+                    : 'Help me sharpen the reader-effect using the four-fold chain (focus → emotion → thought → action), built from MY ideas — polish my wording, never add a concept I didn’t reach. File to cn_section_' + g.num + '_effect')
+                + ' and we’re done — keep this to one or two exchanges. Do not re-walk the rest of the section.');
+        };
+        revisitRow = function () {
+            bar.innerHTML = '';
+            filled.forEach(function (num) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✎ ' + labelOf(num),
+                    onClick: function () {
+                        bar.remove();
+                        silentSend('I’d like to revisit my ' + labelOf(num) + ' notes on “' + title + '”. Recap my current note in one or two lines, then ask what SPECIFICALLY I want to strengthen — offer 2–3 lettered options drawn from my note plus a final option “Happy with it — move on”. Go deep ONLY on what I choose. If the note is already strong, say so honestly and recommend moving on — my time is limited. Re-file when I’m happy; never discard what’s there.');
+                    } }));
+            });
+            bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '↩ Back',
+                onClick: function () { mainRow(); } }));
+        };
+        mainRow = function () {
+            bar.innerHTML = '';
+            if (!allDone) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '▶ Continue — next: ' + labelOf(nextIdx),
+                    onClick: function () {
+                        bar.remove();
+                        silentSend('I’m continuing my Conceptual Notes on “' + title + '” — some sections are already filed in my document. Pick up the walk at the ' + labelOf(nextIdx) + ' section (do not re-ask sections that are already filed).');
+                    } }));
+            }
+            gaps.slice(0, 3).forEach(function (g) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✎ ' + labelOf(g.num) + ' — add ' + kindLabel(g.kind),
+                    onClick: function () { gapSend(g); } }));
+            });
+            bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✎ Revisit a filed section',
+                onClick: function () { revisitRow(); } }));
+        };
+        mainRow();
+        _poetryCnAppendBar(ctx, bar);
+        console.log('[WML lit-CN] re-entry card →', filled.length, 'filed,', gaps.length, 'gap(s), next:', nextIdx || '(all filed)');
+        return true;
+    }
+    // v7.20.23: LIT CN start path — CN-LAW: ALWAYS produce a turn. Re-entry card when sections are
+    // already filed (mid-walk resume / all-done revisit); otherwise an AI-led directive at the first
+    // unfilled section (lit has no opener cards — openers:null → AI-Socratic deep walk). No picker,
+    // no @POEM_SELECTED.
+    function _litCnStart(ctx) {
+        try {
+            var rendered = false;
+            try { rendered = _litCnReentryCard(ctx); } catch (_) { rendered = false; }
+            if (rendered) return;
+            var fam = _cnMoldFam();
+            var SPINE = fam ? fam.spine : [];
+            var nextIdx = _litCnFirstUnfilledSection();
+            var title = state.textName || state.text || 'your text';
+            var label = (nextIdx && SPINE[nextIdx - 1]) ? SPINE[nextIdx - 1].label : (SPINE[0] ? SPINE[0].label : 'Protagonist');
+            var dir = nextIdx
+                ? 'Let’s build my Conceptual Notes on “' + title + '”. Start at the ' + label + ' section'
+                    + (nextIdx > 1 ? ' (some sections are already filed — don’t re-ask those)' : '') + '.'
+                : 'All ' + SPINE.length + ' sections of “' + title + '” are already filed — I’d like to review and refine my notes. Ask me which section I want to revisit.';
+            canvasSilentSend = true;
+            ctx.chatTextarea.value = dir;
+            (ctx.sendCanvasMessageQueued || ctx.sendCanvasMessage)();
+            console.log('[WML lit-CN] start → AI-led turn at section:', nextIdx || '(all filed)');
+        } catch (e) { console.warn('[WML lit-CN] start failed', e); }
+    }
 
     function _poetryCnOpenerPending(hist) {
         try {
@@ -9386,6 +9526,11 @@
                         // poem is active → the picker opens from the top. Do NOT silent-send the AI.
                         state.currentPoemId = '';
                         setTimeout(() => { _renderPoetryCnPicker({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }, { intro: true }); }, 200);
+                        } else if (_litCnActive()) {
+                        // v7.20.23: lit CN chat-clear → code-owned start (re-entry card from the doc's
+                        // filed sections, else AI-led directive). The doc survives a chat clear, so the
+                        // walk resumes where the notes are. Do NOT silent-send blindly.
+                        setTimeout(() => { _litCnStart({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessage, sendCanvasMessageQueued }); }, 200);
                         } else if (isExamPrep) {
                         // v7.15.9: Exam prep exercises get a fresh protocol-driven start, not the generic assessment greeting
                         setTimeout(() => {
@@ -10232,7 +10377,7 @@
                     // walk tasks parse the AI pin. Stored on history so a refresh replay re-renders it
                     // (v911). Marking family excluded via _taskModelChipOk (sidebar-authoritative).
                     const _walkBeat = _taskModelChipOk()
-                        ? (_poetryCnPickerActive() ? _poetryCnWalkBeat(canvasChatHistory) : (WML.parseProgressBeat ? WML.parseProgressBeat(res.reply) : null))
+                        ? (_cnWalkActive() ? _cnWalkBeat(canvasChatHistory) : (WML.parseProgressBeat ? WML.parseProgressBeat(res.reply) : null))
                         : null;
                     if (_walkBeat) formatted = _beatChipBlock(_walkBeat) + formatted;
                     addChatMessage(formatted, 'ai', cleanReply);
@@ -16968,7 +17113,7 @@
                     // (they leaked — only the live path stripped them).
                     let _lastAiIdx = -1;
                     savedChat.history.forEach((m, i) => { if (m.role === 'assistant' && !m.hidden) _lastAiIdx = i; });
-                    const _cnReplayBeat = _poetryCnPickerActive() ? _poetryCnWalkBeat(savedChat.history) : null;
+                    const _cnReplayBeat = _cnWalkActive() ? _cnWalkBeat(savedChat.history) : null;
                     savedChat.history.forEach((msg, _i) => {
                         // v7.15.5: Skip rendering hidden context messages
                         if (msg.hidden) {
@@ -17026,6 +17171,10 @@
                         // v7.19.995: active poem resumed mid-element — if its opener was never
                         // answered (refresh before submit), re-render it (DOM-only, never saved).
                         setTimeout(() => { _maybePoetryCnOpener(tp, tp.canvasChatHistory); }, 400);
+                    } else if (_litCnActive()) {
+                        // v7.20.23: lit CN resume — re-emit the DOM-only re-entry card (Continue at
+                        // next unfilled / gap boxes / Revisit). Never saved to history, so re-render.
+                        setTimeout(() => { _litCnReentryCard(tp); }, 400);
                     }
 
                     // v7.17.59: Hoisted greeting regen + grade buttons UP — was
@@ -17425,6 +17574,11 @@
                     // (no AI opening turn). Replaces the LLM welcome + poem list Neil flagged as
                     // laggy. Poem click sets currentPoemId + silent-sends the walk-start directive.
                     setTimeout(() => { _renderPoetryCnPicker(tp, { intro: true }); }, 400);
+                } else if (_litCnActive() && !state.reviewMode) {
+                    // v7.20.23: literature Conceptual Notes — code-owned start (CN-LAW: always a turn).
+                    // Re-entry card if sections are already filed, else AI-led directive at the first
+                    // unfilled section. No picker (single text), no @POEM_SELECTED.
+                    setTimeout(() => { _litCnStart(tp); }, 400);
                 } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
                     // v7.17.71: ROLLBACK of v7.17.70 _isQuizResume gate. Original always-send
@@ -19144,7 +19298,7 @@
                                     let formatted = formatAI(cleanReply);
                                     // v7.19.987/989: walk beat-chip — CN code-derived, else parse pin (twin of pipeline 1).
                                     const _walkBeat = _taskModelChipOk()
-                                        ? (_poetryCnPickerActive() ? _poetryCnWalkBeat(canvasChatHistory) : (WML.parseProgressBeat ? WML.parseProgressBeat(res.reply) : null))
+                                        ? (_cnWalkActive() ? _cnWalkBeat(canvasChatHistory) : (WML.parseProgressBeat ? WML.parseProgressBeat(res.reply) : null))
                                         : null;
                                     if (_walkBeat) formatted = _beatChipBlock(_walkBeat) + formatted;
                                     addChatMessage(formatted, 'ai', cleanReply);
@@ -19504,7 +19658,7 @@
                                             // strip raw pin/bar on replay (twin of pipeline 1 — see there).
                                             let _lastAiIdx2 = -1;
                                             savedChat.history.forEach((m, i) => { if (m.role === 'assistant' && !m.hidden) _lastAiIdx2 = i; });
-                                            const _cnReplayBeat2 = _poetryCnPickerActive() ? _poetryCnWalkBeat(savedChat.history) : null;
+                                            const _cnReplayBeat2 = _cnWalkActive() ? _cnWalkBeat(savedChat.history) : null;
                                             savedChat.history.forEach((msg, _i) => {
                                                 // v7.15.5: Skip rendering hidden context messages (still kept in history for AI)
                                                 if (msg.hidden) {
@@ -19548,6 +19702,9 @@
                                             } else if (_poetryCnPickerActive()) {
                                                 // v7.19.995 (twin): unanswered element opener re-renders on resume.
                                                 setTimeout(() => { _maybePoetryCnOpener({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessage, sendCanvasMessageQueued }, canvasChatHistory); }, 400);
+                                            } else if (_litCnActive()) {
+                                                // v7.20.23 (twin): lit CN resume — re-emit the DOM-only re-entry card.
+                                                setTimeout(() => { _litCnReentryCard({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessage, sendCanvasMessageQueued }); }, 400);
                                             }
 
                                             // v7.14.44: Re-add grade quick action buttons if chat only has the greeting
@@ -19586,6 +19743,9 @@
                                             // poem picker (no AI opening turn). Twin of the pipeline-A boot
                                             // branch; must precede isExamPrep (conceptual_notes ∈ EXAM_PREP_TASKS).
                                             setTimeout(() => { _renderPoetryCnPicker({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessageQueued }, { intro: true }); }, 400);
+                                        } else if (_litCnActive()) {
+                                            // v7.20.23 (twin): literature CN — code-owned start (CN-LAW: always a turn).
+                                            setTimeout(() => { _litCnStart({ chatMessages, addChatMessage, chatTextarea, sendCanvasMessage, sendCanvasMessageQueued }); }, 400);
                                         } else if (isExamPrep) {
                                             // v7.15.8: Mode selection for essay_plan / model_answer when no mode pre-set
                                             const needsModeSelect = !state.planningMode && (state.task === 'essay_plan' || state.task === 'model_answer');

@@ -838,7 +838,10 @@ window.WML = (function() {
             id: 'literature', prefix: 'lit', spine: LIT_CN_SPINE,
             craft: ['protagonist', 'plot', 'genre', 'themes'],
             depth: 'deep', roster: 'single', openers: null,
-            moldReady: false, // flips in Part B step 2 (Macbeth template + carry-heal)
+            // v7.20.23: card-mold ported to lit's single-text cn_section_N shape (chip dispatcher,
+            // start/resume/clear re-entry cards). Poetry heals stay off lit (isPoetryCnDoc-gated);
+            // payload currentPoemId/donePoemIds no-op on lit (lit_ regex ≠ cn_section_N fields).
+            moldReady: true,
         },
         nonfiction: {
             id: 'nonfiction', prefix: 'nf', spine: NONFICTION_CN_SPINE,
