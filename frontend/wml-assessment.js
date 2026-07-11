@@ -7397,18 +7397,20 @@
             return gaps;
         } catch (e) { console.warn('[WML lit-CN] section-gaps failed', e); return []; }
     }
-    // v7.20.23: LIT CN chip — twin of _poetryCnWalkBeat, keyed on cn_section_N (no poem, single
-    // text). step = filled-count + 1 (cap n) — the lit walk runs the fixed spine IN ORDER
-    // (AI-led, openers:null), so filled is contiguous and step == first-unfilled index; heading
-    // = spine[step-1].label; top-liner = the text title. CODE-DERIVED (doc scan), never a pin.
+    // v7.20.23/24: LIT CN chip — twin of _poetryCnWalkBeat, keyed on cn_section_N (no poem, single
+    // text). step = FIRST-UNFILLED section index, NOT filled-count+1: the FQ→CN autofill (A1) fills
+    // sections NON-contiguously (protagonist/plot/themes/message = §1,3,5,7; context/genre/purpose
+    // left empty), so filled-count+1 would point the heading at an already-filled section. First-
+    // unfilled names the section actually being built next; heading = spine[step-1].label; top-liner
+    // = text title; all-filled → last section. CODE-DERIVED (doc scan), never a pin.
     function _litCnWalkBeat() {
         try {
             if (!_litCnActive()) return null;
             var fam = _cnMoldFam();
             if (!fam || !fam.spine || !fam.spine.length) return null;
             var SPINE = fam.spine;
-            var filled = _litCnFilledSections().length;
-            var step = Math.min(filled + 1, SPINE.length);
+            var nextIdx = _litCnFirstUnfilledSection(); // 1-based; 0 = all filled
+            var step = nextIdx || SPINE.length;
             var title = '';
             try { title = state.textName || state.text || ''; } catch (_) {}
             return {
