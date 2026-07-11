@@ -150,11 +150,16 @@ class SWML_Quiz_Bank {
      * four-fold reader-effect box `_effect` sits on the Themes craft element).
      */
     public static function concept_field_for_dim($dim) {
+        // v7.20.x: EFFECTS = the genre-driven emotional response → the "Genre & Emotion"
+        // section (cn_section_4), NOT the Themes effect box. The FQ tests the general/genre
+        // effect (tragedy → pity & fear); the theme-specific effect box (cn_section_5_effect)
+        // is filled later, during the CN protocol, when the student is asked about the effect
+        // OF a theme. (Neil 2026-07-11; FQ-QUESTION-STANDARD.md.)
         $map = [
             'protagonist' => 'cn_section_1',
             'plot'        => 'cn_section_3',
             'themes'      => 'cn_section_5',
-            'effects'     => 'cn_section_5_effect',
+            'effects'     => 'cn_section_4',
             'message'     => 'cn_section_7',
         ];
         return $map[strtolower(trim((string) $dim))] ?? '';

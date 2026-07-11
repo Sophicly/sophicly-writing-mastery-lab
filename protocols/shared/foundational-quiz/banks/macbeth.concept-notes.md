@@ -7,7 +7,7 @@ answers an aspect's question correctly (per-answer) and completes the full set o
 dimensions and the lit CN doc fields via `concept_field_for_dim()`:
 
   Protagonist → `cn_section_1` · Plot → `cn_section_3` · Themes → `cn_section_5` ·
-  Effects → `cn_section_5_effect` · Message → `cn_section_7`
+  Effects → `cn_section_4` (Genre & Emotion) · Message → `cn_section_7`
 
 Knowledge-organiser depth — one strong line per aspect (the standard Neil approved 2026-07-11), the
 same richness as the poetry `poetic_forms.concept-notes.md` slots. The student BUILDS ON these in the
@@ -27,7 +27,7 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 - **Note:** The central themes are unchecked ambition that "o'erleaps itself" and destroys, the corrosive and inescapable guilt that follows (bloodstains that will not wash, murdered sleep), the tension between fate and free will, and the disruption then restoration of the God-ordained natural order.
 
 ### Effects
-- **Note:** Shakespeare's blood imagery, soliloquy and equivocation place the audience inside Macbeth's guilt and dread — recurring blood that "will not wash clean" brands guilt as permanent, while the witches' chanting, equivocating rhyme unsettles us with a world where "fair is foul".
+- **Note:** Macbeth is a tragedy, and its emotional effect is pity and fear: we pity a man of real greatness who destroys himself through his own fatal error — his ruin feels like a terrible waste — and we fear because he is recognisably "like us", so his fall warns that unchecked ambition could undo anyone. The horror of the blood and the murdered sleep serve that arc, and the restoration of order at the close leaves us moved rather than merely satisfied.
 
 ### Message
 - **Note:** The play warns that ambition pursued without moral restraint corrupts absolutely and destroys the self — regicide unleashes chaos on both conscience and kingdom — yet the return of rightful rule affirms that the moral and natural order ultimately reasserts itself.
