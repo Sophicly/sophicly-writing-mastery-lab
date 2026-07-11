@@ -29,6 +29,22 @@
     padding-left: 10px;
     font-size: 0.9em;
 }
+/* v7.20.25 (Neil): a 3-box concept section (notes + quotes + EFFECT) STACKS as rows — UNIVERSALLY,
+   in every render. The v7.15.88 notes|quotes flex-row was for 2 boxes; a 3rd box makes 3 cramped
+   columns. CN "stacked" only by accident (collapsible nesting dodges the `> _quotes` direct-child
+   rule); keying the stack on the section's CONTENT (has an _effect box, any depth) makes it
+   deliberate + consistent instead of DOM-nesting-dependent. No-op in CN (already stacked); fixes
+   the FQ view of the shared lit CN doc; every future surface inherits it. Pure CSS — cannot touch
+   the PM NodeView (no freeze risk). */
+.swml-section-plan:has(.swml-input-field[data-field-id$="_effect"]) {
+    display: block;
+}
+.swml-section-plan:has(.swml-input-field[data-field-id$="_effect"]) > .swml-input-field[data-field-id$="_quotes"] {
+    border-left: none;
+    padding-left: 0;
+    font-size: 1em;
+    min-width: 0;
+}
 @media (max-width: 720px) {
     .swml-section-plan:has(> .swml-input-field[data-field-id$="_quotes"]) {
         flex-direction: column;
@@ -12016,6 +12032,13 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
 .swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(30,32,40,0.75)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E");
+    /* v7.20.25 (Neil): re-assert no-repeat/size/position — the light signoff/badge rules use a
+       `background:` SHORTHAND that resets background-repeat→repeat at higher specificity than the
+       base lock rule, so the 15px lock TILED across the label in light theme (dark was immune —
+       its chip rule ties the base spec, so base no-repeat won). Same values as the base rule. */
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+    background-position: 7px center;
 }
 [data-swml-theme="light"] .swml-outline-input.swml-outline-locked::after,
 .swml-canvas-light .swml-outline-input.swml-outline-locked::after {
