@@ -7326,6 +7326,78 @@
             return '';
         } catch (e) { console.warn('[WML poetry-CN] first-unfilled failed', e); return ''; }
     }
+
+    // ── v7.20.22: LITERATURE CN card-mold twins ─────────────────────────────────
+    // Literature CN is ONE text with 7 fixed sections (cn_section_1..7 ↔ LIT_CN_SPINE), NO poem
+    // picker, NO per-item id. The poetry _poetryCn* derivations key on {prefix}_{poemId}_{slug}
+    // (cnFieldRe) — a shape a lit doc never contains — so lit needs its own scans keyed on the
+    // cn_section_N index map. Same canonical-scan discipline; doc-derived, never a counter.
+    // (Port spec: wml-CHATC-lit-cn-card-mold-build-2026-07-11.md.)
+    function _litCnActive() {
+        var fam = _cnMoldFam();
+        return !!(fam && fam.id === 'literature' && state.task === 'conceptual_notes');
+    }
+    // Filled section INDICES (1-based, spine order) whose cn_section_N NOTE field is non-empty.
+    function _litCnFilledSections() {
+        try {
+            if (!canvasEditor) return [];
+            var fam = _cnMoldFam();
+            var n = fam && fam.spine ? fam.spine.length : 7;
+            var seen = {};
+            canvasEditor.state.doc.descendants(function (node) {
+                if (node.type && node.type.name === 'inputField' && node.attrs && node.attrs.fieldId) {
+                    var m = /^cn_section_(\d+)$/.exec(String(node.attrs.fieldId));
+                    if (m && (node.textContent || '').trim().length > 0) seen[parseInt(m[1], 10)] = true;
+                }
+            });
+            var out = [];
+            for (var i = 1; i <= n; i++) if (seen[i]) out.push(i);
+            return out;
+        } catch (e) { console.warn('[WML lit-CN] filled-sections failed', e); return []; }
+    }
+    // First unfilled section index (1-based) in spine order; 0 = all filled.
+    function _litCnFirstUnfilledSection() {
+        try {
+            var fam = _cnMoldFam();
+            var n = fam && fam.spine ? fam.spine.length : 7;
+            var filled = _litCnFilledSections();
+            for (var i = 1; i <= n; i++) if (filled.indexOf(i) === -1) return i;
+            return 0;
+        } catch (e) { console.warn('[WML lit-CN] first-unfilled failed', e); return 0; }
+    }
+    // Done = every section NOTE field non-empty (quotes/effect optional).
+    function _litCnDone() {
+        var fam = _cnMoldFam();
+        var n = fam && fam.spine ? fam.spine.length : 7;
+        return n > 0 && _litCnFilledSections().length >= n;
+    }
+    // Empty companion boxes (_quotes / craft _effect) on FILLED sections — the gap-targeting source.
+    // Craft sections carry an effect box: cn_section_{1,3,4,5} (LIT_CRAFT_IDX {0,2,3,4} + 1).
+    function _litCnSectionGaps() {
+        try {
+            if (!canvasEditor) return [];
+            var present = {}, filledNote = {};
+            canvasEditor.state.doc.descendants(function (node) {
+                if (!(node.type && node.type.name === 'inputField' && node.attrs && node.attrs.fieldId)) return;
+                var fid = String(node.attrs.fieldId);
+                present[fid] = (node.textContent || '').trim().length > 0;
+                var mn = /^cn_section_(\d+)$/.exec(fid);
+                if (mn && present[fid]) filledNote[parseInt(mn[1], 10)] = true;
+            });
+            var CRAFT = { 1: true, 3: true, 4: true, 5: true };
+            var gaps = [];
+            Object.keys(filledNote).forEach(function (nStr) {
+                var num = parseInt(nStr, 10);
+                var boxes = CRAFT[num] ? ['_quotes', '_effect'] : ['_quotes'];
+                boxes.forEach(function (suf) {
+                    var fid = 'cn_section_' + num + suf;
+                    if (present[fid] === false) gaps.push(fid); // exists but empty
+                });
+            });
+            return gaps;
+        } catch (e) { console.warn('[WML lit-CN] section-gaps failed', e); return []; }
+    }
+
     function _poetryCnOpenerPending(hist) {
         try {
             if (!_poetryCnPickerActive()) return null;
