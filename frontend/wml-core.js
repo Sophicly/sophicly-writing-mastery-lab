@@ -1790,8 +1790,17 @@ window.WML = (function() {
         }
         // v7.19.971: per-poem CN lessons (e.g. EDEN ROCK) carry their own bridge topic —
         // pin poetry CN to the Topic-2 slot so every consumer opens the ONE anthology doc.
-        // Poetry only (scope guard): novel/drama CN lessons keep their bridged topic.
-        if (state.task === 'conceptual_notes' && isPoetryAnthologyDoc()) {
+        // v7.20.19 (A0, lit FQ↔CN parity): the SAME pin for literature CN. Lit FQ pins its
+        // doc key to topic 2 (canvasTopicPin), but lit CN rode state.topicNumber — so an
+        // odd bridge topic silently forked the FQ doc from the CN doc. All CN is topic 2
+        // (CLAUDE.md terminology: literature CN = Topic 2 always); poetry was singled out
+        // ONLY for its per-poem bridge topics, and literature has the same "always topic 2"
+        // truth — so pin every CN except the not-yet-ported nonfiction/prose families.
+        // No-op for existing lit docs (already topic 2 ⇒ zero re-key). Non-recursive gate:
+        // isNonfictionSubject/isPoetryAnthologyDoc never call canvasDocScope (cnFamily()
+        // WOULD recurse here via isPoetryCnDoc, so it is deliberately NOT used).
+        if (state.task === 'conceptual_notes' &&
+            (isPoetryAnthologyDoc() || (!isNonfictionSubject() && state.subject !== 'prose_anthology'))) {
             scope.topic = 2;
         }
         return scope;
