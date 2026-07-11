@@ -1,165 +1,205 @@
 # Foundational Quiz Bank — DNA (Dennis Kelly)
 
-Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions, mixed categories (Context-weighted) + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+Deterministic, code-scored foundational bank (parsed by `SWML_Quiz_Bank`).
+**20 questions — 4 variations of each of the 5 aspects.** The picker serves ONE random question per
+aspect = a light **5-question round** (`fq_dim_stratified`); depth comes from mastery REPETITION drawing
+a fresh variation per aspect each round, not from round length (3–5 is the low-stakes retrieval sweet
+spot). Keys + feedback live server-side and are stripped before questions reach the client.
 
-Categories: Context · Themes · Techniques · Characters & Plot
-Types: MCQ · Fill · True-False · Select All
+**Concept-based (v7.20.x — governed by `FQ-QUESTION-STANDARD.md`).** Every item tests the CENTRAL
+CONCEPT of its aspect, not surface trivia (research: `research/2026-07-11-concept-based-fq-question-design.md`).
+Distractors are plausible CONCEPTUAL MISREADINGS a real student holds, so the student must reason to the
+answer. *DNA* is a **social-realist morality play** → the `effects` aspect tests the audience's **moral
+discomfort and complicity** — collective guilt and pathos for the innocent — not the naming of techniques.
+
+Aspects (`@dim` → Conceptual-Notes field via `concept_field_for_dim`):
+Protagonist → `cn_section_1` · Plot → `cn_section_3` · Themes → `cn_section_5` ·
+Effects → `cn_section_4` (Genre & Emotion) · Message → `cn_section_7`. A correct answer autofills that
+aspect's pre-authored note (`dna.concept-notes.md`) into the CN doc; mastery completes all five.
 
 ### Quiz: DNA
 
-1. **Type: MCQ [Tests Context]**
-   * **Question:** *DNA* was written by which contemporary British playwright?
-   * **Options:** A) Dennis Kelly, B) Willy Russell, C) J. B. Priestley, D) Simon Stephens
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. *DNA* is the work of Dennis Kelly, a contemporary British dramatist known for writing about young people under moral pressure.
-   * **Why B:** Willy Russell wrote *Blood Brothers*, not *DNA*.
-   * **Why C:** J. B. Priestley wrote *An Inspector Calls*, an earlier and very different play.
-   * **Why D:** Simon Stephens is a modern playwright too, but *DNA* is Kelly's, not his.
-
-2. **Type: MCQ [Tests Context]**
-   * **Question:** *DNA* was first staged as part of which initiative?
-   * **Options:** A) A West End musical revival, B) The National Theatre's Connections programme for young performers, C) A Shakespeare festival, D) A long-running television drama series
+1. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which best captures how Phil *changes* across the play — and what drives the change?
+   * **Options:** A) He is a cold mastermind from the first scene and never really changes, B) He begins a silent, detached teenager idly eating while others panic, and becomes the ruthless architect of a cover-up and a killing — driven by his own choice to protect the group at any moral cost, C) He stays a harmless, passive boy throughout and is simply swept along, D) He is forced by the group to take charge and has no real say in what he does
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Kelly wrote *DNA* for the National Theatre's Connections programme, which commissions new plays for young people to perform, and it was first staged in the late 2000s.
-   * **Why A:** *DNA* is a spoken play, not a musical revival.
-   * **Why C:** It is a brand-new contemporary work, not part of a Shakespeare festival.
-   * **Why D:** It was written for the stage and for young performers, not as a television series.
+   * **Feedback:** ✓ Correct. The disturbance is the *change*: Phil's detachment hardens into calculated ruthlessness — and the engine is his own decision to prioritise the group's safety over conscience, not chance or coercion.
+   * **Why A:** He seems harmless and passive at first — quietly eating, saying little; the drama lies in how far that curdles, not in fixed villainy.
+   * **Why C:** He does not stay passive — he actively masterminds the framing of an innocent man and the killing of Adam; reading him as merely swept along erases his agency.
+   * **Why D:** No one forces him — the others defer to *his* calm decisions; removing his choice turns the moral engine of the play into a puppet.
 
-3. **Type: MCQ [Tests Context]**
-   * **Question:** How is *DNA* structured?
-   * **Options:** A) As one long continuous act, B) In short scenes that alternate quieter two-person conversations with scenes involving the whole group, C) As a series of letters read aloud, D) In rhyming verse divided into cantos
+2. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** What makes Phil a genuinely unsettling figure rather than simply a cartoon villain?
+   * **Options:** A) He is obviously monstrous from the very first line, B) He is an ordinary, recognisable teenager whose cold *reasoning* — protect the group, whatever it takes — leads step by step to real cruelty, so his calm is what disturbs us, C) He is completely innocent and does nothing wrong, D) He loses his temper and kills in a blind rage
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Kelly builds the play from short scenes, cutting between intimate exchanges — such as Jan and Mark, or Leah and Phil — and the larger group as the crisis unfolds.
-   * **Why A:** The play is deliberately fragmented into many short scenes, not one unbroken act.
-   * **Why C:** The story is dramatised in dialogue and action, not read out as letters.
-   * **Why D:** The dialogue is naturalistic modern speech, not rhyming verse.
+   * **Feedback:** ✓ Correct. What chills us is not a monster but a plausible boy applying a cold logic; his very ordinariness makes the cruelty feel possible in anyone, which is the point of a morality play.
+   * **Why A:** If he were an obvious monster the play would let us off the hook; his ordinariness is exactly what implicates us.
+   * **Why C:** He devises the cover-up and orders Adam's death — he is the opposite of innocent.
+   * **Why D:** His cruelty is calm and calculated, not a rage — the composure is what makes it frightening.
 
-4. **Type: True-False [Tests Context]**
-   * **Question:** *DNA* is a contemporary play, written for and about young people rather than a historical drama.
+3. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which pairing best shows Phil's evolution from beginning to end?
+   * **Options:** A) A loud, panicking ringleader at the start → a silent bystander at the end, B) A quiet, detached teenager eating while others fall apart → the group's cold strategist who calmly engineers a framing and a killing to keep the secret, C) A guilt-ridden confessor at the start → a broken wreck at the end, D) The victim of the prank at the start → its planner at the end
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. He travels from unnerving detachment to unnerving control — the same composure, now turned to organising cruelty. That hardening IS his arc.
+   * **Why A:** He is quiet and detached at the opening, not a loud ringleader; this reverses his actual character.
+   * **Why C:** Phil never breaks or confesses — his refusal to be moved by guilt is precisely what sets him apart (that is Brian's arc, not his).
+   * **Why D:** Adam is the victim; Phil is the planner throughout — this confuses who is who entirely.
+
+4. **Type: True-False [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Phil's descent into orchestrating a cover-up and a killing is driven above all by his own choice — to protect the group whatever the cost — not by the group forcing his hand.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. *DNA* is a modern set text concerned with present-day teenagers, which is part of why it is so widely studied at GCSE.
-   * **WhyWrong:** This is true — *DNA* is a contemporary play centred on young people, not a historical drama.
+   * **Feedback:** ✓ Correct. The others look to Phil and follow; the decisions are his. His agency is what makes his calm so disturbing rather than pitiable — he chooses this path.
+   * **WhyWrong:** The group never forces Phil — they defer to him. Treating him as coerced removes the choice that makes his cold pragmatism the moral engine of the play.
 
-5. **Type: Fill [Tests Context]**
-   * **Question:** *DNA* follows a group of present-day British [BLANK] and the crisis that engulfs them.
-   * **Answer:** teenagers
-   * **Feedback:** ✓ Correct. The characters are ordinary contemporary teenagers, which makes their descent into cover-up and cruelty all the more unsettling.
-   * **WhyWrong:** The word is "teenagers" — Kelly writes about a group of ordinary present-day young people.
-
-6. **Type: Select All [Tests Context]**
-   * **Question:** Which of the following describe the world and context of *DNA*?
-   * **Options:** A) It is set in present-day Britain, B) Its characters are ordinary school-age teenagers, C) It examines how a group behaves after something goes badly wrong, D) It takes place among soldiers during the First World War
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. *DNA* unfolds in contemporary Britain among ordinary teenagers, tracing how the group reacts once a prank turns to disaster.
-   * **Why D:** There are no soldiers and no war setting; the play is rooted in modern everyday life.
-
-7. **Type: MCQ [Tests Themes]**
-   * **Question:** Which concern lies at the heart of *DNA*?
-   * **Options:** A) The simple joys of childhood friendship, B) Collective guilt and the moral consequences of covering up a wrongdoing, C) The rivalry between two wealthy families, D) A detective's hunt for a serial criminal
+5. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Why does the group's presumed killing of Adam *lead to* framing an innocent postman? (What is the causal link?)
+   * **Options:** A) The two things are unconnected events that simply happen in order, B) Believing they have killed Adam, the group — led by Phil — chooses to hide their guilt rather than confess, and a cover-up needs a false suspect, so they plant DNA evidence pointing to someone else, C) A detective orders them to name a suspect, D) They frame the postman at random because they have panicked completely
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The play turns on guilt and responsibility: once the group hides what it has done, each new choice deepens the moral damage.
+   * **Feedback:** ✓ Correct. One act *causes* the next: the decision to conceal, not confess, creates the need for a scapegoat — so concealment necessitates a second, deliberate wrong against an innocent man.
+   * **Why A:** In a morality plot the events follow by cause, not mere sequence — reading them as unconnected misses how one lie compels the next.
+   * **Why C:** No detective directs them; the choice to frame someone is the group's own, flowing from its decision to hide the truth.
+   * **Why D:** The framing is not random — it is a calculated plan devised by Phil to divert blame from the group.
+
+6. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which best describes the *causal chain* of the play — not just the order of events?
+   * **Options:** A) A series of unrelated misfortunes that strike the group by bad luck, B) The bullying escalates → they stone Adam and he falls, presumed dead → they choose cover-up over confession → to sustain the lie they frame an innocent man → when Adam turns up alive he threatens the lie → so the group has him killed, C) A stranger causes each disaster, so nothing is the group's doing, D) Fate alone decides everything, and the group's choices make no difference
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Each stage flows by necessity from the one before, all originating in the choice to conceal rather than own the first wrong. That is the moral arc: one lie forces the next crime.
+   * **Why A:** Their ruin is not random misfortune — it is the logical outworking of a choice to cover up.
+   * **Why C:** There is no outside villain; the harm comes entirely from the group's own decisions.
+   * **Why D:** If choice made no difference there would be no moral weight; the whole arc turns on their decisions.
+
+7. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Why does the discovery that Adam is *alive* lead to his real killing? (What is the causal necessity?)
+   * **Options:** A) Adam attacks the group and they defend themselves, B) Adam's survival threatens to expose the lie the group has built, so — to protect the cover-up — Phil has him killed: the first concealment now demands a genuine murder, C) Adam asks to be killed, D) The postman kills Adam to protect himself
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. This is the play's darkest causal turn: the cover-up has its own logic, and once a living Adam endangers it, protecting the lie requires a real death. Concealing one wrong compels a far greater one.
+   * **Why A:** Adam is confused and harmless when found, living rough — there is no self-defence; the killing is to silence him.
+   * **Why C:** Adam does not seek his death; he is an innocent victim throughout.
+   * **Why D:** The postman is a framed innocent, nowhere near Adam; it is the group, under Phil, who kill him.
+
+8. **Type: True-False [Tests Plot]**
+   @dim:plot
+   * **Question:** In *DNA* the later killing of Adam follows by cause-and-effect from the group's first choice to cover up — it is not just a string of unconnected events.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The plot is built on moral necessity, not mere sequence: each act is *because of* the last, all rooted in the decision to conceal. That causal spine is what makes it a morality play, not a list of happenings.
+   * **WhyWrong:** Reading the events as unconnected ("they just happen next") misses the causal necessity — one concealment forcing the next crime — that is the whole engine of the play.
+
+9. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Which controlling idea lies at the heart of *DNA*, and how does it *work* through the play?
+   * **Options:** A) The simple joys of childhood friendship, B) Collective guilt and the diffusion of responsibility — because blame is shared across the group, no single member feels wholly responsible, so together they sanction what none would do alone, C) The rivalry between two wealthy families, D) A detective's hunt for a serial criminal
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The play's engine is shared responsibility: guilt spread across a group thins to nothing in each person, so the crowd commits — and excuses — cruelty no individual would own.
    * **Why A:** Friendship features, but the play's focus is guilt and moral compromise, not childhood joy.
    * **Why C:** There are no feuding wealthy families; the characters are ordinary teenagers.
-   * **Why D:** No detective drives the plot; the tension comes from the group policing its own secret.
+   * **Why D:** No detective drives the plot; the pressure comes from the group policing its own secret.
 
-8. **Type: MCQ [Tests Themes]**
-   * **Question:** Whose development best shows how shared violence can corrupt a person in *DNA*?
-   * **Options:** A) Cathy, who comes to relish the power and cruelty, B) Jan, who helps narrate but stays unchanged, C) Mark, who refuses to take any part, D) Leah, who feels no guilt at all
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Cathy grows to enjoy the group's power and violence, showing how wrongdoing, once shared, can harden into appetite.
-   * **Why B:** Jan helps open scenes but is not the study of corruption the question asks for.
-   * **Why C:** Mark is drawn into events rather than refusing to take part.
-   * **Why D:** Leah is the character most troubled by guilt, not one who feels none.
+10. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** What does the play's escalating cover-up reveal about its view of wrongdoing?
+   * **Options:** A) That a lie, if told confidently, harmlessly makes a problem disappear, B) That concealing a wrong corrupts progressively — each lie demands a larger one, until covering up a death leads to a real murder, C) That the group feels no consequences of any kind, D) That only the ringleader is ever truly to blame
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Kelly's argument is that concealment is not containment: the first lie sets a logic in motion that keeps demanding worse, dragging ordinary teenagers from a covered-up accident to deliberate killing.
+   * **Why A:** The lie does not make the problem vanish — it multiplies it, which is the whole point.
+   * **Why C:** The group is deeply affected — Brian's breakdown, the moral corrosion — even where outward punishment never comes.
+   * **Why D:** The play spreads responsibility across the whole group; blaming only Phil reproduces the very diffusion of guilt it exposes.
 
-9. **Type: True-False [Tests Themes]**
-   * **Question:** *DNA* explores mob mentality — the way people in a group can act more coldly than they might alone.
+11. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** The contrast between Leah, who agonises aloud, and Phil, who stays coldly silent, dramatises which controlling tension?
+   * **Options:** A) Which of them is the funnier character, B) Conscience versus pragmatic self-interest — whether moral feeling can survive under the pressure of group survival, C) Whether Phil can actually speak, D) Which of them is a better friend
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Leah's restless moral questioning set against Phil's calculating silence stages the play's central tension: conscience against cold self-preservation — and it is pragmatism, not conscience, that steers the group.
+   * **Why A:** The pairing is a moral contrast, not a comic one.
+   * **Why C:** Phil chooses silence as control; there is no suggestion he cannot speak.
+   * **Why D:** The contrast is about conscience versus pragmatism, not friendship.
+
+12. **Type: True-False [Tests Themes]**
+   @dim:themes
+   * **Question:** *DNA* explores mob mentality — the unsettling idea that shared guilt can bind a group *more* tightly, so its cohesion grows even as its actions worsen.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Kelly shows the group sanctioning choices no single member might make alone, exposing how collective pressure erodes individual conscience.
-   * **WhyWrong:** This is true — the play is centrally concerned with how a group's shared pressure changes how its members behave.
+   * **Feedback:** ✓ Correct. Kelly's disturbing suggestion is that a shared secret draws the group closer rather than breaking it apart — the guilt that should divide them instead knits them into complicity.
+   * **WhyWrong:** This is true — the play shows the group's cohesion *increasing* under shared guilt, exposing how collective pressure erodes individual conscience.
 
-10. **Type: Fill [Tests Themes]**
-    * **Question:** As the teenagers guard their shared secret, the group grows more tightly bound; their shared guilt paradoxically increases the group's [BLANK].
-    * **Answer:** cohesion
-    * **Feedback:** ✓ Correct. Kelly's unsettling suggestion is that shared wrongdoing can bind a group together, so its cohesion grows even as its actions worsen.
-    * **WhyWrong:** The word is "cohesion" — the shared secret draws the group closer rather than breaking it apart.
+13. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** *DNA* is a social-realist morality play. Why do we feel *moral discomfort*, rather than simple thrill, as the group covers up what they have done?
+   * **Options:** A) Because the crime is exciting and we enjoy watching them get away with it, B) Because they are ordinary teenagers "like us", so their easy slide into concealment implicates us — we are left asking whether we would have done the same, C) Because the fragmented dialogue is unusual, D) Because a detective might catch them at any moment
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Morality drama makes us *complicit*: because these are recognisable ordinary teenagers, their choices feel disturbingly possible in us, and that self-implication is the discomfort the play is built to produce.
+   * **Why A:** The play denies us the thrill of a caper — the emotion is unease, not enjoyment; feeling entertained misreads the genre.
+   * **Why C:** Naming the fragmented dialogue names a *technique*, not the *feeling* it creates — the effect is our moral unease, not a device.
+   * **Why D:** The tension is moral, not a whodunnit suspense; there is no detective closing in.
 
-11. **Type: MCQ [Tests Techniques]**
-    * **Question:** What is the main effect of pairing Leah's constant talking with Phil's near-total silence?
-    * **Options:** A) It shows the two characters are close, trusting friends, B) The contrast sharpens the power imbalance — Phil quietly controls events while Leah fills the silence and is largely ignored, C) It suggests Leah is the group's real leader, D) It proves that Phil is unable to speak
-    * **Correct:** B
-    * **Feedback:** ✓ Correct. Leah's anxious, unbroken speech set against Phil's cold silence dramatises who really holds power: the one who says least directs the most.
-    * **Why A:** The pairing exposes distance and imbalance, not easy friendship.
-    * **Why C:** It is Phil, not Leah, whose quiet decisions steer the group.
-    * **Why D:** Phil chooses silence as a form of control; there is no suggestion he cannot speak.
+14. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** A morality play such as *DNA* is designed to leave the audience feeling — above all — what?
+   * **Options:** A) Amused and entertained, B) Morally uncomfortable and complicit — disquieted at how easily ordinary people excuse cruelty, C) Triumphant that the group succeeds, D) Bored and detached
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The intended response is unease that implicates us — collective guilt made to feel personal — not amusement or triumph; a morality drama that merely entertained would fail its purpose.
+   * **Why A:** Amusement belongs to comedy; *DNA*'s discomfort is the opposite of light entertainment.
+   * **Why C:** We are not meant to cheer the cover-up — their "success" is exactly what unsettles us.
+   * **Why D:** Detachment is the mark of a *failed* effect; the play works precisely by refusing to let us stay detached.
 
-12. **Type: True-False [Tests Techniques]**
-    * **Question:** Kelly writes much of *DNA* in short, clipped, fragmented dialogue that imitates the rhythms of real teenage speech.
-    * **Answer:** True
-    * **Feedback:** ✓ Correct. The broken, overlapping, naturalistic dialogue gives the play its restless, believable teenage voice and its mounting tension.
-    * **WhyWrong:** This is true — the clipped, fragmented style deliberately echoes how teenagers actually speak.
+15. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Why do we feel *pathos* — a pang of pity — for Adam and for the framed postman?
+   * **Options:** A) Because they are the story's villains getting what they deserve, B) Because they are wholly innocent people destroyed so that a guilty group can protect itself — their suffering exposes the human cost of the cover-up, C) Because we find their misfortune darkly funny, D) Because the play uses a recurring motif of eating
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Pathos here comes from undeserved suffering: two innocents are sacrificed to the group's self-preservation, and their ruin is where the play's moral cost becomes unbearably visible.
+   * **Why A:** They are innocent victims, not villains — reading them as deserving inverts the play's moral weight.
+   * **Why C:** Their suffering is not comic; treating it as amusing misreads the genre's discomfort as delight.
+   * **Why D:** The motif of eating is a *technique*; the question asks for the *feeling* — pity for the innocent, not the naming of a device.
 
-13. **Type: Fill [Tests Techniques]**
-    * **Question:** Phil's habit of continually eating while others panic is a recurring [BLANK] that underlines his unnerving detachment.
-    * **Answer:** motif
-    * **Feedback:** ✓ Correct. Phil's steady eating recurs as a motif throughout the play, a small physical detail that makes his cold composure all the more chilling.
-    * **WhyWrong:** The word is "motif" — the repeated image of Phil eating that signals his detachment.
+16. **Type: True-False [Tests Effects]**
+   @dim:effects
+   * **Question:** By the close of the play we are meant to feel morally uneasy and implicated — pity for the innocent who suffer and disquiet at how ordinary the group's cruelty is — rather than entertained or satisfied.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. That uneasy, self-implicating feeling — pathos for the victims and disquiet at complicity — is the emotional effect a morality play is built to produce; it leaves us troubled, not comforted.
+   * **WhyWrong:** The intended effect is moral discomfort and pathos, not amusement or triumph; the play deliberately refuses the satisfaction of a tidy, comforting ending.
 
-14. **Type: Select All [Tests Techniques]**
-    * **Question:** Which dramatic techniques does Kelly use in *DNA*?
-    * **Options:** A) Fragmented, naturalistic dialogue, B) The recurring image of Phil eating while directing events, C) Framing two-person scenes — such as Jan and Mark — around the group scenes, D) Rhyming iambic pentameter used throughout
-    * **Correct:** A, B, C
-    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. Kelly relies on broken naturalistic dialogue, the motif of Phil eating, and recurring two-person scenes that frame the group's story.
-    * **Why D:** The dialogue is modern everyday speech, not rhyming iambic pentameter.
+17. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What is the play's overall *message* about how people behave in groups?
+   * **Options:** A) That groups always bring out the best in people, B) That when responsibility is shared, ordinary people will commit and excuse cruelty no individual would own alone — conscience dissolves in the crowd, C) That one wicked leader is always solely to blame, D) That guilt has no real effect on anyone
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Kelly's enduring "so what" is that the group is where responsibility evaporates: spread thin across many, guilt stops restraining anyone, and ordinary teenagers slide into terrible acts they each disown.
+   * **Why A:** The play shows the opposite — the group licenses cruelty, not virtue.
+   * **Why C:** Blaming one leader recreates the diffusion of guilt the play critiques; the message spreads responsibility across the group.
+   * **Why D:** Guilt corrodes from within — Brian's breakdown shows it — even where external punishment never comes.
 
-15. **Type: MCQ [Tests Characters & Plot]**
-    * **Question:** What sets the plot of *DNA* in motion?
-    * **Options:** A) A teacher discovers the group cheating, B) The group's bullying of Adam goes too far and, after they throw stones at him, he falls down a hole and is presumed dead, C) A stranger threatens the group, D) The teenagers win a large sum of money
-    * **Correct:** B
-    * **Feedback:** ✓ Correct. A cruel prank escalates: the group torments Adam, throws stones, and he falls down a hole, leaving them believing they have killed him.
-    * **Why A:** No teacher exposes them; the crisis is entirely of the group's own making.
-    * **Why C:** The danger comes from the group's own actions, not from an outside threat.
-    * **Why D:** There is no windfall; the trigger is violence that goes disastrously wrong.
+18. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What does *DNA* suggest about the nature of evil and ordinary people?
+   * **Options:** A) That cruelty is committed only by obvious monsters, quite unlike us, B) That terrible harm needs no monster — ordinary, unremarkable people, under group pressure and cold self-justification, are fully capable of it, C) That children are always innocent and never do real harm, D) That evil is always punished swiftly and completely
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The play's lasting warning is that evil is ordinary: no monsters here, just recognisable teenagers whose reasoning and group pressure carry them to framing and killing — which is far more disturbing than a villain would be.
+   * **Why A:** The whole force of the play is that these are ordinary people, not monsters — that is what implicates us.
+   * **Why C:** The teenagers do grievous harm; the message dismantles the comfort of assumed innocence.
+   * **Why D:** Justice is bleakly incomplete — an innocent man is framed and the group is not exposed; the ending refuses clean punishment.
 
-16. **Type: MCQ [Tests Characters & Plot]**
-    * **Question:** Which character coldly devises the plan to cover up what has happened?
-    * **Options:** A) Leah, who agonises aloud over events, B) Brian, who is fragile and easily led, C) Phil, who stays silent and keeps eating while directing the others, D) Adam, the victim of the prank
-    * **Correct:** C
-    * **Feedback:** ✓ Correct. It is Phil who calmly masterminds the cover-up, issuing instructions with chilling detachment while he continues to eat.
-    * **Why A:** Leah talks constantly and agonises over events, but she does not plan the cover-up.
-    * **Why B:** Brian is fragile and easily led rather than the group's strategist.
-    * **Why D:** Adam is the victim of the prank, not the planner of the cover-up.
+19. **Type: True-False [Tests Message]**
+   @dim:message
+   * **Question:** One of the play's lasting messages is that ordinary people, under the pressure of a group and the logic of self-protection, are capable of terrible cruelty — evil need not be monstrous to be real.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. *DNA* insists that the capacity for cruelty is ordinary: recognisable teenagers, protecting themselves and each other, carry out framing and killing — a warning all the more chilling because there is no monster in sight.
+   * **WhyWrong:** The play's message is precisely that ordinary people are capable of great harm; imagining cruelty as the work of monsters alone is the comforting illusion the play dismantles.
 
-17. **Type: MCQ [Tests Characters & Plot]**
-    * **Question:** How does the group try to escape blame — the plan that gives the play its title?
-    * **Options:** A) They confess to the police at once, B) They plant DNA evidence to frame an innocent man for Adam's disappearance, C) They leave the country together, D) They blame the whole thing on a wild animal
-    * **Correct:** B
-    * **Feedback:** ✓ Correct. Following Phil's plan, the group fabricates a suspect and plants DNA evidence so that an innocent man is blamed — the false forensic trail that gives the play its title.
-    * **Why A:** Far from confessing, the group works to hide its guilt.
-    * **Why C:** No one flees abroad; instead they manufacture false evidence.
-    * **Why D:** They frame a real person using planted evidence, not an animal.
-
-18. **Type: MCQ [Tests Characters & Plot]**
-    * **Question:** What complication arises later in the play concerning Adam?
-    * **Options:** A) Adam is found alive but injured and confused, and to protect their lie the group ends up killing him, B) Adam returns unharmed and forgives everyone, C) Adam is never mentioned again, D) Adam turns out simply to have moved abroad
-    * **Correct:** A
-    * **Feedback:** ✓ Correct. Adam has in fact survived the fall, living rough and badly changed; rather than let him expose the truth, the group — led by Phil — sees to it that he is killed.
-    * **Why B:** Adam does not return unharmed or forgiving; his reappearance deepens the horror.
-    * **Why C:** Adam's survival is central to the later plot, not forgotten.
-    * **Why D:** He has been living rough nearby, not abroad.
-
-19. **Type: True-False [Tests Characters & Plot]**
-    * **Question:** As the play goes on, Brian becomes increasingly disturbed and unstable under the weight of what the group has done.
-    * **Answer:** True
-    * **Feedback:** ✓ Correct. Brian visibly deteriorates as events unfold, one of several signs of the toll the cover-up takes on the group.
-    * **WhyWrong:** This is true — Brian grows more disturbed and fragile across the course of the play.
-
-20. **Type: Fill [Tests Characters & Plot]**
-    * **Question:** The innocent man the group frames with planted DNA evidence is a [BLANK].
-    * **Answer:** postman
-    * **Feedback:** ✓ Correct. An entirely innocent postman is blamed because the group's fabricated evidence points to him, making him the victim of their cover-up.
-    * **WhyWrong:** The word is "postman" — an innocent postman is framed by the planted evidence.
+20. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What enduring idea about justice and consequence does the play's ending affirm?
+   * **Options:** A) That wrongdoing is always neatly caught and fairly punished, B) That the innocent may suffer while the guilty protect themselves — the group largely escapes external blame even as guilt corrodes it from within, leaving an unresolved, uncomfortable moral, C) That everyone confesses and is forgiven, D) That covering up a crime is a reliable route to a happy life
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Like the best social realism, *DNA* refuses tidy justice: an innocent man is framed, the group is not exposed, and the damage surfaces inwardly — Brian's collapse, the corrosion of conscience — leaving us with discomfort rather than resolution.
+   * **Why A:** The play deliberately denies neat justice — the true culprits are never brought to account.
+   * **Why C:** There is no group confession or forgiveness; the secret is kept, not owned.
+   * **Why D:** Concealment brings not happiness but escalating harm and inward ruin — the reverse of the message.

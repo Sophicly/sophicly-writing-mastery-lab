@@ -1,165 +1,203 @@
 # Foundational Quiz Bank — The War of the Worlds
 
-Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions, mixed categories (Context-weighted) + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+Deterministic, code-scored foundational bank (parsed by `SWML_Quiz_Bank`).
+**20 questions — 4 variations of each of the 5 aspects.** The picker serves ONE random question per
+aspect = a light **5-question round** (`fq_dim_stratified`); depth comes from mastery REPETITION.
+Keys + feedback live server-side and are stripped before questions reach the client.
 
-Categories: Context · Themes · Techniques · Characters & Plot
-Types: MCQ · Fill · True-False · Select All
+**Concept-based (governed by `FQ-QUESTION-STANDARD.md`).** Every item tests the CENTRAL CONCEPT of its
+aspect, not surface trivia. Distractors are plausible CONCEPTUAL MISREADINGS. *The War of the Worlds*
+is early **science fiction / invasion narrative** → the `effects` aspect tests the reader's **dread and
+fear-as-warning** (cosmic terror + the disquieting recognition that the imperial nation is made prey),
+not the naming of techniques.
+
+Aspects (`@dim` → Conceptual-Notes field via `concept_field_for_dim`):
+Protagonist → `cn_section_1` · Plot → `cn_section_3` · Themes → `cn_section_5` ·
+Effects → `cn_section_4` (Genre & Emotion) · Message → `cn_section_7`.
 
 ### Quiz: The War of the Worlds
 
-1. **Type: MCQ [Tests Context]**
-   * **Question:** When was *The War of the Worlds* first published, and to which era does it belong?
-   * **Options:** A) 1898, the late-Victorian period, B) 1720, the early Georgian period, C) 1945, just after the Second World War, D) 1600, the Elizabethan period
+1. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which best captures how the narrator *changes* across the novel — and what drives the change?
+   * **Options:** A) He stays a calm, confident scientist who is never shaken, B) He begins a rational Victorian who trusts in human progress and ends a humbled survivor who has grasped humanity's fragility — driven by witnessing how helpless mankind truly is, C) He becomes a heroic soldier who leads the fightback, D) He turns into one of the Martians
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The narrator's journey is inward: from complacent faith in human supremacy to a shaken humility. The invasion does not make him a hero — it strips away his certainty.
+   * **Why A:** He is deeply shaken; the whole point is the collapse of his Victorian confidence.
+   * **Why C:** He is a passive survivor, not a soldier — humanity never wins by force.
+   * **Why D:** He remains human throughout; his change is one of understanding, not transformation.
+
+2. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Why does it matter that the narrator is an ordinary man rather than a hero?
+   * **Options:** A) Because his ordinariness makes his terror and helplessness feel like ours — we experience the invasion through someone "like us", B) Because he is secretly the strongest man in England, C) Because he single-handedly defeats the Martians, D) Because he is a Martian in disguise
    * **Correct:** A
-   * **Feedback:** ✓ Correct. H.G. Wells published the novel in 1898, at the close of the Victorian age, when confidence in science and empire was at its height.
-   * **Why B:** It is a late-Victorian novel of 1898, not an eighteenth-century work.
-   * **Why C:** It predates the Second World War by decades, appearing in 1898.
-   * **Why D:** It belongs to the Victorian era, not the Elizabethan.
+   * **Feedback:** ✓ Correct. Wells makes the narrator a reflective everyman so the reader shares his fear directly — the horror lands because it could be any of us.
+   * **Why B:** He has no special power; his helplessness is the point.
+   * **Why C:** No human defeats the Martians — they are killed by bacteria, not by heroism.
+   * **Why D:** He is a human observer throughout; his ordinariness is essential to the effect.
 
-2. **Type: MCQ [Tests Context]**
-   * **Question:** *The War of the Worlds* is regarded as an early example of which genre?
-   * **Options:** A) Science fiction, or the "scientific romance", B) Detective fiction, C) Romantic comedy, D) Historical biography
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Wells helped pioneer science fiction — then called the "scientific romance" — imagining plausible consequences of science and other worlds.
-   * **Why B:** There is no detective at its centre; it imagines an invasion from another planet.
-   * **Why C:** Its mood is one of catastrophe and awe, not romantic comedy.
-   * **Why D:** It is invented fiction, not a factual account of a real life.
+3. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which pairing best shows the narrator's evolution from beginning to end?
+   * **Options:** A) A frightened coward at the start → a fearless conqueror at the end, B) A detached observer confident in human progress at the start → a chastened survivor who knows mankind is not "the master" at the end, C) A Martian at the start → a human at the end, D) A soldier at the start → a scientist at the end
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. He travels from Victorian assurance to humbled awareness — the same man, his certainties shattered by what he has seen.
+   * **Why A:** He is not a coward at the start nor a conqueror at the end; his change is in understanding.
+   * **Why C:** He is human throughout.
+   * **Why D:** His arc is a loss of confidence, not a change of profession.
 
-3. **Type: True-False [Tests Context]**
-   * **Question:** Wells sets much of the invasion in real, recognisable places in Surrey and London, such as Woking, which made the terror feel close to his first readers.
+4. **Type: True-False [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** The narrator's transformation is driven by his own experience of helplessness — he survives the invasion, but he does not defeat the Martians.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Grounding the invasion in ordinary English towns like Woking and the suburbs of London made the extraordinary events strike home for Victorian readers.
-   * **WhyWrong:** This is true — the familiar Surrey and London settings brought the horror unsettlingly close to home.
+   * **Feedback:** ✓ Correct. His change is earned through witnessing devastation, not through triumph; survival, not victory, is what humbles him.
+   * **WhyWrong:** He never overcomes the Martians by his own action — humanity's helplessness, not heroism, is what changes him.
 
-4. **Type: MCQ [Tests Context]**
-   * **Question:** How does the novel reflect Victorian anxieties about empire?
-   * **Options:** A) It celebrates Britain's colonial power, B) It turns the tables — a technologically superior race invades Britain much as European empires had conquered others, prompting reflection on imperial cruelty, C) It ignores empire entirely, D) It argues Britain should expand its empire faster
+5. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Why does humanity's military resistance *fail* to stop the Martians? (What is the causal point?)
+   * **Options:** A) The soldiers simply did not try hard enough, B) The Martians' technology is so far beyond human weapons that force is futile — human power is shown to be irrelevant, C) The Martians agreed to a truce, D) It was purely a matter of bad luck
    * **Correct:** B
-   * **Feedback:** ✓ Correct. By making the British the conquered rather than the conquerors, Wells invites readers to feel what colonised peoples suffered at the hands of superior force.
-   * **Why A:** The novel questions imperial confidence rather than celebrating it.
-   * **Why C:** Empire is central — the narrator explicitly compares the invasion to Britain's own conquests.
-   * **Why D:** It casts doubt on imperial arrogance rather than urging expansion.
+   * **Feedback:** ✓ Correct. The failure is not accidental: Wells builds the plot so that every human effort is causally useless against a vastly superior force — that helplessness is the engine of the story.
+   * **Why A:** The army fights hard; the point is that effort is meaningless against such power.
+   * **Why C:** There is no truce — the Martians treat humanity as beneath negotiation.
+   * **Why D:** The defeat follows by necessity from the gulf in power, not chance.
 
-5. **Type: Fill [Tests Context]**
-   * **Question:** The novel also reflects the influence of Charles Darwin, exploring ideas of evolution and the ruthless struggle for [BLANK].
-   * **Answer:** survival
-   * **Feedback:** ✓ Correct. Darwinian ideas of the struggle for survival run through the novel, which pictures humanity suddenly no longer the fittest species on Earth.
-   * **WhyWrong:** The word is "survival" — the Darwinian struggle for survival that leaves humanity newly vulnerable.
-
-6. **Type: Select All [Tests Context]**
-   * **Question:** Which Victorian concerns does the novel engage with?
-   * **Options:** A) Anxiety about the morality of empire and conquest, B) Confidence — and doubt — about science and progress, C) Darwinian ideas of evolution and extinction, D) The medieval feudal system
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Empire, faith in science, and Darwinian evolution were all live Victorian concerns that shape the novel's imagined catastrophe.
-   * **Why D:** The feudal system belongs to the medieval past and is not among the novel's concerns.
-
-7. **Type: MCQ [Tests Themes]**
-   * **Question:** What does the novel suggest about human arrogance?
-   * **Options:** A) That humanity's confidence in its own supremacy is fragile and quickly humbled, B) That humans are always superior to other beings, C) That arrogance is rewarded, D) That science can never fail
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The invasion shatters humanity's assumption of dominance, exposing how thin the Victorian belief in human supremacy really was.
-   * **Why B:** The novel overturns human supremacy, showing it can be swept aside.
-   * **Why C:** Human complacency is punished, not rewarded.
-   * **Why D:** The novel questions blind faith in progress rather than affirming it.
-
-8. **Type: MCQ [Tests Themes]**
-   * **Question:** How does the novel treat the theme of survival and civilisation?
-   * **Options:** A) Civilised order proves solid under pressure, B) Under the threat of extinction, the veneer of civilisation cracks and people are reduced to panic and self-preservation, C) Survival is never in doubt, D) Society grows kinder during the crisis
+6. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which best describes the *causal chain* of the invasion — not just the order of events?
+   * **Options:** A) A string of unrelated disasters that happen to occur together, B) The Martians land → are underestimated as harmless → unleash overwhelming force → mankind is driven to panic and flight → and they are finally destroyed not by humans but by disease, C) Humans defeat the Martians in open battle, D) The Martians simply leave of their own accord
    * **Correct:** B
-   * **Feedback:** ✓ Correct. As the invasion spreads, ordered society collapses into flight and desperation, revealing how fragile civilisation is when survival is at stake.
-   * **Why A:** Order breaks down rather than holding firm.
-   * **Why C:** Human survival is in grave doubt throughout.
-   * **Why D:** The crisis exposes panic and selfishness more than kindness.
+   * **Feedback:** ✓ Correct. Each stage flows from the last — complacency invites catastrophe, and the ending turns on an irony seeded throughout: force cannot save humanity; the smallest life does.
+   * **Why A:** The events form a tight causal sequence, not unconnected mishaps.
+   * **Why C:** Humanity never wins a battle; that misreads the whole plot.
+   * **Why D:** The Martians do not choose to leave — they die.
 
-9. **Type: True-False [Tests Themes]**
-   * **Question:** The novel explores how insignificant humanity can appear when set against a vast, indifferent universe.
+7. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** What finally destroys the Martians — the great irony on which the plot turns?
+   * **Options:** A) The British army's artillery, B) Earthly bacteria — "the humblest things" — to which humans are immune but the Martians are not, C) The narrator's own courage, D) A secret human weapon
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The Martians are "slain, after all man's devices had failed, by the humblest things that God... has put upon this earth." Humanity is saved by nature, not by its own power — the plot's central irony.
+   * **Why A:** Human weapons fail utterly; the artillery cannot stop them.
+   * **Why C:** No individual defeats them; the narrator merely survives.
+   * **Why D:** There is no human weapon that works — that is precisely the point.
+
+8. **Type: True-False [Tests Plot]**
+   @dim:plot
+   * **Question:** The Martians are defeated not by human strength but by the smallest organisms on Earth — an ironic reversal of humanity's assumed supremacy.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Wells repeatedly stresses humanity's smallness before forces far greater than itself, unsettling Victorian self-importance.
-   * **WhyWrong:** This is true — the novel dwells on human insignificance in an indifferent cosmos.
+   * **Feedback:** ✓ Correct. The bacteria succeed where every army failed; the causal irony humbles humanity's pride in its own power.
+   * **WhyWrong:** Humanity does not save itself — it is the microbes, "the humblest things", that kill the Martians, overturning our assumed mastery.
 
-10. **Type: Fill [Tests Themes]**
-   * **Question:** A central irony is that the mighty invaders are finally defeated not by human weapons but by the smallest of Earth's living things — [BLANK].
-   * **Answer:** bacteria
-   * **Feedback:** ✓ Correct. The invaders, having no immunity to Earth's bacteria, are killed by microbes — the humblest organisms undo the most powerful, a pointed final irony.
-   * **WhyWrong:** The word is "bacteria" — the microbes that destroy the invaders human weapons could not stop.
-
-11. **Type: MCQ [Tests Techniques]**
-   * **Question:** From whose perspective is most of the novel told?
-   * **Options:** A) An unnamed first-person narrator who witnesses the invasion, B) An all-knowing narrator with no personal stake, C) One of the invaders, D) A newspaper reporter interviewing survivors
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. An unnamed first-person narrator carries the story, and his eyewitness account makes the catastrophe feel immediate and believable.
-   * **Why B:** The narration is personal and limited, not detached and all-knowing.
-   * **Why C:** The story is told by a human survivor, not by the invaders.
-   * **Why D:** It is a direct eyewitness narrative, not a reporter's set of interviews.
-
-12. **Type: MCQ [Tests Techniques]**
-   * **Question:** How does Wells make the fantastic invasion feel convincing?
-   * **Options:** A) By keeping it vague and dreamlike, B) By using precise, journalistic detail and real place-names, so the impossible reads like reported fact, C) By setting it in an obviously invented land, D) By addressing it as a fairy tale
+9. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** The narrator reflects that "before we judge of them too harshly we must remember what ruthless and utter destruction our own species has wrought". What idea does this reveal?
+   * **Options:** A) That the Martians are simply misunderstood friends, B) That the invasion mirrors human imperialism — the coloniser is now the colonised, and Wells turns our own cruelty back on us, C) That war is always exciting, D) That the British were blameless victims
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The sober, factual reporting and recognisable geography lend the invasion a documentary realism that makes it frighteningly plausible.
-   * **Why A:** The effect depends on hard, specific detail rather than vagueness.
-   * **Why C:** Real English settings, not an invented land, ground the story.
-   * **Why D:** The tone is reportorial and serious, not that of a fairy tale.
+   * **Feedback:** ✓ Correct. Wells makes the mighty empire the prey, holding a mirror to imperial conquest: what the Martians do to Britain is what Britain did to others.
+   * **Why A:** The Martians are ruthless; the line is not about friendship but about our own guilt.
+   * **Why C:** It is a sober moral reflection on cruelty, not a celebration of war.
+   * **Why D:** The whole point is that the "victims" are themselves conquerors being judged.
 
-13. **Type: True-False [Tests Techniques]**
-   * **Question:** Wells uses vivid imagery of the invaders' machines and weapons to create a sense of overwhelming, unfamiliar power.
+10. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** The Martians regard Earth with "intellects vast and cool and unsympathetic". What does this reveal about the theme of human insignificance?
+   * **Options:** A) That humanity is the pinnacle of creation, B) That a higher intelligence can regard mankind as we regard the "beasts that perish" — humanity is not the centre of the universe, C) That the Martians admire human achievement, D) That intelligence always brings kindness
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Wells dethrones humanity: to a superior mind we are as insects, and our sense of our own importance is exposed as vanity.
+   * **Why A:** The novel argues the opposite — humanity is dethroned, not supreme.
+   * **Why C:** The Martians are "unsympathetic"; they do not admire us, they use us.
+   * **Why D:** Their vast intellect is "cool and unsympathetic" — intelligence here brings no mercy.
+
+11. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Which idea does the novel most explore about Victorian confidence in science, progress and empire?
+   * **Options:** A) That such confidence is fully justified and rewarded, B) That it is complacent and fragile — nature and the cosmos are indifferent to human pride, C) That science is evil and should be abandoned, D) That the Victorians were too modest
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Wells punctures the age's faith in its own supremacy: progress and empire offer no protection against a universe that does not care.
+   * **Why A:** The invasion shatters that confidence rather than rewarding it.
+   * **Why C:** The novel questions arrogance about science, not science itself.
+   * **Why D:** The Victorians are shown as over-confident, not modest.
+
+12. **Type: True-False [Tests Themes]**
+   @dim:themes
+   * **Question:** The novel draws on ideas of natural selection and "survival of the fittest" to suggest that humanity's dominance is not guaranteed.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Striking descriptions of the towering fighting-machines and their destructive weapons convey a power far beyond anything human, heightening the terror.
-   * **WhyWrong:** This is true — the vivid imagery of the machines makes their power feel overwhelming and alien.
+   * **Feedback:** ✓ Correct. Wells, writing after Darwin, imagines a fitter species preying on humanity — a reminder that we hold no permanent place at the top.
+   * **WhyWrong:** The novel uses evolutionary struggle to unsettle human supremacy — a fitter species can make prey of us, so our dominance is not secure.
 
-14. **Type: Fill [Tests Techniques]**
-   * **Question:** As the invasion spreads, a strange red [BLANK] — an alien plant brought from another world — takes over the English landscape, a recurring image of the world transformed.
-   * **Answer:** weed
-   * **Feedback:** ✓ Correct. The spreading red weed is a memorable motif, a vivid sign of an Earth being colonised and remade by an alien force.
-   * **WhyWrong:** The word is "weed" — the red weed whose spread marks the land being overtaken.
-
-15. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** How do the invaders first arrive on Earth?
-   * **Options:** A) They are already living underground, B) They land in cylinders fired from their own world, the first falling on the common near Woking, C) They arrive by sea, D) They are created in a laboratory
+13. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** *The War of the Worlds* is science fiction built on dread. Why does the novel make us feel *fear* as the Martians advance?
+   * **Options:** A) Because we are worried the narrator will lose his job, B) Because a vast, cold, unstoppable intelligence treats humanity as insignificant — the terror is of utter helplessness before something far greater, C) Because the story is comic and light, D) We feel no fear, only boredom
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The invaders travel to Earth inside great cylinders, the first of which crashes onto Horsell Common near Woking, drawing curious crowds.
-   * **Why A:** They come from another world, not from beneath the Earth.
-   * **Why C:** They arrive by cylinders falling from the sky, not by sea.
-   * **Why D:** They are visitors from another planet, not laboratory creations.
+   * **Feedback:** ✓ Correct. The dread comes from powerlessness: an indifferent, superior force against which nothing we do matters. That helplessness is the intended emotional effect.
+   * **Why A:** The fear is existential, not a trivial worry.
+   * **Why C:** The tone is one of terror and awe, not comedy.
+   * **Why D:** The novel is designed precisely to disturb and frighten.
 
-16. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** What are the invaders' towering war-machines, and why are they so feared?
-   * **Options:** A) Slow wooden carts, B) Three-legged fighting-machines that stride across the land wielding a devastating heat-weapon, C) Ordinary tanks, D) Sailing ships
+14. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Beyond fear of the aliens themselves, what deeper unease is the novel designed to provoke?
+   * **Options:** A) The comforting feeling that humans always win, B) The disquieting recognition that WE could be the prey — the imperial nation made helpless — a warning that our own arrogance leaves us exposed, C) Amusement at clever gadgets, D) Pride in British power
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The three-legged fighting-machines move swiftly over the landscape and unleash a searing heat-weapon, against which Victorian defences are useless.
-   * **Why A:** The machines are fast, towering and mechanical, not slow carts.
-   * **Why C:** They are alien tripods far beyond the technology of the day, not ordinary tanks.
-   * **Why D:** They stride over land on three legs; they are not ships.
+   * **Feedback:** ✓ Correct. The lasting effect is a turning of the mirror: the fear is not only of Martians but of what we ourselves are, and how easily the conqueror becomes the conquered.
+   * **Why A:** The novel denies that comfort — humanity does not win by its own power.
+   * **Why C:** The response aimed for is dread and unease, not amusement.
+   * **Why D:** It humbles British pride rather than flattering it.
 
-17. **Type: Select All [Tests Characters & Plot]**
-   * **Question:** Which figures or forces appear in the novel?
-   * **Options:** A) The unnamed narrator who travels through the devastation, B) The artilleryman, who dreams of humans surviving underground, C) The curate, who breaks down under the horror, D) A detective who solves the invasion like a crime
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. The narrator, the artilleryman with his survival scheme, and the panicking curate are all key human figures; there is no detective solving a crime.
-   * **Why D:** The novel is a survival narrative, not a detective story, and has no such investigator.
+15. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Why is the Martians' *indifference* more frightening than open cruelty would be?
+   * **Options:** A) Because indifference is always gentle, B) Because being regarded as "beasts that perish" reduces humanity to insignificance — cold unconcern denies us even the dignity of a true enemy, C) Because the Martians are secretly kind, D) Because it makes the story funnier
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. To be hated is at least to matter; to be brushed aside by a "cool and unsympathetic" intellect is to be nothing — and that erasure of human worth is the deeper horror.
+   * **Why A:** Their indifference is lethal, not gentle.
+   * **Why C:** They are "unsympathetic" — the horror is their lack of kindness.
+   * **Why D:** The effect is dread, not comedy.
 
-18. **Type: True-False [Tests Characters & Plot]**
-   * **Question:** During the invasion the narrator is separated from his wife and spends much of the novel journeying through a devastated landscape.
+16. **Type: True-False [Tests Effects]**
+   @dim:effects
+   * **Question:** The novel's effect is not mere excitement but a disquieting dread — a warning that humanity's confidence in its own supremacy is dangerously misplaced.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Parted from his wife early on, the narrator moves through ruined towns and countryside, and their reunion comes only after the invaders fall.
-   * **WhyWrong:** This is true — separated from his wife, the narrator journeys through the wreckage for much of the novel.
+   * **Feedback:** ✓ Correct. Wells aims past thrill at unease: we are left frightened for our species and for our pride, not merely entertained.
+   * **WhyWrong:** The intended effect is dread and warning, not simple excitement — the fear is meant to make us question human arrogance.
 
-19. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** How is the invasion finally brought to an end?
-   * **Options:** A) Human armies defeat the invaders in battle, B) The invaders die after being infected by Earth's microbes, to which they have no resistance, C) The invaders make peace and leave, D) A great storm destroys them
+17. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What is the novel's overall *message* about human arrogance and empire?
+   * **Options:** A) That humanity's supremacy is secure and deserved, B) That mankind's complacent belief in its own mastery — and the imperial cruelty that flows from it — is fragile and self-condemning; we are not the masters we imagine, C) That science should be worshipped, D) That the strong are always right
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Human weapons fail, but the invaders sicken and die from Earth's bacteria, undone by the tiniest organisms rather than by any human victory.
-   * **Why A:** Human armies are overwhelmed; they do not win the war.
-   * **Why C:** The invaders do not withdraw peacefully; they are destroyed by disease.
-   * **Why D:** It is microbes, not a storm, that end the invasion.
+   * **Feedback:** ✓ Correct. Wells warns against pride: the empire that dominates others is shown how it feels to be dominated, and human mastery is exposed as an illusion.
+   * **Why A:** The invasion demolishes any idea of secure supremacy.
+   * **Why C:** The novel questions blind faith in progress, not calls for worship of it.
+   * **Why D:** It condemns the arrogance of the strong rather than endorsing it.
 
-20. **Type: Fill [Tests Characters & Plot]**
-   * **Question:** The invaders in the novel come from the planet [BLANK], long imagined as a possible home for alien life.
-   * **Answer:** Mars
-   * **Feedback:** ✓ Correct. The invaders come from Mars, a planet that fascinated Victorian astronomers and fed speculation about life beyond Earth.
-   * **WhyWrong:** The word is "Mars" — the red planet from which the invaders launch their attack on Earth.
+18. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What does the ending — humanity saved by bacteria, not by its own power — ultimately suggest?
+   * **Options:** A) That human ingenuity triumphed after all, B) That human pride is humbled: survival owes nothing to our supposed superiority — nature, not human mastery, decides, C) That the Martians were never a real threat, D) That Britain's army won the war
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Deliverance comes from "the humblest things", not from human greatness — a final humbling that denies mankind the credit for its own survival.
+   * **Why A:** Human ingenuity failed entirely; microbes, not ingenuity, prevailed.
+   * **Why C:** The Martians devastate everything — the threat is overwhelming.
+   * **Why D:** The army is defeated; it wins nothing.
+
+19. **Type: True-False [Tests Message]**
+   @dim:message
+   * **Question:** By making the mighty British Empire the victim of a superior invader, Wells holds a mirror to imperialism — suggesting the conquerors should judge themselves as they judge others.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The novel's political sting is this reversal: the coloniser becomes the colonised, and Britain is asked to see its own conquests in the Martians' ruthlessness.
+   * **WhyWrong:** Wells deliberately turns imperial violence back on the empire — the message asks the conqueror to judge itself as harshly as it judges others.
+
+20. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What enduring idea about humanity's place in the universe does the novel affirm?
+   * **Options:** A) That humanity rules creation by right, B) That mankind is small and vulnerable within an indifferent cosmos, and that arrogance blinds us to this — a call for humility, C) That the universe exists to serve human needs, D) That progress guarantees safety
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The lasting message is humility: we are not the centre of things, and our confidence in our own supremacy is both fragile and dangerous.
+   * **Why A:** The novel dethrones humanity rather than crowning it.
+   * **Why C:** The cosmos is shown to be indifferent, not made for us.
+   * **Why D:** Progress offers no protection — that false security is exactly what Wells attacks.

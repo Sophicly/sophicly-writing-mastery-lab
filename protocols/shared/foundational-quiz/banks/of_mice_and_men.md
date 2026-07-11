@@ -1,165 +1,206 @@
 # Foundational Quiz Bank — Of Mice and Men
 
-Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions, mixed categories (Context-weighted) + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+Deterministic, code-scored foundational bank (parsed by `SWML_Quiz_Bank`).
+**20 questions — 4 variations of each of the 5 aspects.** The picker serves ONE random question per
+aspect = a light **5-question round** (`fq_dim_stratified`); depth comes from mastery REPETITION drawing
+a fresh variation per aspect each round, not from round length (3–5 is the low-stakes retrieval sweet
+spot). Keys + feedback live server-side and are stripped before questions reach the client.
 
-Categories: Context · Themes · Techniques · Characters & Plot
-Types: MCQ · Fill · True-False · Select All
+**Concept-based (v7.20.x — governed by `FQ-QUESTION-STANDARD.md`).** Every item tests the CENTRAL
+CONCEPT of its aspect, not surface trivia (research: `research/2026-07-11-concept-based-fq-question-design.md`).
+Distractors are plausible CONCEPTUAL MISREADINGS a real student holds, so the student must reason to the
+answer. Of Mice and Men is **tragic social realism** → the `effects` aspect tests the reader's **pathos and
+moral discomfort** — sorrow for the powerless and unease at an unjust world that discards the weak — not the
+naming of techniques.
+
+Aspects (`@dim` → Conceptual-Notes field via `concept_field_for_dim`):
+Protagonist → `cn_section_1` · Plot → `cn_section_3` · Themes → `cn_section_5` ·
+Effects → `cn_section_4` (Genre & Emotion) · Message → `cn_section_7`. A correct answer autofills that
+aspect's pre-authored note (`of_mice_and_men.concept-notes.md`) into the CN doc; mastery completes all five.
 
 ### Quiz: Of Mice and Men
 
-1. **Type: MCQ [Tests Context]**
-   * **Question:** *Of Mice and Men* is set during which period of American history?
-   * **Options:** A) The Great Depression of the 1930s, B) The American Civil War, C) The Roaring Twenties boom, D) The Second World War
+1. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which best captures how George *changes* across the novella — and what drives the change?
+   * **Options:** A) He is a selfish loner from the first page and never really changes, B) He begins a man set apart by companionship and a shared dream, and ends alone — having chosen to shoot the friend he loved to spare him a worse death, C) He stays exactly the same and is simply unlucky, D) He is forced by Slim and the other men to kill Lennie and has no real say
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The tragedy is the *change*: George's bond with Lennie once lifted him above the "loneliest guys in the world"; by the end he has made the unbearable choice to end that bond himself, and is left as solitary as the rest.
+   * **Why A:** George is defined at the start by looking after Lennie — "I got you... you got me"; the drama lies in losing that, not in fixed selfishness.
+   * **Why C:** He does not stay the same — he is transformed by a choice that costs him everything; the fall is self-made, not mere bad luck.
+   * **Why D:** No one orders George; the decision to shoot Lennie is his own, and its being his own is exactly what makes it tragic.
+
+2. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** What makes George a *tragic* figure rather than simply a killer or a helpless victim?
+   * **Options:** A) He is cruel and heartless throughout, B) He is neither villain nor victim — a decent man driven by love to a terrible act that destroys the very future he lived for, so his ruin moves us, C) He is entirely blameless and the killing is nothing to do with him, D) He walks away happy, his dream intact
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. A tragic figure is an in-between one: George's love is real, which is why his mercy-killing of Lennie — and the death of their dream with it — arouses pathos, not disgust.
+   * **Why A:** If he were heartless his act would repel rather than move us; the tragedy needs his genuine love for Lennie.
+   * **Why C:** He pulls the trigger himself; the choice, and its cost, are his — that is what makes it tragic, not incidental.
+   * **Why D:** The dream dies with Lennie and George is left desolate — a tragic figure loses everything, he does not thrive.
+
+3. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which pairing best shows George's evolution from beginning to end?
+   * **Options:** A) A lonely drifter at the start → a wealthy landowner at the end, B) A man raised above the drifters by companionship and a shared dream → a solitary man who has killed his friend and buried that dream, C) A cruel bully at the start → a beloved leader at the end, D) A stranger to Lennie at the start → Lennie's blood-brother at the end
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. He travels from a man made exceptional by his bond with Lennie to a man as alone as any other ranch hand — hollowed out by the choice he made. That arc IS the tragedy.
+   * **Why A:** He never gains the farm; the dream collapses, leaving him with nothing — this reverses his actual arc.
+   * **Why C:** He is protective and weary, not a bully, at the start, and broken, not beloved, at the close.
+   * **Why D:** George and Lennie are already bound as companions from the opening; the change is the *loss* of that bond, not its forming.
+
+4. **Type: True-False [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** George's transformation is driven above all by his own choice — the danger Lennie is in presses on him, but the decision to shoot his friend is George's own.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Curley's lynch mob creates the crisis, but George weighs it and chooses to act mercifully himself; his agency is what turns a grim situation into tragedy and keeps the loss *his*.
+   * **WhyWrong:** No one forces George's hand — Slim only understands him afterwards. Treating him as a puppet of events removes the choice that makes him a tragic figure rather than a bystander.
+
+5. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Why does Lennie's killing of Curley's wife *lead to* George shooting Lennie? (What is the causal link?)
+   * **Options:** A) The two events are unconnected and simply happen in order, B) Lennie's accidental killing sets Curley's lynch mob after him — so George kills Lennie gently first, to spare him a crueller death, C) Slim orders George to shoot Lennie, D) George kills at random because he has lost his mind
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. One act *causes* the next: the death of Curley's wife guarantees Lennie's capture and torment, and it is that certainty which drives George's mercy-killing. This causal necessity is what makes the plot a tragic arc, not a list of events.
+   * **Why A:** In tragedy events follow by cause, not mere sequence — reading them as unconnected misses the arc that binds them.
+   * **Why C:** Slim comforts George but issues no order; George decides to act himself, out of love.
+   * **Why D:** His act is a deliberate, agonised mercy driven by the mob's approach, not random madness.
+
+6. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which best describes the *causal chain* of the novella's tragedy — not just the order of events?
+   * **Options:** A) A series of unrelated misfortunes that strike the men by bad luck, B) Lennie's uncontrolled strength kills soft things he only wants to pet → he accidentally kills Curley's wife → the mob forms → George shoots Lennie and the dream dies, C) The other ranch hands plot each disaster on purpose, D) Fate alone decides everything and no choice makes any difference
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Each stage flows by necessity from the one before, all rooted in Lennie's tender-but-dangerous nature. That is the tragic arc: a fatal vulnerability → escalating consequence → catastrophe.
+   * **Why A:** The ruin is not random misfortune — it is the logical outworking of Lennie's strength and the world's harshness.
+   * **Why C:** No one plots it; the horror is that it arises from Lennie's innocence and the pressures of the ranch, not a scheme.
+   * **Why D:** Choice is decisive here — George's final choice shapes the ending; a fate-only reading erases the tragedy.
+
+7. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which act is the turning point that makes the catastrophe unavoidable — the point of no return?
+   * **Options:** A) George and Lennie arriving at the ranch, B) Lennie accidentally killing Curley's wife in the barn, C) Candy joining the dream with his savings, D) Crooks letting Lennie into his room
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The death of Curley's wife is the irreversible act: once it happens, Lennie cannot be saved and the dream cannot survive, and every later event follows from it. That is the tragic turning point.
+   * **Why A:** The arrival only sets the scene; nothing is yet irreversible when they reach the ranch.
+   * **Why C:** Candy's savings briefly make the dream feel real — a rising hope, not the fatal turn.
+   * **Why D:** Crooks's scene deepens the theme of loneliness but does not seal the catastrophe.
+
+8. **Type: True-False [Tests Plot]**
+   @dim:plot
+   * **Question:** In Of Mice and Men the later events follow by cause-and-effect — the shooting of Candy's dog even shapes George's later choice — they are not just a string of unconnected happenings.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Tragic plot is built on necessity, not mere sequence: Candy's regret that he "ought to have shot that dog" himself teaches George that a loved one's death is better given by a friend's hand — so the earlier scene causes the later choice.
+   * **WhyWrong:** Reading the events as unconnected ("they just happen next") misses the causal necessity — the very thing that makes the plot a tragic arc rather than a chronicle.
+
+9. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** George and Lennie dream of "livin' off the fatta the lan'". What does this reveal about the novella's view of the American Dream?
+   * **Options:** A) That the Dream is easily won by anyone who works hard, B) That the Dream offers the poor hope and dignity, yet remains tragically out of reach for the dispossessed, C) That the men have no real hopes at all, D) That the Dream matters only to Lennie
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The little farm gives the men something to live for, but its collapse argues that for the powerless in Depression America such hope was an illusion the age would not permit.
+   * **Why A:** The novella shows the dream slipping away again and again, not easily won.
+   * **Why C:** The dream matters intensely — Candy and Crooks are drawn to it too; it is the heart of their hope.
+   * **Why D:** George holds the dream as fiercely as Lennie; it belongs to them both, and to the others who reach for it.
+
+10. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Crooks tells Lennie that "a guy needs somebody — to be near him". Which controlling idea does this voice?
+   * **Options:** A) That human company is a basic need, and loneliness — bred by the itinerant, unequal world of the ranch — is a kind of slow torment, B) That the ranch hands enjoy being alone, C) That only Crooks is ever lonely, D) That friendship is a weakness to be avoided
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Steinbeck sets the novella in 1930s California during the Great Depression, when mass unemployment forced men to drift between ranches for work.
-   * **Why B:** The Civil War was in the 1860s; this story belongs to Depression-era California.
-   * **Why C:** The 1920s boom had collapsed; the novella shows the poverty that followed, not prosperity.
-   * **Why D:** It was published in 1937, before the Second World War, and concerns economic hardship at home.
+   * **Feedback:** ✓ Correct. Crooks's cry announces the novella's argument that isolation, sharpened by race, age and gender, wounds almost everyone — the very place is named Soledad, "solitude".
+   * **Why B:** The men are shown aching for company, not enjoying solitude — Crooks's words are a plea, not contentment.
+   * **Why C:** Loneliness reaches across the ranch — Candy, Curley's wife and the drifters all feel it, not Crooks alone.
+   * **Why D:** The novella prizes companionship as a lifeline; George and Lennie's bond is its clearest good, not a weakness.
 
-2. **Type: MCQ [Tests Context]**
-   * **Question:** Why does the itinerant life of ranch workers matter to the novella's meaning?
-   * **Options:** A) It made workers wealthy, B) Constant moving for work left men rootless and lonely, unable to form lasting bonds, C) It meant workers owned the land they worked, D) It gave workers strong legal protection
+11. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** George says he and Lennie are different because "I got you to look after me, and you got me to look after you." Which idea does the novella most explore through their bond?
+   * **Options:** A) That money is what gives a life meaning, B) That companionship gives the drifter purpose and dignity, standing against a world of solitary, rootless men, C) That the two are simply related and stuck together, D) That friendship makes no difference to a hard life
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Drifting from ranch to ranch, the men had no home, family or future — George's warning that such men "are the loneliest guys in the world" grows straight from this rootless life.
-   * **Why A:** The work paid a bare wage; it did not make the men wealthy.
-   * **Why C:** The tragedy is that they own nothing — owning land is only George and Lennie's dream.
-   * **Why D:** Migrant workers were vulnerable and easily dismissed, with little protection.
+   * **Feedback:** ✓ Correct. Their chosen loyalty sets them apart from men who are "the loneliest guys in the world", making companionship the novella's fragile answer to isolation.
+   * **Why A:** They are as poor as the rest; it is their bond, not money, that gives their lives meaning.
+   * **Why C:** They are not related — the loyalty is chosen, which is exactly what makes it meaningful.
+   * **Why D:** Their friendship transforms both lives with purpose; the tragedy is measured by what its loss costs.
 
-3. **Type: True-False [Tests Context]**
-   * **Question:** The ranch is near the town of Soledad, whose name means "solitude" in Spanish, quietly reinforcing the novella's theme of loneliness.
+12. **Type: True-False [Tests Themes]**
+   @dim:themes
+   * **Question:** The novella explores how the powerless — Crooks through race, Candy through age and disability, Curley's wife through gender — are pushed to the margins of the ranch world.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Setting the action near Soledad — Spanish for "solitude" — lets the very place-name echo the isolation that grips almost every character.
-   * **WhyWrong:** This is true — Soledad means "solitude", and the name subtly underlines the loneliness Steinbeck explores.
+   * **Feedback:** ✓ Correct. Crooks's segregation, Candy's fear of being cast out, and Curley's wife's namelessness dramatise how 1930s society denied the vulnerable a place and a voice.
+   * **WhyWrong:** This is true — marginalisation by race, age, disability and gender is one of the novella's central ideas, exposing how the weak are shut out.
 
-4. **Type: MCQ [Tests Context]**
-   * **Question:** The novella's title comes from a Robert Burns poem. What idea does that source express?
-   * **Options:** A) That hard work always pays off, B) That the best-laid plans of mice and men often go wrong, C) That mice are cleverer than men, D) That men should never make plans
+13. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Of Mice and Men is tragic social realism. Why do we feel deep *sorrow* at the ending, even though Lennie has killed Curley's wife?
+   * **Options:** A) Because we are amused by the twist, B) Because a gentle, innocent man and the fragile dream that lifted two lonely lives are destroyed by a world too harsh to hold them — the loss feels like a waste we grieve, C) Because George escapes with the dream intact and we are glad, D) Because the effect is really the foreshadowing of Candy's dog
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Burns's line "The best-laid schemes o' mice an' men / Gang aft agley" warns that careful plans often collapse — foreshadowing the ruin of George and Lennie's dream.
-   * **Why A:** Burns's point is the opposite: even good plans can fail despite effort.
-   * **Why C:** The poem compares the fragile plans of both mice and men, not their cleverness.
-   * **Why D:** It mourns how plans go astray, not that planning should be abandoned.
+   * **Feedback:** ✓ Correct. Social-realist tragedy makes us mourn the powerless: Lennie means no harm and the dream is decent, so watching both crushed moves us to pathos — sorrow at needless loss, not satisfaction.
+   * **Why A:** Amusement belongs to comedy; the ending is written to grieve us, not entertain.
+   * **Why C:** George is left desolate and the dream dies — the feeling is sorrow and unease, not relief for him.
+   * **Why D:** Foreshadowing is a *technique*; the question asks what we FEEL — the answer is grief, not the name of a device.
 
-5. **Type: Fill [Tests Context]**
-   * **Question:** George and Lennie share a dream of one day owning their own small farm and "living off the [BLANK] of the land".
-   * **Answer:** fat
-   * **Feedback:** ✓ Correct. Lennie's refrain of "livin' off the fatta the lan'" captures the American Dream of self-sufficiency that the Depression made almost impossible for men like them.
-   * **WhyWrong:** The word is "fat" — "the fatta the lan'", the small farm that stands for their hope of independence.
-
-6. **Type: Select All [Tests Context]**
-   * **Question:** Which groups does the novella show as marginalised or discriminated against on the ranch?
-   * **Options:** A) Crooks, because he is Black, B) Candy, because he is old and disabled, C) Curley's wife, because she is a woman, D) Slim, because he is the skilled mule driver
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Crooks (race), Candy (age and disability) and Curley's wife (gender) are each pushed to the edges — Steinbeck exposes how 1930s society isolated the vulnerable.
-   * **Why D:** Slim is respected and admired as the ranch's most skilled man, not marginalised.
-
-7. **Type: MCQ [Tests Themes]**
-   * **Question:** How does the friendship between George and Lennie set them apart from the other ranch hands?
-   * **Options:** A) They are richer than the others, B) Unlike the lonely drifters, they travel together and look after one another, giving each a sense of purpose, C) They refuse to work, D) They are related by blood
+14. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** A work of tragic social realism such as Of Mice and Men is built to make the reader feel — above all — which response?
+   * **Options:** A) Amusement and triumph, B) Pathos and moral discomfort — sorrow for the powerless and unease at an unjust world that discards the weak, C) Confusion and boredom, D) Admiration for how clever the plot is
    * **Correct:** B
-   * **Feedback:** ✓ Correct. George's line that they are different because "I got you to look after me, and you got me to look after you" marks their bond against a world of solitary men.
-   * **Why A:** They are as poor as the rest; it is their companionship, not money, that sets them apart.
-   * **Why C:** They work hard as ranch hands; it is their bond, not idleness, that is unusual.
-   * **Why D:** They are not related — their loyalty is chosen, which makes it more striking.
+   * **Feedback:** ✓ Correct. Steinbeck's realism holds a mirror to a harsh society: it stirs pity for its crushed dreamers and a disquieted anger at the injustice that dooms them — that moral, aching response is its purpose.
+   * **Why A:** Amusement and triumph belong to comedy; a social tragedy that merely satisfied us would fail its purpose.
+   * **Why C:** Confusion and boredom mark a *failed* work, not the intended effect of this one.
+   * **Why D:** We may notice the tight structure, but the intended response is sorrow and moral unease, not admiration for craft.
 
-8. **Type: MCQ [Tests Themes]**
-   * **Question:** What does Steinbeck suggest about the American Dream through George and Lennie's plan?
-   * **Options:** A) It is easily achieved by anyone, B) It offers hope and dignity, yet remains tragically out of reach for the poor and powerless, C) It is unimportant to the characters, D) It is only about becoming famous
+15. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Why do we feel *moral discomfort* — a troubled unease — as the novella shows the treatment of Crooks, Candy and Curley's wife?
+   * **Options:** A) Because we find their situations funny, B) Because their exclusion feels unjust, and we are made uneasily aware that a whole society shuts out the weak — including, perhaps, ourselves, C) Because we are frightened by supernatural events, D) Because we admire the ranch for how it is run
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The dream of the farm gives the men something to live for, but its collapse suggests such hope was, for the dispossessed, an illusion the Depression would not allow.
-   * **Why A:** The novella shows the dream repeatedly slipping away, not easily won.
-   * **Why C:** The dream matters deeply — Candy and Crooks are drawn to it too.
-   * **Why D:** It is about land, security and independence, not fame.
+   * **Feedback:** ✓ Correct. Social realism disturbs the reader's conscience: by making their loneliness and powerlessness so plain, Steinbeck turns our sympathy into a moral discomfort at the injustice we are watching.
+   * **Why A:** Their suffering is written to trouble us, not to amuse — laughter would betray the novella's purpose.
+   * **Why C:** There is nothing supernatural; the unease is moral and human, rooted in real social injustice.
+   * **Why D:** The ranch is shown as unjust and isolating; the intended feeling is discomfort at it, not admiration.
 
-9. **Type: True-False [Tests Themes]**
-   * **Question:** Loneliness is shown to affect almost everyone on the ranch, from Crooks and Candy to Curley's wife.
+16. **Type: True-False [Tests Effects]**
+   @dim:effects
+   * **Question:** By the close of the novella we are meant to feel sorrow for the crushed dream and a troubled unease at a world that discards the weak — not amusement or triumph.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Crooks's ache that "a guy needs somebody", Candy's grief for his dog and Curley's wife's confession that she is lonely all show isolation reaching across the ranch.
-   * **WhyWrong:** This is true — loneliness touches nearly every character, which is central to Steinbeck's vision.
+   * **Feedback:** ✓ Correct. That double feeling — pathos for the powerless and moral discomfort at their injustice — is the emotional effect tragic social realism is built to produce.
+   * **WhyWrong:** The intended effect is pathos *and* moral unease, not amusement or triumph; the ending is written to leave us grieving and disquieted, not satisfied.
 
-10. **Type: Fill [Tests Themes]**
-   * **Question:** Crooks, isolated because of his race, tells Lennie that "a guy needs [BLANK]" to keep from going crazy with loneliness.
-   * **Answer:** somebody
-   * **Feedback:** ✓ Correct. Crooks's cry that "a guy needs somebody — to be near him" voices the novella's belief that human company is a basic need.
-   * **WhyWrong:** The word is "somebody" — Crooks insists a person needs somebody near, or loneliness turns to despair.
-
-11. **Type: MCQ [Tests Techniques]**
-   * **Question:** The novella opens and closes at the same spot by the Salinas River. What is the effect of this cyclical structure?
-   * **Options:** A) It suggests nothing has changed, B) It frames the tragedy, making the peaceful opening return as the place of Lennie's death and lending a sense of grim inevitability, C) It confuses the reader, D) It shows the seasons passing
+17. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What is the novella's overall *message* about the American Dream for the poor and powerless?
+   * **Options:** A) That the Dream is guaranteed to anyone who works hard, B) That the Dream gives the dispossessed hope and dignity, yet in an unjust world it remains, for them, tragically unreachable, C) That dreaming is foolish and should be given up, D) That only money matters and companionship is worthless
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Returning to the riverside brush turns the calm opening into the site of the killing, so the structure itself makes the ending feel fated.
-   * **Why A:** Everything has changed — the same place now holds death, deepening the tragedy.
-   * **Why C:** The mirroring is deliberate and clarifying, framing the story rather than confusing it.
-   * **Why D:** The return is about tragic inevitability, not the passing of seasons.
+   * **Feedback:** ✓ Correct. George and Lennie's farm makes life bearable, yet its collapse argues that the Depression's dispossessed were promised a dream the society would never let them reach — the novella's enduring "so what".
+   * **Why A:** The novella dramatises the opposite — the Dream slips away however hard the men strive.
+   * **Why C:** Steinbeck honours the dream even as it fails; it is what gives the men dignity, not foolishness to abandon.
+   * **Why D:** The bond between George and Lennie is the novella's clearest good — companionship is shown as precious, not worthless.
 
-12. **Type: MCQ [Tests Techniques]**
-   * **Question:** How does the shooting of Candy's old dog function in the novella?
-   * **Options:** A) As comic relief, B) As foreshadowing — its "mercy" killing by a shot to the back of the head anticipates how George will end Lennie's life, C) As proof the ranch hands are cruel for no reason, D) As a random event with no meaning
+18. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What enduring idea about human need does the novella affirm through its portrait of loneliness?
+   * **Options:** A) That people are better off entirely alone, B) That human beings need companionship to survive with dignity, and a society that isolates the weak inflicts a real and cruel wound, C) That only the strong deserve company, D) That loneliness is easily cured by hard work
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The dog, shot in the back of the head to spare it suffering, prefigures George's killing of Lennie in the same way — Steinbeck plants the ending early.
-   * **Why A:** The scene is sombre and unsettling, not comic.
-   * **Why C:** Carlson frames it as mercy for a suffering animal, which makes the parallel with Lennie sharper.
-   * **Why D:** It is carefully placed foreshadowing, rich with meaning.
+   * **Feedback:** ✓ Correct. From Crooks's "a guy needs somebody" to Candy's grief and Curley's wife's isolation, the novella insists that company is a basic human need — and that denying it to the vulnerable is an injustice.
+   * **Why A:** The novella shows solitude as a torment, not a benefit — its whole vision argues against isolation.
+   * **Why C:** Steinbeck's sympathy extends to the weakest — Crooks, Candy, Curley's wife — not only the strong.
+   * **Why D:** Work does not cure the loneliness; only companionship does, and the society denies the vulnerable even that.
 
-13. **Type: True-False [Tests Techniques]**
-   * **Question:** Steinbeck often describes Lennie using animal imagery — dragging his feet "the way a bear drags his paws" — to stress his strength and childlike innocence.
+19. **Type: True-False [Tests Message]**
+   @dim:message
+   * **Question:** One of the novella's lasting messages is that an unjust society casts aside the weak and vulnerable — the old, the disabled, the marginalised — once they can no longer be useful.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Likening Lennie to a bear and other animals captures both his great physical power and his lack of adult understanding.
-   * **WhyWrong:** This is true — the animal imagery underlines Lennie's strength and innocence at once.
+   * **Feedback:** ✓ Correct. Candy's terror of being "canned" when he is too old to work, and Crooks's segregation, affirm the message that a harsh society discards those it deems worthless.
+   * **WhyWrong:** The novella insists that the vulnerable are cast aside once useless — Candy's fear and Crooks's exclusion make that injustice a central part of its message.
 
-14. **Type: Fill [Tests Techniques]**
-   * **Question:** The soft things Lennie loves to pet — mice, the puppy, and finally Curley's wife's hair — act as a recurring [BLANK] linking his gentleness to the danger of his uncontrolled strength.
-   * **Answer:** motif
-   * **Feedback:** ✓ Correct. The repeated motif of stroking soft things ties Lennie's tenderness to the fatal power he cannot govern, building towards the tragedy.
-   * **WhyWrong:** The word is "motif" — the recurring image of petting soft things that links Lennie's gentleness to disaster.
-
-15. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Why does George shoot Lennie at the end of the novella?
-   * **Options:** A) Out of hatred, B) As an act of mercy — to spare Lennie a worse death at the hands of Curley's lynch mob, killing him gently while describing their dream, C) To steal his money, D) Because Slim ordered him to
+20. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** Taking title and ending together, what enduring worldview does the novella ultimately affirm?
+   * **Options:** A) That hard work always secures a happy future, B) That even the best-laid dreams of the powerless "gang aft agley" in an unjust world — yet the hope and loyalty they hold are what give a hard life its dignity, C) That the poor deserve their misfortune, D) That friendship and dreams are pointless
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Knowing Curley means to make Lennie suffer, George kills him mercifully as he speaks of the farm and the rabbits, sparing his friend terror and pain.
-   * **Why A:** George acts out of love and grief, not hatred — the killing costs him everything.
-   * **Why C:** Money is never the motive; George gains nothing and loses his only companion.
-   * **Why D:** The decision is George's own; Slim only understands and comforts him afterwards.
-
-16. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Curley's wife is the only major character never given a name. What does this suggest?
-   * **Options:** A) Steinbeck forgot to name her, B) It marks her lack of identity and power — defined only as a man's possession in a male-dominated world, C) That she is unimportant to the plot, D) That she is a child
-   * **Correct:** B
-   * **Feedback:** ✓ Correct. Being known only as "Curley's wife" reduces her to a possession, exposing how the ranch's world denies women any identity of their own.
-   * **Why A:** The namelessness is deliberate and pointed, not an oversight.
-   * **Why C:** She is central — her death triggers the novella's climax.
-   * **Why D:** She is a young married woman, not a child; the point is her powerlessness.
-
-17. **Type: Select All [Tests Characters & Plot]**
-   * **Question:** Which statements about characters in the novella are accurate?
-   * **Options:** A) Slim is respected as the skilled, fair-minded "prince of the ranch", B) Candy fears being cast out once he is too old to work, C) Crooks lives apart from the others because of his race, D) Curley is generous and well-liked by the workers
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Slim's quiet authority, Candy's fear of being discarded and Crooks's forced separation all ring true to the text.
-   * **Why D:** Curley is aggressive and insecure, disliked and feared rather than well-liked.
-
-18. **Type: True-False [Tests Characters & Plot]**
-   * **Question:** After his own dog is shot, Candy tells George he wishes he had shot the dog himself rather than letting a stranger do it — a regret that later shapes George's choice about Lennie.
-   * **Answer:** True
-   * **Feedback:** ✓ Correct. Candy's regret that he "ought to have shot that dog" himself teaches George that a loved one's death is better given by a friend's hand than a stranger's.
-   * **WhyWrong:** This is true — Candy's regret directly informs George's decision to end Lennie's life himself.
-
-19. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** What repeatedly gets Lennie into trouble throughout the novella?
-   * **Options:** A) His dishonesty, B) His great strength combined with a childlike mind, so he harms soft things he only means to stroke, C) His laziness, D) His cruelty to others
-   * **Correct:** B
-   * **Feedback:** ✓ Correct. Lennie means no harm, but his enormous strength and limited understanding lead him to kill the mice, the puppy and finally Curley's wife.
-   * **Why A:** Lennie is trusting and honest; the danger is his uncontrolled strength, not deceit.
-   * **Why C:** He is a willing, powerful worker — hard-working rather than lazy.
-   * **Why D:** He is gentle by nature; the tragedy is that he causes harm without meaning to.
-
-20. **Type: Fill [Tests Characters & Plot]**
-   * **Question:** Lennie's favourite part of the dream is that he will get to tend the [BLANK] on their future farm.
-   * **Answer:** rabbits
-   * **Feedback:** ✓ Correct. Tending the rabbits is Lennie's cherished image of the dream, and George soothes him with it in his final moments.
-   * **WhyWrong:** The word is "rabbits" — Lennie longs to tend the rabbits, the detail George returns to at the end.
+   * **Feedback:** ✓ Correct. Burns's "the best-laid schemes o' mice an' men / Gang aft agley" frames the message: for the dispossessed the dream collapses, yet Steinbeck honours the love and hope that made it precious — a compassionate vision of dignity amid defeat.
+   * **Why A:** The novella shows effort defeated by an unjust world, not rewarded with a happy future.
+   * **Why C:** Steinbeck's sympathy lies wholly with the poor; the message indicts the society, never blames its victims.
+   * **Why D:** Friendship and the dream are shown as what redeems a hard life — precious, not pointless, even as they fail.

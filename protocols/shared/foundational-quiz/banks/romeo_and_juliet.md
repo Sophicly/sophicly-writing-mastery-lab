@@ -1,165 +1,205 @@
 # Foundational Quiz Bank — Romeo and Juliet
 
-Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions, mixed categories (Context-weighted) + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+Deterministic, code-scored foundational bank (parsed by `SWML_Quiz_Bank`).
+**20 questions — 4 variations of each of the 5 aspects.** The picker serves ONE random question per
+aspect = a light **5-question round** (`fq_dim_stratified`); depth comes from mastery REPETITION drawing
+a fresh variation per aspect each round, not from round length (3–5 is the low-stakes retrieval sweet
+spot). Keys + feedback live server-side and are stripped before questions reach the client.
 
-Categories: Context · Themes · Techniques · Characters & Plot
-Types: MCQ · Fill · True-False · Select All
+**Concept-based (v7.20.x — governed by `FQ-QUESTION-STANDARD.md`).** Every item tests the CENTRAL
+CONCEPT of its aspect, not surface trivia (research: `research/2026-07-11-concept-based-fq-question-design.md`).
+Distractors are plausible CONCEPTUAL MISREADINGS a real student holds, so the student must reason to the
+answer. Romeo and Juliet is a **tragedy** → the `effects` aspect tests the audience's **pity and fear**,
+not the naming of techniques.
+
+Aspects (`@dim` → Conceptual-Notes field via `concept_field_for_dim`):
+Protagonist → `cn_section_1` · Plot → `cn_section_3` · Themes → `cn_section_5` ·
+Effects → `cn_section_4` (Genre & Emotion) · Message → `cn_section_7`. A correct answer autofills that
+aspect's pre-authored note (`romeo_and_juliet.concept-notes.md`) into the CN doc; mastery completes all five.
 
 ### Quiz: Romeo and Juliet
 
-1. **Type: MCQ [Tests Context]**
-   * **Question:** In the social world of the play, why is Juliet's secret marriage to Romeo so dangerous to her family?
-   * **Options:** A) Because Romeo is already married to Rosaline, B) Because marrying for love across the feud betrays the family's lineage and honour, C) Because the Prince had banned all marriages in Verona, D) Because Romeo is a foreigner from Mantua
+1. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which best captures how Juliet *changes* across the play — and what drives the change?
+   * **Options:** A) She is a rebellious daughter from the first scene and never really changes, B) She grows from an obedient, sheltered child into a decisive woman who defies her family and dies by her own hand — driven by her own choice to love Romeo across the feud, C) She stays a passive girl throughout and is simply carried along by others, D) She is controlled by fate and has no say in what she becomes
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Marriage was a binding alliance between families; choosing love across the feud betrayed lineage and honour — "These violent delights have violent ends" (2.6).
-   * **Why A:** Romeo is only infatuated with Rosaline early on — he never marries her.
-   * **Why C:** The Prince bans street violence on pain of death, not marriage.
-   * **Why D:** Romeo is a Veronese Montague; Mantua is only where he is later banished.
+   * **Feedback:** ✓ Correct. The tragedy is the *change*: a dutiful child who will "look to like" whom her parents choose becomes a woman who marries in secret, defies her father and takes the potion — and the engine is her own decision to love, not fate alone.
+   * **Why A:** At the start she is obedient and untried ("I'll look no more than your consent gives strength"); the drama lies in her transformation into defiance, not in fixed rebellion.
+   * **Why C:** She is not passive — she proposes marriage, drinks the potion and chooses death; treating her as merely carried along erases the agency that makes her fall tragic.
+   * **Why D:** Fate presses on the lovers, but Juliet weighs and chooses at every turn; removing her agency turns a tragic heroine into a puppet.
 
-2. **Type: True-False [Tests Context]**
-   * **Question:** Juliet is presented as not yet fourteen — far younger than a typical bride — which heightens the sense of haste and vulnerability in her choices.
+2. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** What makes Romeo and Juliet *tragic* figures rather than simply reckless children or pure victims of fate?
+   * **Options:** A) They are foolish from the very beginning and deserve what happens, B) They are neither wholly wise nor merely unlucky — young lovers of real feeling brought down by their own impetuous haste, so their fall moves us, C) They are entirely innocent and make no mistakes at all, D) They escape all consequences and live on together
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. A tragic figure is an in-between one: genuine love and worth undone by a fatal flaw — here, headlong haste. That middle position is exactly why their ruin arouses pity, not mere impatience with silly teenagers.
+   * **Why A:** If they were merely foolish their deaths would irritate rather than move us — the tragedy needs their love to be real and worthy.
+   * **Why C:** Their haste and secrecy are their own errors; a flawless pair would earn sympathy but not tragic pity.
+   * **Why D:** They are destroyed at the close — tragic figures fall; they do not live on.
+
+3. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which pairing best shows Romeo's evolution from beginning to end?
+   * **Options:** A) A hardened soldier at the start → a gentle peacemaker at the end, B) A love-sick boy sighing over Rosaline → a devoted husband and then a desperate man who kills Tybalt and himself — driven by his own headlong passion, C) A cold, unfeeling man at the start → a calm philosopher at the end, D) An enemy of the Capulets at the start → their loyal servant at the end
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. He travels from shallow infatuation to true, committed love and then to violence and despair — the same impetuous heart, following its passion to ruin. That arc IS the tragedy.
+   * **Why A:** He begins a lover, not a soldier, and ends in violence and suicide, not peacemaking — this reverses his actual arc.
+   * **Why C:** He is passionate throughout, never cold or philosophically calm; his undoing is excess of feeling, not its absence.
+   * **Why D:** Romeo is a Montague throughout and never serves the Capulets; this confuses who he is entirely.
+
+4. **Type: True-False [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** The lovers' downfall is driven partly by their own choices — their headlong haste to love, marry in secret and act on impulse — not by fate alone.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The Nurse and Capulet both mark her age; her youth raises the stakes of every decision.
-   * **WhyWrong:** The text repeatedly stresses how young Juliet is — she is approaching fourteen, not older.
+   * **Feedback:** ✓ Correct. The stars press on them, but they choose at every turn — instant love, a secret marriage, an untested plan, Romeo's rush to die; that agency is what makes the fall *theirs* and the pair tragic rather than merely unlucky.
+   * **WhyWrong:** Fate never simply forces their hands — they decide. Treating them as pure puppets of the stars removes the choices that make them tragic figures rather than victims.
 
-3. **Type: MCQ [Tests Context]**
-   * **Question:** The Prologue calls the lovers "star-cross'd". Which Elizabethan belief does this reflect?
-   * **Options:** A) That the stars and fortune governed human destiny, B) That studying the stars was forbidden, C) That lovers had to consult an astrologer before marrying, D) That a comet had caused the feud
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. "A pair of star-cross'd lovers take their life" (Prologue) signals that fate and fortune work against them from the start.
-   * **Why B:** Astronomy and astrology were widely accepted, not banned.
-   * **Why C:** No such custom drives the plot — the phrase signals destiny, not advice.
-   * **Why D:** The feud's origin is never explained, and no comet causes it.
-
-4. **Type: MCQ [Tests Context]**
-   * **Question:** What does Prince Escalus represent in Verona?
-   * **Options:** A) The Church's authority over marriage, B) Lawful civic order that threatens death to end the feud's violence, C) A loyal ally of the Montague family, D) A merchant with no real power
+5. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Why does Romeo killing Tybalt *lead to* the lovers' final catastrophe? (What is the causal link?)
+   * **Options:** A) The two events are unconnected and simply happen in order, B) Killing Tybalt gets Romeo banished, which forces the lovers apart, drives the desperate potion plan, and so sets the double suicide in motion, C) The Prince orders Romeo to kill himself as punishment, D) Romeo kills at random because he has gone mad
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The Prince enforces civil order and issues the death-penalty edict after the opening brawl (1.1).
-   * **Why A:** Religious authority belongs to Friar Lawrence, not the Prince.
-   * **Why C:** The Prince is impartial — allied to neither house.
-   * **Why D:** He holds supreme civic power in the city.
+   * **Feedback:** ✓ Correct. One act *causes* the next: revenge for Mercutio brings banishment, banishment forces separation, separation demands the risky plan, and the plan's failure ends in the tomb. This causal necessity is what makes the plot a tragic arc, not a list of events.
+   * **Why A:** In tragedy events follow by cause, not mere sequence — "succession is not causation"; reading them as unconnected misses the arc.
+   * **Why C:** The Prince banishes Romeo, he does not command a suicide; the deaths flow from the lovers' own desperate choices.
+   * **Why D:** Romeo kills Tybalt out of grief and revenge for Mercutio, not random madness.
 
-5. **Type: Fill [Tests Context]**
-   * **Question:** The ancient, inherited hatred between the Montagues and the Capulets is called a [BLANK].
-   * **Answer:** feud
-   * **Feedback:** ✓ Correct. The feud is the social fact that frames the whole tragedy — "Two households, both alike in dignity" (Prologue).
-   * **WhyWrong:** The word the play turns on is "feud" — the long-standing quarrel between the two houses.
-
-6. **Type: Select All [Tests Context]**
-   * **Question:** Which of these reflect the real social world the play is set in?
-   * **Options:** A) Marriages arranged to secure family alliances, B) A blood feud accepted as part of Verona's life, C) A jury trial broadcast to the public, D) A belief that fortune and the stars shape human lives
-   * **Correct:** A, B, D
-   * **Scoring:** 2 marks for A,B,D. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Arranged alliance-marriages, an accepted blood feud and a belief in fortune all belong to the play's world.
-   * **Why C:** Public jury trials are a modern anachronism — civic justice here is the Prince's personal authority.
-
-7. **Type: MCQ [Tests Themes]**
-   * **Question:** Juliet's line "My only love sprung from my only hate" (1.5) expresses which central paradox of the play?
-   * **Options:** A) That she secretly hates Romeo, B) That love and hatred are bound together — her love grows from the very house she is meant to hate, C) That she still loves Rosaline's cousin, D) That the Nurse disapproves of the match
+6. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which best describes the *causal chain* of the tragedy — not just the order of events?
+   * **Options:** A) A series of unrelated misfortunes that strike the lovers by bad luck, B) The feud makes love forbidden → the lovers marry in secret → Romeo avenges Mercutio by killing Tybalt → he is banished → the potion plan is hatched → the letter fails to reach him → both die, C) The stars cause each step directly, so nothing is the lovers' doing, D) Fate alone decides everything, and their choices make no difference
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The oxymoron captures the tragedy: love born out of the feud it cannot survive.
-   * **Why A:** She loves Romeo — the line laments that he belongs to the hated house.
-   * **Why C:** Rosaline is Romeo's earlier infatuation, not Juliet's concern.
-   * **Why D:** The Nurse's opinion is not what this line is about.
+   * **Feedback:** ✓ Correct. Each stage flows by necessity from the one before, all originating in the feud and the lovers' haste. That is the tragic arc: an inherited hatred and a rash passion working themselves out to catastrophe.
+   * **Why A:** Their ruin is not random misfortune — it is the logical, causal outworking of the feud and their own choices.
+   * **Why C:** The stars loom over the play, but it is human acts — the marriage, the killing, the failed letter — that drive each step.
+   * **Why D:** If choice made no difference it would not be a tragedy; the whole arc turns on the lovers' decisions.
 
-8. **Type: True-False [Tests Themes]**
-   * **Question:** The play suggests the lovers' haste is partly responsible for the tragedy, not fate alone.
+7. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which act is the turning point that makes the catastrophe unavoidable — the point of no return?
+   * **Options:** A) Romeo and Juliet meeting at the Capulet feast, B) Romeo killing Tybalt in revenge for Mercutio, C) Romeo drinking the poison in the tomb, D) The Prince reconciling the families at the end
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Killing Tybalt is the irreversible act: it earns banishment, splits the lovers, and makes every later disaster follow. Before it, reconciliation is still possible; after it, only tragedy remains. That is the tragic turning point (peripeteia).
+   * **Why A:** The meeting begins the love but is not yet irreversible — the feud could still be crossed peacefully.
+   * **Why C:** The poison is the *catastrophe itself*, the end the turning point made inevitable, not the choice that set it in motion.
+   * **Why D:** The reconciliation is the aftermath — the cost paid, not the act that caused the fall.
+
+8. **Type: True-False [Tests Plot]**
+   @dim:plot
+   * **Question:** In the play the later disasters follow by cause-and-effect from the feud and the lovers' secret marriage — they are not just a string of unconnected events.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Friar Lawrence warns "These violent delights have violent ends" (2.6) — the speed of every choice drives the catastrophe.
-   * **WhyWrong:** Alongside fate, the play repeatedly blames haste — instant love, a secret marriage, an untested plan and Romeo's rush to believe bad news.
+   * **Feedback:** ✓ Correct. Tragic plot is built on necessity, not mere sequence: the brawl, the banishment, the potion and the tomb are each *because of* the last, all rooted in the feud and the hasty marriage. That causal spine is what separates tragedy from a list of happenings.
+   * **WhyWrong:** Reading the events as unconnected ("they just happen next") misses the causal necessity — the very thing that makes the plot a tragic arc rather than a chronicle.
 
 9. **Type: MCQ [Tests Themes]**
-   * **Question:** Why does Romeo at first REFUSE to fight Tybalt in Act 3 Scene 1?
-   * **Options:** A) He is afraid of Tybalt's skill, B) He is now secretly married to Juliet, which makes Tybalt his kinsman, C) The Prince is standing nearby, D) Mercutio has ordered him to stay out of it
+   @dim:themes
+   * **Question:** Juliet cries "My only love sprung from my only hate" (1.5). What does this reveal about the play's view of love and hatred?
+   * **Options:** A) That she secretly hates Romeo, B) That love and hatred are bound inseparably together — her love grows from the very house she is bound to hate, and cannot survive the feud, C) That she still loves an earlier suitor, D) That the Nurse disapproves of the match
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The secret marriage binds Romeo to the Capulets — though his restraint leads to Mercutio's death and his own revenge.
-   * **Why A:** Romeo is not shown as cowardly — he later kills Tybalt.
-   * **Why C:** The Prince is not present at the brawl.
-   * **Why D:** Mercutio is angered BY Romeo's refusal — he does not command it.
+   * **Feedback:** ✓ Correct. The oxymoron captures the play's whole argument: love born out of hatred, doomed by the feud it cannot escape. Love and hate are shown as fatally entangled.
+   * **Why A:** She loves Romeo — the line laments that he belongs to the hated house, not that she hates him.
+   * **Why C:** The line is about the feud dividing her from Romeo, not about a rival suitor.
+   * **Why D:** The Nurse's opinion is not what this line explores — it is the clash of love and inherited hate.
 
-10. **Type: Fill [Tests Themes]**
-   * **Question:** Friar Lawrence warns that "These violent delights have violent [BLANK]."
-   * **Answer:** ends
-   * **Feedback:** ✓ Correct. The line (2.6) foreshadows that passion pursued in haste will end in destruction.
-   * **WhyWrong:** The missing word is "ends" — the delights and their consequences are both "violent".
-
-11. **Type: MCQ [Tests Techniques]**
-   * **Question:** The Prologue that opens the play is written in the form of a...
-   * **Options:** A) Limerick, B) Sonnet, C) Ballad, D) Passage of free verse
+10. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Friar Lawrence warns "These violent delights have violent ends" (2.6). Which controlling idea does this announce?
+   * **Options:** A) That love should always be pursued as fast as possible, B) That passion pursued in haste overreaches and destroys itself — impetuous love ends in ruin, C) That the lovers feel no real delight, D) That only the Friar's plans ever go wrong
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The 14-line sonnet gives the tragedy a tight, fated shape from the very first words.
-   * **Why A:** A limerick is a short comic five-line form.
-   * **Why C:** A ballad is a narrative song form, not a 14-line sonnet.
-   * **Why D:** The Prologue is tightly rhymed and metered, not free verse.
+   * **Feedback:** ✓ Correct. The image of delights that burn out violently is the play's argument about haste: love and revenge alike, pursued without restraint, consume the very people who indulge them.
+   * **Why A:** The line warns *against* haste — the opposite of pursuing love as fast as possible.
+   * **Why C:** The delights are real and intense; it is their *speed and excess*, not their absence, that destroys.
+   * **Why D:** The theme is universal in the play — every rash choice, not only the Friar's, ends violently.
 
-12. **Type: MCQ [Tests Techniques]**
-   * **Question:** "O, she doth teach the torches to burn bright!" (1.5) is an example of which technique?
-   * **Options:** A) Light imagery presenting Juliet as radiant and transcendent, B) Onomatopoeia imitating the sound of fire, C) A pun on Juliet's name, D) A stage direction
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Romeo repeatedly casts Juliet as light against darkness — a pattern running through the whole play.
-   * **Why B:** There is no sound-imitation here — the image is visual.
-   * **Why C:** There is no wordplay on her name in the line.
-   * **Why D:** It is spoken dialogue, not a stage direction.
+11. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** The Prologue calls the lovers "star-cross'd", yet the play also blames human choices. Which idea best describes how their downfall comes about?
+   * **Options:** A) Fate alone destroys them and their choices are irrelevant, B) Fate and free will work together — the stars set a doom, but the lovers' own haste and the families' hatred bring it to pass, C) The feud has nothing to do with their deaths, D) The Friar casts a spell that controls them
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The play holds fate and choice in tension: "star-cross'd" foretells a doom, but it is human hatred and human haste — the marriage, the killing, the rushed suicide — that actually deliver it.
+   * **Why A:** If choice were irrelevant the lovers' rashness would carry no weight; the play repeatedly shows their decisions driving the ruin.
+   * **Why C:** The feud is the very soil the tragedy grows from — it makes the love forbidden and the deaths possible.
+   * **Why D:** There is no spell; the Friar advises and schemes, but the lovers choose their own path.
 
-13. **Type: True-False [Tests Techniques]**
-   * **Question:** Dramatic irony is at work when Romeo believes Juliet is truly dead, while the audience knows she has only taken a sleeping potion.
+12. **Type: True-False [Tests Themes]**
+   @dim:themes
+   * **Question:** In the play, young love is set against a backdrop of inherited hatred — "Two households, both alike in dignity" — and it is the feud that makes the lovers' love both precious and doomed.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The gap between what Romeo knows and what we know is exactly what makes the tomb scene unbearable (5.3).
-   * **WhyWrong:** This IS dramatic irony — the audience holds knowledge the character on stage tragically lacks.
+   * **Feedback:** ✓ Correct. The Prologue frames the whole tragedy as love caught inside an "ancient grudge"; the feud is the controlling condition that makes the lovers' devotion beautiful and impossible at once.
+   * **WhyWrong:** The love and the feud are inseparable in the play — the hatred of the two houses is exactly what dooms the love, not a detail beside it.
 
-14. **Type: Fill [Tests Techniques]**
-   * **Question:** A figure of speech that yokes opposites together — such as "sweet sorrow" — is called an [BLANK].
-   * **Answer:** oxymoron
-   * **Feedback:** ✓ Correct. "Parting is such sweet sorrow" (2.2) fuses pleasure and pain in a single phrase.
-   * **WhyWrong:** Joining contradictory words like "sweet sorrow" is an oxymoron.
-
-15. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Who secretly marries Romeo and Juliet, hoping the union will end the feud?
-   * **Options:** A) The Nurse, B) Friar Lawrence, C) Prince Escalus, D) Lord Capulet
+13. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Romeo and Juliet is a tragedy. Why do we feel *pity* for the lovers by the end, despite the rash choices that ruin them?
+   * **Options:** A) Because they are entirely blameless and made no mistakes, B) Because two young people capable of real, tender love are destroyed by hatred and their own haste — their deaths feel like a terrible waste, C) Because fate forced them and they could do nothing at all, D) Because they escape their families and we are glad for them
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Friar Lawrence weds them believing "this alliance may so happy prove / To turn your households' rancour to pure love" (2.3).
-   * **Why A:** The Nurse helps the lovers meet but does not perform the marriage.
-   * **Why C:** The Prince enforces law — he does not marry them.
-   * **Why D:** Capulet is Juliet's father and knows nothing of the match.
+   * **Feedback:** ✓ Correct. Tragedy makes us pity a *partly self-caused* fall: the lovers' feeling is genuine and full of promise, so watching it wasted by feud and haste moves us. Pity comes from ruined worth, not from innocence.
+   * **Why A:** Their haste is a real flaw — and it is precisely *flawed* lovers, not blameless ones, whose fall earns tragic pity.
+   * **Why C:** Blaming fate alone removes their choices; we pity them *because* their own rashness helps waste something real.
+   * **Why D:** They do not escape — they die; and the feeling at the close is pity and fear, not relief for them.
 
-16. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Which of these characters is the FIRST to die in the play?
-   * **Options:** A) Tybalt, B) Mercutio, C) Romeo, D) Juliet
+14. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** A tragedy such as Romeo and Juliet is designed to make the audience feel two emotions above all others. Which two?
+   * **Options:** A) Amusement and satisfaction, B) Pity and fear, C) Confusion and boredom, D) Admiration for the lovers' cleverness
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Mercutio is killed first in Act 3 Scene 1, cursing "A plague o' both your houses!"
-   * **Why A:** Tybalt dies moments AFTER Mercutio, killed by Romeo in revenge.
-   * **Why C:** Romeo dies in Act 5 at the tomb.
-   * **Why D:** Juliet is the last of the four to die.
+   * **Feedback:** ✓ Correct. Since Aristotle, tragedy has aimed to arouse *pity* (for the lovers' ruin) and *fear* (that hatred and haste like this could destroy any of us) — the emotional purpose the whole arc serves.
+   * **Why A:** Amusement belongs to comedy; a tragedy that merely satisfied us would fail its purpose.
+   * **Why C:** Confusion and boredom are the marks of a *failed* tragedy, not its aim.
+   * **Why D:** We may admire the lovers' devotion, but the intended response is pity and fear, not admiration for cleverness.
 
-17. **Type: Select All [Tests Characters & Plot]**
-   * **Question:** Which of these are direct consequences of the brawl in Act 3 Scene 1?
-   * **Options:** A) Mercutio is killed, B) Romeo kills Tybalt, C) Romeo is banished from Verona, D) Juliet is sent away to a convent
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Mercutio's death, Tybalt's killing and Romeo's banishment all flow from this one scene.
-   * **Why D:** Juliet is never sent to a convent — she is instead pressed to marry Paris.
+15. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Why do we feel *fear* and dread as we watch the lovers rush towards the tomb?
+   * **Options:** A) Because we are frightened of ghosts and the dark vault, B) Because the lovers are recognisably like us — so their ruin warns that hatred, haste and blind chance could destroy anyone, C) Because we are afraid the feud will spread across all of Italy, D) We feel no fear at all, only mild curiosity
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Tragic fear is *fear for ourselves*: because the lovers are ordinary young people, not monsters, their fall feels like a warning that the same forces — inherited hatred, headlong passion, unlucky timing — could undo any of us.
+   * **Why A:** The fear is moral and human, not a fright at ghosts; the tomb disturbs, but the deeper fear is for how easily love is destroyed.
+   * **Why C:** We fear for the lovers themselves and for our own vulnerability, not for the geographical spread of the quarrel.
+   * **Why D:** The foreboding that hangs over the play makes us fear the outcome throughout — indifference is the mark of a failed tragedy.
 
-18. **Type: True-False [Tests Characters & Plot]**
-   * **Question:** At the Capulet tomb in Act 5, Romeo kills Paris before taking the poison.
+16. **Type: True-False [Tests Effects]**
+   @dim:effects
+   * **Question:** By the close of the play we are meant to feel both pity and fear — pity for the young love wasted, and fear that hatred and haste could destroy the innocent.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Paris confronts Romeo at the tomb and is killed before Romeo reaches Juliet (5.3).
-   * **WhyWrong:** Romeo does kill Paris at the tomb — Paris believes Romeo has come to defile the Capulet vault.
+   * **Feedback:** ✓ Correct. That double feeling — pity for the self- and feud-destroyed lovers and fear for "ones like us" — is the emotional effect a tragedy is built to produce as the families are finally, painfully reconciled.
+   * **WhyWrong:** The intended effect is pity *and* fear together, not amusement or triumph; the reconciliation is meant to leave us moved and warned, not merely satisfied.
 
-19. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Why does Friar Lawrence's potion plan end in disaster?
-   * **Options:** A) Juliet refuses to drink the potion, B) The message explaining the plan never reaches Romeo, C) Romeo forgets the agreed plan, D) The Nurse betrays the plan to Lord Capulet
+17. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What is the play's overall *message* about hatred and the feud?
+   * **Options:** A) That family loyalty should always come before love, B) That senseless, inherited hatred destroys the innocent young — and that only a terrible cost finally teaches the warring families peace, C) That love can never really exist, D) That the feud has no real consequences
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The letter never arrives, so Romeo hears only that Juliet is dead and rushes to the tomb (5.1).
-   * **Why A:** Juliet does drink the potion.
-   * **Why C:** Romeo never learns the plan at all — he is told only that she has died.
-   * **Why D:** The Nurse does not expose the plan.
+   * **Feedback:** ✓ Correct. The lovers die because of an "ancient grudge" they did not make, and only their deaths reconcile the houses — the play's enduring "so what": hatred consumes the next generation, and peace is bought at the price of the young.
+   * **Why A:** The play dramatises the opposite — the feud's demand for loyalty is exactly what destroys the lovers.
+   * **Why C:** The play affirms that love is real and precious; it is hatred, not love, that it condemns.
+   * **Why D:** The feud's consequences are catastrophic — it costs the lives of Mercutio, Tybalt, Paris and both lovers.
 
-20. **Type: Fill [Tests Characters & Plot]**
-   * **Question:** After killing Tybalt, Romeo is banished by the Prince to the nearby city of [BLANK].
-   * **Answer:** Mantua
-   * **Feedback:** ✓ Correct. Romeo flees to Mantua, where he later hears the false news of Juliet's death.
-   * **WhyWrong:** Romeo is banished to Mantua — the nearby city he escapes to after the brawl.
+18. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What does the reconciliation of the Montagues and Capulets at the very end suggest the play is saying?
+   * **Options:** A) That the feud was harmless all along, B) That peace was always possible, but it took the death of their innocent children to force the families to see the cost of their hatred, C) That the Prince alone caused the tragedy, D) That the lovers died for nothing and change nothing
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. "All are punish'd" — the families make peace only over their children's bodies, the play's warning that hatred is broken only at unbearable cost, and far too late.
+   * **Why A:** The feud is shown to be lethal, not harmless — it kills four young people before it ends.
+   * **Why C:** The Prince tries to keep order; the tragedy is caused by the families' hatred and the lovers' haste, not by him.
+   * **Why D:** The deaths do change things — they end the feud — but the message is that this reconciliation comes tragically late.
+
+19. **Type: True-False [Tests Message]**
+   @dim:message
+   * **Question:** One of the play's lasting messages is that the hatred of one generation destroys the next — the children pay for the quarrel of their parents.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The "star-cross'd" children die for an "ancient grudge" they never chose, and only their deaths end it — affirming that inherited hatred consumes the innocent young.
+   * **WhyWrong:** The play insists the feud's cost falls on the children: Romeo and Juliet are destroyed by a quarrel made by their elders, a central part of its moral message.
+
+20. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** Which enduring idea about love and hate does the ending most affirm?
+   * **Options:** A) That private love can always overcome public hatred if it is strong enough, B) That love pursued inside a world of hatred cannot survive — yet its destruction can, at last, shame that hatred into peace, C) That hatred always triumphs and love is worthless, D) That fate is the only thing that matters and human choices are meaningless
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The lovers' love is real but cannot outlast the feud; only their deaths reconcile the houses — the play's enduring worldview: love and hate cannot share a world, and hatred is broken only at a devastating cost.
+   * **Why A:** The play shows the opposite — however strong, the love is crushed by the feud; it wins peace only through death, not survival.
+   * **Why C:** Love is not worthless here — it is precious, and its loss is precisely what finally ends the hatred.
+   * **Why D:** The play holds fate and choice in tension; the lovers' and families' decisions plainly shape the outcome, so choice is not meaningless.

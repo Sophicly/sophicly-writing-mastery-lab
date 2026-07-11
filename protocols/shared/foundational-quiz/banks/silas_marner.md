@@ -1,165 +1,206 @@
 # Foundational Quiz Bank — Silas Marner
 
-Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions, mixed categories (Context-weighted) + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+Deterministic, code-scored foundational bank (parsed by `SWML_Quiz_Bank`).
+**20 questions — 4 variations of each of the 5 aspects.** The picker serves ONE random question per
+aspect = a light **5-question round** (`fq_dim_stratified`); depth comes from mastery REPETITION drawing
+a fresh variation per aspect each round, not from round length (3–5 is the low-stakes retrieval sweet
+spot). Keys + feedback live server-side and are stripped before questions reach the client.
 
-Categories: Context · Themes · Techniques · Characters & Plot
-Types: MCQ · Fill · True-False · Select All
+**Concept-based (v7.20.x — governed by `FQ-QUESTION-STANDARD.md`).** Every item tests the CENTRAL
+CONCEPT of its aspect, not surface trivia (research: `research/2026-07-11-concept-based-fq-question-design.md`).
+Distractors are plausible CONCEPTUAL MISREADINGS a real student holds, so the student must reason to the
+answer. Silas Marner is a **rebirth / redemption** story → the `effects` aspect tests the reader's **hope
+and relief softening into tender empathy** — the faith that no heart is beyond change — not the naming of
+techniques.
+
+Aspects (`@dim` → Conceptual-Notes field via `concept_field_for_dim`):
+Protagonist → `cn_section_1` · Plot → `cn_section_3` · Themes → `cn_section_5` ·
+Effects → `cn_section_4` (Genre & Emotion) · Message → `cn_section_7`. A correct answer autofills that
+aspect's pre-authored note (`silas_marner.concept-notes.md`) into the CN doc; mastery completes all five.
 
 ### Quiz: Silas Marner
 
-1. **Type: MCQ [Tests Context]**
-   * **Question:** When was *Silas Marner* first published?
-   * **Options:** A) 1861, B) 1740, C) 1925, D) 1980
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. George Eliot published the novel in 1861, during the Victorian period, though its action looks back to the quieter rural England of the century's opening decades.
-   * **Why B:** The novel is a Victorian work of 1861, not an eighteenth-century one.
-   * **Why C:** It belongs to the Victorian era, well before the 1920s.
-   * **Why D:** It is a nineteenth-century classic, not a modern novel.
+1. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which best captures how Silas *changes* across the novel — and what drives the change?
+   * **Options:** A) He is a cold, joyless miser from first page to last and never really changes, B) He begins a betrayed, embittered recluse who worships his gold, and becomes a warm, loved man restored to the community — driven by his own choice to take in and cherish Eppie, C) He stays a contented, sociable man throughout and is simply misunderstood, D) He is changed entirely by luck, playing no part in his own renewal
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The whole novel is the *thaw*: a heart frozen by betrayal is reopened — and the engine is Silas's own choice to love the child, not chance alone.
+   * **Why A:** He is warm and generous at the start of his Lantern Yard life and again at the close; the drama lies in his transformation, not in fixed coldness.
+   * **Why C:** He is bitterly isolated for the long middle of the book — the point is the change *out* of that state, not a steady contentment.
+   * **Why D:** Eppie arrives by chance, but Silas *chooses* to keep and raise her; removing his agency turns a redemption into an accident and misses why the renewal is his own doing.
 
-2. **Type: MCQ [Tests Context]**
-   * **Question:** "George Eliot" was the pen name of which author?
-   * **Options:** A) Mary Ann Evans, B) Charlotte Brontë, C) Jane Austen, D) Charles Dickens
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. George Eliot was the pen name adopted by Mary Ann Evans, who used a male name so that her serious fiction would be judged fairly in a male-dominated literary world.
-   * **Why B:** Charlotte Brontë was a separate novelist; the pen name George Eliot belonged to Mary Ann Evans.
-   * **Why C:** Jane Austen wrote earlier and under her own name; the pen name was Mary Ann Evans's.
-   * **Why D:** Charles Dickens was a contemporary but an entirely different author.
+2. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** What makes Silas's story a *redemption* rather than mere good fortune falling on a lucky man?
+   * **Options:** A) He is rewarded with money for doing nothing, B) A hardened, cut-off self is remade because Silas confronts his isolation and chooses human love over his hoarded gold — the change costs him and is his own, C) He was never really hardened, so nothing needs redeeming, D) He is rescued entirely by others and stays exactly as he was inside
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Redemption turns on a *thawed self*: Silas's cold, gold-worshipping isolation is real, and choosing to love Eppie is the inner change that brings him back to life.
+   * **Why A:** He loses his gold and gains no wealth; his renewal is of the heart, not the purse.
+   * **Why C:** His years of bitter, miserly isolation are exactly the frozen self the story melts — denying them erases the redemption.
+   * **Why D:** Eppie draws him out, but the reopening of his heart is his own; a rescue that left him unchanged inside would not be a redemption.
 
-3. **Type: True-False [Tests Context]**
-   * **Question:** The novel's full title is *Silas Marner: The Weaver of Raveloe*, naming both the hero's trade and the village where he settles.
+3. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which pairing best shows Silas's evolution from beginning to end?
+   * **Options:** A) A trusted village elder at the start → a lonely outcast at the end, B) A betrayed, solitary linen-weaver hoarding his gold at the loom → a beloved father, thawed and restored to the life of Raveloe, C) A wealthy landowner at the start → a penniless wanderer at the end, D) A cheerful child at the start → a bitter old miser at the end
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. He travels from cold, cut-off gold-worship to warm belonging — the same man, brought back to life by his own care for Eppie. That arc IS the redemption.
+   * **Why A:** He begins an isolated outsider and ends drawn *into* the community — this reverses his actual arc.
+   * **Why C:** He is a humble weaver throughout, never a landowner; the change is of the heart, not of fortune.
+   * **Why D:** His arc runs from bitter isolation *towards* warmth, not away from it — this inverts the redemption.
+
+4. **Type: True-False [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Silas's renewal is driven above all by his own choice to open his heart — Eppie arrives by chance, but choosing to keep, love and raise her is his own doing.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The subtitle "The Weaver of Raveloe" fixes Silas by his craft and his adopted home, the village at the heart of the story.
-   * **WhyWrong:** This is true — the subtitle names him "The Weaver of Raveloe", after his trade and his village.
+   * **Feedback:** ✓ Correct. Fortune brings the child to his hearth, but Silas weighs it and chooses to become her father; that choice is what turns a chance event into a redemption, and keeps the change *his*.
+   * **WhyWrong:** Chance never forces his hand — the child could have been given up. Treating him as passive removes the choice that makes his rebirth his own, not an accident that happened to him.
 
-4. **Type: MCQ [Tests Context]**
-   * **Question:** In what kind of world does George Eliot set the novel?
-   * **Options:** A) A remote English farming village in the early nineteenth century, where old religion and superstition were beginning to fade, B) A bustling modern city during the Second World War, C) Ancient Rome, D) An imagined society of the distant future
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Eliot sets the story in a quiet rural England of the early 1800s, a settled village world in which old faith and folk superstition were slowly giving way to change.
-   * **Why B:** The novel looks back to a rural England of the century's opening decades, not a wartime city.
-   * **Why C:** It is set in nineteenth-century England, not the classical world.
-   * **Why D:** It is historical realist fiction, not a vision of the future.
-
-5. **Type: Fill [Tests Context]**
-   * **Question:** Silas earns his living in Raveloe as a solitary linen-[BLANK], working alone at his loom.
-   * **Answer:** weaver
-   * **Feedback:** ✓ Correct. Working as a linen-weaver, Silas lives apart from the villagers, his loom marking him out as an outsider in Raveloe.
-   * **WhyWrong:** The word is "weaver" — Silas is the linen-weaver of Raveloe, isolated at his loom.
-
-6. **Type: Select All [Tests Context]**
-   * **Question:** Which statements about the novel's context and form are accurate?
-   * **Options:** A) It is a work of realist fiction concerned with moral and inner life, B) It is set in an early-nineteenth-century English village, C) It portrays a rural world where old faith and superstition were giving way to change, D) It takes place in a modern industrial city
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. The novel is realist fiction set in an early-nineteenth-century village, capturing a rural world in which old faith and superstition were slowly yielding to change.
-   * **Why D:** Raveloe is a remote farming village, not a modern industrial city.
-
-7. **Type: MCQ [Tests Themes]**
-   * **Question:** What does Silas's story most clearly suggest about love and money?
-   * **Options:** A) That money brings lasting happiness, B) That human love can redeem a life the love of money had left empty, C) That the two are equally worthless, D) That wealth should always be shared
+5. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Why does the *theft* of Silas's gold *lead to* his renewal? (What is the causal link?)
+   * **Options:** A) The theft and the renewal are unconnected events that simply happen in order, B) Losing the hoard empties his life of the dead treasure he worshipped, so that when Eppie wanders in he takes the living child into the void the gold has left, C) The thief returns the gold and Silas is grateful, D) Silas grows richer after the theft and forgets his loneliness
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Once Silas loses his hoarded gold and comes to love Eppie, the novel shows that human affection, not money, is what restores meaning and joy to his life.
-   * **Why A:** The novel shows Silas's gold left him lonely; it did not bring lasting happiness.
-   * **Why C:** Love proves precious rather than worthless — it is what saves Silas.
-   * **Why D:** The point is love's redeeming power, not a lesson about sharing wealth.
+   * **Feedback:** ✓ Correct. One act *causes* the next: the emptied hearth makes room for the child, and cold treasure is answered by living love. This causal necessity is what makes the plot a redemptive arc, not a list of events.
+   * **Why A:** In a redemption arc events follow by cause, not mere sequence — "succession is not causation"; reading them as unconnected misses the whole hinge of the story.
+   * **Why C:** The gold is never returned in Silas's time of need; its *loss*, not its recovery, clears the way for Eppie.
+   * **Why D:** He gains no wealth — the point is that the *absence* of gold opens him to a love money never gave him.
 
-8. **Type: MCQ [Tests Themes]**
-   * **Question:** How does Silas's place in the community change across the novel?
-   * **Options:** A) He grows ever more isolated until the end, B) He moves from bitter isolation back into the life of the village, drawn out by caring for Eppie, C) He leaves Raveloe forever, D) He never speaks to anyone
+6. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which best describes the *causal chain* of Silas's renewal — not just the order of events?
+   * **Options:** A) A series of unrelated happenings that fall on him by chance, B) Betrayal at Lantern Yard → loss of faith and withdrawal into gold-hoarding → the gold is stolen → Eppie fills the emptied life → raising her draws him back into the community and renews him, C) Each step is caused by pure luck, so nothing Silas does matters, D) The villagers plan his whole recovery from the start
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Cut off and mistrusted at first, Silas is gradually drawn back into Raveloe's community through raising Eppie, who reconnects him with his neighbours.
-   * **Why A:** He grows less isolated, not more, once Eppie enters his life.
-   * **Why C:** He remains in Raveloe, which becomes his true home.
-   * **Why D:** Through Eppie he comes to know, and be known by, the villagers.
+   * **Feedback:** ✓ Correct. Each stage flows from the one before — the wound of betrayal drives the isolation, the theft empties it, the child fills it — all resolving in his return to community. That is the redemptive arc.
+   * **Why A:** His renewal is not random luck — it is the causal outworking of loss making room for love.
+   * **Why C:** His choice to keep and love Eppie is the hinge; removing it erases the causation that is his own.
+   * **Why D:** The village does not engineer his recovery — it grows, step by step, from his own care for the child.
 
-9. **Type: True-False [Tests Themes]**
-   * **Question:** The novel draws a deliberate parallel between the gold Silas loses and the golden-haired child he gains, suggesting living love replaces dead treasure.
+7. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which moment is the turning point that reverses Silas's slide into cold isolation — the hinge of the whole story?
+   * **Options:** A) His false accusation at Lantern Yard, B) The night Eppie wanders in from the snow and Silas chooses to keep her, C) Dunstan Cass stealing the gold, D) Godfrey Cass's final confession
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Taking in the child is the reversal: from that choice his descent into isolation turns upward into warmth and belonging. That is the redemptive turning point.
+   * **Why A:** The betrayal begins his *fall* into isolation; it is the wound, not the moment that reverses it.
+   * **Why C:** The theft empties his life and prepares the ground — a necessary cause, but the *turn* comes with Eppie, not the loss.
+   * **Why D:** Godfrey's confession comes long after Silas is already renewed; it resolves a loose thread, it does not cause the change.
+
+8. **Type: True-False [Tests Plot]**
+   @dim:plot
+   * **Question:** In Silas Marner the events follow by cause and effect — losing the gold empties his life so that Eppie's coming can fill it — not just as a string of unconnected happenings.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Silas's stolen gold is answered by Eppie's golden hair; the novel sets living, loving warmth against the cold hoard he once worshipped.
-   * **WhyWrong:** This is true — the lost gold and the golden-haired child are pointedly linked, love replacing treasure.
+   * **Feedback:** ✓ Correct. The plot is built on necessity, not mere sequence: the theft clears the way, the child fills the void, and raising her renews him — each event *because of* the last. That causal spine is what makes it a redemption, not a chronicle.
+   * **WhyWrong:** Reading the events as unconnected ("they just happen next") misses the causal necessity — the loss preparing the ground for love — which is the very thing that makes the story a redemptive arc.
 
-10. **Type: Fill [Tests Themes]**
-   * **Question:** Before Eppie came to him, the lonely Silas hoarded and worshipped his [BLANK], counting the coins each night.
-   * **Answer:** gold
-   * **Feedback:** ✓ Correct. In his isolation Silas turned to his gold, hoarding and counting it obsessively until it stood in the place of human love.
-   * **WhyWrong:** The word is "gold" — Silas hoarded his gold until Eppie replaced it as the treasure of his life.
-
-11. **Type: MCQ [Tests Techniques]**
-   * **Question:** What is the main effect of linking Silas's stolen gold with Eppie's golden hair?
-   * **Options:** A) It is a meaningless coincidence, B) It works as symbolism — the warm, living gold of the child replaces the cold, dead gold of the coins, C) It shows Silas is still greedy, D) It confuses the timeline
+9. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** The novel pointedly links the stolen gold with Eppie's golden hair. What does this reveal about its view of what truly enriches a life?
+   * **Options:** A) That money and love are equally worthless, B) That living, human love — not dead, hoarded treasure — is what gives a life warmth and worth, C) That Silas remains greedy to the end, D) That wealth should always be shared among neighbours
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The echo between the coins and the child's golden hair is symbolic: lifeless treasure is replaced by a living child who brings real warmth and worth.
-   * **Why A:** The parallel is deliberate and meaningful, not coincidence.
-   * **Why C:** It marks Silas's change away from greed, not proof that it remains.
-   * **Why D:** The symbol clarifies the novel's meaning rather than confusing its order.
+   * **Feedback:** ✓ Correct. The warm gold of the child replacing the cold gold of the coins is the novel's whole argument: love, not money, is the true treasure of a life.
+   * **Why A:** Love is shown to be precious, not worthless — it is what saves Silas; the two are set in contrast, not levelled.
+   * **Why C:** The parallel marks his change *away* from gold-worship, not proof that greed remains.
+   * **Why D:** The point is love's redeeming power over treasure, not a lesson about sharing wealth.
 
-12. **Type: MCQ [Tests Techniques]**
-   * **Question:** How does George Eliot structure the two strands of the novel?
-   * **Options:** A) They never connect, B) The story of the humble weaver and that of the wealthy Cass family are interwoven and finally bound together through Eppie, C) There is only one character, D) The two plots contradict each other
+10. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Silas moves from bitter solitude back into the life of Raveloe. Which controlling idea does this most explore, and how does it *work*?
+   * **Options:** A) That solitude is the happiest state for a person, B) That human belonging heals — a person cut off from others is restored by being drawn back into community, here through caring for Eppie, C) That villages are always cruel to outsiders, D) That Silas was never really alone
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Eliot weaves the weaver's story together with the Cass family's, and the two strands meet in Eppie, whose birth and upbringing link both worlds.
-   * **Why A:** The two strands are closely connected, joined through Eppie.
-   * **Why C:** The novel follows many characters across two social worlds.
-   * **Why D:** The plots complement each other, converging rather than clashing.
+   * **Feedback:** ✓ Correct. The novel's idea of community works through Eppie: caring for her reconnects Silas to his neighbours, and belonging, not isolation, is what brings him back to life.
+   * **Why A:** The book shows solitude as a living death for Silas — the opposite of happiness.
+   * **Why C:** Raveloe mistrusts him at first but finally receives him; the movement is towards acceptance, not fixed cruelty.
+   * **Why D:** His years of real, bitter isolation are exactly what the theme of belonging heals.
 
-13. **Type: True-False [Tests Techniques]**
-   * **Question:** George Eliot uses an omniscient narrator who often pauses to reflect on the moral and inner lives of the characters.
+11. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Silas loses his religious faith when his own community betrays him. How does the novel treat faith and trust across the story?
+   * **Options:** A) It shows faith is pointless and never returns, B) Faith destroyed by human betrayal is quietly restored through human love — Eppie's care rebuilds the trust in others that Lantern Yard had shattered, C) It shows Silas was never really faithful, D) It shows only wealth can restore a broken man
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The wound is human betrayal, and so is the cure: loving and being loved through Eppie rebuilds Silas's trust in others, and with it a quiet faith in life.
+   * **Why A:** Trust and faith *do* return through Eppie — the novel affirms restoration, not despair.
+   * **Why C:** His devout, trusting life at Lantern Yard is real; it is its betrayal that breaks him.
+   * **Why D:** It is love and belonging, not money, that restore him — the gold left him empty.
+
+12. **Type: True-False [Tests Themes]**
+   @dim:themes
+   * **Question:** The novel sets living, loving warmth against cold hoarded gold — Eppie's golden hair answering the lost coins — so that love is shown to replace treasure as the true source of worth.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The all-knowing narrator moves between characters and reflects on their motives and moral growth, guiding the reader's judgement.
-   * **WhyWrong:** This is true — Eliot's omniscient narrator comments openly on the characters' inner and moral lives.
+   * **Feedback:** ✓ Correct. The lost gold and the golden-haired child are deliberately linked: living affection stands against the dead hoard Silas once worshipped, and love proves the real treasure.
+   * **WhyWrong:** The parallel is deliberate and central — the child's warmth answers the coins' coldness, dramatising the novel's idea that living love, not money, gives a life worth.
 
-14. **Type: Fill [Tests Techniques]**
-   * **Question:** The central symbolism of the novel turns on Eppie's golden [BLANK], which recalls the lost gold coins Silas once treasured.
-   * **Answer:** hair
-   * **Feedback:** ✓ Correct. Eppie's golden hair deliberately recalls the gold Silas lost, making the child a living symbol that replaces his hoard.
-   * **WhyWrong:** The word is "hair" — Eppie's golden hair echoes the gold coins, love standing in for treasure.
-
-15. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Why does Silas leave Lantern Yard and settle in Raveloe at the start of the novel?
-   * **Options:** A) He wins a fortune, B) He is falsely accused of theft by his own religious community and, betrayed, loses his faith and flees, C) He is offered a better job, D) He is chasing an old friend
+13. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Silas Marner is a redemption story. Why do we feel *hope and relief* by the end, watching Silas restored?
+   * **Options:** A) Because we are glad a villain has finally been punished, B) Because a heart frozen by betrayal and greed is thawed — his renewal moves us and quietly promises that no one is beyond change, C) Because we are frightened for Silas throughout, D) Because we are amused by the villagers' gossip
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Wrongly accused of stealing at Lantern Yard and abandoned by the community he trusted, Silas loses his faith and withdraws to Raveloe to live alone.
-   * **Why A:** He leaves in disgrace and grief, not because of any fortune.
-   * **Why C:** It is the false accusation, not a job offer, that drives him away.
-   * **Why D:** He flees betrayal and isolation, not in pursuit of a friend.
+   * **Feedback:** ✓ Correct. A redemption is built to console: watching a cold, cut-off man brought back to warmth leaves us hopeful and relieved — the faith that even a hardened heart can begin again.
+   * **Why A:** Silas is no villain to be punished; the feeling is warmth at his *restoration*, not satisfaction at a downfall.
+   * **Why C:** Dread and fear belong to a gothic tale or a tragedy — this story is built to reassure, not to frighten.
+   * **Why D:** Passing amusement is not the point; the intended response is hope and tender relief at a life renewed.
 
-16. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Who steals Silas's hoard of gold?
-   * **Options:** A) Eppie, B) Dunstan Cass, who takes the coins and then disappears, C) Godfrey Cass, D) Silas hides it himself and forgets
+14. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** A redemption story such as Silas Marner is designed to make the reader feel — above all — which response?
+   * **Options:** A) Pity and fear at an inevitable downfall, B) Hope and warm relief, softening into tender empathy — the belief that no heart is beyond change, C) Dread and horror at something monstrous, D) Amusement and light delight
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Dunstan Cass, the reckless younger Cass brother, steals Silas's gold and vanishes; his fate is only uncovered much later.
-   * **Why A:** Eppie is the child who later comes to Silas, not the thief.
-   * **Why C:** Godfrey is Dunstan's brother; it is Dunstan who takes the gold.
-   * **Why D:** The gold is genuinely stolen, not mislaid by Silas.
+   * **Feedback:** ✓ Correct. The redemptive arc aims to leave us hopeful and moved: a frozen self reopened to love reassures us that renewal is always possible.
+   * **Why A:** Pity and fear are the effects of *tragedy*, where the hero falls — here the movement is a rise from cold to warmth.
+   * **Why C:** Dread and horror belong to gothic fiction; Silas Marner is built to console, not to disturb.
+   * **Why D:** There is warmth and even joy, but the deep effect is hopeful, tender relief — not mere amusement.
 
-17. **Type: Select All [Tests Characters & Plot]**
-   * **Question:** Which statements about the novel's characters and plot are accurate?
-   * **Options:** A) Dunstan Cass steals Silas's hoard of gold, B) Godfrey Cass is Eppie's real father but keeps it secret, C) Silas raises the abandoned child as his own, D) Silas grows rich again by finding fresh gold
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Dunstan's theft, Godfrey's guilty silence and Silas's loving care of Eppie are all true to the story.
-   * **Why D:** Silas's real recovery comes through love for Eppie, not renewed wealth.
+15. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Why do we feel a tender *ache of empathy* for Silas, not just detached approval that things turned out well?
+   * **Options:** A) Because the story names its literary techniques for us, B) Because his lonely, betrayed years are recognisable — we long to believe our own cold, cut-off parts could be warmed too, so his thaw moves us deeply, C) Because we are relieved a dangerous man has been stopped, D) Because we admire how cleverly Silas hoards his gold
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The empathy comes from recognition: Silas's frozen isolation is a human state we know, so watching it thaw touches the hope that no one — including us — is past saving.
+   * **Why A:** Naming a device is not a feeling; the effect is the tender empathy the story stirs, not the label of a technique.
+   * **Why C:** Silas is no danger to be stopped; the feeling is warmth for a suffering man restored, not relief at a threat removed.
+   * **Why D:** His gold-hoarding is his sickness, not a skill to admire; we ache for the loneliness behind it.
 
-18. **Type: True-False [Tests Characters & Plot]**
-   * **Question:** Godfrey Cass is secretly Eppie's real father, but he stays silent and lets Silas raise her.
+16. **Type: True-False [Tests Effects]**
+   @dim:effects
+   * **Question:** By the close we are meant to feel hope and warm relief, softening into empathy — that even a heart frozen by betrayal and greed can be reopened by love.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Godfrey, secretly the child's father through an earlier marriage he concealed, keeps his silence while Silas brings Eppie up as his own.
-   * **WhyWrong:** This is true — Godfrey is Eppie's biological father, yet he hides it and leaves her to Silas.
+   * **Feedback:** ✓ Correct. That double feeling — relief at Silas restored and tender empathy for the cold years that make the warmth so moving — is the emotional effect a redemption story is built to produce.
+   * **WhyWrong:** The intended effect is hope and empathy, not dread or triumph over an enemy; the ending's restored warmth is meant to console and move us, not to satisfy us at someone's defeat.
 
-19. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** When Godfrey finally admits he is Eppie's father and offers to raise her, what does Eppie choose?
-   * **Options:** A) She leaves Silas at once for a wealthier life, B) She stays with Silas, the father who raised her with love, rather than go to Godfrey, C) She refuses to speak to anyone, D) She leaves Raveloe alone
+17. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What is the novel's overall *message* about what redeems a wasted, lonely life?
+   * **Options:** A) That wealth, carefully hoarded, is the surest source of happiness, B) That human love and belonging — not money — restore and redeem a life, and that no heart is beyond change, C) That once a man is betrayed he can never trust again, D) That guilt has no consequences in the end
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Grown up, Eppie chooses to remain with Silas, the man who raised and loved her, valuing that bond above the comfort Godfrey's wealth could offer.
-   * **Why A:** She turns down the wealthier life, choosing love over money.
-   * **Why C:** She answers clearly, choosing the father who raised her.
-   * **Why D:** She stays in Raveloe with Silas rather than leaving.
+   * **Feedback:** ✓ Correct. Silas's cold, gold-worshipping isolation is redeemed by love and community, not riches — the novel's enduring "so what": affection, not treasure, makes a life, and renewal is always possible.
+   * **Why A:** The novel dramatises the opposite — the hoarded gold leaves Silas empty and lonely.
+   * **Why C:** Silas's trust *is* rebuilt through Eppie; the message affirms restoration, not permanent bitterness.
+   * **Why D:** Godfrey's concealed guilt returns to cost him Eppie's love — wrongdoing is answered in time.
 
-20. **Type: Fill [Tests Characters & Plot]**
-   * **Question:** The golden-haired child who wanders into Silas's cottage from the snow, and whom he raises as his own, is named [BLANK].
-   * **Answer:** Eppie
-   * **Feedback:** ✓ Correct. Silas names the orphaned child Eppie and raises her with devotion; through her his cold, lonely life is transformed by love.
-   * **WhyWrong:** The word is "Eppie" — the golden-haired child Silas takes in and raises as his daughter.
+18. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What does the novel finally affirm about money set beside human bonds?
+   * **Options:** A) That gold can buy back what love has lost, B) That gold cannot fill or redeem a life, while human love and belonging can — a truth sealed when Eppie chooses the father who raised her over Godfrey's wealth, C) That the wealthy always deserve the children they claim, D) That money and love matter equally in the end
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Eppie's choice of Silas over Godfrey's riches is the novel's verdict: love and belonging outweigh money, which could never restore what Silas's heart had lost.
+   * **Why A:** Godfrey's wealth cannot win back the daughter his silence gave away — gold buys nothing that love has made.
+   * **Why C:** The novel rejects the claim of mere blood-and-money; Eppie belongs to the man who *loved* her.
+   * **Why D:** The two are pointedly weighed and love wins — Eppie turns from wealth to the father who raised her.
+
+19. **Type: True-False [Tests Message]**
+   @dim:message
+   * **Question:** One of the novel's lasting messages is that no heart is beyond change — even a life frozen by betrayal and greed can be renewed by love.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Silas's thaw from bitter miser to loving father affirms the redemptive faith at the novel's core: a cold, cut-off soul can always be brought back to warmth through the care of others.
+   * **WhyWrong:** The novel insists that renewal is possible: Silas's frozen heart *is* reopened by love, which is a central part of its hopeful, redemptive message.
+
+20. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What enduring idea about the human soul does the ending affirm?
+   * **Options:** A) That a person once hardened stays hardened forever, B) That a soul cut off from others can be brought back to life through love and community — that second chances are real, C) That solitude and gold are all a person truly needs, D) That fate alone decides who is redeemed, whatever they choose
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Silas restored to warmth and belonging affirms the novel's redemptive worldview: no one is past saving, and love and community can renew even the most isolated soul.
+   * **Why A:** Silas's transformation directly disproves this — the frozen heart *does* thaw.
+   * **Why C:** His years of gold and solitude are shown to be a living death, not a sufficiency.
+   * **Why D:** Silas's own *choice* to love Eppie drives his renewal; the ending affirms human agency, not blind fate.

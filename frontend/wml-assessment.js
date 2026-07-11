@@ -33807,7 +33807,7 @@
     function _patchQuizResultSidebar() {
         if (state.task !== 'foundational_quiz' && state.task !== 'mark_scheme_unit' && state.task !== 'mark_scheme') return;
         const g = parseInt(_pendingQuizResult && _pendingQuizResult.grade, 10);
-        if (!g || g < 1 || g > 9) return;
+        const hasGrade = (g >= 1 && g <= 9);
         const cont = document.getElementById('swml-progress-steps');
         if (!cont) return;
         // v7.19.640: show the GRADE in the Results step CIRCLE, house-ladder
@@ -33822,15 +33822,27 @@
             if (!/^results\b/i.test(base)) return;
             const circle = step.querySelector('.swml-step-circle');
             if (!circle) return;
-            // Only stamp the grade once the Results step is actually REACHED
-            // (complete/active). Otherwise a stale _pendingQuizResult from a prior
-            // round would paint a grade onto the Results circle mid-new-attempt.
-            if (!/\b(complete|active)\b/.test(circle.className)) return;
-            if (label) label.textContent = base;
-            circle.textContent = String(g);
-            circle.classList.add('swml-step-grade');
-            circle.style.setProperty('background', _GRADE_BG[g] || '#5333ed', 'important');
-            circle.style.setProperty('color', _GRADE_DARK_TEXT[g] ? '#1c1d1f' : '#fff', 'important');
+            const reached = /\b(complete|active)\b/.test(circle.className);
+            if (reached && hasGrade) {
+                // Stamp the grade only once the Results step is actually REACHED
+                // AND a grade exists for THIS round.
+                if (label) label.textContent = base;
+                circle.textContent = String(g);
+                circle.classList.add('swml-step-grade');
+                circle.style.setProperty('background', _GRADE_BG[g] || '#5333ed', 'important');
+                circle.style.setProperty('color', _GRADE_DARK_TEXT[g] ? '#1c1d1f' : '#fff', 'important');
+            } else if (circle.classList.contains('swml-step-grade')) {
+                // v7.20.30 (Neil): a NEW round must NOT keep the prior round's grade
+                // colour on the Results circle. When Results isn't reached (fresh round),
+                // strip the stale grade paint back to the muted step-number style — the
+                // inline !important background from the last round survives updateProgress's
+                // class-based repaint, so it must be actively removed here.
+                circle.classList.remove('swml-step-grade');
+                circle.style.removeProperty('background');
+                circle.style.removeProperty('color');
+                if (label) label.textContent = base;
+                circle.textContent = step.getAttribute('data-step') || circle.textContent;
+            }
         });
     }
     // v7.19.641: exposed so updateProgress() (wml-app.js) can re-apply the grade

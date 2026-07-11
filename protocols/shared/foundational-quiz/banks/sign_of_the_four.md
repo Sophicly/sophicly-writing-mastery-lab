@@ -1,165 +1,206 @@
 # Foundational Quiz Bank — The Sign of the Four
 
-Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions, mixed categories (Context-weighted) + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+Deterministic, code-scored foundational bank (parsed by `SWML_Quiz_Bank`).
+**20 questions — 4 variations of each of the 5 aspects.** The picker serves ONE random question per
+aspect = a light **5-question round** (`fq_dim_stratified`); depth comes from mastery REPETITION drawing
+a fresh variation per aspect each round, not from round length (3–5 is the low-stakes retrieval sweet
+spot). Keys + feedback live server-side and are stripped before questions reach the client.
 
-Categories: Context · Themes · Techniques · Characters & Plot
-Types: MCQ · Fill · True-False · Select All
+**Concept-based (v7.20.x — governed by `FQ-QUESTION-STANDARD.md`).** Every item tests the CENTRAL
+CONCEPT of its aspect, not surface trivia (research: `research/2026-07-11-concept-based-fq-question-design.md`).
+Distractors are plausible CONCEPTUAL MISREADINGS a real student holds, so the student must reason to the
+answer. The Sign of the Four is a **detective mystery with a Gothic strain** → the `effects` aspect tests
+the reader's **suspense and fascinated dread** (the pull to uncover a hidden truth as danger closes in),
+not the naming of techniques.
+
+Aspects (`@dim` → Conceptual-Notes field via `concept_field_for_dim`):
+Protagonist → `cn_section_1` · Plot → `cn_section_3` · Themes → `cn_section_5` ·
+Effects → `cn_section_4` (Genre & Emotion) · Message → `cn_section_7`. A correct answer autofills that
+aspect's pre-authored note (`sign_of_the_four.concept-notes.md`) into the CN doc; mastery completes all five.
 
 ### Quiz: The Sign of the Four
 
-1. **Type: MCQ [Tests Context]**
-   * **Question:** The stolen Agra treasure comes from India during the British Empire. Which real event lies behind the story?
-   * **Options:** A) The French Revolution, B) The Indian Rebellion of 1857 and British rule in India, C) The American Civil War, D) The Norman Conquest
+1. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which best captures how Holmes *changes* across the novel — and what drives the change?
+   * **Options:** A) He is exactly the same cold, tireless machine from first page to last, untouched by events, B) He begins numbed and restless in drug-induced boredom and is transformed into the fiercely engaged, masterful reasoner by a real case — driven by his own craving for mental work, C) He is a bumbling amateur who slowly learns how to detect, D) The cocaine takes him over and he has no say in what he becomes
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The treasure and Jonathan Small's backstory reach back to the 1857 Indian Rebellion and Britain's colonial rule — empire is woven into the plot.
-   * **Why A:** The colonial backdrop is India, not revolutionary France.
-   * **Why C:** The story's roots are in British India, not the American Civil War.
-   * **Why D:** Its context is the nineteenth-century empire, not the medieval conquest.
+   * **Feedback:** ✓ Correct. The novel opens on a Holmes idle and deadened, then a genuine mystery reignites him; the engine of the change is his own hunger for brainwork, not chance or the drug.
+   * **Why A:** He is *not* unchanged — he moves from listless stagnation to electric engagement; missing that arc misses the point of the opening chapter.
+   * **Why C:** He is a master from the start, not a learner; his skill is a given, and what shifts is his energy and purpose.
+   * **Why D:** The cocaine is a symptom of his boredom, not a force controlling him; removing his agency turns a self-driven man into a puppet.
 
-2. **Type: MCQ [Tests Context]**
-   * **Question:** Holmes uses cocaine at the start of the novel. Why is this historically accurate for 1890?
-   * **Options:** A) Because cocaine was illegal and Holmes was a criminal, B) Because cocaine was then legal and used medically, C) Because Watson supplied it secretly, D) Because it was a rare foreign import unknown in Britain
+2. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which pairing best shows Holmes's evolution across the novel?
+   * **Options:** A) A cheerful, contented man at the start → a broken despairing one at the end, B) An idle, drugged Holmes whose "mind rebels at stagnation" → an energised reasoner absorbed in the hunt → back to the cocaine bottle once the stimulation ends, C) A criminal at the start → a reformed detective at the end, D) A clumsy beginner at the start → a competent detective at the end
    * **Correct:** B
-   * **Feedback:** ✓ Correct. In 1890 cocaine was legal and even fashionable as a stimulant, so Holmes's habit reflects the medicine of the day, though Watson disapproves.
-   * **Why A:** It was legal at the time, not a criminal act.
-   * **Why C:** Watson objects to the habit rather than supplying it.
-   * **Why D:** Cocaine was widely available and used in Britain then.
+   * **Feedback:** ✓ Correct. His arc is a self-driven cycle: stagnation rouses to mastery when the case grips him, then subsides again to the needle when the work is done — the same restless nature throughout.
+   * **Why A:** He is restless and deadened at the opening, not contented, and satisfied (not broken) at the close; this reverses his actual movement.
+   * **Why C:** Holmes is the detective throughout, never a criminal; this confuses who he is entirely.
+   * **Why D:** He is already the supreme reasoner; the change is in his engagement, not his competence.
 
-3. **Type: True-False [Tests Context]**
-   * **Question:** The novel is set in a foggy, gas-lit late-Victorian London, a setting typical of detective fiction of the period.
+3. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Watson also travels an arc in the novel. Which best captures how he *changes* — and what drives it?
+   * **Options:** A) He grows to hate Holmes and leaves him, B) He moves from a solitary companion to a man in love, engaged to Mary Morstan — a change driven by his own growing feeling as the case unfolds, C) He becomes a criminal, D) He turns into a better detective than Holmes
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Watson's evolution is the human thread beside the mystery: he falls in love with the client and ends betrothed — driven by his own deepening affection, not by arrangement or chance.
+   * **Why A:** Watson remains Holmes's loyal friend; there is no rupture between them.
+   * **Why C:** Watson is the honest narrator and companion, never a wrongdoer.
+   * **Why D:** Watson admires Holmes's reasoning but never surpasses it; his growth is emotional, not deductive.
+
+4. **Type: True-False [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Holmes's transformation from listless stagnation to brilliant engagement is driven by his own craving for mental work — no one forces the change upon him.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The murky London of fog, river and gaslight gives the mystery its atmosphere and became a hallmark of the detective genre.
-   * **WhyWrong:** The setting is indeed foggy late-Victorian London — its gas-lit streets and river are central to the story's mood.
+   * **Feedback:** ✓ Correct. "My mind rebels at stagnation" is the key: the case reanimates him because he *needs* the challenge; the drive is internal, which is what makes the arc his own.
+   * **WhyWrong:** Nothing external compels the change — the drug is a symptom of his boredom, not its cause; treating him as passively acted upon removes the self-driven hunger that defines him.
 
-4. **Type: MCQ [Tests Context]**
-   * **Question:** Conan Doyle wrote at a time fascinated by science and reason. How does Holmes reflect this?
-   * **Options:** A) He solves crimes by luck and guessing, B) He treats detection as a science, using logic, observation and deduction, C) He relies on magic, D) He never explains his methods
+5. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Why does the stolen Agra treasure *lead to* Bartholomew Sholto's murder? (What is the causal link?)
+   * **Options:** A) The two are unconnected events that simply happen in the same story, B) Major Sholto's theft of the treasure betrayed Jonathan Small, whose long-nursed vow of revenge finally brings him and Tonga to reclaim it — and the killing follows from that chain, C) Holmes causes the murder by investigating, D) Bartholomew dies by pure accident with no cause
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Holmes embodies the Victorian faith in science and reason — "detection is, or ought to be, an exact science" — solving crime through observation and logic.
-   * **Why A:** Holmes rejects luck; his method is rigorous reasoning.
-   * **Why C:** He uses science and logic, never magic.
-   * **Why D:** He explains his deductions carefully to Watson and the reader.
+   * **Feedback:** ✓ Correct. One act *causes* the next: the original betrayal over the treasure sets Small on a course of revenge, so the death at Pondicherry Lodge is the outworking of a chain begun years earlier in India — not a random crime.
+   * **Why A:** In a mystery the crimes follow by hidden cause, not mere coincidence; reading them as unconnected misses the buried chain the plot exists to reveal.
+   * **Why C:** Holmes uncovers the cause; he does not create it — the murder springs from Small's revenge, not the investigation.
+   * **Why D:** The death is the deliberate result of Small and Tonga's break-in to seize the treasure, not an accident.
 
-5. **Type: Fill [Tests Context]**
-   * **Question:** Holmes declares that "Detection is, or ought to be, an exact [BLANK]", capturing the Victorian faith in reason.
-   * **Answer:** science
-   * **Feedback:** ✓ Correct. Calling detection "an exact science" sums up Holmes's method and the age's confidence in logic and observation.
-   * **WhyWrong:** The word is "science" — Holmes insists detection should be an exact science, reflecting Victorian rationalism.
+6. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which best describes the *causal chain* behind the crimes — not just the order of events?
+   * **Options:** A) A series of unrelated misfortunes that strike by bad luck, B) A betrayal over the treasure in India → Small imprisoned, vowing revenge → his escape with Tonga → the raid to reclaim the treasure → Bartholomew's death and the treasure's flight → the Thames chase → the confession that lays the whole cause bare, C) The police cause each step by blundering, D) Fate alone arranges everything, and no one's choices matter
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Each stage flows by necessity from the one before, all rooted in the original betrayal; the present-day crime is the return of a buried past. That causal spine is what makes it a mystery, not a list of happenings.
+   * **Why A:** The crimes are not random — they are the logical unfolding of a wrong done years earlier over the treasure.
+   * **Why C:** The bumbling police (Athelney Jones) obstruct but do not cause the chain; the cause is Small's revenge.
+   * **Why D:** The plot turns on human choices — Sholto's theft, Small's vow — not on impersonal fate.
 
-6. **Type: Select All [Tests Context]**
-   * **Question:** Which contexts inform the novel?
-   * **Options:** A) The British Empire and its wealth from India, B) A Victorian faith in science and reason, C) A foggy, gas-lit London setting, D) The invention of the internet
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Empire, Victorian rationalism and the atmospheric London setting all shape the novel.
-   * **Why D:** The internet is a modern invention with no place in a Victorian novel.
+7. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Why does the steam-launch chase down the Thames *lead to* the mystery being solved?
+   * **Options:** A) The chase is exciting but changes nothing about the solution, B) Capturing Jonathan Small ends the flight and forces his confession — the only source of the hidden history the whole case depends on, so the pursuit *causes* the revelation, C) The treasure is recovered in the chase and explains everything, D) The police solve it by luck, unrelated to the chase
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The chase is not mere spectacle: it seizes the one man who holds the buried backstory, and his confession supplies the cause the reader has been kept blind to. The pursuit is what unlocks the truth.
+   * **Why A:** The chase is the hinge — without Small's capture there is no confession, and without the confession the hidden cause stays sealed.
+   * **Why C:** The treasure is *lost* in the river, not recovered; it is Small's confession, not the gold, that explains the crimes.
+   * **Why D:** The resolution comes through Holmes's pursuit and Small's testimony, not police luck.
 
-7. **Type: MCQ [Tests Themes]**
-   * **Question:** What does the novel most clearly celebrate through Holmes?
-   * **Options:** A) The power of reason and observation to bring order to chaos, B) The value of doing nothing, C) The rewards of dishonesty, D) The uselessness of science
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Holmes's deductions restore order to a confusing mystery — the novel celebrates reason's power to explain the world.
-   * **Why B:** Holmes dreads inaction; his mind "rebels at stagnation".
-   * **Why C:** The novel exposes and punishes dishonesty.
-   * **Why D:** It champions science and reason rather than dismissing them.
-
-8. **Type: True-False [Tests Themes]**
-   * **Question:** The novel links the stolen treasure to greed and the darker side of empire, suggesting the riches bring misfortune rather than happiness.
+8. **Type: True-False [Tests Plot]**
+   @dim:plot
+   * **Question:** The murders and thefts in the novel form a cause-and-effect chain reaching back to a betrayal in India — they are not a string of unconnected crimes that merely happen in sequence.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The Agra treasure sparks betrayal, murder and ruin, and is finally lost in the Thames — greed and colonial plunder bring only sorrow.
-   * **WhyWrong:** The treasure does bring misfortune — tied to greed and the wrongs of empire, it causes death and is ultimately lost.
+   * **Feedback:** ✓ Correct. Mystery plotting is built on hidden causation: the present crime is the return of a past wrong, each event *because of* the last, all rooted in the theft of the Agra treasure. That buried chain is the story's spine.
+   * **WhyWrong:** Reading the crimes as unconnected ("they just happen one after another") misses the causal necessity — the very thing a detective plot exists to uncover and lay bare.
 
 9. **Type: MCQ [Tests Themes]**
-   * **Question:** Watson's growing love for the client Mary Morstan adds which element to the novel?
-   * **Options:** A) A romance running alongside the detective plot, B) A ghost story, C) A courtroom drama, D) A war narrative
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Watson's romance with Mary Morstan gives the mystery a tender human thread, ending in their engagement.
-   * **Why B:** There is no supernatural element; it is a detective story with romance.
-   * **Why C:** The resolution comes through detection, not a trial.
-   * **Why D:** The love plot, not war, runs beside the mystery.
+   @dim:themes
+   * **Question:** Holmes declares that "Detection is, or ought to be, an exact science." What does this reveal about the novel's view of reason?
+   * **Options:** A) That reason is powerless against real mystery, B) That disciplined reason and observation can bring order to chaos — detection as rigorous logic, not luck or guesswork, C) That solving crime is a matter of chance, D) That intuition and magic solve the case
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The line sums up the novel's faith in method: the world's confusions can be read and mastered by patient reasoning, and Holmes embodies that Victorian confidence in science.
+   * **Why A:** The novel celebrates reason's power to explain, not its helplessness — Holmes's deductions pierce the mystery.
+   * **Why C:** Holmes rejects chance; his whole method is systematic reasoning from evidence.
+   * **Why D:** There is no magic or mere intuition — the case yields to observation and logic.
 
-10. **Type: Fill [Tests Themes]**
-   * **Question:** Restless without a case, Holmes complains that his "mind rebels at [BLANK]", showing his need for intellectual challenge.
-   * **Answer:** stagnation
-   * **Feedback:** ✓ Correct. "My mind rebels at stagnation" reveals Holmes's craving for mental stimulation — the reason boredom drives him to cocaine.
-   * **WhyWrong:** The word is "stagnation" — Holmes cannot bear a still, unchallenged mind, which explains his restlessness.
+10. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** The Agra treasure drives the plot yet is finally lost in the Thames. Which controlling idea does this most explore?
+   * **Options:** A) That wealth is the just reward of virtue, B) That greed and plundered riches bring betrayal, death and ruin rather than happiness — the treasure curses all who chase it, C) That money guarantees a happy ending, D) That the treasure is unimportant to the story
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The treasure sparks betrayal, murder and grief and ends at the bottom of the river; the novel's argument is that riches built on greed and plunder corrupt and destroy, never satisfy.
+   * **Why A:** The treasure is won by theft and betrayal, not virtue, and it rewards no one — the idea is the opposite.
+   * **Why C:** Far from a happy ending, the fortune brings only death; its loss, not its gain, clears the way for happiness.
+   * **Why D:** The treasure is central — it is the engine of the whole chain of crime and its loss is thematically pointed.
 
-11. **Type: MCQ [Tests Techniques]**
-   * **Question:** The story is narrated by Dr Watson rather than Holmes. What is the effect?
-   * **Options:** A) We share Watson's admiration and are surprised, as he is, by Holmes's deductions, B) We always know the answer before Holmes, C) It removes all mystery, D) It makes Holmes the narrator
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Watson's viewpoint keeps Holmes's reasoning partly hidden, so we marvel at each deduction just as Watson does.
-   * **Why B:** Watson, like us, is kept guessing — that preserves the suspense.
-   * **Why C:** His narration builds mystery rather than removing it.
-   * **Why D:** Watson, not Holmes, tells the story.
+11. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Watson's love for Mary runs beside Holmes's cold detachment. Which idea does this tension most explore?
+   * **Options:** A) That love and reason are exactly the same thing, B) That human feeling and calculating reason stand in tension — and that the loss of the treasure clears the way for love to flourish, C) That love has no place in the novel, D) That Holmes falls in love too
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The novel weighs Watson's warmth against Holmes's detachment (who prizes the reasoning mind above feeling); tellingly, the fortune that would have set Mary above Watson is lost, freeing their love.
+   * **Why A:** The novel *contrasts* feeling and cold reason rather than equating them — Holmes distrusts emotion as a clouding of judgement.
+   * **Why C:** The romance is a deliberate human thread beside the mystery, ending in Watson's engagement.
+   * **Why D:** Holmes remains detached; it is Watson, not Holmes, who loves and marries.
 
-12. **Type: MCQ [Tests Techniques]**
-   * **Question:** Which genre did Conan Doyle help to shape with stories like this?
-   * **Options:** A) Detective fiction, B) Epic poetry, C) The history play, D) The pastoral
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Holmes's cases helped define detective fiction — a mystery solved by a brilliant investigator through clues and logic.
-   * **Why B:** It is prose detective fiction, not epic verse.
-   * **Why C:** It is a modern mystery, not a history play.
-   * **Why D:** The genre is detection, not pastoral idyll.
-
-13. **Type: True-False [Tests Techniques]**
-   * **Question:** Conan Doyle builds suspense with a dramatic chase along the River Thames as Holmes pursues the criminals.
+12. **Type: True-False [Tests Themes]**
+   @dim:themes
+   * **Question:** In the novel the Agra treasure, rooted in colonial plunder and greed, brings only betrayal, death and ruin — and is finally lost in the Thames.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The tense steam-launch chase down the Thames is a set-piece of action that heightens the novel's suspense.
-   * **WhyWrong:** There is such a chase — the pursuit along the Thames is a thrilling, suspenseful climax to the hunt.
+   * **Feedback:** ✓ Correct. The riches that drive every crime end scattered in the river; the novel's idea is that plundered, greed-driven wealth curses those who pursue it and is rightly lost.
+   * **WhyWrong:** The treasure does bring misfortune — tied to greed and the wrongs of empire, it causes death and division and is never recovered.
 
-14. **Type: Fill [Tests Techniques]**
-   * **Question:** Holmes reaches his conclusions through a process of reasoning from small clues that Conan Doyle calls [BLANK].
-   * **Answer:** deduction
-   * **Feedback:** ✓ Correct. Holmes's method is deduction — reasoning from tiny observed details to a larger truth, the signature of the detective genre.
-   * **WhyWrong:** The word is "deduction" — Holmes's reasoning from small clues to firm conclusions is his method of deduction.
-
-15. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Who narrates the novel and is Holmes's loyal companion?
-   * **Options:** A) Inspector Athelney Jones, B) Dr Watson, C) Jonathan Small, D) Thaddeus Sholto
+13. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** The Sign of the Four is a detective mystery. Why do we feel a tense *fascination* as the story unfolds?
+   * **Options:** A) Because the truth is handed to us at once, leaving nothing to wonder about, B) Because the truth is withheld and released clue by clue — we are kept partly blind, gripped by the pull to see the hidden secret revealed, C) Because the effect is the first-person narration, D) Because we feel amused and light-hearted throughout
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Dr Watson, Holmes's friend and flatmate, tells the story and assists the investigation.
-   * **Why A:** Athelney Jones is the official police detective, not the narrator.
-   * **Why C:** Jonathan Small is the criminal at the heart of the treasure plot.
-   * **Why D:** Thaddeus Sholto is a nervous figure connected to the treasure, not the narrator.
+   * **Feedback:** ✓ Correct. A mystery grips through controlled withholding: the gap between the evidence we see and the truth we cannot yet reach holds us in taut fascination, needing to read on until the secret breaks.
+   * **Why A:** The suspense depends on *not* knowing — the truth is doled out slowly, which is exactly what creates the pull.
+   * **Why C:** "First-person narration" names a technique, not the feeling it produces; the effect is the reader's fascinated suspense.
+   * **Why D:** Amusement belongs to comedy; a mystery is built to grip and unsettle, not to amuse.
 
-16. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Why does Mary Morstan first come to Sherlock Holmes?
-   * **Options:** A) To report a burglary, B) She has received mysterious pearls and a summons after her father's disappearance, C) To sell him a house, D) To arrest him
+14. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** What is the emotional effect of the novel's grotesque, Gothic touches — Bartholomew's fixed death-grin, the poisoned thorn, Tonga in the dark, the river fog?
+   * **Options:** A) Comfort and reassurance, B) Dread and unease — a shiver of horror that sharpens the mystery's sense of menace, C) The effect is simply "imagery" and "setting", D) Amusement at how silly they are
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Mary brings the puzzle of yearly pearls and a strange invitation, linked to her missing father — the mystery that starts the case.
-   * **Why A:** Her case concerns her father and the treasure, not a burglary.
-   * **Why C:** She is a client with a mystery, not a seller.
-   * **Why D:** She seeks Holmes's help, not his arrest.
+   * **Feedback:** ✓ Correct. These grotesque details are built to disturb: the death-grin, the unseen killer and the fog charge the mystery with dread, so the hunt feels genuinely dangerous, not merely clever.
+   * **Why A:** The touches are meant to unsettle, not soothe — they make the threat feel close and real.
+   * **Why C:** "Imagery" and "setting" name devices, not the feeling; the effect is the dread those devices arouse.
+   * **Why D:** The Gothic detail is designed to chill, not to amuse — reading it as silly misses its unsettling purpose.
 
-17. **Type: Select All [Tests Characters & Plot]**
-   * **Question:** Which of these feature in the novel?
-   * **Options:** A) A hidden treasure from India, the Agra treasure, B) A pact among four men signed as "the sign of the four", C) A chase along the River Thames, D) A voyage to the moon
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. The Agra treasure, the four men's pact, and the Thames chase are all central to the plot.
-   * **Why D:** There is no space travel; the novel is a grounded Victorian mystery.
+15. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Why do we feel suspense and then astonishment as Holmes reaches his conclusions?
+   * **Options:** A) Because we always know more than Holmes and are never surprised, B) Because we are kept as much in the dark as Watson, so each revelation lands as a thrill of surprise as the withheld truth breaks through, C) Because the effect is that the story is told in the first person, D) Because we feel bored, having guessed everything already
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Being held at Watson's level of knowledge keeps us blind to the reasoning until it is unveiled, so each deduction arrives as a genuine shock of understanding — that suspense-then-surprise is the mystery's designed feeling.
+   * **Why A:** We are kept *behind* the solution, not ahead of it — that gap is what makes the reveals startle us.
+   * **Why C:** "Told in the first person" names a technique; the effect asked for is the *feeling* — suspense giving way to astonishment.
+   * **Why D:** The withholding is precisely what stops us guessing; boredom is the mark of a failed mystery, not this one.
 
-18. **Type: True-False [Tests Characters & Plot]**
-   * **Question:** In the end, the disputed Agra treasure is lost in the River Thames and never recovered.
+16. **Type: True-False [Tests Effects]**
+   @dim:effects
+   * **Question:** A detective mystery like this is built above all to make us feel suspense and a fascinated dread — the pull to uncover a hidden truth as danger closes in — not amusement or triumph.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Jonathan Small scatters the treasure into the Thames, so the riches that caused so much death are lost forever.
-   * **WhyWrong:** The treasure is lost — Small throws it into the Thames, and the fortune that drove the crimes is never recovered.
+   * **Feedback:** ✓ Correct. The controlled release of clues, the grotesque Gothic menace and the claustrophobic viewpoint all serve one emotional aim: to hold us in tense, fascinated dread until the secret breaks and order is restored.
+   * **WhyWrong:** The intended effect is suspense and fascinated dread, not amusement or triumph; a mystery that merely entertained or reassured would fail its purpose.
 
-19. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Who is the one-legged criminal who tells the long story behind the Agra treasure?
-   * **Options:** A) Thaddeus Sholto, B) Jonathan Small, C) Dr Watson, D) Athelney Jones
+17. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What is the novel's overall *message* about reason and the world?
+   * **Options:** A) That the world is unknowable and confusion always wins, B) That disciplined reason can pierce even the darkest confusion and restore order — a faith that the truth, however hidden, can be uncovered and known, C) That crime is best solved by luck, D) That mystery is beyond any human understanding
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Jonathan Small, captured at the climax, confesses the full history of the treasure and the pact of the four.
-   * **Why A:** Thaddeus Sholto is connected to the Sholto family, not the confessing criminal.
-   * **Why C:** Watson is the narrator, not the treasure's thief.
-   * **Why D:** Athelney Jones is the police detective who takes the credit.
+   * **Feedback:** ✓ Correct. Holmes's method turns a baffling, menacing puzzle into a solved and ordered account — the enduring "so what" is a confidence that patient reason can master the hidden truths of the world.
+   * **Why A:** The novel affirms the opposite — that the hidden *can* be known when reason is applied.
+   * **Why C:** It insists on method over chance; luck is precisely what Holmes rejects.
+   * **Why D:** Far from beyond understanding, the mystery is fully explained by the close through reasoning.
 
-20. **Type: Fill [Tests Characters & Plot]**
-   * **Question:** By the novel's end, Dr Watson has fallen in love with the client, [BLANK] Morstan, and becomes engaged to her.
-   * **Answer:** Mary
-   * **Feedback:** ✓ Correct. Watson and Mary Morstan fall in love during the case and become engaged, giving the mystery a warm ending.
-   * **WhyWrong:** The name is "Mary" — Mary Morstan is the client Watson comes to love and marry.
+18. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What enduring idea about wealth and empire does the novel affirm through the fate of the Agra treasure?
+   * **Options:** A) That riches built on plunder are a glorious reward, B) That wealth seized through greed and colonial plunder brings ruin, not happiness — the treasure curses all who chase it and is rightly lost, a quiet unease about the wrongs at empire's heart, C) That the empire's riches always bring peace, D) That greed is harmless and profitable
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The treasure, rooted in the plunder of India, sows only betrayal and death and ends in the river; the novel's message is that such greed-driven, ill-gotten wealth destroys, and it lets a shadow fall over empire's spoils.
+   * **Why A:** The plundered treasure is a curse, not a glory — it rewards no one and is lost.
+   * **Why C:** The imperial fortune brings violence and division, not peace.
+   * **Why D:** Greed here is ruinous, not harmless — it drives every crime in the book.
+
+19. **Type: True-False [Tests Message]**
+   @dim:message
+   * **Question:** One of the novel's lasting messages is that greed for stolen wealth destroys those who pursue it — the Agra treasure brings only death and is finally lost, so no one profits from the crime.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Every hand that grasps at the treasure meets betrayal or ruin, and it ends scattered in the Thames; the moral is that greed-driven, plundered riches bring destruction, not reward.
+   * **WhyWrong:** The novel insists that no one profits from the treasure — the greed it inspires brings only death, and the fortune itself is lost forever.
+
+20. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What does the ending ultimately affirm about order and justice?
+   * **Options:** A) That crime pays and the criminal triumphs, B) That truth and order are restored — the guilty are caught, the mystery solved, the corrupting treasure removed, and human happiness (Watson and Mary's love) can flourish once the fortune is gone, C) That disorder wins and the detective fails, D) That the treasure secures a happy marriage
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. By the close the case is solved, Small is taken, the divisive treasure is gone, and Watson is free to marry Mary — the restoration of order, and the clearing away of greed, that the mystery is built to deliver.
+   * **Why A:** Small is captured and the crime laid bare; wrongdoing does not triumph.
+   * **Why C:** Holmes solves the mystery and order returns; the detective succeeds.
+   * **Why D:** It is the *loss* of the treasure, not its keeping, that frees Watson and Mary to marry.

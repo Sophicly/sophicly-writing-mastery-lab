@@ -1,165 +1,205 @@
 # Foundational Quiz Bank — Julius Caesar
 
-Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions, mixed categories (Context-weighted) + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+Deterministic, code-scored foundational bank (parsed by `SWML_Quiz_Bank`).
+**20 questions — 4 variations of each of the 5 aspects.** The picker serves ONE random question per
+aspect = a light **5-question round** (`fq_dim_stratified`); depth comes from mastery REPETITION drawing
+a fresh variation per aspect each round, not from round length (3–5 is the low-stakes retrieval sweet
+spot). Keys + feedback live server-side and are stripped before questions reach the client.
 
-Categories: Context · Themes · Techniques · Characters & Plot
-Types: MCQ · Fill · True-False · Select All
+**Concept-based (v7.20.x — governed by `FQ-QUESTION-STANDARD.md`).** Every item tests the CENTRAL
+CONCEPT of its aspect, not surface trivia (research: `research/2026-07-11-concept-based-fq-question-design.md`).
+Distractors are plausible CONCEPTUAL MISREADINGS a real student holds, so the student must reason to the
+answer. *Julius Caesar* is a **tragedy** → the `effects` aspect tests the audience's **pity and fear**,
+not the naming of techniques. Its tragic hero is **Brutus**, whose fatal error drives the arc.
+
+Aspects (`@dim` → Conceptual-Notes field via `concept_field_for_dim`):
+Protagonist → `cn_section_1` · Plot → `cn_section_3` · Themes → `cn_section_5` ·
+Effects → `cn_section_4` (Genre & Emotion) · Message → `cn_section_7`. A correct answer autofills that
+aspect's pre-authored note (`julius_caesar.concept-notes.md`) into the CN doc; mastery completes all five.
 
 ### Quiz: Julius Caesar
 
-1. **Type: MCQ [Tests Context]**
-   * **Question:** *Julius Caesar* was first performed around which year?
-   * **Options:** A) Around 1599, near the opening of the Globe theatre, B) In the 1750s, C) During the reign of Queen Victoria, D) In ancient Rome itself
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Shakespeare wrote the play around 1599, and it was among the first staged at the newly built Globe, though it dramatises events from ancient Rome.
-   * **Why B:** The play belongs to the Elizabethan age, roughly a century and a half before the 1750s.
-   * **Why C:** Victoria reigned in the nineteenth century, long after Shakespeare's lifetime.
-   * **Why D:** The play is set in ancient Rome but was written in Elizabethan England for an English audience.
-
-2. **Type: MCQ [Tests Context]**
-   * **Question:** What kind of play is *Julius Caesar* usually classed as?
-   * **Options:** A) A light romantic comedy, B) A tragedy drawn from Roman history, C) A modern realist drama, D) A pastoral fantasy
+1. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which best captures how Brutus *changes* across the play — and what drives the change?
+   * **Options:** A) He is a scheming traitor from the first scene and never really changes, B) He begins an honoured, principled Roman loved even by Caesar and becomes the ruined leader of a doomed conspiracy — driven by his own choice to believe murder could save Rome, C) He stays untroubled and successful throughout and is simply unlucky at the end, D) He is controlled by Cassius and fate, and has no real say in what he becomes
    * **Correct:** B
-   * **Feedback:** ✓ Correct. It is a tragedy built on real events from Roman history, tracing the fall of Caesar and the ruin of those who conspired against him.
-   * **Why A:** The play is sombre and political, ending in death and civil war rather than marriage or laughter.
-   * **Why C:** It was written around 1599 and dramatises antiquity, not modern life.
-   * **Why D:** There is no rural idyll here; the action turns on politics, assassination and war.
+   * **Feedback:** ✓ Correct. The tragedy is the *change*: a man of the highest integrity is drawn to kill his friend for Rome, and that one fatal choice unmakes him. The engine of the fall is his own idealistic decision, not chance.
+   * **Why A:** He is honoured and trusted at the start — even Cassius must *work* on him; the drama lies in his transformation, not fixed treachery.
+   * **Why C:** He is not merely unlucky — he chooses to join and lead the murder; the fall is self-caused, which is what makes it tragic.
+   * **Why D:** Cassius tempts and flatters, but Brutus deliberates alone and decides for himself; removing his agency turns a tragic hero into a puppet.
 
-3. **Type: True-False [Tests Context]**
-   * **Question:** Shakespeare drew much of the play's story from Plutarch's *Lives*, an ancient account of famous Greeks and Romans.
+2. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** What makes Brutus a *tragic hero* rather than simply a traitor?
+   * **Options:** A) He is wholly wicked and envious from the very beginning, B) He is neither wholly good nor wholly guilty — a genuinely honourable man brought down by his own fatal error of judgement, so his fall moves us, C) He is completely innocent and does nothing wrong, D) He escapes all consequences and lives to rule Rome
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. A tragic hero is an in-between figure: real virtue undone by a fatal error (hamartia). Brutus acts for Rome, not from envy, yet kills a friend on a mistaken principle — that middle position is why his ruin arouses pity, not disgust.
+   * **Why A:** Envy is Cassius's motive, not Brutus's; if Brutus were wholly wicked his fall would satisfy rather than move us.
+   * **Why C:** He does help kill Caesar and misjudges disastrously; a blameless man cannot be a tragic hero, whose fall must be self-caused.
+   * **Why D:** He is defeated at Philippi and dies by his own hand — a tragic hero falls; he does not thrive.
+
+3. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which pairing best shows Brutus's evolution from beginning to end?
+   * **Options:** A) A cowardly flatterer at the start → a triumphant emperor at the end, B) A revered, honourable Roman whose good faith Cassius must court → a defeated, self-slain leader mourned as "the noblest Roman of them all", C) A common soldier at the start → a scheming tyrant at the end, D) One of Caesar's open enemies at the start → Caesar's loyal general at the end
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. He travels from honoured integrity to ruin — the same principled man, undone by a single misjudged act. Antony's tribute over his body measures how far the fall reaches. That arc IS the tragedy.
+   * **Why A:** He starts respected, not a coward, and ends dead, not triumphant — this reverses his actual arc.
+   * **Why C:** He is a leading senator, not a common soldier, at the opening, and his motive is principle, not tyranny.
+   * **Why D:** Brutus is Caesar's friend who turns against him for Rome, not an open enemy who becomes loyal — this inverts his relationship with Caesar.
+
+4. **Type: True-False [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Brutus's downfall is driven above all by his own choice and misjudgement — Cassius tempts him, but the decision to kill Caesar, and the fatal errors that follow, are his.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Shakespeare based the plot closely on Sir Thomas North's translation of Plutarch's *Lives*, reshaping its history into drama.
-   * **WhyWrong:** This is true — Plutarch's *Lives* supplied the historical narrative Shakespeare dramatised.
+   * **Feedback:** ✓ Correct. Cassius plants the idea, but Brutus weighs it alone and chooses; then his own misjudgements — sparing Antony, letting him speak — doom the cause. His agency is what turns temptation into tragedy and keeps the fall *his*.
+   * **WhyWrong:** Cassius never forces Brutus's hand — he flatters and persuades. Treating Brutus as a puppet removes the choices and errors that make him a tragic hero rather than a mere victim.
 
-4. **Type: MCQ [Tests Context]**
-   * **Question:** Why would a play about the killing of a ruler feel especially charged for its first Elizabethan audience?
-   * **Options:** A) England had no interest in Roman history, B) An ageing Queen Elizabeth had no heir, so fears of succession, rebellion and civil strife were very real, C) Assassination was unknown in England, D) The audience wanted only cheerful entertainment
+5. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Why does the assassination of Caesar *lead to* civil war rather than to the free republic the conspirators intended? (What is the causal link?)
+   * **Options:** A) The two things are unconnected events that simply happen in order, B) Killing Caesar removes the one figure holding power, but Brutus then lets Antony speak at the funeral — Antony turns the crowd, and the unleashed chaos becomes the war that destroys the conspirators, C) The gods declare war as a punishment unrelated to anyone's actions, D) The conspirators grow bored and start a war for no reason
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Elizabeth was old and childless, and the question of who would rule next stirred deep anxiety about rebellion and civil war — the very chaos the play unleashes.
-   * **Why A:** Educated Elizabethans prized classical history and saw Rome as a mirror for their own politics.
-   * **Why C:** Plots against monarchs were a genuine fear of the age, which made the subject tense.
-   * **Why D:** The play's political danger spoke directly to real worries, not merely a wish for amusement.
+   * **Feedback:** ✓ Correct. One act *causes* the next: the murder creates a power vacuum, Brutus's misjudgement hands Antony the crowd, and the roused mob's fury becomes civil war. This causal necessity is what makes the plot a tragic arc, not a list of events.
+   * **Why A:** In tragedy events follow by cause, not mere sequence — "succession is not causation"; reading them as unconnected misses the arc.
+   * **Why C:** The war springs from human choices and consequences, not an arbitrary divine decree.
+   * **Why D:** The war is driven by Antony's roused mob and the struggle for power, not boredom or randomness.
 
-5. **Type: Fill [Tests Context]**
-   * **Question:** Caesar's growing power alarmed those who wished to preserve Rome's tradition of shared rule as a [BLANK], rather than let one man become king.
-   * **Answer:** republic
-   * **Feedback:** ✓ Correct. Rome was a republic, governed by its senate, and the conspirators feared Caesar would destroy that shared rule and crown himself king.
-   * **WhyWrong:** The word is "republic" — the conspirators killed Caesar to defend Rome's republic against one-man rule.
-
-6. **Type: Select All [Tests Context]**
-   * **Question:** Which statements about the play's Roman setting and premise are accurate?
-   * **Options:** A) Caesar returns to Rome triumphant and popular with the crowd, B) A group of senators conspires to assassinate him, C) His death is followed by civil war, D) Rome is ruled by a long line of contented kings
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Caesar returns in triumph, a band of senators plots his murder, and his assassination plunges Rome into civil war — the play's central arc.
-   * **Why D:** Rome is a republic that fears kingship; it is not ruled by a contented line of kings.
-
-7. **Type: MCQ [Tests Themes]**
-   * **Question:** What does the play suggest about political power and ambition?
-   * **Options:** A) That power is always safely handed on, B) That the hunger for power, and the fear of it in others, can drive men to murder and unleash chaos, C) That ambition never has consequences, D) That ordinary people control who rules
+6. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which best describes the *causal chain* of Brutus's fall — not just the order of events?
+   * **Options:** A) A series of unrelated misfortunes that strike him by bad luck, B) Cassius persuades him → he chooses to kill Caesar for Rome → he misjudges by sparing Antony and letting him speak → Antony turns the people → civil war follows → he is defeated and takes his own life, C) Fate alone decides everything, and his choices make no difference, D) Cassius secretly controls every step, so nothing is Brutus's doing
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Fear of Caesar's ambition drives the conspirators to kill him, yet their act brings not freedom but civil war — power proves impossible to control.
-   * **Why A:** The transfer of power here is violent and disastrous, not safe or orderly.
-   * **Why C:** Ambition carries a terrible cost throughout, ending in death for almost every leading figure.
-   * **Why D:** The crowd is swayed by whoever speaks best; it does not truly govern events.
+   * **Feedback:** ✓ Correct. Each stage flows by necessity from the one before, all originating in his choice to act on principle. That is the tragic arc: hamartia → escalating consequence → catastrophe.
+   * **Why A:** His ruin is not random misfortune — it is the logical, causal outworking of his own decisions.
+   * **Why C:** If choice made no difference it would not be a tragedy; the whole arc turns on his decisions.
+   * **Why D:** Cassius advises, but Brutus overrules him on the crucial points; making Cassius the cause erases the causation that is Brutus's own.
 
-8. **Type: MCQ [Tests Themes]**
-   * **Question:** How is the power of persuasive speech shown at Caesar's funeral?
-   * **Options:** A) The crowd ignores every speaker, B) Antony's oration turns the citizens against the conspirators, though he claims he has come only to bury Caesar, C) Brutus refuses to speak at all, D) No one is allowed to address the crowd
+7. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which act is the turning point that dooms the conspirators' cause — the point after which they cannot recover?
+   * **Options:** A) The Soothsayer's warning to "Beware the ides of March", B) Brutus's decision to let Antony deliver Caesar's funeral oration, which swings the crowd against the conspiracy, C) Caesar's refusal of the crown offered by Antony, D) The defeat at the Battle of Philippi
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Beginning "Friends, Romans, countrymen, lend me your ears", Antony sways the fickle crowd from approval of the murder to fury against its authors — a lesson in the force of rhetoric.
-   * **Why A:** The crowd is intensely moved and swings from one view to its opposite.
-   * **Why C:** Brutus speaks first and wins the crowd, until Antony speaks and undoes him.
-   * **Why D:** Both Brutus and Antony address the citizens; the contest of their speeches is the point.
+   * **Feedback:** ✓ Correct. Letting Antony speak is the irreversible misjudgement: once the crowd turns, the conspirators lose Rome and every later disaster follows. That is the tragic reversal (peripeteia).
+   * **Why A:** The warning only foreshadows; nothing is yet irreversible — Caesar could still heed it.
+   * **Why C:** The refusal happens before the murder and settles nothing; the cause is not yet lost there.
+   * **Why D:** Philippi marks the arrival of the catastrophe, not the choice that made it inevitable.
 
-9. **Type: True-False [Tests Themes]**
-   * **Question:** Brutus joins the conspiracy not from personal envy but from a sincere, if mistaken, belief that Caesar's death will protect Rome.
+8. **Type: True-False [Tests Plot]**
+   @dim:plot
+   * **Question:** In *Julius Caesar* the civil war and the conspirators' deaths follow by cause-and-effect from the assassination and Brutus's misjudgements — they are not just a string of unconnected events.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Brutus acts from honourable motives, persuaded that killing Caesar is a painful duty to save Rome from tyranny, which makes his role tragic rather than villainous.
-   * **WhyWrong:** This is true — Brutus's motives are honourable, however misguided, setting him apart from the envious Cassius.
+   * **Feedback:** ✓ Correct. Tragic plot is built on necessity, not mere sequence: each event is *because of* the last, all rooted in the murder and the errors around it. That causal spine is what separates tragedy from a chronicle.
+   * **WhyWrong:** Reading the events as unconnected ("they just happen next") misses the causal necessity — the very thing that makes the plot a tragic arc rather than a list of happenings.
 
-10. **Type: Fill [Tests Themes]**
-   * **Question:** The Soothsayer's warning to "Beware the [BLANK] of March" shows the play's concern with fate and omens ignored.
-   * **Answer:** ides
-   * **Feedback:** ✓ Correct. The Soothsayer cries "Beware the ides of March", but Caesar dismisses the warning and is killed on that very day.
-   * **WhyWrong:** The word is "ides" — the ides of March, the day the Soothsayer warns of and the day Caesar dies.
-
-11. **Type: MCQ [Tests Techniques]**
-   * **Question:** In his funeral speech, Antony repeatedly calls Brutus "an honourable man". What technique is this?
-   * **Options:** A) Simple, sincere praise, B) Verbal irony — the repetition turns the phrase into mockery as Antony shows Brutus's act was anything but honourable, C) A factual report, D) A stage direction
+9. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Cassius tells Brutus, "The fault, dear Brutus, is not in our stars, / But in ourselves, that we are underlings." What does this reveal about the play's view of fate and responsibility?
+   * **Options:** A) That the stars and omens control everything, so no one is to blame, B) That men are responsible for their own choices — power and ruin come from what people *do*, not from destiny, C) That Brutus has no choice but to obey Cassius, D) That only the gods decide who rises and falls
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Each time Antony says "For Brutus is an honourable man", the evidence he adds makes the word ring more hollow, so the repetition becomes biting irony.
-   * **Why A:** Antony's tone is bitterly ironic; he means the crowd to doubt Brutus's honour.
-   * **Why C:** The line is a rhetorical weapon, not a neutral statement of fact.
-   * **Why D:** It is spoken dialogue within the oration, not a stage instruction.
+   * **Feedback:** ✓ Correct. The line insists the cause lies in human will, not the heavens: the play's argument is that people make their own fate through action, which is why the conspirators — not fate — bear the guilt.
+   * **Why A:** The line says the opposite — the fault is *not* in the stars but in ourselves; the play stresses human responsibility.
+   * **Why C:** Cassius urges self-determination here; the point is that Brutus *can* act, not that he must obey.
+   * **Why D:** The whole thrust of the line rejects a world ruled by the gods alone in favour of human agency.
 
-12. **Type: MCQ [Tests Techniques]**
-   * **Question:** Storms, strange sights and the Soothsayer's warning fill the play before the murder. What is their dramatic effect?
-   * **Options:** A) They provide comic relief, B) They foreshadow the coming bloodshed and disorder, building a sense of dread, C) They have no bearing on the plot, D) They prove Rome is at peace
+10. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Antony begins, "Friends, Romans, countrymen, lend me your ears." Which controlling idea does the funeral scene most explore?
+   * **Options:** A) That the weather affects the outcome of battles, B) That persuasive speech is a form of power — rhetoric can move a crowd from one belief to its opposite and reshape events, C) That the Roman crowd never listens to anyone, D) That funerals should always be brief
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The unnatural storms and omens foreshadow Caesar's murder and the civil war to follow, warning the audience that order is about to collapse.
-   * **Why A:** The eerie portents create tension and dread, not laughter.
-   * **Why C:** They are closely tied to the action, preparing us for catastrophe.
-   * **Why D:** The disturbances signal looming chaos, the opposite of peace.
+   * **Feedback:** ✓ Correct. Antony sways the fickle citizens from approval of the murder to fury against its authors using only words — the play's idea that rhetoric, well aimed, can outweigh truth and turn the course of history.
+   * **Why A:** The scene turns on the force of speech, not the weather.
+   * **Why C:** The crowd listens intensely and swings completely — that responsiveness is the point.
+   * **Why D:** The theme is the power of what is *said*, not the length of the ceremony.
 
-13. **Type: True-False [Tests Techniques]**
-   * **Question:** Shakespeare uses soliloquy to let the audience overhear Brutus wrestling privately with whether to kill Caesar.
+11. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Brutus joins the plot from honourable motives, yet the result is disaster. Which idea does the play most explore through him — and how does it *work*?
+   * **Options:** A) That good intentions always guarantee good outcomes, B) That honour and idealism, cut off from political realism, can lead a good man to commit and justify terrible acts — noble motive does not redeem the deed, C) That Brutus never really cared about Rome, D) That only selfish people ever cause harm
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Brutus's very integrity is his undoing: because he trusts principle over consequence, he kills a friend and mismanages the aftermath. The play tests whether honourable ends can excuse violent means — and answers no.
+   * **Why A:** The play shows the reverse — Brutus's good intentions produce catastrophe, not good outcomes.
+   * **Why C:** He acts precisely *because* he loves Rome; the tragedy is that this love is misdirected, not absent.
+   * **Why D:** The play shows a well-meaning man causing enormous harm, complicating the idea that only the selfish do damage.
+
+12. **Type: True-False [Tests Themes]**
+   @dim:themes
+   * **Question:** In *Julius Caesar*, the crowd is shown as dangerously fickle — the same citizens who praise Brutus's reasons turn moments later to fury when Antony's rhetoric moves them.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Alone in his orchard, Brutus voices his inner struggle in soliloquy, so we witness the reasoning that leads an honourable man to murder.
-   * **WhyWrong:** This is true — Brutus's soliloquy reveals the private conflict behind his decision to join the plot.
+   * **Feedback:** ✓ Correct. The people cheer Brutus, then Antony reverses them entirely — dramatising the play's idea that public opinion is unstable and can be steered by whoever speaks best.
+   * **WhyWrong:** The crowd's loyalty is strikingly unstable: it swings from one speaker to his opposite, which is exactly the play's warning about the fickleness of the mob and the power of rhetoric over it.
 
-14. **Type: Fill [Tests Techniques]**
-   * **Question:** Antony's repeated line that Brutus "is an honourable man" grows heavy with [BLANK], meaning the opposite of what the words say.
-   * **Answer:** irony
-   * **Feedback:** ✓ Correct. The device is irony: Antony praises Brutus's honour aloud while steering the crowd to conclude the murder was dishonourable.
-   * **WhyWrong:** The word is "irony" — Antony's praise means its opposite, turning the crowd against the "honourable" conspirators.
-
-15. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Why do the conspirators, drawn into the plot by Cassius, decide to assassinate Caesar?
-   * **Options:** A) To steal his personal fortune, B) Because they fear he will make himself king and end the Roman republic, C) Because he has lost every battle, D) Because he has insulted them at a feast
+13. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** *Julius Caesar* is a tragedy. Why do we feel *pity* for Brutus by the end, despite his part in Caesar's murder?
+   * **Options:** A) Because he is entirely innocent and did nothing wrong, B) Because a genuinely honourable man has been destroyed by his own misjudgement — his ruin feels like a terrible waste of real virtue, C) Because Cassius forced him and he could not help it, D) Because he escapes punishment and we are glad for him
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The conspirators fear Caesar's rising power will make him a king and destroy the republic, so they kill him in the name of Rome's freedom.
-   * **Why A:** Their stated motive is political — the fear of tyranny — not personal greed.
-   * **Why C:** Caesar returns victorious and popular, not defeated.
-   * **Why D:** The plot springs from fear of his ambition, not a personal slight at a feast.
+   * **Feedback:** ✓ Correct. Tragedy makes us pity a *self-caused* fall: Brutus's integrity is real, so watching his own error waste it moves us. Even Antony calls him "the noblest Roman of them all". Pity comes from that wasted goodness, not from innocence.
+   * **Why A:** He is guilty of the murder, not innocent — and it is precisely a *flawed* good man, not a blameless one, whose fall earns tragic pity.
+   * **Why C:** Blaming Cassius removes Brutus's choice; we pity him *because* the ruin is his own doing, wasting real virtue.
+   * **Why D:** He does not escape — he dies by his own hand; and the feeling at the close is pity and fear, not relief.
 
-16. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** What does Caesar say as he sees his friend Brutus among his killers?
-   * **Options:** A) "Once more unto the breach", B) "Et tu, Brute? Then fall, Caesar", C) "A horse! a horse!", D) "To be, or not to be"
+14. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** A tragedy such as *Julius Caesar* is designed to make the audience feel two emotions above all others. Which two?
+   * **Options:** A) Amusement and satisfaction, B) Pity and fear, C) Confusion and boredom, D) Admiration for the conspirators' cleverness
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Wounded, Caesar sees Brutus and cries "Et tu, Brute? Then fall, Caesar", his shock at his friend's betrayal breaking his will to live.
-   * **Why A:** That famous line belongs to *Henry V*, not this play.
-   * **Why C:** That cry comes from *Richard III*, spoken on the battlefield.
-   * **Why D:** That is Hamlet's meditation on death, from a different play entirely.
+   * **Feedback:** ✓ Correct. Since Aristotle, tragedy has aimed to arouse *pity* (for the hero's ruin) and *fear* (that one like ourselves could fall the same way) — the emotional purpose the whole arc serves.
+   * **Why A:** Amusement belongs to comedy; a tragedy that merely satisfied us would fail its purpose.
+   * **Why C:** Confusion and boredom are the marks of a *failed* tragedy, not its aim.
+   * **Why D:** We may note the political cunning, but the intended response is pity and fear, not admiration for cleverness.
 
-17. **Type: Select All [Tests Characters & Plot]**
-   * **Question:** Which statements about the play's characters are accurate?
-   * **Options:** A) Cassius is envious and manipulative, drawing Brutus into the plot, B) Mark Antony proves a shrewd and dangerous orator, C) Brutus is respected for his integrity, even by his enemies, D) Casca is a loyal defender of Caesar who refuses to join the conspiracy
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Cassius manipulates, Antony out-manoeuvres the conspirators with his oratory, and even his foes respect Brutus's integrity — all true to the play.
-   * **Why D:** Casca is in fact one of the conspirators and strikes the first blow against Caesar.
+15. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Why do we feel *fear* as we watch Brutus's fall?
+   * **Options:** A) Because we are frightened of the storms and omens as supernatural threats, B) Because Brutus is a good, principled man "like us" — so his ruin warns that even honest ideals, if misjudged, could undo anyone, C) Because we are afraid Brutus will win and seize Rome, D) We feel no fear at all, only contempt
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Tragic fear is *fear for ourselves*: because Brutus is recognisably decent, not a monster, his fall feels like a warning that the same misjudgement could destroy any of us.
+   * **Why A:** The omens create dread, but the deeper fear is moral and human — fear for a good man's fate, and our own.
+   * **Why C:** We know he will fall; the fear is of *how* he falls and what it reveals, not that he will triumph.
+   * **Why D:** A wholly wicked figure would earn contempt; Brutus's genuine nobility is exactly what turns contempt into fear and pity.
 
-18. **Type: True-False [Tests Characters & Plot]**
-   * **Question:** Cassius works on Brutus's sense of honour and pride, using flattery and forged letters to draw him into the conspiracy.
+16. **Type: True-False [Tests Effects]**
+   @dim:effects
+   * **Question:** By the close of the play we are meant to feel both pity and fear — pity for the nobility Brutus has wasted, and fear that even honourable intentions, badly judged, can bring ruin.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Cassius, who insists "The fault, dear Brutus, is not in our stars, / But in ourselves, that we are underlings", flatters Brutus and plants forged letters to draw him into the plot.
-   * **WhyWrong:** This is true — Cassius manipulates Brutus through flattery and forged letters, exploiting his honour.
+   * **Feedback:** ✓ Correct. That double feeling — pity for the self-destroyed hero and fear for "one like us" — is the emotional effect a tragedy is built to produce.
+   * **WhyWrong:** The intended effect is pity *and* fear together, not triumph or amusement; the ending is meant to leave us moved, not satisfied at anyone's defeat.
 
-19. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** How does the conflict end at the Battle of Philippi?
-   * **Options:** A) Brutus and Cassius win and rule Rome together, B) Brutus and Cassius are defeated by Antony and Octavius, and both take their own lives, C) Caesar returns to lead his army, D) The battle is called off and peace is agreed
+17. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What is the play's overall *message* about using violence to protect liberty?
+   * **Options:** A) That killing a powerful man is a reliable route to freedom, B) That political murder, even for a good cause, unleashes chaos rather than liberty — the conspirators destroy the very republic they meant to save, C) That the crowd always chooses wisely, D) That honourable motives make any act turn out well
    * **Correct:** B
-   * **Feedback:** ✓ Correct. At Philippi the forces of Antony and Octavius defeat the conspirators, and both Cassius and Brutus die by their own hands, completing the tragedy.
-   * **Why A:** The conspirators lose the battle; they do not triumph or rule.
-   * **Why C:** Caesar is long dead by this point, though his spirit is said to haunt the field.
-   * **Why D:** The struggle ends in bloody defeat and suicide, not a negotiated peace.
+   * **Feedback:** ✓ Correct. Brutus kills Caesar to save the republic, yet the deed brings civil war, the conspirators' deaths, and the rise of new rulers — the play's enduring "so what": violence to defend freedom devours it.
+   * **Why A:** The play dramatises the opposite — the assassination brings chaos and defeat, not freedom.
+   * **Why C:** The crowd is shown as fickle and easily swayed, not a wise judge of events.
+   * **Why D:** Brutus's honourable motive does *not* save the outcome — the play insists good intentions cannot redeem the deed.
 
-20. **Type: Fill [Tests Characters & Plot]**
-   * **Question:** Standing over Brutus's body, Antony calls him "the [BLANK] Roman of them all", honouring his sincere motives.
-   * **Answer:** noblest
-   * **Feedback:** ✓ Correct. Antony's tribute, "This was the noblest Roman of them all", grants that Brutus alone acted for Rome's good rather than from envy.
-   * **WhyWrong:** The word is "noblest" — Antony judges Brutus "the noblest Roman of them all" because his motives were honourable.
+18. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What does the play suggest about whether noble ends can justify violent means?
+   * **Options:** A) That a good enough cause makes any act right, B) That even the highest motives cannot redeem murder — the deed carries its own ruinous consequences, C) That motives do not matter at all, D) That only the guilty are ever punished
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Brutus acts for Rome, yet the murder still unleashes war and destroys him and his cause. The message is that a noble end does not sanctify a bloody means — consequences follow the act, not the intention.
+   * **Why A:** The play shows a noble cause producing catastrophe, refuting the idea that ends justify means.
+   * **Why C:** Motives matter greatly — they are why we pity Brutus — but the play denies that they *excuse* the deed.
+   * **Why D:** The tragedy engulfs the well-meaning Brutus too; ruin here is not confined to the wicked.
+
+19. **Type: True-False [Tests Message]**
+   @dim:message
+   * **Question:** One of the play's lasting messages is that unleashing violence to defend a republic can destroy the very order it was meant to protect.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The conspirators kill Caesar to preserve the republic, but the act plunges Rome into civil war and clears the way for new tyranny — the freedom they sought is the first casualty.
+   * **WhyWrong:** The play insists the assassination backfires: meant to save the republic, it destroys it — a central part of its moral warning about political violence.
+
+20. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** Through Cassius's line that "the fault … is not in our stars, / But in ourselves", the play affirms which enduring idea?
+   * **Options:** A) That the heavens decide everything and people are helpless, B) That human beings shape their own destiny through their choices — and so must answer for them, C) That omens can never be ignored safely, D) That ambition is the highest virtue
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The play's enduring worldview is one of human responsibility: the conspirators' fate flows from what they choose to do, not from destiny — so the guilt, and the tragedy, are theirs.
+   * **Why A:** The line rejects a helpless, star-ruled world in favour of human agency.
+   * **Why C:** The message is about responsibility for choices, not the reliability of omens.
+   * **Why D:** The play presents unchecked ambition and its violent opposition as destructive, not virtuous.

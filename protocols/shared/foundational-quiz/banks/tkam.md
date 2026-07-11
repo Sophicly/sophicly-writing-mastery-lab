@@ -1,165 +1,206 @@
 # Foundational Quiz Bank — To Kill a Mockingbird
 
-Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions, mixed categories (Context-weighted) + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+Deterministic, code-scored foundational bank (parsed by `SWML_Quiz_Bank`).
+**20 questions — 4 variations of each of the 5 aspects.** The picker serves ONE random question per
+aspect = a light **5-question round** (`fq_dim_stratified`); depth comes from mastery REPETITION drawing
+a fresh variation per aspect each round, not from round length (3–5 is the low-stakes retrieval sweet
+spot). Keys + feedback live server-side and are stripped before questions reach the client.
 
-Categories: Context · Themes · Techniques · Characters & Plot
-Types: MCQ · Fill · True-False · Select All
+**Concept-based (v7.20.x — governed by `FQ-QUESTION-STANDARD.md`).** Every item tests the CENTRAL
+CONCEPT of its aspect, not surface trivia (research: `research/2026-07-11-concept-based-fq-question-design.md`).
+Distractors are plausible CONCEPTUAL MISREADINGS a real student holds, so the student must reason to the
+answer. *To Kill a Mockingbird* is a **bildungsroman (coming-of-age)** set against social-realist racial
+injustice → the `effects` aspect tests the reader's **empathy, poignancy and hope at Scout's growth and
+its cost** (the ache of innocence lost, and moral discomfort at injustice), not the naming of techniques.
+
+Aspects (`@dim` → Conceptual-Notes field via `concept_field_for_dim`):
+Protagonist → `cn_section_1` · Plot → `cn_section_3` · Themes → `cn_section_5` ·
+Effects → `cn_section_4` (Genre & Emotion) · Message → `cn_section_7`. A correct answer autofills that
+aspect's pre-authored note (`tkam.concept-notes.md`) into the CN doc; mastery completes all five.
 
 ### Quiz: To Kill a Mockingbird
 
-1. **Type: MCQ [Tests Context]**
-   * **Question:** Where and when is *To Kill a Mockingbird* set?
-   * **Options:** A) 1930s Maycomb, a small town in the American South, B) 1960s New York, C) Wartime London, D) Colonial India
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The novel unfolds in the fictional town of Maycomb, Alabama, during the Great Depression of the 1930s, a segregated society in the Deep South.
-   * **Why B:** It is set in the rural Southern town of Maycomb, not New York, decades earlier.
-   * **Why C:** The setting is small-town Alabama, not London.
-   * **Why D:** The novel concerns the American South and its racial divisions, not India.
-
-2. **Type: MCQ [Tests Context]**
-   * **Question:** How does the system of racial segregation in the 1930s South shape the novel?
-   * **Options:** A) It has no effect on the story, B) Under Jim Crow laws, Black Americans faced legal and social injustice — the reason a Black man like Tom Robinson cannot get a fair trial, C) It means Black and white citizens were treated equally, D) It only affects the children's games
+1. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which best captures how Scout *changes* across the novel — and what drives the change?
+   * **Options:** A) She is a wise, knowing child from the first page and never really changes, B) She grows from an innocent child who judges quickly into a girl who understands injustice and empathy — driven by witnessing Tom's trial and finally seeing Boo, C) She simply gets older but ends thinking exactly as she began, D) She is forced to change by Atticus and has no part in it herself
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Jim Crow segregation kept Black citizens separate and unequal, so an all-white jury convicts Tom despite clear evidence of his innocence.
-   * **Why A:** Segregation is central — it drives the trial and its unjust verdict.
-   * **Why C:** The whole point is that society was deeply unequal, not equal.
-   * **Why D:** Its reach is far wider than the children's world; it decides a man's life.
+   * **Feedback:** ✓ Correct. This is a coming-of-age novel: the whole point is Scout's *growth* — from a child's quick certainties to hard-won moral sight, forged by what she witnesses and by her own choice to see as Atticus teaches.
+   * **Why A:** She begins genuinely innocent and quick to judge; the drama lies in her transformation, not in a fixed wisdom.
+   * **Why C:** Mere ageing is not the point — a bildungsroman turns on inner change; Scout ends morally transformed, not just older.
+   * **Why D:** Atticus guides her, but her growth is her own dawning understanding — removing her agency misses that she chooses to apply his lesson.
 
-3. **Type: True-False [Tests Context]**
-   * **Question:** Although set in the 1930s, the novel was published in 1960, at the height of the American Civil Rights Movement, which sharpened its message about racial injustice.
+2. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** What makes Scout's journey a *coming-of-age* (bildungsroman) rather than a child simply growing older?
+   * **Options:** A) She learns nothing and stays a naive child, B) She loses her childhood certainties and gains moral understanding — a growth bought at the cost of her innocence, C) She grows physically but her view of the world never shifts, D) She becomes cynical and rejects everything Atticus taught her
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The form measures growth by what is *unlearned*: Scout trades the comfort of childhood innocence for the harder clarity of moral sight — the wisdom is real, but it costs her the certainty she began with.
+   * **Why A:** She learns a great deal — about prejudice, courage and empathy; the arc is precisely her education.
+   * **Why C:** A coming-of-age story is defined by the shift in how she *sees*, not merely by getting taller.
+   * **Why D:** She does not reject Atticus's lesson — she grows into it, ending in understanding, not cynicism.
+
+3. **Type: MCQ [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Which pairing best shows Scout's evolution from beginning to end?
+   * **Options:** A) A cruel bully at the start → a frightened recluse at the end, B) A child who imagines Boo Radley a monster and fights over insults → a girl who stands on Boo's porch and sees the world through his eyes, C) A wise adult at the start → a confused child at the end, D) A stranger to Maycomb at the start → its mayor at the end
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. She travels from a child's fearful fantasy and quick temper to genuine empathy — literally standing where Boo stood to "see" his world. That arc from innocence to understanding IS the coming-of-age.
+   * **Why A:** She is neither a bully nor a recluse; this misreads both ends of her arc.
+   * **Why C:** She begins a child and grows *into* understanding — this reverses her actual development.
+   * **Why D:** Scout is a Maycomb child throughout; her change is moral, not a change of status.
+
+4. **Type: True-False [Tests Protagonist]**
+   @dim:protagonist
+   * **Question:** Scout's growth is driven above all by her own coming-to-see — the trial and meeting Boo force her to unlearn childhood assumptions; she does not merely grow older but becomes morally changed.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Writing in 1960, Harper Lee spoke to a nation then confronting segregation, giving the 1930s story an urgent contemporary charge.
-   * **WhyWrong:** This is true — the 1960 publication placed the novel amid the Civil Rights struggle, deepening its resonance.
+   * **Feedback:** ✓ Correct. The formative experiences test her innocence, but it is Scout's own dawning grasp — her choice to walk in another's skin — that turns experience into growth. That is what makes her the bildungsroman's evolving centre.
+   * **WhyWrong:** Treating Scout as unchanged, or as merely older, misses the point of the form: her innocence is dismantled and replaced by moral understanding, and that transformation is her own.
 
-4. **Type: MCQ [Tests Context]**
-   * **Question:** The Depression setting also shapes the town's rigid sense of social class. How is this shown?
-   * **Options:** A) Everyone in Maycomb is equally wealthy, B) Families like the Cunninghams (poor but proud) and the Ewells (despised outcasts) reveal a strict social hierarchy, C) There are no class differences, D) Class matters only to the children
+5. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Why does Tom Robinson's trial *lead to* Bob Ewell's attack on the children? (What is the causal link?)
+   * **Options:** A) The two events are unconnected and simply happen in that order, B) Atticus exposes Ewell's lie in open court and humiliates him — so the shamed Ewell seeks revenge on Atticus through his children, C) Ewell attacks at random because he has gone mad, D) The sheriff orders Ewell to frighten the children
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Maycomb ranks its families precisely — the hard-working poor Cunninghams above the disreputable Ewells — showing a society layered by class as well as race.
-   * **Why A:** The Depression left many families, like the Cunninghams, in poverty.
-   * **Why C:** Class distinctions run through the town's whole social order.
-   * **Why D:** Adults uphold these divisions most firmly of all.
+   * **Feedback:** ✓ Correct. One act *causes* the next: Atticus's defence publicly disgraces Ewell, and that humiliation breeds the vengeance that drives him to attack Jem and Scout. The plot is a causal chain, not a list of events.
+   * **Why A:** In a well-built plot events follow by cause, not mere sequence; reading them as unconnected misses the arc.
+   * **Why C:** His attack is driven by wounded pride and a thirst for revenge, not random madness.
+   * **Why D:** No one orders him; Ewell acts on his own resentment after being shown up in court.
 
-5. **Type: Fill [Tests Context]**
-   * **Question:** Tom Robinson, a Black man, is falsely accused of assaulting a white woman named Mayella [BLANK].
-   * **Answer:** Ewell
-   * **Feedback:** ✓ Correct. Mayella Ewell's false accusation, backed by her father Bob Ewell, sets the trial in motion and exposes the town's racism.
-   * **WhyWrong:** The surname is "Ewell" — Mayella Ewell, whose accusation drives the injustice against Tom.
-
-6. **Type: Select All [Tests Context]**
-   * **Question:** Which features of 1930s Southern society does the novel depict?
-   * **Options:** A) Racial segregation and prejudice, B) Economic hardship from the Great Depression, C) A strict social class hierarchy, D) Equal justice for all citizens in court
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Segregation, Depression poverty and a rigid class order all shape Maycomb — the one thing absent is equal justice, which the trial denies.
-   * **Why D:** The trial shows justice was NOT equal; Tom is condemned because of his race.
-
-7. **Type: MCQ [Tests Themes]**
-   * **Question:** Atticus tells Scout you never understand a person "until you climb into his skin and walk around in it". Which theme does this express?
-   * **Options:** A) Revenge, B) Empathy — the need to see the world from another's point of view, C) Greed, D) Ambition
+6. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which best describes the *causal chain* of the novel — not just the order of events?
+   * **Options:** A) A series of unrelated small-town happenings with no link between them, B) Atticus defends Tom → he dismantles the Ewells' story → the prejudiced jury convicts Tom anyway → the humiliated Ewell takes revenge → Boo Radley saves the children, C) Everything is caused by Boo Radley from the start, D) The events are decided purely by chance and no choice matters
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Atticus's lesson in seeing from another's perspective makes empathy the novel's moral centre, the quality Scout slowly learns.
-   * **Why A:** The line urges understanding, the opposite of revenge.
-   * **Why C:** It concerns compassion for others, not greed.
-   * **Why D:** It is about moral understanding, not personal ambition.
+   * **Feedback:** ✓ Correct. Each stage flows from the one before: the defence provokes the shame, the shame provokes the revenge, the revenge brings out Boo. That causal spine — rooted in Atticus's principled choice — is what makes it a story, not a chronicle.
+   * **Why A:** The events are tightly linked by cause and effect; reading them as unrelated misses the chain.
+   * **Why C:** Boo appears only at the climax as a *consequence* of Ewell's revenge; he does not cause the earlier events.
+   * **Why D:** Choice is decisive — Atticus's decision to defend Tom sets the whole chain in motion.
 
-8. **Type: MCQ [Tests Themes]**
-   * **Question:** What does Atticus mean by real courage, shown in his defence of Tom Robinson?
-   * **Options:** A) Winning every fight, B) Carrying on to do what is right even when you know you are "licked" before you begin, C) Never feeling afraid, D) Avoiding all conflict
+7. **Type: MCQ [Tests Plot]**
+   @dim:plot
+   * **Question:** Which moment is the turning point that destroys the children's childhood faith in their world — the point of no return in their coming-of-age?
+   * **Options:** A) The children first daring each other to touch the Radley house, B) The jury's guilty verdict against Tom Robinson despite his evident innocence, C) Scout's first day at school, D) The snowman the children build in the yard
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Atticus defines courage as pressing on with what is right despite certain defeat — he defends Tom knowing the verdict is already lost.
-   * **Why A:** He teaches that courage is not about winning; he loses the case yet acts rightly.
-   * **Why C:** Courage, for Atticus, means acting well in spite of fear, not lacking it.
-   * **Why D:** He confronts injustice directly rather than avoiding conflict.
+   * **Feedback:** ✓ Correct. The unjust verdict is irreversible for the children's innocence: once they watch prejudice defeat clear truth, their faith in Maycomb's fairness cannot be restored. That is the moment innocence gives way to moral sight.
+   * **Why A:** The Radley dares are early childhood play — nothing about their view of justice has yet been shaken.
+   * **Why C:** School unsettles Scout, but it does not overturn her whole sense of right and wrong.
+   * **Why D:** The snowman is a small childhood episode, not the shock that ends their innocence.
 
-9. **Type: True-False [Tests Themes]**
-   * **Question:** The novel explores the loss of childhood innocence as Scout and Jem come to see the injustice and prejudice in their community.
+8. **Type: True-False [Tests Plot]**
+   @dim:plot
+   * **Question:** In the novel, Bob Ewell's attack on the children follows by cause-and-effect from the trial — it is not just a later event unconnected to what came before.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Watching Tom's unjust conviction, the children lose their early innocence and awaken to the cruelty and unfairness around them.
-   * **WhyWrong:** This is true — Scout and Jem's growing awareness of injustice charts their loss of innocence.
+   * **Feedback:** ✓ Correct. The plot is built on necessity, not mere sequence: Atticus's courtroom exposure of Ewell's lie humiliates him, and that humiliation is *why* he seeks revenge. The attack is caused by the trial, not merely after it.
+   * **WhyWrong:** Reading the attack as an unconnected later happening misses the causal necessity — Ewell strikes *because* he was disgraced in court, which is what makes the plot a chain rather than a chronicle.
 
-10. **Type: Fill [Tests Themes]**
-   * **Question:** Atticus teaches the children that it is a sin to kill a [BLANK], because it does nothing but sing for others and harms no one.
-   * **Answer:** mockingbird
-   * **Feedback:** ✓ Correct. The mockingbird, which only "sings its heart out" and harms nobody, becomes the novel's symbol of harmless innocence destroyed.
-   * **WhyWrong:** The word is "mockingbird" — killing one is a sin because it only brings song and does no harm.
-
-11. **Type: MCQ [Tests Techniques]**
-   * **Question:** Who narrates the novel, and what effect does this create?
-   * **Options:** A) An all-knowing adult with no personal view, B) Scout, looking back on her childhood — a child's-eye view that exposes adult prejudice with fresh, honest clarity, C) Tom Robinson, D) Atticus Finch
+9. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Atticus tells the children it is "a sin to kill a mockingbird", and Miss Maudie explains that mockingbirds "don't do one thing but sing their hearts out for us". What does this reveal about the novel's controlling idea?
+   * **Options:** A) That hunting birds is cruel and should be banned, B) That to destroy the harmless and innocent — like Tom Robinson and Boo Radley — is a moral wrong, C) That Atticus dislikes music, D) That the children should stay indoors
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Narrating as the grown Scout recalling her younger self, Lee filters Maycomb's injustices through a child's innocence, making the town's prejudice starker.
-   * **Why A:** The narration is deeply personal — the adult Scout remembering being a girl.
-   * **Why C:** Tom is a central figure but not the narrator.
-   * **Why D:** Atticus is seen through Scout's eyes; he does not tell the story.
+   * **Feedback:** ✓ Correct. The mockingbird, which only sings and harms no one, becomes the novel's symbol for the innocent; to wound Tom or Boo is to "kill a mockingbird" — the destruction of harmless goodness by cruelty and prejudice.
+   * **Why A:** The line is a symbol about human innocence, not a literal lesson about hunting.
+   * **Why C:** It concerns the sin of harming the innocent, not Atticus's taste in music.
+   * **Why D:** It is a moral idea about protecting the vulnerable, not a rule about staying inside.
 
-12. **Type: MCQ [Tests Techniques]**
-   * **Question:** Tom Robinson and Boo Radley are both linked to the mockingbird symbol. Why?
-   * **Options:** A) They are both birds, B) Both are harmless, innocent figures damaged by the cruelty and fear of others, C) They both sing, D) They are both wealthy
+10. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** Atticus tells Scout you never understand a person "until you climb into his skin and walk around in it". Which idea does the novel most explore through this, and how does it *work*?
+   * **Options:** A) Revenge — repaying cruelty with cruelty, B) Empathy — that moral understanding comes only from seeing the world through another's eyes, a lesson Scout slowly learns and finally applies to Boo, C) Ambition — the drive to rise above others, D) Greed — the hunger for wealth
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Like the mockingbird, Tom and Boo do no harm yet are wounded by society's prejudice and suspicion — the symbol binds their fates.
-   * **Why A:** The mockingbird is a symbol, not a literal description of them.
-   * **Why C:** The link is their gentle innocence, not singing.
-   * **Why D:** Neither is wealthy; the point is their vulnerability.
+   * **Feedback:** ✓ Correct. Empathy is the novel's moral centre, and it *works* as a lesson Scout is taught early and only truly grasps at the end, when she stands on Boo's porch and sees Maycomb through his eyes.
+   * **Why A:** The line urges understanding — the opposite of revenge.
+   * **Why C:** It is about compassion for others, not personal ambition.
+   * **Why D:** It concerns seeing from another's view, not the hunger for wealth.
 
-13. **Type: True-False [Tests Techniques]**
-   * **Question:** The Boo Radley storyline and the Tom Robinson trial are two separate threads that finally come together at the novel's climax.
+11. **Type: MCQ [Tests Themes]**
+   @dim:themes
+   * **Question:** How does the theme of racial prejudice *work* through the novel — what does it do to Maycomb's justice?
+   * **Options:** A) It has no real effect on the trial's outcome, B) It blinds an all-white jury to plain evidence, so they convict Tom because he is Black rather than because he is guilty, C) It makes the town treat Black and white citizens equally, D) It matters only to the children's games
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Prejudice is shown as a force that overrides truth itself: Atticus proves Tom's innocence, yet racial hatred convicts him anyway — the theme works by exposing how a whole community lets bigotry defeat justice.
+   * **Why A:** Prejudice decides the verdict — it is the reason an innocent man is condemned.
+   * **Why C:** The novel dramatises deep inequality, not equal treatment.
+   * **Why D:** Its reach is a man's life, far beyond the children's world.
+
+12. **Type: True-False [Tests Themes]**
+   @dim:themes
+   * **Question:** The novel presents real courage, through Atticus, as pressing on to do what is right even when — as he says of one "licked before you begin" — you know you cannot win.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The children's fascination with Boo and the drama of Tom's trial run in parallel until they converge when Boo saves the children from Bob Ewell.
-   * **WhyWrong:** This is true — the two plots interweave and meet at the climax, when Boo intervenes.
+   * **Feedback:** ✓ Correct. Atticus defends Tom knowing the verdict is already lost, defining courage not as winning but as doing right in the face of certain defeat — a controlling idea the whole trial dramatises.
+   * **WhyWrong:** Courage here is precisely acting rightly despite certain defeat; Atticus takes the case knowing he is "licked", which is the novel's very definition of the virtue.
 
-14. **Type: Fill [Tests Techniques]**
-   * **Question:** Early in the novel Boo Radley is treated as a frightening local mystery, a [BLANK] figure the children imagine as a monster before they learn the truth.
-   * **Answer:** gothic
-   * **Feedback:** ✓ Correct. Boo begins as a gothic bogeyman of local legend, only to be revealed as a gentle protector — overturning the children's fearful assumptions.
-   * **WhyWrong:** The word is "gothic" — Boo is first a gothic figure of dread before his true kindness appears.
-
-15. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** What is the outcome of Tom Robinson's trial?
-   * **Options:** A) He is found innocent and freed, B) Despite Atticus proving his innocence, the all-white jury convicts him because he is Black, C) The case is dismissed, D) He is never brought to trial
+13. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** *To Kill a Mockingbird* is a coming-of-age novel. Why do we feel a poignant ache as Scout loses her childhood innocence?
+   * **Options:** A) Because we are amused by the children's games, B) Because the moral understanding she gains is bought by the loss of a childhood certainty that can never be restored — we feel the cost of growing up, C) Because a symbol has been used to represent innocence, D) Because we are thrilled by the danger of the final attack
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Atticus dismantles the Ewells' story, yet the prejudiced jury still convicts Tom — a verdict that lays bare the town's racism.
-   * **Why A:** He is convicted, not freed, despite the evidence in his favour.
-   * **Why C:** The trial proceeds fully; it is not dismissed.
-   * **Why D:** He is tried, and the trial is the novel's centrepiece.
+   * **Feedback:** ✓ Correct. The bildungsroman moves us by the *exchange*: Scout's new moral sight is real, but it can never give back the innocence it cost. That ache — empathy for the price of growth — is the feeling the form is built to produce.
+   * **Why A:** Amusement is not the intended response; the games give way to a sobering education, and the feeling deepens into poignancy.
+   * **Why C:** "A symbol is used" names a *technique*, not a feeling — the effect is the ache of lost innocence, not a device.
+   * **Why D:** The attack unsettles, but the enduring emotion is the poignancy of Scout's growth, not the thrill of danger.
 
-16. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** How are the children saved when Bob Ewell attacks them at the end?
-   * **Options:** A) Atticus fights him off, B) Boo Radley intervenes and saves them, killing Ewell in the struggle, C) The sheriff arrives in time, D) They escape unharmed on their own
+14. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** A coming-of-age novel such as this is designed to make the reader feel — above all — which response?
+   * **Options:** A) Delight and relief as disorder is happily resolved, B) Empathy and poignancy at a child's growth and its cost — the ache of innocence traded for understanding, C) Dread and horror at a supernatural threat, D) Triumphant satisfaction at a hero's total victory
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The reclusive Boo Radley emerges to rescue Jem and Scout, and Ewell dies in the fight — the feared neighbour proves their guardian.
-   * **Why A:** Atticus is not present; it is Boo who protects the children.
-   * **Why C:** Sheriff Tate arrives afterwards and chooses to shield Boo, but Boo did the saving.
-   * **Why D:** They are in real danger and are rescued by Boo, not left unharmed by chance.
+   * **Feedback:** ✓ Correct. The form's promise is the feeling of growth and its price: we watch a child gain moral sight and feel both empathy for the journey and the poignancy of what innocence it cost — with a fragile hope in the understanding won.
+   * **Why A:** Delight at resolved disorder is the effect of *comedy* — the wrong genre-emotion for a coming-of-age story marked by injustice.
+   * **Why C:** Dread and horror belong to the gothic; the fear at the Radley house is left behind as understanding replaces it.
+   * **Why D:** There is no triumphant victory — Tom is convicted; the feeling is poignant empathy, not triumph.
 
-17. **Type: Select All [Tests Characters & Plot]**
-   * **Question:** Which statements about the characters are accurate?
-   * **Options:** A) Atticus defends Tom Robinson out of principle, B) Bob Ewell is the malicious accuser who later attacks the children, C) Boo Radley turns out to be gentle and protective, D) Calpurnia is the children's cruel enemy
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Atticus's principled defence, Ewell's malice and Boo's hidden kindness all match the novel; only the claim about Calpurnia is false.
-   * **Why D:** Calpurnia is the Finches' caring housekeeper and a guiding figure, not an enemy.
+15. **Type: MCQ [Tests Effects]**
+   @dim:effects
+   * **Question:** Why does the guilty verdict make us feel moral discomfort and indignation rather than acceptance?
+   * **Options:** A) Because we dislike the courtroom setting, B) Because an evident innocent — a "mockingbird" — is destroyed by prejudice, so we feel the injustice as a wrong done in our own world, C) Because we are pleased to see order upheld, D) Because the trial is exciting to watch
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The novel makes us share the children's outrage: Tom is plainly innocent, yet bigotry condemns him, and we are made to feel that injustice sharply — moral discomfort is exactly the response the social-realist trial is built to arouse.
+   * **Why A:** The discomfort is moral, about injustice, not a dislike of the setting.
+   * **Why C:** There is no just order to be pleased by — the verdict is a miscarriage of justice, which is why we feel wronged.
+   * **Why D:** We may be gripped, but the intended effect is indignation at injustice, not mere excitement.
 
-18. **Type: True-False [Tests Characters & Plot]**
-   * **Question:** At the very end, having finally met Boo, Scout reflects that most people are "real nice" once you truly see them — showing how far her understanding has grown.
+16. **Type: True-False [Tests Effects]**
+   @dim:effects
+   * **Question:** By the close of the novel we are meant to feel empathy and a tempered hope — moved by Scout's growth into understanding, yet aching at the innocence and the injustice it cost.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Scout's closing insight that people are "real nice… when you finally see them" shows she has learned Atticus's lesson of empathy.
-   * **WhyWrong:** This is true — Scout's final reflection marks her growth into understanding and empathy.
+   * **Feedback:** ✓ Correct. That double feeling — hope in the empathy Scout has learned, poignancy at the price of growth and the injustice witnessed — is the emotional effect a coming-of-age novel set against prejudice is built to produce.
+   * **WhyWrong:** The intended effect is empathy and poignant hope, not amusement or triumph; the ending leaves us moved by Scout's understanding and saddened by its cost, not satisfied by a victory.
 
-19. **Type: MCQ [Tests Characters & Plot]**
-   * **Question:** Who is Atticus Finch, and what makes him the novel's moral centre?
-   * **Options:** A) The town's mayor, B) A lawyer and the children's father, who defends Tom Robinson honestly despite the town's hostility, C) The trial judge, D) A wealthy landowner
+17. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What is the novel's overall *message* about prejudice and justice?
+   * **Options:** A) That prejudice is harmless and soon fades on its own, B) That prejudice blinds a community and can destroy the innocent — yet moral courage and empathy remain the right response, even when they cannot win, C) That justice always prevails in the end, D) That it is pointless ever to do what is right
    * **Correct:** B
-   * **Feedback:** ✓ Correct. As lawyer and father, Atticus models integrity — defending Tom fairly and teaching his children empathy and courage against the tide of prejudice.
-   * **Why A:** He is a lawyer and father, not the mayor.
-   * **Why C:** He is the defence attorney, not the judge.
-   * **Why D:** He is a modestly-paid lawyer, respected for principle rather than wealth.
+   * **Feedback:** ✓ Correct. The novel shows prejudice defeating truth and ruining Tom, yet insists — through Atticus — that empathy and the courage to do right are worth holding to regardless of the outcome. That is its enduring "so what".
+   * **Why A:** The novel dramatises prejudice as a destructive force that costs a man his life — the opposite of harmless.
+   * **Why C:** Justice does *not* prevail — Tom is wrongly convicted; the message survives that defeat, it does not deny it.
+   * **Why D:** Atticus's stand affirms that doing right matters even when you lose; the message is the reverse of futility.
 
-20. **Type: Fill [Tests Characters & Plot]**
-   * **Question:** The novel's two young protagonists are Scout and her older brother [BLANK] Finch.
-   * **Answer:** Jem
-   * **Feedback:** ✓ Correct. Jem, Scout's older brother, matures across the novel and is especially shaken by the injustice of Tom's conviction.
-   * **WhyWrong:** The name is "Jem" — Scout's brother, whose disillusionment after the trial marks his growing up.
+18. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** Through the mockingbird symbol, what enduring idea does the novel ultimately affirm?
+   * **Options:** A) That the weak deserve their fate, B) That it is a sin to harm the harmless and innocent, and a just society should protect them rather than destroy them, C) That songbirds should be protected by law, D) That children should never grow up
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Tom and Boo are the novel's mockingbirds — gentle, harmless, wounded by the cruelty of others. The lasting message is that to destroy such innocence is a moral wrong, and that decency means shielding it.
+   * **Why A:** The novel condemns the destruction of the innocent; it never suggests they deserve it.
+   * **Why C:** The mockingbird is a symbol for human innocence, not a literal plea about birds.
+   * **Why D:** The novel affirms the value of moral growth — it does not wish childhood frozen.
+
+19. **Type: True-False [Tests Message]**
+   @dim:message
+   * **Question:** One of the novel's lasting messages is that you never truly understand a person until you see the world from their point of view — empathy is its moral answer to prejudice.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. "Climb into his skin and walk around in it" is the moral heart of the book: prejudice comes from refusing to see others, and empathy — Scout's final gift on Boo's porch — is the cure the novel affirms.
+   * **WhyWrong:** Empathy is exactly the novel's answer to prejudice; Scout's closing understanding of Boo dramatises the message that seeing from another's view is the beginning of justice.
+
+20. **Type: MCQ [Tests Message]**
+   @dim:message
+   * **Question:** What enduring idea about growing up does the ending affirm, as Scout — finally understanding Boo — says "he was real nice", and Atticus replies that "most people are... when you finally see them"?
+   * **Options:** A) That growing up means becoming hard and suspicious of everyone, B) That moral maturity means learning to see others with empathy — even at the cost of childhood innocence — and doing right regardless of the outcome, C) That it is best never to trust anyone, D) That understanding others brings no reward at all
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Atticus's closing reply — that most people are decent "when you finally see them" — crowns Scout's coming-of-age: the empathy she has learned, bought with her lost innocence, lets her at last truly see Boo. That is the novel's final word on growing up.
+   * **Why A:** Her growth makes her more understanding, not harder or more suspicious.
+   * **Why C:** The ending affirms empathy and trust in others' basic decency, not blanket distrust.
+   * **Why D:** The reward is moral understanding itself — the empathy that lets her, at last, truly see Boo.
