@@ -10478,8 +10478,9 @@
                     if (state.task === 'foundational_quiz' || state.task === 'mark_scheme_unit') {
                         const _qMatch = res.reply.match(/Question\s+(\d+)\s+of\s+5/i);
                         let _quizStep = null;
+                        let _qNum = 0;
                         if (_qMatch) {
-                            const _qNum = parseInt(_qMatch[1], 10);
+                            _qNum = parseInt(_qMatch[1], 10);
                             if (_qNum >= 1 && _qNum <= 5) _quizStep = _qNum + 1;
                         }
                         if (/Quiz\s+Complete|\[QUIZ_COMPLETE/i.test(res.reply)) {
@@ -10487,7 +10488,18 @@
                         }
                         // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step is bridge dispatch).
                         const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
-                        if (_quizStep && _quizStep > _curStep) {
+                        // v7.20.31 (Neil): a NEW round restarts at "Question 1 of 5". The stepper is
+                        // forward-only (below), so on a fresh round it stayed parked on the prior
+                        // round's Results step, keeping its grade colour until a nav rebuilt it. When
+                        // Q1 arrives while we're already past Q1, reset the stepper to Q1 — updateProgress
+                        // repaints every circle (Results → muted) and _patchQuizResultSidebar then strips
+                        // the stale grade paint. Clear the pending result so the finished round's grade
+                        // can't re-stamp mid-new-round.
+                        if (_qNum === 1 && _curStep > 2) {
+                            _pendingQuizResult = null;
+                            updateProgress(2);
+                            console.log('WML v7.20.31: new quiz round → reset stepper to Q1');
+                        } else if (_quizStep && _quizStep > _curStep) {
                             updateProgress(_quizStep);
                             console.log('WML v7.18.12: Quiz step → ' + _quizStep + ' (task=' + state.task + ')');
                         }
@@ -33831,17 +33843,21 @@
                 circle.classList.add('swml-step-grade');
                 circle.style.setProperty('background', _GRADE_BG[g] || '#5333ed', 'important');
                 circle.style.setProperty('color', _GRADE_DARK_TEXT[g] ? '#1c1d1f' : '#fff', 'important');
-            } else if (circle.classList.contains('swml-step-grade')) {
-                // v7.20.30 (Neil): a NEW round must NOT keep the prior round's grade
-                // colour on the Results circle. When Results isn't reached (fresh round),
-                // strip the stale grade paint back to the muted step-number style — the
-                // inline !important background from the last round survives updateProgress's
-                // class-based repaint, so it must be actively removed here.
+            } else {
+                // v7.20.31 (Neil): clear stale grade paint whenever this round hasn't produced
+                // a reached+graded Results. updateProgress overwrites className (wiping the
+                // swml-step-grade class) but NOT the inline !important background, so the strip
+                // must be UNCONDITIONAL on the inline style — not gated on the class (which is
+                // already gone by the time this runs). removeProperty is a no-op when unset.
                 circle.classList.remove('swml-step-grade');
                 circle.style.removeProperty('background');
                 circle.style.removeProperty('color');
-                if (label) label.textContent = base;
-                circle.textContent = step.getAttribute('data-step') || circle.textContent;
+                // On a truly muted (not-reached) step, restore the plain number + label.
+                if (!reached) {
+                    const d = step.getAttribute('data-step');
+                    if (d) circle.textContent = d;
+                    if (label) label.textContent = base;
+                }
             }
         });
     }
