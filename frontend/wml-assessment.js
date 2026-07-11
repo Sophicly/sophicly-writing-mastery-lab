@@ -8504,6 +8504,19 @@
     // v7.13.35: Use exerciseConfig.storageSuffix for ALL exercise types — prevents key collisions
     // between assessment, mark_scheme, CW steps, etc. on the same board/text/topic.
     // v7.15.12: Attempt-aware — attempt 1 has no suffix (backward compatible), attempt 2+ appends __a{N}
+    // v7.20.28: CLIENT half of the attempt-pin (server: is_pinned_cn_family). The single-
+    // doc CN family (non-poetry _cn — literature/nonfiction/prose) is attempt-stable, so its
+    // canvas doc identity must resolve to attempt 1 REGARDLESS of state.attempt (which the
+    // /attempts index may have drifted to a stale empty attempt — the blank-FQ bug). Without
+    // this the localStorage key + load URL used `__a{drifted}` while the server pinned to
+    // attempt 1 → the client rendered the empty drifted doc. Poetry keeps its own scoping.
+    function _canvasAttempt() {
+        try {
+            const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
+            if (suffix === '_cn' && !(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return 1;
+        } catch (_) {}
+        return state.attempt || 1;
+    }
     const CANVAS_SAVE_KEY = () => {
         // v7.15.112: Canvas doc uses canvasStorageSuffix when task defines it
         // (Phase 2 tasks share `_redraft` doc even though chat may be isolated).
@@ -8511,7 +8524,8 @@
         // v7.19.955: text/topic via the canonical doc scope (FQ → CN doc identity)
         // so the localStorage key matches the server meta key it hydrates against.
         const _scope = WML.canvasDocScope();
-        const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
+        const _att = _canvasAttempt();
+        const att = _att > 1 ? `__a${_att}` : '';
         // v7.17.38: project-scope CW canvas the same way as CHAT_SAVE_KEY
         // so switching projects doesn't leak prior project's saved doc.
         const cwP = (state.task && state.task.startsWith('cw_') && state.cwProjectId)
@@ -32779,7 +32793,9 @@
             const _docScope = WML.canvasDocScope();
             // Tutor review mode: load student's canvas via review endpoint (v7.15.2)
             let url;
-            const att = state.attempt || 1;
+            // v7.20.28: pin CN-family to attempt 1 (mirror server is_pinned_cn_family) so
+            // the load URL can't request a drifted empty attempt.
+            const att = _canvasAttempt();
             // v7.19.249: Model B copy-forward. For phase-stage essay tasks, ask the server
             // to seed a blank stage doc from the most-recent sibling stage (continuity +
             // migration off the legacy shared _redraft doc). NOT in review mode (tutor must
