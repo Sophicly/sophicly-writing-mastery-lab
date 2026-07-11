@@ -2136,6 +2136,13 @@ class SWML_REST_API {
             $attempt = $idx['current'] ?? 1;
         }
 
+        // v7.20.27 (attempt-drift root fix): mirror the load-side pin — the single-doc CN
+        // family always writes to attempt 1, so a drifted client state.attempt can never
+        // fork the notes doc onto an empty attempt key. Load reads the same pinned key.
+        if ($this->is_pinned_cn_family($board, $text, $suffix)) {
+            $attempt = 1;
+        }
+
         // Build meta key — includes topic number + exercise suffix + attempt for document isolation
         // v7.17.39: + cw_project_id for CW project isolation
         $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
@@ -2380,6 +2387,14 @@ class SWML_REST_API {
             $attempt = $idx['current'] ?? 1;
         }
 
+        // v7.20.27 (attempt-drift root fix): the single-doc CN family (literature /
+        // nonfiction / prose — see is_pinned_cn_family) is attempt-STABLE. Pin to attempt 1
+        // so load never lands on a drifted empty attempt (the "blank FQ doc" bug). Must
+        // mirror the identical pin in save_canvas so load and save share one key.
+        if ($this->is_pinned_cn_family($board, $text, $suffix)) {
+            $attempt = 1;
+        }
+
         $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
 
         // v7.19.992 (doc-fork repair): for the poetry-CN doc family, gather filled field
@@ -2389,9 +2404,14 @@ class SWML_REST_API {
         // student's live doc always wins and the merge is idempotent. Rides every CN-family
         // load — already-merged docs have the fields filled, so replays no-op. Gate:
         // suffix _cn + the text resolves to a populated poems option (any anthology).
-        $merge_fields = ($suffix === '_cn')
-            ? $this->poetry_cn_merge_fields($user_id, $board, $text, $attempt, $meta_key)
-            : [];
+        // v7.20.27: lit/non-anthology CN gets its own sibling-merge (cn_section_* kept, no
+        // fold); poetry keeps poetry_cn_merge_fields. Both emit the same mergeFields sidecar.
+        $merge_fields = [];
+        if ($suffix === '_cn') {
+            $merge_fields = $this->is_pinned_cn_family($board, $text, $suffix)
+                ? $this->literature_cn_merge_fields($user_id, $board, $text, $meta_key)
+                : $this->poetry_cn_merge_fields($user_id, $board, $text, $attempt, $meta_key);
+        }
 
         // v7.15.99: Read shared General Notes mirror for conceptual-notes doc family.
         // Returned in the response regardless of canvas doc presence so the client
@@ -4601,6 +4621,83 @@ class SWML_REST_API {
     // v7.17.39: CW project scope — when $cw_project_id is non-empty, appends __p<pid> so each CW
     // project isolates its canvas doc / chat end-to-end (client localStorage keys already carry
     // the same suffix; server had been lesson-scoped and leaked across projects).
+    /**
+     * v7.20.27 (attempt-drift root fix): the conceptual-notes doc is a SINGLE living
+     * notes document, NOT a multi-attempt assessment — yet suffix `_cn` was attempt-
+     * scoped, so every FQ round / start-new bumped the shared attempt index and stranded
+     * the 7-section content on old attempts, parking `current` on an empty attempt (the
+     * "blank FQ doc" bug — verified on staging: swml_attempts_..._t2_cn current=9 → empty
+     * __a9 doc). Fix: pin the non-anthology CN family (literature / nonfiction / prose —
+     * everything that shares ONE cn_section_N doc per text) to attempt 1, in BOTH load and
+     * save, so the canvas key is attempt-stable. POETRY is deliberately EXCLUDED: it ships
+     * on its own merge/shape-heal machinery (poetry_cn_merge_fields) and stays untouched.
+     * Gate = suffix `_cn` AND no populated poems option (poetry anthologies have one).
+     */
+    private function is_pinned_cn_family($board, $text, $suffix) {
+        if ($suffix !== '_cn') return false;
+        if (!empty(self::poems_option_rows($board, $text))) return false; // poetry anthology → keeps its own machinery
+        return true;
+    }
+
+    /**
+     * v7.20.27: literature/non-anthology CN sibling-merge — the poetry mold
+     * (poetry_cn_merge_fields) re-gated for the single-doc lit family. Gathers filled
+     * cn_section_* field values from every key the one lit CN doc historically forked
+     * across (attempt drift + the legacy _fq/_t2_fq/no-topic _cn suffixes) and returns
+     * them as a mergeFields sidecar the client applies into EMPTY fields only (student
+     * content always wins; idempotent per load). For literature the cn_section_N fields
+     * ARE the canonical structure, so they are kept directly (no General-Notes fold — that
+     * fold is poetry-only, where sections can't be attributed to a poem). Old keys are
+     * never written or deleted (backup). Fail-loud: logs every source hit.
+     */
+    private function literature_cn_merge_fields($user_id, $board, $text, $exclude_key) {
+        $vals = [];
+        $sources_hit = [];
+        $take = function ($meta_key) use ($user_id, $exclude_key, &$vals, &$sources_hit) {
+            if ($meta_key === $exclude_key) return;
+            $raw = get_user_meta($user_id, $meta_key, true);
+            if (empty($raw)) return;
+            $doc = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+            if (!is_array($doc) || empty($doc['html'])) return;
+            $fields = self::extract_canvas_field_values($doc['html'], 'cn_section_');
+            $got = 0;
+            foreach ($fields as $fid => $v) {
+                if (!isset($vals[$fid])) { $vals[$fid] = $v; $got++; }
+            }
+            if ($got > 0) $sources_hit[] = $meta_key . '(+' . $got . ')';
+        };
+        // Sibling bases the one lit CN doc forked across, crossed with attempt variants.
+        $bases = [
+            'swml_canvas_' . $board . '_' . $text . '_t2_cn',   // canonical (pinned target)
+            'swml_canvas_' . $board . '_' . $text . '_t2_fq',   // legacy: FQ under its own topic-2 suffix
+            'swml_canvas_' . $board . '_' . $text . '_fq',      // legacy: pre-topic-pin FQ doc
+            'swml_canvas_' . $board . '_' . $text . '_cn',      // legacy: no-topic CN saves
+        ];
+        foreach ($bases as $b) {
+            $take($b); // attempt 1 (bare)
+            for ($a = 2; $a <= 15; $a++) { $take($b . '__a' . $a); }
+        }
+        $out = [];
+        foreach ($vals as $fid => $v) $out[] = ['field' => $fid, 'value' => $v];
+        if (!empty($out)) {
+            error_log('WML lit-CN merge: user=' . $user_id . ' → ' . count($out) . ' field(s) from [' . implode(', ', $sources_hit) . '] into ' . $exclude_key);
+        }
+        return $out;
+    }
+
+    /**
+     * v7.20.27 (B3 grade-cleanliness): coerce a stored/incoming grade to a clean 0-9
+     * numeric string. Historically the FQ save endpoint took the client `grade` param raw
+     * (`sanitize_text_field`), so labels leaked in — best_grade="Grade" (renders "Grade:
+     * 0" via a failed parse) and assessment grades carried markdown ("Grade: 2**"). This
+     * pulls the first integer out and clamps 1-9 (0 when genuinely no number present).
+     */
+    private static function clean_grade_numeric($raw) {
+        if (is_int($raw) || is_float($raw)) return (string) max(0, min(9, (int) $raw));
+        if (preg_match('/\d+/', (string) $raw, $m)) return (string) max(0, min(9, (int) $m[0]));
+        return '0';
+    }
+
     private function canvas_meta_key($board, $text, $topic, $suffix = '', $attempt = 1, $cw_project_id = '') {
         $text = $this->normalize_text_slug($text);
         $key = 'swml_canvas_' . $board . '_' . $text;
@@ -6627,7 +6724,9 @@ class SWML_REST_API {
         $text   = sanitize_key($params['text']  ?? '');
         $score  = (int) ($params['score'] ?? 0);
         $max    = (int) ($params['max']   ?? 5);
-        $grade  = sanitize_text_field($params['grade'] ?? '');
+        // v7.20.27 (B3): coerce to a clean 0-9 numeric — the client historically sent a
+        // label ("Grade") or markdown-laden value here, which then rendered as "Grade: 0".
+        $grade  = self::clean_grade_numeric($params['grade'] ?? '');
         $cats   = sanitize_text_field($params['categories'] ?? '');
 
         if (!$board || !$text || $max <= 0) {
@@ -6680,6 +6779,19 @@ class SWML_REST_API {
 
         $raw = get_user_meta($uid, 'swml_foundational_quiz_results', true);
         $all = is_string($raw) ? (json_decode($raw, true) ?: []) : (is_array($raw) ? $raw : []);
+
+        // v7.20.27 (B3): heal stale rows on DISPLAY — legacy writes stored a label
+        // ("Grade") or markdown ("Grade: 2**") in best_grade/last_grade, which parses to 0
+        // on the result card. Coerce to a clean 0-9 numeric on read (write path is fixed
+        // above; this covers rows written before the fix).
+        if (is_array($all)) {
+            foreach ($all as $k => &$row) {
+                if (!is_array($row)) continue;
+                if (isset($row['best_grade'])) $row['best_grade'] = self::clean_grade_numeric($row['best_grade']);
+                if (isset($row['last_grade'])) $row['last_grade'] = self::clean_grade_numeric($row['last_grade']);
+            }
+            unset($row);
+        }
 
         $board = sanitize_key($request->get_param('board') ?? '');
         $text  = sanitize_key($request->get_param('text')  ?? '');

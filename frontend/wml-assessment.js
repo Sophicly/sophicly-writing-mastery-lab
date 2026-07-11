@@ -6526,8 +6526,12 @@
     // hydration-gated/fail-loud law as the poetry effects heal.
     function _runLitCnHeals(editor) {
         const fam = _cnFam();
-        if (!fam || fam.id !== 'literature' || state.task !== 'conceptual_notes') return;
+        if (!fam || fam.id !== 'literature') return;
+        // v7.20.27: run for CN and its shared FQ doc. _healLitCnEffects self-gates to
+        // conceptual_notes (safe no-op on FQ); the sibling-merge applies to both.
+        if (state.task !== 'conceptual_notes' && state.task !== 'foundational_quiz') return;
         try { _healLitCnEffects(editor); } catch (_) {}
+        try { _applyCnMergeFields(); } catch (_) {}
     }
 
     // 2) Apply the server's scattered-siblings sidecar. _applyFieldValueSets fills
@@ -6536,13 +6540,18 @@
         try {
             const sets = _pendingCnMergeFields;
             if (!sets || !sets.length) return;
-            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            // v7.20.27: fire for poetry CN OR the single-doc literature CN family (server
+            // emits the same mergeFields sidecar for both — see literature_cn_merge_fields).
+            const _f = _cnFam();
+            const _isPoetry = !!(WML.isPoetryCnDoc && WML.isPoetryCnDoc());
+            const _isLit = !!(_f && _f.id === 'literature');
+            if (!_isPoetry && !_isLit) return;
             if (state.reviewMode) return;
             _pendingCnMergeFields = null; // consume — reapplied fresh on next load
-            console.log('[WML poetry-CN] applying', sets.length, 'merge candidate(s) from scattered sibling docs (empty fields only)');
+            console.log('[WML CN] applying', sets.length, 'merge candidate(s) from scattered sibling docs (empty fields only)');
             _applyFieldValueSets(sets.map(s => ({ field: s.field, value: s.value })));
         } catch (e) {
-            console.warn('[WML poetry-CN] sibling merge failed (non-fatal)', e);
+            console.warn('[WML CN] sibling merge failed (non-fatal)', e);
         }
     }
 
@@ -32821,8 +32830,9 @@
             _pendingCnMergeFields = (res && Array.isArray(res.mergeFields) && res.mergeFields.length) ? res.mergeFields : null;
             if (WML.isPoetryCnDoc && WML.isPoetryCnDoc()) {
                 setTimeout(() => { try { _runPoetryCnHeals(canvasEditor); } catch (_) {} }, 600);
-            } else if (_cnFam() && _cnFam().id === 'literature' && state.task === 'conceptual_notes') {
+            } else if (_cnFam() && _cnFam().id === 'literature' && (state.task === 'conceptual_notes' || state.task === 'foundational_quiz')) {
                 // v7.20.16: slow-network backstop for the lit CN re-layout heal.
+                // v7.20.27: also on the shared FQ doc so the sibling-merge runs there too.
                 setTimeout(() => { try { _runLitCnHeals(canvasEditor); } catch (_) {} }, 600);
             }
             // v7.19.263: surface the "previous stage updated" dot. False unless the
