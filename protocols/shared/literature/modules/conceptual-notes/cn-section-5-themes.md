@@ -180,19 +180,22 @@ Which best shows the theme's relevance across time? Or share your own quote."
 
 ---
 
-<!-- @CONFIRM_SAVE: element_type="cn_section_5" -->
+<!-- FILING: Section 5 (Themes) is a CRAFT section → note + quotes + effect. See cn-foundation.md §FILING CONTRACT. -->
 
-**[AI_INTERNAL]** Create bridge from themes to author's purpose, showing synthesis of all elements.
+**FILE SECTION 5 NOW.** Confirm: "Happy to save these notes for Themes, or change anything?"
+A) ✅ Save these notes
+B) ✏️ I want to change something
 
-**Say:** "Excellent work on Section 5! You've identified the universal themes that [text title] explores - the abstract ideas about human experience that [protagonist_name]'s concrete journey illuminates.
+On B, edit and re-present. On A, emit these markers (single-line values, the student's own words), then say "Notes saved! ✅":
 
-You've now traced: WHO transforms ([protagonist_name]), WHAT happens (the [plot_type]), HOW we experience it (through [genre] creating [primary emotion]), WHAT it explores ([themes]), and WHY it mattered historically ([context]). 
+@FIELD_SET{"field":"cn_section_5","value":"<Themes note: the main theme(s), how they develop across the text, what the author wants us to understand, the protagonist→theme link>"}
+@FIELD_SET{"field":"cn_section_5_quotes","value":"<1–3 key quotes>"}
+@FIELD_SET{"field":"cn_section_5_effect","value":"<four-fold reader-effect (§EFFECTS): how the text makes the reader FEEL about this theme, and what that feeling leaves us to think>"}
 
-Now for the crucial synthesis: WHY did [author] choose to explore [themes] through THIS particular story? What was [author]'s overarching purpose in crafting this text?
+**[AI_INTERNAL]** Then bridge to Author's Purpose and END with lettered options (never "type ready"): the crucial synthesis — WHY did [author] explore these themes through THIS story?
 
-Type 'ready' to examine authorial purpose."
-
-**[AI_INTERNAL]** Update session memory to mark Section 5 as complete and wait for 'ready' confirmation before proceeding to Section 6.
+A — Continue to Author's Purpose
+B — Revisit Themes
 
 ---
 

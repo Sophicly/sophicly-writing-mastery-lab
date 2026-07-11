@@ -178,7 +178,16 @@ Which single quote best captures [text title]'s essence? Or share your own."
 
 ---
 
-<!-- @CONFIRM_SAVE: element_type="cn_section_7" -->
+<!-- FILING: Section 7 (Overall Message) → note + quotes, NO effect (synthesis — it inherits the per-section effects). See cn-foundation.md §FILING CONTRACT. -->
+
+**FILE SECTION 7 NOW.** Confirm: "Happy to save these notes for the Overall Message, or change anything?"
+A) ✅ Save these notes
+B) ✏️ I want to change something
+
+On B, edit and re-present. On A, emit these markers (single-line values, the student's own synthesis), then say "Notes saved! ✅":
+
+@FIELD_SET{"field":"cn_section_7","value":"<Overall Message note: 'Through [protagonist]'s journey in [text], [author] argues that…' — a specific, defensible claim referencing context, the main theme, the purpose and the emotional/intellectual experience>"}
+@FIELD_SET{"field":"cn_section_7_quotes","value":"<the quote that best encapsulates the whole text>"}
 
 **[AI_INTERNAL]** Celebrate completion and emphasize achievement.
 

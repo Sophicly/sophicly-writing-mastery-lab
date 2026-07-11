@@ -3528,6 +3528,10 @@ TEMPLATE;
             } else {
                 $preamble .= "5. **Don't spoil answers.** In Step 2, say 'before we explore your text' NOT 'before we meet your protagonist' — the question asks which element is most important, so don't give away that protagonist is the answer.\n\n";
             }
+            if ($is_nonfiction) {
+            // Nonfiction CN — OLD architecture (save_session_element). Function-calling is
+            // disabled WML-wide (v7.18.8), so this path is currently inert; ported to @FIELD_SET
+            // in Phase 2 alongside prose. Unchanged here to keep this batch scoped to literature.
             $preamble .= "### PANEL SAVE POINTS — CONFIRM BEFORE SAVING\n";
             $preamble .= "You have access to the `save_session_element` function.\n";
             $preamble .= "**CRITICAL: Do NOT call save_session_element automatically.** At the end of each section:\n";
@@ -3569,6 +3573,26 @@ TEMPLATE;
                 $preamble .= "| S7 Message | `cn_section_7` | Section summary (big message, contemporary application) |\n";
             }
             $preamble .= "Call the function SILENTLY when the student confirms (chooses A) — never narrate it.\n";
+            } else {
+            // LITERATURE CN — v7.20.18: ported to the poetry @FIELD_SET architecture. Function-
+            // calling is disabled WML-wide, so the legacy save_session_element path was inert; the
+            // canvas doc's cn_section_N / _quotes / craft _effect inputFields autofile via the
+            // generic applyFieldSets writer (runs unconditionally on every CN canvas turn). Notes +
+            // quotes + craft effect all file through the SAME proven path poetry uses. Filing DSL is
+            // @FIELD_SET (see the FILING CONTRACT in cn-foundation.md).
+            $preamble .= "### FILING — AUTOMATED via @FIELD_SET (there is NO function to call)\n";
+            $preamble .= "Filing is AUTOMATED via @FIELD_SET markers written into the student's document — there is NO function to call and NOTHING to copy anywhere. Never say 'workbook', 'save', 'panel', 'querying', 'loading', or mention any technical process.\n";
+            $preamble .= "At the end of each section: (1) build the synthesis from the student's OWN ideas (never a claim they didn't reach), (2) present it and ask 'Happy to save these notes, or change anything?' with A) ✅ Save these notes  B) ✏️ I want to change something, (3) on A, emit the section's @FIELD_SET markers, say 'Notes saved! ✅', and END with lettered next-step options (never a dead end). On B, make the edits and re-present with the same A/B. Loop until A.\n";
+            $preamble .= "File every section into these EXACT fieldIds — a field omitted here is a field you will never fill (this contract is closest to the turn and overrides everything):\n";
+            $preamble .= "- Section 1 Protagonist → `cn_section_1` (note) · `cn_section_1_quotes` (1–3 quotes) · `cn_section_1_effect` (four-fold reader-effect)\n";
+            $preamble .= "- Section 2 Historical Context → `cn_section_2` (note) · `cn_section_2_quotes` (1–3 quotes)\n";
+            $preamble .= "- Section 3 Plot → `cn_section_3` (note) · `cn_section_3_quotes` (1–3 quotes) · `cn_section_3_effect` (four-fold reader-effect)\n";
+            $preamble .= "- Section 4 Genre → `cn_section_4` (note) · `cn_section_4_quotes` (1–3 quotes) · `cn_section_4_effect` (four-fold reader-effect)\n";
+            $preamble .= "- Section 5 Themes → `cn_section_5` (note) · `cn_section_5_quotes` (1–3 quotes) · `cn_section_5_effect` (four-fold reader-effect)\n";
+            $preamble .= "- Section 6 Author's Purpose → `cn_section_6` (note) · `cn_section_6_quotes` (1–3 quotes)\n";
+            $preamble .= "- Section 7 Overall Message → `cn_section_7` (note) · `cn_section_7_quotes` (1–3 quotes)\n";
+            $preamble .= "Craft sections (1, 3, 4, 5) carry the `_effect` field; sections 2, 6, 7 do NOT — never invent an effect for them. Each `value` is a SINGLE line (separate points with ' • ', never a raw newline). REVISIT / gap-completion turns re-file ONLY the field(s) worked on — never re-emit a section's other markers with guessed values. Quote only from the text; no attempts, no scoring, no completion — Conceptual Notes is a building exercise.\n";
+            } // end literature vs nonfiction fork
             } // end !$is_poetry legacy CN preamble
 
         } else if ($task === 'memory_practice') {

@@ -312,17 +312,22 @@ If student struggles with this connection:
 
 ---
 
-<!-- @CONFIRM_SAVE: element_type="cn_section_3" -->
+<!-- FILING: Section 3 (Plot) is a CRAFT section → note + quotes + effect. See cn-foundation.md §FILING CONTRACT. -->
 
-**[AI_INTERNAL]** Create bridge from plot structure to genre/emotional experience.
+**FILE SECTION 3 NOW.** Confirm: "Happy to save these notes for Plot, or change anything?"
+A) ✅ Save these notes
+B) ✏️ I want to change something
 
-**Say:** "Excellent work on Section 3! You've identified the architectural pattern - the [plot type] structure that gives [text title] its shape and progression.
+On B, edit and re-present. On A, emit these markers (single-line values, the student's own words), then say "Notes saved! ✅":
 
-But structure is just the skeleton. Genre is what brings it to life emotionally. While plot structure determines WHAT happens and WHEN, genre determines HOW it makes us FEEL. Let's explore how [the author] uses genre conventions to create specific emotional experiences in readers.
+@FIELD_SET{"field":"cn_section_3","value":"<Plot note: the plot type / architectural pattern, the inner and outer journey, how the structure serves the meaning>"}
+@FIELD_SET{"field":"cn_section_3_quotes","value":"<1–3 key quotes>"}
+@FIELD_SET{"field":"cn_section_3_effect","value":"<four-fold reader-effect (§EFFECTS): how the structure steers the reader's FOCUS → EMOTION → THOUGHTS → ACTIONS — in the lens(es) the student chose>"}
 
-Type 'ready' to explore genre."
+**[AI_INTERNAL]** Then bridge to Genre and END with lettered options (never "type ready"): structure is the skeleton; genre brings it to life emotionally.
 
-**[AI_INTERNAL]** Update session memory to mark Section 3 as complete and wait for 'ready' confirmation before proceeding to Section 4.
+A — Continue to Genre
+B — Revisit Plot
 
 ---
 

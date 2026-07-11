@@ -882,17 +882,22 @@ Which best shows the theme of [their theme]? Or share your own quote."
 
 ---
 
-<!-- @CONFIRM_SAVE: element_type="cn_section_1" -->
+<!-- FILING: Section 1 (Protagonist) is a CRAFT section → note + quotes + effect. See cn-foundation.md §FILING CONTRACT. -->
 
-**[AI_INTERNAL]** Create bridge from protagonist analysis to historical context, showing why context matters.
+**FILE SECTION 1 NOW.** Present the summary and confirm: "Happy to save these notes for the Protagonist, or change anything?"
+A) ✅ Save these notes
+B) ✏️ I want to change something
 
-**Say:** "Excellent work on Section 1! You've traced [protagonist_name]'s complete transformation and understood what [the author] **may be** conveying through this journey.
+On B, make the edits and re-present with the same A/B. On A, emit these markers on their own lines (each `value` the student's OWN synthesis, single line — never a claim they didn't reach), then say "Notes saved! ✅":
 
-But here's the crucial question: WHY did [the author] feel this story needed to be told? You mentioned they were responding to [reference their Step 11 answer about historical events/ideas]. Now we'll explore that historical context in depth - because understanding what was happening in [author]'s world reveals why this transformation matters so much.
+@FIELD_SET{"field":"cn_section_1","value":"<Protagonist note: starting state → ending state, the transformation's meaning, its themes and key relationships>"}
+@FIELD_SET{"field":"cn_section_1_quotes","value":"<1–3 key quotes>"}
+@FIELD_SET{"field":"cn_section_1_effect","value":"<four-fold reader-effect (§EFFECTS): how [the author] steers the reader's FOCUS → EMOTION → THOUGHTS → ACTIONS across the arc — in the lens(es) the student chose>"}
 
-Type 'ready' when you're prepared to explore the historical context."
+**[AI_INTERNAL]** Then bridge to historical context and END with lettered options (never "type ready"): WHY did [the author] feel this story needed telling? Exploring the world that shaped it reveals why the transformation matters.
 
-**[AI_INTERNAL]** Update session memory to mark Section 1 as complete and wait for the student's 'ready' confirmation before proceeding to Section 2.
+A — Continue to Historical Context
+B — Revisit the Protagonist section
 
 ---
 

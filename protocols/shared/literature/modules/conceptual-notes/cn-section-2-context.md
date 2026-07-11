@@ -206,17 +206,23 @@ Which best demonstrates the meaning you've identified? Or share your own quote."
 
 ---
 
-<!-- @CONFIRM_SAVE: element_type="cn_section_2" -->
+<!-- FILING: Section 2 (Historical Context) is a KNOWLEDGE section → note + quotes, NO effect. See cn-foundation.md §FILING CONTRACT. -->
 
-**[AI_INTERNAL]** Create bridge from historical context to plot structure, showing progressive build.
+**FILE SECTION 2 NOW.** Confirm: "Happy to save these notes for Historical Context, or change anything?"
+A) ✅ Save these notes
+B) ✏️ I want to change something
 
-**Say:** "Excellent work on Section 2! You've now explored the historical world that shaped [text title] - understanding WHY [the author] felt this story needed to be told in [their period].
+On B, edit and re-present with the same A/B. On A, emit these markers (single-line values, the student's own words), then say "Notes saved! ✅":
 
-You've traced WHO changes ([protagonist_name]) and WHY it matters historically (responding to [reference key historical issue]). Now let's examine HOW the story is structured. The plot type reveals the architectural pattern [the author] uses to convey this meaning.
+@FIELD_SET{"field":"cn_section_2","value":"<Context note: the period, 2–3 concrete social/historical/biographical forces, the context→protagonist link, then-and-now relevance>"}
+@FIELD_SET{"field":"cn_section_2_quotes","value":"<1–3 key quotes>"}
 
-Type 'ready' to continue to Plot Types."
+(No `_effect` marker — context is knowledge, not craft.)
 
-**[AI_INTERNAL]** Update session memory to mark Section 2 as complete and wait for 'ready' confirmation before proceeding to Section 3.
+**[AI_INTERNAL]** Then bridge to Plot and END with lettered options (never "type ready"): they've traced WHO changes and WHY it matters historically; next, HOW the story is structured.
+
+A — Continue to Plot
+B — Revisit Historical Context
 
 ---
 

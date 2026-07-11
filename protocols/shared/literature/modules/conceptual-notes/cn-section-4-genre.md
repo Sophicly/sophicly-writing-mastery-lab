@@ -365,19 +365,22 @@ If student struggles:
 
 ---
 
-<!-- @CONFIRM_SAVE: element_type="cn_section_4" -->
+<!-- FILING: Section 4 (Genre) is a CRAFT section → note + quotes + effect. See cn-foundation.md §FILING CONTRACT. -->
 
-**[AI_INTERNAL]** Create bridge from genre to themes, showing how all elements work together.
+**FILE SECTION 4 NOW.** Confirm: "Happy to save these notes for Genre, or change anything?"
+A) ✅ Save these notes
+B) ✏️ I want to change something
 
-**Say:** "Excellent work on Section 4! You've now identified the emotional architecture - how [text title] uses [genre] conventions to create [primary emotion] as we experience [protagonist_name]'s [plot_type] journey.
+On B, edit and re-present. On A, emit these markers (single-line values, the student's own words), then say "Notes saved! ✅":
 
-You've built a complete picture of HOW [text title] works mechanically: structure creates shape, genre creates emotional experience, historical context explains why it matters. But all of these elements serve something deeper - they explore universal themes about human experience.
+@FIELD_SET{"field":"cn_section_4","value":"<Genre note: the primary emotion, the genre conventions used, any blend, how genre serves the author's message>"}
+@FIELD_SET{"field":"cn_section_4_quotes","value":"<1–3 key quotes>"}
+@FIELD_SET{"field":"cn_section_4_effect","value":"<four-fold reader-effect (§EFFECTS): how the genre conventions steer the reader's FOCUS → EMOTION → THOUGHTS → ACTIONS — in the lens(es) the student chose>"}
 
-Now let's identify the abstract themes that emerge from this carefully crafted emotional, structural, and historical experience.
+**[AI_INTERNAL]** Then bridge to Themes and END with lettered options (never "type ready"): structure, genre and context all serve something deeper — the universal themes.
 
-Type 'ready' to explore themes."
-
-**[AI_INTERNAL]** Update session memory to mark Section 4 as complete and wait for 'ready' confirmation before proceeding to Section 5.
+A — Continue to Themes
+B — Revisit Genre
 
 ---
 

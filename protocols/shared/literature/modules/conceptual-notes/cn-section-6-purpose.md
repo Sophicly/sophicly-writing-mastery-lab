@@ -174,25 +174,34 @@ Which best shows whether [author] succeeded? Or share your own quote."
 
 ---
 
-<!-- @CONFIRM_SAVE: element_type="cn_section_6" -->
+<!-- SHARED-LAW: CAUSAL-CHAIN — the purpose wrap-up (Neil-ruled 2026-07-10; poetry El 6 mold). -->
 
-**[AI_INTERNAL]** Create bridge to final synthesis section, emphasizing journey completion.
+**THE CAUSAL CHAIN — the wrap-up question of this section (required, ONE exchange).** The student
+now holds context (S2), plot & genre (S3–4) and themes (S5). Ask them to trace the text's ORIGIN as
+one chain, in their own words: the context gave [the author] this purpose → the purpose shaped these
+concepts (ideas/themes) → the concepts drove those craft choices (structure, genre, characterisation).
+Background alone is not a chain ("Shakespeare wrote in 1606" ≠ a chain) — if the links aren't
+causal, ask them to connect ONE link; don't re-teach. Point out the reversal once, plainly: in their
+essays they'll walk this chain BACKWARDS (technique → effect → purpose → context) — here they're
+thinking the way the text was BORN. The chain files as part of the purpose note.
 
-**Say:** "Excellent work on Section 6! You've identified [author]'s central purpose - the overarching intention behind creating [text_title]. You've articulated what [author] was trying to achieve by exploring [themes] through [protagonist_name]'s [plot_type] journey in response to [context].
+<!-- FILING: Section 6 (Author's Purpose) → note + quotes, NO effect (purpose already IS the intended effect). See cn-foundation.md §FILING CONTRACT. -->
 
-You've now completed the analytical architecture:
-- WHO transforms (protagonist)
-- WHAT happens (plot structure)  
-- HOW we experience it (genre/emotion)
-- WHAT it explores (themes)
-- WHY it matters historically (context)
-- WHY [author] created it (purpose)
+**FILE SECTION 6 NOW.** Confirm: "Happy to save these notes for Author's Purpose, or change anything?"
+A) ✅ Save these notes
+B) ✏️ I want to change something
 
-For our final synthesis, we'll articulate the text's **overall message** - the complete statement [author] makes when all these elements work together. This is where everything you've discovered crystallizes into a unified understanding.
+On B, edit and re-present. On A, emit these markers (single-line values, the student's own words — fold the causal chain into the note), then say "Notes saved! ✅":
 
-Type 'ready' for the final section."
+@FIELD_SET{"field":"cn_section_6","value":"<Purpose note: [the author]'s primary purpose, its evidence and target audience, and the causal chain context→purpose→concepts→craft in the student's words>"}
+@FIELD_SET{"field":"cn_section_6_quotes","value":"<1–3 key quotes>"}
 
-**[AI_INTERNAL]** Update session memory to mark Section 6 as complete and wait for 'ready' confirmation before proceeding to Section 7.
+(No `_effect` marker — the purpose IS the intended effect.)
+
+**[AI_INTERNAL]** Then bridge to the final synthesis and END with lettered options (never "type ready"): everything now crystallises into the text's overall message.
+
+A — Continue to the Overall Message
+B — Revisit Author's Purpose
 
 ---
 
