@@ -11500,9 +11500,15 @@
                 // Files through _applyFieldValueSets: PM transaction, idempotent,
                 // auto-fill provenance — a student's own edit is never clobbered.
                 try {
+                    // v7.20.20 (A1): poetry notes carry {form,slot} (client builds pf_{form}_{slot});
+                    // literature notes carry an explicit {field} (cn_section_*) — file it directly.
                     const noteFills = roundResults
-                        .filter(r => r.res && r.res.correct && r.res.note && r.res.note.form && r.res.note.slot && r.res.note.text)
-                        .map(r => ({ field: 'pf_' + r.res.note.form + '_' + r.res.note.slot, value: r.res.note.text }));
+                        .filter(r => r.res && r.res.correct && r.res.note && r.res.note.text &&
+                            (r.res.note.field || (r.res.note.form && r.res.note.slot)))
+                        .map(r => ({
+                            field: r.res.note.field || ('pf_' + r.res.note.form + '_' + r.res.note.slot),
+                            value: r.res.note.text
+                        }));
                     if (noteFills.length) {
                         _applyFieldValueSets(noteFills);
                         // v7.19.957: fill-visibility law (v912) — a section that just received

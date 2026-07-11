@@ -104,6 +104,10 @@ class SWML_Quiz_Bank {
                 'effects'        => 'effects',
                 'form & meaning' => 'meaning',
                 'meaning'        => 'meaning',
+                // v7.20.20 (A1): literature sidecars carry ONE note per dimension under the
+                // 'Note' label (### Protagonist → - **Note:** …). Same parser, same shape as
+                // poetry's 4 slots; lit reads concept_notes_for($text)[$dim]['note'].
+                'note'           => 'note',
             ];
             $cur = '';
             foreach (preg_split('/\r\n|\r|\n/', (string) file_get_contents($path)) as $ln) {
@@ -134,6 +138,26 @@ class SWML_Quiz_Bank {
             'forms & meaning'   => 'meaning',
         ];
         return $map[strtolower(trim((string) $category))] ?? '';
+    }
+
+    /**
+     * v7.20.20 (A1): map a literature FQ @dim token to the Conceptual-Notes doc field the
+     * correct-answer note autofills. THE single source of truth for the lit dimension→field
+     * map (Neil ruling 2026-07-11: fill the same cn_section_* box the student later builds on,
+     * fill-while-empty, student edits win). 5 dimensions; unknown → '' (no autofill, fail
+     * quiet — the note is a bonus artefact, never quiz-blocking). Section indices match the
+     * lit CN doc mould (protocol-router: 1 Protagonist · 3 Plot · 5 Themes · 7 Message; the
+     * four-fold reader-effect box `_effect` sits on the Themes craft element).
+     */
+    public static function concept_field_for_dim($dim) {
+        $map = [
+            'protagonist' => 'cn_section_1',
+            'plot'        => 'cn_section_3',
+            'themes'      => 'cn_section_5',
+            'effects'     => 'cn_section_5_effect',
+            'message'     => 'cn_section_7',
+        ];
+        return $map[strtolower(trim((string) $dim))] ?? '';
     }
 
     /** Parse a bank markdown file at $path into [ section_label => [questions] ]. */
@@ -187,6 +211,7 @@ class SWML_Quiz_Bank {
                     'set'       => null, // v7.19.899: poem-quiz reading STAGE (@set:N) — bridge fq_stage
                     'part'      => null, // v7.19.899: forms-quiz STAGE (@part:N) — bridge fq_part
                     'form'      => '',   // v7.19.955: concept-note ENTITY (@form:slug) — autofill target
+                    'dim'       => '',   // v7.20.20 (A1): literature CN DIMENSION (@dim:slug) — autofill target
                 ];
                 continue;
             }
@@ -202,6 +227,12 @@ class SWML_Quiz_Bank {
             // Kept OUT of the [Tests …] stratification key (same law as @set/@part). Questions
             // without the token (general poetry-literacy Qs) simply never autofill — by design.
             if (preg_match('/^\s*@form:([a-z0-9_]+)\s*$/i', $ln, $m)) { $q['form'] = strtolower($m[1]); continue; }
+            // v7.20.20 (A1): literature CN dimension token — which of the 5 lit dimensions
+            // (protagonist/plot/themes/effects/message) this question tests. On a correct
+            // answer the pre-authored note for that dimension autofills the matching
+            // cn_section_* box (concept_field_for_dim). Same law as @form/@set/@part: kept
+            // OUT of the [Tests …] stratification key; untagged Qs simply never autofill.
+            if (preg_match('/^\s*@dim:([a-z0-9_]+)\s*$/i', $ln, $m)) { $q['dim'] = strtolower($m[1]); continue; }
 
             if (preg_match('/^\s*\*\s*\*\*Question:\*\*\s*(.+)$/i', $ln, $m)) { $q['question'] = self::clean($m[1]); continue; }
             if (preg_match('/^\s*\*\s*\*\*Options:\*\*\s*(.+)$/i', $ln, $m)) {

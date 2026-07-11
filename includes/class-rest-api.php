@@ -1082,17 +1082,35 @@ class SWML_REST_API {
         // the knowledge organiser at the REVEAL turn (never mid-quiz). Missing
         // sidecar/slot logs loudly but never blocks scoring (note = bonus artefact).
         $note = null;
-        if (!empty($res['correct']) && !empty($q['form']) && strpos($q_id, 'fq:') === 0) {
+        if (!empty($res['correct']) && strpos($q_id, 'fq:') === 0) {
             $id_parts  = explode(':', $q_id);
             $bank_text = $id_parts[1] ?? '';
-            $slot      = SWML_Quiz_Bank::concept_slot_for_category($q['category'] ?? '');
-            if ($bank_text && $slot) {
-                $cnotes = SWML_Quiz_Bank::concept_notes_for($bank_text);
-                $ntext  = $cnotes[$q['form']][$slot] ?? '';
-                if ($ntext !== '') {
-                    $note = ['form' => $q['form'], 'slot' => $slot, 'text' => $ntext];
-                } else {
-                    error_log("WML FQ: no concept note for form={$q['form']} slot={$slot} bank={$bank_text} — autofill skipped");
+            if (!empty($q['form'])) {
+                // Poetry: entity = poetic form, note keyed (form × category-slot); the
+                // client builds the pf_{form}_{slot} field id from form+slot.
+                $slot = SWML_Quiz_Bank::concept_slot_for_category($q['category'] ?? '');
+                if ($bank_text && $slot) {
+                    $cnotes = SWML_Quiz_Bank::concept_notes_for($bank_text);
+                    $ntext  = $cnotes[$q['form']][$slot] ?? '';
+                    if ($ntext !== '') {
+                        $note = ['form' => $q['form'], 'slot' => $slot, 'text' => $ntext];
+                    } else {
+                        error_log("WML FQ: no concept note for form={$q['form']} slot={$slot} bank={$bank_text} — autofill skipped");
+                    }
+                }
+            } elseif (!empty($q['dim'])) {
+                // v7.20.20 (A1) literature: entity = CN dimension; the note carries an
+                // EXPLICIT target field (cn_section_*) — the client files it directly
+                // (no pf_ construction). Same reveal-turn, fill-while-empty path.
+                $field = SWML_Quiz_Bank::concept_field_for_dim($q['dim']);
+                if ($bank_text && $field) {
+                    $cnotes = SWML_Quiz_Bank::concept_notes_for($bank_text);
+                    $ntext  = $cnotes[$q['dim']]['note'] ?? '';
+                    if ($ntext !== '') {
+                        $note = ['field' => $field, 'text' => $ntext];
+                    } else {
+                        error_log("WML FQ: no concept note for dim={$q['dim']} bank={$bank_text} — autofill skipped");
+                    }
                 }
             }
         }
@@ -1222,10 +1240,13 @@ class SWML_REST_API {
                 $q_nums[(int) end($bits)] = true;
             }
             if ($fq_slug !== '' && !empty($q_nums)) {
-                $forms = [];
+                $forms = []; $dims = [];
                 foreach (SWML_Quiz_Bank::questions_for_fq($fq_slug) as $pq) {
-                    if (!empty($pq['form']) && isset($q_nums[(int) ($pq['q_num'] ?? 0)])) $forms[$pq['form']] = true;
+                    if (!isset($q_nums[(int) ($pq['q_num'] ?? 0)])) continue;
+                    if (!empty($pq['form'])) $forms[$pq['form']] = true;
+                    if (!empty($pq['dim']))  $dims[$pq['dim']]   = true;
                 }
+                // Poetry: entity = form × 4 slots → pf_{form}_{slot}.
                 if (!empty($forms)) {
                     $cnotes = SWML_Quiz_Bank::concept_notes_for($fq_slug);
                     foreach (array_keys($forms) as $f) {
@@ -1233,9 +1254,18 @@ class SWML_REST_API {
                             if ($txt !== '') $mastery_notes[] = ['field' => 'pf_' . $f . '_' . $slot, 'text' => $txt];
                         }
                     }
-                    if (empty($mastery_notes) && function_exists('error_log')) {
-                        error_log('WML FQ: mastery notes EMPTY for bank "' . $fq_slug . '" — missing .concept-notes.md sidecar? (organiser autofill skipped)');
+                }
+                // v7.20.20 (A1) literature: entity = dimension → one note into its cn_section_*.
+                if (!empty($dims)) {
+                    $cnotes = SWML_Quiz_Bank::concept_notes_for($fq_slug);
+                    foreach (array_keys($dims) as $d) {
+                        $field = SWML_Quiz_Bank::concept_field_for_dim($d);
+                        $txt   = $cnotes[$d]['note'] ?? '';
+                        if ($field && $txt !== '') $mastery_notes[] = ['field' => $field, 'text' => $txt];
                     }
+                }
+                if (empty($mastery_notes) && (!empty($forms) || !empty($dims)) && function_exists('error_log')) {
+                    error_log('WML FQ: mastery notes EMPTY for bank "' . $fq_slug . '" — missing .concept-notes.md sidecar? (organiser autofill skipped)');
                 }
             }
         }
