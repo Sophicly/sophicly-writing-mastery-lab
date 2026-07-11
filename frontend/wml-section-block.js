@@ -293,6 +293,17 @@
                     (typeof window.WML.isPoetryCnDoc === 'function' && window.WML.isPoetryCnDoc())
                     || (typeof window.WML.canvasDocScope === 'function' && window.WML.canvasDocScope().text === 'poetic_forms')));
             } catch (_) { _isOrganiserDoc = false; }
+            // v7.20.17 (Part B step 2 fix): literature CN docs are collapsible too — this is
+            // what makes them STACK. Collapsibility triggers the nested .swml-section-content
+            // wrapper below, so the input fields are NOT direct children of .swml-section-plan
+            // → the :has(> _quotes) side-column CSS can't fire → notes/quotes/effect stack
+            // full-width (exactly like poetry). Doc-level gate via the CN registry (literature
+            // family only — poetry already handled by _isOrganiserDoc; unseen/forms → null).
+            let _isLitCnDoc = false;
+            try {
+                _isLitCnDoc = !!(window.WML && typeof window.WML.cnFamily === 'function'
+                    && (function () { var f = window.WML.cnFamily(); return f && f.id === 'literature'; })());
+            } catch (_) { _isLitCnDoc = false; }
             // v7.19.971: per-poem section-group detection — by the STABLE poem_ fieldId
             // prefix in the node model (content-addressed; data-* attrs on the wrapper
             // don't survive the HTML round-trip, fieldIds do).
@@ -307,7 +318,7 @@
             }
             const _collapsible = type === 'feedback' || type === 'scores'
                 || (type === 'action' && (_cvLabel === 'Self-Assessment' || _cvLabel === 'Action Plan'))
-                || (type === 'plan' && _isOrganiserDoc);
+                || (type === 'plan' && (_isOrganiserDoc || _isLitCnDoc));
             if (_collapsible) {
                 const contentDOM = document.createElement('div');
                 contentDOM.className = 'swml-section-content';

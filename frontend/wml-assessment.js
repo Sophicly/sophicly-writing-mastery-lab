@@ -6477,60 +6477,57 @@
         }
     }
 
-    // v7.20.16 (Part B step 2, Design B): LITERATURE re-layout heal — reuses the exact
-    // _healPoetryCnShape mechanism (Neil: reuse the working design), but SIMPLER: Design B
-    // keeps cn_section_N, so there is NO field remap — legacy lit docs (7 separate sections,
-    // no effect boxes) rebuild from the CURRENT template (the one-section stacked mold with
-    // effect boxes on craft) CARRYING every filled cn_section_* value back into the SAME
-    // fieldId. Idempotent: a doc that already has a cn_section_*_effect field is already the
-    // mold → bail. Same non-negotiable law: additive (values re-applied, never deleted),
-    // hydration-gated, PM-transaction setContent under _migrationActive, fail-loud. Only
-    // fires on a literature CN doc (never poetry/nonfiction).
-    function _healLitCnShape(editor) {
+    // v7.20.17 (Part B step 2, Design B): LITERATURE effect-box heal — ADDITIVE only.
+    // Legacy lit CN docs (7 sections, no effect boxes) get a cn_section_N_effect box inserted
+    // after the quotes field on each craft element. The STACKED layout is NOT a doc change —
+    // it comes from the collapsible NodeView (wml-section-block _isLitCnDoc → nested
+    // contentDOM → fields not direct children → side-column CSS can't fire), so existing docs
+    // stack on load with zero mutation. This heal only fills the ONE gap legacy docs have:
+    // the effect boxes. Targeted insertContentAt (never setContent — no rebuild, no wipe
+    // risk), idempotent (bails per-field if the effect box exists), hydration-gated, fail-loud.
+    function _healLitCnEffects(editor) {
         try {
-            if (!editor || !editor.state || !editor.commands) return;
+            if (!editor || !editor.state || !editor.chain) return;
             const fam = _cnFam();
-            if (!fam || fam.id !== 'literature') return;
-            if (state.task !== 'conceptual_notes') return;
+            if (!fam || fam.id !== 'literature' || state.task !== 'conceptual_notes') return;
             if (state.reviewMode) return; // tutors see the stored doc as-is
-            let hasEffect = false, hasSection = false, fieldCount = 0;
-            const carried = [];
+            // Craft cn_section indices get an effect box: 1 Protagonist · 3 Plot · 4 Genre
+            // · 5 Themes (matches LIT_CRAFT_IDX {0,2,3,4} → cn_section_{idx+1}).
+            const CRAFT = { '1': true, '3': true, '4': true, '5': true };
+            const fieldIds = new Set();
             editor.state.doc.descendants((n) => {
-                if (!n.type || n.type.name !== 'inputField') return;
-                const fid = String((n.attrs && n.attrs.fieldId) || '');
-                if (!fid) return;
-                fieldCount++;
-                if (/^cn_section_\d+_effect$/.test(fid)) { hasEffect = true; return; }
-                if (/^cn_section_\d+(_quotes)?$/.test(fid)) hasSection = true;
-                const val = (n.textContent || '').trim();
-                if (val) carried.push({ field: fid, value: val }); // same fieldId in the new template
+                if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId) fieldIds.add(n.attrs.fieldId);
             });
-            if (hasEffect) return;                       // already the mold — idempotent
-            if (!hasSection || fieldCount === 0) return; // not a legacy lit CN doc / empty (template owns it)
-            const template = getExamPrepDocTemplate(state.task);
-            if (!template || template.indexOf('cn_section_1_effect') === -1) {
-                console.warn('[WML lit-CN] re-layout heal: current template lacks the mold (effect box) — aborted, doc untouched');
-                return;
-            }
-            _migrationActive = true;
-            try { editor.commands.setContent(template, false); }
-            finally { _migrationActive = false; }
-            snapshotTemplateBaseline(editor);
-            _cnRebaselinePending = true;
-            console.log('[WML lit-CN] RE-LAYOUT HEAL: legacy 7-section lit doc rebuilt as the one-section stacked mold —', carried.length, 'filled field(s) carried over');
-            if (carried.length) _applyFieldValueSets(carried);
-            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            if (!fieldIds.size) return; // empty/placeholder doc — template covers it
+            const targets = [];
+            editor.state.doc.descendants((node, pos) => {
+                if (!node.type || node.type.name !== 'inputField') return;
+                const m = /^cn_section_(\d+)_quotes$/.exec(String((node.attrs && node.attrs.fieldId) || ''));
+                if (!m || !CRAFT[m[1]]) return;
+                const efid = 'cn_section_' + m[1] + '_effect';
+                if (fieldIds.has(efid)) return; // already present — idempotent
+                targets.push({ pos: pos, size: node.nodeSize, efid: efid });
+            });
+            if (!targets.length) return;
+            targets.sort((a, b) => b.pos - a.pos); // descending — earlier positions stay valid
+            targets.forEach((t) => {
+                editor.chain().insertContentAt(t.pos + t.size, inputHTML(LIT_EFFECT_PROMPT, t.efid)).run();
+            });
+            console.log('[WML lit-CN] healed Effect-on-reader into', targets.length, 'craft element(s)');
         } catch (e) {
-            console.warn('[WML lit-CN] re-layout heal failed (doc untouched)', e);
+            console.warn('[WML lit-CN] effect heal failed (doc untouched beyond applied inserts)', e);
         }
     }
 
-    // v7.20.16: literature CN heal orchestrator — just the re-layout heal (no poetry
-    // organiser/TOC/poem-card structures apply). Self-gates on a literature CN doc.
+    // v7.20.17: literature CN heal orchestrator — ADDITIVE effect-box insert only. The
+    // stacked layout comes from the collapsible NodeView (wml-section-block _isLitCnDoc), NOT
+    // a doc rebuild — so no setContent/migration here, just the missing effect boxes for
+    // legacy docs. Self-gates on a literature CN doc; same idempotent/targeted-insert/
+    // hydration-gated/fail-loud law as the poetry effects heal.
     function _runLitCnHeals(editor) {
         const fam = _cnFam();
         if (!fam || fam.id !== 'literature' || state.task !== 'conceptual_notes') return;
-        try { _healLitCnShape(editor); } catch (_) {}
+        try { _healLitCnEffects(editor); } catch (_) {}
     }
 
     // 2) Apply the server's scattered-siblings sidecar. _applyFieldValueSets fills
@@ -31473,45 +31470,33 @@
                 { label: 'Author\u2019s Purpose', prompt: 'What is the author trying to achieve? What message are they communicating to the reader?' },
                 { label: 'The Big Message', prompt: 'What is the overarching message? What does this text reveal about the human experience?' },
             ];
-            // v7.20.16 (Part B step 2, Design B — Neil: REUSE the poetry mold, don't
-            // reinvent): LITERATURE (single text) renders like a poem section — ONE
-            // collapsible section, all elements STACKED inside (label → notes → quotes-under
-            // → effect-on-craft). This is the same inner shape as pcnSubs above; the
-            // multi-field section flows stacked (the :has(>_quotes) two-column rule produces
-            // the side column only for a single notes+quotes section, which is the legacy
-            // look we are killing). Filing UNCHANGED — index-keyed cn_section_N (+_quotes,
-            // +_effect on craft). Nonfiction keeps its per-section loop until Phase 2.
-            var _litCnMold = !isNF && !isPo;
-            if (_litCnMold) {
-                var litInner = '';
-                concepts.forEach(function (c, idx) {
-                    var fid = 'cn_section_' + (idx + 1);
-                    litInner += '<p><strong>' + c.label + '</strong></p>' +
-                        inputHTML(c.prompt, fid) +
-                        inputHTML('Key quotes (1–3).', fid + '_quotes') +
-                        (LIT_CRAFT_IDX[idx] ? inputHTML(LIT_EFFECT_PROMPT, fid + '_effect') : '');
-                });
-                html += dividerHTML('CONCEPTUAL NOTES');
-                html += sectionHTML('plan', 'Conceptual Notes', true, null, litInner);
-            } else {
-                concepts.forEach(function(c, idx) {
-                    var fieldId = isNF ? ('nfcn_section_' + (idx + 1)) : ('cn_section_' + (idx + 1));
-                    var quotesFieldId = fieldId + '_quotes';
-                    html += dividerHTML(c.label.toUpperCase());
-                    // v7.15.88: emit notes + quotes input fields as direct siblings
-                    // of the section block. TipTap strips arbitrary wrapper <div>s,
-                    // so layout is driven by CSS — the section uses :has() to flex
-                    // its children side-by-side when it contains a *_quotes input.
-                    // v7.15.93 locked concept sections during the FQ. v7.19.955: the FQ
-                    // and the CN lesson now share ONE doc, and editable-ness is BAKED
-                    // into persisted section HTML — an FQ-time lock seeded first would
-                    // freeze the CN lesson's sections forever. Always editable.
-                    html += sectionHTML('plan', c.label, true, null,
-                        '<h3>' + c.label + '</h3>' +
-                        inputHTML(c.prompt, fieldId) +
-                        inputHTML('Key quotes', quotesFieldId));
-                });
-            }
+            concepts.forEach(function(c, idx) {
+                var fieldId = isNF ? ('nfcn_section_' + (idx + 1)) : ('cn_section_' + (idx + 1));
+                var quotesFieldId = fieldId + '_quotes';
+                html += dividerHTML(c.label.toUpperCase());
+                // v7.15.88: emit notes + quotes input fields as direct siblings
+                // of the section block. TipTap strips arbitrary wrapper <div>s,
+                // so layout is driven by CSS — the section uses :has() to flex
+                // its children side-by-side when it contains a *_quotes input.
+                // v7.15.93 locked concept sections during the FQ. v7.19.955: the FQ
+                // and the CN lesson now share ONE doc, and editable-ness is BAKED
+                // into persisted section HTML — an FQ-time lock seeded first would
+                // freeze the CN lesson's sections forever. Always editable.
+                // v7.20.17 (Part B step 2, Design B — REUSE the poetry mold): LITERATURE
+                // (not NF, not Po) craft elements get an Effect-on-reader box (four-fold
+                // reader-effect), AFTER quotes. Lit CN sections are collapsible (see
+                // wml-section-block _isLitCnDoc) → nested contentDOM → the fields STACK
+                // full-width (quotes UNDER notes, effect under) exactly like poetry — the
+                // side-column CSS only fires on a section whose fields are DIRECT children.
+                // Filing UNCHANGED (index-keyed cn_section_N). NF keeps its plain layout.
+                var litEffect = (!isNF && !isPo && LIT_CRAFT_IDX[idx])
+                    ? inputHTML(LIT_EFFECT_PROMPT, fieldId + '_effect') : '';
+                html += sectionHTML('plan', c.label, true, null,
+                    '<h3>' + c.label + '</h3>' +
+                    inputHTML(c.prompt, fieldId) +
+                    inputHTML('Key quotes', quotesFieldId) +
+                    litEffect);
+            });
         } else if (exerciseType === 'memory_practice') {
             // ── MEMORY PRACTICE ──
             // v7.14.13: Full retrieval practice document with quality gate, multiple rounds,
