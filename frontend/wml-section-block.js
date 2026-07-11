@@ -299,11 +299,26 @@
             // → the :has(> _quotes) side-column CSS can't fire → notes/quotes/effect stack
             // full-width (exactly like poetry). Doc-level gate via the CN registry (literature
             // family only — poetry already handled by _isOrganiserDoc; unseen/forms → null).
+            // v7.20.26 (Neil): detect the lit CN doc by its FIELD SHAPE (a cn_* field in this plan
+            // section — content-addressed, same idiom as _isPoemGroup below), NOT via cnFamily(),
+            // which returns null unless task==='conceptual_notes'. The Foundational Quiz renders the
+            // SAME lit CN doc under task='foundational_quiz', so the task-gated check went false →
+            // sections weren't made collapsible → boxes fell to the direct-child flex rule (3 cramped
+            // columns). Content-addressed = TASK-INDEPENDENT → the FQ render now matches the CN render
+            // (collapsible + stacked), the ROOT fix for the FQ/CN divergence. `cn_` catches BOTH the
+            // concept sections (cn_section_N) AND General Notes (cn_general_notes); poetry (poem_/pf_
+            // fields) is untouched — already collapsible via _isOrganiserDoc. Same collapsible NodeView
+            // path CN already uses → no new PM foreign-mutation/freeze surface.
             let _isLitCnDoc = false;
-            try {
-                _isLitCnDoc = !!(window.WML && typeof window.WML.cnFamily === 'function'
-                    && (function () { var f = window.WML.cnFamily(); return f && f.id === 'literature'; })());
-            } catch (_) { _isLitCnDoc = false; }
+            if (type === 'plan') {
+                try {
+                    node.descendants((n) => {
+                        if (n.type && n.type.name === 'inputField'
+                            && /^cn_/.test(String((n.attrs && n.attrs.fieldId) || ''))) _isLitCnDoc = true;
+                        return !_isLitCnDoc;
+                    });
+                } catch (_) { _isLitCnDoc = false; }
+            }
             // v7.19.971: per-poem section-group detection — by the STABLE poem_ fieldId
             // prefix in the node model (content-addressed; data-* attrs on the wrapper
             // don't survive the HTML round-trip, fieldIds do).
