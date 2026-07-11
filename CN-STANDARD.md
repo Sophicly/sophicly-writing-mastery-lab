@@ -69,6 +69,26 @@ poetry anthologies: all boards. Watch: Cambridge IGCSE Literature uses Songs of 
 (poetry) and potentially Stories of Ourselves (PROSE anthology) — the prose-anthology register
 built for Edexcel IGCSE gets reused there.
 
+**§2.8 — The stacked layout (notes → quotes-UNDER → effect) is produced by COLLAPSIBILITY, not
+by template HTML.** Cost a full debug cycle (v7.20.16→17, lit CN). The ONLY layout rule for a
+plan section is `wml-canvas.css` `.swml-section-plan:has(> .swml-input-field[data-field-id$="_quotes"])`
+→ notes|quotes SIDE-COLUMN, and it fires only when a `_quotes` input is a **DIRECT child** of
+`.swml-section-plan`. The section NodeView (`wml-section-block.js`) has two paths: **collapsible**
+sections nest their fields inside a `.swml-section-content` wrapper (fields NOT direct children →
+the side-column rule CANNOT fire → fields STACK full-width); **non-collapsible** sections put
+fields as direct children → side-column. So a `plan` CN section stacks **iff it is collapsible**.
+The `_collapsible` gate for `type==='plan'` is registry-keyed (`isPoetryCnDoc` / `_isLitCnDoc` via
+`WML.cnFamily()`).
+- **To give a NEW CN family the stacked mold, make its plan sections COLLAPSIBLE** (extend the
+  `_collapsible` gate in `wml-section-block.js` to that family). This ALSO delivers the "every
+  section collapsible + tick" ruling in one move.
+- **NEVER** try to fix CN layout in the template HTML, and **NEVER** edit the shared
+  `:has(>_quotes)` CSS rule (regresses planning/other plan sections). Two static-CSS theories
+  were falsified here before the NodeView cause was found — the template is not the lever.
+- Same NodeView as the foreign-mutation-loop class (`reference_wml_pm_nodeview_foreign_mutation_loop`);
+  keep derived-card writes firewalled. Full note: memory
+  `reference_wml_cn_stacked_layout_requires_collapsible_section`.
+
 ---
 
 ## §3 — PACE: DEEP, NEVER DRAGGING (programme principle)
@@ -178,6 +198,7 @@ Porting literature/nonfiction CN to this contract (Macbeth = the mold text; lock
 - [ ] Depth register preserved (§1.1): the 45-step walk keeps its depth — the port adds LAWS, not thinning
 
 **Doc side (JS currently poetry-gated — generalise, don't fork):**
+- [ ] **Sections COLLAPSIBLE for the family (§2.8) — this is what makes them STACK.** Extend the `_collapsible` `plan` gate in `wml-section-block.js` to the family (via `WML.cnFamily()`); do NOT fix layout in template HTML or the shared `:has(>_quotes)` CSS. (Delivers the "collapsible + tick" ruling too.)
 - [ ] One-doc mold (§2.3): element rows notes → quotes → effect; collapsible sections; TOC super-group
 - [ ] Additive heal for live legacy docs (§2.4) — the legacy 7-box (`cn_section_N`) content carries over (the poetry `_healPoetryCnShape` carried/fold pattern)
 - [ ] Collapse persistence on programmatic expand (§2.3)
