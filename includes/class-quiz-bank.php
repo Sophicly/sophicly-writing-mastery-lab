@@ -395,8 +395,48 @@ class SWML_Quiz_Bank {
         $pool = self::questions_for_fq($text);
         if (empty($pool)) return [];
         $serve = self::fq_stage_subset($pool, $text, $stage, $stage_kind);
+        // v7.20.21 (Neil + learning-science research 2026-07-11): a literature DIMENSION bank
+        // (questions carry @dim) serves ONE random question per aspect — a light 5-Q round
+        // (protagonist·plot·themes·effects·message). Depth comes from mastery REPETITION drawing
+        // a fresh variation per aspect each round, not from round length (3–5 is the low-stakes
+        // retrieval sweet spot; longer fatigues + lowers reliability). Poetry banks (no @dim) keep
+        // their whole-staged-set behaviour untouched.
+        $serve = self::fq_dim_stratified($serve);
         // n = count($serve) → pick_from_pool returns the ENTIRE served set, shuffled + id-stamped.
         return self::pick_from_pool($serve, 'fq:' . sanitize_key((string) $text), count($serve));
+    }
+
+    /**
+     * v7.20.21: FQ dimension stratification — one random question per @dim aspect, in canonical
+     * order. Returns the pool UNCHANGED when no question carries a @dim (poetry / legacy lit banks
+     * not yet restructured — safe transition: only a fully-@dim bank gets the 5-per-round shape).
+     * NOTE: in a partially-tagged bank untagged questions would be dropped — restructure a lit bank
+     * FULLY to 5×4 when adding @dim (Macbeth = the mold).
+     */
+    private static function fq_dim_stratified($pool) {
+        $by_dim = [];
+        foreach ($pool as $q) {
+            $d = isset($q['dim']) ? (string) $q['dim'] : '';
+            if ($d !== '') $by_dim[$d][] = $q;
+        }
+        if (empty($by_dim)) return $pool; // no dims → poetry/legacy: unchanged
+        $order = ['protagonist', 'plot', 'themes', 'effects', 'message'];
+        $out = [];
+        foreach ($order as $d) {
+            if (!empty($by_dim[$d])) { $out[] = $by_dim[$d][array_rand($by_dim[$d])]; unset($by_dim[$d]); }
+        }
+        foreach ($by_dim as $qs) { $out[] = $qs[array_rand($qs)]; } // any non-canonical dim (defensive)
+        return $out;
+    }
+
+    /** v7.20.21: distinct @dim count in a pool (0 if none) — the served round size for a dim bank. */
+    private static function fq_dim_count($pool) {
+        $dims = [];
+        foreach ($pool as $q) {
+            $d = isset($q['dim']) ? (string) $q['dim'] : '';
+            if ($d !== '') $dims[$d] = true;
+        }
+        return count($dims);
     }
 
     /**
@@ -446,6 +486,10 @@ class SWML_Quiz_Bank {
         $pool = self::questions_for_fq($text);
         if (empty($pool)) return 0;
         $serve = self::fq_stage_subset($pool, $text, $stage, $stage_kind);
+        // v7.20.21: a dimension bank serves one-per-aspect — the round size is the distinct @dim
+        // count (must mirror pick_session_fq's fq_dim_stratified or the first-paint sidebar lies).
+        $dimN = self::fq_dim_count($serve);
+        if ($dimN > 0) return $dimN;
         return count(self::dedupe_stems($serve, '', false));
     }
 
