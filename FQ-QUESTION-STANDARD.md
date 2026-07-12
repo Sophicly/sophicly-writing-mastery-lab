@@ -142,3 +142,75 @@ and require: every quote-marked phrase confirmed verbatim in the source, or de-q
 jamie/kay/lochhead/maccaig/morgan/n5_collection/paterson — Scottish set texts; no clean text on disk).
 These stay on their current live banks until Neil provides the source, or a source is found under
 `Sophicly Etch Mark Scheme Resources/` (SQA / CCEA / CAIE subfolders — PDFs may exist to Read).
+
+---
+
+# § NONFICTION — the contract for nonfiction FQ banks
+**Reference implementation:** the Adichie block in `igcse_nonfiction.md` (the nonfiction mold).
+**Status:** MOLD prepped 2026-07-12 (Adichie only); fan-out of the other 9 texts + autofill wiring PENDING Neil's packaging ruling (see § AUTOFILL fork below).
+
+**THE PRINCIPLE is identical** (concept over trivia; conceptual-misreading distractors; research-grounded).
+Nonfiction is NOT narrative → NO protagonist/plot. It keys on the writer's craft. Content DERIVES from the
+nonfiction CN protocol (`protocols/shared/nonfiction/modules/conceptual-notes/nfcn-*.md`) — never authored
+from general knowledge. **HARD pedagogy gate (nfcn-foundation §0.3): NEVER frame answers/distractors through
+modern ideological lenses** (post-colonial / CRT / Marxist / "patriarchy" / feminist-critique) — ground every
+item in the writer's OWN stated context + the text's own words. (Reinforces [[feedback_no_patriarchy_language]],
+[[feedback_avoid_feminist_critique_framework]].)
+
+## THE FIVE ASPECTS + their central concept (nonfiction)
+Each `@dim` maps to a nonfiction Conceptual-Notes field. **Slugs are DISTINCT from the lit set** (lit uses
+protagonist/plot/themes/effects/message) to avoid the `concept_field_for_dim` collision — critically the lit
+`themes`→`cn_section_5` clash, so nonfiction uses **`ideas`**, not `themes`.
+
+| `@dim` | Central concept the item MUST elicit | nfcn field |
+|---|---|---|
+| `voice` | **Whose voice** + stance: Category A (writer as central voice) / B (observer-reporter) / C (reflective narrator), and the writer's attitude to the subject | `nfcn_section_1` |
+| `form` | **Text type + how its form/organisation SHAPES the reader's response** (Speech/Memoir/Travel/Article/Autobiography/Personal-Essay/Literary-Memoir/Reportage → Effect Chain), NOT naming the type | `nfcn_section_4` |
+| `methods` | **Technique as EFFECT on the reader** (pathos/ethos/emotive/triadic/anecdote…), NOT naming the device | `nfcn_section_5` |
+| `ideas` | The **controlling ideas** the text explores | `nfcn_section_6` |
+| `purpose` | What the writer wants the reader to **think / feel / do** + the enduring **message** | `nfcn_section_7` |
+
+**5 questions per TEXT = one per aspect** (mirrors poetry's 3-per-poem, not lit's 5×4). 10 anthology texts →
+50 Q, `@set`-staged. Picker serves ONE random per aspect (`fq_dim_stratified`) → a 5-question round.
+
+## DISTRACTOR LAW (same as prose/poetry)
+Each wrong option is a plausible **conceptual misreading**, with a `Why <letter>:` gloss naming the misreading:
+- **voice:** detached-expert / angry-accuser / neutral-reporter when the writer is a reflective first-person.
+- **form:** "states its thesis then lists statistics" / "one continuous chronology" when it's thematic-anecdotal.
+- **methods:** "it decorates" / "names the device" / "proves a statistic" instead of the FELT effect.
+- **ideas:** naming the STEREOTYPE the text dismantles as if it were the text's idea.
+- **purpose:** "to feel guilty and do nothing" / "to pity" instead of the writer's actual call.
+
+## THE 10 TEXTS + text type / structure (from nfcn-foundation §0.4 — derive, don't invent)
+Adichie (Speech, thematic/argumentative) · Alagiah *A Passage to Africa* (Memoir/Reportage, fragmented) ·
+Herbert *The Explorer's Daughter* (Travel/Memoir, contrast-driven) · Morris *Explorers or boys messing about?*
+(Newspaper Article, contrast) · Ralston *127 Hours* (Autobiography, chronological) · Zephaniah *Young and
+dyslexic?* (Personal Essay, thematic) · Levine *A Game of Polo…* (Travel/Sports Journalism, fragmented) ·
+Zeppa *Beyond the Sky and the Earth* (Travel/Memoir, circular) · Macdonald *H is for Hawk* (Literary Memoir,
+circular) · Yen Mah *Chinese Cinderella* (Autobiography, chronological).
+
+## QUOTE SOURCE (the same hard provenance gate)
+All 10 texts are reproduced full in `Model Answers/Model Answer Resources/iGCSE-Anthology-English-Language-A-and-English-Literature.md`
+(Part 1: Paper 1 Section A Non-fiction texts, lines ~169–748). Every quoted phrase MUST be verbatim there
+or be de-quoted. Feed that file to each rebuild agent, same as the poetry fan-out.
+
+## AUTOFILL — the OPEN architecture fork (Neil ruling needed before wiring)
+Lit resolves its note file by **text slug = bank slug** (one text per bank). Neil's locked **one-anthology-bank**
+puts 10 texts in one file, so autofill needs **per-text + per-dim** resolution — a THIRD pattern (poetry did its
+version with the `@form:<poem>` entity token + `pf_*` path). Options:
+- **(A) One bank + entity token:** add `@text:<slug>` per Q; resolve the note from a per-text `*.concept-notes.md`
+  keyed by (text, dim), write to `nfcn_section_*` of that text's CN doc. New resolution machinery (mirror poetry's `@form`).
+- **(B) Per-text banks (10 files):** reuses lit autofill wholesale (`{text}.concept-notes.md` + `@dim` +
+  `concept_field_for_dim` returning `nfcn_section_*`). Contradicts the one-bank lock but zero new machinery.
+Until resolved: `concept_field_for_dim` gets the 5 nf entries (`voice/form/methods/ideas/purpose → nfcn_1/4/5/6/7`)
+and `fq_dim_stratified`'s `$order` gets them appended — but the note RESOLUTION path + the doc write-path's
+`nfcn_section_*` handling must be verified before any nonfiction bank ships (do NOT assume the lit write-path
+accepts `nfcn_` keys).
+
+## ACCEPTANCE CHECKS (nonfiction)
+- [ ] 5 questions per text; each `@dim` ∈ {voice, form, methods, ideas, purpose}; one per aspect.
+- [ ] `methods` items test a FELT effect, not "name the device"; `form` items test the form's effect, not its label.
+- [ ] `ideas` items never present the stereotype the text dismantles as the text's own idea.
+- [ ] NO modern-ideological framing anywhere (nfcn-foundation §0.3).
+- [ ] Every quote verbatim in the IGCSE anthology source (Part 1 Non-fiction).
+- [ ] Parses under `SWML_Quiz_Bank::parse_file`.
