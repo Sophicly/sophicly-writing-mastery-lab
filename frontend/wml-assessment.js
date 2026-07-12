@@ -13157,6 +13157,12 @@
         // Topic / exercise badge
         if (state.topicNumber) {
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: `Topic ${state.topicNumber}` }));
+            // v7.20.38: anthology CN staged-delivery badge — "Stage N of M" beside the Topic
+            // badge; only on a staged CN lesson (cn_stage set + text is a staged anthology).
+            if (state.cnStage && WML.cnStageCountFor) {
+                const _cnTot = WML.cnStageCountFor(state.board, state.text);
+                ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-stage', textContent: _cnTot ? `Stage ${state.cnStage} of ${_cnTot}` : `Stage ${state.cnStage}` }));
+            }
         } else if (state.task && state.task !== 'planning') {
             // v7.13.11: read label from exercise manifest instead of hardcoded map
             const headerConfig = WML.getExerciseConfig(state.task);

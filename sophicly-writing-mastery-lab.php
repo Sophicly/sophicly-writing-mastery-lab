@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.37
+ * Version: 7.20.38
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.37');
+define('SWML_VERSION', '7.20.38');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -648,6 +648,7 @@ class Sophicly_Writing_Mastery_Lab {
             'text'     => '',
             'fq_bank'  => '',
             'fq_stage' => '',
+            'cn_stage' => '',
         ], $atts, 'writing_mastery_lab');
 
         $post_id = get_the_ID();
@@ -666,6 +667,10 @@ class Sophicly_Writing_Mastery_Lab {
         // Same option-wins/att-fallback pattern as the v7.17.16 step attribute.
         $fq_bank  = sanitize_file_name($atts['fq_bank']);
         $fq_stage = absint($atts['fq_stage']);
+        // v7.20.38: per-lesson CN stage (anthology staged-delivery). Bridge option wins
+        // below; shortcode att is the fallback. Independent of fq_stage (FQ = pre-writing
+        // primer staged on @set; CN = post-writing consolidation staged on text coverage).
+        $cn_stage = absint($atts['cn_stage']);
         // v7.17.16: shortcode step attribute (bridge emits this alongside task for mark_scheme_unit).
         // Bridge option at line ~548 still wins (authoritative); shortcode value acts as fallback
         // when the bridge option lookup misses (e.g. new lesson not yet mapped).
@@ -747,6 +752,10 @@ class Sophicly_Writing_Mastery_Lab {
             if (!empty($bridge_entry['fq_stage'])) {
                 $fq_stage = absint($bridge_entry['fq_stage']);
             }
+            // v7.20.38: per-lesson CN stage override (bridge picker "CN Stage" field).
+            if (!empty($bridge_entry['cn_stage'])) {
+                $cn_stage = absint($bridge_entry['cn_stage']);
+            }
         }
 
         // v7.19.1: dropped v7.19.0 FYW post-title regex heuristic. It never fired
@@ -822,6 +831,7 @@ class Sophicly_Writing_Mastery_Lab {
             'fqBank'      => $fq_bank,   // v7.19.952: per-lesson FQ bank override (bridge)
             'fqStage'     => $fq_stage,  // v7.19.952: per-lesson FQ stage (bridge, unified fq_stage=N)
             'fqRoundSize' => $fq_round_size, // v7.19.968: boot-time round size (first-paint sidebar)
+            'cnStage'     => $cn_stage,  // v7.20.38: per-lesson CN stage (anthology staged-delivery)
         ];
 
 

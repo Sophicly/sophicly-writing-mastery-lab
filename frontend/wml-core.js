@@ -865,6 +865,37 @@ window.WML = (function() {
             : new RegExp('^' + fam.prefix + '_(.+?)_(' + alt + ')$');
     };
 
+    // v7.20.38: CN STAGED-DELIVERY — per-anthology stage split (how many texts a
+    // student covers per sitting). stageCount = ceil(rosterLength / perStage). An
+    // anthology ABSENT from this map = NO staging (single-text novels/plays: one doc,
+    // one go). Locked splits (Neil 2026-07-12): poetry 5×3, IGCSE-lit poetry 4×4,
+    // nonfiction 5×2, Edexcel IGCSE P2 mixed 5×(1 poem + 1 prose). The staging ENGINE
+    // is family-generic; only nonfiction is wired live in this batch — the others light
+    // up by adding a line here once their rosters/bridge lessons exist (D-SPLIT).
+    const CN_STAGE_SPLITS = {
+        'edexcel-igcse|igcse_lang_nonfiction': { perStage: 2 },
+    };
+    // Resolve the split for a board+text through the same dash-ladder anthologyPoemsFor
+    // uses, so every alias form resolves. Returns null when the text is not staged.
+    const cnStageSplitFor = (board, text) => {
+        const b = String(board || state.board || '').toLowerCase();
+        const t = String(text || state.text || '');
+        const tries = [t, t.replace(/_poetry$/, ''), t + '_poetry'];
+        for (let i = 0; i < tries.length; i++) {
+            const s = CN_STAGE_SPLITS[b + '|' + tries[i]];
+            if (s) return s;
+        }
+        return null;
+    };
+    // Total stage count for a staged anthology (0 = not staged / roster not yet seeded).
+    const cnStageCountFor = (board, text) => {
+        const s = cnStageSplitFor(board, text);
+        if (!s) return 0;
+        const roster = anthologyPoemsFor(text);
+        if (!roster.length) return 0;
+        return Math.ceil(roster.length / s.perStage);
+    };
+
     const NONFICTION_CN_STEPS = [
         { step: 1, label: 'S1 Writer\'s Voice' },
         { step: 2, label: 'S2 Context' },
@@ -3493,6 +3524,7 @@ window.WML = (function() {
         anthologyPoemsFor, isPoetryAnthologyDoc,
         // CN family registry (v7.20.15)
         CN_FAMILIES, LIT_CN_SPINE, NONFICTION_CN_SPINE, PROSE_CN_SPINE, cnFamily, cnFieldRe,
+        CN_STAGE_SPLITS, cnStageSplitFor, cnStageCountFor,
         getSteps, getElements, getExerciseConfig, getCwStepDef, resolveStorageSuffix, resolveCanvasSuffix, canvasDocScope,
         // Exercise manifest
         EXERCISE_MANIFEST,

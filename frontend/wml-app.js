@@ -88,6 +88,8 @@
         // poem-anthology course) filtered to the lesson's stage. Absent → course text, whole bank.
         if (embedConfig.fqBank)  state.fqBank  = embedConfig.fqBank;
         if (embedConfig.fqStage) state.fqStage = embedConfig.fqStage;
+        // v7.20.38: per-lesson CN stage (anthology staged-delivery). Independent of fqStage.
+        if (embedConfig.cnStage) state.cnStage = embedConfig.cnStage;
         // v7.19.968 (Neil C): server-computed FQ round size → the sidebar shows the REAL
         // step count from FIRST PAINT (no 5-step placeholder that morphs mid-lesson). The
         // quiz controller's _syncFqSidebar remains the self-heal if the served round differs.
@@ -7632,6 +7634,8 @@ Before marking the introduction, ask the student to confirm their essay structur
             // previous lesson would serve the wrong bank on this lesson's quiz start.
             state.fqBank      = cfg.fqBank  || '';
             state.fqStage     = cfg.fqStage || 0;
+            // v7.20.38: CN stage re-set unconditionally (never leak across SPA-navigated lessons).
+            state.cnStage     = cfg.cnStage || 0;
             // v7.19.954: dynamic FQ sidebar length — never leak across lessons.
             // v7.19.968 (Neil C): seed from the server-computed round size so SPA-navigated
             // FQ lessons also paint the real step count immediately (0 when not an FQ lesson).
