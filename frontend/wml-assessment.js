@@ -8917,7 +8917,11 @@
         // bridge-mapped stage as its own badge; without it three staged lessons on one
         // text read identically in the sidebar.
         if (state.task === 'foundational_quiz' && state.fqStage) {
-            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Stage ' + state.fqStage }));
+            // v7.20.46 (Neil): "Stage N of M" for consistency with the CN badge, so students see how
+            // many stages remain. M = the anthology's stage count (same helper as CN); for a
+            // non-anthology FQ with no resolvable total, fall back to bare "Stage N".
+            var _fqTot = (WML.cnStageCountFor ? WML.cnStageCountFor(state.board, state.text) : 0);
+            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: _fqTot ? 'Stage ' + state.fqStage + ' of ' + _fqTot : 'Stage ' + state.fqStage }));
         }
         // v7.20.43 (Neil staging): CN staged-delivery "Stage N of M" — the SIDEBAR twin of the
         // canvas CN badge (13200). The canvas ctxBadges are HIDDEN in training-env (13317), and CN
@@ -33184,6 +33188,33 @@
                         }
                     } else {
                         console.log('WML: Local canvas content exists, server backup available');
+                        // v7.20.46: CROSS-LESSON SEED RECONCILE (Conceptual Notes). A CN doc can be
+                        // seeded server-side by ITS shared Foundational Quiz — a DIFFERENT lesson/page:
+                        // the FQ autofills concept notes straight into this doc's server record
+                        // (..._t2_cn), but this page kept its stale localStorage (local-wins above), so
+                        // the seed never appears in the CN lesson (Neil staging 2026-07-12). The
+                        // mergeFields sidecar can't recover it — it carries only SIBLING-key fields
+                        // (excludes this exact key), and the FQ wrote the SAME key. So additively
+                        // hydrate: fill EMPTY local fields from the server doc's OWN filled fields.
+                        // _applyFieldValueSets is inputField-empty-only (hash-provenance) — a student's
+                        // in-progress local edits are preserved; only blanks receive the seed. No-op when
+                        // local already matches server (same-value skip). Gated to conceptual_notes.
+                        if (state.task === 'conceptual_notes' && res.doc && res.doc.html) {
+                            try {
+                                const _tmp = document.createElement('div');
+                                _tmp.innerHTML = res.doc.html;
+                                const _srv = [];
+                                _tmp.querySelectorAll('[data-input-field][data-field-id]').forEach(el => {
+                                    const fid = el.getAttribute('data-field-id');
+                                    const val = (el.textContent || '').trim();
+                                    if (fid && val) _srv.push({ field: fid, value: val });
+                                });
+                                if (_srv.length) {
+                                    console.log('[WML CN] cross-lesson seed reconcile — hydrating', _srv.length, 'server field(s) into empty local fields');
+                                    _applyFieldValueSets(_srv);
+                                }
+                            } catch (e) { console.warn('[WML CN] cross-lesson seed reconcile failed (non-fatal)', e); }
+                        }
                     }
                 }
                 // v7.19.247: re-paint Score-Summary dates after the async server doc
