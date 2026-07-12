@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.43
+ * Version: 7.20.44
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.43');
+define('SWML_VERSION', '7.20.44');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -777,14 +777,20 @@ class Sophicly_Writing_Mastery_Lab {
         if (!$topic) {
             $topic = absint(get_post_meta($post_id, '_sophicly_topic_number', true));
         }
-        // v7.20.41: Conceptual Notes is ALWAYS Topic 2 (WML terminology — Topic 2 = CN
-        // across every board/paper). A CN lesson mis-mapped with a blank Topic # in the
-        // bridge (wml_topic:0) otherwise keys its canvas doc WITHOUT the _t2 suffix and the
-        // "Topic 2 · Stage N" badge (nested in `if(state.topicNumber)`) never renders. Code
-        // -default here so the doc key + badge can't silently depend on the picker being set.
-        // Scoped to conceptual_notes ONLY — the CN-shared FQ maps its own topic in the bridge;
-        // defaulting all foundational_quiz would misfile every non-CN FQ lesson.
-        if (!$topic && $task === 'conceptual_notes') {
+        // v7.20.41 / v7.20.44: Conceptual Notes is ALWAYS Topic 2 (WML terminology — Topic 2 = CN
+        // across every board/paper), and its SHARED foundational quiz (the anthology CN primer)
+        // must land on the SAME topic-2 doc so its autofilled concept notes appear in the CN lesson.
+        // A lesson mis-mapped with a blank Topic # otherwise keys its canvas doc WITHOUT the _t2
+        // suffix — the CN lesson reads `..._t2_cn` while a topic-less FQ writes `..._cn`, so the
+        // FQ seed never crosses (Neil staging 2026-07-12: FQ notes filed but absent in CN). Code
+        // -default here so the shared doc key + "Topic 2 · Stage N" badge can't depend on the
+        // picker being set. v7.20.44 broadens to the CN-shared FQ: a foundational_quiz whose
+        // subject is a CN-ANTHOLOGY family (nonfiction / poetry / prose anthology, incl. the
+        // Edexcel-IGCSE language_p1 nonfiction derivation) shares the CN doc → Topic 2. A plain
+        // (non-anthology) FQ never matches, so it is not misfiled.
+        $is_cn_anthology_subject = in_array($subject, ['nonfiction_anthology', 'poetry_anthology', 'unseen_poetry', 'prose_anthology'], true)
+            || ($board === 'edexcel-igcse' && in_array($subject, ['language_p1', 'language1'], true));
+        if (!$topic && ($task === 'conceptual_notes' || ($task === 'foundational_quiz' && $is_cn_anthology_subject))) {
             $topic = 2;
         }
 
