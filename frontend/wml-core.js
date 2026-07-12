@@ -1867,6 +1867,17 @@ window.WML = (function() {
         }
         return [];
     }
+    // v7.20.40: the anthology SLUG to fetch the roster (with poem_text bodies) from GET /poems.
+    // For nonfiction the doc's course text (edexcel_igcse_lang_a) is NOT the anthology slug —
+    // the roster lives under NONFICTION_ANTHOLOGY_BY_BOARD[board]. Card fetch + any /poems call
+    // must resolve through THIS, not raw state.text, or it fetches the wrong (empty) option.
+    function cnRosterSlug(text) {
+        const board = String(state.board || '').toLowerCase();
+        if (isNonfictionSubject() && Array.isArray(NONFICTION_ANTHOLOGY_BY_BOARD[board]) && NONFICTION_ANTHOLOGY_BY_BOARD[board][0]) {
+            return NONFICTION_ANTHOLOGY_BY_BOARD[board][0].id;
+        }
+        return String(text || state.text || '');
+    }
     // v7.19.992: DURABLE poetry-anthology detection for the doc-identity layer.
     // state.subject is mutable boot state — on odd access paths (course-map miss,
     // SPA-nav timing) it can be empty/late, and a false negative silently forks the
@@ -3537,7 +3548,7 @@ window.WML = (function() {
         QUOTE_ANALYSIS_ELEMENTS, MODEL_ANSWER_ELEMENTS, PLAN_ELEMENTS,
         // Helpers
         isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject, isPoetryCnDoc,
-        anthologyPoemsFor, isPoetryAnthologyDoc,
+        anthologyPoemsFor, cnRosterSlug, isPoetryAnthologyDoc,
         // CN family registry (v7.20.15)
         CN_FAMILIES, LIT_CN_SPINE, NONFICTION_CN_SPINE, PROSE_CN_SPINE, cnFamily, cnFieldRe,
         CN_STAGE_SPLITS, cnStageSplitFor, cnStageCountFor,

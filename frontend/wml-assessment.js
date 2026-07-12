@@ -6633,6 +6633,9 @@
         _poemTextsFetchState = 'loading';
         let scopeText = state.text;
         try { scopeText = WML.canvasDocScope().text || state.text; } catch (_) {}
+        // v7.20.40: resolve the anthology roster slug board-wise — for nonfiction the doc's
+        // course text is NOT the roster slug (roster lives under the board nonfiction anthology).
+        try { if (WML.cnRosterSlug) scopeText = WML.cnRosterSlug(scopeText); } catch (_) {}
         fetch(`${API.poems}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(scopeText)}`, { headers })
             .then(r => r.json())
             .then(res => {
@@ -6734,8 +6737,10 @@
                     head.setAttribute('contenteditable', 'false');
                     // v7.19.993 (Neil): plus icon, not a chevron — matches the site's accordion
                     // convention (LearnDash transcript etc.); rotates to × when open (CSS).
+                    // v7.20.40: family-aware noun — "text" for nonfiction, "poem" for poetry.
+                    const _itemNoun = (_cardFam && _cardFam.id === 'nonfiction') ? 'text' : 'poem';
                     head.innerHTML = '<span class="swml-poem-card-plus" aria-hidden="true"></span>' +
-                        '<span class="swml-poem-card-title">Read the poem</span>' +
+                        '<span class="swml-poem-card-title">Read the ' + _itemNoun + '</span>' +
                         (poem && poem.poet ? '<span class="swml-poem-card-poet">' + escapeHTML(poem.poet) + '</span>' : '');
                     head.addEventListener('mousedown', (ev) => { ev.preventDefault(); ev.stopPropagation(); });
                     head.addEventListener('click', (ev) => {
@@ -6752,9 +6757,9 @@
                     if (poem && poem.poem_text) {
                         _renderPoemBody(body, poem.poem_text);
                     } else if (_poemTextsFetchState === 'done') {
-                        body.innerHTML = '<em class="swml-poem-card-missing">Poem text unavailable — please report this so we can add it.</em>';
+                        body.innerHTML = '<em class="swml-poem-card-missing">' + (_itemNoun === 'text' ? 'Text' : 'Poem text') + ' unavailable — please report this so we can add it.</em>';
                     } else {
-                        body.innerHTML = '<em class="swml-poem-card-missing">Loading poem…</em>';
+                        body.innerHTML = '<em class="swml-poem-card-missing">Loading ' + _itemNoun + '…</em>';
                     }
                     reveal.appendChild(body);
                     card.appendChild(head);
