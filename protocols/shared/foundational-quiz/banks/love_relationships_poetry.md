@@ -8,6 +8,13 @@ student has actually read. The picker draws a random 5 per round, stratified acr
 Keys + feedback live server-side and are stripped before questions reach the client. The AI is
 never the scorekeeper.
 
+**Concept-based (governed by `FQ-QUESTION-STANDARD.md` § POETRY).** Every item tests the CENTRAL
+CONCEPT of its dimension, not surface trivia. **Recognising** keys on the poem's *controlling idea /
+argument* (anchored by a signature line), not image-matching; **Form & Features** tests how the form
+*shapes meaning*, not its label; **Meaning & Effects** tests the controlling idea + the reader's
+response. Distractors are plausible CONCEPTUAL MISREADINGS — for Recognising, other anthology poems
+whose *argument differs*.
+
 Categories: Recognising the Poem · Form & Features · Meaning & Effects
 Types: MCQ · Fill · True-False · Select All
 
@@ -28,138 +35,138 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 1. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
-   * **Question:** Which poem treats a grandfather as a mountain, the speaker climbing him "free, without a rope or net" up to the summit of his head?
+   * **Question:** Which poem builds a single sustained metaphor — a beloved elder treated as a mountain to be climbed slowly and carefully up to his "summit" — to argue that truly knowing someone is patient, physical, loving work?
    * **Options:** A) Follower, B) Climbing My Grandfather, C) Eden Rock, D) Walking Away
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Waterhouse's "Climbing My Grandfather" turns the old man's body into a mountain the speaker scales — nails, brogue, cheek — reaching the "summit" of his head.
-   * **Why A:** Follower watches a father plough, not a grandfather climbed like a mountain.
-   * **Why C:** Eden Rock imagines dead parents picnicking beyond a stream.
-   * **Why D:** Walking Away recalls a father watching his son leave, not a climb.
+   * **Feedback:** ✓ Correct. Waterhouse's "Climbing My Grandfather" turns the old man's body into terrain the speaker scales — nails "giving good purchase" — reaching the "summit" of his head, so the climb itself becomes an act of intimate knowing and respect.
+   * **Why A:** Follower's argument is a son's changing relationship with a ploughing father and the reversal of roles, not the knowing of an elder through a climb.
+   * **Why C:** Eden Rock's argument is the comfort of imagining reunion with dead parents, not coming to know a living elder.
+   * **Why D:** Walking Away argues that parental love means releasing a child, not scaling and knowing one.
 
 2. **Type: MCQ [Tests Form & Features]**
    @set:1
    * **Question:** How does the free verse of "Climbing My Grandfather" serve its meaning?
-   * **Options:** A) Its strict sonnet form argues a case, B) Its loose form sustains the extended metaphor of a slow, careful climb up a beloved elder, C) Its ballad refrain tells a heroic tale, D) It has no effect on the meaning
+   * **Options:** A) Its strict sonnet form argues a case, B) Its loose, unhurried form lets the single extended metaphor of the climb unfold steadily, mirroring the patient act of coming to know a beloved elder, C) Its ballad refrain tells a heroic tale, D) It has no effect on the meaning
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The unhurried free verse lets the single extended metaphor of the climb unfold steadily, mirroring the patient, tender act of coming to know his grandfather.
+   * **Feedback:** ✓ Correct. The open, unhurried free verse lets the one climbing metaphor build without interruption, so the form itself enacts the slow, tender attention the poem pays to the grandfather.
    * **Why A:** The poem flows freely; it is not a tightly argued sonnet.
    * **Why C:** It is an intimate portrait, not a heroic ballad.
-   * **Why D:** The open form is central to the sustained climbing metaphor.
+   * **Why D:** The open form is exactly what sustains the single climbing metaphor.
 
 3. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
-   * **Question:** What feeling does "Climbing My Grandfather" ultimately convey?
-   * **Options:** A) Fear and resentment of the grandfather, B) Deep admiration, intimacy and respect, as the speaker explores and comes to know him, C) Indifference towards family, D) Anger at growing old
+   * **Question:** What feeling does "Climbing My Grandfather" ultimately leave us with?
+   * **Options:** A) Fear and resentment of the grandfather, B) Deep admiration, intimacy and respect, as the effort of the climb becomes an act of love, C) Indifference towards family, D) Anger at growing old
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The effort of the climb becomes an act of love — reaching the "summit" and lying breathless conveys awe, closeness and respect for the grandfather.
+   * **Feedback:** ✓ Correct. The strain of the climb becomes tenderness — reaching the "summit" and lying breathless conveys awe, closeness and respect for the grandfather.
    * **Why A:** The tone is tender admiration, not fear or resentment.
-   * **Why C:** The whole poem is an act of intimate attention, not indifference.
+   * **Why C:** The whole poem is an act of intimate attention, the opposite of indifference.
    * **Why D:** It celebrates the elder rather than resenting age.
 
 4. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
-   * **Question:** In which poem does a child follow his father ploughing, only for the roles to reverse so the father now "keeps stumbling / Behind me"?
+   * **Question:** Which poem argues that admiration can invert with time — a boy who once trailed his expert father now leads, while the ageing father "will not go away" but stumbles behind him?
    * **Options:** A) Follower, B) Mother, Any Distance, C) Winter Swans, D) Neutral Tones
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Heaney's "Follower" watches the expert father plough, then turns at the end to the father stumbling behind the grown speaker — a role reversal.
-   * **Why B:** Mother, Any Distance concerns a son measuring a new home, not ploughing.
-   * **Why C:** Winter Swans follows a couple reconciling by a lake.
-   * **Why D:** Neutral Tones recalls a dead love by a winter pond.
+   * **Feedback:** ✓ Correct. Heaney's "Follower" watches the skilled father plough, then reverses the roles at the close — the father now the one who "will not go away" — arguing that dependence and admiration shift as generations age.
+   * **Why B:** Mother, Any Distance argues a son's growth means loosening the mother's hold, not a father's decline.
+   * **Why C:** Winter Swans argues a couple can silently reconcile, not that roles reverse with age.
+   * **Why D:** Neutral Tones argues love fades into lasting disillusionment, not generational reversal.
 
 5. **Type: True-False [Tests Form & Features]**
    @set:1
-   * **Question:** "Follower" is written in regular, rhymed quatrains, whose steady, controlled shape reflects the father's skill and the rhythm of ploughing.
+   * **Question:** "Follower" is written in regular, rhymed quatrains, whose steady, controlled shape reflects the father's skill and the measured rhythm of ploughing.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Heaney's neat ABAB quatrains move with the measured, expert rhythm of the plough, embodying the father's mastery.
+   * **Feedback:** ✓ Correct. Heaney's neat quatrains move with the measured, expert rhythm of the plough, so the ordered form embodies the father's mastery.
    * **WhyWrong:** This is true — the ordered rhymed quatrains mirror the father's skilled, rhythmic ploughing.
 
 6. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
    * **Question:** What is the effect of the final turn in "Follower", where the father now stumbles behind the speaker?
-   * **Options:** A) It suggests the father was always incompetent, B) It reverses the roles of admiration and dependence, exposing time, ageing and the son's guilt or discomfort, C) It proves the son never loved his father, D) It celebrates a happy family outing
+   * **Options:** A) It suggests the father was always incompetent, B) It reverses the roles of admiration and dependence, exposing time, ageing and the son's uneasy mix of love and impatience, C) It proves the son never loved his father, D) It celebrates a happy family outing
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The reversal — once the follower, now the followed — captures the passing of time, the father's decline and the son's uneasy mix of love and impatience.
-   * **Why A:** The father is shown as an "expert"; the point is change, not incompetence.
+   * **Feedback:** ✓ Correct. The reversal — once the follower, now the followed — captures the passing of time, the father's decline and the son's troubled tenderness.
+   * **Why A:** The father is shown as an expert; the point is change, not incompetence.
    * **Why C:** The poem is rooted in admiration; love is not denied.
    * **Why D:** The tone is reflective and uneasy, not a cheerful outing.
 
 7. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
-   * **Question:** Which poem recalls, "eighteen years ago", a parent watching a son drift away "behind a scatter of boys" after a game?
+   * **Question:** Which poem, recalling a parting "eighteen years ago" as a son walked off behind a "scatter of boys", argues that real parental love is proved by releasing a child into independence?
    * **Options:** A) Before You Were Mine, B) Walking Away, C) Eden Rock, D) Letters from Yorkshire
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Day-Lewis's "Walking Away" remembers watching his son go off after a football game "like a satellite / Wrenched from its orbit".
-   * **Why A:** Before You Were Mine imagines the mother's youth, not a son walking away.
-   * **Why C:** Eden Rock pictures dead parents beyond a stream.
-   * **Why D:** Letters from Yorkshire concerns letters across distance, not a parting after a game.
+   * **Feedback:** ✓ Correct. Day-Lewis's "Walking Away" watches his son drift off after a game like a "satellite" pulled from orbit, reaching the conviction that "selfhood begins with a walking away" — love matures by letting go.
+   * **Why A:** Before You Were Mine imagines a mother's youth before the speaker existed, not a parent releasing a child.
+   * **Why C:** Eden Rock imagines dead parents welcoming the speaker, not a living parting.
+   * **Why D:** Letters from Yorkshire argues connection survives distance, not that love means release.
 
 8. **Type: Fill [Tests Form & Features]**
    @set:1
-   * **Question:** In "Walking Away", Day-Lewis compares his departing son to a [BLANK] "wrenched from its orbit", showing him pulled painfully out of the parent's hold.
+   * **Question:** In "Walking Away", Day-Lewis compares his departing son to a [BLANK] "wrenched from its orbit", so the image itself enacts the child pulled painfully and naturally out of the parent's hold.
    * **Answer:** satellite
-   * **Feedback:** ✓ Correct. The simile of a "satellite / Wrenched from its orbit" captures the painful, natural pull of the child away from the parent.
-   * **WhyWrong:** The word is "satellite" — the son is like a satellite wrenched from orbit, drifting inevitably away.
+   * **Feedback:** ✓ Correct. The simile of a "satellite" "wrenched from its orbit" makes the son's leaving feel like an unstoppable, natural force — the image carrying the poem's argument about inevitable separation.
+   * **WhyWrong:** The word is "satellite" — the son is like a satellite wrenched from orbit, drifting inevitably away, so the image does the poem's thinking about letting go.
 
 9. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
    * **Question:** What idea about parental love does "Walking Away" reach in its final lines?
-   * **Options:** A) That love means holding a child close forever, B) That "love is proved in the letting go" — selfhood begins with separation, C) That parents and children should never part, D) That the son was ungrateful
+   * **Options:** A) That love means holding a child close forever, B) That "selfhood begins with a walking away" — love is shown in the letting go, so separation is where a child's independent self begins, C) That parents and children should never part, D) That the son was ungrateful
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The poem resolves that "selfhood begins with a walking away, / And love is proved in the letting go" — real love allows painful independence.
-   * **Why A:** The poem argues the opposite: love releases rather than clings.
+   * **Feedback:** ✓ Correct. The poem resolves that "selfhood begins with a walking away" and that love is proved in the letting go — real love allows, even requires, painful independence.
+   * **Why A:** The poem argues the opposite — love releases rather than clings.
    * **Why C:** It accepts parting as necessary to growth.
-   * **Why D:** The ache is the parent's; the son is not blamed.
+   * **Why D:** The ache is the parent's; the son is never blamed.
 
 10. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** In which poem does a daughter imagine her mother's glamorous, carefree youth — a "polka-dot dress", laughing on a pavement — before she was born?
+    * **Question:** Which poem argues that a parent had a vivid life of her own before her child — the daughter picturing a "polka-dot dress" and "the ballroom with the thousand eyes" in the years "before you were mine"?
     * **Options:** A) Before You Were Mine, B) Neutral Tones, C) The Farmer's Bride, D) Follower
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Duffy's "Before You Were Mine" pictures the mother young and glamorous — "the ballroom with the thousand eyes" — in the years "before" the speaker existed.
-    * **Why B:** Neutral Tones recalls a dead love by a pond, not a mother's youth.
-    * **Why C:** The Farmer's Bride tells of a frightened runaway wife.
-    * **Why D:** Follower watches a father ploughing.
+    * **Feedback:** ✓ Correct. Duffy's "Before You Were Mine" pictures the mother young and carefree — the "polka-dot dress", "the ballroom with the thousand eyes" — arguing that this glamorous self existed, and was partly given up, "before you were mine".
+    * **Why B:** Neutral Tones argues love fades into disillusionment by a winter pond, not a mother's lost youth.
+    * **Why C:** The Farmer's Bride explores an unreachable, frightened wife, not a celebrated mother.
+    * **Why D:** Follower explores a son's changing bond with a ploughing father, not a mother's glamour.
 
 11. **Type: MCQ [Tests Form & Features]**
     @set:1
     * **Question:** How does the free verse of "Before You Were Mine" serve its meaning?
-    * **Options:** A) Its strict form argues a legal case, B) Its loose, interior-monologue style lets the daughter freely imagine her mother's life before motherhood, C) Its ballad refrain tells a heroic tale, D) Its sonnet volta resolves a debate
+    * **Options:** A) Its strict form argues a legal case, B) Its loose, interior-monologue style lets the daughter freely imagine and reconstruct her mother's life before motherhood, C) Its ballad refrain tells a heroic tale, D) Its sonnet volta resolves a debate
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The free, wandering voice suits memory and imagination as the daughter pictures her mother young, carefree and "before" she was hers.
+    * **Feedback:** ✓ Correct. The free, wandering voice suits memory and imagination as the daughter conjures her mother young, carefree and not yet hers — the open form mirroring the drift of remembering.
     * **Why A:** The poem flows like private thought, not a legal argument.
     * **Why C:** It is a personal reflection, not a heroic ballad.
     * **Why D:** It is free verse, without a sonnet's formal turn.
 
 12. **Type: True-False [Tests Meaning & Effects]**
     @set:1
-    * **Question:** In "Before You Were Mine", the daughter's imagining of her mother's free, glamorous past carries a faint sense of loss — that this vivid life existed before, and partly ended with, the child.
+    * **Question:** In "Before You Were Mine", the daughter's imagining of her mother's free, glamorous past carries a faint sense of loss — that this vivid life existed before, and was partly closed down by, the child.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The love is tinged with wistfulness: the mother's "possessive" glamour belonged to a self that motherhood — the arrival of the speaker — began to close down.
+    * **Feedback:** ✓ Correct. The love is tinged with wistfulness: the mother's glamour belonged to a self that motherhood — the arrival of the speaker — began to close down, so celebration and loss run together.
     * **WhyWrong:** This is true — beneath the celebration runs a wistful sense that the mother's carefree self existed "before" the daughter claimed her.
 
 13. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** Which poem uses a tape measure across a new house — "you at the zero-end" — as a metaphor for a mother and son's stretching bond?
+    * **Question:** Which poem uses a tape measure across a new house — the mother at the "zero-end", the tape "unreeling" as the speaker moves off — as a metaphor for a mother-and-son bond stretched by the son's growing independence?
     * **Options:** A) Mother, Any Distance, B) Climbing My Grandfather, C) Winter Swans, D) Love's Philosophy
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Armitage's "Mother, Any Distance" measures a new home with his mother at "the zero-end" of the tape, the line "unreeling / years between us" as he grows independent.
-    * **Why B:** Climbing My Grandfather uses a mountain-climb metaphor, not a tape measure.
-    * **Why C:** Winter Swans watches a couple reconcile by a lake.
-    * **Why D:** Love's Philosophy argues from nature that lovers should unite.
+    * **Feedback:** ✓ Correct. Armitage's "Mother, Any Distance" has the mother hold the "zero-end" of the tape as it goes "unreeling", measuring not just a home but the widening, testing distance of the son's independence.
+    * **Why B:** Climbing My Grandfather uses a mountain-climb to know an elder, not a stretching bond measured out.
+    * **Why C:** Winter Swans watches a couple reconcile, not a parent and child separating.
+    * **Why D:** Love's Philosophy argues lovers should unite, the opposite of stretching apart.
 
 14. **Type: True-False [Tests Form & Features]**
     @set:1
-    * **Question:** "Mother, Any Distance" uses an extended, stretched sonnet form, its shape pulled out like the tape measure in the poem.
+    * **Question:** "Mother, Any Distance" uses a loose, stretched sonnet form, its shape pulled out and loosened like the tape measure in the poem.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The loosely stretched sonnet works like the "tape measure" — its form is pulled out as the bond between mother and son is tested.
+    * **Feedback:** ✓ Correct. The loosely stretched sonnet works like the tape measure — its form is extended as the bond between mother and son is tested and drawn out.
     * **WhyWrong:** It does use a stretched sonnet — the form is extended and loosened, echoing the measuring tape and the stretching bond.
 
 15. **Type: MCQ [Tests Meaning & Effects]**
     @set:1
-    * **Question:** What does the ending of "Mother, Any Distance" — reaching "a hatch that opens on an endless sky / to fall or fly" — convey?
-    * **Options:** A) That the son will never leave home, B) The risk and possibility of independence, as the son lets go of the mother's hold to make his own way, C) That the mother refuses to let go, D) That measuring a house is pointless
+    * **Question:** What does the ending of "Mother, Any Distance" — reaching a hatch that "opens on an endless sky", the son left to fall or fly — convey?
+    * **Options:** A) That the son will never leave home, B) The risk and exhilaration of independence, as the son lets go of the mother's steadying line to make his own way, C) That the mother refuses to let go, D) That measuring a house is pointless
     * **Correct:** B
-    * **Feedback:** ✓ Correct. "To fall or fly" captures the thrilling danger of independence — the son releasing the mother's steadying line to risk his own adult life.
+    * **Feedback:** ✓ Correct. The hatch that "opens on an endless sky" and the choice to fall or fly capture the danger and thrill of independence — the son releasing the mother's line to risk his own adult life.
     * **Why A:** The whole poem moves towards leaving, not staying.
     * **Why C:** It is the son who lets go of the line; the mother anchors him.
     * **Why D:** The measuring is a metaphor for the bond, not a literal chore.
@@ -168,18 +175,18 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 16. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem imagines dead parents picnicking on the far side of a stream, the mother pouring tea, telling the speaker "crossing is not as hard as you might think"?
+    * **Question:** Which poem imagines dead parents waiting on the far bank of a stream, picnicking as in life and beckoning the speaker across — so that death is reimagined as a gentle crossing towards a longed-for reunion?
     * **Options:** A) Eden Rock, B) Walking Away, C) When We Two Parted, D) Winter Swans
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Causley's "Eden Rock" pictures his dead parents waiting "somewhere beyond Eden Rock", reassuring him that "crossing is not as hard as you might think".
-    * **Why B:** Walking Away recalls a living father watching a son leave.
-    * **Why C:** When We Two Parted grieves a secret, broken love.
-    * **Why D:** Winter Swans follows a couple reconciling by a lake.
+    * **Feedback:** ✓ Correct. Causley's "Eden Rock" pictures his dead parents beyond a stream, beckoning the speaker across; the quiet close — "I had not thought that it would be like this" — turns the fear of death into calm, hopeful reunion.
+    * **Why B:** Walking Away recalls a living father watching a son leave, not a reunion beyond death.
+    * **Why C:** When We Two Parted grieves a secret, broken love, not the comfort of reunion.
+    * **Why D:** Winter Swans follows a living couple reconciling, not the dead across a stream.
 
 17. **Type: MCQ [Tests Form & Features]**
     @set:2
     * **Question:** How does the mostly gentle, regular form of "Eden Rock" support its subject?
-    * **Options:** A) Its harsh, broken structure conveys rage, B) Its calm, ordered stanzas make the vision of the dead parents feel peaceful and reassuring, until the quiet final-line shift, C) It is a chaotic free verse, D) It is a galloping ballad of war
+    * **Options:** A) Its harsh, broken structure conveys rage, B) Its calm, ordered stanzas keep the vision of the dead parents peaceful and reassuring, so the quiet final-line shift lands with real force, C) It is a chaotic free verse, D) It is a galloping ballad of war
     * **Correct:** B
     * **Feedback:** ✓ Correct. The measured, tender stanzas keep the scene serene and comforting, so the closing "I had not thought that it would be like this" lands as a soft, moving turn.
     * **Why A:** The tone is calm and reassuring, not enraged.
@@ -191,54 +198,54 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Question:** What does "Eden Rock" ultimately explore?
     * **Options:** A) A quarrel between lovers, B) Death, memory and the comforting hope of reunion with lost parents, C) The horror of battle, D) A celebration of youth
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Causley turns the fear of death into comfort — imagining his parents waiting to welcome him makes "crossing" over into death feel gentle and hopeful.
+    * **Feedback:** ✓ Correct. Causley turns the fear of death into comfort — imagining his parents waiting to welcome him makes the "crossing" over into death feel gentle and hopeful.
     * **Why A:** The poem concerns parents and mortality, not a lovers' quarrel.
     * **Why C:** There is no battlefield; the setting is a tender family picnic.
     * **Why D:** It faces death, though with warmth, rather than celebrating youth.
 
 19. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem recalls standing by a pond "that winter day", the sun "white, as though chidden of God", framing a bitter memory of dead love?
+    * **Question:** Which poem fixes a single bleak memory — a couple standing by a pond that winter day under a sun "chidden of God" — into a lasting emblem of love turned cold and deceitful?
     * **Options:** A) Neutral Tones, B) Love's Philosophy, C) Letters from Yorkshire, D) Singh Song!
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Hardy's "Neutral Tones" fixes a grey winter pond, the "white" sun and a "grin of bitterness" into an emblem of love turned cold.
-    * **Why B:** Love's Philosophy is a warm, persuasive plea, not a bleak memory.
-    * **Why C:** Letters from Yorkshire concerns connection across distance.
-    * **Why D:** Singh Song! is a joyful, comic love poem.
+    * **Feedback:** ✓ Correct. Hardy's "Neutral Tones" freezes the grey pond, the white sun "chidden of God" and a "grin of bitterness" into one image, arguing that a single dead love can colour how we see love ever after.
+    * **Why B:** Love's Philosophy argues warmly for union, not a bleak memory of dead love.
+    * **Why C:** Letters from Yorkshire argues connection survives distance, not that love curdles.
+    * **Why D:** Singh Song! celebrates joyful, consuming love, the opposite of disillusionment.
 
 20. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** What mood do the reflective, greyish quatrains of "Neutral Tones" create?
-    * **Options:** A) Joyful celebration, B) Melancholic disillusionment with love, C) Comic mockery, D) Patriotic pride
+    * **Question:** What mood do the reflective, greyish quatrains of "Neutral Tones" create, and why?
+    * **Options:** A) Joyful celebration, B) A melancholic disillusionment — the measured, colourless stanzas suit a love that has faded and stopped moving, C) Comic mockery, D) Patriotic pride
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The measured, colourless quatrains suit Hardy's bleak reflection on a love that has faded into disillusionment.
+    * **Feedback:** ✓ Correct. The measured, drained quatrains match Hardy's bleak reflection on a dead love, so the very flatness of the form deepens the sense of disillusionment.
     * **Why A:** The tone is sorrowful, not celebratory.
     * **Why C:** It is quietly sad, not comic.
     * **Why D:** The poem concerns lost love, not patriotism.
 
 21. **Type: True-False [Tests Meaning & Effects]**
     @set:2
-    * **Question:** In "Neutral Tones", the bleak winter scene becomes a lasting emblem: the speaker says such greyness has shaped how he sees love and deception ever since.
+    * **Question:** In "Neutral Tones", the bleak winter scene becomes a lasting emblem: the speaker suggests such greyness has shaped how he sees love and "wrongs" ever since.
     * **Answer:** True
     * **Feedback:** ✓ Correct. Hardy makes the grey pond, white sun and bitter grin into a fixed image of love's betrayal — a scene that has coloured his view of love and "wrongs" ever after.
     * **WhyWrong:** This is true — the frozen, colourless scene becomes a permanent emblem of disillusionment that stays with the speaker.
 
 22. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** In which poem does a couple, silent after a quarrel, watch swans and slowly reach for each other's hands "like a pair of wings settling"?
+    * **Question:** Which poem sets a silent, estranged couple beside swans "righting in rough weather" until their hands quietly reunite "like a pair of wings settling" — arguing that love can recover without a word?
     * **Options:** A) Winter Swans, B) Eden Rock, C) Follower, D) The Farmer's Bride
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Sheers's "Winter Swans" watches the mating swans "righting in rough weather" as a couple's hands quietly reunite, "like a pair of wings settling".
-    * **Why B:** Eden Rock imagines dead parents beyond a stream.
-    * **Why C:** Follower watches a father ploughing.
-    * **Why D:** The Farmer's Bride tells of a frightened, fleeing wife.
+    * **Feedback:** ✓ Correct. Sheers's "Winter Swans" watches the swans that "mate for life" "righting in rough weather", and the couple's hands close "like a pair of wings settling" — reconciliation modelled on natural constancy.
+    * **Why B:** Eden Rock imagines dead parents beyond a stream, not a couple reconciling.
+    * **Why C:** Follower explores a son and his ploughing father, not lovers healing.
+    * **Why D:** The Farmer's Bride explores a love that cannot be reached, the opposite of quiet reunion.
 
 23. **Type: MCQ [Tests Form & Features]**
     @set:2
     * **Question:** How does the form of "Winter Swans" reflect its meaning?
-    * **Options:** A) Long unbroken stanzas show endless argument, B) The poem moves from separated tercets and couplets towards a final joining, mirroring the couple's reconciliation, C) A strict sonnet argues a case, D) A galloping ballad drives to war
+    * **Options:** A) Long unbroken stanzas show endless argument, B) The poem moves from separated tercets towards paired lines and a final joining, so the structure enacts the couple coming back together, C) A strict sonnet argues a case, D) A galloping ballad drives to war
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The shift towards paired lines and the closing image of hands as "wings settling" lets the structure enact the couple coming back together.
+    * **Feedback:** ✓ Correct. The shift towards paired lines and the closing image of hands as "a pair of wings settling" lets the structure itself perform the couple's reconciliation.
     * **Why A:** The movement is towards union, not endless argument.
     * **Why C:** It is not a formal fourteen-line sonnet.
     * **Why D:** It is a tender reconciliation, not a war ballad.
@@ -255,20 +262,20 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 25. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem remembers a secret past love ending "in silence and tears", and imagines greeting the former lover the same way after long years?
+    * **Question:** Which poem grieves a secret past love that ended in silence and tears, and imagines meeting the faithless lover again years later with the very same "silence and tears"?
     * **Options:** A) When We Two Parted, B) Love's Philosophy, C) Singh Song!, D) Winter Swans
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Byron's "When We Two Parted" grieves a secret, broken love, framed by the repeated "silence and tears" of parting and future meeting.
-    * **Why B:** Love's Philosophy is a warm plea for union, not a grief.
+    * **Feedback:** ✓ Correct. Byron's "When We Two Parted" frames a secret, broken love with the returning "silence and tears", arguing that a betrayal kept hidden festers into lasting, unspoken grief.
+    * **Why B:** Love's Philosophy is a warm plea for union, not a grief over betrayal.
     * **Why C:** Singh Song! is a joyful, comic celebration of love.
     * **Why D:** Winter Swans ends in reconciliation, not lasting sorrow.
 
 26. **Type: Fill [Tests Form & Features]**
     @set:2
-    * **Question:** "When We Two Parted" uses ballad-like [BLANK] — repeated words and the returning phrase "silence and tears" — to deepen its sorrow and sense of loss.
+    * **Question:** In "When We Two Parted", the ballad-like [BLANK] of key words — and the returning phrase "silence and tears" — makes the poem circle back on its grief, so its very structure enacts a speaker unable to move on.
     * **Answer:** repetition
-    * **Feedback:** ✓ Correct. The refrain-like repetition gives the lyric a mournful, echoing quality that suits Byron's grief over a secret, broken love.
-    * **WhyWrong:** The word is "repetition" — the ballad-like repeated words and the returning "silence and tears" intensify the poem's sorrow.
+    * **Feedback:** ✓ Correct. The refrain-like repetition and the returning "silence and tears" give the lyric a circling, inescapable movement — the form itself embodying grief that cannot be left behind.
+    * **WhyWrong:** The word is "repetition" — the repeated words and returning "silence and tears" make the sorrow feel circular and unresolved.
 
 27. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
@@ -282,20 +289,20 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 28. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem argues from nature — "the fountains mingle with the river" — that since everything in the world unites, the beloved should kiss the speaker?
+    * **Question:** Which poem argues from nature — "The fountains mingle with the river", "Nothing in this world is single" — that since all things unite, the beloved should therefore unite with the speaker?
     * **Options:** A) Love's Philosophy, B) Neutral Tones, C) Letters from Yorkshire, D) Porphyria's Lover
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Shelley's "Love's Philosophy" builds a persuasive case from nature's minglings — "nothing in the world is single" — to press for the beloved's kiss.
-    * **Why B:** Neutral Tones is a bleak memory of dead love, not a plea.
-    * **Why C:** Letters from Yorkshire concerns connection across distance.
-    * **Why D:** Porphyria's Lover is a disturbing monologue of possessive murder.
+    * **Feedback:** ✓ Correct. Shelley's "Love's Philosophy" stacks nature's minglings — "The fountains mingle with the river", "Nothing in this world is single" — into a persuasive case that refusing love would break the law of the world.
+    * **Why B:** Neutral Tones argues love decays into disillusionment, not that lovers should unite.
+    * **Why C:** Letters from Yorkshire argues connection survives distance, not a seductive plea.
+    * **Why D:** Porphyria's Lover argues love twists into possessive control, the opposite of a gentle appeal.
 
 29. **Type: MCQ [Tests Form & Features]**
     @set:2
     * **Question:** How does the form of "Love's Philosophy" support its persuasive purpose?
-    * **Options:** A) Its broken, chaotic lines undercut the argument, B) Its regular, rhythmic lyric stanzas and rhetorical questions build a smooth, rhetorical case, ending on a direct appeal, C) It is an unrhymed epic, D) It is a dramatic monologue exposing madness
+    * **Options:** A) Its broken, chaotic lines undercut the argument, B) Its regular, musical lyric stanzas and mounting natural examples build a smooth, almost logical case that culminates in a direct personal appeal, C) It is an unrhymed epic, D) It is a dramatic monologue exposing madness
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The neat, musical stanzas and mounting examples give the argument a persuasive, almost logical momentum, culminating in "What is all this sweet work worth / If thou kiss not me?".
+    * **Feedback:** ✓ Correct. The neat, rhythmic stanzas and accumulating images of nature uniting give the argument a persuasive, almost inevitable momentum, so the closing turn to the beloved feels like the conclusion of a proof.
     * **Why A:** The form is controlled and rhetorical, not chaotic.
     * **Why C:** It is a short persuasive lyric, not an epic.
     * **Why D:** It is a charming plea, not a monologue of madness.
@@ -311,50 +318,50 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 31. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** In which poem do the speaker's thoughts "twine and bud / About thee, as wild vines", until she longs for the lover's real presence over mere thought?
+    * **Question:** Which poem lets the speaker's thoughts "twine and bud / About thee, as wild vines", then bursts them aside — "I do not think of thee" — arguing that real presence must overwhelm the mere thought of the beloved?
     * **Options:** A) Sonnet 29 'I think of thee', B) Letters from Yorkshire, C) Follower, D) Eden Rock
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Barrett Browning's "Sonnet 29" imagines thoughts wrapping the beloved like "wild vines", then bursts them aside — "I do not think of thee—I am too near thee".
-    * **Why B:** Letters from Yorkshire concerns letters across physical distance.
-    * **Why C:** Follower watches a father ploughing.
-    * **Why D:** Eden Rock imagines dead parents beyond a stream.
+    * **Feedback:** ✓ Correct. Barrett Browning's "Sonnet 29" lets thoughts wrap the beloved like "wild vines", then casts them off — "I do not think of thee" because she is too near to need to — arguing that desire for the real presence outstrips imagining it.
+    * **Why B:** Letters from Yorkshire argues connection survives physical distance, not that presence beats thought.
+    * **Why C:** Follower explores a son and his ageing father, not longing for a lover.
+    * **Why D:** Eden Rock imagines reunion with dead parents, not desire for a living beloved.
 
 32. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** "Sonnet 29" uses which form, and how?
-    * **Options:** A) Free verse with dialect, B) A Petrarchan sonnet, subverted by an early volta that lets passion strain against the form, C) A galloping ballad, D) Rhyming couplets of a monologue
+    * **Question:** How does the sonnet form of "Sonnet 29" shape its meaning?
+    * **Options:** A) It stays perfectly regular to show calm control, B) The traditional shape is strained by an early turn, so the speaker's desire for presence over thought seems to break impatiently through the form, C) It is a galloping ballad, D) It abandons rhyme entirely for dialect
     * **Correct:** B
-    * **Feedback:** ✓ Correct. It is a Petrarchan sonnet, but the volta comes early, so the speaker's desire for presence over thought breaks impatiently through the traditional shape.
-    * **Why A:** It keeps sonnet length and rhyme; it is not dialect free verse.
+    * **Feedback:** ✓ Correct. The volta comes early, so the surge of longing for the real man breaks through the ordered sonnet shape — the form enacting passion overflowing thought.
+    * **Why A:** The point is that passion strains against the form, not that it stays serenely regular.
     * **Why C:** It is an intimate sonnet, not a narrative ballad.
-    * **Why D:** The couplet-monologue shape belongs to Porphyria's Lover.
+    * **Why D:** It keeps sonnet length and rhyme; it is not dialect free verse.
 
 33. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
     * **Question:** What does the extended "wild vines" image, then its bursting, convey in "Sonnet 29"?
-    * **Options:** A) That the speaker prefers thinking about her lover to seeing him, B) That thought is only a poor substitute — she craves the lover's actual, physical presence, which overwhelms mere imagining, C) That she has stopped loving him, D) That nature is more important than love
+    * **Options:** A) That the speaker prefers thinking about her lover to seeing him, B) That thought is only a poor substitute — she craves the lover's actual presence, which overwhelms mere imagining, C) That she has stopped loving him, D) That nature matters more than love
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The vines of thought threaten to hide the "tree" of the real man; she wants him present — "I am too near thee" — passion overflowing thought.
+    * **Feedback:** ✓ Correct. The "wild vines" of thought threaten to hide the real man; she wants him present — "I am too near to thee" to be content with only thinking — desire overflowing imagination.
     * **Why A:** She rejects thought as a substitute; she wants the real presence.
     * **Why C:** The poem is a surge of desire, not a falling-out of love.
-    * **Why D:** Nature is only the vehicle; the tenor is intense love.
+    * **Why D:** Nature is only the vehicle; the real subject is intense love.
 
 34. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem, spoken in Punjabi-inflected dialect, has a newly-married shopkeeper neglect his father's shop to be with his bride, ending "is priceless baby"?
+    * **Question:** Which poem, spoken in a playful Punjabi-inflected voice, has a newly-married shopkeeper neglect his father's shop — even as customers call it "di worst Indian shop" — because he would rather be upstairs with his bride?
     * **Options:** A) Singh Song!, B) The Farmer's Bride, C) Love's Philosophy, D) When We Two Parted
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Nagra's "Singh Song!" has the smitten shopkeeper abandon his duties for his bride, celebrating their love with warmth, humour and cultural pride.
+    * **Feedback:** ✓ Correct. Nagra's "Singh Song!" has the smitten shopkeeper abandon his duties — customers grumble it is "di worst Indian shop / in di whole Indian road" — celebrating a joyful, all-consuming love rooted in his cultural and family world.
     * **Why B:** The Farmer's Bride tells of a frightened, fleeing wife, not a joyful marriage.
-    * **Why C:** Love's Philosophy is a persuasive plea from nature.
+    * **Why C:** Love's Philosophy is a persuasive plea from nature, not a comic celebration.
     * **Why D:** When We Two Parted grieves a secret, broken love.
 
 35. **Type: MCQ [Tests Form & Features]**
     @set:3
     * **Question:** In "Singh Song!", how do the dialect and free verse work together?
-    * **Options:** A) They show the speaker cannot write English, B) They celebrate cultural identity and playful, joyful love, C) They make the poem a solemn elegy, D) They have no effect on meaning
+    * **Options:** A) They show the speaker cannot write English, B) They root the love story in the speaker's cultural identity and give the poem its warm, playful, celebratory energy, C) They make the poem a solemn elegy, D) They have no effect on meaning
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The lively dialect and loose form give the poem its warmth and humour, rooting the love story in the speaker's cultural identity.
+    * **Feedback:** ✓ Correct. The lively dialect and loose form give the poem its warmth and humour, tying the joy of the love directly to the speaker's cultural and family world.
     * **Why A:** The dialect is a proud, deliberate voice, not a failing.
     * **Why C:** The poem is playful and joyful, not a solemn elegy.
     * **Why D:** The form and voice are central to its celebratory meaning.
@@ -368,20 +375,20 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 37. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem contrasts one lover digging and planting in Yorkshire with the distant other, their "souls tap out messages across the icy miles"?
+    * **Question:** Which poem contrasts one partner digging and planting outdoors in Yorkshire with a distant other, insisting that "our souls tap out messages across the icy miles" — that love survives on connection, not proximity?
     * **Options:** A) Letters from Yorkshire, B) Winter Swans, C) Neutral Tones, D) Climbing My Grandfather
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Dooley's "Letters from Yorkshire" sets the earthy, outdoor life of one against the distant other, connected as "our souls tap out messages across the icy miles".
-    * **Why B:** Winter Swans watches a couple reconcile by a lake, not across distance.
-    * **Why C:** Neutral Tones recalls a dead love by a winter pond.
-    * **Why D:** Climbing My Grandfather scales an elder like a mountain.
+    * **Feedback:** ✓ Correct. Dooley's "Letters from Yorkshire" sets the earthy, outdoor life of one against the distant other, arguing that "our souls tap out messages across the icy miles" — genuine connection outlasts physical separation.
+    * **Why B:** Winter Swans watches a couple reconcile in one place, not love sustained across distance.
+    * **Why C:** Neutral Tones argues love decays into disillusionment, not that it endures apart.
+    * **Why D:** Climbing My Grandfather explores knowing an elder up close, not connection at a distance.
 
 38. **Type: MCQ [Tests Form & Features]**
     @set:3
     * **Question:** How does the form of "Letters from Yorkshire" reflect its subject?
-    * **Options:** A) Its rigid sonnet argues a case, B) Its loose free-verse tercets and enjambment let thought flow easily between the two distant lives, like the letters themselves, C) Its galloping ballad drives to war, D) It repeats a fixed refrain each stanza
+    * **Options:** A) Its rigid sonnet argues a case, B) Its loose free-verse tercets and run-on lines let thought flow easily between the two distant lives, like the letters themselves, C) Its galloping ballad drives to war, D) It repeats a fixed refrain each stanza
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The unforced tercets and run-on lines carry the conversational, connecting movement of correspondence, bridging the gap between the two lives.
+    * **Feedback:** ✓ Correct. The unforced tercets and enjambment carry the conversational, connecting movement of correspondence, bridging the gap between the two lives.
     * **Why A:** The poem is loose free verse, not a formal sonnet.
     * **Why C:** It is a quiet meditation on connection, not a war ballad.
     * **Why D:** There is no fixed repeating refrain.
@@ -391,52 +398,52 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Question:** What does "Letters from Yorkshire" suggest about love and connection?
     * **Options:** A) That distance and different lives make love impossible, B) That genuine connection can survive distance and difference — communication keeps love alive across the "icy miles", C) That letters are meaningless, D) That only physical closeness matters
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Despite separate worlds and physical distance, the exchange of words keeps the bond real and alive — connection is sustained through communication.
+    * **Feedback:** ✓ Correct. Despite separate worlds and physical distance, the exchange of words keeps the bond real and alive — connection is sustained across the "icy miles" through communication.
     * **Why A:** The poem affirms that love endures the distance.
     * **Why C:** The letters are exactly what sustains the relationship.
     * **Why D:** It values the connection of souls over mere physical closeness.
 
 40. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** In which poem does a farmer recount choosing a young "maid" who, terrified, "runned away", is caught and brought home, and remains fearful and distant?
+    * **Question:** Which poem has a farmer recount choosing a young "maid" who, terrified, "runned away" and was chased down — "we caught her" — yet stays fearful and unreachable, a love that can be captured but never won?
     * **Options:** A) The Farmer's Bride, B) Porphyria's Lover, C) Before You Were Mine, D) Eden Rock
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Mew's "The Farmer's Bride" has the farmer tell how his frightened young wife fled, was "fetched home", and stays withdrawn — a tragic, unreachable love.
-    * **Why B:** Porphyria's Lover strangles his lover; the bride here flees and survives.
-    * **Why C:** Before You Were Mine imagines a mother's youth.
-    * **Why D:** Eden Rock pictures dead parents beyond a stream.
+    * **Feedback:** ✓ Correct. Mew's "The Farmer's Bride" has the farmer tell how his frightened young "maid" "runned away" and "we caught her", then withdrew in terror — arguing that love cannot be forced into being, only left tragically unreachable.
+    * **Why B:** Porphyria's Lover ends in murder to possess a lover; the bride here flees and survives.
+    * **Why C:** Before You Were Mine imagines a mother's glamorous youth, not a fearful marriage.
+    * **Why D:** Eden Rock imagines reunion with dead parents, not an unreachable wife.
 
 41. **Type: Fill [Tests Form & Features]**
     @set:3
-    * **Question:** "The Farmer's Bride" is a dramatic [BLANK] with narrative, ballad-like features, spoken by the farmer himself.
+    * **Question:** "The Farmer's Bride" is a dramatic [BLANK], spoken by the farmer himself — and hearing the story only in his baffled voice, never the wife's, is what exposes the tragic gulf between them.
     * **Answer:** monologue
-    * **Feedback:** ✓ Correct. The farmer's own voice tells the story — a dramatic monologue whose narrative details expose his wife's terror and their tragic distance.
-    * **WhyWrong:** The word is "monologue" — a dramatic monologue, spoken by the farmer, carrying a sad narrative of unreachable love.
+    * **Feedback:** ✓ Correct. Because it is a dramatic monologue in the farmer's voice alone, the silenced wife's terror reaches us only through his bewilderment — the one-sided form itself dramatising a love that cannot be shared.
+    * **WhyWrong:** The word is "monologue" — a dramatic monologue in the farmer's voice, whose one-sidedness exposes the unbridgeable distance between him and his frightened wife.
 
 42. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
     * **Question:** What makes "The Farmer's Bride" tragic and unsettling?
-    * **Options:** A) The farmer's open cruelty and violence, B) The gap between the farmer's baffled, growing desire and the bride's silent terror — a love that cannot be reached or forced, C) The bride's happiness in the marriage, D) The comedy of rural life
+    * **Options:** A) The farmer's open cruelty and violence, B) The gap between the farmer's baffled, mounting longing — fixing on "her hair" — and the bride's silent terror: a love that can be neither shared nor forced, C) The bride's happiness in the marriage, D) The comedy of rural life
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The farmer is not simply cruel; the horror lies in the unbridgeable gulf between his mounting longing ("her hair, her hair!") and her animal fear, love that can neither be shared nor compelled.
+    * **Feedback:** ✓ Correct. The farmer is not simply cruel; the horror lies in the unbridgeable gulf between his growing desire — dwelling on "her hair" — and her animal fear, a love that can be neither returned nor compelled.
     * **Why A:** He is bewildered and yearning rather than openly brutal, which is what unsettles.
     * **Why C:** The bride is frightened and withdrawn, not happy.
     * **Why D:** The tone is tragic, not comic.
 
 43. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** In which poem does a calm speaker strangle his lover with her own hair to freeze a perfect moment, then note "God has not said a word"?
+    * **Question:** In which poem does a calm speaker strangle his lover with her own hair to freeze a perfect moment forever, then sit unpunished — so that love has curdled into a will to possess and control?
     * **Options:** A) Porphyria's Lover, B) The Farmer's Bride, C) When We Two Parted, D) Sonnet 29 'I think of thee'
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Browning's "Porphyria's Lover" has the speaker strangle Porphyria with her hair to possess the moment forever, ending on the chilling "And yet God has not said a word!".
+    * **Feedback:** ✓ Correct. Browning's "Porphyria's Lover" has the speaker wind her hair around her throat — "And strangled her" — to keep the moment of her love forever, arguing that possessive love can twist into control and murder.
     * **Why B:** The Farmer's Bride flees and survives; she is not murdered.
     * **Why C:** When We Two Parted grieves a broken love, with no violence.
-    * **Why D:** Sonnet 29 is a surge of longing, not a murder.
+    * **Why D:** Sonnet 29 is a surge of longing for presence, not a murder.
 
 44. **Type: MCQ [Tests Form & Features]**
     @set:3
     * **Question:** What is the effect of the dramatic monologue form in "Porphyria's Lover"?
-    * **Options:** A) It keeps the reader at a safe, comfortable distance, B) It draws us uncomfortably close to a disturbed mind, letting the speaker calmly expose his own madness, C) It hides the speaker completely, D) It makes the poem funny
+    * **Options:** A) It keeps the reader at a safe, comfortable distance, B) It draws us uncomfortably close to a disturbed mind, letting the speaker calmly expose his own madness the more he talks, C) It hides the speaker completely, D) It makes the poem funny
     * **Correct:** B
     * **Feedback:** ✓ Correct. The unbroken, composed voice traps us inside the speaker's chilling logic, so his madness reveals itself the more we listen.
     * **Why A:** The form creates uneasy closeness, not safe distance.

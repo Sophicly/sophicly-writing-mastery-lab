@@ -1,12 +1,19 @@
 # Foundational Quiz Bank — Edexcel IGCSE Literature Poetry (Poems)
 
-Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
+Deterministic, code-scored foundational bank (parsed by `SWML_Quiz_Bank`).
 48 questions on the actual ANTHOLOGY POEMS (Tier B) — three per poem across Neil's three
 understanding dimensions: Recognising the Poem · Form & Features · Meaning & Effects. Unlike
 the universal forms bank (`poetic_forms.md`, Tier A), these are poem-specific, testing what the
 student has actually read. The picker draws a random 5 per round, stratified across categories.
 Keys + feedback live server-side and are stripped before questions reach the client. The AI is
 never the scorekeeper.
+
+**Concept-based (governed by `FQ-QUESTION-STANDARD.md` § POETRY).** Every item tests the CENTRAL
+CONCEPT of its dimension, not surface trivia. **Recognising** keys on the poem's *controlling idea /
+argument* (anchored by a signature line), not image-matching; **Form & Features** tests how the form
+*shapes meaning*, not its label; **Meaning & Effects** tests the controlling idea + the reader's
+response. Distractors are plausible CONCEPTUAL MISREADINGS — for Recognising, other anthology poems
+whose *argument differs*.
 
 Categories: Recognising the Poem · Form & Features · Meaning & Effects
 Types: MCQ · Fill · True-False · Select All
@@ -38,13 +45,13 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 2. **Type: MCQ [Tests Form & Features]**
    @set:1
-   * **Question:** What form does Shakespeare use for "Sonnet 116", and how does it build its argument?
-   * **Options:** A) A villanelle with two recurring refrains, B) A sonnet — three quatrains of argument sealed by a final rhyming couplet, C) A ballad narrating a love story, D) Free verse with no fixed rhyme
+   * **Question:** How does the structure of "Sonnet 116" — three quatrains followed by a final rhyming couplet — shape the way it argues for constant love?
+   * **Options:** A) The quatrains wander without direction, so the argument never resolves, B) Each quatrain builds and deepens the definition of love that "alters not", and the closing couplet clinches it with a personal, almost legal guarantee, C) The couplet contradicts the quatrains, admitting love does change after all, D) The form is decorative only and has no bearing on the argument
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The sonnet's three quatrains build the case for constant love step by step, and the closing couplet clinches it with a personal, almost legal, guarantee.
-   * **Why A:** A villanelle circles around two repeating refrains; this poem argues in quatrains and a couplet instead.
-   * **Why C:** There is no narrative here — the poem argues a definition, rather than telling a story.
-   * **Why D:** The poem keeps strict rhyme and metre throughout, so it is not free verse.
+   * **Feedback:** ✓ Correct. The three quatrains accumulate the case for love that "alters not with his brief hours and weeks", and the final couplet seals it by staking the poet's own authorship on its truth — structure driving argument.
+   * **Why A:** The quatrains move purposefully towards a fixed definition; they do not wander.
+   * **Why C:** The couplet reinforces the quatrains' claim absolutely; it does not overturn it.
+   * **Why D:** The build-then-clinch shape is exactly how the poem makes its argument feel unanswerable.
 
 3. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
@@ -56,19 +63,22 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
    * **Why C:** The tone is solemn and assertive, not comic.
    * **Why D:** There is no apology; the couplet stakes a claim rather than backing down from one.
 
-4. **Type: Fill [Tests Recognising the Poem]**
+4. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
-   * **Question:** In Keats's ballad, the faery lady feeds the enchanted knight "roots of relish sweet, / And honey wild, and manna [BLANK]".
-   * **Answer:** dew
-   * **Feedback:** ✓ Correct. "Manna dew" is part of the strange, enchanted food the lady gives the knight before he falls under her spell.
-   * **WhyWrong:** The word is "dew" — the lady's gifts of "honey wild, and manna dew" mark the knight's seduction into her enchanted world.
+   * **Question:** Which poem tells of a knight-at-arms left "alone and palely loitering" after a beautiful "faery's child" enchants and then abandons him — arguing that desire and enchantment can be as destructive as they are seductive?
+   * **Options:** A) La Belle Dame sans Merci, B) Sonnet 116, C) Remember, D) Poem at Thirty-Nine
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. Keats's "La Belle Dame sans Merci" follows a knight seduced by a "faery's child" and left wasted "on the cold hill's side" — its argument is that enchantment and desire can lure a lover to ruin.
+   * **Why B:** Sonnet 116 defines love as constant and unchanging, not a seductive enchantment that destroys.
+   * **Why C:** Remember concerns memory and grief after death, not a knight's fatal enchantment.
+   * **Why D:** Poem at Thirty-Nine is a daughter's fond tribute to her father, not a tale of dangerous desire.
 
 5. **Type: True-False [Tests Form & Features]**
    @set:1
-   * **Question:** "La Belle Dame sans Merci" is written as a ballad, using regular rhyming quatrains and a story-telling structure with a shorter final line in each stanza.
+   * **Question:** In "La Belle Dame sans Merci", the ballad's song-like quatrains and its clipped, echoing returns — "And no birds sing" — give the poem a hypnotic, dreamlike spell, so the form itself echoes the knight's enchantment and desolation.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Keats uses the traditional ballad quatrain, its clipped final line giving each stanza a haunting, song-like close.
-   * **WhyWrong:** This is true — the poem's regular quatrains and shortened final lines are the hallmark of the ballad form Keats borrows for this haunting tale.
+   * **Feedback:** ✓ Correct. The repeating, song-like measure and the haunting shortened lines ("no birds sing", "the cold hill's side") cast a mournful, spellbound mood — the form re-enacting the very enchantment that traps the knight.
+   * **WhyWrong:** This is true — the ballad's musical repetition and clipped echoes create the dreamlike, spellbound feeling that mirrors the knight's enchantment, so the form shapes the meaning.
 
 6. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
@@ -112,7 +122,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 10. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** Which sonnet begins "Remember me when I am gone away, / Gone far away into the silent land" and asks a loved one not to grieve?
+    * **Question:** Which sonnet opens "Remember me when I am gone away", picturing a loved one gone into "the silent land", yet turns to ask that loved one not to grieve?
     * **Options:** A) Remember, B) Sonnet 116, C) My Last Duchess, D) Poem at Thirty-Nine
     * **Correct:** A
     * **Feedback:** ✓ Correct. Rossetti's "Remember" opens with this plea, then turns towards releasing the loved one from grief rather than clinging to memory.
@@ -120,19 +130,22 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Why C:** My Last Duchess is the Duke's own monologue, not an address to a loved one about being remembered.
     * **Why D:** Poem at Thirty-Nine is a daughter's tribute to her father, not a plea about being forgotten.
 
-11. **Type: Fill [Tests Form & Features]**
+11. **Type: MCQ [Tests Form & Features]**
     @set:1
-    * **Question:** "Remember" is a [BLANK] — a fourteen-line poem whose volta turns from pleading to be remembered towards releasing the loved one from grief.
-    * **Answer:** sonnet
-    * **Feedback:** ✓ Correct. The sonnet form gives Rossetti room to build her plea in the octave, then turn it in the sestet towards selfless comfort.
-    * **WhyWrong:** The word is "sonnet" — its fourteen lines and volta carry the poem from a request to be remembered towards a gentler, more selfless conclusion.
+    * **Question:** "Remember" builds its plea across the octave, then turns at the volta into the sestet. How does that sonnet turn shape the poem's meaning?
+    * **Options:** A) It repeats the same plea more loudly, insisting the loved one must never forget, B) The turn moves the poem from asking to be remembered towards selflessly releasing the loved one from grief — the structure enacting the speaker's growing generosity, C) It abandons memory to describe the landscape of the "silent land", D) The turn has no effect; the poem's feeling stays exactly the same throughout
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The octave pleads "Remember me", but the sestet's turn gives way to "Better by far you should forget and smile / Than that you should remember and be sad" — the sonnet's structure carrying the speaker from longing to selfless love.
+    * **Why A:** The turn softens the plea into selflessness; it does not intensify a demand to be remembered.
+    * **Why C:** The turn is a shift in feeling, not a move into landscape description.
+    * **Why D:** The volta is exactly where the poem's feeling changes from longing to generosity.
 
 12. **Type: MCQ [Tests Meaning & Effects]**
     @set:1
     * **Question:** What is the emotional turn, or volta, of "Remember"?
     * **Options:** A) From anger towards forgiveness, B) From asking to be remembered towards accepting being forgotten, if forgetting brings happiness rather than grief, C) From love towards resentment, D) From describing the past towards describing the future only
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Having asked to be remembered, the speaker turns to say it is "better far" to be forgotten and smile than to be remembered and grieve — love expressed as selflessness.
+    * **Feedback:** ✓ Correct. Having asked to be remembered, the speaker turns to say it is "better by far" to "forget and smile" than to "remember and be sad" — love expressed as selflessness.
     * **Why A:** There is no anger in the poem; its tone stays tender throughout.
     * **Why C:** The turn moves towards generosity, not resentment.
     * **Why D:** The turn is about how to feel, not simply a shift in tense.
@@ -149,7 +162,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 14. **Type: MCQ [Tests Form & Features]**
     @set:1
-    * **Question:** What form does Alice Walker use for "Poem at Thirty-Nine"?
+    * **Question:** How does the form of "Poem at Thirty-Nine" suit its intimate, reflective memory of a father?
     * **Options:** A) A strict villanelle with two refrains, B) Free verse, its loose, conversational lines — "Writing deposit slips and checks I think of him" — suiting intimate, reflective memory, C) A traditional ballad, D) A Shakespearean sonnet
     * **Correct:** B
     * **Feedback:** ✓ Correct. The unrhymed, flowing free verse lets the poem move naturally between memory, regret and quiet affection, closing on an unpunctuated list — "cooking, writing, chopping wood, staring into the fire" — that reads like a private reflection rather than a formal argument.
@@ -170,13 +183,13 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 16. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem describes a community's joy when a municipal pipe bursts and water suddenly rushes out, with people running to collect it in every vessel they own?
+    * **Question:** Which poem turns a sudden burst of water into a fleeting communal blessing — its whole force resting on how scarce and precious water is, since "There never is enough water"?
     * **Options:** A) Blessing, B) Half-caste, C) If—, D) Search For My Tongue
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Dharker's "Blessing" turns a burst municipal pipe into a moment of communal celebration, as people rush with every container they can find to seize the sudden, precious water.
-    * **Why B:** Half-caste challenges prejudice about mixed identity, not water scarcity.
-    * **Why C:** If— gives fatherly advice through conditional clauses, not a scene of a community and water.
-    * **Why D:** Search For My Tongue concerns a mother tongue and bilingual identity, not a water shortage.
+    * **Feedback:** ✓ Correct. Dharker's "Blessing" makes a sudden gush of water a moment of communal celebration; the joy only means so much because water is normally so scarce — "The skin cracks like a pod. There never is enough water."
+    * **Why B:** Half-caste challenges prejudice about mixed identity, not scarcity and blessing.
+    * **Why C:** If— sets out conditions for mature resilience, not a scene of water and community.
+    * **Why D:** Search For My Tongue concerns losing and recovering a mother tongue, not a water shortage.
 
 17. **Type: MCQ [Tests Form & Features]**
     @set:2
@@ -217,7 +230,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 21. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What does the central image of the mother tongue "growing back" — it "grows longer, grows moist, grows strong veins" until "the bud opens" — suggest in "Search For My Tongue"?
+    * **Question:** What does the central image of the mother tongue that "grows back" — it "grows longer, grows moist, grows strong veins" until "the bud opens" — suggest in "Search For My Tongue"?
     * **Options:** A) That the mother tongue is lost forever once a second language takes over, B) That a mother tongue, even when suppressed by daily use of another language, can quietly persist and reassert itself, C) That the speaker regrets ever learning English, D) That language has no real connection to identity
     * **Correct:** B
     * **Feedback:** ✓ Correct. The image of the tongue growing back, until "it blossoms out of my mouth", suggests the mother tongue is never truly lost — it can return and flourish again, however dominant the second language becomes.
@@ -237,10 +250,10 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 23. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** What is distinctive about the language and form John Agard uses in "Half-caste"?
+    * **Question:** How do the language and form of "Half-caste" shape its challenge to prejudice?
     * **Options:** A) Strict Received Pronunciation and formal, elevated syntax, B) Non-standard, phonetic Caribbean spelling and a conversational, confrontational direct address to the reader, C) A fixed villanelle with two refrains, D) Latinate, elevated diction throughout
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Agard's phonetic Caribbean spelling and direct, challenging address put the reader on the spot, resisting the "standard" English the poem implicitly critiques.
+    * **Feedback:** ✓ Correct. Agard's phonetic Caribbean spelling and direct, challenging address put the reader on the spot, resisting the standard English the poem implicitly critiques.
     * **Why A:** The poem deliberately rejects standard spelling and formal syntax.
     * **Why C:** There is no repeating refrain structure; the poem builds through accumulating examples instead.
     * **Why D:** Its diction is everyday and confrontational, not elevated or Latinate.
@@ -284,17 +297,17 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 28. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem builds through repeated conditional clauses beginning "If you can..." towards its closing promise that "you'll be a Man, my son!"?
+    * **Question:** Which poem argues that meeting "Triumph and Disaster" with equal composure — patience, integrity and self-mastery — is what truly makes a person, resolving on "you'll be a Man, my son!"?
     * **Options:** A) If—, B) Sonnet 116, C) Remember, D) Half-caste
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Kipling's "If—" piles up conditions for resilience and integrity before resolving on this final line of fatherly advice.
-    * **Why B:** Sonnet 116 argues a definition of love, with no conditional structure of advice.
-    * **Why C:** Remember is a plea about memory and grief, not a set of conditions for maturity.
-    * **Why D:** Half-caste challenges prejudice; it gives no advice about character.
+    * **Feedback:** ✓ Correct. Kipling's "If—" piles up conditions of resilience, humility and steadiness — treating "Triumph and Disaster" as "two impostors" — arguing that such self-mastery is what makes a person whole.
+    * **Why B:** Sonnet 116 argues a definition of constant love, not the conditions of mature character.
+    * **Why C:** Remember is a plea about memory and grief, not counsel on how to live.
+    * **Why D:** Half-caste confronts racial prejudice; it gives no advice about character.
 
 29. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** How is "If—" by Kipling structured?
+    * **Question:** How does the accumulating, stanza-by-stanza structure of "If—" shape the advice it gives?
     * **Options:** A) Four regular rhymed stanzas of conditional clauses, piling up advice before the final resolution, B) A single unrhymed sonnet, C) A ballad telling one dramatic event, D) Free verse with no repetition
     * **Correct:** A
     * **Feedback:** ✓ Correct. The steady, rhymed stanzas of accumulating "If" clauses build a sense of patient discipline, resolving in the poem's closing promise.
@@ -337,7 +350,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     @set:3
     * **Question:** In "Half-past Two", the child's eventual return to ordinary, clock-measured "Time" suggests something valuable about childhood imagination is lost as we grow up.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. Once "slotted ... back into schooltime", the child's private, imaginative world — where he had escaped "into the clockless land for ever" — is lost, implying growing up narrows a more open, wondering way of experiencing the world.
+    * **Feedback:** ✓ Correct. Once "slotted him back into schooltime", the child's private, imaginative world — where he had escaped "into the clockless land for ever" — is lost, implying growing up narrows a more open, wondering way of experiencing the world.
     * **WhyWrong:** This is true — the poem frames the return to clock-time as a kind of loss, closing off the child's freer, more imaginative world where "time hides tick-less waiting to be born".
 
 34. **Type: MCQ [Tests Recognising the Poem]**
@@ -352,7 +365,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 35. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** How is "Piano" by D. H. Lawrence structured?
+    * **Question:** How does the regular, rhymed form of "Piano" suit the song and memory at its centre?
     * **Options:** A) Three regular rhymed stanzas, giving the poem a controlled, musical form, B) Free verse with no rhyme at all, C) A dramatic monologue spoken to a silent listener, D) A villanelle with two recurring refrains
     * **Correct:** A
     * **Feedback:** ✓ Correct. The poem's three neat, rhymed stanzas give it a musical, song-like control that mirrors the singing and piano-playing at its centre.
@@ -380,12 +393,15 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Why C:** Half-past Two concerns being kept in after school, not a game of hide and seek.
     * **Why D:** Prayer Before Birth is an unborn child's plea, not a game between children.
 
-38. **Type: Fill [Tests Form & Features]**
+38. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** "Hide and Seek" is written in [BLANK] verse, its shifting, unrhymed lines following the child's changing feelings in real time.
-    * **Answer:** free
-    * **Feedback:** ✓ Correct. The unrhymed, flexible free verse mirrors the child's shifting emotions, from excited anticipation to cold disappointment.
-    * **WhyWrong:** The word is "free" — free verse lets the poem's rhythm follow the child's changing state of mind moment by moment.
+    * **Question:** How do the loose, unrhymed lines of "Hide and Seek", with their clipped commands — "Don't breathe. Don't move." — shape the poem?
+    * **Options:** A) A neat, regular rhyme makes the game feel safe and playful throughout, B) The shifting, unrhymed lines and clipped imperatives follow the child's feelings moment by moment — from tense excitement to cold, dawning isolation, C) A song-like refrain celebrates the child's clever hiding place, D) The form has no bearing on how we experience the child's feelings
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The free verse bends with the child's mood in real time — the urgent "Don't breathe. Don't move." of hiding giving way to the chill of being forgotten — so the form tracks his shift from thrill to abandonment.
+    * **Why A:** The poem is unrhymed and turns bleak; it is neither regular nor reassuring.
+    * **Why C:** There is no celebratory refrain; the excitement curdles into isolation.
+    * **Why D:** The form's very looseness is what lets it mirror the child's changing state of mind.
 
 39. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
@@ -409,13 +425,13 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 41. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** What form does Dylan Thomas use for this poem, and what does it demand?
-    * **Options:** A) A villanelle — nineteen lines built from two recurring refrains, B) A ballad telling a single narrative event, C) Free verse with no repetition, D) A Shakespearean sonnet
-    * **Correct:** A
-    * **Feedback:** ✓ Correct. The villanelle's strict nineteen-line structure, with its two obsessively returning refrains, forces the poem to circle back again and again to its central plea.
-    * **Why B:** The poem builds its argument through repeated refrains and examples, not a single narrated event.
-    * **Why C:** The poem's repetition is central and deliberate, not absent.
-    * **Why D:** It is nineteen lines with refrains, not a fourteen-line sonnet.
+    * **Question:** How does the villanelle's tightly controlled, endlessly repeating form serve "Do not go gentle into that good night"?
+    * **Options:** A) Its loose, free structure lets the grief spill out formlessly, B) The rigid, obsessively repeating form presses raw grief into a ritual-like, insistent plea — the very control of the form intensifying the desperation beneath it, C) The repetition makes the poem calm and accepting, easing the speaker towards peace, D) The form is incidental and has no effect on the poem's feeling
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The villanelle's strict rhyme and forced return of its two lines press overwhelming grief into a disciplined, incantatory shape — and that tight control makes the speaker's desperation feel all the more unbearable.
+    * **Why A:** The villanelle is one of the strictest forms in English, the opposite of loose or formless.
+    * **Why C:** The relentless repetition demands resistance and rage, not calm acceptance.
+    * **Why D:** The clash between rigid form and raw grief is central to the poem's power.
 
 42. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
@@ -429,13 +445,13 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 43. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem is set in a darkroom where a man develops photographs of suffering from conflicts in places such as Belfast, Beirut and Phnom Penh?
+    * **Question:** Which poem follows a photographer alone with his "spools of suffering" — arguing that the comfortable public back home feels only a brief pang before turning away, indifferent to distant war?
     * **Options:** A) War Photographer, B) Prayer Before Birth, C) The Tyger, D) Half-caste
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Carol Ann Duffy's "War Photographer" opens with a man alone in his darkroom, developing "spools of suffering" gathered from Belfast, Beirut and Phnom Penh.
-    * **Why B:** Prayer Before Birth is an unborn child's plea, with no darkroom or photographs.
-    * **Why C:** The Tyger questions a fearsome creature's creation, unconnected to war photography.
-    * **Why D:** Half-caste challenges prejudice about mixed identity, not the work of a photographer.
+    * **Feedback:** ✓ Correct. Duffy's "War Photographer" sets the photographer's careful witness against a public whose "eyeballs prick / with tears" only briefly "between the bath and pre-lunch beers" — an argument about indifference to others' pain.
+    * **Why B:** Prayer Before Birth is an unborn child's plea against a cruel world, not a study of public apathy.
+    * **Why C:** The Tyger questions what creator could make such terror, unconnected to war and indifference.
+    * **Why D:** Half-caste challenges prejudice about mixed identity, not indifference to distant suffering.
 
 44. **Type: MCQ [Tests Form & Features]**
     @set:3
@@ -468,7 +484,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 47. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** What form and rhythm does Blake use in "The Tyger"?
+    * **Question:** How does the driving, hammering rhythm of "The Tyger" shape our sense of the creature?
     * **Options:** A) Free verse with no set rhythm, B) Regular rhyming quatrains in a hammering, driving rhythm that echoes a blacksmith's forge, C) A villanelle with two recurring refrains, D) A single long, unrhymed sentence
     * **Correct:** B
     * **Feedback:** ✓ Correct. The poem's insistent rhyme and hammering rhythm, alongside imagery of hammer, chain, furnace and anvil, make the tiger sound forged rather than born.

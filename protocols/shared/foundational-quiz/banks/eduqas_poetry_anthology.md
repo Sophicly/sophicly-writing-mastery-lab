@@ -1,26 +1,23 @@
 # Foundational Quiz Bank — Eduqas Poetry Anthology (Poems)
 
-Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-45 questions on the actual ANTHOLOGY POEMS (Tier B) — three per poem across Neil's three
-understanding dimensions: Recognising the Poem · Form & Features · Meaning & Effects. Unlike
-the universal forms bank (`poetic_forms.md`, Tier A), these are poem-specific, testing what the
-student has actually read. The picker draws a random 5 per round, stratified across categories.
-Keys + feedback live server-side and are stripped before questions reach the client. The AI is
-never the scorekeeper.
+Deterministic, code-scored foundational bank (parsed by `SWML_Quiz_Bank`).
+**45 questions on the actual ANTHOLOGY POEMS — three per poem** across the three understanding
+dimensions: Recognising the Poem · Form & Features · Meaning & Effects. The picker draws a random 5
+per round, stratified across categories. Keys + feedback live server-side and are stripped before
+questions reach the client. The AI is never the scorekeeper.
 
-Categories: Recognising the Poem · Form & Features · Meaning & Effects
-Types: MCQ · Fill · True-False · Select All
+**Concept-based (governed by `FQ-QUESTION-STANDARD.md` § POETRY).** Every item tests the CENTRAL
+CONCEPT of its dimension, not surface trivia. **Recognising** keys on the poem's *controlling idea /
+argument* (anchored by a signature line), not image-matching; **Form & Features** tests how the form
+*shapes meaning*, not its label; **Meaning & Effects** tests the controlling idea + the reader's
+response. Distractors are plausible CONCEPTUAL MISREADINGS — for Recognising, other anthology poems
+whose *argument differs*.
 
 Each question carries an `@set:N` token (N = 1/2/3) staging the poems 5-at-a-time by the
-course's reading order, so the quiz only serves poems the student has read:
+course's reading order (unchanged), so the quiz only serves poems the student has read:
 - **@set:1** — The Schoolboy · I Wandered Lonely as a Cloud · Blackberry-Picking · Catrin · Origin Story
 - **@set:2** — Drummer Hodge · Disabled · Kamikaze · War Photographer · Remains
 - **@set:3** — Cousin Kate · Sonnet 29 · Dusting the Phone · I Shall Return · Decomposition
-
-The token is kept OUT of the `[Tests …]` stratification key — the current parser ignores it
-(live quiz stays category-stratified); only the future set-filter engine reads it via `fq_set=N`
-(mirrors Tier A's `@part:N` / `fq_part=N`). Mastery redo-to-100% walks every poem in the
-unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the draw by poem.
 
 ### Quiz: Eduqas Poetry Anthology
 
@@ -28,283 +25,292 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 1. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
-   * **Question:** In which poem does the speaker love to rise on a summer morning to birdsong and a "distant huntsman" winding his horn, only to dread school's "cruel eye outworn"?
-   * **Options:** A) The Schoolboy, B) Catrin, C) Origin Story, D) I Wandered Lonely as a Cloud
+   * **Question:** Which poem argues that shutting a naturally joyful child away in the classroom can only blight, never nurture, their growth — asking how "the bird that is born for joy" can "Sit in a cage and sing"?
+   * **Options:** A) The Schoolboy, B) Catrin, C) Origin Story, D) Blackberry-Picking
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Blake's "The Schoolboy" opens with the boy's joy in summer birdsong and the "distant huntsman", but turns to dismay under the schoolmaster's "cruel eye outworn".
-   * **Why B:** Catrin depicts a mother-daughter conflict, not a schoolboy's dawn joy.
-   * **Why C:** Origin Story reflects on the speaker's parents' relationship, not a boy's school day.
-   * **Why D:** I Wandered Lonely as a Cloud recalls a solitary walk among daffodils, not a schoolroom.
+   * **Feedback:** ✓ Correct. Blake's "The Schoolboy" sets the boy's summer joy against the schoolmaster's "cruel eye outworn", arguing through the caged-bird image that confinement destroys a child's natural delight.
+   * **Why B:** Catrin's argument is about the bound-together love and conflict of mother and daughter, not a child stifled by school.
+   * **Why C:** Origin Story reflects on the fragile worth of the speaker's parents' love, not childhood confinement.
+   * **Why D:** Blackberry-Picking is about the yearly hope to preserve perfection against decay, not a child at school.
 
 2. **Type: MCQ [Tests Form & Features]**
    @set:1
-   * **Question:** What form does Blake use for "The Schoolboy"?
-   * **Options:** A) A ballad narrating a battle, B) A simple, song-like lyric in short rhyming stanzas, typical of Blake's "Songs", C) A Petrarchan sonnet, D) Free verse with no rhyme
+   * **Question:** "The Schoolboy" is built from short, simply rhymed, song-like stanzas. What does that song-like form achieve?
+   * **Options:** A) It turns the poem into a triumphant marching song, B) The innocent, nursery-song shape sharpens the contrast between the child's natural joy and the confinement that stifles it, so the gentle form makes the loss feel like a violation, C) It proves the boy enjoys his lessons, D) It has no effect on the meaning
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Like Blake's other "Songs", the poem is built from short, simply rhymed stanzas that read almost like a nursery song, sharpening the contrast between childlike joy and adult confinement.
-   * **Why A:** The poem is a personal complaint, not a narrated battle.
-   * **Why C:** It has none of the sonnet's fourteen-line, argument-driven shape.
-   * **Why D:** The poem is tightly rhymed, not unrhymed free verse.
+   * **Feedback:** ✓ Correct. Casting a protest against confinement in the shape of a children's song makes the stifling of joy all the more poignant — the childlike music is exactly what the schoolroom crushes.
+   * **Why A:** The tone is plaintive complaint, not a triumphant march.
+   * **Why C:** The song-like form underscores lost joy, not enjoyment of lessons.
+   * **Why D:** The clash between the innocent form and its dismal subject is central to the feeling.
 
 3. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
-   * **Question:** Why does Blake use the image of a bird "born for joy" shut in a cage in "The Schoolboy"?
-   * **Options:** A) To praise the school's routine, B) To argue that forcing a naturally joyful child into confinement destroys that joy, just as caging silences a bird, C) To describe a real caged pet, D) To celebrate the huntsman's skill
+   * **Question:** Why does Blake picture a bird "born for joy" shut in a cage in "The Schoolboy"?
+   * **Options:** A) To praise the school's discipline, B) To argue that forcing a naturally joyful child into confinement can only blight that joy, just as caging silences a bird born to fly, C) To describe a real caged pet, D) To celebrate the huntsman's skill
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The rhetorical question about a bird "born for joy" sitting caged turns the boy's dismay into a wider argument: shutting a child away from nature and freedom can only blight, not nurture, growth.
-   * **Why A:** The image is a protest against confinement, not praise for it.
+   * **Feedback:** ✓ Correct. The rhetorical question about a caged bird turns the boy's dismay into a wider argument: shutting a child away from freedom and nature can only stunt, never nurture, growth.
+   * **Why A:** The image protests confinement rather than praising discipline.
    * **Why C:** The bird stands for the boy's own stifled joy, not a literal pet.
-   * **Why D:** The huntsman appears only in the opening, joyful stanza, unconnected to this image.
+   * **Why D:** The huntsman belongs only to the opening joyful stanza, unconnected to this image.
 
-4. **Type: Fill [Tests Recognising the Poem]**
+4. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
-   * **Question:** In Wordsworth's poem, the speaker wanders "lonely as a cloud" until he suddenly sees a "crowd, / A host, of golden [BLANK]" beside a lake.
-   * **Answer:** daffodils
-   * **Feedback:** ✓ Correct. The speaker's solitary drifting is interrupted by a great host of golden daffodils "fluttering and dancing in the breeze".
-   * **WhyWrong:** The flower is "daffodils" — Wordsworth's "host, of golden daffodils" transforms a lonely walk into a lasting memory of joy.
+   * **Question:** Which poem argues that a single, fleeting encounter with nature can become a lasting inner joy — its "host, of golden daffodils" returning to "flash upon that inward eye" long afterwards?
+   * **Options:** A) I Wandered Lonely as a Cloud, B) The Schoolboy, C) Blackberry-Picking, D) Catrin
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. Wordsworth's speaker drifts past the daffodils, but the poem's real argument is that the remembered sight returns in "the bliss of solitude" to gladden him for ever.
+   * **Why B:** The Schoolboy argues confinement blights a child's joy, not that nature's memory sustains it.
+   * **Why C:** Blackberry-Picking argues the opposite — that summer's sweetness cannot be kept and rots away.
+   * **Why D:** Catrin is about the bond and struggle between mother and daughter, not solitary nature remembered.
 
 5. **Type: MCQ [Tests Form & Features]**
    @set:1
-   * **Question:** How is "I Wandered Lonely as a Cloud" structured?
-   * **Options:** A) Four six-line stanzas (sestets) in rhyming iambic tetrameter, B) An unrhymed sonnet, C) A single unbroken paragraph of free verse, D) Seven irregular stanzas with no rhyme
+   * **Question:** Wordsworth writes "I Wandered Lonely as a Cloud" in flowing, regular, dancing stanzas. How does that form serve the poem?
+   * **Options:** A) The lilting, dance-like movement of the verse echoes the daffodils "dancing in the breeze", so the poem's rhythm carries the very joy it describes, B) The broken, halting rhythm mirrors the speaker's despair, C) The formless free verse shows the speaker's confusion, D) It has no bearing on the meaning
    * **Correct:** A
-   * **Feedback:** ✓ Correct. The poem's four neat sestets, rhymed and flowing in iambic tetrameter, mirror the dance-like movement of the daffodils themselves.
-   * **Why B:** It has no fourteen-line sonnet shape and is fully rhymed.
-   * **Why C:** The poem is carefully rhymed and stanza-divided, not a single free-verse block.
-   * **Why D:** Its rhyme is regular throughout, not absent.
+   * **Feedback:** ✓ Correct. The smooth, tripping metre moves like the flowers themselves, so the form re-enacts the delight — and, at the close, the heart that "dances with the daffodils".
+   * **Why B:** The rhythm is buoyant and glad, not halting or despairing.
+   * **Why C:** The verse is carefully rhymed and regular, not formless.
+   * **Why D:** The dancing movement of the form is exactly what conveys the joy.
 
 6. **Type: True-False [Tests Meaning & Effects]**
    @set:1
-   * **Question:** In "I Wandered Lonely as a Cloud", the final stanza reveals the memory of the daffodils continuing to bring the speaker comfort long after the walk itself, in "the bliss of solitude".
+   * **Question:** In "I Wandered Lonely as a Cloud", the memory of the daffodils keeps bringing the speaker joy long after the walk itself, in "the bliss of solitude".
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The daffodils "flash upon that inward eye" whenever the speaker lies "in vacant or in pensive mood", proving that a single moment in nature can become a lasting source of joy.
+   * **Feedback:** ✓ Correct. The daffodils "flash upon that inward eye" whenever the speaker lies "in vacant or in pensive mood", proving that one moment in nature can become a lasting source of happiness.
    * **WhyWrong:** This is true — the closing stanza reveals memory alone reviving the same pleasure the daffodils first gave, recollected in tranquillity.
 
 7. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
-   * **Question:** Which poem follows children filling "milk cans" with blackberries, only to find the hoard turns to "a rat-grey fungus" in the byre?
-   * **Options:** A) Blackberry-Picking, B) Catrin, C) Origin Story, D) The Schoolboy
+   * **Question:** Which poem argues that our longing to keep something perfect is always defeated by time — its hoarded berries souring each year into "a rat-grey fungus"?
+   * **Options:** A) Blackberry-Picking, B) I Wandered Lonely as a Cloud, C) Origin Story, D) The Schoolboy
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Heaney's "Blackberry-Picking" follows a summer of gathering berries "with milk cans, pea tins and jam-pots", only for the hoarded fruit to rot into "a rat-grey fungus, glutting on our cache".
-   * **Why B:** Catrin concerns a mother and daughter's ongoing conflict, not berry-picking.
-   * **Why C:** Origin Story reflects on the speaker's parents' courtship, not a summer harvest.
-   * **Why D:** The Schoolboy laments schoolroom confinement, not fruit gathered outdoors.
+   * **Feedback:** ✓ Correct. Heaney's "Blackberry-Picking" gathers the summer's sweet fruit only to watch it rot "in the byre", ending on the yearly hope for fruit that would never keep — an argument about impermanence and inevitable loss.
+   * **Why B:** I Wandered Lonely as a Cloud argues the opposite — that a moment's joy can be preserved for ever in memory.
+   * **Why C:** Origin Story argues fragile love is worth protecting, not that decay always wins.
+   * **Why D:** The Schoolboy is about a child stifled by school, not the souring of a harvest.
 
 8. **Type: MCQ [Tests Form & Features]**
    @set:1
-   * **Question:** How is "Blackberry-Picking" structured?
-   * **Options:** A) A single sonnet, B) Two verse paragraphs of loosely rhymed lines — the first savouring the harvest, the second turning to decay, C) A strict villanelle with refrains, D) A ballad with a repeated chorus
+   * **Question:** "Blackberry-Picking" falls into two verse paragraphs — the first gathering the ripe fruit, the second finding it rotted. How does that two-part shape serve the poem?
+   * **Options:** A) It has no effect — the two parts are interchangeable, B) The structure enacts the poem's turn from sweet ripeness to souring decay, so the form itself performs the loss it describes, C) It makes the poem a repeating, song-like ballad, D) It proves the berries never rotted
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The two verse paragraphs mirror the poem's turn — the first paragraph's sensuous gathering giving way to the second's souring and regret.
-   * **Why A:** The poem runs across two paragraphs, not a single fourteen-line sonnet.
-   * **Why C:** There are no villanelle-style repeating refrain lines.
-   * **Why D:** Nothing in the poem repeats as a chorus; it moves forward from harvest to decay.
+   * **Feedback:** ✓ Correct. The break between the sensuous gathering and the "rat-grey fungus" lets the form fall from ripeness into rot, so the shape of the poem carries its argument about impermanence.
+   * **Why A:** The sequence — ripeness then decay — is the whole point; the parts cannot be swapped.
+   * **Why C:** There is no repeating refrain; the poem moves forward, it does not circle like a ballad.
+   * **Why D:** The second paragraph turns explicitly on the fruit fermenting and going "sour".
 
 9. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
-   * **Question:** What does the final line, "Each year I hoped they'd keep, knew they would not," reveal about "Blackberry-Picking"?
-   * **Options:** A) That the speaker never picked berries again, B) A recognition that hoping to preserve something perfect cannot stop time and decay, however much one wishes it, C) That the berries were never sweet to begin with, D) That the rot was the children's fault
+   * **Question:** What does the final line, "Each year I hoped they'd keep, knew they would not", reveal about "Blackberry-Picking"?
+   * **Options:** A) That the speaker never picked berries again, B) A recognition that hoping to preserve something perfect cannot hold back time and decay, however much one wishes it, C) That the berries were never sweet to begin with, D) That the rot was the children's fault
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The closing admission sets hope against experience — every year the same longing to keep the berries, and every year the same inevitable rot, an early lesson in impermanence and loss.
-   * **Why A:** The line implies the cycle happens "each year", so picking continues.
-   * **Why C:** The berries were "sweet" at first, "like thickened wine" — the loss is what makes the rot painful.
-   * **Why D:** The rot is treated as natural and inevitable, not a fault of the children.
+   * **Feedback:** ✓ Correct. The closing admission sets hope against experience — every year the same longing to keep the fruit, and every year the same inevitable rot: an early lesson in impermanence.
+   * **Why A:** The line implies the cycle recurs "each year", so the picking continues.
+   * **Why C:** The fruit was sweet "Like thickened wine" at first — the loss is what makes the rot painful.
+   * **Why D:** The rot is treated as natural and inevitable, not the children's fault.
 
 10. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** In which poem does a mother recall standing "in a hot, white / Room" at her child's birth, then a present-day battle over her daughter's request to "skate in the dark, for one more hour"?
-    * **Options:** A) Catrin, B) Dusting the Phone, C) I Wandered Lonely as a Cloud, D) Cousin Kate
+    * **Question:** Which poem argues that love and conflict are bound together as one — a mother and daughter joined and divided by the same "red rope of love" from birth to a present-day quarrel?
+    * **Options:** A) Catrin, B) Cousin Kate, C) Origin Story, D) Dusting the Phone
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Clarke's "Catrin" moves from the "hot, white" hospital room of birth to a present argument over the daughter wanting to "skate in the dark, for one more hour", showing love and conflict as one continuous "rope".
-    * **Why B:** Dusting the Phone voices longing for a lover's call, not a mother-daughter bond.
-    * **Why C:** I Wandered Lonely as a Cloud recalls solitary nature, not a birth or a daughter.
-    * **Why D:** Cousin Kate is a ballad of seduction and betrayal, not motherhood.
+    * **Feedback:** ✓ Correct. Clarke's "Catrin" runs from the "hot, white" room of birth to an argument over one more hour skating, arguing that the same rope that ties mother and daughter is what they both "Fought over".
+    * **Why B:** Cousin Kate is about seduction, betrayal and defiant pride, not a mother-daughter bond.
+    * **Why C:** Origin Story reflects on a couple's fragile love, not the tie between parent and child.
+    * **Why D:** Dusting the Phone is about anxious longing for a lover's call, not motherhood.
 
-11. **Type: Fill [Tests Form & Features]**
+11. **Type: MCQ [Tests Form & Features]**
     @set:1
-    * **Question:** Clarke calls the hospital room a "square / [BLANK] blank, disinfected / Of paintings or toys" to picture the sterile setting of Catrin's birth.
-    * **Answer:** Environmental
-    * **Feedback:** ✓ Correct. The clinical phrase "Environmental blank" strips the hospital room of any warmth, against which the raw, physical bond of birth stands out.
-    * **WhyWrong:** The word is "Environmental" — Clarke's "square, Environmental blank" pictures a room stripped of all comfort.
+    * **Question:** "Catrin" runs its sentences on across the line-breaks (enjambment) rather than stopping neatly at each line's end. How does that shape its meaning?
+    * **Options:** A) It makes the poem feel calm, resolved and orderly, B) The lines pull on across the breaks like the "red rope of love" itself, so the unbroken form enacts the tie of love and struggle that mother and daughter cannot cut, C) It shows the mother has lost all feeling for her daughter, D) It has no effect on the meaning
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The sentences strain over the line-endings just as the rope pulls tight between them — the very movement of the verse embodies a bond that is also a tug-of-war.
+    * **Why A:** The run-on lines create tension and pull, not calm resolution.
+    * **Why C:** The straining form insists on a fierce, continuing connection, not lost feeling.
+    * **Why D:** The enjambment mirroring the rope is central to how the poem feels.
 
 12. **Type: MCQ [Tests Meaning & Effects]**
     @set:1
-    * **Question:** What does the recurring image of the "red rope" suggest about the relationship in "Catrin"?
-    * **Options:** A) That mother and daughter have never had any connection, B) That love and conflict are bound together — the same tie that connects them is also what they pull against, C) That the daughter has run away permanently, D) That the poem is really about two strangers
+    * **Question:** What does the recurring image of the "red rope of love" suggest about the relationship in "Catrin"?
+    * **Options:** A) That mother and daughter have never had any real connection, B) That love and conflict are bound together — the same tie that binds them is the very thing they pull against, C) That the daughter has left home for good, D) That the poem is really about two strangers
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The "tight red rope of love" from birth returns at the poem's end as the daughter again pulls against her mother — the same bond that connects them is the very thing both are "fighting" over.
-    * **Why A:** The rope image insists on a deep, continuing connection, not its absence.
-    * **Why C:** The final argument is over one more hour out, not a permanent separation.
-    * **Why D:** The intimacy of "our first fierce confrontation" makes clear this is mother and daughter, not strangers.
+    * **Feedback:** ✓ Correct. The rope of love from birth returns at the poem's end as the daughter again pulls against her mother — the same bond that connects them is what both are fighting over.
+    * **Why A:** The rope insists on a deep, continuing connection, not its absence.
+    * **Why C:** The closing argument is over one more hour out, not a permanent parting.
+    * **Why D:** Their "first" fierce confrontation makes clear this is mother and daughter, not strangers.
 
 13. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** Which poem opens "This is true:" and retells how the speaker's parents met at "the Greyhound bus station in the mid-eighties in Chicago", her mother buying her father's comic book for "one dollar"?
-    * **Options:** A) Origin Story, B) Sonnet 29, C) Drummer Hodge, D) Decomposition
+    * **Question:** Which poem argues that an ordinary, fragile love is precious and worth protecting — retelling how the speaker's parents met when her mother bought her father's hand-drawn comic book for "one dollar"?
+    * **Options:** A) Origin Story, B) Sonnet 29, C) Cousin Kate, D) I Shall Return
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Ewing's "Origin Story" opens "This is true:" and recounts her parents meeting at "the Greyhound bus station" in Chicago, her mother buying her father's hand-drawn comic book for "one dollar" — the ordinary beginning of a lasting love.
-    * **Why B:** Sonnet 29 addresses the speaker's own overwhelming love directly, not a parents' backstory.
-    * **Why C:** Drummer Hodge mourns a soldier buried far from home, unconnected to a parents' romance.
-    * **Why D:** Decomposition reflects on a photograph of a stranger, not the speaker's own family history.
+    * **Feedback:** ✓ Correct. Ewing's "Origin Story" opens "This is true" and likens her parents' modest love to a comic book — "love is like a comic book. it's fragile" — arguing that even an unglamorous love is worth cherishing.
+    * **Why B:** Sonnet 29 argues the beloved's real presence outweighs even the richest thoughts of him, a different claim.
+    * **Why C:** Cousin Kate is about betrayal and a wronged woman's defiant pride, not a cherished ordinary love.
+    * **Why D:** I Shall Return is a vow to a lost homeland, not a parents' romance.
 
 14. **Type: MCQ [Tests Form & Features]**
     @set:1
-    * **Question:** How is "Origin Story" written, and what does its central comparison — "love is like a comic book. it's fragile" — suggest?
-    * **Options:** A) As a strict rhyming sonnet, suggesting a formal, timeless love, B) In free verse with conversational, unconventional punctuation, its comic-book comparison suggesting an ordinary love is fragile yet worth carefully protecting, C) As a formal ballad with a chorus, suggesting the parents' story is legendary, D) In rigid, numbered stanzas of equal length, suggesting a case study
+    * **Question:** "Origin Story" is written in loose free verse with casual, lower-case punctuation, and likens the parents' love to a comic book that is "fragile". How does that form serve its meaning?
+    * **Options:** A) Its strict rhyme and formal shape suggest a grand, timeless romance, B) The conversational, unpolished free verse makes the love feel ordinary and real, while the comic-book comparison suggests that something fragile is exactly what deserves careful protecting, C) A marching ballad-refrain makes the parents' story sound legendary, D) Rigid, numbered stanzas turn the poem into a case study
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem's free verse and loose, lower-case punctuation read like spoken storytelling, while likening the parents' love to a comic book that is "fragile" and kept safe in "plastic and cardboard, dark rooms and boxes" suggests an ordinary love is still worth preserving.
-    * **Why A:** The poem has no fixed rhyme scheme or fourteen-line shape.
-    * **Why C:** There is no sung refrain or chorus structure.
-    * **Why D:** Its loose, conversational form resists rigid, equal-length stanzas.
+    * **Feedback:** ✓ Correct. The relaxed, spoken free verse reads like a story told aloud, and comparing the love to a comic book kept in "plastic and cardboard, dark rooms and boxes" makes plain that an ordinary, breakable love is still worth preserving.
+    * **Why A:** The poem has no fixed rhyme or formal shape; its looseness is the point.
+    * **Why C:** There is no sung refrain or legendary ballad tone.
+    * **Why D:** Its loose, conversational form resists rigid, equal stanzas.
 
 15. **Type: Select All [Tests Meaning & Effects]**
     @set:1
     * **Question:** Which statements correctly describe the meaning and effect of "Origin Story"?
-    * **Options:** A) It reframes the parents' courtship, from meeting at "the Greyhound bus station" to the comic book sold for "one dollar", using the language of a superhero origin story, B) Comparing their love to a comic book that could "find its way to another decade, another home" suggests ordinary, imperfect love can still be preserved and cherished, C) Its free verse and casual, lower-case punctuation give it a modern, conversational storytelling voice, D) It concludes that real relationships are less significant than fictional ones
+    * **Options:** A) It reframes the parents' courtship — meeting at "the Greyhound bus station", the comic book sold for "one dollar" — in the language of a superhero origin story, B) Comparing their love to a comic book that could "find its way to another decade" suggests ordinary, imperfect love can still be preserved and cherished, C) Its free verse and casual, lower-case punctuation give it a modern, conversational storytelling voice, D) It concludes that real relationships matter less than fictional ones
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. Ewing borrows superhero "origin story" language, likens the parents' love to a comic book that could "find its way to another decade, another home", and tells it all in a free, conversational voice suited to modern storytelling.
+    * **Feedback:** ✓ Correct. Ewing borrows superhero "origin story" language, likens the parents' love to a comic book that might survive into "another decade", and tells it all in a free, conversational voice suited to modern storytelling.
     * **Why D:** The poem elevates the parents' real story rather than diminishing it against fiction.
 
 <!-- ============================ SET 2 ============================ -->
 
 16. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem buries a young soldier "Uncoffined – just as found" beneath a "kopje-crest", far from his "Wessex home"?
-    * **Options:** A) Drummer Hodge, B) Remains, C) Disabled, D) War Photographer
+    * **Question:** Which poem argues that a boy soldier, thrown "Uncoffined" into an unmarked grave far from his "Wessex home", becomes for ever a part of the strange foreign land he never understood?
+    * **Options:** A) Drummer Hodge, B) Disabled, C) Remains, D) War Photographer
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Hardy's "Drummer Hodge" pictures a boy soldier thrown into an unmarked Boer War grave, "Uncoffined – just as found", his landmark only a "kopje-crest" on the veldt.
-    * **Why B:** Remains follows a soldier's guilt over a shooting, not a burial far from home.
-    * **Why C:** Disabled contrasts a wounded soldier's past and present, not a burial abroad.
-    * **Why D:** War Photographer concerns a photographer developing images of war, not Hodge's grave.
+    * **Feedback:** ✓ Correct. Hardy's "Drummer Hodge" buries the boy beneath a "kopje-crest" and insists that "portion of that unknown plain" will be Hodge for ever — the alien land absorbing him eternally.
+    * **Why B:** Disabled is about a maimed survivor's ruined life at home, not a burial abroad.
+    * **Why C:** Remains is about a soldier's lasting guilt over a killing, not an anonymous grave.
+    * **Why D:** War Photographer is about a public indifferent to distant suffering, not a soldier's burial.
 
-17. **Type: Fill [Tests Form & Features]**
+17. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** "Drummer Hodge" is shaped as three short [BLANK]-line stanzas of rhymed, regular metre, giving the boy's death a plain, song-like dignity.
-    * **Answer:** six
-    * **Feedback:** ✓ Correct. The three neat six-line stanzas, rhymed throughout, give the poem a controlled, elegiac calm despite the bleakness of an anonymous burial.
-    * **WhyWrong:** The stanzas are six lines long — Hardy's plain, regular form lends the burial an understated, ballad-like dignity.
+    * **Question:** Hardy tells "Drummer Hodge" in plain, regular, song-like rhyming stanzas. What does that steady form achieve, given the bleakness of the burial?
+    * **Options:** A) The calm, controlled regularity lends the anonymous, unmarked death an understated, elegiac dignity, B) The chaotic, broken metre mirrors the violence of battle, C) The comic, jaunty rhythm mocks the dead boy, D) The form has no bearing on the meaning
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The measured, ballad-like stanzas hold their composure over a desolate subject, and that quiet control is exactly what dignifies a boy tipped nameless into foreign soil.
+    * **Why B:** The metre is even and controlled, not broken or violent.
+    * **Why C:** The steady form mourns the boy; it never mocks him.
+    * **Why D:** The dignity of the plain form against the bleak content is central to the poem.
 
 18. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What does Hardy suggest by writing that Hodge will become "portion of that unknown plain" for ever, his "homely Northern breast and brain" growing "to some Southern tree"?
-    * **Options:** A) That Hodge will be forgotten entirely, B) That even in an anonymous, alien grave, the soldier becomes permanently and intimately part of the foreign land he never understood, C) That his body will be brought home eventually, D) That the poem celebrates the glory of empire
+    * **Question:** What does Hardy suggest by writing that "portion of that unknown plain" will be Hodge for ever, his "homely Northern breast and brain" growing to "some Southern tree"?
+    * **Options:** A) That Hodge will be entirely forgotten, B) That even in an anonymous, alien grave the boy becomes permanently and intimately part of the foreign land he never understood, C) That his body will be brought home in the end, D) That the poem celebrates the glory of empire
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Hardy transforms the anonymity of Hodge's grave into a strange permanence — his body merging with the "unknown plain" and its "strange-eyed constellations", so the unfamiliar land absorbs him for ever.
+    * **Feedback:** ✓ Correct. Hardy turns the anonymity of the grave into a strange permanence — the boy's body merging with the "unknown plain" and its "strange-eyed constellations", so the unfamiliar land claims him for ever.
     * **Why A:** The poem's whole purpose is to memorialise Hodge, even in his namelessness.
-    * **Why C:** The imagery insists he stays fused with the "Southern tree" and plain, not returned home.
+    * **Why C:** The imagery insists he stays fused with the "some Southern tree" and plain, not returned home.
     * **Why D:** The tone mourns waste and estrangement, not imperial glory.
 
 19. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem opens with a wounded ex-soldier who "sat in a wheeled chair, waiting for dark", remembering when "Town used to swing so gay" before he lost his legs?
-    * **Options:** A) Disabled, B) Remains, C) Kamikaze, D) Drummer Hodge
+    * **Question:** Which poem argues that war robs a young man of everything he had — following an ex-soldier who "sat in a wheeled chair, waiting for dark", remembering when "Town used to swing so gay" before he lost his legs?
+    * **Options:** A) Disabled, B) Drummer Hodge, C) Kamikaze, D) Remains
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Owen's "Disabled" opens with the maimed young man "waiting for dark" in his wheelchair, his mind drifting back to the football glory and admiration of when "Town used to swing so gay".
-    * **Why B:** Remains follows a soldier haunted by a shooting, not amputation and lost youth.
-    * **Why C:** Kamikaze concerns a pilot's return from a suicide mission, not a wheelchair-bound veteran.
-    * **Why D:** Drummer Hodge is buried far from home; this soldier survives, disabled, at home.
+    * **Feedback:** ✓ Correct. Owen's "Disabled" cuts between the maimed man's grey present and his vivid, admired past, arguing that a young life lured into war by romantic illusion returns broken and ignored.
+    * **Why B:** Drummer Hodge is about a boy buried abroad, not a maimed survivor at home.
+    * **Why C:** Kamikaze is about a pilot torn between duty and life, not lost limbs and youth.
+    * **Why D:** Remains is about the guilt that haunts a soldier, not the loss of his body.
 
 20. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** How does Owen structure "Disabled" to make its point?
-    * **Options:** A) A single unbroken present-tense account, B) Shifting between the bleak present and vivid memories of his able-bodied past, so the contrast exposes what war has taken from him, C) A strict, cheerful sonnet, D) A dialogue between two soldiers
+    * **Question:** Owen structures "Disabled" by cutting between the soldier's bleak present and vivid memories of his able-bodied past. How does that serve the poem?
+    * **Options:** A) A single unbroken present-tense account keeps the focus steady, B) Each cut between the grey present and the glow of memory sharpens the contrast, exposing exactly what war has taken from him, C) The strict, cheerful sonnet form lightens the mood, D) A dialogue between two soldiers shares the blame
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Owen cuts between the soldier's grey present and the glow of memory — football, admiring girls, an artist sketching his face — so each shift sharpens what his injuries have cost him.
-    * **Why A:** The poem deliberately moves between past and present, not a single continuous moment.
+    * **Feedback:** ✓ Correct. Owen swings between the wheelchair's cold present and remembered football, admiring girls and glory, so every shift measures the distance between what the soldier was and what war has left him.
+    * **Why A:** The poem deliberately moves between past and present rather than staying in one moment.
     * **Why C:** Its tone is bitter and mournful, far from a cheerful form.
-    * **Why D:** The soldier's own voice and memory dominate; there is no second speaking soldier.
+    * **Why D:** The soldier's own memory dominates; there is no second speaking soldier.
 
 21. **Type: True-False [Tests Meaning & Effects]**
     @set:2
     * **Question:** In "Disabled", Owen suggests the young man enlisted partly out of a naive, romantic idea of war and to impress a girl, only to return maimed and ignored.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. He joined for the romance of glinting "jewelled hilts" and to look smart in uniform for a girl, lying about his age — an illusion Owen exposes as hollow once the soldier returns broken and overlooked.
+    * **Feedback:** ✓ Correct. He joined for the glamour of "jewelled hilts" and to look "a god in kilts" for his girl, lying about his age — an illusion Owen exposes as hollow once the soldier returns broken and overlooked.
     * **WhyWrong:** This is true — the poem reveals the soldier's youthful, romanticised reasons for enlisting curdling into isolation and neglect on his return.
 
 22. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem, framed through a daughter's voice, follows a father-pilot who turns his plane back from a one-way mission, drawn by the "green-blue translucent sea"?
-    * **Options:** A) Kamikaze, B) War Photographer, C) Remains, D) Disabled
+    * **Question:** Which poem argues that a rigid code of honour can be crueller than death itself — following a pilot who turns back from his suicide mission, only to be treated by his own family "as though he no longer existed"?
+    * **Options:** A) Kamikaze, B) Remains, C) Disabled, D) Drummer Hodge
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Garland's "Kamikaze" follows a pilot who abandons his suicide mission, pulled back by memories of the sea's "shoals of fish flashing silver", only to be shunned by his family on his return.
-    * **Why B:** War Photographer is set in a darkroom developing images of conflict, not a cockpit over the sea.
-    * **Why C:** Remains concerns a soldier's guilt over a killing, not a pilot's turning back.
-    * **Why D:** Disabled follows a wounded veteran at home, not a pilot's flight.
+    * **Feedback:** ✓ Correct. Garland's "Kamikaze" shows a pilot drawn back to life by the "green-blue translucent sea", then shunned by a family bound to an honour-code — arguing that such a code can punish the choice of life more harshly than death.
+    * **Why B:** Remains is about the guilt of a killing, not a choice between duty and life.
+    * **Why C:** Disabled is about a maimed survivor robbed of his youth, not a pilot's turning back.
+    * **Why D:** Drummer Hodge is about a boy buried abroad, not a living pilot shunned at home.
 
 23. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** How is the story of "Kamikaze" told?
-    * **Options:** A) Entirely in the pilot's own first-person voice, B) Mostly in the third person, framed by the daughter's remembered, italicised voice, C) As a rhyming ballad with a refrain, D) As a strict sonnet
+    * **Question:** In "Kamikaze" the pilot never speaks; his story reaches us through his daughter's remembered voice. How does that framing shape the poem's effect?
+    * **Options:** A) It lets the pilot justify himself directly to the reader, B) Because we judge him only through the family that later shunned him, the framing turns the poem into a quiet reckoning with the honour-code, letting the daughter's regret colour our sympathy, C) It makes the poem an impersonal news report, D) It has no effect on how we read the pilot
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The narrative is largely third-person but framed by the daughter's voice — her italicised, personal perspective layered over her father's story of duty and regret.
-    * **Why A:** The pilot never speaks directly; his story is relayed by his daughter.
-    * **Why C:** There is no song-like refrain; the form is loose, not a ballad.
-    * **Why D:** The poem runs across several stanzas, not a fourteen-line sonnet.
+    * **Feedback:** ✓ Correct. Filtering the pilot's story through the daughter's voice means his choice reaches us wrapped in her later regret and the family's rejection, so the form itself weighs the human cost of the honour-code.
+    * **Why A:** The pilot is silent throughout; he never speaks for himself.
+    * **Why C:** The daughter's personal, remembering voice is the opposite of an impersonal report.
+    * **Why D:** Hearing him only through the family that shunned him is exactly what shapes our judgement.
 
 24. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What central conflict does "Kamikaze" explore?
-    * **Options:** A) Between two rival armies, B) Between duty and honour on one side and the pull of life, family and beauty on the other, C) Between paper and stone, D) Between a photographer and his subjects
+    * **Question:** What central conflict does "Kamikaze" make us feel?
+    * **Options:** A) A clash between two rival armies, B) A conflict between duty and honour on one side and the pull of life, family and beauty on the other — with the poem's sympathy for the pilot who chose life yet paid for it, C) A conflict between paper and stone, D) A conflict between a photographer and his subjects
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The pilot is torn between the honour-code demanding his death and the pull of life and beauty that call him home — a choice that then costs him everything socially.
-    * **Why A:** The poem's conflict is inward and social, not a clash of armies.
+    * **Feedback:** ✓ Correct. The pilot is torn between the honour-code demanding his death and the beauty of the sea and life that call him home — and the poem quietly sides with his choice, even as it costs him everything.
+    * **Why A:** The conflict is inward and social, not a clash of armies.
     * **Why C:** There is no paper-and-stone imagery in this poem.
     * **Why D:** There is no photographer in "Kamikaze".
 
 25. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem is set in a darkroom where a man develops photographs of distant wars, among them "Belfast. Beirut. Phnom Penh."?
-    * **Options:** A) War Photographer, B) Kamikaze, C) Drummer Hodge, D) Disabled
+    * **Question:** Which poem argues that a comfortable public feels only a flicker of sympathy for distant suffering before returning to its ease — set through a man developing "spools of suffering" from "Belfast. Beirut. Phnom Penh."?
+    * **Options:** A) War Photographer, B) Remains, C) Drummer Hodge, D) Disabled
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Duffy's "War Photographer" opens with the photographer alone in his darkroom, developing "spools of suffering" from Belfast, Beirut and Phnom Penh.
-    * **Why B:** Kamikaze follows a pilot's flight and return, not a photographer's darkroom.
-    * **Why C:** Drummer Hodge concerns a soldier's burial, not photography.
-    * **Why D:** Disabled follows a wounded veteran, not a war photographer.
+    * **Feedback:** ✓ Correct. Duffy's "War Photographer" sets the man's care against readers whose eyeballs "prick" with tears for a moment before comfort resumes and "they do not care" — an argument about indifference to others' pain.
+    * **Why B:** Remains is about one soldier's private guilt, not the public's apathy.
+    * **Why C:** Drummer Hodge is about a boy's anonymous burial, not photography or public feeling.
+    * **Why D:** Disabled is about a maimed veteran at home, not distant war images and their audience.
 
 26. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** How does the ordered form of "War Photographer" — regular six-line stanzas — serve the poem?
-    * **Options:** A) It has no effect on meaning, B) Its rigid order contrasts with the chaos of the war scenes, mirroring the photographer's attempt to control suffering, C) It makes the poem a ballad, D) It proves the wars were peaceful
+    * **Question:** How does the ordered form of "War Photographer" — regular, controlled six-line stanzas — serve the poem?
+    * **Options:** A) It has no effect on meaning, B) The rigid order sits against the chaos of the war scenes, mirroring the photographer's effort to control and contain unbearable suffering, C) It makes the poem a heroic ballad, D) It proves the wars were peaceful
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The neat, controlled stanzas sit against the horror they contain, echoing the photographer ordering "spools of suffering" into frames he can manage.
-    * **Why A:** The tension between orderly form and chaotic content is central to the poem.
+    * **Feedback:** ✓ Correct. The neat stanzas frame horror the way the photographer orders "spools of suffering" into manageable images — the tension between orderly form and chaotic content is the point.
+    * **Why A:** The clash between form and content is central to the meaning.
     * **Why C:** Regular stanzas alone do not make a ballad; there is no narrative refrain.
     * **Why D:** The form contains the horror; it does not deny it.
 
 27. **Type: Select All [Tests Meaning & Effects]**
     @set:2
     * **Question:** Which statements correctly describe the meaning and effect of "War Photographer"?
-    * **Options:** A) It criticises the public back home for feeling only brief, passing sympathy for others' suffering, B) The ordered, six-line stanzas contrast with the chaos of the scenes the photographer has witnessed, C) The photographer feels a lasting unease about the distance between suffering and its audience, D) It celebrates how deeply readers of newspapers care about distant wars
+    * **Options:** A) It criticises the public back home for feeling only brief, passing sympathy for others' suffering, B) The ordered, six-line stanzas contrast with the chaos of the scenes the photographer has witnessed, C) The photographer is left uneasy at the distance between suffering and its comfortable audience, D) It celebrates how deeply newspaper readers care about distant wars
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
     * **Feedback:** ✓ Correct. Duffy indicts public indifference, uses ordered stanzas to contain chaotic content, and leaves the photographer uneasy at how little his images truly change his audience.
-    * **Why D:** The poem accuses readers of fleeting concern, not deep or lasting care.
+    * **Why D:** The poem accuses readers of fleeting concern — "they do not care" — not deep or lasting care.
 
 28. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** In which poem does a soldier keep reliving a shooting, haunted by "his bloody life in my bloody hands"?
+    * **Question:** Which poem argues that war's deepest wound is the guilt that will not leave — a soldier reliving a shooting until the dead man is "here in my head", "his bloody life in my bloody hands"?
     * **Options:** A) Remains, B) Disabled, C) Drummer Hodge, D) Kamikaze
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Armitage's "Remains" follows a soldier's guilt over shooting a looter — "probably armed, possibly not" — whose memory he cannot escape.
-    * **Why B:** Disabled concerns a soldier's lost limbs and youth, not a haunting killing.
-    * **Why C:** Drummer Hodge is buried anonymously abroad, with no surviving guilt to relive.
-    * **Why D:** Kamikaze follows a pilot's return, not a soldier haunted by a shooting.
+    * **Feedback:** ✓ Correct. Armitage's "Remains" follows a soldier haunted by shooting a looter, "probably armed, possibly not", arguing that the true cost of war is the trauma that follows him home.
+    * **Why B:** Disabled is about lost limbs and youth, not a haunting act of killing.
+    * **Why C:** Drummer Hodge is buried abroad, with no surviving guilt to carry.
+    * **Why D:** Kamikaze is about a pilot's choice of life, not a soldier's guilt over a shooting.
 
 29. **Type: True-False [Tests Form & Features]**
     @set:2
-    * **Question:** "Remains" is written in a loose, colloquial monologue that sounds like ordinary speech or spoken testimony.
+    * **Question:** "Remains" is written as a loose, colloquial monologue that sounds like real spoken testimony — and that plain, spoken voice makes the trauma feel immediate and true.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. Armitage uses a loose, conversational monologue — the plain, spoken voice makes the trauma feel immediate and real, drawn from a soldier's own testimony.
-    * **WhyWrong:** This is true — the poem's loose, colloquial monologue mimics real spoken testimony, heightening the sense of genuine trauma.
+    * **Feedback:** ✓ Correct. The conversational, testimony-like voice strips away any poetic distance, so the horror lands as one man's raw, real experience — the form serving the sense of genuine trauma.
+    * **WhyWrong:** This is true — the loose, colloquial monologue mimics real spoken testimony, and that plainness heightens the trauma.
 
 30. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What is the main concern of "Remains"?
-    * **Options:** A) The glory of victory, B) The lasting psychological trauma and guilt of killing, which follows the soldier home, C) The beauty of the landscape, D) A celebration of army life
+    * **Question:** What is the controlling idea of "Remains"?
+    * **Options:** A) The glory of victory, B) The lasting psychological trauma and guilt of killing, which follows the soldier home long after the event, C) The beauty of the landscape, D) A celebration of army life
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The killing "remains" in the soldier's mind long after the event — Armitage centres the enduring psychological wound and guilt, a trauma that will not fade.
-    * **Why A:** There is no glory here; only guilt and trauma.
+    * **Feedback:** ✓ Correct. The killing "remains" in the soldier's mind long after the event — Armitage centres the enduring psychological wound and guilt, a portrait of what we now call PTSD.
+    * **Why A:** There is no glory here, only guilt and trauma.
     * **Why C:** The poem's focus is inward and psychological, not scenic.
     * **Why D:** It exposes war's cost rather than celebrating army life.
 
@@ -312,110 +318,113 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 31. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem has a "cottage maiden" lament that a "great lord" lured and discarded her for her own "Cousin Kate", though she has a "fair-haired son" Kate cannot match?
-    * **Options:** A) Cousin Kate, B) Sonnet 29, C) Dusting the Phone, D) Decomposition
+    * **Question:** Which poem argues that a woman publicly ruined by a "great lord" can still hold a defiant private pride over the respectable "Cousin Kate" who replaced her — because she alone bore his "fair-haired son"?
+    * **Options:** A) Cousin Kate, B) Sonnet 29, C) Dusting the Phone, D) Origin Story
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Rossetti's "Cousin Kate" gives voice to a cottage girl seduced and cast off by a "great lord" who marries her cousin instead, though she alone has borne him a "fair-haired son".
-    * **Why B:** Sonnet 29 is a declaration of overwhelming love, not a tale of seduction and betrayal.
-    * **Why C:** Dusting the Phone voices longing for a lover's call, not an abandoned mother.
-    * **Why D:** Decomposition reflects on a photograph of a stranger, not a personal betrayal.
+    * **Feedback:** ✓ Correct. Rossetti's "Cousin Kate" voices a cottage girl seduced and discarded, yet ending on the "gift you have not got" — the son who gives her a claim on the lord that Kate's marriage never can.
+    * **Why B:** Sonnet 29 is a declaration of overwhelming love, not a tale of betrayal and defiant pride.
+    * **Why C:** Dusting the Phone is about anxious longing for a lover's call, not seduction and social ruin.
+    * **Why D:** Origin Story cherishes an ordinary love, not a wronged woman's bitter triumph.
 
 32. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** "Cousin Kate" is written in which form?
-    * **Options:** A) A ballad, in plain rhyming stanzas that tell its story of betrayal and loss, B) A Petrarchan sonnet, C) An ode, D) Free verse
+    * **Question:** Rossetti tells "Cousin Kate" in plain, song-like ballad stanzas. What does that traditional folk-song form achieve?
+    * **Options:** A) It makes a private betrayal sound like a public, communal tale of wrong, giving the outcast woman a direct voice to accuse the lord and Kate, B) It makes the poem sound like a joyful celebration, C) It hides the story behind difficult, obscure language, D) It has no effect on the meaning
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Rossetti uses a traditional ballad, its narrative stanzas and direct, song-like voice carrying the story of the speaker's seduction and social ruin.
-    * **Why B:** It is a narrative told in stanzas, not a fourteen-line sonnet.
-    * **Why C:** An ode is a formal poem of praise, not this tale of wrong.
-    * **Why D:** Its regular, rhymed narrative stanzas make it a ballad, not free verse.
+    * **Feedback:** ✓ Correct. The ballad's clear, singing narrative carries her seduction and ruin as if it were a story the whole community should hear — and its direct address lets her answer back, "howl in dust" while Kate sits "in gold and sing".
+    * **Why B:** The song-like form carries grievance and defiance, not celebration.
+    * **Why C:** The ballad's plainness makes the story clear and public, not obscure.
+    * **Why D:** The communal, accusing voice the ballad gives her is central to the effect.
 
 33. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
     * **Question:** What does the speaker mean by claiming she has "a gift you have not got" in the closing stanzas of "Cousin Kate"?
-    * **Options:** A) That she is wealthier than Kate, B) That her son gives her a private pride and claim on the lord that Kate's respectable marriage cannot provide, C) That she has forgiven the lord completely, D) That she plans to steal Kate's wedding ring
+    * **Options:** A) That she is wealthier than Kate, B) That her son gives her a private pride and a claim on the lord that Kate's respectable marriage cannot provide, C) That she has forgiven the lord completely, D) That she plans to steal Kate's wedding ring
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Naming her son "my shame, my pride", the speaker finds one thing status and marriage cannot give Kate — a defiant, complicating claim of her own on the lord, even from her cast-off position.
+    * **Feedback:** ✓ Correct. Naming her son "my shame, my pride", the speaker finds the one thing status and marriage cannot give Kate — a defiant claim of her own, even from her cast-off position.
     * **Why A:** The poem stresses Kate's gold and comfort against the speaker's own poverty.
     * **Why C:** Her bitterness towards the lord and Kate runs through every stanza; there is no forgiveness.
-    * **Why D:** The son, not the ring, is the "gift" she claims — the poem never mentions theft.
+    * **Why D:** The son, not a ring, is the "gift" she claims; the poem never mentions theft.
 
 34. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem compares the speaker's constant thoughts of her beloved to "wild vines" twining thickly about a "palm-tree", until she longs for his real presence instead?
-    * **Options:** A) Sonnet 29, B) I Wandered Lonely as a Cloud, C) Cousin Kate, D) Origin Story
+    * **Question:** Which poem argues that even the richest thoughts of a beloved are a poor substitute for his real presence — the speaker's thoughts twining like "wild vines" about a tree until she begs to have him near instead?
+    * **Options:** A) Sonnet 29, B) Cousin Kate, C) I Shall Return, D) Dusting the Phone
     * **Correct:** A
-    * **Feedback:** ✓ Correct. In Elizabeth Barrett Browning's "Sonnet 29", thoughts of the beloved grow like "wild vines... about a tree", so thickly that she begs him to "renew" his presence and burst the "bands of greenery" apart.
-    * **Why B:** I Wandered Lonely as a Cloud uses daffodils in solitary memory, not a vine-and-tree metaphor for love.
-    * **Why C:** Cousin Kate is a ballad of betrayal, not a sonnet of devoted love.
-    * **Why D:** Origin Story reflects on the speaker's parents' courtship, not her own direct address to a beloved.
+    * **Feedback:** ✓ Correct. In Barrett Browning's "Sonnet 29" thoughts grow thickly as "wild vines" over her "palm-tree", but she longs to "Renew thy presence" — ending "I do not think of thee—I am too near thee": presence outweighing imagination.
+    * **Why B:** Cousin Kate is a ballad of betrayal and defiant pride, not devoted longing for presence.
+    * **Why C:** I Shall Return longs for a homeland, not a beloved's physical nearness.
+    * **Why D:** Dusting the Phone dwells on anxious, uncertain waiting, not a confident craving for presence over thought.
 
-35. **Type: Fill [Tests Form & Features]**
+35. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** "Sonnet 29" is, as its title states, a [BLANK], its fourteen lines building and then turning at the volta to demand the beloved's real presence over mere thought.
-    * **Answer:** sonnet
-    * **Feedback:** ✓ Correct. The poem's sonnet form disciplines the speaker's overwhelming feeling into fourteen lines, with a volta that pivots from imagining her beloved to longing for him in person.
-    * **WhyWrong:** The word is "sonnet" — its fixed, fourteen-line shape gives ordered intensity to a feeling that threatens to overwhelm.
+    * **Question:** "Sonnet 29" pours an overwhelming feeling into the tight fourteen-line sonnet form, turning at its volta. How does that form shape the poem's meaning?
+    * **Options:** A) The strict form disciplines a feeling that threatens to overwhelm, and the volta pivots from imagined thought to a craving for real presence, so the shape enacts the poem's argument, B) The loose, sprawling form shows the speaker has no strong feeling, C) The form makes the poem a light, comic song, D) The form has no bearing on the meaning
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The sonnet's discipline holds in a feeling as tangled as the "wild vines", and the volta breaks that tangle open — from thinking of the beloved to needing him near, so the turn of the form carries the turn of the thought.
+    * **Why B:** The feeling is intense and contained by the form, not absent.
+    * **Why C:** The tone is passionate and serious, not comic.
+    * **Why D:** The form's containment and its volta are exactly what shape the meaning.
 
 36. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
     * **Question:** What is the final turn of "Sonnet 29"?
     * **Options:** A) The speaker decides she no longer loves him, B) The speaker rejects thought alone and longs instead for his actual, physical presence — "I do not think of thee—I am too near thee", C) The speaker compares him to a rival, D) The speaker describes a battle
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The closing couplet overturns the whole extended metaphor: real closeness would make thought unnecessary — "I do not think of thee—I am too near thee" — presence outweighing imagination.
+    * **Feedback:** ✓ Correct. The close overturns the whole extended metaphor: real closeness would make thought unnecessary — "I do not think of thee—I am too near thee" — presence outweighing imagination.
     * **Why A:** The poem is a declaration of overwhelming love, not its rejection.
     * **Why C:** No rival appears; the poem addresses the beloved directly.
-    * **Why D:** There is no battle imagery; the metaphor is botanical (vines and a tree).
+    * **Why D:** There is no battle; the metaphor is botanical — vines and a tree.
 
 37. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem depicts a woman polishing and dressing for a silent telephone — "Silver service. I polish it. I dress for it." — as she waits for her lover to call?
+    * **Question:** Which poem argues that waiting on another person's contact can slowly consume and trap you — a speaker who polishes and dresses for a silent phone, "Silver service. I polish it. I dress for it."?
     * **Options:** A) Dusting the Phone, B) Sonnet 29, C) Cousin Kate, D) I Shall Return
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Jackie Kay's "Dusting the Phone" depicts the speaker polishing and dressing for the telephone — "Silver service. I polish it. I dress for it." — her ritual devotion to the silent object standing in for her anxious wait for her lover's call.
-    * **Why B:** Sonnet 29 addresses a beloved directly and confidently, not through anxious waiting for contact.
-    * **Why C:** Cousin Kate narrates a completed betrayal, not present-tense waiting for a call.
-    * **Why D:** I Shall Return is a vow to return to a homeland, not a wait for a lover's call.
+    * **Feedback:** ✓ Correct. Kay's "Dusting the Phone" turns a wait for a lover's call into an obsessive ritual, ending "I am trapped in it. I can't move." — arguing that dependence on another's contact erodes a person's balance.
+    * **Why B:** Sonnet 29 is a confident craving for a beloved's presence, not anxious, trapped waiting.
+    * **Why C:** Cousin Kate narrates a completed betrayal, not present-tense longing for a call.
+    * **Why D:** I Shall Return is a vow to a homeland, not a wait for a lover.
 
 38. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** How is "Dusting the Phone" written, and what effect does its clipped line "The phone rings heralding some disaster. Sirens." create?
-    * **Options:** A) As a fixed, rhyming sonnet, building calm certainty, B) As a free-verse monologue, its sentence fragments and personified phone conveying anxious, obsessive longing, C) As a formal ballad, narrating events at a distance, D) As a strict villanelle, its refrains offering reassurance
+    * **Question:** How does the free-verse, fragmented form of "Dusting the Phone" — clipped lines like "The phone rings heralding some disaster. Sirens." — shape its effect?
+    * **Options:** A) A fixed, rhyming sonnet builds calm certainty, B) The broken sentence-fragments, and the phone treated as if it holds power over her, enact a restless, obsessive anxiety, so the form itself feels like nervous waiting, C) A formal ballad narrates events from a calm distance, D) A strict villanelle's refrains offer reassurance
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Kay's free verse and clipped, fragmented sentences — "The phone rings heralding some disaster. Sirens." — enact the woman's restless, obsessive waiting, while the phone is personified as if it holds power over her.
-    * **Why A:** The poem has no fixed rhyme scheme or sonnet shape.
-    * **Why C:** There is no narrative ballad structure or refrain.
-    * **Why D:** The poem does not use a villanelle's strict repeating refrains.
+    * **Feedback:** ✓ Correct. The clipped fragments jump and stall like an anxious mind, and personifying the phone as something that "sends me hoaxes" gives it power over her — the form re-enacting obsessive, restless longing.
+    * **Why A:** The poem has no fixed rhyme or sonnet calm.
+    * **Why C:** The voice is close and agitated, not distanced and calm.
+    * **Why D:** There are no reassuring villanelle refrains.
 
 39. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
     * **Question:** What does "Dusting the Phone" suggest about the effect of waiting for a lover's call, given the speaker admits "I am trapped in it. I can't move."?
-    * **Options:** A) That waiting brings only calm confidence, B) That prolonged uncertainty and dependency on someone else's contact can wear away at a person's emotional balance, trapping her even as she longs for the call, C) That the phone itself is broken, D) That the speaker no longer cares about the relationship
+    * **Options:** A) That waiting brings only calm confidence, B) That drawn-out uncertainty and dependence on someone else's contact can wear away a person's emotional balance, trapping her even as she longs for the call, C) That the phone itself is broken, D) That the speaker no longer cares about the relationship
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem reveals how silence and uncertainty, stretched out over time, erode confidence and hope — "I am trapped in it. I can't move." — however much the speaker longs to control her own feelings.
-    * **Why A:** The speaker's anxious fragments show unease, not calm confidence.
-    * **Why C:** The poem's focus is emotional, not a literal fault with the telephone.
-    * **Why D:** Her obsessive attention to the phone reveals she cares intensely, not that she has stopped caring.
+    * **Feedback:** ✓ Correct. The poem reveals how silence and uncertainty, stretched over time, erode confidence and hope — "I am trapped in it. I can't move." — however much the speaker longs to master her own feelings.
+    * **Why A:** The anxious fragments show unease, not calm confidence.
+    * **Why C:** The focus is emotional, not a literal fault with the telephone.
+    * **Why D:** Her obsessive attention shows she cares intensely, not that she has stopped.
 
 40. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem repeats the vow "I shall return" to a home the speaker recalls through "forest fires", "bending grasses" and village "fiddle and fife"?
+    * **Question:** Which poem argues that returning to an idealised, remembered homeland will heal years of exile — vowing "I shall return" to its "forest fires", "bending grasses" and village "fiddle and fife"?
     * **Options:** A) I Shall Return, B) Decomposition, C) Drummer Hodge, D) Catrin
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Claude McKay's "I Shall Return" repeats its title vow across three quatrains of remembered homeland imagery — forest fires, mountain streams, village dances — before easing "long, long years of pain".
-    * **Why B:** Decomposition reflects on a photograph of a stranger, not a vow to return home.
-    * **Why C:** Drummer Hodge concerns a soldier who will never return, buried abroad.
-    * **Why D:** Catrin is about a mother and daughter, not exile and a longed-for homeland.
+    * **Feedback:** ✓ Correct. McKay's "I Shall Return" repeats its vow across remembered homeland images, ending on returning to ease "long, long years of pain" — an argument that homecoming will heal exile.
+    * **Why B:** Decomposition is about the guilt of aestheticising a stranger's suffering, not a longed-for homecoming.
+    * **Why C:** Drummer Hodge concerns a boy who will never return, buried abroad.
+    * **Why D:** Catrin is about a mother and daughter, not exile and homecoming.
 
 41. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** How is "I Shall Return" structured?
-    * **Options:** A) A sonnet of three quatrains and a closing couplet, its repeated vow building through each stanza, B) A single unrhymed stanza, C) A ballad with dialogue, D) A poem entirely without a title-line refrain
+    * **Question:** "I shall return" recurs as a refrain through the stanzas of McKay's poem, before its closing couplet. How does that repetition shape the poem's effect?
+    * **Options:** A) The repeated vow builds a mounting sense of longing and determination, gathering toward the resolving final couplet, B) The repetition suggests the speaker has given up and expects never to return, C) The refrain makes the poem sound like a comic nonsense rhyme, D) The repetition has no bearing on the feeling
     * **Correct:** A
-    * **Feedback:** ✓ Correct. The poem follows the traditional sonnet pattern — three quatrains and a couplet — using the repeated vow "I shall return" to build longing towards its resolving final couplet.
-    * **Why B:** The poem is rhymed and divided into four sections, not one unrhymed stanza.
-    * **Why C:** There is no dialogue between characters; it is a single vowing voice.
-    * **Why D:** The title phrase recurs as a refrain across the poem, not just once.
+    * **Feedback:** ✓ Correct. Each return of the vow deepens the longing and steadies the resolve, so that by the final couplet the promise of homecoming feels certain — the refrain enacting the determination the poem argues for.
+    * **Why B:** The mounting refrain insists on certainty, never surrender.
+    * **Why C:** The tone is heartfelt and yearning, not comic.
+    * **Why D:** The building repetition is exactly what creates the sense of determination.
 
 42. **Type: Select All [Tests Meaning & Effects]**
     @set:3
@@ -423,33 +432,33 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Options:** A) It expresses a longing to return to a remembered, idealised homeland, B) The repeated vow "I shall return" builds a growing sense of determination across the poem, C) The closing couplet links returning home to easing "long, long years of pain", D) It concludes that the speaker has given up on ever returning
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. McKay's speaker longs for a remembered homeland, repeats his vow with mounting determination, and ties the return to relief from long years of exile's pain.
+    * **Feedback:** ✓ Correct. McKay's speaker longs for a remembered homeland, repeats his vow with mounting determination, and ties the return to relief from "long, long years of pain".
     * **Why D:** The whole poem insists on the certainty of return, never abandoning the hope.
 
 43. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem centres on the speaker's memory of photographing a sleeping beggar in Bombay, and his guilt at having taken the picture for the wrong reasons?
+    * **Question:** Which poem argues that framing another person's suffering as art can crowd out real compassion — a speaker guilty at having photographed a sleeping beggar in Bombay and "glibly called it 'The Man in the Street'"?
     * **Options:** A) Decomposition, B) War Photographer, C) I Shall Return, D) Cousin Kate
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Zulfikar Ghose's "Decomposition" recalls a photograph of a sleeping beggar in Bombay, moving from a detached, artistic description towards uneasy recognition of the man's real suffering.
-    * **Why B:** War Photographer concerns a professional photographer of distant wars, not this single remembered image of a beggar.
+    * **Feedback:** ✓ Correct. Ghose's "Decomposition" moves from a detached "good composition" of a beggar to the man's posture that "chides me now" — arguing that aestheticising suffering can displace genuine empathy.
+    * **Why B:** War Photographer indicts a distant public's apathy, not the speaker's own guilt at composing one image.
     * **Why C:** I Shall Return is a vow of homecoming, not a meditation on a photograph.
     * **Why D:** Cousin Kate is a ballad of betrayal, unrelated to photography or poverty.
 
 44. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** How is "Decomposition" written?
-    * **Options:** A) As a fixed, rhyming ballad, B) In free verse, its loose, unrhymed lines allowing the description to shift from detached composition towards uncomfortable self-awareness, C) As a Petrarchan sonnet, D) As a villanelle with repeating refrains
+    * **Question:** "Decomposition" is written in loose, unrhymed free verse. How does that form serve the poem?
+    * **Options:** A) A fixed, rhyming ballad keeps the mood light, B) The loose free verse lets the description drift from a detached, artistic "composition" into the speaker's uncomfortable, guilty self-awareness, so the form follows his change of heart, C) A strict sonnet contains the feeling neatly, D) A villanelle's refrains circle back reassuringly
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem's free verse mirrors its shifting focus — beginning as if composing an artistic image, then loosening into the speaker's guilty recognition of the man's real, decaying poverty.
-    * **Why A:** The poem has no regular rhyme or ballad-style narrative stanzas.
-    * **Why C:** It does not keep to a fourteen-line sonnet shape.
-    * **Why D:** There are no repeating refrains as in a villanelle.
+    * **Feedback:** ✓ Correct. The unrhymed, shifting lines let the poem slide from composing an image to recognising the man's real suffering — the form loosening as the speaker's detachment gives way to guilt.
+    * **Why A:** The poem has no rhyming ballad shape, and its mood is troubled, not light.
+    * **Why C:** It keeps no strict sonnet form.
+    * **Why D:** There are no reassuring repeating refrains.
 
 45. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
     * **Question:** What does "Decomposition" suggest about observing another person's suffering as art?
-    * **Options:** A) That artistic composition is always more important than compassion, B) That treating suffering as an aesthetic subject can dangerously overshadow genuine human empathy for the person suffering, C) That the beggar in the poem was never really suffering, D) That photography has no power to make people uncomfortable
+    * **Options:** A) That artistic composition always matters more than compassion, B) That treating suffering as an aesthetic subject can dangerously overshadow genuine human empathy for the person suffering, C) That the beggar in the poem was never really suffering, D) That photography has no power to make us uncomfortable
     * **Correct:** B
     * **Feedback:** ✓ Correct. Ghose's speaker realises that framing the beggar's decay as a composed image risks replacing real compassion with detached aesthetic pleasure — a discomfort the poem forces the reader to share.
     * **Why A:** The poem's unease comes from privileging composition over compassion, not endorsing it.

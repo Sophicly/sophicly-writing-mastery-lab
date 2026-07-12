@@ -8,6 +8,13 @@ these are poem-specific, testing what the student has actually read. The picker 
 per round, stratified across categories. Keys + feedback live server-side and are stripped before
 questions reach the client. The AI is never the scorekeeper.
 
+**Concept-based (governed by `FQ-QUESTION-STANDARD.md` § POETRY).** Every item tests the CENTRAL
+CONCEPT of its dimension, not surface trivia. **Recognising** keys on each poem's *controlling idea /
+argument* (anchored by a verified signature line), not image-matching; **Form & Features** tests how
+the form *shapes meaning*, not its label; **Meaning & Effects** tests the controlling idea + the
+reader's response. Distractors are plausible CONCEPTUAL MISREADINGS — for Recognising, the other
+Duffy poems in this set, whose *argument differs*.
+
 Categories: Recognising the Poem · Form & Features · Meaning & Effects
 Types: MCQ · Fill · True-False · Select All
 
@@ -19,148 +26,151 @@ Medusa · Havisham · Before You Were Mine.
 ### Quiz: Carol Ann Duffy Poetry
 
 1. **Type: MCQ [Tests Recognising the Poem]**
-   * **Question:** Which poem opens with a family's car journey away from their home, as one brother "cried, one of them bawling, / Home, Home," while the fields rush past?
+   * **Question:** Which poem argues that leaving one's home country in childhood permanently fractures a person's sense of self — ending not in arrival but in the doubt "Do I only think / I lost a river, culture, speech, country?"
    * **Options:** A) Originally, B) Before You Were Mine, C) In Mrs Tilscher's Class, D) Mrs Midas
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Duffy's "Originally" opens with the speaker's family driving away from their home country, a brother's cry of "Home, Home," marking the wrench of leaving.
-   * **Why B:** Before You Were Mine imagines the mother's youth before the speaker was born, not a family's car journey.
-   * **Why C:** In Mrs Tilscher's Class is set in a primary school classroom, not a car leaving home.
-   * **Why D:** Mrs Midas is a domestic dramatic monologue about a husband's golden touch, not a childhood journey.
+   * **Feedback:** ✓ Correct. Duffy's "Originally" traces a family's emigration to argue that childhood displacement uproots the self — the closing question "Do I only think / I lost a river, culture, speech, country?" leaves belonging permanently unresolved.
+   * **Why B:** Before You Were Mine argues a child possesses and celebrates the mother's lost youth — a claim on belonging, not the loss of it.
+   * **Why C:** In Mrs Tilscher's Class charts the loss of childhood innocence into adolescence, not the loss of a homeland.
+   * **Why D:** Mrs Midas concerns a marriage destroyed by obsession, not displacement and national identity.
 
 2. **Type: MCQ [Tests Form & Features]**
-   * **Question:** How does Duffy structure "Originally" to trace the speaker's shifting sense of home?
-   * **Options:** A) A single unbroken stanza in strict rhyme, B) Three stanzas of free verse moving from a childhood memory, through the extended metaphor "All childhood is an emigration", to an adult's uncertain reflection, C) A dramatic monologue addressed to a husband, D) A sonnet form borrowed from love poetry
+   * **Question:** "Originally" moves through three free-verse stanzas, from a childhood memory to an adult's unanswered question. How does that loosening structure shape the poem's meaning?
+   * **Options:** A) A strict rhyme scheme tightens toward a confident resolution, B) The free verse slackens and grows more uncertain as it goes, so the form itself enacts an identity coming loose and never resettling, C) A dramatic monologue lets a single character betray herself through her own speech, D) A sonnet's neat turn delivers a consolation at the close
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The three free-verse stanzas move chronologically — from the car journey, through the reflection that "All childhood is an emigration", to the uncertain adult voice questioning identity at the close.
-   * **Why A:** The poem is written in free verse across three stanzas, not one strict rhymed block.
-   * **Why C:** The dramatic-monologue address to a husband belongs to Mrs Midas or Medusa, not Originally.
-   * **Why D:** Originally is not a sonnet; its structure loosens rather than tightens as the stanzas progress.
+   * **Feedback:** ✓ Correct. The unrhymed stanzas grow less settled as they progress, loosening toward the closing question — so the shape of the poem mirrors a self that never fully resettles after displacement.
+   * **Why A:** The poem is free verse, not strict rhyme, and it moves toward doubt rather than confident resolution.
+   * **Why C:** The self-betraying dramatic monologue belongs to Mrs Midas or Havisham, not Originally.
+   * **Why D:** Originally is not a sonnet, and it withholds consolation rather than delivering it.
 
 3. **Type: True-False [Tests Meaning & Effects]**
    * **Question:** By the end of "Originally", the speaker's sense of identity has settled comfortably into her new home, with no lingering uncertainty about where she belongs.
    * **Answer:** False
-   * **Feedback:** ✓ Correct. The poem closes on unresolved uncertainty — the direct question "Where do you come from?" and the isolated "Originally?" leave the speaker unable to give a simple answer, revealing that displacement has left identity unsettled rather than settled.
-   * **WhyWrong:** The poem's final question undercuts any sense of settled belonging — the speaker cannot answer simply, so identity remains unresolved rather than comfortably fixed.
+   * **Feedback:** ✓ Correct. The poem closes on unresolved doubt — the speaker asks whether she "only" imagines that she "lost a river, culture, speech, country", and the very need to ask leaves belonging unsettled rather than settled.
+   * **WhyWrong:** The closing question undercuts any settled belonging — the speaker cannot say simply where she is from, so identity remains fractured rather than comfortably fixed.
 
 4. **Type: MCQ [Tests Recognising the Poem]**
-   * **Question:** Which poem opens with a wife pouring a glass of wine in her kitchen while, in the garden, her husband turns a twig to gold?
+   * **Question:** Which poem retells a classical myth to argue that one partner's consuming obsession destroys the intimacy of a marriage — the loss felt most in "his warm hands on my skin, his touch"?
    * **Options:** A) Mrs Midas, B) Havisham, C) Medusa, D) Originally
    * **Correct:** A
-   * **Feedback:** ✓ Correct. "Mrs Midas" opens on an ordinary September evening, the wife relaxing over wine as she watches her husband, framed in the kitchen window, turn a garden twig to gold.
-   * **Why B:** Havisham is a bitter monologue spoken from within a decaying house, not a domestic kitchen-garden scene.
-   * **Why C:** Medusa opens on a jealousy that turns the speaker's own hair to snakes, not a husband's golden touch.
-   * **Why D:** Originally opens with a family's car journey, not a kitchen-garden scene.
+   * **Feedback:** ✓ Correct. "Mrs Midas" reworks the King Midas myth from the wife's view to argue that obsession contaminates a marriage until nothing shared survives — the loss centring on "his warm hands on my skin, his touch".
+   * **Why B:** Havisham voices a bride betrayed at the altar — love curdled into hatred, not a marriage ruined by a partner's obsession.
+   * **Why C:** Medusa concerns jealousy that turns the self monstrous, not a golden touch that destroys a marriage.
+   * **Why D:** Originally argues childhood displacement fractures identity, not the loss of marital intimacy.
 
-5. **Type: Fill [Tests Form & Features]**
-   * **Question:** "Mrs Midas" is structured as eleven stanzas of six lines each — a dramatic [BLANK] spoken entirely in the wife's own voice.
-   * **Answer:** monologue
-   * **Feedback:** ✓ Correct. The poem is a dramatic monologue: the wife's voice carries the whole narrative, letting Duffy filter the ancient myth through a modern, sardonic domestic perspective.
-   * **WhyWrong:** The word is "monologue" — the poem's eleven six-line stanzas are voiced entirely by Mrs Midas herself, in the dramatic-monologue form Duffy uses throughout this set.
+5. **Type: MCQ [Tests Form & Features]**
+   * **Question:** "Mrs Midas" is voiced entirely by the wife herself. What does that single-voice dramatic-monologue form achieve?
+   * **Options:** A) It filters an ancient myth through one modern, intimate, sardonic voice, so a distant legend becomes a felt personal loss, B) It proves the wife is an unreliable liar the reader must distrust, C) It turns the poem into a communal ballad sung by many voices, D) It has no bearing on how we read the myth
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. Confining the whole narrative to the wife's voice pulls the King Midas legend out of myth and into a kitchen — we feel the loss from inside her modern, wry, grieving perspective rather than at a mythic distance.
+   * **Why B:** The single voice makes the loss intimate and trusted, not a performance of unreliable deceit.
+   * **Why C:** The poem is one private voice, not a chorus or communal ballad.
+   * **Why D:** The choice of her voice is exactly what turns a distant myth into a personal tragedy.
 
 6. **Type: MCQ [Tests Meaning & Effects]**
-   * **Question:** What does the ending of "Mrs Midas" reveal about her feelings once she and her husband are parted?
-   * **Options:** A) Relief, with no sense of loss, B) A grudging, unresolved longing — she confesses she misses "his hands, his warm hands on my skin, his touch", C) Triumph at having outwitted him, D) Indifference to what became of him
+   * **Question:** What does the ending of "Mrs Midas" reveal about the wife's feelings once she and her husband are parted?
+   * **Options:** A) Relief, with no sense of loss, B) A grudging, unresolved longing — she confesses she still misses "his warm hands on my skin, his touch", C) Triumph at having outwitted him, D) Indifference to what became of him
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Despite the disaster his golden touch caused, the closing lines admit a lingering physical and emotional longing — the poem ends on loss and ambivalence rather than simple relief.
-   * **Why A:** The final stanza voices longing, not relief; the separation still costs her something.
-   * **Why C:** There is no note of triumph — the tone is wistful and unresolved, not victorious.
-   * **Why D:** The admission that she "misses most" his touch reveals she is far from indifferent.
+   * **Feedback:** ✓ Correct. Despite the ruin his golden touch caused, the closing admission that she still longs for "his warm hands on my skin, his touch" ends the poem on loss and ambivalence rather than simple relief.
+   * **Why A:** The final lines voice longing, not relief; the separation still costs her deeply.
+   * **Why C:** The tone is wistful and unresolved, with no note of triumph.
+   * **Why D:** That she still aches for his touch reveals she is far from indifferent.
 
 7. **Type: MCQ [Tests Recognising the Poem]**
-   * **Question:** Which poem recalls a primary-school geography lesson tracing the Blue Nile, alongside tadpoles that "changed from commas into exclamation marks"?
+   * **Question:** Which poem recreates the enchanted safety of a primary-school classroom — a teacher who "chanted the scenery. Tana. Domodossola." — before charting childhood's slide into adolescence?
    * **Options:** A) In Mrs Tilscher's Class, B) Before You Were Mine, C) Mrs Midas, D) Medusa
    * **Correct:** A
-   * **Feedback:** ✓ Correct. "In Mrs Tilscher's Class" recalls the classroom's Blue Nile geography lesson and the tadpoles in the jar, images of an ordered, nurturing childhood world.
-   * **Why B:** Before You Were Mine recalls the mother's youth on a city corner, not a classroom.
-   * **Why C:** Mrs Midas is a married adult's domestic monologue, not a childhood classroom memory.
-   * **Why D:** Medusa is a mythological dramatic monologue, not a schoolroom recollection.
+   * **Feedback:** ✓ Correct. "In Mrs Tilscher's Class" builds an absorbed, enchanted classroom world — the teacher who "chanted the scenery. Tana. Domodossola." — then lets adolescence break that safety, arguing that growing up is both a loss and an awakening.
+   * **Why B:** Before You Were Mine recalls the mother's youth, not the speaker's own schoolroom and the loss of childhood.
+   * **Why C:** Mrs Midas is a married wife's monologue about her husband, not a childhood classroom.
+   * **Why D:** Medusa dramatises destructive jealousy, not the passage from childhood into adolescence.
 
 8. **Type: MCQ [Tests Form & Features]**
    * **Question:** How does the stanza structure of "In Mrs Tilscher's Class" support its movement from childhood into adolescence?
-   * **Options:** A) Four free-verse stanzas, the first two octaves easing into two shorter septets as the poem approaches puberty, B) A strict sonnet form throughout, C) Rhyming couplets that never vary, D) A single stanza with no breaks
+   * **Options:** A) Four free-verse stanzas whose settled early length gives way to a more unsettled shape as puberty approaches, so the structure itself charts the loss of the ordered childhood world, B) A strict sonnet form holds a single argument throughout, C) Rhyming couplets keep a steady, unchanging beat, D) A single unbroken stanza refuses any sense of change
    * **Correct:** A
-   * **Feedback:** ✓ Correct. The first two eight-line stanzas hold the settled world of the classroom; the shorter final stanzas, still free verse, mirror the more unsettled mood as the "feverish July" of puberty approaches.
-   * **Why B:** The poem is written in free verse, not a fixed fourteen-line sonnet.
-   * **Why C:** There is no regular end-rhyme scheme; the poem relies on free verse and natural speech rhythms.
-   * **Why D:** The poem is clearly divided into four stanzas of differing length, not one unbroken block.
+   * **Feedback:** ✓ Correct. The early stanzas hold the settled, safe world of the classroom; as the poem approaches the "feverish July" of adolescence its shape grows less settled, so the structure enacts the movement out of childhood.
+   * **Why B:** The poem is free verse, not a fixed fourteen-line sonnet arguing one case.
+   * **Why C:** There is no regular end-rhyme; the poem relies on free verse and natural speech rhythm.
+   * **Why D:** The poem is clearly divided into stanzas that change as it moves toward adolescence, not one static block.
 
 9. **Type: True-False [Tests Meaning & Effects]**
-   * **Question:** The final stanza's "feverish July", with the air "tasted of electricity" and a "sexy" sky, marks the child's uneasy, disorientating entry into adolescence rather than a continuation of settled childhood.
+   * **Question:** The final stanza's "feverish July", where "the air tasted of electricity" beneath a "racy-looking sky, full of potential", marks the child's uneasy, disorientating entry into adolescence rather than a continuation of settled childhood.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The charged, disorientating imagery of the final stanza — heat, electricity, an implicitly "sexy" sky — signals puberty breaking into the poem, ending the settled innocence of the classroom world.
-   * **WhyWrong:** This is the poem's turning point — the final stanza's charged imagery marks an uneasy shift into adolescence, breaking from the ordered childhood world established earlier.
+   * **Feedback:** ✓ Correct. The charged, ambiguous imagery of the close — heat, "electricity", a "racy-looking sky, full of potential" — signals puberty breaking into the poem, ending the settled innocence of the classroom world on a note of exhilaration and unease.
+   * **WhyWrong:** This is the poem's turn — the final stanza's charged imagery marks an uneasy shift into adolescence, breaking from the ordered childhood world established earlier.
 
 10. **Type: MCQ [Tests Recognising the Poem]**
-    * **Question:** Which poem opens with a wife's jealousy that turns "the hairs on my head to filthy snakes"?
+    * **Question:** Which poem gives voice to a mythical woman whose jealousy and suspicion of her husband curdle into a power that turns everything she looks at — and herself — to stone?
     * **Options:** A) Medusa, B) Havisham, C) Originally, D) Mrs Midas
     * **Correct:** A
-    * **Feedback:** ✓ Correct. "Medusa" opens as suspicion and jealousy physically transform the speaker, her hair becoming snakes as her mind curdles with doubt about her husband.
-    * **Why B:** Havisham's opening oxymoron "Beloved sweetheart bastard" voices bitterness at abandonment, not a jealousy-triggered transformation.
-    * **Why C:** Originally opens with a family's departure from home, not a mythological transformation.
-    * **Why D:** Mrs Midas opens with an ordinary domestic evening, not a jealousy-driven metamorphosis.
+    * **Feedback:** ✓ Correct. "Medusa" dramatises how jealousy and betrayal poison the self — the speaker's suspicion transforms her into a monster whose gaze petrifies, arguing that a destructive emotion consumes the one who holds it.
+    * **Why B:** Havisham also voices betrayal, but as a jilted bride's decades-long decay, not a jealous wife whose look turns others to stone.
+    * **Why C:** Originally argues childhood displacement fractures identity, not a self poisoned by jealousy.
+    * **Why D:** Mrs Midas centres a marriage destroyed by a husband's golden touch, not a wife's petrifying jealousy.
 
 11. **Type: Fill [Tests Form & Features]**
-    * **Question:** In "Medusa", Duffy uses [BLANK] — repeated hissing "s" sounds — across the opening stanzas to echo the snakes and the speaker's poisoned state of mind.
+    * **Question:** In "Medusa", Duffy threads [BLANK] — repeated hissing "s" sounds — through the poem so that the very sound of the speaker's voice hisses like her snakes and enacts her poisoned, jealous state of mind.
     * **Answer:** sibilance
-    * **Feedback:** ✓ Correct. The dense sibilance of the opening stanzas hisses like the snakes themselves, binding sound to sense as jealousy poisons the speaker's voice.
-    * **WhyWrong:** The technique is "sibilance" — Duffy's hissing repeated "s" sounds echo the snakes and the corrosive jealousy driving the poem.
+    * **Feedback:** ✓ Correct. The dense sibilance makes sound serve sense — the hissing "s" sounds echo the snakes and let us hear the corrosive jealousy curdling the speaker's voice, so the technique's effect, not its label, is the point.
+    * **WhyWrong:** The technique is "sibilance" — the hissing repeated "s" sounds bind sound to meaning, voicing the jealousy that poisons the speaker.
 
 12. **Type: MCQ [Tests Meaning & Effects]**
-    * **Question:** What does Medusa's stone-turning power ultimately reveal about her feelings towards her husband?
-    * **Options:** A) Pure hatred, with no remaining love, B) A painful contradiction — she still declares "It's you I love, perfect man, Greek God, my own" even as she wishes him stone rather than unfaithful, C) Total indifference to his fate, D) Gratitude for her transformation
+    * **Question:** What does Medusa's petrifying power ultimately reveal about her feelings towards her husband?
+    * **Options:** A) Pure hatred, with no love remaining, B) A painful contradiction — her love survives alongside the jealousy, so she would sooner turn him to stone than lose him to another, C) Total indifference to his fate, D) Gratitude for what she has become
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Medusa's power is entangled with continuing love — she would rather petrify her husband than lose him to betrayal, exposing the pain of jealousy that has not extinguished affection.
-    * **Why A:** The declaration "It's you I love" confirms love persists alongside the destructive power.
-    * **Why C:** Her monologue is charged with feeling, not indifference, towards him.
-    * **Why D:** She frames her state as a loss ("Wasn't I beautiful?"), not something to be grateful for.
+    * **Feedback:** ✓ Correct. Medusa's destructive power is entangled with love that has not died — she would rather petrify her husband than share him, exposing a jealousy that torments precisely because affection persists.
+    * **Why A:** Love clearly survives beside the rage; it is not pure hatred.
+    * **Why C:** Her monologue is charged with feeling towards him, the opposite of indifference.
+    * **Why D:** She frames her transformation as a loss and a wound, not something to be grateful for.
 
 13. **Type: MCQ [Tests Recognising the Poem]**
-    * **Question:** Which poem opens with the oxymoron "Beloved sweetheart bastard", spoken by Dickens's jilted bride?
+    * **Question:** Which poem voices a bride abandoned at the altar, whose betrayal has fused love and hatred into one consuming emotion — opening on the oxymoron "Beloved sweetheart bastard"?
     * **Options:** A) Havisham, B) Medusa, C) In Mrs Tilscher's Class, D) Before You Were Mine
     * **Correct:** A
-    * **Feedback:** ✓ Correct. "Havisham" opens with the contradictory "Beloved sweetheart bastard", voicing Miss Havisham's tangled love and hatred for the man who abandoned her at the altar.
-    * **Why B:** Medusa opens with jealousy transforming the speaker's hair to snakes, not an oxymoron about a groom.
-    * **Why C:** In Mrs Tilscher's Class opens in a classroom, not with a jilted bride's address.
-    * **Why D:** Before You Were Mine opens by picturing the speaker's mother as a girl, not a bride abandoned at the altar.
+    * **Feedback:** ✓ Correct. "Havisham" opens with the oxymoron "Beloved sweetheart bastard", fusing tenderness and rage to argue that betrayal's deepest damage is love weaponised into hatred, consuming the self for decades.
+    * **Why B:** Medusa voices jealousy within a marriage, not a bride left at the altar for decades.
+    * **Why C:** In Mrs Tilscher's Class charts childhood giving way to adolescence, not a jilted bride's bitterness.
+    * **Why D:** Before You Were Mine warmly claims the mother's youth — a poem of affection, not betrayal and hatred.
 
 14. **Type: MCQ [Tests Form & Features]**
-    * **Question:** How is "Havisham" structured, and what effect does this create?
-    * **Options:** A) Four quatrains in free verse, the irregular rhythm and jarring punctuation mimicking her disordered, bitter state of mind, B) A single flowing stanza with no punctuation, C) Four quatrains in strict, singsong rhyme, D) A ballad with a repeated refrain
+    * **Question:** "Havisham" is written in four outwardly regular quatrains, but the free verse inside them is jagged with abrupt punctuation and broken syntax. What effect does this create?
+    * **Options:** A) The clash between the orderly quatrains and their fractured, jarring rhythm enacts a mind that looks contained but is broken apart by decades of bitterness, B) A smooth, unpunctuated flow suggests calm acceptance, C) A strict singsong rhyme makes the poem light and musical, D) A ballad refrain tells a reassuring story
     * **Correct:** A
-    * **Feedback:** ✓ Correct. The four quatrains look outwardly regular, but the free verse, jagged syntax and abrupt punctuation inside them convey a mind fractured by decades of bitterness.
-    * **Why B:** The poem is heavily, deliberately punctuated with abrupt stops, not unpunctuated flow.
-    * **Why C:** There is no strict or singsong rhyme; the free verse resists musicality.
-    * **Why D:** There is no ballad refrain; the stanzas develop rather than repeat a chorus.
+    * **Feedback:** ✓ Correct. The stanzas look regular, but the jagged syntax and abrupt stops inside them convey a consciousness disintegrating — the form's outward order against its inner fracture is the point.
+    * **Why B:** The poem is heavily, deliberately punctuated with abrupt breaks, not a smooth, calm flow.
+    * **Why C:** The free verse resists musicality; there is no singsong rhyme.
+    * **Why D:** The stanzas develop a breaking mind rather than repeating a reassuring refrain.
 
 15. **Type: Select All [Tests Meaning & Effects]**
     * **Question:** Which statements correctly describe the meaning and effect of the final line, "Don't think it's only the heart that b-b-b-breaks"?
-    * **Options:** A) The stammered "b-b-b-breaks" enacts her broken speech and fractured state of mind, B) It suggests the damage of abandonment goes beyond emotional pain to her whole sense of self, C) It is the poem's only moment of genuine tenderness towards her former groom, D) It proves she has fully recovered from the betrayal
+    * **Options:** A) The stammered "b-b-b-breaks" enacts her broken speech and fractured state of mind, B) It extends the damage of betrayal beyond emotional pain to her whole sense of self, C) It is the poem's one moment of genuine tenderness towards her former groom, D) It proves she has fully recovered from the betrayal
     * **Correct:** A, B
     * **Scoring:** 2 marks for A,B. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. The stammer physically enacts a mind breaking apart, extending "breaking" beyond the heart to suggest a more total collapse of self caused by the betrayal.
-    * **Why C:** The line is bitter and pained, not a moment of tenderness towards the man who jilted her.
+    * **Feedback:** ✓ Correct. The stammer physically enacts a mind breaking apart, and the insistence that it is not "only the heart" extends the collapse beyond feeling to the entire self — mind, body, and voice undone by betrayal.
+    * **Why C:** The line is bitter and pained, not tender towards the man who jilted her.
     * **Why D:** The broken stammer signals continuing damage, not recovery.
 
 16. **Type: MCQ [Tests Recognising the Poem]**
-    * **Question:** Which poem imagines the speaker's mother laughing with friends on a street corner years before the speaker was born, her "polka-dot dress" blowing "round your legs. Marilyn."?
+    * **Question:** Which poem imagines the speaker's mother as a glamorous young woman years before the speaker was born — "Your polka-dot dress blowing round you, Marilyn." — reversing the usual claim so the child possesses the parent's past?
     * **Options:** A) Before You Were Mine, B) In Mrs Tilscher's Class, C) Mrs Midas, D) Originally
     * **Correct:** A
-    * **Feedback:** ✓ Correct. "Before You Were Mine" pictures the speaker's mother as a laughing young woman, her polka-dot dress lifted like Marilyn Monroe's, in the years before the speaker existed.
-    * **Why B:** In Mrs Tilscher's Class recalls the speaker's own childhood classroom, not her mother's youth.
-    * **Why C:** Mrs Midas is a married adult's monologue about her husband, not a daughter picturing her mother's youth.
-    * **Why D:** Originally recalls the speaker's own childhood move, not her mother's pre-motherhood youth.
+    * **Feedback:** ✓ Correct. "Before You Were Mine" pictures the mother's carefree youth — "Your polka-dot dress blowing round you, Marilyn." — and reverses the parent-child claim, arguing the child possesses and immortalises the mother's lost self.
+    * **Why B:** In Mrs Tilscher's Class recalls the speaker's own classroom childhood, not the mother's pre-motherhood youth.
+    * **Why C:** Mrs Midas is a wife's monologue about her husband's ruinous touch, not a daughter claiming her mother's past.
+    * **Why D:** Originally argues childhood displacement fractures identity, not a child's celebration of a parent's youth.
 
 17. **Type: MCQ [Tests Form & Features]**
-    * **Question:** How does the structure of "Before You Were Mine" reflect its movement between past and present?
-    * **Options:** A) Four stanzas that slip between second-person address to the mother and first-person memory, circling back to the same pavement image at beginning and end, B) A strict villanelle with a fixed refrain, C) A single stanza fixed entirely in the past tense, D) Twelve short stanzas with no repeated imagery
+    * **Question:** How does the form of "Before You Were Mine" shape its movement between the mother's past and the speaker's present?
+    * **Options:** A) It slips between second-person address to the mother ("you") and the speaker's own first-person voice, and uses the present tense for past events — so the form keeps the mother's youth perpetually alive and within the child's grasp, B) A strict villanelle repeats a fixed refrain, C) A single past-tense stanza seals the mother's youth safely away in the past, D) Rigid rhyming couplets hold the speaker at a cool distance
     * **Correct:** A
-    * **Feedback:** ✓ Correct. The four stanzas move fluidly between direct address ("you") and the speaker's own voice, and the pavement/corner image returning at the close gives the poem a circular shape that binds past and present.
-    * **Why B:** There is no strict refrain or villanelle form; the poem is in free verse.
-    * **Why C:** The poem shifts between past and present, not fixed wholly in the past.
-    * **Why D:** The poem has four stanzas, and imagery, such as the corner and the dancing, recurs rather than appearing only once.
+    * **Feedback:** ✓ Correct. The shifts between "you" and "I", and the present tense used for the past, dissolve the distance between the mother's youth and the speaker's present — the form itself lets the child claim and preserve that lost, glamorous self.
+    * **Why B:** The poem is free verse, not a villanelle with a fixed refrain.
+    * **Why C:** The present tense keeps the past alive rather than sealing it away.
+    * **Why D:** The intimate address pulls mother and child close, not into cool, distanced couplets.
 
 18. **Type: True-False [Tests Meaning & Effects]**
     * **Question:** "Before You Were Mine" expresses straightforward disapproval of the mother's youthful freedom, with no admiration or affection in the speaker's tone.
     * **Answer:** False
-    * **Feedback:** ✓ Correct. The poem's tone is affectionate and admiring — the speaker delights in imagining her mother's carefree youth, even as she registers the loss of that freedom once motherhood began.
-    * **WhyWrong:** The poem's tone is warm and admiring, not disapproving — the speaker cherishes the image of her mother's youthful freedom rather than condemning it.
+    * **Feedback:** ✓ Correct. The tone is affectionate and admiring — the speaker delights in imagining her mother's glamorous, carefree youth, even as she registers that this freedom was surrendered once motherhood arrived.
+    * **WhyWrong:** The tone is warm and celebratory, not disapproving — the speaker cherishes the image of her mother's youthful freedom rather than condemning it.

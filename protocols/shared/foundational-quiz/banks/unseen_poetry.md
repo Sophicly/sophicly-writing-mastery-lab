@@ -150,13 +150,13 @@ Types: MCQ · Fill · True-False · Select All
    * **WhyWrong:** This is true — identifying the form is a key move for understanding how an unseen poem creates meaning.
 
 19. **Type: MCQ [Tests Forms & Meaning]**
-   * **Question:** A poem whose main job is to tell a story is broadly called a...
-   * **Options:** A) Narrative poem, B) Sonnet, C) Ode, D) Lyric
+   * **Question:** An unseen poem tells its subject through a narrative form — events, characters, a sequence — rather than as a lyric. What does that choice DO to how its meaning reaches the reader?
+   * **Options:** A) Meaning unfolds through the sequence of events, so the reader arrives at it by following what happens and how the characters are changed, B) Meaning is delivered as one compressed burst of private feeling, with no events to follow, C) Meaning comes entirely from a fixed rhyme scheme and an exact line count, D) Meaning is stated directly as an elevated address of praise to the subject
    * **Correct:** A
-   * **Feedback:** ✓ Correct. A narrative poem tells a story, with events, characters and a sequence — the ballad and epic are narrative forms.
-   * **Why B:** A sonnet is a fourteen-line form, not defined by storytelling.
-   * **Why C:** An ode praises a subject rather than telling a story.
-   * **Why D:** A lyric focuses on personal feeling, not on relating events.
+   * **Feedback:** ✓ Correct. A narrative form makes meaning emerge from the arc — the reader understands the poem by tracking events and the change they work on the characters.
+   * **Why B:** That describes the lyric's inward compression of feeling, not the narrative form's meaning-through-events.
+   * **Why C:** A narrative poem is not defined by fixed rhyme or line count; its meaning is carried by the story arc, not a metrical rule.
+   * **Why D:** Direct elevated praise is the ode's mode; a narrative reveals its meaning through what happens, not through stated praise.
 
 20. **Type: Fill [Tests Forms & Meaning]**
    * **Question:** A turn from problem to resolution, or a repeated refrain, are clues that help you identify a poem's [BLANK].

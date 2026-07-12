@@ -1,7 +1,7 @@
 # FQ-QUESTION-STANDARD.md — the contract for Foundational-Quiz question banks (prose/drama)
 
 **Status:** contract (like `PROTOCOL-STANDARD.md`, `CN-STANDARD.md`). A bank that fails these checks does not ship.
-**Governs:** `protocols/shared/foundational-quiz/banks/*.md` for **prose + drama** texts (novels, plays). Poetry banks use a different spine — a separate standard (queued).
+**Governs:** `protocols/shared/foundational-quiz/banks/*.md` for **prose + drama** texts (novels, plays). Poetry banks keep their own per-poem structure — see **§ POETRY** at the foot of this file.
 **Derived from:** `research/2026-07-11-concept-based-fq-question-design.md` (verified educational research).
 **Reference implementation:** `macbeth.md` (the mold every other bank copies).
 
@@ -72,3 +72,73 @@ Author verifies the text's genre before writing its effects items; if unlisted, 
 
 ## COMPANION: concept-notes (`<text>.concept-notes.md`)
 One note per aspect (the autofill payload). The **effects** note is the **genre-emotion** (pity/fear/…), NOT a technique list. Mapping header must read `Effects → cn_section_4`.
+
+---
+
+# § POETRY — the contract for poetry FQ banks
+**Reference implementation:** `power_conflict_poetry.md` (the poetry mold every poetry bank copies).
+
+**THE PRINCIPLE is identical** (concept over trivia; conceptual-misreading distractors; research-grounded).
+Only the STRUCTURE differs — poetry is per-poem across an anthology, not per-text 5 aspects.
+
+## STRUCTURE (preserved — do NOT relabel to the 5 prose aspects)
+- **Per-poem, 3 questions each**, across **3 dimensions**: `[Tests Recognising the Poem]` · `[Tests Form & Features]` · `[Tests Meaning & Effects]`. (No `@dim:` — poetry keys on these three category labels, which the parser stratifies.)
+- **Anthology banks** = 3 × N poems (e.g. 45 Q for a 15-poem anthology), staged by reading order with `@set:N` (5 poems per set); **single-poet / forms banks** use `@part:N`. **KEEP the existing `@set`/`@part` staging and poem membership exactly** — the reading-order gate must not change.
+- Single-poet collections (SQA) + unseen banks: same 3 dimensions per poem, scaled to the bank's poems.
+
+## THE THREE DIMENSIONS + their central concept
+| Category label | Central concept the item MUST elicit |
+|---|---|
+| Recognising the Poem | Recognise the poem by its **controlling idea / argument** (its central concern), anchored by a signature image or line — NOT image-matching alone. |
+| Form & Features | How the poem's **form / structure / method SHAPES meaning** (the *effect* of the form) — NOT naming the form. |
+| Meaning & Effects | The poem's **controlling idea + the reader's feeling / response** it produces — NOT a plot-summary or technique label. |
+
+## DISTRACTOR LAW (same as prose)
+Each wrong option is a plausible **conceptual misreading**, with a `Why <letter>:` gloss.
+- **Recognising:** distractors are OTHER poems in the same anthology **whose central argument differs** (so the student must reason from concept, not spot a stray image).
+- **Form & Features:** distractors are **misreadings of the form's effect** ("it makes the poem song-like", "it shows the speaker's power") or a form belonging to a different poem in the set.
+- **Meaning & Effects:** distractors are **wrong emotional / conceptual readings**, never arbitrary false facts.
+
+## EVIDENCE RULES (same hard gates)
+- **Real anchor quotes only**, correctly attributed to the poem. **Reuse the quotes already in the existing bank** (verified). Never invent a line; check the Table of Techniques "Genre & Mode" / form families if unsure of a form.
+- **Effects/Meaning items test a FEELING or IDEA, never a technique name.**
+
+## ACCEPTANCE CHECKS (poetry)
+- [ ] Every poem in the bank has exactly 3 questions — one per category (Recognising / Form & Features / Meaning & Effects).
+- [ ] `@set:N` / `@part:N` staging + poem membership unchanged from the prior bank.
+- [ ] Recognising items key on the **controlling idea**, and their distractors are other anthology poems with a *different* argument.
+- [ ] Form items test the form's **effect on meaning**, not the label.
+- [ ] Meaning & Effects items test an idea/feeling, not a technique name; distractors are conceptual misreadings.
+- [ ] Every quote real + correctly attributed to its poem.
+- [ ] Parses under `SWML_Quiz_Bank::parse_file()`.
+
+## POETRY CN AUTOFILL (note)
+Poetry FQ→CN autofill uses the poetry `pf_*` / poem-field path (per `reference_wml_fq_cn_autofill_pf_path_poetry_only`), NOT `concept_field_for_dim`/`cn_section_*` — that lit mapping is prose/drama-only. Poetry banks do not author a `concept_field_for_dim` companion; leave the poetry autofill path untouched.
+
+## ⭐ POEM-TEXT SOURCES — verify EVERY quote against these (NEVER re-search; do not guess)
+The 2026-07-12 poetry fan-out FAILED the quote gate because agents had no poem text. **Poetry quotes
+MUST be verified against the anthology source** (words are enough; stanza layout not needed for quotes).
+Sources live under `sophicly-etchwp-package v2.6/`. Feed the matching source FILE to each rebuild agent
+and require: every quote-marked phrase confirmed verbatim in the source, or de-quoted. Also see memory
+`reference_poem_text_source_location_and_stanza_gold`.
+
+**Bank → source (VERIFIABLE — re-run the rebuild WITH this file):**
+| Bank | Source file (under `Model Answers/Model Answer Resources/` unless noted) |
+|---|---|
+| power_conflict_poetry | `Power and Conflict Anthology.md` |
+| worlds_lives_poetry | `AQA Worlds and Live Anthology.md` |
+| love_relationships_poetry | `The Art of Poetry – AQA Love & relationships_nodrm.md` (cleaner than the garbled `AQA love relationships poetry-copy2.md`) |
+| edexcel_belonging_poetry | `Edexcel Belonging Anthology.md` |
+| edexcel_conflict_poetry | `Edexcel Conflict Anthology.md` |
+| edexcel_relationships_poetry | `Edexcel Relationships Anthology.md` |
+| edexcel_time_place_poetry | `Edexcel Time and Place Anthology.md` |
+| eduqas_poetry_anthology | `EDUQAS-2027-poetry-anthology-for-first-examination-in-2027-mlp-18pt.md` |
+| conflict (OCR) | `OCR Poetry Anthologies_ Complete Poems and Study Guide Latest.md` |
+| igcse_lit_poetry / igcse_lang_poetry | `iGCSE-Anthology-English-Language-A-and-English-Literature.md` (+ PDFs under `Sophicly Etch Mark Scheme Resources/Edexcel IGCSE Poetry Anthology/`) |
+
+**GAP — no clean on-system poem text found (2026-07-12); DO NOT rebuild these until a source is located:**
+`ccea_conflict`, `ccea_identity`, `ccea_relationships` (CCEA anthology) · `cambridge_songs_ourselves`
+(CAIE Songs of Ourselves — only a WML template exists) · all `sqa_*` (dharker/duffy/higher_collection/
+jamie/kay/lochhead/maccaig/morgan/n5_collection/paterson — Scottish set texts; no clean text on disk).
+These stay on their current live banks until Neil provides the source, or a source is found under
+`Sophicly Etch Mark Scheme Resources/` (SQA / CCEA / CAIE subfolders — PDFs may exist to Read).
