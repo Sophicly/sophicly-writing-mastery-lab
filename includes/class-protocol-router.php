@@ -970,6 +970,11 @@ class SWML_Protocol_Router {
             $poem = $context['poem'] ?? '';
             if ($task === 'conceptual_notes' && $is_poetry_sub) {
                 $skip_block = $this->build_poetry_cn_injection($context);
+            } else if ($task === 'conceptual_notes' && $is_nonfiction_sub) {
+                // v7.20.38: nonfiction anthology one-doc walk — same data contract as poetry
+                // (roster + selected text + nf_{text}_{slug} fields + done list), but no full
+                // text injected (in-copyright; student quotes from their own anthology).
+                $skip_block = $this->build_nonfiction_cn_injection($context);
             } else if (!empty($poem) || !empty($poem_title)) {
                 $text_name = $poem_title ?: $poem;
 
@@ -1410,6 +1415,107 @@ class SWML_Protocol_Router {
         return $b;
     }
 
+    /**
+     * v7.20.38: NONFICTION anthology Conceptual Notes injection — the nf twin of
+     * build_poetry_cn_injection. Supplies the nfcn walk with the anthology TEXT roster, the
+     * selected text's orientation summary, the frozen nf_{text}_{slug} fieldId contract, and
+     * the done list. Nonfiction extracts are IN-COPYRIGHT, so — unlike poetry — the full text
+     * is NOT injected: the student has the anthology in front of them and supplies the quotes;
+     * the model must never invent or quote nonfiction from memory. Roster resolves through the
+     * SAME get_anthology_poems_map used by the doc's per-text sections. Fails loud on a roster
+     * miss (never improvises a text list). Reuses @POEM_SELECTED (the client's family-generic
+     * item marker) + the current_poem_id/done_poem_ids context (generic item id / done list).
+     */
+    private function build_nonfiction_cn_injection($context) {
+        $board  = sanitize_key($context['board'] ?? '');
+        $text   = (string) ($context['text'] ?? '');
+        $sel_id = sanitize_key($context['current_poem_id'] ?? ($context['poem'] ?? ''));
+        $done   = array_values(array_filter(array_map('sanitize_key', (array) ($context['done_poem_ids'] ?? []))));
+
+        $b = "\n\n## ⚠️ CONCEPTUAL NOTES — SESSION DATA (read before anything else) ⚠️\n\n";
+
+        $map = class_exists('Sophicly_Writing_Mastery_Lab')
+            ? Sophicly_Writing_Mastery_Lab::instance()->get_anthology_poems_map()
+            : [];
+        $canon = class_exists('SWML_REST_API') ? SWML_REST_API::canonical_slug($text) : $text;
+        $cands = [];
+        foreach ([$text, $canon] as $c) {
+            $c = (string) $c;
+            if ($c !== '' && !in_array($c, $cands, true)) $cands[] = $c;
+        }
+        $anthology = '';
+        $roster = [];
+        foreach ($cands as $c) {
+            if (!empty($map[$board . '|' . $c])) { $anthology = $c; $roster = $map[$board . '|' . $c]; break; }
+        }
+
+        if (empty($roster)) {
+            error_log("WML NF-CN: NO ROSTER board={$board} text={$text} (tried " . implode(',', $cands)
+                . ") — author swml_poems_{board}_{anthology} or add a slug alias");
+            $b .= "**ROSTER UNAVAILABLE.** The anthology text list could not be loaded for this course. "
+                . "Tell the student plainly that their text list isn't available yet and ask them to report it to their tutor. "
+                . "Do NOT improvise a text list, do NOT guess any text's contents, and do NOT ask the student to paste a text.\n";
+            return $b;
+        }
+
+        $b .= "### Anthology roster — the ONLY texts you may offer\n";
+        $b .= "Build the picker from these. Use each text's `id` (in [brackets]) in @POEM_SELECTED and in every @FIELD_SET field (nf_{id}_{element}).\n";
+        foreach ($roster as $p) {
+            $id = $p['id'] ?? '';
+            if ($id === '') continue;
+            $done_tag = in_array($id, $done, true) ? ' — ✓ notes complete' : '';
+            $b .= "- {$p['title']}" . (!empty($p['poet']) ? " ({$p['poet']})" : '') . " [id: {$id}]{$done_tag}\n";
+        }
+        if (!empty($done)) {
+            $b .= "\nAlready complete (exclude from the picker unless the student asks to revisit): " . implode(', ', $done) . "\n";
+        }
+
+        if ($sel_id !== '') {
+            $sel = null;
+            foreach ($roster as $p) { if (($p['id'] ?? '') === $sel_id) { $sel = $p; break; } }
+            if ($sel) {
+                $summary = '';
+                global $wpdb;
+                $opt_names = $wpdb->get_col($wpdb->prepare(
+                    "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+                    $wpdb->esc_like('swml_poems_' . $board . '_') . '%'
+                ));
+                array_unshift($opt_names, 'swml_poems_' . $board . '_' . $anthology);
+                foreach (array_unique($opt_names) as $opt) {
+                    $rows = get_option($opt, []);
+                    if (!is_array($rows)) continue;
+                    foreach ($rows as $r) {
+                        if (is_array($r) && sanitize_key($r['id'] ?? '') === $sel_id
+                            && trim((string) ($r['poem_text'] ?? '')) !== '') {
+                            $summary = (string) $r['poem_text'];
+                            break 2;
+                        }
+                    }
+                }
+                $b .= "\n### Current text: {$sel['title']}" . (!empty($sel['poet']) ? " ({$sel['poet']})" : '') . " [id: {$sel_id}]\n";
+                $b .= "Skip the picker — walk THIS text, element by element IN ORDER (voice → context → structure → texttype → techniques → themes → purpose → message), asking each element's opening question YOURSELF (one question per message; the interface renders your lettered options as buttons). Unlike the poetry walk, nonfiction has NO frontend stance cards — so do not expect an @ELEMENT_STANCE line; ask the opener, take the student's answer, develop it Socratically, then file. If INSTEAD their message says they are CONTINUING or REVISITING an element already filed, do exactly what it directs: resume at the element it names; or deepen the filed element it asks to revisit (recap their note in 1–2 lines FIRST, then ONE targeted question — if the note is already strong, say so honestly and recommend moving on to an unfilled element); or, when it names ONE empty box (quotes / effect), work ONLY on that box and file ONLY that field. Never restart at Voice uninvited, never re-walk elements the message didn't name. Do NOT greet again, do NOT ask them to \"say ready\", do NOT re-present the picker. File every element into these EXACT fieldIds:\n";
+                $effect_els = ['voice', 'structure', 'texttype', 'techniques', 'themes'];
+                foreach (['voice', 'context', 'structure', 'texttype', 'techniques', 'themes', 'purpose', 'message'] as $el) {
+                    $b .= "- nf_{$sel_id}_{$el}  (notes)  ·  nf_{$sel_id}_{$el}_quotes  (1–3 quotes from the text)"
+                        . (in_array($el, $effect_els, true) ? "  ·  nf_{$sel_id}_{$el}_effect  (effect on the reader — how the method steers focus/feeling/thinking)" : '')
+                        . "\n";
+                }
+                if (trim($summary) !== '') {
+                    $b .= "\n#### Orientation for {$sel['title']} (context only — the student has the FULL text in their anthology):\n";
+                    $b .= "```\n" . trim($summary) . "\n```\n";
+                }
+                $b .= "\n**QUOTES:** the student reads the full text in their own anthology; quotes come from THEIR reading. NEVER quote nonfiction from memory, and NEVER invent a line — if you need evidence, ask the student to find and type the exact phrase.\n";
+            } else {
+                error_log("WML NF-CN: selected id={$sel_id} NOT in roster for {$board}|{$anthology} — stale/mismatched selection");
+                $b .= "\n**SELECTION NOT RECOGNISED.** The text id the session sent (`{$sel_id}`) is not in this anthology's roster above. Do NOT invent or guess a text — re-present the picker and ask the student to choose again.\n";
+            }
+        } else {
+            $b .= "\nNo text selected yet — present the picker (two-step disclosure: a few recommended, then \"See all texts…\") and wait for the student's choice.\n";
+        }
+
+        return $b;
+    }
+
     private function load_modular_protocol($context, $user_id = 0) {
         // v7.19.406 (CACHE): never let a previous call's slice leak into this request.
         $this->dynamic_step_slice = '';
@@ -1698,7 +1804,9 @@ class SWML_Protocol_Router {
 
         // Edexcel IGCSE Language Paper 1 = nonfiction anthology — use nonfiction CN protocol (v7.14.89)
         // v7.15.38: $board is normalized to hyphenated form at function entry.
-        if ($task === 'conceptual_notes' && $subject === 'language1' && $board === 'edexcel-igcse') {
+        // v7.20.38: the one-doc mold uses subject 'nonfiction_anthology'; the legacy embed used
+        // 'language1'+edexcel-igcse. Route BOTH to the shared nonfiction CN protocol.
+        if ($task === 'conceptual_notes' && ($subject === 'nonfiction_anthology' || ($subject === 'language1' && $board === 'edexcel-igcse'))) {
             $protocol_group = 'nonfiction';
             $manifest_path = $plugin_dir . "protocols/shared/nonfiction/manifest.json";
         }
@@ -3512,6 +3620,18 @@ TEMPLATE;
                 $preamble .= "3. Filing is AUTOMATED via @FIELD_SET markers (see the protocol). There is NO function to call and NOTHING for the student to copy anywhere. Never say 'workbook', 'save', 'panel', 'querying', 'loading', or mention any technical issue.\n";
                 $preamble .= "4. Follow the protocol exactly: picker (two-step disclosure) → per-poem element walk (speaker → … → comparisons) → @FIELD_SET filing (note + 1–3 quotes; craft elements — speaker/form/structure/themes — also the _effect field) per element → next-poem loop.\n";
                 $preamble .= "5. Quote ONLY from the injected poem text. No attempts, no scoring, no completion — Conceptual Notes is a building exercise.\n\n";
+            } else if ($subject === 'nonfiction_anthology') {
+                // v7.20.38: the NEW nonfiction one-doc walk (nfcn-conceptual-notes.md) runs the
+                // same picker + per-text element walk + @FIELD_SET filing as poetry. It must NOT
+                // get the legacy nonfiction preamble below (welcome-then-ready / vector-store /
+                // Step-2 A-B-C-D) — that conflicts with the walk. The legacy else-branch is for the
+                // OLD single-doc nonfiction (subject 'language1') only.
+                $preamble .= "\n### CONCEPTUAL NOTES (nonfiction) — SESSION RULES\n";
+                $preamble .= "1. One question per message. Wait for the answer, give brief feedback, then ask the next. Never combine questions.\n";
+                $preamble .= "2. Never re-send the welcome. Once a text is selected, never re-ask which text.\n";
+                $preamble .= "3. Filing is AUTOMATED via @FIELD_SET markers (see the protocol). There is NO function to call and NOTHING for the student to copy anywhere. Never say 'workbook', 'save', 'panel', 'querying', 'loading', or mention any technical issue.\n";
+                $preamble .= "4. Follow the protocol exactly: picker (two-step disclosure) → per-text element walk (voice → context → structure → texttype → techniques → themes → purpose → message) → @FIELD_SET filing (note + 1–3 quotes; craft elements — voice/structure/texttype/techniques/themes — also the _effect field) per element → next-text loop.\n";
+                $preamble .= "5. Quotes come from the student's OWN anthology reading — NEVER quote nonfiction from memory or invent lines. No attempts, no scoring, no completion — Conceptual Notes is a building exercise.\n\n";
             } else {
             $preamble .= "\n### CRITICAL RULES FOR CONCEPTUAL NOTES SESSION\n";
             $preamble .= "1. **NEVER reveal vector store queries.** Query the vector store silently — never say 'querying', never show the query string, never mention the vector store exists. Use retrieved knowledge to inform your Socratic questions.\n";
