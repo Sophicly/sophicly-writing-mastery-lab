@@ -847,7 +847,7 @@ window.WML = (function() {
             id: 'nonfiction', prefix: 'nf', spine: NONFICTION_CN_SPINE,
             craft: ['voice', 'structure', 'texttype', 'techniques', 'themes'],
             depth: 'light', roster: 'anthology', openers: null,
-            moldReady: false, // flips in Part B Phase 2 (light-walk template ships)
+            moldReady: true, // v7.20.37: one-doc template + shape-heal + FQ→CN autofill activated (cards/walk deferred to CN-WALK batch)
         },
         prose: {
             id: 'prose', prefix: 'prose', spine: PROSE_CN_SPINE,
