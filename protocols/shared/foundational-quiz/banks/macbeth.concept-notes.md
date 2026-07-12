@@ -21,13 +21,13 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 - **Note:** Macbeth begins as a valiant, honoured Scottish general — "brave Macbeth" — whose hamartia is not ambition itself but his choice to act on the witches' prophecy; once he murders Duncan he falls from hero to isolated, sleepless tyrant, until his death restores the moral order.
 
 ### Plot
-- **Note:** Spurred by the witches' prophecy and Lady Macbeth's goading, Macbeth murders King Duncan to seize the throne, then kills again — Banquo, Macduff's family — to hold it; his tyranny provokes rebellion, Lady Macbeth collapses under guilt, and Macduff, "not of woman born", kills him as Malcolm reclaims the crown.
+- **Note:** Spurred by the witches' prophecy and Lady Macbeth's goading, Macbeth murders King Duncan to seize the throne, then kills again — Banquo, Macduff's family — to hold it; his tyranny provokes rebellion, Lady Macbeth collapses under guilt, and Macduff — not of woman born, "from his mother's womb / Untimely ripp'd" — kills him as Malcolm reclaims the crown.
 
 ### Themes
 - **Note:** The central themes are unchecked ambition that "o'erleaps itself" and destroys, the corrosive and inescapable guilt that follows (bloodstains that will not wash, murdered sleep), the tension between fate and free will, and the disruption then restoration of the God-ordained natural order.
 
 ### Effects
-- **Note:** Macbeth is a tragedy, and its emotional effect is pity and fear: we pity a man of real greatness who destroys himself through his own fatal error — his ruin feels like a terrible waste — and we fear because he is recognisably "like us", so his fall warns that unchecked ambition could undo anyone. The horror of the blood and the murdered sleep serve that arc, and the restoration of order at the close leaves us moved rather than merely satisfied.
+- **Note:** Macbeth is a tragedy, and its emotional effect is pity and fear: we pity a man of real greatness who destroys himself through his own fatal error — his ruin feels like a terrible waste — and we fear because he is recognisably like us, so his fall warns that unchecked ambition could undo anyone. The horror of the blood and the murdered sleep serve that arc, and the restoration of order at the close leaves us moved rather than merely satisfied.
 
 ### Message
 - **Note:** The play warns that ambition pursued without moral restraint corrupts absolutely and destroys the self — regicide unleashes chaos on both conscience and kingdom — yet the return of rightful rule affirms that the moral and natural order ultimately reasserts itself.

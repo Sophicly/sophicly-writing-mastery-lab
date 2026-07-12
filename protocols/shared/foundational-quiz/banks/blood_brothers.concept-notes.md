@@ -27,7 +27,7 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 - **Note:** The controlling ideas are nature versus nurture — that class and upbringing, not birth or ability, decide the twins' opposite fates ("you didn't need to" grow up); superstition and fate as a shadow of doom the play stages and then reframes as class; and brotherhood and love destroyed by the inequality forced between the twins.
 
 ### Effects
-- **Note:** Blood Brothers is a social-realist tragedy, and its emotional effect is moral discomfort, injustice-anger and pathos: we grieve for two ordinary, blameless brothers destroyed not by their own wickedness but by a class system that hands one everything and the other nothing, and because Mickey is recognisably "like us" his ruin feels like a warning and an injustice we are implicated in — the ending leaves us uneasy and questioning, not consoled.
+- **Note:** Blood Brothers is a social-realist tragedy, and its emotional effect is moral discomfort, injustice-anger and pathos: we grieve for two ordinary, blameless brothers destroyed not by their own wickedness but by a class system that hands one everything and the other nothing, and because Mickey is recognisably like us his ruin feels like a warning and an injustice we are implicated in — the ending leaves us uneasy and questioning, not consoled.
 
 ### Message
 - **Note:** The play's enduring message is that class, not ability or worth, decides a person's fate — the Narrator rejects superstition and names "class" as the true cause, insisting the twins' deaths were a preventable, man-made injustice for which the whole of an unequal society bears responsibility.

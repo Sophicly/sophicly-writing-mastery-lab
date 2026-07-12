@@ -18,7 +18,7 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 ---
 
 ### Protagonist
-- **Note:** Enid is the Jamaican-born mother at the play's heart — one of the Windrush generation who came to Britain after 1948 — defined at first by relentless sacrifice ("man and woman" to her daughters) and by the dream of one day returning "home" to Jamaica; her flaw is clinging too tightly to that idealised past and to her grip on her British-born daughters, and her arc is the hard-won learning to let go and accept that her home and family are now in Britain.
+- **Note:** Enid is the Jamaican-born mother at the play's heart — one of the Windrush generation who came to Britain after 1948 — defined at first by relentless sacrifice (both mother and father to her daughters) and by the dream of one day returning "home" to Jamaica; her flaw is clinging too tightly to that idealised past and to her grip on her British-born daughters, and her arc is the hard-won learning to let go and accept that her home and family are now in Britain.
 
 ### Plot
 - **Note:** Enid's backward-looking hold on an idealised Jamaica strains her British-born daughters, driving Del to rebel and leave — turning instead to Mai and the Caribbean heritage she had resisted — while the death of Enid's mother back in Jamaica shatters the dream of return; forced to confront her denial, Enid at last begins to let go and reach toward acceptance and a fragile reconciliation with her daughters.

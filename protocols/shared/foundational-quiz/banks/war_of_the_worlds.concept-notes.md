@@ -12,13 +12,13 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 ---
 
 ### Protagonist
-- **Note:** The unnamed narrator is a rational, complacent Victorian who trusts in human progress; witnessing the invasion strips away that certainty and leaves him a humbled survivor who knows mankind is not "the master". His ordinariness makes his terror and helplessness the reader's own — he survives, but never defeats the Martians.
+- **Note:** The unnamed narrator is a rational, complacent Victorian who trusts in human progress; witnessing the invasion strips away that certainty and leaves him a humbled survivor who knows mankind is not the master. His ordinariness makes his terror and helplessness the reader's own — he survives, but never defeats the Martians.
 
 ### Plot
 - **Note:** The Martians land and are underestimated as harmless, then unleash an overwhelming force against which every human weapon proves futile; mankind is driven to panic and flight, and the invaders are finally destroyed not by human power but — "after all man's devices had failed" — by earthly bacteria, "the humblest things", the great irony on which the plot turns.
 
 ### Themes
-- **Note:** The novel explores human insignificance (the Martians' "intellects vast and cool and unsympathetic" regard us as "beasts that perish"), a critique of imperialism (the coloniser becomes the colonised, and Wells turns "the ruthless and utter destruction our own species has wrought" back on the empire), and the Darwinian idea that humanity's dominance is not guaranteed against a fitter species.
+- **Note:** The novel explores human insignificance (the Martians' "intellects vast and cool and unsympathetic" regard us as "beasts that perish"), a critique of imperialism (the coloniser becomes the colonised, and Wells turns the "ruthless and utter destruction our own species has wrought" back on the empire), and the Darwinian idea that humanity's dominance is not guaranteed against a fitter species.
 
 ### Effects
 - **Note:** As early science fiction, the novel is built on dread and fear-as-warning: the terror of utter helplessness before a vast, indifferent intelligence, and the deeper unease of the mirror turned on us — the imperial nation made prey. Its aim is not mere excitement but a disquiet that questions humanity's confidence in its own supremacy.

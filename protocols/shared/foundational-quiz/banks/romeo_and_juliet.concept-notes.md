@@ -27,7 +27,7 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 - **Note:** The central themes are love and hate fatally entangled ("My only love sprung from my only hate"), the destructive haste of "violent delights" that "have violent ends", the tension between fate ("star-cross'd") and the lovers' own free choices, and the inherited feud of "two households" that makes the love both precious and doomed.
 
 ### Effects
-- **Note:** Romeo and Juliet is a tragedy, and its emotional effect is pity and fear: we pity two young people capable of real, tender love who are destroyed by hatred and their own haste — their deaths feel like a terrible waste — and we fear because they are recognisably "like us", so their fall warns that inherited hatred, headlong passion and blind chance could ruin anyone; the reconciliation of the families at the close leaves us moved and warned rather than merely satisfied.
+- **Note:** Romeo and Juliet is a tragedy, and its emotional effect is pity and fear: we pity two young people capable of real, tender love who are destroyed by hatred and their own haste — their deaths feel like a terrible waste — and we fear because they are recognisably like us, so their fall warns that inherited hatred, headlong passion and blind chance could ruin anyone; the reconciliation of the families at the close leaves us moved and warned rather than merely satisfied.
 
 ### Message
 - **Note:** The play warns that senseless, inherited hatred destroys the innocent young — the children pay for the quarrel of their parents — and that love pursued inside a world of hate cannot survive; yet the lovers' deaths finally shame the feuding houses into a peace bought at a devastating and far-too-late cost.

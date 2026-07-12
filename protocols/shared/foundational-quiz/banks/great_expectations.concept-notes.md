@@ -18,7 +18,7 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 ---
 
 ### Protagonist
-- **Note:** Pip begins as a warm-hearted, loyal forge boy — loving Joe and crying "What larks!" — whose flaw is not ambition itself but his choice to be ashamed of his own people once he gains "great expectations"; taught to despise his "coarse hands" and "thick boots", he hardens into a snob, then, chastened by the truth of his fortune and by loss, grows into humility and self-knowledge.
+- **Note:** Pip begins as a warm-hearted, loyal forge boy — loving Joe, who greets life at the forge with "What larks!" — whose flaw is not ambition itself but his choice to be ashamed of his own people once he gains "great expectations"; taught to despise his "coarse hands" and "thick boots", he hardens into a snob, then, chastened by the truth of his fortune and by loss, grows into humility and self-knowledge.
 
 ### Plot
 - **Note:** As a boy Pip is terrified into feeding an escaped convict, Magwitch, on the marshes; years later a secret fortune makes him a London gentleman and he grows ashamed of Joe, believing Miss Havisham his benefactor — until Magwitch returns to reveal that *he*, out of gratitude, has funded everything, a revelation that shatters Pip's pride and turns him back toward loyalty, humility and love.

@@ -21,7 +21,7 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 - **Note:** Alec (Alexander Moore) begins as a lonely, sheltered son of the Anglo-Irish gentry, starved of affection and dominated by a cold, controlling mother; through his forbidden friendship with the working-class Jerry Crowe he grows into a young man who, in one decisive act of loyalty — shooting Jerry himself rather than let him die before a firing squad — finally chooses for himself, and is condemned to death for it.
 
 ### Plot
-- **Note:** A cross-class friendship the world forbids drives both boys to enlist in the First World War, where the army's harsh discipline re-imposes the officer–private divide; when Jerry deserts to search for his father and is sentenced to death, Alec, ordered to take part in the execution, instead shoots his friend as a final act of loyalty — and for that choice is himself condemned.
+- **Note:** Alec enlists because his mother insists it is his duty, Jerry for money, and in the First World War the army's harsh discipline re-imposes the officer–private divide their cross-class friendship had crossed; when Jerry deserts to search for his father and is sentenced to death, Alec, ordered to take part in the execution, instead shoots his friend as a final act of loyalty — and for that choice is himself condemned.
 
 ### Themes
 - **Note:** The controlling ideas are a genuine friendship crushed between class division and war, the rigid class barrier that follows the boys from Ireland into military rank, war as a futile, dehumanising force that wastes the young, and the tragic clash between personal loyalty and the demands of authority.

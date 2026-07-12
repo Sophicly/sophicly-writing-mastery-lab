@@ -30,4 +30,4 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 - **Note:** The Old Man and the Sea is a tale of heroic endurance, and its emotional effect is admiration edged with poignant sorrow: we admire Santiago's undefeated dignity — courage and skill that survive crushing loss — and we grieve, tenderly rather than despairingly, at the cost of his struggle, so the stripped skeleton and the Christ-like climb leave us moved and uplifted rather than triumphant or in despair.
 
 ### Message
-- **Note:** The novella affirms that a person's worth lies not in what they win but in how they endure — meeting suffering with courage, skill and "grace under pressure" so that dignity outlasts any material defeat — and it lends that endurance an almost sacred, redemptive nobility.
+- **Note:** The novella affirms that a person's worth lies not in what they win but in how they endure — meeting suffering with courage, skill and grace under pressure so that dignity outlasts any material defeat — and it lends that endurance an almost sacred, redemptive nobility.

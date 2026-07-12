@@ -18,7 +18,7 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 ---
 
 ### Protagonist
-- **Note:** George Milton begins as a man raised above the "loneliest guys in the world" by his companionship with Lennie and their shared dream of "livin' off the fatta the lan'"; his tragedy is his own choice to shoot the friend he loves — a mercy that spares Lennie the lynch mob but kills the dream and leaves George as solitary and dispossessed as any other drifter.
+- **Note:** George Milton begins as a man raised above the "loneliest guys in the world" by his companionship with Lennie and their shared dream to "live off the fatta the lan'"; his tragedy is his own choice to shoot the friend he loves — a mercy that spares Lennie the lynch mob but kills the dream and leaves George as solitary and dispossessed as any other drifter.
 
 ### Plot
 - **Note:** Two migrant workers, George and Lennie, chase the dream of a small farm, but Lennie's uncontrolled strength — foreshadowed by dead mice, the puppy, and the shooting of Candy's old dog — leads him to accidentally kill Curley's wife; with a lynch mob closing in, George shoots Lennie gently while describing the farm, and the dream dies with him.
@@ -30,4 +30,4 @@ Parser contract: `### <Dimension>` heading (slugified) → `- **Note:** <text>`.
 - **Note:** Of Mice and Men is tragic social realism, and its emotional effect is pathos and moral discomfort: we grieve for a gentle, innocent man and the decent dream destroyed by a world too harsh to hold them, and we are left uneasily aware — angered even — at an unjust society that shuts out and discards the weak. The novella holds a mirror to that world, so its sorrow is inseparable from a troubled conscience rather than any triumph or relief.
 
 ### Message
-- **Note:** The novella affirms that even the best-laid dreams of the powerless "gang aft agley" in an unjust world — the dispossessed are promised a dignity society will never let them reach, and the vulnerable are cast aside once useless — yet Steinbeck honours the companionship and hope that give a hard life its dignity, a compassionate vision of worth amid defeat.
+- **Note:** The novella affirms that even the best-laid dreams of the powerless "gang aft agley" (Burns's line, which gives the novella its title) in an unjust world — the dispossessed are promised a dignity society will never let them reach, and the vulnerable are cast aside once useless — yet Steinbeck honours the companionship and hope that give a hard life its dignity, a compassionate vision of worth amid defeat.
