@@ -1878,9 +1878,19 @@ window.WML = (function() {
     // doc-level check wins over subject (the shared organiser doc law, v992).
     const cnFamily = () => {
         if (isPoetryCnDoc()) return CN_FAMILIES.poetry;
+        // v7.20.35 (Part B Phase 2): nonfiction/prose are ANTHOLOGY mold families whose
+        // FOUNDATIONAL QUIZ SHARES the one CN doc — so they must resolve for BOTH
+        // conceptual_notes AND foundational_quiz, or the FQ build and the CN build would
+        // diverge into two different doc shapes for one doc (heal-thrash). This mirrors poetry
+        // (isPoetryCnDoc, above, already covers the FQ). SAFE + INERT until moldReady flips:
+        // every mold consumer gates on _cnMoldFam (moldReady), and the only raw _cnFam
+        // consumers are literature/poetry id-specific (nonfiction/prose are no-ops for them).
+        // Literature is roster:single with no shared-FQ organiser → stays CN-task-only below.
+        if (state.task === 'conceptual_notes' || state.task === 'foundational_quiz') {
+            if (isNonfictionSubject()) return CN_FAMILIES.nonfiction;
+            if (state.subject === 'prose_anthology') return CN_FAMILIES.prose;
+        }
         if (state.task !== 'conceptual_notes') return null;
-        if (isNonfictionSubject()) return CN_FAMILIES.nonfiction;
-        if (state.subject === 'prose_anthology') return CN_FAMILIES.prose;
         // v7.20.16: NON-anthology poetry (unseen / poetic_forms) is a poetry subject but not
         // the mold — it must NOT fall through to literature (that would mis-gate the lit
         // re-layout heal onto a poetry doc). Return null: it's a CN surface with no mold family.

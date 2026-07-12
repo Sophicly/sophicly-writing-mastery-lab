@@ -165,6 +165,25 @@ class SWML_Quiz_Bank {
         return $map[strtolower(trim((string) $dim))] ?? '';
     }
 
+    /**
+     * v7.20.35: map a NONFICTION FQ @dim slug → its Conceptual-Notes SPINE slug (the frozen
+     * fieldId segment, NONFICTION_CN_SPINE in wml-core.js). The per-text autofill field is then
+     * nf_{text}_{slug} (composed in the consumer, class-rest-api.php) — the poetry pf_{form}_{slot}
+     * pattern, per-text. Distinct slug namespace from concept_field_for_dim's lit dims (no
+     * collision). FQ seeds 5 of the 8 nf spine slots; the CN walk fills context/structure/message.
+     * Unknown → '' (no autofill, fail-quiet — the note is a bonus artefact, never quiz-blocking).
+     */
+    public static function nf_spine_slug_for_dim($dim) {
+        $map = [
+            'voice'   => 'voice',      // Writer's Voice
+            'form'    => 'texttype',   // Structure & Text Type → Text Type & Form
+            'methods' => 'techniques', // Methods & Effect → Techniques
+            'ideas'   => 'themes',     // Themes & Ideas
+            'purpose' => 'purpose',    // Purpose & Message → Writer's Purpose
+        ];
+        return $map[strtolower(trim((string) $dim))] ?? '';
+    }
+
     /** Parse a bank markdown file at $path into [ section_label => [questions] ]. */
     public static function parse_file($path) {
         if (!file_exists($path)) return [];
@@ -217,6 +236,7 @@ class SWML_Quiz_Bank {
                     'part'      => null, // v7.19.899: forms-quiz STAGE (@part:N) — bridge fq_part
                     'form'      => '',   // v7.19.955: concept-note ENTITY (@form:slug) — autofill target
                     'dim'       => '',   // v7.20.20 (A1): literature CN DIMENSION (@dim:slug) — autofill target
+                    'text'      => '',   // v7.20.35: multi-text bank TEXT (@text:slug) — composite {text}_{dim} note key + nf_{text}_{slug} field (nonfiction anthology)
                 ];
                 continue;
             }
@@ -238,6 +258,12 @@ class SWML_Quiz_Bank {
             // cn_section_* box (concept_field_for_dim). Same law as @form/@set/@part: kept
             // OUT of the [Tests …] stratification key; untagged Qs simply never autofill.
             if (preg_match('/^\s*@dim:([a-z0-9_]+)\s*$/i', $ln, $m)) { $q['dim'] = strtolower($m[1]); continue; }
+            // v7.20.35: multi-text bank token. A 10-text bank (nonfiction anthology) reuses ONE
+            // @dim slug (voice/form/…) across every text, so the note key is composite {text}_{dim}
+            // and the doc field is per-text nf_{text}_{slug}. @text names which text this Q belongs
+            // to. Kept OUT of the [Tests …] stratification key (same law as @dim/@form). Absent on
+            // single-text banks (poetry/lit) — those never need it.
+            if (preg_match('/^\s*@text:([a-z0-9_]+)\s*$/i', $ln, $m)) { $q['text'] = strtolower($m[1]); continue; }
 
             if (preg_match('/^\s*\*\s*\*\*Question:\*\*\s*(.+)$/i', $ln, $m)) { $q['question'] = self::clean($m[1]); continue; }
             if (preg_match('/^\s*\*\s*\*\*Options:\*\*\s*(.+)$/i', $ln, $m)) {
@@ -425,7 +451,8 @@ class SWML_Quiz_Bank {
             if ($d !== '') $by_dim[$d][] = $q;
         }
         if (empty($by_dim)) return $pool; // no dims → poetry/legacy: unchanged
-        $order = ['protagonist', 'plot', 'themes', 'effects', 'message'];
+        $order = ['protagonist', 'plot', 'themes', 'effects', 'message',
+                  'voice', 'form', 'methods', 'ideas', 'purpose']; // v7.20.35: nonfiction aspect order
         $out = [];
         foreach ($order as $d) {
             if (!empty($by_dim[$d])) { $out[] = $by_dim[$d][array_rand($by_dim[$d])]; unset($by_dim[$d]); }

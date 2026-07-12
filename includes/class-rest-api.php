@@ -1098,6 +1098,23 @@ class SWML_REST_API {
                         error_log("WML FQ: no concept note for form={$q['form']} slot={$slot} bank={$bank_text} — autofill skipped");
                     }
                 }
+            } elseif (!empty($q['dim']) && !empty($q['text'])) {
+                // v7.20.35 NONFICTION anthology: ONE bank, 10 texts, each @dim slug reused per
+                // text — so the doc field is PER-TEXT nf_{text}_{slug} (the poetry pf_{form}_{slot}
+                // pattern, per-text) and the note is keyed by the composite {text}_{dim} entity in
+                // the sidecar (concept_notes_for slugifies "### adichie_voice" → adichie_voice).
+                // Explicit {field} — the client files it directly, same reveal-turn fill path.
+                $slug = SWML_Quiz_Bank::nf_spine_slug_for_dim($q['dim']);
+                if ($bank_text && $slug) {
+                    $entity = $q['text'] . '_' . $q['dim'];
+                    $cnotes = SWML_Quiz_Bank::concept_notes_for($bank_text);
+                    $ntext  = $cnotes[$entity]['note'] ?? '';
+                    if ($ntext !== '') {
+                        $note = ['field' => 'nf_' . $q['text'] . '_' . $slug, 'text' => $ntext];
+                    } else {
+                        error_log("WML FQ: no concept note for entity={$entity} bank={$bank_text} — nf autofill skipped");
+                    }
+                }
             } elseif (!empty($q['dim'])) {
                 // v7.20.20 (A1) literature: entity = CN dimension; the note carries an
                 // EXPLICIT target field (cn_section_*) — the client files it directly
@@ -1240,11 +1257,16 @@ class SWML_REST_API {
                 $q_nums[(int) end($bits)] = true;
             }
             if ($fq_slug !== '' && !empty($q_nums)) {
-                $forms = []; $dims = [];
+                $forms = []; $dims = []; $nfpairs = [];
                 foreach (SWML_Quiz_Bank::questions_for_fq($fq_slug) as $pq) {
                     if (!isset($q_nums[(int) ($pq['q_num'] ?? 0)])) continue;
                     if (!empty($pq['form'])) $forms[$pq['form']] = true;
-                    if (!empty($pq['dim']))  $dims[$pq['dim']]   = true;
+                    if (!empty($pq['dim'])) {
+                        // v7.20.35: a @text-bearing @dim is NONFICTION (per-text) — key by the
+                        // composite pair so 10 texts' notes never collapse onto one dim slug.
+                        if (!empty($pq['text'])) $nfpairs[$pq['text'] . '|' . $pq['dim']] = true;
+                        else                     $dims[$pq['dim']] = true;
+                    }
                 }
                 // Poetry: entity = form × 4 slots → pf_{form}_{slot}.
                 if (!empty($forms)) {
@@ -1264,7 +1286,17 @@ class SWML_REST_API {
                         if ($field && $txt !== '') $mastery_notes[] = ['field' => $field, 'text' => $txt];
                     }
                 }
-                if (empty($mastery_notes) && (!empty($forms) || !empty($dims)) && function_exists('error_log')) {
+                // v7.20.35 NONFICTION: entity = (text, dim) → per-text nf_{text}_{slug}.
+                if (!empty($nfpairs)) {
+                    $cnotes = SWML_Quiz_Bank::concept_notes_for($fq_slug);
+                    foreach (array_keys($nfpairs) as $pair) {
+                        list($ptext, $pdim) = array_pad(explode('|', $pair, 2), 2, '');
+                        $slug = SWML_Quiz_Bank::nf_spine_slug_for_dim($pdim);
+                        $txt  = $cnotes[$ptext . '_' . $pdim]['note'] ?? '';
+                        if ($slug && $txt !== '' && $ptext !== '') $mastery_notes[] = ['field' => 'nf_' . $ptext . '_' . $slug, 'text' => $txt];
+                    }
+                }
+                if (empty($mastery_notes) && (!empty($forms) || !empty($dims) || !empty($nfpairs)) && function_exists('error_log')) {
                     error_log('WML FQ: mastery notes EMPTY for bank "' . $fq_slug . '" — missing .concept-notes.md sidecar? (organiser autofill skipped)');
                 }
             }

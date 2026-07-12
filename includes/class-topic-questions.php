@@ -868,6 +868,10 @@ class SWML_Topic_Questions {
      *   ...
      *   # Next Title | Next Poet
      *   ...
+     * v7.20.35 — EXPLICIT ID (either format): "id | Title | Poet" (TWO pipes). Use when the
+     * roster id must match an external token rather than a title-derived slug — e.g. the
+     * nonfiction FQ @text slug the autofill targets (nf_{id}_{slug}); id "adichie" must NOT
+     * become "the_danger_of_a_single_story". One pipe keeps the legacy title-derived id.
      */
     public function ajax_import_poems() {
         check_ajax_referer('swml_topics_nonce', 'nonce');
@@ -889,17 +893,22 @@ class SWML_Topic_Questions {
             foreach ($blocks as $block) {
                 $lines = explode("\n", trim($block));
                 $header = trim(array_shift($lines));
-                // Prioritise | as delimiter (titles like "If—" contain em dashes)
-                if (strpos($header, '|') !== false) {
+                // v7.20.35: TWO pipes = explicit id "id | Title | Poet"; one = "Title | Poet".
+                $eid = '';
+                if (substr_count($header, '|') >= 2) {
+                    $parts = array_map('trim', explode('|', $header, 3));
+                    $eid = sanitize_key($parts[0]); $title = $parts[1]; $poet = $parts[2];
+                } elseif (strpos($header, '|') !== false) {
                     $parts = explode('|', $header, 2);
+                    $title = trim($parts[0]); $poet = trim($parts[1] ?? '');
                 } else {
+                    // Prioritise | as delimiter (titles like "If—" contain em dashes)
                     $parts = preg_split('/\s*[—–]\s*/', $header, 2);
+                    $title = trim($parts[0] ?? ''); $poet = trim($parts[1] ?? '');
                 }
-                $title = trim($parts[0] ?? '');
-                $poet  = trim($parts[1] ?? '');
                 if (!$title) continue;
                 $poem_text = trim(implode("\n", $lines));
-                $id = sanitize_key(strtolower(preg_replace('/\s+/', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $title))));
+                $id = $eid !== '' ? $eid : sanitize_key(strtolower(preg_replace('/\s+/', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $title))));
                 $parsed[] = ['id' => $id, 'title' => $title, 'poet' => $poet, 'poem_text' => $poem_text];
             }
         } else {
@@ -907,16 +916,21 @@ class SWML_Topic_Questions {
             foreach (explode("\n", $raw) as $line) {
                 $line = trim($line);
                 if (!$line) continue;
-                // Prioritise | as delimiter (titles like "If—" contain em dashes)
-                if (strpos($line, '|') !== false) {
+                // v7.20.35: TWO pipes = explicit id "id | Title | Poet"; one = "Title | Poet".
+                $eid = '';
+                if (substr_count($line, '|') >= 2) {
+                    $parts = array_map('trim', explode('|', $line, 3));
+                    $eid = sanitize_key($parts[0]); $title = $parts[1]; $poet = $parts[2];
+                } elseif (strpos($line, '|') !== false) {
                     $parts = explode('|', $line, 2);
+                    $title = trim($parts[0]); $poet = trim($parts[1] ?? '');
                 } else {
+                    // Prioritise | as delimiter (titles like "If—" contain em dashes)
                     $parts = preg_split('/\s*[—–-]\s*/', $line, 2);
+                    $title = trim($parts[0] ?? ''); $poet = trim($parts[1] ?? '');
                 }
-                $title = trim($parts[0] ?? '');
-                $poet  = trim($parts[1] ?? '');
                 if (!$title) continue;
-                $id = sanitize_key(strtolower(preg_replace('/\s+/', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $title))));
+                $id = $eid !== '' ? $eid : sanitize_key(strtolower(preg_replace('/\s+/', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $title))));
                 $parsed[] = ['id' => $id, 'title' => $title, 'poet' => $poet, 'poem_text' => ''];
             }
         }

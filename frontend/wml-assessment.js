@@ -6477,6 +6477,64 @@
         }
     }
 
+    // v7.20.35 (Part B Phase 2): NONFICTION-CN stale-shape rebuild — the nonfiction twin of
+    // _healPoetryCnShape (kept SEPARATE, not a refactor of the poetry heal, so poetry's tested
+    // path is zero-touch). A nonfiction one-doc ALWAYS carries nf_{text}_{slug} fields; a doc
+    // with inputFields but none is the legacy single-text nfcn_section_N template → rebuild it
+    // from the current one-doc template, carrying every filled field. Legacy FLAT
+    // nfcn_section_N / cn_section_N values can't be attributed to one anthology text in the new
+    // multi-text doc → recovered LOSSLESSLY into General Notes (never dropped, never MISattributed
+    // to the wrong text — the safe migration under the no-test bar). moldReady-gated (inert until
+    // the flip). Same law as poetry: idempotent, hydration-gated, PM setContent under
+    // _migrationActive, one-shot rebaseline, fail-loud, doc-untouched on any guard miss.
+    function _healNonfictionCnShape(editor) {
+        try {
+            if (!editor || !editor.state || !editor.commands) return;
+            var fam = _cnMoldFam();
+            if (!fam || fam.id !== 'nonfiction') return;
+            if (state.reviewMode) return; // tutors see the stored doc as-is
+            var hasNf = false, fieldCount = 0;
+            var carried = [];
+            var fold = [];
+            editor.state.doc.descendants(function (n) {
+                if (!n.type || n.type.name !== 'inputField') return;
+                var fid = String((n.attrs && n.attrs.fieldId) || '');
+                if (!fid) return;
+                fieldCount++;
+                if (/^nf_/.test(fid)) { hasNf = true; return; }
+                var val = (n.textContent || '').trim();
+                if (!val) return;
+                if (/^(nfcn|cn)_section_\d+(_quotes)?$/.test(fid)) fold.push(val);
+                else carried.push({ field: fid, value: val });
+            });
+            if (hasNf || fieldCount === 0) return; // one-doc shape already / empty doc (template owns it)
+            var nfT = '';
+            try { nfT = String(WML.canvasDocScope().text || ''); } catch (_) { nfT = String(state.text || ''); }
+            var items = (WML.anthologyPoemsFor && WML.anthologyPoemsFor(nfT)) || [];
+            if (!items.length) {
+                console.warn('[WML nf-CN] stale-shape doc detected but no roster resolves — shape-heal skipped, doc untouched');
+                return;
+            }
+            // Legacy flat values can't name their text → recover into General Notes (never lost).
+            if (fold.length) carried.push({ field: 'cn_general_notes', value: 'Recovered notes (from an earlier notes layout): ' + fold.join(' • ') });
+            var template = getExamPrepDocTemplate(state.task);
+            if (!template || template.indexOf('nf_') === -1) {
+                console.warn('[WML nf-CN] shape-heal: current template did not build the one-doc layout — aborted, doc untouched');
+                return;
+            }
+            _migrationActive = true;
+            try { editor.commands.setContent(template, false); }
+            finally { _migrationActive = false; }
+            snapshotTemplateBaseline(editor);
+            _cnRebaselinePending = true;
+            console.log('[WML nf-CN] SHAPE-HEAL: stale pre-one-doc nonfiction layout rebuilt from current template —', carried.length, 'filled field(s) carried over');
+            if (carried.length) _applyFieldValueSets(carried);
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('[WML nf-CN] shape-heal failed (doc untouched)', e);
+        }
+    }
+
     // v7.20.17 (Part B step 2, Design B): LITERATURE effect-box heal — ADDITIVE only.
     // Legacy lit CN docs (7 sections, no effect boxes) get a cn_section_N_effect box inserted
     // after the quotes field on each craft element. The STACKED layout is NOT a doc change —
@@ -6709,6 +6767,19 @@
         try { _healPoetryCnTocHeader(editor); } catch (_) {}
         try { _applyCnMergeFields(); } catch (_) {}
         try { _renderPoemCards(); } catch (_) {}
+    }
+
+    // v7.20.35 (Part B Phase 2): NONFICTION-CN heal orchestrator — sibling of _runPoetryCnHeals,
+    // gated on the nonfiction mold family (inert until moldReady flips). Shape rebuild FIRST
+    // (creates the nf_ fields), then the sibling merge (fills empties — _applyCnMergeFields is a
+    // no-op for nonfiction until its server merge branch + client gate land in the PHP step; the
+    // ordering is fixed here so it's correct once widened). Nonfiction cards/walk-beat wire in as
+    // those paths land. Every pass idempotent; safe to call repeatedly.
+    function _runNonfictionCnHeals(editor) {
+        var fam = _cnMoldFam();
+        if (!fam || fam.id !== 'nonfiction') return;
+        try { _healNonfictionCnShape(editor); } catch (_) {}
+        try { _applyCnMergeFields(); } catch (_) {}
     }
 
     // v7.19.978: poetry-CN poem-selection support. The walk (pn-conceptual-notes.md)
@@ -23276,6 +23347,10 @@
                 // (both orchestrators self-gate by family; only one fires per doc).
                 setTimeout(() => { try { _runLitCnHeals(editor); } catch (_) {} }, 1800);
                 setTimeout(() => { try { _runLitCnHeals(editor); } catch (_) {} }, 3800);
+                // v7.20.35 (Part B Phase 2): nonfiction CN heal — same staggered/idempotent shape
+                // (all three orchestrators self-gate by family; only one fires per doc).
+                setTimeout(() => { try { _runNonfictionCnHeals(editor); } catch (_) {} }, 1800);
+                setTimeout(() => { try { _runNonfictionCnHeals(editor); } catch (_) {} }, 3800);
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
@@ -31695,6 +31770,68 @@
                 html += buildSignoffSection();
                 return html;
             }
+            // v7.20.35 (Part B Phase 2): NONFICTION anthology Conceptual-Notes ONE-DOC —
+            // mirrors the poetry mold (one collapsible section-group per anthology TEXT), with
+            // NO pf_ forms organiser (nonfiction has no "forms" quiz). Gated on the mold family
+            // (_cnMoldFam → moldReady) so it stays INERT until the flag flips; nonfiction FQ + CN
+            // share this doc (cnFamily resolves BOTH tasks). fieldId contract: nf_{textId}_{slug}
+            // + _quotes (every element) + _effect (craft els from fam.craft) — the SAME
+            // {prefix}_{id}_{slug} shape as poetry, so the generalised heal/cards/picker/chip need
+            // no special case. Structure is family-driven (fam.spine/fam.craft); prompts per slug.
+            var _nfFam = _cnMoldFam();
+            if (_nfFam && _nfFam.id === 'nonfiction') {
+                var nfT = '';
+                try { nfT = String(WML.canvasDocScope().text || ''); } catch (_) { nfT = String(state.text || ''); }
+                var nfItems = (WML.anthologyPoemsFor && WML.anthologyPoemsFor(nfT)) || [];
+                var nfEffectEls = _nfFam.craft || [];
+                var NF_EFFECT_PROMPT = 'Effect on the reader — how do the writer’s methods steer the reader’s focus, feeling and thinking here?';
+                var NF_PROMPTS = {
+                    voice:      'What is distinctive about this writer’s voice? How do their perspective, experience, and style shape the text?',
+                    context:    'When and why was this written? What social, political, or personal context shapes the writer’s perspective?',
+                    structure:  'How is the text organised? What structural choices does the writer make, and to what effect?',
+                    texttype:   'What type of text is this (article, speech, memoir, etc.)? How do its conventions shape the reader’s experience?',
+                    techniques: 'What language and rhetorical techniques does the writer use? How do they work together to create meaning?',
+                    themes:     'What are the key themes and ideas? What is the writer arguing or exploring?',
+                    purpose:    'What is the writer trying to achieve? How do they want the reader to think, feel, or act?',
+                    message:    'What is the overarching message? What does this text reveal about the human experience?'
+                };
+                html += sectionHTML('question', 'About This Exercise', false, null,
+                    '<h2>Nonfiction Conceptual Notes</h2>' +
+                    (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
+                    '<p>Your living reference for this anthology. The quiz seeds each text’s notes as you master its ideas; ' +
+                    'then, in Conceptual Notes, you and Sophia study the anthology text by text — the writer’s voice, context, ' +
+                    'structure, text type, techniques, themes, purpose, and the big message, each anchored to key quotes.</p>');
+                html += dividerHTML('GENERAL NOTES');
+                html += sectionHTML('plan', 'General Notes', true, null,
+                    '<h3>General Notes</h3>' +
+                    inputHTML('Free notes — anything you want to remember about this anthology.', 'cn_general_notes') +
+                    inputHTML('Key quotes', 'cn_general_notes_quotes'));
+                if (nfItems.length) {
+                    html += sectionHTML('section-header', 'Conceptual Notes', false, null,
+                        '<h2>Conceptual Notes — The Texts</h2>' +
+                        '<p><em>One section per text. In your Conceptual Notes lesson you’ll pick a text and build its notes with Sophia — voice, context, structure, text type, techniques, themes, purpose, and the big message, each anchored to 1–3 key quotes. During the quiz these sections stay locked.</em></p>');
+                } else if (window.console && console.warn) {
+                    console.warn('[WML nf-CN] no roster for anthology "' + nfT + '" — swml_poems_{board}_{anthology} option not seeded; nonfiction one-doc renders General Notes only');
+                }
+                nfItems.forEach(function (item) {
+                    var iid = String(item.id || '');
+                    if (!iid) return;
+                    html += dividerHTML(item.title || iid);
+                    var nInner = '<h3>' + escapeHTML(item.title || iid) + '</h3>' +
+                        ((item.poet || item.author) ? '<p><em>' + escapeHTML(item.poet || item.author) + '</em></p>' : '');
+                    (_nfFam.spine || []).forEach(function (e) {
+                        nInner += '<p><strong>' + e.label + '</strong></p>' +
+                            inputHTML(NF_PROMPTS[e.slug] || '', 'nf_' + iid + '_' + e.slug) +
+                            inputHTML('Key quotes (1–3).', 'nf_' + iid + '_' + e.slug + '_quotes') +
+                            (nfEffectEls.indexOf(e.slug) !== -1
+                                ? inputHTML(NF_EFFECT_PROMPT, 'nf_' + iid + '_' + e.slug + '_effect')
+                                : '');
+                    });
+                    html += sectionHTML('plan', item.title || iid, true, null, nInner);
+                });
+                html += buildSignoffSection();
+                return html;
+            }
             var cnTitle = isFQ
                 ? 'Foundational Quiz'
                 : (isNF ? 'Nonfiction Conceptual Notes' : (isPo ? 'Poetry Conceptual Notes' : 'Grade 9 Conceptual Notes'));
@@ -32862,6 +32999,10 @@
                 // v7.20.16: slow-network backstop for the lit CN re-layout heal.
                 // v7.20.27: also on the shared FQ doc so the sibling-merge runs there too.
                 setTimeout(() => { try { _runLitCnHeals(canvasEditor); } catch (_) {} }, 600);
+            } else if (_cnMoldFam() && _cnMoldFam().id === 'nonfiction') {
+                // v7.20.35 (Part B Phase 2): slow-network backstop for the nonfiction CN one-doc
+                // heal (fires on the shared FQ doc too — _cnMoldFam resolves both tasks).
+                setTimeout(() => { try { _runNonfictionCnHeals(canvasEditor); } catch (_) {} }, 600);
             }
             // v7.19.263: surface the "previous stage updated" dot. False unless the
             // server reports the upstream stage changed since last pull/dismiss.
