@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.46
+ * Version: 7.20.47
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.46');
+define('SWML_VERSION', '7.20.47');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -784,13 +784,15 @@ class Sophicly_Writing_Mastery_Lab {
         // suffix — the CN lesson reads `..._t2_cn` while a topic-less FQ writes `..._cn`, so the
         // FQ seed never crosses (Neil staging 2026-07-12: FQ notes filed but absent in CN). Code
         // -default here so the shared doc key + "Topic 2 · Stage N" badge can't depend on the
-        // picker being set. v7.20.44 broadens to the CN-shared FQ: a foundational_quiz whose
-        // subject is a CN-ANTHOLOGY family (nonfiction / poetry / prose anthology, incl. the
-        // Edexcel-IGCSE language_p1 nonfiction derivation) shares the CN doc → Topic 2. A plain
-        // (non-anthology) FQ never matches, so it is not misfiled.
-        $is_cn_anthology_subject = in_array($subject, ['nonfiction_anthology', 'poetry_anthology', 'unseen_poetry', 'prose_anthology'], true)
-            || ($board === 'edexcel-igcse' && in_array($subject, ['language_p1', 'language1'], true));
-        if (!$topic && ($task === 'conceptual_notes' || ($task === 'foundational_quiz' && $is_cn_anthology_subject))) {
+        // picker being set. v7.20.47: EVERY foundational_quiz is CN-doc-bound — the single FQ task
+        // config pins canvasTopicPin:2 + canvasStorageSuffix:'_cn' + documentTemplate:'conceptual_notes'
+        // (wml-core.js ~1562), so the client ALWAYS reads/writes the Topic-2 `_cn` doc. The v7.20.44
+        // subject-literal allowlist matched only anthology subjects and SILENTLY MISSED literature
+        // set-texts (the live aqa_macbeth_cn / aqa_macbeth_t2_cn fork found by the key-mismatch sweep
+        // 2026-07-12 — same class as the nonfiction bug). Default ALL FQ to Topic 2, mirroring the
+        // client, and drop the per-literal allowlist (the exact fragility §5d KEY-MATCH warns of).
+        // Non-CN FQ does not exist — the config is universal — so nothing is misfiled.
+        if (!$topic && ($task === 'conceptual_notes' || $task === 'foundational_quiz')) {
             $topic = 2;
         }
 
