@@ -2440,9 +2440,16 @@ class SWML_REST_API {
         // fold); poetry keeps poetry_cn_merge_fields. Both emit the same mergeFields sidecar.
         $merge_fields = [];
         if ($suffix === '_cn') {
-            $merge_fields = $this->is_pinned_cn_family($board, $text, $suffix)
-                ? $this->literature_cn_merge_fields($user_id, $board, $text, $meta_key)
-                : $this->poetry_cn_merge_fields($user_id, $board, $text, $attempt, $meta_key);
+            // v7.20.38: nonfiction anthology is its OWN merge family (per-text nf_ fields +
+            // legacy nfcn_section_N fold). It now carries a poems option (v7.20.37 roster), so
+            // it must be split from poetry BEFORE the has-poems ternary — else it misroutes.
+            if ($this->is_nonfiction_text($board, $text)) {
+                $merge_fields = $this->nonfiction_cn_merge_fields($user_id, $board, $text, $meta_key);
+            } else if ($this->is_pinned_cn_family($board, $text, $suffix)) {
+                $merge_fields = $this->literature_cn_merge_fields($user_id, $board, $text, $meta_key);
+            } else {
+                $merge_fields = $this->poetry_cn_merge_fields($user_id, $board, $text, $attempt, $meta_key);
+            }
         }
 
         // v7.15.99: Read shared General Notes mirror for conceptual-notes doc family.
@@ -4667,8 +4674,76 @@ class SWML_REST_API {
      */
     private function is_pinned_cn_family($board, $text, $suffix) {
         if ($suffix !== '_cn') return false;
-        if (!empty(self::poems_option_rows($board, $text))) return false; // poetry anthology → keeps its own machinery
+        // v7.20.38: NONFICTION now carries a poems option too (v7.20.37 roster), so "has a
+        // poems option" no longer means "poetry". Nonfiction is a single accumulating CN doc
+        // → MUST stay attempt-pinned (else the attempt-drift blank-doc bug returns). Only
+        // POETRY (has poems option AND is not nonfiction) keeps its own attempt-stable machinery.
+        if (!empty(self::poems_option_rows($board, $text)) && !self::is_nonfiction_text($board, $text)) return false;
         return true;
+    }
+
+    /**
+     * v7.20.38: server-side nonfiction-anthology discriminator. Nonfiction shares the
+     * per-text `nf_{text}_{slug}` mold + a poems roster (like poetry) but is a single
+     * accumulating CN doc (attempt-pinned, own merge fold, like literature) — so it needs
+     * its own branch in both is_pinned_cn_family and the _cn merge dispatcher. Slug carries
+     * "nonfiction" (edexcel-igcse igcse_lang_nonfiction); explicit list is belt-and-braces.
+     */
+    private static function is_nonfiction_text($board, $text) {
+        $t = strtolower((string) $text);
+        if (strpos($t, 'nonfiction') !== false) return true;
+        return in_array($t, ['igcse_lang_nonfiction'], true);
+    }
+
+    /**
+     * v7.20.38: NONFICTION anthology CN sibling-merge — mirror of literature_cn_merge_fields,
+     * but keeps the per-text `nf_{text}_{slug}` (+_quotes/_effect) fields directly (they ARE
+     * the canonical structure) and folds any LEGACY single-doc sections (nfcn_section_N /
+     * cn_section_N — unattributable per text) into ONE General-Notes recovery line, exactly
+     * like poetry. Client applies into EMPTY fields only; old keys never written/deleted.
+     */
+    private function nonfiction_cn_merge_fields($user_id, $board, $text, $exclude_key) {
+        $vals = [];
+        $sources_hit = [];
+        $take = function ($meta_key) use ($user_id, $exclude_key, &$vals, &$sources_hit) {
+            if ($meta_key === $exclude_key) return;
+            $raw = get_user_meta($user_id, $meta_key, true);
+            if (empty($raw)) return;
+            $doc = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+            if (!is_array($doc) || empty($doc['html'])) return;
+            $got = 0;
+            foreach (['nf_', 'nfcn_section_', 'cn_section_'] as $pfx) {
+                foreach (self::extract_canvas_field_values($doc['html'], $pfx) as $fid => $v) {
+                    if (!isset($vals[$fid])) { $vals[$fid] = $v; $got++; }
+                }
+            }
+            if ($got > 0) $sources_hit[] = $meta_key . '(+' . $got . ')';
+        };
+        $bases = [
+            'swml_canvas_' . $board . '_' . $text . '_t2_cn',
+            'swml_canvas_' . $board . '_' . $text . '_t2_fq',
+            'swml_canvas_' . $board . '_' . $text . '_fq',
+            'swml_canvas_' . $board . '_' . $text . '_cn',
+        ];
+        foreach ($bases as $b) {
+            $take($b);
+            for ($a = 2; $a <= 15; $a++) { $take($b . '__a' . $a); }
+        }
+        // Legacy single-doc sections aren't attributable to a text → fold to General Notes.
+        $fold = [];
+        foreach ($vals as $fid => $v) {
+            if (preg_match('/^(nfcn|cn)_section_\d+(_quotes)?$/', $fid)) { $fold[] = $v; unset($vals[$fid]); }
+        }
+        unset($vals['cn_general_notes'], $vals['cn_general_notes_quotes']);
+        if (!empty($fold)) {
+            $vals['cn_general_notes'] = 'Recovered notes (from an earlier notes layout): ' . implode(' • ', $fold);
+        }
+        $out = [];
+        foreach ($vals as $fid => $v) $out[] = ['field' => $fid, 'value' => $v];
+        if (!empty($out)) {
+            error_log('WML nf-CN merge: user=' . $user_id . ' → ' . count($out) . ' field(s) from [' . implode(', ', $sources_hit) . '] into ' . $exclude_key);
+        }
+        return $out;
     }
 
     /**

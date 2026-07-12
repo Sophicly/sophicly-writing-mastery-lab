@@ -291,6 +291,10 @@
             try {
                 _isOrganiserDoc = !!(window.WML && (
                     (typeof window.WML.isPoetryCnDoc === 'function' && window.WML.isPoetryCnDoc())
+                    // v7.20.38: nonfiction anthology one-doc is organiser-like too (per-item groups,
+                    // collapsible/stacked). isNonfictionSubject() is subject-keyed → TASK-INDEPENDENT
+                    // (matches both the CN render and the FQ render, same reason as _isLitCnDoc).
+                    || (typeof window.WML.isNonfictionSubject === 'function' && window.WML.isNonfictionSubject())
                     || (typeof window.WML.canvasDocScope === 'function' && window.WML.canvasDocScope().text === 'poetic_forms')));
             } catch (_) { _isOrganiserDoc = false; }
             // v7.20.17 (Part B step 2 fix): literature CN docs are collapsible too — this is
@@ -324,9 +328,19 @@
             // don't survive the HTML round-trip, fieldIds do).
             let _isPoemGroup = false;
             if (_isOrganiserDoc && type === 'plan') {
+                // v7.20.38: per-ITEM anthology group = a section whose input fields use an anthology
+                // family's prefix (poem_ poetry, nf_ nonfiction, prose_ prose). Content-addressed
+                // (house idiom, NOT cnFamily()) — prefixes derived from the CN family registry when
+                // present, else the known anthology set. Poetry (poem_) behaviour is unchanged.
+                let _antRe;
+                try {
+                    const _fams = window.WML && window.WML.CN_FAMILIES; const _ps = [];
+                    if (_fams) Object.keys(_fams).forEach((k) => { if (_fams[k] && _fams[k].roster === 'anthology' && _fams[k].prefix) _ps.push(_fams[k].prefix); });
+                    _antRe = new RegExp('^(' + (_ps.length ? _ps.join('|') : 'poem|nf|prose') + ')_');
+                } catch (_) { _antRe = /^(poem|nf|prose)_/; }
                 try {
                     node.descendants((n) => {
-                        if (n.type && n.type.name === 'inputField' && /^poem_/.test(String((n.attrs && n.attrs.fieldId) || ''))) _isPoemGroup = true;
+                        if (n.type && n.type.name === 'inputField' && _antRe.test(String((n.attrs && n.attrs.fieldId) || ''))) _isPoemGroup = true;
                         return !_isPoemGroup;
                     });
                 } catch (_) { _isPoemGroup = false; }

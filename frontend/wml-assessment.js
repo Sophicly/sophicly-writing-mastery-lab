@@ -6603,7 +6603,8 @@
             const _f = _cnFam();
             const _isPoetry = !!(WML.isPoetryCnDoc && WML.isPoetryCnDoc());
             const _isLit = !!(_f && _f.id === 'literature');
-            if (!_isPoetry && !_isLit) return;
+            const _isNf = !!(_f && _f.id === 'nonfiction'); // v7.20.38: nf sibling-merge applies too
+            if (!_isPoetry && !_isLit && !_isNf) return;
             if (state.reviewMode) return;
             _pendingCnMergeFields = null; // consume — reapplied fresh on next load
             console.log('[WML CN] applying', sets.length, 'merge candidate(s) from scattered sibling docs (empty fields only)');
@@ -6617,9 +6618,18 @@
     const _poemTexts = {};          // poem id → {id,title,poet,poem_text}
     let _poemTextsFetchState = '';  // '' | 'loading' | 'done'
     const _poemCardOpen = {};       // pid → explicit student toggle (wins over the default)
+    // v7.20.38: anthology CN doc of ANY moldReady family (poetry + nonfiction) — the shared
+    // gate for cards/picker/walk. Poetry keeps its durable detection (first branch, UNCHANGED);
+    // other anthology-roster families (nonfiction) opt in via the family registry. Literature
+    // is single-text (roster !== 'anthology') so it never matches here.
+    function _cnAnthologyCardDoc() {
+        if (WML.isPoetryCnDoc && WML.isPoetryCnDoc()) return true;
+        var f = _cnMoldFam();
+        return !!(f && f.roster === 'anthology');
+    }
     function _ensurePoemTexts() {
         if (_poemTextsFetchState !== '') return;
-        if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+        if (!_cnAnthologyCardDoc()) return;
         _poemTextsFetchState = 'loading';
         let scopeText = state.text;
         try { scopeText = WML.canvasDocScope().text || state.text; } catch (_) {}
@@ -6696,7 +6706,12 @@
     // Idempotent writes only (sig-guarded innerHTML, class checks) — §PM NodeView law.
     function _renderPoemCards() {
         try {
-            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            if (!_cnAnthologyCardDoc()) return;
+            // v7.20.38: derive the item prefix + fieldId regex from the family so nonfiction
+            // (nf_) cards resolve too. Fallback to poetry keeps behaviour identical when the
+            // family gate is true via durable detection but _cnMoldFam() momentarily misses.
+            const _cardFam = _cnMoldFam() || WML.CN_FAMILIES.poetry;
+            const _cardFieldRe = (WML.cnFieldRe && WML.cnFieldRe(_cardFam, 'any')) || /^poem_(.+?)_(speaker|context|form|structure|themes|purpose|message|comparisons)(?:_quotes)?$/;
             const host = canvasEditor && canvasEditor.options && canvasEditor.options.element;
             if (!host) return;
             const cards = host.querySelectorAll('.swml-poem-card');
@@ -6704,8 +6719,8 @@
             _ensurePoemTexts();
             cards.forEach((card) => {
                 const sec = card.closest('.swml-section-block');
-                const fld = sec && sec.querySelector('[data-input-field][data-field-id^="poem_"]');
-                const m = fld && /^poem_(.+?)_(speaker|context|form|structure|themes|purpose|message|comparisons)(?:_quotes)?$/.exec(fld.getAttribute('data-field-id') || '');
+                const fld = sec && sec.querySelector('[data-input-field][data-field-id^="' + _cardFam.prefix + '_"]');
+                const m = fld && _cardFieldRe.exec(fld.getAttribute('data-field-id') || '');
                 const pid = m ? m[1] : '';
                 if (!pid) { if (card.style.display !== 'none') card.style.display = 'none'; return; }
                 const poem = _poemTexts[pid];
@@ -6780,6 +6795,9 @@
         if (!fam || fam.id !== 'nonfiction') return;
         try { _healNonfictionCnShape(editor); } catch (_) {}
         try { _applyCnMergeFields(); } catch (_) {}
+        // v7.20.38: nf item cards now render here — _renderPoemCards is family-generic
+        // (derives prefix/regex from the family; gated by _cnAnthologyCardDoc).
+        try { _renderPoemCards(); } catch (_) {}
     }
 
     // v7.19.978: poetry-CN poem-selection support. The walk (pn-conceptual-notes.md)
@@ -6788,7 +6806,7 @@
     // BOTH canvas pipelines (self-guarding: no-op off a poetry-CN doc / when absent).
     function _extractPoemSelected(reply) {
         try {
-            if (!reply || !(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return;
+            if (!reply || !_cnAnthologyCardDoc()) return;
             const m = /@POEM_SELECTED\s*(\{[^}]*\})/.exec(String(reply));
             if (!m) return;
             let id = '';
@@ -6806,7 +6824,7 @@
     // `hist` is passed in because canvasChatHistory is a per-pipeline local, NOT module scope.
     function _poetryCnCurrentPoemId(hist) {
         try {
-            if (!(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return '';
+            if (!_cnAnthologyCardDoc()) return '';
             if (state && state.currentPoemId) return state.currentPoemId;
             if (!Array.isArray(hist)) return '';
             for (let i = hist.length - 1; i >= 0; i--) {
@@ -6872,7 +6890,10 @@
     // exposes the same key names, so a tp pipeline passes `tp` as ctx directly.
     // Poetry-ANTHOLOGY CN only; non-anthology CN (poetic_forms/unseen) keeps the AI path.
     function _poetryCnPickerActive() {
-        try { return state.task === 'conceptual_notes' && state.subject === 'poetry_anthology'; }
+        // v7.20.38: anthology-CN picker/walk gate. Poetry_anthology UNCHANGED; nonfiction_anthology
+        // ADDED (also an item-per-section anthology walk). Deliberately NOT a bare roster check —
+        // that would wrongly activate unseen_poetry / poetic_forms, which keep the AI path.
+        try { return state.task === 'conceptual_notes' && (state.subject === 'poetry_anthology' || state.subject === 'nonfiction_anthology'); }
         catch (_) { return false; }
     }
     // v7.19.987: which canvas tasks render the model's per-turn progress as the designed beat-chip.
@@ -6914,7 +6935,10 @@
         try {
             var host = canvasEditor && canvasEditor.options && canvasEditor.options.element;
             if (!host || !pid) return;
-            var fld = host.querySelector('[data-input-field][data-field-id="poem_' + pid + '_speaker"]');
+            // v7.20.38: derive prefix + first spine slug from the family (poem_…_speaker for
+            // poetry, nf_…_voice for nonfiction) so scroll-to-item works across families.
+            var _sf = _cnMoldFam() || WML.CN_FAMILIES.poetry;
+            var fld = host.querySelector('[data-input-field][data-field-id="' + _sf.prefix + '_' + pid + '_' + _sf.spine[0].slug + '"]');
             var sec = fld && fld.closest('.swml-section-block');
             if (!sec) { console.warn('[WML poetry-CN] no doc section for poem', pid); return; }
             if (sec.classList.contains('swml-fb-collapsed')) sec.classList.remove('swml-fb-collapsed');
@@ -7314,7 +7338,7 @@
                         var refiled = false;
                         for (var h2 = rvIdx + 1; h2 < hist.length; h2++) {
                             var c2 = hist[h2] && hist[h2].content;
-                            if (c2 && c2.indexOf('"field":"poem_' + pid + '_' + rvEl) !== -1) { refiled = true; break; }
+                            if (c2 && c2.indexOf('"field":"' + fam.prefix + '_' + pid + '_' + rvEl) !== -1) { refiled = true; break; }
                         }
                         var ri = ELS.indexOf(rvEl);
                         // v7.20.12 (Neil): the chip names the BOX being worked on, not just the
