@@ -958,7 +958,11 @@ class SWML_Protocol_Router {
             $subject = $context['subject'] ?? '';
             $task = $context['task'] ?? '';
             $is_poetry_sub = in_array($subject, ['poetry_anthology', 'unseen_poetry']);
-            $is_nonfiction_sub = ($subject === 'nonfiction_anthology');
+            // v7.20.39 SLUG-DRIFT FIX: the bridge emits subject 'language'→'language_p1' for Edexcel
+            // IGCSE Language P1 (nonfiction), NOT 'nonfiction_anthology' or the legacy 'language1'.
+            // Match all three or the nonfiction walk injection arm never fires. (P1 only; P2 fiction.)
+            $is_nonfiction_sub = ($subject === 'nonfiction_anthology')
+                || (($subject === 'language_p1' || $subject === 'language1') && $board === 'edexcel-igcse');
 
             // v7.19.978: Poetry Conceptual Notes runs the one-doc picker + per-poem walk
             // (pn-conceptual-notes.md). It needs live DATA, not a hardcoded next-message:
@@ -1438,8 +1442,12 @@ class SWML_Protocol_Router {
             ? Sophicly_Writing_Mastery_Lab::instance()->get_anthology_poems_map()
             : [];
         $canon = class_exists('SWML_REST_API') ? SWML_REST_API::canonical_slug($text) : $text;
+        // v7.20.39 SLUG-DRIFT FIX: nonfiction's roster is BOARD-determined — the course text
+        // (edexcel_igcse_lang_a) is NOT the anthology slug. Add the board nonfiction anthology
+        // (igcse_lang_nonfiction) so the roster resolves regardless of the course text slug.
+        $nf_anth = ($board === 'edexcel-igcse') ? 'igcse_lang_nonfiction' : '';
         $cands = [];
-        foreach ([$text, $canon] as $c) {
+        foreach ([$text, $canon, $nf_anth] as $c) {
             $c = (string) $c;
             if ($c !== '' && !in_array($c, $cands, true)) $cands[] = $c;
         }
@@ -3607,7 +3615,7 @@ TEMPLATE;
             $is_poetry = in_array($subject, ['poetry_anthology', 'unseen_poetry']);
             // v7.15.38: $board arrives normalized to hyphenated form.
             $is_nonfiction = ($subject === 'nonfiction_anthology')
-                || ($subject === 'language1' && $board === 'edexcel-igcse');
+                || (($subject === 'language_p1' || $subject === 'language1') && $board === 'edexcel-igcse'); // v7.20.39: language_p1 is the real derived subject
             if ($is_poetry) {
                 // v7.19.978: poetry CN runs the one-doc picker + per-poem walk
                 // (pn-conceptual-notes.md); session DATA is injected by

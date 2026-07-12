@@ -1851,6 +1851,16 @@ window.WML = (function() {
         const board = String(state.board || '').toLowerCase();
         const t = String(text || state.text || '');
         const tries = [t, t.replace(/_poetry$/, ''), t + '_poetry'];
+        // v7.20.39 SLUG-DRIFT FIX: nonfiction's anthology is BOARD-determined — the course text
+        // (e.g. edexcel_igcse_lang_a) is NOT the anthology slug; the roster lives under
+        // NONFICTION_ANTHOLOGY_BY_BOARD[board] (igcse_lang_nonfiction). Add it so a nonfiction doc
+        // resolves its roster even when state.text is the generic course text. Poetry unaffected
+        // (isNonfictionSubject false → no extra tries).
+        try {
+            if (isNonfictionSubject() && Array.isArray(NONFICTION_ANTHOLOGY_BY_BOARD[board])) {
+                NONFICTION_ANTHOLOGY_BY_BOARD[board].forEach((a) => { if (a && a.id) tries.push(a.id); });
+            }
+        } catch (_) {}
         for (let i = 0; i < tries.length; i++) {
             const row = map[board + '|' + tries[i]];
             if (Array.isArray(row) && row.length) return row;
@@ -1863,7 +1873,10 @@ window.WML = (function() {
     // one-doc onto the legacy poetic_forms key (Neil's "old document, notes gone").
     // The poem list is a durable fact: course text resolves to a populated anthology
     // ⇒ this IS a poetry anthology, whatever state.subject currently says.
-    const isPoetryAnthologyDoc = () => isPoetrySubject() || anthologyPoemsFor().length > 0;
+    // v7.20.39: exclude nonfiction — anthologyPoemsFor now also resolves the nonfiction roster
+    // (board-wise), so "roster populated" alone no longer implies POETRY. isNonfictionSubject
+    // guards the durable poetry detection so a nonfiction doc can't be misread as a poetry doc.
+    const isPoetryAnthologyDoc = () => isPoetrySubject() || (!isNonfictionSubject() && anthologyPoemsFor().length > 0);
 
     // Active config based on current task
     // prose_anthology uses Literature CN, not Poetry CN
@@ -1882,8 +1895,11 @@ window.WML = (function() {
     };
     const isNonfictionSubject = () => {
         if (state.subject === 'nonfiction_anthology') return true;
-        // Edexcel IGCSE Language Paper 1 = nonfiction anthology texts
-        if (state.subject === 'language1' && state.board === 'edexcel-igcse') return true;
+        // Edexcel IGCSE Language Paper 1 = nonfiction anthology. v7.20.39 SLUG-DRIFT FIX: the bridge
+        // emits subject 'language' → derived to 'language_p1' (text_to_template_slug), NEVER the
+        // legacy 'language1' literal — so the whole nonfiction family silently fell to Literature.
+        // Match BOTH forms (P1 only; P2 = poetry+prose fiction, keeps its own family).
+        if ((state.subject === 'language_p1' || state.subject === 'language1') && state.board === 'edexcel-igcse') return true;
         return false;
     };
     const isAnthologySubject = () => ['poetry_anthology', 'prose_anthology', 'nonfiction_anthology'].includes(state.subject);

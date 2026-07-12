@@ -272,6 +272,19 @@ if (studentText.length > THRESHOLD) return ' ✓';
    touching a runtime path (a chat pipeline, a submit handler, marking, boot), DRIVE that path
    once (or `/verify`) before shipping. Syntax-checking a submit handler is not testing it. The
    .898 crash shipped because it was checked, not run.
+0c. **SLUG / IDENTITY TRACE — mandatory for ANY feature keyed on a slug/subject/text/path/family/key.**
+   Verifying the DESIGNED slug exists (seeded option, config key, bank `@text`, file on disk) is NOT
+   enough — the feature is inert if the REAL lesson resolves to a different slug than the gates check.
+   (a) Grep EVERY gate that keys on the identity (client detection predicates, router arms, preamble
+   branches, server discriminators, roster/bank/template/protocol resolvers, canvas meta-key builders,
+   autofill field composers). (b) Get the REAL resolved value from a real lesson — read the shortcode
+   atts or `wp eval` the resolver (`text_to_template_slug`, subject derivation, `normalize_text_slug`,
+   `canonical_slug`); NEVER assume the picker/design sets it (the bridge/course-map/derivation
+   overrides). (c) Diff real-vs-expected at EVERY gate (table: gate | checks-for | real | match?). Any
+   mismatch = a silent miss. Prefer ONE canonical predicate/resolver over N literal checks. Full SOP:
+   memory `feedback_slug_trace_mandatory_preship_gate` (proof: nonfiction CN loaded Literature because
+   the bridge emits `language_p1`/`edexcel_igcse_lang_a`, not the mold's `nonfiction_anthology`/
+   `igcse_lang_nonfiction` — every gate missed while all "data exists" checks passed).
 
 1. **Trace the full click path.** User clicks → function → screen render → state change. Check no other handler also fires.
 2. **Check for dual event bindings.** Search for `.onclick =` and `.addEventListener` on the same element.
