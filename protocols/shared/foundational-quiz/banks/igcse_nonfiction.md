@@ -20,7 +20,10 @@ Slugs (`voice / form / methods / ideas / purpose`) are DISTINCT from the lit set
 
 Every quote is verbatim from the anthology source
 (`Model Answers/Model Answer Resources/iGCSE-Anthology-English-Language-A-and-English-Literature.md`, Part 1).
-`@set:N` stages the texts (Set 1 = texts 1–5, Set 2 = texts 6–10). `@text:<slug>` names the text for autofill.
+`@set:N` stages the texts in 5 stages of 2, ALIGNED to the CN staged-delivery (cn_stage 5×2, same roster
+pairing) so "Stage N" means the same 2 texts for both the quiz and the notes (Neil 2026-07-12): Stage 1 =
+adichie, alagiah · Stage 2 = herbert, morris · Stage 3 = ralston, zephaniah · Stage 4 = levine, zeppa ·
+Stage 5 = macdonald, yenmah. `@text:<slug>` names the text for autofill.
 
 ### Quiz: Edexcel IGCSE Non-fiction Anthology
 
@@ -145,7 +148,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The reporter's discomfort, not his heroism, is the point; Alagiah indicts the journalist's detachment rather than celebrating it.
 
 11. **Type: MCQ [Tests Writer's Voice]**
-   @set:1
+   @set:2
    @dim:voice
    @text:herbert
    * **Question:** Whose voice tells *The Explorer's Daughter*, and what is her stance toward the hunt she watches?
@@ -157,7 +160,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** She has a deep personal stake — "This dilemma stayed with me the whole time that I was in Greenland" — so the voice is anything but neutral.
 
 12. **Type: MCQ [Tests Structure & Text Type]**
-   @set:1
+   @set:2
    @dim:form
    @text:herbert
    * **Question:** *The Explorer's Daughter* is a piece of travel writing / memoir. How does its form shape the reader's response?
@@ -169,7 +172,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** It is intensely personal, not an impersonal report — the wildlife facts serve her reflection, not a catalogue.
 
 13. **Type: MCQ [Tests Methods & Effect]**
-   @set:1
+   @set:2
    @dim:methods
    @text:herbert
    * **Question:** As the hunter takes aim, Herbert writes that she "urged the man on in my head" and yet "at the same time my heart also urged the narwhal to dive, to leave, to survive". What does this method DO to the reader?
@@ -181,7 +184,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The point is the EFFECT — feeling torn — not labelling the technique as "balance" or "juxtaposition".
 
 14. **Type: MCQ [Tests Themes & Ideas]**
-   @set:1
+   @set:2
    @dim:ideas
    @text:herbert
    * **Question:** Which controlling idea does *The Explorer's Daughter* most explore?
@@ -193,7 +196,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** She states the opposite — imported goods "can only ever account for part of the food supply", so the hunt remains essential.
 
 15. **Type: MCQ [Tests Purpose & Message]**
-   @set:1
+   @set:2
    @dim:purpose
    @text:herbert
    * **Question:** What does Herbert ultimately want her reader to think or feel — and what is her enduring message?
@@ -205,7 +208,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** She feels respect, not pity — the hunter's courage "could only inspire respect"; pity would flatten the equals she portrays.
 
 16. **Type: MCQ [Tests Writer's Voice]**
-   @set:1
+   @set:2
    @dim:voice
    @text:morris
    * **Question:** Whose voice reports *Explorers or boys messing about?*, and what is his stance toward the two adventurers?
@@ -217,7 +220,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The criticism is never the writer's open rage — it is carried by others' quoted words, so the reporting voice stays ostensibly neutral.
 
 17. **Type: MCQ [Tests Structure & Text Type]**
-   @set:1
+   @set:2
    @dim:form
    @text:morris
    * **Question:** *Explorers or boys messing about?* is a newspaper article. How does its structure shape the reader's response?
@@ -229,7 +232,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The writer is an outside reporter, not a first-person narrator recalling his own journey.
 
 18. **Type: MCQ [Tests Methods & Effect]**
-   @set:1
+   @set:2
    @dim:methods
    @text:morris
    * **Question:** Morris reports the wife's description of the pair as "boys messing about with a helicopter" and lets an expert say they were "pushing it to the maximum". What does this method DO to the reader?
@@ -241,7 +244,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The point is the EFFECT — feeling the criticism as trustworthy — not labelling a technique.
 
 19. **Type: MCQ [Tests Themes & Ideas]**
-   @set:1
+   @set:2
    @dim:ideas
    @text:morris
    * **Question:** Which controlling idea does *Explorers or boys messing about?* most explore?
@@ -253,7 +256,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The rescue services are shown working hard and well; the article's concern is the men's choices and their cost, not naval competence.
 
 20. **Type: MCQ [Tests Purpose & Message]**
-   @set:1
+   @set:2
    @dim:purpose
    @text:morris
    * **Question:** What does Morris ultimately want the reader to think or feel — and what is the article's enduring message?
@@ -265,7 +268,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** Nothing in the report calls for punishment — even the wife only jokes they'll "have their bottoms kicked"; the tone is sceptical, not vengeful.
 
 21. **Type: MCQ [Tests Writer's Voice]**
-   @set:1
+   @set:3
    @dim:voice
    @text:ralston
    * **Question:** Whose voice tells this account of *127 Hours*, and what is his stance as he narrates the accident?
@@ -277,7 +280,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The relentless present tense denies any calm of hindsight; we experience the panic as it unfolds, not recollected in tranquillity.
 
 22. **Type: MCQ [Tests Structure & Text Type]**
-   @set:1
+   @set:3
    @dim:form
    @text:ralston
    * **Question:** *127 Hours* is an autobiography. How does the way it is organised shape the reader's response?
@@ -289,7 +292,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The organisation delivers mounting panic, not detached listing — the closer the moment comes, the more intense the telling.
 
 23. **Type: MCQ [Tests Methods & Effect]**
-   @set:1
+   @set:3
    @dim:methods
    @text:ralston
    * **Question:** When the rock falls, Ralston writes that the next three seconds "play out at a tenth of their normal speed" and describes the collision "In slow motion". What does this method DO to the reader?
@@ -301,7 +304,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The point is the EFFECT — living the moment frame by frame — not labelling the technique.
 
 24. **Type: MCQ [Tests Themes & Ideas]**
-   @set:1
+   @set:3
    @dim:ideas
    @text:ralston
    * **Question:** Which controlling idea does this extract most explore?
@@ -313,7 +316,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** His own choices shape the peril — he trusts a boulder he feels teeter, and he "had not informed anyone of his hiking plans", so he is utterly alone.
 
 25. **Type: MCQ [Tests Purpose & Message]**
-   @set:1
+   @set:3
    @dim:purpose
    @text:ralston
    * **Question:** What does Ralston want the reader to feel and understand — and what is the enduring message of the account?
@@ -325,7 +328,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** It is not an anti-adventure lecture; the message concerns human vulnerability and the fragility of control, not a warning to stay indoors.
 
 26. **Type: MCQ [Tests Writer's Voice]**
-   @set:2
+   @set:3
    @dim:voice
    @text:zephaniah
    * **Question:** Whose voice tells *Young and dyslexic? You've got it going on*, and what is his stance toward his own experience?
@@ -337,7 +340,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** He is not neutral; he argues a clear personal case, that dyslexia is a difference to be embraced.
 
 27. **Type: MCQ [Tests Structure & Text Type]**
-   @set:2
+   @set:3
    @dim:form
    @text:zephaniah
    * **Question:** *Young and dyslexic? You've got it going on* is a personal essay. How does the way it is organised shape the reader's response?
@@ -349,7 +352,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** It is intimate and direct, speaking straight to a dyslexic "you" — the opposite of an impersonal report.
 
 28. **Type: MCQ [Tests Methods & Effect]**
-   @set:2
+   @set:3
    @dim:methods
    @text:zephaniah
    * **Question:** Zephaniah folds himself and his reader into one group — "Us dyslexic people, we've got it going on – we are the architects. We are the designers." What does this method DO to a dyslexic reader?
@@ -361,7 +364,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The point is the FELT effect — belonging — not labelling the technique "first-person plural".
 
 29. **Type: MCQ [Tests Themes & Ideas]**
-   @set:2
+   @set:3
    @dim:ideas
    @text:zephaniah
    * **Question:** Which controlling idea does *Young and dyslexic? You've got it going on* most explore?
@@ -373,7 +376,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** He credits self-belief and using dyslexia to his advantage, not luck, as what made the difference.
 
 30. **Type: MCQ [Tests Purpose & Message]**
-   @set:2
+   @set:3
    @dim:purpose
    @text:zephaniah
    * **Question:** What does Zephaniah ultimately want a dyslexic reader — or their parent — to think, feel or do, and what is his enduring message?
@@ -385,7 +388,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** He argues the opposite — "What's unnatural is the way we read and write"; he wants the difference embraced, not erased.
 
 31. **Type: MCQ [Tests Writer's Voice]**
-   @set:2
+   @set:4
    @dim:voice
    @text:levine
    * **Question:** Whose voice tells the extract from *A Game of Polo with a Headless Goat*, and what is her stance toward the donkey race she describes?
@@ -397,7 +400,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** Her whole stance is that of the outsider meeting something unfamiliar and thrilling for the first time, not an insider to whom it is ordinary.
 
 32. **Type: MCQ [Tests Structure & Text Type]**
-   @set:2
+   @set:4
    @dim:form
    @text:levine
    * **Question:** This is travel and sports journalism. How does its form shape the reader's response?
@@ -409,7 +412,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The event is the foreground throughout; this is outward-looking travel writing, not introspective memoir.
 
 33. **Type: MCQ [Tests Methods & Effect]**
-   @set:2
+   @set:4
    @dim:methods
    @text:levine
    * **Question:** Levine calls the chase "Formula One without rules, or a city-centre rush hour gone anarchic". What does this method DO to the reader?
@@ -421,7 +424,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The point is the EFFECT — feeling the speed and anarchy — not labelling the comparison as a device.
 
 34. **Type: MCQ [Tests Themes & Ideas]**
-   @set:2
+   @set:4
    @dim:ideas
    @text:levine
    * **Question:** Which controlling idea does the extract most explore?
@@ -433,7 +436,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** In experience the trip is a thrilling success — the chaos is the point of the adventure, not a failure of it.
 
 35. **Type: MCQ [Tests Purpose & Message]**
-   @set:2
+   @set:4
    @dim:purpose
    @text:levine
    * **Question:** What does Levine ultimately want the reader to feel — and what is her enduring message?
@@ -445,7 +448,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** Pity and condemnation are exactly what her tone withholds ("not cruelly"); she wants the reader to share the excitement, not to campaign.
 
 36. **Type: MCQ [Tests Writer's Voice]**
-   @set:2
+   @set:4
    @dim:voice
    @text:zeppa
    * **Question:** Whose voice tells *Beyond the Sky and the Earth*, and what is her stance toward Bhutan?
@@ -457,7 +460,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** Her stake is entirely personal: by the end she is "full of admiration for this small country", the opposite of a neutral observer.
 
 37. **Type: MCQ [Tests Structure & Text Type]**
-   @set:2
+   @set:4
    @dim:form
    @text:zeppa
    * **Question:** *Beyond the Sky and the Earth* is travel writing / memoir. How does its form shape the reader's response?
@@ -469,7 +472,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** It narrates an experience rather than arguing a case; there is no thesis-and-proof, only a journey lived and felt.
 
 38. **Type: MCQ [Tests Methods & Effect]**
-   @set:2
+   @set:4
    @dim:methods
    @text:zeppa
    * **Question:** Flying in, Zeppa writes that "on the other side of mountains are mountains, more mountains and mountains again". What does this method DO to the reader?
@@ -481,7 +484,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The point is the EFFECT — feeling the endlessness — not naming the device as "repetition".
 
 39. **Type: MCQ [Tests Themes & Ideas]**
-   @set:2
+   @set:4
    @dim:ideas
    @text:zeppa
    * **Question:** Which controlling idea does *Beyond the Sky and the Earth* most explore?
@@ -493,7 +496,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The reverse is true — the place reshapes HER perception; she rejects measuring it against home ("Thimphu will never look like New York to me").
 
 40. **Type: MCQ [Tests Purpose & Message]**
-   @set:2
+   @set:4
    @dim:purpose
    @text:zeppa
    * **Question:** What does Zeppa ultimately want the reader to feel or do — and what is her enduring message?
@@ -505,7 +508,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The opposite — she is drawn to "the Bhutanese-ness of everything else" and quietly rejects the New York comparison.
 
 41. **Type: MCQ [Tests Writer's Voice]**
-   @set:2
+   @set:5
    @dim:voice
    @text:macdonald
    * **Question:** Whose voice tells this extract from *H is for Hawk*, and what is her stance toward the moment she describes?
@@ -517,7 +520,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The extract signals something far heavier than a hobby — "something behind it that was very important" — the private loss that drove her to the hawk.
 
 42. **Type: MCQ [Tests Structure & Text Type]**
-   @set:2
+   @set:5
    @dim:form
    @text:macdonald
    * **Question:** How does the FORM of this writing shape the reader's response to the meeting with the hawk?
@@ -529,7 +532,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** It is not invented — it is a true remembered experience, which is precisely why its literary intensity carries such weight.
 
 43. **Type: MCQ [Tests Methods & Effect]**
-   @set:2
+   @set:5
    @dim:methods
    @text:macdonald
    * **Question:** Macdonald piles up clashing images for the hawk — "a conjuring trick. A reptile. A fallen angel" — then "gold falling through water". What does this method DO to the reader?
@@ -541,7 +544,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The point is the EFFECT — feeling her awe and disorientation — not labelling the comparisons "metaphor".
 
 44. **Type: MCQ [Tests Themes & Ideas]**
-   @set:2
+   @set:5
    @dim:ideas
    @text:macdonald
    * **Question:** Which controlling idea does this extract most explore?
@@ -553,7 +556,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** The man's calm is one detail, not the idea; mistaking it for the theme misses the grief driving the narrator.
 
 45. **Type: MCQ [Tests Purpose & Message]**
-   @set:2
+   @set:5
    @dim:purpose
    @text:macdonald
    * **Question:** What does Macdonald ultimately want the reader to feel — and what is the enduring message of the extract?
@@ -565,7 +568,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** Pity that leads nowhere misreads the writing — it wants us to inhabit her experience and grasp its meaning, not merely feel sorry.
 
 46. **Type: MCQ [Tests Writer's Voice]**
-   @set:2
+   @set:5
    @dim:voice
    @text:yenmah
    * **Question:** Whose voice tells this extract from *Chinese Cinderella*, and what is her stance toward the scene she recounts?
@@ -577,7 +580,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** She does not accuse; she yearns for belonging, and the tone is longing and hope, not anger.
 
 47. **Type: MCQ [Tests Structure & Text Type]**
-   @set:2
+   @set:5
    @dim:form
    @text:yenmah
    * **Question:** This extract comes from an autobiography. How does the way it is organised shape the reader's response?
@@ -589,7 +592,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** We are inside her feelings throughout — the dread, the relief, the soaring hope.
 
 48. **Type: MCQ [Tests Methods & Effect]**
-   @set:2
+   @set:5
    @dim:methods
    @text:yenmah
    * **Question:** The narrator says the thought of leaving school "throbbed at the back of my mind like a persistent toothache". What does this DO to the reader?
@@ -601,7 +604,7 @@ Every quote is verbatim from the anthology source
    * **Why D:** There is no real toothache; the ache is the shape of her anxiety, not a physical illness.
 
 49. **Type: MCQ [Tests Themes & Ideas]**
-   @set:2
+   @set:5
    @dim:ideas
    @text:yenmah
    * **Question:** Which controlling idea does this extract most explore?
@@ -613,7 +616,7 @@ Every quote is verbatim from the anthology source
    * **Why C:** The extract does not preach obedience; her silent agreement is the price she pays for a chance at escape, rendered with feeling rather than approval.
 
 50. **Type: MCQ [Tests Purpose & Message]**
-   @set:2
+   @set:5
    @dim:purpose
    @text:yenmah
    * **Question:** What does Yen Mah ultimately want the reader to feel or understand — and what is the extract's enduring message?
