@@ -26,7 +26,7 @@ Scottish Poetry Library and, for the traditional ballad, standard Child Ballad 3
 <!-- ============================ POEM 1: THOMAS THE RHYMER ============================ -->
 
 1. **Type: MCQ [Tests Recognising the Poem]**
-   * **Question:** Which poem tells of a man who meets a magical lady beneath the Eildon Tree, rides with her to Elfland, and returns after seven years with a tongue that cannot lie?
+   * **Question:** Which poem turns a mortal's crossing into the supernatural into a bargain — a man who follows a fairy queen beneath the Eildon Tree to Elfland for seven years, surrendering his own will there, and comes back granted "the tongue that can never lie"?
    * **Options:** A) Thomas the Rhymer, B) Composed in August, C) Da Clearance, D) 33
    * **Correct:** A
    * **Feedback:** ✓ Correct. The traditional ballad "Thomas the Rhymer" follows Thomas's encounter with the Queen of Elfland beneath the Eildon Tree, his seven-year sojourn, and the apple that gives him "the tongue that can never lie".
@@ -55,7 +55,7 @@ Scottish Poetry Library and, for the traditional ballad, standard Child Ballad 3
 <!-- ============================ POEM 2: COMPOSED IN AUGUST ============================ -->
 
 4. **Type: MCQ [Tests Recognising the Poem]**
-   * **Question:** Which poem opens with "Now westlin winds and slaught'ring guns / Bring Autumn's pleasant weather," moving from birds in the heather to a young man musing on his "charmer" by moonlight?
+   * **Question:** Which poem sets autumn's natural harmony and a young man's love against the cruelty of the shooting season — opening "Now westlin winds, and slaught'ring guns / Bring autumn's pleasant weather," then turning from the birds to his "charmer"?
    * **Options:** A) Composed in August, B) 33, C) The Bonnie Broukit Bairn, D) Summit of Corrie Etchachan
    * **Correct:** A
    * **Feedback:** ✓ Correct. Burns's "Composed in August" opens with the westlin winds and "slaught'ring guns" of the shooting season before turning to the birds and the speaker's love for his "charmer".
@@ -81,7 +81,7 @@ Scottish Poetry Library and, for the traditional ballad, standard Child Ballad 3
 <!-- ============================ POEM 3: THE BONNIE BROUKIT BAIRN ============================ -->
 
 7. **Type: MCQ [Tests Recognising the Poem]**
-   * **Question:** Which poem imagines Mars dressed "in crammasy" and Venus "in a green silk goun", gossiping among the stars while addressing "thou bonnie broukit bairn"?
+   * **Question:** Which poem argues that the vain, self-absorbed heavens ignore a neglected Earth — imagining Mars "in crammasy" and Venus "in a green silk goun" gossiping among the stars, sparing not a thought for "thou bonnie broukit bairn"?
    * **Options:** A) The Bonnie Broukit Bairn, B) Da Clearance, C) Thomas the Rhymer, D) Composed in August
    * **Correct:** A
    * **Feedback:** ✓ Correct. MacDiarmid's "The Bonnie Broukit Bairn" pictures Mars and Venus finely dressed and self-absorbed, ignoring the neglected Earth — the "bonnie broukit bairn" the poem addresses directly.
@@ -92,16 +92,16 @@ Scottish Poetry Library and, for the traditional ballad, standard Child Ballad 3
 8. **Type: True-False [Tests Form & Features]**
    * **Question:** "The Bonnie Broukit Bairn" is an eight-line poem written in Scots that turns, after a dash, into a final, urgent couplet warning of Earth's tears.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. MacDiarmid compresses the whole poem into eight lines of Scots, with a dash marking a sharp turn into the final couplet's warning that the Earth's tears could "drown the haill clanjamfrie".
+   * **Feedback:** ✓ Correct. MacDiarmid compresses the whole poem into eight lines of Scots, with a dash marking a sharp turn into the final couplet's warning that the Earth's tears could drown "the haill clanjamfrie".
    * **WhyWrong:** This is true — the poem's dash marks exactly this turn, from the planets' vain chatter to Earth's own, more powerful, potential grief.
 
 9. **Type: MCQ [Tests Meaning & Effects]**
-   * **Question:** What does the poem suggest by ending on the image of Earth's tears that could "drown the haill clanjamfrie" (the whole crowd of them)?
+   * **Question:** What does the poem suggest by ending on the image of Earth's tears that could drown "the haill clanjamfrie" (the whole crowd of them)?
    * **Options:** A) That Earth is powerless and insignificant next to Mars and Venus, B) That the neglected Earth's grief holds a hidden power that could overwhelm the very bodies that ignore it, C) That the planets will comfort Earth if it cries, D) That crying is a sign of weakness
    * **Correct:** B
    * **Feedback:** ✓ Correct. The closing image reverses the poem's opening imbalance: the "broukit" (neglected) Earth's tears carry force enough to drown the vain, chattering "clanjamfrie" of Mars, Venus and the moon.
    * **Why A:** The final image gives Earth unexpected power, not confirmed insignificance.
-   * **Why C:** The other bodies are shown sparing Earth "not a thochtie" — indifferent, not comforting.
+   * **Why C:** The other bodies spare Earth not a single thought — "Nane for thee a thochtie sparin'" — indifferent, not comforting.
    * **Why D:** The tears are presented as a potential force, not a weakness.
 
 <!-- ============================ POEM 4: SUMMIT OF CORRIE ETCHACHAN ============================ -->

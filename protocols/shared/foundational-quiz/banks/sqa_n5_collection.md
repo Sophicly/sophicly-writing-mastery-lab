@@ -48,7 +48,7 @@ Jassat) · Little Girls (Len Pennie).
    * **Question:** In which ballad do two crows discuss where to find their next meal, revealing a slain knight already abandoned by his hawk, hound, and lady?
    * **Options:** A) The Bonnie Earl o' Moray, B) The Twa Corbies, C) Little Girls, D) Auntie
    * **Correct:** B
-   * **Feedback:** ✓ Correct. "The Twa Corbies" opens with two crows planning "Where sall we gang and dine to-day?", finding a "new slain knight" deserted by his own hound, hawk and lady.
+   * **Feedback:** ✓ Correct. "The Twa Corbies" opens with two crows planning "Where sall we gang and dine the day?", finding a "new slain knight" deserted by his own hound, hawk and lady.
    * **Why A:** The Bonnie Earl o' Moray laments a named historical Earl, not an anonymous knight found by crows.
    * **Why C:** Little Girls is a contemporary poem about girlhood and resilience, with no ballad crows.
    * **Why D:** Auntie is a tender poem about family and distance, not a dark ballad of scavenging birds.
@@ -69,7 +69,7 @@ Jassat) · Little Girls (Len Pennie).
    * **Why D:** His lady has already moved on to "another mate", not grieved him.
 
 7. **Type: MCQ [Tests Recognising the Poem]**
-   * **Question:** Which poem opens "My luve's like a red, red rose, / That's newly sprung in June"?
+   * **Question:** Which poem opens "O my Luve's like a red, red rose, / That's newly sprung in June"?
    * **Options:** A) Lochinvar, B) A Red, Red Rose, C) The Twa Corbies, D) Little Girls
    * **Correct:** B
    * **Feedback:** ✓ Correct. Burns's "A Red, Red Rose" opens with the famous simile comparing his love to a rose "newly sprung in June" and a melody "sweetly play'd in tune".
