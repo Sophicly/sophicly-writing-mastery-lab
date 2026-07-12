@@ -8919,6 +8919,14 @@
         if (state.task === 'foundational_quiz' && state.fqStage) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Stage ' + state.fqStage }));
         }
+        // v7.20.43 (Neil staging): CN staged-delivery "Stage N of M" — the SIDEBAR twin of the
+        // canvas CN badge (13200). The canvas ctxBadges are HIDDEN in training-env (13317), and CN
+        // lessons ARE training-env, so the canvas badge never shows — this sidebar row is the only
+        // visible chip strip. Same gate/text as the canvas badge; mirrors the FQ stage badge above.
+        if (state.task === 'conceptual_notes' && state.cnStage && WML.cnStageCountFor) {
+            const _cnTot = WML.cnStageCountFor(state.board, state.text);
+            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: _cnTot ? 'Stage ' + state.cnStage + ' of ' + _cnTot : 'Stage ' + state.cnStage }));
+        }
         // v7.15.20: Attempt badge — injected/updated dynamically after attempt resolution
         // (state.attempt is 0 at build time; resolved later via server or sessionStorage)
         function _updateAttemptBadge() {
