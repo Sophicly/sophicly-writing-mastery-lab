@@ -25036,6 +25036,16 @@
             if (!canvasEditor) return;
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
+            // v7.20.41: CN + FQ docs have NO marking control-row surface — no feedback-mark
+            // boxes, Self-Assessment, scores, Action-Plan, Analytics or sign-off sections. Every
+            // pass below already no-ops on such a doc (labels never match the Feedback: X (n/m)
+            // regex; the other querySelectors return null). But a large CN doc (nonfiction: 10
+            // texts × 8 elements = 80 sections) schedules 3 _fillCtl passes per section at mount
+            // (~240 in <1s), which trips the _derivedCardFillOk >50/s breaker with a SPURIOUS
+            // "fill storm" warn — the breaker counts no-op CALLS as writes. Bail BEFORE the
+            // counter so CN/FQ can never trip it. Not a masked loop: renderControlRows writes
+            // nothing on these docs (verified — poetry CN, being smaller, simply never reached 50).
+            if (state.task === 'conceptual_notes' || state.task === 'foundational_quiz') return;
             if (!_derivedCardFillOk('ctlrows')) return;
 
             const _ctlRowOf = (section) => {

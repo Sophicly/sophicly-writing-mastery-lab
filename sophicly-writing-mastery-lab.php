@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.40
+ * Version: 7.20.41
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.40');
+define('SWML_VERSION', '7.20.41');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -776,6 +776,16 @@ class Sophicly_Writing_Mastery_Lab {
         // close+reopen. Closing this gap pins topic consistently across access paths.
         if (!$topic) {
             $topic = absint(get_post_meta($post_id, '_sophicly_topic_number', true));
+        }
+        // v7.20.41: Conceptual Notes is ALWAYS Topic 2 (WML terminology — Topic 2 = CN
+        // across every board/paper). A CN lesson mis-mapped with a blank Topic # in the
+        // bridge (wml_topic:0) otherwise keys its canvas doc WITHOUT the _t2 suffix and the
+        // "Topic 2 · Stage N" badge (nested in `if(state.topicNumber)`) never renders. Code
+        // -default here so the doc key + badge can't silently depend on the picker being set.
+        // Scoped to conceptual_notes ONLY — the CN-shared FQ maps its own topic in the bridge;
+        // defaulting all foundational_quiz would misfile every non-CN FQ lesson.
+        if (!$topic && $task === 'conceptual_notes') {
+            $topic = 2;
         }
 
         // Detect LearnDash Focus Mode (template = focus, or body has ld-in-focus-mode)
