@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.47
+ * Version: 7.20.48
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.47');
+define('SWML_VERSION', '7.20.48');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -784,15 +784,17 @@ class Sophicly_Writing_Mastery_Lab {
         // suffix — the CN lesson reads `..._t2_cn` while a topic-less FQ writes `..._cn`, so the
         // FQ seed never crosses (Neil staging 2026-07-12: FQ notes filed but absent in CN). Code
         // -default here so the shared doc key + "Topic 2 · Stage N" badge can't depend on the
-        // picker being set. v7.20.47: EVERY foundational_quiz is CN-doc-bound — the single FQ task
-        // config pins canvasTopicPin:2 + canvasStorageSuffix:'_cn' + documentTemplate:'conceptual_notes'
-        // (wml-core.js ~1562), so the client ALWAYS reads/writes the Topic-2 `_cn` doc. The v7.20.44
-        // subject-literal allowlist matched only anthology subjects and SILENTLY MISSED literature
-        // set-texts (the live aqa_macbeth_cn / aqa_macbeth_t2_cn fork found by the key-mismatch sweep
-        // 2026-07-12 — same class as the nonfiction bug). Default ALL FQ to Topic 2, mirroring the
-        // client, and drop the per-literal allowlist (the exact fragility §5d KEY-MATCH warns of).
-        // Non-CN FQ does not exist — the config is universal — so nothing is misfiled.
-        if (!$topic && ($task === 'conceptual_notes' || $task === 'foundational_quiz')) {
+        // picker being set. Scoped to conceptual_notes ONLY. v7.20.48 (Neil): a foundational_quiz
+        // must NOT be given a lesson topic — it is a STANDALONE preliminary exercise, not
+        // topic-aligned, and stamping topic 2 wrongly showed a "Topic 2" badge on it. Its CANVAS
+        // doc still shares the CN doc WITHOUT a lesson topic: the FQ task config pins
+        // canvasTopicPin:2 (wml-core.js ~1564) so canvasDocScope keys the doc to Topic 2 regardless
+        // of state.topicNumber, and the v7.20.48 cnFamily() fix keeps the doc TEXT = the CN course
+        // text. So the FQ→CN doc match is handled entirely in canvasDocScope (topic + text) — which
+        // is why the earlier FQ topic-default (v7.20.44/47) was BOTH unnecessary for the key AND
+        // wrong for the badge. conceptual_notes keeps the default: it has NO canvasTopicPin, so its
+        // canvas key + "Topic 2 · Stage N" badge genuinely ride state.topicNumber.
+        if (!$topic && $task === 'conceptual_notes') {
             $topic = 2;
         }
 

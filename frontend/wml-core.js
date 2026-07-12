@@ -1827,7 +1827,16 @@ window.WML = (function() {
             // the legacy shared poetic_forms doc (superseded design). Non-poetry FQs keep
             // the override untouched (Neil scope guard: this restructure is poetry ONLY).
             // v7.19.992: durable check — subject timing must never fork the doc identity.
-            if (!isPoetryAnthologyDoc()) scope.text = state.fqBank;
+            // v7.20.48 (Neil staging — FQ→CN seed fork, THE key-mismatch again): the fqBank
+            // text-override must be excluded for EVERY CN-anthology family, not just poetry. A
+            // nonfiction FQ (fqBank='igcse_nonfiction') was overriding scope.text to the BANK slug,
+            // so it wrote ..._igcse_nonfiction_t2_cn while the CN lesson read ..._edexcel_igcse_lang_a_t2_cn
+            // (text = the course text) — different key, seed never crossed. v39/40 fixed the roster
+            // + picker gates but MISSED this one (the partial-sweep failure §5d warns of). Gate on
+            // the ONE canonical CN-family predicate (cnFamily → poetry/nonfiction/prose/literature)
+            // so any CN-shared FQ keeps the CN doc's own text; only a genuinely standalone
+            // (non-CN) FQ still uses the bank slug. No recursion: cnFamily's deps never call canvasDocScope.
+            if (!cnFamily()) scope.text = state.fqBank;
         }
         if (cfg && typeof cfg.canvasTopicPin === 'number') {
             scope.topic = cfg.canvasTopicPin;
