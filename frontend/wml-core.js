@@ -881,6 +881,16 @@ window.WML = (function() {
         const b = String(board || state.board || '').toLowerCase();
         const t = String(text || state.text || '');
         const tries = [t, t.replace(/_poetry$/, ''), t + '_poetry'];
+        // v7.20.42 SLUG-DRIFT FIX: nonfiction's anthology is BOARD-determined — the course text
+        // (edexcel_igcse_lang_a) is NOT the stage-split key (igcse_lang_nonfiction). Mirror
+        // anthologyPoemsFor/cnRosterSlug (v39/v40): push the board nonfiction anthology id so the
+        // split resolves off the generic course text. Without this cnStageCountFor=0 → no "Stage
+        // N of M" badge on the real lesson (Neil staging v7.20.41: badge missing).
+        try {
+            if (isNonfictionSubject() && Array.isArray(NONFICTION_ANTHOLOGY_BY_BOARD[b])) {
+                NONFICTION_ANTHOLOGY_BY_BOARD[b].forEach((a) => { if (a && a.id) tries.push(a.id); });
+            }
+        } catch (_) {}
         for (let i = 0; i < tries.length; i++) {
             const s = CN_STAGE_SPLITS[b + '|' + tries[i]];
             if (s) return s;

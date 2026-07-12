@@ -6898,7 +6898,14 @@
         // v7.20.38: anthology-CN picker/walk gate. Poetry_anthology UNCHANGED; nonfiction_anthology
         // ADDED (also an item-per-section anthology walk). Deliberately NOT a bare roster check —
         // that would wrongly activate unseen_poetry / poetic_forms, which keep the AI path.
-        try { return state.task === 'conceptual_notes' && (state.subject === 'poetry_anthology' || state.subject === 'nonfiction_anthology'); }
+        // v7.20.42 SLUG-DRIFT FIX: the real nonfiction lesson derives subject 'language_p1' (NOT the
+        // literal 'nonfiction_anthology'), so the literal never matched → the programmatic picker was
+        // OFF → the AI improvised the opening AND scroll-to-section never fired (it lives in the
+        // picker's _poetryCnStartPoem). Gate on the canonical isNonfictionSubject() (covers both the
+        // 'nonfiction_anthology' id AND the derived 'language_p1', board-guarded, P1-only) — same
+        // predicate anthologyPoemsFor/cnRosterSlug use. The nfcn protocol "mirrors the poetry mold"
+        // and expects this picker (Neil staging v7.20.41: nonfiction ran the AI path, no scroll).
+        try { return state.task === 'conceptual_notes' && (state.subject === 'poetry_anthology' || isNonfictionSubject()); }
         catch (_) { return false; }
     }
     // v7.19.987: which canvas tasks render the model's per-turn progress as the designed beat-chip.
