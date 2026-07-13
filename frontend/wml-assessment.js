@@ -22707,7 +22707,17 @@
                         update(updated) {
                             if (updated.type.name !== 'checklistItem') return false;
                             node = updated;
-                            dom.setAttribute('data-checked', updated.attrs.checked ? 'true' : 'false');
+                            // v7.20.67: animate ONLY a live false→true flip observed here.
+                            // Keyframes used to key on [data-checked="true"] alone, so every
+                            // (re)mount of an already-checked box replayed flood+draw — with
+                            // several checked statements any redraw/load mass-replayed them
+                            // (Neil's "checkboxes interfering"). Mounted-checked now paints
+                            // the static end state; .swml-check-anim carries the keyframes.
+                            const wasChecked = dom.getAttribute('data-checked') === 'true';
+                            const nowChecked = !!updated.attrs.checked;
+                            dom.setAttribute('data-checked', nowChecked ? 'true' : 'false');
+                            if (nowChecked && !wasChecked) dom.classList.add('swml-check-anim');
+                            else if (!nowChecked) dom.classList.remove('swml-check-anim');
                             if (updated.attrs.itemId) dom.setAttribute('data-item-id', updated.attrs.itemId);
                             if (updated.attrs.correct === true)  dom.setAttribute('data-correct', 'true');
                             if (updated.attrs.correct === false) dom.setAttribute('data-correct', 'false');
@@ -25734,6 +25744,8 @@
             // v7.20.49: AQA P2 planning — Predictions section (S1d commits file here).
             // v7.20.65: also the Phase-1 write doc (student self-fills; no chain there).
             _migrateStep('ensurePredictionsSection', _ensurePredictionsSection);
+            // v7.20.67: carry the diagnostic's pre-write space into frozen assessment docs.
+            _migrateStep('healPhase1PrewriteCarry', () => { _healPhase1PrewriteCarry(); });
             // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
             // inject the Reflection section once it resolves (record-gated; the filing
             // path re-heals if this races the fetch).
@@ -36646,12 +36658,23 @@
         const html = canvasEditor.getHTML();
         if (html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1) return; // already present
         let block;
+        // Copy derives from protocol B.2A (keywords + specific aspect) — protocol law:
+        // student-facing method statements mirror what we teach, never invented.
+        const kwSection = dividerHTML('QUESTION FOCUS') +
+            sectionHTML('notes', 'Question Focus: Keywords', true, null,
+                inputHTML('The key words or concepts the question asks you to focus on — and the specific aspect they point at (a transformation, a relationship, a treatment of others — not the character or theme generally). Committed before writing, never marked.', 'kw-focus'));
         if (litWrite) {
-            // Copy derives from protocol B.2A (keywords + specific aspect) — protocol law:
-            // student-facing method statements mirror what we teach, never invented.
-            block = dividerHTML('QUESTION FOCUS') +
-                sectionHTML('notes', 'Question Focus: Keywords', true, null,
-                    inputHTML('The key words or concepts the question asks you to focus on — and the specific aspect they point at (a transformation, a relationship, a treatment of others — not the character or theme generally). Committed before writing, never marked.', 'kw-focus'));
+            block = kwSection;
+        } else if (!planning && (state.board || '').toLowerCase() === 'edexcel-igcse') {
+            // v7.20.67 (Neil): Spec A sources are STUDIED anthology texts. P1 = anthology
+            // text + ONE unseen → keywords box + a single unseen-text prediction;
+            // P2 = anthology poetry/prose → keywords only (same treatment as literature).
+            block = kwSection;
+            if (isNonfictionSubject()) {
+                block += dividerHTML('PREDICTIONS') +
+                    sectionHTML('notes', 'Predictions: The Unseen Text', true, null,
+                        inputHTML('3 predicted themes for the unseen text (from its title, author and date only).', 'pred-unseen'));
+            }
         } else if (planning) {
             // Literal P2 trio — the S1d chain files these exact fieldIds. Unchanged.
             block = dividerHTML('PREDICTIONS') +
@@ -36687,6 +36710,52 @@
         canvasEditor.commands.insertContentAt(0, block);
         if (typeof saveCanvasContent === 'function') saveCanvasContent();
         console.log('WML Migration: ' + (litWrite ? 'Keywords-focus' : 'Predictions') + ' section injected (' + (planning ? 'AQA P2 planning' : 'phase-1 write ' + (state.board || '') + '/' + (state.subject || '')) + ')');
+    }
+
+    /**
+     * v7.20.67 (Neil): the Phase-1 chain builds FORWARD — the diagnostic's pre-write
+     * thinking space (Predictions / Question Focus) must show in the ASSESSMENT lesson
+     * too. New flows carry it via the universal reseed ('' → _assessment), but docs that
+     * forked/froze BEFORE the space existed (already-marked assessments) never re-pull
+     * the seed. This heal copies the block — WITH the student's content — from the
+     * upstream diagnostic doc when absent here. Additive only (inserted at top,
+     * overwrites nothing); backwards edits never flow (the diagnostic doc is untouched).
+     * Fail-silent: no upstream block → no-op; next load retries.
+     */
+    async function _healPhase1PrewriteCarry() {
+        try {
+            if (!canvasEditor) return;
+            if (state.task !== 'assessment' || state.phase === 'redraft' || state.reviewMode) return;
+            const html = canvasEditor.getHTML();
+            if (html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1 || html.indexOf('pred-unseen') !== -1) return;
+            const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=&attempt=${state.attempt || 1}`;
+            const res = await apiGet(url);
+            const upstream = (res && res.doc && res.doc.html) ? res.doc.html : '';
+            if (!upstream || (upstream.indexOf('data-field-id="pred-') === -1 && upstream.indexOf('kw-focus') === -1)) return;
+            const tmp = document.createElement('div');
+            tmp.innerHTML = upstream;
+            const parts = [];
+            let capture = false;
+            Array.from(tmp.children).forEach((child) => {
+                if (!child.getAttribute) return;
+                const t = child.getAttribute('data-section-type') || '';
+                if (t === 'divider') {
+                    // divider label attr can die on reload (known quirk) — fall back to text
+                    const lbl = (child.getAttribute('data-section-label') || child.textContent || '').trim();
+                    capture = /^(PREDICTIONS|QUESTION FOCUS)$/i.test(lbl);
+                    if (capture) parts.push(child.outerHTML);
+                    return;
+                }
+                if (capture) {
+                    if (child.querySelector('[data-field-id^="pred-"], [data-field-id="kw-focus"]')) parts.push(child.outerHTML);
+                    else capture = false;
+                }
+            });
+            if (!parts.length) return;
+            canvasEditor.commands.insertContentAt(0, parts.join(''));
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            console.log('WML Migration: Phase-1 pre-write space carried into assessment doc (' + parts.length + ' node(s))');
+        } catch (e) { console.warn('WML: pre-write carry heal failed (non-fatal)', e && e.message); }
     }
 
     /**
