@@ -36888,6 +36888,12 @@
                 planning: null, // head of its own phase — synthesis only, no upstream copy
             };
             if (!(state.task in HEAD_BY_TASK) || state.reviewMode) return;
+            // v7.20.83: chain machinery is for NUMBERED mastery topics ONLY — a
+            // free-practice / exam-prep doc (topic 0/free) must never gain the
+            // pre-write space or mirrors (Neil's log: the mirror synthesized a
+            // keywords box into a free-practice doc, head=_planning, topic 0).
+            const _tn = Number(state.topicNumber || 0);
+            if (!(_tn >= 1 && _tn <= 10)) return;
             // reassessment/discuss in redraft phase read from the planning head too
             let headSuffix = HEAD_BY_TASK[state.task];
             if (state.task === 'assessment' && state.phase === 'redraft') headSuffix = '_planning';
@@ -37034,18 +37040,21 @@
                     synced++;
                 } catch (e2) { console.warn('WML chain: field mirror failed', fid, e2 && e2.message); }
             });
-            // v7.20.81 self-clean: the pre-fix leak stamped copies of the field text as
-            // loose DOC-ROOT paragraphs (one per pass per load — Neil's screenshots show
-            // six). Remove any top-level paragraph whose ENTIRE text equals a mirrored
-            // field's text — exact match, doc root only; student prose lives inside
-            // sections and can never be touched by this.
+            // v7.20.81 self-clean, v7.20.83 broadened: the pre-fix leak stamped copies of
+            // field text as loose DOC-ROOT paragraphs — including OLD values from earlier
+            // edits ("focus test 3focus test 4"), which an exact-match against the CURRENT
+            // value never catches (Neil's reassessment doc: strays survived + manual
+            // deletes didn't stick). A doc-root paragraph whose whitespace-stripped text
+            // is a FRAGMENT of a mirrored field's stripped text is a leak artifact —
+            // student prose lives inside sections and can never be touched by this.
             try {
-                const _vals = Object.keys(upFields).map((k) => upFields[k].text);
+                const _strip = (s) => String(s || '').replace(/\s+/g, '');
+                const _valsStripped = Object.keys(upFields).map((k) => _strip(upFields[k].text)).filter((v) => v.length >= 6);
                 const _doomed = [];
                 canvasEditor.state.doc.forEach((node, offset) => {
                     if (node.type.name !== 'paragraph') return;
-                    const t = (node.textContent || '').replace(/\s+/g, ' ').trim();
-                    if (t && _vals.indexOf(t) !== -1) _doomed.push({ from: offset, to: offset + node.nodeSize });
+                    const t = _strip(node.textContent);
+                    if (t.length >= 6 && _valsStripped.some((v) => v.indexOf(t) !== -1)) _doomed.push({ from: offset, to: offset + node.nodeSize });
                 });
                 if (_doomed.length) {
                     canvasEditor.chain().command(({ tr }) => {
