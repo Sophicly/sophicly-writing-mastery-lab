@@ -7,14 +7,16 @@
      the P2 planning design brief (wml-PLANNING-P2-design-brief-2026-07-12.md, D1–D7 ruled).
      The validated pedagogy from b1–b7 is RE-HOUSED here, not re-invented.
 
-     BUILD DEPENDENCIES (engine work that must ship WITH or BEFORE this file — brief §11):
+     BUILD DEPENDENCIES — ✅ ALL RESOLVED (shipped v7.20.49–55; chain proven live
+     2026-07-13). Kept for provenance only — NOT open preconditions (audit fix 2):
      1. §11.1 — @FIELD_COMMIT writer extended to fill inputField nodes (RATIFIED). Until it
         ships, every plan filing below silently no-ops (plan fields are inputField).
      2. §11.2 — Q4 comparative plan builder (plan-Q4-intro / plan-Q4-body-{1..3} /
         plan-Q4-conclusion). Until it ships, Q4's template has 4 generic para fields instead.
      3. Prediction-capture component (S1 chips; replies arrive as tagged artifacts) +
         Predictions doc section (D2). 4. Manifest de-stitch: planning.steps {} + groups [];
-        b1–b7 left on disk unreferenced. 5. Q5 device help-menu = programmatic component
+        b1–b7 moved to planning/_superseded/ (2026-07-13 — do NOT port from them).
+        5. Q5 device help-menu = programmatic component
         (D6 — content moves verbatim from b6-help-menu.md; NOT loaded as protocol).
 
      FILING fieldId CONTRACT (byte-exact; traced from wml-assessment.js, brief §7b):
@@ -25,6 +27,18 @@
      | Q4 | plan-Q4-intro · plan-Q4-body-1 · plan-Q4-body-2 · plan-Q4-body-3 · plan-Q4-conclusion |
      | Q5 | iumvcc-intro · iumvcc-urgency · iumvcc-method · iumvcc-vision · iumvcc-counter · iumvcc-conclusion |
      (Q5 ids are abbreviated — "method", "counter" — never "methodology"/"counterargument".)
+
+     FILING ORDER ≠ DOCUMENT ORDER (audit fix 4): Q4 files bodies FIRST (Beats 5–9), then
+     intro (Beat 10), then conclusion (Beat 11) — the table above is DOCUMENT order. Safe
+     because filing targets fieldIds, never positions. Any consumer that derives structure
+     from the plan (sidebar rows, the future outline-row generator) must key on the fieldId
+     table, NEVER on emission order.
+
+     PLAN-COMPLETE (audit fix 3): the plan is COMPLETE when every fieldId above holds
+     student text. ONE source of truth = CODE — _buildPlanningSidebarModel derives each
+     step's done-ness from the document's fields (A6: numbers/state have one owner). The
+     protocol GATES on "all fields filed" per question but never announces completion
+     itself; ports must not invent a completion message or a hand-authored count.
      ═══════════════════════════════════════════════════════════════════════ -->
 
 ---
