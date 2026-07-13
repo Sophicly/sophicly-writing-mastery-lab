@@ -34117,6 +34117,10 @@
         try {
             const _key = CANVAS_SAVE_KEY();
             localStorage.setItem(_key, html);
+            // v7.20.82: freshness stamp — the feed-forward mirror arbitrates local copy
+            // vs server copy by timestamp (newest wins), so a downstream lesson can
+            // never mirror stale content whichever side lags.
+            try { localStorage.setItem(_key + '__ts', String(Date.now())); } catch (_) {}
             // v7.19.136 instrumentation — confirm localStorage write success + size
             try { console.log('[WML save-debug v7.19.136] localStorage written', { key: _key, size: html.length }); } catch (_) {}
         } catch (e) { /* storage full */
@@ -36741,7 +36745,12 @@
             // predicates is CORRECT behaviour (its pre-write space arrives via the
             // carry-heal, not this ensure) — only warn outside that set.
             const _NONWRITE_TASKS = /^(assessment|feedback_discussion|planning|outlining|polishing|redraft_assessment|mark_scheme|mark_scheme_unit)$/;
-            if (_settled && !state.reviewMode && !_NONWRITE_TASKS.test(String(state.task || ''))
+            // v7.20.82: also skip the warn when the doc ALREADY HAS the pre-write space —
+            // predicate-miss with the space present means "nothing to do", not a failure
+            // (the R&J diagnostic warned every load despite a filled keywords box).
+            let _spacePresent = false;
+            try { const _h = canvasEditor.getHTML(); _spacePresent = _h.indexOf('kw-focus') !== -1 || _h.indexOf('pred-paper') !== -1 || _h.indexOf('pred-unseen') !== -1; } catch (_) {}
+            if (_settled && !state.reviewMode && !_spacePresent && !_NONWRITE_TASKS.test(String(state.task || ''))
                 && (state.task === '' || /^(diagnostic|development)$/.test(String(state.draftType || '')))) {
                 console.warn('WML predictions: write-doc gate MISSED', {
                     task: state.task, draftType: state.draftType, board: state.board,
@@ -36909,20 +36918,38 @@
             const _fetchUpstream = async (attemptN) => {
                 const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=${encodeURIComponent(headSuffix)}&attempt=${attemptN}`;
                 const res = await apiGet(url);
-                return (res && res.doc && res.doc.html) ? res.doc.html : '';
+                return {
+                    html: (res && res.doc && res.doc.html) ? res.doc.html : '',
+                    savedAt: (res && res.doc && res.doc.savedAt) ? res.doc.savedAt : '',
+                };
             };
             // Fetch the phase-HEAD doc (attempt fallback: current → 1; the attempt can
             // re-resolve mid-load and a later attempt's head may never have been opened).
             let upstreamHtml = '';
             if (headSuffix !== null) {
-                // v7.20.79 (Neil's "takes time to get there" repro): the outgoing lesson's
-                // save flushes on SPA nav while THIS fetch races it — read-after-write.
-                // Await the in-flight save so the head doc we read always includes the
-                // edit just typed. No-op when nothing is in flight.
+                // v7.20.82 DETERMINISTIC SOURCE (root of "sometimes it's there, sometimes
+                // later" — the .79 await only helped when the SPA-nav event had already
+                // fired the flush; event order isn't ours to rely on):
+                // (1) flush any enqueued save OURSELVES, (2) await it, (3) read BOTH the
+                // head's localStorage copy (same-browser: written synchronously on every
+                // edit) and the server copy, (4) newest timestamp wins. Same-browser nav
+                // can never see stale content; cross-device still resolves to the server
+                // when it is newer.
+                try { if (typeof _flushPendingSaves === 'function') _flushPendingSaves(); } catch (_) {}
                 if (_lastCanvasFlushPromise) { try { await _lastCanvasFlushPromise; } catch (_) {} }
+                let _localHtml = '', _localTs = 0;
+                try {
+                    // byte-match CANVAS_SAVE_KEY's template (att pinned → '', not a CW task)
+                    const _scopeH = WML.canvasDocScope();
+                    const _headKey = `swml_canvas_${state.board}_${_scopeH.text}_${_scopeH.topic || 'free'}${headSuffix}`;
+                    _localHtml = localStorage.getItem(_headKey) || '';
+                    _localTs = parseInt(localStorage.getItem(_headKey + '__ts') || '0', 10) || 0;
+                } catch (_) {}
                 const _mirrorAtt = _canvasAttempt(); // v7.20.78: pinned resolver — mirror source = the doc reads read
-                upstreamHtml = await _fetchUpstream(_mirrorAtt);
-                if (!_extractParts(upstreamHtml).length && _mirrorAtt > 1) upstreamHtml = await _fetchUpstream(1);
+                let _srv = await _fetchUpstream(_mirrorAtt);
+                if (!_extractParts(_srv.html).length && _mirrorAtt > 1) _srv = await _fetchUpstream(1);
+                const _srvTs = _srv.savedAt ? (Date.parse(_srv.savedAt) || 0) : 0;
+                upstreamHtml = (_localHtml && _localTs > _srvTs) ? _localHtml : (_srv.html || _localHtml);
             }
             // v7.20.80: presence check runs AFTER the awaits (flush + fetch) — a snapshot
             // taken before them goes stale mid-run and double-inserts (the .79 regression).
