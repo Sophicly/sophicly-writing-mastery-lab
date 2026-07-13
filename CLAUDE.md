@@ -69,6 +69,23 @@ Almost every "it works for X but silently does nothing for Y" bug in WML is **be
 
 4. **Fail loud + rollout matrix.** When a turn LOOKS like it should fill the canvas but fills nothing, `console.warn` loudly (see the SILENT-SKIP guard in `applyAssessmentFeedback`) — don't fail quietly. Before shipping any canvas feature, verify it across **{P1, P2} × {diagnostic, redraft} × {topic 1 … N}** (and both chat pipelines). Match the box by question NUMBER, not the `"Qn"` literal — labels render as `Feedback: Q2 (— / 8)` but the format drifts.
 
+5. **GRANULAR, CANVAS-DERIVED sidebar — the STANDARD for every canvas task (Neil 2026-07-13).**
+   No de-stitched task ships the generic essay sidebar. Steps are DERIVED, never hand-authored
+   per protocol: (a) one row per document plan/feedback FIELD, grouped by question (labels from
+   `data-section-label`, done = field holds text); (b) code-owned pre-chain stages each get their
+   own row (grade goal / headline goal / plan mode / predictions), done-ness from the chain's own
+   stage detection; (c) live intra-step beats surface via the universal `📌` pin →
+   `parseProgressBeat` chip — a protocol wanting finer sidebar granularity emits pins, never a
+   new hand-authored step list. Reference impl: `_buildPlanningSidebarModel` (planning) +
+   `_buildLangSidebarModel` (assessment, v7.19.625). Numbers/counts in chain texts are likewise
+   DERIVED from the document (`_planDocQuestionFacts`) — a hardcoded "five questions" was the bug.
+
+6. **Detection regexes vs markdown (v7.20.50 lesson).** Any regex matched against chat-history
+   content must run on MARKDOWN-STRIPPED text (`_planChainNorm`-style `replace(/\*/g,'')`) or
+   avoid crossing a `**bold**` boundary — `**3 themes** do` broke `/themes do/` and looped the
+   predictions capture forever. Detection regex + question text are ONE unit: change one,
+   re-check the other (byte-pair rule).
+
 ---
 
 ## PROSEMIRROR NODEVIEW — never write to a NodeView's DOM outside a transaction (v7.19.866)

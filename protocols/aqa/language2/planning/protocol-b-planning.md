@@ -172,7 +172,8 @@ arrive in the conversation as tagged artifacts. You USE every one of them from i
   difference is how much you condense them.
 - **S1d PRE-READ + PREDICTION exercise** (three programmatic captures, committed to the
   document's Predictions section, never marked):
-  1. All five questions shown → student notes **3 themes** they expect this paper is about.
+  1. All the paper's questions shown (count is code-derived from the document — never
+     hardcoded) → student notes **3 themes** they expect this paper is about.
   2. Source A preamble (title, author, date) → **3 predicted themes** for Source A.
   3. Source B preamble → **3 predicted themes** for Source B.
   One strategy line is shown programmatically with the questions: "Q1 you'll answer

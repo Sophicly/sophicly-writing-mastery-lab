@@ -679,9 +679,14 @@
             && (state.board || '').toLowerCase() === 'aqa'
             && _isLangPaper2();
     }
+    // v7.20.50: detection runs on MARKDOWN-STRIPPED text. The question texts carry
+    // **bold** mid-sentence ("**3 themes** do you expect…"), and a raw-regex match across
+    // that boundary silently missed → the predQ stage re-asked forever (Neil's one-shot,
+    // 2026-07-13). Normalise once here; texts stay free to use bold anywhere.
+    function _planChainNorm(s) { return String(s || '').replace(/\*/g, ''); }
     function _planPreChainStageFor(history) {
         if (!_planPreChainActive()) return null;
-        const askedBy = (re) => history.some(m => m.role === 'assistant' && re.test(m.content || ''));
+        const askedBy = (re) => history.some(m => m.role === 'assistant' && re.test(_planChainNorm(m.content)));
         // Planning already underway (legacy sliced-protocol chats, resumed sessions,
         // filed fields) → never hijack a live conversation.
         if (askedBy(/@FIELD_COMMIT|Inference 1 \(Source A\)|anchor quote/i)) return null;
@@ -692,7 +697,7 @@
         }
         if (!askedBy(/headline goal/i)) return 'headline';
         if (!askedBy(/condense your plans/i)) return 'planmode';
-        if (!askedBy(/themes do you expect this paper/i)) return 'predQ';
+        if (!askedBy(/do you expect this paper is about/i)) return 'predQ';
         if (!askedBy(/predict Source A will explore/i)) return 'predA';
         if (!askedBy(/predict Source B will explore/i)) return 'predB';
         return null;
@@ -716,20 +721,69 @@
         } catch (_) { /* non-fatal */ }
         return 'Source ' + letter;
     }
+    // v7.20.50 (Neil): question counts + planned/untrained lists are DERIVED FROM THE
+    // DOCUMENT, never hardcoded — "five questions"/"four questions" was AQA-P2 literal
+    // and wrong for every other paper (Edexcel IGCSE P1 = 6 Qs, Eduqas C2 = more).
+    // planned = questions with a plan section ("Plan: … — Qn"); untrained = the rest
+    // (simple retrieval/comprehension — read the source, write the answers; no training).
+    function _planDocQuestionFacts() {
+        const facts = { total: 0, planned: [], untrained: [] };
+        try {
+            const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
+            const plannedSet = {};
+            host.querySelectorAll('[data-section-type="plan"]').forEach(p => {
+                const m = /—\s*(Q\d+)\s*$/.exec(p.getAttribute('data-section-label') || '');
+                if (m) plannedSet[m[1]] = true;
+            });
+            host.querySelectorAll('[data-section-type="question"]').forEach(q => {
+                const m = /^(Q\d+)/.exec((q.getAttribute('data-section-label') || '').trim());
+                if (!m) return;
+                facts.total++;
+                if (plannedSet[m[1]]) facts.planned.push(m[1]); else facts.untrained.push(m[1]);
+            });
+        } catch (_) { /* non-fatal */ }
+        return facts;
+    }
+    function _planCountWord(n) {
+        const w = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+        return w[n] || String(n);
+    }
+    function _planListJoin(arr) {
+        if (!arr.length) return '';
+        if (arr.length === 1) return arr[0];
+        return arr.slice(0, -1).join(', ') + ' and ' + arr[arr.length - 1];
+    }
+    // The one line explaining untrained questions (Neil 2026-07-13): simple comprehension
+    // questions get no training — read the source, write the answers. Empty when none.
+    function _planUntrainedNote(facts) {
+        if (!facts.untrained.length) return '';
+        const plural = facts.untrained.length > 1;
+        return `(${_planListJoin(facts.untrained)} ${plural ? 'are' : 'is a'} quick comprehension question${plural ? 's' : ''} — you'll answer ${plural ? 'them' : 'it'} directly in the exam by reading the source and picking out the answers. No training needed, no plan.)`;
+    }
     // Question text per stage — ONE source for both pipelines. The detection regexes in
     // _planPreChainStageFor are byte-paired with these strings: change one, change both.
     function _planChainQuestionText(stage, firstName) {
         let plain, html;
         if (stage === 'greeting') {
             const fn = firstName || 'there';
-            plain = `Hi ${fn}! Welcome to your planning session for AQA English Language Paper 2. Here's what's coming: we'll set your goals, make three quick predictions, then plan all four questions in exam order — Q2, Q3, Q4 and Q5 — one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
-            html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>AQA English Language Paper 2</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, make three quick predictions, then plan all four questions in exam order — <strong>Q2, Q3, Q4 and Q5</strong> — one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p></div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
+            const facts = _planDocQuestionFacts();
+            const plannedPhrase = facts.planned.length
+                ? `plan all ${_planCountWord(facts.planned.length)} questions in exam order — ${_planListJoin(facts.planned)} —`
+                : 'plan your questions in exam order —';
+            const unNote = _planUntrainedNote(facts);
+            plain = `Hi ${fn}! Welcome to your planning session for AQA English Language Paper 2. Here's what's coming: we'll set your goals, make three quick predictions, then ${plannedPhrase} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.${unNote ? ' ' + unNote : ''}\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
+            html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>AQA English Language Paper 2</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, make three quick predictions, then ${plannedPhrase.replace(/—\s*(.+?)\s*—/, '— <strong>$1</strong> —')} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p>${unNote ? `<p style="margin-top:8px;font-size:12.5px;opacity:0.8">${unNote}</p>` : ''}</div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
         } else if (stage === 'planmode') {
             plain = `Noted — your headline goal will thread through every question we plan. Next: how should I **condense your plans** as we file them?\n\nA) Advanced — keywords only (2–4 keywords per element)\nB) Standard — key phrases (short phrases in your own words)\n\nBoth modes use only YOUR words — the difference is how much we condense.`;
             html = `<p>Noted — your headline goal will thread through every question we plan.</p><p style="margin-top:8px">Next: how should I <strong>condense your plans</strong> as we file them?</p><p style="margin-top:8px">Both modes use only YOUR words — the difference is how much we condense.</p>`;
         } else if (stage === 'predQ') {
-            plain = `Now the pre-read. Look at the **five questions** in your document first — just the questions, don't read the sources yet. (Q1 you'll answer directly in the exam — no plan needed.)\n\nWhat **3 themes** do you expect this paper is about? Type your three themes.`;
-            html = `<p>Now the pre-read. Look at the <strong>five questions</strong> in your document first — just the questions, don't read the sources yet. <em>(Q1 you'll answer directly in the exam — no plan needed.)</em></p><p style="margin-top:8px">What <strong>3 themes</strong> do you expect this paper is about? Type your three themes.</p>`;
+            const facts = _planDocQuestionFacts();
+            const qPhrase = facts.total ? `${_planCountWord(facts.total)} questions` : 'questions';
+            const unShort = facts.untrained.length
+                ? ` (${_planListJoin(facts.untrained)} you'll answer directly in the exam — no plan needed.)`
+                : '';
+            plain = `Now the pre-read. Look at the **${qPhrase}** in your document first — just the questions, don't read the sources yet.${unShort}\n\nWhat **3 themes** do you expect this paper is about? Type your three themes.`;
+            html = `<p>Now the pre-read. Look at the <strong>${qPhrase}</strong> in your document first — just the questions, don't read the sources yet.${unShort ? ` <em>${unShort.trim()}</em>` : ''}</p><p style="margin-top:8px">What <strong>3 themes</strong> do you expect this paper is about? Type your three themes.</p>`;
         } else if (stage === 'predA') {
             const la = _planSourceLabel('A');
             plain = `Committed. Now look at **${la}** — read ONLY its title, author and date, not the text itself.\n\nWhat **3 themes** do you predict Source A will explore?`;
@@ -749,14 +803,17 @@
             if (!_planPreChainActive() || !msg) return;
             let lastAsk = null;
             for (let i = history.length - 1; i >= 0; i--) {
-                if (history[i].role === 'assistant') { lastAsk = history[i].content || ''; break; }
+                if (history[i].role === 'assistant') { lastAsk = _planChainNorm(history[i].content); break; }
             }
             if (!lastAsk) return;
             let fid = null;
-            if (/themes do you expect this paper/i.test(lastAsk)) fid = 'pred-paper';
+            if (/do you expect this paper is about/i.test(lastAsk)) fid = 'pred-paper';
             else if (/predict Source A will explore/i.test(lastAsk)) fid = 'pred-source-a';
             else if (/predict Source B will explore/i.test(lastAsk)) fid = 'pred-source-b';
-            if (fid && _writeOutlineRowField(fid, msg) && typeof saveCanvasContent === 'function') saveCanvasContent();
+            if (fid && _writeOutlineRowField(fid, msg)) {
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                setTimeout(_refreshPlanningSidebar, 250);
+            }
         } catch (e) { console.warn('WML plan-chain: prediction file failed (non-fatal)', e && e.message); }
     }
 
@@ -1554,6 +1611,8 @@
             let wrote = false;
             fields.forEach(fid => { if (_writeOutlineRowField(fid, verbatim)) wrote = true; });
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+            // v7.20.50: planning filings advance the granular canvas-derived sidebar.
+            if (wrote && state.task === 'planning') setTimeout(_refreshPlanningSidebar, 250);
         } catch (e) {
             console.warn('WML FieldFill: error (non-fatal)', e && e.message);
         }
@@ -10470,6 +10529,8 @@
             chatTextarea.value = text;
             sendCanvasMessageQueued();
         };
+        // v7.20.50: history getter for the granular planning sidebar (chain-stage rows).
+        window.__swmlCanvasChatHistory = () => canvasChatHistory;
 
         // sendCanvasMessage — AI Engine chat
         async function sendCanvasMessage() {
@@ -10556,6 +10617,7 @@
                     chatTextarea.value = '';
                     chatTextarea.style.height = '40px';
                     _renderPlanChainQuestion(_ppcStage);
+                    setTimeout(_refreshPlanningSidebar, 250);
                     console.log('WML plan-chain: code-asked "' + _ppcStage + '" capture (no AI turn)');
                     return;
                 }
@@ -19646,6 +19708,8 @@
                             chatTextarea.value = text;
                             sendCanvasMessage();
                         };
+                        // v7.20.50: history getter for the granular planning sidebar.
+                        window.__swmlCanvasChatHistory = () => canvasChatHistory;
 
                         async function sendCanvasMessage() {
                             // v7.19.995: free-typed turn on an active poetry-CN poem still persists
@@ -19693,6 +19757,7 @@
                                     chatTextarea.value = '';
                                     chatTextarea.style.height = '40px';
                                     _renderPlanChainQuestion(_ppcStage);
+                                    setTimeout(_refreshPlanningSidebar, 250);
                                     console.log('WML plan-chain: code-asked "' + _ppcStage + '" capture (no AI turn)');
                                     return;
                                 }
@@ -24833,6 +24898,11 @@
             _migrateStep('migrateMissingPlans', migrateMissingPlans);
             // v7.20.49: AQA P2 planning — Predictions section (S1d commits file here).
             _migrateStep('ensurePredictionsSection', _ensurePredictionsSection);
+            // v7.20.50: pre-build docs carry the generic 4-para Q4 plan — re-shape to
+            // comparative while empty (protocol Q4 filings key on the new fieldIds).
+            _migrateStep('healP2Q4ComparativePlan', _healP2Q4ComparativePlan);
+            // v7.20.50: granular canvas-derived planning sidebar (after the doc shape is final).
+            _migrateStep('refreshPlanningSidebar', () => setTimeout(_refreshPlanningSidebar, 400));
             _migrateStep('migrateMissingOutlines', migrateMissingOutlines);
             _migrateStep('migrateOutlineCriteria', migrateOutlineCriteria);
             _migrateStep('migrateInputFields', migrateInputFields);
@@ -35707,6 +35777,110 @@
         canvasEditor.commands.insertContentAt(0, block);
         if (typeof saveCanvasContent === 'function') saveCanvasContent();
         console.log('WML Migration: Predictions section injected (AQA P2 planning)');
+    }
+
+    /**
+     * v7.20.50: heal EXISTING AQA P2 planning docs to the comparative Q4 plan shape.
+     * Docs saved before v7.20.49 carry 4 generic "Plan: Paragraph i — Q4" fields
+     * (plan-Q4-para-1..4); the protocol files plan-Q4-intro/body-1..3/conclusion —
+     * a write-key≠read-key fork on every pre-existing doc (visible in Neil's one-shot).
+     * Swap ONLY when every legacy Q4 field is EMPTY — student words are never destroyed;
+     * a doc with content keeps its legacy ids and warns loudly.
+     */
+    function _healP2Q4ComparativePlan() {
+        if (!canvasEditor || !_planPreChainActive()) return;
+        const html = canvasEditor.getHTML();
+        if (html.indexOf('plan-Q4-para-') === -1) return;   // already new shape / no Q4 plan
+        if (html.indexOf('plan-Q4-intro') !== -1) return;   // both shapes present — leave alone
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        const legacyFields = tmp.querySelectorAll('[data-field-id^="plan-Q4-para-"]');
+        if (!legacyFields.length) return;
+        for (let i = 0; i < legacyFields.length; i++) {
+            if ((legacyFields[i].textContent || '').trim()) {
+                console.warn('WML heal: legacy Q4 plan holds student content — comparative swap skipped (protocol Q4 filings will not land on this doc)');
+                return;
+            }
+        }
+        const sections = [];
+        legacyFields.forEach(f => {
+            const s = f.closest('[data-section-type="plan"]');
+            if (s && sections.indexOf(s) === -1) sections.push(s);
+        });
+        if (!sections.length) return;
+        const frag = document.createElement('div');
+        frag.innerHTML = buildComparativePlanSection('Q4');
+        const anchor = sections[0];
+        while (frag.firstChild) anchor.parentNode.insertBefore(frag.firstChild, anchor);
+        sections.forEach(s => s.remove());
+        canvasEditor.commands.setContent(tmp.innerHTML, false);
+        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        console.log('WML heal: Q4 plan re-shaped to comparative (intro + 3 bodies + conclusion)');
+    }
+
+    /**
+     * v7.20.50 (Neil): GRANULAR canvas-derived sidebar for de-stitched planning — the
+     * read-from-canvas law (assessment's .625 paradigm). Steps derive from the document
+     * itself: Setup & Goals + Predictions (done-ness read from the prediction fields),
+     * one step per plan section grouped by its question, Final Review last. Completion =
+     * the section's field holds text (filed). Universal by construction: ANY paper's
+     * planning doc yields its own map — Edexcel's 6 questions, Eduqas' components —
+     * zero per-paper wiring. Rendered through _applyServerSidebar (one render path).
+     */
+    function _buildPlanningSidebarModel() {
+        // De-stitched planning ONLY (today: AQA P2 via the chain predicate) — sliced
+        // papers still advance their manifest steps via [PROGRESS: N] tags, and this
+        // model's numbering would fight them. Ports widen the predicate as they de-stitch.
+        if (!_planPreChainActive() || !canvasEditor) return null;
+        const host = canvasEditor.options && canvasEditor.options.element;
+        if (!host) return null;
+        const fieldText = (fid) => {
+            const f = host.querySelector('[data-field-id="' + fid + '"]');
+            return f ? (f.textContent || '').trim() : '';
+        };
+        const planSecs = host.querySelectorAll('[data-section-type="plan"]');
+        if (!planSecs.length) return null;
+        const steps = [];
+        const add = (label, group, done) => steps.push({ step: steps.length + 1, label: label, group: group || '', _done: !!done });
+        // Setup rows = the chain's own stages (Neil: granular means EVERY capture is a
+        // row). Done-ness derives from the chain's stage detection over the live history
+        // (same source as the interceptor — one truth), with the prediction FIELDS as the
+        // resume-proof fallback when no history getter is registered yet.
+        const predsFiled = !!(fieldText('pred-paper') && fieldText('pred-source-a') && fieldText('pred-source-b'));
+        if (host.querySelector('[data-field-id="pred-paper"]')) {
+            let stageIdx = predsFiled ? 6 : 0;
+            try {
+                const hist = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null;
+                if (hist) {
+                    const stage = _planPreChainStageFor(hist);
+                    const order = ['greeting', 'headline', 'planmode', 'predQ', 'predA', 'predB'];
+                    stageIdx = stage === null
+                        ? (hist.some(m => m.role === 'assistant') ? 6 : 0)
+                        : order.indexOf(stage);
+                }
+            } catch (_) { /* field fallback stands */ }
+            add('Grade goal', 'Setup', stageIdx >= 1);
+            add('Headline goal', 'Setup', stageIdx >= 2);
+            add('Plan mode', 'Setup', stageIdx >= 3);
+            add('Predictions', 'Setup', predsFiled);
+        }
+        planSecs.forEach(sec => {
+            const raw = (sec.getAttribute('data-section-label') || '').replace(/^Plan:\s*/i, '');
+            const m = /—\s*(Q\d+)\s*$/.exec(raw);
+            const input = sec.querySelector('[data-field-id]');
+            const done = !!(input && (input.textContent || '').trim());
+            add(raw.replace(/\s*—\s*Q\d+\s*$/, ''), m ? m[1] : '', done);
+        });
+        add('Final Review', '', false);
+        let current = steps.length;
+        for (let i = 0; i < steps.length; i++) { if (!steps[i]._done) { current = i + 1; break; } }
+        return { steps: steps, current: current };
+    }
+    function _refreshPlanningSidebar() {
+        try {
+            const model = _buildPlanningSidebarModel();
+            if (model && typeof _applyServerSidebar === 'function') _applyServerSidebar(model);
+        } catch (e) { console.warn('WML planning sidebar: refresh failed (non-fatal)', e && e.message); }
     }
 
     /**
