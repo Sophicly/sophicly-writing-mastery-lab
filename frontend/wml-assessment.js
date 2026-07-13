@@ -22495,6 +22495,11 @@
                     const checkbox = document.createElement('span');
                     checkbox.classList.add('swml-checklist-box');
                     checkbox.contentEditable = 'false';
+                    // v7.20.58 (Neil): inline tick SVG so the check can DRAW itself
+                    // (stroke-dashoffset — the Aaron Iker liquid-checkbox draw, minus
+                    // the GSAP/goo machinery). Built at construction — the NodeView's
+                    // own render, never a post-mount mutation (PM NodeView law).
+                    checkbox.innerHTML = '<svg class="swml-check-tick-svg" viewBox="0 0 24 24" aria-hidden="true"><path class="swml-check-tick" d="M4.5 12.5L9.5 17L19 6.5"/></svg>';
                     checkbox.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -22528,7 +22533,26 @@
                     contentDOM.classList.add('swml-checklist-text');
                     dom.appendChild(contentDOM);
 
-                    return { dom, contentDOM };
+                    return {
+                        dom,
+                        contentDOM,
+                        // v7.20.58 ROOT FIX: without update(), PM DESTROYS and rebuilds
+                        // this NodeView on every setNodeMarkup toggle — the fresh DOM
+                        // mounts already-checked, so no CSS transition on the tick ever
+                        // ran (the v7.20.57 pop was dead on arrival). Syncing the attr
+                        // on the EXISTING dom lets the flood + tick-draw animate, and
+                        // keeps the closure's node fresh (the old toggle spread stale
+                        // attrs from the mount-time node).
+                        update(updated) {
+                            if (updated.type.name !== 'checklistItem') return false;
+                            node = updated;
+                            dom.setAttribute('data-checked', updated.attrs.checked ? 'true' : 'false');
+                            if (updated.attrs.itemId) dom.setAttribute('data-item-id', updated.attrs.itemId);
+                            if (updated.attrs.correct === true)  dom.setAttribute('data-correct', 'true');
+                            if (updated.attrs.correct === false) dom.setAttribute('data-correct', 'false');
+                            return true;
+                        },
+                    };
                 };
             },
 
