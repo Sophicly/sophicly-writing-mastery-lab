@@ -694,6 +694,7 @@
     // "not the character generally").
     function _isPhase1WriteDoc() {
         return state.task === ''
+            && !state.reviewMode
             && /^(diagnostic|development)$/.test(String(state.draftType || ''));
     }
     function _isLangPhase1Write() {
@@ -36652,7 +36653,19 @@
         const langWrite = !planning && _isLangPhase1Write();
         // Studied-text (Literature) write docs: keywords-focus box instead of predictions.
         const litWrite = !planning && !langWrite && _isPhase1WriteDoc();
-        if (!canvasEditor || !(planning || langWrite || litWrite)) return;
+        if (!canvasEditor) return;
+        if (!(planning || langWrite || litWrite)) {
+            // v7.20.70 FAIL-LOUD: Neil saw NO section on the IGCSE Spec A P1 + R&J
+            // diagnostics while every predicate passes statically — when a write-ish
+            // doc misses the gate, say exactly which field diverged (slug-trace law).
+            if (state.task === '' && !state.reviewMode) {
+                console.warn('WML predictions: write-doc gate MISSED', {
+                    task: state.task, draftType: state.draftType, board: state.board,
+                    subject: state.subject, text: state.text, topic: state.topicNumber,
+                });
+            }
+            return;
+        }
         const html = canvasEditor.getHTML();
         if (html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1) return; // already present
         let block;
@@ -36705,7 +36718,24 @@
                         'pred-source-' + String.fromCharCode(97 + i)));
             });
         }
-        canvasEditor.commands.insertContentAt(0, block);
+        // v7.20.70 (Neil): on LIT write docs the keywords box sits AFTER the Question &
+        // Extract section — the question IS what the keywords dissect. Language papers
+        // keep predictions at the top (committed before reading the sources). Fallback 0.
+        let insertAt = 0;
+        if (litWrite) {
+            try {
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (insertAt) return false;
+                    if (node.type.name === 'sectionBlock' && node.attrs
+                        && (node.attrs.sectionType === 'question' || /question\s*&?\s*extract/i.test(node.attrs.label || ''))) {
+                        insertAt = pos + node.nodeSize;
+                        return false;
+                    }
+                    return true;
+                });
+            } catch (_) { insertAt = 0; }
+        }
+        canvasEditor.commands.insertContentAt(insertAt, block);
         if (typeof saveCanvasContent === 'function') saveCanvasContent();
         console.log('WML Migration: ' + (litWrite ? 'Keywords-focus' : 'Predictions') + ' section injected (' + (planning ? 'AQA P2 planning' : 'phase-1 write ' + (state.board || '') + '/' + (state.subject || '')) + ')');
     }
