@@ -278,7 +278,18 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     overflow-x: hidden;
     padding: 32px 0 32px;
     position: relative;
+    /* v7.20.54 (Neil): slim minimal scrollbar — default chunky thumb was ugly in
+       the canvas. Matches the stepper-wrap treatment (wml-styles.css L681). */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.14) transparent;
 }
+.swml-canvas-content::-webkit-scrollbar { width: 5px; }
+.swml-canvas-content::-webkit-scrollbar-track { background: transparent; }
+.swml-canvas-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 999px; }
+.swml-canvas-content::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.26); }
+.swml-canvas.swml-canvas-light .swml-canvas-content { scrollbar-color: rgba(0,0,0,0.14) transparent; }
+.swml-canvas.swml-canvas-light .swml-canvas-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.14); }
+.swml-canvas.swml-canvas-light .swml-canvas-content::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.26); }
 .swml-canvas-doc {
     width: 720px;
     flex-shrink: 0; /* Never CSS-shrink — auto-fit uses transform: scale() */
