@@ -18994,9 +18994,15 @@
                             // with the correct attempt after the editor has already
                             // mounted. Belt-and-braces alongside the pre-mount hint.
                             const _seededAttempt = state.attempt || 0;
-                            const _serverAttempt = idx.current || 1;
-                            const _needsReload = (_seededAttempt > 0 && _seededAttempt !== _serverAttempt);
-                            if (!state.attempt || state.attempt < 1) state.attempt = _serverAttempt;
+                            // v7.20.77 (Neil: NO attempts in the lab): topic-flow lessons never
+                            // adopt the server's attempt counter — one doc per lesson, always
+                            // attempt 1. The v7.17.11 lock existed but this resolver bypassed it
+                            // (the root of every drift bug: content splitting across __aN docs).
+                            const _pinned = (WML.isTopicFlow && WML.isTopicFlow());
+                            const _serverAttempt = _pinned ? 1 : (idx.current || 1);
+                            const _needsReload = !_pinned && (_seededAttempt > 0 && _seededAttempt !== _serverAttempt);
+                            if (_pinned) state.attempt = 1;
+                            else if (!state.attempt || state.attempt < 1) state.attempt = _serverAttempt;
                             _writeCurrentAttemptHint(state.board, _attScope.text, _attScope.topic, WML.resolveCanvasSuffix(state.task, state.phase), state.attempt);
                             if (_needsReload) {
                                 state.attempt = _serverAttempt;
@@ -24196,7 +24202,11 @@
             let _hintScope = { text: state.text, topic: state.topicNumber };
             try { if (WML && typeof WML.canvasDocScope === 'function') _hintScope = WML.canvasDocScope(); } catch (_) {}
             const _hint = _readCurrentAttemptHint(state.board, _hintScope.text, _hintScope.topic, _rawSuffix);
-            if (_hint > 0) {
+            // v7.20.77 (Neil ruling: NO attempts in the lab — one doc per lesson):
+            // topic-flow lessons PIN attempt 1; the hint must never re-introduce drift.
+            if (WML.isTopicFlow && WML.isTopicFlow()) {
+                state.attempt = 1;
+            } else if (_hint > 0) {
                 state.attempt = _hint;
                 console.log('WML: Attempt pre-resolved from sessionStorage hint →', state.attempt);
             }
@@ -36921,6 +36931,44 @@
             if (synced) {
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 console.log('WML chain: pre-write fields live-synced from head (' + synced + ' field(s), head=' + (headSuffix || 'diagnostic') + ')');
+            }
+            // v7.20.77 (feed-forward law, RESPONSE sections — Neil's "response edit 3"
+            // repro): Phase-1 assessment/discuss docs MIRROR the diagnostic's response
+            // sections too — but ONLY while this doc is UNMARKED. Once any feedback box
+            // carries a filled mark the doc is a frozen record (Neil: "if it's already
+            // marked, you shouldn't be able to edit it from the previous lesson").
+            if (state.task === 'assessment' || state.task === 'feedback_discussion') {
+                const _marked = /data-section-label="[^"]*\(\s*\d[^"]*\/\s*\d+\s*\)/.test(canvasEditor.getHTML());
+                if (!_marked && upstreamHtml) {
+                    const _tmpAll = document.createElement('div');
+                    _tmpAll.innerHTML = upstreamHtml;
+                    let respSynced = 0;
+                    _tmpAll.querySelectorAll('[data-section-type="response"]').forEach((up) => {
+                        const upLabel = up.getAttribute('data-section-label') || '';
+                        const upText = (up.textContent || '').replace(/\s+/g, ' ').trim();
+                        if (!upText) return;
+                        let tPos = null, tNode = null;
+                        canvasEditor.state.doc.descendants((node, pos) => {
+                            if (tPos !== null) return false;
+                            if (node.type.name === 'sectionBlock' && node.attrs
+                                && node.attrs.sectionType === 'response' && (node.attrs.label || '') === upLabel) {
+                                tPos = pos; tNode = node; return false;
+                            }
+                            return true;
+                        });
+                        if (tPos === null || !tNode) return;
+                        const curText = (tNode.textContent || '').replace(/\s+/g, ' ').trim();
+                        if (curText === upText) return; // already mirrored — idempotent
+                        try {
+                            canvasEditor.chain().insertContentAt({ from: tPos + 1, to: tPos + tNode.nodeSize - 1 }, up.innerHTML).run();
+                            respSynced++;
+                        } catch (e3) { console.warn('WML chain: response mirror failed', upLabel, e3 && e3.message); }
+                    });
+                    if (respSynced) {
+                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                        console.log('WML chain: response sections live-synced from diagnostic (' + respSynced + ')');
+                    }
+                }
             }
         } catch (e) { console.warn('WML: pre-write carry heal failed (non-fatal)', e && e.message); }
     }

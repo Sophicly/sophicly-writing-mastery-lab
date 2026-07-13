@@ -2963,7 +2963,9 @@ window.WML = (function() {
     // v7.18.19: mark_scheme (Final Assessment) also suppressed — no formal attempt
     // system; one assessment per unit, free-form re-attempt via clear-chat is fine
     // but no counter / overlay should render.
-    const TOPIC_FLOW_TASKS = ['diagnostic', 'assessment', 'planning', 'outlining', 'polishing', 'mark_scheme_unit', 'mark_scheme', ''];
+    // v7.20.77 (Neil: NO attempts in the lab — one doc per lesson): redraft_assessment +
+    // feedback_discussion join the set so the WHOLE chain pins to attempt 1.
+    const TOPIC_FLOW_TASKS = ['diagnostic', 'assessment', 'planning', 'outlining', 'polishing', 'redraft_assessment', 'feedback_discussion', 'mark_scheme_unit', 'mark_scheme', ''];
     const GUIDED_PHASES    = ['initial', 'redraft', 'preliminary'];
     function isTopicFlow() {
         const n = Number(window.WML?.state?.topicNumber ?? 0);
