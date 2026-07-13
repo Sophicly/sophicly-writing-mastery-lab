@@ -1,4 +1,6 @@
 <!-- CURRENT STEP — do ONLY this step, in full, then STOP. Do not run later steps; do not skip ahead. (Slice of protocol-a-assessment.md. The Pause gate lives in the feedback step — the student has ALREADY typed Y by the time this slice is served.) -->
+<!-- @GOLD_SHAPE: 3 × TTECEA body ¶; each = topic sentence (core concept) + technique + embedded evidence + inference + close analysis + 2 distinct effect sentences (across reader-effect categories) + author’s purpose (tentative); no the/this/these; no "shows" -->
+<!-- D7 single-source shape line (v7.20.49): the planning protocol cites this via @GOLD_REF + a byte-copy; bin/check-gold-shapes.sh diffs citation vs source — if this gold’s SHAPE changes, update this line AND the citing planning protocol in the same commit. -->
 
 ---
 

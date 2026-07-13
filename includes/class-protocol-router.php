@@ -2973,29 +2973,48 @@ TEMPLATE;
                     $topic_num = $context['topic_number'] ?? 0;
                     $preamble .= "### MASTERY PROGRAMME — {$phase} PHASE (Topic {$topic_num})\n\n";
                     $preamble .= "This student is in the mastery programme ({$phase} phase). All questions are compulsory.\n\n";
-                    $preamble .= "**SKIP THE ENTIRE Part A of the protocol.** Part A (setup, question selection, source collection) is completely redundant because:\n";
-                    $preamble .= "- The document already contains all source texts, questions, and response areas\n";
-                    $preamble .= "- This is confirmed as a {$phase} session — no need to ask\n";
-                    $preamble .= "- ALL questions are planned sequentially — no question selection needed\n\n";
-                    $preamble .= "**START DIRECTLY WITH Part B (Goal Setting)** for the first question in the document (typically Q2).\n";
-                    $preamble .= "Read the question text from the `[question]` section, then begin the goal-setting conversation.\n";
-                    $preamble .= "After completing planning for that question, move to the next question and repeat Part B → Part C.\n";
-                    $preamble .= "Continue until all questions have been planned.\n\n";
 
-                    // Build step map from manifest for progress markers
+                    // Build step map from manifest for progress markers.
+                    // v7.20.49: also the DE-STITCH discriminator — an empty planning.steps
+                    // means this paper's planning is served as ONE monolith (protocol-b-
+                    // planning.md owns the whole flow); the legacy Part A/B/C narration
+                    // below would contradict it, so it only ships on sliced papers.
                     $manifest_path = SWML_PATH . "protocols/{$context['board']}/{$raw_subject}/manifest.json";
                     if (!file_exists($manifest_path)) {
                         // Try shared path resolution
                         $manifest_path = SWML_PATH . "protocols/shared/{$raw_subject}/manifest.json";
                     }
+                    // v7.20.49: resolve through the protocol-group dir when the raw subject
+                    // dir doesn't exist (language_p2 → language2), mirroring load_protocol.
+                    if (!file_exists($manifest_path)) {
+                        $group_dir = preg_replace('/^language_p(\d)$/', 'language$1', $raw_subject);
+                        $manifest_path = SWML_PATH . "protocols/{$context['board']}/{$group_dir}/manifest.json";
+                    }
                     $planning_steps = [];
+                    $planning_destitched = false;
                     if (file_exists($manifest_path)) {
                         $man = json_decode(file_get_contents($manifest_path), true);
+                        if (isset($man['planning']) && empty($man['planning']['steps'])) {
+                            $planning_destitched = true;
+                        }
                         if (!empty($man['planning']['steps'])) {
                             foreach ($man['planning']['steps'] as $num => $step_data) {
                                 $planning_steps[] = "- Step {$num}: {$step_data['label']}";
                             }
                         }
+                    }
+                    if ($planning_destitched) {
+                        $preamble .= "The planning protocol below owns the ENTIRE session flow — stages, beats, gates and filing. ";
+                        $preamble .= "Follow it exactly, from its opening stage. Do not improvise setup questions: the platform captures goals, plan mode and predictions programmatically, and the document already contains all sources and questions.\n\n";
+                    } else {
+                        $preamble .= "**SKIP THE ENTIRE Part A of the protocol.** Part A (setup, question selection, source collection) is completely redundant because:\n";
+                        $preamble .= "- The document already contains all source texts, questions, and response areas\n";
+                        $preamble .= "- This is confirmed as a {$phase} session — no need to ask\n";
+                        $preamble .= "- ALL questions are planned sequentially — no question selection needed\n\n";
+                        $preamble .= "**START DIRECTLY WITH Part B (Goal Setting)** for the first question in the document (typically Q2).\n";
+                        $preamble .= "Read the question text from the `[question]` section, then begin the goal-setting conversation.\n";
+                        $preamble .= "After completing planning for that question, move to the next question and repeat Part B → Part C.\n";
+                        $preamble .= "Continue until all questions have been planned.\n\n";
                     }
                     if (!empty($planning_steps)) {
                         $preamble .= "### PROGRESS TRACKING — MANDATORY\n\n";

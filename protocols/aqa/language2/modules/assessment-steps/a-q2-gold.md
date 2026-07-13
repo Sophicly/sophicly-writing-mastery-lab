@@ -1,4 +1,6 @@
 <!-- CURRENT STEP — do ONLY this step, in full, then STOP. Do not run later steps; do not skip ahead. (Slice of protocol-a-assessment.md. v7.19.362: the Pause gate moved into the feedback step — the student has ALREADY typed Y by the time this slice is served.) -->
+<!-- @GOLD_SHAPE: 2¶ × [Inference 1 (Source A) → Inference 2 (Source B)]; each inference = topic sentence + PERCEPTIVE inference + detail + embedded quote; Source B opens a comparative discourse marker; labels "Inference 1/2"; 2-3 line sentences; no the/this/these; no "shows" -->
+<!-- D7 single-source shape line (v7.20.49): the planning protocol cites this via @GOLD_REF + a byte-copy; bin/check-gold-shapes.sh diffs citation vs source — if this gold’s SHAPE changes, update this line AND the citing planning protocol in the same commit. -->
 
 ---
 

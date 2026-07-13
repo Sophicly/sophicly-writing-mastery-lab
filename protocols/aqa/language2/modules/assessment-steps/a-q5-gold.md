@@ -1,4 +1,6 @@
 <!-- CURRENT STEP — do ONLY this step, in full, then STOP. Do not run later steps; do not skip ahead. (Slice of protocol-a-assessment.md. The student has ALREADY typed Y — produce the gold model now.) -->
+<!-- @GOLD_SHAPE: ONE holistic transactional piece (Section B, AO5+AO6), SIX IUMVCC sections labelled inline (Introduction/Urgency/Methodology/Vision/Counter-argument/Conclusion); NOT per-paragraph; formal controlled register, varied sentence forms, ambitious vocab; elevate the student’s own ideas where possible -->
+<!-- D7 single-source shape line (v7.20.49): the planning protocol cites this via @GOLD_REF + a byte-copy; bin/check-gold-shapes.sh diffs citation vs source — if this gold’s SHAPE changes, update this line AND the citing planning protocol in the same commit. -->
 
 ##### Gold Standard Model (Section B — holistic)
 

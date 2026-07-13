@@ -3453,3 +3453,21 @@ html[data-theme="light"] .swml-tooltip[data-placement="right"]::after {
 }
 :root[data-theme="dark"] .swml-learn-chip:hover,
 [data-theme="dark"] .swml-learn-chip:hover { background: rgba(139, 123, 247, 0.26); }
+
+/* ── v7.20.49: device-template chip (AQA P2 planning Q5, D6 component) —
+   same slim-pill discipline as the learn-chip, one visual family. */
+.swml-device-menu-chip {
+    display: inline-flex; align-items: center;
+    margin: 4px 0 0; padding: 3px 11px 4px;
+    border: none; border-radius: 999px; cursor: pointer;
+    font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1.4;
+    color: var(--swml-purple); background: rgba(83, 51, 237, 0.10);
+    white-space: nowrap; transition: background 0.15s ease;
+}
+.swml-device-menu-chip:hover { background: rgba(83, 51, 237, 0.18); }
+:root[data-theme="dark"] .swml-device-menu-chip,
+[data-theme="dark"] .swml-device-menu-chip {
+    color: #a99cf5; background: rgba(139, 123, 247, 0.16);
+}
+:root[data-theme="dark"] .swml-device-menu-chip:hover,
+[data-theme="dark"] .swml-device-menu-chip:hover { background: rgba(139, 123, 247, 0.26); }

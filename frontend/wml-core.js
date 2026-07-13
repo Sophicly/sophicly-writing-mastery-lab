@@ -2991,6 +2991,10 @@ window.WML = (function() {
         // transform — detection reuses the ledger's raw-text codeRe shape. Tokens are added to
         // this local copy only; raw chatHistory and every raw-text consumer stay untouched.
         text = tagLearnChips(text);
+        // v7.20.49: protocol-triggered resource deep-links + the Q5 device-card menu chip
+        // (AQA P2 planning). Same token pipeline as the learn-chips — ONE chip system.
+        text = tagResourceLinks(text);
+        text = String(text).replace(/@DEVICE_MENU/g, '⟦SWML_DEVMENU⟧');
         // Security: escape raw HTML entities before markdown conversion (v7.15.2)
         // All HTML tags are generated programmatically AFTER this step by the markdown converter
         text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -3167,6 +3171,10 @@ window.WML = (function() {
         // v7.19.922: swap the Learn-chip tokens (added by tagLearnChips at the top of this
         // function) for the real buttons — last, so no other transform can split them.
         html = renderLearnChipTokens(html);
+        // v7.20.49: device-card menu chip (AQA P2 planning Q5 — D6 programmatic component).
+        // The delegated open handler lives in wml-assessment (.swml-device-menu-chip).
+        html = html.replace(/⟦SWML_DEVMENU⟧/g,
+            '<button type="button" class="swml-device-menu-chip" title="Open the device construction templates">🛠 Device templates →</button>');
 
         return html;
     }
@@ -3325,6 +3333,48 @@ window.WML = (function() {
         }
         return _resolveTechniqueNames(t).map(name => ({ dest: 'table', arg: name, label: name }));
     }
+    // v7.20.49: protocol-triggered resource deep-links — the AI emits
+    // @RESOURCE_LINK{"dest":"toolkit|table","arg":"<section-id|technique>","label":"<text>"}
+    // on its own line (AQA P2 planning session law 7); this converts each into the same
+    // ⟦SWML_LEARN⟧ token the learn-chips render, so ONE chip system + ONE delegated open
+    // handler serve both. VALIDATION (the F1 silent-landing lesson): toolkit args must be
+    // in the frozen known-section allowlist; table args must resolve to a canonical
+    // technique name (swmlConfig.techniqueNames). Unknown → drop + console.warn, never a
+    // dead chip or a silent landing-page open. Keep the allowlist in sync with
+    // PENALTY_LEARN_MAP + the notes plugin's SECTIONS registry (parity check at pre-ship).
+    const RESOURCE_TOOLKIT_IDS = ['wb-verbs', 'evaluative-keywords', 'topic-sentence', 'close-analysis', 'finegrained'];
+    function tagResourceLinks(text) {
+        if (!text || String(text).indexOf('@RESOURCE_LINK') === -1) return text;
+        return String(text).replace(/@RESOURCE_LINK\s*(\{[^}]*\})/g, (whole, json) => {
+            try {
+                const p = JSON.parse(json);
+                const dest = p.dest === 'table' ? 'table' : 'toolkit';
+                let arg = String(p.arg || '').trim();
+                let label = String(p.label || '').trim();
+                if (dest === 'toolkit') {
+                    if (RESOURCE_TOOLKIT_IDS.indexOf(arg) === -1) {
+                        console.warn('WML resource-link: unknown toolkit section dropped —', arg);
+                        return '';
+                    }
+                    if (!(typeof window !== 'undefined' && window.SophiclyToolkit && window.SophiclyToolkit.open)) return '';
+                } else {
+                    const name = _resolveTechniqueName(arg);
+                    if (!name) {
+                        console.warn('WML resource-link: unknown technique dropped —', arg);
+                        return '';
+                    }
+                    arg = name;
+                    if (!label) label = name;
+                    if (!(typeof window !== 'undefined' && window.SophiclyTable && window.SophiclyTable.open)) return '';
+                }
+                return '⟦SWML_LEARN:' + dest + ':' + arg + ':' + (label || arg) + '⟧';
+            } catch (e) {
+                console.warn('WML resource-link: dropped unparseable marker', String(json).slice(0, 80));
+                return '';
+            }
+        });
+    }
+
     // Raw-text phase (start of formatAI): append a ⟦SWML_LEARN:dest:arg:label⟧ token to each
     // chip-eligible penalty line. Colon-delimited — technique names never carry colons, and
     // the token has no markdown-active chars (| would risk the table converter).

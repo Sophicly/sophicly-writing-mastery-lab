@@ -1,4 +1,6 @@
 <!-- CURRENT STEP — do ONLY this step, in full, then STOP. Do not run later steps; do not skip ahead. (Slice of protocol-a-assessment.md. The Pause gate lives in the feedback step — the student has ALREADY typed Y by the time this slice is served.) -->
+<!-- @GOLD_SHAPE: intro + 3 × comparative TTECEA body ¶ + conclusion; each body compares BOTH sources throughout (comparative topic sentence + technique-both + evidence-both w/ comparative transitions + comparative close analysis + reader-effects-both + comparative author’s purpose + comparative JUDGEMENT of effectiveness); bodies carry 15/16; no the/this/these; no "shows" -->
+<!-- D7 single-source shape line (v7.20.49): the planning protocol cites this via @GOLD_REF + a byte-copy; bin/check-gold-shapes.sh diffs citation vs source — if this gold’s SHAPE changes, update this line AND the citing planning protocol in the same commit. -->
 
 ---
 

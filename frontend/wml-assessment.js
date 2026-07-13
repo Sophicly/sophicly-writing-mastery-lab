@@ -663,6 +663,251 @@
         return /^(language2|languagep2|languagepaper2|langp2)$/.test(s);
     }
 
+    // ══════════════════════════════════════════════════════════════
+    //  v7.20.49: AQA Lang P2 PRE-PLANNING CHAIN (S0–S1) — shared, stateless core.
+    //  The planning monolith (protocol-b-planning.md §2) holds a HARD PRECONDITION:
+    //  no question planning until SIX artifacts exist in-conversation — grade goal,
+    //  headline goal, plan mode, and three prediction commits. Code owns the captures
+    //  (A16 programmatic-first): the per-pipeline sendCanvasMessage twins intercept
+    //  while the chain is incomplete (no AI round-trip) and bind their closure-local
+    //  chat UI to these builders. Predictions also file VERBATIM into the document's
+    //  Predictions section (fieldIds pred-paper / pred-source-a / pred-source-b) —
+    //  deterministic, never through the LLM.
+    // ══════════════════════════════════════════════════════════════
+    function _planPreChainActive() {
+        return state.task === 'planning'
+            && (state.board || '').toLowerCase() === 'aqa'
+            && _isLangPaper2();
+    }
+    function _planPreChainStageFor(history) {
+        if (!_planPreChainActive()) return null;
+        const askedBy = (re) => history.some(m => m.role === 'assistant' && re.test(m.content || ''));
+        // Planning already underway (legacy sliced-protocol chats, resumed sessions,
+        // filed fields) → never hijack a live conversation.
+        if (askedBy(/@FIELD_COMMIT|Inference 1 \(Source A\)|anchor quote/i)) return null;
+        if (!askedBy(/what grade are you aiming for/i)) {
+            // The chain opens ONLY on a fresh conversation. An existing chat without
+            // the greeting is a pre-build session — the protocol owns it.
+            return history.some(m => m.role === 'assistant') ? null : 'greeting';
+        }
+        if (!askedBy(/headline goal/i)) return 'headline';
+        if (!askedBy(/condense your plans/i)) return 'planmode';
+        if (!askedBy(/themes do you expect this paper/i)) return 'predQ';
+        if (!askedBy(/predict Source A will explore/i)) return 'predA';
+        if (!askedBy(/predict Source B will explore/i)) return 'predB';
+        return null;
+    }
+    function _planChainBeat(stage) {
+        const map = {
+            greeting: [1, 'Setup · Grade goal'], headline: [2, 'Setup · Headline goal'],
+            planmode: [3, 'Setup · Plan mode'], predQ: [4, 'Predict · This paper'],
+            predA: [5, 'Predict · Source A'], predB: [6, 'Predict · Source B'],
+        };
+        const b = map[stage];
+        return b ? { section: b[1], step: b[0], total: 6 } : null;
+    }
+    function _planSourceLabel(letter) {
+        try {
+            const secs = document.querySelectorAll('[data-section-type="source"]');
+            for (let i = 0; i < secs.length; i++) {
+                const l = secs[i].getAttribute('data-section-label') || '';
+                if (new RegExp('source\\s*' + letter + '\\b', 'i').test(l)) return l;
+            }
+        } catch (_) { /* non-fatal */ }
+        return 'Source ' + letter;
+    }
+    // Question text per stage — ONE source for both pipelines. The detection regexes in
+    // _planPreChainStageFor are byte-paired with these strings: change one, change both.
+    function _planChainQuestionText(stage, firstName) {
+        let plain, html;
+        if (stage === 'greeting') {
+            const fn = firstName || 'there';
+            plain = `Hi ${fn}! Welcome to your planning session for AQA English Language Paper 2. Here's what's coming: we'll set your goals, make three quick predictions, then plan all four questions in exam order — Q2, Q3, Q4 and Q5 — one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
+            html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>AQA English Language Paper 2</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, make three quick predictions, then plan all four questions in exam order — <strong>Q2, Q3, Q4 and Q5</strong> — one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p></div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
+        } else if (stage === 'planmode') {
+            plain = `Noted — your headline goal will thread through every question we plan. Next: how should I **condense your plans** as we file them?\n\nA) Advanced — keywords only (2–4 keywords per element)\nB) Standard — key phrases (short phrases in your own words)\n\nBoth modes use only YOUR words — the difference is how much we condense.`;
+            html = `<p>Noted — your headline goal will thread through every question we plan.</p><p style="margin-top:8px">Next: how should I <strong>condense your plans</strong> as we file them?</p><p style="margin-top:8px">Both modes use only YOUR words — the difference is how much we condense.</p>`;
+        } else if (stage === 'predQ') {
+            plain = `Now the pre-read. Look at the **five questions** in your document first — just the questions, don't read the sources yet. (Q1 you'll answer directly in the exam — no plan needed.)\n\nWhat **3 themes** do you expect this paper is about? Type your three themes.`;
+            html = `<p>Now the pre-read. Look at the <strong>five questions</strong> in your document first — just the questions, don't read the sources yet. <em>(Q1 you'll answer directly in the exam — no plan needed.)</em></p><p style="margin-top:8px">What <strong>3 themes</strong> do you expect this paper is about? Type your three themes.</p>`;
+        } else if (stage === 'predA') {
+            const la = _planSourceLabel('A');
+            plain = `Committed. Now look at **${la}** — read ONLY its title, author and date, not the text itself.\n\nWhat **3 themes** do you predict Source A will explore?`;
+            html = `<p>Committed. Now look at <strong>${la}</strong> — read ONLY its title, author and date, not the text itself.</p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict Source A will explore?</p>`;
+        } else if (stage === 'predB') {
+            const lb = _planSourceLabel('B');
+            plain = `Committed. Last one: **${lb}** — title, author and date only.\n\nWhat **3 themes** do you predict Source B will explore? After this your predictions are committed — we'll check back on them as you plan. Being wrong there is often where the best insights come from.`;
+            html = `<p>Committed. Last one: <strong>${lb}</strong> — title, author and date only.</p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict Source B will explore? After this your predictions are committed — we'll check back on them as you plan. Being wrong there is often where the best insights come from.</p>`;
+        }
+        return { plain: plain, html: html };
+    }
+    // File a prediction reply into its document field. The reply being handled always
+    // answers the MOST RECENT assistant question — match it to its fieldId. Self-guarding
+    // no-op on every non-prediction turn, so the fall-through call is always safe.
+    function _planChainFilePrediction(history, msg) {
+        try {
+            if (!_planPreChainActive() || !msg) return;
+            let lastAsk = null;
+            for (let i = history.length - 1; i >= 0; i--) {
+                if (history[i].role === 'assistant') { lastAsk = history[i].content || ''; break; }
+            }
+            if (!lastAsk) return;
+            let fid = null;
+            if (/themes do you expect this paper/i.test(lastAsk)) fid = 'pred-paper';
+            else if (/predict Source A will explore/i.test(lastAsk)) fid = 'pred-source-a';
+            else if (/predict Source B will explore/i.test(lastAsk)) fid = 'pred-source-b';
+            if (fid && _writeOutlineRowField(fid, msg) && typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) { console.warn('WML plan-chain: prediction file failed (non-fatal)', e && e.message); }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  v7.20.49: DEVICE-CARD MENU (design brief D6) — the Q5 IUMVCC help menu re-housed
+    //  as a programmatic component. Content moved VERBATIM from
+    //  protocols/shared/language/modules/help-menu-devices.md (b6); only the routing
+    //  prose (H/M/E commands, SESSION_STATE) died. Selecting a template sends its FULL
+    //  content into the conversation as a hidden context turn (AI-visible, UI-quiet) so
+    //  Sophia coaches from the real template text — never from memory of it.
+    //  Opened by the ⟦@DEVICE_MENU⟧ chip (protocol-emitted, rendered by formatAI).
+    // ══════════════════════════════════════════════════════════════
+    const _DEVICE_MENU_DATA = [
+        { group: 'Metaphor templates', intro: 'Comparing without using ‘like’ or ‘as’', items: [
+            { name: 'Metaphor Pattern 1: Adjective + Noun', body: 'PATTERN 1: Adjective + Noun\n\nHow it works: Pair a powerful adjective with a concrete noun\n\nExamples:\n- fragile silence\n- razor-sharp crisis\n- towering arches\n- impenetrable faith\n- deafening silence\n\nYour turn: Combine a powerful adjective with a concrete noun related to your topic\n\nAdjective ideas: fragile, razor-sharp, towering, jagged, frozen, treacherous, deafening, thorny, impenetrable\n\nTry: [powerful adjective] + [concrete noun related to topic]' },
+            { name: 'Metaphor Pattern 2: Noun is/are Noun', body: 'PATTERN 2: Noun is/are Noun\n\nHow it works: State that one thing IS another thing (but isn’t literally)\n\nExamples:\n- Love is barbed-wire\n- Climate change is a ticking time bomb\n- Our planet is a patient on life support\n- Racism is a poison\n\nYour turn: Complete this sentence about your topic\n\n‘[Your topic] is a __________’\n\nNoun ideas: weapon, prison, battlefield, disease, fire, flood, earthquake, mountain, ocean, anchor' },
+            { name: 'Metaphor Pattern 3: Noun of Noun', body: 'PATTERN 3: Noun of Noun\n\nHow it works: Connect two nouns with ‘of’ to create an image\n\nExamples:\n- carpet of snowflakes\n- ocean of plastic\n- sea of hate\n- waterfall of fire\n- factories of anger\n- hall of hopelessness\n\nYour turn: Complete this pattern for your topic\n\n‘[Concrete noun] of [effect/emotion from your topic]’\n\nFirst noun ideas: carpet, ocean, sea, valley, stream, blanket, wall, mountain, river, storm' },
+            { name: 'Metaphor Pattern 4: Verb + Preposition + Noun', body: 'PATTERN 4: Verb + Preposition + Noun\n\nHow it works: Show action using a metaphorical force\n\nExamples:\n- swallowed by fear\n- shielded by love\n- devoured by hate\n- sculpted by brilliance\n- surrounded by silence\n- destroyed by greed\n\nYour turn: Complete this pattern for your topic\n\n‘[Action related to topic] by [force/emotion]’\n\nVerb ideas: swallowed, devoured, shielded, surrounded, destroyed, sculpted, healed, buried, consumed, crushed' },
+            { name: 'Metaphor Pattern 5: Verb Metaphors (Action as Metaphor)', body: 'PATTERN 5: Verb Metaphors (Action as Metaphor)\n\nHow it works: Give abstract things concrete actions they can’t literally do\n\nExamples:\n- Fear gripped the nation (fear doesn’t have hands)\n- Hope bloomed in their hearts (hope isn’t a flower)\n- Silence devoured hope (silence can’t eat)\n- Anger erupted (anger isn’t a volcano)\n\nYour turn: Take an abstract thing from your topic and give it a concrete action\n\n‘[Abstract concept] + [concrete action verb]’\n\nPowerful verbs: gripped, bloomed, devoured, erupted, shattered, crawled, strangled, suffocated, exploded, collapsed' },
+            { name: 'Metaphor Pattern 6: Implicit Metaphors (No Comparison Stated)', body: 'PATTERN 6: Implicit Metaphors (No Comparison Stated)\n\nHow it works: Use a verb from a completely different domain\n\nExamples:\n- He barked orders (treating person like a dog)\n- She devoured the book (treating book like food)\n- Ideas percolated in his mind (treating brain like coffee maker)\n- The economy tanked (treating economy like a vehicle)\n\nYour turn: Choose a verb from a different domain to describe your topic\n\nSport verbs: tackle, fumble, score, sprint, collapse, rally\nWar verbs: fight, attack, defend, surrender, ambush, retreat\nNature verbs: bloom, wither, erode, flood, ignite, freeze\nFood verbs: devour, consume, digest, chew, swallow, feast' },
+        ] },
+        { group: 'Simile templates', intro: 'Comparing with ‘like’ or ‘as’', items: [
+            { name: 'Simile Pattern 1: [Topic] is like [concrete thing] that [action]', body: 'PATTERN 1: [Topic] is like [concrete thing] that [action]\n\nHow it works: Compare your topic to something concrete, then explain HOW they’re similar\n\nExamples:\n- Climate change is like a slow-motion car crash that we’re watching but not stopping\n- Social media is like a megaphone that amplifies both truth and lies\n- Poverty is like quicksand that pulls families deeper the more they struggle\n\nYour turn: Complete this for your topic\n\n‘[Your topic] is like a __________ that __________’' },
+            { name: 'Simile Pattern 2: As [adjective] as [concrete noun]', body: 'PATTERN 2: As [adjective] as [concrete noun]\n\nHow it works: Make a quick, punchy comparison\n\nExamples:\n- As fragile as glass\n- As sharp as a blade\n- As cold as steel\n- As heavy as an anchor\n- As explosive as a bomb\n\nYour turn: Complete this for your topic\n\n‘[Your topic] is as __________ as __________’\n\nAdjective ideas: fragile, sharp, heavy, explosive, cold, hot, deep, shallow, bright, dark' },
+            { name: 'Simile Pattern 3: Like [concrete scene/image]', body: 'PATTERN 3: Like [concrete scene/image]\n\nHow it works: Paint a visual picture with ‘like’\n\nExamples:\n- Pollution spreads like ink in water\n- Fear spreads like wildfire through dry grass\n- Rumors spread like cracks in ice\n\nYour turn: Complete this for your topic\n\n‘[Your topic] spreads/moves/acts like __________’' },
+        ] },
+        { group: 'Personification templates', intro: 'Giving human actions to objects, ideas, or forces', items: [
+            { name: 'Personification Pattern 1: Abstract thing + Human action verb', body: 'PATTERN 1: [Abstract thing] + [Human action verb]\n\nHow it works: Take something that isn’t human and make it DO human actions\n\nExamples:\n- Silence devoured hope (silence can’t eat)\n- Fear gripped the nation (fear doesn’t have hands)\n- Technology enslaves us (technology can’t enslave)\n- Greed whispers in our ear (greed can’t speak)\n- Injustice laughs at the weak (injustice can’t laugh)\n\nYour turn: Take an abstract concept from your topic and give it a human action\n\n‘[Abstract concept from your topic] + [human action verb]’\n\nHuman action verbs:\n- Physical: grips, clutches, strangles, embraces, reaches, crawls\n- Speech: whispers, screams, laughs, mocks, calls, begs\n- Emotional: weeps, rages, celebrates, mourns, rejoices\n- Violent: attacks, murders, destroys, wounds, strikes' },
+            { name: 'Personification Pattern 2: Natural force/object + Human quality', body: 'PATTERN 2: [Natural force/object] + [Human quality]\n\nHow it works: Give nature or objects human emotions/characteristics\n\nExamples:\n- The angry sky wept (sky has emotion + cries)\n- Stubborn weeds refused to die (weeds have willpower)\n- The cruel sun beat down on them (sun has cruelty)\n- Gentle rain kissed the earth (rain shows affection)\n\nYour turn: If your topic involves nature/objects, give them human qualities\n\n‘[Adjective describing human emotion] + [natural thing] + [human action]’' },
+            { name: 'Personification Pattern 3: Topic + Demands/Begs/Cries/Screams', body: 'PATTERN 3: [Topic] + [Demands/Begs/Cries/Screams]\n\nHow it works: Make your issue ‘speak’ or demand attention\n\nExamples:\n- The environment cries out for protection\n- Justice demands action\n- Poverty screams from every street corner\n- The crisis begs for our attention\n\nYour turn: Make your topic actively communicate\n\n‘[Your topic] cries/demands/begs/screams for __________’' },
+        ] },
+        { group: 'Advanced techniques', intro: 'Most important for persuasive writing listed first', items: [
+            { name: 'Polysyndeton', body: 'POLYSYNDETON CONSTRUCTION\n\nDefinition: Repeating conjunctions (and/or/nor/but) where they aren’t grammatically necessary\n\nEffect on reader: Creates momentum, builds emotion, makes list feel overwhelming or endless\n\nHow to construct it:\n\nNormal sentence: We need action on climate, poverty, inequality.\nPolysyndeton: We need action on climate and poverty and inequality and injustice.\n\nPattern: [Item 1] and [Item 2] and [Item 3] and [Item 4]...\n\nExamples:\n- ‘We shall fight on the beaches and on the landing grounds and in the fields and in the streets’ (Churchill)\n- ‘Let us go forth to lead the land we love, asking His blessing and His help, but knowing that here on earth God’s work must truly be our own’ (JFK)\n\nYour turn: List 3-4 things related to your topic using ‘and’ between each\n\nComplete: ‘We must address [item] and [item] and [item] and [item]’' },
+            { name: 'Asyndeton', body: 'ASYNDETON CONSTRUCTION\n\nDefinition: Deliberately removing conjunctions between words/phrases/clauses\n\nEffect on reader: Creates speed, urgency, impact; makes each item hit harder\n\nHow to construct it:\n\nNormal sentence: We need to act quickly and decisively and without hesitation.\nAsyndeton: We need to act quickly, decisively, without hesitation.\n\nPattern: [Item 1], [Item 2], [Item 3] (NO ‘and’ until optional final item)\n\nExamples:\n- ‘I came, I saw, I conquered’ (Caesar)\n- ‘Government of the people, by the people, for the people’ (Lincoln)\n- ‘We shall pay any price, bear any burden, meet any hardship’ (JFK)\n\nYour turn: List 3 actions or qualities related to your topic WITHOUT using ‘and’ until the end\n\nComplete: ‘We must be [quality], [quality], [quality]’ OR ‘We must [action], [action], [action]’' },
+            { name: 'Antithesis', body: 'ANTITHESIS CONSTRUCTION\n\nDefinition: Placing contrasting ideas side-by-side in balanced structures\n\nEffect on reader: Creates drama, makes contrast sharp and memorable, forces choice\n\nHow to construct it:\n\nPattern: [Positive statement] not [negative opposite]\nOR: [One extreme], [opposite extreme]\n\nExamples:\n- ‘Ask not what your country can do for you; ask what you can do for your country’ (JFK)\n- ‘One small step for man, one giant leap for mankind’ (Armstrong)\n- ‘The best of times, the worst of times’ (Dickens)\n- ‘We want progress, not destruction; hope, not despair; action, not apathy’\n\nYour turn: Create contrast with your topic using one of these patterns:\n\nPattern 1: ‘We need [positive], not [negative]’\nPattern 2: ‘This is a time for [positive], not [negative]’\nPattern 3: ‘Some see [negative]; I see [positive]’' },
+            { name: 'Hyperbole', body: 'HYPERBOLE CONSTRUCTION\n\nDefinition: Deliberate exaggeration for emphasis (not meant to be taken literally)\n\nEffect on reader: Creates emotional impact, makes point memorable, emphasizes scale\n\nHow to construct it:\n\nTake a real problem and make it MORE extreme using:\n- Extreme numbers: millions, billions, infinity, zero\n- Extreme words: always, never, everyone, no one, everywhere, nowhere\n- Extreme comparisons: biggest, smallest, fastest, slowest EVER\n\nExamples:\n- ‘I’ve told you a million times’\n- ‘It’s been an eternity since we acted’\n- ‘This will affect every single person on Earth’\n- ‘We’re standing at the edge of oblivion’\n- ‘The whole world is watching’\n\nYour turn: Exaggerate the scale or impact of your topic\n\nPattern 1: ‘If we don’t act, [extreme negative consequence]’\nPattern 2: ‘This affects [extreme number/scope] of [people/places/things]’\nPattern 3: ‘[Topic] is the [biggest/worst/most critical] issue of [our time/this century/human history]’' },
+            { name: 'Anaphora', body: 'ANAPHORA CONSTRUCTION\n\nDefinition: Repeating the same word(s) at the beginning of successive sentences/clauses\n\nEffect on reader: Creates rhythm, builds momentum, makes message unforgettable\n\nHow to construct it:\n\nChoose a powerful opening phrase, then repeat it 3+ times with different endings\n\nPattern: [Repeated phrase]... [ending 1]\n[Repeated phrase]... [ending 2]\n[Repeated phrase]... [ending 3]\n\nExamples:\n- ‘We shall fight on the beaches. We shall fight on the landing grounds. We shall fight in the fields...’ (Churchill)\n- ‘Now is the time to make real the promises of democracy. Now is the time to rise from the dark valley...’ (MLK)\n- ‘Every day, children go hungry. Every day, families struggle. Every day, the crisis deepens.’\n\nYour turn: Choose a phrase to repeat, then complete it 3 times:\n\nOption 1: ‘We must [action]... We must [different action]... We must [third action]...’\nOption 2: ‘Every day, [problem]... Every day, [related problem]... Every day, [consequence]...’\nOption 3: ‘This is [description]... This is [different description]... This is [impact]...’' },
+            { name: 'Epistrophe', body: 'EPISTROPHE CONSTRUCTION\n\nDefinition: Repeating the same word(s) at the END of successive sentences/clauses\n\nEffect on reader: Creates emphasis through repetition, makes ending memorable, builds to conclusion\n\nHow to construct it:\n\nChoose a powerful ending phrase, then repeat it 3+ times at the end\n\nPattern: [Different start]... [repeated ending]\n[Different start]... [repeated ending]\n[Different start]... [repeated ending]\n\nExamples:\n- ‘Government of the people, by the people, for the people’ (Lincoln)\n- ‘When I was a child, I spoke as a child, I understood as a child, I thought as a child’ (Bible)\n- ‘We want action now. We need change now. We demand justice now.’\n\nYour turn: Choose an ending to repeat:\n\nPattern: ‘[Different action/idea]... now. [Different action]... now. [Different action]... now.’\n\nOr: ‘[Idea 1] matters. [Idea 2] matters. [Idea 3] matters.’' },
+            { name: 'Tricolon', body: 'TRICOLON CONSTRUCTION\n\nDefinition: Using three parallel elements (words, phrases, or clauses) for rhythm and completeness\n\nEffect on reader: Feels complete and balanced; three is the minimum for a pattern but not too many to remember\n\nHow to construct it:\n\nList exactly THREE things in parallel structure\n\nPattern: [Item 1], [Item 2], [Item 3]\n\nExamples:\n- ‘I came, I saw, I conquered’ (Caesar)\n- ‘Life, liberty, and the pursuit of happiness’ (Declaration)\n- ‘Blood, sweat, and tears’ (Churchill)\n- ‘Education, empowerment, equality’\n- ‘We must act swiftly, decisively, courageously’\n\nYour turn: Create a tricolon for your topic\n\nOption 1 (Nouns): ‘[Noun 1], [noun 2], [noun 3]’ (e.g., ‘hope, change, action’)\nOption 2 (Adjectives): ‘We must be [adj], [adj], [adj]’\nOption 3 (Verbs): ‘We must [verb], [verb], [verb]’\nOption 4 (Sentences): ‘[Short sentence]. [Short sentence]. [Short sentence].’' },
+            { name: 'Parallelism', body: 'PARALLELISM CONSTRUCTION\n\nDefinition: Using the same grammatical structure for related ideas\n\nEffect on reader: Creates rhythm, makes ideas feel equally important, easier to remember\n\nHow to construct it:\n\nMake 2+ sentences/phrases follow the exact same pattern\n\nPattern: All items must use same grammatical structure\n\nExamples:\n- ‘To err is human, to forgive is divine’\n- ‘Ask not what your country can do for you, ask what you can do for your country’ (JFK)\n- ‘We need teachers who inspire. We need leaders who listen. We need citizens who care.’\n- ‘Some see problems. Others see opportunities.’\n\nYour turn: Create parallel structures for your topic\n\nPattern 1 (To + verb): ‘To [verb] is [outcome], to [verb] is [outcome]’\nPattern 2 (We need): ‘We need [noun] who [verb]. We need [noun] who [verb]. We need [noun] who [verb].’\nPattern 3 (Some/Others): ‘Some [verb/see]. Others [verb/see].’' },
+            { name: 'Chiasmus', body: 'CHIASMUS CONSTRUCTION\n\nDefinition: Reversing the structure of two phrases (AB-BA pattern)\n\nEffect on reader: Creates memorable, quotable moments; forces reader to think about relationship between ideas\n\nHow to construct it:\n\nPattern: [A] [B] ... [B] [A]\n\nExamples:\n- ‘Ask not what your country can do for you; ask what you can do for your country’ (JFK)\n  Structure: [Your country / you] ... [You / your country]\n- ‘When the going gets tough, the tough get going’\n  Structure: [going / tough] ... [tough / going]\n\nYour turn: Create a reversal for your topic\n\nTemplate: Start with two related concepts (A and B), then reverse them:\n\n‘[A] affects [B]; [B] affects [A]’\nOR\n‘We must not [A] to [B]; we must [B] to [A]’\n\nExample for climate change:\n‘The planet shapes our future; our future shapes the planet’' },
+            { name: 'Euphemism', body: 'EUPHEMISM CONSTRUCTION\n\nDefinition: Softening harsh/unpleasant realities with gentler language (can be used ironically)\n\nEffect on reader: Can make uncomfortable topics acceptable OR can expose hypocrisy when used ironically\n\nHow to construct it:\n\nReplace harsh/direct word with softer alternative (or use ironically to criticize avoidance)\n\nExamples (Genuine):\n- ‘Passed away’ instead of ‘died’\n- ‘Let go’ instead of ‘fired’\n- ‘Economically disadvantaged’ instead of ‘poor’\n\nExamples (Ironic - exposing euphemisms):\n- ‘They call it “restructuring” but people call it what it is: job losses’\n- ‘Politicians speak of “collateral damage” when they mean innocent deaths’\n- ‘We use the term “climate change” as if it’s gentle weather adjustment, not planetary crisis’\n\nYour turn: For your topic, either:\n\nOption 1 (Genuine): Find a gentler way to discuss something difficult\nOption 2 (Ironic): Expose a euphemism that hides the truth\n\n‘They call it [euphemism], but it’s really [harsh truth]’' },
+            { name: 'Oxymoron', body: 'OXYMORON CONSTRUCTION\n\nDefinition: Placing contradictory words together to create new meaning\n\nEffect on reader: Creates surprise, forces reader to think, reveals complexity or irony\n\nHow to construct it:\n\nPair opposites: [Positive] + [Negative] OR [Negative] + [Positive]\n\nExamples:\n- Deafening silence\n- Bitter sweet\n- Cruel kindness\n- Beautiful disaster\n- Organized chaos\n- Clearly confused\n- Alone together\n\nYour turn: Create an oxymoron for your topic by combining opposites:\n\nPattern: [adjective with opposite meaning] + [noun]\n\nFor climate change: ‘comfortable crisis’, ‘slow emergency’, ‘visible invisibility’\nFor poverty: ‘working poor’, ‘necessary evil’, ‘wealthy poverty’\n\nThink: What two contradictory words capture the complexity of your topic?' },
+            { name: 'Paronomasia (Wordplay/Puns)', body: 'PARONOMASIA CONSTRUCTION\n\nDefinition: Wordplay using similar-sounding words or multiple meanings for wit/emphasis\n\nEffect on reader: Creates memorable phrases, shows intelligence, can be humorous or serious\n\nHow to construct it:\n\nOption 1: Use words that sound similar\nOption 2: Use words with double meanings\nOption 3: Play with phrases/clichés\n\nExamples:\n- ‘We must all hang together, or we shall all hang separately’ (Franklin - ‘hang’ = unite OR be executed)\n- ‘Ask for me tomorrow and you shall find me a grave man’ (Shakespeare - ‘grave’ = serious OR dead)\n- ‘The right to bear arms’ (bear = carry OR the animal)\n\nYour turn: This is the hardest technique! Only use if you find a natural wordplay opportunity for your topic\n\nLook for:\n- Words with double meanings\n- Common phrases you can twist\n- Similar-sounding words\n\nExample for education: ‘We’re not teaching kids to pass tests; we’re teaching them to pass by tests’ (pass = succeed vs pass = ignore)' },
+        ] },
+        { group: 'Quick guides', intro: 'Instant help for common devices', items: [
+            { name: 'Alliteration', body: 'ALLITERATION QUICK GUIDE\n\nDefinition: Repeating the same consonant sound at the start of nearby words\n\nEffect: Creates rhythm, makes phrase memorable, can create mood (harsh sounds vs soft sounds)\n\nHow to construct:\n\n1. Choose a letter that matches your mood:\n   - Harsh: K, T, P, B, G (hard sounds)\n   - Soft: S, F, L, M, W (gentle sounds)\n   - Sinister: S, SH, CH (hissing/whispering)\n2. Find 2-3 words starting with that letter\n\nExamples:\n- ‘Bold, brave, brilliant vision’\n- ‘Silent, sinister suffering’\n- ‘Devastating destruction drives despair’\n\nYour turn: Pick a letter and find 2-3 words for your topic' },
+            { name: 'Rhetorical Question', body: 'RHETORICAL QUESTION QUICK GUIDE\n\nDefinition: Question you don’t expect answer to - the answer is obvious\n\nEffect: Engages reader, challenges assumptions, creates dramatic effect\n\nHow to construct:\n\nMake the answer obvious. If you ask ‘Should we act?’, the reader should think ‘Of course!’\n\nPatterns:\n- ‘How can we [not act/ignore/accept] [problem]?’\n- ‘Who among us would [negative action]?’\n- ‘Can we really afford to [negative consequence]?’\n- ‘What kind of [person/society/world] would [terrible thing]?’\n\nExamples:\n- ‘How can we stand by while children go hungry?’\n- ‘Can we really afford to ignore this crisis?’\n- ‘What kind of society allows this injustice?’\n\nYour turn: Create a rhetorical question for your topic where the answer is obvious' },
+        ] },
+    ];
+
+    // The active canvas pipeline registers its sender here at mount (last mount wins —
+    // matches the single-active-canvas model). The modal delivers the chosen template
+    // through it as a SILENT send: AI-visible context, no giant user bubble.
+    function _showDeviceMenu() {
+        if (document.querySelector('.swml-device-menu-overlay')) return;
+        const send = window.__swmlCanvasChatSend;
+        const overlay = document.createElement('div');
+        overlay.className = 'swml-device-menu-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;overscroll-behavior:contain;';
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#1c1d1f;color:rgba(255,255,255,0.92);border-radius:14px;max-width:640px;width:92%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(255,255,255,0.08);';
+        const head = document.createElement('div');
+        head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.08);flex:0 0 auto;';
+        head.innerHTML = '<strong>Device Construction Templates</strong>';
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '✕';
+        closeBtn.style.cssText = 'background:none;border:none;color:rgba(255,255,255,0.6);font-size:16px;cursor:pointer;padding:4px 8px;';
+        head.appendChild(closeBtn);
+        const body = document.createElement('div');
+        body.style.cssText = 'overflow-y:auto;overscroll-behavior:contain;padding:12px 18px 18px;flex:1 1 auto;';
+        // Two-level browse: list → template detail (read the full verbatim template
+        // programmatically, zero AI cost) → "Work with this template" sends its content
+        // into the conversation so Sophia coaches from the REAL text (D6 spec note).
+        function renderList() {
+            body.innerHTML = '';
+            body.scrollTop = 0;
+            _DEVICE_MENU_DATA.forEach(group => {
+                const h = document.createElement('div');
+                h.style.cssText = 'margin:14px 0 6px;font-weight:600;font-size:13px;';
+                h.textContent = group.group;
+                const sub = document.createElement('div');
+                sub.style.cssText = 'font-size:11.5px;color:rgba(255,255,255,0.5);margin-bottom:8px;';
+                sub.textContent = group.intro;
+                body.appendChild(h); body.appendChild(sub);
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+                group.items.forEach(item => {
+                    const b = document.createElement('button');
+                    b.className = 'swml-quick-btn';
+                    b.textContent = item.name;
+                    b.addEventListener('click', () => renderDetail(item));
+                    wrap.appendChild(b);
+                });
+                body.appendChild(wrap);
+            });
+        }
+        function renderDetail(item) {
+            body.innerHTML = '';
+            body.scrollTop = 0;
+            const back = document.createElement('button');
+            back.className = 'swml-quick-btn';
+            back.textContent = '← All templates';
+            back.addEventListener('click', renderList);
+            const pre = document.createElement('div');
+            pre.style.cssText = 'white-space:pre-wrap;font-size:13px;line-height:1.55;margin:12px 0;';
+            pre.textContent = item.body;
+            const use = document.createElement('button');
+            use.className = 'swml-quick-btn';
+            use.textContent = 'Work with this template →';
+            use.addEventListener('click', () => {
+                _closeDeviceMenu(overlay);
+                if (typeof send === 'function') {
+                    send('[DEVICE TEMPLATE — ' + item.name.toUpperCase() + ']\n\n' + item.body
+                        + '\n\nI’ve picked this template — help me build one for the section we’re planning.');
+                } else {
+                    console.warn('WML device-menu: no canvas sender registered');
+                }
+            });
+            body.appendChild(back); body.appendChild(pre); body.appendChild(use);
+        }
+        renderList();
+        // Overlay scroll isolation (universal law, all three layers): contain (above),
+        // backdrop wheel/touch block (here), parent overflow lock (below).
+        ['wheel', 'touchmove'].forEach(ev => overlay.addEventListener(ev, e => {
+            if (e.target === overlay) e.preventDefault();
+        }, { passive: false }));
+        const _prevBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        overlay._swmlRestoreOverflow = () => { document.body.style.overflow = _prevBodyOverflow; };
+        closeBtn.addEventListener('click', () => _closeDeviceMenu(overlay));
+        overlay.addEventListener('click', e => { if (e.target === overlay) _closeDeviceMenu(overlay); });
+        card.appendChild(head); card.appendChild(body); overlay.appendChild(card);
+        document.body.appendChild(overlay);
+    }
+    function _closeDeviceMenu(overlay) {
+        try { if (overlay._swmlRestoreOverflow) overlay._swmlRestoreOverflow(); } catch (_) {}
+        overlay.remove();
+    }
+    // Delegated open handler for the ⟦@DEVICE_MENU⟧ chip (rendered by formatAI in
+    // wml-core). Capture-phase + bound-once guard, mirroring the learn-chip binding.
+    if (typeof document !== 'undefined' && !window.__swmlDeviceMenuBound) {
+        window.__swmlDeviceMenuBound = true;
+        document.addEventListener('click', function (e) {
+            const b = e.target && e.target.closest && e.target.closest('.swml-device-menu-chip');
+            if (!b) return;
+            e.preventDefault(); e.stopPropagation();
+            _showDeviceMenu();
+        }, true);
+    }
+
     // v7.19.829: keyword-recall target rotates — Q4 (biggest prize) → Q2 → Q3 → Q5, repeat.
     // v7.19.833: rotation keys on TOPIC + PHASE + ATTEMPT, not attempt alone. The same P1
     // protocol serves phase 1 AND phase 2 of every practice paper, and re-sits are rare —
@@ -1234,23 +1479,25 @@
         console.log('WML CW: Sub-step complete →', detected.name, `(step_${detected.stepNum}, substep_${detected.substepNum})`);
     }
 
-    // v7.19.660: shared deterministic box-write core — finds the outlineRow by fieldId and
-    // writes `verbatim` (empty field → set; existing → append, never destroy; exact-dup → skip).
-    // Returns true if it wrote. Used by both @FIELD_COMMIT (applyFieldCommits) and the
-    // deterministic CW-Step-1 controller (_cwProfileCtl), so the write path is identical.
-    // Does NOT save — the caller batches saveCanvasContent().
+    // v7.19.660: shared deterministic box-write core — finds the outlineRow OR inputField by
+    // fieldId and writes `verbatim` (empty field → set; existing → append, never destroy;
+    // exact-dup → skip). Returns true if it wrote. Used by both @FIELD_COMMIT
+    // (applyFieldCommits) and the deterministic CW-Step-1 controller (_cwProfileCtl), so the
+    // write path is identical. Does NOT save — the caller batches saveCanvasContent().
+    // v7.20.49: matches inputField too (parity with _applyFieldValueSets) — plan sections are
+    // inputField nodes, so @FIELD_COMMIT plan filings silently no-opped before this.
     function _writeOutlineRowField(fid, verbatim) {
         if (!canvasEditor || !fid || !verbatim) return false;
         let targetPos = null, targetNode = null;
         canvasEditor.state.doc.descendants((node, pos) => {
             if (targetPos !== null) return false;
-            if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === fid) {
+            if ((node.type.name === 'outlineRow' || node.type.name === 'inputField') && node.attrs && node.attrs.fieldId === fid) {
                 targetPos = pos; targetNode = node; return false;
             }
             return true;
         });
         if (targetPos === null || !targetNode) {
-            console.warn('WML FieldFill: no outlineRow for field', fid, '(left empty — student can type it)');
+            console.warn('WML FieldFill: no outlineRow/inputField for field', fid, '(left empty — student can type it)');
             return false;
         }
         const existing = (targetNode.textContent || '');
@@ -1264,7 +1511,10 @@
             return false;
         } else {
             const content = [];
-            const hasBr = !!(canvasEditor.schema.nodes && canvasEditor.schema.nodes.hardBreak);
+            // v7.20.49: inputField's inline schema always accepts plain text — append with a
+            // plain-newline separator there (hardBreak reserved for outlineRow, its proven path).
+            const hasBr = targetNode.type.name !== 'inputField'
+                && !!(canvasEditor.schema.nodes && canvasEditor.schema.nodes.hardBreak);
             if (hasBr) { content.push({ type: 'hardBreak' }, { type: 'hardBreak' }); }
             content.push({ type: 'text', text: (hasBr ? '' : '\n\n') + verbatim });
             canvasEditor.commands.insertContentAt(to, content);
@@ -10157,6 +10407,70 @@
             }
         }
 
+        // v7.20.49: PLANNING chain twin — shared question text (module core) + this
+        // pipeline's chat UI. Byte-pair rule: stage-detection regexes live beside the
+        // texts in _planChainQuestionText / _planPreChainStageFor.
+        function _renderPlanChainQuestion(stage) {
+            let plain, html;
+            if (stage === 'headline') {
+                const optsPlain = _preChainGoalOptions().join('\n') + '\nF) Something else (type it below)';
+                plain = `Good — noted. Now your **headline goal**: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan. Please choose the option that best describes your focus:\n\n${optsPlain}`;
+                html = `<p>Good — noted. Now your <strong>headline goal</strong>: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan.</p><p style="margin-top:8px">Choose the option that best describes your focus, or type your own:</p>`;
+            } else {
+                const t = _planChainQuestionText(stage, (config.userName || '').split(' ')[0]);
+                plain = t.plain; html = t.html;
+            }
+            const _beat = _planChainBeat(stage);
+            if (_beat && typeof WML !== 'undefined' && WML.progressChipHTML) html = WML.progressChipHTML(_beat) + html;
+            addChatMessage(html, 'ai', plain, { suppressActions: true });
+            canvasChatHistory.push({ role: 'assistant', content: plain, beat: _beat });
+            saveCanvasChat(canvasChatHistory, canvasChatId);
+            const bubble = chatMessages.lastElementChild;
+            const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+            if (!bc) return;
+            const bar = el('div', { className: 'swml-quick-actions' });
+            const sendVal = (v) => { bar.remove(); chatTextarea.value = v; sendCanvasMessageQueued(); };
+            if (stage === 'greeting') {
+                // S0 resource orientation — availability-gated; the learn-chip markup rides
+                // the global delegated open handler (wml-core), so no new click wiring.
+                const res = el('div', { className: 'swml-quick-actions' });
+                if (window.SophiclyToolkit && window.SophiclyToolkit.open) {
+                    const b1 = el('button', { className: 'swml-quick-btn swml-learn-chip', textContent: '📖 Mastery Toolkit' });
+                    b1.setAttribute('data-learn-dest', 'toolkit'); b1.setAttribute('data-learn-arg', '');
+                    res.appendChild(b1);
+                }
+                if (window.SophiclyTable && window.SophiclyTable.open) {
+                    const b2 = el('button', { className: 'swml-quick-btn swml-learn-chip', textContent: '🗂 Table of Techniques' });
+                    b2.setAttribute('data-learn-dest', 'table'); b2.setAttribute('data-learn-arg', '');
+                    res.appendChild(b2);
+                }
+                res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📚 Library',
+                    onClick: () => window.open((typeof swmlConfig !== 'undefined' && swmlConfig.libraryUrl) || '/library/', '_blank') }));
+                bc.appendChild(res);
+                ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: g, onClick: () => sendVal(_gradeKickoffValue(g)) })));
+            } else if (stage === 'headline') {
+                _preChainGoalOptions().forEach(opt => bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: opt,
+                    onClick: () => sendVal('My headline goal: ' + opt.replace(/^[A-E]\)\s*/, '')) })));
+            } else if (stage === 'planmode') {
+                [['A) Advanced — keywords only', 'My plan mode: Advanced — keywords only'],
+                 ['B) Standard — key phrases', 'My plan mode: Standard — key phrases']]
+                    .forEach(pair => bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: pair[0], onClick: () => sendVal(pair[1]) })));
+            }
+            if (bar.childNodes.length) bc.appendChild(bar);
+        }
+
+        // v7.20.49: register this pipeline's sender for module-scope components (the
+        // device-card menu). SILENT send: the template rides to the AI as context —
+        // the student just read it in the modal, no giant user bubble.
+        window.__swmlCanvasChatSend = (text) => {
+            canvasSilentSend = true;
+            chatTextarea.value = text;
+            sendCanvasMessageQueued();
+        };
+
         // sendCanvasMessage — AI Engine chat
         async function sendCanvasMessage() {
             // v7.19.995: free-typed turn on an active poetry-CN poem still persists the poem
@@ -10225,6 +10539,29 @@
                 _renderPreChainQuestion(_pcStage);
                 console.log('WML pre-chain: code-asked "' + _pcStage + '" question (no AI turn)');
                 return;
+            }
+
+            // v7.20.49: PRE-PLANNING CHAIN gate (S0–S1) — AQA Lang P2 planning monolith.
+            // While the setup chain is incomplete, code owns the turn: record the reply,
+            // file predictions verbatim into the document, ask the next capture — no AI
+            // round-trip. The boot's silent "Let's begin!" renders the S0 greeting card.
+            if (_planPreChainActive()) {
+                const _ppcStage = _planPreChainStageFor(canvasChatHistory);
+                if (_ppcStage) {
+                    const _ppcSilent = canvasSilentSend;
+                    canvasSilentSend = false;
+                    if (!_ppcSilent) addChatMessage(msg, 'user');
+                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _ppcSilent });
+                    if (_ppcStage !== 'greeting') _planChainFilePrediction(canvasChatHistory, msg);
+                    chatTextarea.value = '';
+                    chatTextarea.style.height = '40px';
+                    _renderPlanChainQuestion(_ppcStage);
+                    console.log('WML plan-chain: code-asked "' + _ppcStage + '" capture (no AI turn)');
+                    return;
+                }
+                // Chain just completed: the closing reply (Source B predictions) files
+                // before it rides to the AI as the first planning turn.
+                _planChainFilePrediction(canvasChatHistory, msg);
             }
 
             // v7.19.854: CLOSING CHAIN gate — while the engine-owned ending is collecting
@@ -19250,6 +19587,66 @@
                             }
                         }
 
+                        // v7.20.49: PLANNING chain twin (mirrors the primary pipeline —
+                        // dual-pipeline rule; keep the two IDENTICAL bar the send fn).
+                        function _renderPlanChainQuestion(stage) {
+                            let plain, html;
+                            if (stage === 'headline') {
+                                const optsPlain = _preChainGoalOptions().join('\n') + '\nF) Something else (type it below)';
+                                plain = `Good — noted. Now your **headline goal**: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan. Please choose the option that best describes your focus:\n\n${optsPlain}`;
+                                html = `<p>Good — noted. Now your <strong>headline goal</strong>: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan.</p><p style="margin-top:8px">Choose the option that best describes your focus, or type your own:</p>`;
+                            } else {
+                                const t = _planChainQuestionText(stage, (config.userName || '').split(' ')[0]);
+                                plain = t.plain; html = t.html;
+                            }
+                            const _beat = _planChainBeat(stage);
+                            if (_beat && typeof WML !== 'undefined' && WML.progressChipHTML) html = WML.progressChipHTML(_beat) + html;
+                            addChatMessage(html, 'ai', plain, { suppressActions: true });
+                            canvasChatHistory.push({ role: 'assistant', content: plain, beat: _beat });
+                            saveCanvasChat(canvasChatHistory, canvasChatId);
+                            const bubble = chatMessages.lastElementChild;
+                            const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                            if (!bc) return;
+                            const bar = el('div', { className: 'swml-quick-actions' });
+                            const sendVal = (v) => { bar.remove(); chatTextarea.value = v; sendCanvasMessage(); };
+                            if (stage === 'greeting') {
+                                const res = el('div', { className: 'swml-quick-actions' });
+                                if (window.SophiclyToolkit && window.SophiclyToolkit.open) {
+                                    const b1 = el('button', { className: 'swml-quick-btn swml-learn-chip', textContent: '📖 Mastery Toolkit' });
+                                    b1.setAttribute('data-learn-dest', 'toolkit'); b1.setAttribute('data-learn-arg', '');
+                                    res.appendChild(b1);
+                                }
+                                if (window.SophiclyTable && window.SophiclyTable.open) {
+                                    const b2 = el('button', { className: 'swml-quick-btn swml-learn-chip', textContent: '🗂 Table of Techniques' });
+                                    b2.setAttribute('data-learn-dest', 'table'); b2.setAttribute('data-learn-arg', '');
+                                    res.appendChild(b2);
+                                }
+                                res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📚 Library',
+                                    onClick: () => window.open((typeof swmlConfig !== 'undefined' && swmlConfig.libraryUrl) || '/library/', '_blank') }));
+                                bc.appendChild(res);
+                                ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => bar.appendChild(el('button', {
+                                    className: 'swml-quick-btn', textContent: g, onClick: () => sendVal(_gradeKickoffValue(g)) })));
+                            } else if (stage === 'headline') {
+                                _preChainGoalOptions().forEach(opt => bar.appendChild(el('button', {
+                                    className: 'swml-quick-btn', textContent: opt,
+                                    onClick: () => sendVal('My headline goal: ' + opt.replace(/^[A-E]\)\s*/, '')) })));
+                            } else if (stage === 'planmode') {
+                                [['A) Advanced — keywords only', 'My plan mode: Advanced — keywords only'],
+                                 ['B) Standard — key phrases', 'My plan mode: Standard — key phrases']]
+                                    .forEach(pair => bar.appendChild(el('button', {
+                                        className: 'swml-quick-btn', textContent: pair[0], onClick: () => sendVal(pair[1]) })));
+                            }
+                            if (bar.childNodes.length) bc.appendChild(bar);
+                        }
+
+                        // v7.20.49: register this pipeline's sender for module-scope
+                        // components (device-card menu) — mirrors the primary pipeline.
+                        window.__swmlCanvasChatSend = (text) => {
+                            canvasSilentSend = true;
+                            chatTextarea.value = text;
+                            sendCanvasMessage();
+                        };
+
                         async function sendCanvasMessage() {
                             // v7.19.995: free-typed turn on an active poetry-CN poem still persists
                             // the poem identity (self-guarding — see _poetryCnEnsurePoemMarker).
@@ -19281,6 +19678,25 @@
                                 _renderPreChainQuestion(_pcStage);
                                 console.log('WML pre-chain: code-asked "' + _pcStage + '" question (no AI turn)');
                                 return;
+                            }
+
+                            // v7.20.49: PRE-PLANNING CHAIN gate (mirrors primary pipeline) —
+                            // AQA Lang P2 planning monolith S0–S1 captures, code-owned.
+                            if (_planPreChainActive()) {
+                                const _ppcStage = _planPreChainStageFor(canvasChatHistory);
+                                if (_ppcStage) {
+                                    const _ppcSilent = canvasSilentSend;
+                                    canvasSilentSend = false;
+                                    if (!_ppcSilent) addChatMessage(msg, 'user');
+                                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _ppcSilent });
+                                    if (_ppcStage !== 'greeting') _planChainFilePrediction(canvasChatHistory, msg);
+                                    chatTextarea.value = '';
+                                    chatTextarea.style.height = '40px';
+                                    _renderPlanChainQuestion(_ppcStage);
+                                    console.log('WML plan-chain: code-asked "' + _ppcStage + '" capture (no AI turn)');
+                                    return;
+                                }
+                                _planChainFilePrediction(canvasChatHistory, msg);
                             }
 
                             // v7.19.854: CLOSING CHAIN gate (mirrors primary pipeline) — code owns
@@ -24415,6 +24831,8 @@
             _migrateStep('migrateOverallFeedbackSection', migrateOverallFeedbackSection);
             _migrateStep('migrateExtractQuestionDivider', migrateExtractQuestionDivider);
             _migrateStep('migrateMissingPlans', migrateMissingPlans);
+            // v7.20.49: AQA P2 planning — Predictions section (S1d commits file here).
+            _migrateStep('ensurePredictionsSection', _ensurePredictionsSection);
             _migrateStep('migrateMissingOutlines', migrateMissingOutlines);
             _migrateStep('migrateOutlineCriteria', migrateOutlineCriteria);
             _migrateStep('migrateInputFields', migrateInputFields);
@@ -28869,6 +29287,19 @@
             sectionHTML('plan', `Plan: Conclusion${prefix}`, true, null, inputHTML('Call to action. Leave a lasting image.', 'iumvcc-conclusion'));
     }
 
+    // v7.20.49: AO3 comparative sub-essay plan (AQA Lang P2 Q4 = 16m). Neil's ruling
+    // 2026-07-12 (brief §11.2): brief intro + 3 comparative bodies + brief conclusion —
+    // bodies carry 15 of 16 marks; the 4-straight-paragraphs route is taught live only.
+    // fieldIds are qId-namespaced; the planning protocol's filing markers target exactly these.
+    function buildComparativePlanSection(qId) {
+        return sectionHTML('plan', `Plan: Introduction — ${qId}`, true, null,
+                inputHTML('Brief: name the two sources + your overall comparative line.', `plan-${qId}-intro`)) +
+            [1, 2, 3].map(i => sectionHTML('plan', `Plan: Comparative Body ${i} — ${qId}`, true, null,
+                inputHTML(`Aspect ${i}: A-concept, B-concept, integration + comparative judgement.`, `plan-${qId}-body-${i}`))).join('') +
+            sectionHTML('plan', `Plan: Conclusion — ${qId}`, true, null,
+                inputHTML('Brief: overall comparative judgement — which text does it more effectively, and why.', `plan-${qId}-conclusion`));
+    }
+
     /**
      * v7.15.35: 7-Element Scene Structure plan for fiction/creative writing.
      * Reuses the exact scene elements from Creative Writing Step 8 (Hook→Denouement).
@@ -30469,6 +30900,19 @@
     }
 
     /**
+     * v7.20.49: canonical subject → spec-key resolver. The bridge/router emits
+     * 'language_p1'/'language_p2', but legacy lessons still carry 'language1'/'language2'
+     * (and paper/dash forms) — an exact-key lookup silently misses those (slug-trace law).
+     * Mirrors the server normalisation (class-protocol-router.php L187-196). Non-language
+     * subjects pass through unchanged.
+     */
+    function _specSubjectKey() {
+        const s = String(state.subject || '').replace(/-/g, '_');
+        const m = /^lang(?:uage)?_?p?(?:aper_?)?([12])$/i.exec(s);
+        return m ? ('language_p' + m[1]) : s;
+    }
+
+    /**
      * Look up a question's spec from the language-paper-specs.json data.
      * Returns the question object { id, marks, type, aos, description, ... } or null.
      * v7.14.16
@@ -30476,7 +30920,7 @@
     function lookupQuestionSpec(questionId) {
         const specs = window.swmlLangSpecs || {};
         const board = (state.board || '').toLowerCase().replace(/-/g, '');
-        const subject = (state.subject || '').replace(/-/g, '_');
+        const subject = _specSubjectKey();
         const paper = specs[board]?.[subject];
         if (!paper?.sections) return null;
         for (const sec of paper.sections) {
@@ -30495,7 +30939,7 @@
     function buildSectionMap() {
         const specs = window.swmlLangSpecs || {};
         const board = (state.board || '').toLowerCase().replace(/-/g, '');
-        const subject = (state.subject || '').replace(/-/g, '_');
+        const subject = _specSubjectKey();
         const paper = specs[board]?.[subject];
         if (!paper?.sections) return null;
         const map = {};
@@ -30646,10 +31090,21 @@
                 if ((isCreativeWritingQ && isWritingQ) || _isLangP1Q5Creative) {
                     // Fiction Section B: 7-element scene structure (reused from CW Step 8)
                     html += buildCreativeScenePlan(qId);
-                } else if (isPersuasive) {
+                } else if (isPersuasive
+                    || ((state.board || '').toLowerCase() === 'aqa' && _isLangPaper2() && isWritingQ && !isCreativeWritingQ)) {
+                    // v7.20.49 (brief §11.3): AQA P2 Section B is transactional BY SPEC — route
+                    // it to IUMVCC even when the prompt text lacks a form-word trigger (a "Write
+                    // an essay giving your views…" prompt used to fall silently to the generic
+                    // essay plan, forking every iumvcc-* filing fieldId).
                     html += buildIUMVCCPlanSection(qId);
                 } else if (isWritingQ || qMarks >= 20) {
                     html += buildPlanSection(qId, qMarks);
+                } else if (qMarks >= 12 && qMarks < 20 && /AO3/i.test(String(q.aos || specQ?.aos || ''))) {
+                    // v7.20.49: AO3 comparative, sub-essay band (AQA P2 Q4 = 16m):
+                    // intro + 3 comparative bodies + conclusion. Capability gate, not name —
+                    // per-QUESTION AO truth only (q.aos authored, else spec); topicData.aos is
+                    // a topic-level default ('AO1,AO2,AO3') and would false-positive here.
+                    html += buildComparativePlanSection(qId);
                 } else {
                     // Analysis/evaluation/comparison: paragraph-based planning (1 para per ~4-5 marks)
                     const planParas = Math.max(1, Math.ceil(qMarks / 5));
@@ -30669,7 +31124,10 @@
                     html += buildCWPlotOutlineSection();
                 } else if (isCreativeWritingQ && isWritingQ) {
                     // Language fiction: Plan Scene Structure above is the outline. No second scaffold.
-                } else if (isPersuasive) {
+                } else if (isPersuasive
+                    || ((state.board || '').toLowerCase() === 'aqa' && _isLangPaper2() && isWritingQ && !isCreativeWritingQ)) {
+                    // v7.20.49: same AQA-P2-transactional guarantee as the plan branch above \u2014
+                    // plan and outline must route to the SAME family (key-match law).
                     html += dividerHTML(`OUTLINE \u2014 ${qId}`);
                     html += buildIUMVCCOutlineSection(qId);
                 } else {
@@ -35227,6 +35685,31 @@
      */
 
     /**
+     * v7.20.49: AQA Lang P2 planning — ensure the PREDICTIONS section exists at the top
+     * of the document (design brief D2). The S1d chain files the student's three
+     * prediction commits into these fields verbatim (pred-paper / pred-source-a /
+     * pred-source-b) — chips are redisplayed at the two revisits, never marked.
+     * Runs in the hydration-gated migration chain (doc-mutations-on-load law); the
+     * planning doc is a forward snapshot of the assessed doc, so injection here is the
+     * primary path — existing student docs never rebuild from the template.
+     */
+    function _ensurePredictionsSection() {
+        if (!canvasEditor || !_planPreChainActive()) return;
+        const html = canvasEditor.getHTML();
+        if (html.indexOf('pred-paper') !== -1) return; // already present
+        const block = dividerHTML('PREDICTIONS') +
+            sectionHTML('notes', 'Predictions: This Paper', true, null,
+                inputHTML('3 themes you expect this paper is about — committed before reading, never marked.', 'pred-paper')) +
+            sectionHTML('notes', 'Predictions: Source A', true, null,
+                inputHTML('3 predicted themes for Source A (from its title, author and date only).', 'pred-source-a')) +
+            sectionHTML('notes', 'Predictions: Source B', true, null,
+                inputHTML('3 predicted themes for Source B (from its title, author and date only).', 'pred-source-b'));
+        canvasEditor.commands.insertContentAt(0, block);
+        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        console.log('WML Migration: Predictions section injected (AQA P2 planning)');
+    }
+
+    /**
      * v7.14.69: Inject missing plan sections into multi-question documents.
      * Documents saved before v7.14.66 have question + response sections but no plan sections.
      * This detects the gap and injects plan sections (with InputFields) between
@@ -35279,10 +35762,16 @@
 
             // Build plan HTML
             let planHTML = dividerHTML(`PLAN \u2014 ${qId}`);
-            if (isPersuasive) {
+            if (isPersuasive
+                || ((state.board || '').toLowerCase() === 'aqa' && _isLangPaper2() && isWritingQ)) {
+                // v7.20.49: AQA P2 Section B = transactional by spec (see doc-builder gate).
                 planHTML += buildIUMVCCPlanSection(qId);
             } else if (isWritingQ || qMarks >= 20) {
                 planHTML += buildPlanSection(qId, qMarks);
+            } else if (qMarks >= 12 && qMarks < 20 && /AO3/i.test(specQ?.aos || qText)) {
+                // v7.20.49: mirror of the doc builder's AO3 comparative gate \u2014 the two plan
+                // producers must emit identical Q4 fieldIds (key-match law).
+                planHTML += buildComparativePlanSection(qId);
             } else {
                 const planParas = Math.max(1, Math.ceil(qMarks / 5));
                 for (let i = 1; i <= planParas; i++) {
