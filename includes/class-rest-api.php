@@ -2468,6 +2468,18 @@ class SWML_REST_API {
         // Client gates this behind a confirm modal; the seed persists under THIS
         // stage's key on the next autosave, and ⌘Z reverts. One hop only — no cascade.
         if (!empty($request->get_param('force_seed'))) {
+            // v7.20.74 (audit C1): the manual pull must respect the SAME freeze law as
+            // the auto engine — without this, a student could pull the polished draft
+            // OVER a marked reassessment and destroy their graded essay + feedback.
+            // Grades are never lost; documents must not be either.
+            $frozen_raw = get_user_meta($user_id, $meta_key, true);
+            if (!empty($frozen_raw) && $this->stage_is_frozen($user_id, $board, $text, $topic_number, $suffix, $attempt, $frozen_raw, $meta_key)) {
+                return rest_ensure_response([
+                    'success' => false,
+                    'frozen'  => true,
+                    'message' => 'This stage is already marked — pulling would overwrite your assessed work, so it is locked.',
+                ]);
+            }
             $up_doc = $this->previous_stage_doc($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
             if ($up_doc && !empty($up_doc['html'])) {
                 // Stamp the pull baseline so the "update available" dot clears
@@ -5086,7 +5098,16 @@ class SWML_REST_API {
      * no canvas and are deliberately absent.
      */
     private static function phase2_stage_order() {
-        return ['_planning', '_outlining', '_polishing', '_reassessment'];
+        // v7.20.74 (audit C2): DERIVED from stage_seed_chain() — the order was encoded
+        // three times (chain, here, frontend _PULL_STAGE_LABELS) while the chain's
+        // header comment claimed it was the only source. One slice, no drift:
+        // phase-2 pull stages = _planning.._reassessment (the _redraft discussion doc
+        // never pulls; phase 1 never shows the FAB).
+        $chain = self::stage_seed_chain();
+        $from = array_search('_planning', $chain, true);
+        $to   = array_search('_reassessment', $chain, true);
+        if ($from === false || $to === false || $to < $from) return ['_planning', '_outlining', '_polishing', '_reassessment'];
+        return array_slice($chain, $from, $to - $from + 1);
     }
 
     /**
@@ -5321,6 +5342,12 @@ class SWML_REST_API {
             return false;
         }
         $baseline = strcmp($stamp['pulled'], $stamp['dismissed']) >= 0 ? $stamp['pulled'] : $stamp['dismissed'];
+        // v7.20.74 (audit C9): compare as epochs, not raw strings — server stamps
+        // (current_time('c')) and client-written savedAt can differ in offset/precision
+        // formatting, and a lexical compare then misorders (dot never fires / fires forever).
+        $up_t = strtotime($up_saved);
+        $base_t = strtotime($baseline);
+        if ($up_t !== false && $base_t !== false) return $up_t > $base_t;
         return strcmp($up_saved, $baseline) > 0;
     }
 

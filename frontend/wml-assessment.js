@@ -34805,6 +34805,12 @@
                 // re-anchor on the fresh essay (no chat reset — keeps her progress).
                 if (sfx === '_reassessment') _essayRepulled = true;
                 if (typeof showToast === 'function') showToast(`Pulled in your latest ${labels.previous}.`);
+            } else if (res && res.frozen) {
+                // v7.20.74 (audit C1): server refused — this stage is marked; pulling
+                // would overwrite assessed work. Hide the FAB, tell the student why.
+                _updatePullDot(false);
+                try { const fab = document.querySelector('.swml-pull-fab'); if (fab) fab.remove(); } catch (_) {}
+                if (typeof showToast === 'function') showToast(res.message || 'This stage is already marked — pulling is locked to protect your assessed work.');
             } else {
                 if (typeof showToast === 'function') showToast(`Nothing to pull yet — your ${labels.previous} is empty.`);
             }
