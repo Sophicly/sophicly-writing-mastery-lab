@@ -615,7 +615,11 @@
         if (!container) return;
         container.style.display = '';
         const sig = JSON.stringify(sidebar.steps.map(s => [s.label, s.group || '']));
-        if (state._serverSidebarSig !== sig) {
+        // v7.20.52: ALSO re-render when the container is empty — state (and its sig)
+        // survives SPA navs / workspace remounts, but the container DOM does not. A
+        // sig-equal skip on a freshly remounted container revealed an EMPTY panel
+        // (Neil's clear-chat repro). The sig is also reset at both paint sites.
+        if (state._serverSidebarSig !== sig || !container.childElementCount) {
             container.innerHTML = '';
             _renderSidebarSteps(container, sidebar.steps, { alwaysGroup: true });
             state._serverSidebarSig = sig;
@@ -1543,6 +1547,24 @@
     // write path is identical. Does NOT save — the caller batches saveCanvasContent().
     // v7.20.49: matches inputField too (parity with _applyFieldValueSets) — plan sections are
     // inputField nodes, so @FIELD_COMMIT plan filings silently no-opped before this.
+    // v7.20.52 (Neil ruling): UNIVERSAL — every code autofill scrolls the document to
+    // the section it just filled ("show the filing happening", matching the feedback /
+    // FQ behaviour). Trailing-debounced so a multi-field reply scrolls ONCE, to the
+    // last field written. Loop-based attribute lookup (never CSS.escape — WML rule).
+    let _fieldFillScrollTimer = null;
+    function _scrollToFilledField(fid) {
+        if (!fid) return;
+        clearTimeout(_fieldFillScrollTimer);
+        _fieldFillScrollTimer = setTimeout(() => {
+            try {
+                const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
+                let f = null;
+                host.querySelectorAll('[data-field-id]').forEach(n => { if (!f && n.getAttribute('data-field-id') === fid) f = n; });
+                const sec = f && (f.closest('.swml-section-block') || f);
+                if (sec) _swmlScrollToTop(sec);
+            } catch (_) { /* non-fatal */ }
+        }, 400);
+    }
     function _writeOutlineRowField(fid, verbatim) {
         if (!canvasEditor || !fid || !verbatim) return false;
         let targetPos = null, targetNode = null;
@@ -1577,6 +1599,7 @@
             canvasEditor.commands.insertContentAt(to, content);
             console.log('WML FieldFill: appended', verbatim.length, 'chars →', fid, '(preserved prior content)');
         }
+        _scrollToFilledField(fid);   // v7.20.52: universal — show the filing happening
         return true;
     }
 
@@ -2627,19 +2650,11 @@
                 console.log('WML FieldSet: wrote', s.value.length, 'chars →', s.field);
                 if (targetKind === 'inputField') _autoFillRemember(s.field, s.value);
                 wrote = true;
+                // v7.20.52 (Neil): universal scroll-to-fill — debounced, last write wins.
+                // Supersedes the v7.19.839 action/analytics-only Action Plan scroll.
+                _scrollToFilledField(s.field);
             });
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
-            // v7.19.839: show the filing happening — scroll the doc to the Action Plan when
-            // the auto-file lands (Neil: it filled silently off-screen).
-            if (wrote && sets.some(s => /^(action|analytics)-/.test(s.field))) {
-                setTimeout(() => {
-                    try {
-                        const host = (canvasEditor.options && canvasEditor.options.element) || document;
-                        const sec = host.querySelector('.swml-section-block[data-section-label="Action Plan"]');
-                        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    } catch (_) {}
-                }, 400);
-            }
         } catch (e) {
             console.warn('WML FieldSet: error (non-fatal)', e && e.message);
         }
@@ -2692,7 +2707,11 @@
                 canvasEditor.commands.insertContentAt({ from: targetPos + 1, to: targetPos + targetNode.nodeSize - 1 }, { type: 'text', text: val });
                 wrote = true;
             });
-            if (wrote) { console.log('WML Spine: deterministic synthesis fill (6 beats)'); if (typeof saveCanvasContent === 'function') saveCanvasContent(); }
+            if (wrote) {
+                console.log('WML Spine: deterministic synthesis fill (6 beats)');
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                _scrollToFilledField('cw-step-4-beat1');   // v7.20.52: universal scroll-to-fill
+            }
         } catch (e) { console.warn('WML Spine: synthesis parse error (non-fatal)', e && e.message); }
     }
 
@@ -9294,6 +9313,10 @@
             // the step list scrolls within the sidebar column; the active step is
             // auto-scrolled into view on every server-sidebar advance.
             const protoSteps = el('div', { id: 'swml-progress-steps', style: { overflowY: 'auto', overflowX: 'hidden', flex: '1 1 auto', minHeight: '0' } });
+            // v7.20.52: fresh container → stale sig must die. state survives SPA navs;
+            // a sig-equal _applyServerSidebar skip against this empty container left the
+            // panel blank (pairs with the childElementCount guard there).
+            state._serverSidebarSig = '';
             // v7.18.25: universal step-array resolution. Drop the isExamPrep
             // gate (and the v7.18.24 mark_scheme_unit gate) — getSteps() is now
             // ALWAYS consulted when the manifest doesn't provide an explicit
@@ -9335,6 +9358,13 @@
                 // let _refreshLangSidebar reveal+paint the granular once the doc settles (10880),
                 // exactly like the Language/server-sidebar path — no generic flash (Neil).
                 protoSteps.style.display = 'none';   // hide until the granular model paints
+                // v7.20.52: planning — seed the task's generic list BENEATH the hidden panel
+                // so a fail-safe reveal can never expose an empty panel (it stays invisible
+                // unless the granular model never builds; the granular replaces it via the
+                // retry ladder in _refreshPlanningSidebar).
+                if (_planExpected && _gs && _gs.length) {
+                    _renderSidebarSteps(protoSteps, _gs.map((s, i) => ({ step: i + 1, label: s.label, group: s.group, display: s.display })));
+                }
             } else {
                 // v7.19.998: preserve `group` (+ `display`) — this FIRST-PAINT map was
                 // dropping the group field getSteps() computes for staged FQ, so the
@@ -9361,6 +9391,10 @@
             // sidebar from the marks present — handles async doc load + re-entry.
             // v7.19.698: also for lit assessments (refresh falls through to the lit model).
             if (_langExpected || _litAssess) setTimeout(_refreshLangSidebar, 0);
+            // v7.20.52: planning joins the paint-site schedule (was migrate-chain-only —
+            // a missed/early one-shot left the hidden panel unrevealed). The refresh
+            // itself retries until the doc settles.
+            if (_planExpected) setTimeout(_refreshPlanningSidebar, 0);
             protoBody.appendChild(protoSteps);
         }
 
@@ -10491,6 +10525,12 @@
             const bubble = chatMessages.lastElementChild;
             const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
             if (!bc) return;
+            _appendPlanChainActions(stage, bc);
+        }
+        // v7.20.52: chain quick-actions extracted from _renderPlanChainQuestion — they
+        // are DOM-only (never persisted), so a refresh mid-chain replayed the question
+        // text WITHOUT its buttons (Neil). Shared by the live render + the resume hook.
+        function _appendPlanChainActions(stage, bc) {
             const bar = el('div', { className: 'swml-quick-actions' });
             const sendVal = (v) => { bar.remove(); chatTextarea.value = v; sendCanvasMessageQueued(); };
             if (stage === 'greeting') {
@@ -10523,6 +10563,27 @@
             }
             if (bar.childNodes.length) bc.appendChild(bar);
         }
+        // v7.20.52: resume hook — after a chat replay, re-append the buttons of the
+        // pending (asked, unanswered) capture. _planPreChainStageFor returns the NEXT
+        // question to render, so the pending one is its predecessor; predict stages are
+        // free-typed (no buttons). Idempotent: skips if a quick-action bar already
+        // exists on the last bubble (live render, or the generic option auto-detector).
+        function _resumePlanChainActions() {
+            try {
+                if (!_planPreChainActive()) return;
+                const next = _planPreChainStageFor(canvasChatHistory);
+                const pending = { headline: 'greeting', planmode: 'headline', predQ: 'planmode' }[next];
+                if (!pending) return;
+                let last = null;
+                for (let i = canvasChatHistory.length - 1; i >= 0; i--) { if (!canvasChatHistory[i].hidden) { last = canvasChatHistory[i]; break; } }
+                if (!last || last.role !== 'assistant') return; // answered-but-unrendered: next send recovers
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                _appendPlanChainActions(pending, bc);
+                console.log('WML plan-chain: restored "' + pending + '" quick-actions after replay');
+            } catch (e) { console.warn('WML plan-chain: action resume failed (non-fatal)', e && e.message); }
+        }
 
         // v7.20.49: register this pipeline's sender for module-scope components (the
         // device-card menu). SILENT send: the template rides to the AI as context —
@@ -10534,6 +10595,8 @@
         };
         // v7.20.50: history getter for the granular planning sidebar (chain-stage rows).
         window.__swmlCanvasChatHistory = () => canvasChatHistory;
+        // v7.20.52: resume hook for the restore blocks (they live outside this closure).
+        window.__swmlPlanChainResume = _resumePlanChainActions;
 
         // sendCanvasMessage — AI Engine chat
         async function sendCanvasMessage() {
@@ -17740,6 +17803,12 @@
                         // next unfilled / gap boxes / Revisit). Never saved to history, so re-render.
                         setTimeout(() => { _litCnReentryCard(tp); }, 400);
                     }
+                    // v7.20.52: plan-chain quick-actions are DOM-only — re-append the pending
+                    // capture's buttons after replay (registered inside the pipeline closure;
+                    // same never-saved pattern as the poetry opener / lit-CN card above).
+                    if (_planPreChainActive()) {
+                        setTimeout(() => { try { if (window.__swmlPlanChainResume) window.__swmlPlanChainResume(); } catch (_) {} }, 400);
+                    }
 
                     // v7.17.59: Hoisted greeting regen + grade buttons UP — was
                     // post-await (3-5s gap during which the un-styled bubble was
@@ -18911,6 +18980,9 @@
             // the step list scrolls within the sidebar column; the active step is
             // auto-scrolled into view on every server-sidebar advance.
             const protoSteps = el('div', { id: 'swml-progress-steps', style: { overflowY: 'auto', overflowX: 'hidden', flex: '1 1 auto', minHeight: '0' } });
+                            // v7.20.52: fresh container → stale sig must die (twin of the
+                            // primary paint site — see there).
+                            state._serverSidebarSig = '';
                             // v7.13.97: Use task-specific steps for exam prep, manifest sidebarSteps for assessment, fallback to defaults
                             // v7.19.625/626: multi-question Language papers (non-P2) → per-question granular
                             // sidebar; hide until it paints (no generic flat-8 flash) when the doc is still loading.
@@ -18930,6 +19002,12 @@
                                 // server sidebar, OR a Literature assessment whose model is still
                                 // building. _refreshLangSidebar reveals+paints it once ready (12936).
                                 protoSteps.style.display = 'none';
+                                // v7.20.52: planning — seed generic beneath the hidden panel
+                                // (twin of the primary paint site; never reveal an empty panel).
+                                if (_planPreChainActive() && typeof getSteps === 'function') {
+                                    const _pgs = getSteps() || [];
+                                    if (_pgs.length) _renderSidebarSteps(protoSteps, _pgs.map((s, i) => ({ step: i + 1, label: s.label, group: s.group, display: s.display })));
+                                }
                             } else {
                                 const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
                                     { step: 1, label: 'Setup & Details' },
@@ -18945,6 +19023,8 @@
                             }
                             protoBody.appendChild(protoSteps);
                             if (_langExpected2 || _litAssess2) setTimeout(_refreshLangSidebar, 0);
+                            // v7.20.52: planning paint-site schedule (twin — see primary site).
+                            if (_planPreChainActive()) setTimeout(_refreshPlanningSidebar, 0);
                         }
 
                         // Bottom buttons — matching original sidebar, with icon+text for collapsed mode
@@ -19672,6 +19752,11 @@
                             const bubble = chatMessages.lastElementChild;
                             const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
                             if (!bc) return;
+                            _appendPlanChainActions(stage, bc);
+                        }
+                        // v7.20.52: chain quick-actions extracted (twin of the primary
+                        // pipeline — DOM-only buttons, re-appended on replay resume).
+                        function _appendPlanChainActions(stage, bc) {
                             const bar = el('div', { className: 'swml-quick-actions' });
                             const sendVal = (v) => { bar.remove(); chatTextarea.value = v; sendCanvasMessage(); };
                             if (stage === 'greeting') {
@@ -19702,6 +19787,23 @@
                             }
                             if (bar.childNodes.length) bc.appendChild(bar);
                         }
+                        // v7.20.52: resume hook (twin — see primary pipeline for the law).
+                        function _resumePlanChainActions() {
+                            try {
+                                if (!_planPreChainActive()) return;
+                                const next = _planPreChainStageFor(canvasChatHistory);
+                                const pending = { headline: 'greeting', planmode: 'headline', predQ: 'planmode' }[next];
+                                if (!pending) return;
+                                let last = null;
+                                for (let i = canvasChatHistory.length - 1; i >= 0; i--) { if (!canvasChatHistory[i].hidden) { last = canvasChatHistory[i]; break; } }
+                                if (!last || last.role !== 'assistant') return;
+                                const bubble = chatMessages.lastElementChild;
+                                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                                _appendPlanChainActions(pending, bc);
+                                console.log('WML plan-chain: restored "' + pending + '" quick-actions after replay');
+                            } catch (e) { console.warn('WML plan-chain: action resume failed (non-fatal)', e && e.message); }
+                        }
 
                         // v7.20.49: register this pipeline's sender for module-scope
                         // components (device-card menu) — mirrors the primary pipeline.
@@ -19712,6 +19814,8 @@
                         };
                         // v7.20.50: history getter for the granular planning sidebar.
                         window.__swmlCanvasChatHistory = () => canvasChatHistory;
+                        // v7.20.52: resume hook for the restore blocks (twin registration).
+                        window.__swmlPlanChainResume = _resumePlanChainActions;
 
                         async function sendCanvasMessage() {
                             // v7.19.995: free-typed turn on an active poetry-CN poem still persists
@@ -20323,6 +20427,12 @@
                                                 canvasChatHistory.push(msg);
                                             });
                                             if (savedChat.chatId) canvasChatId = savedChat.chatId;
+
+                                            // v7.20.52: re-append the pending plan-chain capture's
+                                            // buttons after replay (DOM-only — twin of pipeline 1).
+                                            if (_planPreChainActive()) {
+                                                setTimeout(() => { try { _resumePlanChainActions(); } catch (_) {} }, 400);
+                                            }
 
                                             // ── Unified assessment state init (v7.12.32) ──
                                             // Await init so sidebar updates before user sees the UI
@@ -35861,9 +35971,14 @@
                         : order.indexOf(stage);
                 }
             } catch (_) { /* field fallback stands */ }
-            add('Grade goal', 'Setup', stageIdx >= 1);
-            add('Headline goal', 'Setup', stageIdx >= 2);
-            add('Plan mode', 'Setup', stageIdx >= 3);
+            // v7.20.52: a row is done when its capture is ANSWERED, not merely asked.
+            // stageIdx = index of the NEXT question to render (the chain renders question
+            // N+1 synchronously on N's answer), so "grade answered" ⟺ headline asked
+            // (stageIdx ≥ 2), etc. The old ≥1/≥2/≥3 ticked each row one turn early
+            // (Neil's screenshot: "Grade goal ✓" while the grade question sat unanswered).
+            add('Grade goal', 'Setup', stageIdx >= 2);
+            add('Headline goal', 'Setup', stageIdx >= 3);
+            add('Plan mode', 'Setup', stageIdx >= 4);
             add('Predictions', 'Setup', predsFiled);
         }
         planSecs.forEach(sec => {
@@ -35878,14 +35993,24 @@
         for (let i = 0; i < steps.length; i++) { if (!steps[i]._done) { current = i + 1; break; } }
         return { steps: steps, current: current };
     }
-    function _refreshPlanningSidebar() {
+    // v7.20.52: the model is TRANSIENTLY null while the editor/doc mounts (async) — a
+    // one-shot refresh raced that window, the fail-safe revealed a never-painted panel,
+    // and nothing retried (Neil's clear-chat repro: heading with nothing under it).
+    // Retry until the doc settles; reveal the (now generic-seeded) panel only as the
+    // final fail-safe. External calls reset the ladder; only self-retries continue it.
+    let _planSidebarTries = 0;
+    function _refreshPlanningSidebar(isRetry) {
         try {
+            if (isRetry !== true) _planSidebarTries = 0;
             const model = _buildPlanningSidebarModel();
-            if (model && typeof _applyServerSidebar === 'function') { _applyServerSidebar(model); return; }
-            // Fail-safe (no-flash rule pairs with this): first paint HIDES the panel when
-            // a granular planning model is expected — never leave it hidden if the model
-            // can't build (doc without plan sections, stale editor ref).
+            if (model && typeof _applyServerSidebar === 'function') { _planSidebarTries = 0; _applyServerSidebar(model); return; }
             if (_planPreChainActive()) {
+                if (_planSidebarTries < 12) {
+                    _planSidebarTries++;
+                    setTimeout(() => _refreshPlanningSidebar(true), 350);
+                    return;
+                }
+                console.warn('WML planning sidebar: granular model never built after retries — revealing fallback list');
                 const c = document.getElementById('swml-progress-steps');
                 if (c && c.style.display === 'none') c.style.display = '';
             }
