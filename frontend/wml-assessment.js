@@ -16949,75 +16949,57 @@
                 tmp.querySelectorAll('script, style').forEach(n => n.remove());
                 tmp.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
                 tmp.querySelectorAll('select, textarea, input, button').forEach(n => { n.disabled = true; });
-                // v7.20.60 (Neil round 2): the pad imposes ONE universal structure —
-                // Source Material → Question 1..N (each question's statements, plans,
-                // response and feedback together) → Results & Feedback — instead of raw
-                // doc order (which interleaved "Q2 Response" with the next "Q3" heading).
-                // The chip strip is gone: a single STICKY "Jump to…" dropdown navigates
-                // (Neil: too many buttons up top). Doc dividers are dropped — the pad's
-                // own group headers replace them. All sections start collapsed (TOC read).
+                // v7.20.63 (Neil round 3 — REVERSES the .60 re-bucketing): the pad keeps
+                // the DOCUMENT'S OWN structure — sections in doc order, grouped under the
+                // doc's own DIVIDERS ("Section A: Reading", "Plan — Q2", "Feedback",
+                // "Results"…). Neil: filing Q1's feedback under a synthetic "Question 1"
+                // group read as a different document; the doc's structure IS the truth.
+                // Universal by construction — whatever a paper's dividers say, the pad
+                // mirrors. Dividers render as pad group headers (+ dropdown optgroups);
+                // sections collapse (all collapsed = TOC read); sticky Jump dropdown stays.
                 const padItems = [];
-                const loose = [];   // unlabelled leading nodes (cover/title) keep their spot
-                const buckets = { src: [], q: {}, rest: [] };
-                const qNums = [];
-                Array.from(tmp.children).forEach(child => {
-                    const isSec = child.classList && child.classList.contains('swml-section-block') && child.getAttribute('data-section-label');
-                    const secType = (child.getAttribute && child.getAttribute('data-section-type')) || '';
-                    if (secType === 'divider') return; // pad group headers replace doc dividers
-                    if (!isSec) { loose.push(child); return; }
-                    child.classList.remove('swml-fb-collapsed', 'swml-task-locked'); // pad is a reading surface
-                    const label = child.getAttribute('data-section-label');
-                    const qm = /\bQ(?:uestion\s*)?(\d+)\b/i.exec(label);
-                    if (secType === 'source' || secType === 'preamble' || (!qm && /source/i.test(label))) {
-                        buckets.src.push({ child, label });
-                    } else if (qm) {
-                        const n = parseInt(qm[1], 10);
-                        if (!buckets.q[n]) { buckets.q[n] = []; qNums.push(n); }
-                        // Within its question group the Q-tag is redundant — strip it.
-                        let short = label.replace(/\s*—\s*Q\d+\s*$/i, '').replace(new RegExp('^Q(?:uestion\\s*)?' + n + '\\s*[:.]?\\s*', 'i'), '').trim();
-                        if (!short) short = 'Question';
-                        buckets.q[n].push({ child, label: short });
-                    } else {
-                        buckets.rest.push({ child, label });
-                    }
-                });
                 const esc = (s) => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
                 const jumpSelect = el('select', { className: 'swml-prior-jump' });
                 jumpSelect.appendChild(el('option', { value: '', textContent: 'Jump to section…' }));
-                const mkItem = (entry, group) => {
+                let curOg = null; // optgroup for the doc's current divider group
+                const ensureOg = () => {
+                    if (!curOg) { curOg = el('optgroup'); curOg.label = 'Sections'; jumpSelect.appendChild(curOg); }
+                    return curOg;
+                };
+                Array.from(tmp.children).forEach(child => {
+                    const secType = (child.getAttribute && child.getAttribute('data-section-type')) || '';
+                    const label = (child.getAttribute && child.getAttribute('data-section-label')) || '';
+                    if (secType === 'divider') {
+                        // The doc's divider becomes the pad's group header. Stored dividers
+                        // can lose their label attr (known divider-label reload quirk) —
+                        // fall back to their text; skip the header entirely when blank.
+                        const t = (label || (child.textContent || '')).replace(/\s+/g, ' ').trim();
+                        if (t) {
+                            body.appendChild(el('div', { className: 'swml-prior-padgroup', textContent: t }));
+                            curOg = el('optgroup');
+                            curOg.label = t;
+                            jumpSelect.appendChild(curOg);
+                        }
+                        return;
+                    }
+                    const isSec = child.classList && child.classList.contains('swml-section-block') && label;
+                    if (!isSec) { body.appendChild(child); return; } // cover/title/loose nodes keep their spot
+                    child.classList.remove('swml-fb-collapsed', 'swml-task-locked'); // pad is a reading surface
                     const item = el('div', { className: 'swml-notes-item swml-notes-collapsed' });
                     const head = el('button', { className: 'swml-notes-item-head', type: 'button' });
-                    head.innerHTML = '<span class="swml-notes-item-chev"></span> ' + esc(entry.label);
+                    head.innerHTML = '<span class="swml-notes-item-chev"></span> ' + esc(label);
                     const bodyWrap = el('div', { className: 'swml-notes-item-body' });
-                    bodyWrap.appendChild(entry.child);
+                    bodyWrap.appendChild(child);
                     head.addEventListener('click', () => item.classList.toggle('swml-notes-collapsed'));
                     item.appendChild(head);
                     item.appendChild(bodyWrap);
                     body.appendChild(item);
                     padItems.push(item);
-                    const opt = el('option', { textContent: entry.label });
+                    const opt = el('option', { textContent: label });
                     opt._swmlItem = item;
                     opt.value = String(padItems.length);
-                    group.appendChild(opt);
-                };
-                const mkGroup = (title, entries) => {
-                    if (!entries.length) return;
-                    if (title) body.appendChild(el('div', { className: 'swml-prior-padgroup', textContent: title }));
-                    const og = el('optgroup');
-                    og.label = title || 'Sections';
-                    entries.forEach(en => mkItem(en, og));
-                    jumpSelect.appendChild(og);
-                };
-                loose.forEach(n => body.appendChild(n));
-                mkGroup('Source Material', buckets.src);
-                qNums.sort((a, b) => a - b).forEach(n => mkGroup('Question ' + n, buckets.q[n]));
-                // UNIVERSAL BY CONSTRUCTION: buckets derive from data-section-type + a
-                // Q-number regex on labels — any paper shapes itself (Edexcel IGCSE's 6
-                // questions, Eduqas components). Docs with NO question numbers (Conceptual
-                // Notes, lit essays) collapse to a flat ungrouped list — "Results &
-                // Feedback" would be a mislabel there, so the header only renders when
-                // question groups exist.
-                mkGroup(qNums.length ? 'Results & Feedback' : '', buckets.rest);
+                    ensureOg().appendChild(opt);
+                });
                 if (padItems.length) {
                     const jumpBar = el('div', { className: 'swml-prior-jumpbar' });
                     jumpSelect.addEventListener('change', () => {
