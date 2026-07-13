@@ -17002,16 +17002,22 @@
                 };
                 const mkGroup = (title, entries) => {
                     if (!entries.length) return;
-                    body.appendChild(el('div', { className: 'swml-prior-padgroup', textContent: title }));
+                    if (title) body.appendChild(el('div', { className: 'swml-prior-padgroup', textContent: title }));
                     const og = el('optgroup');
-                    og.label = title;
+                    og.label = title || 'Sections';
                     entries.forEach(en => mkItem(en, og));
                     jumpSelect.appendChild(og);
                 };
                 loose.forEach(n => body.appendChild(n));
                 mkGroup('Source Material', buckets.src);
                 qNums.sort((a, b) => a - b).forEach(n => mkGroup('Question ' + n, buckets.q[n]));
-                mkGroup('Results & Feedback', buckets.rest);
+                // UNIVERSAL BY CONSTRUCTION: buckets derive from data-section-type + a
+                // Q-number regex on labels — any paper shapes itself (Edexcel IGCSE's 6
+                // questions, Eduqas components). Docs with NO question numbers (Conceptual
+                // Notes, lit essays) collapse to a flat ungrouped list — "Results &
+                // Feedback" would be a mislabel there, so the header only renders when
+                // question groups exist.
+                mkGroup(qNums.length ? 'Results & Feedback' : '', buckets.rest);
                 if (padItems.length) {
                     const jumpBar = el('div', { className: 'swml-prior-jumpbar' });
                     jumpSelect.addEventListener('change', () => {
