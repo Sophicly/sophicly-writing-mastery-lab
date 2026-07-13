@@ -14795,6 +14795,12 @@
                 // from the active-section detection (breadcrumb landed on the wrong section). Now
                 // CONTENT-driven, not phase-gated: hide a results section only while it's still an
                 // empty placeholder (the blank write phase); once populated it's navigable. Universal.
+                // v7.20.73 (Neil): on PRE-ASSESSMENT lessons (write, planning, outlining,
+                // polishing) the feedback/results family is NEVER navigable — populated or
+                // not (planning docs inherit Phase-1 marks via the seed; students must not
+                // see them until the assessment / discuss-feedback lessons).
+                if (['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)
+                    && ['', 'planning', 'outlining', 'polishing'].includes(state.task)) return false;
                 if (canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) {
                     // v7.19.762: read the PM node's text directly (node.textContent) — _siNodeDom(pos)
                     // returned null at build time for some sections, wrongly treating populated
@@ -15365,6 +15371,12 @@
                     // only while they're still empty placeholders, not for the whole diagnostic
                     // phase — a COMPLETED assessment keeps the 'swml-canvas-diagnostic' class, so the
                     // old type-only guard left its populated results out of the outline forever.
+                    // v7.20.73 (Neil): pre-assessment lessons never list the results family
+                    // (mirrors the scroll-island guard) — populated or not; the RESULTS/
+                    // FEEDBACK dividers hide with them so no empty group headers remain.
+                    const _preAssess = ['', 'planning', 'outlining', 'polishing'].includes(state.task);
+                    if (_preAssess && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) return false;
+                    if (_preAssess && type === 'divider' && /feedback|results/i.test(node.attrs.label || '')) return false;
                     if (type !== 'divider' && canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) {
                         const _t = (node.textContent || '').replace(/\s+/g, ' ').trim();
                         const _placeholder = !_t || /will appear|will be assessed|appear here|once your assessment|not yet/i.test(_t);
@@ -15560,7 +15572,12 @@
                     }
                     if (domSection) {
                         const indicator = getSectionIndicator(s);
-                        domSection.setAttribute('data-section-complete', indicator ? 'true' : 'false');
+                        // v7.20.73: IDEMPOTENT (PM law rule 4) — this unconditional write fired a
+                        // same-value MutationRecord per section per pass; on docs whose NodeView
+                        // firewall doesn't cover it, PM's DOMObserver flushed → NodeView rebuild →
+                        // _fillCtl → the "ctlrows" fill storm Neil's console caught (R&J planning).
+                        const _compVal = indicator ? 'true' : 'false';
+                        if (domSection.getAttribute('data-section-complete') !== _compVal) domSection.setAttribute('data-section-complete', _compVal);
                         // v7.19.219: Mastery Codex — stamp computed section number on
                         // DOM as data-codex-num. CSS reads via attr() in ::before, bypassing
                         // unreliable CSS counter behaviour in TipTap nodeView rendering.
@@ -15573,7 +15590,7 @@
                         const _num = sectionNumbers[i] || '';
                         const _numAttr = _num ? _num + '. ' : '';
                         if (domSection.getAttribute('data-section-num') !== _numAttr) domSection.setAttribute('data-section-num', _numAttr);
-                        if (_isCodexNumbering) {
+                        if (_isCodexNumbering && domSection.getAttribute('data-codex-num') !== _numAttr) {
                             domSection.setAttribute('data-codex-num', _numAttr);
                         }
                     }
@@ -36668,6 +36685,20 @@
         }
         const html = canvasEditor.getHTML();
         if (html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1) return; // already present
+        const composed = _composePrewriteBlock(planning, litWrite);
+        canvasEditor.commands.insertContentAt(_prewriteInsertPos(composed.isKw), composed.block);
+        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        console.log('WML Migration: ' + (composed.isKw ? 'Keywords-focus' : 'Predictions') + ' section injected (' + (planning ? 'AQA P2 planning' : 'phase-1 write ' + (state.board || '') + '/' + (state.subject || '')) + ')');
+    }
+
+    /**
+     * v7.20.73: ONE composer for the pre-write thinking block (extracted from
+     * _ensurePredictionsSection so the carry-heal can SYNTHESIZE the space when the
+     * upstream diagnostic was never opened — Neil: the space must exist on every
+     * chain lesson, carried WITH content when upstream has it, fresh when not).
+     * Returns { block, isKw }.
+     */
+    function _composePrewriteBlock(planning, litWrite) {
         let block;
         // Copy derives from protocol B.2A (keywords + specific aspect) — protocol law:
         // student-facing method statements mirror what we teach, never invented.
@@ -36718,26 +36749,29 @@
                         'pred-source-' + String.fromCharCode(97 + i)));
             });
         }
-        // v7.20.70 (Neil): on LIT write docs the keywords box sits AFTER the Question &
-        // Extract section — the question IS what the keywords dissect. Language papers
-        // keep predictions at the top (committed before reading the sources). Fallback 0.
-        let insertAt = 0;
-        if (litWrite) {
-            try {
-                canvasEditor.state.doc.descendants((node, pos) => {
-                    if (insertAt) return false;
-                    if (node.type.name === 'sectionBlock' && node.attrs
-                        && (node.attrs.sectionType === 'question' || /question\s*&?\s*extract/i.test(node.attrs.label || ''))) {
-                        insertAt = pos + node.nodeSize;
-                        return false;
-                    }
-                    return true;
-                });
-            } catch (_) { insertAt = 0; }
-        }
-        canvasEditor.commands.insertContentAt(insertAt, block);
-        if (typeof saveCanvasContent === 'function') saveCanvasContent();
-        console.log('WML Migration: ' + (litWrite ? 'Keywords-focus' : 'Predictions') + ' section injected (' + (planning ? 'AQA P2 planning' : 'phase-1 write ' + (state.board || '') + '/' + (state.subject || '')) + ')');
+        return { block: block, isKw: block.indexOf('kw-focus') !== -1 };
+    }
+
+    /**
+     * v7.20.73: ONE placement rule (Neil rounds 5–6). A KEYWORDS-carrying block sits
+     * AFTER the material it dissects — after the LAST source section when the doc has
+     * extracts (IGCSE Spec A: "under the second extract, before the student answers
+     * anything"), else after the Question & Extract section (lit). Pure predictions
+     * (AQA-style language papers) stay at the TOP (committed before reading).
+     * The v7.20.70 first-question lookup landed the IGCSE block under Q1 — wrong.
+     */
+    function _prewriteInsertPos(isKwBlock) {
+        if (!isKwBlock || !canvasEditor) return 0;
+        let lastSourceEnd = 0, questionEnd = 0;
+        try {
+            canvasEditor.state.doc.descendants((node, pos) => {
+                if (node.type.name !== 'sectionBlock' || !node.attrs) return true;
+                if (node.attrs.sectionType === 'source') lastSourceEnd = pos + node.nodeSize;
+                else if (!questionEnd && (node.attrs.sectionType === 'question' || /question\s*&?\s*extract/i.test(node.attrs.label || ''))) questionEnd = pos + node.nodeSize;
+                return true;
+            });
+        } catch (_) { return 0; }
+        return lastSourceEnd || questionEnd || 0;
     }
 
     /**
@@ -36763,47 +36797,49 @@
             if (CARRY_TASKS.indexOf(state.task) === -1 || state.reviewMode) return;
             const html = canvasEditor.getHTML();
             if (html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1 || html.indexOf('pred-unseen') !== -1) return;
-            const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=&attempt=${state.attempt || 1}`;
-            const res = await apiGet(url);
-            const upstream = (res && res.doc && res.doc.html) ? res.doc.html : '';
-            if (!upstream || (upstream.indexOf('data-field-id="pred-') === -1 && upstream.indexOf('kw-focus') === -1)) return;
-            const tmp = document.createElement('div');
-            tmp.innerHTML = upstream;
-            const parts = [];
-            let capture = false;
-            Array.from(tmp.children).forEach((child) => {
-                if (!child.getAttribute) return;
-                const t = child.getAttribute('data-section-type') || '';
-                if (t === 'divider') {
-                    // divider label attr can die on reload (known quirk) — fall back to text
-                    const lbl = (child.getAttribute('data-section-label') || child.textContent || '').trim();
-                    capture = /^(PREDICTIONS|QUESTION FOCUS)$/i.test(lbl);
-                    if (capture) parts.push(child.outerHTML);
-                    return;
-                }
-                if (capture) {
-                    if (child.querySelector('[data-field-id^="pred-"], [data-field-id="kw-focus"]')) parts.push(child.outerHTML);
-                    else capture = false;
-                }
-            });
-            if (!parts.length) return;
-            // Mirror the injection's placement rule: a keywords block (lit) sits AFTER
-            // the Question & Extract section; predictions (language) sit at the top.
-            let healAt = 0;
-            if (parts.join('').indexOf('kw-focus') !== -1) {
-                try {
-                    canvasEditor.state.doc.descendants((node, pos) => {
-                        if (healAt) return false;
-                        if (node.type.name === 'sectionBlock' && node.attrs
-                            && (node.attrs.sectionType === 'question' || /question\s*&?\s*extract/i.test(node.attrs.label || ''))) {
-                            healAt = pos + node.nodeSize;
-                            return false;
-                        }
-                        return true;
-                    });
-                } catch (_) { healAt = 0; }
+            const _extractParts = (upstreamHtml) => {
+                if (!upstreamHtml || (upstreamHtml.indexOf('data-field-id="pred-') === -1 && upstreamHtml.indexOf('kw-focus') === -1)) return [];
+                const tmp = document.createElement('div');
+                tmp.innerHTML = upstreamHtml;
+                const out = [];
+                let capture = false;
+                Array.from(tmp.children).forEach((child) => {
+                    if (!child.getAttribute) return;
+                    const t = child.getAttribute('data-section-type') || '';
+                    if (t === 'divider') {
+                        // divider label attr can die on reload (known quirk) — fall back to text
+                        const lbl = (child.getAttribute('data-section-label') || child.textContent || '').trim();
+                        capture = /^(PREDICTIONS|QUESTION FOCUS)$/i.test(lbl);
+                        if (capture) out.push(child.outerHTML);
+                        return;
+                    }
+                    if (capture) {
+                        if (child.querySelector('[data-field-id^="pred-"], [data-field-id="kw-focus"]')) out.push(child.outerHTML);
+                        else capture = false;
+                    }
+                });
+                return out;
+            };
+            const _fetchUpstream = async (attemptN) => {
+                const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=&attempt=${attemptN}`;
+                const res = await apiGet(url);
+                return (res && res.doc && res.doc.html) ? res.doc.html : '';
+            };
+            // v7.20.73: ATTEMPT FALLBACK + SYNTHESIS (Neil's R&J appear/disappear repro —
+            // the attempt-drift class). The attempt can re-resolve mid-load (1 → 2), and a
+            // later attempt's diagnostic may never have been opened: try the CURRENT
+            // attempt, fall back to attempt 1, and when NO upstream block exists at all,
+            // SYNTHESIZE the empty space from the doc itself (_composePrewriteBlock) —
+            // the space must exist on every chain lesson.
+            let parts = _extractParts(await _fetchUpstream(state.attempt || 1));
+            if (!parts.length && (state.attempt || 1) > 1) parts = _extractParts(await _fetchUpstream(1));
+            if (!parts.length) {
+                const composed = _composePrewriteBlock(false, !_isAnyLanguagePaper());
+                if (composed && composed.block) parts = [composed.block];
             }
-            canvasEditor.commands.insertContentAt(healAt, parts.join(''));
+            if (!parts.length) return;
+            // ONE placement rule shared with the injection (v7.20.73).
+            canvasEditor.commands.insertContentAt(_prewriteInsertPos(parts.join('').indexOf('kw-focus') !== -1), parts.join(''));
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
             // v7.20.68: this insert lands ASYNC (after apiGet) — every consumer that
             // captured PM positions or section lists at load is now stale by the block
