@@ -36962,7 +36962,10 @@
                 const id = el.getAttribute('data-field-id') || '';
                 if (!/^pred-|^kw-focus$/.test(id)) return;
                 const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
-                if (t) upFields[id] = t;
+                // v7.20.81: keep the ELEMENT too — the write rebuilds the field's inline
+                // content (text + hard breaks) from it, so multi-line keywords survive
+                // instead of squashing into one run ("focus test 3focus test 4").
+                if (t) upFields[id] = { text: t, el: el };
             });
             if (!Object.keys(upFields).length) return;
             let synced = 0;
@@ -36977,16 +36980,55 @@
                 });
                 if (targetPos === null || !targetNode) return;
                 const cur = (targetNode.textContent || '').replace(/\s+/g, ' ').trim();
-                if (cur === upFields[fid]) return; // already mirrored — idempotent
+                if (cur === upFields[fid].text) return; // already mirrored — idempotent
                 try {
                     canvasEditor.chain().command(({ tr, state: pmState }) => {
-                        const para = pmState.schema.nodes.paragraph.createChecked(null, pmState.schema.text(upFields[fid]));
-                        tr.replaceWith(targetPos + 1, targetPos + targetNode.nodeSize - 1, para);
+                        // v7.20.81 ROOT of the "leaks outside the box, reseeds every refresh"
+                        // repro: inputField content = inline* — a PARAGRAPH cannot sit inside
+                        // it, so PM's fitter "repaired" the old paragraph write by SPLITTING
+                        // the field and dropping the text OUTSIDE it. The box stayed empty,
+                        // the cur!==up check re-fired every load (twice: mount + settled
+                        // pass), and the leak accumulated one copy per pass. Write INLINE
+                        // content only — text + hard breaks, rebuilt from the head field.
+                        const _hb = pmState.schema.nodes.hardBreak;
+                        const _inline = [];
+                        const _kids = Array.from(upFields[fid].el.childNodes);
+                        _kids.forEach((n, i) => {
+                            if (n.nodeName === 'BR') { if (_hb) _inline.push(_hb.create()); return; }
+                            const t = n.textContent || '';
+                            if (t) _inline.push(pmState.schema.text(t));
+                            const isBlock = n.nodeType === 1 && /^(P|DIV)$/.test(n.nodeName);
+                            if (isBlock && _hb && i < _kids.length - 1) _inline.push(_hb.create());
+                        });
+                        if (!_inline.length) return false;
+                        tr.replaceWith(targetPos + 1, targetPos + targetNode.nodeSize - 1, _inline);
                         return true;
                     }).run();
                     synced++;
                 } catch (e2) { console.warn('WML chain: field mirror failed', fid, e2 && e2.message); }
             });
+            // v7.20.81 self-clean: the pre-fix leak stamped copies of the field text as
+            // loose DOC-ROOT paragraphs (one per pass per load — Neil's screenshots show
+            // six). Remove any top-level paragraph whose ENTIRE text equals a mirrored
+            // field's text — exact match, doc root only; student prose lives inside
+            // sections and can never be touched by this.
+            try {
+                const _vals = Object.keys(upFields).map((k) => upFields[k].text);
+                const _doomed = [];
+                canvasEditor.state.doc.forEach((node, offset) => {
+                    if (node.type.name !== 'paragraph') return;
+                    const t = (node.textContent || '').replace(/\s+/g, ' ').trim();
+                    if (t && _vals.indexOf(t) !== -1) _doomed.push({ from: offset, to: offset + node.nodeSize });
+                });
+                if (_doomed.length) {
+                    canvasEditor.chain().command(({ tr }) => {
+                        for (let i = _doomed.length - 1; i >= 0; i--) tr.delete(_doomed[i].from, _doomed[i].to);
+                        return true;
+                    }).run();
+                    synced++;
+                    console.log('WML chain: removed ' + _doomed.length + ' leaked field paragraph(s)');
+                }
+            } catch (_) {}
             if (synced) {
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 console.log('WML chain: pre-write fields live-synced from head (' + synced + ' field(s), head=' + (headSuffix || 'diagnostic') + ')');
