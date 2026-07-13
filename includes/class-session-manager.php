@@ -738,6 +738,57 @@ class SWML_Session_Manager {
         return $best;
     }
 
+    // ═══════════════════════════════════════════
+    //  PHASE RESULT READER (v7.20.56)
+    //  ONE canonical key-builder for the swml_phase_* records. complete_phase
+    //  (write, via SWML_REST_API::phase_meta_key delegate), /phase/status and
+    //  the router's redraft-context preamble (reads) all resolve through here —
+    //  a second hand-rolled key string is exactly the write-key ≠ read-key fork
+    //  this exists to prevent (CLAUDE.md 5d).
+    // ═══════════════════════════════════════════
+
+    /**
+     * Attempt 1 keeps the legacy un-suffixed format; attempt 2+ appends __a{N}.
+     * Text resolves through the ONE slug registry (canonical_slug) — same as
+     * every canvas/attempt key.
+     */
+    public static function phase_meta_key($board, $text, $topic, $phase, $attempt = 1) {
+        if (class_exists('SWML_REST_API')) {
+            $text = SWML_REST_API::canonical_slug($text);
+        }
+        $key = sprintf('swml_phase_%s_%s_t%d_%s', $board, $text, (int) $topic, $phase);
+        if ($attempt > 1) $key .= '__a' . (int) $attempt;
+        return $key;
+    }
+
+    /**
+     * Current attempt from the bare (suffix-less) attempt index — the same
+     * index complete_phase resolves against (mirrors attempt_index_key with
+     * suffix = '').
+     */
+    public static function current_attempt($user_id, $board, $text, $topic) {
+        if (class_exists('SWML_REST_API')) {
+            $text = SWML_REST_API::canonical_slug($text);
+        }
+        $key = 'swml_attempts_' . $board . '_' . $text;
+        if ($topic !== null && (int) $topic > 0) $key .= '_t' . (int) $topic;
+        $raw = get_user_meta($user_id, $key, true);
+        $idx = is_array($raw) ? $raw : json_decode((string) $raw, true);
+        return (is_array($idx) && !empty($idx['current'])) ? max(1, (int) $idx['current']) : 1;
+    }
+
+    /**
+     * Decoded phase-completion record, or null. Slash-tolerant decode
+     * (WORDPRESS META STORAGE gotcha).
+     */
+    public static function get_phase_result($user_id, $board, $text, $topic, $phase = 'initial', $attempt = 1) {
+        $raw = get_user_meta($user_id, self::phase_meta_key($board, $text, $topic, $phase, $attempt), true);
+        if (empty($raw)) return null;
+        $d = is_array($raw) ? $raw : json_decode($raw, true);
+        if (!is_array($d)) $d = json_decode(wp_unslash((string) $raw), true);
+        return is_array($d) ? $d : null;
+    }
+
     /**
      * Ordered list of paragraph keys. Used by progression logic + UI labels.
      */

@@ -4636,14 +4636,9 @@ class SWML_REST_API {
         }
 
         // v7.15.44: Attempt 1 uses the legacy un-suffixed key, attempt 2+ uses __aN
-        $initial_key = $this->phase_meta_key($board, $text, $topic, 'initial', $attempt);
-        $redraft_key = $this->phase_meta_key($board, $text, $topic, 'redraft', $attempt);
-
-        $initial_raw = get_user_meta($user_id, $initial_key, true);
-        $redraft_raw = get_user_meta($user_id, $redraft_key, true);
-
-        $initial = $initial_raw ? json_decode($initial_raw, true) : null;
-        $redraft = $redraft_raw ? json_decode($redraft_raw, true) : null;
+        // v7.20.56: read through the canonical shared reader (slash-tolerant decode).
+        $initial = SWML_Session_Manager::get_phase_result($user_id, $board, $text, $topic, 'initial', $attempt);
+        $redraft = SWML_Session_Manager::get_phase_result($user_id, $board, $text, $topic, 'redraft', $attempt);
 
         return rest_ensure_response([
             'initial' => $initial,
@@ -5349,11 +5344,10 @@ class SWML_REST_API {
     }
 
     // v7.15.44: Phase completion meta key — attempt-aware. Attempt 1 keeps legacy un-suffixed format for backward compat.
+    // v7.20.56: delegates to the ONE canonical builder (SWML_Session_Manager::phase_meta_key)
+    // so the router's redraft-context read can never fork from this write path (key-match law).
     private function phase_meta_key($board, $text, $topic, $phase, $attempt = 1) {
-        $text = $this->normalize_text_slug($text);
-        $key = sprintf('swml_phase_%s_%s_t%d_%s', $board, $text, $topic, $phase);
-        if ($attempt > 1) $key .= '__a' . $attempt;
-        return $key;
+        return SWML_Session_Manager::phase_meta_key($board, $text, $topic, $phase, $attempt);
     }
 
     /**

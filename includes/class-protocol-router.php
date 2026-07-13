@@ -2960,6 +2960,28 @@ TEMPLATE;
             $preamble .= "You are a planning tutor helping {$first_name} prepare their response to a {$board_label} {$subject} paper. ";
             $preamble .= "Guide them through the planning process using Socratic questioning — help them think through each question, select evidence, and structure their ideas before they write.\n\n";
 
+            // v7.20.56: PHASE-1 RESULT AWARENESS (redraft planning). The reflect reveal is
+            // CODE-owned client-side (plan-chain 'reflect' stage) — this note only stops later
+            // AI turns re-framing the session (the bug: "your responses are currently empty —
+            // this appears to be a fresh attempt"). Suppressed when no completed Phase-1
+            // record exists, so a true first-timer's fresh-start framing stays correct.
+            // Reads through the ONE canonical key-builder (key-match law) — the same key
+            // complete_phase wrote. Never infer attempt history from an empty document.
+            $topic_for_phase = (int) ($context['topic_number'] ?? 0);
+            if ($topic_for_phase > 0 && !empty($context['text']) && class_exists('SWML_Session_Manager')) {
+                $p1_att = SWML_Session_Manager::current_attempt($user_id, $context['board'], $context['text'], $topic_for_phase);
+                $p1_rec = SWML_Session_Manager::get_phase_result($user_id, $context['board'], $context['text'], $topic_for_phase, 'initial', $p1_att);
+                if (is_array($p1_rec) && ($p1_rec['status'] ?? '') === 'complete' && trim((string) ($p1_rec['grade'] ?? '')) !== '') {
+                    $p1_g  = trim((string) $p1_rec['grade']);
+                    $p1_ts = trim((string) ($p1_rec['total_score'] ?? ''));
+                    $p1_t1 = trim((string) ($p1_rec['target_1'] ?? ''));
+                    $preamble .= "**PHASE-2 REDRAFT CONTEXT (authoritative):** This student has already completed Phase 1 of this topic — Grade {$p1_g}"
+                        . ($p1_ts !== '' ? " ({$p1_ts})" : '')
+                        . ($p1_t1 !== '' ? ", priority target: \"{$p1_t1}\"" : '')
+                        . ". NEVER describe this session as a fresh attempt or say their responses are missing: empty plan/response sections are EXPECTED here — they are re-planning before the rewrite. These numbers are for framing only; do not re-state marks unless the student asks.\n\n";
+                }
+            }
+
             $preamble .= "### THE STUDENT'S DOCUMENT\n\n";
             $preamble .= "The student's document is attached to each message as `[STUDENT'S DOCUMENT]`. ";
             $preamble .= "Each section is labelled with `=== LABEL [type] ===`. Use these labels to find content:\n\n";

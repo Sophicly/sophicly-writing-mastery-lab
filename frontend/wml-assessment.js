@@ -688,6 +688,29 @@
     // that boundary silently missed → the predQ stage re-asked forever (Neil's one-shot,
     // 2026-07-13). Normalise once here; texts stay free to use bold anywhere.
     function _planChainNorm(s) { return String(s || '').replace(/\*/g, ''); }
+    // ── v7.20.56: PRIOR-ATTEMPT REFLECTION (cross-phase) ──
+    // The Phase-1 assessment's recorded result gates a 'reflect' chain stage —
+    // ask-then-reveal (generation effect, the same law the prediction stages
+    // cite). state.priorPhase is prefetched from /phase/status; null = fresh
+    // student = the stage never renders and the neutral opener stays correct.
+    // The stored record is the ONLY authority on attempt history — NEVER infer
+    // it from an empty document (that inference was the original bug).
+    function _planReflectEligible() {
+        const rec = state.priorPhase && state.priorPhase.initial;
+        return !!(rec && rec.status === 'complete' && String(rec.grade || '').trim());
+    }
+    let _priorPhaseFetched = false;
+    function _prefetchPriorPhase() {
+        if (_priorPhaseFetched || !_planPreChainActive()) return;
+        _priorPhaseFetched = true;
+        const url = `${API.phaseStatus}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topic=${state.topicNumber || 1}`;
+        apiGet(url).then(res => {
+            state.priorPhase = (res && res.initial) ? res : null;
+            if (_planReflectEligible()) {
+                console.log('WML plan-chain: prior Phase-1 record found — reflect stage armed (grade ' + state.priorPhase.initial.grade + ')');
+            }
+        }).catch(() => { state.priorPhase = null; });
+    }
     function _planPreChainStageFor(history) {
         if (!_planPreChainActive()) return null;
         const askedBy = (re) => history.some(m => m.role === 'assistant' && re.test(_planChainNorm(m.content)));
@@ -699,6 +722,10 @@
             // the greeting is a pre-build session — the protocol owns it.
             return history.some(m => m.role === 'assistant') ? null : 'greeting';
         }
+        // v7.20.56: reflect slots between grade and headline. The headline guard is
+        // load-bearing: a session already past its slot (legacy run / prefetch that
+        // resolved late) skips reflect entirely rather than hijacking a later reply.
+        if (_planReflectEligible() && !askedBy(/when you sat this paper last time/i) && !askedBy(/headline goal/i)) return 'reflect';
         if (!askedBy(/headline goal/i)) return 'headline';
         if (!askedBy(/condense your plans/i)) return 'planmode';
         if (!askedBy(/do you expect this paper is about/i)) return 'predQ';
@@ -706,15 +733,24 @@
         if (!askedBy(/predict Source B will explore/i)) return 'predB';
         return null;
     }
+    // v7.20.56: the chain's stage order is DERIVED (reflect slots in only when a
+    // prior Phase-1 record exists) — beats and the sidebar Setup rows both read
+    // this one list, so step numbers/totals can never fork from the stage set.
+    function _planChainOrder() {
+        const o = ['greeting'];
+        if (_planReflectEligible()) o.push('reflect');
+        return o.concat(['headline', 'planmode', 'predQ', 'predA', 'predB']);
+    }
     function _planChainBeat(stage) {
-        const map = {
-            greeting: [1, 'Setup · Grade goal'], headline: [2, 'Setup · Headline goal'],
-            planmode: [3, 'Setup · Plan mode'], predQ: [4, 'Predict · This paper'],
-            predA: [5, 'Predict · Source A'], predB: [6, 'Predict · Source B'],
-            tidy: [6, 'Predict · Tidy-up'],
+        const labels = {
+            greeting: 'Setup · Grade goal', reflect: 'Setup · Reflect', headline: 'Setup · Headline goal',
+            planmode: 'Setup · Plan mode', predQ: 'Predict · This paper',
+            predA: 'Predict · Source A', predB: 'Predict · Source B', tidy: 'Predict · Tidy-up',
         };
-        const b = map[stage];
-        return b ? { section: b[1], step: b[0], total: 6 } : null;
+        if (!labels[stage]) return null;
+        const order = _planChainOrder();
+        const idx = order.indexOf(stage === 'tidy' ? 'predB' : stage);
+        return idx === -1 ? null : { section: labels[stage], step: idx + 1, total: order.length };
     }
     function _planSourceLabel(letter) {
         try {
@@ -778,6 +814,14 @@
             const unNote = _planUntrainedNote(facts);
             plain = `Hi ${fn}! Welcome to your planning session for AQA English Language Paper 2. Here's what's coming: we'll set your goals, make three quick predictions, then ${plannedPhrase} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.${unNote ? ' ' + unNote : ''}\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
             html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>AQA English Language Paper 2</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, make three quick predictions, then ${plannedPhrase.replace(/—\s*(.+?)\s*—/, '— <strong>$1</strong> —')} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p>${unNote ? `<p style="margin-top:8px;font-size:12.5px;opacity:0.8">${unNote}</p>` : ''}</div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
+        } else if (stage === 'reflect') {
+            // v7.20.56: ask-then-reveal, beat 1 (the ASK — no AI turn, free-typed reply).
+            // Research-locked framing (Kluger & DeNisi 1996): TASK-level recall only —
+            // never "what are you weakest at", never a grade-guess. The reveal (beat 2,
+            // _planReflectRevealFor) rides the front of the NEXT chain question.
+            // Detection byte-pair: /when you sat this paper last time/ — change together.
+            plain = `This isn't a fresh start — you've written this paper once already and had it assessed. Today's plan builds directly on that work.\n\nFirst, from memory — no peeking: **when you sat this paper last time**, which question asked more of you than you expected, and what ONE thing would you most want to do better this time? A line or two is plenty.\n\nHave a go before I show you what the assessment recorded — recalling it yourself first is what makes the feedback stick.`;
+            html = `<p>This isn't a fresh start — you've written this paper once already and had it assessed. Today's plan builds directly on that work.</p><p style="margin-top:8px">First, from memory — no peeking: <strong>when you sat this paper last time</strong>, which question asked more of you than you expected, and what ONE thing would you most want to do better this time? A line or two is plenty.</p><p style="margin-top:8px;font-size:12.5px;opacity:0.75"><em>Have a go before I show you what the assessment recorded — recalling it yourself first is what makes the feedback stick.</em></p>`;
         } else if (stage === 'planmode') {
             plain = `Noted — your headline goal will thread through every question we plan. Next: how should I **condense your plans** as we file them?\n\nA) Advanced — keywords only (2–4 keywords per element)\nB) Standard — key phrases (short phrases in your own words)\n\nBoth modes use only YOUR words — the difference is how much we condense.`;
             html = `<p>Noted — your headline goal will thread through every question we plan.</p><p style="margin-top:8px">Next: how should I <strong>condense your plans</strong> as we file them?</p><p style="margin-top:8px">Both modes use only YOUR words — the difference is how much we condense.</p>`;
@@ -815,6 +859,42 @@
         }
         return { plain: plain, html: html };
     }
+    // v7.20.56: ask-then-reveal, beat 2 (the REVEAL) — prepended to whatever chain
+    // question renders immediately after the student's recall answer (ordering-
+    // robust by construction). Grade / total / priority target are interpolated
+    // from the stored Phase-1 record — CODE-owned numbers, never model-emitted.
+    // No "your recall matched" claim (unverifiable — never-guess law); the safe
+    // affirmation is of the ACT of recalling. Stale records with an empty
+    // target_1 (every pre-v7.20.56 write — the client sent blank) fall back to
+    // pointing at the Previous Assessments pad instead of a blank quote.
+    function _planReflectRevealFor(history) {
+        try {
+            if (!_planReflectEligible()) return null;
+            let lastAsk = null, answered = false;
+            for (let i = history.length - 1; i >= 0; i--) {
+                const m = history[i];
+                if (m.role === 'assistant') { lastAsk = _planChainNorm(m.content); break; }
+                if (m.role === 'user') answered = true;
+            }
+            if (!lastAsk || !answered || !/when you sat this paper last time/i.test(lastAsk)) return null;
+            const esc = (s) => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+            const rec = state.priorPhase.initial;
+            const g = esc(String(rec.grade || '').trim());
+            const ts = esc(String(rec.total_score || '').trim());
+            const t1 = String(rec.target_1 || '').trim();
+            const scorePart = ts ? ` (${ts})` : '';
+            let plain = `Good — naming it yourself first is exactly the habit strong writers build. Here's what the assessment recorded: last time you achieved **Grade ${g}**${scorePart}.`;
+            let html = `<p>Good — naming it yourself first is exactly the habit strong writers build. Here's what the assessment recorded: last time you achieved <strong>Grade ${g}</strong>${scorePart}.</p>`;
+            if (t1) {
+                plain += ` Your priority target was: *"${t1}"*. That's our anchor for today — every element we plan pulls toward closing that gap.`;
+                html += `<p style="margin-top:8px">Your priority target was: <em>"${esc(t1)}"</em>. That's our anchor for today — every element we plan pulls toward closing that gap.</p>`;
+            } else {
+                plain += ` Your full feedback is one click away — the Previous Assessments button (left toolbar) opens it beside your plan. Today is about closing that gap.`;
+                html += `<p style="margin-top:8px">Your full feedback is one click away — the <strong>Previous Assessments</strong> button (left toolbar) opens it beside your plan. Today is about closing that gap.</p>`;
+            }
+            return { plain: plain + '\n\n', html: html };
+        } catch (_) { return null; }
+    }
     // File a prediction reply into its document field. The reply being handled always
     // answers the MOST RECENT assistant question — match it to its fieldId. Self-guarding
     // no-op on every non-prediction turn, so the fall-through call is always safe.
@@ -830,6 +910,10 @@
             if (/do you expect this paper is about/i.test(lastAsk)) fid = 'pred-paper';
             else if (/predict Source A will explore/i.test(lastAsk)) fid = 'pred-source-a';
             else if (/predict Source B will explore/i.test(lastAsk)) fid = 'pred-source-b';
+            // v7.20.56: the reflect recall files too (ruling 1: FILE IT — Bisra et al.
+            // 2018, self-explanation g≈.55; the written line co-encodes with the reveal).
+            // Section is healed in just before the write (late-prefetch safe).
+            else if (/when you sat this paper last time/i.test(lastAsk)) { _ensureReflectionSection(); fid = 'reflect-recall'; }
             // v7.20.53: REPLACE — predictions are per-run commitments; append stacked a
             // previous run's answer under this run's (doc survives chat clears).
             if (fid && _writeOutlineRowField(fid, msg, { replace: true })) {
@@ -846,7 +930,10 @@
         try {
             if (!_planPreChainActive() || !canvasEditor) return;
             let wiped = 0;
-            ['pred-paper', 'pred-source-a', 'pred-source-b'].forEach(fid => {
+            // v7.20.56: reflect-recall is a per-run capture like the predictions —
+            // the chain re-asks it every fresh run, so a dead run's recall must not
+            // pre-tick the row or stack under the new answer.
+            ['pred-paper', 'pred-source-a', 'pred-source-b', 'reflect-recall'].forEach(fid => {
                 let targetPos = null, targetNode = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
                     if (targetPos !== null) return false;
@@ -10604,6 +10691,10 @@
                 const t = _planChainQuestionText(stage, (config.userName || '').split(' ')[0]);
                 plain = t.plain; html = t.html;
             }
+            // v7.20.56: the reflect REVEAL (grade + priority target, code-owned) rides
+            // the front of the question that follows the student's recall answer.
+            const _rev = _planReflectRevealFor(canvasChatHistory);
+            if (_rev) { plain = _rev.plain + plain; html = _rev.html + html; }
             const _beat = _planChainBeat(stage);
             if (_beat && typeof WML !== 'undefined' && WML.progressChipHTML) html = WML.progressChipHTML(_beat) + html;
             addChatMessage(html, 'ai', plain, { suppressActions: true });
@@ -10798,6 +10889,7 @@
             // file predictions verbatim into the document, ask the next capture — no AI
             // round-trip. The boot's silent "Let's begin!" renders the S0 greeting card.
             if (_planPreChainActive()) {
+                _prefetchPriorPhase(); // v7.20.56: idempotent — arms the reflect stage
                 const _ppcStage = _planPreChainStageFor(canvasChatHistory);
                 if (_ppcStage) {
                     const _ppcSilent = canvasSilentSend;
@@ -16723,6 +16815,244 @@
             if (!extractPanels['essay']) spawnExtractPanel([], 'essay', { top: '110px', right: '48px' });
         };
 
+        // ── v7.20.56: PREVIOUS ASSESSMENTS — prior-attempt viewer (Neil) ──
+        // A button under the Document Outline cluster lists EVERY prior doc for this
+        // student (ruling 2: everything, incl. Conceptual Notes — ideas transfer across
+        // texts), newest first, grouped by text; grade badge when graded, "ungraded"
+        // indicator otherwise. Rows enumerate from /student/attempts-all; each row
+        // carries its OWN board/text/topic/suffix/attempt and the pad loads exactly
+        // that key via /canvas/load — suffixes are never guessed (key-match law; the
+        // P2 assessment doc's suffix is `_assessment`, traced on staging 2026-07-13).
+        // Pad-count guidance is SOFT (Neil ruling): a calm load note, never a gate.
+        const _priorPads = {};
+        const _PA_STAGE_NAMES = {
+            '': 'Response', '_assessment': 'Assessment', '_reassessment': 'Reassessment',
+            '_planning': 'Planning', '_outlining': 'Outlining', '_outline': 'Outline',
+            '_polishing': 'Polishing', '_redraft': 'Redraft', '_cn': 'Conceptual Notes',
+            '_fq': 'Foundational Quiz', '_ms': 'Mark Scheme', '_msu': 'Mark Scheme Unit',
+            '_fb': 'Feedback', '_fbdiscuss': 'Feedback Discussion', '_eq': 'Exam Question',
+            '_ep': 'Essay Plan', '_ma': 'Model Answer', '_mp': 'Memory Practice', '_crib': 'Crib',
+        };
+        const _paStageName = (r) => _PA_STAGE_NAMES[r.suffix || ''] ||
+            String(r.suffix || '').replace(/^_/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const _paTextName = (slug) => String(slug || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const _paDate = (iso) => {
+            try { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
+            catch (_) { return ''; }
+        };
+        let _paNoteEl = null;
+        function _paRefreshNote() {
+            if (!_paNoteEl) return;
+            const n = Object.keys(_priorPads).length;
+            _paNoteEl.textContent = n >= 3
+                ? 'Three open pads splits attention — most students plan best with one or two.'
+                : (n === 2 ? 'Two pads open — fine for comparing; close one when you’re done.' : '');
+            _paNoteEl.style.display = _paNoteEl.textContent ? '' : 'none';
+        }
+        async function spawnPriorAttemptPad(row) {
+            const padKey = [row.board, row.text, row.topic || 0, row.suffix || '', row.attempt || 1].join('|');
+            if (_priorPads[padKey]) { _priorPads[padKey].remove(); delete _priorPads[padKey]; _paRefreshNote(); return; }
+            let docHtml = '';
+            try {
+                const url = `${API.canvasLoad}?board=${encodeURIComponent(row.board)}&text=${encodeURIComponent(row.text)}${row.topic ? '&topicNumber=' + row.topic : ''}&suffix=${encodeURIComponent(row.suffix || '')}&attempt=${row.attempt || 1}`;
+                const res = await apiGet(url);
+                docHtml = (res && res.doc && res.doc.html) ? res.doc.html : '';
+            } catch (_) { /* handled below */ }
+            const panel = el('div', { className: 'swml-extract-panel swml-prior-pad' });
+            const header = el('div', { className: 'swml-extract-panel-header' });
+            header.appendChild(el('span', { textContent: _paTextName(row.text) + ' — ' + _paStageName(row) + (row.attempt > 1 ? ' · Attempt ' + row.attempt : '') }));
+            if (row.grade != null && row.grade !== '') {
+                header.appendChild(el('span', { className: 'swml-pa-grade' + (String(row.grade).trim() === '9' ? ' swml-pa-grade-9' : ''), textContent: 'Grade ' + row.grade }));
+            }
+            header.appendChild(el('button', {
+                className: 'swml-extract-panel-close', textContent: '✕',
+                onClick: () => { panel.remove(); delete _priorPads[padKey]; _paRefreshNote(); }
+            }));
+            panel.appendChild(header);
+            const body = el('div', { className: 'swml-extract-panel-body' });
+            if (docHtml) {
+                // Read-only, STATIC render — a prior attempt never changes, so no
+                // observer (unlike the live feedback pad). Strip every editable /
+                // interactive affordance from the stored markup.
+                const tmp = document.createElement('div');
+                tmp.innerHTML = docHtml;
+                tmp.querySelectorAll('script, style').forEach(n => n.remove());
+                tmp.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
+                tmp.querySelectorAll('select, textarea, input, button').forEach(n => { n.disabled = true; });
+                while (tmp.firstChild) body.appendChild(tmp.firstChild);
+            } else {
+                body.appendChild(el('p', { textContent: 'This document couldn’t be loaded — it may be empty.' }));
+            }
+            panel.appendChild(body);
+            // Resize handles + drag — same shape as the extract pads (classes reuse
+            // their CSS; embedded-mode transform correction via getFixedOriginOffset).
+            ['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'].forEach(dir => {
+                const h = el('div', { className: `swml-extract-rh swml-extract-rh-${dir.length > 1 ? 'corner' : 'edge'} swml-extract-rh-${dir}` });
+                h.dataset.dir = dir;
+                panel.appendChild(h);
+            });
+            let paResizing = false, paDir = '', paSX, paSY, paSW, paSH, paSL, paST;
+            panel.querySelectorAll('.swml-extract-rh').forEach(h => {
+                h.addEventListener('mousedown', (e) => {
+                    if (e.button !== 0) return;
+                    e.preventDefault(); e.stopPropagation();
+                    paResizing = true; paDir = h.dataset.dir;
+                    const origin = typeof getFixedOriginOffset === 'function' ? getFixedOriginOffset(panel) : { x: 0, y: 0 };
+                    const r = panel.getBoundingClientRect();
+                    paSX = e.clientX; paSY = e.clientY;
+                    paSW = r.width; paSH = r.height;
+                    paSL = r.left - origin.x; paST = r.top - origin.y;
+                });
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!paResizing || !panel.parentNode) return; e.preventDefault();
+                const dx = e.clientX - paSX, dy = e.clientY - paSY;
+                let w = paSW, h2 = paSH, l = paSL, t = paST;
+                if (paDir.indexOf('e') > -1) w = Math.max(280, paSW + dx);
+                if (paDir.indexOf('w') > -1) { w = Math.max(280, paSW - dx); l = paSL + (paSW - w); }
+                if (paDir.indexOf('s') > -1) h2 = Math.max(200, paSH + dy);
+                if (paDir.indexOf('n') > -1) { h2 = Math.max(200, paSH - dy); t = paST + (paSH - h2); }
+                panel.style.width = w + 'px'; panel.style.maxHeight = 'none'; panel.style.height = h2 + 'px';
+                panel.style.left = l + 'px'; panel.style.top = t + 'px'; panel.style.right = 'auto';
+            });
+            document.addEventListener('mouseup', () => { paResizing = false; });
+            let paDragging = false, paDX = 0, paDY = 0;
+            panel.style.cursor = 'grab';
+            panel.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                if (e.target.closest('.swml-extract-rh') || e.target.closest('button')) return;
+                paDragging = true;
+                const origin = typeof getFixedOriginOffset === 'function' ? getFixedOriginOffset(panel) : { x: 0, y: 0 };
+                const rect = panel.getBoundingClientRect();
+                paDX = e.clientX - (rect.left - origin.x);
+                paDY = e.clientY - (rect.top - origin.y);
+                panel.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!paDragging || !panel.parentNode) return;
+                panel.style.left = (e.clientX - paDX) + 'px';
+                panel.style.top = (e.clientY - paDY) + 'px';
+                panel.style.right = 'auto';
+            });
+            document.addEventListener('mouseup', () => {
+                paDragging = false;
+                if (panel.parentNode) panel.style.cursor = 'grab';
+            });
+            // Cascade successive pads so they don't stack invisibly.
+            const openCount = Object.keys(_priorPads).length;
+            panel.style.top = (70 + openCount * 34) + 'px';
+            panel.style.right = (24 + openCount * 34) + 'px';
+            // Portal to <body> (v7.19.772 stacking-context law — same as the extract pads).
+            document.body.appendChild(panel);
+            _priorPads[padKey] = panel;
+            _paRefreshNote();
+        }
+        let _paPanel = null;
+        function _paBuildList(rows) {
+            const list = el('div', { className: 'swml-prior-list' });
+            const curSuffix = (typeof WML !== 'undefined' && WML.resolveCanvasSuffix) ? (WML.resolveCanvasSuffix(state.task, state.phase) || '') : '';
+            const kept = rows.filter(r => {
+                const isCurrent = r.board === state.board && r.text === state.text
+                    && (r.topic || 0) === (state.topicNumber || 0)
+                    && (r.suffix || '') === curSuffix && (r.attempt || 1) === (state.attempt || 1);
+                if (isCurrent) return false; // the doc they're looking at — not "previous"
+                return (r.grade != null && r.grade !== '') || (r.wordCount > 0) || r.status === 'complete';
+            }).sort((a, b) => String(b.started || '').localeCompare(String(a.started || '')));
+            if (!kept.length) {
+                list.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'No previous work yet — your completed assessments and notes will appear here.' }));
+                return list;
+            }
+            const groups = {};
+            const groupOrder = [];
+            kept.forEach(r => {
+                const gk = r.board + '|' + r.text;
+                if (!groups[gk]) { groups[gk] = []; groupOrder.push(gk); }
+                groups[gk].push(r);
+            });
+            groupOrder.forEach(gk => {
+                const first = groups[gk][0];
+                list.appendChild(el('div', { className: 'swml-prior-group', textContent: String(first.board || '').toUpperCase() + ' · ' + _paTextName(first.text) }));
+                groups[gk].forEach(r => {
+                    const rowEl = el('button', { className: 'swml-prior-row', type: 'button', onClick: () => spawnPriorAttemptPad(r) });
+                    const main = el('div', { className: 'swml-prior-row-main' });
+                    main.appendChild(el('span', { className: 'swml-prior-row-label', textContent: _paStageName(r) + (r.topic ? ' · Topic ' + r.topic : '') + (r.attempt > 1 ? ' · Attempt ' + r.attempt : '') }));
+                    if (r.grade != null && r.grade !== '') {
+                        main.appendChild(el('span', { className: 'swml-pa-grade' + (String(r.grade).trim() === '9' ? ' swml-pa-grade-9' : ''), textContent: 'Grade ' + r.grade }));
+                    } else {
+                        main.appendChild(el('span', { className: 'swml-pa-ungraded', textContent: 'ungraded' }));
+                    }
+                    rowEl.appendChild(main);
+                    const dateStr = _paDate(r.started);
+                    if (dateStr) rowEl.appendChild(el('span', { className: 'swml-prior-row-date', textContent: dateStr }));
+                    list.appendChild(rowEl);
+                });
+            });
+            return list;
+        }
+        async function _paTogglePanel(anchorBtn) {
+            if (_paPanel) { _paPanel.remove(); _paPanel = null; anchorBtn.classList.remove('is-active'); return; }
+            _paPanel = el('div', { className: 'swml-extract-panel swml-prior-panel' });
+            const hdr = el('div', { className: 'swml-extract-panel-header' });
+            hdr.appendChild(el('span', { textContent: 'Previous Assessments' }));
+            hdr.appendChild(el('button', {
+                className: 'swml-extract-panel-close', textContent: '✕',
+                onClick: () => { if (_paPanel) { _paPanel.remove(); _paPanel = null; anchorBtn.classList.remove('is-active'); } }
+            }));
+            _paPanel.appendChild(hdr);
+            const bodyWrap = el('div', { className: 'swml-extract-panel-body' });
+            bodyWrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Loading…' }));
+            _paPanel.appendChild(bodyWrap);
+            _paNoteEl = el('div', { className: 'swml-prior-note' });
+            _paNoteEl.style.display = 'none';
+            _paPanel.appendChild(_paNoteEl);
+            // Anchor beside the outline button column (fixed → body portal, stacking law).
+            try {
+                const r = anchorBtn.getBoundingClientRect();
+                _paPanel.style.top = Math.max(12, r.top - 8) + 'px';
+                _paPanel.style.left = (r.right + 10) + 'px';
+                _paPanel.style.right = 'auto';
+            } catch (_) { /* default CSS position stands */ }
+            document.body.appendChild(_paPanel);
+            anchorBtn.classList.add('is-active');
+            try {
+                const res = await apiGet(`${config.restUrl}student/attempts-all`);
+                if (!_paPanel) return; // closed while loading
+                bodyWrap.innerHTML = '';
+                bodyWrap.appendChild(_paBuildList((res && res.attempts) || []));
+                _paRefreshNote();
+            } catch (_) {
+                if (!_paPanel) return;
+                bodyWrap.innerHTML = '';
+                bodyWrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Couldn’t load your previous work — try again in a moment.' }));
+            }
+        }
+        const SVG_HISTORY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 3"/></svg>';
+        const priorAttemptsBtn = el('button', {
+            className: 'swml-outline-btn swml-prior-attempts-btn',
+            'data-tooltip': 'Previous Assessments',
+            'data-tooltip-pos': 'right',
+            'aria-label': 'Previous Assessments',
+            innerHTML: SVG_HISTORY,
+            onClick: (e) => { e.stopPropagation(); _paTogglePanel(priorAttemptsBtn); }
+        });
+        // Empty-state law: no dead control — hidden until the probe finds a prior row.
+        priorAttemptsBtn.style.display = 'none';
+        btnColumn.appendChild(priorAttemptsBtn);
+        if (!state.reviewMode) {
+            apiGet(`${config.restUrl}student/attempts-all`).then(res => {
+                const rows = (res && res.attempts) || [];
+                const curSuffix = (typeof WML !== 'undefined' && WML.resolveCanvasSuffix) ? (WML.resolveCanvasSuffix(state.task, state.phase) || '') : '';
+                const any = rows.some(r => {
+                    const isCurrent = r.board === state.board && r.text === state.text
+                        && (r.topic || 0) === (state.topicNumber || 0)
+                        && (r.suffix || '') === curSuffix && (r.attempt || 1) === (state.attempt || 1);
+                    return !isCurrent && ((r.grade != null && r.grade !== '') || (r.wordCount > 0) || r.status === 'complete');
+                });
+                if (any) priorAttemptsBtn.style.display = '';
+            }).catch(() => { /* button stays hidden */ });
+        }
+
         const extractBtn = el('button', {
             className: 'swml-extract-btn',
             title: 'Pop out the question extract so you can view it while writing',
@@ -19890,6 +20220,9 @@
                                 const t = _planChainQuestionText(stage, (config.userName || '').split(' ')[0]);
                                 plain = t.plain; html = t.html;
                             }
+                            // v7.20.56: reflect reveal rides the next question (twin).
+                            const _rev = _planReflectRevealFor(canvasChatHistory);
+                            if (_rev) { plain = _rev.plain + plain; html = _rev.html + html; }
                             const _beat = _planChainBeat(stage);
                             if (_beat && typeof WML !== 'undefined' && WML.progressChipHTML) html = WML.progressChipHTML(_beat) + html;
                             addChatMessage(html, 'ai', plain, { suppressActions: true });
@@ -20032,6 +20365,7 @@
                             // v7.20.49: PRE-PLANNING CHAIN gate (mirrors primary pipeline) —
                             // AQA Lang P2 planning monolith S0–S1 captures, code-owned.
                             if (_planPreChainActive()) {
+                                _prefetchPriorPhase(); // v7.20.56: arms the reflect stage (twin)
                                 const _ppcStage = _planPreChainStageFor(canvasChatHistory);
                                 if (_ppcStage) {
                                     const _ppcSilent = canvasSilentSend;
@@ -25204,6 +25538,11 @@
             _migrateStep('migrateMissingPlans', migrateMissingPlans);
             // v7.20.49: AQA P2 planning — Predictions section (S1d commits file here).
             _migrateStep('ensurePredictionsSection', _ensurePredictionsSection);
+            // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
+            // inject the Reflection section once it resolves (record-gated; the filing
+            // path re-heals if this races the fetch).
+            _migrateStep('prefetchPriorPhase', _prefetchPriorPhase);
+            _migrateStep('ensureReflectionSection', () => setTimeout(_ensureReflectionSection, 900));
             // v7.20.50: pre-build docs carry the generic 4-para Q4 plan — re-shape to
             // comparative while empty (protocol Q4 filings key on the new fieldIds).
             _migrateStep('healP2Q4ComparativePlan', _healP2Q4ComparativePlan);
@@ -26678,6 +27017,31 @@
         // (never the AI's drifted chat grade) + the resolved attempt number, with no
         // student action. Idempotent (state._phaseCommitted); on reload it re-UPDATEs
         // the same attempt row (keyed by attempt_number) → no dupes, no double-count.
+        // v7.20.56: first Action-Plan priority from the doc's auto-filed field. The
+        // canvas pipeline never populates state.plan.target_1 (that was the legacy
+        // main-chat extractor), so every recent phase record shipped with an EMPTY
+        // priority target (staging trace 2026-07-13) — and the redraft-planning
+        // reflect reveal had nothing to quote. The doc's action-priorities field IS
+        // the durable, code-filed record of the same fact — read it at commit time.
+        function _firstActionPriorityFromDoc() {
+            try {
+                if (!canvasEditor) return '';
+                let txt = '';
+                canvasEditor.state.doc.descendants((node) => {
+                    if (txt) return false;
+                    if (node.type.name === 'inputField' && node.attrs && node.attrs.fieldId === 'action-priorities') {
+                        txt = (node.textContent || '').trim();
+                    }
+                    return true;
+                });
+                if (!txt) return '';
+                let first = txt.split(/\s+·\s+|\n/)[0].trim();
+                first = first.replace(/^\s*(?:1[.)]\s*|[-•]\s*)/, '');
+                const second = first.search(/\s2[.)]\s/);
+                if (second > 20) first = first.slice(0, second).trim();
+                return first.length > 180 ? first.slice(0, 177).trimEnd() + '…' : first;
+            } catch (_) { return ''; }
+        }
         async function _autoCommitAssessment(totalMarks, maxTotal, gradeVal) {
             if (state._phaseCommitted || state._phaseCommitting) return;
             if (!gradeVal || !(maxTotal > 0)) return;
@@ -26698,7 +27062,9 @@
                     total_score: totalMarks + '/' + maxTotal,
                     ao1_score: getVal(p.ao1_score), ao2_score: getVal(p.ao2_score),
                     ao3_score: getVal(p.ao3_score), ao4_score: getVal(p.ao4_score),
-                    strength_1: getVal(p.strength_1), target_1: getVal(p.target_1), target_2: getVal(p.target_2),
+                    strength_1: getVal(p.strength_1),
+                    target_1: getVal(p.target_1) || _firstActionPriorityFromDoc(),
+                    target_2: getVal(p.target_2),
                     attempt_number: (state.attempt || 1),     // on_phase_complete keys the row by this → additive, never overwrites a prior attempt
                     lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '',
                 };
@@ -36086,6 +36452,37 @@
     }
 
     /**
+     * v7.20.56: REFLECTION section (cross-phase recall) — injected only when a
+     * completed Phase-1 record exists (record-driven, NEVER doc-inferred). The
+     * reflect chain stage files the student's recall here verbatim (ruling 1:
+     * FILE IT — Bisra et al. 2018, self-explanation g≈.55; the written line
+     * co-encodes with the revealed target). Inserted at position 0 so it sits
+     * ABOVE the Predictions section (recall happens first in the chain).
+     */
+    function _ensureReflectionSection() {
+        if (!canvasEditor || !_planPreChainActive() || !_planReflectEligible()) return;
+        const html = canvasEditor.getHTML();
+        if (html.indexOf('reflect-recall') !== -1) return; // already present
+        // Never bolt the section onto a run already PAST the reflect slot (a
+        // legacy chat where headline was asked before reflect existed / a late
+        // prefetch) — the stage will never ask there, so the box would sit empty
+        // forever. Fresh runs and pre-headline sessions inject normally; the
+        // filing path calls this again right before the write, so an eligible
+        // run can never write into a missing field.
+        try {
+            const hist = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null;
+            if (hist && hist.some(m => m.role === 'assistant' && /headline goal/i.test(_planChainNorm(m.content)))
+                     && !hist.some(m => m.role === 'assistant' && /when you sat this paper last time/i.test(_planChainNorm(m.content)))) return;
+        } catch (_) { /* inject — filing guard above still holds */ }
+        const block = dividerHTML('REFLECTION') +
+            sectionHTML('notes', 'Reflection: Last Attempt', true, null,
+                inputHTML('Your own recall of last attempt — what asked more of you, and the one thing to do better. Committed before the recorded feedback is revealed, never marked.', 'reflect-recall'));
+        canvasEditor.commands.insertContentAt(0, block);
+        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        console.log('WML Migration: Reflection section injected (prior Phase-1 record present)');
+    }
+
+    /**
      * v7.20.50: heal EXISTING AQA P2 planning docs to the comparative Q4 plan shape.
      * Docs saved before v7.20.49 carry 4 generic "Plan: Paragraph i — Q4" fields
      * (plan-Q4-para-1..4); the protocol files plan-Q4-intro/body-1..3/conclusion —
@@ -36159,38 +36556,47 @@
             // Predictions ✓ from a PREVIOUS run's answers and jumped current to Q2 while
             // this run was still mid-predictions (Neil's repro). Fields remain only the
             // no-history fallback; histAvailable tracks which truth we're on.
-            let stageIdx = predsFiled ? 6 : 0;
+            // v7.20.56: the stage order is DERIVED (_planChainOrder — reflect slots in
+            // when a prior Phase-1 record exists), so indexes are resolved against it
+            // instead of hardcoded thresholds.
+            const order = _planChainOrder();
+            const L = order.length;
+            let stageIdx = predsFiled ? L : 0;
             let histAvailable = false;
             try {
                 const hist = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null;
                 if (hist) {
                     histAvailable = true;
                     const stage = _planPreChainStageFor(hist);
-                    const order = ['greeting', 'headline', 'planmode', 'predQ', 'predA', 'predB'];
                     if (stage !== null) {
                         stageIdx = order.indexOf(stage);
                     } else if (!hist.some(m => m.role === 'assistant')) {
                         stageIdx = 0;
                     } else {
                         // stage null = predB ASKED (or a legacy chat the chain never owned).
-                        // Asked ≠ answered: only reach 6 when a user reply follows the ask.
+                        // Asked ≠ answered: only reach L when a user reply follows the ask.
                         let bIdx = -1;
                         hist.forEach((m, i) => { if (m.role === 'assistant' && /predict Source B will explore/i.test(_planChainNorm(m.content))) bIdx = i; });
-                        stageIdx = (bIdx !== -1 && !hist.some((m, i) => i > bIdx && m.role === 'user')) ? 5 : 6;
+                        stageIdx = (bIdx !== -1 && !hist.some((m, i) => i > bIdx && m.role === 'user')) ? (L - 1) : L;
                     }
                 }
             } catch (_) { /* field fallback stands */ }
             // v7.20.52: a row is done when its capture is ANSWERED, not merely asked.
             // stageIdx = index of the NEXT question to render (the chain renders question
-            // N+1 synchronously on N's answer), so "grade answered" ⟺ headline asked
-            // (stageIdx ≥ 2), etc. The old ≥1/≥2/≥3 ticked each row one turn early
-            // (Neil's screenshot: "Grade goal ✓" while the grade question sat unanswered).
-            add('Grade goal', 'Setup', stageIdx >= 2);
-            add('Headline goal', 'Setup', stageIdx >= 3);
-            add('Plan mode', 'Setup', stageIdx >= 4);
+            // N+1 synchronously on N's answer), so stage s is answered ⟺ stageIdx ≥
+            // index(s)+2, capped at L for the final capture. The old ≥1/≥2/≥3 ticked
+            // each row one turn early (Neil's screenshot).
+            const _stageDone = (s) => { const i = order.indexOf(s); return i !== -1 && stageIdx >= Math.min(i + 2, L); };
+            add('Grade goal', 'Setup', _stageDone('greeting'));
+            // v7.20.56: reflect row only when eligible AND the doc carries its section
+            // (record-gated injection — a skipped slot or a failed record fetch never
+            // shows a dead row that would park "current" on a stage the chain won't ask).
+            if (order.indexOf('reflect') !== -1 && host.querySelector('[data-field-id="reflect-recall"]')) add('Reflect on last attempt', 'Setup', _stageDone('reflect'));
+            add('Headline goal', 'Setup', _stageDone('headline'));
+            add('Plan mode', 'Setup', _stageDone('planmode'));
             // v7.20.53: chain truth when available — raw fields tick from a PREVIOUS
             // run's answers (doc survives chat clears; Neil's jump-to-Q2 repro).
-            add('Predictions', 'Setup', histAvailable ? stageIdx >= 6 : predsFiled);
+            add('Predictions', 'Setup', histAvailable ? stageIdx >= L : predsFiled);
         }
         planSecs.forEach(sec => {
             const raw = (sec.getAttribute('data-section-label') || '').replace(/^Plan:\s*/i, '');
