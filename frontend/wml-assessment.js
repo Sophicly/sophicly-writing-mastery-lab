@@ -9216,6 +9216,10 @@
     // Writer Profile text that flashed "Saved" (localStorage-only) also lands on the
     // server before the tab unloads. Cleared inside the respective setTimeout bodies.
     let _pendingCanvasSaveBody = null;
+    // v7.20.79: last in-flight canvas-save POST (timer fire OR SPA-nav flush). The
+    // feed-forward mirror awaits this before fetching the phase-head doc, so a
+    // just-flushed edit is ALWAYS on the server before the mirror reads it.
+    let _lastCanvasFlushPromise = null;
     let _pendingChatSaveBody = null;
     // v7.17.40: CW typing mirror — typing autosave writes to canvas doc (/canvas/save)
     // but _loadCWProjectIntoEditor reads from the per-project artifact. Without this
@@ -34219,7 +34223,10 @@
                     suffix: snap.suffix, attempt: snap.attempt, htmlSize: body && body.html ? body.html.length : 0
                 });
             } catch (_) {}
-            fetch(API.canvasSave, {
+            // v7.20.79: track the in-flight save so the feed-forward mirror can await it
+            // (read-after-write race — the next lesson's mirror GET could beat this POST's
+            // server write, syncing the PREVIOUS version until the next navigation).
+            _lastCanvasFlushPromise = fetch(API.canvasSave, {
                 method: 'POST', headers,
                 body: JSON.stringify(body)
             }).then(r => r.json()).then(res => {
@@ -34283,7 +34290,9 @@
             if (_pendingCanvasSaveBody) {
                 // v7.19.702: .catch the async rejection — try/catch only traps sync throws, so a
                 // fetch that rejects mid-SPA-nav ("Failed to fetch") escaped as an unhandled rejection.
-                try { fetch(API.canvasSave, { method: 'POST', headers, body: JSON.stringify(_pendingCanvasSaveBody), keepalive: true }).catch(function(){}); } catch (_) {}
+                // v7.20.79: capture the promise — the incoming lesson's feed-forward mirror
+                // awaits it so its head-doc GET can never beat this POST's server write.
+                try { _lastCanvasFlushPromise = fetch(API.canvasSave, { method: 'POST', headers, body: JSON.stringify(_pendingCanvasSaveBody), keepalive: true }).catch(function(){}); } catch (_) {}
                 _pendingCanvasSaveBody = null;
                 clearTimeout(canvasSaveToServerTimer);
             }
@@ -36724,12 +36733,16 @@
             // (task '' OR a diagnostic/development draftType) — the R&J miss carried a
             // stale task from the previous SPA lesson, which the old task==='' condition
             // silently skipped. Log the full tuple; one console line = the diagnosis.
-            // v7.20.78: warn on the SETTLED pass only — at mount time BOTH task and
-            // draftType can be stale carry-over (assessment lessons carrying a
-            // 'diagnostic' draftType spammed a false MISSED on every load). The 1.8s
-            // settled pass re-runs this with trustworthy state; a genuine miss still
-            // warns there, once, with a tuple worth reading.
-            if (_settled && !state.reviewMode && (state.task === '' || /^(diagnostic|development)$/.test(String(state.draftType || '')))) {
+            // v7.20.78: warn on the SETTLED pass only — at mount time task can be stale
+            // carry-over. v7.20.79: draftType is NOT stale on assessment/discuss docs —
+            // it is genuinely 'diagnostic' there (the doc marks a diagnostic draft), so
+            // the settled gate alone still false-warned on every assessment load. At
+            // settled time task IS trustworthy: a known non-write task missing the
+            // predicates is CORRECT behaviour (its pre-write space arrives via the
+            // carry-heal, not this ensure) — only warn outside that set.
+            const _NONWRITE_TASKS = /^(assessment|feedback_discussion|planning|outlining|polishing|redraft_assessment|mark_scheme|mark_scheme_unit)$/;
+            if (_settled && !state.reviewMode && !_NONWRITE_TASKS.test(String(state.task || ''))
+                && (state.task === '' || /^(diagnostic|development)$/.test(String(state.draftType || '')))) {
                 console.warn('WML predictions: write-doc gate MISSED', {
                     task: state.task, draftType: state.draftType, board: state.board,
                     subject: state.subject, text: state.text, topic: state.topicNumber, attempt: state.attempt,
@@ -36891,6 +36904,11 @@
             // re-resolve mid-load and a later attempt's head may never have been opened).
             let upstreamHtml = '';
             if (headSuffix !== null) {
+                // v7.20.79 (Neil's "takes time to get there" repro): the outgoing lesson's
+                // save flushes on SPA nav while THIS fetch races it — read-after-write.
+                // Await the in-flight save so the head doc we read always includes the
+                // edit just typed. No-op when nothing is in flight.
+                if (_lastCanvasFlushPromise) { try { await _lastCanvasFlushPromise; } catch (_) {} }
                 const _mirrorAtt = _canvasAttempt(); // v7.20.78: pinned resolver — mirror source = the doc reads read
                 upstreamHtml = await _fetchUpstream(_mirrorAtt);
                 if (!_extractParts(upstreamHtml).length && _mirrorAtt > 1) upstreamHtml = await _fetchUpstream(1);
