@@ -686,13 +686,18 @@
     // v7.20.65 (Neil): the Phase-1 WRITE doc carries the SAME Predictions space as the
     // Phase-2 planning doc — but no chat runs there (testing environment), so the student
     // self-fills it once trained (Topic 1 Phase 2 teaches the habit). Identity = the
-    // v7.19.736 write-doc pair: task '' + draftType diagnostic/development. AQA Lang P2
-    // scope this cycle (ports ride the P1 arc).
-    function _isP2Phase1Write() {
+    // v7.19.736 write-doc pair: task '' + draftType diagnostic/development.
+    // v7.20.66 (Neil): ALL papers, every board. Language papers get source PREDICTIONS
+    // (pre-reading anticipation of unseen material); Literature/studied-text papers get a
+    // KEYWORDS-FOCUS box instead (derived from the mandatory planning step B.2A —
+    // protocols/aqa/literature/planning/b2a-keywords.md: keywords + the specific aspect,
+    // "not the character generally").
+    function _isPhase1WriteDoc() {
         return state.task === ''
-            && /^(diagnostic|development)$/.test(String(state.draftType || ''))
-            && (state.board || '').toLowerCase() === 'aqa'
-            && _isLangPaper2();
+            && /^(diagnostic|development)$/.test(String(state.draftType || ''));
+    }
+    function _isLangPhase1Write() {
+        return _isPhase1WriteDoc() && _isAnyLanguagePaper();
     }
     // v7.20.50: detection runs on MARKDOWN-STRIPPED text. The question texts carry
     // **bold** mid-sentence ("**3 themes** do you expect…"), and a raw-regex match across
@@ -36627,21 +36632,61 @@
      * primary path — existing student docs never rebuild from the template.
      */
     function _ensurePredictionsSection() {
-        // v7.20.65: also the Phase-1 write doc (Neil) — same space, byte-identical block;
-        // no chain fills it there, the student self-fills (see _isP2Phase1Write).
-        if (!canvasEditor || !(_planPreChainActive() || _isP2Phase1Write())) return;
+        // v7.20.65: also the Phase-1 write doc (Neil) — no chain fills it there, the
+        // student self-fills. v7.20.66: universal across Language papers — the write-doc
+        // branch DERIVES its boxes from the doc's own source sections (1-source paper =
+        // question box + 1 source box; paired-source = + 2), zero per-paper wiring.
+        // Neil's Phase-1 chain law: the filled fields ride FORWARD via the universal
+        // reseed ('' → _assessment → _fbdiscuss) until the downstream doc freezes.
+        const planning = _planPreChainActive();
+        const langWrite = !planning && _isLangPhase1Write();
+        // Studied-text (Literature) write docs: keywords-focus box instead of predictions.
+        const litWrite = !planning && !langWrite && _isPhase1WriteDoc();
+        if (!canvasEditor || !(planning || langWrite || litWrite)) return;
         const html = canvasEditor.getHTML();
-        if (html.indexOf('pred-paper') !== -1) return; // already present
-        const block = dividerHTML('PREDICTIONS') +
-            sectionHTML('notes', 'Predictions: This Paper', true, null,
-                inputHTML('3 themes you expect this paper is about — committed before reading, never marked.', 'pred-paper')) +
-            sectionHTML('notes', 'Predictions: Source A', true, null,
-                inputHTML('3 predicted themes for Source A (from its title, author and date only).', 'pred-source-a')) +
-            sectionHTML('notes', 'Predictions: Source B', true, null,
-                inputHTML('3 predicted themes for Source B (from its title, author and date only).', 'pred-source-b'));
+        if (html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1) return; // already present
+        let block;
+        if (litWrite) {
+            // Copy derives from protocol B.2A (keywords + specific aspect) — protocol law:
+            // student-facing method statements mirror what we teach, never invented.
+            block = dividerHTML('QUESTION FOCUS') +
+                sectionHTML('notes', 'Question Focus: Keywords', true, null,
+                    inputHTML('The key words or concepts the question asks you to focus on — and the specific aspect they point at (a transformation, a relationship, a treatment of others — not the character or theme generally). Committed before writing, never marked.', 'kw-focus'));
+        } else if (planning) {
+            // Literal P2 trio — the S1d chain files these exact fieldIds. Unchanged.
+            block = dividerHTML('PREDICTIONS') +
+                sectionHTML('notes', 'Predictions: This Paper', true, null,
+                    inputHTML('3 themes you expect this paper is about — committed before reading, never marked.', 'pred-paper')) +
+                sectionHTML('notes', 'Predictions: Source A', true, null,
+                    inputHTML('3 predicted themes for Source A (from its title, author and date only).', 'pred-source-a')) +
+                sectionHTML('notes', 'Predictions: Source B', true, null,
+                    inputHTML('3 predicted themes for Source B (from its title, author and date only).', 'pred-source-b'));
+        } else {
+            // Write-doc branch: one box per source section found in the doc. FieldIds use
+            // the SAME pred-source-{a,b,…} ladder the planning chain files — the Phase-2
+            // planning doc seeds from this chain, so a diverged id would silently no-op
+            // the chain's filing on inherited sections (KEY-MATCH law).
+            const srcLabels = [];
+            try {
+                canvasEditor.state.doc.descendants((node) => {
+                    if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'source') {
+                        srcLabels.push(String(node.attrs.label || '').trim() || ('Source ' + String.fromCharCode(65 + srcLabels.length)));
+                    }
+                    return true;
+                });
+            } catch (_) {}
+            block = dividerHTML('PREDICTIONS') +
+                sectionHTML('notes', 'Predictions: This Paper', true, null,
+                    inputHTML('3 themes you expect this paper is about — committed before reading, never marked.', 'pred-paper'));
+            srcLabels.forEach((lbl, i) => {
+                block += sectionHTML('notes', escapeHTML('Predictions: ' + lbl), true, null,
+                    inputHTML('3 predicted themes for ' + lbl + ' (from its title, author and date only).',
+                        'pred-source-' + String.fromCharCode(97 + i)));
+            });
+        }
         canvasEditor.commands.insertContentAt(0, block);
         if (typeof saveCanvasContent === 'function') saveCanvasContent();
-        console.log('WML Migration: Predictions section injected (AQA P2 ' + (_planPreChainActive() ? 'planning' : 'phase-1 write') + ')');
+        console.log('WML Migration: ' + (litWrite ? 'Keywords-focus' : 'Predictions') + ' section injected (' + (planning ? 'AQA P2 planning' : 'phase-1 write ' + (state.board || '') + '/' + (state.subject || '')) + ')');
     }
 
     /**
