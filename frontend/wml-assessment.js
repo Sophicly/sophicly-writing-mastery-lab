@@ -25766,6 +25766,16 @@
             _migrateStep('ensurePredictionsSection', _ensurePredictionsSection);
             // v7.20.67: carry the diagnostic's pre-write space into frozen assessment docs.
             _migrateStep('healPhase1PrewriteCarry', () => { _healPhase1PrewriteCarry(); });
+            // v7.20.76 ROOT (the R&J/IGCSE miss class): this chain runs at MOUNT time,
+            // when SPA nav can still carry the PREVIOUS lesson's task and the attempt
+            // can re-resolve mid-load — so state-gated mutations silently miss or hit
+            // the wrong attempt's doc. The pass is IDEMPOTENT (presence + same-value
+            // guards), so fire it once more after state settles. Universal law: any
+            // state-gated canvas mutation must have a settled-state second pass.
+            _migrateStep('prewriteSettledPass', () => setTimeout(() => {
+                try { _ensurePredictionsSection(); } catch (_) {}
+                try { _healPhase1PrewriteCarry(); } catch (_) {}
+            }, 1800));
             // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
             // inject the Reflection section once it resolves (record-gated; the filing
             // path re-heals if this races the fetch).
@@ -36682,13 +36692,14 @@
         const litWrite = !planning && !langWrite && _isPhase1WriteDoc();
         if (!canvasEditor) return;
         if (!(planning || langWrite || litWrite)) {
-            // v7.20.70 FAIL-LOUD: Neil saw NO section on the IGCSE Spec A P1 + R&J
-            // diagnostics while every predicate passes statically — when a write-ish
-            // doc misses the gate, say exactly which field diverged (slug-trace law).
-            if (state.task === '' && !state.reviewMode) {
+            // v7.20.70 FAIL-LOUD, v7.20.76 broadened: warn on ANY write-shaped miss
+            // (task '' OR a diagnostic/development draftType) — the R&J miss carried a
+            // stale task from the previous SPA lesson, which the old task==='' condition
+            // silently skipped. Log the full tuple; one console line = the diagnosis.
+            if (!state.reviewMode && (state.task === '' || /^(diagnostic|development)$/.test(String(state.draftType || '')))) {
                 console.warn('WML predictions: write-doc gate MISSED', {
                     task: state.task, draftType: state.draftType, board: state.board,
-                    subject: state.subject, text: state.text, topic: state.topicNumber,
+                    subject: state.subject, text: state.text, topic: state.topicNumber, attempt: state.attempt,
                 });
             }
             return;
