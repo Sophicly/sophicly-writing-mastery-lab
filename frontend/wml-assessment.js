@@ -36753,7 +36753,14 @@
     async function _healPhase1PrewriteCarry() {
         try {
             if (!canvasEditor) return;
-            if (state.task !== 'assessment' || state.phase === 'redraft' || state.reviewMode) return;
+            // v7.20.71 (Neil): the pre-write space rides the WHOLE forward chain —
+            // Phase 1 (assessment, discuss) AND Phase 2 (planning → outlining →
+            // polishing → reassessment). Frozen/typed docs never re-pull their seed,
+            // so the heal covers every downstream task; AQA P2 planning's own
+            // injection runs first in the migrate chain, so its pred-paper guard
+            // makes this a no-op there. Review mode never mutates a student doc.
+            const CARRY_TASKS = ['assessment', 'redraft_assessment', 'planning', 'outlining', 'polishing'];
+            if (CARRY_TASKS.indexOf(state.task) === -1 || state.reviewMode) return;
             const html = canvasEditor.getHTML();
             if (html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1 || html.indexOf('pred-unseen') !== -1) return;
             const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=&attempt=${state.attempt || 1}`;
@@ -36780,7 +36787,23 @@
                 }
             });
             if (!parts.length) return;
-            canvasEditor.commands.insertContentAt(0, parts.join(''));
+            // Mirror the injection's placement rule: a keywords block (lit) sits AFTER
+            // the Question & Extract section; predictions (language) sit at the top.
+            let healAt = 0;
+            if (parts.join('').indexOf('kw-focus') !== -1) {
+                try {
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (healAt) return false;
+                        if (node.type.name === 'sectionBlock' && node.attrs
+                            && (node.attrs.sectionType === 'question' || /question\s*&?\s*extract/i.test(node.attrs.label || ''))) {
+                            healAt = pos + node.nodeSize;
+                            return false;
+                        }
+                        return true;
+                    });
+                } catch (_) { healAt = 0; }
+            }
+            canvasEditor.commands.insertContentAt(healAt, parts.join(''));
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
             // v7.20.68: this insert lands ASYNC (after apiGet) — every consumer that
             // captured PM positions or section lists at load is now stale by the block

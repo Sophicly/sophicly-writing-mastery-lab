@@ -950,11 +950,9 @@ Type Y if all three are true, or N if you need to revise first."
          
        **STRENGTHS \- Marks Awarded:**  
          
-       * Hook (engaging question, provocative statement, or relevant observation) OR strong opening statement that addresses the question (AO3): \+0.5  
-         → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
-       * Introduces both texts and their contexts clearly (AO3): \+0.5  
-         → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
-       * Establishes a clear, debatable comparative thesis statement with sophisticated phrasing (AO3): \+1.0  
+       * Hook — an engaging question or a provocative statement about the concept (AO3): \+1.0  
+         → **Awarded \[X\]/1.0 marks** because \[specific reason\]  
+       * Comparative thesis statement outlining the three main ideas of the essay — one per body paragraph, drawn from the topic sentences (AO3): \+1.0  
          → **Awarded \[X\]/1.0 marks** because \[specific reason\]
 
        
@@ -1275,7 +1273,7 @@ Say: "Type Y to see your paragraph rewritten to gold standard."
          
        * Restated thesis (sophisticated rephrasing of introduction thesis) (AO3): \+1.0  
          → **Awarded \[X\]/1.0 marks** because \[specific reason\]  
-       * Final perceptive evaluation of authors' purposes (synthesizes WHY authors made their choices) (AO3): \+1.0  
+       * Final perceptive evaluation of the authors' purposes — the ultimate moral or message each text carries (synthesizes WHY the authors made their choices) (AO3): \+1.0  
          → **Awarded \[X\]/1.0 marks** because \[specific reason\]
 
        
