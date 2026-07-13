@@ -17312,7 +17312,11 @@
 
         // v7.19.265: floating "pull from previous stage" icon — last child so it
         // stacks above the editor. Appears only when the load flag turns it on.
-        _mountPullFab(editorPane);
+        // v7.20.75 (Neil ruling): pull FAB RETIRED — the chain feeds forward itself
+        // (phase-head sections live-sync on load; see _healPhase1PrewriteCarry + the
+        // FEED-FORWARD LAW in the codify design doc). Server force_seed stays for
+        // admin/debug. Do NOT re-mount without a new Neil ruling.
+        // _mountPullFab(editorPane);
 
         canvas.appendChild(editorPane);
 
@@ -36793,16 +36797,24 @@
     async function _healPhase1PrewriteCarry() {
         try {
             if (!canvasEditor) return;
-            // v7.20.71 (Neil): the pre-write space rides the WHOLE forward chain —
-            // Phase 1 (assessment, discuss) AND Phase 2 (planning → outlining →
-            // polishing → reassessment). Frozen/typed docs never re-pull their seed,
-            // so the heal covers every downstream task; AQA P2 planning's own
-            // injection runs first in the migrate chain, so its pred-paper guard
-            // makes this a no-op there. Review mode never mutates a student doc.
-            const CARRY_TASKS = ['assessment', 'redraft_assessment', 'planning', 'outlining', 'polishing'];
-            if (CARRY_TASKS.indexOf(state.task) === -1 || state.reviewMode) return;
+            // v7.20.75 (Neil's FEED-FORWARD LAW): the pre-write space is OWNED by the
+            // phase-HEAD lesson — Phase 1 = the diagnostic write (''), Phase 2 = planning
+            // (_planning; a new phase is a new attempt, so phase 2 never inherits phase-1
+            // content). Every LATER lesson in the phase LIVE-SYNCS those fields from the
+            // head doc on load (edits feed forward, never backwards); planning itself
+            // only synthesizes an empty space. Review mode never mutates a student doc.
+            const HEAD_BY_TASK = {
+                assessment: '', feedback_discussion: '',
+                outlining: '_planning', polishing: '_planning', redraft_assessment: '_planning',
+                planning: null, // head of its own phase — synthesis only, no upstream copy
+            };
+            if (!(state.task in HEAD_BY_TASK) || state.reviewMode) return;
+            // reassessment/discuss in redraft phase read from the planning head too
+            let headSuffix = HEAD_BY_TASK[state.task];
+            if (state.task === 'assessment' && state.phase === 'redraft') headSuffix = '_planning';
+            if (state.task === 'feedback_discussion' && state.phase === 'redraft') headSuffix = '_planning';
             const html = canvasEditor.getHTML();
-            if (html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1 || html.indexOf('pred-unseen') !== -1) return;
+            const _hasSpace = html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1 || html.indexOf('pred-unseen') !== -1;
             const _extractParts = (upstreamHtml) => {
                 if (!upstreamHtml || (upstreamHtml.indexOf('data-field-id="pred-') === -1 && upstreamHtml.indexOf('kw-focus') === -1)) return [];
                 const tmp = document.createElement('div');
@@ -36827,33 +36839,78 @@
                 return out;
             };
             const _fetchUpstream = async (attemptN) => {
-                const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=&attempt=${attemptN}`;
+                const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=${encodeURIComponent(headSuffix)}&attempt=${attemptN}`;
                 const res = await apiGet(url);
                 return (res && res.doc && res.doc.html) ? res.doc.html : '';
             };
-            // v7.20.73: ATTEMPT FALLBACK + SYNTHESIS (Neil's R&J appear/disappear repro —
-            // the attempt-drift class). The attempt can re-resolve mid-load (1 → 2), and a
-            // later attempt's diagnostic may never have been opened: try the CURRENT
-            // attempt, fall back to attempt 1, and when NO upstream block exists at all,
-            // SYNTHESIZE the empty space from the doc itself (_composePrewriteBlock) —
-            // the space must exist on every chain lesson.
-            let parts = _extractParts(await _fetchUpstream(state.attempt || 1));
-            if (!parts.length && (state.attempt || 1) > 1) parts = _extractParts(await _fetchUpstream(1));
-            if (!parts.length) {
-                const composed = _composePrewriteBlock(false, !_isAnyLanguagePaper());
-                if (composed && composed.block) parts = [composed.block];
+            // Fetch the phase-HEAD doc (attempt fallback: current → 1; the attempt can
+            // re-resolve mid-load and a later attempt's head may never have been opened).
+            let upstreamHtml = '';
+            if (headSuffix !== null) {
+                upstreamHtml = await _fetchUpstream(state.attempt || 1);
+                if (!_extractParts(upstreamHtml).length && (state.attempt || 1) > 1) upstreamHtml = await _fetchUpstream(1);
             }
-            if (!parts.length) return;
-            // ONE placement rule shared with the injection (v7.20.73).
-            canvasEditor.commands.insertContentAt(_prewriteInsertPos(parts.join('').indexOf('kw-focus') !== -1), parts.join(''));
-            if (typeof saveCanvasContent === 'function') saveCanvasContent();
-            // v7.20.68: this insert lands ASYNC (after apiGet) — every consumer that
-            // captured PM positions or section lists at load is now stale by the block
-            // size (island breadcrumb pointed at earlier nodes = Neil's "backwards";
-            // TOC numbering missed the new rows). Fire the existing rebuild hooks.
-            try { buildTableOfContents(); } catch (_) {}
-            try { if (typeof _siRebuildRef === 'function') _siRebuildRef(); } catch (_) {}
-            console.log('WML Migration: Phase-1 pre-write space carried into assessment doc (' + parts.length + ' node(s))');
+            const parts = _extractParts(upstreamHtml);
+            if (!_hasSpace) {
+                // Doc lacks the space entirely: insert the head's block (WITH content),
+                // else synthesize the empty space from this doc itself (v7.20.73).
+                let insertParts = parts;
+                if (!insertParts.length) {
+                    const composed = _composePrewriteBlock(false, !_isAnyLanguagePaper());
+                    if (composed && composed.block) insertParts = [composed.block];
+                }
+                if (!insertParts.length) return;
+                // ONE placement rule shared with the injection (v7.20.73).
+                canvasEditor.commands.insertContentAt(_prewriteInsertPos(insertParts.join('').indexOf('kw-focus') !== -1), insertParts.join(''));
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                // v7.20.68: async insert → rebuild the position/list consumers.
+                try { buildTableOfContents(); } catch (_) {}
+                try { if (typeof _siRebuildRef === 'function') _siRebuildRef(); } catch (_) {}
+                console.log('WML chain: pre-write space inserted (' + insertParts.length + ' node(s), head=' + (headSuffix === null ? 'self' : (headSuffix || 'diagnostic')) + ')');
+                return;
+            }
+            // v7.20.75 LIVE-SYNC (Neil's feed-forward law — the "TEST FOCUS didn't
+            // persist" repro): the space exists here already, so MIRROR the head's
+            // field content into it. Head-owned fields flow forward on every load;
+            // edits made downstream to these fields are overwritten by design (the
+            // head lesson owns them; backwards never flows).
+            if (!parts.length) return; // head has no space/content — nothing to mirror
+            const _tmpUp = document.createElement('div');
+            _tmpUp.innerHTML = parts.join('');
+            const upFields = {};
+            _tmpUp.querySelectorAll('[data-input-field][data-field-id]').forEach((el) => {
+                const id = el.getAttribute('data-field-id') || '';
+                if (!/^pred-|^kw-focus$/.test(id)) return;
+                const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+                if (t) upFields[id] = t;
+            });
+            if (!Object.keys(upFields).length) return;
+            let synced = 0;
+            Object.keys(upFields).forEach((fid) => {
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if (node.type.name === 'inputField' && node.attrs && node.attrs.fieldId === fid) {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null || !targetNode) return;
+                const cur = (targetNode.textContent || '').replace(/\s+/g, ' ').trim();
+                if (cur === upFields[fid]) return; // already mirrored — idempotent
+                try {
+                    canvasEditor.chain().command(({ tr, state: pmState }) => {
+                        const para = pmState.schema.nodes.paragraph.createChecked(null, pmState.schema.text(upFields[fid]));
+                        tr.replaceWith(targetPos + 1, targetPos + targetNode.nodeSize - 1, para);
+                        return true;
+                    }).run();
+                    synced++;
+                } catch (e2) { console.warn('WML chain: field mirror failed', fid, e2 && e2.message); }
+            });
+            if (synced) {
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML chain: pre-write fields live-synced from head (' + synced + ' field(s), head=' + (headSuffix || 'diagnostic') + ')');
+            }
         } catch (e) { console.warn('WML: pre-write carry heal failed (non-fatal)', e && e.message); }
     }
 
