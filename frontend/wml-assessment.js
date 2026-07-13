@@ -814,11 +814,52 @@
             if (/do you expect this paper is about/i.test(lastAsk)) fid = 'pred-paper';
             else if (/predict Source A will explore/i.test(lastAsk)) fid = 'pred-source-a';
             else if (/predict Source B will explore/i.test(lastAsk)) fid = 'pred-source-b';
-            if (fid && _writeOutlineRowField(fid, msg)) {
+            // v7.20.53: REPLACE — predictions are per-run commitments; append stacked a
+            // previous run's answer under this run's (doc survives chat clears).
+            if (fid && _writeOutlineRowField(fid, msg, { replace: true })) {
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 setTimeout(_refreshPlanningSidebar, 250);
             }
         } catch (e) { console.warn('WML plan-chain: prediction file failed (non-fatal)', e && e.message); }
+    }
+    // v7.20.53: chat-clear wipes the chain's OWN captures — predictions are per-run
+    // commitments (re-captured every run); a dead run's answers left in the doc forked
+    // the sidebar's done-ness and stacked under the new run's (append). Plan fields
+    // (student work product) are NEVER touched. Planning-only self-guard.
+    function _resetPlanningPredictions() {
+        try {
+            if (!_planPreChainActive() || !canvasEditor) return;
+            let wiped = 0;
+            ['pred-paper', 'pred-source-a', 'pred-source-b'].forEach(fid => {
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if ((node.type.name === 'outlineRow' || node.type.name === 'inputField') && node.attrs && node.attrs.fieldId === fid) {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null || !targetNode || !(targetNode.textContent || '').trim()) return;
+                canvasEditor.commands.deleteRange({ from: targetPos + 1, to: targetPos + targetNode.nodeSize - 1 });
+                wiped++;
+            });
+            if (wiped) {
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML plan-chain: cleared', wiped, 'prediction field(s) for the fresh run');
+            }
+        } catch (e) { console.warn('WML plan-chain: prediction reset failed (non-fatal)', e && e.message); }
+    }
+    // v7.20.53 (Neil): deep-link scroll for chain asks — scroll-only, never submits.
+    // Loop-based label match (never CSS.escape — WML rule); first matching section wins.
+    function _planScrollToSection(re) {
+        try {
+            const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
+            let target = null;
+            host.querySelectorAll('.swml-section-block[data-section-label]').forEach(s => {
+                if (!target && re.test(s.getAttribute('data-section-label') || '')) target = s;
+            });
+            if (target) _swmlScrollToTop(target);
+        } catch (_) { /* non-fatal */ }
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -1565,7 +1606,12 @@
             } catch (_) { /* non-fatal */ }
         }, 400);
     }
-    function _writeOutlineRowField(fid, verbatim) {
+    // v7.20.53: opts.replace — run-scoped chain captures (planning predictions) REPLACE
+    // stale content instead of appending. The doc survives chat clears, so append
+    // semantics stacked a previous run's prediction under this run's (and stale answers
+    // forked the sidebar's done-ness). Replace is the honest write for a per-run
+    // commitment; default append semantics unchanged for every other caller.
+    function _writeOutlineRowField(fid, verbatim, opts) {
         if (!canvasEditor || !fid || !verbatim) return false;
         let targetPos = null, targetNode = null;
         canvasEditor.state.doc.descendants((node, pos) => {
@@ -1582,9 +1628,13 @@
         const existing = (targetNode.textContent || '');
         const from = targetPos + 1;
         const to = targetPos + targetNode.nodeSize - 1;
-        if (!existing.trim()) {
+        if (!existing.trim() || (opts && opts.replace)) {
+            if (existing.trim() === verbatim.trim()) {
+                console.log('WML FieldFill: skip — field', fid, 'already holds this answer (re-fire)');
+                return false;
+            }
             canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: verbatim });
-            console.log('WML FieldFill: wrote', verbatim.length, 'chars →', fid);
+            console.log('WML FieldFill:', existing.trim() ? 'replaced' : 'wrote', verbatim.length, 'chars →', fid);
         } else if (existing.indexOf(verbatim) !== -1) {
             console.log('WML FieldFill: skip — field', fid, 'already contains this answer (re-fire)');
             return false;
@@ -10003,6 +10053,9 @@
                         // v7.14.68 / v7.19.250: Planning silent auto-send after clear.
                         // Polishing migrated to inline-coaching env (v7.19.250) — no auto-send.
                         // Use setTimeout to let DOM settle; verify editor is alive before sending
+                        // v7.20.53: fresh run — wipe the chain's own prediction captures
+                        // (per-run commitments; stale ones forked sidebar done-ness).
+                        _resetPlanningPredictions();
                         setTimeout(() => {
                             if (canvasEditor && canvasEditor.options?.element) {
                                 canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage();
@@ -10560,23 +10613,47 @@
                  ['B) Standard — key phrases', 'My plan mode: Standard — key phrases']]
                     .forEach(pair => bar.appendChild(el('button', {
                         className: 'swml-quick-btn', textContent: pair[0], onClick: () => sendVal(pair[1]) })));
+            } else if (stage === 'predQ') {
+                // v7.20.53 (Neil): deep-link buttons — scroll to each question, never
+                // submit. DERIVED from the doc's question sections (dynamic per paper:
+                // Eduqas 10 Qs, IGCSE 6…). Bar persists after clicks (it's navigation).
+                const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
+                host.querySelectorAll('[data-section-type="question"]').forEach(q => {
+                    const m = /^(Q\d+)/.exec((q.getAttribute('data-section-label') || '').trim());
+                    if (!m) return;
+                    const qid = m[1];
+                    bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + qid,
+                        onClick: () => _planScrollToSection(new RegExp('^' + qid + '\\b', 'i')) }));
+                });
+            } else if (stage === 'predA' || stage === 'predB') {
+                // v7.20.53: same deep-link for the source being predicted.
+                const letter = stage === 'predA' ? 'A' : 'B';
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + _planSourceLabel(letter),
+                    onClick: () => _planScrollToSection(new RegExp('source\\s*' + letter + '\\b', 'i')) }));
             }
             if (bar.childNodes.length) bc.appendChild(bar);
         }
         // v7.20.52: resume hook — after a chat replay, re-append the buttons of the
-        // pending (asked, unanswered) capture. _planPreChainStageFor returns the NEXT
-        // question to render, so the pending one is its predecessor; predict stages are
-        // free-typed (no buttons). Idempotent: skips if a quick-action bar already
-        // exists on the last bubble (live render, or the generic option auto-detector).
+        // pending (asked, unanswered) capture. v7.20.53: pending derives from the LAST
+        // ASK's own text (byte-paired with _planPreChainStageFor's regexes) — the
+        // next-stage map couldn't represent a pending predB (stage null = asked AND
+        // the chain's final question), and predict stages now carry deep-link buttons.
+        // Idempotent: skips if a quick-action bar already exists on the last bubble.
         function _resumePlanChainActions() {
             try {
                 if (!_planPreChainActive()) return;
-                const next = _planPreChainStageFor(canvasChatHistory);
-                const pending = { headline: 'greeting', planmode: 'headline', predQ: 'planmode' }[next];
-                if (!pending) return;
                 let last = null;
                 for (let i = canvasChatHistory.length - 1; i >= 0; i--) { if (!canvasChatHistory[i].hidden) { last = canvasChatHistory[i]; break; } }
                 if (!last || last.role !== 'assistant') return; // answered-but-unrendered: next send recovers
+                const t = _planChainNorm(last.content);
+                let pending = null;
+                if (/condense your plans/i.test(t)) pending = 'planmode';
+                else if (/headline goal/i.test(t)) pending = 'headline';
+                else if (/what grade are you aiming for/i.test(t)) pending = 'greeting';
+                else if (/do you expect this paper is about/i.test(t)) pending = 'predQ';
+                else if (/predict Source A will explore/i.test(t)) pending = 'predA';
+                else if (/predict Source B will explore/i.test(t)) pending = 'predB';
+                if (!pending) return; // chain done or a conversation the chain never owned
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
                 if (!bc || bc.querySelector('.swml-quick-actions')) return;
@@ -19142,6 +19219,8 @@
                                         // v7.14.68: Planning/polishing — silent auto-send after clear
                                         // v7.19.915: tp is the hoisted training-panels handle — null if this
                                         // canvas rendered outside the training-env branch. Fail loud, not dead.
+                                        // v7.20.53: fresh run — wipe chain prediction captures (self-guards to planning).
+                                        _resetPlanningPredictions();
                                         if (tp) { canvasSilentSend = true; tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage(); }
                                         else console.warn('WML clear-chat: no training panels handle — auto-resend skipped for', state.task);
                                         } else {
@@ -19784,19 +19863,39 @@
                                  ['B) Standard — key phrases', 'My plan mode: Standard — key phrases']]
                                     .forEach(pair => bar.appendChild(el('button', {
                                         className: 'swml-quick-btn', textContent: pair[0], onClick: () => sendVal(pair[1]) })));
+                            } else if (stage === 'predQ') {
+                                // v7.20.53 (Neil): deep-link buttons — doc-derived, scroll-only (twin).
+                                const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
+                                host.querySelectorAll('[data-section-type="question"]').forEach(q => {
+                                    const m = /^(Q\d+)/.exec((q.getAttribute('data-section-label') || '').trim());
+                                    if (!m) return;
+                                    const qid = m[1];
+                                    bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + qid,
+                                        onClick: () => _planScrollToSection(new RegExp('^' + qid + '\\b', 'i')) }));
+                                });
+                            } else if (stage === 'predA' || stage === 'predB') {
+                                const letter = stage === 'predA' ? 'A' : 'B';
+                                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + _planSourceLabel(letter),
+                                    onClick: () => _planScrollToSection(new RegExp('source\\s*' + letter + '\\b', 'i')) }));
                             }
                             if (bar.childNodes.length) bc.appendChild(bar);
                         }
-                        // v7.20.52: resume hook (twin — see primary pipeline for the law).
+                        // v7.20.52/53: resume hook (twin — see primary pipeline for the law).
                         function _resumePlanChainActions() {
                             try {
                                 if (!_planPreChainActive()) return;
-                                const next = _planPreChainStageFor(canvasChatHistory);
-                                const pending = { headline: 'greeting', planmode: 'headline', predQ: 'planmode' }[next];
-                                if (!pending) return;
                                 let last = null;
                                 for (let i = canvasChatHistory.length - 1; i >= 0; i--) { if (!canvasChatHistory[i].hidden) { last = canvasChatHistory[i]; break; } }
                                 if (!last || last.role !== 'assistant') return;
+                                const t = _planChainNorm(last.content);
+                                let pending = null;
+                                if (/condense your plans/i.test(t)) pending = 'planmode';
+                                else if (/headline goal/i.test(t)) pending = 'headline';
+                                else if (/what grade are you aiming for/i.test(t)) pending = 'greeting';
+                                else if (/do you expect this paper is about/i.test(t)) pending = 'predQ';
+                                else if (/predict Source A will explore/i.test(t)) pending = 'predA';
+                                else if (/predict Source B will explore/i.test(t)) pending = 'predB';
+                                if (!pending) return;
                                 const bubble = chatMessages.lastElementChild;
                                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
                                 if (!bc || bc.querySelector('.swml-quick-actions')) return;
@@ -35960,15 +36059,30 @@
         // resume-proof fallback when no history getter is registered yet.
         const predsFiled = !!(fieldText('pred-paper') && fieldText('pred-source-a') && fieldText('pred-source-b'));
         if (host.querySelector('[data-field-id="pred-paper"]')) {
+            // v7.20.53: the CHAIN (history) is the ONE truth for Setup done-ness — the doc
+            // fields survive chat clears/abandoned runs, so raw predsFiled ticked
+            // Predictions ✓ from a PREVIOUS run's answers and jumped current to Q2 while
+            // this run was still mid-predictions (Neil's repro). Fields remain only the
+            // no-history fallback; histAvailable tracks which truth we're on.
             let stageIdx = predsFiled ? 6 : 0;
+            let histAvailable = false;
             try {
                 const hist = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null;
                 if (hist) {
+                    histAvailable = true;
                     const stage = _planPreChainStageFor(hist);
                     const order = ['greeting', 'headline', 'planmode', 'predQ', 'predA', 'predB'];
-                    stageIdx = stage === null
-                        ? (hist.some(m => m.role === 'assistant') ? 6 : 0)
-                        : order.indexOf(stage);
+                    if (stage !== null) {
+                        stageIdx = order.indexOf(stage);
+                    } else if (!hist.some(m => m.role === 'assistant')) {
+                        stageIdx = 0;
+                    } else {
+                        // stage null = predB ASKED (or a legacy chat the chain never owned).
+                        // Asked ≠ answered: only reach 6 when a user reply follows the ask.
+                        let bIdx = -1;
+                        hist.forEach((m, i) => { if (m.role === 'assistant' && /predict Source B will explore/i.test(_planChainNorm(m.content))) bIdx = i; });
+                        stageIdx = (bIdx !== -1 && !hist.some((m, i) => i > bIdx && m.role === 'user')) ? 5 : 6;
+                    }
                 }
             } catch (_) { /* field fallback stands */ }
             // v7.20.52: a row is done when its capture is ANSWERED, not merely asked.
@@ -35979,7 +36093,9 @@
             add('Grade goal', 'Setup', stageIdx >= 2);
             add('Headline goal', 'Setup', stageIdx >= 3);
             add('Plan mode', 'Setup', stageIdx >= 4);
-            add('Predictions', 'Setup', predsFiled);
+            // v7.20.53: chain truth when available — raw fields tick from a PREVIOUS
+            // run's answers (doc survives chat clears; Neil's jump-to-Q2 repro).
+            add('Predictions', 'Setup', histAvailable ? stageIdx >= 6 : predsFiled);
         }
         planSecs.forEach(sec => {
             const raw = (sec.getAttribute('data-section-label') || '').replace(/^Plan:\s*/i, '');
