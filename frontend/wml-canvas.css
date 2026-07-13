@@ -7552,21 +7552,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-checklist-box:hover {
     border-color: rgba(28,217,145,0.55);
 }
-/* v7.20.60: the check animates via KEYFRAMES, not transitions. v7.20.67: keyframes
-   moved behind .swml-check-anim — the NodeView stamps it ONLY on a live false→true
-   flip it observes in update(). A (re)mounted already-checked box paints the static
-   end state below; keying animation on [data-checked="true"] alone made every
-   redraw/load mass-replay all checked boxes (Neil's multi-box "interference"). */
+/* v7.20.68 (Neil): keyframes retired — simple effect only. The base transitions
+   (box-shadow / stroke-dashoffset) animate a LIVE toggle because update() flips the
+   attr on the existing dom (v7.20.58 law); a (re)mounted checked box just paints its
+   end state, so nothing ever mass-replays (the v7.20.67 lesson). */
 .swml-checklist-item[data-checked="true"] .swml-checklist-box {
     border-color: transparent;
     box-shadow: inset 0 0 0 10px #1CD991;
-}
-.swml-checklist-item.swml-check-anim[data-checked="true"] .swml-checklist-box {
-    animation: swml-check-flood 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-@keyframes swml-check-flood {
-    from { box-shadow: inset 0 0 0 0 rgba(28,217,145,0.4); }
-    to   { box-shadow: inset 0 0 0 10px #1CD991; }
 }
 .swml-check-tick-svg {
     width: 12px; height: 12px;
@@ -7584,14 +7576,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     transition: stroke-dashoffset 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* un-draw on uncheck */
 }
 .swml-checklist-item[data-checked="true"] .swml-check-tick {
-    stroke-dashoffset: 0; /* static end state on (re)mount — no replay */
-}
-.swml-checklist-item.swml-check-anim[data-checked="true"] .swml-check-tick {
-    animation: swml-check-draw 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both; /* draws after the flood */
-}
-@keyframes swml-check-draw {
-    from { stroke-dashoffset: 24px; }
-    to   { stroke-dashoffset: 0px; }
+    stroke-dashoffset: 0; /* live toggle animates via the base transition; mounts paint static */
 }
 @media (prefers-reduced-motion: reduce) {
     .swml-checklist-box, .swml-check-tick { transition: none; animation: none; }

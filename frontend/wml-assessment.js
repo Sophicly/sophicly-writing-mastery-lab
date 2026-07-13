@@ -22707,17 +22707,11 @@
                         update(updated) {
                             if (updated.type.name !== 'checklistItem') return false;
                             node = updated;
-                            // v7.20.67: animate ONLY a live false→true flip observed here.
-                            // Keyframes used to key on [data-checked="true"] alone, so every
-                            // (re)mount of an already-checked box replayed flood+draw — with
-                            // several checked statements any redraw/load mass-replayed them
-                            // (Neil's "checkboxes interfering"). Mounted-checked now paints
-                            // the static end state; .swml-check-anim carries the keyframes.
-                            const wasChecked = dom.getAttribute('data-checked') === 'true';
-                            const nowChecked = !!updated.attrs.checked;
-                            dom.setAttribute('data-checked', nowChecked ? 'true' : 'false');
-                            if (nowChecked && !wasChecked) dom.classList.add('swml-check-anim');
-                            else if (!nowChecked) dom.classList.remove('swml-check-anim');
+                            // v7.20.68 (Neil): keyframes retired — the base CSS transitions
+                            // give the simple effect. Live toggles animate because this
+                            // in-place attr flip transitions; (re)mounted checked boxes
+                            // paint static end state (the v7.20.67 mass-replay lesson).
+                            dom.setAttribute('data-checked', updated.attrs.checked ? 'true' : 'false');
                             if (updated.attrs.itemId) dom.setAttribute('data-item-id', updated.attrs.itemId);
                             if (updated.attrs.correct === true)  dom.setAttribute('data-correct', 'true');
                             if (updated.attrs.correct === false) dom.setAttribute('data-correct', 'false');
@@ -36754,6 +36748,12 @@
             if (!parts.length) return;
             canvasEditor.commands.insertContentAt(0, parts.join(''));
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            // v7.20.68: this insert lands ASYNC (after apiGet) — every consumer that
+            // captured PM positions or section lists at load is now stale by the block
+            // size (island breadcrumb pointed at earlier nodes = Neil's "backwards";
+            // TOC numbering missed the new rows). Fire the existing rebuild hooks.
+            try { buildTableOfContents(); } catch (_) {}
+            try { if (typeof _siRebuildRef === 'function') _siRebuildRef(); } catch (_) {}
             console.log('WML Migration: Phase-1 pre-write space carried into assessment doc (' + parts.length + ' node(s))');
         } catch (e) { console.warn('WML: pre-write carry heal failed (non-fatal)', e && e.message); }
     }
@@ -37874,26 +37874,15 @@
                     sc = sc.parentElement;
                 }
                 const scroller = (sc && sc !== document.body) ? sc : cw;
-                // v7.19.417: account for the auto-fit zoom. .swml-canvas-doc is
-                // transform-scaled; the scroller's scrollTop space is layout space
-                // while rects are visual, so without dividing by the rendered scale
-                // every click scrolls short whenever zoom < 1 (fitted-width screens)
-                // — Neil's "TOC click doesn't scroll to the area". Mirrors
-                // scrollContentTo() (v7.13.74), which lives in a different closure
-                // and cannot be called from here; the scale is read from the DOM
-                // because canvasZoom is also out of scope.
-                let zoom = 1;
-                const docEl = target.closest('.swml-canvas-doc');
-                if (docEl) {
-                    const t = getComputedStyle(docEl).transform;
-                    if (t && t !== 'none') {
-                        const m = t.match(/matrix\(([-0-9.]+)/);
-                        if (m && parseFloat(m[1])) zoom = parseFloat(m[1]);
-                    }
-                }
+                // v7.20.68: NO zoom division — the v7.19.417 `/ zoom` here contradicted the
+                // v7.19.768 ruling that settled this for scrollContentTo(): the scaled
+                // .swml-canvas-doc sits INSIDE the unscaled scroller, so rects are visual and
+                // scrollTop moves 1:1 with them. Dividing at <100% zoom inflated the offset
+                // and overshot (Neil's "TOC scrolls past the section" at 71%). One convention
+                // now: visual delta, no compensation — same as scrollContentTo.
                 const sRect = scroller.getBoundingClientRect();
                 const tRect = target.getBoundingClientRect();
-                scroller.scrollTo({ top: scroller.scrollTop + ((tRect.top - sRect.top) / zoom) - (sRect.height / 3), behavior: 'smooth' });
+                scroller.scrollTo({ top: scroller.scrollTop + (tRect.top - sRect.top) - (sRect.height / 3), behavior: 'smooth' });
             } else {
                 console.warn('WML TOC: no section in document matches label', label);
             }
