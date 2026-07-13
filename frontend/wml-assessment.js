@@ -36851,7 +36851,20 @@
      * overwrites nothing); backwards edits never flow (the diagnostic doc is untouched).
      * Fail-silent: no upstream block → no-op; next load retries.
      */
+    // v7.20.80: SERIALIZE the heal. The .79 flush-await stretched each run past the
+    // 1.8s settled-pass gap, so mount pass + settled pass could BOTH snapshot "no
+    // pre-write space yet" and BOTH insert — duplicated, schema-flattened loose
+    // paragraphs outside the box (Neil's outline-lesson repro). One run at a time;
+    // a queued run re-reads the live doc, so the presence checks stay truthful.
+    let _prewriteHealRunning = null;
     async function _healPhase1PrewriteCarry() {
+        if (_prewriteHealRunning) { try { await _prewriteHealRunning; } catch (_) {} }
+        let _done;
+        _prewriteHealRunning = new Promise((r) => { _done = r; });
+        try { await _healPhase1PrewriteCarryInner(); }
+        finally { _done(); _prewriteHealRunning = null; }
+    }
+    async function _healPhase1PrewriteCarryInner() {
         try {
             if (!canvasEditor) return;
             // v7.20.75 (Neil's FEED-FORWARD LAW): the pre-write space is OWNED by the
@@ -36870,8 +36883,6 @@
             let headSuffix = HEAD_BY_TASK[state.task];
             if (state.task === 'assessment' && state.phase === 'redraft') headSuffix = '_planning';
             if (state.task === 'feedback_discussion' && state.phase === 'redraft') headSuffix = '_planning';
-            const html = canvasEditor.getHTML();
-            const _hasSpace = html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1 || html.indexOf('pred-unseen') !== -1;
             const _extractParts = (upstreamHtml) => {
                 if (!upstreamHtml || (upstreamHtml.indexOf('data-field-id="pred-') === -1 && upstreamHtml.indexOf('kw-focus') === -1)) return [];
                 const tmp = document.createElement('div');
@@ -36913,6 +36924,10 @@
                 upstreamHtml = await _fetchUpstream(_mirrorAtt);
                 if (!_extractParts(upstreamHtml).length && _mirrorAtt > 1) upstreamHtml = await _fetchUpstream(1);
             }
+            // v7.20.80: presence check runs AFTER the awaits (flush + fetch) — a snapshot
+            // taken before them goes stale mid-run and double-inserts (the .79 regression).
+            const html = canvasEditor.getHTML();
+            const _hasSpace = html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1 || html.indexOf('pred-unseen') !== -1;
             const parts = _extractParts(upstreamHtml);
             if (!_hasSpace) {
                 // Doc lacks the space entirely: insert the head's block (WITH content),
