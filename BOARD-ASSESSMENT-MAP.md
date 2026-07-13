@@ -4,7 +4,7 @@
 
 **Siblings:** `PROTOCOL-STANDARD.md` (what the protocol says) · `ASSESSMENT-MECHANICS.md` (how the engine behaves) · `CN-STANDARD.md` (conceptual-notes contract). This doc = *where the marks live per board*.
 
-**Owner:** Neil (Sophicly). **Last built:** 2026-07-11 (Language half; Literature = TODO batch 2).
+**Owner:** Neil (Sophicly). **Last built:** 2026-07-11 (Language half) + Literature half (AQA/Eduqas/Edexcel GCSE+IGCSE/OCR/CCEA/SQA). **Re-verified 2026-07-12** by an independent 4-agent re-extraction from protocols — headline grids CONFIRMED to match; a few extra internal-scaffold drifts logged in §DRIFT (2026-07-12 addendum).
 
 ---
 
@@ -232,3 +232,10 @@ Section 1 totals 20 (`2+4+2+4+8` typical). Technical accuracy integrated (no sep
 - **Per-AO numeric splits of the 30/40 totals** (AQA, Edexcel, Eduqas) — mostly stated as totals + AO4 only.
 - **CCEA Unit 2** (Drama & Poetry) AO/marks; **SQA Higher + Paper 1 RUAE**; **exam durations / % weightings** across all boards.
 - **Cambridge IGCSE 0500/0990 Literature** — no protocol dir extracted (not present among the board dirs).
+
+## §DRIFT — 2026-07-12 re-verification addendum (extra items caught; headline grids unchanged)
+
+7. **Eduqas poetry protocol lists AQA's anthology clusters, not Eduqas's own.** `eduqas/poetry/foundation-poetry.md:5,194-195` is "Adapted from AQA GCSE Poetry Comparison Protocol" and names AQA's **Power & Conflict / Love & Relationships** as the anthology. Eduqas has its own poetry set — **student-facing content mismatch**, verify before it reaches students. (Also `:822-824` still shows a stale 7-mark body figure vs the live 6.)
+8. **AQA 19th-C novel denominator conflict (/30 vs /34).** Shared `aqa/literature/…/protocol-a-assessment.md` hardcodes the summary as `Total: X/34` (l.921,926,931-932,999) for every lit essay incl. the 19th-C novel, but `ao4-assessment.md:64-65` / `knowledge-ao4.md:15` mark the 19th-C novel **/30, no AO4**. Same file also reaches "34" two incompatible ways (body max 8 vs 7; conclusion 7 vs 6). Headline component marks unaffected; element-allocation contradiction for a future protocol cleanup.
+9. **Edexcel GCSE poetry intro marks — 3 vs 2 vs 5.** `edexcel/…/protocol-a-assessment.md:532` header "3 Marks" but operative totals use /2 (`:600,:1682-1684`), and the self-rating table `:1708` mislabels intro "/5". Grand total /20 is sound; intro sub-mark drifts.
+10. **INFRA — two protocol trees have diverged.** OCR/poetry + CCEA protocols exist ONLY in the canonical `sophicly-plugins/sophicly-writing-mastery-lab/protocols/` tree, NOT in the `sophicly_writing_mastery_lab_v7_12_30/protocols/` copy (where this MAP file lives). Cross-check which tree is authoritative before any protocol edit for those boards.
