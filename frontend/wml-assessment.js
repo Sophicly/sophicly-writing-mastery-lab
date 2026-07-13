@@ -17042,6 +17042,39 @@
                     });
                     header.insertBefore(collapseAll, header.querySelector('.swml-extract-panel-close'));
                 }
+                // v7.20.62 (Neil's repro): a re-mark SHARES the document (v7.19.843 —
+                // deliberate; only the grade history forks), so a stored doc can hold a
+                // NEWER partial marking run than the recorded result on the badge
+                // (badge Grade 7 / 58-80 vs doc "3/80 · Grade 1 (in progress)", feedback
+                // boxes unmarked). Not a data fault — surface the divergence honestly
+                // instead of letting the pad read as broken. Code-derived comparison of
+                // the doc's own Score Summary against the attempt row; display-only.
+                try {
+                    if (row.grade != null && row.grade !== '') {
+                        let scoresEl = null;
+                        body.querySelectorAll('.swml-section-block').forEach(s => {
+                            if (!scoresEl && /score summary/i.test(s.getAttribute('data-section-label') || '')) scoresEl = s;
+                        });
+                        const sTxt = scoresEl ? (scoresEl.textContent || '') : '';
+                        const dg = /Grade:\s*([1-9U])/i.exec(sTxt);
+                        const inProg = /in progress/i.test(sTxt);
+                        if (dg && String(dg[1]) !== String(row.grade).trim()) {
+                            const dt = /Total Marks:\s*([\d.]+\s*\/\s*\d+)/i.exec(sTxt);
+                            const recorded = 'Grade ' + row.grade + (row.score ? ' (' + row.score + ')' : '');
+                            const note = el('div', { className: 'swml-prior-mismatch' });
+                            note.textContent = inProg
+                                ? 'Heads-up: this document holds a newer marking run that’s still in progress'
+                                    + (dt ? ' (' + dt[1].replace(/\s+/g, ' ') + ' so far)' : '')
+                                    + ' — some sections may be unmarked. The recorded result for this attempt is ' + recorded + '.'
+                                : 'Heads-up: this document shows Grade ' + dg[1]
+                                    + (dt ? ' (' + dt[1].replace(/\s+/g, ' ') + ')' : '')
+                                    + ' from a later marking run — the recorded result for this attempt is ' + recorded + '.';
+                            const jb = body.querySelector('.swml-prior-jumpbar');
+                            if (jb && jb.nextSibling) body.insertBefore(note, jb.nextSibling);
+                            else body.insertBefore(note, body.firstChild);
+                        }
+                    }
+                } catch (_) { /* display-honesty only — never blocks the pad */ }
             } else {
                 body.appendChild(el('p', { textContent: 'This document couldn’t be loaded — it may be empty.' }));
             }
