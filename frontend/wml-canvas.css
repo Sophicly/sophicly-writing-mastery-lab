@@ -7391,39 +7391,38 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
  *  CHECKLIST ITEMS (v7.14.60)
  * ══════════════════════════════════════════ */
 
+/* v7.20.55 (Neil): borderless list rows — the per-item outlined boxes read as a grid
+   of tacky cards. The checkbox is the only drawn control; row state is a soft tint. */
 .swml-checklist-item {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 8px 12px; margin: 3px 0;
-    border-radius: 6px;
-    background: rgba(255,255,255,0.025);
-    border: 1px solid rgba(255,255,255,0.06);
-    transition: background 0.2s, border-color 0.2s;
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 9px 12px; margin: 2px 0;
+    border-radius: 8px;
+    background: transparent;
+    transition: background 0.18s ease;
     cursor: default;
 }
-.swml-checklist-item:hover { background: rgba(255,255,255,0.04); }
+.swml-checklist-item:hover { background: rgba(255,255,255,0.035); }
 .swml-checklist-item[data-checked="true"] {
-    background: rgba(28,217,145,0.06);
-    border-color: rgba(28,217,145,0.2);
+    background: rgba(28,217,145,0.07);
 }
 .swml-checklist-box {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 20px; height: 20px; min-width: 20px;
-    margin-top: 2px;
-    border: 2px solid rgba(255,255,255,0.25);
-    border-radius: 5px;
+    width: 18px; height: 18px; min-width: 18px;
+    margin-top: 3px;
+    border: 1.5px solid rgba(255,255,255,0.28);
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: border-color 0.15s ease, background 0.15s ease;
     user-select: none; -webkit-user-select: none;
 }
 .swml-checklist-box:hover {
-    border-color: rgba(81,218,207,0.5);
-    background: rgba(81,218,207,0.08);
+    border-color: rgba(28,217,145,0.55);
 }
 .swml-checklist-item[data-checked="true"] .swml-checklist-box {
-    background: #1CD991; border-color: #1CD991;
+    background: #1CD991; border-color: transparent;
 }
 .swml-checklist-item[data-checked="true"] .swml-checklist-box::after {
-    content: '✓'; color: #fff; font-size: 13px; font-weight: 700; line-height: 1;
+    content: '✓'; color: #0b3b26; font-size: 12px; font-weight: 700; line-height: 1;
 }
 .swml-checklist-text {
     flex: 1; min-width: 0;
@@ -7431,25 +7430,22 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: rgba(255,255,255,0.8);
 }
 .swml-checklist-item[data-checked="true"] .swml-checklist-text {
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.55);
 }
 
 /* Light theme */
-[data-swml-theme="light"] .swml-checklist-item {
-    background: rgba(0,0,0,0.015); border-color: rgba(0,0,0,0.06);
-}
-[data-swml-theme="light"] .swml-checklist-item:hover { background: rgba(0,0,0,0.025); }
+[data-swml-theme="light"] .swml-checklist-item:hover { background: rgba(0,0,0,0.03); }
 [data-swml-theme="light"] .swml-checklist-item[data-checked="true"] {
-    background: rgba(28,217,145,0.05); border-color: rgba(28,217,145,0.2);
+    background: rgba(28,217,145,0.09);
 }
 [data-swml-theme="light"] .swml-checklist-box {
-    border-color: rgba(0,0,0,0.2);
+    border-color: rgba(0,0,0,0.25);
 }
 [data-swml-theme="light"] .swml-checklist-box:hover {
-    border-color: rgba(45,122,120,0.5); background: rgba(45,122,120,0.06);
+    border-color: rgba(24,160,110,0.6);
 }
 [data-swml-theme="light"] .swml-checklist-text { color: rgba(0,0,0,0.75); }
-[data-swml-theme="light"] .swml-checklist-item[data-checked="true"] .swml-checklist-text { color: rgba(0,0,0,0.4); }
+[data-swml-theme="light"] .swml-checklist-item[data-checked="true"] .swml-checklist-text { color: rgba(0,0,0,0.45); }
 
 /* ══════════════════════════════════════════
  *  SECTION CONTROL ROWS (v7.19.951 — replaces the absolute dropdown-overlay layer)

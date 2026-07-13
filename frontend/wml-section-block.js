@@ -179,6 +179,26 @@
                 }
             } catch (_) { /* never block render */ }
 
+            // v7.20.55 (Neil): prediction-capture sections (type 'notes', pred-* fields —
+            // AQA P2 planning) tick like fillable sections: complete when every pred-*
+            // field holds text. Scoped to pred-* fieldIds ONLY so CN/General-Notes 'notes'
+            // sections (which also carry inputFields) are untouched.
+            try {
+                if (type === 'notes') {
+                    let predInputs = 0, predFilled = 0, otherInputs = 0;
+                    node.descendants((c) => {
+                        if (c.type && c.type.name === 'inputField') {
+                            const fid = ((c.attrs && c.attrs.fieldId) || '');
+                            if (/^pred-/.test(fid)) { predInputs++; if ((c.textContent || '').trim().length > 0) predFilled++; }
+                            else otherInputs++;
+                        }
+                    });
+                    if (predInputs > 0 && otherInputs === 0) {
+                        dom.setAttribute('data-section-complete', predFilled === predInputs ? 'true' : 'false');
+                    }
+                }
+            } catch (_) { /* never block render */ }
+
             // v7.19.760: the three STUDENT-FILLED assessment sections compute completion
             // HERE, at render time, from the node model — so the tick survives nodeView
             // rebuild (JS-set attrs get wiped, comment L88). Analytics is type 'feedback', so

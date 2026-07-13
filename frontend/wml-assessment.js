@@ -711,6 +711,7 @@
             greeting: [1, 'Setup · Grade goal'], headline: [2, 'Setup · Headline goal'],
             planmode: [3, 'Setup · Plan mode'], predQ: [4, 'Predict · This paper'],
             predA: [5, 'Predict · Source A'], predB: [6, 'Predict · Source B'],
+            tidy: [6, 'Predict · Tidy-up'],
         };
         const b = map[stage];
         return b ? { section: b[1], step: b[0], total: 6 } : null;
@@ -786,16 +787,31 @@
             const unShort = facts.untrained.length
                 ? ` (${_planListJoin(facts.untrained)} you'll answer directly in the exam — no plan needed.)`
                 : '';
-            plain = `Now the pre-read. Look at the **${qPhrase}** in your document first — just the questions, don't read the sources yet.${unShort}\n\nWhat **3 themes** do you expect this paper is about? Type your three themes.`;
-            html = `<p>Now the pre-read. Look at the <strong>${qPhrase}</strong> in your document first — just the questions, don't read the sources yet.${unShort ? ` <em>${unShort.trim()}</em>` : ''}</p><p style="margin-top:8px">What <strong>3 themes</strong> do you expect this paper is about? Type your three themes.</p>`;
+            // v7.20.55 (Neil): Q1's statement options are theme clues — even false statements
+            // reveal what the sources cover. Gated on the doc actually carrying a checklist.
+            let skim = '';
+            try {
+                const h = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+                if (h && h.querySelector('.swml-checklist-item')) skim = ' Skim Q1’s statement list too — true or false, those statements hint at what the sources cover.';
+            } catch (_) { /* note stays off */ }
+            // v7.20.55 (Neil): why-predict citation — research/2026-07-12-prediction-before-
+            // reading-pedagogy.md F1 (generation effect, Bertsch et al. 2007, 86 studies).
+            const why = 'Why predict? Attempting an answer before you read measurably deepens what you learn from a text — even when the prediction turns out wrong. Psychologists call it the generation effect (Bertsch et al., 2007 — a meta-analysis of 86 studies).';
+            plain = `Now the pre-read. Look at the **${qPhrase}** in your document first — just the questions, don't read the sources yet.${unShort}${skim}\n\n${why}\n\nWhat **3 themes** do you expect this paper is about? Type your three themes.`;
+            html = `<p>Now the pre-read. Look at the <strong>${qPhrase}</strong> in your document first — just the questions, don't read the sources yet.${unShort ? ` <em>${unShort.trim()}</em>` : ''}${skim}</p><p style="margin-top:8px;font-size:12.5px;opacity:0.75"><em>${why}</em></p><p style="margin-top:8px">What <strong>3 themes</strong> do you expect this paper is about? Type your three themes.</p>`;
         } else if (stage === 'predA') {
             const la = _planSourceLabel('A');
-            plain = `Committed. Now look at **${la}** — read ONLY its title, author and date, not the text itself.\n\nWhat **3 themes** do you predict Source A will explore?`;
-            html = `<p>Committed. Now look at <strong>${la}</strong> — read ONLY its title, author and date, not the text itself.</p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict Source A will explore?</p>`;
+            plain = `Committed. Now look at **${la}** — read ONLY its title, author, date and preamble, not the text itself.\n\nWhat **3 themes** do you predict Source A will explore?`;
+            html = `<p>Committed. Now look at <strong>${la}</strong> — read ONLY its title, author, date and preamble, not the text itself.</p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict Source A will explore?</p>`;
         } else if (stage === 'predB') {
             const lb = _planSourceLabel('B');
-            plain = `Committed. Last one: **${lb}** — title, author and date only.\n\nWhat **3 themes** do you predict Source B will explore? After this your predictions are committed — we'll check back on them as you plan. Being wrong there is often where the best insights come from.`;
-            html = `<p>Committed. Last one: <strong>${lb}</strong> — title, author and date only.</p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict Source B will explore? After this your predictions are committed — we'll check back on them as you plan. Being wrong there is often where the best insights come from.</p>`;
+            plain = `Committed. Last one: **${lb}** — title, author, date and preamble only.\n\nWhat **3 themes** do you predict Source B will explore? After this your predictions are committed — we'll check back on them as you plan. Being wrong there is often where the best insights come from.`;
+            html = `<p>Committed. Last one: <strong>${lb}</strong> — title, author, date and preamble only.</p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict Source B will explore? After this your predictions are committed — we'll check back on them as you plan. Being wrong there is often where the best insights come from.</p>`;
+        } else if (stage === 'tidy') {
+            // v7.20.55 (Neil): one code-owned confirm between the last prediction and the
+            // first AI turn — a quick SPaG once-over of the prediction boxes.
+            plain = `All three predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the Predictions section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.\n\nClick **Continue** when you're happy with them.`;
+            html = `<p>All three predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the <strong>Predictions</strong> section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.</p><p style="margin-top:8px">Click <strong>Continue</strong> when you're happy with them.</p>`;
         }
         return { plain: plain, html: html };
     }
@@ -851,15 +867,33 @@
     }
     // v7.20.53 (Neil): deep-link scroll for chain asks — scroll-only, never submits.
     // Loop-based label match (never CSS.escape — WML rule); first matching section wins.
-    function _planScrollToSection(re) {
+    // v7.20.55: optional sectionType filter — label-only matching sent "📍 Source B" to
+    // the "Predictions: Source B" NOTES section (first label match in doc order), and
+    // left "📍 Source A" parked on its predictions box instead of the source text.
+    function _planScrollToSection(re, sectionType) {
         try {
             const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
+            const sel = sectionType
+                ? '.swml-section-block[data-section-type="' + sectionType + '"]'
+                : '.swml-section-block[data-section-label]';
             let target = null;
-            host.querySelectorAll('.swml-section-block[data-section-label]').forEach(s => {
+            host.querySelectorAll(sel).forEach(s => {
                 if (!target && re.test(s.getAttribute('data-section-label') || '')) target = s;
             });
             if (target) _swmlScrollToTop(target);
         } catch (_) { /* non-fatal */ }
+    }
+    // v7.20.55: does the incoming reply answer the chain's FINAL question (Source B)?
+    // True only when the last visible history message is the predB ask itself — once the
+    // tidy card (or any other assistant turn) follows, the reply flows through to the AI.
+    function _planChainAnswersPredB(history) {
+        for (let i = history.length - 1; i >= 0; i--) {
+            const m = history[i];
+            if (m.hidden) continue;
+            if (m.role !== 'assistant') return false;
+            return /predict Source B will explore/i.test(_planChainNorm(m.content));
+        }
+        return false;
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -10623,13 +10657,26 @@
                     if (!m) return;
                     const qid = m[1];
                     bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + qid,
-                        onClick: () => _planScrollToSection(new RegExp('^' + qid + '\\b', 'i')) }));
+                        onClick: () => _planScrollToSection(new RegExp('^' + qid + '\\b', 'i'), 'question') }));
                 });
             } else if (stage === 'predA' || stage === 'predB') {
                 // v7.20.53: same deep-link for the source being predicted.
+                // v7.20.55: type-filtered to SOURCE sections (label-only match hit the
+                // predictions boxes first in doc order).
                 const letter = stage === 'predA' ? 'A' : 'B';
                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + _planSourceLabel(letter),
-                    onClick: () => _planScrollToSection(new RegExp('source\\s*' + letter + '\\b', 'i')) }));
+                    onClick: () => _planScrollToSection(new RegExp('source\\s*' + letter + '\\b', 'i'), 'source') }));
+            } else if (stage === 'tidy') {
+                // v7.20.55: SPaG once-over — nav to the predictions + a silent continue.
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 Predictions',
+                    onClick: () => _planScrollToSection(/^Predictions/i) }));
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✓ Continue to planning',
+                    onClick: () => {
+                        bar.remove();
+                        canvasSilentSend = true;
+                        chatTextarea.value = 'Predictions committed — let’s begin planning.';
+                        sendCanvasMessageQueued();
+                    } }));
             }
             if (bar.childNodes.length) bc.appendChild(bar);
         }
@@ -10653,6 +10700,7 @@
                 else if (/do you expect this paper is about/i.test(t)) pending = 'predQ';
                 else if (/predict Source A will explore/i.test(t)) pending = 'predA';
                 else if (/predict Source B will explore/i.test(t)) pending = 'predB';
+                else if (/give them a quick once-over/i.test(t)) pending = 'tidy';
                 if (!pending) return; // chain done or a conversation the chain never owned
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
@@ -10764,9 +10812,24 @@
                     console.log('WML plan-chain: code-asked "' + _ppcStage + '" capture (no AI turn)');
                     return;
                 }
-                // Chain just completed: the closing reply (Source B predictions) files
-                // before it rides to the AI as the first planning turn.
+                // Chain just completed: the closing reply (Source B predictions) files first.
+                // v7.20.55: then ONE code-owned tidy step (SPaG once-over of the prediction
+                // boxes) before anything rides to the AI — its Continue button (or any typed
+                // reply after it) is the first AI-bound turn.
+                const _wasPredB = _planChainAnswersPredB(canvasChatHistory);
                 _planChainFilePrediction(canvasChatHistory, msg);
+                if (_wasPredB) {
+                    const _tdSilent = canvasSilentSend;
+                    canvasSilentSend = false;
+                    if (!_tdSilent) addChatMessage(msg, 'user');
+                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _tdSilent });
+                    chatTextarea.value = '';
+                    chatTextarea.style.height = '40px';
+                    _renderPlanChainQuestion('tidy');
+                    setTimeout(_refreshPlanningSidebar, 250);
+                    console.log('WML plan-chain: tidy step rendered (no AI turn)');
+                    return;
+                }
             }
 
             // v7.19.854: CLOSING CHAIN gate — while the engine-owned ending is collecting
@@ -16645,8 +16708,12 @@
             };
             // v7.19.975 (Neil): notes docs have no essay/response or filed feedback —
             // those pad toggles are meaningless there (Collapse all lives in their spot).
+            // v7.20.55 (Neil): Feedback pad only where feedback is a LIVE surface. The
+            // shared multi-phase doc carries stage-hidden feedback sections, so the toggle
+            // leaked into planning and popped placeholder feedback cards.
+            const _fbPadApplies = ['assessment', 'redraft_assessment', 'feedback_discussion'].indexOf(state.task) !== -1;
             if (!isEssayMode && !isNotesMode) _addPadToggle('essay', _workPad, { top: '110px', right: '48px' });
-            if (!isFeedbackMode && !isNotesMode) _addPadToggle('feedback', 'Feedback', { top: '140px', right: '76px' });
+            if (!isFeedbackMode && !isNotesMode && _fbPadApplies) _addPadToggle('feedback', 'Feedback', { top: '140px', right: '76px' });
         }
 
         // v7.19.914 (Neil): expose the "My Response" pad opener to the module-scope SA walk
@@ -19871,12 +19938,24 @@
                                     if (!m) return;
                                     const qid = m[1];
                                     bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + qid,
-                                        onClick: () => _planScrollToSection(new RegExp('^' + qid + '\\b', 'i')) }));
+                                        onClick: () => _planScrollToSection(new RegExp('^' + qid + '\\b', 'i'), 'question') }));
                                 });
                             } else if (stage === 'predA' || stage === 'predB') {
+                                // v7.20.55: type-filtered to SOURCE sections (twin).
                                 const letter = stage === 'predA' ? 'A' : 'B';
                                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + _planSourceLabel(letter),
-                                    onClick: () => _planScrollToSection(new RegExp('source\\s*' + letter + '\\b', 'i')) }));
+                                    onClick: () => _planScrollToSection(new RegExp('source\\s*' + letter + '\\b', 'i'), 'source') }));
+                            } else if (stage === 'tidy') {
+                                // v7.20.55: SPaG once-over (twin).
+                                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 Predictions',
+                                    onClick: () => _planScrollToSection(/^Predictions/i) }));
+                                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✓ Continue to planning',
+                                    onClick: () => {
+                                        bar.remove();
+                                        canvasSilentSend = true;
+                                        chatTextarea.value = 'Predictions committed — let’s begin planning.';
+                                        sendCanvasMessage();
+                                    } }));
                             }
                             if (bar.childNodes.length) bc.appendChild(bar);
                         }
@@ -19895,6 +19974,7 @@
                                 else if (/do you expect this paper is about/i.test(t)) pending = 'predQ';
                                 else if (/predict Source A will explore/i.test(t)) pending = 'predA';
                                 else if (/predict Source B will explore/i.test(t)) pending = 'predB';
+                                else if (/give them a quick once-over/i.test(t)) pending = 'tidy';
                                 if (!pending) return;
                                 const bubble = chatMessages.lastElementChild;
                                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
@@ -19966,7 +20046,22 @@
                                     console.log('WML plan-chain: code-asked "' + _ppcStage + '" capture (no AI turn)');
                                     return;
                                 }
+                                // v7.20.55: tidy step after the final prediction (twin — see
+                                // primary pipeline for the law).
+                                const _wasPredB2 = _planChainAnswersPredB(canvasChatHistory);
                                 _planChainFilePrediction(canvasChatHistory, msg);
+                                if (_wasPredB2) {
+                                    const _tdSilent2 = canvasSilentSend;
+                                    canvasSilentSend = false;
+                                    if (!_tdSilent2) addChatMessage(msg, 'user');
+                                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _tdSilent2 });
+                                    chatTextarea.value = '';
+                                    chatTextarea.style.height = '40px';
+                                    _renderPlanChainQuestion('tidy');
+                                    setTimeout(_refreshPlanningSidebar, 250);
+                                    console.log('WML plan-chain: tidy step rendered (no AI turn)');
+                                    return;
+                                }
                             }
 
                             // v7.19.854: CLOSING CHAIN gate (mirrors primary pipeline) — code owns
