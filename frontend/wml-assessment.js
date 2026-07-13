@@ -9319,11 +9319,15 @@
             const _litAssess = !_langModel && !_langExpected && !_expectServerSidebar()
                 && !state.reviewMode && (state.task === 'assessment' || state.task === 'redraft_assessment');
             const _litModel = _litAssess ? _buildLitSidebarModel() : null;
+            // v7.20.51: de-stitched planning gets the granular canvas-derived model after
+            // the doc settles — hide at first paint instead of flashing the generic
+            // planning defaults (same no-flash rule as Language/Lit/server paths; Neil).
+            const _planExpected = _planPreChainActive();
             if (_langModel) {
                 _renderSidebarSteps(protoSteps, _langModel.steps, { alwaysGroup: true });
             } else if (_litModel) {
                 _renderSidebarSteps(protoSteps, _litModel.steps, { alwaysGroup: true });
-            } else if (_langExpected || _expectServerSidebar() || _litAssess) {
+            } else if (_langExpected || _expectServerSidebar() || _litAssess || _planExpected) {
                 // v7.19.715: also hide for a Literature assessment whose granular model isn't
                 // built yet (feedback boxes load async → _litModel null at first paint). Was
                 // falling through to the generic flat-8 below and FLASHING it before
@@ -10490,18 +10494,17 @@
             const bar = el('div', { className: 'swml-quick-actions' });
             const sendVal = (v) => { bar.remove(); chatTextarea.value = v; sendCanvasMessageQueued(); };
             if (stage === 'greeting') {
-                // S0 resource orientation — availability-gated; the learn-chip markup rides
-                // the global delegated open handler (wml-core), so no new click wiring.
+                // S0 resource orientation — availability-gated, direct open handlers.
+                // (v7.20.51: no swml-learn-chip class — its inline-pill CSS fought
+                // swml-quick-btn and skewed the row's alignment; Neil.)
                 const res = el('div', { className: 'swml-quick-actions' });
                 if (window.SophiclyToolkit && window.SophiclyToolkit.open) {
-                    const b1 = el('button', { className: 'swml-quick-btn swml-learn-chip', textContent: '📖 Mastery Toolkit' });
-                    b1.setAttribute('data-learn-dest', 'toolkit'); b1.setAttribute('data-learn-arg', '');
-                    res.appendChild(b1);
+                    res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📖 Mastery Toolkit',
+                        onClick: () => window.SophiclyToolkit.open('') }));
                 }
                 if (window.SophiclyTable && window.SophiclyTable.open) {
-                    const b2 = el('button', { className: 'swml-quick-btn swml-learn-chip', textContent: '🗂 Table of Techniques' });
-                    b2.setAttribute('data-learn-dest', 'table'); b2.setAttribute('data-learn-arg', '');
-                    res.appendChild(b2);
+                    res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '🗂 Table of Techniques',
+                        onClick: () => window.SophiclyTable.open('') }));
                 }
                 res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📚 Library',
                     onClick: () => window.open((typeof swmlConfig !== 'undefined' && swmlConfig.libraryUrl) || '/library/', '_blank') }));
@@ -18921,7 +18924,7 @@
                                 _renderSidebarSteps(protoSteps, _langModel2.steps, { alwaysGroup: true });
                             } else if (_litModel2) {
                                 _renderSidebarSteps(protoSteps, _litModel2.steps, { alwaysGroup: true });
-                            } else if (_langExpected2 || _expectServerSidebar() || _litAssess2) {
+                            } else if (_langExpected2 || _expectServerSidebar() || _litAssess2 || _planPreChainActive()) {
                                 // v7.19.715: embedded pipeline parity — hide (don't flash the
                                 // generic flat-8) whenever a granular model is expected: Language,
                                 // server sidebar, OR a Literature assessment whose model is still
@@ -19672,16 +19675,15 @@
                             const bar = el('div', { className: 'swml-quick-actions' });
                             const sendVal = (v) => { bar.remove(); chatTextarea.value = v; sendCanvasMessage(); };
                             if (stage === 'greeting') {
+                                // v7.20.51: direct open handlers, no learn-chip class (alignment).
                                 const res = el('div', { className: 'swml-quick-actions' });
                                 if (window.SophiclyToolkit && window.SophiclyToolkit.open) {
-                                    const b1 = el('button', { className: 'swml-quick-btn swml-learn-chip', textContent: '📖 Mastery Toolkit' });
-                                    b1.setAttribute('data-learn-dest', 'toolkit'); b1.setAttribute('data-learn-arg', '');
-                                    res.appendChild(b1);
+                                    res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📖 Mastery Toolkit',
+                                        onClick: () => window.SophiclyToolkit.open('') }));
                                 }
                                 if (window.SophiclyTable && window.SophiclyTable.open) {
-                                    const b2 = el('button', { className: 'swml-quick-btn swml-learn-chip', textContent: '🗂 Table of Techniques' });
-                                    b2.setAttribute('data-learn-dest', 'table'); b2.setAttribute('data-learn-arg', '');
-                                    res.appendChild(b2);
+                                    res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '🗂 Table of Techniques',
+                                        onClick: () => window.SophiclyTable.open('') }));
                                 }
                                 res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📚 Library',
                                     onClick: () => window.open((typeof swmlConfig !== 'undefined' && swmlConfig.libraryUrl) || '/library/', '_blank') }));
@@ -35879,7 +35881,14 @@
     function _refreshPlanningSidebar() {
         try {
             const model = _buildPlanningSidebarModel();
-            if (model && typeof _applyServerSidebar === 'function') _applyServerSidebar(model);
+            if (model && typeof _applyServerSidebar === 'function') { _applyServerSidebar(model); return; }
+            // Fail-safe (no-flash rule pairs with this): first paint HIDES the panel when
+            // a granular planning model is expected — never leave it hidden if the model
+            // can't build (doc without plan sections, stale editor ref).
+            if (_planPreChainActive()) {
+                const c = document.getElementById('swml-progress-steps');
+                if (c && c.style.display === 'none') c.style.display = '';
+            }
         } catch (e) { console.warn('WML planning sidebar: refresh failed (non-fatal)', e && e.message); }
     }
 
