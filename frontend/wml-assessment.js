@@ -4755,6 +4755,12 @@
     async function _resolveCtxAttempt() {
         if ((state.attempt || 0) >= 1) return;
         if (state.reviewMode || !state.board || !state.text) return;
+        // v7.20.78 (NO-ATTEMPTS law): the THIRD resolver — .77 pinned the hint
+        // pre-resolve + the main resolver, but this badge-path adoption still
+        // flipped state.attempt to the server counter (e.g. 2) mid-session and
+        // poisoned the cross-lesson hint. Topic flow: pin 1, never adopt, never
+        // write the hint.
+        if (WML.isTopicFlow && WML.isTopicFlow()) { state.attempt = 1; return; }
         try {
             // v7.15.78: phase-aware suffix resolution
             // v7.15.112: Attempts endpoint tracks doc attempts → canvas suffix
@@ -9132,6 +9138,13 @@
     // this the localStorage key + load URL used `__a{drifted}` while the server pinned to
     // attempt 1 → the client rendered the empty drifted doc. Poetry keeps its own scoping.
     function _canvasAttempt() {
+        // v7.20.78 (NO-ATTEMPTS law, root pin): topic-flow lessons are ONE DOC PER
+        // LESSON — pin the doc identity HERE, the single builder every read AND write
+        // path shares, so no attempt-state leak (badge resolver adoption, SPA carry-over,
+        // stale hint) can fork a mastery doc again. The v7.20.77 pins covered two
+        // resolvers but writes still rode raw state.attempt (write key ≠ read key —
+        // the "test response six vanished" repro: saves landed in __a2, reads on base).
+        try { if (WML.isTopicFlow && WML.isTopicFlow()) return 1; } catch (_) {}
         try {
             const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
             if (suffix === '_cn' && !(WML.isPoetryCnDoc && WML.isPoetryCnDoc())) return 1;
@@ -9179,7 +9192,10 @@
     };
     const CHAT_SAVE_KEY = () => {
         const suffix = _chatStorageSuffix();
-        const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
+        // v7.20.78: chat identity shares the pinned doc-attempt resolver (same
+        // write-key ≠ read-key fork class as the canvas doc).
+        const _catt = _canvasAttempt();
+        const att = _catt > 1 ? `__a${_catt}` : '';
         // v7.17.38: CW projects are independent writing works, NOT attempts.
         // Without project-scoping, switching projects shows prior project's chat.
         const cwP = (state.task && state.task.startsWith('cw_') && state.cwProjectId)
@@ -9248,7 +9264,7 @@
         clearTimeout(chatSaveTimer);
         // v7.17.39: stash the body so beforeunload can sendBeacon if the tab closes
         // before the 8s timer fires (Writer Profile text-loss parity for chat).
-        _pendingChatSaveBody = Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _chatStorageSuffix(), attempt: state.attempt || 1, history, chatId }, cwScopeBody());
+        _pendingChatSaveBody = Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _chatStorageSuffix(), attempt: _canvasAttempt(), history, chatId }, cwScopeBody());
         chatSaveTimer = setTimeout(() => {
             const body = _pendingChatSaveBody;
             _pendingChatSaveBody = null;
@@ -18053,7 +18069,7 @@
                     try {
                         const _chatSuffix = _chatStorageSuffix();
                         // Tutor review: load student's chat via review endpoint (v7.15.2)
-                        const _chatAtt = state.attempt || 1;
+                        const _chatAtt = _canvasAttempt(); // v7.20.78: pinned resolver (chat read = chat write key)
                         const chatUrl = state.reviewMode && state.reviewStudentId
                             ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}`
                             : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}${cwScopeQuery()}${_wantSidebar ? `&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task || '')}` : ''}`;
@@ -19280,7 +19296,7 @@
             // v7.15.111: Outlining lives mid-Phase-2 and must scope by task + topic + attempt
             // so each attempt gets its own session timer (not shared with the diagnostic pass).
             const _sessionKeyTask = state.task === 'outlining' ? 'outline' : 'diag';
-            const _sessionAttSuffix = (state.task === 'outlining' && (state.attempt || 1) > 1) ? `__a${state.attempt}` : '';
+            const _sessionAttSuffix = (state.task === 'outlining' && _canvasAttempt() > 1) ? `__a${_canvasAttempt()}` : ''; // v7.20.78: pinned resolver
             const _sessionTopicPart = state.task === 'outlining' ? `_t${state.topicNumber || 0}` : '';
             const startKey = `swml_${_sessionKeyTask}_start_${state.board}_${(state.text || '').replace(/\s/g, '_')}${_sessionTopicPart}${_sessionAttSuffix}`;
             let startTime = localStorage.getItem(startKey);
@@ -20990,7 +21006,7 @@
                                         if (_needChat2 || _wantSidebar2) {
                                             try {
                                                 const _chatSuffix = _chatStorageSuffix();
-                                                const _chatAtt2 = state.attempt || 1;
+                                                const _chatAtt2 = _canvasAttempt(); // v7.20.78: pinned resolver (chat read = chat write key)
                                                 // Tutor review: load student's chat via review endpoint (v7.15.2)
                                                 const chatUrl = state.reviewMode && state.reviewStudentId
                                                     ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}`
@@ -25783,7 +25799,7 @@
             // guards), so fire it once more after state settles. Universal law: any
             // state-gated canvas mutation must have a settled-state second pass.
             _migrateStep('prewriteSettledPass', () => setTimeout(() => {
-                try { _ensurePredictionsSection(); } catch (_) {}
+                try { _ensurePredictionsSection(true); } catch (_) {}
                 try { _healPhase1PrewriteCarry(); } catch (_) {}
             }, 1800));
             // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
@@ -34123,7 +34139,9 @@
             task: state.task,
             // v7.15.112: server canvas save keyed by canvas-context suffix
             suffix: WML.resolveCanvasSuffix(state.task, state.phase) || '',
-            attempt: state.attempt || 1,
+            // v7.20.78: WRITE side rides the same pinned resolver as the read side —
+            // raw state.attempt here was the fork (saves to __a2, reads on base).
+            attempt: _canvasAttempt(),
             embedded: state.embedded,
             planningMode: state.planningMode || '',
             // v7.17.39: snapshot project_id so server key matches v7.17.38 localStorage suffix
@@ -36689,7 +36707,7 @@
      * planning doc is a forward snapshot of the assessed doc, so injection here is the
      * primary path — existing student docs never rebuild from the template.
      */
-    function _ensurePredictionsSection() {
+    function _ensurePredictionsSection(_settled) {
         // v7.20.65: also the Phase-1 write doc (Neil) — no chain fills it there, the
         // student self-fills. v7.20.66: universal across Language papers — the write-doc
         // branch DERIVES its boxes from the doc's own source sections (1-source paper =
@@ -36706,7 +36724,12 @@
             // (task '' OR a diagnostic/development draftType) — the R&J miss carried a
             // stale task from the previous SPA lesson, which the old task==='' condition
             // silently skipped. Log the full tuple; one console line = the diagnosis.
-            if (!state.reviewMode && (state.task === '' || /^(diagnostic|development)$/.test(String(state.draftType || '')))) {
+            // v7.20.78: warn on the SETTLED pass only — at mount time BOTH task and
+            // draftType can be stale carry-over (assessment lessons carrying a
+            // 'diagnostic' draftType spammed a false MISSED on every load). The 1.8s
+            // settled pass re-runs this with trustworthy state; a genuine miss still
+            // warns there, once, with a tuple worth reading.
+            if (_settled && !state.reviewMode && (state.task === '' || /^(diagnostic|development)$/.test(String(state.draftType || '')))) {
                 console.warn('WML predictions: write-doc gate MISSED', {
                     task: state.task, draftType: state.draftType, board: state.board,
                     subject: state.subject, text: state.text, topic: state.topicNumber, attempt: state.attempt,
@@ -36868,8 +36891,9 @@
             // re-resolve mid-load and a later attempt's head may never have been opened).
             let upstreamHtml = '';
             if (headSuffix !== null) {
-                upstreamHtml = await _fetchUpstream(state.attempt || 1);
-                if (!_extractParts(upstreamHtml).length && (state.attempt || 1) > 1) upstreamHtml = await _fetchUpstream(1);
+                const _mirrorAtt = _canvasAttempt(); // v7.20.78: pinned resolver — mirror source = the doc reads read
+                upstreamHtml = await _fetchUpstream(_mirrorAtt);
+                if (!_extractParts(upstreamHtml).length && _mirrorAtt > 1) upstreamHtml = await _fetchUpstream(1);
             }
             const parts = _extractParts(upstreamHtml);
             if (!_hasSpace) {
@@ -36882,7 +36906,9 @@
                 }
                 if (!insertParts.length) return;
                 // ONE placement rule shared with the injection (v7.20.73).
-                canvasEditor.commands.insertContentAt(_prewriteInsertPos(insertParts.join('').indexOf('kw-focus') !== -1), insertParts.join(''));
+                // v7.20.78: updateSelection:false — a load-time insert must never move
+                // the cursor (selection follow = the "page scrolls itself on load" bug).
+                canvasEditor.commands.insertContentAt(_prewriteInsertPos(insertParts.join('').indexOf('kw-focus') !== -1), insertParts.join(''), { updateSelection: false });
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 // v7.20.68: async insert → rebuild the position/list consumers.
                 try { buildTableOfContents(); } catch (_) {}
@@ -36960,7 +36986,10 @@
                         const curText = (tNode.textContent || '').replace(/\s+/g, ' ').trim();
                         if (curText === upText) return; // already mirrored — idempotent
                         try {
-                            canvasEditor.chain().insertContentAt({ from: tPos + 1, to: tPos + tNode.nodeSize - 1 }, up.innerHTML).run();
+                            // v7.20.78: updateSelection:false — the response mirror on load moved the
+                            // cursor to the inserted section's end, scrolling the page there (Neil's
+                            // "discuss-feedback jumps to the response" repro).
+                            canvasEditor.chain().insertContentAt({ from: tPos + 1, to: tPos + tNode.nodeSize - 1 }, up.innerHTML, { updateSelection: false }).run();
                             respSynced++;
                         } catch (e3) { console.warn('WML chain: response mirror failed', upLabel, e3 && e3.message); }
                     });
