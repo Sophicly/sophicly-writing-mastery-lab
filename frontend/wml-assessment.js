@@ -37051,14 +37051,44 @@
                 const _strip = (s) => String(s || '').replace(/\s+/g, '');
                 const _valsStripped = Object.keys(upFields).map((k) => _strip(upFields[k].text)).filter((v) => v.length >= 6);
                 const _doomed = [];
-                canvasEditor.state.doc.forEach((node, offset) => {
-                    if (node.type.name !== 'paragraph') return;
+                const _isLeak = (node) => {
                     const t = _strip(node.textContent);
-                    if (t.length >= 6 && _valsStripped.some((v) => v.indexOf(t) !== -1)) _doomed.push({ from: offset, to: offset + node.nodeSize });
+                    return t.length >= 6 && _valsStripped.some((v) => v.indexOf(t) !== -1);
+                };
+                // v7.20.84: the fitter SPLIT the field IN PLACE, so leak paragraphs live
+                // INSIDE the pre-write section too, not only at doc root (Neil's
+                // reassessment strays survived the root-only scan). Scan doc root + the
+                // direct children of any section holding a mirrored field. Response and
+                // all other sections are never descended into.
+                canvasEditor.state.doc.forEach((node, offset) => {
+                    if (node.type.name === 'paragraph') {
+                        if (_isLeak(node)) _doomed.push({ from: offset, to: offset + node.nodeSize });
+                        return;
+                    }
+                    if (node.type.name !== 'sectionBlock') return;
+                    let hasMirrorField = false;
+                    node.descendants((c) => {
+                        if (hasMirrorField) return false;
+                        if (c.type.name === 'inputField' && /^pred-|^kw-focus$/.test(String((c.attrs && c.attrs.fieldId) || ''))) { hasMirrorField = true; return false; }
+                        return true;
+                    });
+                    // also scan pre-write sections whose field the split DESTROYED —
+                    // matched by label so CN/notes sections elsewhere are never touched.
+                    const _isPrewriteSection = node.attrs && node.attrs.sectionType === 'notes'
+                        && /question\s*focus|predictions/i.test(String(node.attrs.label || ''));
+                    if (!hasMirrorField && !_isPrewriteSection) return;
+                    node.forEach((child, childOffset) => {
+                        if (child.type.name !== 'paragraph') return;
+                        if (_isLeak(child)) {
+                            const from = offset + 1 + childOffset;
+                            _doomed.push({ from: from, to: from + child.nodeSize });
+                        }
+                    });
                 });
                 if (_doomed.length) {
+                    _doomed.sort((a, b) => b.from - a.from); // delete deepest-last first — positions stay valid
                     canvasEditor.chain().command(({ tr }) => {
-                        for (let i = _doomed.length - 1; i >= 0; i--) tr.delete(_doomed[i].from, _doomed[i].to);
+                        for (let i = 0; i < _doomed.length; i++) tr.delete(_doomed[i].from, _doomed[i].to);
                         return true;
                     }).run();
                     synced++;
