@@ -683,6 +683,17 @@
             && (state.board || '').toLowerCase() === 'aqa'
             && _isLangPaper2();
     }
+    // v7.20.65 (Neil): the Phase-1 WRITE doc carries the SAME Predictions space as the
+    // Phase-2 planning doc — but no chat runs there (testing environment), so the student
+    // self-fills it once trained (Topic 1 Phase 2 teaches the habit). Identity = the
+    // v7.19.736 write-doc pair: task '' + draftType diagnostic/development. AQA Lang P2
+    // scope this cycle (ports ride the P1 arc).
+    function _isP2Phase1Write() {
+        return state.task === ''
+            && /^(diagnostic|development)$/.test(String(state.draftType || ''))
+            && (state.board || '').toLowerCase() === 'aqa'
+            && _isLangPaper2();
+    }
     // v7.20.50: detection runs on MARKDOWN-STRIPPED text. The question texts carry
     // **bold** mid-sentence ("**3 themes** do you expect…"), and a raw-regex match across
     // that boundary silently missed → the predQ stage re-asked forever (Neil's one-shot,
@@ -25716,6 +25727,7 @@
             _migrateStep('migrateExtractQuestionDivider', migrateExtractQuestionDivider);
             _migrateStep('migrateMissingPlans', migrateMissingPlans);
             // v7.20.49: AQA P2 planning — Predictions section (S1d commits file here).
+            // v7.20.65: also the Phase-1 write doc (student self-fills; no chain there).
             _migrateStep('ensurePredictionsSection', _ensurePredictionsSection);
             // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
             // inject the Reflection section once it resolves (record-gated; the filing
@@ -36615,7 +36627,9 @@
      * primary path — existing student docs never rebuild from the template.
      */
     function _ensurePredictionsSection() {
-        if (!canvasEditor || !_planPreChainActive()) return;
+        // v7.20.65: also the Phase-1 write doc (Neil) — same space, byte-identical block;
+        // no chain fills it there, the student self-fills (see _isP2Phase1Write).
+        if (!canvasEditor || !(_planPreChainActive() || _isP2Phase1Write())) return;
         const html = canvasEditor.getHTML();
         if (html.indexOf('pred-paper') !== -1) return; // already present
         const block = dividerHTML('PREDICTIONS') +
@@ -36627,7 +36641,7 @@
                 inputHTML('3 predicted themes for Source B (from its title, author and date only).', 'pred-source-b'));
         canvasEditor.commands.insertContentAt(0, block);
         if (typeof saveCanvasContent === 'function') saveCanvasContent();
-        console.log('WML Migration: Predictions section injected (AQA P2 planning)');
+        console.log('WML Migration: Predictions section injected (AQA P2 ' + (_planPreChainActive() ? 'planning' : 'phase-1 write') + ')');
     }
 
     /**
