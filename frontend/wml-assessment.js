@@ -16847,6 +16847,77 @@
                 : (n === 2 ? 'Two pads open — fine for comparing; close one when you’re done.' : '');
             _paNoteEl.style.display = _paNoteEl.textContent ? '' : 'none';
         }
+        // v7.20.59 (Neil): drag + 8-edge/corner resize for the viewer's panels — the
+        // same interaction shape as the extract pads, extracted once so the popover
+        // and every prior pad share it (embedded-mode transform correction included).
+        function _makePanelInteractive(panel) {
+            ['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'].forEach(dir => {
+                const h = el('div', { className: `swml-extract-rh swml-extract-rh-${dir.length > 1 ? 'corner' : 'edge'} swml-extract-rh-${dir}` });
+                h.dataset.dir = dir;
+                panel.appendChild(h);
+            });
+            let rz = false, rzDir = '', rzSX, rzSY, rzSW, rzSH, rzSL, rzST;
+            panel.querySelectorAll('.swml-extract-rh').forEach(h => {
+                h.addEventListener('mousedown', (e) => {
+                    if (e.button !== 0) return;
+                    e.preventDefault(); e.stopPropagation();
+                    rz = true; rzDir = h.dataset.dir;
+                    const origin = typeof getFixedOriginOffset === 'function' ? getFixedOriginOffset(panel) : { x: 0, y: 0 };
+                    const r = panel.getBoundingClientRect();
+                    rzSX = e.clientX; rzSY = e.clientY;
+                    rzSW = r.width; rzSH = r.height;
+                    rzSL = r.left - origin.x; rzST = r.top - origin.y;
+                });
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!rz || !panel.parentNode) return; e.preventDefault();
+                const dx = e.clientX - rzSX, dy = e.clientY - rzSY;
+                let w = rzSW, h2 = rzSH, l = rzSL, t = rzST;
+                if (rzDir.indexOf('e') > -1) w = Math.max(280, rzSW + dx);
+                if (rzDir.indexOf('w') > -1) { w = Math.max(280, rzSW - dx); l = rzSL + (rzSW - w); }
+                if (rzDir.indexOf('s') > -1) h2 = Math.max(200, rzSH + dy);
+                if (rzDir.indexOf('n') > -1) { h2 = Math.max(200, rzSH - dy); t = rzST + (rzSH - h2); }
+                panel.style.width = w + 'px'; panel.style.maxHeight = 'none'; panel.style.height = h2 + 'px';
+                panel.style.left = l + 'px'; panel.style.top = t + 'px'; panel.style.right = 'auto';
+            });
+            document.addEventListener('mouseup', () => { rz = false; });
+            let dg = false, dgX = 0, dgY = 0;
+            panel.style.cursor = 'grab';
+            panel.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                if (e.target.closest('.swml-extract-rh') || e.target.closest('button')) return;
+                dg = true;
+                const origin = typeof getFixedOriginOffset === 'function' ? getFixedOriginOffset(panel) : { x: 0, y: 0 };
+                const rect = panel.getBoundingClientRect();
+                dgX = e.clientX - (rect.left - origin.x);
+                dgY = e.clientY - (rect.top - origin.y);
+                panel.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!dg || !panel.parentNode) return;
+                panel.style.left = (e.clientX - dgX) + 'px';
+                panel.style.top = (e.clientY - dgY) + 'px';
+                panel.style.right = 'auto';
+            });
+            document.addEventListener('mouseup', () => {
+                dg = false;
+                if (panel.parentNode) panel.style.cursor = 'grab';
+            });
+        }
+        // v7.20.59 (Neil): grade badges wear the HOUSE LADDER — the same _GRADE_BG map
+        // the predict pills / sidebar / dashboard use (7 = blue, 8 = purple, 9 = the
+        // reserved brand gradient; 4–6 carry dark text). One ladder, no drift.
+        function _paGradeBadge(grade) {
+            const n = parseInt(grade, 10);
+            const badge = el('span', { className: 'swml-pa-grade', textContent: 'Grade ' + grade });
+            const bg = _GRADE_BG[n];
+            if (bg) {
+                badge.style.background = bg;
+                badge.style.color = _GRADE_DARK_TEXT[n] ? '#1c1d1f' : '#fff';
+            }
+            return badge;
+        }
         async function spawnPriorAttemptPad(row) {
             const padKey = [row.board, row.text, row.topic || 0, row.suffix || '', row.attempt || 1].join('|');
             if (_priorPads[padKey]) { _priorPads[padKey].remove(); delete _priorPads[padKey]; _paRefreshNote(); return; }
@@ -16860,7 +16931,7 @@
             const header = el('div', { className: 'swml-extract-panel-header' });
             header.appendChild(el('span', { textContent: _paTextName(row.text) + ' — ' + _paStageName(row) + (row.attempt > 1 ? ' · Attempt ' + row.attempt : '') }));
             if (row.grade != null && row.grade !== '') {
-                header.appendChild(el('span', { className: 'swml-pa-grade' + (String(row.grade).trim() === '9' ? ' swml-pa-grade-9' : ''), textContent: 'Grade ' + row.grade }));
+                header.appendChild(_paGradeBadge(row.grade)); // house ladder (v7.20.59)
             }
             header.appendChild(el('button', {
                 className: 'swml-extract-panel-close', textContent: '✕',
@@ -16877,66 +16948,55 @@
                 tmp.querySelectorAll('script, style').forEach(n => n.remove());
                 tmp.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
                 tmp.querySelectorAll('select, textarea, input, button').forEach(n => { n.disabled = true; });
-                while (tmp.firstChild) body.appendChild(tmp.firstChild);
+                // v7.20.59 (Neil): a 30-section past assessment was one long scroll.
+                // Each labelled section now collapses under its own header (the notes-pad
+                // collapse chrome, reused) — ALL COLLAPSED on open, so the pad reads as a
+                // table of contents — plus a chip strip up top that expands + scrolls to
+                // its section, and a Collapse/Expand-all toggle in the panel header.
+                const padItems = [];
+                const chipStrip = el('div', { className: 'swml-prior-chipstrip' });
+                Array.from(tmp.children).forEach(child => {
+                    const isSec = child.classList && child.classList.contains('swml-section-block') && child.getAttribute('data-section-label');
+                    const secType = child.getAttribute && child.getAttribute('data-section-type');
+                    if (!isSec || secType === 'divider') { body.appendChild(child); return; }
+                    child.classList.remove('swml-fb-collapsed', 'swml-task-locked'); // pad is a reading surface
+                    const label = child.getAttribute('data-section-label');
+                    const item = el('div', { className: 'swml-notes-item swml-notes-collapsed' });
+                    const head = el('button', { className: 'swml-notes-item-head', type: 'button' });
+                    head.innerHTML = '<span class="swml-notes-item-chev">▾</span> ' + label.replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+                    const bodyWrap = el('div', { className: 'swml-notes-item-body' });
+                    bodyWrap.appendChild(child);
+                    head.addEventListener('click', () => item.classList.toggle('swml-notes-collapsed'));
+                    item.appendChild(head);
+                    item.appendChild(bodyWrap);
+                    body.appendChild(item);
+                    padItems.push(item);
+                    const chip = el('button', { className: 'swml-prior-chip', type: 'button', textContent: label.replace(/\s*\(.*\)\s*$/, '') });
+                    chip.addEventListener('click', () => {
+                        item.classList.remove('swml-notes-collapsed');
+                        item.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                    chipStrip.appendChild(chip);
+                });
+                if (padItems.length) {
+                    body.insertBefore(chipStrip, body.firstChild);
+                    const collapseAll = el('button', {
+                        className: 'swml-extract-tab', textContent: 'Expand all',
+                        style: { marginLeft: '8px', fontSize: '10px', padding: '3px 8px' },
+                        onClick: (e) => {
+                            e.stopPropagation();
+                            const anyOpen = padItems.some(it => !it.classList.contains('swml-notes-collapsed'));
+                            padItems.forEach(it => it.classList.toggle('swml-notes-collapsed', anyOpen));
+                            collapseAll.textContent = anyOpen ? 'Expand all' : 'Collapse all';
+                        }
+                    });
+                    header.insertBefore(collapseAll, header.querySelector('.swml-extract-panel-close'));
+                }
             } else {
                 body.appendChild(el('p', { textContent: 'This document couldn’t be loaded — it may be empty.' }));
             }
             panel.appendChild(body);
-            // Resize handles + drag — same shape as the extract pads (classes reuse
-            // their CSS; embedded-mode transform correction via getFixedOriginOffset).
-            ['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'].forEach(dir => {
-                const h = el('div', { className: `swml-extract-rh swml-extract-rh-${dir.length > 1 ? 'corner' : 'edge'} swml-extract-rh-${dir}` });
-                h.dataset.dir = dir;
-                panel.appendChild(h);
-            });
-            let paResizing = false, paDir = '', paSX, paSY, paSW, paSH, paSL, paST;
-            panel.querySelectorAll('.swml-extract-rh').forEach(h => {
-                h.addEventListener('mousedown', (e) => {
-                    if (e.button !== 0) return;
-                    e.preventDefault(); e.stopPropagation();
-                    paResizing = true; paDir = h.dataset.dir;
-                    const origin = typeof getFixedOriginOffset === 'function' ? getFixedOriginOffset(panel) : { x: 0, y: 0 };
-                    const r = panel.getBoundingClientRect();
-                    paSX = e.clientX; paSY = e.clientY;
-                    paSW = r.width; paSH = r.height;
-                    paSL = r.left - origin.x; paST = r.top - origin.y;
-                });
-            });
-            document.addEventListener('mousemove', (e) => {
-                if (!paResizing || !panel.parentNode) return; e.preventDefault();
-                const dx = e.clientX - paSX, dy = e.clientY - paSY;
-                let w = paSW, h2 = paSH, l = paSL, t = paST;
-                if (paDir.indexOf('e') > -1) w = Math.max(280, paSW + dx);
-                if (paDir.indexOf('w') > -1) { w = Math.max(280, paSW - dx); l = paSL + (paSW - w); }
-                if (paDir.indexOf('s') > -1) h2 = Math.max(200, paSH + dy);
-                if (paDir.indexOf('n') > -1) { h2 = Math.max(200, paSH - dy); t = paST + (paSH - h2); }
-                panel.style.width = w + 'px'; panel.style.maxHeight = 'none'; panel.style.height = h2 + 'px';
-                panel.style.left = l + 'px'; panel.style.top = t + 'px'; panel.style.right = 'auto';
-            });
-            document.addEventListener('mouseup', () => { paResizing = false; });
-            let paDragging = false, paDX = 0, paDY = 0;
-            panel.style.cursor = 'grab';
-            panel.addEventListener('mousedown', (e) => {
-                if (e.button !== 0) return;
-                if (e.target.closest('.swml-extract-rh') || e.target.closest('button')) return;
-                paDragging = true;
-                const origin = typeof getFixedOriginOffset === 'function' ? getFixedOriginOffset(panel) : { x: 0, y: 0 };
-                const rect = panel.getBoundingClientRect();
-                paDX = e.clientX - (rect.left - origin.x);
-                paDY = e.clientY - (rect.top - origin.y);
-                panel.style.cursor = 'grabbing';
-                e.preventDefault();
-            });
-            document.addEventListener('mousemove', (e) => {
-                if (!paDragging || !panel.parentNode) return;
-                panel.style.left = (e.clientX - paDX) + 'px';
-                panel.style.top = (e.clientY - paDY) + 'px';
-                panel.style.right = 'auto';
-            });
-            document.addEventListener('mouseup', () => {
-                paDragging = false;
-                if (panel.parentNode) panel.style.cursor = 'grab';
-            });
+            _makePanelInteractive(panel); // drag + 8-way resize (shared, v7.20.59)
             // Cascade successive pads so they don't stack invisibly.
             const openCount = Object.keys(_priorPads).length;
             panel.style.top = (70 + openCount * 34) + 'px';
@@ -16968,23 +17028,39 @@
                 if (!groups[gk]) { groups[gk] = []; groupOrder.push(gk); }
                 groups[gk].push(r);
             });
+            // v7.20.59 (Neil): one student has 30+ pieces — a flat list is a long
+            // scroll. Text groups are now COLLAPSIBLE headers with counts; the
+            // CURRENT paper's group sorts first and opens, every other group starts
+            // collapsed. The popover reads as a short index until expanded.
+            const curKey = state.board + '|' + state.text;
+            groupOrder.sort((a, b) => (a === curKey ? -1 : 0) - (b === curKey ? -1 : 0));
             groupOrder.forEach(gk => {
                 const first = groups[gk][0];
-                list.appendChild(el('div', { className: 'swml-prior-group', textContent: String(first.board || '').toUpperCase() + ' · ' + _paTextName(first.text) }));
+                const isCurrent = gk === curKey;
+                const groupWrap = el('div', { className: 'swml-prior-groupwrap' + (isCurrent ? '' : ' swml-prior-collapsed') });
+                const head = el('button', { className: 'swml-prior-group', type: 'button' });
+                head.innerHTML = '<span class="swml-prior-group-chev">▾</span> '
+                    + (String(first.board || '').toUpperCase() + ' · ' + _paTextName(first.text)).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))
+                    + ' <span class="swml-prior-group-count">' + groups[gk].length + '</span>';
+                head.addEventListener('click', () => groupWrap.classList.toggle('swml-prior-collapsed'));
+                groupWrap.appendChild(head);
+                const groupBody = el('div', { className: 'swml-prior-groupbody' });
                 groups[gk].forEach(r => {
                     const rowEl = el('button', { className: 'swml-prior-row', type: 'button', onClick: () => spawnPriorAttemptPad(r) });
                     const main = el('div', { className: 'swml-prior-row-main' });
                     main.appendChild(el('span', { className: 'swml-prior-row-label', textContent: _paStageName(r) + (r.topic ? ' · Topic ' + r.topic : '') + (r.attempt > 1 ? ' · Attempt ' + r.attempt : '') }));
                     if (r.grade != null && r.grade !== '') {
-                        main.appendChild(el('span', { className: 'swml-pa-grade' + (String(r.grade).trim() === '9' ? ' swml-pa-grade-9' : ''), textContent: 'Grade ' + r.grade }));
+                        main.appendChild(_paGradeBadge(r.grade)); // house ladder (v7.20.59)
                     } else {
                         main.appendChild(el('span', { className: 'swml-pa-ungraded', textContent: 'ungraded' }));
                     }
                     rowEl.appendChild(main);
                     const dateStr = _paDate(r.started);
                     if (dateStr) rowEl.appendChild(el('span', { className: 'swml-prior-row-date', textContent: dateStr }));
-                    list.appendChild(rowEl);
+                    groupBody.appendChild(rowEl);
                 });
+                groupWrap.appendChild(groupBody);
+                list.appendChild(groupWrap);
             });
             return list;
         }
@@ -17004,6 +17080,7 @@
             _paNoteEl = el('div', { className: 'swml-prior-note' });
             _paNoteEl.style.display = 'none';
             _paPanel.appendChild(_paNoteEl);
+            _makePanelInteractive(_paPanel); // v7.20.59 (Neil): popover drags + resizes like the pads
             // Anchor beside the outline button column (fixed → body portal, stacking law).
             try {
                 const r = anchorBtn.getBoundingClientRect();
@@ -22551,6 +22628,18 @@
                             if (updated.attrs.correct === true)  dom.setAttribute('data-correct', 'true');
                             if (updated.attrs.correct === false) dom.setAttribute('data-correct', 'false');
                             return true;
+                        },
+                        // v7.20.59 (Neil's blink repro): update() re-stamps attributes on
+                        // this NodeView's own dom. Without firewalling the resulting
+                        // MutationRecords, PM's DOMObserver treats them as foreign edits
+                        // → flush → updateState → EVERY NodeView redraws (the visible
+                        // double-blink on toggle; the PM foreign-mutation law). Ignore
+                        // attribute writes on dom + anything inside the checkbox control;
+                        // contentDOM (the student-editable statement text) stays live.
+                        ignoreMutation(m) {
+                            if (m.type === 'attributes' && m.target === dom) return true;
+                            if (checkbox.contains(m.target)) return true;
+                            return false;
                         },
                     };
                 };

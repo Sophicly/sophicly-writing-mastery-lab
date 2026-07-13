@@ -4844,13 +4844,41 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 
 /* ── v7.20.56: Previous Assessments (prior-attempt viewer) ── */
 .swml-prior-panel { width: 320px; }
+/* v7.20.59 (Neil): active trigger goes SOLID — the rgba accent tint over the dark
+   canvas read as see-through. Solid mixes of the outline accent on each surface. */
+.swml-prior-attempts-btn.is-active { color: #7cc4f8; background: #223140; }
+.swml-canvas-light .swml-prior-attempts-btn.is-active { color: #1668b0; background: #ddeafa; }
 .swml-prior-list { display: flex; flex-direction: column; gap: 3px; }
+/* v7.20.59: collapsible text groups (30-piece students) — current paper opens first */
 .swml-prior-group {
+    display: flex; align-items: center; gap: 6px;
+    width: 100%; text-align: left; background: none; border: none; cursor: pointer;
     font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
     color: rgba(255,255,255,0.4); text-transform: uppercase;
-    margin: 10px 0 4px; user-select: none;
+    margin: 10px 0 4px; padding: 0; user-select: none;
 }
-.swml-prior-group:first-child { margin-top: 0; }
+.swml-prior-group:hover { color: rgba(255,255,255,0.65); }
+.swml-prior-groupwrap:first-child .swml-prior-group { margin-top: 0; }
+.swml-prior-group-chev { font-size: 9px; transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1); }
+.swml-prior-collapsed .swml-prior-group-chev { transform: rotate(-90deg); }
+.swml-prior-group-count {
+    font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 999px;
+    background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5);
+}
+.swml-prior-groupbody { display: flex; flex-direction: column; gap: 3px; }
+.swml-prior-collapsed .swml-prior-groupbody { display: none; }
+/* v7.20.59: prior-pad section chip strip — tap a section to expand + scroll to it */
+.swml-prior-chipstrip {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin: 0 0 12px;
+}
+.swml-prior-chip {
+    background: rgba(255,255,255,0.06); border: none; cursor: pointer;
+    color: rgba(255,255,255,0.55); font-size: 10px; font-weight: 600;
+    padding: 4px 8px; border-radius: 999px;
+    transition: all 0.15s;
+}
+.swml-prior-chip:hover { color: #51dacf; background: rgba(81,218,207,0.12); }
 .swml-prior-row {
     display: flex; flex-direction: column; align-items: stretch; gap: 2px;
     width: 100%; text-align: left; background: rgba(255,255,255,0.04);
@@ -4861,13 +4889,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-prior-row-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .swml-prior-row-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); }
 .swml-prior-row-date { font-size: 10.5px; color: rgba(255,255,255,0.35); }
+/* v7.20.59: background + colour come INLINE from the house grade ladder
+   (_GRADE_BG — 7 blue, 8 purple, 9 the reserved gradient); CSS owns shape only. */
 .swml-pa-grade {
     flex-shrink: 0; font-size: 10.5px; font-weight: 700; line-height: 1;
     padding: 4px 8px; border-radius: 999px;
-    background: rgba(81,218,207,0.15); color: #51dacf;
-}
-.swml-pa-grade-9 { /* grade 9 wears the reserved brand gradient */
-    background: linear-gradient(135deg, #5333ed, #2c003e); color: #fff;
+    background: rgba(81,218,207,0.15); color: #51dacf; /* fallback for unparseable grades */
 }
 .swml-pa-ungraded {
     flex-shrink: 0; font-size: 10px; font-weight: 600; line-height: 1;
@@ -4883,11 +4910,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-prior-pad { width: 460px; max-height: 70vh; }
 .swml-prior-pad .swml-extract-panel-header .swml-pa-grade { margin-left: auto; margin-right: 8px; }
 [data-swml-theme="light"] .swml-prior-group { color: rgba(28,29,31,0.45); }
+[data-swml-theme="light"] .swml-prior-group:hover { color: rgba(28,29,31,0.7); }
+[data-swml-theme="light"] .swml-prior-group-count { background: rgba(28,29,31,0.07); color: rgba(28,29,31,0.5); }
+[data-swml-theme="light"] .swml-prior-chip { background: rgba(28,29,31,0.06); color: rgba(28,29,31,0.55); }
+[data-swml-theme="light"] .swml-prior-chip:hover { color: #2d7a78; background: rgba(65,170,168,0.14); }
 [data-swml-theme="light"] .swml-prior-row { background: rgba(28,29,31,0.05); }
 [data-swml-theme="light"] .swml-prior-row:hover { background: rgba(65,170,168,0.12); }
 [data-swml-theme="light"] .swml-prior-row-label { color: rgba(28,29,31,0.85); }
 [data-swml-theme="light"] .swml-prior-row-date { color: rgba(28,29,31,0.4); }
-[data-swml-theme="light"] .swml-pa-grade { background: rgba(65,170,168,0.14); color: #2d7a78; }
 [data-swml-theme="light"] .swml-pa-ungraded { background: rgba(28,29,31,0.08); color: rgba(28,29,31,0.45); }
 [data-swml-theme="light"] .swml-prior-empty { color: rgba(28,29,31,0.5); }
 [data-swml-theme="light"] .swml-prior-note { color: rgba(28,29,31,0.5); border-top-color: rgba(28,29,31,0.08); }
