@@ -4760,8 +4760,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     letter-spacing: 0.5px; text-transform: uppercase; padding: 6px 10px; margin: 0 0 6px;
 }
 .swml-notes-item-head:hover { background: rgba(255,255,255,0.09); }
-.swml-notes-item-chev { display: inline-block; transition: transform 0.15s ease; }
-.swml-notes-collapsed .swml-notes-item-chev { transform: rotate(-90deg); }
+/* v7.20.60 (Neil): the HOUSE collapse glyph is the PLUS icon (as the WML progress
+   sidebar) — chevrons retired everywhere. Glyph lives in CSS content, so every
+   collapse surface (notes pad, prior pads, viewer groups) swaps in one place. */
+.swml-notes-item-chev { display: inline-block; width: 12px; text-align: center; font-weight: 700; }
+.swml-notes-item-chev::before { content: '−'; }
+.swml-notes-collapsed > .swml-notes-item-head .swml-notes-item-chev::before { content: '+'; }
 .swml-notes-collapsed .swml-notes-item-body { display: none; }
 [data-swml-theme="light"] .swml-notes-item-head,
 .swml-canvas-light .swml-notes-item-head { background: rgba(0,0,0,0.05); color: rgba(30,32,40,0.75); }
@@ -4859,26 +4863,54 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-prior-group:hover { color: rgba(255,255,255,0.65); }
 .swml-prior-groupwrap:first-child .swml-prior-group { margin-top: 0; }
-.swml-prior-group-chev { font-size: 9px; transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1); }
-.swml-prior-collapsed .swml-prior-group-chev { transform: rotate(-90deg); }
+/* v7.20.60: house plus/minus glyph (chevron retired) */
+.swml-prior-group-chev { width: 10px; text-align: center; font-weight: 700; font-size: 11px; }
+.swml-prior-group-chev::before { content: '−'; }
+.swml-prior-collapsed .swml-prior-group-chev::before { content: '+'; }
 .swml-prior-group-count {
     font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 999px;
     background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5);
 }
 .swml-prior-groupbody { display: flex; flex-direction: column; gap: 3px; }
 .swml-prior-collapsed .swml-prior-groupbody { display: none; }
-/* v7.20.59: prior-pad section chip strip — tap a section to expand + scroll to it */
-.swml-prior-chipstrip {
-    display: flex; flex-wrap: wrap; gap: 4px;
-    margin: 0 0 12px;
+/* v7.20.60 (Neil): chip strip retired — ONE sticky "Jump to…" dropdown navigates */
+.swml-prior-jumpbar {
+    position: sticky; top: -14px; /* body has 14px padding — pin flush to the header */
+    z-index: 5;
+    margin: -6px -6px 12px;
+    padding: 8px 6px;
+    background: rgba(28, 29, 31, 0.97);
 }
-.swml-prior-chip {
-    background: rgba(255,255,255,0.06); border: none; cursor: pointer;
-    color: rgba(255,255,255,0.55); font-size: 10px; font-weight: 600;
-    padding: 4px 8px; border-radius: 999px;
-    transition: all 0.15s;
+.swml-prior-jump {
+    width: 100%;
+    appearance: none; -webkit-appearance: none;
+    background: rgba(255,255,255,0.07)
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
+        right 10px center / 12px no-repeat;
+    border: none; border-radius: 8px;
+    color: rgba(255,255,255,0.75);
+    font-size: 12px; font-weight: 600;
+    padding: 8px 30px 8px 10px;
+    cursor: pointer;
 }
-.swml-prior-chip:hover { color: #51dacf; background: rgba(81,218,207,0.12); }
+.swml-prior-jump:focus { outline: none; box-shadow: 0 0 0 2px rgba(81,218,207,0.35); }
+.swml-prior-jump option, .swml-prior-jump optgroup { background: #1c1d1f; color: rgba(255,255,255,0.8); }
+/* pad group headers — replace the doc's dividers with the pad's own structure */
+.swml-prior-padgroup {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.35); text-transform: uppercase;
+    margin: 14px 0 6px; user-select: none;
+}
+/* header: title ellipsises, badge never overlaps (Neil round 2) */
+.swml-prior-pad .swml-extract-panel-header { gap: 8px; }
+.swml-prior-pad-title {
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+[data-swml-theme="light"] .swml-prior-jumpbar { background: rgba(255,255,255,0.97); }
+[data-swml-theme="light"] .swml-prior-jump { background-color: rgba(28,29,31,0.05); color: rgba(28,29,31,0.75); }
+[data-swml-theme="light"] .swml-prior-jump option, [data-swml-theme="light"] .swml-prior-jump optgroup { background: #fff; color: rgba(28,29,31,0.85); }
+[data-swml-theme="light"] .swml-prior-padgroup { color: rgba(28,29,31,0.4); }
 .swml-prior-row {
     display: flex; flex-direction: column; align-items: stretch; gap: 2px;
     width: 100%; text-align: left; background: rgba(255,255,255,0.04);
@@ -7510,9 +7542,17 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-checklist-box:hover {
     border-color: rgba(28,217,145,0.55);
 }
+/* v7.20.60: the check animates via KEYFRAMES, not transitions — keyframes fire
+   whether the state flipped in place OR ProseMirror re-mounted the row (a fresh
+   mount has no "before" state, so a transition silently paints the end state;
+   this is rebuild-PROOF and slower/larger so it actually reads at 18px). */
 .swml-checklist-item[data-checked="true"] .swml-checklist-box {
-    box-shadow: inset 0 0 0 10px #1CD991; /* flood to full fill */
     border-color: transparent;
+    animation: swml-check-flood 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes swml-check-flood {
+    from { box-shadow: inset 0 0 0 0 rgba(28,217,145,0.4); }
+    to   { box-shadow: inset 0 0 0 10px #1CD991; }
 }
 .swml-check-tick-svg {
     width: 12px; height: 12px;
@@ -7525,17 +7565,45 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     stroke-width: 3.2;
     stroke-linecap: round;
     stroke-linejoin: round;
-    stroke-dasharray: 24;
-    stroke-dashoffset: 24; /* undrawn */
-    transition: stroke-dashoffset 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    stroke-dasharray: 24px;
+    stroke-dashoffset: 24px; /* undrawn */
+    transition: stroke-dashoffset 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* un-draw on uncheck */
 }
 .swml-checklist-item[data-checked="true"] .swml-check-tick {
-    stroke-dashoffset: 0; /* draws left → right */
-    transition-delay: 0.12s; /* after the flood lands; un-draw runs undelayed */
+    animation: swml-check-draw 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both; /* draws after the flood */
+}
+@keyframes swml-check-draw {
+    from { stroke-dashoffset: 24px; }
+    to   { stroke-dashoffset: 0px; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .swml-checklist-box, .swml-check-tick { transition: none; }
+    .swml-checklist-box, .swml-check-tick { transition: none; animation: none; }
+    .swml-checklist-item[data-checked="true"] .swml-checklist-box { box-shadow: inset 0 0 0 10px #1CD991; }
+    .swml-checklist-item[data-checked="true"] .swml-check-tick { stroke-dashoffset: 0px; }
 }
+
+/* v7.20.60 (Neil): STORED docs carry no checkbox chrome (the box is NodeView-only,
+   never serialised) — so the prior-attempt pad showed bare statements. Synthesise a
+   static box + tick from the persisted data-checked attribute, pad-scoped. */
+.swml-prior-pad [data-checklist-item] {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 6px 8px; border-radius: 8px;
+}
+.swml-prior-pad [data-checklist-item]::before {
+    content: '';
+    width: 16px; height: 16px; min-width: 16px;
+    margin-top: 2px;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: 5px;
+}
+.swml-prior-pad [data-checklist-item][data-checked="true"] {
+    background: rgba(28,217,145,0.07);
+}
+.swml-prior-pad [data-checklist-item][data-checked="true"]::before {
+    background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpolyline points='216 72 104 184 48 128' fill='none' stroke='%230b3b26' stroke-linecap='round' stroke-linejoin='round' stroke-width='36'/%3E%3C/svg%3E") 50% 50% / 10px no-repeat;
+    border-color: transparent;
+}
+[data-swml-theme="light"] .swml-prior-pad [data-checklist-item]::before { border-color: rgba(28,29,31,0.25); }
 .swml-checklist-text {
     flex: 1; min-width: 0;
     font-size: 13.5px; line-height: 1.55;

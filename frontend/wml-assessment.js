@@ -16620,7 +16620,7 @@
                 const _mkNoteItem = (src, parent) => {
                     const item = el('div', { className: 'swml-notes-item' });
                     const head = el('button', { className: 'swml-notes-item-head', type: 'button' });
-                    head.innerHTML = '<span class="swml-notes-item-chev">▾</span> ' +
+                    head.innerHTML = '<span class="swml-notes-item-chev"></span> ' +
                         (src.getAttribute('data-section-label') || 'Notes');
                     const bodyWrap = el('div', { className: 'swml-notes-item-body' });
                     const c = _stripChipsFromClone(src.cloneNode(true));
@@ -16649,7 +16649,7 @@
                 if (_foundational.length && _poemSecs.length) {
                     const group = el('div', { className: 'swml-notes-item swml-notes-group swml-notes-collapsed' });
                     const ghead = el('button', { className: 'swml-notes-item-head', type: 'button' });
-                    ghead.innerHTML = '<span class="swml-notes-item-chev">▾</span> Foundational Notes';
+                    ghead.innerHTML = '<span class="swml-notes-item-chev"></span> Foundational Notes';
                     const gbody = el('div', { className: 'swml-notes-item-body' });
                     ghead.addEventListener('click', () => group.classList.toggle('swml-notes-collapsed'));
                     group.appendChild(ghead);
@@ -16929,7 +16929,8 @@
             } catch (_) { /* handled below */ }
             const panel = el('div', { className: 'swml-extract-panel swml-prior-pad' });
             const header = el('div', { className: 'swml-extract-panel-header' });
-            header.appendChild(el('span', { textContent: _paTextName(row.text) + ' — ' + _paStageName(row) + (row.attempt > 1 ? ' · Attempt ' + row.attempt : '') }));
+            // v7.20.60: title ellipsises so the grade badge never overlaps it (Neil).
+            header.appendChild(el('span', { className: 'swml-prior-pad-title', textContent: _paTextName(row.text) + ' — ' + _paStageName(row) + (row.attempt > 1 ? ' · Attempt ' + row.attempt : '') }));
             if (row.grade != null && row.grade !== '') {
                 header.appendChild(_paGradeBadge(row.grade)); // house ladder (v7.20.59)
             }
@@ -16948,38 +16949,81 @@
                 tmp.querySelectorAll('script, style').forEach(n => n.remove());
                 tmp.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
                 tmp.querySelectorAll('select, textarea, input, button').forEach(n => { n.disabled = true; });
-                // v7.20.59 (Neil): a 30-section past assessment was one long scroll.
-                // Each labelled section now collapses under its own header (the notes-pad
-                // collapse chrome, reused) — ALL COLLAPSED on open, so the pad reads as a
-                // table of contents — plus a chip strip up top that expands + scrolls to
-                // its section, and a Collapse/Expand-all toggle in the panel header.
+                // v7.20.60 (Neil round 2): the pad imposes ONE universal structure —
+                // Source Material → Question 1..N (each question's statements, plans,
+                // response and feedback together) → Results & Feedback — instead of raw
+                // doc order (which interleaved "Q2 Response" with the next "Q3" heading).
+                // The chip strip is gone: a single STICKY "Jump to…" dropdown navigates
+                // (Neil: too many buttons up top). Doc dividers are dropped — the pad's
+                // own group headers replace them. All sections start collapsed (TOC read).
                 const padItems = [];
-                const chipStrip = el('div', { className: 'swml-prior-chipstrip' });
+                const loose = [];   // unlabelled leading nodes (cover/title) keep their spot
+                const buckets = { src: [], q: {}, rest: [] };
+                const qNums = [];
                 Array.from(tmp.children).forEach(child => {
                     const isSec = child.classList && child.classList.contains('swml-section-block') && child.getAttribute('data-section-label');
-                    const secType = child.getAttribute && child.getAttribute('data-section-type');
-                    if (!isSec || secType === 'divider') { body.appendChild(child); return; }
+                    const secType = (child.getAttribute && child.getAttribute('data-section-type')) || '';
+                    if (secType === 'divider') return; // pad group headers replace doc dividers
+                    if (!isSec) { loose.push(child); return; }
                     child.classList.remove('swml-fb-collapsed', 'swml-task-locked'); // pad is a reading surface
                     const label = child.getAttribute('data-section-label');
+                    const qm = /\bQ(?:uestion\s*)?(\d+)\b/i.exec(label);
+                    if (secType === 'source' || secType === 'preamble' || (!qm && /source/i.test(label))) {
+                        buckets.src.push({ child, label });
+                    } else if (qm) {
+                        const n = parseInt(qm[1], 10);
+                        if (!buckets.q[n]) { buckets.q[n] = []; qNums.push(n); }
+                        // Within its question group the Q-tag is redundant — strip it.
+                        let short = label.replace(/\s*—\s*Q\d+\s*$/i, '').replace(new RegExp('^Q(?:uestion\\s*)?' + n + '\\s*[:.]?\\s*', 'i'), '').trim();
+                        if (!short) short = 'Question';
+                        buckets.q[n].push({ child, label: short });
+                    } else {
+                        buckets.rest.push({ child, label });
+                    }
+                });
+                const esc = (s) => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+                const jumpSelect = el('select', { className: 'swml-prior-jump' });
+                jumpSelect.appendChild(el('option', { value: '', textContent: 'Jump to section…' }));
+                const mkItem = (entry, group) => {
                     const item = el('div', { className: 'swml-notes-item swml-notes-collapsed' });
                     const head = el('button', { className: 'swml-notes-item-head', type: 'button' });
-                    head.innerHTML = '<span class="swml-notes-item-chev">▾</span> ' + label.replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+                    head.innerHTML = '<span class="swml-notes-item-chev"></span> ' + esc(entry.label);
                     const bodyWrap = el('div', { className: 'swml-notes-item-body' });
-                    bodyWrap.appendChild(child);
+                    bodyWrap.appendChild(entry.child);
                     head.addEventListener('click', () => item.classList.toggle('swml-notes-collapsed'));
                     item.appendChild(head);
                     item.appendChild(bodyWrap);
                     body.appendChild(item);
                     padItems.push(item);
-                    const chip = el('button', { className: 'swml-prior-chip', type: 'button', textContent: label.replace(/\s*\(.*\)\s*$/, '') });
-                    chip.addEventListener('click', () => {
+                    const opt = el('option', { textContent: entry.label });
+                    opt._swmlItem = item;
+                    opt.value = String(padItems.length);
+                    group.appendChild(opt);
+                };
+                const mkGroup = (title, entries) => {
+                    if (!entries.length) return;
+                    body.appendChild(el('div', { className: 'swml-prior-padgroup', textContent: title }));
+                    const og = el('optgroup');
+                    og.label = title;
+                    entries.forEach(en => mkItem(en, og));
+                    jumpSelect.appendChild(og);
+                };
+                loose.forEach(n => body.appendChild(n));
+                mkGroup('Source Material', buckets.src);
+                qNums.sort((a, b) => a - b).forEach(n => mkGroup('Question ' + n, buckets.q[n]));
+                mkGroup('Results & Feedback', buckets.rest);
+                if (padItems.length) {
+                    const jumpBar = el('div', { className: 'swml-prior-jumpbar' });
+                    jumpSelect.addEventListener('change', () => {
+                        const opt = jumpSelect.selectedOptions && jumpSelect.selectedOptions[0];
+                        const item = opt && opt._swmlItem;
+                        if (!item) return;
                         item.classList.remove('swml-notes-collapsed');
                         item.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        jumpSelect.value = '';
                     });
-                    chipStrip.appendChild(chip);
-                });
-                if (padItems.length) {
-                    body.insertBefore(chipStrip, body.firstChild);
+                    jumpBar.appendChild(jumpSelect);
+                    body.insertBefore(jumpBar, body.firstChild);
                     const collapseAll = el('button', {
                         className: 'swml-extract-tab', textContent: 'Expand all',
                         style: { marginLeft: '8px', fontSize: '10px', padding: '3px 8px' },
@@ -17039,7 +17083,7 @@
                 const isCurrent = gk === curKey;
                 const groupWrap = el('div', { className: 'swml-prior-groupwrap' + (isCurrent ? '' : ' swml-prior-collapsed') });
                 const head = el('button', { className: 'swml-prior-group', type: 'button' });
-                head.innerHTML = '<span class="swml-prior-group-chev">▾</span> '
+                head.innerHTML = '<span class="swml-prior-group-chev"></span> '
                     + (String(first.board || '').toUpperCase() + ' · ' + _paTextName(first.text)).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))
                     + ' <span class="swml-prior-group-count">' + groups[gk].length + '</span>';
                 head.addEventListener('click', () => groupWrap.classList.toggle('swml-prior-collapsed'));
