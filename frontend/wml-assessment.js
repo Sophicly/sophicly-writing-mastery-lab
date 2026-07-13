@@ -22667,7 +22667,11 @@
                         if (typeof getPos === 'function') {
                             const pos = getPos();
                             const currentChecked = editor.state.doc.nodeAt(pos)?.attrs.checked;
-                            editor.chain().focus()
+                            // v7.20.69: no .focus() — grabbing editor focus on a checkbox click
+                            // moves the selection (caret redraw + possible scroll-into-view),
+                            // which read as a gentle double-blink on uncheck (the flood animation
+                            // masked it on check). setNodeMarkup doesn't need focus.
+                            editor.chain()
                                 .command(({ tr }) => {
                                     tr.setNodeMarkup(pos, undefined, { ...node.attrs, checked: !currentChecked });
                                     return true;
