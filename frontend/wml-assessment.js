@@ -16885,7 +16885,10 @@
             panel.style.cursor = 'grab';
             panel.addEventListener('mousedown', (e) => {
                 if (e.button !== 0) return;
-                if (e.target.closest('.swml-extract-rh') || e.target.closest('button')) return;
+                // v7.20.64: drag must never start on an interactive control — preventDefault
+                // on mousedown suppresses a native <select> opening (Neil: the pad's
+                // "Jump to section…" dropdown wouldn't open).
+                if (e.target.closest('.swml-extract-rh, button, select, input, textarea, a, label, [contenteditable="true"]')) return;
                 dg = true;
                 const origin = typeof getFixedOriginOffset === 'function' ? getFixedOriginOffset(panel) : { x: 0, y: 0 };
                 const rect = panel.getBoundingClientRect();
