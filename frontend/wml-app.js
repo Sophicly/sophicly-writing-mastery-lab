@@ -5312,7 +5312,7 @@
         rec.onstart = () => {
             isListening = true;
             const btn = $('#swml-mic-btn');
-            if (btn) { btn.classList.add('swml-mic-active'); btn.innerHTML = SVG_MIC_STOP; btn.title = 'Stop listening'; }
+            if (btn) { btn.classList.add('swml-mic-active'); btn.title = 'Stop listening'; /* v7.20.57: CSS morphs SVG_MIC */ }
             const input = $('#swml-input');
             if (input) input.placeholder = 'Listening...';
         };
@@ -5320,7 +5320,7 @@
         rec.onend = () => {
             isListening = false;
             const btn = $('#swml-mic-btn');
-            if (btn) { btn.classList.remove('swml-mic-active'); btn.innerHTML = SVG_MIC; btn.title = 'Voice input'; }
+            if (btn) { btn.classList.remove('swml-mic-active'); btn.title = 'Voice input'; }
             const input = $('#swml-input');
             if (input) input.placeholder = 'Type your response...';
             finalTranscript = '';
@@ -5354,7 +5354,7 @@
             }
             isListening = false;
             const btn = $('#swml-mic-btn');
-            if (btn) { btn.classList.remove('swml-mic-active'); btn.innerHTML = SVG_MIC; btn.title = 'Voice input'; }
+            if (btn) { btn.classList.remove('swml-mic-active'); btn.title = 'Voice input'; }
         };
 
         return rec;

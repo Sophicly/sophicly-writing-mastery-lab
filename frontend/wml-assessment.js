@@ -5733,16 +5733,14 @@
             listening = true;
             micBtn.style.background = '#ff5470';
             micBtn.style.color = '#fff'; // icon always light on the live-red fill
-            micBtn.classList.add('swml-mic-live');
-            micBtn.innerHTML = SVG_MIC_STOP || SVG_MIC;
+            micBtn.classList.add('swml-mic-live'); // v7.20.57: CSS morphs the icon to the record dot
             textarea.setAttribute('placeholder', 'Listening… speak now');
         };
         const setIdle = () => {
             listening = false;
             micBtn.style.background = baseBg;
             micBtn.style.color = baseColor;
-            micBtn.classList.remove('swml-mic-live');
-            micBtn.innerHTML = SVG_MIC;
+            micBtn.classList.remove('swml-mic-live'); // v7.20.57: morph reverts with the class
             textarea.setAttribute('placeholder', basePlaceholder);
         };
         micBtn.addEventListener('click', () => {
@@ -10388,7 +10386,7 @@
                     canvasRecognition.onstart = () => {
                         canvasListening = true; finalTranscript = chatTextarea.value || '';
                         console.log('WML Mic: onstart — canvasChatLoading:', canvasChatLoading, 'retries:', _micNoSpeechRetries);
-                        chatMicBtn.innerHTML = SVG_MIC_STOP;
+                        /* v7.20.57: no icon swap — CSS morphs SVG_MIC into the record dot via .swml-mic-active */
                         chatMicBtn.classList.add('swml-mic-active'); try { localStorage.setItem(MIC_TIP_KEY, '1'); } catch (_) {} // v7.19.834: mic users never see the tip
                         // v7.15.14: Auto-start timer when mic starts in Exam mode
                         if (_examTimerMode === 'exam' && window.WML._startCanvasTimer) {
@@ -10405,7 +10403,7 @@
                     canvasRecognition.onend = () => {
                         console.log('WML Mic: onend — finalTranscript length:', finalTranscript.length);
                         canvasListening = false;
-                        chatMicBtn.innerHTML = SVG_MIC;
+                        /* v7.20.57: morph reverts as .swml-mic-active is removed */
                         chatMicBtn.classList.remove('swml-mic-active');
                         chatTextarea.focus();
                     };
@@ -10418,14 +10416,14 @@
                             setTimeout(() => {
                                 try { canvasRecognition.start(); } catch(ex) {
                                     canvasListening = false;
-                                    chatMicBtn.innerHTML = SVG_MIC;
+                                    /* v7.20.57: morph reverts as .swml-mic-active is removed */
                                     chatMicBtn.classList.remove('swml-mic-active');
                                 }
                             }, 200);
                             return;
                         }
                         canvasListening = false;
-                        chatMicBtn.innerHTML = SVG_MIC;
+                        /* v7.20.57: morph reverts as .swml-mic-active is removed */
                         chatMicBtn.classList.remove('swml-mic-active');
                         // v7.15.22: User-facing feedback for different error types
                         if (e.error === 'network' || e.error === 'not-allowed') {
@@ -19732,12 +19730,12 @@
                                     };
                                     canvasRecognition.onstart = () => {
                                         canvasListening = true; finalTranscript = chatTextarea.value || '';
-                                        chatMicBtn.innerHTML = SVG_MIC_STOP;
+                                        /* v7.20.57: no icon swap — CSS morphs SVG_MIC into the record dot via .swml-mic-active */
                                         chatMicBtn.classList.add('swml-mic-active'); try { localStorage.setItem(MIC_TIP_KEY, '1'); } catch (_) {} // v7.19.834: mic users never see the tip
                                     };
                                     canvasRecognition.onend = () => {
                                         canvasListening = false;
-                                        chatMicBtn.innerHTML = SVG_MIC;
+                                        /* v7.20.57: morph reverts as .swml-mic-active is removed */
                                         chatMicBtn.classList.remove('swml-mic-active');
                                         // Focus textarea so user can press Enter to submit
                                         chatTextarea.focus();
@@ -19745,7 +19743,7 @@
                                     canvasRecognition.onerror = (e) => {
                                         console.warn('Canvas voice error:', e.error);
                                         canvasListening = false;
-                                        chatMicBtn.innerHTML = SVG_MIC;
+                                        /* v7.20.57: morph reverts as .swml-mic-active is removed */
                                         chatMicBtn.classList.remove('swml-mic-active');
                                     };
                                 }

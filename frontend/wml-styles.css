@@ -1651,6 +1651,43 @@ body.swml-page {
     50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
 }
 
+/* ── v7.20.57 (Neil): mic → record-dot MORPH (Aaron-Iker-style, one SVG) ──
+   Keyed on the state classes every mic toggle ALREADY sets (.swml-mic-active for
+   the chat mics, .swml-mic-live for the panel/toolbar mics via _attachPanelMic),
+   so ANY button holding SVG_MIC morphs with zero per-button wiring. The capsule
+   rect eases into a filled round dot at the icon's centre (SVG geometry as CSS —
+   x/y/width/height/rx are animatable properties); the sound-waves, cradle and
+   stand scale down and fade. While recording, the dot breathes via stroke-width.
+   Button chrome untouched (Neil: keep the button style the same). House
+   Standard easing, no overshoot (MOTION.md). */
+.swml-mic-capsule {
+    fill: transparent;
+    transition: x 0.28s cubic-bezier(0.4, 0, 0.2, 1), y 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+        width 0.28s cubic-bezier(0.4, 0, 0.2, 1), height 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+        rx 0.28s cubic-bezier(0.4, 0, 0.2, 1), fill 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.swml-mic-detail {
+    transform-origin: 12px 12px;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.swml-mic-active .swml-mic-capsule,
+.swml-mic-live .swml-mic-capsule {
+    x: 7.5px; y: 7.5px; width: 9px; height: 9px; rx: 4.5px;
+    fill: currentColor;
+    animation: swml-mic-dot 1.6s ease-in-out infinite 0.28s;
+}
+.swml-mic-active .swml-mic-detail,
+.swml-mic-live .swml-mic-detail {
+    transform: scale(0.55);
+    opacity: 0;
+}
+@keyframes swml-mic-dot {
+    50% { stroke-width: 3.5; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-mic-active .swml-mic-capsule, .swml-mic-live .swml-mic-capsule { animation: none; }
+}
+
 /* User message copy button */
 .swml-user-copy {
     display: block; margin-top: 2px; margin-left: auto;

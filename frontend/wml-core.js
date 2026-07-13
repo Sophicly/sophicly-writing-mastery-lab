@@ -2338,7 +2338,14 @@ window.WML = (function() {
 
     // ── SVG Icons (minimalist, uses currentColor for theming) ──
     // Input area (18px)
-    const SVG_MIC = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 3V5M1 2V6M19 3V5M23 2V6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10V11C5 14.866 8.13401 18 12 18C15.866 18 19 14.866 19 11V10" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 18V22M12 22H9M12 22H15" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    // v7.20.57 (Neil): morph-ready mic — visually identical to the old icon at rest,
+    // but the capsule (rect) and details (waves/cradle/stand) carry classes so CSS can
+    // MORPH mic → pulsing record dot when the button gains .swml-mic-active /
+    // .swml-mic-live (the state classes every mic toggle already sets). One icon, no
+    // innerHTML swapping — the swap is what made the old transition a hard cut.
+    // Morph CSS lives beside the mic-button styles in wml-styles.css.
+    const SVG_MIC = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect class="swml-mic-capsule" x="9" y="2" width="6" height="12" rx="3"/><path class="swml-mic-detail" d="M5 3V5M1 2V6M19 3V5M23 2V6" stroke-linecap="round" stroke-linejoin="round"/><path class="swml-mic-detail" d="M5 10V11C5 14.866 8.13401 18 12 18C15.866 18 19 14.866 19 11V10" stroke-linecap="round" stroke-linejoin="round"/><path class="swml-mic-detail" d="M12 18V22M12 22H9M12 22H15" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    // Legacy stop square — kept for any stray consumer; live surfaces now morph SVG_MIC in place.
     const SVG_MIC_STOP = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
     const SVG_SEND = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
     const SVG_ATTACH = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
