@@ -2607,6 +2607,11 @@ TEMPLATE;
      * Returns directory name (e.g., "literature", "poetry", "modern", "language1")
      */
     private function resolve_protocol_group($board, $subject) {
+        // v7.20.49: the bridge's lang_map emits DASH-form subjects ('language-p2', v7.14.14)
+        // while every map/regex below expects underscores — normalise first (same treatment
+        // the board key already gets). Slug-trace law: dash-vs-underscore is a documented
+        // silent-miss class (IGCSE Lang A memory).
+        $subject = str_replace('-', '_', (string) $subject);
         // v7.17.4: normalise language_p1/language_p2 → language1/language2 for map lookup.
         // Frontend + schema use language_p1; protocol dir + map use language1. Converge here.
         $subject = preg_replace('/^language_p(\d)$/', 'language$1', $subject);
@@ -2985,9 +2990,10 @@ TEMPLATE;
                         $manifest_path = SWML_PATH . "protocols/shared/{$raw_subject}/manifest.json";
                     }
                     // v7.20.49: resolve through the protocol-group dir when the raw subject
-                    // dir doesn't exist (language_p2 → language2), mirroring load_protocol.
+                    // dir doesn't exist (language-p2 / language_p2 → language2), mirroring
+                    // load_protocol's normalisation (dash forms come from the bridge lang_map).
                     if (!file_exists($manifest_path)) {
-                        $group_dir = preg_replace('/^language_p(\d)$/', 'language$1', $raw_subject);
+                        $group_dir = preg_replace('/^language[_-]p(\d)$/', 'language$1', str_replace('-', '_', $raw_subject));
                         $manifest_path = SWML_PATH . "protocols/{$context['board']}/{$group_dir}/manifest.json";
                     }
                     $planning_steps = [];
