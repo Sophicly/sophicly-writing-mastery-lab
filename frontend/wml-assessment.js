@@ -3586,20 +3586,27 @@
                         // answer with no separator → "AO1Topic SentenceThe brightness…" squash.
                         // Collect just the editable input cells (.swml-input-field / outline
                         // .swml-outline-input), drop empties + placeholders, join with " · " so
-                        // each field reads as its own chunk. Fall back to the old textContent
-                        // scrape only when a section has no such fields (no regression).
+                        // each field reads as its own chunk. Fall back to the old scrape only
+                        // when a section has no such fields (no regression).
+                        // v7.20.102b: textContent gives NO character at a <br>/block boundary, so a
+                        // multi-line field ("stars"<br>"As daylight", or "BP3 TEST REDRAFT"<br>
+                        // "PLANNING") reads glued ("starsAs daylight"). _spaced() strips tags to a
+                        // SPACE via innerHTML, so every hardBreak/paragraph boundary becomes a
+                        // space, then decodes entities — the root de-squash for within-field lines.
+                        const _decodeEnt = (s) => { const d = document.createElement('div'); d.innerHTML = s; return d.textContent || ''; };
+                        const _spaced = (elm) => _decodeEnt((elm.innerHTML || '').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
                         let t = '';
                         if (body) {
                             const fields = body.querySelectorAll('.swml-input-field, .swml-outline-input');
                             if (fields.length) {
                                 const parts = [];
                                 fields.forEach(f => {
-                                    const v = (f.textContent || '').replace(/\s+/g, ' ').trim();
+                                    const v = _spaced(f);
                                     if (v && _WC_PLACEHOLDERS.indexOf(v.toLowerCase()) === -1) parts.push(v);
                                 });
                                 t = parts.join(' · ');
                             } else {
-                                t = (body.textContent || '').replace(/\s+/g, ' ').trim();
+                                t = _spaced(body);
                                 if (_WC_PLACEHOLDERS.indexOf(t.toLowerCase()) !== -1) t = '';
                             }
                         }
