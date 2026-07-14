@@ -8526,9 +8526,14 @@
             if ((input.textContent || '').trim().length === 0) allFilled = false;
             const cbs = r.querySelectorAll('input[type="checkbox"]');
             if (cbs.length) {
-                if (Array.from(cbs).some(c => c.checked)) anyChecked = true;
+                const anyOn = Array.from(cbs).some(c => c.checked);
+                if (anyOn) anyChecked = true;
                 const isPick = /^cw-step-\d+-(logline|idea)/.test(r.getAttribute('data-field-id') || '');
+                // v7.20.99: choice checklists (effects, data-choice="1") complete at >=1 ticked;
+                // required checklists (evidence) still need every item ticked.
+                const isChoice = r.getAttribute('data-choice') === '1';
                 if (isPick) pickGroup = true;
+                else if (isChoice) { if (!anyOn) allFilled = false; }
                 else if (!Array.from(cbs).every(c => c.checked)) allFilled = false;
             }
             const sel = r.querySelector('.swml-outline-select');
@@ -23142,6 +23147,10 @@
 
                     let crit;
                     try { crit = JSON.parse(node.attrs.criteria || '{}'); } catch(e) { crit = {}; }
+                    // v7.20.99 (Neil): expose the choice flag on the DOM row so the DOM-based
+                    // section-completion reader (checkSectionComplete) can honour "≥1 ticked"
+                    // for choice checklists (effects) vs "all ticked" for required ones (evidence).
+                    if (crit.choice) dom.setAttribute('data-choice', '1');
 
                     // v7.14.74: Read checkbox state from Map first (live), fall back to TipTap attr (persisted)
                     const fieldId = node.attrs.fieldId || '';
@@ -23340,7 +23349,9 @@
                             criteriaOk = sel && !!sel.value;
                         } else if (crit.type === 'checklist' && crit.items) {
                             const checkedCount = checkboxes.filter(c => c.checked).length;
-                            criteriaOk = checkedCount >= Math.max(1, crit.items.length);
+                            // v7.20.99: choice checklists (effects) complete at >=1; required (evidence) need all.
+                            const need = crit.choice ? 1 : Math.max(1, crit.items.length);
+                            criteriaOk = checkedCount >= need;
                         } else if (crit.type === 'checkbox') {
                             criteriaOk = checkboxes.some(c => c.checked);
                         } else {
@@ -30803,8 +30814,11 @@
                 // Effect 1 = immediate response (focus → emotion); Effect 2 = deeper response
                 // (thought → real-world action). id 'effects' kept for Effect 1 so existing saved
                 // outlines keep their text (no write-key drift); 'effects2' is purely additive.
-                { id: 'effects', label: 'Effect 1 on Reader', ao: 'AO2', type: 'checklist', items: ['Directs focus', 'Evokes emotion'], prompt: 'Immediate effect — where the writer directs the reader’s focus and the emotion it evokes' },
-                { id: 'effects2', label: 'Effect 2 on Reader', ao: 'AO2', type: 'checklist', items: ['Shapes thoughts', 'Prompts action'], prompt: 'Deeper effect — the thoughts it shapes and the real-world attitude or action it may inspire' },
+                // v7.20.99 (Neil): effects checklists are a CHOICE, not a requirement — the
+                // student picks the effect(s) that apply (can't tick all four at once). choice:true
+                // => complete at >=1 ticked. Evidence above has NO choice flag => all three required.
+                { id: 'effects', label: 'Effect 1 on Reader', ao: 'AO2', type: 'checklist', choice: true, items: ['Manipulates focus', 'Manipulates emotions', 'Manipulates thoughts', 'Manipulates actions'], prompt: 'How does the author manipulate the reader? Be specific to the ideas and themes.' },
+                { id: 'effects2', label: 'Effect 2 on Reader', ao: 'AO2', type: 'checklist', choice: true, items: ['Manipulates focus', 'Manipulates emotions', 'Manipulates thoughts', 'Manipulates actions'], prompt: 'A second, distinct effect — how else does the author shape the reader’s response?' },
                 { id: 'purpose', label: "Author's Purpose + Context", ao: 'AO1/AO3', type: 'checkbox', prompt: 'Why these choices? Link to context' },
             ],
             conclusion: [
@@ -37422,6 +37436,83 @@
         } catch (e) { console.warn('WML heal: nested-section heal failed (non-fatal)', e && e.message); return 0; }
     }
 
+    // v7.20.99 (Neil): upgrade EXISTING outline docs to the current literature scaffold.
+    // The scaffold (labels, prompts, criteria, row set) is baked into each saved doc at
+    // creation, so an OUTLINE_CRITERIA change only reaches freshly-generated docs — every
+    // in-progress student stays frozen on the old scaffold. This heal reconciles baked
+    // outline BODY rows to the canonical criteria (single source: OUTLINE_CRITERIA.literature),
+    // preserving all student text: relabels evidence ("Technique + Evidence + Inference",
+    // AO2/AO1) and effects (→ "Effect 1 on Reader", choice), rewords the hook, and INSERTS
+    // an empty "Effect 2 on Reader" row after each Effect-1 row. Idempotent (skips a paragraph
+    // whose Effect-1 row is already followed by an effects2 row; skips relabels already applied
+    // → no transaction on an up-to-date doc). Engine-safe: one PM transaction, swmlEditTs meta +
+    // addToHistory:false, descending positions (mirrors _healNestedSections, the v7.20.97 law).
+    function _healOutlineScaffold() {
+        try {
+            if (!canvasEditor) return 0;
+            const lit = (typeof OUTLINE_CRITERIA !== 'undefined' && OUTLINE_CRITERIA && OUTLINE_CRITERIA.literature) ? OUTLINE_CRITERIA.literature : null;
+            if (!lit) return 0;
+            const body = lit.body || [], intro = lit.intro || [];
+            const cEvidence = body.find(c => c.id === 'evidence');
+            const cEffect1  = body.find(c => c.id === 'effects');
+            const cEffect2  = body.find(c => c.id === 'effects2');
+            const cHook     = intro.find(c => c.id === 'hook');
+            if (!cEvidence || !cEffect1 || !cEffect2) return 0;
+            const doc = canvasEditor.state.doc;
+            const updates = []; // { pos, attrs }
+            const inserts = []; // { pos }  (position to insert an Effect-2 row)
+            let needHeal = false;
+            const _mergeAttrs = (node, crit) => Object.assign({}, node.attrs, { criteria: JSON.stringify(crit), prompt: crit.prompt || '' });
+            doc.descendants((n, pos) => {
+                if (n.type.name !== 'outlineRow') return true;
+                const fid = n.attrs.fieldId || '';
+                let cur; try { cur = JSON.parse(n.attrs.criteria || '{}'); } catch (_) { cur = {}; }
+                if (/^outline-body-\d+-evidence$/.test(fid)) {
+                    if (cur.label !== cEvidence.label || cur.ao !== cEvidence.ao) { updates.push({ pos, attrs: _mergeAttrs(n, cEvidence) }); needHeal = true; }
+                } else if (/^outline-body-\d+-effects$/.test(fid)) {
+                    if (cur.label !== cEffect1.label || cur.choice !== true) { updates.push({ pos, attrs: _mergeAttrs(n, cEffect1) }); needHeal = true; }
+                    // Insert Effect 2 unless the immediately-following sibling is already one.
+                    const after = doc.nodeAt(pos + n.nodeSize);
+                    const hasEffect2 = after && after.type.name === 'outlineRow' && /-effects2$/.test(after.attrs.fieldId || '');
+                    if (!hasEffect2) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid + '2' }); needHeal = true; }
+                } else if (cHook && /^outline-intro-hook/.test(fid)) {
+                    if (cur.prompt !== cHook.prompt) { updates.push({ pos, attrs: _mergeAttrs(n, cHook) }); needHeal = true; }
+                }
+                return true;
+            });
+            if (!needHeal) return 0;
+            _migrationActive = true;
+            try {
+                canvasEditor.chain().command(({ tr }) => {
+                    tr.setMeta('swmlEditTs', 1);
+                    tr.setMeta('addToHistory', false);
+                    // Combine updates (no size change) + inserts (shift upward), apply by
+                    // DESCENDING position so every recorded position stays valid.
+                    const ops = updates.map(u => ({ pos: u.pos, kind: 'u', u }))
+                        .concat(inserts.map(i => ({ pos: i.pos, kind: 'i', i })))
+                        .sort((a, b) => b.pos - a.pos);
+                    ops.forEach(op => {
+                        if (op.kind === 'u') {
+                            tr.setNodeMarkup(op.pos, undefined, op.u.attrs);
+                        } else {
+                            const node = canvasEditor.schema.nodes.outlineRow.create({
+                                prompt: cEffect2.prompt || '',
+                                fieldId: op.i.fieldId,
+                                criteria: JSON.stringify(cEffect2),
+                                checkState: '{}',
+                            });
+                            tr.insert(op.pos, node);
+                        }
+                    });
+                    return true;
+                }).run();
+            } finally { _migrationActive = false; }
+            console.warn('WML heal: outline scaffold upgraded — ' + updates.length + ' row(s) relabelled, ' + inserts.length + ' Effect-2 row(s) added (v7.20.99). Student text preserved.');
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            return updates.length + inserts.length;
+        } catch (e) { console.warn('WML heal: outline scaffold heal failed (non-fatal)', e && e.message); return 0; }
+    }
+
     let _prewriteHealRunning = null;
     async function _healPhase1PrewriteCarry() {
         if (_prewriteHealRunning) { try { await _prewriteHealRunning; } catch (_) {} }
@@ -37456,6 +37547,10 @@
             // v7.20.97: structural heal FIRST — mirrors must never read/write a doc
             // that still carries nested sections (they'd copy the garbage forward).
             _healNestedSections();
+            // v7.20.99: upgrade a baked outline scaffold to the current criteria (two effects +
+            // labels), preserving student text — runs after the nested heal (clean doc) and
+            // before the mirrors (they must copy the CURRENT scaffold forward, not the stale one).
+            _healOutlineScaffold();
             // v7.20.92: place this doc in its phase chain via the CANONICAL suffix
             // resolver (the one save/load key off — key-match by construction). All
             // EARLIER stages are arbitration sources. Client twin of stage_seed_chain

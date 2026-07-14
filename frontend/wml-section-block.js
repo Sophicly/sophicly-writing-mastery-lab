@@ -130,7 +130,10 @@
                                 if (isPick) {
                                     pickGroup = true;
                                 } else {
-                                    const need = (crit.type === 'checklist' && Array.isArray(crit.items)) ? crit.items.length : 1;
+                                    // v7.20.99 (Neil): choice checklists (effects) complete at >=1
+                                    // ticked; required checklists (evidence) need every item.
+                                    const need = crit.choice ? 1
+                                        : ((crit.type === 'checklist' && Array.isArray(crit.items)) ? crit.items.length : 1);
                                     rowOk = hasText && chk >= need;
                                 }
                             } else if (crit.type === 'dropdown') {
