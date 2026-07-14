@@ -179,6 +179,10 @@ class SWML_Protocol_Router {
     private function normalise_subject_key($subject, $board = '') {
         $s = (string) $subject;
         $nb = strtolower(str_replace('_', '-', (string) $board));
+        // v7.20.95 (P2 audit S2): the long form `language_paper_N` drifted past this
+        // normaliser — spec keys are `language_pN`, so the shape lookup silently fell
+        // to the default. Fold the long form into the short one before mapping.
+        $s = preg_replace('/^language_paper_(\d)$/', 'language$1', $s);
         // Board-aware short→long mappings. JSON spec keys differ per awarding body:
         //   AQA / Edexcel / Edexcel-IGCSE / Cambridge-IGCSE → language_p1 / language_p2 (paper-style)
         //   Eduqas / OCR                                    → language_c1 / language_c2 (component-style)
@@ -2614,7 +2618,11 @@ TEMPLATE;
         $subject = str_replace('-', '_', (string) $subject);
         // v7.17.4: normalise language_p1/language_p2 → language1/language2 for map lookup.
         // Frontend + schema use language_p1; protocol dir + map use language1. Converge here.
-        $subject = preg_replace('/^language_p(\d)$/', 'language$1', $subject);
+        // v7.20.95 (P2 audit S1): also fold the LONG form `language_paper_N` — every other
+        // gate in the plugin (quiz-bank, client _isLangPaper2, isLanguageSubject) absorbs
+        // it, but this normaliser missed it, so that form would fall through to a
+        // non-existent protocols/{board}/language_paper_N/ manifest and load nothing.
+        $subject = preg_replace('/^language_p(?:aper_)?(\d)$/', 'language$1', $subject);
 
         // Normalise board key (frontend uses hyphens, map uses underscores)
         $board_key = str_replace('-', '_', $board);

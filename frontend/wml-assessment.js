@@ -32536,6 +32536,12 @@
                     html += buildComparativePlanSection(qId);
                 } else {
                     // Analysis/evaluation/comparison: paragraph-based planning (1 para per ~4-5 marks)
+                    // ⚠ BYTE-PAIR (P2 audit 2026-07-14): each paper's planning protocol
+                    // hardcodes its @FIELD_COMMIT ids to the paragraph count THIS formula
+                    // yields from the spec marks (AQA P2: Q2 8m→2¶, Q3 12m→3¶) — and the
+                    // AO3 branch above pre-empts this one for 12–19m questions. Change a
+                    // spec's marks/AOs, or this routing, and the protocol's plan-{q}-para-*
+                    // filings land nowhere. Re-check the paper's protocol in the same commit.
                     const planParas = Math.max(1, Math.ceil(qMarks / 5));
                     for (let i = 1; i <= planParas; i++) {
                         html += sectionHTML('plan', `Plan: Paragraph ${i} \u2014 ${qId}`, true, null,
