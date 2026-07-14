@@ -32,7 +32,8 @@ delta → fix batch).
 - Part B = the assessment spec: B-COMMON (the invariant spine, both anchors) → B-LANG → B-LIT
   (incl. comparison variant) → B-CHECKS (grep table).
 - PORT SOP = the three-way ENGINE / PROTOCOL / CONFIG split + the phased playbook.
-- Part C = the planning spec (stub — fill after the assessment standard is proven).
+- Part C = the planning spec: C-COMMON (the settled spine) → C-CHECKS (grep table). Anchor = the
+  P2 planning monolith. Grows with the codify arc (outline contract + ownership map).
 - Appendices = P1 first-live-run lessons (items 1–14, still binding) + known-gap register.
 
 Authority order when documents conflict: Neil's latest decision > this file > the anchor files.
@@ -668,14 +669,81 @@ error = fail. Then prod (lane-A-gated, deploy lock, SOP).
 
 ---
 
-# PART C — PLANNING PROTOCOL SPEC (STUB)
+# PART C — PLANNING PROTOCOL SPEC
 
-Planning is the flip side of assessment — same Part A invariants, mirrored components (assessment's
-predict-mark reflection ↔ planning's anchor-quote commitment; per-criterion mark table ↔ per-element
-scaffold check; calibration ↔ plan-vs-execution review). **Fill this part only after the assessment
-standard has survived contact** (P2 + Edexcel IGCSE ports built against Part B, Neil signed off).
-Reference candidates for the planning gold: `protocols/aqa/literature/planning/` b-modules — evaluate
-and pick the reference explicitly with Neil before codifying.
+Planning is assessment run in reverse: each question's plan builds, element by element out of the
+student's own ideas, toward the exact gold-standard shape that question's assessment will judge.
+Same Part A invariants as assessment; planning NEVER marks (grade-9 line-of-sight allowed and
+required — say what a move buys at the top band, never score it).
+
+**PLANNING ANCHOR (one, named — Neil-proven live 2026-07-13, chain v7.20.49–55):**
+`protocols/aqa/language2/planning/protocol-b-planning.md` — THE PLANNING MONOLITH. Every planning
+port copies from it, never from memory. The sliced b1–b7 planning set is RETIRED
+(`planning/_superseded/` — do NOT port from it). The old `protocols/aqa/literature/planning/`
+b-modules are pedagogy source material only, not a structural reference.
+
+## C-COMMON — the settled planning spine (every planning protocol carries ALL of it)
+
+1. **Fed WHOLE (de-stitched serving).** One monolith file per paper; manifest `planning.steps`
+   empty. No sliced step files — a superseded slice left loaded is a coin-flip at runtime
+   (ONE-TEMPLATE LAW applies to planning too).
+2. **THE OWNERSHIP LAW.** The plan is built from the student's words ONLY — elicit, validate,
+   sharpen through questions; never introduce content/quotations/phrasings the student did not
+   produce. One Socratic push per weak answer, then respect their choice. Sanctioned exceptions
+   are defined IN PLACE in the protocol (e.g. the P2 fuller-quotation offer, second-technique
+   nudge) — never invented at port time.
+3. **fieldId CONTRACT TABLE in the protocol header — byte-exact, traced from code.** Every plan
+   element files to a unique fieldId via `@FIELD_COMMIT{"field":"<id>"}` (deterministic: CODE
+   writes the student's message verbatim into that field — the text never round-trips through
+   the model). One field per compile step, marker emitted once, in the compile-validating reply
+   only. KEY-MATCH gate (CLAUDE.md 5d): the table must byte-match the template's fieldIds before
+   ship.
+4. **FILING ORDER ≠ DOCUMENT ORDER.** Filing targets fieldIds, never positions (P2 Q4 files
+   bodies first, then intro, then conclusion). Any consumer deriving structure from the plan
+   (sidebar rows, outline-row generator) keys on the fieldId contract table, NEVER on emission
+   order.
+5. **PLAN-COMPLETE is code-owned (A6).** The plan is complete when every contract fieldId holds
+   student text; the ONE owner is `_buildPlanningSidebarModel` (doc-derived done-ness). The
+   protocol gates per question on "all fields filed" but never announces completion, never
+   hand-authors a count.
+6. **Pre-planning chain is code-asked + gated** (grade goal / headline goal / plan mode /
+   predictions — HARD PRECONDITION before planning beats). Predictions are never judged:
+   revisited with curiosity, an overturned prediction is the WIN — no accuracy tallies, ever.
+7. **Q-GATE progression:** one `Got it — continue` gate row per question, four buttons,
+   engine-rendered semantics; HARD STOP before the final-review turn.
+8. **Markers are the API (A2), planning set only:** `@FIELD_COMMIT` (filing), the Q-GATE line +
+   buttons, `@DEVICE_MENU` and `@RESOURCE_LINK{...}` where the protocol defines them in place.
+   Emit no others. `@FIELD_COMMIT` targets inputField nodes; `@FIELD_SET` = outlineRow+inputField
+   (the capability matrix).
+9. **Expert insights capped at 3 per session**, each = insight → Socratic question → band-language
+   advantage → student decides; resource deep-links ride the same discipline with validated
+   section ids only.
+10. **`@GOLD_REF` traceability per question section** — every question's planning beats name the
+    gold file they reverse (D7). Elements derive from the paper's gold-standard model, never
+    hand-authored.
+
+**QUEUED — this Part grows with the codify arc** (design doc:
+`wml-QUEUED-plan-autofill-codify-and-p1-outline-mechanism-2026-07-13.md`): per-element fieldId
+filing (granularity ruling (b)), the outline-row contract (`data-stage-reveal`
+hidden-during-planning + Transfer-to-Response + OUTLINE COVERAGE LAW), and the feed-forward
+ownership map (planning OWNS pre-write + plan fields). Ports before that arc lands build to
+C-COMMON + C-CHECKS as they stand.
+
+## C-CHECKS — grep-able acceptance (run on any planning protocol before ship)
+
+Promoted from the P2 monolith §10; counts parameterize per paper.
+
+| Check | Expect |
+|---|---|
+| Literal `@FIELD_COMMIT{"field":"…"}` marker lines | = the paper's plan-element count EXACTLY (P2: 16 = Q2×2 + Q3×3 + Q4×5 + Q5×6), every fieldId byte-matching the header contract table, each in a compile-validating reply |
+| `grep -c 'Got it — continue'` | = Q-GATE row count + 1 (the acceptance line itself; P2: 4+1=5) |
+| `grep -c 'HARD PRECONDITION'` | ≥ 3 (pre-planning chain + per-question gates) |
+| Simulated-state vocabulary | appears NOWHERE as an instruction (only the prohibition line itself + provenance comments may contain the word) |
+| `grep -ci 'all [0-9]+ steps'` | 0 (no hardcoded step counts — "all steps", never "all N steps") |
+| Ownership stated at every compile | "their own words" / mode rules present per compile step |
+| `@GOLD_REF` | one traceability line per question section (D7) |
+| Completion announcements | 0 — no protocol-authored "plan complete" message or count (PLAN-COMPLETE is code-owned) |
+| House bans | hold throughout: no "shows", no "Unit" for sub-parts, no arrows in student-facing content (internal structural notes may use arrows) |
 
 ---
 
@@ -744,6 +812,16 @@ From the 2026-07-01 live-run audit (R&J AQA diagnostic) + status as of v7.19.852
 ---
 
 ## Changelog
+- 2026-07-14 — v2.5 (codify arc, fix 5). **PART C FILLED** (was stub): planning anchor named =
+  the P2 planning monolith (`protocols/aqa/language2/planning/protocol-b-planning.md`, proven
+  live 2026-07-13, audit-passed READY AFTER FIXES, fixes 1–4 shipped v7.20.72); C-COMMON spine
+  (de-stitched whole-file serving, OWNERSHIP LAW, byte-exact fieldId contract table + KEY-MATCH
+  gate, filing-order ≠ document-order, PLAN-COMPLETE code-owned via `_buildPlanningSidebarModel`,
+  code-asked pre-chain, Q-GATEs, planning marker set, insight cap, @GOLD_REF per question);
+  C-CHECKS promoted from the monolith's §10 with per-paper parameterized counts. Outline contract
+  + feed-forward ownership map explicitly QUEUED to the codify arc (design doc
+  wml-QUEUED-plan-autofill-codify-and-p1-outline-mechanism-2026-07-13.md). Author: wml-chat-C
+  (Fable 5, codify session).
 - 2026-07-07 — v2.4 (the CODIFY session, post-Run-9 green at v7.19.929). A14 rows added for the
   v917–929 engine nets: Q5 ceiling one-source-at-label-write (917), code-tallied penalty Trend
   (921), Fix→Learn chip tagging shapes (922), resume-proof ledger doc-reconstruction (924),
