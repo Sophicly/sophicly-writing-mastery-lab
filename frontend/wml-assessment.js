@@ -37509,6 +37509,19 @@
             const updates = []; // { pos, attrs }
             const inserts = []; // { pos }  (position to insert an Effect-2 row)
             let needHeal = false;
+            // v7.20.104 (Neil): AO-restamp bridge for BAKED evaluation outlines. The AO4 render
+            // (v7.20.102 isEvaluation) only reaches freshly-generated docs; a doc baked BEFORE it
+            // still shows the literature AO labels (AO1/AO2). Detect the one shipped evaluation
+            // case — AQA Language Paper 1 (its literature-shaped outline is the Q4 AO4 evaluation;
+            // P2 uses IUMVCC/comparative builders, so `outline-(intro|body|conclusion)-*` fieldIds
+            // never appear there) — and restamp those rows' AO to AO4. Non-destructive: only the
+            // `ao` field changes; labels/prompts/items/choice + all student text are preserved. No
+            // row deletion (baked docs keep their old intro/conclusion rows; fresh docs get the new
+            // Hook-only / Restated-Thesis-only shape). Board-scoped by design — extend the gate as
+            // other boards' evaluation outlines ship (they opt in capability-gated at render).
+            const _isEvalDoc = (typeof _isAnyLanguagePaper === 'function' && _isAnyLanguagePaper())
+                && (state.board || '').toLowerCase() === 'aqa'
+                && !(typeof _isLangPaper2 === 'function' && _isLangPaper2());
             const _mergeAttrs = (node, crit) => Object.assign({}, node.attrs, { criteria: JSON.stringify(crit), prompt: crit.prompt || '' });
             doc.descendants((n, pos) => {
                 if (n.type.name !== 'outlineRow') return true;
@@ -37519,6 +37532,15 @@
                 // its canonical labels/AOs are correct at render, so the literature relabel/insert
                 // must never touch it (would force AO2/AO1 + insert Context). AO4 rows opt out.
                 if (cur.ao === 'AO4') return true;
+                // v7.20.104: evaluation doc → every literature-outline row is AO4. Restamp the AO
+                // (only), skip the literature relabel/insert branches below.
+                if (_isEvalDoc && /^outline-(intro|body|conclusion)-/.test(fid)) {
+                    if (cur.ao && cur.ao !== 'AO4') {
+                        updates.push({ pos, attrs: Object.assign({}, n.attrs, { criteria: JSON.stringify(Object.assign({}, cur, { ao: 'AO4' })) }) });
+                        needHeal = true;
+                    }
+                    return true;
+                }
                 if (/^outline-body-\d+-evidence$/.test(fid)) {
                     if (cur.label !== cEvidence.label || cur.ao !== cEvidence.ao) { updates.push({ pos, attrs: _mergeAttrs(n, cEvidence) }); needHeal = true; }
                 } else if (/^outline-body-\d+-effects$/.test(fid)) {
