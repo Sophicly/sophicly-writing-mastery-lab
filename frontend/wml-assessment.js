@@ -1734,8 +1734,15 @@
     // FQ behaviour). Trailing-debounced so a multi-field reply scrolls ONCE, to the
     // last field written. Loop-based attribute lookup (never CSS.escape — WML rule).
     let _fieldFillScrollTimer = null;
+    // v7.20.89 (Neil A1 — the other half of the universal law): LIVE fills scroll,
+    // LOAD/REPLAY fills NEVER scroll (same law as updateSelection:false). Replay paths
+    // (_healFeedbackBoxesFromHistory, CN load heals) set this synchronously around their
+    // replay body; the gates below check it at SYNCHRONOUS entry, before any timer is
+    // scheduled. Root of Neil's "fbdiscuss lands scrolled to a random doc position".
+    let _suppressFillScroll = false;
     function _scrollToFilledField(fid) {
         if (!fid) return;
+        if (_suppressFillScroll) return; // load/replay — never scroll
         clearTimeout(_fieldFillScrollTimer);
         _fieldFillScrollTimer = setTimeout(() => {
             try {
@@ -2030,11 +2037,16 @@
             // never clobber a student edit; it only repairs a wiped/stale doc.
             try {
                 if (_emptyActionPlanFileFields().length) {
-                    history.forEach(m => {
-                        if (m && m.role === 'assistant' && m.content && m.content.indexOf('@FIELD_SET') !== -1) applyFieldSets(m.content);
-                    });
+                    // v7.20.89 (A1): this is a LOAD-TIME replay — the fills must never
+                    // scroll (they yanked the fbdiscuss doc to a random position on load).
+                    _suppressFillScroll = true;
+                    try {
+                        history.forEach(m => {
+                            if (m && m.role === 'assistant' && m.content && m.content.indexOf('@FIELD_SET') !== -1) applyFieldSets(m.content);
+                        });
+                    } finally { _suppressFillScroll = false; }
                 }
-            } catch (_) {}
+            } catch (_) { _suppressFillScroll = false; }
             const PLACEHOLDER_RE = /will appear after assessment|will be assessed here|appear here (?:after|once)/i;
             const placeholderQs = new Set();
             let overallPlaceholder = false;
@@ -2051,6 +2063,8 @@
             });
             if (!placeholderQs.size && !overallPlaceholder) return;
             let replayed = 0;
+            _suppressFillScroll = true; // v7.20.89 (A1): load-time replay — never scroll
+            try {
             history.forEach(m => {
                 if (!m || m.role !== 'assistant' || !m.content) return;
                 if (overallPlaceholder) _routeOverallFeedback(m.content); // self-guards: summary signal + placeholder check
@@ -2067,6 +2081,7 @@
                 applyAssessmentFeedback(m.content);
                 replayed++;
             });
+            } finally { _suppressFillScroll = false; }
             if (replayed) {
                 console.warn('WML HEAL: re-filed ' + replayed + ' marking message(s) from chat history into placeholder feedback boxes');
                 // v7.19.825: rebuild the mark dropdowns + Predicted·Actual·Δ readouts too.
@@ -2668,6 +2683,10 @@
                         _swmlScrollToTop(t);
                         console.log('[WML feedback] auto-scrolled to', (t.tagName && t.tagName.toLowerCase() === 'h3') ? ('region "' + head0 + '"') : ('feedback box ' + key0), '(' + why + ')');
                     };
+                    // v7.20.89 (A1): live fills scroll; LOAD/REPLAY fills never do. Checked
+                    // at synchronous entry so the 600ms re-assert timer is never scheduled
+                    // during a replay either.
+                    if (!_suppressFillScroll) {
                     _fireScroll('fill');
                     setTimeout(() => {
                         try {
@@ -2679,6 +2698,7 @@
                             if (d < -8 || d > 160) _fireScroll('re-assert');
                         } catch (_) {}
                     }, 600);
+                    }
                 } catch (_) { /* scroll is best-effort, never block */ }
             }
         } catch (e) {
@@ -3553,7 +3573,21 @@
             strips.forEach(s => {
                 const key = s.getAttribute('data-strip') || 'Analytics';
                 let html = '';
-                try { html = BUILDERS[key] ? BUILDERS[key]() : _analyticsHtml(); } catch (_) { html = ''; }
+                if (s.hasAttribute('data-strip-teaser')) {
+                    // v7.20.89 (Neil B7): generic collapsed teaser — first line of the
+                    // section's own content ("headline first, detail on expand"). NEVER
+                    // fall through to the Analytics builder for these strips.
+                    try {
+                        const sec = s.closest('.swml-section-block');
+                        const body = sec && sec.querySelector('.swml-section-content');
+                        let t = (body && body.textContent || '').replace(/\s+/g, ' ').trim();
+                        if (_WC_PLACEHOLDERS.indexOf(t.toLowerCase()) !== -1) t = '';
+                        if (t.length > 140) t = t.slice(0, 140).replace(/\s+\S*$/, '') + '…';
+                        html = t ? seg('Preview', '<span class="swml-ana-calib">' + escapeHTML(t) + '</span>') : '';
+                    } catch (_) { html = ''; }
+                } else {
+                    try { html = BUILDERS[key] ? BUILDERS[key]() : _analyticsHtml(); } catch (_) { html = ''; }
+                }
                 if (s.innerHTML !== html) s.innerHTML = html;
                 const want = html ? '' : 'none';
                 if (s.style.display !== want) s.style.display = want;
@@ -6993,7 +7027,7 @@
             snapshotTemplateBaseline(editor);
             _cnRebaselinePending = true;
             console.log('[WML poetry-CN] SHAPE-HEAL: stale pre-one-doc layout rebuilt from current template —', carried.length, 'filled field(s) carried over');
-            if (carried.length) _applyFieldValueSets(carried);
+            if (carried.length) { _suppressFillScroll = true; try { _applyFieldValueSets(carried); } finally { _suppressFillScroll = false; } } // v7.20.89 (A1): load heal — no scroll
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
         } catch (e) {
             console.warn('[WML poetry-CN] shape-heal failed (doc untouched)', e);
@@ -7051,7 +7085,7 @@
             snapshotTemplateBaseline(editor);
             _cnRebaselinePending = true;
             console.log('[WML nf-CN] SHAPE-HEAL: stale pre-one-doc nonfiction layout rebuilt from current template —', carried.length, 'filled field(s) carried over');
-            if (carried.length) _applyFieldValueSets(carried);
+            if (carried.length) { _suppressFillScroll = true; try { _applyFieldValueSets(carried); } finally { _suppressFillScroll = false; } } // v7.20.89 (A1): load heal — no scroll
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
         } catch (e) {
             console.warn('[WML nf-CN] shape-heal failed (doc untouched)', e);
@@ -7131,7 +7165,9 @@
             if (state.reviewMode) return;
             _pendingCnMergeFields = null; // consume — reapplied fresh on next load
             console.log('[WML CN] applying', sets.length, 'merge candidate(s) from scattered sibling docs (empty fields only)');
-            _applyFieldValueSets(sets.map(s => ({ field: s.field, value: s.value })));
+            _suppressFillScroll = true; // v7.20.89 (A1): load-time merge — no scroll
+            try { _applyFieldValueSets(sets.map(s => ({ field: s.field, value: s.value }))); }
+            finally { _suppressFillScroll = false; }
         } catch (e) {
             console.warn('[WML CN] sibling merge failed (non-fatal)', e);
         }
@@ -8470,23 +8506,33 @@
             if (trackable) sectionEl.setAttribute('data-section-complete', hasText ? 'true' : 'false');
             return;
         }
-        // v7.19.492: pick-group aware (mirrors the section nodeView). Complete = every row
-        // has text AND, if the section is a single-select pick group (checkbox rows, e.g.
-        // logline drafts), at least one is chosen; dropdown rows need a selection.
-        let allFilled = true, hasCheckboxRow = false, anyChecked = false;
+        // v7.19.492: pick-group aware (mirrors the section nodeView).
+        // v7.20.89 (Neil A2 ruling): outline section done = every input filled AND every
+        // side checkbox/checklist item ticked, PER ROW. The old section-level anyChecked
+        // let one ticked box complete a whole section (BP1 lit while BP2/BP3 never could).
+        // CW single-select pick groups (cw-step-*-logline/idea) keep the old rule: rows
+        // need text, section needs ONE pick — all-ticked is impossible there by design.
+        // Kept byte-consistent with the nodeView predicate (wml-section-block.js ~100).
+        let allFilled = true, pickGroup = false, anyChecked = false;
         rows.forEach(r => {
             const input = r.querySelector('.swml-outline-input') || r;
             // v7.19.679: LOCKED rows are read-only carryovers (e.g. Step-2 "Sparks From
             // Step 1" slots) — the student can't fill them, so an empty locked row must
             // NOT block completion. Mirrors the nodeView locked-row auto-satisfy.
             const locked = input.classList && input.classList.contains('swml-outline-locked');
-            if (!locked && (input.textContent || '').trim().length === 0) allFilled = false;
-            const cb = r.querySelector('input[type="checkbox"]');
-            if (cb) { hasCheckboxRow = true; if (cb.checked) anyChecked = true; }
+            if (locked) return;
+            if ((input.textContent || '').trim().length === 0) allFilled = false;
+            const cbs = r.querySelectorAll('input[type="checkbox"]');
+            if (cbs.length) {
+                if (Array.from(cbs).some(c => c.checked)) anyChecked = true;
+                const isPick = /^cw-step-\d+-(logline|idea)/.test(r.getAttribute('data-field-id') || '');
+                if (isPick) pickGroup = true;
+                else if (!Array.from(cbs).every(c => c.checked)) allFilled = false;
+            }
             const sel = r.querySelector('.swml-outline-select');
             if (sel && !sel.value) allFilled = false;
         });
-        const complete = allFilled && (!hasCheckboxRow || anyChecked);
+        const complete = allFilled && (!pickGroup || anyChecked);
         sectionEl.setAttribute('data-section-complete', complete ? 'true' : 'false');
     }
 
@@ -8584,6 +8630,27 @@
             }).run();
             return true;
         } catch (_) { return false; }
+    }
+
+    // v7.20.89 (Neil B10): set a selectField node's value through a PM transaction
+    // (setNodeMarkup — the feedback-mark dropdown mechanism). Used by the MSA
+    // grade-goal gate to file the student's pick into 'ms-grade-goal'.
+    function _setSelectFieldValue(fieldId, value) {
+        if (!canvasEditor) return false;
+        let done = false;
+        canvasEditor.state.doc.descendants((n, p) => {
+            if (done) return false;
+            if (n.type && n.type.name === 'selectField' && n.attrs && n.attrs.fieldId === fieldId) {
+                try {
+                    const tr = canvasEditor.state.tr.setNodeMarkup(p, undefined, Object.assign({}, n.attrs, { value: String(value) }));
+                    canvasEditor.view.dispatch(tr);
+                    done = true;
+                } catch (_) { /* leave done=false */ }
+                return false;
+            }
+            return true;
+        });
+        return done;
     }
 
     // v7.19.766: write a PARAGRAPH's inline content through a ProseMirror transaction.
@@ -11893,6 +11960,11 @@
             // BEFORE any marks are shown. Calibration only; never feeds the grade.
             let predictedScore = null;      // 0-20 once committed this attempt
             let awaitingPrediction = false; // gating flag while we wait for the prediction
+            // v7.20.89 (Neil B10): target-grade universal — MSA asks the student's target
+            // grade BEFORE round 1 (code-owned gate, the awaitingPrediction shape) and
+            // files it into the doc's 'ms-grade-goal' select. Student's pick, never auto+1.
+            let goalGrade = null;           // 'Grade N' once committed this attempt
+            let awaitingGoal = false;       // gating flag while we wait for the pick
 
             // FQ + MSA each keep their OWN sidecar key so MSQ resume is byte-identical (no collision).
             // v7.19.960: key the resume sidecar on the EFFECTIVE bank (fqBank override wins),
@@ -11908,7 +11980,7 @@
             // off the identical scope — one clobber-proof identity, client and server, for
             // FQ/MSQ/MSA uniformly (MSQ/MSA are stage 0 → suffix `_s0`, still unique).
             const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, (state.fqBank || state.text), (state.attempt || 1), 's' + (state.fqStage || 0)].join('_');
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts, predictedScore, awaitingPrediction })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts, predictedScore, awaitingPrediction, goalGrade, awaitingGoal })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             // v7.20.87 (Neil): the ONE canonical round-load failure line — emit sites,
             // the history scrubber, and the self-heal all match on THIS string (byte-pair
@@ -11954,6 +12026,17 @@
                     const raw = localStorage.getItem(lsKey());
                     if (!raw) return _healRestart();
                     const d = JSON.parse(raw);
+                    // v7.20.89 (B10): goal-gate resume — a reload while the grade ask is
+                    // open (nothing else persisted yet) re-shows the ask instead of falling
+                    // through to _healRestart (which would skip the ask entirely).
+                    if (d && quizType === 'mark_scheme_assessment') {
+                        goalGrade = (typeof d.goalGrade === 'string' && d.goalGrade) ? d.goalGrade : null;
+                        if (d.awaitingGoal && goalGrade === null) {
+                            awaitingGoal = true; active = true;
+                            setTimeout(() => { try { _askGoal(); } catch (e) {} }, 60);
+                            return true;
+                        }
+                    }
                     if (!d || !Array.isArray(d.qs) || !d.qs.length) return _healRestart();
                     qs = d.qs; idx = d.idx || 0; total = d.total || d.qs.length;
                     _syncFqSidebar();   // v7.19.954: resumed rounds re-derive the sidebar length too
@@ -12452,6 +12535,7 @@
                 if (_corr) { await _applyCorrection(_corr); return; }
                 // v7.19.747: awaiting the MSA /20 prediction — capture this typed number as the
                 // prediction (before any reveal), not as a quiz answer or a clarification.
+                if (awaitingGoal) { _captureGoal(msg); return; } // v7.20.89 (B10): grade ask owns the turn
                 if (awaitingPrediction) { _capturePrediction(msg); return; }
                 // v7.19.580 (FQ): round finished — any typed message is a clarification about
                 // the round just done (controller still owns the turn so it never leaks to the
@@ -12571,6 +12655,28 @@
             // mastery-or-loop. Persisting every round also makes the grade honest — a
             // student who stops at 3/5 counts as that grade; only a 5/5 finish = 100%.
             // v7.19.747: parse + commit the student's /20 prediction, then reveal.
+            // v7.20.89 (Neil B10): target-grade gate — code-owned ask before MSA round 1
+            // (the awaitingPrediction shape: resume-safe, no LLM dependency). The pick is
+            // filed straight into the doc's 'ms-grade-goal' select — student choice, never
+            // a model guess or auto+1.
+            function _askGoal() {
+                aiBubble('**Before we begin — what grade are you aiming for?** Tap a grade below, or type a number **1–9**. Naming your target first is how deliberate practice works: every question you meet is now measured against *your* goal. 🎯');
+                appendQuickButtons([9, 8, 7, 6, 5].map(g => ({ label: 'Grade ' + g, onClick: () => _captureGoal(String(g)) })));
+            }
+            function _captureGoal(raw) {
+                if (goalGrade) return;   // already committed — ignore a stray second input
+                const mm = String(raw == null ? '' : raw).match(/[1-9]/);
+                const v = mm ? parseInt(mm[0], 10) : NaN;
+                if (isNaN(v)) { aiBubble('Just the grade you are aiming for as a number **1–9**, please.'); resetSend(); return; }
+                goalGrade = 'Grade ' + v;
+                awaitingGoal = false;
+                persist();
+                try {
+                    if (_setSelectFieldValue('ms-grade-goal', String(v)) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                } catch (e) { /* doc field best-effort; the gate itself never blocks */ }
+                aiBubble('**' + goalGrade + '** it is — I\'ve filed it into your document (§ Grade you are aiming for). Every answer today is a step toward it. Let\'s begin.');
+                startRound();
+            }
             function _capturePrediction(raw) {
                 if (predictedScore !== null) return;   // already committed — ignore a stray second input
                 const mm = String(raw == null ? '' : raw).match(/-?\d+(?:\.\d+)?/);
@@ -12913,6 +13019,14 @@
                     const board = (state.board || '').toUpperCase().replace(/-/g, ' ');
                     aiBubble(`Welcome to the **Mark Scheme Quiz**${board ? ' — ' + board : ''}. Each round is **5 questions**, and I'll give you the full feedback at the *end* of the round. **Aim for 100%** — we'll keep going with fresh sets until you ace a whole round. Stuck on any question? Just **ask me** and I'll explain.`);
                 }
+                // v7.20.89 (Neil B10): MSA — ask the target grade before round 1. The gate
+                // owns the turn (_captureGoal calls startRound when the pick lands).
+                if (quizType === 'mark_scheme_assessment' && !goalGrade) {
+                    awaitingGoal = true;
+                    persist();
+                    _askGoal();
+                    return;
+                }
                 await startRound();
             }
 
@@ -12921,6 +13035,8 @@
             function reset() {
                 active = false; round = 1; roundResults = []; idx = 0; qs = [];
                 betweenRounds = false; lastMastered = false; msaAttempts = [];
+                predictedScore = null; awaitingPrediction = false;
+                goalGrade = null; awaitingGoal = false; // v7.20.89 (B10): fresh start re-asks
                 clearPersist();
             }
 
@@ -17280,7 +17396,15 @@
         // Empty-state law: no dead control — hidden until the probe finds a prior row.
         priorAttemptsBtn.style.display = 'none';
         btnColumn.appendChild(priorAttemptsBtn);
-        if (!state.reviewMode) {
+        // v7.20.89 (Neil B9): hide on TESTING activities — quizzes (FQ / MSQ-unit), MSA
+        // (mark_scheme), diagnostic (task '' or 'diagnostic'). Outlining/polishing share
+        // the diagnostic-derived env but carry their own task strings, so they KEEP it
+        // (Neil explicit). Keyed on state.task directly — never reverse-derived from the
+        // suffix (the task_by_suffix trap).
+        const _paTestingTask = state.task === '' || state.task === 'diagnostic'
+            || state.task === 'foundational_quiz' || state.task === 'mark_scheme_unit'
+            || state.task === 'mark_scheme';
+        if (!state.reviewMode && !_paTestingTask) {
             apiGet(`${config.restUrl}student/attempts-all`).then(res => {
                 const rows = (res && res.attempts) || [];
                 const curSuffix = (typeof WML !== 'undefined' && WML.resolveCanvasSuffix) ? (WML.resolveCanvasSuffix(state.task, state.phase) || '') : '';
@@ -26102,26 +26226,90 @@
             return 'Response';
         }
 
-        /** Insert paragraphs at the end of a response sectionBlock via TipTap */
-        function insertIntoResponse(responseLabel, paragraphs) {
+        /** v7.20.89 (Neil A4): transfer PROVENANCE — remember exactly what each transfer
+         *  wrote (per doc + response label + source), so a re-transfer OVERWRITES its own
+         *  prior block instead of appending a duplicate. Same ratified pattern as the
+         *  auto-fill provenance (_autoFillRemember ~2719): match = untouched → replace;
+         *  hand-edited (no match) → append, never clobber; no record → append (old
+         *  behaviour). Stores the normalized paragraph list, keyed off CANVAS_SAVE_KEY()
+         *  so outlining/polishing docs never cross. */
+        function _transferStoreKey() {
+            try { return 'swml_transfer:' + CANVAS_SAVE_KEY(); } catch (_) { return 'swml_transfer:fallback'; }
+        }
+        function _transferNorm(t) { return String(t || '').replace(/\s+/g, ' ').trim(); }
+        function _transferRecall(slot) {
+            try { var v = (JSON.parse(localStorage.getItem(_transferStoreKey()) || '{}'))[slot]; return Array.isArray(v) ? v : null; } catch (_) { return null; }
+        }
+        function _transferRemember(slot, parts) {
+            try {
+                var k = _transferStoreKey();
+                var m = JSON.parse(localStorage.getItem(k) || '{}');
+                m[slot] = parts;
+                localStorage.setItem(k, JSON.stringify(m));
+            } catch (_) {}
+        }
+        /** Find the contiguous run of direct children of the response node whose
+         *  normalized texts equal `parts`. Returns {from,to} absolute range or null. */
+        function _findTransferRun(tPos, tNode, parts) {
+            var kids = [];
+            tNode.forEach(function(child, offset) {
+                kids.push({ text: _transferNorm(child.textContent), from: tPos + 1 + offset, to: tPos + 1 + offset + child.nodeSize });
+            });
+            for (var i = 0; i + parts.length <= kids.length; i++) {
+                var hit = true;
+                for (var j = 0; j < parts.length; j++) {
+                    if (kids[i + j].text !== parts[j]) { hit = false; break; }
+                }
+                if (hit) return { from: kids[i].from, to: kids[i + parts.length - 1].to };
+            }
+            return null;
+        }
+        /** Write paragraphs into a response sectionBlock via TipTap.
+         *  Overwrites this source's prior UNTOUCHED transfer in place; appends otherwise. */
+        function insertIntoResponse(responseLabel, paragraphs, sourceKey) {
             if (!canvasEditor || !paragraphs.length) return false;
-            var insertPos = null;
+            var tPos = null, tNode = null;
             canvasEditor.state.doc.descendants(function(node, pos) {
-                if (insertPos !== null) return false;
+                if (tPos !== null) return false;
                 if (node.type.name === 'sectionBlock' &&
                     node.attrs.sectionType === 'response' &&
                     node.attrs.label === responseLabel) {
-                    insertPos = pos + node.nodeSize - 1;
+                    tPos = pos; tNode = node;
                     return false;
                 }
             });
-            if (insertPos === null) return false;
-            var content = paragraphs.filter(function(t) { return t.trim(); }).map(function(t) {
+            if (tPos === null || !tNode) return false;
+            var clean = paragraphs.filter(function(t) { return t.trim(); });
+            if (!clean.length) return false;
+            var content = clean.map(function(t) {
                 return { type: 'paragraph', content: [{ type: 'text', text: t }] };
             });
-            if (!content.length) return false;
-            canvasEditor.chain().insertContentAt(insertPos, content).run();
+            var newParts = clean.map(_transferNorm);
+            var slot = responseLabel + '||' + (sourceKey || '');
+            var prev = _transferRecall(slot);
+            var range = null;
+            if (prev && prev.length) range = _findTransferRun(tPos, tNode, prev);
+            if (!range) {
+                // No untouched prior transfer on record — but if the target already holds
+                // EXACTLY this content (e.g. the outlining→polishing response seed), adopt
+                // it instead of appending a duplicate.
+                range = _findTransferRun(tPos, tNode, newParts);
+                if (range) { _transferRemember(slot, newParts); return true; }
+            }
+            if (range) {
+                canvasEditor.chain().insertContentAt(range, content, { updateSelection: false }).run();
+            } else {
+                canvasEditor.chain().insertContentAt(tPos + tNode.nodeSize - 1, content, { updateSelection: false }).run();
+            }
+            _transferRemember(slot, newParts);
             saveCanvasContent();
+            // v7.20.89 (Neil B8 — universal autofill-scroll law): live fill → bring the
+            // student to the section it landed in.
+            try {
+                var _ed = document.getElementById('swml-tiptap-editor');
+                var _secEl = _ed && findSectionByLabel(_ed, responseLabel);
+                if (_secEl) _swmlScrollToTop(_secEl, 24);
+            } catch (_) {}
             return true;
         }
 
@@ -26197,7 +26385,7 @@
                     var text = extractPlanText(sec);
                     if (!text) { flashTransferBtn(btn, false); return; }
                     var target = resolveResponseLabel(label);
-                    var ok = insertIntoResponse(target, [text]);
+                    var ok = insertIntoResponse(target, [text], 'plan:' + label);
                     flashTransferBtn(btn, ok);
                 });
                 transferLayer.appendChild(btn);
@@ -26221,7 +26409,7 @@
                     var text = extractOutlineText(sec);
                     if (!text) { flashTransferBtn(btn, false); return; }
                     var target = resolveResponseLabel(label);
-                    var ok = insertIntoResponse(target, [text]);
+                    var ok = insertIntoResponse(target, [text], 'outline:' + label);
                     flashTransferBtn(btn, ok);
                 });
                 transferLayer.appendChild(btn);
@@ -26254,7 +26442,7 @@
                     });
                     if (!paragraphs.length) { flashTransferBtn(btn, false); return; }
                     var target = dividerToResponseLabel(label);
-                    var ok = insertIntoResponse(target, paragraphs);
+                    var ok = insertIntoResponse(target, paragraphs, 'all:' + targetType + ':' + label);
                     flashTransferBtn(btn, ok);
                 });
                 transferLayer.appendChild(btn);
@@ -33857,6 +34045,11 @@
             + selectHTML('AOs improved', 'ms-improvements-aos', AO_OPTIONS, true)
         );
 
+        // ── H2. DOCUMENT PROGRESS (v7.20.89, Neil B6 — parity with assessment docs;
+        // same node the assessment template emits; NodeView + _derivedCardFillOk +
+        // ignoreMutation firewall all inherited) ──────────────────
+        html += sectionHTML('progress', 'Document Progress', false, null, '<p></p>');
+
         // ── I. SIGN-OFF ─────────────────────────────────────────
         html += buildSignoffSection();
         return html;
@@ -34734,7 +34927,9 @@
                                 });
                                 if (_srv.length) {
                                     console.log('[WML CN] cross-lesson seed reconcile — hydrating', _srv.length, 'server field(s) into empty local fields');
-                                    _applyFieldValueSets(_srv);
+                                    _suppressFillScroll = true; // v7.20.89 (A1): load hydrate — no scroll
+                                    try { _applyFieldValueSets(_srv); }
+                                    finally { _suppressFillScroll = false; }
                                 }
                             } catch (e) { console.warn('[WML CN] cross-lesson seed reconcile failed (non-fatal)', e); }
                         }
@@ -35666,6 +35861,21 @@
             finally { _migrationActive = false; }
             snapshotTemplateBaseline(canvasEditor);
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            // v7.20.89 (Neil B8 — universal autofill-scroll law): a LIVE fill scrolls the
+            // doc to the filled section. Deferred past the setContent NodeView rebuild
+            // (rebuild-after-insert rule); this fn never runs on the load path, so no
+            // replay gate is needed here.
+            requestAnimationFrame(() => {
+                try {
+                    const host = canvasEditor.options && canvasEditor.options.element;
+                    let sec = null;
+                    if (host) host.querySelectorAll('[data-section-label]').forEach(n => {
+                        if (!sec && n.getAttribute('data-section-label') === FB_LABEL)
+                            sec = n.closest('.swml-section-block') || n;
+                    });
+                    if (sec) _swmlScrollToTop(sec, 24);
+                } catch (_) {}
+            });
         } catch (e) {
             console.warn('WML MSA: applyMsaNarrativeToDoc failed (non-fatal)', e && e.message);
         }
@@ -35954,6 +36164,32 @@
             // identity. The regex is specific to the two removed ids, so a healthy
             // post-741 doc has neither and correctly skips (no false-positive wipe).
             const hasStaleV14Fields = /data-field-id="(ms-score-raw|ms-predicted-grade)"/.test(currentMS);
+            // v7.20.89 (Neil B6): Document Progress parity — BACKFILL the progress node
+            // into existing v14 MSA docs (the template covers new docs only; deploys
+            // ship files, saved docs don't re-template). Idempotent, keyed on absence;
+            // inserted before the sign-off, mirroring the assessment-doc position.
+            // Rare stale-field docs re-strip from currentMS below and lose this insert —
+            // the next load backfills again (self-healing, no data at risk).
+            if (hasV14Template && !currentMS.includes('data-section-type="progress"')) {
+                try {
+                    const _pTmp = document.createElement('div');
+                    _pTmp.innerHTML = currentMS;
+                    const _wrap = document.createElement('div');
+                    _wrap.innerHTML = sectionHTML('progress', 'Document Progress', false, null, '<p></p>');
+                    const _pNode = _wrap.firstElementChild;
+                    const _signoff = _pTmp.querySelector('[data-section-type="signoff"]');
+                    if (_pNode) {
+                        if (_signoff && _signoff.parentNode) _signoff.parentNode.insertBefore(_pNode, _signoff);
+                        else _pTmp.appendChild(_pNode);
+                        _migrationActive = true;
+                        try { canvasEditor.commands.setContent(_pTmp.innerHTML, false); }
+                        finally { _migrationActive = false; }
+                        snapshotTemplateBaseline(canvasEditor);
+                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                        console.log('WML: MSA Document Progress node backfilled');
+                    }
+                } catch (e) { console.warn('WML: MSA progress backfill failed (non-fatal)', e && e.message); }
+            }
             if (hasV14Template) {
                 if (!hasStaleV14Fields) {
                     console.log('WML: Mark scheme document (v7.19.741+) already current, skipping template');
@@ -37188,6 +37424,9 @@
                     if (labelFilter && !labelFilter(upLabel)) return;
                     const upText = (up.textContent || '').replace(/\s+/g, ' ').trim();
                     if (!upText) return;
+                    // v7.20.89: a source holding only the template placeholder has nothing to
+                    // say — never mirror it (and never let it satisfy a seed's fallback chain).
+                    if (_WC_PLACEHOLDERS.indexOf(upText.toLowerCase()) !== -1) return;
                     let tPos = null, tNode = null;
                     canvasEditor.state.doc.descendants((node, pos) => {
                         if (tPos !== null) return false;
@@ -37202,7 +37441,14 @@
                     // v7.20.88: fill-if-empty mode — the polishing RESPONSE is polishing-OWNED
                     // (student edits it there); the outlining copy only seeds it while the
                     // student hasn't written anything, never overwrites their edits.
-                    if (mOpts && mOpts.onlyIfEmpty && curText) return;
+                    // v7.20.89 ROOT FIX (Neil's polishing repro): the response template ships
+                    // REAL locked placeholder text ("Write your essay here." — buildResponseSection),
+                    // so a pristine target had curText.length>0 and onlyIfEmpty blocked the seed
+                    // forever (response never reached polishing/reassessment). A target holding
+                    // only a known placeholder IS empty — same list the word-count uses
+                    // (_WC_PLACEHOLDERS / _stripScaffoldForCount, the v7.19.696 lesson).
+                    if (mOpts && mOpts.onlyIfEmpty
+                        && curText && _WC_PLACEHOLDERS.indexOf(curText.toLowerCase()) === -1) return;
                     // v7.20.88: checkbox states don't change textContent — outline sections
                     // compare the data-checked census too, so upstream ticks flow forward.
                     let same = (curText === upText);
@@ -37266,7 +37512,17 @@
                 if (state.task === 'polishing' || !_markedHere) {
                     const _outSrc = await _headDoc('_outlining');
                     _mirrorSections(_outSrc, 'outline', null, 'outline', { includeChecked: true });
-                    if (state.task === 'polishing') _mirrorSections(_outSrc, 'response', null, 'response-seed', { onlyIfEmpty: true });
+                    if (state.task === 'polishing') {
+                        _mirrorSections(_outSrc, 'response', null, 'response-seed', { onlyIfEmpty: true });
+                    } else if (state.task === 'redraft_assessment') {
+                        // v7.20.89: reassessment reads _polishing for the response (37238);
+                        // if polishing was never opened/seeded the doc would be stranded —
+                        // seed from _polishing first, else fall back to the outlining draft.
+                        const _polSrc = await _headDoc('_polishing');
+                        if (!_mirrorSections(_polSrc, 'response', null, 'response-seed', { onlyIfEmpty: true })) {
+                            _mirrorSections(_outSrc, 'response', null, 'response-seed', { onlyIfEmpty: true });
+                        }
+                    }
                 }
             }
         } catch (e) { console.warn('WML: pre-write carry heal failed (non-fatal)', e && e.message); }

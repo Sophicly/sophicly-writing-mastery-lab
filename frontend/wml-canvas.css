@@ -5541,12 +5541,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-section-signoff::before {
     content: counter(swml-major) '. ' attr(data-section-label);
 }
-/* Completion indicator — green left border + label checkmark for complete sections */
+/* Completion indicator — green left border + label checkmark for complete sections.
+   v7.20.89 (Neil B11): the '✓' TEXT glyph is gone from every content: rule — the tick is
+   now the house badge (green circle + white check) as a BACKGROUND layer, see the block
+   at the end of this file. content: rules here carry text only (v7.19.972 law). */
 .swml-section-block[data-section-complete="true"] {
     border-left-color: #1CD991 !important;
 }
 .swml-section-block[data-section-complete="true"]::before {
-    content: '✓ ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
+    content: counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
 }
 .swml-section-question[data-section-complete="true"]::before,
 .swml-section-response[data-section-complete="true"]::before,
@@ -5554,11 +5557,11 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-section-improvement[data-section-complete="true"]::before,
 .swml-section-action[data-section-complete="true"]::before,
 .swml-section-signoff[data-section-complete="true"]::before {
-    content: '✓ ' counter(swml-major) '. ' attr(data-section-label);
+    content: counter(swml-major) '. ' attr(data-section-label);
 }
 /* Read-only complete sections keep the lock icon (v7.19.952: 🔒 → tabler lock, Neil) */
 .swml-section-readonly[data-section-complete="true"]::before {
-    content: '✓ ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
+    content: counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
 }
 /* v7.19.487: top-right completion tick on EDITABLE sections — appears automatically
    when all the section's elements are filled (data-section-complete). Quiet, scholarly
@@ -6460,13 +6463,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     content: attr(data-section-num) attr(data-section-label);
 }
 .swml-canvas-diagnostic .swml-section-block:not(.swml-section-divider)[data-section-complete="true"]::before {
-    content: '✓ ' attr(data-section-num) attr(data-section-label);
+    content: attr(data-section-num) attr(data-section-label); /* v7.20.89: ✓ glyph → badge bg layer (end of file) */
 }
 .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)::before {
     content: attr(data-section-num) attr(data-section-label); /* v7.19.952: 🔒 → tabler lock */
 }
 .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)[data-section-complete="true"]::before {
-    content: '✓ ' attr(data-section-num) attr(data-section-label); /* v7.19.952: 🔒 → tabler lock */
+    content: attr(data-section-num) attr(data-section-label); /* v7.19.952: 🔒 → tabler lock */
 }
 
 /* Headings inside sections */
@@ -12167,7 +12170,7 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 }
 [data-swml-theme="light"] .swml-section-readonly[data-section-complete="true"]::before,
 .swml-canvas-light .swml-section-readonly[data-section-complete="true"]::before {
-    content: '✓ ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
+    content: counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
 }
 [data-swml-theme="light"] .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)::before,
 .swml-canvas-light .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)::before {
@@ -12175,7 +12178,7 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 }
 [data-swml-theme="light"] .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)[data-section-complete="true"]::before,
 .swml-canvas-light .swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)[data-section-complete="true"]::before {
-    content: '✓ ' attr(data-section-num) attr(data-section-label);
+    content: attr(data-section-num) attr(data-section-label);
 }
 
 /* v7.19.972 (Neil): lock icon as BACKGROUND layer — a content: image is a replaced box
@@ -12336,3 +12339,36 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 /* pad clones keep the section's completion tick (::after rides the cloned class),
    so the card keeps clearance there too — just slightly tighter than the doc. */
 .swml-extract-panel-body .swml-poem-card { margin: 26px 0 8px; }
+
+/* v7.20.89 (Neil B11): section-label '✓' glyph → house badge (green circle + white check,
+   same data-URI as the .swml-codex-doc rule near the top of this file) as a BACKGROUND
+   layer — a content: image can't centre on the 10px pill (see the v7.19.972 lock note).
+   Every complete-state content: rule above now carries TEXT ONLY. Placed at file END so
+   these longhands beat every earlier `background:` SHORTHAND pill rule (the v7.20.25
+   tiling lesson) at equal specificity. Dividers/progress never carry the attr. */
+.swml-section-block[data-section-complete="true"]::before {
+    padding-left: 24px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%231CD991'/%3E%3Cpolyline points='17 9 10.5 15.5 7 12' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 6px center;
+    background-size: 13px 13px;
+}
+/* readonly/task-locked + complete keep BOTH icons: check (left) + lock (beside it) via
+   multi-background. Keep the lock data-URIs in sync with WML.lockIconSVG (v7.19.972 block). */
+.swml-section-block.swml-section-readonly[data-section-complete="true"]::before,
+.swml-section-block.swml-task-locked[data-section-complete="true"]::before {
+    padding-left: 43px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%231CD991'/%3E%3Cpolyline points='17 9 10.5 15.5 7 12' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.92)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat, no-repeat;
+    background-position: 6px center, 23px center;
+    background-size: 13px 13px, 15px 15px;
+}
+[data-swml-theme="light"] .swml-section-block.swml-section-readonly[data-section-complete="true"]::before,
+.swml-canvas-light .swml-section-block.swml-section-readonly[data-section-complete="true"]::before,
+[data-swml-theme="light"] .swml-section-block.swml-task-locked[data-section-complete="true"]::before,
+.swml-canvas-light .swml-section-block.swml-task-locked[data-section-complete="true"]::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%231CD991'/%3E%3Cpolyline points='17 9 10.5 15.5 7 12' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='rgba(30,32,40,0.75)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z'/%3E%3Cpath d='M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z'/%3E%3Cpath d='M10 11v-2a2 2 0 1 1 4 0v2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat, no-repeat;
+    background-position: 6px center, 23px center;
+    background-size: 13px 13px, 15px 15px;
+}

@@ -604,6 +604,31 @@ replaced) or say honestly in code that it can't be done (post-reveal). Residual:
 intent that falls through to the AI with an implied promise — audit `routeHelp` prompts when
 adding capabilities.
 
+**21. Placeholder ≠ empty** (the "response never seeded" class, v7.20.89, Neil 2026-07-14).
+Trigger: an emptiness predicate (`onlyIfEmpty` seed gate, "fill while empty", fallback chains)
+reads `textContent` of a section whose TEMPLATE ships real locked placeholder text
+(`Write your essay here.` — buildResponseSection). Symptom: a pristine target counts as
+non-empty, the seed silently never fires — polishing response stayed blank, reassessment +
+discuss cascaded empty ("nothing persisted"). The word-count hit this first (v7.19.696 →
+`_WC_PLACEHOLDERS`/`_stripScaffoldForCount`); the v7.20.88 mirror seed re-bit it. Net: every
+emptiness guard strips `_WC_PLACEHOLDERS` on BOTH sides — target (may seed) and source (a
+placeholder-only source has nothing to say, and must not satisfy a fallback chain). Residual:
+any NEW emptiness predicate that doesn't route through the placeholder list; grep
+`textContent || ''` + `trim()` guards at review. Memory:
+`reference_wml_placeholder_defeats_emptiness_and_scroll_replay_law`.
+
+**22. Replay scroll** (the "fbdiscuss lands mid-doc" class, v7.20.89, Neil 2026-07-14).
+Trigger: a scroll call baked into a shared FILL helper (`_scrollToFilledField`,
+applyAssessmentFeedback's `_fireScroll`) with no live/replay distinction; load-time replays
+(`_healFeedbackBoxesFromHistory`, CN shape-heals, sibling merge, seed reconcile) re-run the
+fill and drag the doc to a random section on open. Net: the FILL-SCROLL LAW — LIVE autofill
+always scrolls to the filled section; LOAD/REPLAY fills NEVER scroll. Mechanism:
+`_suppressFillScroll` module flag, checked at SYNCHRONOUS entry of every fill-scroll gate
+(before any debounce/re-assert timer is scheduled); replay bodies set it in try/finally
+(the updateSelection:false of scrolling). Residual: any NEW autofill site must wire both
+halves — live scroll via `_swmlScrollToTop` (deferred past setContent rebuilds), replay wrap
+via the flag.
+
 **20. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
 the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
 (#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract

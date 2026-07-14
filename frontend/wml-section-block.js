@@ -97,8 +97,9 @@
                 // tripping the free-prose branch into data-section-complete="true".
                 const _secRO = node.attrs && (node.attrs.editable === false || node.attrs.editable === 'false'
                     || node.attrs.readonly === 'true' || node.attrs.readonly === true);
-                if (!_secRO && (type === 'plan' || type === 'response' || type === 'outline' || type === 'improvement')) {
-                    let rowCount = 0, filled = 0, checkboxRows = 0, anyChecked = false;
+                if (!_secRO && (type === 'plan' || type === 'response' || type === 'outline' || type === 'improvement'
+                    || type === 'mark_scheme_response' /* v7.20.89 (Neil B6/B7): MSA sections tick + feed the progress card */)) {
+                    let rowCount = 0, filled = 0, pickGroup = false, anyChecked = false;
                     node.forEach((child) => {
                         if (!child.type || child.type.name !== 'outlineRow') return;
                         rowCount++;
@@ -114,19 +115,31 @@
                             // then reads complete instead of wedging progress below 100%.
                             if (crit.locked === true || crit.locked === 'true') {
                                 rowOk = true;
-                            } else if (crit.type === 'checkbox') {
-                                // Single-select pick group (e.g. logline drafts): the TICK is
-                                // tracked at section level (anyChecked); a row just needs text.
-                                checkboxRows++;
-                                if (Array.isArray(cs.checked) && cs.checked.length > 0) anyChecked = true;
+                            } else if (crit.type === 'checkbox' || crit.type === 'checklist') {
+                                // v7.20.89 (Neil A2 ruling): outline section done = inputs filled
+                                // AND every side checkbox/checklist item ticked, PER ROW. The old
+                                // section-level anyChecked let one ticked box complete the whole
+                                // section (BP1 lit, BP2/BP3 never could). CW single-select pick
+                                // groups (logline drafts / idea rows) keep the old rule: row needs
+                                // text only, section needs ONE pick — all-ticked is impossible
+                                // there by design. Mirrors checkRowComplete (checklist = all items).
+                                const chk = Array.isArray(cs.checked) ? cs.checked.length : 0;
+                                if (chk > 0) anyChecked = true;
+                                const isPick = /^cw-step-\d+-(logline|idea)/.test(String((child.attrs && child.attrs.fieldId) || ''));
+                                if (isPick) {
+                                    pickGroup = true;
+                                } else {
+                                    const need = (crit.type === 'checklist' && Array.isArray(crit.items)) ? crit.items.length : 1;
+                                    rowOk = hasText && chk >= need;
+                                }
                             } else if (crit.type === 'dropdown') {
                                 rowOk = hasText && !!cs.selected;
                             }
                         } catch (_) { /* default rowOk = hasText */ }
                         if (rowOk) filled++;
                     });
-                    // Complete = every row present AND (if a pick group) one chosen.
-                    const complete = rowCount > 0 && filled === rowCount && (checkboxRows === 0 || anyChecked);
+                    // Complete = every row satisfied AND (if a pick group) one chosen.
+                    const complete = rowCount > 0 && filled === rowCount && (!pickGroup || anyChecked);
                     if (rowCount > 0) {
                         dom.setAttribute('data-section-complete', complete ? 'true' : 'false');
                     } else {
@@ -366,6 +379,8 @@
                 } catch (_) { _isPoemGroup = false; }
             }
             const _collapsible = type === 'feedback' || type === 'scores'
+                || type === 'outline' /* v7.20.89 (Neil A3): outline sections collapse like assessment docs */
+                || type === 'mark_scheme_response' || type === 'notice' /* v7.20.89 (Neil B7): MSA doc parity */
                 || (type === 'action' && (_cvLabel === 'Self-Assessment' || _cvLabel === 'Action Plan'))
                 || (type === 'plan' && (_isOrganiserDoc || _isLitCnDoc));
             if (_collapsible) {
@@ -381,10 +396,17 @@
                 // on every (re)mount + overlay rebuild. 'collapsed' mode = visible only while
                 // the section is collapsed (the preview); 'always' = the Analytics readout.
                 let anaStrip = null;
-                if (_STRIP_MODE[fbLabel]) {
+                // v7.20.89 (Neil B7): generic collapsed-only TEASER strip for collapsible
+                // sections with no bespoke builder (outline / MSA / notice) — collapsed view
+                // previews the section's first line ("headline first, detail on expand").
+                // Filled by the same _renderSectionStrips pass (data-strip-teaser branch).
+                const _teaser = !_STRIP_MODE[fbLabel]
+                    && (type === 'outline' || type === 'mark_scheme_response' || type === 'notice');
+                if (_STRIP_MODE[fbLabel] || _teaser) {
                     anaStrip = document.createElement('div');
-                    anaStrip.className = 'swml-ana-strip' + (_STRIP_MODE[fbLabel] === 'collapsed' ? ' swml-strip-collapsed-only' : '');
+                    anaStrip.className = 'swml-ana-strip' + ((_teaser || _STRIP_MODE[fbLabel] === 'collapsed') ? ' swml-strip-collapsed-only' : '');
                     anaStrip.setAttribute('data-strip', fbLabel);
+                    if (_teaser) anaStrip.setAttribute('data-strip-teaser', '1');
                     anaStrip.setAttribute('contenteditable', 'false');
                     dom.insertBefore(anaStrip, contentDOM);
                     const _fillAna = () => {
