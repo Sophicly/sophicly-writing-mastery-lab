@@ -17655,7 +17655,10 @@
             let fbScrollAttempts = 0;
             const fbScrollInterval = setInterval(() => {
                 fbScrollAttempts++;
-                const target = editorEl?.querySelector('[data-section-type="divider"][data-section-label="FEEDBACK"]')
+                // v7.20.90 (Neil): land on SELF-ASSESSMENT — the beginning of the feedback
+                // family and the lesson's focus — falling back to the FEEDBACK divider.
+                const target = editorEl?.querySelector('[data-section-type="action"][data-section-label="Self-Assessment"]')
+                    || editorEl?.querySelector('[data-section-type="divider"][data-section-label="FEEDBACK"]')
                     || editorEl?.querySelector('[data-section-label="FEEDBACK"]')
                     || editorEl?.querySelector('[data-section-type="feedback"]');
                 if (target && contentWrap) {
@@ -23323,7 +23326,13 @@
                         // v7.14.74: Ignore DOM mutations inside the criteria panel (checkbox toggles,
                         // dropdown changes). Prevents ProseMirror's DOM observer from creating
                         // secondary transactions that trigger PaginationPlus re-pagination.
+                        // v7.20.90 ROOT (ctlrows storm): checkRowComplete's class toggles on this
+                        // row's own dom/contentDOM (23305-6) were FOREIGN mutations — every
+                        // completion recompute fired a DOMObserver flush that tore down + re-armed
+                        // every (now-collapsible) section NodeView on the big doc. Wrapper-attr
+                        // firewall, the v7.19.866 rule; content mutations still flow.
                         ignoreMutation(mutation) {
+                            if (mutation.type === 'attributes' && (mutation.target === dom || mutation.target === contentDOM)) return true;
                             return criteriaEl.contains(mutation.target);
                         },
                         update(updatedNode) {
@@ -24652,6 +24661,38 @@
                         return cleaned;
                     });
                 },
+                // v7.20.90 (Neil paste repro): copying a WORD inside an inputField/outlineRow
+                // and pasting into a response inserted the WHOLE element — both nodes are
+                // defining:true blocks, so PM records them as slice CONTEXT and re-wraps the
+                // text on paste (transformPastedHTML can't stop it: same-editor paste rebuilds
+                // from the data-pm-slice marker AFTER the HTML hook). This SLICE-level hook is
+                // the one choke point for Cmd-V and drag alike. Chip/Copy/transfer flows use
+                // plain writeText (no PM slice) → mapped.eq() → untouched. Paste INTO a field
+                // never reaches here (handlePaste below returns true first).
+                transformPasted(slice) {
+                    try {
+                        const UNWRAP = { inputField: true, outlineRow: true };
+                        const FragmentC = slice.content.constructor;
+                        const pType = canvasEditor && canvasEditor.schema && canvasEditor.schema.nodes.paragraph;
+                        if (!pType) return slice;
+                        const mapFragment = (frag) => {
+                            const out = [];
+                            frag.forEach(node => {
+                                if (UNWRAP[node.type.name]) {
+                                    out.push(pType.create(null, node.content));
+                                } else if (node.content && node.content.size && !node.isText) {
+                                    out.push(node.copy(mapFragment(node.content)));
+                                } else {
+                                    out.push(node);
+                                }
+                            });
+                            return FragmentC.fromArray(out);
+                        };
+                        const mapped = mapFragment(slice.content);
+                        if (mapped.eq(slice.content)) return slice;
+                        return new slice.constructor(mapped, slice.openStart, slice.openEnd);
+                    } catch (_) { return slice; }
+                },
                 // v7.14.68: Keep multi-paragraph paste inside InputField nodes
                 // InputField uses content:'inline*' so block paste escapes. Convert blocks to inline.
                 handlePaste(view, event) {
@@ -25822,7 +25863,14 @@
         const tryHealCwProgressSection = () => {
             if (!canvasEditor || state.reviewMode) return;
             const isAssessDoc = !isCwTask && WML.hasAssessmentSections && WML.hasAssessmentSections(state.task);
-            if (!isCwTask && !isAssessDoc) return;
+            // v7.20.90 (Neil): EVERY phase doc carries the Document Progress card. The
+            // phase-chain docs (planning/outlining/polishing/discuss) were the gap — they
+            // fail hasAssessmentSections so the v821 extension skipped them. Derived/
+            // readonly card, signoff-anchored insert, idempotent — safe on a fresh
+            // template (unlike essays, there is no essay-less state to avoid persisting).
+            const isPhaseDoc = !isCwTask && !isAssessDoc
+                && ['planning', 'outlining', 'polishing', 'feedback_discussion'].indexOf(state.task) !== -1;
+            if (!isCwTask && !isAssessDoc && !isPhaseDoc) return;
             try {
                 if (isAssessDoc) {
                     const editorEl = canvasEditor.options && canvasEditor.options.element;
@@ -25846,7 +25894,7 @@
                 finally { _migrationActive = false; }
                 try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
-                console.log('WML CW: progress summary section healed in');
+                console.log('WML: Document Progress section healed in (task=' + (state.task || 'cw') + ')');
             } catch (e) { console.log('WML CW: progress heal skipped —', e && e.message); }
         };
         // v7.19.467: HEAL Step-2 docs polluted by the pre-fix SPA-nav save race — the
@@ -26493,8 +26541,13 @@
                 // (level with the ✓ completion tick) and inset to right-64 so the ↓
                 // clears the tick (right:12, 22px) with an 8px gap, instead of landing
                 // on top of it (Neil). Mirrors the .688 exam_crib chip-row tidy.
+                // v7.20.90 (Neil overlap repro): on a COLLAPSIBLE section the tick itself
+                // shifts to right:44 to clear the chevron (wml-canvas.css .swml-collapsible
+                // rule), so right-64 landed the ↓ ON the shifted tick. Key the inset off
+                // the same capability class — chevron(8+22) + tick(44+22) + 8px gap → 96.
                 var top = (sRect.top - dwRect.top) / z + 10;
-                var left = (sRect.right - dwRect.left) / z - 64;
+                var inset = section.classList.contains('swml-collapsible') ? 96 : 64;
+                var left = (sRect.right - dwRect.left) / z - inset;
                 btn.style.cssText = 'position:absolute;top:' + top + 'px;left:' + left + 'px;pointer-events:auto;';
             });
 
@@ -37460,7 +37513,14 @@
                     }
                     if (same) return; // already mirrored — idempotent
                     try {
-                        canvasEditor.chain().insertContentAt({ from: tPos + 1, to: tPos + tNode.nodeSize - 1 }, up.innerHTML, { updateSelection: false }).run();
+                        // v7.20.90: run under _migrationActive like every other heal — a replace
+                        // whose parsed content nets fewer sections otherwise trips the
+                        // onTransaction deletion guard, whose undo() re-triggers recompute churn
+                        // (the "Section deletion blocked (72→71)" + storm feeder pair).
+                        _migrationActive = true;
+                        try {
+                            canvasEditor.chain().insertContentAt({ from: tPos + 1, to: tPos + tNode.nodeSize - 1 }, up.innerHTML, { updateSelection: false }).run();
+                        } finally { _migrationActive = false; }
                         n++;
                     } catch (e3) { console.warn('WML chain: ' + what + ' mirror failed', upLabel, e3 && e3.message); }
                 });

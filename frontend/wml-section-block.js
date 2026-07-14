@@ -574,6 +574,22 @@
                         if (poemCard && (poemCard === mutation.target || poemCard.contains(mutation.target))) return true;
                         return toggle === mutation.target || toggle.contains(mutation.target);
                     },
+                    // v7.20.90 (ctlrows-storm amplifier fix): WITHOUT update(), every doc
+                    // transaction destroyed + recreated this NodeView — re-arming the three
+                    // _fillCtl timers per section (~40 collapsible sections on the big doc
+                    // tripped the >50/s breaker) and re-reading the collapse default (the
+                    // v7.20.6 snap-shut landmine). Same-identity updates keep the DOM; PM
+                    // manages contentDOM children itself. Completion attr stays fresh via
+                    // the DOM recompute path (checkSectionComplete), whose attr writes the
+                    // wrapper-attr firewall above already ignores.
+                    update: (updatedNode) => {
+                        if (!updatedNode.type || updatedNode.type.name !== node.type.name) return false;
+                        const ua = updatedNode.attrs || {};
+                        const na = node.attrs || {};
+                        if (ua.sectionType !== na.sectionType || (ua.label || '') !== (na.label || '')) return false;
+                        node = updatedNode;
+                        return true;
+                    },
                 };
             }
 
