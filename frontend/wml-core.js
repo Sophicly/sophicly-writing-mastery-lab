@@ -2447,16 +2447,54 @@ window.WML = (function() {
         return e;
     }
 
+    // ── v7.20.85 NONCE SELF-HEAL (root cause of the "couldn't load the round" /
+    // universal-403 storm, Neil 2026-07-14): WP REST nonces die after ~24h, and the
+    // Focus SPA never full-reloads — a long-lived tab outlives its nonce and EVERY
+    // REST call 403s (quiz/start, canvas save/load, chat, grades). Fix at the ONE
+    // seam all WML requests share: on a 403, fetch a fresh nonce via core's
+    // `rest-nonce` ajax action (what wp-api-fetch's middleware uses), update the
+    // shared `headers` object + `config.nonce` IN PLACE (every consumer reads
+    // them by reference), retry ONCE. A second 403 = genuinely logged out — fail
+    // loud, existing error paths surface it. Single-flight so a 403 storm
+    // triggers one refresh, not fifty.
+    let _nonceRefreshing = null;
+    function _refreshRestNonce() {
+        if (_nonceRefreshing) return _nonceRefreshing;
+        _nonceRefreshing = (async () => {
+            try {
+                const origin = new URL(config.restUrl, window.location.href).origin;
+                const r = await fetch(origin + '/wp-admin/admin-ajax.php?action=rest-nonce', { credentials: 'same-origin' });
+                const t = (await r.text()).trim();
+                if (r.ok && t && t !== '0' && t !== '-1' && t.length <= 20) {
+                    config.nonce = t;
+                    headers['X-WP-Nonce'] = t;
+                    console.log('WML auth: REST nonce refreshed (stale-tab self-heal)');
+                    return true;
+                }
+            } catch (e) { console.warn('WML auth: nonce refresh failed', e && e.message); }
+            return false;
+        })();
+        return _nonceRefreshing.finally(() => { _nonceRefreshing = null; });
+    }
+    async function _fetchAuth(url, opts) {
+        let r = await fetch(url, opts);
+        if (r.status === 403) {
+            const ok = await _refreshRestNonce();
+            if (ok) r = await fetch(url, opts); // headers object already carries the fresh nonce
+            if (r.status === 403) console.warn('WML auth: still 403 after nonce refresh — session expired, full reload/login needed:', url);
+        }
+        return r;
+    }
     async function apiPost(url, body) {
         try {
-            const r = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+            const r = await _fetchAuth(url, { method: 'POST', headers, body: JSON.stringify(body) });
             const text = await r.text();
             return text ? JSON.parse(text) : { success: false, message: 'Empty server response' };
         } catch (e) { console.error('WML apiPost error:', e); return { success: false, message: e.message }; }
     }
     async function apiGet(url) {
         try {
-            const r = await fetch(url, { headers });
+            const r = await _fetchAuth(url, { headers });
             const text = await r.text();
             return text ? JSON.parse(text) : { success: false, message: 'Empty server response' };
         } catch (e) { console.error('WML apiGet error:', e); return { success: false, message: e.message }; }
