@@ -641,9 +641,14 @@ direction); mirror v3 arbitrates every candidate across ALL earlier stages in th
 chain: newest ts wins, tie → latest stage, unstamped-vs-unstamped with local content keeps
 LOCAL (never delete a possible student edit), empty/placeholder local always accepts a seed
 (§21), mirrored writes CARRY the origin ts (never re-stamp). Frozen (marked) docs accept
-nothing. Residual: any NEW sync path that overwrites without consulting `editTs`; any
-programmatic txn outside the four exclusion signals (would false-freshen — grep new
-`dispatch(` sites at review). Canonical spec: design doc §2b; laws 1–3 there bind.
+nothing. PROVEN residual (v7.20.93, same day): a load-path whole-doc txn outside the four
+signals stamped all 57 nodes of reassessment/redraft at open → every section false-fresh →
+newest-wins locked ALL upstream edits out (Neil's "doesn't reach assessment/discuss").
+Net: the BULK-TXN GUARD — >3 sections touched in ONE transaction = programmatic, skip the
+whole txn loudly (a user gesture never edits that many at once; structural, not a fifth
+signal to forget). Remaining residual: a programmatic txn touching ≤3 sections still
+false-freshens (grep new `dispatch(` sites at review); mirror logs every kept-local
+decision + its sources so a block is console-diagnosable. Canonical spec: design doc §2b.
 
 **20. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
 the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
