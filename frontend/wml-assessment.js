@@ -23206,6 +23206,7 @@
                                 checkboxes.forEach((c, i) => { if (c.checked) indices.push(i); });
                                 persistState({ checked: indices });
                                 checkRowComplete(); // v7.15.0
+                                syncSection(); // v7.20.98: refresh section header tick
                             });
                             checkboxes.push(cb);
                             lbl.appendChild(cb);
@@ -23238,6 +23239,7 @@
                             persistState({ selected: sel.value });
                             sel.classList.toggle('swml-select-filled', !!sel.value); // v7.15.0
                             checkRowComplete();
+                            syncSection(); // v7.20.98: refresh section header tick
                             // v7.19.443: the CW Step 5 plot-structure choice must reach Step 6
                             // reliably. persistState only does a 2s debounced doc-save, which is
                             // lost if the student navigates to Step 6 quickly — so Step 6 read a
@@ -23273,6 +23275,7 @@
                             e.stopPropagation();
                             persistState({ checked: cb.checked ? [0] : [] });
                             checkRowComplete(); // v7.15.0
+                            syncSection(); // v7.20.98: refresh section header tick
                             // v7.19.461: CW Step 2 — the "choose this idea" checkbox is a
                             // SINGLE-SELECT across the three idea rows. On tick: clear the other
                             // two (radio behaviour) and save the chosen idea's TEXT to a
@@ -23350,6 +23353,20 @@
                     // NO MutationObserver — text changes detected by global updateRowIndicators() in onUpdate
                     // Initial check deferred to after all rows are built
                     dom._checkRowComplete = checkRowComplete;
+
+                    // v7.20.98 (Neil): a checkbox/dropdown toggle changes NO doc text, so the
+                    // enclosing section's onUpdate never fires — the section header green-check
+                    // (data-section-complete) went stale (green while a box was still unticked).
+                    // Recompute the section tick + progress card on every criteria toggle. Both
+                    // writes land on firewalled targets (section wrapper attr + progress card),
+                    // so no PM DOMObserver flush. Shared by all three toggle handlers below.
+                    function syncSection() {
+                        try {
+                            const s = dom.closest('.swml-section-block');
+                            if (s && typeof checkSectionComplete === 'function') checkSectionComplete(s);
+                            if (window.WML && typeof window.WML.updateProgressSummary === 'function') window.WML.updateProgressSummary();
+                        } catch (_) { /* never block the toggle */ }
+                    }
 
                     // Calculate min-height synchronously from criteria data.
                     let critH = 18;
@@ -30771,15 +30788,23 @@
         // ── Literature essay (TTECEA+C) — used by AQA, EDUQAS, Edexcel, OCR, CCEA, IGCSE ──
         literature: {
             intro: [
-                { id: 'hook', label: 'Hook', ao: 'AO1', type: 'dropdown', items: ['Historical fact', 'Question', 'Quote', 'Metaphor/image'], prompt: 'An intriguing concept or contextual observation' },
+                { id: 'hook', label: 'Hook', ao: 'AO1', type: 'dropdown', items: ['Historical fact', 'Question', 'Quote', 'Metaphor/image'], prompt: 'A striking fact, question, quote, or image to draw the reader in' },
                 { id: 'building', label: 'Building Sentences', ao: 'AO3', type: 'dropdown', items: ['Historical context', 'Social context', 'Cultural context', 'Counter-argument'], prompt: 'Contextual backdrop \u2014 historical, social, or cultural' },
                 { id: 'thesis', label: 'Thesis', ao: 'AO1', type: 'checklist', items: ['Key idea 1', 'Key idea 2', 'Key idea 3', 'Argument setup'], prompt: 'Your 3-point argument \u2014 three key ideas that answer the question' },
             ],
             body: [
                 { id: 'topic', label: 'Topic Sentence', ao: 'AO1', type: 'checkbox', prompt: 'A conceptual idea linking to your thesis' },
-                { id: 'evidence', label: 'Evidence + Technique', ao: 'AO1/AO2', type: 'checklist', items: ['Technique named', 'Quote integrated', 'Inference made'], prompt: 'Quote + name the technique. Integrate, don\'t bolt on' },
+                // v7.20.98 (Neil): label + AO order mirror the check icons — Technique, then Evidence,
+                // then Inference (AO2 drives the analysis, AO1 supports). Was "Evidence + Technique".
+                { id: 'evidence', label: 'Technique + Evidence + Inference', ao: 'AO2/AO1', type: 'checklist', items: ['Technique named', 'Quote integrated', 'Inference made'], prompt: 'Name the technique, integrate the quote, then infer — don\'t bolt on' },
                 { id: 'analysis', label: 'Close Analysis', ao: 'AO2', type: 'checkbox', prompt: 'Examine specific words, sounds, or structural choices' },
-                { id: 'effects', label: 'Effects on Reader', ao: 'AO2', type: 'checklist', items: ['Manipulates focus', 'Manipulates emotions', 'Manipulates thoughts', 'Manipulates actions'], prompt: 'How does the author manipulate the reader? Be specific to the ideas and themes.' },
+                // v7.20.98 (Neil): the E in TTECEA is TWO effects — the protocol + mark scheme award
+                // SEPARATE marks for each (shared essay-plan.md L79; AQA b5-bodies.md L330-331).
+                // Effect 1 = immediate response (focus → emotion); Effect 2 = deeper response
+                // (thought → real-world action). id 'effects' kept for Effect 1 so existing saved
+                // outlines keep their text (no write-key drift); 'effects2' is purely additive.
+                { id: 'effects', label: 'Effect 1 on Reader', ao: 'AO2', type: 'checklist', items: ['Directs focus', 'Evokes emotion'], prompt: 'Immediate effect — where the writer directs the reader’s focus and the emotion it evokes' },
+                { id: 'effects2', label: 'Effect 2 on Reader', ao: 'AO2', type: 'checklist', items: ['Shapes thoughts', 'Prompts action'], prompt: 'Deeper effect — the thoughts it shapes and the real-world attitude or action it may inspire' },
                 { id: 'purpose', label: "Author's Purpose + Context", ao: 'AO1/AO3', type: 'checkbox', prompt: 'Why these choices? Link to context' },
             ],
             conclusion: [
@@ -31922,7 +31947,7 @@
     // ── Intro/Conclusion criteria builders (v7.14.99) ──
 
     function buildIntroCriteria(type, buildAO) {
-        const hook = { id: 'hook', label: 'Hook', ao: 'AO1', type: 'dropdown', items: ['Historical fact', 'Question', 'Quote', 'Metaphor/image'], prompt: 'An intriguing concept or contextual observation' };
+        const hook = { id: 'hook', label: 'Hook', ao: 'AO1', type: 'dropdown', items: ['Historical fact', 'Question', 'Quote', 'Metaphor/image'], prompt: 'A striking fact, question, quote, or image to draw the reader in' };
         const buildCtx = { id: 'building', label: 'Building Sentences', ao: buildAO || 'AO3', type: 'dropdown', items: buildAO === 'AO3' ? ['Historical context', 'Social context', 'Cultural context', 'Counter-argument'] : ['Concept statement', 'Technique preview', 'Argument development', 'Counter-position'], prompt: buildAO === 'AO3' ? 'Contextual backdrop \u2014 historical, social, or cultural' : 'Set up your thesis \u2014 preview your key ideas and approach' };
         const thesis = { id: 'thesis', label: 'Thesis', ao: 'AO1', type: 'checklist', items: ['Key idea 1', 'Key idea 2', 'Key idea 3', 'Argument setup'], prompt: 'Your 3-point argument \u2014 three key ideas that answer the question' };
         switch (type) {
