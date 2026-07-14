@@ -506,8 +506,12 @@ chat wipes marks → unfreezes → newest work flows in → re-mark).
 **Coverage** (uniform — no task-name gating): response + outline(+tick census) section
 families; all owned fields (pred-/kw-focus/reflect-/plan-/iumvcc-); SA + Action Plan
 assessment→discuss while phase open. Phase 1 and Phase 2 run the SAME engine. CW excluded
-by construction (not in the chains). Adopting a new surface = add its section type/field
-prefix to the mirror calls — never a new sync mechanism.
+by construction (not in the chains) — but QUEUED for onboarding (Neil 2026-07-14: "Creative
+Writing is one long project — things feed through from lesson to lesson; the first few
+lessons already work like that; come back and polish later"). When that pass lands, CW
+adopts THIS mechanism (a `_cw_*` step chain + the same stamp/arbitrate/carry parts), never
+a parallel sync. Adopting any new surface = add its section type/field prefix to the
+mirror calls — never a new sync mechanism.
 
 ## §9. THE POTENTIAL-ERRORS REGISTER (Neil's ask — name the class before you fix the instance)
 
