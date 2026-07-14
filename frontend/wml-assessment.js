@@ -37508,6 +37508,7 @@
             const doc = canvasEditor.state.doc;
             const updates = []; // { pos, attrs }
             const inserts = []; // { pos }  (position to insert an Effect-2 row)
+            const deletes = []; // { pos, size } (v7.20.105: empty old-shape rows on eval docs)
             let needHeal = false;
             // v7.20.104 (Neil): AO-restamp bridge for BAKED evaluation outlines. The AO4 render
             // (v7.20.102 isEvaluation) only reaches freshly-generated docs; a doc baked BEFORE it
@@ -37535,6 +37536,23 @@
                 // v7.20.104: evaluation doc → every literature-outline row is AO4. Restamp the AO
                 // (only), skip the literature relabel/insert branches below.
                 if (_isEvalDoc && /^outline-(intro|body|conclusion)-/.test(fid)) {
+                    // v7.20.105 (Neil): also migrate the SHAPE of a baked eval doc to the new
+                    // evaluation outline — Hook-only intro, TTECEA body (no Context), Restated-
+                    // Thesis-only conclusion. The extra old-literature rows (intro Building
+                    // Sentences/Thesis; conclusion Controlling Concept/Author's Central Purpose/
+                    // Universal Message; any body Context) are removed — but ONLY when EMPTY (no
+                    // typed text AND no ticked checkbox), so a student's work is never deleted. A
+                    // filled extra row is left in place (safe) rather than silently discarded.
+                    const _isExtra = /^outline-intro-(building|thesis)/.test(fid)
+                        || /^outline-conclusion-(concept|purpose|message)/.test(fid)
+                        || /^outline-body-\d+-context/.test(fid);
+                    if (_isExtra) {
+                        const _txt = (n.textContent || '').trim();
+                        let _checked = false;
+                        try { const cs = JSON.parse(n.attrs.checkState || '{}'); _checked = Object.keys(cs).some(k => cs[k]); } catch (_) {}
+                        if (!_txt && !_checked) { deletes.push({ pos, size: n.nodeSize }); needHeal = true; return true; }
+                        // filled → keep it, but still restamp its AO to AO4 below.
+                    }
                     if (cur.ao && cur.ao !== 'AO4') {
                         updates.push({ pos, attrs: Object.assign({}, n.attrs, { criteria: JSON.stringify(Object.assign({}, cur, { ao: 'AO4' })) }) });
                         needHeal = true;
@@ -37569,14 +37587,17 @@
                 canvasEditor.chain().command(({ tr }) => {
                     tr.setMeta('swmlEditTs', 1);
                     tr.setMeta('addToHistory', false);
-                    // Combine updates (no size change) + inserts (shift upward), apply by
-                    // DESCENDING position so every recorded position stays valid.
+                    // Combine updates (no size change) + inserts (shift up) + deletes (shift
+                    // down), apply by DESCENDING position so every recorded position stays valid.
                     const ops = updates.map(u => ({ pos: u.pos, kind: 'u', u }))
                         .concat(inserts.map(i => ({ pos: i.pos, kind: 'i', i })))
+                        .concat(deletes.map(d => ({ pos: d.pos, kind: 'd', d })))
                         .sort((a, b) => b.pos - a.pos);
                     ops.forEach(op => {
                         if (op.kind === 'u') {
                             tr.setNodeMarkup(op.pos, undefined, op.u.attrs);
+                        } else if (op.kind === 'd') {
+                            tr.delete(op.d.pos, op.d.pos + op.d.size);
                         } else {
                             const node = canvasEditor.schema.nodes.outlineRow.create({
                                 prompt: (op.i.crit && op.i.crit.prompt) || '',
@@ -37590,7 +37611,7 @@
                     return true;
                 }).run();
             } finally { _migrationActive = false; }
-            console.warn('WML heal: outline scaffold upgraded — ' + updates.length + ' row(s) relabelled, ' + inserts.length + ' element row(s) added (Effect 2 / Context) (v7.20.100). Student text preserved.');
+            console.warn('WML heal: outline scaffold upgraded — ' + updates.length + ' row(s) relabelled, ' + inserts.length + ' added (Effect 2 / Context), ' + deletes.length + ' empty old-shape row(s) removed (eval shape migration, v7.20.105). Student text preserved.');
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
             return updates.length + inserts.length;
         } catch (e) { console.warn('WML heal: outline scaffold heal failed (non-fatal)', e && e.message); return 0; }
