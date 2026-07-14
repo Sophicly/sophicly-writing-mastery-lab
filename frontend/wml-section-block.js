@@ -98,7 +98,8 @@
                 const _secRO = node.attrs && (node.attrs.editable === false || node.attrs.editable === 'false'
                     || node.attrs.readonly === 'true' || node.attrs.readonly === true);
                 if (!_secRO && (type === 'plan' || type === 'response' || type === 'outline' || type === 'improvement'
-                    || type === 'mark_scheme_response' /* v7.20.89 (Neil B6/B7): MSA sections tick + feed the progress card */)) {
+                    || type === 'mark_scheme_response' /* v7.20.89 (Neil B6/B7): MSA sections tick + feed the progress card */
+                    || type === 'notes' /* v7.20.96 (Neil): keyword/Question-Focus sections tick like everything else (field-filled = done) */)) {
                     let rowCount = 0, filled = 0, pickGroup = false, anyChecked = false;
                     node.forEach((child) => {
                         if (!child.type || child.type.name !== 'outlineRow') return;
@@ -382,7 +383,12 @@
                 || type === 'outline' /* v7.20.89 (Neil A3): outline sections collapse like assessment docs */
                 || type === 'mark_scheme_response' || type === 'notice' /* v7.20.89 (Neil B7): MSA doc parity */
                 || (type === 'action' && (_cvLabel === 'Self-Assessment' || _cvLabel === 'Action Plan'))
-                || (type === 'plan' && (_isOrganiserDoc || _isLitCnDoc));
+                /* v7.20.96 (Neil universal-consistency ruling, 2026-07-14): plan + response
+                   collapse EVERYWHERE (was plan on organiser/CN docs only); keyword/Question-
+                   Focus 'notes' collapse on essay-flow docs — CN docs keep their current notes
+                   layout until the CN-STANDARD look is decided (pending Neil). */
+                || type === 'plan' || type === 'response'
+                || (type === 'notes' && !_isOrganiserDoc && !_isLitCnDoc);
             if (_collapsible) {
                 const contentDOM = document.createElement('div');
                 contentDOM.className = 'swml-section-content';
@@ -401,7 +407,9 @@
                 // previews the section's first line ("headline first, detail on expand").
                 // Filled by the same _renderSectionStrips pass (data-strip-teaser branch).
                 const _teaser = !_STRIP_MODE[fbLabel]
-                    && (type === 'outline' || type === 'mark_scheme_response' || type === 'notice');
+                    && (type === 'outline' || type === 'mark_scheme_response' || type === 'notice'
+                        /* v7.20.96: the newly-collapsible families get the same first-line preview */
+                        || type === 'plan' || type === 'response' || type === 'notes');
                 if (_STRIP_MODE[fbLabel] || _teaser) {
                     anaStrip = document.createElement('div');
                     anaStrip.className = 'swml-ana-strip' + ((_teaser || _STRIP_MODE[fbLabel] === 'collapsed') ? ' swml-strip-collapsed-only' : '');
@@ -519,7 +527,7 @@
                 toggle.type = 'button';
                 toggle.className = 'swml-fb-toggle';
                 toggle.setAttribute('contenteditable', 'false');
-                toggle.setAttribute('aria-label', 'Collapse or expand this feedback');
+                toggle.setAttribute('aria-label', 'Collapse or expand'); /* v7.20.96 (Neil): generic — not every collapsible section is feedback */
                 toggle.setAttribute('data-tooltip', 'Collapse / expand feedback');
                 toggle.innerHTML = '<span class="swml-fb-chevron" aria-hidden="true"></span>';
                 toggle.addEventListener('mousedown', (ev) => { ev.preventDefault(); ev.stopPropagation(); });

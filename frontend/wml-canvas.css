@@ -11963,10 +11963,13 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 /* Collapse toggle — slim borderless chevron, top-right */
 .swml-fb-toggle {
     position: absolute;
-    top: 6px;
+    /* v7.20.96 (Neil overlap repro): ONE control row — chevron matches the ✓ tick +
+       ↓ transfer geometry exactly (top:10, 22×22). Was top:6/26px, which bottom-aligned
+       the trio (shared y=32) and read as the ↓/✓ "hanging below" the chevron. */
+    top: 10px;
     right: 8px;
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -12047,7 +12050,11 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-section-block[data-section-type="action"] { position: relative; }
 /* v7.19.926 UNIVERSAL: any chevron-carrying section is its toggle's positioned ancestor —
    keyed off the same .swml-collapsible capability class (covers 'scores' + future types). */
-.swml-section-block.swml-collapsible { position: relative; }
+/* v7.20.96 (Neil overlap repro): the top-right control row (✓ tick / ↓ transfer / chevron,
+   top:10, 22px → ends y=32) sat over the first content line (base padding-top 24px). Any
+   collapsible section clears the row with real padding — capability-keyed, so the newly
+   collapsible plan/response/notes families are covered by construction. */
+.swml-section-block.swml-collapsible { position: relative; padding-top: 40px; }
 @media (prefers-reduced-motion: reduce) {
     .swml-fb-chevron, .swml-section-feedback .swml-section-content { transition: none; }
 }

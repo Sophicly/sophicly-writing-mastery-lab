@@ -8471,7 +8471,9 @@
             // block; complete when that block has text. Mirrors the nodeView so free-prose
             // sections (Step-1 Writer's Profile / Seed Loglines) tick live too.
             const type = sectionEl.getAttribute('data-section-type') || '';
-            if (type !== 'plan' && type !== 'response' && type !== 'outline' && type !== 'improvement') return;
+            // v7.20.96 (Neil): 'notes' joins — keyword/Question-Focus sections tick when
+            // their field is filled (byte-consistent with the nodeView gate, wml-section-block.js ~100).
+            if (type !== 'plan' && type !== 'response' && type !== 'outline' && type !== 'improvement' && type !== 'notes') return;
             // v7.19.506: InputField/SelectField sections (Codex reflections + quizzes).
             // Mirror the nodeView: all inputs filled + all plain selects chosen; quiz
             // selects (with data-correct) must be CORRECT, not merely answered.
