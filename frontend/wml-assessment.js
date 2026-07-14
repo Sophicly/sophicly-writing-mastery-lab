@@ -11910,13 +11910,51 @@
             const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, (state.fqBank || state.text), (state.attempt || 1), 's' + (state.fqStage || 0)].join('_');
             function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts, predictedScore, awaitingPrediction })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            // v7.20.87 (Neil): the ONE canonical round-load failure line — emit sites,
+            // the history scrubber, and the self-heal all match on THIS string (byte-pair
+            // rule: change it in one place or the heal goes blind).
+            const QUIZ_LOAD_ERR = "I couldn't load the round just now.";
+            // Strip persisted load-error bubbles from history + DOM. They are pure
+            // transient noise: pre-.87 they were SAVED into the chat (the 403-storm
+            // session), so every later load replayed a dead "please refresh" bubble and
+            // the lesson looked broken even after the real fault was fixed. Exact-prefix
+            // match on the canonical line — can never touch student content.
+            function _stripLoadErrors() {
+                let n = 0;
+                for (let i = canvasChatHistory.length - 1; i >= 0; i--) {
+                    const m = canvasChatHistory[i];
+                    if (m && m.role === 'assistant' && String(m.content || '').indexOf(QUIZ_LOAD_ERR) === 0) { canvasChatHistory.splice(i, 1); n++; }
+                }
+                if (n) {
+                    try {
+                        const host = document.getElementById('swml-canvas-chat-messages');
+                        if (host) host.querySelectorAll('.swml-bubble.ai').forEach(b => {
+                            if ((b.textContent || '').indexOf(QUIZ_LOAD_ERR) !== -1) b.remove();
+                        });
+                    } catch (e) {}
+                    saveCanvasChat(canvasChatHistory, canvasChatId);
+                }
+                return n;
+            }
             function rehydrate(opts) {
                 if (opts && opts.quizType) quizType = (opts.quizType === 'foundational') ? 'foundational' : (opts.quizType === 'mark_scheme_assessment') ? 'mark_scheme_assessment' : 'mark_scheme';
+                // v7.20.87 SELF-HEAL (Neil: "students might not know they need a new
+                // chat — it should check automatically"): scrub any persisted load-error
+                // bubbles ALWAYS; if the round then has nothing to resume, the error is
+                // WHY (start failed, nothing persisted) — silently start a fresh round
+                // instead of stranding the student on a stale "please refresh".
+                const _errs = _stripLoadErrors();
+                const _healRestart = () => {
+                    if (!_errs) return false; // genuinely nothing to resume — caller decides
+                    console.log('[WML quiz] stalled load-error detected in saved chat — auto-restarting round');
+                    setTimeout(() => { try { startRound(); } catch (e) { console.warn('[WML quiz] self-heal restart failed', e && e.message); } }, 80);
+                    return true; // controller owns the turn; fresh round incoming
+                };
                 try {
                     const raw = localStorage.getItem(lsKey());
-                    if (!raw) return false;
+                    if (!raw) return _healRestart();
                     const d = JSON.parse(raw);
-                    if (!d || !Array.isArray(d.qs) || !d.qs.length) return false;
+                    if (!d || !Array.isArray(d.qs) || !d.qs.length) return _healRestart();
                     qs = d.qs; idx = d.idx || 0; total = d.total || d.qs.length;
                     _syncFqSidebar();   // v7.19.954: resumed rounds re-derive the sidebar length too
                     round = d.round || 1; roundResults = Array.isArray(d.roundResults) ? d.roundResults : [];
@@ -11970,7 +12008,7 @@
                         } catch (_re) { console.warn('WML quiz resume: current-question re-render failed', _re && _re.message); }
                     }
                     return active;
-                } catch (e) { return false; }
+                } catch (e) { return _healRestart(); }
             }
 
             function resetSend() {
@@ -11980,6 +12018,9 @@
             }
             function aiBubble(plain, opts) {
                 addChatMessage(formatAI(plain), 'ai', plain, opts);
+                // v7.20.87: transient notices (load failures) are DISPLAY-ONLY — a saved
+                // error replays forever and reads as a broken lesson (Neil's MSA strand).
+                if (opts && opts.ephemeral) return;
                 canvasChatHistory.push({ role: 'assistant', content: plain });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
@@ -12835,7 +12876,7 @@
                     });
                     removeCanvasTyping();
                     if (!res || !res.success || !res.questions || !res.questions.length) {
-                        aiBubble("I couldn't load the round just now. Please refresh — and if it keeps happening, let your tutor know.");
+                        aiBubble(QUIZ_LOAD_ERR + " Please refresh — and if it keeps happening, let your tutor know.", { ephemeral: true });
                         return;
                     }
                     qs = res.questions; total = res.total || qs.length; idx = 0; roundResults = []; active = true;
@@ -12845,7 +12886,7 @@
                     renderQ();
                 } catch (e) {
                     removeCanvasTyping();
-                    aiBubble("I couldn't load the round just now. Please refresh and try again.");
+                    aiBubble(QUIZ_LOAD_ERR + " Please refresh and try again.", { ephemeral: true });
                 } finally {
                     resetSend();
                 }
