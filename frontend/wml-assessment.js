@@ -37528,21 +37528,18 @@
                 if (n.type.name !== 'outlineRow') return true;
                 const fid = n.attrs.fieldId || '';
                 let cur; try { cur = JSON.parse(n.attrs.criteria || '{}'); } catch (_) { cur = {}; }
-                // v7.20.102 (Neil): this heal reconciles LITERATURE-scaffold docs. An evaluation
-                // outline (AQA Lang P1 Q4) shares the same fieldIds but every element is AO4 —
-                // its canonical labels/AOs are correct at render, so the literature relabel/insert
-                // must never touch it (would force AO2/AO1 + insert Context). AO4 rows opt out.
-                if (cur.ao === 'AO4') return true;
-                // v7.20.104: evaluation doc → every literature-outline row is AO4. Restamp the AO
-                // (only), skip the literature relabel/insert branches below.
+                // v7.20.104/105 (Neil): evaluation doc (AQA Lang P1 Q4) — the literature-shaped
+                // outline rows are all AO4. Handle these FIRST, BEFORE the AO4 opt-out guard below:
+                // after .104 restamps them to AO4 a later load would short-circuit on that guard and
+                // never reach the .105 SHAPE migration (the bug Neil saw — labels fixed, shape stuck).
+                // (1) SHAPE: migrate a baked doc to the evaluation outline (Hook-only intro, TTECEA
+                //     body no-Context, Restated-Thesis-only conclusion) by removing the extra old-
+                //     literature rows (intro Building Sentences/Thesis; conclusion Controlling
+                //     Concept/Author's Central Purpose/Universal Message; any body Context) — ONLY
+                //     when EMPTY (no typed text AND no ticked checkbox) so student work is never lost;
+                //     a filled extra row is kept + AO4-restamped rather than discarded.
+                // (2) AO: restamp any kept row still on a literature AO → AO4.
                 if (_isEvalDoc && /^outline-(intro|body|conclusion)-/.test(fid)) {
-                    // v7.20.105 (Neil): also migrate the SHAPE of a baked eval doc to the new
-                    // evaluation outline — Hook-only intro, TTECEA body (no Context), Restated-
-                    // Thesis-only conclusion. The extra old-literature rows (intro Building
-                    // Sentences/Thesis; conclusion Controlling Concept/Author's Central Purpose/
-                    // Universal Message; any body Context) are removed — but ONLY when EMPTY (no
-                    // typed text AND no ticked checkbox), so a student's work is never deleted. A
-                    // filled extra row is left in place (safe) rather than silently discarded.
                     const _isExtra = /^outline-intro-(building|thesis)/.test(fid)
                         || /^outline-conclusion-(concept|purpose|message)/.test(fid)
                         || /^outline-body-\d+-context/.test(fid);
@@ -37559,6 +37556,10 @@
                     }
                     return true;
                 }
+                // v7.20.102 (Neil): the literature relabel/insert branches below must never touch a
+                // fresh AO4 evaluation row on a board NOT covered by _isEvalDoc (would force AO2/AO1
+                // + insert Context). AO4 rows opt out here.
+                if (cur.ao === 'AO4') return true;
                 if (/^outline-body-\d+-evidence$/.test(fid)) {
                     if (cur.label !== cEvidence.label || cur.ao !== cEvidence.ao) { updates.push({ pos, attrs: _mergeAttrs(n, cEvidence) }); needHeal = true; }
                 } else if (/^outline-body-\d+-effects$/.test(fid)) {
