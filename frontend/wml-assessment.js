@@ -37773,7 +37773,10 @@
             // phase closes the discuss doc is a frozen record.
             if (state.task === 'feedback_discussion' && !state._phaseMarkedComplete) {
                 const _saDocs = _upDocs.filter((d) => d.sfx === (_isRedraft ? '_reassessment' : '_assessment'));
-                _mirrorSections(_saDocs, 'action', (lbl) => /^self-assessment$/i.test(String(lbl).trim()), 'self-assessment');
+                // v7.20.94: Action Plan joins — the freeze law names BOTH as the student-
+                // editable feedback-family sections (SA + Action Plan); only SA mirrored
+                // before. Sophia feedback/scores stay reseed-owned, never mirrored here.
+                _mirrorSections(_saDocs, 'action', (lbl) => /^(self-assessment|action plan)$/i.test(String(lbl).trim()), 'self-assessment');
             }
         } catch (e) { console.warn('WML: pre-write carry heal failed (non-fatal)', e && e.message); }
     }

@@ -467,6 +467,48 @@ The deterministic quiz controller (`_quizCtl` — FQ, MSQ, MSA all share it) has
 - Known cosmetic bleed: chip labels appear in copy-pasted doc exports ("Learn: … →"). Accepted
   for now; revisit if Neil exports for parents (§9.9).
 
+## §8b. THE STAGE-RECORD FEED-FORWARD MECHANISM (Neil, 2026-07-14 — ⭐ THE canonical
+## persistence/feed-forward pattern; reuse this anywhere content must flow between docs)
+
+Neil-verified live (v7.20.93, R&J t1: "sky is blue → sky is green fed all the way
+through, not backwards — works perfectly"). This is the house mechanism; do NOT invent a
+new sync shape for a new surface — adopt this one.
+
+**The three laws** (design doc §2b): (1) STAGE RECORD — each stage doc permanently shows
+what the student wrote AT that stage; the chain is the visible drafting journey; (2)
+FORWARD-ONLY, NEWEST-EDIT-WINS — any edit to any shared area flows to every LATER stage;
+on load each area resolves to the newest edit among current-and-earlier stages; never
+backwards; (3) FREEZE — a marked doc is a frozen record, nothing mirrors in (reset/clear-
+chat wipes marks → unfreezes → newest work flows in → re-mark).
+
+**Mechanism, in five moving parts** (all in wml-assessment.js):
+1. **Provenance attr**: `editTs` (data-edit-ts) on every arbitrated node type (sectionBlock
+   + inputField). Rides the doc's own HTML serialisation — localStorage, server, seeds —
+   so there is NO side-channel key to drift (5d key-match by construction).
+2. **Stamper**: onTransaction collector + rAF flush, throttled 3s/node, stamps ONLY user
+   edits. Exclusions: `_migrationActive`, `_suppressFillScroll`, `addToHistory:false`,
+   `swmlEditTs` meta, and the BULK-TXN GUARD (>3 sections in one txn = programmatic).
+   Failure direction is chosen: a missed exclusion false-freshens (blocks inflow, loud in
+   console) — it can NEVER delete student work.
+3. **Arbitration** (mirror v3, `_healPhase1PrewriteCarryInner`): on load, fetch every
+   EARLIER stage doc in the phase chain (placement via canonical `resolveCanvasSuffix`;
+   chains = client twin of `stage_seed_chain`). Winner per area = newest editTs; tie →
+   latest stage; non-empty local survives unless winner STRICTLY newer; unstamped-vs-
+   unstamped keeps LOCAL (legacy safety); empty/placeholder-only local accepts any seed
+   (§9.21 placeholder law).
+4. **Carry, never re-stamp**: a mirrored copy keeps the ORIGIN edit's ts. Mirror writes run
+   under `_migrationActive` + `swmlEditTs` meta + `addToHistory:false`,
+   `updateSelection:false`.
+5. **Diagnosability**: every run logs its sources (`chain: X sources → …`), every write
+   (`live-synced (n, newest-wins)`), every kept-local decision, every bulk-txn skip. A
+   flow question is answerable from the console alone.
+
+**Coverage** (uniform — no task-name gating): response + outline(+tick census) section
+families; all owned fields (pred-/kw-focus/reflect-/plan-/iumvcc-); SA + Action Plan
+assessment→discuss while phase open. Phase 1 and Phase 2 run the SAME engine. CW excluded
+by construction (not in the chains). Adopting a new surface = add its section type/field
+prefix to the mirror calls — never a new sync mechanism.
+
 ## §9. THE POTENTIAL-ERRORS REGISTER (Neil's ask — name the class before you fix the instance)
 
 Per class: **trigger → symptom → the net that catches it → residual risk.** When a new bug
