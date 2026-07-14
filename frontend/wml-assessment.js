@@ -3580,8 +3580,29 @@
                     try {
                         const sec = s.closest('.swml-section-block');
                         const body = sec && sec.querySelector('.swml-section-content');
-                        let t = (body && body.textContent || '').replace(/\s+/g, ' ').trim();
-                        if (_WC_PLACEHOLDERS.indexOf(t.toLowerCase()) !== -1) t = '';
+                        // v7.20.102 (Neil): preview the STUDENT'S input only, field-by-field.
+                        // Raw body.textContent glued every scaffold label (AO tags, "Topic
+                        // Sentence", checkbox words) and instruction paragraphs straight onto the
+                        // answer with no separator → "AO1Topic SentenceThe brightness…" squash.
+                        // Collect just the editable input cells (.swml-input-field / outline
+                        // .swml-outline-input), drop empties + placeholders, join with " · " so
+                        // each field reads as its own chunk. Fall back to the old textContent
+                        // scrape only when a section has no such fields (no regression).
+                        let t = '';
+                        if (body) {
+                            const fields = body.querySelectorAll('.swml-input-field, .swml-outline-input');
+                            if (fields.length) {
+                                const parts = [];
+                                fields.forEach(f => {
+                                    const v = (f.textContent || '').replace(/\s+/g, ' ').trim();
+                                    if (v && _WC_PLACEHOLDERS.indexOf(v.toLowerCase()) === -1) parts.push(v);
+                                });
+                                t = parts.join(' · ');
+                            } else {
+                                t = (body.textContent || '').replace(/\s+/g, ' ').trim();
+                                if (_WC_PLACEHOLDERS.indexOf(t.toLowerCase()) !== -1) t = '';
+                            }
+                        }
                         if (t.length > 140) t = t.slice(0, 140).replace(/\s+\S*$/, '') + '…';
                         html = t ? seg('Preview', '<span class="swml-ana-calib">' + escapeHTML(t) + '</span>') : '';
                     } catch (_) { html = ''; }
@@ -31970,6 +31991,7 @@
         const buildCtx = { id: 'building', label: 'Building Sentences', ao: buildAO || 'AO3', type: 'dropdown', items: buildAO === 'AO3' ? ['Historical context', 'Social context', 'Cultural context', 'Counter-argument'] : ['Concept statement', 'Technique preview', 'Argument development', 'Counter-position'], prompt: buildAO === 'AO3' ? 'Contextual backdrop \u2014 historical, social, or cultural' : 'Set up your thesis \u2014 preview your key ideas and approach' };
         const thesis = { id: 'thesis', label: 'Thesis', ao: 'AO1', type: 'checklist', items: ['Key idea 1', 'Key idea 2', 'Key idea 3', 'Argument setup'], prompt: 'Your 3-point argument \u2014 three key ideas that answer the question' };
         switch (type) {
+            case 'hook_only':  return [hook]; // v7.20.102: evaluation intro = a single Hook
             case 'thesis_only': return [thesis];
             case 'compact':    return [hook, thesis];
             case 'standard':   return [hook, buildCtx, thesis];
@@ -32020,15 +32042,26 @@
         const aoList = (aos || 'AO1,AO2,AO3').split(',').map(a => a.trim());
         const prefix = partLabel ? ` \u2014 ${partLabel}` : '';
         let html = '';
+        // v7.20.102 (Neil): AO4-only = an EVALUATION question (AQA Lang P1 Q4, and any board's
+        // "to what extent do you agree" evaluation). Evaluation is higher-tier analysis (Bloom:
+        // one rung above analysis) \u2014 SAME TTECEA engine, but every element is marked against the
+        // single AO4 objective, not AO1/AO2/AO3. Shape: Intro = Hook only; Body = TTECEA \u00d7N with
+        // NO Context (no AO3 in Lang P1); Conclusion = Restated Thesis only. All element AOs read
+        // AO4 (examiners mark the evaluation of methods + effects, not an agree/disagree stance).
+        // Capability-gated (AO4-only), NOT a literal board/task name \u2014 every evaluation question
+        // opts in automatically. evalAO() stamps AO4 onto each shared literature criterion.
+        const isEvaluation = aoList.length === 1 && aoList[0] === 'AO4' && marks >= 20;
+        const evalAO = (c) => isEvaluation ? Object.assign({}, c, { ao: 'AO4' }) : c;
 
         // Resolve spec: explicit key > auto-detect from state > mark-based defaults
         const key = specKey || getOutlineSpecKey(partLabel);
         const spec = OUTLINE_SPECS[key] || {};
         // v7.14.99: When a spec exists, always use full essay structure (intro/body/conclusion)
         // even for low-mark parts like EDUQAS Q1 (15m) — the spec controls element count.
-        const fullEssay = spec.introType ? true : needsFullEssayStructure(marks);
-        const introType = spec.introType || (marks < 20 ? 'thesis_only' : 'standard');
-        const concType = spec.concType || (marks < 20 ? 'thesis_only' : 'standard');
+        const fullEssay = (spec.introType || isEvaluation) ? true : needsFullEssayStructure(marks);
+        // v7.20.102: evaluation collapses intro→Hook-only, conclusion→Restated-Thesis-only.
+        const introType = isEvaluation ? 'hook_only' : (spec.introType || (marks < 20 ? 'thesis_only' : 'standard'));
+        const concType = isEvaluation ? 'thesis_only' : (spec.concType || (marks < 20 ? 'thesis_only' : 'standard'));
         const buildAO = spec.buildAO || (aoList.includes('AO3') ? 'AO3' : 'AO1');
         const purposeAO = spec.purposeAO || (aoList.includes('AO3') ? 'AO1/AO3' : 'AO1');
 
@@ -32037,7 +32070,7 @@
             const introCriteria = buildIntroCriteria(introType, buildAO);
             let introRows = '';
             introCriteria.forEach(c => {
-                introRows += outlineRowHTML(c, `outline-intro-${c.id}${prefix ? '-' + partLabel?.replace(/\s/g,'').toLowerCase() : ''}`);
+                introRows += outlineRowHTML(evalAO(c), `outline-intro-${c.id}${prefix ? '-' + partLabel?.replace(/\s/g,'').toLowerCase() : ''}`);
             });
             html += sectionHTML('outline', `Outline: Introduction${prefix}`, true, null, introRows);
 
@@ -32053,7 +32086,7 @@
                     if (!aoList.includes('AO3') && c.id === 'purpose') {
                         adapted = { ...c, label: "Author's Purpose", ao: 'AO1', prompt: 'Why did the author make these choices?' };
                     }
-                    bodyRows += outlineRowHTML(adapted, `outline-body-${i}-${c.id}`);
+                    bodyRows += outlineRowHTML(evalAO(adapted), `outline-body-${i}-${c.id}`);
                 });
                 html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null, bodyRows);
             }
@@ -32062,7 +32095,7 @@
             const concCriteria = buildConclusionCriteria(concType, purposeAO);
             let concRows = '';
             concCriteria.forEach(c => {
-                concRows += outlineRowHTML(c, `outline-conclusion-${c.id}`);
+                concRows += outlineRowHTML(evalAO(c), `outline-conclusion-${c.id}`);
             });
             html += sectionHTML('outline', `Outline: Conclusion${prefix}`, true, null, concRows);
         } else {
@@ -37474,6 +37507,11 @@
                 if (n.type.name !== 'outlineRow') return true;
                 const fid = n.attrs.fieldId || '';
                 let cur; try { cur = JSON.parse(n.attrs.criteria || '{}'); } catch (_) { cur = {}; }
+                // v7.20.102 (Neil): this heal reconciles LITERATURE-scaffold docs. An evaluation
+                // outline (AQA Lang P1 Q4) shares the same fieldIds but every element is AO4 —
+                // its canonical labels/AOs are correct at render, so the literature relabel/insert
+                // must never touch it (would force AO2/AO1 + insert Context). AO4 rows opt out.
+                if (cur.ao === 'AO4') return true;
                 if (/^outline-body-\d+-evidence$/.test(fid)) {
                     if (cur.label !== cEvidence.label || cur.ao !== cEvidence.ao) { updates.push({ pos, attrs: _mergeAttrs(n, cEvidence) }); needHeal = true; }
                 } else if (/^outline-body-\d+-effects$/.test(fid)) {
