@@ -950,6 +950,9 @@
             // v7.20.56: reflect-recall is a per-run capture like the predictions —
             // the chain re-asks it every fresh run, so a dead run's recall must not
             // pre-tick the row or stack under the new answer.
+            // v7.20.85 note: pred-unseen is DELIBERATELY absent — it is a self-fill
+            // write-doc box (IGCSE Spec A P1), not a P2-planning-chain capture; this
+            // reset is chain-scoped (_planPreChainActive above).
             ['pred-paper', 'pred-source-a', 'pred-source-b', 'reflect-recall'].forEach(fid => {
                 let targetPos = null, targetNode = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
@@ -36882,6 +36885,10 @@
             // content). Every LATER lesson in the phase LIVE-SYNCS those fields from the
             // head doc on load (edits feed forward, never backwards); planning itself
             // only synthesizes an empty space. Review mode never mutates a student doc.
+            // v7.20.85: HEAD_BY_TASK is the ownership map's PHASE-HEAD column (fields the
+            // head owns = _ownedField below; section families resolve their own owner —
+            // response → polishing in Phase 2, Self-Assessment → assessment). Server twin:
+            // stage_seed_chain/reseed_stage_config (class-rest-api.php ~4888/4906).
             const HEAD_BY_TASK = {
                 assessment: '', feedback_discussion: '',
                 outlining: '_planning', polishing: '_planning', redraft_assessment: '_planning',
@@ -36921,16 +36928,37 @@
                 });
                 return out;
             };
-            const _fetchUpstream = async (attemptN) => {
-                const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=${encodeURIComponent(headSuffix)}&attempt=${attemptN}`;
+            const _fetchUpstream = async (sfx, attemptN) => {
+                const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=${encodeURIComponent(sfx)}&attempt=${attemptN}`;
                 const res = await apiGet(url);
                 return {
                     html: (res && res.doc && res.doc.html) ? res.doc.html : '',
                     savedAt: (res && res.doc && res.doc.savedAt) ? res.doc.savedAt : '',
                 };
             };
-            // Fetch the phase-HEAD doc (attempt fallback: current → 1; the attempt can
-            // re-resolve mid-load and a later attempt's head may never have been opened).
+            const _mirrorAtt = _canvasAttempt(); // v7.20.78: pinned resolver — mirror source = the doc reads read
+            // v7.20.85 (ownership map): ONE head-doc resolver, any suffix — the v7.20.82
+            // deterministic-source discipline (flush own saves → await in-flight POST →
+            // localStorage vs server by newest __ts timestamp) now serves every owner
+            // head, not just the primary (fbdiscuss reads _assessment for the feedback
+            // family; redraft-phase docs read _polishing for the response).
+            const _headDoc = async (sfx, emptyProbe) => {
+                let _localHtml = '', _localTs = 0;
+                try {
+                    // byte-match CANVAS_SAVE_KEY's template (att pinned → '', not a CW task)
+                    const _scopeH = WML.canvasDocScope();
+                    const _headKey = `swml_canvas_${state.board}_${_scopeH.text}_${_scopeH.topic || 'free'}${sfx}`;
+                    _localHtml = localStorage.getItem(_headKey) || '';
+                    _localTs = parseInt(localStorage.getItem(_headKey + '__ts') || '0', 10) || 0;
+                } catch (_) {}
+                let _srv = await _fetchUpstream(sfx, _mirrorAtt);
+                // attempt fallback: current → 1; the attempt can re-resolve mid-load and
+                // a later attempt's head may never have been opened.
+                if (_mirrorAtt > 1 && (emptyProbe ? !emptyProbe(_srv.html) : !_srv.html)) _srv = await _fetchUpstream(sfx, 1);
+                const _srvTs = _srv.savedAt ? (Date.parse(_srv.savedAt) || 0) : 0;
+                return (_localHtml && _localTs > _srvTs) ? _localHtml : (_srv.html || _localHtml);
+            };
+            // Fetch the phase-HEAD doc.
             let upstreamHtml = '';
             if (headSuffix !== null) {
                 // v7.20.82 DETERMINISTIC SOURCE (root of "sometimes it's there, sometimes
@@ -36943,19 +36971,7 @@
                 // when it is newer.
                 try { if (typeof _flushPendingSaves === 'function') _flushPendingSaves(); } catch (_) {}
                 if (_lastCanvasFlushPromise) { try { await _lastCanvasFlushPromise; } catch (_) {} }
-                let _localHtml = '', _localTs = 0;
-                try {
-                    // byte-match CANVAS_SAVE_KEY's template (att pinned → '', not a CW task)
-                    const _scopeH = WML.canvasDocScope();
-                    const _headKey = `swml_canvas_${state.board}_${_scopeH.text}_${_scopeH.topic || 'free'}${headSuffix}`;
-                    _localHtml = localStorage.getItem(_headKey) || '';
-                    _localTs = parseInt(localStorage.getItem(_headKey + '__ts') || '0', 10) || 0;
-                } catch (_) {}
-                const _mirrorAtt = _canvasAttempt(); // v7.20.78: pinned resolver — mirror source = the doc reads read
-                let _srv = await _fetchUpstream(_mirrorAtt);
-                if (!_extractParts(_srv.html).length && _mirrorAtt > 1) _srv = await _fetchUpstream(1);
-                const _srvTs = _srv.savedAt ? (Date.parse(_srv.savedAt) || 0) : 0;
-                upstreamHtml = (_localHtml && _localTs > _srvTs) ? _localHtml : (_srv.html || _localHtml);
+                upstreamHtml = await _headDoc(headSuffix, (h) => _extractParts(h).length > 0);
             }
             // v7.20.80: presence check runs AFTER the awaits (flush + fetch) — a snapshot
             // taken before them goes stale mid-run and double-inserts (the .79 regression).
@@ -36987,20 +37003,37 @@
             // field content into it. Head-owned fields flow forward on every load;
             // edits made downstream to these fields are overwritten by design (the
             // head lesson owns them; backwards never flows).
-            if (!parts.length) return; // head has no space/content — nothing to mirror
+            // v7.20.85 OWNERSHIP MAP (client half — Neil's mandate: "ALL the input areas
+            // save and persist across the lessons like the keywords areas"). The fields a
+            // phase HEAD owns and every later lesson in the phase live-syncs. Field
+            // classes (inventory 2026-07-14, 100% sweep): pre-write (pred-*/kw-focus),
+            // reflection (reflect-*), plan fields (plan-* — essay plan-intro/body-N/
+            // conclusion/para-N, multi-Q plan-{qId}-*, and iumvcc-*). Q{n}-response /
+            // Q{n}-point-* fields are NOT here — they live inside response SECTIONS,
+            // owned by the section-family mirror below (one owner per area, never two
+            // writers). Server twin: stage_seed_chain/reseed_stage_config
+            // (class-rest-api.php ~4888/4906) — change ownership THERE and HERE only.
+            const _ownedField = (id) => /^(pred-|reflect-|plan-|iumvcc-)/.test(id) || id === 'kw-focus';
+            if (!upstreamHtml) return; // no head doc — nothing to mirror
             const _tmpUp = document.createElement('div');
-            _tmpUp.innerHTML = parts.join('');
+            // v7.20.85: field source = the WHOLE head doc, not just the pre-write parts —
+            // plan fields live in plan sections mid-doc. Fields inside response sections
+            // are excluded (section mirror owns those areas).
+            _tmpUp.innerHTML = upstreamHtml;
             const upFields = {};
             _tmpUp.querySelectorAll('[data-input-field][data-field-id]').forEach((el) => {
                 const id = el.getAttribute('data-field-id') || '';
-                if (!/^pred-|^kw-focus$/.test(id)) return;
+                if (!_ownedField(id)) return;
+                if (el.closest && el.closest('[data-section-type="response"]')) return;
                 const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
                 // v7.20.81: keep the ELEMENT too — the write rebuilds the field's inline
                 // content (text + hard breaks) from it, so multi-line keywords survive
                 // instead of squashing into one run ("focus test 3focus test 4").
                 if (t) upFields[id] = { text: t, el: el };
             });
-            if (!Object.keys(upFields).length) return;
+            // Empty upFields is NOT a return — the section-family mirrors below must
+            // still run (v1 returned here and skipped the response mirror whenever the
+            // head's pre-write fields were empty — a silent gap).
             let synced = 0;
             Object.keys(upFields).forEach((fid) => {
                 let targetPos = null, targetNode = null;
@@ -37069,7 +37102,7 @@
                     let hasMirrorField = false;
                     node.descendants((c) => {
                         if (hasMirrorField) return false;
-                        if (c.type.name === 'inputField' && /^pred-|^kw-focus$/.test(String((c.attrs && c.attrs.fieldId) || ''))) { hasMirrorField = true; return false; }
+                        if (c.type.name === 'inputField' && _ownedField(String((c.attrs && c.attrs.fieldId) || ''))) { hasMirrorField = true; return false; }
                         return true;
                     });
                     // also scan pre-write sections whose field the split DESTROYED —
@@ -37099,45 +37132,70 @@
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 console.log('WML chain: pre-write fields live-synced from head (' + synced + ' field(s), head=' + (headSuffix || 'diagnostic') + ')');
             }
-            // v7.20.77 (feed-forward law, RESPONSE sections — Neil's "response edit 3"
-            // repro): Phase-1 assessment/discuss docs MIRROR the diagnostic's response
-            // sections too — but ONLY while this doc is UNMARKED. Once any feedback box
-            // carries a filled mark the doc is a frozen record (Neil: "if it's already
-            // marked, you shouldn't be able to edit it from the previous lesson").
-            if (state.task === 'assessment' || state.task === 'feedback_discussion') {
-                const _marked = /data-section-label="[^"]*\(\s*\d[^"]*\/\s*\d+\s*\)/.test(canvasEditor.getHTML());
-                if (!_marked && upstreamHtml) {
-                    const _tmpAll = document.createElement('div');
-                    _tmpAll.innerHTML = upstreamHtml;
-                    let respSynced = 0;
-                    _tmpAll.querySelectorAll('[data-section-type="response"]').forEach((up) => {
-                        const upLabel = up.getAttribute('data-section-label') || '';
-                        const upText = (up.textContent || '').replace(/\s+/g, ' ').trim();
-                        if (!upText) return;
-                        let tPos = null, tNode = null;
-                        canvasEditor.state.doc.descendants((node, pos) => {
-                            if (tPos !== null) return false;
-                            if (node.type.name === 'sectionBlock' && node.attrs
-                                && node.attrs.sectionType === 'response' && (node.attrs.label || '') === upLabel) {
-                                tPos = pos; tNode = node; return false;
-                            }
-                            return true;
-                        });
-                        if (tPos === null || !tNode) return;
-                        const curText = (tNode.textContent || '').replace(/\s+/g, ' ').trim();
-                        if (curText === upText) return; // already mirrored — idempotent
-                        try {
-                            // v7.20.78: updateSelection:false — the response mirror on load moved the
-                            // cursor to the inserted section's end, scrolling the page there (Neil's
-                            // "discuss-feedback jumps to the response" repro).
-                            canvasEditor.chain().insertContentAt({ from: tPos + 1, to: tPos + tNode.nodeSize - 1 }, up.innerHTML, { updateSelection: false }).run();
-                            respSynced++;
-                        } catch (e3) { console.warn('WML chain: response mirror failed', upLabel, e3 && e3.message); }
+            // v7.20.77 → v7.20.85 SECTION-FAMILY MIRROR (feed-forward law, whole sections
+            // matched by TYPE + LABEL — the key class for areas without fieldIds).
+            // Mirrors a head doc's sections into this doc: idempotent (normalized-text
+            // compare), updateSelection:false (v7.20.78 — a load-time write must never
+            // move the cursor/scroll), fail-loud per section.
+            const _mirrorSections = (srcHtml, sectionType, labelFilter, what) => {
+                if (!srcHtml) return 0;
+                const _tmpAll = document.createElement('div');
+                _tmpAll.innerHTML = srcHtml;
+                let n = 0;
+                _tmpAll.querySelectorAll('[data-section-type="' + sectionType + '"]').forEach((up) => {
+                    const upLabel = up.getAttribute('data-section-label') || '';
+                    if (labelFilter && !labelFilter(upLabel)) return;
+                    const upText = (up.textContent || '').replace(/\s+/g, ' ').trim();
+                    if (!upText) return;
+                    let tPos = null, tNode = null;
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (tPos !== null) return false;
+                        if (node.type.name === 'sectionBlock' && node.attrs
+                            && node.attrs.sectionType === sectionType && (node.attrs.label || '') === upLabel) {
+                            tPos = pos; tNode = node; return false;
+                        }
+                        return true;
                     });
-                    if (respSynced) {
-                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
-                        console.log('WML chain: response sections live-synced from diagnostic (' + respSynced + ')');
-                    }
+                    if (tPos === null || !tNode) return;
+                    const curText = (tNode.textContent || '').replace(/\s+/g, ' ').trim();
+                    if (curText === upText) return; // already mirrored — idempotent
+                    try {
+                        canvasEditor.chain().insertContentAt({ from: tPos + 1, to: tPos + tNode.nodeSize - 1 }, up.innerHTML, { updateSelection: false }).run();
+                        n++;
+                    } catch (e3) { console.warn('WML chain: ' + what + ' mirror failed', upLabel, e3 && e3.message); }
+                });
+                if (n) {
+                    if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    console.log('WML chain: ' + what + ' sections live-synced (' + n + ')');
+                }
+                return n;
+            };
+            const _isRedraft = state.phase === 'redraft';
+            const _onAssessOrDiscuss = state.task === 'assessment' || state.task === 'feedback_discussion' || state.task === 'redraft_assessment';
+            if (_onAssessOrDiscuss) {
+                // RESPONSE family — ONLY while this doc is UNMARKED. Once any feedback box
+                // carries a filled mark the doc is a frozen record (Neil: "if it's already
+                // marked, you shouldn't be able to edit it from the previous lesson").
+                const _marked = /data-section-label="[^"]*\(\s*\d[^"]*\/\s*\d+\s*\)/.test(canvasEditor.getHTML());
+                if (!_marked) {
+                    // Response owner: Phase 1 = diagnostic ('' — the primary head already
+                    // fetched); Phase 2 = POLISHING (ownership map — reassessment/discuss
+                    // read the polished response, not the planning doc).
+                    const _respSrc = (_isRedraft || state.task === 'redraft_assessment')
+                        ? await _headDoc('_polishing')
+                        : upstreamHtml;
+                    _mirrorSections(_respSrc, 'response', null, 'response');
+                }
+                // FEEDBACK FAMILY (v7.20.85 — Neil's SA-edit repro, .78 "expected" gap):
+                // Self-Assessment is student-typed and owned by the ASSESSMENT lesson;
+                // the discuss doc mirrors it while the phase is still open. Marking-run
+                // content (feedback boxes/scores) arrives via reseed and is frozen by the
+                // server's freeze law — never mirrored here. Gate: phase completion stamp
+                // (state._phaseMarkedComplete, set from the phaseStatus API) — after the
+                // phase closes the discuss doc is a frozen record.
+                if (state.task === 'feedback_discussion' && !state._phaseMarkedComplete) {
+                    const _saSrc = await _headDoc(_isRedraft ? '_reassessment' : '_assessment');
+                    _mirrorSections(_saSrc, 'action', (lbl) => /^self-assessment$/i.test(String(lbl).trim()), 'self-assessment');
                 }
             }
         } catch (e) { console.warn('WML: pre-write carry heal failed (non-fatal)', e && e.message); }

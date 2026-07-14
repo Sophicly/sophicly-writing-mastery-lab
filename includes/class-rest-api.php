@@ -4853,22 +4853,44 @@ class SWML_REST_API {
      * content found there is a seeding artefact — safe to strip on every load.
      */
     private static function strip_responses_for_planning($html) {
-        if (empty($html) || strpos($html, '-response"') === false) return $html;
+        if (empty($html)) return $html;
         // Response prose lives in the input-field INSIDE the response section:
         // <div data-prompt="…" data-field-id="QN-response" data-input-field="true"
         //      class="swml-input-field">PROSE</div>
         // Emptying the field's inner HTML reproduces the untouched-template state
         // exactly (empty fields serialise as <div …></div>; the data-prompt
         // placeholder shows again in the editor).
-        return preg_replace_callback(
-            '/(<div[^>]*data-field-id="Q\d+-response"[^>]*>)(.*?)(<\/div>)/s',
-            function ($m) {
-                if (trim($m[2]) === '') return $m[0];
-                if (stripos($m[2], '<div') !== false) return $m[0]; // unexpected nesting — leave untouched
-                return $m[1] . $m[3];
-            },
-            $html
-        );
+        if (strpos($html, '-response"') !== false) {
+            $html = preg_replace_callback(
+                '/(<div[^>]*data-field-id="Q\d+-response"[^>]*>)(.*?)(<\/div>)/s',
+                function ($m) {
+                    if (trim($m[2]) === '') return $m[0];
+                    if (stripos($m[2], '<div') !== false) return $m[0]; // unexpected nesting — leave untouched
+                    return $m[1] . $m[3];
+                },
+                $html
+            );
+        }
+        // v7.20.85 (C3): essay-family docs carry the response as editable PARAGRAPHS in
+        // the response SECTION body (no data-field-id at all), so the field pass above
+        // never touched them. Empty the body of plain response sections too. Nested-div
+        // guard: multi-Q response sections contain inputField/checklist DIVs — the lazy
+        // match would truncate at the first inner </div>, so any '<div' in the captured
+        // body means "not a plain section, leave untouched" (its prose lives in fields
+        // the pass above already handled).
+        if (strpos($html, 'data-section-type="response"') !== false) {
+            $html = preg_replace_callback(
+                '/(<div[^>]*data-section-type="response"[^>]*>)(.*?)(<\/div>)/s',
+                function ($m) {
+                    if (trim($m[2]) === '') return $m[0];
+                    if (stripos($m[2], '<div') !== false) return $m[0];
+                    if (trim(wp_strip_all_tags($m[2])) === '') return $m[0]; // furniture only — leave
+                    return $m[1] . '<p></p>' . $m[3];
+                },
+                $html
+            );
+        }
+        return $html;
     }
 
     /**
@@ -5048,6 +5070,7 @@ class SWML_REST_API {
         $chain = self::stage_seed_chain();
         $i = array_search($suffix, $chain, true);
         if ($i !== false && $i > 0) {
+            $phase2_start = array_search('_planning', $chain, true); // phase boundary index
             for ($j = $i - 1; $j >= 0; $j--) {
                 $key = $this->canvas_meta_key($board, $text, (int) $topic_number, $chain[$j], $attempt, $cw_project_id);
                 if ($key === $exclude_key) continue;
@@ -5057,7 +5080,12 @@ class SWML_REST_API {
                 if (!is_array($d) || empty($d['html'])) continue;
                 // v7.19.424: planning is a fresh start — never seed sibling response
                 // prose into a planning-stage doc.
-                return (strpos($exclude_key, '_planning') !== false)
+                // v7.20.85 (audit C3): the SAME strip applies whenever ANY Phase-2 stage's
+                // walk-back crosses the phase boundary into Phase-1 material (skipped/empty
+                // _planning meant _outlining/_polishing seeded raw Phase-1 responses —
+                // phase boundaries are attempt boundaries, student prose never crosses).
+                $crosses_boundary = ($phase2_start !== false && $i >= $phase2_start && $j < $phase2_start);
+                return (strpos($exclude_key, '_planning') !== false || $crosses_boundary)
                     ? self::strip_responses_for_planning($d['html'])
                     : $d['html'];
             }
