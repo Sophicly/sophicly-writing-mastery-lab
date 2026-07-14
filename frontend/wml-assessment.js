@@ -24680,6 +24680,12 @@
                             frag.forEach(node => {
                                 if (UNWRAP[node.type.name]) {
                                     out.push(pType.create(null, node.content));
+                                } else if (node.type.name === 'sectionBlock') {
+                                    // v7.20.91 (Neil re-repro): sectionBlock is defining:true TOO —
+                                    // the slice context re-created a whole NUMBERED SECTION on paste
+                                    // (the duplicate "Question Focus: Keywords" 4.2/4.3/4.4 rows).
+                                    // A paste must NEVER mint a section: splice its (mapped) children.
+                                    mapFragment(node.content).forEach(inner => out.push(inner));
                                 } else if (node.content && node.content.size && !node.isText) {
                                     out.push(node.copy(mapFragment(node.content)));
                                 } else {
@@ -24690,7 +24696,11 @@
                         };
                         const mapped = mapFragment(slice.content);
                         if (mapped.eq(slice.content)) return slice;
-                        return new slice.constructor(mapped, slice.openStart, slice.openEnd);
+                        // maxOpen, not the original open depths — splicing a defining wrapper
+                        // changes the fragment's depth shape, and maxOpen is the natural
+                        // "join as text" paste for flattened content.
+                        return (slice.constructor.maxOpen ? slice.constructor.maxOpen(mapped)
+                            : new slice.constructor(mapped, 0, 0));
                     } catch (_) { return slice; }
                 },
                 // v7.14.68: Keep multi-paragraph paste inside InputField nodes
