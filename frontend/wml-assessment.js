@@ -30819,7 +30819,12 @@
                 // => complete at >=1 ticked. Evidence above has NO choice flag => all three required.
                 { id: 'effects', label: 'Effect 1 on Reader', ao: 'AO2', type: 'checklist', choice: true, items: ['Manipulates focus', 'Manipulates emotions', 'Manipulates thoughts', 'Manipulates actions'], prompt: 'How does the author manipulate the reader? Be specific to the ideas and themes.' },
                 { id: 'effects2', label: 'Effect 2 on Reader', ao: 'AO2', type: 'checklist', choice: true, items: ['Manipulates focus', 'Manipulates emotions', 'Manipulates thoughts', 'Manipulates actions'], prompt: 'A second, distinct effect — how else does the author shape the reader’s response?' },
-                { id: 'purpose', label: "Author's Purpose + Context", ao: 'AO1/AO3', type: 'checkbox', prompt: 'Why these choices? Link to context' },
+                // v7.20.100 (Neil): split "Author's Purpose + Context" into two elements — the
+                // protocol already plans them as distinct lines. Purpose = AO1/AO3 (why the choices);
+                // Context = AO3 only (the backdrop). id 'purpose' kept (no key drift; old text lands
+                // in Purpose); 'context' additive + aoRequired AO3 so non-AO3 papers never show it.
+                { id: 'purpose', label: "Author's Purpose", ao: 'AO1/AO3', type: 'checkbox', prompt: 'Why did the author make these choices?' },
+                { id: 'context', label: 'Context', ao: 'AO3', aoRequired: 'AO3', type: 'checkbox', prompt: 'The historical, social, or cultural backdrop that shaped these choices' },
             ],
             conclusion: [
                 { id: 'thesis', label: 'Restated Thesis', ao: 'AO1', type: 'checkbox', prompt: 'Restate your argument \u2014 evolved, not repeated' },
@@ -37456,8 +37461,10 @@
             const cEvidence = body.find(c => c.id === 'evidence');
             const cEffect1  = body.find(c => c.id === 'effects');
             const cEffect2  = body.find(c => c.id === 'effects2');
+            const cPurpose  = body.find(c => c.id === 'purpose');
+            const cContext  = body.find(c => c.id === 'context');
             const cHook     = intro.find(c => c.id === 'hook');
-            if (!cEvidence || !cEffect1 || !cEffect2) return 0;
+            if (!cEvidence || !cEffect1 || !cEffect2 || !cPurpose || !cContext) return 0;
             const doc = canvasEditor.state.doc;
             const updates = []; // { pos, attrs }
             const inserts = []; // { pos }  (position to insert an Effect-2 row)
@@ -37474,7 +37481,16 @@
                     // Insert Effect 2 unless the immediately-following sibling is already one.
                     const after = doc.nodeAt(pos + n.nodeSize);
                     const hasEffect2 = after && after.type.name === 'outlineRow' && /-effects2$/.test(after.attrs.fieldId || '');
-                    if (!hasEffect2) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid + '2' }); needHeal = true; }
+                    if (!hasEffect2) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid + '2', crit: cEffect2 }); needHeal = true; }
+                } else if (/^outline-body-\d+-purpose$/.test(fid)) {
+                    if (cur.label !== cPurpose.label) { updates.push({ pos, attrs: _mergeAttrs(n, cPurpose) }); needHeal = true; }
+                    // Insert Context after Purpose only if this paragraph assessed AO3 (the old
+                    // combined "Author's Purpose + Context" carried AO3) and the next sibling isn't
+                    // already Context. Non-AO3 papers keep a single Purpose element (no Context).
+                    const purposeHadAO3 = /AO3/.test(cur.ao || '');
+                    const afterP = doc.nodeAt(pos + n.nodeSize);
+                    const hasContext = afterP && afterP.type.name === 'outlineRow' && /-context$/.test(afterP.attrs.fieldId || '');
+                    if (purposeHadAO3 && !hasContext) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid.replace(/-purpose$/, '-context'), crit: cContext }); needHeal = true; }
                 } else if (cHook && /^outline-intro-hook/.test(fid)) {
                     if (cur.prompt !== cHook.prompt) { updates.push({ pos, attrs: _mergeAttrs(n, cHook) }); needHeal = true; }
                 }
@@ -37496,9 +37512,9 @@
                             tr.setNodeMarkup(op.pos, undefined, op.u.attrs);
                         } else {
                             const node = canvasEditor.schema.nodes.outlineRow.create({
-                                prompt: cEffect2.prompt || '',
+                                prompt: (op.i.crit && op.i.crit.prompt) || '',
                                 fieldId: op.i.fieldId,
-                                criteria: JSON.stringify(cEffect2),
+                                criteria: JSON.stringify(op.i.crit),
                                 checkState: '{}',
                             });
                             tr.insert(op.pos, node);
@@ -37507,7 +37523,7 @@
                     return true;
                 }).run();
             } finally { _migrationActive = false; }
-            console.warn('WML heal: outline scaffold upgraded — ' + updates.length + ' row(s) relabelled, ' + inserts.length + ' Effect-2 row(s) added (v7.20.99). Student text preserved.');
+            console.warn('WML heal: outline scaffold upgraded — ' + updates.length + ' row(s) relabelled, ' + inserts.length + ' element row(s) added (Effect 2 / Context) (v7.20.100). Student text preserved.');
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
             return updates.length + inserts.length;
         } catch (e) { console.warn('WML heal: outline scaffold heal failed (non-fatal)', e && e.message); return 0; }
