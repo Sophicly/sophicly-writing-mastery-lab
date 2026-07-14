@@ -24592,7 +24592,7 @@
                 if (transaction.getMeta('swmlEditTs') || transaction.getMeta('addToHistory') === false) return;
                 const doc = canvasEditor.state.doc;
                 const maps = transaction.mapping.maps;
-                const ids = _editTsPendingIds || (_editTsPendingIds = new Set());
+                const txnIds = new Set();
                 maps.forEach((m, i) => {
                     m.forEach((oldS, oldE, newS, newE) => {
                         let s = newS, e = newE;
@@ -24601,14 +24601,32 @@
                         e = Math.max(s, Math.min(e, doc.content.size));
                         doc.nodesBetween(s, e, (node) => {
                             if (node.type.name === 'sectionBlock') {
-                                ids.add('S|' + (node.attrs.sectionType || '') + '|' + (node.attrs.label || ''));
+                                txnIds.add('S|' + (node.attrs.sectionType || '') + '|' + (node.attrs.label || ''));
                             } else if (node.type.name === 'inputField' && node.attrs.fieldId) {
-                                ids.add('F|' + node.attrs.fieldId);
+                                txnIds.add('F|' + node.attrs.fieldId);
                             }
                             return true;
                         });
                     });
                 });
+                if (!txnIds.size) return;
+                // v7.20.93 BULK-TXN GUARD (the v7.20.92 false-freshen bug, Neil's "doesn't
+                // reach reassessment/discuss" repro): a load-path whole-doc transaction
+                // (seed/setContent/heal) that carries none of the four exclusion signals
+                // stamped EVERY node — including readonly dividers — at open time, so
+                // every local section looked freshly edited and newest-wins locked all
+                // upstream edits out. Structural net (not another signal to forget): a
+                // USER gesture never touches more than a couple of sections in ONE
+                // transaction; a programmatic rewrite touches many. >3 sections in one
+                // txn = programmatic — skip the whole txn, loudly.
+                let _secCount = 0;
+                txnIds.forEach((id) => { if (id.charAt(0) === 'S') _secCount++; });
+                if (_secCount > 3) {
+                    console.log('WML editTs: bulk txn skipped (' + _secCount + ' sections — programmatic, not stamped)');
+                    return;
+                }
+                const ids = _editTsPendingIds || (_editTsPendingIds = new Set());
+                txnIds.forEach((id) => ids.add(id));
                 if (ids.size && !_editTsFlushQueued) {
                     _editTsFlushQueued = true;
                     requestAnimationFrame(() => { _editTsFlushQueued = false; _flushEditTsStamps(); });
@@ -37438,6 +37456,12 @@
                     _upDocs.push({ sfx: f.sfx, idx: f.idx, div: d });
                 });
                 upstreamHtml = (_fetchedAll[0] && _fetchedAll[0].html) || '';
+                // v7.20.93 diagnosability: name the sources every run — "why didn't it
+                // flow" must be answerable from the console alone.
+                try {
+                    console.log('WML chain: ' + (_ownSfx || 'diagnostic') + ' sources → '
+                        + (_upDocs.map((d) => (d.sfx || 'diagnostic') + '(' + d.div.innerHTML.length + 'b)').join(', ') || 'none'));
+                } catch (_) {}
             }
             // v7.20.80: presence check runs AFTER the awaits (flush + fetch) — a snapshot
             // taken before them goes stale mid-run and double-inserts (the .79 regression).
@@ -37662,7 +37686,7 @@
                         }
                     });
                 });
-                let n = 0;
+                let n = 0, kept = 0;
                 Object.keys(_cands).forEach((upLabel) => {
                     const cand = _cands[upLabel];
                     let tPos = null, tNode = null;
@@ -37681,7 +37705,7 @@
                     const _localEmpty = !curText || _WC_PLACEHOLDERS.indexOf(curText.toLowerCase()) !== -1;
                     // v7.20.92 NEWEST-EDIT-WINS: local non-empty copy survives unless the
                     // candidate is strictly newer.
-                    if (!_localEmpty && cand.ts <= ((tNode.attrs && tNode.attrs.editTs) || 0)) return;
+                    if (!_localEmpty && cand.ts <= ((tNode.attrs && tNode.attrs.editTs) || 0)) { kept++; return; }
                     // v7.20.88: checkbox states don't change textContent — outline sections
                     // compare the data-checked census too, so upstream ticks flow forward.
                     let same = (curText === cand.text);
@@ -37723,6 +37747,8 @@
                     if (typeof saveCanvasContent === 'function') saveCanvasContent();
                     console.log('WML chain: ' + what + ' sections live-synced (' + n + ', newest-wins)');
                 }
+                // v7.20.93 diagnosability: a kept-local is a DECISION, not a silence.
+                if (kept) console.log('WML chain: ' + what + ' — ' + kept + ' section(s) kept (local edit newer)');
                 return n;
             };
             const _isRedraft = state.phase === 'redraft';
