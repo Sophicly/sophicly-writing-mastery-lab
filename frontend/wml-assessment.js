@@ -26700,7 +26700,7 @@
                         const sep = '<span style="opacity:0.3">·</span>';
                         calibEl.innerHTML = predTxt + sep + actTxt + sep + deltaTxt;
                         row.appendChild(calibEl);
-                        console.log('[WML calib] readout Q' + _qForCalib + ' pred=' + _pred + ' act=' + currentMarks);
+                        if (window.SWML_DEBUG) console.log('[WML calib] readout Q' + _qForCalib + ' pred=' + _pred + ' act=' + currentMarks); // v7.20.88: gated — was flooding every console (Neil)
                     }
                 } catch (e) { console.warn('[WML calib] readout error', e && e.message); }
 
@@ -37178,7 +37178,7 @@
             // Mirrors a head doc's sections into this doc: idempotent (normalized-text
             // compare), updateSelection:false (v7.20.78 — a load-time write must never
             // move the cursor/scroll), fail-loud per section.
-            const _mirrorSections = (srcHtml, sectionType, labelFilter, what) => {
+            const _mirrorSections = (srcHtml, sectionType, labelFilter, what, mOpts) => {
                 if (!srcHtml) return 0;
                 const _tmpAll = document.createElement('div');
                 _tmpAll.innerHTML = srcHtml;
@@ -37199,7 +37199,20 @@
                     });
                     if (tPos === null || !tNode) return;
                     const curText = (tNode.textContent || '').replace(/\s+/g, ' ').trim();
-                    if (curText === upText) return; // already mirrored — idempotent
+                    // v7.20.88: fill-if-empty mode — the polishing RESPONSE is polishing-OWNED
+                    // (student edits it there); the outlining copy only seeds it while the
+                    // student hasn't written anything, never overwrites their edits.
+                    if (mOpts && mOpts.onlyIfEmpty && curText) return;
+                    // v7.20.88: checkbox states don't change textContent — outline sections
+                    // compare the data-checked census too, so upstream ticks flow forward.
+                    let same = (curText === upText);
+                    if (same && mOpts && mOpts.includeChecked) {
+                        const upChecked = (up.innerHTML.match(/data-checked="true"/g) || []).length;
+                        let tChecked = 0;
+                        tNode.descendants((c) => { if (c.attrs && (c.attrs.checked === true || c.attrs.checked === 'true')) tChecked++; return true; });
+                        same = (upChecked === tChecked);
+                    }
+                    if (same) return; // already mirrored — idempotent
                     try {
                         canvasEditor.chain().insertContentAt({ from: tPos + 1, to: tPos + tNode.nodeSize - 1 }, up.innerHTML, { updateSelection: false }).run();
                         n++;
@@ -37237,6 +37250,23 @@
                 if (state.task === 'feedback_discussion' && !state._phaseMarkedComplete) {
                     const _saSrc = await _headDoc(_isRedraft ? '_reassessment' : '_assessment');
                     _mirrorSections(_saSrc, 'action', (lbl) => /^self-assessment$/i.test(String(lbl).trim()), 'self-assessment');
+                }
+            }
+            // v7.20.88 (Neil's outlining→polishing blockage, R&J live test): OUTLINE
+            // sections are outlining-OWNED — they mirror forward continuously (incl.
+            // checkbox ticks) to polishing + reassessment + redraft discuss. The
+            // RESPONSE seeds polishing from outlining ONLY while the polishing copy is
+            // empty — polishing OWNS the response, its edits are never overwritten.
+            // A pre-existing typed-frozen polishing doc was blocking the server reseed;
+            // this client hop is how post-freeze outline work reaches the later lessons.
+            const _postOutline = state.task === 'polishing' || state.task === 'redraft_assessment'
+                || (state.task === 'feedback_discussion' && _isRedraft);
+            if (_postOutline) {
+                const _markedHere = /data-section-label="[^"]*\(\s*\d[^"]*\/\s*\d+\s*\)/.test(canvasEditor.getHTML());
+                if (state.task === 'polishing' || !_markedHere) {
+                    const _outSrc = await _headDoc('_outlining');
+                    _mirrorSections(_outSrc, 'outline', null, 'outline', { includeChecked: true });
+                    if (state.task === 'polishing') _mirrorSections(_outSrc, 'response', null, 'response-seed', { onlyIfEmpty: true });
                 }
             }
         } catch (e) { console.warn('WML: pre-write carry heal failed (non-fatal)', e && e.message); }
