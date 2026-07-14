@@ -629,6 +629,22 @@ always scrolls to the filled section; LOAD/REPLAY fills NEVER scroll. Mechanism:
 halves — live scroll via `_swmlScrollToTop` (deferred past setContent rebuilds), replay wrap
 via the flag.
 
+**23. Owner-always-wins overwrite** (the "my edit vanished when I went back" class, v7.20.92,
+Neil 2026-07-14 — STAGE-RECORD LAW §2b). Trigger: a mirror/sync that resolves a shared area
+by OWNERSHIP ("head owns these fields; downstream edits are overwritten by design") instead
+of by RECENCY. Symptom: a student edit made outside the area's home lesson is silently
+REVERTED on next load — invisible data loss that reads as "it didn't save". Net: per-node
+`data-edit-ts` (sectionBlock + inputField), stamped by the onTransaction collector on USER
+edits only (programmatic writes excluded via `_migrationActive`/`_suppressFillScroll`/
+`addToHistory:false`/`swmlEditTs` meta — a missed skip only false-freshens, the safe
+direction); mirror v3 arbitrates every candidate across ALL earlier stages in the phase
+chain: newest ts wins, tie → latest stage, unstamped-vs-unstamped with local content keeps
+LOCAL (never delete a possible student edit), empty/placeholder local always accepts a seed
+(§21), mirrored writes CARRY the origin ts (never re-stamp). Frozen (marked) docs accept
+nothing. Residual: any NEW sync path that overwrites without consulting `editTs`; any
+programmatic txn outside the four exclusion signals (would false-freshen — grep new
+`dispatch(` sites at review). Canonical spec: design doc §2b; laws 1–3 there bind.
+
 **20. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
 the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
 (#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract
