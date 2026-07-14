@@ -8946,9 +8946,10 @@
     // invented colours. 90–100 = lighter→darker purple gradient; then light purple,
     // blue, green, yellow, orange, red; below 30 = deep red.
     function _progressBand(pct) {
-        // Brand purples only: #5333ed (brand) + #2c003e (deep). Top band = the
-        // canonical brand gradient; 80s = solid brand purple. Then the house ramp.
-        if (pct >= 90) return { fill: 'linear-gradient(90deg, #5333ed 0%, #2c003e 100%)', text: '#5333ed' };
+        // Brand purples only: #5333ed (brand) + #2c003e (deep). v7.20.97 (Neil): the
+        // purple GRADIENT is reserved for 100% complete — same law as the grade-9
+        // gradient. Anything below full rides the ladder (80s–90s = solid brand purple).
+        if (pct >= 100) return { fill: 'linear-gradient(90deg, #5333ed 0%, #2c003e 100%)', text: '#5333ed' };
         if (pct >= 80) return { fill: '#5333ed', text: '#5333ed' };
         if (pct >= 70) return { fill: '#4D76FD', text: '#4D76FD' };
         if (pct >= 60) return { fill: '#1CD991', text: '#1CD991' };
@@ -24740,6 +24741,13 @@
                 handleDOMEvents: {
                     mousedown(view, event) {
                         if (event.target.closest('.swml-outline-criteria')) return true; // absorb
+                        // v7.20.97 (Neil: dropdown opens then instantly closes on first
+                        // click): a native <select> anywhere in the doc (selectField,
+                        // ms-grade-goal) fires a PM selection transaction on mousedown —
+                        // the view update can swap the node while its picker is opening.
+                        // Absorb = PM ignores the event; the browser still opens the
+                        // picker. Same cure as the criteria panel above (v7.14.72).
+                        if (event.target.closest('select')) return true;
                         return false; // let ProseMirror handle normally
                     },
                 },
@@ -37340,6 +37348,55 @@
     // pre-write space yet" and BOTH insert — duplicated, schema-flattened loose
     // paragraphs outside the box (Neil's outline-lesson repro). One run at a time;
     // a queued run re-reads the live doc, so the presence checks stay truthful.
+    // v7.20.97 STRUCTURAL LAW: sections never nest. Nested sectionBlocks are mint
+    // artifacts (the pre-.91 paste class) that an unrefreshed tab's localStorage
+    // re-saved AFTER the 2026-07-14 DB cleanup — and the chain mirror then faithfully
+    // copied them forward (reassessment reached 3 nested "Question Focus" copies; they
+    // also broke the Document Progress card: the nested dup read incomplete, so the
+    // card named a section Neil could SEE was done). Self-healing beats cleanup
+    // scripts: on load, DELETE a nested section whose type+label duplicates a
+    // top-level section (pure artifact — stale copy), UNWRAP any other nested section
+    // (unknown content is preserved as plain blocks). The saveCanvasContent that
+    // follows persists the clean doc over BOTH localStorage and server.
+    function _healNestedSections() {
+        try {
+            if (!canvasEditor) return 0;
+            const doc = canvasEditor.state.doc;
+            const topIds = new Set();
+            doc.forEach((n) => { if (n.type.name === 'sectionBlock') topIds.add((n.attrs.sectionType || '') + '|' + (n.attrs.label || '')); });
+            const hits = [];
+            doc.descendants((node, pos) => {
+                if (node.type.name !== 'sectionBlock') return true;
+                const $p = doc.resolve(pos);
+                let nested = false;
+                for (let d = $p.depth; d > 0; d--) { if ($p.node(d).type.name === 'sectionBlock') { nested = true; break; } }
+                if (!nested) return true;
+                const id = (node.attrs.sectionType || '') + '|' + (node.attrs.label || '');
+                hits.push({ pos: pos, size: node.nodeSize, dup: topIds.has(id), label: node.attrs.label || '', content: node.content });
+                return false; // inner nesting rides along (deleted/unwrapped with this one; next pass catches strays)
+            });
+            if (!hits.length) return 0;
+            _migrationActive = true;
+            try {
+                canvasEditor.chain().command(({ tr }) => {
+                    tr.setMeta('swmlEditTs', 1);
+                    tr.setMeta('addToHistory', false);
+                    for (let i = hits.length - 1; i >= 0; i--) { // reverse doc order — earlier positions stay valid
+                        const h = hits[i];
+                        if (h.dup) tr.delete(h.pos, h.pos + h.size);
+                        else tr.replaceWith(h.pos, h.pos + h.size, h.content);
+                    }
+                    return true;
+                }).run();
+            } finally { _migrationActive = false; }
+            console.warn('WML heal: fixed ' + hits.length + ' NESTED section(s): '
+                + hits.map((h) => (h.dup ? 'deleted dup' : 'unwrapped') + ' "' + h.label + '"').join(', ')
+                + ' — sections never nest (v7.20.97 law)');
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            return hits.length;
+        } catch (e) { console.warn('WML heal: nested-section heal failed (non-fatal)', e && e.message); return 0; }
+    }
+
     let _prewriteHealRunning = null;
     async function _healPhase1PrewriteCarry() {
         if (_prewriteHealRunning) { try { await _prewriteHealRunning; } catch (_) {} }
@@ -37371,6 +37428,9 @@
             // keywords box into a free-practice doc, head=_planning, topic 0).
             const _tn = Number(state.topicNumber || 0);
             if (!(_tn >= 1 && _tn <= 10)) return;
+            // v7.20.97: structural heal FIRST — mirrors must never read/write a doc
+            // that still carries nested sections (they'd copy the garbage forward).
+            _healNestedSections();
             // v7.20.92: place this doc in its phase chain via the CANONICAL suffix
             // resolver (the one save/load key off — key-match by construction). All
             // EARLIER stages are arbitration sources. Client twin of stage_seed_chain
@@ -37679,6 +37739,14 @@
                 if (!sources || !sources.length) return 0;
                 const _cands = {};
                 sources.forEach((src) => {
+                    // v7.20.97 source-side guard (sections never nest): unwrap any nested
+                    // section wrappers in the SOURCE before candidate selection, so a
+                    // not-yet-healed upstream doc can't replant artifacts here. Idempotent.
+                    src.div.querySelectorAll('[data-section-type] [data-section-type]').forEach((nst) => {
+                        const frag = document.createDocumentFragment();
+                        while (nst.firstChild) frag.appendChild(nst.firstChild);
+                        nst.replaceWith(frag);
+                    });
                     src.div.querySelectorAll('[data-section-type="' + sectionType + '"]').forEach((up) => {
                         const upLabel = up.getAttribute('data-section-label') || '';
                         if (labelFilter && !labelFilter(upLabel)) return;

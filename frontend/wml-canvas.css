@@ -6549,16 +6549,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     margin: 4px 0;
 }
 
-/* Focus ring on editable sections — subtle purple tint, not red (v7.15.4) */
+/* Focus cue on editable sections — v7.20.97 (Neil: "the outline section goes an
+   ugly purple when the dropdown is active"): the old blanket PURPLE tint clashed
+   with every non-plan section's own accent (blue outline, green response). Neutral
+   white lift instead — section-agnostic by construction, zero reflow (v7.19.338
+   lesson: never change border width on focus). */
 .swml-section-block:not(.swml-section-readonly):focus-within {
-    background: rgba(83, 51, 237, 0.06);
-    /* v7.19.338: brighten the left bar on focus, but DON'T grow its width. The
-       base border-left is 3px (content-box), so the old `border-left-width:4px`
-       pushed the section's content 1px right the instant a focusable control (the
-       codex <select>) gained focus — the dropdown right-shift Neil reported. Text
-       paragraphs aren't focusable so they never triggered it. Same-width colour
-       change = focus cue with zero reflow. */
-    border-left-color: rgba(83, 51, 237, 0.9);
+    background: rgba(255, 255, 255, 0.035);
 }
 
 /* ── Light mode overrides ── */
@@ -7325,32 +7322,55 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: rgba(255,255,255,0.5);
 }
 /* Dropdown select for single-choice criteria (Hook, Building Sentences) */
+/* v7.20.97 (Neil impeccable pass): custom-drawn select — the native look was
+   "generally unstyled": stroke outline, default chevron, misaligned. House recipe:
+   soft fill + inset highlight for edge (NO border — house rule), own chevron glyph,
+   focus = subtle mint ring (not a stroke), option list themed dark. Universal:
+   this class is THE dropdown for outline criteria + plan archetypes everywhere. */
 .swml-outline-select {
     display: block;
     width: 100%;
     box-sizing: border-box;
     margin-top: 4px;
-    padding: 4px 24px 4px 6px; /* v7.19.442: right pad clears the native chevron — long archetype labels were overlapping the arrow (Neil) */
+    padding: 5px 26px 5px 9px; /* right pad clears the drawn chevron */
     font-size: 11px;
     line-height: 1.4;
-    color: rgba(255,255,255,0.7);
-    background: rgba(66, 161, 236, 0.1);
-    border: 1px solid rgba(66, 161, 236, 0.2);
-    border-radius: 4px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.75);
+    background: rgba(255,255,255,0.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='0.55' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") right 8px center / 10px 10px no-repeat;
+    border: 0;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 2px rgba(0,0,0,0.22);
     cursor: pointer;
-    appearance: auto;
+    appearance: none;
+    -webkit-appearance: none;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
 }
-.swml-outline-select:focus {
-    border-color: rgba(66, 161, 236, 0.45);
+.swml-outline-select:hover {
+    background-color: rgba(255,255,255,0.09);
+    color: rgba(255,255,255,0.9);
+}
+.swml-outline-select:focus,
+.swml-outline-select:focus-visible {
     outline: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 0 0 2px rgba(125,249,233,0.3);
+}
+.swml-outline-select option {
+    background: #1c1d1f;
+    color: rgba(255,255,255,0.85);
 }
 [data-swml-theme="light"] .swml-outline-select {
-    color: rgba(0,0,0,0.65);
-    background: rgba(66, 161, 236, 0.06);
-    border-color: rgba(66, 161, 236, 0.18);
+    color: rgba(0,0,0,0.7);
+    background-color: rgba(0,0,0,0.05);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-opacity='0.45' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08);
+}
+[data-swml-theme="light"] .swml-outline-select option {
+    background: #ffffff;
+    color: rgba(0,0,0,0.8);
 }
 
 /* Light theme */
@@ -7378,14 +7398,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 
 /* ── v7.15.0: Completion Indicators ── */
-/* Dropdown turns green when an option is selected */
+/* v7.20.97 (Neil): "answered" = the same soft green FILL the inputs use — the old
+   green stroke re-boxed the control (house rule: no strokes). Chevron + text stay. */
 .swml-outline-select.swml-select-filled {
-    border-color: rgba(28, 217, 145, 0.5);
-    background: rgba(28, 217, 145, 0.08);
+    background-color: rgba(28, 217, 145, 0.14);
+    color: rgba(255,255,255,0.85);
 }
 [data-swml-theme="light"] .swml-outline-select.swml-select-filled {
-    border-color: rgba(28, 217, 145, 0.45);
-    background: rgba(28, 217, 145, 0.06);
+    background-color: rgba(28, 217, 145, 0.12);
+    color: rgba(0,0,0,0.75);
 }
 /* Input area has text — v7.19.436: signal "answered" with a soft fill tint, not a
    resting border (a border here would re-introduce the boxed-form look once filled). */
@@ -7433,8 +7454,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: rgba(83, 51, 237, 0.08);
 }
 .swml-section-plan .swml-outline-select {
-    background: rgba(83, 51, 237, 0.1);
-    border-color: rgba(83, 51, 237, 0.25);
+    /* v7.20.97: tint only — the select is borderless now (chevron/shadow carry the shape) */
+    background-color: rgba(83, 51, 237, 0.12);
 }
 .swml-section-plan .swml-outline-input:focus-within {
     border-color: rgba(83, 51, 237, 0.5);

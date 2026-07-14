@@ -528,7 +528,7 @@
                 toggle.className = 'swml-fb-toggle';
                 toggle.setAttribute('contenteditable', 'false');
                 toggle.setAttribute('aria-label', 'Collapse or expand'); /* v7.20.96 (Neil): generic — not every collapsible section is feedback */
-                toggle.setAttribute('data-tooltip', 'Collapse / expand feedback');
+                toggle.setAttribute('data-tooltip', 'Collapse / expand'); /* v7.20.97 (Neil): generic — the chevron lives on every section family now */
                 toggle.innerHTML = '<span class="swml-fb-chevron" aria-hidden="true"></span>';
                 toggle.addEventListener('mousedown', (ev) => { ev.preventDefault(); ev.stopPropagation(); });
                 toggle.addEventListener('click', (ev) => {
