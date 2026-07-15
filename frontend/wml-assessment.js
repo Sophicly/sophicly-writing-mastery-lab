@@ -15215,108 +15215,147 @@
         let siOpen = false;
         let indexPositions = []; // [{pos, itemEl, label}]
 
+        // v7.20.115: is this section reachable from the nav? Island-ONLY policy (the TOC
+        // and rail show everything) — kept verbatim from the old row-collection walk.
+        function _siNavigable(type, text) {
+            const canvas = document.querySelector('.swml-canvas-doc');
+            // v7.20.73 (Neil): on PRE-ASSESSMENT lessons (write, planning, outlining,
+            // polishing) the feedback/results family is NEVER navigable — populated or not
+            // (planning docs inherit Phase-1 marks via the seed; students must not see them
+            // until the assessment / discuss-feedback lessons).
+            if (['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)
+                && ['', 'planning', 'outlining', 'polishing'].includes(state.task)) return false;
+            // v7.19.761 ROOT FIX: CONTENT-driven, not phase-gated — the 'swml-canvas-diagnostic'
+            // class persists after assessment, so a phase gate hid a COMPLETED assessment's
+            // populated results. Hide a results section only while it is still an empty
+            // placeholder. v7.19.762: read the PM node's text, not the DOM (nodeDOM returns
+            // null at build time for some sections → populated results wrongly read as empty).
+            if (canvas && canvas.classList.contains('swml-canvas-diagnostic')
+                && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) {
+                const t = (text || '').replace(/\s+/g, ' ').trim();
+                if (!t || /will appear|will be assessed|appear here|once your assessment|not yet/i.test(t)) return false;
+            }
+            return true;
+        }
+
+        // first navigable descendant's pos. v7.19.534: a group header must jump to its first
+        // SECTION, never to its own divider — the divider isn't an indexPosition, so landing
+        // on it leaves the first section below the active-detection line and the breadcrumb
+        // shows the PREVIOUS group's last section. Falls back to the group's own pos.
+        function _siFirstLeafPos(entry) {
+            for (const c of entry.children) {
+                if (c.kind === 'leaf') return c.pos;
+                const deep = _siFirstLeafPos(c);
+                if (deep != null) return deep;
+            }
+            return null;
+        }
+
         function buildIndexList() {
             siList.innerHTML = '';
             indexPositions = [];
             if (!canvasEditor) return;
-            const editor = document.getElementById('swml-tiptap-editor');
-            const rows = [];
-            let currentUnit = '';
-            let currentUnitPos = null;
+
+            // v7.20.115: the island RENDERS the one shared model. It used to group by "unit"
+            // = whatever divider it last walked past, which is why JUMP TO SECTION read flat
+            // ("PLAN — Q2", "RESPONSE — Q2") while the in-doc TOC grouped by question — the
+            // island simply wasn't the copy that .110 fixed. Same model now, so it mirrors
+            // the TOC by construction. See _buildSectionModel()'s header.
+            const allSections = [];
+            const _occ = {};
             canvasEditor.state.doc.descendants((node, pos) => {
                 if (node.type.name !== 'sectionBlock') return;
                 const type = node.attrs.sectionType || 'response';
                 const label = (node.attrs.label || '').trim();
-                // dividers set the current UNIT context (label + pos, for the header jump)
-                if (type === 'divider') { currentUnit = label; currentUnitPos = pos; return; }
-                // v7.19.761 ROOT FIX: the old guard hid ALL results sections (feedback/scores/
-                // analytics/action/signoff/improvement) whenever the canvas carried the
-                // 'swml-canvas-diagnostic' class — but that class persists after assessment, so a
-                // COMPLETED assessment's populated results were unreachable from the nav AND absent
-                // from the active-section detection (breadcrumb landed on the wrong section). Now
-                // CONTENT-driven, not phase-gated: hide a results section only while it's still an
-                // empty placeholder (the blank write phase); once populated it's navigable. Universal.
-                // v7.20.73 (Neil): on PRE-ASSESSMENT lessons (write, planning, outlining,
-                // polishing) the feedback/results family is NEVER navigable — populated or
-                // not (planning docs inherit Phase-1 marks via the seed; students must not
-                // see them until the assessment / discuss-feedback lessons).
-                if (['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)
-                    && ['', 'planning', 'outlining', 'polishing'].includes(state.task)) return false;
-                if (canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) {
-                    // v7.19.762: read the PM node's text directly (node.textContent) — _siNodeDom(pos)
-                    // returned null at build time for some sections, wrongly treating populated
-                    // results as empty placeholders → still excluded from the nav.
-                    const _t = (node.textContent || '').replace(/\s+/g, ' ').trim();
-                    const _placeholder = !_t || /will appear|will be assessed|appear here|once your assessment|not yet/i.test(_t);
-                    if (_placeholder) return false;
-                }
                 if (!label) return;
-                rows.push({ type, label, pos, unit: currentUnit, unitPos: currentUnitPos });
+                _occ[label] = (_occ[label] || 0) + 1;
+                allSections.push({ type, label, pos, occurrence: _occ[label] - 1, _text: node.textContent || '' });
             });
-            if (rows.length === 0) {
+
+            const model = _buildSectionModel(allSections, {
+                // Structural sections always survive — they ARE the grouping. The navigability
+                // policy applies to leaves only.
+                isVisible: (sec) => ['divider', 'question', 'section-header'].includes(sec.type)
+                    ? true : _siNavigable(sec.type, sec._text),
+                isComplete: (entry) => {
+                    const dom = _swmlSectionDom(entry.pos);
+                    if (!dom || !dom.getAttribute) return null;
+                    return dom.getAttribute('data-section-complete') === 'true';
+                },
+            });
+
+            // Drop structural containers that ended up with no navigable leaf — a group that
+            // jumps nowhere is worse than no row (the rail hides these too).
+            const _hasLeaf = (e) => e.kind === 'leaf' || e.children.some(_hasLeaf);
+            const entries = model.entries.filter(_hasLeaf);
+            if (entries.length === 0) {
                 siList.appendChild(el('div', { className: 'swml-scroll-index-empty', textContent: 'No sections yet' }));
                 return;
             }
-            // group rows by unit (document order) → collapsible unit groups, so the
-            // student sees WHICH unit each section is in (was a flat, unlabelled 1–38).
-            const groups = [];
-            let cur = null;
-            rows.forEach(s => {
-                if (!cur || cur.unit !== s.unit) { cur = { unit: s.unit, unitPos: s.unitPos, items: [] }; groups.push(cur); }
-                cur.items.push(s);
-            });
-            // v7.19.768: a "Table of Contents" entry at the very TOP of the list that jumps to
-            // the very top of the document. The breadcrumb already reads "Table of Contents" when
-            // you're at the top, but there was no NAV ENTRY to get back there — Overview jumps to
-            // the first SECTION (Question & Extract), not the document top (Neil 2026-06-30).
+
+            // v7.19.768: a "Table of Contents" entry at the very TOP that jumps to the document
+            // top. The breadcrumb already reads "Table of Contents" up there, but there was no
+            // NAV ENTRY to get back (Neil 2026-06-30).
             const tocItem = el('button', { className: 'swml-scroll-index-item swml-scroll-index-toc', tabIndex: -1,
                 onClick: () => { closeIndexPanel(); contentWrap.scrollTo({ top: 0, behavior: 'smooth' }); } });
             tocItem.appendChild(el('span', { className: 'swml-scroll-index-itemlabel', textContent: 'Table of Contents' }));
             siList.appendChild(tocItem);
-            groups.forEach(g => {
-                const groupWrap = el('div', { className: 'swml-scroll-index-group swml-scroll-index-collapsed' });
-                // header = chevron (toggle open/close) + label (jump to the unit's start)
+
+            // `unit` drives the breadcrumb (_siBreadcrumb) and is the TOP-tier group's label,
+            // so a nested row reads "Question 2 · Plan: Q2" rather than naming its inner divider.
+            function renderItem(entry, container, unitLabel) {
+                const item = el('button', { className: 'swml-scroll-index-item', tabIndex: -1,
+                    onClick: () => { closeIndexPanel(); scrollToPos(entry.pos); } });
+                item.appendChild(el('span', { className: 'swml-scroll-index-itemlabel', textContent: entry.displayLabel }));
+                if (entry.complete === true) {
+                    const chk = el('span', { className: 'swml-scroll-index-check' });
+                    chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+                    item.appendChild(chk);
+                }
+                container.appendChild(item);
+                indexPositions.push({ pos: entry.pos, itemEl: item, label: entry.displayLabel, unit: unitLabel, groupWrap: _siGroupWrapFor(container) });
+            }
+
+            // the collapsible wrapper an item lives in — the scroll spy auto-opens it
+            function _siGroupWrapFor(container) {
+                return container.closest ? container.closest('.swml-scroll-index-group') : null;
+            }
+
+            function renderGroup(entry, container, unitLabel, depth) {
+                const groupWrap = el('div', { className: 'swml-scroll-index-group swml-scroll-index-collapsed' + (depth > 0 ? ' swml-scroll-index-subgroup' : '') });
                 const head = el('div', { className: 'swml-scroll-index-group-head' });
                 const chevBtn = el('button', { className: 'swml-scroll-index-chev-btn', tabIndex: -1,
-                    onClick: () => {
+                    onClick: (e) => {
+                        e.stopPropagation();   // a nested chevron must not toggle its parent
                         groupWrap.classList.toggle('swml-scroll-index-collapsed');
-                        // v7.19.533: re-fit the nav so expanding a group grows the panel
-                        // (until the list hits its own cap + scrolls) instead of clipping.
+                        // v7.19.533: re-fit the nav so expanding grows the panel instead of clipping
                         if (siOpen) siNav.style.maxHeight = siNav.scrollHeight + 'px';
                     } });
                 chevBtn.innerHTML = '<svg class="swml-scroll-index-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
-                // v7.19.534: jump to the unit's FIRST SECTION (a detectable indexPosition),
-                // not the divider. The divider isn't in indexPositions, so landing on it left
-                // the unit's first section below the active-detection line and the breadcrumb
-                // showed the PREVIOUS unit's last section. The divider banner stays visible
-                // just above the landed section. Fall back to the divider pos if no items.
-                const _jumpPos = (g.items[0] ? g.items[0].pos : (typeof g.unitPos === 'number' ? g.unitPos : null));
-                const labelBtn = el('button', { className: 'swml-scroll-index-group-label', tabIndex: -1, textContent: _siGroupLabel(g.unit),
-                    onClick: () => { if (_jumpPos != null) { closeIndexPanel(); scrollToPos(_jumpPos); } } });
+                const jumpPos = _siFirstLeafPos(entry);
+                const labelBtn = el('button', { className: 'swml-scroll-index-group-label', tabIndex: -1, textContent: entry.displayLabel,
+                    onClick: () => { if (jumpPos != null) { closeIndexPanel(); scrollToPos(jumpPos); } } });
                 head.appendChild(chevBtn);
                 head.appendChild(labelBtn);
                 const itemsWrap = el('div', { className: 'swml-scroll-index-group-items' });
-                g.items.forEach(s => {
-                    // completion = data-section-complete; resolve by POSITION (nodeDOM), NOT
-                    // label — labels repeat across units, a label lookup collapses to last copy.
-                    let dom = _siNodeDom(s.pos);
-                    const complete = !!dom && dom.getAttribute && dom.getAttribute('data-section-complete') === 'true';
-                    const item = el('button', { className: 'swml-scroll-index-item', tabIndex: -1,
-                        onClick: () => { closeIndexPanel(); scrollToPos(s.pos); } });
-                    item.appendChild(el('span', { className: 'swml-scroll-index-itemlabel', textContent: s.label }));
-                    if (complete) {
-                        const chk = el('span', { className: 'swml-scroll-index-check' });
-                        chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
-                        item.appendChild(chk);
-                    }
-                    itemsWrap.appendChild(item);
-                    indexPositions.push({ pos: s.pos, itemEl: item, label: s.label, unit: s.unit, groupWrap });
-                });
                 groupWrap.appendChild(head);
                 groupWrap.appendChild(itemsWrap);
-                siList.appendChild(groupWrap);
-            });
+                container.appendChild(groupWrap);
+                entry.children.forEach(c => {
+                    if (c.kind === 'leaf') renderItem(c, itemsWrap, unitLabel);
+                    else if (_hasLeaf(c)) renderGroup(c, itemsWrap, unitLabel, depth + 1);
+                });
+            }
+
+            // Top-level leaves (before any divider) keep their "Overview" home.
+            const loose = entries.filter(e => e.kind === 'leaf');
+            if (loose.length) {
+                const ov = { kind: 'divider', displayLabel: _siGroupLabel(''), pos: loose[0].pos, children: loose, structural: false };
+                renderGroup(ov, siList, ov.displayLabel, 0);
+            }
+            entries.filter(e => e.kind !== 'leaf').forEach(e => renderGroup(e, siList, e.displayLabel, 0));
         }
+
         // group header label: "UNIT 4 — FORGING A HERO'S MINDSET" stays as-is; pre-unit
         // sections (before the first divider) group under "Overview".
         function _siGroupLabel(unit) {
@@ -15387,15 +15426,24 @@
         function updateIndexActive() {
             const activeIdx = computeActiveIdx();
             indexPositions.forEach((hp, i) => hp.itemEl.classList.toggle('swml-scroll-index-active', i === activeIdx));
-            // accordion: only the active unit's group is open (default-closed). Runs on
-            // doc scroll (panel closed, behind the backdrop) so it never fights a manual
-            // expand while the panel is open.
+            // accordion: only the active group is open (default-closed). Runs on doc scroll
+            // (panel closed, behind the backdrop) so it never fights a manual expand while
+            // the panel is open.
+            // v7.20.115: the index is now TWO-TIER (Question 2 → Plan → rows), so opening the
+            // active group alone is not enough — its ANCESTORS must open too, or the active
+            // row sits inside a collapsed parent and is invisible exactly when it matters.
             const activeGroup = activeIdx >= 0 ? indexPositions[activeIdx].groupWrap : null;
+            const openSet = new Set();
+            for (let g = activeGroup; g; g = g.parentElement && g.parentElement.closest('.swml-scroll-index-group')) {
+                openSet.add(g);
+            }
             const seenGroups = new Set();
             indexPositions.forEach(hp => {
-                if (hp.groupWrap && !seenGroups.has(hp.groupWrap)) {
-                    seenGroups.add(hp.groupWrap);
-                    hp.groupWrap.classList.toggle('swml-scroll-index-collapsed', hp.groupWrap !== activeGroup);
+                let g = hp.groupWrap;
+                while (g && !seenGroups.has(g)) {
+                    seenGroups.add(g);
+                    g.classList.toggle('swml-scroll-index-collapsed', !openSet.has(g));
+                    g = g.parentElement && g.parentElement.closest('.swml-scroll-index-group');
                 }
             });
             // before any section crosses the line (i.e. at the very top) → Table of Contents
