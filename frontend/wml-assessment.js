@@ -32129,8 +32129,10 @@
         // v7.20.102 (Neil): AO4-only = an EVALUATION question (AQA Lang P1 Q4, and any board's
         // "to what extent do you agree" evaluation). Evaluation is higher-tier analysis (Bloom:
         // one rung above analysis) \u2014 SAME TTECEA engine, but every element is marked against the
-        // single AO4 objective, not AO1/AO2/AO3. Shape: Intro = Hook only; Body = TTECEA \u00d7N with
-        // NO Context (no AO3 in Lang P1); Conclusion = Restated Thesis only. All element AOs read
+        // single AO4 objective, not AO1/AO2/AO3. Shape: Intro = THESIS only (v7.20.108 \u2014 Neil: an
+        // evaluation opens by stating its argued position, NOT with a hook; .102's hook_only was the
+        // wrong element); Body = TTECEA \u00d7N with NO Context (no AO3 in Lang P1); Conclusion =
+        // Restated Thesis only. All element AOs read
         // AO4 (examiners mark the evaluation of methods + effects, not an agree/disagree stance).
         // Capability-gated (AO4-only), NOT a literal board/task name \u2014 every evaluation question
         // opts in automatically. evalAO() stamps AO4 onto each shared literature criterion.
@@ -32184,8 +32186,9 @@
         // v7.14.99: When a spec exists, always use full essay structure (intro/body/conclusion)
         // even for low-mark parts like EDUQAS Q1 (15m) — the spec controls element count.
         const fullEssay = (spec.introType || isEvaluation) ? true : needsFullEssayStructure(marks);
-        // v7.20.102: evaluation collapses intro→Hook-only, conclusion→Restated-Thesis-only.
-        const introType = isEvaluation ? 'hook_only' : (spec.introType || (marks < 20 ? 'thesis_only' : 'standard'));
+        // v7.20.108 (Neil): evaluation collapses intro→THESIS-only (was hook_only in .102 — wrong
+        // element; an evaluation states its position, it doesn't hook), conclusion→Restated-Thesis-only.
+        const introType = isEvaluation ? 'thesis_only' : (spec.introType || (marks < 20 ? 'thesis_only' : 'standard'));
         const concType = isEvaluation ? 'thesis_only' : (spec.concType || (marks < 20 ? 'thesis_only' : 'standard'));
         const buildAO = spec.buildAO || (aoList.includes('AO3') ? 'AO3' : 'AO1');
         const purposeAO = spec.purposeAO || (aoList.includes('AO3') ? 'AO1/AO3' : 'AO1');
@@ -37631,6 +37634,8 @@
             const inserts = []; // { pos }  (position to insert an Effect-2 row)
             const deletes = []; // { pos, size } (v7.20.105: empty old-shape rows on eval docs)
             let needHeal = false;
+            // v7.20.108: intro tracking — restore the evaluation's Thesis row if .105 deleted it.
+            let _introLastEnd = null, _introHasThesis = false, _introSuffix = null;
             // v7.20.104 (Neil): AO-restamp bridge for BAKED evaluation outlines. The AO4 render
             // (v7.20.102 isEvaluation) only reaches freshly-generated docs; a doc baked BEFORE it
             // still shows the literature AO labels (AO1/AO2). Detect the one shipped evaluation
@@ -37680,8 +37685,19 @@
                 // (2) AO: restamp any kept row still on a literature AO → AO4.
                 // v7.20.107: a body-only question's rows (Q2/Q3, AO2) live on the same P1 doc as
                 // Q4's evaluation rows — they are NOT the evaluation, so the eval branch skips them.
-                if (_isEvalDoc && /^outline-(intro|body|conclusion)-/.test(fid) && !_isBodyOnlyRowFid(fid)) {
-                    const _isExtra = /^outline-intro-(building|thesis)/.test(fid)
+                const _evalRow = _isEvalDoc && /^outline-(intro|body|conclusion)-/.test(fid) && !_isBodyOnlyRowFid(fid);
+                if (_evalRow) {
+                    // Track the intro so a missing Thesis row can be restored after the walk.
+                    if (/^outline-intro-/.test(fid)) {
+                        _introLastEnd = pos + n.nodeSize;
+                        if (_introSuffix === null) _introSuffix = fid.replace(/^outline-intro-[a-z0-9]+/, '');
+                        if (/^outline-intro-thesis/.test(fid)) _introHasThesis = true;
+                    }
+                    // SHAPE: drop rows outside the evaluation shape — ONLY when EMPTY (never lose work).
+                    // v7.20.108 (Neil): intro = THESIS only, so HOOK is now the extra and thesis is
+                    // KEPT. .102/.105 had this inverted (hook_only) — a baked doc healed under .105
+                    // has had its empty Thesis deleted, so it is re-inserted after the walk.
+                    const _isExtra = /^outline-intro-(hook|building)/.test(fid)
                         || /^outline-conclusion-(concept|purpose|message)/.test(fid)
                         || /^outline-body-\d+-context/.test(fid);
                     if (_isExtra) {
@@ -37689,40 +37705,68 @@
                         let _checked = false;
                         try { const cs = JSON.parse(n.attrs.checkState || '{}'); _checked = Object.keys(cs).some(k => cs[k]); } catch (_) {}
                         if (!_txt && !_checked) { deletes.push({ pos, size: n.nodeSize }); needHeal = true; return true; }
-                        // filled → keep it, but still restamp its AO to AO4 below.
+                        // filled → keep it, but still canonicalise + restamp its AO to AO4 below.
                     }
-                    if (cur.ao && cur.ao !== 'AO4') {
-                        updates.push({ pos, attrs: Object.assign({}, n.attrs, { criteria: JSON.stringify(Object.assign({}, cur, { ao: 'AO4' })) }) });
-                        needHeal = true;
-                    }
-                    return true;
                 }
                 // v7.20.102 (Neil): the literature relabel/insert branches below must never touch a
                 // fresh AO4 evaluation row on a board NOT covered by _isEvalDoc (would force AO2/AO1
-                // + insert Context). AO4 rows opt out here.
-                if (cur.ao === 'AO4') return true;
+                // + insert Context). AO4 rows opt out here — but an _evalRow does NOT opt out.
+                // ⭐ v7.20.108 ROOT FIX (guard-order trap, 3rd occurrence): the eval branch used to
+                // stamp AO4 and `return true`, which STARVED every relabel branch below — so a baked
+                // eval doc kept its pre-v7.20.98 scaffold forever ("Evidence + Technique" + the old
+                // prompt, while the canonical row is "Technique + Evidence + Inference"). Eval rows
+                // now flow THROUGH the same canonical branches; _want() just overlays AO4 on the
+                // canonical criterion. ONE relabel path for every row — the eval doc only differs by AO.
+                if (!_evalRow && cur.ao === 'AO4') return true;
+                const _want = (crit) => _evalRow ? Object.assign({}, crit, { ao: 'AO4' }) : crit;
+                let _handled = false;
                 if (/^outline-body-\d+-evidence$/.test(fid)) {
-                    if (cur.label !== cEvidence.label || cur.ao !== cEvidence.ao) { updates.push({ pos, attrs: _mergeAttrs(n, cEvidence) }); needHeal = true; }
+                    const w = _want(cEvidence); _handled = true;
+                    if (cur.label !== w.label || cur.ao !== w.ao || cur.prompt !== w.prompt) { updates.push({ pos, attrs: _mergeAttrs(n, w) }); needHeal = true; }
                 } else if (/^outline-body-\d+-effects$/.test(fid)) {
-                    if (cur.label !== cEffect1.label || cur.choice !== true) { updates.push({ pos, attrs: _mergeAttrs(n, cEffect1) }); needHeal = true; }
+                    const w = _want(cEffect1); _handled = true;
+                    if (cur.label !== w.label || cur.ao !== w.ao || cur.choice !== true) { updates.push({ pos, attrs: _mergeAttrs(n, w) }); needHeal = true; }
                     // Insert Effect 2 unless the immediately-following sibling is already one.
                     const after = doc.nodeAt(pos + n.nodeSize);
                     const hasEffect2 = after && after.type.name === 'outlineRow' && /-effects2$/.test(after.attrs.fieldId || '');
-                    if (!hasEffect2) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid + '2', crit: cEffect2 }); needHeal = true; }
+                    if (!hasEffect2) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid + '2', crit: _want(cEffect2) }); needHeal = true; }
                 } else if (/^outline-body-\d+-purpose$/.test(fid)) {
-                    if (cur.label !== cPurpose.label) { updates.push({ pos, attrs: _mergeAttrs(n, cPurpose) }); needHeal = true; }
+                    const w = _want(cPurpose); _handled = true;
+                    if (cur.label !== w.label || cur.ao !== w.ao) { updates.push({ pos, attrs: _mergeAttrs(n, w) }); needHeal = true; }
                     // Insert Context after Purpose only if this paragraph assessed AO3 (the old
                     // combined "Author's Purpose + Context" carried AO3) and the next sibling isn't
                     // already Context. Non-AO3 papers keep a single Purpose element (no Context).
                     const purposeHadAO3 = /AO3/.test(cur.ao || '');
                     const afterP = doc.nodeAt(pos + n.nodeSize);
                     const hasContext = afterP && afterP.type.name === 'outlineRow' && /-context$/.test(afterP.attrs.fieldId || '');
-                    if (purposeHadAO3 && !hasContext) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid.replace(/-purpose$/, '-context'), crit: cContext }); needHeal = true; }
+                    if (purposeHadAO3 && !hasContext) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid.replace(/-purpose$/, '-context'), crit: _want(cContext) }); needHeal = true; }
                 } else if (cHook && /^outline-intro-hook/.test(fid)) {
-                    if (cur.prompt !== cHook.prompt) { updates.push({ pos, attrs: _mergeAttrs(n, cHook) }); needHeal = true; }
+                    const w = _want(cHook); _handled = true;
+                    if (cur.prompt !== w.prompt || cur.ao !== w.ao) { updates.push({ pos, attrs: _mergeAttrs(n, w) }); needHeal = true; }
+                }
+                // v7.20.108: eval rows with no canonical relabel branch (topic, analysis, thesis)
+                // still need the AO4 stamp the old blanket eval branch used to give them.
+                if (!_handled && _evalRow && cur.ao && cur.ao !== 'AO4') {
+                    updates.push({ pos, attrs: Object.assign({}, n.attrs, { criteria: JSON.stringify(Object.assign({}, cur, { ao: 'AO4' })) }) });
+                    needHeal = true;
                 }
                 return true;
             });
+            // v7.20.108 (Neil): evaluation intro = THESIS only. A doc healed under .102/.105 had the
+            // shape inverted (Hook kept, empty Thesis deleted), so restore the Thesis row. Insert at
+            // the END of the intro rows: ops apply by DESCENDING position, so this lands before the
+            // (lower-position) Hook delete runs and can't be clobbered by it.
+            if (_isEvalDoc && _introLastEnd !== null && !_introHasThesis) {
+                const cThesis = intro.find(c => c.id === 'thesis');
+                if (cThesis) {
+                    inserts.push({
+                        pos: _introLastEnd,
+                        fieldId: 'outline-intro-thesis' + (_introSuffix || ''),
+                        crit: Object.assign({}, cThesis, { ao: 'AO4' }),
+                    });
+                    needHeal = true;
+                }
+            }
             if (!needHeal) return 0;
             _migrationActive = true;
             try {

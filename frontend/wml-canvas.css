@@ -7296,6 +7296,11 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     font-weight: 700;
     letter-spacing: 0.2px;
     white-space: nowrap;
+    /* v7.20.108 (Neil): the badge and its label are adjacent spans appended with no whitespace
+       text node between them, so "AO4" butted straight against "Technique + Evidence…". The gap
+       belongs on the badge (both renderers — the NodeView and the injected criteria panel —
+       build the same two spans, so one rule fixes both). */
+    margin-right: 5px;
 }
 .swml-outline-check {
     display: flex;
