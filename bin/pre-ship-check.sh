@@ -51,6 +51,15 @@ for f in "${FILES[@]}"; do
   esac
 done
 
+# v7.20.128: the technique index is GENERATED from protocols/shared/reference/table-of-techniques.md.
+# If the table moves and the index is not regenerated, the outline's technique picker silently ships
+# a vocabulary that has forked from the taught one — invisible to node --check. Runs whenever the
+# table or the index is staged (or on --all).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'table-of-techniques\.md|wml-techniques-index\.js'; then
+  node bin/build-techniques-index.js --check || fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   echo ""
   echo "pre-ship gate FAILED — fix before shipping (do NOT --no-verify past it)."
