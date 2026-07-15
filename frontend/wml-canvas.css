@@ -2242,6 +2242,15 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: #fff;
 }
 
+/* v7.20.115: STRUCTURAL divider row — a real heading ("SECTION A: READING") whose
+   questions became sibling super-groups in .110, so it has no children and therefore
+   no chevron. The rail used to skip every childless divider and silently dropped
+   these while the in-doc TOC kept them. Pad to where a chevron would sit so the row
+   aligns with its chevron'd siblings instead of jumping left. */
+.swml-outline-item.swml-outline-structural {
+    padding-left: 14px;
+}
+
 /* v7.19.123: super-group (section-header) outline tier — outer chevron contains
    nested divider-group chevrons. Super-group header bolder + uppercase; nested
    divider-groups inside indent further so the hierarchy reads at a glance. */

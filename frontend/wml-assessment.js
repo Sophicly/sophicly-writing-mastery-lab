@@ -2383,6 +2383,19 @@
         const m = t.match(/(\d+)/);
         return m ? m[1] : '';
     }
+    // v7.20.115: resolve a section's rendered DOM element BY DOC POSITION (unique),
+    // never by label — labels repeat across units, so a label lookup can silently
+    // return the wrong section. The island already knew this and had its own copy
+    // (_siNodeDom) trapped in a closure the rail could not reach, which is exactly
+    // why the rail kept matching by label. MODULE scope so all three surfaces share it.
+    function _swmlSectionDom(pos) {
+        if (!canvasEditor || pos == null) return null;
+        let dom = null;
+        try { dom = canvasEditor.view.nodeDOM(pos); } catch (e) { /* stale pos */ }
+        if (dom && dom.nodeType !== 1) dom = dom.parentElement;
+        return dom || null;
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     //  THE ONE SECTION MODEL — v7.20.115. Read this before touching ANY of the
     //  three navigation surfaces.
@@ -2412,6 +2425,9 @@
     //   pos          PM doc position — UNIQUE. Resolve DOM by this, never by label
     //                (labels repeat across units — the island already knew this).
     //   occurrence   nth section carrying this label (scrollToLabel needs it)
+    //   num          the caller's pre-assigned section number ("5.1"), or ''. The rail
+    //                prefixes rows with it; the TOC numbers positionally and ignores it.
+    //                Carried so neither surface has to re-derive it.
     //   children     [Entry]
     //   complete     true|false|null  (null = nothing a student can complete)
     //   structural   divider whose questions became SIBLINGS (see below)
@@ -2448,7 +2464,7 @@
         let divGroup = null;
         const mkLeaf = (s) => ({
             kind: 'leaf', label: s.label, displayLabel: s.label, type: s.type,
-            pos: s.pos, occurrence: s.occurrence, children: [], complete: null, structural: false,
+            pos: s.pos, occurrence: s.occurrence, num: s._num || '', children: [], complete: null, structural: false,
         });
 
         src.forEach(s => {
@@ -2459,7 +2475,7 @@
             if (s.type === 'section-header') {
                 superGroup = {
                     kind: 'group', label: label, displayLabel: label, type: null,
-                    pos: s.pos, occurrence: s.occurrence, children: [], complete: null, structural: false,
+                    pos: s.pos, occurrence: s.occurrence, num: s._num || '', children: [], complete: null, structural: false,
                 };
                 entries.push(superGroup);
                 divGroup = null; qSuper = null;
@@ -2472,7 +2488,7 @@
             if (s.type === 'question' && /^Q\d+[a-z]?$/i.test(label.trim()) && !superGroup) {
                 qSuper = {
                     kind: 'question', label: label, displayLabel: 'Question ' + label.trim().toUpperCase().replace(/^Q/i, ''),
-                    type: null, pos: s.pos, occurrence: s.occurrence, children: [], complete: null, structural: false,
+                    type: null, pos: s.pos, occurrence: s.occurrence, num: s._num || '', children: [], complete: null, structural: false,
                 };
                 entries.push(qSuper);
                 divGroup = null;
@@ -2487,7 +2503,7 @@
                 if (!qDiv) qSuper = null;   // a non-question divider closes the question group
                 divGroup = {
                     kind: 'divider', label: label, displayLabel: inQ ? _titleCase(qDiv[1]) : label,
-                    type: null, pos: s.pos, occurrence: s.occurrence, children: [], complete: null, structural: false,
+                    type: null, pos: s.pos, occurrence: s.occurrence, num: s._num || '', children: [], complete: null, structural: false,
                 };
                 if (inQ) qSuper.children.push(divGroup);
                 else if (superGroup) superGroup.children.push(divGroup);
@@ -2524,7 +2540,7 @@
                     else if (groupKey === 'Part B Feedback') displayName = 'Feedback — Part B';
                     g = {
                         kind: 'group', label: label, displayLabel: displayName, type: s.type,
-                        pos: s.pos, occurrence: s.occurrence, children: [], complete: null, structural: false,
+                        pos: s.pos, occurrence: s.occurrence, num: s._num || '', children: [], complete: null, structural: false,
                     };
                     prefixGroups[groupKey] = g;
                     entries.push(g);
@@ -15814,21 +15830,30 @@
             });
 
             // ── Section completion check (for indicators) ──
-            function getSectionIndicator(s) {
+            // v7.20.115: $domOverride lets the caller supply the element it already
+            // resolved BY DOC POSITION (_swmlSectionDom), which is unique. The label
+            // scan below is the legacy path and is genuinely unsafe on any doc with
+            // repeated labels — the type+label pass keeps the LAST match, and the
+            // label-only fallback keeps the last of those, so a duplicate label could
+            // tick the wrong section. Prefer the override; the scan stays for callers
+            // that have no pos.
+            function getSectionIndicator(s, domOverride) {
                 if (!editor) return '';
-                // Find DOM section by matching attributes (avoids CSS.escape issues)
-                let domSection = null;
-                editor.querySelectorAll('[data-section-type]').forEach(el => {
-                    if (el.getAttribute('data-section-type') === s.type &&
-                        el.getAttribute('data-section-label') === s.label) {
-                        domSection = el;
-                    }
-                });
-                // Fallback: match by label only
+                let domSection = domOverride || null;
                 if (!domSection) {
-                    editor.querySelectorAll('[data-section-label]').forEach(el => {
-                        if (el.getAttribute('data-section-label') === s.label) domSection = el;
+                    // Find DOM section by matching attributes (avoids CSS.escape issues)
+                    editor.querySelectorAll('[data-section-type]').forEach(el => {
+                        if (el.getAttribute('data-section-type') === s.type &&
+                            el.getAttribute('data-section-label') === s.label) {
+                            domSection = el;
+                        }
                     });
+                    // Fallback: match by label only
+                    if (!domSection) {
+                        editor.querySelectorAll('[data-section-label]').forEach(el => {
+                            if (el.getAttribute('data-section-label') === s.label) domSection = el;
+                        });
+                    }
                 }
                 if (!domSection) return '';
 
@@ -15998,7 +16023,9 @@
                         });
                     }
                     if (domSection) {
-                        const indicator = getSectionIndicator(s);
+                        // v7.20.115: hand over the element this loop ALREADY resolved rather
+                        // than making getSectionIndicator repeat the same label scan.
+                        const indicator = getSectionIndicator(s, domSection);
                         // v7.20.73: IDEMPOTENT (PM law rule 4) — this unconditional write fired a
                         // same-value MutationRecord per section per pass; on docs whose NodeView
                         // firewall doesn't cover it, PM's DOMObserver flushed → NodeView rebuild →
@@ -16040,102 +16067,29 @@
             // Attach section numbers to sections for outline display (v7.12.56)
             sections.forEach((s, i) => { s._num = sectionNumbers[i] || ''; });
 
-            // v7.14.29: Group sections using dividers as boundaries (fundamental fix — works for all doc types)
-            // Dividers become group headers in the outline. Fallback: PREFIX_MAP for docs without dividers.
-            // v7.19.123: section-header opens a super-group that wraps subsequent dividers
-            // (used by AQA Modern Text 20-Q cribs to nest "Top 10 Theme" / "Top 10 Character"
-            // chevrons above each T/C-divider in the TOC).
-            const groups = [];
-            let currentSuperGroup = null;
-            let currentDividerGroup = null;
-            let currentQSuper = null; // v7.20.110: question super-group (mirrors the in-doc TOC)
-            const PREFIX_MAP = { 'Plan:': 'Essay Plan', 'Outline:': 'Outline', 'Feedback:': 'Feedback' };
-            // v7.20.110: same word-casing as the in-doc TOC so the two surfaces read identically.
-            const _titleCaseRail = (str) => String(str || '').trim().toLowerCase()
-                .replace(/\b([a-z])/g, (m, c) => c.toUpperCase());
-            sections.forEach(s => {
-                if (s.type === 'cover') return;
-                // section-header opens a super-group; subsequent dividers nest inside it
-                if (s.type === 'section-header') {
-                    currentSuperGroup = {
-                        key: s.label,
-                        isSuperGroup: true,
-                        pos: s.pos,
-                        dividerGroups: [],
-                        directChildren: [],
-                    };
-                    groups.push(currentSuperGroup);
-                    currentDividerGroup = null;
-                    currentQSuper = null;
-                    return;
-                }
-                // v7.20.110 (Neil): QUESTION GROUPING — MUST mirror the in-doc TOC's model exactly
-                // (same rule, same labels), or the rail and the page disagree about where a section
-                // lives. A question section ("Q2") opens a super-group; its own "… — Q2" dividers
-                // nest inside. DERIVED from the document, never a paper list; a doc with no question
-                // sections stays flat (literature single essay = correct as-is).
-                if (s.type === 'question' && /^Q\d+[a-z]?$/i.test((s.label || '').trim()) && !currentSuperGroup) {
-                    currentQSuper = {
-                        key: 'Question ' + s.label.trim().toUpperCase().replace(/^Q/i, ''),
-                        isSuperGroup: true,
-                        pos: s.pos,
-                        dividerGroups: [],
-                        directChildren: [],
-                    };
-                    groups.push(currentQSuper);
-                    currentDividerGroup = null;
-                    return;
-                }
-                // Dividers start new groups (children of super-group when one is open)
-                if (s.type === 'divider') {
-                    const _qDiv = /^(.*?)\s*—\s*(Q\d+[a-z]?)\s*$/i.exec(s.label || '');
-                    const _inQ = _qDiv && currentQSuper
-                        && currentQSuper.key.toUpperCase().replace(/^QUESTION\s*/, 'Q') === _qDiv[2].toUpperCase();
-                    if (!_qDiv) currentQSuper = null; // a non-question divider closes the question group
-                    currentDividerGroup = {
-                        key: _inQ ? _titleCaseRail(_qDiv[1]) : s.label,
-                        children: [], type: null, isDivider: true, pos: s.pos,
-                    };
-                    if (_inQ) {
-                        currentQSuper.dividerGroups.push(currentDividerGroup);
-                    } else if (currentSuperGroup) {
-                        currentSuperGroup.dividerGroups.push(currentDividerGroup);
-                    } else {
-                        groups.push(currentDividerGroup);
-                    }
-                    return;
-                }
-                // If inside a divider group, add as child
-                if (currentDividerGroup) {
-                    if (!currentDividerGroup.type) currentDividerGroup.type = s.type;
-                    currentDividerGroup.children.push({ ...s, childLabel: s.label });
-                    return;
-                }
-                // Inside super-group but no divider yet → direct child (e.g. preamble notices)
-                if (currentSuperGroup) {
-                    currentSuperGroup.directChildren.push({ ...s, childLabel: s.label });
-                    return;
-                }
-                // Fallback: PREFIX_MAP grouping for sections before any divider
-                let groupKey = null, childLabel = s.label;
-                for (const [prefix, name] of Object.entries(PREFIX_MAP)) {
-                    if (s.label.startsWith(prefix)) {
-                        groupKey = name;
-                        childLabel = s.label.slice(prefix.length).trim();
-                        break;
-                    }
-                }
-                if (groupKey) {
-                    const lastGroup = groups[groups.length - 1];
-                    if (lastGroup && lastGroup.key === groupKey && !lastGroup.isDivider && !lastGroup.isSuperGroup) {
-                        lastGroup.children.push({ ...s, childLabel });
-                    } else {
-                        groups.push({ key: groupKey, children: [{ ...s, childLabel }], type: s.type });
-                    }
-                } else {
-                    groups.push({ key: null, section: s });
-                }
-            });
+            // v7.20.115: the rail RENDERS the one shared model — it no longer derives its
+            // own. Its old copy of this logic is exactly how .110's question grouping healed
+            // the TOC + rail and BROKE this surface (SECTION A/B vanished): two builders,
+            // one fix. See _buildSectionModel()'s header for the full story.
+            //
+            // Two behaviours it INHERITS from the model that it never had alone:
+            //  · hidden sections are filtered (stage-reveal leaves zero-geometry nodes in the
+            //    DOM — the rail used to offer rows whose click silently did nothing);
+            //  · completion resolves BY POS, not by label. getSectionIndicator() matched on
+            //    label with a label-only fallback, but labels repeat across units, so a
+            //    duplicate label could tick the wrong row.
+            const groups = _buildSectionModel(sections, {
+                isVisible: (sec) => {
+                    const dom = _swmlSectionDom(sec.pos);
+                    return dom ? dom.offsetParent !== null : true; // not yet rendered → keep
+                },
+                isComplete: (entry) => {
+                    const dom = _swmlSectionDom(entry.pos);
+                    if (!dom) return null;
+                    return getSectionIndicator(entry, dom) ? true : false;
+                },
+            }).entries;
+
 
             // v7.14.34: "Table of Contents" link at top of outline
             const tocEl = document.querySelector('.swml-toc');
@@ -16177,12 +16131,17 @@
                 const dot = el('span', { className: 'swml-outline-dot' });
                 dot.style.background = groupColor;
                 header.appendChild(dot);
-                const groupMajor = (g.children[0]?._num || '').split('.')[0];
+                // v7.20.115: scroll to the GROUP'S OWN pos, not its first child's. The
+                // divider is a real section with a rendered element, the in-doc TOC already
+                // scrolls to it, and a `structural` group has NO children — the old
+                // g.children[0].pos would have thrown on exactly the SECTION A/B rows this
+                // release restores.
+                const groupMajor = (g.num || g.children[0]?.num || '').split('.')[0];
                 const titleBtn = el('button', {
                     className: 'swml-outline-group-title',
                     tabIndex: -1,
-                    textContent: (groupMajor ? groupMajor + '. ' : '') + g.key,
-                    onClick: () => scrollToPos(g.children[0].pos),
+                    textContent: (groupMajor ? groupMajor + '. ' : '') + g.displayLabel,
+                    onClick: () => scrollToPos(g.pos),
                 });
                 header.appendChild(titleBtn);
                 const childWrap = el('div', { className: 'swml-outline-children swml-outline-collapsed' });
@@ -16199,15 +16158,15 @@
                 });
                 groupWrap.appendChild(header);
                 container.appendChild(groupWrap);
-                outlineHeadingPositions.push({ pos: g.children[0].pos, itemEl: header });
+                outlineHeadingPositions.push({ pos: g.pos, itemEl: header });
                 g.children.forEach(child => {
-                    const childIndicator = getSectionIndicator(child);
+                    const childIndicator = child.complete === true;
                     const item = el('button', {
                         className: 'swml-outline-item swml-outline-child',
                         tabIndex: -1,
                         onClick: () => scrollToPos(child.pos),
                     });
-                    item.appendChild(el('span', { className: 'swml-outline-label', textContent: (child._num ? child._num + ' ' : '') + (child.childLabel || child.label) }));
+                    item.appendChild(el('span', { className: 'swml-outline-label', textContent: (child.num ? child.num + ' ' : '') + child.displayLabel }));
                     if (childIndicator) {
                         const chk = el('span', { className: 'swml-outline-check' });
                         chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#1CD991" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
@@ -16235,7 +16194,7 @@
                 const titleBtn = el('button', {
                     className: 'swml-outline-group-title',
                     tabIndex: -1,
-                    textContent: g.key,
+                    textContent: g.displayLabel,
                     onClick: () => scrollToPos(g.pos),
                 });
                 header.appendChild(titleBtn);
@@ -16255,19 +16214,22 @@
                 outlineList.appendChild(groupWrap);
                 outlineHeadingPositions.push({ pos: g.pos, itemEl: header });
                 // Direct children (e.g. preamble notices) — flat items inside super-group
-                (g.directChildren || []).forEach(child => {
+                // v7.20.115: the model carries ONE children array (the TOC's shape). Leaves
+                // are the old `directChildren` (preamble notices); dividers are the old
+                // `dividerGroups`. Two arrays were a rail-only invention.
+                (g.children || []).filter(c => c.kind === 'leaf').forEach(child => {
                     const item = el('button', {
                         className: 'swml-outline-item swml-outline-child',
                         tabIndex: -1,
                         onClick: () => scrollToPos(child.pos),
                     });
-                    item.appendChild(el('span', { className: 'swml-outline-label', textContent: child.childLabel || child.label }));
+                    item.appendChild(el('span', { className: 'swml-outline-label', textContent: child.displayLabel }));
                     childWrap.appendChild(item);
                     outlineHeadingPositions.push({ pos: child.pos, itemEl: item });
                 });
                 // Nested divider-groups
-                (g.dividerGroups || []).forEach(dg => {
-                    if (!dg.children || dg.children.length === 0) return;
+                (g.children || []).filter(c => c.kind === 'divider').forEach(dg => {
+                    if (!dg.children.length && !dg.structural) return; // genuinely empty → hide
                     const dgColor = OUTLINE_GROUP_COLOURS[_groupColorIdx++ % OUTLINE_GROUP_COLOURS.length];
                     renderDividerGroupInto(dg, childWrap, dgColor);
                 });
@@ -16275,107 +16237,66 @@
             }
 
             groups.forEach(g => {
-                // Super-group from section-header — render nested chevrons
-                if (g.isSuperGroup) {
+                // v7.20.115: dispatch on the shared model's `kind`. A 'question' super-group
+                // ("Question 2") and a section-header 'group' both render two-tier — they
+                // differ only in what opened them, never in how they draw.
+                if (g.kind === 'question' || (g.kind === 'group' && g.children.some(c => c.kind === 'divider'))) {
                     const color = OUTLINE_GROUP_COLOURS[_groupColorIdx++ % OUTLINE_GROUP_COLOURS.length];
                     renderSuperGroup(g, color);
                     return;
                 }
-                // Skip divider groups with no children (empty structural dividers)
-                if (g.isDivider && (!g.children || g.children.length === 0)) return;
-                if (g.key && g.children && g.children.length >= 1) {
-                    // Brand colour for this group (divider-based get cycling colours, prefix-based get section colours)
-                    const groupColor = g.isDivider
-                        ? OUTLINE_GROUP_COLOURS[_groupColorIdx++ % OUTLINE_GROUP_COLOURS.length]
-                        : (SECTION_COLOURS[g.type] || '#888');
-
-                    // Wrapper div for group header + collapsible children
-                    const groupWrap = el('div', { className: 'swml-outline-group-wrap' });
-
-                    // Parent group header — chevron LEFT of dot, title clicks to scroll
-                    const header = el('div', {
-                        className: 'swml-outline-item swml-outline-group',
-                    });
-
-                    // Chevron (left side) — toggles accordion
-                    const chevron = el('button', { className: 'swml-outline-chevron', tabIndex: -1 });
-                    chevron.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>';
-                    header.appendChild(chevron);
-
+                // ⭐ §4.1 FIX — a STRUCTURAL divider ("SECTION A: READING") legitimately has
+                // no children: .110 moved its questions into sibling super-groups. The old
+                // rule skipped every childless divider, so this surface silently dropped the
+                // SECTION A/B headings while the in-doc TOC (which has no such skip) kept
+                // them — the two diverged. The skip is NOT deleted: a divider with nothing
+                // after it at all is still genuinely empty and still hides. The model draws
+                // that distinction once (see _buildSectionModel), so no surface re-guesses it.
+                if (g.kind === 'divider' && !g.children.length) {
+                    if (!g.structural) return;                       // genuinely empty → hide
+                    // Chevron-less (nothing to expand) but still a real link — the in-doc TOC
+                    // scrolls to this divider, so the rail must land in the same place.
+                    const item = el('div', { className: 'swml-outline-item swml-outline-group swml-outline-structural' });
                     const dot = el('span', { className: 'swml-outline-dot' });
-                    dot.style.background = groupColor;
-                    header.appendChild(dot);
-
-                    // Title — clicks to scroll to section
-                    const groupMajor = (g.children[0]?._num || '').split('.')[0];
-                    const titleBtn = el('button', {
+                    dot.style.background = OUTLINE_GROUP_COLOURS[_groupColorIdx++ % OUTLINE_GROUP_COLOURS.length];
+                    item.appendChild(dot);
+                    item.appendChild(el('button', {
                         className: 'swml-outline-group-title',
                         tabIndex: -1,
-                        textContent: (groupMajor ? groupMajor + '. ' : '') + g.key,
-                        onClick: () => scrollToPos(g.children[0].pos),
-                    });
-                    header.appendChild(titleBtn);
-
-                    // Collapsible children container (starts collapsed)
-                    const childWrap = el('div', { className: 'swml-outline-children swml-outline-collapsed' });
-
-                    // Chevron click: toggle accordion
-                    chevron.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const isCollapsed = childWrap.classList.contains('swml-outline-collapsed');
-                        if (isCollapsed) {
-                            childWrap.classList.remove('swml-outline-collapsed');
-                            chevron.classList.add('swml-outline-chevron-open');
-                        } else {
-                            childWrap.classList.add('swml-outline-collapsed');
-                            chevron.classList.remove('swml-outline-chevron-open');
-                        }
-                    });
-
-                    groupWrap.appendChild(header);
-                    outlineList.appendChild(groupWrap);
-                    outlineHeadingPositions.push({ pos: g.children[0].pos, itemEl: header });
-
-                    // Children inside collapsible wrapper
-                    g.children.forEach(child => {
-                        const childIndicator = getSectionIndicator(child);
-                        const item = el('button', {
-                            className: 'swml-outline-item swml-outline-child',
-                            tabIndex: -1,
-                            onClick: () => scrollToPos(child.pos)
-                        });
-                        item.appendChild(el('span', { className: 'swml-outline-label', textContent: (child._num ? child._num + ' ' : '') + (child.childLabel || child.label) }));
-                        if (childIndicator) {
-                            const chk = el('span', { className: 'swml-outline-check' });
-                            chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#1CD991" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
-                            item.appendChild(chk);
-                        }
-                        childWrap.appendChild(item);
-                        outlineHeadingPositions.push({ pos: child.pos, itemEl: item });
-                    });
-                    groupWrap.appendChild(childWrap);
-                } else {
-                    // Single section (or single-child group)
-                    const s = g.key ? g.children[0] : g.section;
-                    const label = g.key && g.children.length === 1 ? g.key : s.label;
-                    const indicator = getSectionIndicator(s);
-                    const item = el('button', {
-                        className: 'swml-outline-item',
-                        tabIndex: -1,
-                        onClick: () => scrollToPos(s.pos)
-                    });
-                    const dot = el('span', { className: 'swml-outline-dot' });
-                    dot.style.background = SECTION_COLOURS[s.type] || '#888';
-                    item.appendChild(dot);
-                    item.appendChild(el('span', { className: 'swml-outline-label', textContent: (s._num ? s._num + '. ' : '') + label }));
-                    if (indicator) {
-                        const chk = el('span', { className: 'swml-outline-check' });
-                        chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#1CD991" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
-                        item.appendChild(chk);
-                    }
+                        textContent: (g.num ? g.num.split('.')[0] + '. ' : '') + g.displayLabel,
+                        onClick: () => scrollToPos(g.pos),
+                    }));
                     outlineList.appendChild(item);
-                    outlineHeadingPositions.push({ pos: s.pos, itemEl: item });
+                    outlineHeadingPositions.push({ pos: g.pos, itemEl: item });
+                    return;
                 }
+                // Divider / prefix group WITH children → the SAME renderer the super-group
+                // path uses. This block used to be an inline copy of renderDividerGroupInto —
+                // a fourth duplicate of the same drawing code.
+                if (g.children.length) {
+                    const groupColor = g.kind === 'divider'
+                        ? OUTLINE_GROUP_COLOURS[_groupColorIdx++ % OUTLINE_GROUP_COLOURS.length]
+                        : (SECTION_COLOURS[g.type] || '#888');
+                    renderDividerGroupInto(g, outlineList, groupColor);
+                    return;
+                }
+                // Bare leaf
+                const item = el('button', {
+                    className: 'swml-outline-item',
+                    tabIndex: -1,
+                    onClick: () => scrollToPos(g.pos)
+                });
+                const dot = el('span', { className: 'swml-outline-dot' });
+                dot.style.background = SECTION_COLOURS[g.type] || '#888';
+                item.appendChild(dot);
+                item.appendChild(el('span', { className: 'swml-outline-label', textContent: (g.num ? g.num + '. ' : '') + g.displayLabel }));
+                if (g.complete === true) {
+                    const chk = el('span', { className: 'swml-outline-check' });
+                    chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#1CD991" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+                    item.appendChild(chk);
+                }
+                outlineList.appendChild(item);
+                outlineHeadingPositions.push({ pos: g.pos, itemEl: item });
             });
 
         }
