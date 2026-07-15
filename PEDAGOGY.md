@@ -29,6 +29,40 @@ asserted, research not yet done.
 
 ---
 
+## §0. ⭐ PROCEDURE — SEARCH FOR THE RULING BEFORE YOU ASK NEIL FOR IT (mandatory)
+
+**THE RULE (Neil, 2026-07-15):** *"I think we should make it a procedure that you check before
+asking, because I have said this before."*
+
+He is right, and it was measurable: on 2026-07-14 he ruled that the outline gate is
+structure-based (§4 below). On 2026-07-15 a handoff listed *"does `short_analysis` get an
+outline?"* as an **open ruling needed from Neil**. It was not open. It had been answered a day
+earlier and written down. He was asked to re-decide a settled question.
+
+**THE REASON.** Neil's rulings are the scarcest input in this project — he is one person, and every
+re-ask spends him on work already done and risks a *drifted* second answer that silently contradicts
+the first. A ruling that gets re-asked is a ruling that was never really recorded.
+
+**THE PROCEDURE — before ANY question to Neil that starts "should X…", "does X get…", "which
+shape…", and before writing any handoff line that calls a ruling OPEN or NEEDED:**
+1. **Search this file** — §4 onward is the rulings register.
+2. **Search the memory directory** for the topic (`grep -rli "<topic>" ~/.claude/.../memory/`). Most
+   pre-2026-07-15 rulings still live only there.
+3. **Search the protocol** that governs it — `feedback_derive_from_protocol_dont_ask_what_is_documented`.
+4. **Only if all three miss**, ask — and ask in the confirm form, never the open form:
+   *"I checked X, found Y, confirm?"* — never *"what should we do about Y?"*
+5. **When he does rule: write it HERE in the same session**, not only in a memory or a commit
+   message. A ruling recorded only in memory did not survive one day (§4 is the proof).
+
+**THE ROOT CAUSE this prevents.** The 07-14 ruling was recorded in a memory file
+(`reference_wml_outline_gate_20plus_marks`) and nowhere else. The docs that govern this arc —
+this file and `ASSESSMENT-MECHANICS.md` — never carried it, so the next session read the *code*,
+saw a marks-based gate, and concluded the question was open. **Memory is a recall aid; the .md
+files are the law.** Same failure this whole document exists to prevent (see "Why this document
+exists" above) — a rule with no home gets re-derived wrongly.
+
+---
+
 ## §1. SUPPORT IS WITHDRAWN AS INSTRUCTION IS RECEIVED — the first-attempt rule
 
 **THE RULE (Neil, 2026-07-15, verbatim):** the Topic-1 / Phase-1 leniency — the Essay Plan is
@@ -111,7 +145,169 @@ completed cycle. That is simpler and un-gameable; worth confirming it is also ri
 
 ---
 
-## §3. WHERE THE REST OF THE PEDAGOGY CURRENTLY LIVES (to be migrated in as it is touched)
+## §3. AN OUTLINE IS EARNED BY STRUCTURE, NEVER BY MARKS — the outline gate
+
+**THE RULE (Neil, ruled 2026-07-14, re-stated verbatim 2026-07-15):**
+
+> *"Any response that requires at least a paragraph structure needs an outline."*
+
+And its inverse:
+
+> *"Some of the questions require one simple statement. Some require two, some require three. Those
+> ones, we're not gonna teach them anything about that, because that's basic comprehension that they
+> either get right or they get wrong. It's not a technique as such."*
+
+**MARKS ARE NOT THE CRITERION — this is the whole point of the rule.** Neil's own worked example:
+**AQA Language Paper 2 Question 2 is only 8 marks but requires two structured paragraphs, so it gets
+an outline.** Meanwhile AQA Language Paper 1 Q1 (4 marks, four simple statements) and AQA Language
+Paper 2 Q1 (choose four true statements) get **none** — *"we don't need to give them a structure for
+that. It's just four simple statements, that's it."* A marks threshold in either direction is the
+wrong instrument; the question is only ever **"does answering this require the student to build a
+paragraph?"**
+
+**THE REASON — two distinct halves, and both matter:**
+- **Structured questions get an outline** because structure is the thing we teach. The student sees
+  and trains the SAME structure across planning → outlining → polishing
+  (`reference_wml_planning_outline_response_lesson_flow`). An outline is the protocol's structure
+  made fillable.
+- **Comprehension questions get none** because *"they either get it right or they get wrong"* — there
+  is no technique to train, so there is nothing an outline could teach. Neil's pedagogy for these is
+  **self-testing**: *"we can afford to let them test themselves on that, because they either get it
+  right or wrong. If they get it right, then that shows the comprehension is at least basic. If they
+  get it wrong, then they just have to go and correct it."* Scaffolding a right/wrong retrieval
+  question would train nothing and cost time. (Consistent with §1 — help is given where it teaches.)
+
+**WHY THE OLD MARKS GATE EXISTED, AND WHY IT IS DEAD.** The original `qMarks >= 20` ceiling was a
+TIME/FRICTION decision, never a pedagogical one: an outline per question used to force students to
+copy-paste plan content by hand, so scaffolding short questions cost more than it was worth. **That
+friction has been engineered away** — plan elements now auto-transfer (plan→outline autofill,
+outline→response transfer). Students must convert their plan into full sentences anyway; doing it
+INSIDE the outline adds structure-training at no extra time cost. The constraint that justified the
+threshold is gone, so the threshold is gone. **Any marks-based outline gate found in the code is a
+defect, not a spec.**
+
+**THE PER-QUESTION MAP (AQA — ruled 2026-07-14, CORRECTED AGAINST THE PROTOCOL 2026-07-15):**
+- **Skip (no structure to train):** AQA P1 Q1 (4m, list) · AQA P2 Q1 (true/false comprehension —
+  `protocol-b-planning.md:144` excludes it from planning outright).
+- **Body-only TTECEA outline:** P1 Q2 · P1 Q3 · P2 Q3 (3 × TTECEA, `protocol-b-planning.md:364-410`).
+- **P2 Q2 — PAIRED CROSS-SOURCE INFERENCE, not TTECEA and NOT "synthesis".**
+  2 paragraphs, each weaving BOTH sources: Inference 1 (Source A) → Inference 2 (Source B, opening
+  with a comparative discourse marker). Each inference = topic sentence + perceptive inference +
+  detail + embedded quote. `protocol-b-planning.md:157, :244-247`. The protocol is explicit:
+  *"Never write one paragraph about Source A and a second about Source B."*
+  ⚠️ **CORRECTION, 2026-07-15.** Until today this line read *"synthesis shape (Topic sentence ·
+  Quote · Inference); pull the exact shape from the synthesis protocol."* **Both halves were false:**
+  the protocol never uses the word "synthesis", and **no synthesis protocol exists** — the
+  instruction was unfollowable. The error came from the 07-14 memory and was copied into this file
+  unverified. It is the exact failure §0 exists to stop, in the file that stops it. **Rulings get
+  byte-checked against the protocol before they are written down as law**
+  (`feedback_never_guess_verify_the_real_answer`).
+- **Full essay outline:** P1 Q4 · P2 Q4 — brief intro + 3 comparative bodies + brief conclusion
+  (bodies carry 15 of the 16 marks; `protocol-b-planning.md:442-531`).
+- **Writing questions:** P1 Q5 = the scene-structure plan IS the outline · P2 Q5 = IUMVCC.
+
+**WHAT IT GOVERNS.** `_resolveBodyOnlyOutline()` and `migrateMissingQOutlines()`
+(`frontend/wml-assessment.js`) — the gate deciding which questions build an outline — **for every
+board and paper, literature included** (Neil, 2026-07-15: *"We need to do it for ALL of the exam
+boards. Everything, basically. Even for literature."*). Creative writing is explicitly out of scope
+(separate build, Pixar six-beat spine, cannot reuse TTECEA).
+
+**STATUS: ⚠️ IMPLEMENTED WRONG — live defect.** `_resolveBodyOnlyOutline` still enforces
+`board !== 'aqa' → null`, `_specSubjectKey() !== 'language_p1' → null`, and the dead
+`qMarks < 20` ceiling. So no board except AQA Language Paper 1 can ever get a per-question outline,
+and AQA P2 Q2 (8m, two paragraphs — the rule's own worked example) is excluded twice over. The gate
+must resolve to the CAPABILITY *"does this question require a multi-paragraph structured response?"*,
+derived from `protocols/shared/language-paper-specs.json` — **never accumulate board arms**
+(CLAUDE.md canvas rule 2). Literature and Section B outlines are ALREADY board-agnostic because they
+read the specs — that is the proof the capability approach works; copy it, don't invent it.
+
+**⚠️ STILL GENUINELY OPEN (§0 applied — these are not re-asks; the protocol does not settle them):**
+- **How GRANULAR should an outline row be?** The governing law is that the outline mirrors the
+  planning protocol — but the AQA P2 Q5 IUMVCC outline renders **12 rows against ~30 taught
+  elements** (the Methodology section, 250–350 words and the piece's engine, gets 2). Mirroring
+  literally means ~30 rows; mirroring usefully may mean fewer. **This is the one real design
+  question in the arc** and it recurs on every question of every paper, so it wants answering once.
+  Weigh against PACE (`feedback_deep_but_never_dragging_pace_principle`).
+- **`comparison` BODY rows** (AQA P2 Q4 16m AO3; IGCSE P1 Q5 22m AO3). The *document* shape is ruled
+  (intro + 3 bodies + conclusion, above). What is open is the **row set inside a comparative body**:
+  the protocol teaches a comparative topic sentence (3 moves), T+E+I for BOTH sources plus a
+  choice-comparison, comparative close analysis, **four** effect sentences, and A + JUDGEMENT
+  (`protocol-b-planning.md:468-531`) — a different row set from the literature body's six. Reusing
+  the literature rows here would silently under-teach comparison.
+- **Multi-AO questions** (IGCSE P1 Q3 = AO1+AO2) — the machinery stamps ONE AO onto every row, so
+  multi-AO is a shape question, not a gate flag.
+
+---
+
+## §4. WE TEACH TO THE MARK SCHEME — WE DO NOT TEACH IN ITS LANGUAGE
+
+**THE RULE (Neil, 2026-07-15, verbatim):**
+
+> *"We don't always use exactly the same language as the mark scheme. What we're teaching them is how
+> to GET TO the thing that the mark scheme is asking for — like 'sustained crafting of linguistic
+> devices'. That's why we're trying to make them aggressive in terms of using multiple linguistic
+> devices per sentence if possible, at least one."*
+
+**THE REASON.** A mark-scheme descriptor is a **judgement an examiner makes about a finished piece**,
+not an instruction a 15-year-old can act on. *"Sustained crafting of linguistic devices"* tells a
+student nothing they can DO. *"At least one device per sentence — better, two or three combined"* is
+the same thing as a habit they can practise, and practising it is what produces the descriptor.
+**The protocol teaches the ACTION; the mark scheme names the RESULT.**
+
+**WHERE EACH LAYER LIVES — verified 2026-07-15, and it is already right in the codebase:**
+- **The descriptor lives in the MARKING modules**, because marking is where the criteria belong:
+  `aqa/language2/modules/assessment-steps/a-q5-ao5.md:11` and
+  `aqa/language2/modules/knowledge-mark-scheme-lang2.md:184` both carry AQA's Level 4 AO5 verbatim —
+  *"Extensive and ambitious vocabulary with sustained crafting of linguistic devices."* Eleven files
+  carry it in total, including the MSQ/MSA banks.
+- **The habit lives in the PLANNING protocol**, which never uses the phrase — it teaches the image
+  first, then the devices that deliver it (`protocol-b-planning.md:619-627`).
+- **The bridge is written down**, and it is exactly Neil's rule made explicit:
+  `edexcel-igcse/language1/modules/knowledge-hub.md:277` reads *"**Sustained Crafting of Linguistic
+  Devices:** Employs a range of techniques in a deliberate and controlled manner. **Refer to the
+  MADFATHER'S CROPS mnemonic.**"* Descriptor → habit, in one line.
+
+**So the rule is: the descriptor belongs in MARKING; student-facing TEACHING states the habit.** Both
+must exist; they must not be swapped.
+
+**⚠️ THE TRAP — do not "fix" a descriptor's absence from a teaching surface.** Finding no
+mark-scheme wording in a planning protocol is not a gap; it is the design. Ask *what concrete habit
+produces this?* and check THAT is present.
+**⚠️ AND DO NOT MANUFACTURE THE ABSENCE EITHER.** 2026-07-15, in this file, on the same day it was
+written: I grepped for "sustained crafting", **piped the results through `head -10`**, saw only
+Edexcel IGCSE hits, and concluded the phrase was deliberately absent from AQA — then wrote that
+conclusion HERE as this section's proof. It was false: the AQA hits were below the truncation. **A
+truncated search is not evidence of absence.** For any "X does not exist in the codebase" claim:
+never `head` the search, count the hits (`grep -rc`), and state the exact command you ran.
+(`feedback_never_guess_verify_the_real_answer` — the failure mode is not laziness, it is a search
+that answered a narrower question than the one being asked.)
+
+**THE CANONICAL EXAMPLE:**
+
+| Layer | Wording |
+|---|---|
+| Official AQA AO5 mark scheme | "sustained crafting of linguistic devices" |
+| What we tell the student | at least one technique per sentence — better, combine two or three |
+| The tool that makes it doable | MAD FATHERS CROPS (15 taught-core devices) + the 245-entry table |
+| Where it lands in the product | the technique picker, on **every** section of the IUMVCC outline |
+
+**WHAT IT GOVERNS:** every protocol beat, outline row, prompt, checklist and chip that a student
+reads. Translate DOWN to an observable action; never paste a descriptor into student-facing text and
+call it teaching.
+
+**WHAT IT DOES *NOT* LICENSE:** inventing mark-scheme claims. The descriptor is still the target and
+must be real (`feedback_never_invent_mark_scheme_claims`). This rule governs the LANGUAGE we teach
+in, never the accuracy of what we aim at — marking output still uses the real AO criteria. And per
+§2, the training load sits deliberately ABOVE the descriptor's floor: "sustained" is the pass; one to
+three devices in every sentence is the practice.
+
+**STATUS: ✅ the pedagogy is live** (the protocols already teach this way). **🔵 the tooling is not** —
+the IUMVCC outline currently gives the student no way to record the techniques they used. See §3's
+open granularity question and the technique-picker build.
+
+---
+
+## §5. WHERE THE REST OF THE PEDAGOGY CURRENTLY LIVES (to be migrated in as it is touched)
 
 Not a rewrite — the principles below are already recorded and working. Move one INTO this file when
 you touch it, so migration follows real work rather than a big-bang pass:
