@@ -109,35 +109,27 @@
                         try {
                             const crit = JSON.parse((child.attrs && child.attrs.criteria) || '{}');
                             const cs = JSON.parse((child.attrs && child.attrs.checkState) || '{}');
-                            // v7.19.679: a LOCKED row is a read-only carryover (e.g. Step-2
-                            // "Sparks From Step 1" slots, filled from Step-1 ticks) — the student
-                            // can't edit it, so it must NOT be a completion requirement. Auto-
-                            // satisfy it; an all-locked section (Sparks, with 0–3 slots filled)
-                            // then reads complete instead of wedging progress below 100%.
-                            if (crit.locked === true || crit.locked === 'true') {
-                                rowOk = true;
-                            } else if (crit.type === 'checkbox' || crit.type === 'checklist') {
-                                // v7.20.89 (Neil A2 ruling): outline section done = inputs filled
-                                // AND every side checkbox/checklist item ticked, PER ROW. The old
-                                // section-level anyChecked let one ticked box complete the whole
-                                // section (BP1 lit, BP2/BP3 never could). CW single-select pick
-                                // groups (logline drafts / idea rows) keep the old rule: row needs
-                                // text only, section needs ONE pick — all-ticked is impossible
-                                // there by design. Mirrors checkRowComplete (checklist = all items).
-                                const chk = Array.isArray(cs.checked) ? cs.checked.length : 0;
-                                if (chk > 0) anyChecked = true;
-                                const isPick = /^cw-step-\d+-(logline|idea)/.test(String((child.attrs && child.attrs.fieldId) || ''));
-                                if (isPick) {
-                                    pickGroup = true;
-                                } else {
-                                    // v7.20.99 (Neil): choice checklists (effects) complete at >=1
-                                    // ticked; required checklists (evidence) need every item.
-                                    const need = crit.choice ? 1
-                                        : ((crit.type === 'checklist' && Array.isArray(crit.items)) ? crit.items.length : 1);
-                                    rowOk = hasText && chk >= need;
+                            // v7.20.129: THE RULE LIVES IN ONE PLACE — WML.outlineRow.complete
+                            // (wml-core.js). This used to be a hand-copy of it and had drifted.
+                            // This adapter owns only what is genuinely section-level:
+                            //  • anyChecked / pickGroup — the CW single-select group (logline /
+                            //    idea rows): the row needs text only, the SECTION needs one pick.
+                            //    All-ticked is impossible there by design (v7.20.89 A2 ruling).
+                            const rule = window.WML && window.WML.outlineRow;
+                            if (!rule) {
+                                // Load-order break (core must load before this file). Fail loud —
+                                // silently ticking every section would read as success.
+                                if (!window.__swmlOutlineRuleWarned) {
+                                    window.__swmlOutlineRuleWarned = true;
+                                    console.warn('WML: WML.outlineRow missing — section ticks degraded to text-only. Check wml-core.js load order.');
                                 }
-                            } else if (crit.type === 'dropdown') {
-                                rowOk = hasText && !!cs.selected;
+                            } else {
+                                const anyOn = (Array.isArray(cs.checked) && cs.checked.length > 0)
+                                    || (cs.c && Object.keys(cs.c).some(k => Array.isArray(cs.c[k].checked) && cs.c[k].checked.length > 0));
+                                if (anyOn) anyChecked = true;
+                                const isPick = /^cw-step-\d+-(logline|idea)/.test(String((child.attrs && child.attrs.fieldId) || ''));
+                                if (isPick) pickGroup = true;
+                                else rowOk = rule.complete(crit, cs, hasText);
                             }
                         } catch (_) { /* default rowOk = hasText */ }
                         if (rowOk) filled++;

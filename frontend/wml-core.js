@@ -3642,6 +3642,84 @@ window.WML = (function() {
         return b;
     }
 
+    // ── v7.20.129: OUTLINE ROW RULE — the ONE definition of "is this row done?" ──
+    //
+    // WHY THIS EXISTS. The rule was hand-copied into THREE consumers, each carrying a
+    // "mirrors X" comment — a promise, not a guarantee — and they had ALREADY drifted
+    // (the row nodeView never handled `locked`; the other two did):
+    //   1. checkRowComplete        wml-assessment.js   (row nodeView — the row's own ✓ class)
+    //   2. checkSectionComplete    wml-assessment.js   (DOM reader — section header tick)
+    //   3. section nodeView        wml-section-block.js (PM-attr reader — same tick, on mount)
+    // Multi-control rows would have made that four copies of a harder rule. Same failure
+    // class as v7.20.125 (a hardening pass that missed one member of the family), so the
+    // fix is the family's: one rule, three thin adapters.
+    //
+    // The adapters differ ONLY in where they read state from (live DOM vs PM attrs); the
+    // RULE is here. Anything row-completion decides belongs in this file. Callers still own
+    // what is genuinely theirs: text extraction, and the CW single-select pick-group
+    // (a SECTION-level rule — one pick completes the group — never a row rule).
+    //
+    // MULTI-CONTROL (v7.20.129, Neil: "six sections, one row each, options inside"):
+    // a criterion may carry `controls: [ …N control objects… ]`. A criterion WITHOUT it is
+    // a single-control row and behaves byte-identically to before — every other outline
+    // family (literature, CW, para-AO) passes one control and is untouched by this change.
+    const outlineRow = {
+        // A criterion's controls, normalised. Legacy single-control crit ⇒ [crit].
+        controlsOf(crit) {
+            if (!crit || typeof crit !== 'object') return [{}];
+            return (Array.isArray(crit.controls) && crit.controls.length) ? crit.controls : [crit];
+        },
+
+        isMulti(crit) {
+            return !!(crit && Array.isArray(crit.controls) && crit.controls.length);
+        },
+
+        // ⭐ STATE SHAPE — a persisted-identifier decision, so read this before changing it
+        // ([[feedback_key_mismatch_is_the_number_one_recurring_bug]]).
+        //   single-control row (legacy, UNCHANGED): { checked: [0,2], selected: "Quote" }
+        //   multi-control row  (new):               { c: { hook: {checked:[0]}, tone: {selected:"urgent"} } }
+        // A flat `checked` array cannot say WHICH control it belongs to, so multi rows MUST
+        // namespace by control id. Legacy rows keep the flat shape untouched — every saved
+        // literature/CW outline in the DB still reads correctly with zero migration.
+        stateOf(crit, state, ctl) {
+            const st = state || {};
+            if (!this.isMulti(crit)) return st;
+            return ((st.c || {})[ctl && ctl.id] || {});
+        },
+
+        // Merge one control's state back into the row's persisted object (multi-aware).
+        withControlState(crit, state, ctl, next) {
+            const st = state || {};
+            if (!this.isMulti(crit)) return next;
+            const c = Object.assign({}, st.c || {});
+            c[ctl && ctl.id] = next;
+            return Object.assign({}, st, { c });
+        },
+
+        // Is ONE control satisfied? `choice: true` ⇒ ≥1 ticked (the student picks what
+        // applies); no flag ⇒ every item required (v7.20.99: effects vs evidence).
+        controlOk(ctl, st) {
+            const c = ctl || {}, s = st || {};
+            const chk = Array.isArray(s.checked) ? s.checked.length : 0;
+            if (c.type === 'dropdown') return !!s.selected;
+            if (c.type === 'checklist') {
+                const need = c.choice ? 1 : Math.max(1, (Array.isArray(c.items) ? c.items.length : 1));
+                return chk >= need;
+            }
+            if (c.type === 'checkbox') return chk > 0;
+            return true; // no control on this row — text alone completes it
+        },
+
+        // THE RULE. hasText is the caller's (it owns its own text source).
+        // A LOCKED row is a read-only carryover the student cannot fill (v7.19.679) — it can
+        // never be a completion requirement, text or not.
+        complete(crit, state, hasText) {
+            if (crit && (crit.locked === true || crit.locked === 'true')) return true;
+            if (!hasText) return false;
+            return this.controlsOf(crit).every(ctl => this.controlOk(ctl, this.stateOf(crit, state, ctl)));
+        },
+    };
+
     // ── Module Exports ──
     // All core functions/constants available to consuming modules via window.WML
     return {
@@ -3724,5 +3802,8 @@ window.WML = (function() {
         resolvePaperShape,
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
         caps, cap, isMarkingFlow, hasAssessmentSections,
+        // v7.20.129: the ONE outline-row completion rule — all three consumers call it
+        // (row nodeView, checkSectionComplete DOM reader, section nodeView PM-attr reader).
+        outlineRow,
     };
 })();

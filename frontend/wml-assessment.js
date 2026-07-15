@@ -8778,19 +8778,40 @@
             if (locked) return;
             if ((input.textContent || '').trim().length === 0) allFilled = false;
             const cbs = r.querySelectorAll('input[type="checkbox"]');
-            if (cbs.length) {
-                const anyOn = Array.from(cbs).some(c => c.checked);
-                if (anyOn) anyChecked = true;
-                const isPick = /^cw-step-\d+-(logline|idea)/.test(r.getAttribute('data-field-id') || '');
-                // v7.20.99: choice checklists (effects, data-choice="1") complete at >=1 ticked;
-                // required checklists (evidence) still need every item ticked.
-                const isChoice = r.getAttribute('data-choice') === '1';
-                if (isPick) pickGroup = true;
-                else if (isChoice) { if (!anyOn) allFilled = false; }
-                else if (!Array.from(cbs).every(c => c.checked)) allFilled = false;
+            if (Array.from(cbs).some(c => c.checked)) anyChecked = true;
+            const isPick = /^cw-step-\d+-(logline|idea)/.test(r.getAttribute('data-field-id') || '');
+            if (isPick) { pickGroup = true; return; } // section-level rule: one pick completes the group
+            // v7.20.129: read the rule PER CONTROL GROUP, not per row. A multi-control row may
+            // mix a required checklist with a choice one, which the old row-level data-choice
+            // could not express. The RULE itself is WML.outlineRow.controlOk (wml-core.js) —
+            // this only adapts live DOM into the state shape it expects.
+            const rule = window.WML && window.WML.outlineRow;
+            const groups = r.querySelectorAll('.swml-outline-ctl');
+            if (!rule || !groups.length) {
+                // Pre-v7.20.129 DOM (no groups) or a load-order break — fall back to the old
+                // row-level reading rather than silently ticking.
+                if (cbs.length) {
+                    const isChoice = r.getAttribute('data-choice') === '1';
+                    if (isChoice) { if (!Array.from(cbs).some(c => c.checked)) allFilled = false; }
+                    else if (!Array.from(cbs).every(c => c.checked)) allFilled = false;
+                }
+                const sel0 = r.querySelector('.swml-outline-select');
+                if (sel0 && !sel0.value) allFilled = false;
+                return;
             }
-            const sel = r.querySelector('.swml-outline-select');
-            if (sel && !sel.value) allFilled = false;
+            groups.forEach(g => {
+                const boxes = Array.from(g.querySelectorAll('input[type="checkbox"]'));
+                const sel = g.querySelector('.swml-outline-select');
+                const ctl = {
+                    type: g.getAttribute('data-ctl-type') || '',
+                    choice: g.getAttribute('data-choice') === '1',
+                    items: boxes, // controlOk only reads .length
+                };
+                const st = { checked: [] };
+                boxes.forEach((c, i) => { if (c.checked) st.checked.push(i); });
+                if (sel) st.selected = sel.value;
+                if (!rule.controlOk(ctl, st)) allFilled = false;
+            });
         });
         const complete = allFilled && (!pickGroup || anyChecked);
         sectionEl.setAttribute('data-section-complete', complete ? 'true' : 'false');
@@ -23686,28 +23707,89 @@
                         criteriaEl.appendChild(labelEl);
                     }
 
-                    const checkboxes = []; // track for state persistence
+                    // \u2500\u2500 v7.20.129: MULTI-CONTROL ROWS \u2500\u2500
+                    // Neil's ruling: "it's actually just six sections\u2026 it's six with multiple
+                    // options in each one." The engine rendered ONE control per row, so six
+                    // sections could only be expressed as twelve rows. A criterion may now carry
+                    // `controls: [ \u2026N control objects\u2026 ]`; a criterion WITHOUT it is a single-
+                    // control row and renders byte-identically to before (every other outline
+                    // family \u2014 literature, CW, para-AO \u2014 passes one, so they are untouched).
+                    //
+                    // The completion RULE is NOT here \u2014 it is WML.outlineRow (wml-core.js), the
+                    // single definition all three consumers call. This is a renderer.
+                    const CTL = window.WML && window.WML.outlineRow;
+                    if (!CTL && !window.__swmlOutlineRuleWarned) {
+                        window.__swmlOutlineRuleWarned = true;
+                        console.warn('WML: WML.outlineRow missing \u2014 outline rows degraded to text-only completion. Check wml-core.js load order.');
+                    }
+                    const controls = CTL ? CTL.controlsOf(crit) : [crit];
+                    const isMulti = CTL ? CTL.isMulti(crit) : false;
+                    // [{ ctl, boxes: [checkbox\u2026], sel: <select>|null }] \u2014 one entry per control,
+                    // in `controls` order. Checkbox INDICES are per-control (they index that
+                    // control's own items), which is exactly why multi rows namespace their
+                    // saved state by control id rather than sharing one flat `checked` array.
+                    const rendered = [];
 
-                    if (crit.type === 'checklist' && crit.items) {
+                    // Live state read off the DOM for ONE control (the student may have just
+                    // toggled it, so the DOM leads the persisted attr).
+                    const liveState = (entry) => {
+                        const checked = [];
+                        entry.boxes.forEach((c, i) => { if (c.checked) checked.push(i); });
+                        const st = { checked };
+                        if (entry.sel) st.selected = entry.sel.value;
+                        return st;
+                    };
+
+                    // Persist ONE control's state, merged into the row's object (multi-aware).
+                    const persistControl = (entry) => {
+                        const next = liveState(entry);
+                        savedState = CTL ? CTL.withControlState(crit, savedState, entry.ctl, next) : next;
+                        persistState(savedState);
+                    };
+
+                    controls.forEach((ctl) => {
+                        const st = CTL ? CTL.stateOf(crit, savedState, ctl) : savedState;
+                        const entry = { ctl, boxes: [], sel: null };
+                        rendered.push(entry);
+
+                        // Every control gets its own group element carrying its OWN rule flags.
+                        // The DOM completion reader (checkSectionComplete) applies the rule PER
+                        // GROUP: a row may now mix a required checklist with a choice one, which
+                        // the old row-level data-choice attribute could not express.
+                        const group = document.createElement('div');
+                        group.className = 'swml-outline-ctl';
+                        if (ctl.id) group.setAttribute('data-ctl-id', ctl.id);
+                        if (ctl.type) group.setAttribute('data-ctl-type', ctl.type);
+                        if (ctl.choice) group.setAttribute('data-choice', '1');
+
+                        // Multi rows label each control (the row label is the SECTION \u2014
+                        // "Introduction" \u2014 so "Hook" / "Tone" must sit on their own controls).
+                        // Single rows already carry their label at row level; no change there.
+                        if (isMulti && ctl.label) {
+                            const cl = document.createElement('span');
+                            cl.className = 'swml-outline-ctl-label';
+                            cl.textContent = ctl.label;
+                            group.appendChild(cl);
+                        }
+
+                    if (ctl.type === 'checklist' && ctl.items) {
                         const list = document.createElement('div');
                         list.className = 'swml-outline-checklist';
-                        crit.items.forEach((item, idx) => {
+                        ctl.items.forEach((item, idx) => {
                             const lbl = document.createElement('label');
                             lbl.className = 'swml-outline-check';
                             const cb = document.createElement('input');
                             cb.type = 'checkbox';
                             // Restore saved state
-                            if (savedState.checked && savedState.checked.includes(idx)) cb.checked = true;
+                            if (st.checked && st.checked.includes(idx)) cb.checked = true;
                             cb.addEventListener('mousedown', e => e.stopPropagation());
                             cb.addEventListener('click', e => {
                                 e.stopPropagation();
-                                const indices = [];
-                                checkboxes.forEach((c, i) => { if (c.checked) indices.push(i); });
-                                persistState({ checked: indices });
+                                persistControl(entry);
                                 checkRowComplete(); // v7.15.0
                                 syncSection(); // v7.20.98: refresh section header tick
                             });
-                            checkboxes.push(cb);
+                            entry.boxes.push(cb);
                             lbl.appendChild(cb);
                             const txt = document.createElement('span');
                             txt.className = 'swml-outline-check-label';
@@ -23715,27 +23797,28 @@
                             lbl.appendChild(txt);
                             list.appendChild(lbl);
                         });
-                        criteriaEl.appendChild(list);
-                    } else if (crit.type === 'dropdown' && crit.items) {
+                        group.appendChild(list);
+                    } else if (ctl.type === 'dropdown' && ctl.items) {
                         const sel = document.createElement('select');
                         sel.className = 'swml-outline-select';
+                        entry.sel = sel;
                         const placeholder = document.createElement('option');
                         placeholder.value = '';
                         placeholder.textContent = 'Choose one\u2026';
                         placeholder.disabled = true;
-                        if (!savedState.selected) placeholder.selected = true;
+                        if (!st.selected) placeholder.selected = true;
                         sel.appendChild(placeholder);
-                        crit.items.forEach(item => {
+                        ctl.items.forEach(item => {
                             const opt = document.createElement('option');
                             opt.value = item;
                             opt.textContent = item;
-                            if (savedState.selected === item) opt.selected = true;
+                            if (st.selected === item) opt.selected = true;
                             sel.appendChild(opt);
                         });
                         sel.addEventListener('mousedown', e => e.stopPropagation());
                         sel.addEventListener('change', e => {
                             e.stopPropagation();
-                            persistState({ selected: sel.value });
+                            persistControl(entry);
                             sel.classList.toggle('swml-select-filled', !!sel.value); // v7.15.0
                             checkRowComplete();
                             syncSection(); // v7.20.98: refresh section header tick
@@ -23761,18 +23844,18 @@
                                 }
                             }
                         });
-                        if (savedState.selected) sel.classList.add('swml-select-filled'); // v7.15.0: restore on load
-                        criteriaEl.appendChild(sel);
-                    } else if (crit.type === 'checkbox') {
+                        if (st.selected) sel.classList.add('swml-select-filled'); // v7.15.0: restore on load
+                        group.appendChild(sel);
+                    } else if (ctl.type === 'checkbox') {
                         const lbl = document.createElement('label');
                         lbl.className = 'swml-outline-check';
                         const cb = document.createElement('input');
                         cb.type = 'checkbox';
-                        if (savedState.checked && savedState.checked.includes(0)) cb.checked = true;
+                        if (st.checked && st.checked.includes(0)) cb.checked = true;
                         cb.addEventListener('mousedown', e => e.stopPropagation());
                         cb.addEventListener('click', e => {
                             e.stopPropagation();
-                            persistState({ checked: cb.checked ? [0] : [] });
+                            persistControl(entry);
                             checkRowComplete(); // v7.15.0
                             syncSection(); // v7.20.98: refresh section header tick
                             // v7.19.461: CW Step 2 — the "choose this idea" checkbox is a
@@ -23809,10 +23892,13 @@
                                 }
                             }
                         });
-                        checkboxes.push(cb);
+                        entry.boxes.push(cb);
                         lbl.appendChild(cb);
-                        criteriaEl.appendChild(lbl);
+                        group.appendChild(lbl);
                     }
+
+                        criteriaEl.appendChild(group);
+                    });
 
                     dom.appendChild(criteriaEl);
 
@@ -23833,20 +23919,13 @@
                     // ── v7.15.0: Row completion — criteria check only (text check via global onUpdate) ──
                     function checkRowComplete() {
                         const hasText = (contentDOM.textContent || '').trim().length > 0;
-                        let criteriaOk = false;
-                        if (crit.type === 'dropdown') {
-                            const sel = criteriaEl.querySelector('.swml-outline-select');
-                            criteriaOk = sel && !!sel.value;
-                        } else if (crit.type === 'checklist' && crit.items) {
-                            const checkedCount = checkboxes.filter(c => c.checked).length;
-                            // v7.20.99: choice checklists (effects) complete at >=1; required (evidence) need all.
-                            const need = crit.choice ? 1 : Math.max(1, crit.items.length);
-                            criteriaOk = checkedCount >= need;
-                        } else if (crit.type === 'checkbox') {
-                            criteriaOk = checkboxes.some(c => c.checked);
-                        } else {
-                            criteriaOk = true;
-                        }
+                        // v7.20.129: EVERY control must be satisfied, read live off the DOM.
+                        // The per-control rule is WML.outlineRow.controlOk — the same function
+                        // the section tick uses, so the row's ✓ and the header's ✓ can't disagree.
+                        // (This stays a per-control check rather than outlineRow.complete: the
+                        // row class is cosmetic and must not auto-tick a LOCKED empty row, which
+                        // .complete deliberately does for the SECTION count. v7.19.679.)
+                        const criteriaOk = CTL ? rendered.every(e => CTL.controlOk(e.ctl, liveState(e))) : true;
                         const complete = hasText && criteriaOk;
                         dom.classList.toggle('swml-row-complete', complete);
                         contentDOM.classList.toggle('swml-input-filled', hasText);
@@ -23870,14 +23949,20 @@
                     }
 
                     // Calculate min-height synchronously from criteria data.
+                    // v7.20.129: SUM the controls — a multi-control row is as tall as its whole
+                    // option column (the criteria panel is absolutely positioned at 180px wide,
+                    // so the row must reserve the height or the panel overlaps the next row).
                     let critH = 18;
                     if (crit.ao || crit.label) {
                         const labelLen = (crit.label || '').length;
                         critH += labelLen > 20 ? 40 : 22;
                     }
-                    if (crit.type === 'checklist' && crit.items) critH += crit.items.length * 24;
-                    else if (crit.type === 'checkbox') critH += 24;
-                    else if (crit.type === 'dropdown') critH += 32;
+                    controls.forEach((ctl) => {
+                        if (isMulti && ctl.label) critH += 18; // the control's own label line
+                        if (ctl.type === 'checklist' && ctl.items) critH += ctl.items.length * 24;
+                        else if (ctl.type === 'checkbox') critH += 24;
+                        else if (ctl.type === 'dropdown') critH += 32;
+                    });
                     dom.style.minHeight = critH + 'px';
 
                     return {
@@ -23908,13 +23993,18 @@
                             } else {
                                 try { st = JSON.parse(updatedNode.attrs.checkState || '{}'); } catch(e) { st = {}; }
                             }
-                            if (st.checked) {
-                                checkboxes.forEach((cb, i) => { cb.checked = st.checked.includes(i); });
-                            }
-                            if (st.selected) {
-                                const sel = criteriaEl.querySelector('.swml-outline-select');
-                                if (sel) sel.value = st.selected;
-                            }
+                            // v7.20.129: restore PER CONTROL. Checkbox indices are per-control,
+                            // so a multi row's flat replay would tick the wrong boxes — the state
+                            // is namespaced by control id and unpacked through the same resolver
+                            // the renderer used (WML.outlineRow.stateOf).
+                            savedState = st;
+                            rendered.forEach((entry) => {
+                                const cs = CTL ? CTL.stateOf(crit, st, entry.ctl) : st;
+                                if (cs.checked) {
+                                    entry.boxes.forEach((cb, i) => { cb.checked = cs.checked.includes(i); });
+                                }
+                                if (cs.selected && entry.sel) entry.sel.value = cs.selected;
+                            });
                             return true;
                         },
                     };

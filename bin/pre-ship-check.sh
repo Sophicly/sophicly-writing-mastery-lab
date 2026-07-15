@@ -60,6 +60,18 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/build-techniques-index.js --check || fail=1
 fi
 
+# v7.20.129: the outline-row completion RULE (WML.outlineRow in wml-core.js) is called by all
+# three consumers — the row nodeView, the checkSectionComplete DOM reader, and the section
+# nodeView. It used to be three hand-copies that drifted. The harness proves single-control rows
+# stay byte-identical to v7.20.128 (an equivalence sweep against the OLD rule as an oracle, over
+# every real criterion) and that multi-control state stays namespaced by control id — a flat
+# `checked` array on a multi row is the key-mismatch bug class and the harness fails on it.
+# Invisible to node --check: every mutation tested here is syntactically perfect.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-core\.js|wml-assessment\.js|wml-section-block\.js|outline-rule-harness\.js'; then
+  node bin/outline-rule-harness.js || fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   echo ""
   echo "pre-ship gate FAILED — fix before shipping (do NOT --no-verify past it)."
