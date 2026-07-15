@@ -4573,7 +4573,7 @@ class SWML_REST_API {
             // than invent. (Per-element capture = Phase 1b `element[]`.)
             $out['question'] = [[
                 'key'       => 'essay',
-                'label'     => (string) $resolved['key'],
+                'label'     => self::breakdown_label($resolved['key']),
                 'earned'    => $earned + 0,
                 'available' => $available,
                 'ao'        => array_values((array) ($resolved['spec']['aos'] ?? [])),
@@ -4597,7 +4597,6 @@ class SWML_REST_API {
                 ];
             }
         }
-        $ao_desc = (array) ($spec['aos_descriptions'] ?? []);
 
         $questions = [];
         $ao_acc    = [];   // 'AO2' => ['earned'=>x,'available'=>y]
@@ -4642,7 +4641,7 @@ class SWML_REST_API {
 
             $questions[] = [
                 'key'       => $key,
-                'label'     => $sp['description'] !== '' ? $sp['description'] : $key,
+                'label'     => self::breakdown_label($sp['description'] !== '' ? $sp['description'] : $key),
                 'earned'    => $qe + 0,
                 'available' => $qa,
                 'ao'        => $sp['aos'],
@@ -4668,8 +4667,16 @@ class SWML_REST_API {
             $ao = [];
             foreach ($ao_acc as $k => $v) {
                 $ao[] = [
+                    // label = the AO id, deliberately. The spec's `aos_descriptions` are
+                    // PROSE, not labels (AQA's AO5 runs ~258 chars vs a varchar(180)
+                    // dim_label — it would truncate mid-sentence), and only 1 of 14 papers
+                    // defines them at all. A shared short-name map is NOT an option either:
+                    // AO meanings differ per board (Edexcel IGCSE AO4 = Context, the
+                    // OPPOSITE of GCSE's SPaG), so one map would confidently mislabel.
+                    // The id is canonical and is what trends key on; display naming belongs
+                    // to the dashboard. (feedback_never_invent_mark_scheme_claims)
                     'key'       => $k,
-                    'label'     => isset($ao_desc[$k]) ? (string) $ao_desc[$k] : $k,
+                    'label'     => $k,
                     'earned'    => $v['earned'] + 0,
                     'available' => $v['available'],
                 ];
@@ -4682,8 +4689,26 @@ class SWML_REST_API {
     }
 
     /**
+     * v7.20.113: fit a label to student-data's dim_label varchar(180) HERE, at the
+     * producer. The consumer sanitize_text_field()s but does NOT length-guard, so an
+     * over-long label truncates mid-word (or hard-fails the INSERT under strict mode)
+     * — a silent corruption with no backfill to repair it.
+     */
+    private static function breakdown_label($s) {
+        $s = trim((string) $s);
+        if (function_exists('mb_strlen') ? mb_strlen($s) <= 180 : strlen($s) <= 180) return $s;
+        return (function_exists('mb_substr') ? mb_substr($s, 0, 179) : substr($s, 0, 179)) . '…';
+    }
+
+    /**
      * v7.20.113: boundary table for a paper of $max marks, as [{grade,min,max}].
      * Delegates to the ONE canonical builder — never a second band.
+     *
+     * NOTE: student-data's persist_assessment_breakdown() currently reads only
+     * overall.{earned,available,committed_at} and the dimension arrays — it has no
+     * column for boundaries/ceiling/notes, so those ride the hook for any other
+     * listener but are NOT persisted today. The 07-06 contract asked for boundaries
+     * explicitly; flagged back to dashboard-chat rather than dropped here.
      */
     private static function breakdown_boundaries($max) {
         if (!class_exists('SWML_Protocol_Router') || $max <= 0) return [];
