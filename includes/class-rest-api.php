@@ -4498,6 +4498,206 @@ class SWML_REST_API {
     // ═══════════════════════════════════════════
 
     /**
+     * v7.20.113: ANALYTICS BREAKDOWN — the per-AO / per-question / boundaries payload
+     * the dashboard's trends capture contract needs (handoff
+     * dashboard-to-wmlA-EMIT-assessment-breakdown-payload-2026-07-06, LOCKED).
+     *
+     * DIVISION OF AUTHORITY (deliberate — do not move either half):
+     *   CLIENT sends only what it alone can see: the LEDGER facts read off the doc's
+     *     feedback boxes (per-question earned/available) + the Q5 AO5/AO6 holistic
+     *     marks. Same parse as recalculateScoreSummary(), so these numbers cannot
+     *     drift from the audited total (feedback_one_source_of_truth_numbers).
+     *   SERVER (here) adds only what IT is the authority for: the AO taxonomy +
+     *     labels from the paper specs, and the boundary table from the ONE canonical
+     *     builder. The client never invents an AO map.
+     *
+     * WHY subject AND text: the phase record is keyed by TEXT (real value
+     * 'aqa_lang_paper_1'), but the spec JSON is keyed by SUBJECT ('language_p1').
+     * There is no text->spec alias and adding one would be a SECOND naming layer
+     * (§TEXT-SLUG REGISTRY). The client already resolves subject via the shortcode
+     * course-context derivation, so it sends it; we normalise through the one
+     * canonical ladder (SWML_Protocol_Router::normalise_subject_key).
+     *
+     * NEVER GUESS: any dimension we cannot derive is OMITTED and noted in
+     * breakdown['notes'] — a wrong number is worse than an absent one, and there is
+     * no backfill to repair it later.
+     *
+     * @return array|null  null when even `overall` is unavailable (caller omits the key).
+     */
+    private function build_breakdown($board, $subject, $client, $grade) {
+        if (!is_array($client)) return null;
+        $c_overall = $client['overall'] ?? [];
+        $earned    = isset($c_overall['earned'])    ? (float) $c_overall['earned']    : null;
+        $available = isset($c_overall['available']) ? (int)   $c_overall['available'] : 0;
+        if ($earned === null || $available <= 0) return null;
+
+        $notes = [];
+        $out = [
+            'overall' => [
+                'earned'       => $earned + 0,
+                'available'    => $available,
+                'grade'        => $grade === '' ? null : $grade,
+                'committed_at' => gmdate('c'),
+                // The ONE canonical band (Sophicly's own, ~10pp above the real exam —
+                // see _grade_band_percent in language-paper-specs.json). NOT the awarding
+                // body's published boundaries; the dashboard must not label them as such.
+                'boundaries'   => self::breakdown_boundaries($available),
+            ],
+        ];
+
+        // Word-count CEILING (Neil, settled): marks are never deducted — the TOTAL simply
+        // cannot rise above the ceiling. `earned` is therefore the marks as AWARDED, and the
+        // grade derives from MIN(earned, ceiling). Emitted only when a ceiling is actually
+        // live, so its presence means "this attempt was capped".
+        if (isset($c_overall['ceiling']) && is_numeric($c_overall['ceiling'])) {
+            $out['overall']['ceiling'] = (float) $c_overall['ceiling'] + 0;
+        }
+
+        $resolved = class_exists('SWML_Protocol_Router')
+            ? SWML_Protocol_Router::get_paper_spec($board, $subject)
+            : null;
+
+        if (!$resolved) {
+            // Fail LOUD. A missing spec means the emit ships without its granular half —
+            // silence here would read as success (feedback_slug_trace_mandatory_preship_gate).
+            error_log(sprintf('WML breakdown: NO PAPER SPEC for board=%s subject=%s — emitting overall only', $board, $subject));
+            $notes[] = 'no_paper_spec:' . $board . '/' . $subject;
+            $out['notes'] = $notes;
+            return $out;
+        }
+
+        if ($resolved['kind'] === 'lit') {
+            // Literature marks per ELEMENT (intro / body xN / conclusion), never per AO —
+            // the spec's AO split lives only in a prose `_note`, and a student's earned
+            // AO1-vs-AO2 is genuinely not separable from element marks. Omit + note rather
+            // than invent. (Per-element capture = Phase 1b `element[]`.)
+            $out['question'] = [[
+                'key'       => 'essay',
+                'label'     => (string) $resolved['key'],
+                'earned'    => $earned + 0,
+                'available' => $available,
+                'ao'        => array_values((array) ($resolved['spec']['aos'] ?? [])),
+            ]];
+            $notes[] = 'ao_not_separable_for_literature:marking_is_per_element';
+            $out['notes'] = $notes;
+            return $out;
+        }
+
+        // ── Language paper: per-question marks from the doc, AO map from the spec ──
+        $spec    = $resolved['spec'];
+        $qspec   = [];   // 'Q1' => ['marks'=>4,'aos'=>['AO1'],'description'=>...]
+        foreach (($spec['sections'] ?? []) as $sec) {
+            foreach (($sec['questions'] ?? []) as $q) {
+                $id = (string) ($q['id'] ?? '');
+                if ($id === '') continue;
+                $qspec[$id] = [
+                    'marks'       => isset($q['marks']) ? (int) $q['marks'] : null,
+                    'aos'         => array_values((array) ($q['aos'] ?? [])),
+                    'description' => (string) ($q['description'] ?? ''),
+                ];
+            }
+        }
+        $ao_desc = (array) ($spec['aos_descriptions'] ?? []);
+
+        $questions = [];
+        $ao_acc    = [];   // 'AO2' => ['earned'=>x,'available'=>y]
+        $add_ao = function ($key, $e, $a) use (&$ao_acc) {
+            if (!isset($ao_acc[$key])) $ao_acc[$key] = ['earned' => 0, 'available' => 0];
+            $ao_acc[$key]['earned']    += $e;
+            $ao_acc[$key]['available'] += $a;
+        };
+
+        // Q5-style holistic AO marks (e.g. "Q5 Total: AO5 17/24 + AO6 11/16 = 28/40"),
+        // audited CLIENT-side against the ledger box before being sent. Keyed by question.
+        $holistic = [];
+        foreach ((array) ($client['ao_holistic'] ?? []) as $h) {
+            $qk = (string) ($h['question'] ?? '');
+            $ak = (string) ($h['key'] ?? '');
+            if ($qk === '' || $ak === '') continue;
+            $holistic[$qk][] = [
+                'key'       => $ak,
+                'earned'    => (float) ($h['earned'] ?? 0),
+                'available' => (int)   ($h['available'] ?? 0),
+            ];
+        }
+
+        foreach ((array) ($client['question'] ?? []) as $cq) {
+            $key = (string) ($cq['key'] ?? '');
+            if ($key === '' || !isset($qspec[$key])) {
+                if ($key !== '') $notes[] = 'question_not_in_spec:' . $key;
+                continue;
+            }
+            $qe = (float) ($cq['earned'] ?? 0);
+            $qa = (int)   ($cq['available'] ?? 0);
+            $sp = $qspec[$key];
+
+            // The doc is what the student was actually marked against; the spec is what
+            // the paper SHOULD be. A divergence is a real signal — keep the doc's number
+            // (it matches the audited total) but never let it pass silently.
+            if ($sp['marks'] !== null && $qa !== $sp['marks']) {
+                error_log(sprintf('WML breakdown: %s doc max %d != spec max %d (board=%s subject=%s)',
+                    $key, $qa, $sp['marks'], $board, $subject));
+                $notes[] = 'max_mismatch:' . $key . ':doc' . $qa . ':spec' . $sp['marks'];
+            }
+
+            $questions[] = [
+                'key'       => $key,
+                'label'     => $sp['description'] !== '' ? $sp['description'] : $key,
+                'earned'    => $qe + 0,
+                'available' => $qa,
+                'ao'        => $sp['aos'],
+            ];
+
+            if (count($sp['aos']) === 1) {
+                // Single-AO question — the whole mark belongs to that AO. Exact, no guess.
+                $add_ao($sp['aos'][0], $qe, $qa);
+            } elseif (!empty($holistic[$key])) {
+                foreach ($holistic[$key] as $h) {
+                    if (!in_array($h['key'], $sp['aos'], true)) continue;
+                    $add_ao($h['key'], $h['earned'], $h['available']);
+                }
+            } elseif (count($sp['aos']) > 1) {
+                // Multi-AO question with no audited split — omit, never apportion.
+                $notes[] = 'ao_split_unavailable:' . $key . ':' . implode('+', $sp['aos']);
+            }
+        }
+
+        if ($questions) $out['question'] = $questions;
+
+        if ($ao_acc) {
+            $ao = [];
+            foreach ($ao_acc as $k => $v) {
+                $ao[] = [
+                    'key'       => $k,
+                    'label'     => isset($ao_desc[$k]) ? (string) $ao_desc[$k] : $k,
+                    'earned'    => $v['earned'] + 0,
+                    'available' => $v['available'],
+                ];
+            }
+            $out['ao'] = $ao;
+        }
+
+        if ($notes) $out['notes'] = $notes;
+        return $out;
+    }
+
+    /**
+     * v7.20.113: boundary table for a paper of $max marks, as [{grade,min,max}].
+     * Delegates to the ONE canonical builder — never a second band.
+     */
+    private static function breakdown_boundaries($max) {
+        if (!class_exists('SWML_Protocol_Router') || $max <= 0) return [];
+        $bm  = SWML_Protocol_Router::grade_boundary_marks($max);
+        $out = [];
+        $upper = (int) $max;
+        foreach ($bm as $g => $min) {
+            $out[] = ['grade' => (int) $g, 'min' => (int) $min, 'max' => $upper];
+            $upper = (int) $min - 1;
+        }
+        return $out;
+    }
+
+    /**
      * Mark a phase as complete.
      * Stores: swml_phase_{board}_{text}_t{topic}_{phase}
      * Fires: do_action('swml_phase_complete', ...) for external integrations.
@@ -4579,6 +4779,17 @@ class SWML_REST_API {
             'attempt'      => $attempt,
             'completed_at' => current_time('mysql'),
         ];
+
+        // v7.20.113: analytics breakdown (see build_breakdown). Additive — absent for
+        // non-assessment commits and for any client that doesn't send the ledger facts,
+        // in which case student-data's on_phase_complete simply no-ops on it.
+        $breakdown = $this->build_breakdown(
+            $board,
+            sanitize_text_field($params['subject'] ?? ''),
+            $params['breakdown'] ?? null,
+            $data['grade']
+        );
+        if ($breakdown) $data['breakdown'] = $breakdown;
 
         $meta_key = $this->phase_meta_key($board, $text, $topic, $phase, $attempt);
         $json     = wp_json_encode($data);

@@ -75,10 +75,18 @@ class SWML_Protocol_Router {
      * @param array    $lesson_meta      Optional lesson-meta overrides (e.g. ['shape_override' => 'lit-no-extract']).
      * @return array { shape, marks?, spag_marks?, aos?, extract?, question_prefix?, source }
      */
-    private $_paper_specs_cache = null;
-
     private function load_paper_specs() {
-        if ($this->_paper_specs_cache !== null) return $this->_paper_specs_cache;
+        return self::paper_specs();
+    }
+
+    /**
+     * v7.20.113: static form of the spec loader so non-instance callers (the
+     * analytics breakdown emit in class-rest-api) read the SAME two JSON files
+     * through the SAME cache — never a second loader that can drift.
+     */
+    public static function paper_specs() {
+        static $cache = null;
+        if ($cache !== null) return $cache;
         $out = ['lit' => [], 'lang' => []];
         $lit_file  = SWML_PROTOCOLS_PATH . 'shared/literature-paper-specs.json';
         $lang_file = SWML_PROTOCOLS_PATH . 'shared/language-paper-specs.json';
@@ -90,8 +98,35 @@ class SWML_Protocol_Router {
             $decoded = json_decode(file_get_contents($lang_file), true);
             if (is_array($decoded)) $out['lang'] = $decoded;
         }
-        $this->_paper_specs_cache = $out;
-        return $out;
+        $cache = $out;
+        return $cache;
+    }
+
+    /**
+     * v7.20.113: the WHOLE paper spec for a board/subject, resolved through the
+     * ONE canonical subject ladder (normalise_subject_key). resolve_paper_shape()
+     * answers "what shape is question N"; this answers "what is this paper" —
+     * the analytics emit needs every question's marks + AOs at once.
+     *
+     * Returns ['kind' => 'lang'|'lit', 'key' => <spec key>, 'spec' => array] or
+     * null when the board/subject resolves to no spec (caller must fail loud —
+     * a silent null is how an emit ships inert).
+     */
+    public static function get_paper_spec($board, $subject) {
+        $specs = self::paper_specs();
+        $nb    = strtolower(str_replace('_', '-', (string) $board));
+        $sk    = self::normalise_subject_key($subject, $board);
+        // Same order as resolve_paper_shape(): literature first, then language.
+        foreach ([$sk, $subject] as $_k) {
+            if ($_k === '' || $_k === null) continue;
+            if (isset($specs['lit'][$nb][$_k]) && is_array($specs['lit'][$nb][$_k])) {
+                return ['kind' => 'lit', 'key' => $_k, 'spec' => $specs['lit'][$nb][$_k]];
+            }
+            if (isset($specs['lang'][$nb][$_k]['sections'])) {
+                return ['kind' => 'lang', 'key' => $_k, 'spec' => $specs['lang'][$nb][$_k]];
+            }
+        }
+        return null;
     }
 
     /**
@@ -176,7 +211,7 @@ class SWML_Protocol_Router {
      * subjects (shakespeare, 19th_century, language_c1, etc.) already match
      * the JSON shape and don't need remapping.
      */
-    private function normalise_subject_key($subject, $board = '') {
+    public static function normalise_subject_key($subject, $board = '') {
         $s = (string) $subject;
         $nb = strtolower(str_replace('_', '-', (string) $board));
         // v7.20.95 (P2 audit S2): the long form `language_paper_N` drifted past this
@@ -210,7 +245,7 @@ class SWML_Protocol_Router {
 
         $specs = $this->load_paper_specs();
         $norm_board = strtolower(str_replace('_', '-', (string) $board));
-        $sk = $this->normalise_subject_key($subject, $board);
+        $sk = self::normalise_subject_key($subject, $board);
 
         // 2. Literature specs
         foreach ([$sk, $subject] as $_k) {
@@ -281,7 +316,7 @@ class SWML_Protocol_Router {
     private function build_assessment_schema_block($board, $subject) {
         $specs = $this->load_paper_specs();
         $nb = strtolower(str_replace('_', '-', (string) $board));
-        $sk = $this->normalise_subject_key($subject, $board);
+        $sk = self::normalise_subject_key($subject, $board);
 
         $paper = $specs['lang'][$nb][$sk] ?? null;
         if (!$paper) $paper = $specs['lit'][$nb][$sk] ?? null;
@@ -4808,7 +4843,7 @@ TEMPLATE;
         $subject = $context['subject'] ?? '';
         $specs = $this->load_paper_specs();
         $nb = strtolower(str_replace('_', '-', (string) $board));
-        $sk = $this->normalise_subject_key($subject, $board);
+        $sk = self::normalise_subject_key($subject, $board);
         $paper = $specs['lang'][$nb][$sk] ?? ($specs['lang'][$nb][$subject] ?? null);
         if (!is_array($paper) || empty($paper['sections']) || !is_array($paper['sections'])) return [];
         $out = [];

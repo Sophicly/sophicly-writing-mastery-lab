@@ -27863,6 +27863,90 @@
                 return first.length > 180 ? first.slice(0, 177).trimEnd() + '…' : first;
             } catch (_) { return ''; }
         }
+        // v7.20.113: ANALYTICS BREAKDOWN (client half) — the LEDGER facts only this side
+        // can see. The server adds the AO taxonomy + boundaries from the paper specs; we
+        // never invent an AO map here (see build_breakdown in class-rest-api.php).
+        //
+        // ONE SOURCE: earned/available are parsed with the SAME regex recalculateScoreSummary
+        // uses, off the SAME feedback boxes, so a question's marks can never drift from the
+        // audited total (feedback_one_source_of_truth_numbers). Unmarked boxes ("—") are
+        // OMITTED, never coerced to 0 — an absent dimension beats a fabricated zero, and
+        // there is no backfill to repair a wrong number later.
+        //
+        // Q5-style holistic AO split: the protocol MANDATES the line
+        // "Q5 Total: AO5 [X]/24 + AO6 [Y]/16 = [Z]/40" (aqa/language1 protocol-a-assessment.md
+        // L617, language2 L658). AO5/AO6 are two INDEPENDENT holistic judgements, not a split
+        // of one 40 (foundation-lang1.md L86) — code cannot derive them, only a marker awards
+        // them. So we read them, then AUDIT them against the ledger box; anything that fails
+        // the audit is dropped with a warning rather than shipped.
+        const _AO_SPLIT_RE = /AO5\s*:?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*\+\s*AO6\s*:?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*=\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)/i;
+        function _breakdownFromDoc(finalMarks, maxTotal) {
+            try {
+                const editor = document.getElementById('swml-tiptap-editor');
+                if (!editor || !(maxTotal > 0)) return null;
+                const question = [];
+                const ao_holistic = [];
+                editor.querySelectorAll('[data-section-type="feedback"]').forEach(section => {
+                    const label = section.getAttribute('data-section-label') || '';
+                    const m = label.match(/\((\S+)\s*\/\s*(\d+)\)$/);   // === recalculateScoreSummary
+                    if (!m || m[1] === '—') return;                      // unset → omit, never 0
+                    const qm = label.match(/feedback\s*[:\-]?\s*q\s*(\d+)/i); // === _buildLangSidebarModel
+                    if (!qm) return;                                     // element box (lit) → not a question dimension
+                    const earned = parseFloat(m[1]);
+                    const available = parseInt(m[2], 10);
+                    if (!isFinite(earned) || !(available > 0)) return;
+                    const key = 'Q' + qm[1];
+                    question.push({ key: key, earned: earned, available: available });
+
+                    const sp = _AO_SPLIT_RE.exec(String(section.textContent || ''));
+                    if (!sp) return;
+                    const a5e = parseFloat(sp[1]), a5a = parseInt(sp[2], 10);
+                    const a6e = parseFloat(sp[3]), a6a = parseInt(sp[4], 10);
+                    const z   = parseFloat(sp[5]), zm  = parseInt(sp[6], 10);
+                    const sum = a5e + a6e;
+                    // AUDIT — every one of these must hold or the split is not trustworthy.
+                    const ok = isFinite(a5e) && isFinite(a6e) && isFinite(z)
+                        && zm === available            // the line's max agrees with the box
+                        && a5a + a6a === zm            // the AO maxima partition the question
+                        && Math.abs(z - earned) < 0.01 // the line's total IS the ledger's mark
+                        && sum >= z - 0.01;            // marks can be CAPPED (never invented)
+                    if (!ok) {
+                        console.warn('WML breakdown: ' + key + ' AO split failed audit — omitted.',
+                            { ao5: a5e + '/' + a5a, ao6: a6e + '/' + a6a, line: z + '/' + zm, box: earned + '/' + available });
+                        return;
+                    }
+                    // Word-count CEILING (Neil, settled): Q5 Total = MIN(AO5+AO6, C) — the AO
+                    // marks stay as AWARDED and the TOTAL is capped. So when a cap bites,
+                    // AO5+AO6 legitimately exceeds the question total. We emit the awarded
+                    // marks and flag the cap rather than apportion it (that would be a guess).
+                    if (sum > z + 0.01) {
+                        question[question.length - 1].capped_from = sum;
+                        console.log('WML breakdown: ' + key + ' word-count ceiling applied — AO5+AO6 ' + sum + ' capped to ' + z);
+                    }
+                    ao_holistic.push({ question: key, key: 'AO5', earned: a5e, available: a5a });
+                    ao_holistic.push({ question: key, key: 'AO6', earned: a6e, available: a6a });
+                });
+                if (!question.length) return null;
+                const out = {
+                    overall: { earned: finalMarks, available: maxTotal },
+                    question: question,
+                };
+                // The caller hands us the RAW box sum (same value it puts in total_score), while
+                // the committed GRADE derives from MIN(sum, max − wcPenalty). So when a ceiling
+                // is live, earned alone cannot reproduce the grade. Emit the ceiling rather than
+                // silently pre-apply it: the awarded marks stay honest AND the grade stays
+                // derivable. (Lit-only today — recalculateScoreSummary gates _wcPen on
+                // !isLanguageSubject(), so language papers always send ceiling-free numbers.)
+                if (typeof _docWcPenalty === 'number' && _docWcPenalty > 0) {
+                    out.overall.ceiling = Math.max(0, maxTotal - _docWcPenalty);
+                }
+                if (ao_holistic.length) out.ao_holistic = ao_holistic;
+                return out;
+            } catch (e) {
+                console.warn('WML breakdown: build failed —', e && e.message);
+                return null;
+            }
+        }
         async function _autoCommitAssessment(totalMarks, maxTotal, gradeVal) {
             if (state._phaseCommitted || state._phaseCommitting) return;
             if (!gradeVal || !(maxTotal > 0)) return;
@@ -27877,6 +27961,11 @@
                 const payload = {
                     board: state.board,
                     text: state.text,
+                    // v7.20.113: the phase record is keyed by TEXT ('aqa_lang_paper_1'), but the
+                    // paper specs are keyed by SUBJECT ('language_p1') and no text→spec alias
+                    // exists. Send the subject the shortcode already derived rather than mint a
+                    // second naming layer (§TEXT-SLUG REGISTRY / key-match gate).
+                    subject: state.subject || '',
                     topic_number: state.topicNumber || 1,
                     phase: phase,
                     grade: String(gradeVal),                  // deterministic doc grade — NOT the AI's
@@ -27889,6 +27978,10 @@
                     attempt_number: (state.attempt || 1),     // on_phase_complete keys the row by this → additive, never overwrites a prior attempt
                     lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '',
                 };
+                // v7.20.113: granular analytics capture. Additive — a null breakdown leaves the
+                // commit exactly as it was, so this can never regress the grade write.
+                const _bd = _breakdownFromDoc(totalMarks, maxTotal);
+                if (_bd) payload.breakdown = _bd;
                 const res = await apiPost(API.phaseComplete, payload);
                 if (res && res.success) {
                     state._phaseCommitted = true;
