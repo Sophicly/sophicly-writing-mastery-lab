@@ -15236,18 +15236,33 @@
         // when already at the top. Replaces the old standalone scroll-to-top button.
         const _SI_UP = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>';
         const _SI_DOWN = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
-        const siJump = el('button', { className: 'swml-scroll-index-jump', title: 'Scroll to top' });
-        siJump.innerHTML = _SI_UP;
-        siJump.addEventListener('click', (e) => {
+        // v7.20.120 (Neil): TWO fixed buttons, not one adaptive one. The old single button was
+        // MODAL — it only offered scroll-to-bottom when you were ALREADY within 12px of the top
+        // (`atTop ? scrollHeight : 0`), so from anywhere else in the document the bottom was
+        // unreachable in one click: Neil had to jump to the top first and wait for the arrow to
+        // flip, or open the panel and click its last item. A control whose meaning changes under
+        // you is harder to learn than two that each always mean one thing, and fixed positions
+        // build muscle memory.
+        // Each button DIMS (never hides) at its own extreme — hiding would shift the row and
+        // slide the other button under the cursor mid-click.
+        const siJumpUp = el('button', { className: 'swml-scroll-index-jump', title: 'Scroll to top' });
+        siJumpUp.innerHTML = _SI_UP;
+        siJumpUp.addEventListener('click', (e) => {
             e.stopPropagation(); // don't toggle the panel
-            const atTop = contentWrap.scrollTop < 12;
-            contentWrap.scrollTo({ top: atTop ? contentWrap.scrollHeight : 0, behavior: 'smooth' });
+            contentWrap.scrollTo({ top: 0, behavior: 'smooth' });
         });
-        siHead.appendChild(siJump);
+        const siJumpDown = el('button', { className: 'swml-scroll-index-jump', title: 'Scroll to bottom' });
+        siJumpDown.innerHTML = _SI_DOWN;
+        siJumpDown.addEventListener('click', (e) => {
+            e.stopPropagation();
+            contentWrap.scrollTo({ top: contentWrap.scrollHeight, behavior: 'smooth' });
+        });
+        siHead.appendChild(siJumpUp);
+        siHead.appendChild(siJumpDown);
         siHead.appendChild(siRing);
         siHead.appendChild(siTitle);
         siHead.appendChild(siPct);
-        let _siJumpAtTop = null;
+        let _siJumpAtTop = null, _siJumpAtBottom = null;
 
         scrollIndex.appendChild(siNav);
         scrollIndex.appendChild(siHead);
@@ -15576,12 +15591,19 @@
             const pct = max > 8 ? Math.min(100, Math.max(0, Math.round(contentWrap.scrollTop / max * 100))) : 0;
             siPct.textContent = pct + '%';
             if (siRingBar) siRingBar.style.strokeDashoffset = String(100 - pct);
-            // flip the jump arrow: at the very top → offer scroll-to-bottom, else top
+            // v7.20.120: both buttons are always present; each dims at its own extreme.
+            // Writes are guarded (only touch the class when the state actually flips) — this
+            // runs on every scroll frame, and a same-value class write is churn.
+            // A doc shorter than the viewport (max <= 8) has nowhere to go: both dim.
             const atTop = contentWrap.scrollTop < 12;
+            const atBottom = max > 8 ? contentWrap.scrollTop >= max - 12 : true;
             if (atTop !== _siJumpAtTop) {
                 _siJumpAtTop = atTop;
-                siJump.innerHTML = atTop ? _SI_DOWN : _SI_UP;
-                siJump.title = atTop ? 'Scroll to bottom' : 'Scroll to top';
+                siJumpUp.classList.toggle('is-inert', atTop);
+            }
+            if (atBottom !== _siJumpAtBottom) {
+                _siJumpAtBottom = atBottom;
+                siJumpDown.classList.toggle('is-inert', atBottom);
             }
         }
         contentWrap.addEventListener('scroll', () => {

@@ -8810,7 +8810,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     opacity: 0.7;
     font-variant-numeric: tabular-nums;
 }
-/* adaptive jump-to-top/bottom arrow (left of the ring) */
+/* v7.20.120: jump-to-top AND jump-to-bottom, both always present (left of the ring).
+   Was ONE adaptive arrow that only offered "bottom" when already at the top — see the
+   wml-assessment.js note. */
 .swml-scroll-index-jump {
     flex: 0 0 auto;
     display: inline-flex;
@@ -8824,9 +8826,12 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: rgba(255,255,255,0.08);
     color: #fff;
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background 0.15s ease, opacity 0.2s ease;
 }
 .swml-scroll-index-jump:hover { background: rgba(255,255,255,0.16); }
+/* At its own extreme a button has nowhere to go: dim + un-clickable, but it KEEPS ITS
+   SLOT. Hiding it would reflow the row and slide the other button under the cursor. */
+.swml-scroll-index-jump.is-inert { opacity: 0.28; pointer-events: none; }
 .swml-canvas-light .swml-scroll-index-jump { background: rgba(20,18,30,0.06); color: #1a1a1e; }
 .swml-canvas-light .swml-scroll-index-jump:hover { background: rgba(20,18,30,0.12); }
 
