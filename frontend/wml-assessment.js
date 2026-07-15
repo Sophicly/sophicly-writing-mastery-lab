@@ -24455,8 +24455,12 @@
         // Uses fresh DOM lookups (not closure refs) to survive re-renders.
         // Listeners registered on document only ONCE via flag.
         let canvasSelToolbar = null;
+        // v7.20.121: the PM from:to the mounted toolbar belongs to. See the idempotence guard
+        // in showCanvasSelToolbar — this is what makes "same selection" answerable.
+        let _selToolbarKey = null;
         function removeCanvasSelToolbar() {
             if (canvasSelToolbar) { canvasSelToolbar.remove(); canvasSelToolbar = null; }
+            _selToolbarKey = null;
         }
 
         if (!window._swmlCanvasSelRegistered) {
@@ -24505,6 +24509,26 @@
                     // SKELETON PLAN sections). Lower bound stays at 2 to keep stray clicks out.
                     if (selectedText.length < 2) { removeCanvasSelToolbar(); return; }
 
+                    // v7.20.121 IDEMPOTENCE (Neil: "it blinks twice"). This path DESTROYS and
+                    // REBUILDS the toolbar element, and .swml-selection-toolbar carries
+                    // `animation: swml-reply-pop` (wml-styles.css:612) which replays on every
+                    // NEW element. Under the old mouseup binding this ran once per action so the
+                    // rebuild was invisible; `selectionchange` (v7.20.118) legitimately fires
+                    // SEVERAL times for one action — PM syncs its DOM selection after the txn,
+                    // then focus settles — so the same selection rebuilt 2-3× and the pop
+                    // animation replayed: the blink.
+                    // Same selection => leave the mounted toolbar exactly as it is. This is the
+                    // same idempotent-write law the derived-card fills and the outline-panel
+                    // attr writes already follow (PM law rule 4) — a driver that fires N times
+                    // is CORRECT; the consumer must be idempotent, not the driver throttled.
+                    // Must sit BEFORE the teardown below, or the rebuild has already happened.
+                    const tFrom = canvasEditor?.state?.selection?.from;
+                    const tTo = canvasEditor?.state?.selection?.to;
+                    if (tFrom == null || tTo == null || tFrom === tTo) { removeCanvasSelToolbar(); return; }
+                    const _selKey = tFrom + ':' + tTo;
+                    if (canvasSelToolbar && _selToolbarKey === _selKey && wrap.contains(canvasSelToolbar)) return;
+                    _selToolbarKey = _selKey;
+
                     // Remove any existing toolbar
                     const old = wrap.querySelector('.swml-selection-toolbar');
                     if (old) old.remove();
@@ -24533,10 +24557,8 @@
                     } : boundingRect;
                     const wrapRect = wrap.getBoundingClientRect();
 
-                    const tFrom = canvasEditor?.state?.selection?.from;
-                    const tTo = canvasEditor?.state?.selection?.to;
-                    if (tFrom == null || tTo == null || tFrom === tTo) return;
-
+                    // (tFrom/tTo + the null/collapsed guard moved ABOVE the teardown at v7.20.121
+                    // — they are what the idempotence key is built from.)
                     const quote = selectedText.length > 120 ? selectedText.substring(0, 120) + '...' : selectedText;
                     const hasChat = !!document.getElementById('swml-canvas-chat-input');
 
