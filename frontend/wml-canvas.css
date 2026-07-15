@@ -2043,13 +2043,27 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 
 /* ── Document Outline Panel ── */
 .swml-outline-panel {
-    position: sticky;
-    top: 0px; /* Aligns with document top */
-    float: left;
-    clear: left;
+    /* v7.20.117 (Neil ruling): the panel TAKES OVER the button and expands from it.
+       SUPERSEDES v7.19.451 ("both triggers stay visible, so the panel must not cover
+       them") — Neil's newer instruction wins: the panel covers the triggers while open
+       (it closes via its own ✕ / detach).
+       ROOT of the old bug: sticky+float+clear:left. A sticky element can never rise
+       above its natural flow position, so at scrollTop 0 there is no offset to apply
+       and `clear: left` dropped the panel BELOW the floated button column.
+       Sticky-in-flow cannot express "pinned to the button" — it is the wrong primitive.
+       FIX = the pattern v7.19.454 already proved on .swml-resources-panel: anchored
+       ABSOLUTELY inside the sticky .swml-outline-btn-column. top:0 = over the button
+       (resources uses top:100% = under it); left:0 = flush with the button column.
+       Tracks the sticky column at every scroll position. Detach (fixed, reparented to
+       body) overrides this. */
+    position: absolute;
+    top: 0;
+    left: 0;
+    float: none;
+    clear: none;
     width: 220px;
     max-height: calc(100vh - 140px);
-    margin: 8px -220px 0 12px; /* v7.19.451: sit just BELOW the buttons (was -30px pull-up over the now-hidden button). Both triggers stay visible now, so the panel must not cover them. left 12px = button column left edge (flush). */
+    margin: 0;
     border-radius: 10px;
     background: #28292b; /* v7.14.47: match document alt colour — no backdrop-filter (Chrome flickers) */
     border: 1px solid rgba(255,255,255,0.08);
@@ -2060,13 +2074,18 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     flex-direction: column;
     opacity: 0;
     transform: translateX(-12px);
-    pointer-events: none;
+    /* v7.20.117: !important mirrors the v7.19.451 CLICK-STEAL FIX on .swml-resources-panel.
+       Now that the panel sits ON TOP of the button column (top:0), an opacity:0 panel that
+       stayed hit-testable would swallow the outline button's OWN click. pointer-events is
+       the reliable lever here — Etch force-overrides visibility/opacity on divs, but not
+       this. Kept off `visibility` so the close fade-out survives. */
+    pointer-events: none !important;
     transition: opacity 0.25s ease, transform 0.25s ease;
 }
 .swml-outline-panel.swml-outline-open {
     opacity: 1;
     transform: translateX(0);
-    pointer-events: auto;
+    pointer-events: auto !important;
 }
 .swml-outline-header {
     display: flex;

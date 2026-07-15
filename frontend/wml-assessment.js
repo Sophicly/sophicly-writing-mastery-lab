@@ -13759,6 +13759,42 @@
             return false;
         } catch (_) { return true; }
     }
+    // v7.20.117 (§4.4 — Neil: "we've had problems with that elsewhere; fix it at the ROOT so
+    // it's universal"): Cmd/Ctrl+A inside a scaffolded field must select THAT FIELD's content,
+    // not the whole document. ProseMirror's selectAll is doc-scoped by design, so a student
+    // clearing one plan box selected every box in the doc.
+    // Returns the inner content range of the innermost inputField/outlineRow around `pos`, or
+    // null when the cursor is not in one (free prose / doc root) — callers then fall through to
+    // PM's default selectAll rather than inventing a scope.
+    // ONE derivation shared by BOTH canvas editors' handleKeyDown (CANVAS TASK-SCOPING rule 1:
+    // cross-cutting consumers run unconditionally and self-guard) — the second editor has no
+    // inputField/outlineRow in its schema, so it simply gets null and behaves as before. That
+    // is why this is a shared helper and not a fix wired into one pipeline.
+    const FIELD_SELECT_ALL_TYPES = ['inputField', 'outlineRow'];
+    function _swmlFieldSelectAllRange(state, pos) {
+        try {
+            const $p = state.doc.resolve(Math.max(0, Math.min(pos, state.doc.content.size)));
+            for (let d = $p.depth; d > 0; d--) {
+                // both are content:'inline*' textblocks, so start/end IS the field's content
+                if (FIELD_SELECT_ALL_TYPES.includes($p.node(d).type.name)) return { from: $p.start(d), to: $p.end(d) };
+            }
+        } catch (_) {}
+        return null;
+    }
+    // Returns true when it HANDLED the key (caller must stop). Self-guarding: any key that
+    // isn't Mod+A, and any cursor that isn't in a field, returns false untouched.
+    function _swmlHandleFieldSelectAll(view, event) {
+        if (event.key !== 'a' && event.key !== 'A') return false;
+        if (!(event.metaKey || event.ctrlKey) || event.altKey) return false;
+        if (!canvasEditor) return false;
+        const range = _swmlFieldSelectAllRange(view.state, view.state.selection.from);
+        if (!range) return false; // not in a field — PM's doc-wide selectAll stands
+        event.preventDefault();
+        // No .focus() — the student is already focused here, and chaining focus() makes
+        // setTextSelection scroll the editor (see the v7.19.63/23934 note).
+        canvasEditor.chain().setTextSelection(range).run();
+        return true;
+    }
 
     let _canvasGuard = false; // Prevents double-render of canvas workspace (v7.12.61)
     function renderCanvasWorkspace() {
@@ -14796,7 +14832,13 @@
             }
         }
         contentWrap.appendChild(btnColumn); // sticky button column (outline + resources triggers)
-        contentWrap.appendChild(outlinePanel);
+        // v7.20.117: the outline panel is a CHILD of the sticky button column, positioned
+        // absolutely over it (CSS .swml-outline-panel top:0/left:0) — the pattern v7.19.454
+        // already proved on the resources panel. It was a contentWrap child using
+        // sticky+float+clear:left, which dropped it below the buttons at scrollTop 0.
+        // Absolute + out of flow, so it adds no flex gap to the column. Detach reparents
+        // it to document.body (floatOutline) and dockOutline restores it here.
+        btnColumn.appendChild(outlinePanel);
 
         // ── CW Resources Panel (v7.13.49) ──
         // Collapsible panel like Document Outline, for step-specific resource links
@@ -25204,6 +25246,8 @@
                 },
                 handleKeyDown(view, event) {
                     const k = event.key;
+                    // v7.20.117 (§4.4): Cmd/Ctrl+A scopes to the focused field, not the doc.
+                    if (_swmlHandleFieldSelectAll(view, event)) return true;
                     // v7.19.947: Cmd/Ctrl+X deletes the selection without passing through
                     // handleTextInput — treat cut like Delete so locked ranges survive it.
                     const isCut = (k === 'x' || k === 'X') && (event.metaKey || event.ctrlKey);
@@ -41255,6 +41299,8 @@ ${html}
                 },
                 handleKeyDown(view, event) {
                     const k = event.key;
+                    // v7.20.117 (§4.4): Cmd/Ctrl+A scopes to the focused field, not the doc.
+                    if (_swmlHandleFieldSelectAll(view, event)) return true;
                     // v7.19.947: Cmd/Ctrl+X deletes the selection without passing through
                     // handleTextInput — treat cut like Delete so locked ranges survive it.
                     const isCut = (k === 'x' || k === 'X') && (event.metaKey || event.ctrlKey);
