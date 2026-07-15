@@ -24562,12 +24562,40 @@
                 scheduleCanvasSelToolbar();
             });
             function showCanvasSelToolbar() {
+                // v7.20.124 PROBE (temporary — remove once the Cmd+A pause is pinned).
+                // Neil: after Cmd+A the page is "stuck for about a second, then I can scroll".
+                // Suspect: this path measures the selection to position the toolbar
+                // (getClientRects / getBoundingClientRect / offsetWidth), and that cost scales
+                // with SELECTION SIZE. Until v7.20.117/.118 a whole-essay selection was
+                // effectively unreachable, so this path had never run at 1700-word scale.
+                // NOT fixing on that hunch — measure first. Logs only when it actually blocks
+                // (>50ms), so it is silent in normal use and cannot spam a student's console.
+                const _t0 = performance.now();
+                try { return _showCanvasSelToolbarInner(); }
+                finally {
+                    const _ms = performance.now() - _t0;
+                    if (_ms > 50) {
+                        try {
+                            const _n = (window.getSelection() || {}).toString ? window.getSelection().toString().length : -1;
+                            console.warn('[WML perf] selection toolbar build blocked the main thread for '
+                                + Math.round(_ms) + 'ms (selected chars: ' + _n + '). Screenshot this for chat A.');
+                        } catch (_) {}
+                    }
+                }
+            }
+            function _showCanvasSelToolbarInner() {
                 {
                     const sel = window.getSelection();
                     // selectionchange also fires when a selection COLLAPSES (arrow key, click
                     // away) or moves outside the canvas — mouseup never had to handle that, so
                     // every bail must now clear a stale toolbar rather than just return.
-                    if (!sel || sel.isCollapsed || !sel.toString().trim()) { removeCanvasSelToolbar(); return; }
+                    if (!sel || sel.isCollapsed) { removeCanvasSelToolbar(); return; }
+                    // v7.20.124: serialize the selection ONCE. This used to call sel.toString()
+                    // here AND again for selectedText below — two full serializations of the
+                    // whole selection on every call, which is free for a few dragged words and
+                    // is not for a Cmd+A'd 1700-word essay.
+                    const _selStr = sel.toString().trim();
+                    if (!_selStr) { removeCanvasSelToolbar(); return; }
 
                     // Find ProseMirror editor from anchor — fresh lookup every time
                     const anchor = sel.anchorNode;
@@ -24575,7 +24603,7 @@
                     const wrap = pm?.closest('.swml-canvas-content');
                     if (!pm || !wrap) { removeCanvasSelToolbar(); return; }
 
-                    const selectedText = sel.toString().trim();
+                    const selectedText = _selStr; // v7.20.124: serialized once above
                     // v7.19.71: drop the silent 2000-char upper cap — Neil reported toolbar
                     // missing on whole-essay-plan highlights (>2000 chars, e.g. exam-prep crib
                     // SKELETON PLAN sections). Lower bound stays at 2 to keep stray clicks out.
