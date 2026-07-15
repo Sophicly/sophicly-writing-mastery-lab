@@ -800,6 +800,30 @@
                     if (mutation.type === 'attributes' && mutation.target === dom) return true;
                     if (chip === mutation.target || chip.contains(mutation.target)) return true;
                     if (pullChip && (pullChip === mutation.target || pullChip.contains(mutation.target))) return true;
+                    // v7.20.126 PROBE (temporary — remove once the ctlrows storm is pinned).
+                    // The .125 firewall above is live and correct (all 4 branches carry it), yet
+                    // Neil's console still shows the storm with the SAME stack
+                    // (updateOutline → :16309 → attributes → observer → flush). So a mutation is
+                    // reaching PM that this function is NOT catching, and every explanation from
+                    // here is a guess. Report the first few mutations we DON'T firewall, with the
+                    // facts needed to tell which assumption is wrong:
+                    //   target===dom?  → is the write landing on the NodeView's own dom at all
+                    //   attributeName  → which write (data-section-num / -complete / class / style)
+                    //   sameNode?      → is `dom` still the mounted element (or a stale re-created one)
+                    try {
+                        window.__swmlIgnMissDbg = (window.__swmlIgnMissDbg || 0) + 1;
+                        if (window.__swmlIgnMissDbg <= 5) {
+                            console.warn('[WML ignoreMutation MISS #' + window.__swmlIgnMissDbg + ']', {
+                                type: mutation.type,
+                                attributeName: mutation.attributeName || null,
+                                targetIsDom: mutation.target === dom,
+                                targetIsInDom: !!(dom && dom.contains && mutation.target && dom.contains(mutation.target)),
+                                targetClass: (mutation.target && mutation.target.className) || null,
+                                domClass: (dom && dom.className) || null,
+                                domConnected: !!(dom && dom.isConnected),
+                            });
+                        }
+                    } catch (_) {}
                     return false;
                 },
             };
