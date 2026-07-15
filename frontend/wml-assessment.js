@@ -15284,10 +15284,15 @@
                 },
             });
 
-            // Drop structural containers that ended up with no navigable leaf — a group that
-            // jumps nowhere is worse than no row (the rail hides these too).
+            // Drop containers that ended up with no navigable leaf — a group that jumps
+            // nowhere is worse than no row.
+            // v7.20.115a (Neil, staging): …but NOT the structural dividers. "SECTION A:
+            // READING" has no children BY DEFINITION (.110 moved its questions into sibling
+            // super-groups), so _hasLeaf dropped exactly the rows the model exists to keep —
+            // the island shipped without the Section headings the TOC and rail both show.
             const _hasLeaf = (e) => e.kind === 'leaf' || e.children.some(_hasLeaf);
-            const entries = model.entries.filter(_hasLeaf);
+            const _keep = (e) => _hasLeaf(e) || (e.kind === 'divider' && e.structural);
+            const entries = model.entries.filter(_keep);
             if (entries.length === 0) {
                 siList.appendChild(el('div', { className: 'swml-scroll-index-empty', textContent: 'No sections yet' }));
                 return;
@@ -15321,6 +15326,17 @@
                 return container.closest ? container.closest('.swml-scroll-index-group') : null;
             }
 
+            // A structural divider ("SECTION A: READING") is a heading with no children —
+            // nothing to expand, so no chevron. Registered in indexPositions so the
+            // breadcrumb can actually land on it.
+            function renderStructural(entry) {
+                const item = el('button', { className: 'swml-scroll-index-item swml-scroll-index-sectionhead', tabIndex: -1,
+                    onClick: () => { closeIndexPanel(); scrollToPos(entry.pos); } });
+                item.appendChild(el('span', { className: 'swml-scroll-index-itemlabel', textContent: entry.displayLabel }));
+                siList.appendChild(item);
+                indexPositions.push({ pos: entry.pos, itemEl: item, label: entry.displayLabel, unit: '', groupWrap: null });
+            }
+
             function renderGroup(entry, container, unitLabel, depth) {
                 const groupWrap = el('div', { className: 'swml-scroll-index-group swml-scroll-index-collapsed' + (depth > 0 ? ' swml-scroll-index-subgroup' : '') });
                 const head = el('div', { className: 'swml-scroll-index-group-head' });
@@ -15332,7 +15348,18 @@
                         if (siOpen) siNav.style.maxHeight = siNav.scrollHeight + 'px';
                     } });
                 chevBtn.innerHTML = '<svg class="swml-scroll-index-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
-                const jumpPos = _siFirstLeafPos(entry);
+                // v7.20.115a (Neil, staging: "click question two and it scrolls to the top of
+                // the PLANNING for question two, not the beginning of question two, which is
+                // the question and extract").
+                // A QUESTION group's own section IS real content — the question + extract — so
+                // it is the right landing spot, and the TOC + rail both already scroll there.
+                // v7.19.534's "jump to the first section, never the divider" applies to
+                // DIVIDERS, which carry no content and are not indexPositions. Questions are
+                // not dividers. Registering the head below makes it a detectable position too,
+                // so the breadcrumb lands on the question instead of the previous section.
+                const jumpPos = entry.kind === 'question'
+                    ? entry.pos
+                    : (_siFirstLeafPos(entry) != null ? _siFirstLeafPos(entry) : entry.pos);
                 const labelBtn = el('button', { className: 'swml-scroll-index-group-label', tabIndex: -1, textContent: entry.displayLabel,
                     onClick: () => { if (jumpPos != null) { closeIndexPanel(); scrollToPos(jumpPos); } } });
                 head.appendChild(chevBtn);
@@ -15341,6 +15368,11 @@
                 groupWrap.appendChild(head);
                 groupWrap.appendChild(itemsWrap);
                 container.appendChild(groupWrap);
+                // The question's OWN section (question + extract) is content a reader lands on,
+                // so the head is a real detectable position — not just a label.
+                if (entry.kind === 'question') {
+                    indexPositions.push({ pos: entry.pos, itemEl: head, label: entry.displayLabel, unit: '', groupWrap });
+                }
                 entry.children.forEach(c => {
                     if (c.kind === 'leaf') renderItem(c, itemsWrap, unitLabel);
                     else if (_hasLeaf(c)) renderGroup(c, itemsWrap, unitLabel, depth + 1);
@@ -15353,7 +15385,10 @@
                 const ov = { kind: 'divider', displayLabel: _siGroupLabel(''), pos: loose[0].pos, children: loose, structural: false };
                 renderGroup(ov, siList, ov.displayLabel, 0);
             }
-            entries.filter(e => e.kind !== 'leaf').forEach(e => renderGroup(e, siList, e.displayLabel, 0));
+            entries.filter(e => e.kind !== 'leaf').forEach(e => {
+                if (e.kind === 'divider' && !e.children.length) { renderStructural(e); return; }
+                renderGroup(e, siList, e.displayLabel, 0);
+            });
         }
 
         // group header label: "UNIT 4 — FORGING A HERO'S MINDSET" stays as-is; pre-unit
