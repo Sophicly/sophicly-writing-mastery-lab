@@ -53,9 +53,13 @@ grade boundaries anywhere in this assessment.
 
 **[AI_INTERNAL] WORTHS SUM EXACTLY (v7.19.854 — Neil; supersedes the old "sum 22, cap 20"
 note, which was a stale error):** Q4's granular worths are 1 + 6 + 6 + 6 + 1 = exactly 20 (the
-section specs below are authoritative). No buffer, no cap — BONUS rows (Q2/Q3's `+0.5`
-interplay) are the only thing that adds above a paragraph's base, capped at that paragraph's
-full value. Q4 Total = the plain sum of its five section totals.
+section specs below are authoritative). No buffer, no cap. **Every question's criteria worths sum
+EXACTLY to its full value — Q2/Q3's six criteria sum to 4.0 per paragraph (v7.20.109: they summed
+to 3.5, which made full marks unreachable without the bonus — a stale error of the same class as the
+superseded "sum 22, cap 20" note).** BONUS rows (Q2/Q3's `+0.5` interplay) are the only thing that
+can add above the criteria sum, and are capped at that paragraph's full value — so a bonus can only
+offset marks dropped elsewhere, never lift a paragraph past 4.0 and never be needed for full marks.
+Q4 Total = the plain sum of its five section totals.
 
 ---
 
@@ -95,8 +99,9 @@ total ONLY in the canonical form `Qn Total: A/B` on its own line (WML auto-fills
 from it — NEVER ask the student to record or select a mark). **A is a WHOLE number** — round the
 granular sum half-up at question level (paragraph totals stay granular and MAY be decimal —
 NEVER round a paragraph total, never append "→ rounded: X/Y" to a `Total Mark for Paragraph`
-line, and never print a "Base total: X/3.5" line: a paragraph is out of its FULL value (4.0 =
-3.5 elements + 0.5 bonus) and rounding happens exactly ONCE, at the question total; the question
+line, and never print a "Base total" line — there is no base: a paragraph is out of its FULL value
+(4.0 = the six criteria, which sum to 4.0 on their own; the +0.5 interplay BONUS rides on top and is
+capped at 4.0, so it only offsets marks lost elsewhere) and rounding happens exactly ONCE, at the question
 total is exam-form, and the Final Summary sums these whole totals so chat, document and Score
 Summary always agree). **NOTHING follows `A/B` on that line** — no parenthetical, no ceiling commentary
 (WML reads the LAST X/Y on the line as the awarded mark; a trailing "(ceilinged at 27/40)" gets
@@ -402,11 +407,16 @@ Output `@FB_BEGIN{"q":"Q2","para":"1","title":"Paragraph 1"}` on its own line, t
   | Detailed, perceptive word-level close analysis (AO2) | 0.5 |
   | First detailed sentence evaluating effects on the reader (AO2) | 0.5 |
   | Second detailed sentence evaluating effects on the reader (AO2) | 0.5 |
-  | Perceptive evaluation of the author's purpose (AO2) | 0.5 |
+  | Perceptive evaluation of the author's purpose (AO2) | 1.0 |
   | **BONUS** — analysis of technique interplay (AO2) | +0.5 |
 
-  The 6 non-bonus criteria form the 3.5 base; the BONUS adds on top, capped at 4.0. When absent:
-  do NOT deduct, do NOT list as a weakness, OMIT the row entirely — it can only help.
+  **The 6 criteria sum to the paragraph's FULL value: 0.5+1.0+0.5+0.5+0.5+1.0 = 4.0** (the WORTHS
+  SUM EXACTLY law above). There is NO "base" and no "base total" — a paragraph is out of 4.0, and a
+  student who meets all six criteria scores 4.0 WITHOUT the bonus. The **BONUS** rides on top and is
+  then **capped at 4.0**, so it can only ever recover marks dropped elsewhere — a cushion, never a
+  requirement. When absent: do NOT deduct, do NOT list as a weakness, OMIT the row entirely.
+  (v7.20.109 — Neil: the old "3.5 base + 0.5 bonus" made full marks impossible without the bonus,
+  the same stale-error class as the superseded "sum 22, cap 20" note.)
 - **Penalties** — max 3 (−1.5). Each penalty MUST be: `CODE — plain name (−0.5): "[student's
   verbatim phrase]" → Fix: "[one-line worked rewrite of that exact phrase]"` (e.g. `F1 — weak
   analytical verb (−0.5): …` — students must never meet a bare code). Codes (universal
