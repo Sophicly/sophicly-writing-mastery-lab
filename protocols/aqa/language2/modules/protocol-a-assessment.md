@@ -61,8 +61,11 @@ grade boundaries anywhere in this assessment.
 
 **[AI_INTERNAL] WORTHS SUM EXACTLY:** every question's granular worths sum EXACTLY to its mark
 total (Q2/Q3: 4.0 per taught paragraph; Q4 = 0.5 + 5 + 5 + 5 + 0.5 = 16). There is no buffer and
-no cap on a question total — BONUS rows (marked `+X`) are the only thing that can add above a
-paragraph's base, and each is capped at that paragraph's full value. **Q4's weighting is
+no cap on a question total. **There is NO "base": a paragraph's non-bonus criteria sum to its FULL
+value on their own, so all criteria met = full marks with no bonus** (v7.20.111 — Q3's table summed
+to 3.5 against the 4.0 this very line declares, making full marks impossible without the bonus).
+BONUS rows (marked `+X`) are the only thing that can add above the criteria sum, and each is capped
+at that paragraph's full value — a cushion that only offsets marks dropped elsewhere. **Q4's weighting is
 deliberate (Neil):** a comparison paragraph covers BOTH texts — near-double the writing of a
 normal paragraph — so the three body paragraphs carry 15 of the 16 marks; the introduction and
 conclusion are worth 0.5 each, mirroring real practice where body paragraphs are planned and
@@ -488,15 +491,21 @@ card → Y → ¶3 card → Q3 Total + calibration → Q-GATE), with these swaps
   | Criterion | Worth |
   |---|---|
   | Conceptual topic sentence introducing the paragraph's idea (AO2) | 0.5 |
-  | Technique named with precise terminology + integrated quote (AO2) | 0.5 |
+  | Technique named with precise terminology + integrated quote + inference (AO2) | 1.0 |
   | Detailed, perceptive word-level close analysis (AO2) | 0.5 |
   | First detailed sentence evaluating effects on the reader (AO2) | 0.5 |
   | Second detailed sentence evaluating effects on the reader (AO2) | 0.5 |
   | Perceptive evaluation of the writer's purpose (AO2) | 1.0 |
   | **BONUS** — analysis of technique interplay (AO2) | +0.5 |
 
-  The 6 non-bonus criteria form the 3.5 base; the BONUS adds on top, capped at 4.0. When absent:
-  omit the row entirely.
+  **The 6 criteria sum to the paragraph's FULL value: 0.5+1.0+0.5+0.5+0.5+1.0 = 4.0** (the WORTHS
+  SUM EXACTLY law above). There is NO "base" — a paragraph is out of 4.0, and a student who meets all
+  six scores 4.0 WITHOUT the bonus. The **BONUS** rides on top and is **capped at 4.0**, so it can
+  only recover marks dropped elsewhere — a cushion, never a requirement. When absent: omit the row
+  entirely. (v7.20.111 — Neil; identical fix to P1 Q2/Q3 at v7.20.109. The old "3.5 base" made full
+  marks impossible without the bonus and contradicted marking-fairness-universal.md L34: "the
+  paragraph maximum comes from the non-bonus elements". Inference added to criterion 2 to match the
+  outline row + the golds, which both already require it.)
 - Penalties: max 3 (−1.5) per paragraph from: M1 retelling instead of analysis · L1 missing
   causal link between evidence and effect · Q1 quotation without analysis · D1 lacks sustained
   detail · F1 · T1 · U1 informal vocabulary · S1 · S2 · H1 · P1 · C1. Priority: analysis faults
