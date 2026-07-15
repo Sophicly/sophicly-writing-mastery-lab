@@ -467,6 +467,42 @@ The deterministic quiz controller (`_quizCtl` — FQ, MSQ, MSA all share it) has
 - Known cosmetic bleed: chip labels appear in copy-pasted doc exports ("Learn: … →"). Accepted
   for now; revisit if Neil exports for parents (§9.9).
 
+### §8c. ⭐ THE FLOATING-PANEL LAW — a panel anchored to a trigger is a CHILD of that trigger's
+### sticky column, positioned absolutely (v7.20.117; the pattern v7.19.454 proved)
+
+**LAW: every panel that must sit at a trigger is an ABSOLUTE child of the sticky
+`.swml-outline-btn-column`, never a sticky/floated sibling in the scroller.** `top: 0` = the panel
+takes over the button (document outline). `top: calc(100% + 4px)` = the panel sits under it
+(resources, Writer's Profile). `left: 0` = flush with the button column. All three share
+`.swml-outline-panel`; the two "under" variants override position via `.swml-resources-panel`.
+
+**WHY (the root, so it is never re-broken).** `position: sticky` cannot express "pinned to the
+button". A sticky element can never rise ABOVE its natural flow position — it only ever offsets
+DOWNWARD from where the flow puts it. So at `scrollTop 0` there is no offset to apply and the
+panel renders exactly where the flow left it; with `float: left; clear: left` that is BELOW the
+floated button column. Neil reported it twice as "the panel gets pushed down at the top of the
+document". It is not a tuning problem — sticky is the wrong primitive, and no `top`/`margin` value
+fixes it. The button column is itself `position: sticky`, which makes it a containing block, so an
+absolute child tracks it at EVERY scroll position for free.
+
+**Corollaries (each one cost a cycle or was engineered out):**
+1. **Out of flow = no flex gap.** The column is `display:flex; column`; an absolute child adds no
+   gap and needs no source-order care.
+2. **A panel that covers its trigger MUST be `pointer-events: none !important` when closed.**
+   `opacity: 0` stays hit-testable, so the invisible panel swallows the button's own click — the
+   v7.19.451 CLICK-STEAL bug. `pointer-events` is the reliable lever: Etch force-overrides
+   `visibility`/`opacity` on divs, but not this. Keep the guard OFF `visibility` or the close
+   fade-out dies.
+3. **Detach escapes the column, by design.** `floatOutline` reparents to `document.body`
+   (v7.19.91) because `position: fixed` + `z-index: 9999` cannot escape an ancestor stacking
+   context (the column sets `z-index: 8`) or an ancestor `transform` (LD focus-mode). `dockOutline`
+   restores the stashed parent. Any new panel copies this or it will be occluded.
+4. **Supersedes v7.19.451** ("both triggers stay visible, so the panel must not cover them") —
+   Neil ruled 2026-07-15 that the panel takes over the button and expands from it.
+
+**Grep gate before touching any panel:** `grep -n "position: sticky" frontend/wml-canvas.css` —
+a panel (as opposed to the button column) in that list is this bug returning.
+
 ## §8b. THE STAGE-RECORD FEED-FORWARD MECHANISM (Neil, 2026-07-14 — ⭐ THE canonical
 ## persistence/feed-forward pattern; reuse this anywhere content must flow between docs)
 
@@ -696,7 +732,52 @@ signal to forget). Remaining residual: a programmatic txn touching ≤3 sections
 false-freshens (grep new `dispatch(` sites at review); mirror logs every kept-local
 decision + its sources so a block is console-diagnosable. Canonical spec: design doc §2b.
 
-**20. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
+**20. One-input-path binding** (a cross-cutting UI consumer wired to a single input event).
+Trigger: a feature that should fire "whenever X happens" is bound to ONE way X can happen —
+`mouseup` for selection, a click handler for a state a keyboard can also reach. Symptom: works
+when you drive it the way the author drove it, silently dead for every other route; nobody
+reports it because nobody tries the other route. This is class 1 (name-guard scoping) wearing a
+DOM-event costume: `mouseup` is a literal, exactly like `task.startsWith(...)`.
+Proof (v7.20.118): the canvas selection toolbar (Comment/Copy) was bound to
+`document.addEventListener('mouseup')`, so EVERY keyboard selection missed it — Cmd/Ctrl+A,
+Shift+arrow, Shift+Home/End, programmatic. Invisible for months; only surfaced when v7.20.117's
+field-scoped Cmd+A made keyboard selection worth doing. Net: bind to the STATE-CHANGE event, not
+the input event (`selectionchange`, not `mouseup`) — it is input-agnostic by definition, so no
+future route can miss it. Residual: state-change events also fire for the null/collapsed case the
+input event never delivered — EVERY bail must clear stale UI, not just `return`.
+
+**21. Pseudo-element collision** (two rules, one `::before`/`::after`, per-property cascade).
+Trigger: two independent features render on the same pseudo-element of the same node. Symptom: a
+box positioned/painted in a way neither rule asks for. The trap: specificity is resolved
+PER PROPERTY, not per rule — the losing rule's properties still apply wherever the winner is
+silent, and a shorthand (`inset`) sets four properties that a winner setting only `top`/`right`
+cannot displace. `left:0` + `right:44px` + a fixed `width` is over-constrained → `right` is
+dropped → the box pins to the opposite side.
+Proof (v7.20.119): the completion badge
+(`.swml-section-block[data-section-complete]::after`) and the read-only hatch overlay
+(`.swml-section-readonly::after`, `inset: 0`) collided — the badge rendered hard-LEFT on read-only
+sections, and the hatch was destroyed. Net: never render two features on one pseudo-element; if a
+badge and an overlay must coexist, one gets a real element. Residual: grep `::after`/`::before`
+for a second rule on the same class family before adding either.
+
+**22. Tri-state collapsed to boolean** (null/"not applicable" flattened into false).
+Trigger: a helper answers a 3-valued question (yes / no / not-applicable) through a 2-valued
+return — `'' | ' ✓'`, `bool`, a truthiness check. Symptom: "not applicable" is stored as "no",
+and every PRESENCE-keyed consumer downstream then treats the inapplicable thing as a real,
+pending item. Especially vicious when an attribute's PRESENCE is the contract and its VALUE is
+only the state (a deliberate, documented pattern here — a faint tick marks a target before it is
+filled).
+Proof (v7.20.119): `getSectionIndicator` returns a string and refuses to evaluate read-only
+sections (returns `''`); its caller (`wml-assessment.js` ~16158) wrote
+`indicator ? 'true' : 'false'`, stamping `data-section-complete="false"` on a read-only notice.
+Both presence-keyed consumers then believed it: the badge CSS drew a tick, `_computeCwProgress`
+counted it in "0 of 3 sections complete". The law it broke ("read-only sections are
+instruction/scaffold, never completable" — Neil, v7.19.500) was already enforced in THREE places;
+this caller was the fourth opinion that ignored them. Net: when a law is stated in N places, a new
+consumer reuses the SAME predicate — never re-derives it, never collapses the refusal into a
+value. Residual: audit every caller of a `'' | value` helper for `x ? a : b`.
+
+**23. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
 the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
 (#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract
 TBD). See `~/.claude/handoffs/open/wml-backlog.md`.

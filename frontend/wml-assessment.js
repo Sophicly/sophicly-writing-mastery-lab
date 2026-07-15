@@ -16155,8 +16155,42 @@
                         // same-value MutationRecord per section per pass; on docs whose NodeView
                         // firewall doesn't cover it, PM's DOMObserver flushed → NodeView rebuild →
                         // _fillCtl → the "ctlrows" fill storm Neil's console caught (R&J planning).
-                        const _compVal = indicator ? 'true' : 'false';
-                        if (domSection.getAttribute('data-section-complete') !== _compVal) domSection.setAttribute('data-section-complete', _compVal);
+                        // v7.20.119 (Neil: "we shouldn't have one in that section anyway
+                        // because it's not an editable section" — the diagnostic's read-only
+                        // "What happens next?" notice).
+                        // ROOT: getSectionIndicator returns a STRING ('' | ' ✓'), so the line
+                        // below collapsed "not TRACKABLE" and "trackable, not done yet" into the
+                        // same 'false'. The attribute is then PRESENT — and both consumers key on
+                        // PRESENCE, not value, by design: the badge CSS
+                        // (wml-canvas.css:5607 — a faint grey tick marks a target before the
+                        // student fills it) and _computeCwProgress (~9286, counts every
+                        // attr-carrying section). So a read-only notice drew a tick AND was
+                        // counted in "0 of 3 sections complete".
+                        // The "read-only sections are instruction/scaffold, never completable"
+                        // law is Neil's (v7.19.500) and already exists in THREE places:
+                        // checkSectionComplete (~8717), getSectionIndicator (~15992) and the
+                        // nodeView (wml-section-block.js ~98). This caller was the only one that
+                        // ignored it — it calls getSectionIndicator, which REFUSES to track a
+                        // read-only section, then re-stamped the attr all three had declined to
+                        // set. Same predicate here, so all four now agree byte-for-byte.
+                        // This also fixes the badge rendering hard-LEFT on such sections:
+                        // .swml-section-readonly::after (wml-canvas.css:6445) is the diagonal
+                        // hatch overlay and sets `inset: 0`. An element has ONE ::after — the
+                        // badge rule wins on specificity for content/background/top/right, but
+                        // inset's left:0/bottom:0 survive (no badge rule sets them), and
+                        // left:0 + right:44px + width:22px is over-constrained, so `right` is
+                        // dropped and the badge pins left. No attr → no badge on read-only
+                        // sections → that collision (which was also destroying the hatch
+                        // overlay) can't arise.
+                        const _roSec = domSection.getAttribute('data-readonly') === 'true'
+                            || domSection.getAttribute('data-editable') === 'false';
+                        if (_roSec) {
+                            // Idempotent, same reason as the write below (PM law rule 4).
+                            if (domSection.hasAttribute('data-section-complete')) domSection.removeAttribute('data-section-complete');
+                        } else {
+                            const _compVal = indicator ? 'true' : 'false';
+                            if (domSection.getAttribute('data-section-complete') !== _compVal) domSection.setAttribute('data-section-complete', _compVal);
+                        }
                         // v7.19.219: Mastery Codex — stamp computed section number on
                         // DOM as data-codex-num. CSS reads via attr() in ::before, bypassing
                         // unreliable CSS counter behaviour in TipTap nodeView rendering.
