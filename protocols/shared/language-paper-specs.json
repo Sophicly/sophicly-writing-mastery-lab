@@ -43,8 +43,8 @@
           "marks": 40,
           "questions": [
             { "id": "Q1", "marks": 4, "aos": ["AO1"], "type": "retrieval", "description": "List 4 things from lines X-Y" },
-            { "id": "Q2", "marks": 8, "aos": ["AO2"], "type": "analysis", "description": "How does the writer use language to..." },
-            { "id": "Q3", "marks": 8, "aos": ["AO2"], "type": "analysis", "description": "How has the writer structured the text to..." },
+            { "id": "Q2", "marks": 8, "aos": ["AO2"], "type": "analysis", "focus": "language", "description": "How does the writer use language to..." },
+            { "id": "Q3", "marks": 8, "aos": ["AO2"], "type": "analysis", "focus": "structure", "description": "How has the writer structured the text to..." },
             { "id": "Q4", "marks": 20, "aos": ["AO4"], "type": "evaluation", "description": "To what extent do you agree..." }
           ]
         },

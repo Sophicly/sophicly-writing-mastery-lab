@@ -26233,6 +26233,11 @@
             // v7.20.50: granular canvas-derived planning sidebar (after the doc shape is final).
             _migrateStep('refreshPlanningSidebar', () => setTimeout(_refreshPlanningSidebar, 400));
             _migrateStep('migrateMissingOutlines', migrateMissingOutlines);
+            // v7.20.107: baked multi-question docs GAIN the body-only outlines (AQA Lang P1 Q2/Q3).
+            // AFTER migrateMissingPlans — it anchors each outline to that question's last plan
+            // section. migrateMissingOutlines is inert here (bails on multi-question + existing
+            // outline), which is exactly why this exists.
+            _migrateStep('migrateMissingQOutlines', migrateMissingQOutlines);
             _migrateStep('migrateOutlineCriteria', migrateOutlineCriteria);
             _migrateStep('migrateInputFields', migrateInputFields);
             // v7.15.90: prepend General Notes into conceptual-notes docs that
@@ -30823,6 +30828,38 @@
 
     // Criteria definitions per paragraph section. Each row = { id, label, ao, type, items? }
     // type: 'checkbox' (single tick), 'checklist' (multi-tick), 'label' (read-only text)
+    // v7.20.107 (Neil): a body-only analysis question keeps the SAME TTECEA paragraph shape and the
+    // SAME row ids — only its FOCUS differs, and the focus shows in the non-editable scaffold text
+    // (row label + criteria prompt) the student reads. AQA Lang P1: Q2 = language analysis, Q3 =
+    // structure analysis. Grounded in protocol-a-assessment.md L464-472: Q3's criterion 2 reads
+    // "Structural feature named with precise terminology + located evidence" and criterion 3
+    // "Detailed analysis of how the structural choice works on the reader's journey".
+    // Overlay ONLY (label/prompt/items) — ids never change, so fieldIds carry no focus and a focus
+    // reword can never drift a write-key. Opt-in via the spec's `focus` field, never a Q-id literal.
+    // Q3's topic sentence stays CONCEPTUAL by protocol (never prompt naming the feature there).
+    // v7.20.107: overlay applied to EVERY body-only outline, whatever its focus. A body-only
+    // question has NO intro, so it has NO thesis — the shared essay scaffold's "linking to your
+    // thesis" would point the student at a section that does not exist on their page. Protocol
+    // wording instead (protocol-a-assessment.md L400): "Conceptual topic sentence introducing the
+    // paragraph's idea". Scaffold text only — id/fieldId untouched.
+    const OUTLINE_BODY_ONLY_OVERRIDES = {
+        topic: { prompt: 'A conceptual idea introducing this paragraph’s focus' },
+    };
+
+    const OUTLINE_BODY_FOCUS = {
+        structure: {
+            evidence: {
+                label: 'Structural Feature + Evidence + Inference',
+                items: ['Structural feature named', 'Evidence located', 'Inference made'],
+                prompt: 'Name the structural feature, locate it in the text, then infer — don’t bolt on',
+            },
+            analysis: {
+                label: 'Close Analysis',
+                prompt: 'How does the structural choice work on the reader’s journey through the text?',
+            },
+        },
+    };
+
     const OUTLINE_CRITERIA = {
         // ── Literature essay (TTECEA+C) — used by AQA, EDUQAS, Edexcel, OCR, CCEA, IGCSE ──
         literature: {
@@ -32041,12 +32078,52 @@
     }
 
     /**
+     * v7.20.107 — OUTLINE-EVERYWHERE step 1 (Neil 2026-07-14 ruling; the old `qMarks >= 20` gate was
+     * a copy-paste TIME constraint, removed by auto-transfer). Resolves a question's BODY-ONLY
+     * outline shape: N TTECEA body paragraphs, NO intro, NO conclusion — the analysis questions get
+     * the same structure training as the Q4 essay, at no extra time cost.
+     *
+     * Returns { bodies, ao, focus } or null (null = no body-only outline for this question).
+     *
+     * CAPABILITY-gated, never a Q-id literal (the #1 canvas bug class): single-AO + sub-essay marks
+     * + spec type 'analysis'. Rollout is staged by PAPER (AQA Lang P1 now; P2 Q2-synthesis /
+     * Q3 / Q4-comparative next per the outline-everywhere spec) because each paper's element set
+     * must be read from ITS protocol before it ships — an unscoped gate would silently activate
+     * TTECEA outlines on boards whose analysis questions are shaped differently (Edexcel IGCSE
+     * multi-Q response sets, Cambridge multi-part).
+     *
+     * Bodies = ceil(marks / 4) — grounded, not guessed: protocol-a-assessment.md L43 + L378 + L454
+     * mark AQA P1 Q2 and Q3 as "8 marks — 2 TTECEA paragraphs × 4".
+     */
+    function _resolveBodyOnlyOutline(qId, qType, qMarks, aosRaw, specQ) {
+        const board = (state.board || '').toLowerCase().replace(/-/g, '');
+        if (board !== 'aqa') return null;
+        if (_specSubjectKey() !== 'language_p1') return null;
+        if (qType !== 'analysis') return null;
+        if (!(qMarks > 0 && qMarks < 20)) return null;
+        // Per-QUESTION AO truth only — q.aos (authored) else the spec. topicData.aos is a
+        // topic-level default ('AO1,AO2,AO4,AO5,AO6' on a language paper) and would false-positive.
+        const aoList = (Array.isArray(aosRaw) ? aosRaw : String(aosRaw || '').split(','))
+            .map(a => String(a).trim()).filter(Boolean);
+        if (aoList.length !== 1) return null;
+        return {
+            bodies: Math.max(1, Math.ceil(qMarks / 4)),
+            ao: aoList[0],
+            focus: specQ?.focus || null,
+        };
+    }
+
+    /**
      * Build outline section with two-column criteria layout.
      * v7.14.99: Uses per-board OUTLINE_SPECS for intro/conclusion structure.
      * Body paragraphs remain shared (TTEECA with AO filtering).
+     * v7.20.107: `opts` = { bodyOnly: N, stampAO: 'AO2', focus: 'structure' } — body-only mode.
      */
-    function buildOutlineSection(aos, partLabel, marks, specKey) {
-        const aoList = (aos || 'AO1,AO2,AO3').split(',').map(a => a.trim());
+    function buildOutlineSection(aos, partLabel, marks, specKey, opts) {
+        // v7.20.107: accept BOTH shapes \u2014 templates author `aos` as a string ("AO2"), the specs
+        // JSON carries an array (["AO2"]). A bare .split() threw on the spec-fallback path.
+        const aoList = (Array.isArray(aos) ? aos : String(aos || 'AO1,AO2,AO3').split(','))
+            .map(a => String(a).trim()).filter(Boolean);
         const prefix = partLabel ? ` \u2014 ${partLabel}` : '';
         let html = '';
         // v7.20.102 (Neil): AO4-only = an EVALUATION question (AQA Lang P1 Q4, and any board's
@@ -32058,7 +32135,48 @@
         // Capability-gated (AO4-only), NOT a literal board/task name \u2014 every evaluation question
         // opts in automatically. evalAO() stamps AO4 onto each shared literature criterion.
         const isEvaluation = aoList.length === 1 && aoList[0] === 'AO4' && marks >= 20;
-        const evalAO = (c) => isEvaluation ? Object.assign({}, c, { ao: 'AO4' }) : c;
+        // v7.20.107: generalised evalAO() → stampAO(). A single-AO question marks EVERY element
+        // against that one objective, so each row carries it (Q4 evaluation = AO4, P1 Q2/Q3 = AO2).
+        // opts.stampAO wins; the AO4 evaluation stamp is preserved exactly as v7.20.102 shipped.
+        const _stampTo = (opts && opts.stampAO) || (isEvaluation ? 'AO4' : null);
+        const stampAO = (c) => _stampTo ? Object.assign({}, c, { ao: _stampTo }) : c;
+        const _bodyOnly = opts && opts.bodyOnly > 0 ? opts.bodyOnly : 0;
+        const _focusOverlay = (opts && opts.focus && OUTLINE_BODY_FOCUS[opts.focus]) || null;
+
+        // ONE body-row builder for BOTH the full-essay and body-only paths — a second copy would
+        // drift the moment a criterion changes (and the heal reads the same overlay).
+        const _bodyRowsFor = (i, suffix) => {
+            let rows = '';
+            OUTLINE_CRITERIA.literature.body.forEach(c => {
+                if (c.aoRequired && !aoList.includes(c.aoRequired)) return;
+                // Adapt Author's Purpose when AO3 not assessed: drop "+ Context", relabel AO
+                let adapted = c;
+                if (!aoList.includes('AO3') && c.id === 'purpose') {
+                    adapted = { ...c, label: "Author's Purpose", ao: 'AO1', prompt: 'Why did the author make these choices?' };
+                }
+                // Scaffold-text overlays (label/prompt/items only — id/fieldId untouched):
+                // body-only first (drops the no-thesis reference), then the per-focus wording.
+                if (_bodyOnly && OUTLINE_BODY_ONLY_OVERRIDES[c.id]) adapted = Object.assign({}, adapted, OUTLINE_BODY_ONLY_OVERRIDES[c.id]);
+                if (_focusOverlay && _focusOverlay[c.id]) adapted = Object.assign({}, adapted, _focusOverlay[c.id]);
+                rows += outlineRowHTML(stampAO(adapted), `outline-body-${i}-${c.id}${suffix}`);
+            });
+            return rows;
+        };
+
+        // ── Body-only outline (v7.20.107): N TTECEA paragraphs, no intro, no conclusion ──
+        // fieldIds carry the question suffix (`outline-body-1-topic-q2`), mirroring the intro
+        // convention. REQUIRED: a P1 doc holds Q2, Q3 AND Q4 outlines, and the legacy body ids are
+        // NOT question-scoped — unsuffixed rows would collide across all three questions
+        // (write-key mismatch = the #1 recurring bug). Q4/literature KEEP the legacy unsuffixed ids
+        // so no baked doc drifts.
+        if (_bodyOnly) {
+            const _sfx = partLabel ? '-' + String(partLabel).replace(/\s/g, '').toLowerCase() : '';
+            let out = '';
+            for (let i = 1; i <= _bodyOnly; i++) {
+                out += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null, _bodyRowsFor(i, _sfx));
+            }
+            return out;
+        }
 
         // Resolve spec: explicit key > auto-detect from state > mark-based defaults
         const key = specKey || getOutlineSpecKey(partLabel);
@@ -32077,32 +32195,22 @@
             const introCriteria = buildIntroCriteria(introType, buildAO);
             let introRows = '';
             introCriteria.forEach(c => {
-                introRows += outlineRowHTML(evalAO(c), `outline-intro-${c.id}${prefix ? '-' + partLabel?.replace(/\s/g,'').toLowerCase() : ''}`);
+                introRows += outlineRowHTML(stampAO(c), `outline-intro-${c.id}${prefix ? '-' + partLabel?.replace(/\s/g,'').toLowerCase() : ''}`);
             });
             html += sectionHTML('outline', `Outline: Introduction${prefix}`, true, null, introRows);
 
-            // Body paragraphs — shared TTEECA with AO filtering
+            // Body paragraphs — shared TTEECA with AO filtering.
+            // v7.20.107: legacy UNSUFFIXED body fieldIds (''), unchanged — no baked-doc drift.
             const bodyCount = marks >= 40 ? 4 : 3;
-            const bodyCriteria = OUTLINE_CRITERIA.literature.body;
             for (let i = 1; i <= bodyCount; i++) {
-                let bodyRows = '';
-                bodyCriteria.forEach(c => {
-                    if (c.aoRequired && !aoList.includes(c.aoRequired)) return;
-                    // Adapt Author's Purpose when AO3 not assessed: drop "+ Context", relabel AO
-                    let adapted = c;
-                    if (!aoList.includes('AO3') && c.id === 'purpose') {
-                        adapted = { ...c, label: "Author's Purpose", ao: 'AO1', prompt: 'Why did the author make these choices?' };
-                    }
-                    bodyRows += outlineRowHTML(evalAO(adapted), `outline-body-${i}-${c.id}`);
-                });
-                html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null, bodyRows);
+                html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null, _bodyRowsFor(i, ''));
             }
 
             // Conclusion — from per-board spec
             const concCriteria = buildConclusionCriteria(concType, purposeAO);
             let concRows = '';
             concCriteria.forEach(c => {
-                concRows += outlineRowHTML(evalAO(c), `outline-conclusion-${c.id}`);
+                concRows += outlineRowHTML(stampAO(c), `outline-conclusion-${c.id}`);
             });
             html += sectionHTML('outline', `Outline: Conclusion${prefix}`, true, null, concRows);
         } else {
@@ -32647,8 +32755,21 @@
             // v7.14.78: Outline with criteria columns — redraft only (diagnostic = write cold)
             // v7.15.108: CW multi-stage archetype outline is standalone-course-only; Language fiction's
             // Scene Structure plan above IS the outline — skip the outline block entirely for it.
-            if (mode === 'redraft' && qType !== 'multiple_choice' && qMarks >= 20) {
-                if (isCWCourse) {
+            // v7.20.107: body-only outline for the sub-essay analysis questions (AQA Lang P1 Q2/Q3).
+            // Resolved BEFORE the gate so the gate admits them alongside the >=20 essay path.
+            const _bodyOnlyOutline = _resolveBodyOnlyOutline(qId, qType, qMarks, q.aos || specQ?.aos, specQ);
+            if (mode === 'redraft' && qType !== 'multiple_choice' && (qMarks >= 20 || _bodyOnlyOutline)) {
+                if (_bodyOnlyOutline) {
+                    // Body-only: N TTECEA paragraphs, no intro/conclusion. Checked BEFORE the
+                    // writing branches — an 8-mark analysis Q can never be creative/persuasive,
+                    // and this keeps the essay path byte-identical to what shipped.
+                    html += dividerHTML(`OUTLINE — ${qId}`);
+                    html += buildOutlineSection(q.aos || specQ?.aos, qId, qMarks, null, {
+                        bodyOnly: _bodyOnlyOutline.bodies,
+                        stampAO: _bodyOnlyOutline.ao,
+                        focus: _bodyOnlyOutline.focus,
+                    });
+                } else if (isCWCourse) {
                     html += dividerHTML(`OUTLINE \u2014 ${qId}`);
                     html += buildCWPlotOutlineSection();
                 } else if (isCreativeWritingQ && isWritingQ) {
@@ -37523,6 +37644,24 @@
             const _isEvalDoc = (typeof _isAnyLanguagePaper === 'function' && _isAnyLanguagePaper())
                 && (state.board || '').toLowerCase() === 'aqa'
                 && !(typeof _isLangPaper2 === 'function' && _isLangPaper2());
+            // ⭐ v7.20.107 — the .104 gate above assumed EVERY `outline-(intro|body|conclusion)-*`
+            // row on an AQA P1 doc belongs to the Q4 AO4 evaluation. That stopped being true the
+            // moment Q2/Q3 got their own body-only outlines on the SAME doc: their rows are AO2, and
+            // the eval branch would silently restamp them to AO4 (and shape-delete them). Body-only
+            // rows are question-SUFFIXED (`outline-body-1-topic-q2`); Q4's body/conclusion rows are
+            // not. Identify them through the SAME resolver the renderer uses — never a Q-id literal,
+            // so a new body-only question can't be missed here.
+            const _bodyOnlyQCache = {};
+            const _isBodyOnlyRowFid = (fid) => {
+                const m = /^outline-body-\d+-[a-z0-9]+-(q\d+)$/i.exec(fid);
+                if (!m) return false;
+                const qid = m[1].toUpperCase();
+                if (!(qid in _bodyOnlyQCache)) {
+                    const sq = typeof lookupQuestionSpec === 'function' ? lookupQuestionSpec(qid) : null;
+                    _bodyOnlyQCache[qid] = !!(sq && _resolveBodyOnlyOutline(qid, sq.type || null, parseInt(sq.marks) || 0, sq.aos, sq));
+                }
+                return _bodyOnlyQCache[qid];
+            };
             const _mergeAttrs = (node, crit) => Object.assign({}, node.attrs, { criteria: JSON.stringify(crit), prompt: crit.prompt || '' });
             doc.descendants((n, pos) => {
                 if (n.type.name !== 'outlineRow') return true;
@@ -37539,7 +37678,9 @@
                 //     when EMPTY (no typed text AND no ticked checkbox) so student work is never lost;
                 //     a filled extra row is kept + AO4-restamped rather than discarded.
                 // (2) AO: restamp any kept row still on a literature AO → AO4.
-                if (_isEvalDoc && /^outline-(intro|body|conclusion)-/.test(fid)) {
+                // v7.20.107: a body-only question's rows (Q2/Q3, AO2) live on the same P1 doc as
+                // Q4's evaluation rows — they are NOT the evaluation, so the eval branch skips them.
+                if (_isEvalDoc && /^outline-(intro|body|conclusion)-/.test(fid) && !_isBodyOnlyRowFid(fid)) {
                     const _isExtra = /^outline-intro-(building|thesis)/.test(fid)
                         || /^outline-conclusion-(concept|purpose|message)/.test(fid)
                         || /^outline-body-\d+-context/.test(fid);
@@ -38695,6 +38836,86 @@
         finally { _migrationActive = false; }
         if (typeof saveCanvasContent === 'function') saveCanvasContent();
         console.log('WML CW: Step-1 questions healed to current template (' + (sameSet ? 'prompt refresh' : 'structural rebuild + stash') + ')');
+    }
+
+    /**
+     * v7.20.107 — heal: inject the BODY-ONLY outline sections into BAKED multi-question docs.
+     *
+     * WHY this exists (do not delete as a duplicate of migrateMissingOutlines): the outline scaffold
+     * is BAKED into each saved doc, so the v7.20.107 builder change only reaches FRESH docs — every
+     * in-progress student stays frozen on the old shape (the reference_wml_outline_scaffold_baked_
+     * needs_onload_heal law: render handles fresh docs, heal handles baked ones, SAME commit).
+     * `migrateMissingOutlines` CANNOT do it — it bails on `data-section-type="outline"` already
+     * present (a P1 doc has Q4's outline) AND on multi-question docs (>=2 Q sections). Both are true
+     * of every AQA Lang P1 doc, so it is inert here.
+     *
+     * Per-question, additive, idempotent: only inserts where that question's outline is ABSENT.
+     * Never touches an existing outline section, so no student text can be lost.
+     */
+    function migrateMissingQOutlines() {
+        if (!canvasEditor) return;
+        const html = canvasEditor.getHTML();
+        // Multi-question exam docs only (the single-part path is migrateMissingOutlines').
+        const qSections = html.match(/data-section-label="Q\d+"/g);
+        if (!qSections || qSections.length < 2) return;
+        // Outlines are the OUTLINING (redraft) stage only — diagnostic writes cold.
+        if (state.phase !== 'redraft' && !state.draftType?.includes('redraft')) return;
+        if (state.task === 'mark_scheme') return;
+        if (state.task && state.task.startsWith('cw_')) return;
+
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        let changed = false;
+        const healed = [];
+
+        tmp.querySelectorAll('[data-section-type="question"]').forEach(qSection => {
+            const qId = (qSection.getAttribute('data-section-label') || '').trim();
+            if (!qId || !/^Q\d/.test(qId)) return;
+
+            const specQ = lookupQuestionSpec(qId);
+            const qMarks = parseInt(specQ?.marks ?? 0)
+                || parseInt((qSection.textContent || '').match(/\[(\d+)\s*marks?\]/i)?.[1] || 0);
+            // SAME resolver the doc builder uses — one gate, so heal and render can never diverge.
+            const shape = _resolveBodyOnlyOutline(qId, specQ?.type || null, qMarks, specQ?.aos, specQ);
+            if (!shape) return;
+
+            // Already has this question's outline? Additive only — never rebuild.
+            const already = Array.from(tmp.querySelectorAll('[data-section-type="outline"]'))
+                .some(s => (s.getAttribute('data-section-label') || '').endsWith(`— ${qId}`));
+            if (already) return;
+
+            // Anchor: after this question's LAST plan section (outline sits between plan and
+            // response, matching the fresh builder's order). No plan yet → skip; migrateMissingPlans
+            // runs FIRST in the chain, so a doc that still lacks one is not ours to shape.
+            const planSections = Array.from(tmp.querySelectorAll('[data-section-type="plan"]'))
+                .filter(s => (s.getAttribute('data-section-label') || '').endsWith(`— ${qId}`));
+            if (!planSections.length) return;
+            const anchor = planSections[planSections.length - 1];
+
+            const frag = document.createElement('div');
+            frag.innerHTML = dividerHTML(`OUTLINE — ${qId}`)
+                + buildOutlineSection(specQ?.aos, qId, qMarks, null, {
+                    bodyOnly: shape.bodies,
+                    stampAO: shape.ao,
+                    focus: shape.focus,
+                });
+
+            let after = anchor;
+            while (frag.firstChild) {
+                after.parentNode.insertBefore(frag.firstChild, after.nextSibling);
+                after = after.nextSibling;
+            }
+            changed = true;
+            healed.push(`${qId}(${shape.bodies}¶/${shape.ao}${shape.focus ? '/' + shape.focus : ''})`);
+        });
+
+        if (!changed) return;
+        _migrationActive = true;
+        try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
+        finally { _migrationActive = false; }
+        // Fail loud — a heal that fires must be visible, never silent (v7.20.106 lesson).
+        console.warn('[WML heal v7.20.107] body-only outlines injected into baked doc: ' + healed.join(', '));
+        if (typeof saveCanvasContent === 'function') saveCanvasContent();
     }
 
     /**

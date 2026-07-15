@@ -398,11 +398,11 @@ Output `@FB_BEGIN{"q":"Q2","para":"1","title":"Paragraph 1"}` on its own line, t
   | Criterion | Worth |
   |---|---|
   | Conceptual topic sentence introducing the paragraph's idea (AO2) | 0.5 |
-  | Technique named with precise terminology + integrated quote (AO2) | 0.5 |
+  | Technique named with precise terminology + integrated quote + inference (AO2) | 1.0 |
   | Detailed, perceptive word-level close analysis (AO2) | 0.5 |
   | First detailed sentence evaluating effects on the reader (AO2) | 0.5 |
   | Second detailed sentence evaluating effects on the reader (AO2) | 0.5 |
-  | Perceptive evaluation of the author's purpose (AO2) | 1.0 |
+  | Perceptive evaluation of the author's purpose (AO2) | 0.5 |
   | **BONUS** — analysis of technique interplay (AO2) | +0.5 |
 
   The 6 non-bonus criteria form the 3.5 base; the BONUS adds on top, capped at 4.0. When absent:
@@ -465,8 +465,9 @@ Q3 Total + calibration → Q-GATE), with these swaps:
   perspective/time shifts) · **paragraph** (topic change, zoom in/out, cohesion) · **sentence**
   (only when it shapes the whole structure). Across the two paragraphs, reward at least one
   whole-text and one paragraph-level feature; the mark table's criterion 2 reads "Structural
-  feature named with precise terminology + located evidence (AO2)" and criterion 3 reads
-  "Detailed analysis of how the structural choice works on the reader's journey (AO2)".
+  feature named with precise terminology + located evidence + inference (AO2)" (worth 1.0, as in
+  Q2 — the inference IS the analysis and carries the paragraph's heaviest element) and criterion 3
+  reads "Detailed analysis of how the structural choice works on the reader's journey (AO2)".
 - **Topic sentence stays conceptual:** reward conceptual framing; never instruct the student to
   name the structural feature in the topic sentence (it belongs in the technique beat). If they
   name it there unprompted, don't penalise — but never prompt it.
