@@ -15837,7 +15837,11 @@
             const groups = [];
             let currentSuperGroup = null;
             let currentDividerGroup = null;
+            let currentQSuper = null; // v7.20.110: question super-group (mirrors the in-doc TOC)
             const PREFIX_MAP = { 'Plan:': 'Essay Plan', 'Outline:': 'Outline', 'Feedback:': 'Feedback' };
+            // v7.20.110: same word-casing as the in-doc TOC so the two surfaces read identically.
+            const _titleCaseRail = (str) => String(str || '').trim().toLowerCase()
+                .replace(/\b([a-z])/g, (m, c) => c.toUpperCase());
             sections.forEach(s => {
                 if (s.type === 'cover') return;
                 // section-header opens a super-group; subsequent dividers nest inside it
@@ -15851,12 +15855,39 @@
                     };
                     groups.push(currentSuperGroup);
                     currentDividerGroup = null;
+                    currentQSuper = null;
+                    return;
+                }
+                // v7.20.110 (Neil): QUESTION GROUPING — MUST mirror the in-doc TOC's model exactly
+                // (same rule, same labels), or the rail and the page disagree about where a section
+                // lives. A question section ("Q2") opens a super-group; its own "… — Q2" dividers
+                // nest inside. DERIVED from the document, never a paper list; a doc with no question
+                // sections stays flat (literature single essay = correct as-is).
+                if (s.type === 'question' && /^Q\d+[a-z]?$/i.test((s.label || '').trim()) && !currentSuperGroup) {
+                    currentQSuper = {
+                        key: 'Question ' + s.label.trim().toUpperCase().replace(/^Q/i, ''),
+                        isSuperGroup: true,
+                        pos: s.pos,
+                        dividerGroups: [],
+                        directChildren: [],
+                    };
+                    groups.push(currentQSuper);
+                    currentDividerGroup = null;
                     return;
                 }
                 // Dividers start new groups (children of super-group when one is open)
                 if (s.type === 'divider') {
-                    currentDividerGroup = { key: s.label, children: [], type: null, isDivider: true, pos: s.pos };
-                    if (currentSuperGroup) {
+                    const _qDiv = /^(.*?)\s*—\s*(Q\d+[a-z]?)\s*$/i.exec(s.label || '');
+                    const _inQ = _qDiv && currentQSuper
+                        && currentQSuper.key.toUpperCase().replace(/^QUESTION\s*/, 'Q') === _qDiv[2].toUpperCase();
+                    if (!_qDiv) currentQSuper = null; // a non-question divider closes the question group
+                    currentDividerGroup = {
+                        key: _inQ ? _titleCaseRail(_qDiv[1]) : s.label,
+                        children: [], type: null, isDivider: true, pos: s.pos,
+                    };
+                    if (_inQ) {
+                        currentQSuper.dividerGroups.push(currentDividerGroup);
+                    } else if (currentSuperGroup) {
                         currentSuperGroup.dividerGroups.push(currentDividerGroup);
                     } else {
                         groups.push(currentDividerGroup);
@@ -32711,6 +32742,22 @@
             const _respStageAttrs = _qPlanBuilt ? null : { 'stage-reveal': 'planning' };
             if (_qPlanBuilt) {
                 html += dividerHTML(`PLAN \u2014 ${qId}`);
+                // \u2b50 v7.20.110 (Neil) \u2014 DIAGNOSTIC = TESTING, REDRAFT = TRAINING. The diagnostic
+                // measures what the STUDENT can do, so it strips scaffolding to the minimum: ONE
+                // plan area, whatever builder this question would otherwise get (per-paragraph,
+                // buildPlanSection, scene-structure, IUMVCC, comparative). Printing two plan rows
+                // for Q2 silently told them "write two paragraphs" \u2014 the exam paper never says that,
+                // and choosing the shape is part of what Q2 tests. The COUNT RULE: mirror the paper,
+                // never reveal a count the paper withholds (a retrieval Q that STATES its count \u2014
+                // "list four things" \u2014 keeps its per-point fields further below; it hints nothing).
+                // Redraft is untouched: its granular per-element plan IS the training, and every
+                // planning protocol's @FIELD_COMMIT filings key on those fieldIds.
+                // Memory: feedback_diagnostic_tests_redraft_trains.
+                const _isDiagnosticDoc = mode !== 'redraft';
+                if (_isDiagnosticDoc && !isCWCourse) {
+                    html += sectionHTML('plan', `Plan \u2014 ${qId}`, true, null,
+                        inputHTML('Plan your response.', `plan-${qId}-para-1`));
+                } else {
                 // v7.19.250: Language PAPER 1 Q5 (40-mark Section B fiction writing) is creative
                 // writing pedagogically, but state.subject is 'language1' / 'language_p1' (not
                 // 'creative_writing') and the isCreativeWritingQ keyword regex doesn't always
@@ -32753,6 +32800,7 @@
                             inputHTML(`Key points for paragraph ${i}`, `plan-${qId}-para-${i}`));
                     }
                 }
+                } // end REDRAFT plan builders (v7.20.110 — diagnostic took the single-area branch)
             }
 
             // v7.14.78: Outline with criteria columns — redraft only (diagnostic = write cold)
@@ -39348,9 +39396,15 @@
         // it as second-tier chevrons (used by AQA Modern Text 20-Q cribs so the in-doc
         // TOC reads "How to use this guide / Top 10 Character / Top 10 Theme" at the
         // top tier and "C1 — The Inspector / T1 — Social Responsibility ..." inside).
+        // v7.20.110: divider labels are upper-case ("PLAN — Q2"); nested under a Question super-group
+        // they read as words, not shouting ("5.1 Plan"). Word-wise so "SOURCE MATERIAL" → "Source Material".
+        const _titleCase = (str) => String(str || '').trim().toLowerCase()
+            .replace(/\b([a-z])/g, (m, c) => c.toUpperCase());
+
         const tocEntries = [];
         let currentSuperGroup = null;
         let currentDivGroup = null;
+        let currentQSuper = null; // v7.20.110: question super-group (distinct from a section-header one)
         const groupPrefixes = ['Feedback', 'Plan', 'Outline'];
         const groupMap = {};
 
@@ -39367,12 +39421,50 @@
                 };
                 tocEntries.push(currentSuperGroup);
                 currentDivGroup = null;
+                currentQSuper = null;
+                return;
+            }
+            // v7.20.110 (Neil): QUESTION GROUPING — the flat list grew past ~16 entries once every
+            // structured question gained an outline, and it is too much to eye-scan. A question
+            // section ("Q2") opens a super-group; its own PLAN/OUTLINE/RESPONSE dividers (labelled
+            // "… — Q2") nest inside as second-tier chevrons, reusing the v7.19.124 two-tier
+            // accordion that already exists for exactly this ("q/plan/response children").
+            // DERIVED from the document — the question section's label and the divider's "— Qn"
+            // suffix — never a paper/board list, so any paper groups automatically and a doc with
+            // no question sections (literature single-essay: bare PLAN/OUTLINE/RESPONSE dividers)
+            // simply stays flat, which is already correct for one essay.
+            if (s.type === 'question' && /^Q\d+[a-z]?$/i.test((s.label || '').trim()) && !currentSuperGroup) {
+                const _qid = s.label.trim().toUpperCase();
+                currentQSuper = {
+                    type: null,
+                    label: s.label,          // super-row click scrolls to the question itself
+                    occurrence: s.occurrence,
+                    displayLabel: 'Question ' + _qid.replace(/^Q/i, ''),
+                    children: [],
+                    isGroup: true,
+                    isSuperGroup: true,
+                };
+                tocEntries.push(currentQSuper);
+                currentDivGroup = null;
                 return;
             }
             // Dividers start new groups
             if (s.type === 'divider') {
-                currentDivGroup = { type: null, label: s.label, displayLabel: s.label, children: [], isGroup: true, isDivider: true };
-                if (currentSuperGroup) {
+                // A "… — Qn" divider belongs to that question's super-group; strip the suffix so the
+                // child reads "Plan" / "Outline" / "Response" (the parent already names the question).
+                const _qDiv = /^(.*?)\s*—\s*(Q\d+[a-z]?)\s*$/i.exec(s.label || '');
+                const _inQ = _qDiv && currentQSuper
+                    && String(currentQSuper.label).trim().toUpperCase() === _qDiv[2].toUpperCase();
+                if (!_qDiv) currentQSuper = null; // a non-question divider (SECTION B: WRITING) closes the group
+                currentDivGroup = {
+                    type: null,
+                    label: s.label,
+                    displayLabel: _inQ ? _titleCase(_qDiv[1]) : s.label,
+                    children: [], isGroup: true, isDivider: true,
+                };
+                if (_inQ) {
+                    currentQSuper.children.push(currentDivGroup);
+                } else if (currentSuperGroup) {
                     currentSuperGroup.children.push(currentDivGroup);
                 } else {
                     tocEntries.push(currentDivGroup);
