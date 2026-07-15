@@ -2383,6 +2383,185 @@
         const m = t.match(/(\d+)/);
         return m ? m[1] : '';
     }
+    // ══════════════════════════════════════════════════════════════════════════
+    //  THE ONE SECTION MODEL — v7.20.115. Read this before touching ANY of the
+    //  three navigation surfaces.
+    // ══════════════════════════════════════════════════════════════════════════
+    //
+    // WHY THIS EXISTS (root of a recurring class, not a tidy-up):
+    // The in-doc TOC page, the document-outline panel and the dynamic island are
+    // three CONSUMERS of one conceptual model. Each used to re-derive its own, so
+    // every fix healed one copy and let the others drift. Proven four times:
+    //   · SCROLL — three offset implementations; the `/3` survived for MONTHS
+    //     because SWML_SCROLL_TOP_PAD was function-local (fixed .112).
+    //   · SECTION A/B — .110's question grouping healed the TOC + rail and BROKE
+    //     the panel (its childless-divider skip hid "SECTION A: READING").
+    //   · ISLAND — stayed flat because it wasn't the copy that got fixed.
+    //   · TICKS — completion existed in one surface only.
+    // Different STYLING per surface is fine. Different MODELS is the bug.
+    // (feedback_shared_surface_fix_in_one_function)
+    //
+    // THE TOC PAGE IS THE GOLD STANDARD (Neil, verified on staging .110) — this
+    // model is its shape. The panel and island MIRROR it; they do not re-derive it.
+    //
+    // ENTRY:
+    //   kind         'question' | 'divider' | 'group' | 'leaf'
+    //   label        RAW doc label — the DOM/scroll lookup key. NEVER display it.
+    //   displayLabel what a surface shows. NEVER look up by it.
+    //   type         section type ('plan'|'response'|…), or null for containers
+    //   pos          PM doc position — UNIQUE. Resolve DOM by this, never by label
+    //                (labels repeat across units — the island already knew this).
+    //   occurrence   nth section carrying this label (scrollToLabel needs it)
+    //   children     [Entry]
+    //   complete     true|false|null  (null = nothing a student can complete)
+    //   structural   divider whose questions became SIBLINGS (see below)
+    //
+    // STRUCTURAL DIVIDERS — the §4.1 root. Pre-.110 "SECTION A: READING" owned
+    // Q1–Q4 as children. Now each question opens its OWN super-group, so that
+    // divider legitimately has ZERO children. The panel skipped childless dividers
+    // (to hide genuinely-empty ones) and so dropped it; the TOC had no such skip.
+    // We mark the difference HERE, once: a childless divider FOLLOWED by question
+    // super-groups is `structural` (render as a plain, chevron-less row); one with
+    // nothing after it is `empty` (hide). Surfaces must not re-guess this.
+    //
+    // @param sections [{type,label,pos,occurrence}] in document order
+    // @param opts.isComplete  (entry) => true|false|null — resolve BY POS
+    // @param opts.isVisible   (section) => bool. Hidden sections have ZERO geometry,
+    //        so a link to one silently does nothing (the v7.19.420 TOC fix, which
+    //        the panel and island never got).
+    function _buildSectionModel(sections, opts) {
+        opts = opts || {};
+        const isComplete = typeof opts.isComplete === 'function' ? opts.isComplete : null;
+        const isVisible = typeof opts.isVisible === 'function' ? opts.isVisible : null;
+
+        // Word-wise title case so a shouting divider reads as words under a Question
+        // parent ("SOURCE MATERIAL" → "Source Material"). Same rule both surfaces had.
+        const _titleCase = (str) => String(str || '').trim().toLowerCase()
+            .replace(/\b([a-z])/g, (m, c) => c.toUpperCase());
+
+        const src = (sections || []).filter(s => s && s.type !== 'cover' && (!isVisible || isVisible(s)));
+
+        const entries = [];
+        const prefixGroups = {}; // groupKey → entry (fallback path; see below)
+        let superGroup = null;   // opened by a section-header
+        let qSuper = null;       // opened by a "Q2" question section
+        let divGroup = null;
+        const mkLeaf = (s) => ({
+            kind: 'leaf', label: s.label, displayLabel: s.label, type: s.type,
+            pos: s.pos, occurrence: s.occurrence, children: [], complete: null, structural: false,
+        });
+
+        src.forEach(s => {
+            const label = String(s.label || '');
+
+            // A section-header opens a super-group; subsequent dividers nest inside it
+            // (AQA Modern Text 20-Q cribs: "Top 10 Theme" / "Top 10 Character").
+            if (s.type === 'section-header') {
+                superGroup = {
+                    kind: 'group', label: label, displayLabel: label, type: null,
+                    pos: s.pos, occurrence: s.occurrence, children: [], complete: null, structural: false,
+                };
+                entries.push(superGroup);
+                divGroup = null; qSuper = null;
+                return;
+            }
+
+            // A question section ("Q2") opens a super-group; its own "… — Q2" dividers
+            // nest inside. DERIVED from the doc — never a paper/board list — so any
+            // paper groups for free and a literature single-essay doc stays flat.
+            if (s.type === 'question' && /^Q\d+[a-z]?$/i.test(label.trim()) && !superGroup) {
+                qSuper = {
+                    kind: 'question', label: label, displayLabel: 'Question ' + label.trim().toUpperCase().replace(/^Q/i, ''),
+                    type: null, pos: s.pos, occurrence: s.occurrence, children: [], complete: null, structural: false,
+                };
+                entries.push(qSuper);
+                divGroup = null;
+                return;
+            }
+
+            if (s.type === 'divider') {
+                const qDiv = /^(.*?)\s*—\s*(Q\d+[a-z]?)\s*$/i.exec(label);
+                // Compare against the RAW question label ("Q2"), never the derived
+                // displayLabel — the two builders used to disagree on exactly this.
+                const inQ = !!(qDiv && qSuper && String(qSuper.label).trim().toUpperCase() === qDiv[2].toUpperCase());
+                if (!qDiv) qSuper = null;   // a non-question divider closes the question group
+                divGroup = {
+                    kind: 'divider', label: label, displayLabel: inQ ? _titleCase(qDiv[1]) : label,
+                    type: null, pos: s.pos, occurrence: s.occurrence, children: [], complete: null, structural: false,
+                };
+                if (inQ) qSuper.children.push(divGroup);
+                else if (superGroup) superGroup.children.push(divGroup);
+                else entries.push(divGroup);
+                return;
+            }
+
+            if (divGroup) {
+                if (!divGroup.type) divGroup.type = s.type;
+                divGroup.children.push(mkLeaf(s));
+                return;
+            }
+            if (superGroup) { superGroup.children.push(mkLeaf(s)); return; }
+
+            // Prefix fallback for docs with no dividers at all (legacy shapes).
+            // Mirrors the in-doc TOC EXACTLY (the gold standard), which differs from the
+            // rail's old copy in three ways that all matter:
+            //   · keyed by a MAP, so non-adjacent "Plan:" sections join ONE group
+            //     (the rail's adjacency check opened a second group instead);
+            //   · the group's `label` is the FIRST CHILD'S REAL DOC LABEL — a groupKey
+            //     ("Plan") is not a label, so scrolling to it would silently find nothing;
+            //   · "Plan" displays as "Essay Plan", and Part A/B Feedback are spelled out.
+            const dual = label.match(/^(Part [AB] Feedback):\s*/);
+            const pfx = !dual ? ['Feedback', 'Plan', 'Outline'].find(p => label.startsWith(p + ':')) : null;
+            const groupKey = dual ? dual[1] : pfx;
+            if (groupKey) {
+                const child = mkLeaf(s);
+                child.displayLabel = label.replace(/^[^:]+:\s*/, '') || label;
+                let g = prefixGroups[groupKey];
+                if (!g) {
+                    let displayName = groupKey;
+                    if (groupKey === 'Plan') displayName = 'Essay Plan';
+                    else if (groupKey === 'Part A Feedback') displayName = 'Feedback — Part A';
+                    else if (groupKey === 'Part B Feedback') displayName = 'Feedback — Part B';
+                    g = {
+                        kind: 'group', label: label, displayLabel: displayName, type: s.type,
+                        pos: s.pos, occurrence: s.occurrence, children: [], complete: null, structural: false,
+                    };
+                    prefixGroups[groupKey] = g;
+                    entries.push(g);
+                }
+                g.children.push(child);
+                return;
+            }
+            entries.push(mkLeaf(s));
+        });
+
+        // STRUCTURAL vs EMPTY (see header). A childless divider followed — before the
+        // next top-level divider — by question super-groups had its content move into
+        // those siblings; it is a real heading and must render. One with nothing after
+        // it is genuinely empty.
+        entries.forEach((e, i) => {
+            if (e.kind !== 'divider' || e.children.length) return;
+            for (let j = i + 1; j < entries.length; j++) {
+                if (entries[j].kind === 'divider') break;
+                if (entries[j].kind === 'question') { e.structural = true; break; }
+            }
+        });
+
+        // Completion, resolved ONCE, by pos. Containers report complete only when every
+        // completable descendant is — so a tick means the same thing on all three surfaces.
+        if (isComplete) {
+            const walk = (e) => {
+                e.children.forEach(walk);
+                if (e.kind === 'leaf') { e.complete = isComplete(e); return; }
+                const kids = e.children.filter(c => c.complete !== null);
+                e.complete = kids.length ? kids.every(c => c.complete === true) : null;
+            };
+            entries.forEach(walk);
+        }
+
+        return { entries: entries };
+    }
+
     // v7.19.920 (Neil): collapsed-sidebar circle glyph for a step-group header —
     // "Question 2" → "2", "Section B" → "B", anything else → its initial. Derived
     // from the label so every board/paper gets it free (no per-protocol wiring).
@@ -39507,131 +39686,25 @@
             const l = el.getAttribute('data-section-label');
             (_domLabelMap[l] = _domLabelMap[l] || []).push(el);
         });
-        const visibleSections = sections.filter(s => {
+        // ONE predicate — the count guard below and the model build MUST agree on what
+        // "visible" means, or the TOC can bail on a doc it would happily have rendered.
+        const _isVisibleSection = (s) => {
             const els = _domLabelMap[s.label] || [];
             const el = els[s.occurrence] || els[0];
             return el ? el.offsetParent !== null : true; // not yet rendered → keep
-        });
+        };
 
-        if (visibleSections.length < 3) return; // Not enough sections for a TOC
+        if (sections.filter(_isVisibleSection).length < 3) return; // Not enough sections for a TOC
 
-        // v7.14.30: Group using dividers as boundaries first, then prefix fallback.
-        // Dividers create accordion groups — all sections after a divider become its children.
-        // v7.19.124: section-header opens a super-group — subsequent dividers nest under
-        // it as second-tier chevrons (used by AQA Modern Text 20-Q cribs so the in-doc
-        // TOC reads "How to use this guide / Top 10 Character / Top 10 Theme" at the
-        // top tier and "C1 — The Inspector / T1 — Social Responsibility ..." inside).
-        // v7.20.110: divider labels are upper-case ("PLAN — Q2"); nested under a Question super-group
-        // they read as words, not shouting ("5.1 Plan"). Word-wise so "SOURCE MATERIAL" → "Source Material".
-        const _titleCase = (str) => String(str || '').trim().toLowerCase()
-            .replace(/\b([a-z])/g, (m, c) => c.toUpperCase());
+        // v7.20.115: the in-doc TOC is the GOLD STANDARD for section grouping — it now
+        // RENDERS the one shared model instead of deriving its own. The rules that used to
+        // live here (section-header super-groups, "Q2" question super-groups, "… — Qn"
+        // divider nesting + title-casing, the prefix fallback with its Essay Plan / Part A|B
+        // display names) moved VERBATIM into _buildSectionModel() so the outline panel and
+        // the dynamic island get exactly the same tree. Different styling per surface is
+        // fine; different MODELS is the bug this kills. See the model's header comment.
+        const tocEntries = _buildSectionModel(sections, { isVisible: _isVisibleSection }).entries;
 
-        const tocEntries = [];
-        let currentSuperGroup = null;
-        let currentDivGroup = null;
-        let currentQSuper = null; // v7.20.110: question super-group (distinct from a section-header one)
-        const groupPrefixes = ['Feedback', 'Plan', 'Outline'];
-        const groupMap = {};
-
-        visibleSections.forEach(s => {
-            // section-header — open super-group; flush divider context
-            if (s.type === 'section-header') {
-                currentSuperGroup = {
-                    type: null,
-                    label: s.label,
-                    displayLabel: s.label,
-                    children: [],
-                    isGroup: true,
-                    isSuperGroup: true,
-                };
-                tocEntries.push(currentSuperGroup);
-                currentDivGroup = null;
-                currentQSuper = null;
-                return;
-            }
-            // v7.20.110 (Neil): QUESTION GROUPING — the flat list grew past ~16 entries once every
-            // structured question gained an outline, and it is too much to eye-scan. A question
-            // section ("Q2") opens a super-group; its own PLAN/OUTLINE/RESPONSE dividers (labelled
-            // "… — Q2") nest inside as second-tier chevrons, reusing the v7.19.124 two-tier
-            // accordion that already exists for exactly this ("q/plan/response children").
-            // DERIVED from the document — the question section's label and the divider's "— Qn"
-            // suffix — never a paper/board list, so any paper groups automatically and a doc with
-            // no question sections (literature single-essay: bare PLAN/OUTLINE/RESPONSE dividers)
-            // simply stays flat, which is already correct for one essay.
-            if (s.type === 'question' && /^Q\d+[a-z]?$/i.test((s.label || '').trim()) && !currentSuperGroup) {
-                const _qid = s.label.trim().toUpperCase();
-                currentQSuper = {
-                    type: null,
-                    label: s.label,          // super-row click scrolls to the question itself
-                    occurrence: s.occurrence,
-                    displayLabel: 'Question ' + _qid.replace(/^Q/i, ''),
-                    children: [],
-                    isGroup: true,
-                    isSuperGroup: true,
-                };
-                tocEntries.push(currentQSuper);
-                currentDivGroup = null;
-                return;
-            }
-            // Dividers start new groups
-            if (s.type === 'divider') {
-                // A "… — Qn" divider belongs to that question's super-group; strip the suffix so the
-                // child reads "Plan" / "Outline" / "Response" (the parent already names the question).
-                const _qDiv = /^(.*?)\s*—\s*(Q\d+[a-z]?)\s*$/i.exec(s.label || '');
-                const _inQ = _qDiv && currentQSuper
-                    && String(currentQSuper.label).trim().toUpperCase() === _qDiv[2].toUpperCase();
-                if (!_qDiv) currentQSuper = null; // a non-question divider (SECTION B: WRITING) closes the group
-                currentDivGroup = {
-                    type: null,
-                    label: s.label,
-                    displayLabel: _inQ ? _titleCase(_qDiv[1]) : s.label,
-                    children: [], isGroup: true, isDivider: true,
-                };
-                if (_inQ) {
-                    currentQSuper.children.push(currentDivGroup);
-                } else if (currentSuperGroup) {
-                    currentSuperGroup.children.push(currentDivGroup);
-                } else {
-                    tocEntries.push(currentDivGroup);
-                }
-                return;
-            }
-            // If inside a divider group, add as child
-            if (currentDivGroup) {
-                if (!currentDivGroup.type) currentDivGroup.type = s.type;
-                currentDivGroup.children.push({ type: s.type, label: s.label, displayLabel: s.label, occurrence: s.occurrence });
-                return;
-            }
-            // v7.19.131: inside super-group, no divider yet → preamble notice etc.
-            // Add as leaf children of the super-group so they appear under the
-            // chevron in the TOC (e.g. AQA Modern Text "How to use this guide"
-            // expands to "How this list was generated / Priority order / How to
-            // use this document / Pedagogical depth / 7-sent shape / Memorise once").
-            if (currentSuperGroup) {
-                currentSuperGroup.children.push({ type: s.type, label: s.label, displayLabel: s.label, occurrence: s.occurrence });
-                return;
-            }
-            // Fallback: prefix-based grouping for sections before any divider
-            const dualMatch = s.label.match(/^(Part [AB] Feedback):\s*/);
-            const matchedPrefix = !dualMatch ? groupPrefixes.find(p => s.label.startsWith(p + ':')) : null;
-            const groupKey = dualMatch ? dualMatch[1] : matchedPrefix;
-
-            if (groupKey) {
-                if (!groupMap[groupKey]) {
-                    let displayName = groupKey;
-                    if (groupKey === 'Plan') displayName = 'Essay Plan';
-                    else if (groupKey === 'Part A Feedback') displayName = 'Feedback \u2014 Part A';
-                    else if (groupKey === 'Part B Feedback') displayName = 'Feedback \u2014 Part B';
-                    const entry = { type: s.type, label: s.label, displayLabel: displayName, children: [], isGroup: true };
-                    groupMap[groupKey] = entry;
-                    tocEntries.push(entry);
-                }
-                const childLabel = s.label.replace(/^[^:]+:\s*/, '');
-                groupMap[groupKey].children.push({ type: s.type, label: s.label, displayLabel: childLabel });
-            } else {
-                tocEntries.push({ type: s.type, label: s.label, displayLabel: s.label, children: [], isGroup: false });
-            }
-        });
 
         // Build TOC element — styled as a proper page
         const toc = document.createElement('div');
@@ -39816,13 +39889,18 @@
         const _isCodexToc = (typeof WML !== 'undefined' && WML.state && WML.state.task === 'mastery_codex');
         tocEntries.forEach((entry, idx) => {
             const sectionNum = _isCodexToc ? idx : idx + 1;
-            // Super-group → nested two-tier render
-            if (entry.isSuperGroup) {
+            // v7.20.115: dispatch on the shared model's `kind` — 'question' (a "Q2"
+            // super-group) and 'group' (a section-header super-group) both render as
+            // two-tier; they differ only in what opened them, never in how they draw.
+            if (entry.kind === 'question' || entry.kind === 'group') {
                 list.appendChild(renderSuperGroupEntry(entry, sectionNum + '.'));
                 return;
             }
-            // Divider group → existing single-tier render
-            if (entry.isDivider) {
+            // Divider group → existing single-tier render. A `structural` divider
+            // (SECTION A: READING — its questions became siblings) legitimately has no
+            // children; renderDividerEntry already omits the chevron in that case, so
+            // it draws as the plain heading row the TOC has always shown.
+            if (entry.kind === 'divider') {
                 const dotColor = BRAND_DOT_COLOURS[idx % BRAND_DOT_COLOURS.length];
                 list.appendChild(renderDividerEntry(entry, sectionNum + '.', dotColor));
                 return;
@@ -39850,7 +39928,10 @@
             });
             item.appendChild(row);
 
-            if (entry.isGroup && entry.children && entry.children.length > 0) {
+            // v7.20.115: was `entry.isGroup` — a flag the shared model doesn't emit, which
+            // would have silently dropped every prefix group's children. Children present
+            // IS the condition; a leaf has none.
+            if (entry.children && entry.children.length > 0) {
                 const chevron = document.createElement('button');
                 chevron.className = 'swml-toc-chevron';
                 chevron.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>';
