@@ -933,10 +933,28 @@ that no amount of rewriting the toolbar would have touched.
    has now caught the ctlrows storm twice (v7.20.73, v7.20.125). Design the output for that: name the
    number, the scale, and what to do with it.
 
-**Corollary — the breakers ARE instruments.** `_derivedCardFillOk` did not just protect the page; its
-warning + stack diagnosed the bug. When you add a guard, make its message name the CLASS and point at
-the rule (this one cites the CLAUDE.md PROSEMIRROR NODEVIEW rule) — a guard that only prevents damage
-is worth less than one that also explains it.
+**Corollary — the breakers ARE instruments, and a lying instrument is worse than none**
+(v7.20.127, the sequel — read this before trusting any guard's message).
+`_derivedCardFillOk`'s warning asserted a cause it had never checked: *"a ProseMirror NodeView DOM
+write is not firewalled by ignoreMutation, causing a DOMObserver flush loop."* It measured ONE thing
+— fills/second — and named a mechanism. **The mechanism was false.** R&J has ~53 sections; a healthy
+mount fills each control row once, so 50+ fills land inside one second and the breaker tripped on a
+perfectly good page load, every load, suppressing the remaining fills (real damage) while blaming an
+innocent firewall. It sent two versions (.125/.126) into the wrong file. Only a probe in
+`ignoreMutation` finding **nothing** broke the spell.
+**LAWS:**
+1. **A burst is not a loop.** 53 sections filling once each = a mount. One section filling 53 times =
+   a loop. Rate alone cannot tell them apart. A loop is SUSTAINED (it cannot stop itself); a mount is
+   hot for one window and done. Trip on CONSECUTIVE hot windows, never a single burst (.127).
+2. **A guard states the SYMPTOM IT MEASURED; the cause is a HYPOTHESIS, labelled as one.** Write
+   "rate stayed above X for N consecutive seconds — LIKELY (not verified): …, to confirm do Y."
+   Never assert a mechanism the guard did not test. A confident-but-wrong guard does not merely fail
+   to help — it actively routes the next reader to the wrong file, and it is trusted precisely
+   because it looks like instrumentation.
+3. **Threshold guards need a scale check.** Any per-second cap must be sized against the LEGITIMATE
+   worst case (here: the biggest doc's section count). 50 was below a normal R&J mount.
+4. Corollary to §9c: **this applies to the instruments too.** The probe was trusted only because it
+   reported a fact ("no un-firewalled mutation reached here"), not a story.
 
 ## §10. THE HARNESS METHOD — how nets get proven before Neil ever tests
 

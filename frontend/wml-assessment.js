@@ -9449,14 +9449,50 @@
     // 1s window — breaking the loop's foreign-write step so it can't sustain. Self-recovers next
     // window. See CLAUDE.md "PROSEMIRROR NODEVIEW" rule + memory reference_wml_pm_nodeview_foreign_mutation_loop.
     const _cardFillWin = {};
+    // v7.20.127 (Neil's console, R&J): A BURST IS NOT A LOOP.
+    // This breaker counted fills in a 1-second window across the WHOLE doc and tripped at >50 —
+    // then printed a confident diagnosis ("a NodeView write is not firewalled by ignoreMutation,
+    // causing a DOMObserver flush loop") that it had never actually checked. R&J has ~53 sections;
+    // on a normal mount every section legitimately fills its control row ONCE, so 50+ fills land
+    // in well under a second. Result: it tripped on a HEALTHY page load, every load, suppressed
+    // the remaining control-row fills (real damage — later sections lost their rows), and asserted
+    // a bug that did not exist. It cost two versions chasing a firewall (v7.20.125/.126); a probe
+    // in ignoreMutation proved there was no un-firewalled mutation at all.
+    // THE DISCRIMINATOR: 53 sections filling once each = a mount. One section filling 53 times =
+    // a loop. A loop is SUSTAINED — it cannot stop on its own, so it stays hot second after
+    // second. A mount is hot for exactly one window and then done. So require the window to be
+    // hot CONSECUTIVELY before tripping. The real v7.19.866 loop was unbounded and would trip in
+    // ~3s (it froze the tab for far longer than that); a mount can never reach 2 consecutive hot
+    // windows.
+    // LESSON (documented, §9c): a guard that names a cause it did not verify is worse than one
+    // that names none — it does not just fail to help, it actively sends the next reader to the
+    // wrong file. State the SYMPTOM you measured, and offer the cause as a hypothesis.
+    const _CARD_FILL_HOT = 50;      // fills in one 1s window that count as "hot"
+    const _CARD_FILL_HOT_RUNS = 2;  // consecutive hot windows before we believe it is a loop
     function _derivedCardFillOk(name) {
         try {
             const now = (window.performance && performance.now) ? performance.now() : (0);
             let r = _cardFillWin[name];
-            if (!r || now - r.start > 1000) { r = _cardFillWin[name] = { start: now, n: 0, warned: (r && r.warned) || false }; }
+            if (!r || now - r.start > 1000) {
+                // Roll the window. hotRuns counts CONSECUTIVE hot seconds; a single burst resets it.
+                const prevHot = !!(r && r.n > _CARD_FILL_HOT);
+                r = _cardFillWin[name] = {
+                    start: now, n: 0,
+                    warned: (r && r.warned) || false,
+                    hotRuns: prevHot ? (((r && r.hotRuns) || 0) + 1) : 0,
+                };
+            }
             r.n++;
-            if (r.n > 50) {
-                if (!r.warned) { r.warned = true; console.warn('WML: "' + name + '" derived-card fill storm (>50/s) — a ProseMirror NodeView DOM write is not firewalled by ignoreMutation, causing a DOMObserver flush loop. Suppressing fills to break it. See CLAUDE.md PROSEMIRROR NODEVIEW rule.'); }
+            if (r.n > _CARD_FILL_HOT && r.hotRuns >= _CARD_FILL_HOT_RUNS) {
+                if (!r.warned) {
+                    r.warned = true;
+                    console.warn('WML: "' + name + '" fill rate stayed above ' + _CARD_FILL_HOT
+                        + '/s for ' + (r.hotRuns + 1) + ' consecutive seconds — that is sustained, so it is a loop, '
+                        + 'not a mount burst. Suppressing fills to break it. LIKELY (not verified): a ProseMirror '
+                        + 'NodeView DOM write is not firewalled by ignoreMutation → DOMObserver flush → redraw → '
+                        + 're-fill. To confirm, log mutation.target in the relevant ignoreMutation before changing '
+                        + 'any firewall. See CLAUDE.md PROSEMIRROR NODEVIEW rule + ASSESSMENT-MECHANICS §9 class 25.');
+                }
                 return false;
             }
             return true;
@@ -24572,26 +24608,12 @@
                 scheduleCanvasSelToolbar();
             });
             function showCanvasSelToolbar() {
-                // v7.20.124 PROBE (temporary — remove once the Cmd+A pause is pinned).
-                // Neil: after Cmd+A the page is "stuck for about a second, then I can scroll".
-                // Suspect: this path measures the selection to position the toolbar
-                // (getClientRects / getBoundingClientRect / offsetWidth), and that cost scales
-                // with SELECTION SIZE. Until v7.20.117/.118 a whole-essay selection was
-                // effectively unreachable, so this path had never run at 1700-word scale.
-                // NOT fixing on that hunch — measure first. Logs only when it actually blocks
-                // (>50ms), so it is silent in normal use and cannot spam a student's console.
-                const _t0 = performance.now();
-                try { return _showCanvasSelToolbarInner(); }
-                finally {
-                    const _ms = performance.now() - _t0;
-                    if (_ms > 50) {
-                        try {
-                            const _n = (window.getSelection() || {}).toString ? window.getSelection().toString().length : -1;
-                            console.warn('[WML perf] selection toolbar build blocked the main thread for '
-                                + Math.round(_ms) + 'ms (selected chars: ' + _n + '). Screenshot this for chat A.');
-                        } catch (_) {}
-                    }
-                }
+                // v7.20.124 probe REMOVED at .127. It did its job by REFUTING the hypothesis:
+                // the suspect was that this build blocks on a big Cmd+A'd selection
+                // (getClientRects/getBoundingClientRect/offsetWidth scale with selection size).
+                // It never once exceeded 50ms on Neil's runs — the toolbar is NOT the Cmd+A
+                // pause. Don't re-suspect it without new evidence. (§9c: a refutation is a result.)
+                return _showCanvasSelToolbarInner();
             }
             function _showCanvasSelToolbarInner() {
                 {
