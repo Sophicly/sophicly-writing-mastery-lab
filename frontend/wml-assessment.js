@@ -9180,8 +9180,34 @@
             // v7.19.869: exclude the progress card ITSELF — it is a section-block with
             // data-section-complete, so without this it counted itself as a trackable
             // section ("8 of 9 · Still to do: Document Progress"). Same in _computeCwProgress.
-            if (type === 'question' || type === 'response' || type === 'scores' || type === 'signoff' || type === 'progress') return;
+            if (type === 'question' || type === 'scores' || type === 'signoff' || type === 'progress') return;
             if (label === 'Overall Feedback') return;
+            // v7.20.122 (Neil: "why is it saying two? I don't think that's correct").
+            // ROOT: `response` used to be an unconditional skip here, so a DIAGNOSTIC — where
+            // writing the responses IS the entire job — counted none of them. The card read
+            // "0 of 2" (the two Predictions notes) while Q5 Response carried a green tick:
+            // incoherent. The skip was written for ASSESSMENT docs, where the response is a
+            // read-only carryover of work already done, and the diagnostic inherited it because
+            // BOTH doc kinds answer yes to hasAssessmentSections() — one compute, two document
+            // kinds with opposite jobs.
+            // FIX: gate on the CAPABILITY, not the doc kind (canvas task-scoping rule 2) — a
+            // response counts when it is the student's to fill RIGHT NOW. Carryovers are
+            // display-locked (`swml-task-locked`, stamped by the nodeView wherever
+            // _docDisplayLocked() applies: assessment / redraft_assessment / feedback_discussion),
+            // so they drop out by construction on every board and paper, and no future doc kind
+            // can inherit the wrong rule by accident.
+            if (type === 'response' && s.classList.contains('swml-task-locked')) return;
+            // Essay Plan is exempt on the first diagnostic (Neil 2026-06-30, reaffirmed
+            // 2026-07-15: the plan is optional on a testing baseline, so counting it would
+            // wedge a student who legitimately didn't plan below 100%).
+            // ⚠️ KNOWN-WRONG PREDICATE — tracked, not forgotten: _isFirstDiagnostic() only asks
+            // "is this doc Topic 1 / Phase 1?" of the CURRENT course, so a student who finished
+            // AQA Lang P1 and then starts Macbeth gets the beginner exemption again. Neil's rule
+            // is "only the student's VERY FIRST attempt, ever; after that everything is
+            // compulsory." That needs a server-side answer stamped ONCE on the doc at creation
+            // (it must not be computed live — the student's own session_record is registered at
+            // project creation, so a live check would flip mid-exercise and move the card's
+            // goalposts under them). Queued as its own build; see the handoff.
             if (type === 'plan' && firstDiag) return;
             // v7.19.828 (Neil 2026-07-03): count only what the student can SEE at this
             // stage. The diagnostic environment CSS-hides the results family

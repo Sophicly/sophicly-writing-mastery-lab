@@ -792,7 +792,30 @@ this caller was the fourth opinion that ignored them. Net: when a law is stated 
 consumer reuses the SAME predicate — never re-derives it, never collapses the refusal into a
 value. Residual: audit every caller of a `'' | value` helper for `x ? a : b`.
 
-**23. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
+**23. Predicate named for the DOCUMENT when the rule is about the STUDENT** (⚠️ LIVE DEFECT —
+`_isFirstDiagnostic`, wml-assessment.js ~8849).
+Trigger: a rule whose real subject is the student's HISTORY gets implemented from what the current
+document happens to be. Symptom: correct for the case the author had in mind, silently wrong for
+every student who arrives by another route — and the name reads as correct, so nobody re-checks it.
+**Neil's rule (2026-07-15):** the Topic-1/Phase-1 leniency (Essay Plan optional) applies ONLY to a
+student's **very first attempt ever**. *"Once they've done topic 1 phase 1 they've had feedback,
+grade-9 model answers, the redraft, more models — by the time they reach another topic 1 phase 1
+they've learned enough to at least have a go, so we can no longer have that leniency, because it
+isn't their first attempt."* The exemption is about **having been taught**, not about the document's
+number.
+**What the code does instead:** `topicNumber === 1 && phase === 'initial'` — of the CURRENT course.
+So a student who completes AQA Lang P1 and starts Macbeth gets the beginner exemption again. This is
+ONE shared predicate (v7.19.817, deliberately) so the bug lands in BOTH consumers: the progress card
+AND `_isAssessmentComplete` (where it makes the Essay Plan wrongly optional for completion).
+**The build (queued, not done):** the attempt ledger is `session_records` (student-data). WML must
+get the answer server-side in the canvas payload. **It MUST be decided ONCE and stamped on the doc at
+creation, never computed live** — the student's own record is registered at project creation
+(class-rest-api.php ~6089), so a live check sees itself and flips mid-exercise, moving the progress
+card's goalposts under the student. Set-once + a one-time heal for existing docs (which carry no
+stamp). Same forward-snapshot law as stage records (§8b).
+Net once built: the predicate is renamed for its real subject (student experience), not the doc.
+
+**24. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
 the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
 (#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract
 TBD). See `~/.claude/handoffs/open/wml-backlog.md`.
