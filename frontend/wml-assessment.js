@@ -24406,22 +24406,48 @@
         if (!window._swmlCanvasSelRegistered) {
             window._swmlCanvasSelRegistered = true;
 
-            document.addEventListener('mouseup', (e) => {
-                setTimeout(() => {
+            // v7.20.118 (Neil: "I want that contextual toolbar whenever something is highlighted,
+            // and that should be universal").
+            // ROOT: this toolbar was bound to `mouseup` — a MOUSE event — so EVERY keyboard
+            // selection missed it: Cmd/Ctrl+A, Shift+arrow, Shift+Home/End, and any programmatic
+            // selection. That was never a Cmd+A bug; the v7.20.117 field-scoped Cmd+A only made a
+            // long-standing gap visible.
+            // FIX: the driver is now `selectionchange` — input-agnostic by definition, so mouse,
+            // keyboard and programmatic selections all reach the SAME show path. One trigger, so
+            // no future selection route can silently miss the toolbar (the mouseup binding was
+            // exactly the "gated on one input path" shape that hid this for months).
+            // mouseup stays only to release the drag latch below.
+            let _selShowTimer = null;
+            let _selDragging = false;
+            function scheduleCanvasSelToolbar() {
+                clearTimeout(_selShowTimer);
+                _selShowTimer = setTimeout(showCanvasSelToolbar, 10);
+            }
+            document.addEventListener('selectionchange', () => {
+                // Mid-drag the selection changes on every mousemove. The old mouseup-only shape
+                // got "don't flicker under the cursor" for free; the latch preserves it.
+                if (_selDragging) return;
+                scheduleCanvasSelToolbar();
+            });
+            function showCanvasSelToolbar() {
+                {
                     const sel = window.getSelection();
-                    if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
+                    // selectionchange also fires when a selection COLLAPSES (arrow key, click
+                    // away) or moves outside the canvas — mouseup never had to handle that, so
+                    // every bail must now clear a stale toolbar rather than just return.
+                    if (!sel || sel.isCollapsed || !sel.toString().trim()) { removeCanvasSelToolbar(); return; }
 
                     // Find ProseMirror editor from anchor — fresh lookup every time
                     const anchor = sel.anchorNode;
                     const pm = anchor?.parentElement?.closest?.('.ProseMirror');
                     const wrap = pm?.closest('.swml-canvas-content');
-                    if (!pm || !wrap) return;
+                    if (!pm || !wrap) { removeCanvasSelToolbar(); return; }
 
                     const selectedText = sel.toString().trim();
                     // v7.19.71: drop the silent 2000-char upper cap — Neil reported toolbar
                     // missing on whole-essay-plan highlights (>2000 chars, e.g. exam-prep crib
                     // SKELETON PLAN sections). Lower bound stays at 2 to keep stray clicks out.
-                    if (selectedText.length < 2) return;
+                    if (selectedText.length < 2) { removeCanvasSelToolbar(); return; }
 
                     // Remove any existing toolbar
                     const old = wrap.querySelector('.swml-selection-toolbar');
@@ -24621,11 +24647,17 @@
                         rect.left - wrapRect.left + rect.width / 2 - tbW / 2,
                         wrapRect.width - tbW - 4
                     )) + 'px';
-                }, 10);
-            });
+                }
+            }
 
             document.addEventListener('mousedown', (e) => {
+                _selDragging = true;
                 if (canvasSelToolbar && !canvasSelToolbar.contains(e.target)) removeCanvasSelToolbar();
+            });
+            // Drag finished — release the latch and show the toolbar for the new selection.
+            document.addEventListener('mouseup', () => {
+                _selDragging = false;
+                scheduleCanvasSelToolbar();
             });
         }
 
