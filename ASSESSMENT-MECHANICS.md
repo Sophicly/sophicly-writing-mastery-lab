@@ -746,6 +746,21 @@ the input event (`selectionchange`, not `mouseup`) — it is input-agnostic by d
 future route can miss it. Residual: state-change events also fire for the null/collapsed case the
 input event never delivered — EVERY bail must clear stale UI, not just `return`.
 
+**20b. The tax on class 20: a state-change driver fires N times, so the CONSUMER must be
+idempotent** (v7.20.121 — a same-day regression on the v7.20.118 fix, caught by Neil first pass).
+Symptom: the toolbar "blinked twice" on appear. Cause: the show path DESTROYS and REBUILDS the
+element every call, and `.swml-selection-toolbar` carries `animation: swml-reply-pop`
+(wml-styles.css:612) which replays on every NEW element. `mouseup` fired once per action so the
+rebuild was invisible; `selectionchange` correctly fires several times for ONE action (PM syncs its
+DOM selection after the txn, then focus settles) → 2-3 rebuilds → the pop replayed.
+**LAW: a driver that fires N times for one logical change is CORRECT — do not throttle it. Make the
+consumer idempotent: record the identity of what is mounted (here the PM `from:to`) and no-op when
+it is unchanged.** Throttling would have hidden the blink while leaving the rebuild-per-event defect
+in place AND risked re-breaking the keyboard paths class 20 just fixed. This is the same law as PM
+rule 4 (idempotent DOM writes) and the v7.19.866 fill-storm — it is now the THIRD place a
+non-idempotent consumer under a legitimately-chatty driver has bitten. Residual: the guard MUST sit
+before the teardown; after it, the rebuild has already happened.
+
 **21. Pseudo-element collision** (two rules, one `::before`/`::after`, per-property cascade).
 Trigger: two independent features render on the same pseudo-element of the same node. Symptom: a
 box positioned/painted in a way neither rule asks for. The trap: specificity is resolved
