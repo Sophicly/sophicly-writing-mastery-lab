@@ -815,7 +815,26 @@ card's goalposts under the student. Set-once + a one-time heal for existing docs
 stamp). Same forward-snapshot law as stage records (§8b).
 Net once built: the predicate is renamed for its real subject (student experience), not the doc.
 
-**24. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
+**24. One concept, two scaffolds** (⚠️ LIVE — the response body).
+Trigger: the same conceptual thing is BUILT from different nodes in different courses, while looking
+identical to the user. Symptom: a feature keyed on the node works in half the product and silently
+misses the other half — and the user reports it as "why does it behave differently here?", because
+from the outside the two ARE the same thing.
+**Proof (v7.20.123, read from the real staging docs, uid 1355 — not inferred):**
+`swml_canvas_aqa_aqa_lang_paper_1_t1` → "Q1 Response" = **4 inputFields, 0 paragraphs**;
+`swml_canvas_aqa_romeo_and_juliet_t1` → "Response" = **0 inputFields, 9 paragraphs**. The box the
+student writes their answer in is an `inputField` on language papers and free `paragraph`s on
+literature essays. Neil clicked "a response row" in both and got different Cmd+A behaviour.
+**Net for now:** features must handle BOTH shapes and derive from the doc — field tier, then prose
+tier (`_swmlFieldSelectAllRange` → `_swmlProseSelectAllRange`). Never assume "the response is a
+field".
+**Root still open:** one scaffold for the response body across every board and course. That is a doc
+MIGRATION (every existing lit doc), so it is a tracked build, not a drive-by. Until then, this row
+is the warning: **before keying anything on `inputField`, check whether the literature docs have one.**
+**Where else to audit:** anything reading response content by node type — word count, extraction,
+autofill targets, `@FIELD_COMMIT` destinations, the outline→response transfer.
+
+**25. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
 the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
 (#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract
 TBD). See `~/.claude/handoffs/open/wml-backlog.md`.

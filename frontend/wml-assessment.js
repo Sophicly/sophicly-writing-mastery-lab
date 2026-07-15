@@ -13807,14 +13807,60 @@
         } catch (_) {}
         return null;
     }
+    // v7.20.123 (Neil: "Cmd+A matters in ALL of the editable input rows — predictions,
+    // planning, outlining, responses — it should behave the same in all of them").
+    // ROOT of the P1-vs-R&J difference, PROVEN from the real saved staging docs (uid 1355),
+    // not inferred: the SAME conceptual thing — the box the student writes their answer in —
+    // is scaffolded TWO different ways per course.
+    //     swml_canvas_aqa_aqa_lang_paper_1_t1  "Q1 Response" → 4 inputFields, 0 paragraphs
+    //     swml_canvas_aqa_romeo_and_juliet_t1  "Response"    → 0 inputFields, 9 paragraphs
+    // So the field walk above scopes every LANGUAGE paper and misses every LITERATURE essay —
+    // identical-looking rows, different nodes. (The scaffold inconsistency itself is the deeper
+    // root and is tracked separately; re-scaffolding every lit doc is a migration, and Cmd+A
+    // must work on the docs that exist TODAY either way.)
+    // FIX: when the cursor is not in a field, scope to the student's OWN WRITING — the run of
+    // unlocked paragraphs around the cursor.
+    // NOT the whole sectionBlock: that sweeps in the locked title/instruction, and
+    // handleTextInput refuses any edit touching a locked range — so Cmd+A-then-type would be
+    // SILENTLY BLOCKED (student presses a key, nothing happens). Contiguous-around-the-cursor
+    // rather than first..last unlocked, so the range can never SPAN a locked block sitting
+    // between two prose runs, which would fail the same way.
+    function _swmlProseSelectAllRange(state, pos) {
+        try {
+            const $p = state.doc.resolve(Math.max(0, Math.min(pos, state.doc.content.size)));
+            let depth = -1;
+            for (let d = $p.depth; d > 0; d--) { if ($p.node(d).type.name === 'sectionBlock') { depth = d; break; } }
+            if (depth < 0 || $p.depth <= depth) return null; // no section, or cursor not inside a child
+            const sec = $p.node(depth);
+            const cursorIdx = $p.index(depth);
+            // Only PARAGRAPHS the student owns. Headings are always scaffold (_swmlNodeLocked);
+            // fields are handled by the walk above; locked paragraphs are instruction text.
+            const usable = (child) => !!child && !!child.type && child.type.name === 'paragraph'
+                && !(child.attrs && (child.attrs.locked === true || child.attrs.locked === 'true'));
+            const kids = [];
+            let off = $p.start(depth);
+            sec.forEach((child) => { kids.push({ child, start: off, end: off + child.nodeSize }); off += child.nodeSize; });
+            if (!kids[cursorIdx] || !usable(kids[cursorIdx].child)) return null;
+            let lo = cursorIdx, hi = cursorIdx;
+            while (lo - 1 >= 0 && usable(kids[lo - 1].child)) lo--;
+            while (hi + 1 < kids.length && usable(kids[hi + 1].child)) hi++;
+            const from = kids[lo].start + 1; // inside the first block
+            const to = kids[hi].end - 1;     // inside the last block
+            return to > from ? { from, to } : null;
+        } catch (_) { return null; }
+    }
     // Returns true when it HANDLED the key (caller must stop). Self-guarding: any key that
-    // isn't Mod+A, and any cursor that isn't in a field, returns false untouched.
+    // isn't Mod+A, and any cursor that isn't in a field or in prose, returns false untouched.
     function _swmlHandleFieldSelectAll(view, event) {
         if (event.key !== 'a' && event.key !== 'A') return false;
         if (!(event.metaKey || event.ctrlKey) || event.altKey) return false;
         if (!canvasEditor) return false;
-        const range = _swmlFieldSelectAllRange(view.state, view.state.selection.from);
-        if (!range) return false; // not in a field — PM's doc-wide selectAll stands
+        // Field first (language papers, plan/outline/prediction rows), then the student's own
+        // prose (literature essays). Both tiers are derived from the doc, so a course/board/task
+        // never has to opt in — the same keystroke means the same thing in every editable row.
+        const range = _swmlFieldSelectAllRange(view.state, view.state.selection.from)
+            || _swmlProseSelectAllRange(view.state, view.state.selection.from);
+        if (!range) return false; // genuinely nothing scoped — PM's doc-wide selectAll stands
         event.preventDefault();
         // No .focus() — the student is already focused here, and chaining focus() makes
         // setTextSelection scroll the editor (see the v7.19.63/23934 note).
