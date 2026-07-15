@@ -834,7 +834,33 @@ is the warning: **before keying anything on `inputField`, check whether the lite
 **Where else to audit:** anything reading response content by node type — word count, extraction,
 autofill targets, `@FIELD_COMMIT` destinations, the outline→response transfer.
 
-**25. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
+**25. A hardening pass that misses ONE member of the family** (v7.20.125 — a LIVE PROD bug).
+Trigger: a fix is applied to "all the NodeViews that need it" by enumerating the ones the bug was
+seen on. Symptom: the missed member is the one that renders the COMMON case, so the bug is dormant
+only until someone adds a write to it — and by then the fix looks long-done and settled.
+**Proof:** v7.19.866/912 added the wrapper-attr firewall
+(`if (mutation.type==='attributes' && mutation.target===dom) return true;`) to the DERIVED-CARD
+NodeViews — progress (~638), sign-off (~682), analytics (~570) — and missed the GENERAL section
+NodeView (~780), which renders EVERY ordinary section. Dormant for ~30 versions. v7.19.897 then
+added a runtime `data-section-num` write on every section's dom, and shipped it with the comment
+*"firewalled on the section-block dom exactly like data-section-complete above (proven no PM
+flush-loop)"* — a claim inherited from the derived-card fix that never applied here. Result: the
+`"ctlrows"` fill-storm breaker firing on R&J in Neil's console, with control-row fills SUPPRESSED
+(the visible damage) — on production.
+**Two laws:**
+1. **Idempotence is not immunity.** The write WAS idempotent. But sections mount raggedly, so the
+   computed number genuinely CHANGES between passes → a real write → a real foreign mutation → flush
+   → redraw → re-number → compounding loop. Idempotence only defeats SAME-VALUE churn; it does
+   nothing for a value that legitimately settles over several passes. Under a ragged mount, ANY
+   derived attr needs the firewall, idempotent or not.
+2. **"It's firewalled" in file A is a CLAIM about file B.** Go read file B's `ignoreMutation` before
+   believing it. This comment was the load-bearing evidence and it was false.
+**Net:** when hardening a NodeView class, enumerate every `createNodeView`/`ignoreMutation` in the
+file and fix the SET, not the instances the bug appeared on:
+`grep -n "ignoreMutation" frontend/wml-section-block.js` — every one must carry the wrapper-attr
+line unless there is a written reason it must not.
+
+**26. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
 the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
 (#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract
 TBD). See `~/.claude/handoffs/open/wml-backlog.md`.
@@ -873,6 +899,44 @@ short of endless testing?") — ask ALL of these of any assessment-flow change b
 
 Settled UI rule (Neil, 2026-07-07): **mark-prediction control = buttons when max ≤ 8, dropdown
 above 8** (already engine behaviour — Q2/8 buttons, Q3/12 dropdown).
+
+## §9c. ⭐ MEASURE, DON'T REWRITE ON A HUNCH (Neil, 2026-07-15: "that sounds like a success that
+## you measured instead of rewriting on a hunch")
+
+**THE LAW: when you cannot see the fault, do not "fix" the thing you suspect. Ship the cheapest
+instrument that makes the fault NAME ITSELF, then fix what it names.** A rewrite-on-a-hunch is
+untestable by Neil (he cannot self-verify a perf or timing claim), so if the hunch is wrong he pays
+a full test cycle to learn nothing — and you have added complexity to a path that was innocent.
+
+**The case (v7.20.124 → .125).** Neil: after Cmd+A the page is *"stuck for about a second, then I
+can scroll"*. Prime suspect: the selection-toolbar build measures the selection
+(`getClientRects`/`getBoundingClientRect`/`offsetWidth`) and that cost scales with selection size —
+and Cmd+A had just made a whole-essay selection reachable for the first time. It FIT the symptom
+perfectly. It was **wrong**.
+Instead of rewriting the measuring path, .124 shipped a 12-line probe that warns ONLY when the build
+actually blocks (>50ms). Neil's console showed **no perf line at all** — the toolbar was never the
+problem — and, unprompted, showed the REAL fault with a full stack: the `"ctlrows"` fill-storm
+breaker firing, `updateOutline → :16299 → attributes → observer → flush → _fillCtl`. That named
+class 25 (the missing wrapper-attr firewall) — a LIVE PROD bug that had nothing to do with Cmd+A and
+that no amount of rewriting the toolbar would have touched.
+
+**Why it worked (reusable):**
+1. **A refutation is a result.** "No warning appeared" killed the hypothesis for one screenshot. That
+   is cheaper than any fix, and it is the ONLY outcome that reliably stops you fixing the innocent.
+2. **Instrument the SUSPECT, read the WHOLE console.** The answer was not in the probe — it was in a
+   pre-existing breaker firing three lines away. Ask for the whole console, never just your own line.
+3. **Threshold, don't log.** `if (ms > 50)` stays silent in normal use, so the probe cannot spam a
+   student's console and can ride staging safely.
+4. **Probes are temporary and say so.** Marked for removal in the code, at the version that pinned
+   the cause.
+5. **Neil's console is a first-class instrument.** He cannot profile, but he CAN screenshot — and it
+   has now caught the ctlrows storm twice (v7.20.73, v7.20.125). Design the output for that: name the
+   number, the scale, and what to do with it.
+
+**Corollary — the breakers ARE instruments.** `_derivedCardFillOk` did not just protect the page; its
+warning + stack diagnosed the bug. When you add a guard, make its message name the CLASS and point at
+the rule (this one cites the CLAUDE.md PROSEMIRROR NODEVIEW rule) — a guard that only prevents damage
+is worth less than one that also explains it.
 
 ## §10. THE HARNESS METHOD — how nets get proven before Neil ever tests
 

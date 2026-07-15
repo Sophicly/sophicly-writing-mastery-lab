@@ -16292,8 +16292,18 @@
                         // sectionNumbers[i] the TOC uses) so the assessment doc's section tabs read
                         // the reliable attr instead of TipTap-flaky CSS counters (assessment-scoped
                         // ::before in wml-canvas.css). Idempotent write (rule #4) so a same-value
-                        // pass fires no MutationRecord; firewalled on the section-block dom exactly
-                        // like data-section-complete above (proven no PM flush-loop).
+                        // pass fires no MutationRecord.
+                        // ⚠️ v7.20.125 — the original note here claimed this was "firewalled on the
+                        // section-block dom ... (proven no PM flush-loop)". THAT WAS FALSE and cost a
+                        // live prod bug: the proof belonged to the DERIVED-CARD NodeViews (v7.19.866),
+                        // and the GENERAL section NodeView had no wrapper-attr firewall at all — so
+                        // this line WAS the foreign mutation that flushed PM's DOMObserver
+                        // ("ctlrows" fill storm, Neil's console, R&J). Idempotence alone does not
+                        // save you: sections mount raggedly, so `_numAttr` genuinely CHANGES between
+                        // passes → real write → flush → redraw → re-number → loop.
+                        // The firewall now exists (wml-section-block.js ~780). LESSON: an
+                        // "it's firewalled" comment is a CLAIM about another file — go read that
+                        // file's ignoreMutation before believing it.
                         const _num = sectionNumbers[i] || '';
                         const _numAttr = _num ? _num + '. ' : '';
                         if (domSection.getAttribute('data-section-num') !== _numAttr) domSection.setAttribute('data-section-num', _numAttr);

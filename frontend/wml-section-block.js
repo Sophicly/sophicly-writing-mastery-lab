@@ -779,6 +779,25 @@
                 // never trigger a transaction / re-render loop.
                 ignoreMutation: (mutation) => {
                     if (!mutation || !mutation.target) return false;
+                    // v7.20.125 — THE MISSING WRAPPER-ATTR FIREWALL. Caught by Neil's console:
+                    // the '"ctlrows" derived-card fill storm' breaker fired on R&J, and the stack
+                    // named updateOutline → wml-assessment.js:16299 → `attributes` → PM observer
+                    // → flush → redraw → _fillCtl → storm.
+                    // ROOT: v7.19.866/912 added this exact firewall to the DERIVED-CARD NodeViews
+                    // (progress ~638, sign-off ~682, analytics ~570) but MISSED this one — the
+                    // GENERAL section NodeView that renders every ordinary section. v7.19.897 then
+                    // introduced a runtime attr write (`data-section-num`) on every section's dom
+                    // and asserted it was "firewalled on the section-block dom exactly like
+                    // data-section-complete above (proven no PM flush-loop)". That proof belonged
+                    // to the derived-card NodeViews; it never applied here. The write is idempotent,
+                    // which is NOT enough: sections mount raggedly, so the computed number genuinely
+                    // CHANGES between passes → real write → foreign mutation → flush → redraw →
+                    // re-number → compounding loop until the breaker trips (and suppressing ctlrows
+                    // fills means control rows stop rendering — the visible damage).
+                    // Our runtime attrs on this wrapper (data-section-num / -complete / -codex-num,
+                    // collapse classes, style) are DISPLAY-ONLY and never a doc change; PM's source
+                    // of truth is the doc, not this DOM. Same line, same reason, as the siblings.
+                    if (mutation.type === 'attributes' && mutation.target === dom) return true;
                     if (chip === mutation.target || chip.contains(mutation.target)) return true;
                     if (pullChip && (pullChip === mutation.target || pullChip.contains(mutation.target))) return true;
                     return false;
