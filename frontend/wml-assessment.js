@@ -27,6 +27,36 @@
     // (separate closures) read it.
     const ATTEMPTLESS_TASKS = ['foundational_quiz', 'conceptual_notes'];
 
+    // ⭐ THE ONE SCROLL CONVENTION (v7.20.112 — module scope so EVERY caller shares it).
+    // Land the clicked section's TOP just inside the viewport, minus a small CONSTANT pad that
+    // clears the floating section-label tag (top:-10) plus a little air. That is the whole rule:
+    //   scrollTop + visualOffset - SWML_SCROLL_TOP_PAD      (visual delta; NO /zoom, NO /3)
+    //
+    // WHY THIS KEEPS REGRESSING (Neil, 2026-07-15: "whenever we fix something the scroll issue
+    // returns") — the offset had THREE independent implementations, so each fix healed one and the
+    // others drifted back:
+    //   · v7.19.417 added `/ zoom` → overshoot at <100% zoom  → removed in scrollContentTo…
+    //   · v7.19.614 replaced `containerRect.height / 3` (~33% down) with this pad because varying
+    //     section heights landed inconsistently ("all mixed up", Neil 2026-06-22) → fixed
+    //     scrollContentTo ONLY (outline panel + island).
+    //   · v7.20.68 removed a second `/ zoom` from the TOC's scrollToLabel — but left ITS `/3`.
+    //   · v7.20.112 finally removes that `/3`: the in-doc TOC page has its OWN scrollToLabel, which
+    //     is why "clicking OUTLINE — Q2 lands on the plan" (a third of a viewport of the PRECEDING
+    //     section is forced into view) and why TOC clicks never sat at the top.
+    // RULES: (1) never re-derive a scroll offset — import THIS constant; (2) no `/ zoom` (the scaled
+    // doc sits inside an unscaled scroller: rects are already visual, scrollTop moves 1:1);
+    // (3) no fraction-of-viewport offsets; (4) new scroll surface → call an existing helper, never
+    // a fourth copy. Grep gate before shipping any scroll change:
+    //     grep -n "height / 3\|/ zoom" frontend/wml-assessment.js   → only comments + the ONE
+    //     legitimate exception below.
+    // ⚠️ EXCEPTION — NOT a scroll, do NOT "fix" it: the comment-bubble position (~24457,
+    // `(markRect.top - docRect.top) / zoom`) places an element INSIDE the scaled .swml-canvas-doc,
+    // so it must convert the visual rect back into that container's own scaled coordinates. The
+    // no-/zoom rule applies to SCROLLING because the scroller sits OUTSIDE the scale. Inside the
+    // scaled box → divide; scrolling the unscaled scroller → don't.
+    // Memory: reference_wml_scroll_convention_no_zoom_division.
+    const SWML_SCROLL_TOP_PAD = 24;
+
     // ── Destructure core exports as local variables ──
     const { config, API, headers, state } = WML;
     const { TEXT_CATALOGUE, POETRY_ANTHOLOGY_BY_BOARD, PROSE_ANTHOLOGY_BY_BOARD,
@@ -15535,7 +15565,10 @@
             });
         }
 
-        // v7.13.74: Unified scroll helper — used by outline panel and in-document TOC.
+        // v7.13.74: Unified scroll helper — used by the outline panel and the island.
+        // ⚠️ v7.20.112: it is NOT used by the in-document TOC page — that has its OWN
+        // implementation (`scrollToLabel`, ~39566), which is exactly why the v7.19.614 fix below
+        // had to be applied there a SECOND time. See SWML_SCROLL_TOP_PAD (module scope).
         // Scrolls contentWrap only (not parent containers) to avoid multi-ancestor conflicts.
         // v7.19.614: land the clicked section's TOP just inside the viewport, with a small
         // CONSTANT pad that clears the floating section-label tag (top:-10) + a little air.
@@ -15543,7 +15576,6 @@
         // because section heights vary, landed inconsistently relative to the heading — every
         // outline-panel item AND the island route through here, so they were "all mixed up"
         // (Neil 2026-06-22). One offset, every caller lands the heading at the top.
-        const SWML_SCROLL_TOP_PAD = 24;
         function scrollContentTo(target) {
             if (!target || !contentWrap) return;
             const containerRect = contentWrap.getBoundingClientRect();
@@ -39563,7 +39595,13 @@
                 // now: visual delta, no compensation — same as scrollContentTo.
                 const sRect = scroller.getBoundingClientRect();
                 const tRect = target.getBoundingClientRect();
-                scroller.scrollTo({ top: scroller.scrollTop + (tRect.top - sRect.top) - (sRect.height / 3), behavior: 'smooth' });
+                // v7.20.112 (Neil): was `- (sRect.height / 3)` — a THIRD scroll convention. It drops
+                // the target ~33% down the viewport, so a TOC click never sat at the top AND forced a
+                // third of a viewport of the PRECEDING section into view (clicking "OUTLINE — Q2"
+                // landed on the plan above it). Same defect v7.19.614 already fixed in
+                // scrollContentTo — this page has its own scroll, so the fix never reached it.
+                // ONE convention now, shared constant: top of section, minus the standard pad.
+                scroller.scrollTo({ top: scroller.scrollTop + (tRect.top - sRect.top) - SWML_SCROLL_TOP_PAD, behavior: 'smooth' });
             } else {
                 console.warn('WML TOC: no section in document matches label', label);
             }
