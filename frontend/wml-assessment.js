@@ -32929,28 +32929,29 @@
         },
         // ── Inference (AQA Lang P2 Q2 — infer differences between two sources) ──
         //
-        // v7.20.149 (Neil, from the AQA mark-scheme indicative standard, Level 4 exemplar). Each
-        // paragraph = a paired Source-A-then-Source-B inference (2026 inference-led spec), AO1 only,
-        // 2 ¶ × 4.0 = 8. Structure decoded from the exemplar ("The train in Source A reflects…" →
-        // topic sentence; "…'mail van', 'dining car'…" → evidence; "…showing both the advancement…"
-        // → developed inference; "This relative luxury is a complete contrast to Source B…" → marker
-        // + topic sentence; then B evidence + developed inference). So each source part = THREE
-        // written elements: perceptive topic sentence (the inferential claim) → evidence (embedded
-        // quote) → developed inference. SIX boxes, not seven: the mark scheme's separate
-        // "Perceptiveness of the difference" (1.0) is a HOLISTIC quality of the pair, scored not
-        // written — never its own box. The "aspect" is realised AS the Source A topic sentence, not a
-        // separate element. Order = claim→quote→develop (exemplar reading order), NOT the marking
-        // table's claim→develop→quote. Wording derived from the exemplar + protocol, not invented
-        // ([[feedback_student_content_derives_from_protocols_never_assume]]).
+        // v7.20.151 (Neil, from the AQA mark-scheme Level 4 exemplar). Each paragraph = a paired
+        // Source-A-then-Source-B inference (2026 inference-led spec), AO1 only, 2 ¶ × 4.0 = 8.
+        // Structure decoded from the exemplar ("The train in Source A reflects…" → topic sentence;
+        // "…'mail van', 'dining car'… showing both the advancement…" → evidence AND developed
+        // inference in ONE sentence; "This relative luxury is a complete contrast to Source B…" →
+        // marker + topic sentence; then Source B evidence + developed inference in one sentence).
+        // So each source part = TWO written elements: perceptive topic sentence (the inferential
+        // claim) → evidence + developed inference (embed the quote AND develop what it reveals in one
+        // sentence, exactly as the gold standard writes it). FOUR boxes per paragraph, not six:
+        // evidence and development are FUSED (Neil 2026-07-16 — the exemplar writes them as one
+        // sentence, and "one box = one sentence the student will actually write"). The mark scheme's
+        // separate "Perceptiveness of the difference" (1.0) is a HOLISTIC quality of the pair, scored
+        // not written — never its own box; the two half-marks (embedded quote + developed detail)
+        // are still scored INSIDE the one evidence+inference box. The "aspect" is realised AS the
+        // Source A topic sentence, not a separate element. Wording derived from the exemplar +
+        // protocol, not invented ([[feedback_student_content_derives_from_protocols_never_assume]]).
         // Source: AQA 8700/2 mark scheme Q2 indicative standard; protocol-a-assessment.md:398-476;
         // protocol-b-planning.md S3 (Q2 planning); PROTOCOL-QUESTION-STRUCTURE-MAP.md Q2 row.
         inference: [
-            { id: 'inf1-topic',    label: 'Source A — Perceptive Topic Sentence',          ao: 'AO1', type: 'checkbox', prompt: 'Open the paragraph with a perceptive, inferential claim about Source A — what the writer implies beyond the obvious.' },
-            { id: 'inf1-evidence', label: 'Source A — Evidence',                            ao: 'AO1', type: 'checkbox', prompt: 'A judicious, embedded quotation from Source A that your claim is built from.' },
-            { id: 'inf1-develop',  label: 'Source A — Developed Inference',                 ao: 'AO1', type: 'checkbox', prompt: 'Develop the inference — explain what the quoted words reveal. Don’t restate.' },
-            { id: 'inf2-topic',    label: 'Source B — Discourse Marker + Perceptive Topic Sentence', ao: 'AO1', type: 'checkbox', prompt: 'Open with a comparative discourse marker (However, In contrast, Whereas), then make a perceptive claim stating the difference against your Source A point.' },
-            { id: 'inf2-evidence', label: 'Source B — Evidence',                            ao: 'AO1', type: 'checkbox', prompt: 'A judicious, embedded quotation from Source B.' },
-            { id: 'inf2-develop',  label: 'Source B — Developed Inference',                 ao: 'AO1', type: 'checkbox', prompt: 'Develop the Source B inference — explain what the quoted words reveal. Don’t restate.' },
+            { id: 'inf1-topic',    label: 'Source A — Perceptive Topic Sentence',          ao: 'AO1', type: 'checkbox', prompt: 'Open with a perceptive, inferential claim about Source A — what the writer implies beyond the obvious.' },
+            { id: 'inf1-evidence', label: 'Source A — Evidence + Developed Inference',      ao: 'AO1', type: 'checkbox', prompt: 'In ONE sentence: embed a judicious quotation from Source A AND develop what those exact words reveal — never bolt a comment onto a quote.' },
+            { id: 'inf2-topic',    label: 'Source B — Discourse Marker + Perceptive Topic Sentence', ao: 'AO1', type: 'checkbox', prompt: 'Open with a comparative discourse marker (However, In contrast, Whereas), then a perceptive claim stating the difference against your Source A point.' },
+            { id: 'inf2-evidence', label: 'Source B — Evidence + Developed Inference',      ao: 'AO1', type: 'checkbox', prompt: 'In ONE sentence: embed a judicious quotation from Source B AND develop what those words reveal.' },
         ],
         // ── IUMVCC (persuasive/transactional writing) ──
         //
@@ -41202,10 +41203,18 @@
                 const q2Dividers = Array.from(tmp.querySelectorAll('[data-section-type="divider"]'))
                     .filter(s => (s.getAttribute('data-section-label') || '') === `OUTLINE — ${qId}`);
                 if (existing.length || q2Dividers.length) {
-                    const curFirst = `outline-body-1-${OUTLINE_CRITERIA.inference[0].id}-q2`;
-                    const shapeCurrent = existing.some(s =>
-                        s.querySelector(`[data-outline-row][data-field-id="${curFirst}"]`));
-                    if (shapeCurrent && q2Dividers.length <= 1) return; // clean + current → no-op
+                    // Shape check = the FULL fieldId set, not just the first id — the 6→4 reshape
+                    // (v7.20.151) KEEPS inf1-topic, so a first-id check would call a stale 6-box doc
+                    // "current" and never heal it. Compare baked ids against the builder's ids.
+                    const wantIds = [];
+                    for (let _i = 1; _i <= 2; _i++)
+                        OUTLINE_CRITERIA.inference.forEach(c => wantIds.push(`outline-body-${_i}-${c.id}-q2`));
+                    const bakedIds = existing.flatMap(s =>
+                        Array.from(s.querySelectorAll('[data-outline-row]'))
+                            .map(r => r.getAttribute('data-field-id') || ''));
+                    const shapeCurrent = wantIds.length === bakedIds.length
+                        && wantIds.every(id => bakedIds.includes(id));
+                    if (shapeCurrent && q2Dividers.length <= 1) return; // clean + current shape → no-op
                     // Student text lives as the row's own content in the saved HTML (criteria panel
                     // is nodeView-rendered, never serialised) — same detection as _healIumvccOutlineShape.
                     const holdsText = existing.some(s =>
