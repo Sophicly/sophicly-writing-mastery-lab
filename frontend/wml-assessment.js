@@ -9462,6 +9462,25 @@
             // v7.20.96 (Neil): 'notes' joins — keyword/Question-Focus sections tick when
             // their field is filled (byte-consistent with the nodeView gate, wml-section-block.js ~100).
             if (type !== 'plan' && type !== 'response' && type !== 'outline' && type !== 'improvement' && type !== 'notes') return;
+            // v7.20.139 (Neil): Q1 true/false statements (MSQ retrieval) render as checklistItems —
+            // no inputField, no outlineRow, no <p> — so this reader never ticked the section (its
+            // whole shape was invisible to the input/select/prose branches below). ROOT: give the
+            // checklist its own completion branch. DONE = the student ticked at least as many
+            // statements as there are TRUE ones (the "choose N" count, DERIVED from data-correct —
+            // never hardcoded; e.g. AQA "choose the four true statements" → 4 correct → target 4).
+            // Correctness is scored separately by the assessment (_readChecklistTicks reads WHICH
+            // were picked); completion here means "you've made your selection", grade-agnostic.
+            const chkItems = sectionEl.querySelectorAll('.swml-checklist-item');
+            if (chkItems.length) {
+                let trueCount = 0, checkedCount = 0;
+                chkItems.forEach(it => {
+                    if (it.getAttribute('data-correct') === 'true') trueCount++;
+                    if (it.getAttribute('data-checked') === 'true') checkedCount++;
+                });
+                const target = trueCount > 0 ? trueCount : 1; // fallback: no answer-key → 1 tick engages
+                sectionEl.setAttribute('data-section-complete', checkedCount >= target ? 'true' : 'false');
+                return;
+            }
             // v7.19.506: InputField/SelectField sections (Codex reflections + quizzes).
             // Mirror the nodeView: all inputs filled + all plain selects chosen; quiz
             // selects (with data-correct) must be CORRECT, not merely answered.
@@ -14715,6 +14734,24 @@
             });
             return hasField && !hasFreeProse;
         } catch (_) { return false; }
+    }
+    // v7.20.139 (Neil: clicking a non-editable spot still blinked a caret, reading as editable).
+    // Caret VISIBILITY tracks the SAME rule as typing-permission — a caret shows only where the
+    // student can actually type. Derived from the exact block predicates the input handlers use,
+    // so it can never drift from them: hidden in a doc-root gap (`!_swmlInSection`), a field-only
+    // section's body (`_swmlSectionFieldOnly`), or locked scaffold (`_swmlPosLocked`). Empty cursor
+    // only — a range selection shows a highlight, not a caret. Toggles a class on the ProseMirror
+    // root; the CSS sets caret-color:transparent. Fail-safe: on any glitch, leave the caret shown.
+    function _updateCaretVisibility(view) {
+        try {
+            const st = view.state, sel = st.selection;
+            const hide = sel.empty && (
+                !_swmlInSection(st, sel.from)
+                || _swmlSectionFieldOnly(st, sel.from)
+                || _swmlPosLocked(st, sel.from)
+            );
+            view.dom.classList.toggle('swml-caret-hidden', hide);
+        } catch (_) {}
     }
     // v7.20.123 (Neil: "Cmd+A matters in ALL of the editable input rows — predictions,
     // planning, outlining, responses — it should behave the same in all of them").
@@ -24319,6 +24356,16 @@
                                 clearTimeout(canvasSaveTimer);
                                 canvasSaveTimer = setTimeout(() => { saveCanvasContent(); }, 200);
                             } catch (_) { /* canvasSaveTimer/saveCanvasContent always in scope */ }
+                            // v7.20.139 (Neil: Q1 tick didn't activate on 4 picks): checklist
+                            // setNodeMarkup doesn't reliably fire onUpdate (see the save note
+                            // above), so the completion recompute that would tick the section
+                            // never runs on its own. checkSectionComplete now has a checklist
+                            // branch — trigger it explicitly here so the section ticks LIVE.
+                            try {
+                                if (typeof _recomputeAllCompletion === 'function') {
+                                    setTimeout(() => { try { _recomputeAllCompletion(); } catch (_) {} }, 160);
+                                }
+                            } catch (_) {}
                         }
                     });
                     dom.appendChild(checkbox);
@@ -26963,6 +27010,7 @@
             },
             onSelectionUpdate: ({ editor }) => {
                 updateToolbarState(toolbar, editor);
+                _updateCaretVisibility(editor.view); // v7.20.139: hide the caret where typing is blocked
             },
         });
 
@@ -42989,6 +43037,9 @@ ${html}
                     if (_swmlSectionFieldOnly(view.state, view.state.selection.from)) return true; // v7.20.138
                     return _swmlRangeLocked(view.state, view.state.selection.from, view.state.selection.to);
                 },
+            },
+            onSelectionUpdate: ({ editor }) => {
+                _updateCaretVisibility(editor.view); // v7.20.139: parity with the main canvas editor
             },
             onUpdate: ({ editor }) => {
                 const wc = getResponseWordCount(editor);
