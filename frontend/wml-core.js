@@ -3707,7 +3707,10 @@ window.WML = (function() {
             // (protocol-b-planning.md:607/619) — demanding two would teach a rule we don't
             // teach (PEDAGOGY.md §3b). Codes, not names, so a rename in the technique table
             // can never orphan a student's saved pick.
-            if (c.type === 'techniques') {
+            // v7.20.136: the effect picker (four-fold: focus/emotions/thoughts/actions) satisfies
+            // exactly like the device picker — ONE chosen effect completes it, same {picked,free}
+            // shape, so nothing new to persist or key.
+            if (c.type === 'techniques' || c.type === 'effects') {
                 const p = Array.isArray(s.picked) ? s.picked.length : 0;
                 const f = Array.isArray(s.free) ? s.free.filter(x => String(x || '').trim()).length : 0;
                 return (p + f) >= 1;

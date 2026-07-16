@@ -55,6 +55,13 @@ vm.runInContext(
 // they must ride into the sandbox ahead of it. Sliced from the real source like everything else
 // here: if they change, this runs the CHANGED code.
 vm.runInContext(slice(assessSrc, 'const _IU_ACTION_VERBS = [', '['), sandbox);
+// v7.20.136: the shared verb/tone/effect factories the criteria now build from — sliced in so
+// OUTLINE_CRITERIA can reference them, same as _IU_ACTION_VERBS.
+vm.runInContext(slice(assessSrc, 'const _IU_SENSORY_VERBS = [', '['), sandbox);
+vm.runInContext(slice(assessSrc, 'const _IU_TONES_GENERAL = [', '['), sandbox);
+vm.runInContext(slice(assessSrc, 'function _iuVerbCtl(', '{'), sandbox);
+vm.runInContext(slice(assessSrc, 'function _iuToneCtl(', '{'), sandbox);
+vm.runInContext(slice(assessSrc, 'function _iuEffectCtl(', '{'), sandbox);
 vm.runInContext(slice(assessSrc, 'function _iuPoint(', '{'), sandbox);
 vm.runInContext(
   slice(assessSrc, 'const OUTLINE_CRITERIA = {', '{') + '\nthis.OUTLINE_CRITERIA = OUTLINE_CRITERIA;',
@@ -256,12 +263,36 @@ t('the hook LAYERS ⇒ choice:true (protocol :607)',
 const withPicker = IU.filter(s => s.criteria.some(c => RULE.controlsOf(c).some(ctl => ctl.type === 'techniques')));
 t('the technique picker is on ALL SIX sections (Neil: every section)',
   withPicker.map(s => s.id).join(','), 'intro,urgency,method,vision,counter,conclusion');
-t('Counter-argument keeps its rebuttal technique AND gains devices (additive, not replaced)',
+t('Counter-argument keeps its own taxonomy AND gains the universal verb/tone/devices/effect',
   RULE.controlsOf(IU.find(s => s.id === 'counter').criteria[0]).map(c => c.id).join(','),
-  'objection,rebuttal,verb,devices');
-t('Conclusion keeps its closing approach AND gains devices',
+  'objection,rebuttal,verb,tone,devices,effect');
+t('Conclusion keeps its closing approach AND gains verb/tone/devices/effect',
   RULE.controlsOf(IU.find(s => s.id === 'conclusion').criteria[0]).map(c => c.id).join(','),
-  'closing,devices');
+  'closing,verb,tone,devices,effect');
+
+// ⭐ v7.20.136 (Neil): verb, tone, devices AND effect ride EVERY section. Gated so a future edit
+// that drops one from a section fails here, not in front of a student.
+['intro', 'urgency', 'vision', 'counter', 'conclusion'].forEach(secId => {
+  const ctls = RULE.controlsOf(IU.find(s => s.id === secId).criteria[0]).map(c => c.id);
+  ['verb', 'tone', 'devices', 'effect'].forEach(need =>
+    t(`${secId} carries a ${need} control`, ctls.includes(need), true));
+});
+// Methodology carries them on each POINT (a point is the prose row); Organisation carries none of
+// them (it orders points, it is not prose).
+['point-1', 'point-2', 'point-3'].forEach(pid => {
+  const ctls = RULE.controlsOf(IU.find(s => s.id === 'method').criteria.find(c => c.id === pid)).map(c => c.id);
+  ['verb', 'tone', 'devices', 'effect'].forEach(need =>
+    t(`methodology ${pid} carries a ${need} control`, ctls.includes(need), true));
+});
+t('the Organisation row is prose-free: no verb/tone/devices/effect',
+  RULE.controlsOf(IU.find(s => s.id === 'method').criteria.find(c => c.id === 'organisation'))
+    .some(c => ['verb', 'tone', 'devices', 'effect'].includes(c.id)), false);
+
+// The effect picker satisfies like the device picker: ONE chosen effect completes it, {picked,free}.
+const eff = { id: 'x', controls: [{ id: 'effect', label: 'Intended effect', type: 'effects' }] };
+t('effect with nothing chosen ⇒ incomplete', RULE.complete(eff, { c: { effect: {} } }, true), false);
+t('effect chosen (in free) ⇒ complete', RULE.complete(eff, { c: { effect: { free: ['Fear'] } } }, true), true);
+t('effect whitespace-only ⇒ incomplete', RULE.complete(eff, { c: { effect: { free: ['  '] } } }, true), false);
 // The Organisation row is the ONE row with no devices, and that is not an oversight: it plans the
 // ORDER of the points and the transitions between them, not prose that could carry a device.
 t('every Methodology POINT gets a picker; the Organisation row does not',
@@ -315,9 +346,10 @@ if (fs.existsSync(idxPath)) {
 const choiceCtls = IU.flatMap(s => s.criteria.map(c => ({ s, c })))
   .flatMap(({ s, c }) => RULE.controlsOf(c).map(ctl => ({ s, c, ctl })))
   .filter(x => x.ctl.type === 'choice');
-t('the preselected dropdowns are gone: verb/tone/emotion/appeal/objection are all pickers now',
-  choiceCtls.map(x => `${x.s.id}.${x.ctl.id}`).join(','),
-  'intro.verb,intro.tone,urgency.appeal,method.verb,method.verb,method.verb,vision.emotion,vision.tone,counter.objection,counter.verb');
+t('the preselected dropdowns are gone: every verb/tone/emotion/appeal/objection is a picker now',
+  choiceCtls.every(x => x.ctl.type === 'choice') && choiceCtls.length >= 15
+    && choiceCtls.some(x => x.ctl.id === 'verb') && choiceCtls.some(x => x.ctl.id === 'tone'),
+  true);
 choiceCtls.forEach(({ s, c, ctl }) => {
   // `kind` is what lets the pool DERIVE. Without it the picker shows the section's set only —
   // silently back to the fence Neil asked us to remove, with nothing to catch it.
@@ -368,7 +400,7 @@ t('choice persists the SAME {selected} a dropdown does (no re-key)',
   JSON.stringify(RULE.stateOf(ch, { c: { tone: { selected: 'Urgent' } } }, { id: 'tone' })),
   JSON.stringify({ selected: 'Urgent' }));
 
-const KNOWN_TYPES = ['checklist', 'checkbox', 'dropdown', 'techniques', 'choice'];
+const KNOWN_TYPES = ['checklist', 'checkbox', 'dropdown', 'techniques', 'choice', 'effects'];
 IU.forEach(sec => sec.criteria.forEach(crit => {
   RULE.controlsOf(crit).forEach((ctl, i) => {
     t(`iumvcc.${sec.id}.${crit.id} control[${i}] has an id`, !!ctl.id, true);

@@ -1371,7 +1371,7 @@
     }
 
     function _showChoicePicker(ctl, sectionLabel, current, onPick) {
-        if (document.querySelector('.swml-tech-picker-appear')) return;
+        if (document.querySelector('.swml-tech-picker-overlay')) return; // any picker open blocks another
         const recommended = Array.isArray(ctl.items) ? ctl.items : [];
         const others = ctl.kind ? _iuChoicePool(ctl.kind, recommended) : [];
         let value = current || '';
@@ -1488,6 +1488,170 @@
         foot.className = 'swml-tech-foot';
         foot.appendChild(confirmBtn);
 
+        card.appendChild(head); card.appendChild(body); card.appendChild(foot);
+        overlay.appendChild(card);
+        const stop = e => { if (!card.contains(e.target)) e.preventDefault(); };
+        overlay.addEventListener('wheel', stop, { passive: false });
+        overlay.addEventListener('touchmove', stop, { passive: false });
+        overlay.addEventListener('mousedown', e => e.stopPropagation());
+        const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey); };
+        const onKey = e => { if (e.key === 'Escape') close(); };
+        document.addEventListener('keydown', onKey);
+        closeBtn.addEventListener('click', close);
+        confirmBtn.addEventListener('click', close);
+        overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+        document.body.appendChild(overlay);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  v7.20.136: THE EFFECT PICKER — the four-fold effect on the reader.
+    //
+    //  Neil, 2026-07-15: *"in each section about the effect… there's four categories: focus,
+    //  emotions, thoughts, actions. And it'd be nice if they're a little bit specific with each
+    //  one. Maybe we can build a picker for that as well."*
+    //
+    //  The FOUR CATEGORIES are grounded — they are the four-fold framework we already teach
+    //  ([[feedback_effects_on_reader_four_fold_framework]]), and they are literally the item set of
+    //  the literature `effects` control ("Manipulates focus/emotions/thoughts/actions"). What makes
+    //  an effect SPECIFIC is the student's own writing, so free text is the primary mechanism, not
+    //  an afterthought. Chosen effects persist as plain strings in `free` (there is no code table
+    //  for effects), so it reuses the technique picker's {picked,free} state shape and completion
+    //  rule with zero new persistence.
+    //
+    //  ⚠️ The SPECIFIC option lists under each category are INTERIM (grounded starters), pending
+    //  Neil's effect-specifics research (handoff to the notes chat, alongside tone + verbs). The
+    //  categories are right; the exhaustive specifics are being researched. Free text means no
+    //  student is fenced while that lands.
+    const _EFFECTS = [
+        { group: 'Focus', hint: 'what the reader notices', items: ['Draws the eye to a key detail', 'Widens to the bigger picture', 'Lingers on one moment', 'Shifts attention sharply'] },
+        { group: 'Emotions', hint: 'what the reader feels', items: ['Fear', 'Hope', 'Outrage', 'Sympathy', 'Unease', 'Longing'] },
+        { group: 'Thoughts', hint: 'what the reader thinks', items: ['Questions an assumption', 'Plants a doubt', 'Reframes the issue', 'Leads to a conclusion'] },
+        { group: 'Actions', hint: 'what the reader is moved to do', items: ['Reconsider a view', 'Act now', 'Share the message', 'Pause and reflect'] },
+    ];
+
+    function _showEffectPicker(sel, onChange) {
+        if (document.querySelector('.swml-tech-picker-overlay')) return; // any picker open blocks another
+        // Effects live in `free` only (plain strings — no code table). `picked` stays [] so the
+        // shape still matches the device picker and controlOk needs no special case.
+        let free = Array.isArray(sel.free) ? sel.free.slice() : [];
+        const has = (v) => free.some(x => x.toLowerCase() === v.toLowerCase());
+        const commit = () => onChange({ picked: [], free: free.slice() });
+
+        const overlay = document.createElement('div');
+        overlay.className = 'swml-tech-picker-overlay swml-tech-picker-appear';
+        const card = document.createElement('div');
+        card.className = 'swml-tech-card';
+        const head = document.createElement('div');
+        head.className = 'swml-tech-head';
+        const title = document.createElement('strong');
+        title.textContent = 'Effect on the reader';
+        head.appendChild(title);
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'swml-tech-close';
+        closeBtn.setAttribute('aria-label', 'Close');
+        closeBtn.textContent = '✕';
+        head.appendChild(closeBtn);
+
+        const body = document.createElement('div');
+        body.className = 'swml-tech-body';
+        const confirmBtn = document.createElement('button');
+        confirmBtn.type = 'button';
+        confirmBtn.className = 'swml-tech-confirm';
+
+        const toggle = (v, ...repaint) => {
+            const i = free.findIndex(x => x.toLowerCase() === v.toLowerCase());
+            if (i >= 0) free.splice(i, 1); else free.push(v);
+            commit(); repaint.forEach(fn => fn());
+        };
+
+        const groupsWrap = document.createElement('div');
+        function renderGroups() {
+            groupsWrap.innerHTML = '';
+            const lede = document.createElement('p');
+            lede.className = 'swml-tech-lede';
+            lede.textContent = 'What should this section DO to the reader? Pick the effects you are aiming for, then make them specific in your own words.';
+            groupsWrap.appendChild(lede);
+            _EFFECTS.forEach(g => {
+                const h = document.createElement('h4');
+                h.className = 'swml-tech-group';
+                h.textContent = g.group + ' · ' + g.hint;
+                groupsWrap.appendChild(h);
+                const row = document.createElement('div');
+                row.className = 'swml-tech-row';
+                g.items.forEach(it => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    const on = has(it);
+                    b.className = 'swml-tech-pick' + (on ? ' is-on' : '');
+                    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                    b.textContent = it;
+                    b.addEventListener('click', () => toggle(it, renderGroups, renderPicked));
+                    row.appendChild(b);
+                });
+                groupsWrap.appendChild(row);
+            });
+        }
+
+        // own words
+        const ownWrap = document.createElement('div');
+        ownWrap.className = 'swml-tech-section';
+        const ownH = document.createElement('h4');
+        ownH.className = 'swml-tech-group';
+        ownH.textContent = 'In your own words';
+        const freeRow = document.createElement('div');
+        freeRow.className = 'swml-tech-freerow';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'swml-tech-input';
+        input.placeholder = 'e.g. makes the cost feel personal…';
+        const add = document.createElement('button');
+        add.type = 'button';
+        add.className = 'swml-tech-add';
+        add.textContent = 'Add';
+        const addOwn = () => { const v = input.value.trim(); if (!v) return; if (!has(v)) free.push(v); input.value = ''; commit(); renderPicked(); };
+        add.addEventListener('click', addOwn);
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addOwn(); } });
+        input.addEventListener('mousedown', e => e.stopPropagation());
+        freeRow.appendChild(input); freeRow.appendChild(add);
+        ownWrap.appendChild(ownH); ownWrap.appendChild(freeRow);
+
+        const pickedWrap = document.createElement('div');
+        pickedWrap.className = 'swml-tech-section';
+        function renderPicked() {
+            pickedWrap.innerHTML = '';
+            const h = document.createElement('h4');
+            h.className = 'swml-tech-group';
+            h.textContent = `Your effects (${free.length})`;
+            pickedWrap.appendChild(h);
+            const row = document.createElement('div');
+            row.className = 'swml-tech-row';
+            if (!free.length) {
+                const none = document.createElement('p');
+                none.className = 'swml-tech-empty';
+                none.textContent = 'None yet. Choose one above.';
+                row.appendChild(none);
+            }
+            free.forEach(v => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'swml-tech-pick is-on swml-tech-remove';
+                b.textContent = v;
+                b.addEventListener('click', () => { free.splice(free.indexOf(v), 1); commit(); renderGroups(); renderPicked(); });
+                row.appendChild(b);
+            });
+            pickedWrap.appendChild(row);
+            confirmBtn.textContent = free.length ? `Confirm ${free.length} effect${free.length === 1 ? '' : 's'}` : 'Done';
+        }
+
+        body.appendChild(groupsWrap);
+        body.appendChild(ownWrap);
+        body.appendChild(pickedWrap);
+        renderGroups(); renderPicked();
+
+        const foot = document.createElement('div');
+        foot.className = 'swml-tech-foot';
+        foot.appendChild(confirmBtn);
         card.appendChild(head); card.appendChild(body); card.appendChild(foot);
         overlay.appendChild(card);
         const stop = e => { if (!card.contains(e.target)) e.preventDefault(); };
@@ -9337,10 +9501,20 @@
                 return;
             }
             groups.forEach(g => {
+                const gtype = g.getAttribute('data-ctl-type') || '';
+                // v7.20.136: `choice` and `techniques` render as buttons/chips with NO native input,
+                // so this DOM reader cannot scrape their state. The row nodeView stamps their live
+                // satisfied-ness onto the group as data-ctl-done (from the SAME WML.outlineRow rule),
+                // and we read that. Without this the section tick never lit once those controls
+                // shipped — a filled Introduction stayed grey (Neil, v7.20.135).
+                if (gtype === 'choice' || gtype === 'techniques') {
+                    if (g.getAttribute('data-ctl-done') !== '1') allFilled = false;
+                    return;
+                }
                 const boxes = Array.from(g.querySelectorAll('input[type="checkbox"]'));
                 const sel = g.querySelector('.swml-outline-select');
                 const ctl = {
-                    type: g.getAttribute('data-ctl-type') || '',
+                    type: gtype,
                     choice: g.getAttribute('data-choice') === '1',
                     items: boxes, // controlOk only reads .length
                 };
@@ -24303,6 +24477,11 @@
                         if (ctl.id) group.setAttribute('data-ctl-id', ctl.id);
                         if (ctl.type) group.setAttribute('data-ctl-type', ctl.type);
                         if (ctl.choice) group.setAttribute('data-choice', '1');
+                        // v7.20.136: the group's DOM ref, so the completion stamp can reach it.
+                        // `choice` and `techniques` controls render as buttons/chips with NO native
+                        // input, so the DOM section-reader (checkSectionComplete) cannot scrape
+                        // their state — it reads the `data-ctl-done` this stamps instead.
+                        entry.group = group;
 
                         // Multi rows label each control (the row label is the SECTION \u2014
                         // "Introduction" \u2014 so "Hook" / "Tone" must sit on their own controls).
@@ -24351,12 +24530,18 @@
                         paint();
                         group.appendChild(val);
                         group.appendChild(btn);
-                    } else if (ctl.type === 'techniques') {
+                    } else if (ctl.type === 'techniques' || ctl.type === 'effects') {
                         // v7.20.131: the criteria column is 180px — too narrow to OFFER 14 chips
                         // plus the protocol's hints legibly. So the column carries the RECORD
                         // (what they picked) and the overlay does the teaching, where the
                         // protocol's four groups get room for their hints. Reads its roster from
                         // the generated window.WML_TECHNIQUES — never a hand-typed list.
+                        // v7.20.136: the EFFECT picker reuses this exact record+button affordance;
+                        // only the modal it opens and the noun differ. Effects have no code table,
+                        // so their labels are plain strings — _techLabel passes those through
+                        // unchanged, and effects only ever populate `free`.
+                        const _isEffects = ctl.type === 'effects';
+                        const _noun = _isEffects ? 'effects' : 'devices';
                         entry.tech = {
                             picked: Array.isArray(st.picked) ? st.picked.slice() : [],
                             free: Array.isArray(st.free) ? st.free.slice() : [],
@@ -24401,20 +24586,22 @@
                                 });
                                 chips.appendChild(c);
                             });
-                            btn.textContent = all.length ? 'Edit devices' : 'Choose devices';
+                            btn.textContent = all.length ? ('Edit ' + _noun) : ('Choose ' + _noun);
                         };
                         entry.tech.paint = paint;
                         btn.addEventListener('mousedown', e => e.stopPropagation());
                         btn.addEventListener('click', e => {
                             e.stopPropagation();
                             e.preventDefault();
-                            _showTechniquePicker(entry.tech, (next) => {
+                            const open = _isEffects ? _showEffectPicker : _showTechniquePicker;
+                            open(entry.tech, (next) => {
                                 entry.tech.picked = next.picked;
                                 entry.tech.free = next.free;
                                 paint();
                                 persistControl(entry);
                                 checkRowComplete();
                                 syncSection();
+                                if (dom._syncRowHeight) dom._syncRowHeight();
                             });
                         });
                         paint();
@@ -24571,6 +24758,20 @@
                     dom.appendChild(contentDOM);
 
                     // ── v7.15.0: Row completion — criteria check only (text check via global onUpdate) ──
+                    // v7.20.136: stamp each control group with its live satisfied-ness. This is the
+                    // ONLY way the DOM section-reader can see a `choice`/`techniques` control — those
+                    // render as buttons/chips with no native input, so it cannot scrape their state
+                    // the way it scrapes a checkbox or a <select>. The rule is still the ONE rule
+                    // (WML.outlineRow.controlOk); this only surfaces its result where a DOM reader
+                    // can find it. Idempotent-guarded so a same-value stamp fires no MutationRecord.
+                    function stampGroups() {
+                        if (!CTL) return;
+                        rendered.forEach(e => {
+                            if (!e.group) return;
+                            const want = CTL.controlOk(e.ctl, liveState(e)) ? '1' : '0';
+                            if (e.group.getAttribute('data-ctl-done') !== want) e.group.setAttribute('data-ctl-done', want);
+                        });
+                    }
                     function checkRowComplete() {
                         const hasText = (contentDOM.textContent || '').trim().length > 0;
                         // v7.20.129: EVERY control must be satisfied, read live off the DOM.
@@ -24579,6 +24780,7 @@
                         // (This stays a per-control check rather than outlineRow.complete: the
                         // row class is cosmetic and must not auto-tick a LOCKED empty row, which
                         // .complete deliberately does for the SECTION count. v7.19.679.)
+                        stampGroups();
                         const criteriaOk = CTL ? rendered.every(e => CTL.controlOk(e.ctl, liveState(e))) : true;
                         const complete = hasText && criteriaOk;
                         dom.classList.toggle('swml-row-complete', complete);
@@ -24631,12 +24833,13 @@
                         if (ctl.type === 'checklist' && ctl.items) critH += ctl.items.length * 24;
                         else if (ctl.type === 'checkbox') critH += 24;
                         else if (ctl.type === 'dropdown') critH += 32;
-                        else if (ctl.type === 'techniques') {
+                        else if (ctl.type === 'techniques' || ctl.type === 'effects') {
                             const _s = CTL ? CTL.stateOf(crit, savedState, ctl) : savedState;
                             const _n = (Array.isArray(_s.picked) ? _s.picked.length : 0)
                                 + (Array.isArray(_s.free) ? _s.free.length : 0);
                             critH += 28 + _n * 22;
                         }
+                        else if (ctl.type === 'choice') critH += 32;
                     });
                     dom.style.minHeight = critH + 'px';
 
@@ -24717,6 +24920,10 @@
                                     entry.choice.paint();
                                 }
                             });
+                            // v7.20.136: re-stamp after a replay — a redraw restores the JS-held
+                            // choice/techniques state, so their groups' data-ctl-done must be
+                            // rewritten or the DOM section-reader reads a stale tick.
+                            stampGroups();
                             // v7.20.133: a replay can change the panel's height (chips restored),
                             // so re-measure — the observer covers it, but this makes the corrected
                             // height land in the same frame as the content that caused it.
@@ -32311,6 +32518,33 @@
     const _IU_ACTION_VERBS = ['Connection (bridges, weaves)', 'Growth (flourishes, blooms)',
         'Decay (withers, erodes, suffocates)', 'Transformation (reshapes, redefines)', 'Impact (drives, fuels)'];
 
+    // v7.20.136 (Neil: "power verbs and tone should be in every section"). Defined ONCE so a
+    // research pass edits one list, not six (the drift rule the v7.20.129 consolidation exists for).
+    // The verb RECOMMENDATION splits by the protocol's own usage: SENSORY verbs power the opening
+    // IMAGE (:616), ACTION verbs power the ARGUMENT body (:653). Tone: the general set is the
+    // recommendation wherever the protocol is silent; Vision keeps its protocol-named set (:672).
+    // The `choice` picker's pool UNIONS every set of the same kind, so a student is never fenced to
+    // the recommendation — PEDAGOGY.md §3b.
+    // ⚠️ The per-section verb/tone RECOMMENDATION LISTS are interim pending Neil's tone + verb
+    // research (handoffs to the notes chat). The four-fold categories are grounded; the exhaustive
+    // vocab lists are what the research fills. Structure ships now; content enriches in place.
+    const _IU_SENSORY_VERBS = ['Movement (surge, pulse, sweep)', 'Pressure (grip, crush, suffocate)',
+        'Decay (crumble, wither, collapse)', 'Stillness (hang, linger, drift)', 'Sound (whisper, echo, roar)'];
+    const _IU_TONES_GENERAL = ['Passionate', 'Urgent', 'Reflective', 'Playful', 'Concerned', 'Inspiring'];
+    // Function declarations (not arrows) so the pre-ship harness can slice them by brace balance.
+    function _iuVerbCtl(items, label) {
+        return { id: 'verb', label: label || 'Power verb family', type: 'choice', kind: 'verb', items };
+    }
+    function _iuToneCtl(items) {
+        return { id: 'tone', label: 'Tone', type: 'choice', kind: 'tone', items: items || _IU_TONES_GENERAL };
+    }
+    // v7.20.136 (Neil: "one more in each section about the effect… four categories: focus, emotions,
+    // thoughts, actions… build a picker"). The four-fold effect picker, on every section. Content
+    // + modal live in _showEffectPicker / _EFFECTS (grounded categories, interim specifics + free text).
+    function _iuEffectCtl() {
+        return { id: 'effect', label: 'Intended effect', type: 'effects' };
+    }
+
     // One Methodology point row. `optional` is the protocol's 2–3 RANGE made real (see PEDAGOGY §3b).
     function _iuPoint(n, prompt, optional) {
         const crit = {
@@ -32319,8 +32553,10 @@
             prompt,
             controls: [
                 { id: 'verb', label: 'Action verb family', type: 'choice', kind: 'verb', items: _IU_ACTION_VERBS },
+                _iuToneCtl(), // v7.20.136: a point is prose — it carries a tone like every other section
                 // :655-656 — "2–3 layered devices for that point".
                 { id: 'devices', label: 'Devices', type: 'techniques' },
+                _iuEffectCtl(),
             ],
         };
         if (optional) crit.optional = true;
@@ -32393,12 +32629,14 @@
                         // Statement with Imagery) OUT, so SEVEN ship. `choice` per :607 —
                         // "professional writers layer 2–3 openers — invite the layer, never force it".
                         { id: 'hook', label: 'Hook technique', type: 'checklist', choice: true, items: ['Anecdote', 'Imagine', 'Rhetorical question', 'Shocking statistic + metaphor', 'Vivid description', 'Contrast / juxtaposition', 'Extended metaphor'] },
-                        // :616-618 — the protocol's own verb families, offered against is/are/was/were.
-                        { id: 'verb', label: 'Power verb family', type: 'choice', kind: 'verb', items: ['Movement (surge, pulse, sweep)', 'Pressure (grip, crush, suffocate)', 'Decay (crumble, wither, collapse)', 'Stillness (hang, linger, drift)', 'Sound (whisper, echo, roar)'] },
-                        // :637 — one named tone.
-                        { id: 'tone', label: 'Tone', type: 'choice', kind: 'tone', items: ['Passionate', 'Urgent', 'Reflective', 'Playful', 'Concerned', 'Inspiring'] },
+                        // :616-618 — the protocol's own SENSORY verb families, offered against
+                        // is/are/was/were. Shared constant so the research pass edits one list.
+                        _iuVerbCtl(_IU_SENSORY_VERBS),
+                        // :637 — one named tone (the general set).
+                        _iuToneCtl(_IU_TONES_GENERAL),
                         // :619-627 — "Layer devices — MADFATHER'S CROPS (offer 2–3 to start)".
                         { id: 'devices', label: 'Devices', type: 'techniques' },
+                        _iuEffectCtl(),
                     ]},
                 ]},
                 // :638-647. Image → metaphor → how it extends → evidence → flow → devices → appeal.
@@ -32406,9 +32644,14 @@
                     { id: 'urgency', label: 'Urgency', prompt: 'Why this matters NOW (100–150 words). What does the urgency LOOK like? Build the metaphor, extend it, make it real with concrete evidence — no invented statistics.', controls: [
                         // :646 — "ONE named emotional appeal", so a dropdown, not a checklist.
                         { id: 'appeal', label: 'Emotional appeal', type: 'choice', kind: 'emotion', items: ['Fear', 'Empathy', 'Outrage', 'Guilt'] },
+                        // v7.20.136 (Neil): verb + tone on every section. Urgency is argument prose,
+                        // so its recommended verbs are the ACTION family.
+                        _iuVerbCtl(_IU_ACTION_VERBS),
+                        _iuToneCtl(),
                         // :643-646 — devices offered BY JOB here (building intensity / showing
                         // consequences / creating urgency). Same picker, same taught vocabulary.
                         { id: 'devices', label: 'Devices', type: 'techniques' },
+                        _iuEffectCtl(),
                     ]},
                 ]},
                 // :648-660. Their 2–3 points, each verb-driven; ORGANISATION comes after them.
@@ -32432,8 +32675,11 @@
                         { id: 'emotion', label: 'Emotion', type: 'choice', kind: 'emotion', items: ['Hope', 'Excitement', 'Peace', 'Pride', 'Joy', 'Relief'] },
                         // :672 — a named tone.
                         { id: 'tone', label: 'Tone', type: 'choice', kind: 'tone', items: ['Optimistic', 'Hopeful', 'Inspiring', 'Passionate', 'Confident'] },
+                        // v7.20.136 (Neil): verb on every section. Vision is argument prose → ACTION verbs.
+                        _iuVerbCtl(_IU_ACTION_VERBS),
                         // :668-671 — devices by job (creating vision / building emotion / adding power).
                         { id: 'devices', label: 'Devices', type: 'techniques' },
+                        _iuEffectCtl(),
                     ]},
                 ]},
                 // :673-687. Opposing view → concession → rebuttal technique → rebuttal verb → bridge.
@@ -32445,9 +32691,12 @@
                         { id: 'rebuttal', label: 'Rebuttal technique', type: 'checklist', choice: true, items: ['Analogy', 'Rhetorical question', 'Vivid scenario', 'Contrast', 'Turn-around'] },
                         // :681-683 — rebuttal action-verb families.
                         { id: 'verb', label: 'Rebuttal verb family', type: 'choice', kind: 'verb', items: ['Expose flaws (crumbles, collapses, fractures)', 'Show strength (withstands, endures, proves)', 'Reveal truth (exposes, unmasks, uncovers)', 'Overcome (outweighs, transcends, eclipses)', 'Transform (converts, reframes, reshapes)'] },
+                        // v7.20.136 (Neil): tone on every section (the verb here is the rebuttal one).
+                        _iuToneCtl(),
                         // v7.20.133 (Neil): devices ride EVERY section. See the note on the
                         // Conclusion row — this ADDS to the rebuttal taxonomy, it does not replace it.
                         { id: 'devices', label: 'Devices', type: 'techniques' },
+                        _iuEffectCtl(),
                     ]},
                 ]},
                 // :688-694. Final image → closing approach → final sentence → verbal echo.
@@ -32455,6 +32704,10 @@
                     { id: 'conclusion', label: 'Conclusion', prompt: 'The final image (75–100 words). Draft your FINAL SENTENCE and read it aloud — it must land on a stressed word. Any call to action rides in the imagery, never a bare command.', controls: [
                         // :689-691 — "the closing approach, layerable" ⇒ choice.
                         { id: 'closing', label: 'Closing approach', type: 'checklist', choice: true, items: ['Echo the opening metaphor, resolved', 'One last vivid picture', 'Call to imagination ("Imagine…")', 'A question that lingers', 'The extended metaphor completed'] },
+                        // v7.20.136 (Neil): verb + tone on every section. A conclusion is argument
+                        // prose landing the piece → ACTION verbs.
+                        _iuVerbCtl(_IU_ACTION_VERBS),
+                        _iuToneCtl(),
                         // ⭐ v7.20.133 — DEVICES RIDE EVERY SECTION (Neil, 2026-07-15: "choosing
                         // devices needs to be in every section because it's really, really
                         // important that they do that").
@@ -32476,6 +32729,7 @@
                         // coach device-layering at C/C. Logged for the protocol pass — the scaffold
                         // leads here deliberately, on Neil's ruling.
                         { id: 'devices', label: 'Devices', type: 'techniques' },
+                        _iuEffectCtl(),
                     ]},
                 ]},
             ],
