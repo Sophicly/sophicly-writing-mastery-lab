@@ -3712,7 +3712,12 @@ window.WML = (function() {
                 const f = Array.isArray(s.free) ? s.free.filter(x => String(x || '').trim()).length : 0;
                 return (p + f) >= 1;
             }
-            if (c.type === 'dropdown') return !!s.selected;
+            // v7.20.134: `choice` is a dropdown that stopped pretending its list was exhaustive —
+            // the protocol's set for THIS section is a RECOMMENDATION, the student may take any
+            // family or name their own (Neil: "the categories are preselected per section, but I
+            // don't think that should be the case… they need to choose"). It persists the SAME
+            // `{selected}` string a dropdown does, so the rule is the same and nothing re-keys.
+            if (c.type === 'dropdown' || c.type === 'choice') return !!s.selected;
             if (c.type === 'checklist') {
                 const need = c.choice ? 1 : Math.max(1, (Array.isArray(c.items) ? c.items.length : 1));
                 return chk >= need;

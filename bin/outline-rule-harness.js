@@ -60,6 +60,11 @@ vm.runInContext(
   slice(assessSrc, 'const OUTLINE_CRITERIA = {', '{') + '\nthis.OUTLINE_CRITERIA = OUTLINE_CRITERIA;',
   sandbox
 );
+// v7.20.134: the choice picker's option pool. Sliced and RUN, not just inspected — a pool that
+// silently returns [] would leave every picker fenced to its own section again, and would look
+// exactly like a passing structural check.
+sandbox.window = { WML: { outlineRow: sandbox.outlineRow } };
+vm.runInContext(slice(assessSrc, 'function _iuChoicePool(', '{') + '\nthis._iuChoicePool = _iuChoicePool;', sandbox);
 
 const RULE = sandbox.outlineRow;
 const CRITERIA = sandbox.OUTLINE_CRITERIA;
@@ -242,18 +247,23 @@ t('the Introduction hook offers SEVEN openers (eight in the protocol, F ruled ou
   IU[0].criteria[0].controls.find(c => c.id === 'hook').items.length, 7);
 t('the hook LAYERS ⇒ choice:true (protocol :607)',
   IU[0].criteria[0].controls.find(c => c.id === 'hook').choice, true);
-// ⭐ THE PICKER LANDS ON I·U·M·V ONLY — a PEDAGOGY rule (PEDAGOGY.md §3b), so it is gated here
-// rather than trusted to a comment. The protocol offers DEVICES at those four sections
-// (:619-627 / :643-646 / :655-656 / :668-671). Counter-argument offers *rebuttal techniques*
-// and Conclusion offers *closing approaches* — different taxonomies, so the device picker there
-// would teach a vocabulary the protocol never offers at that section.
+// ⭐ THE PICKER LANDS ON EVERY SECTION — Neil, 2026-07-15: "choosing devices needs to be in every
+// section because it's really, really important that they do that." Gated here rather than trusted
+// to a comment. This REVERSES the v7.20.131 rule (picker on I/U/M/V only), which read "the protocol
+// does not offer devices at Counter/Conclusion" as "the student must not layer devices there" —
+// two different claims. The taxonomies are ADDITIVE: Counter-argument keeps its rebuttal technique
+// and Conclusion its closing approach, and BOTH also get devices.
 const withPicker = IU.filter(s => s.criteria.some(c => RULE.controlsOf(c).some(ctl => ctl.type === 'techniques')));
-t('the technique picker is on Introduction, Urgency, Methodology and Vision — and NOWHERE else',
-  withPicker.map(s => s.id).join(','), 'intro,urgency,method,vision');
-t('Counter-argument has NO device picker (it teaches rebuttal techniques instead)',
-  RULE.controlsOf(IU.find(s => s.id === 'counter').criteria[0]).some(c => c.type === 'techniques'), false);
-t('Conclusion has NO device picker (it teaches closing approaches instead)',
-  RULE.controlsOf(IU.find(s => s.id === 'conclusion').criteria[0]).some(c => c.type === 'techniques'), false);
+t('the technique picker is on ALL SIX sections (Neil: every section)',
+  withPicker.map(s => s.id).join(','), 'intro,urgency,method,vision,counter,conclusion');
+t('Counter-argument keeps its rebuttal technique AND gains devices (additive, not replaced)',
+  RULE.controlsOf(IU.find(s => s.id === 'counter').criteria[0]).map(c => c.id).join(','),
+  'objection,rebuttal,verb,devices');
+t('Conclusion keeps its closing approach AND gains devices',
+  RULE.controlsOf(IU.find(s => s.id === 'conclusion').criteria[0]).map(c => c.id).join(','),
+  'closing,devices');
+// The Organisation row is the ONE row with no devices, and that is not an oversight: it plans the
+// ORDER of the points and the transitions between them, not prose that could carry a device.
 t('every Methodology POINT gets a picker; the Organisation row does not',
   IU.find(s => s.id === 'method').criteria
     .filter(c => RULE.controlsOf(c).some(ctl => ctl.type === 'techniques')).map(c => c.id).join(','),
@@ -301,12 +311,69 @@ if (fs.existsSync(idxPath)) {
   fail++; failures.push('MULTI the generated technique index is MISSING — run node bin/build-techniques-index.js');
 }
 
-const KNOWN_TYPES = ['checklist', 'checkbox', 'dropdown', 'techniques'];
+// ══ TEST 5d — the CHOICE picker: recommended here, choose anything (v7.20.134) ══
+const choiceCtls = IU.flatMap(s => s.criteria.map(c => ({ s, c })))
+  .flatMap(({ s, c }) => RULE.controlsOf(c).map(ctl => ({ s, c, ctl })))
+  .filter(x => x.ctl.type === 'choice');
+t('the preselected dropdowns are gone: verb/tone/emotion/appeal/objection are all pickers now',
+  choiceCtls.map(x => `${x.s.id}.${x.ctl.id}`).join(','),
+  'intro.verb,intro.tone,urgency.appeal,method.verb,method.verb,method.verb,vision.emotion,vision.tone,counter.objection,counter.verb');
+choiceCtls.forEach(({ s, c, ctl }) => {
+  // `kind` is what lets the pool DERIVE. Without it the picker shows the section's set only —
+  // silently back to the fence Neil asked us to remove, with nothing to catch it.
+  t(`iumvcc.${s.id}.${c.id}.${ctl.id} declares a kind (the pool derives from it)`, !!ctl.kind, true);
+  t(`iumvcc.${s.id}.${c.id}.${ctl.id} still ships its protocol recommendation`,
+    Array.isArray(ctl.items) && ctl.items.length > 0, true);
+});
+// The Organisation row stays a dropdown ON PURPOSE: strongest-first / build-intensity / logical-
+// sequence is an exhaustive structural choice, not a creative palette. Nothing to "choose anything"
+// from, so a picker there would be affordance for its own sake.
+t('Organisation stays a dropdown (an exhaustive structural choice, not a palette)',
+  RULE.controlsOf(IU.find(s => s.id === 'method').criteria.find(c => c.id === 'organisation'))[0].type,
+  'dropdown');
+// The pools must actually CROSS sections — this is the whole point of the change.
+const verbKinds = choiceCtls.filter(x => x.ctl.kind === 'verb');
+t('verb families exist in more than one section, so the pool genuinely crosses them',
+  verbKinds.length >= 3, true);
+const introVerbs = choiceCtls.find(x => x.s.id === 'intro' && x.ctl.id === 'verb').ctl.items;
+const methodVerbs = choiceCtls.find(x => x.s.id === 'method' && x.ctl.id === 'verb').ctl.items;
+t('a Methodology verb family is NOT in the Introduction recommendation (so it must come from the pool)',
+  introVerbs.some(v => v === methodVerbs[0]), false);
+// ⭐ RUN the pool. This is the assertion that proves the fence is actually gone: from the
+// Introduction, a Methodology verb family must be REACHABLE.
+const POOL = sandbox._iuChoicePool;
+const introPool = POOL('verb', introVerbs);
+t('the verb pool returns something (an empty pool = every picker silently re-fenced)',
+  introPool.length > 0, true);
+t('from the Introduction, a METHODOLOGY verb family is reachable (Neil: they need to choose)',
+  introPool.includes(methodVerbs[0]), true);
+t('the pool EXCLUDES what is already recommended (no chip appears twice)',
+  introPool.some(v => introVerbs.includes(v)), false);
+t('the pool de-duplicates across sections',
+  introPool.length, new Set(introPool.map(s => s.toLowerCase())).size);
+const tonePool = POOL('tone', ['Passionate']);
+t('the tone pool crosses sections too (Vision tones reachable from the Introduction)',
+  tonePool.includes('Optimistic'), true);
+t('an unknown kind yields an empty pool rather than throwing',
+  POOL('nonsense-kind', []).length, 0);
+
+// A `choice` completes exactly like a dropdown — same {selected} shape, so nothing re-keys.
+const ch = { id: 'x', controls: [{ id: 'tone', label: 'Tone', type: 'choice', kind: 'tone', items: ['Urgent'] }] };
+t('choice with nothing selected ⇒ incomplete', RULE.complete(ch, { c: { tone: {} } }, true), false);
+t('choice with a RECOMMENDED value ⇒ complete',
+  RULE.complete(ch, { c: { tone: { selected: 'Urgent' } } }, true), true);
+t('choice with the student’s OWN value ⇒ complete (it is not fenced to the list)',
+  RULE.complete(ch, { c: { tone: { selected: 'Defiant' } } }, true), true);
+t('choice persists the SAME {selected} a dropdown does (no re-key)',
+  JSON.stringify(RULE.stateOf(ch, { c: { tone: { selected: 'Urgent' } } }, { id: 'tone' })),
+  JSON.stringify({ selected: 'Urgent' }));
+
+const KNOWN_TYPES = ['checklist', 'checkbox', 'dropdown', 'techniques', 'choice'];
 IU.forEach(sec => sec.criteria.forEach(crit => {
   RULE.controlsOf(crit).forEach((ctl, i) => {
     t(`iumvcc.${sec.id}.${crit.id} control[${i}] has an id`, !!ctl.id, true);
     t(`iumvcc.${sec.id}.${crit.id}.${ctl.id} type is known`, KNOWN_TYPES.includes(ctl.type), true);
-    if (ctl.type === 'checklist' || ctl.type === 'dropdown') {
+    if (ctl.type === 'checklist' || ctl.type === 'dropdown' || ctl.type === 'choice') {
       t(`iumvcc.${sec.id}.${crit.id}.${ctl.id} offers items`, Array.isArray(ctl.items) && ctl.items.length > 0, true);
     }
     t(`iumvcc.${sec.id}.${crit.id}.${ctl.id} is labelled (the row label is the SECTION)`, !!ctl.label, true);

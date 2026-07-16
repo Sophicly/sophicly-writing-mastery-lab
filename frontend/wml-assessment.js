@@ -1137,56 +1137,73 @@
         const T = _techIndex();
         let picked = Array.isArray(sel.picked) ? sel.picked.slice() : [];
         let free = Array.isArray(sel.free) ? sel.free.slice() : [];
+        // Picks commit LIVE, and the footer button closes rather than saves. Deliberate: a
+        // stage-then-confirm modal loses a student's picks on a stray backdrop click, and losing
+        // a 14-year-old's work to a mis-click is not a trade worth making for tidier semantics.
+        // The button exists because Neil could not tell HOW TO LEAVE — a discoverability problem,
+        // not a transaction one. So ✕, Escape, backdrop and Confirm all do the same safe thing.
         const commit = () => onChange({ picked: picked.slice(), free: free.slice() });
 
         const overlay = document.createElement('div');
         overlay.className = 'swml-tech-picker-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;overscroll-behavior:contain;';
         const card = document.createElement('div');
-        card.style.cssText = 'background:#1c1d1f;color:rgba(255,255,255,0.92);border-radius:14px;max-width:560px;width:92%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(255,255,255,0.08);';
+        card.className = 'swml-tech-card';
         const head = document.createElement('div');
-        head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.08);flex:0 0 auto;';
-        head.innerHTML = '<strong>Layer your devices</strong>';
+        head.className = 'swml-tech-head';
+        const title = document.createElement('strong');
+        title.textContent = 'Layer your devices';
+        head.appendChild(title);
         const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'swml-tech-close';
+        closeBtn.setAttribute('aria-label', 'Close');
         closeBtn.textContent = '✕';
-        closeBtn.style.cssText = 'background:none;border:none;color:rgba(255,255,255,0.6);font-size:16px;cursor:pointer;padding:4px 8px;';
         head.appendChild(closeBtn);
 
         const body = document.createElement('div');
-        body.style.cssText = 'overflow-y:auto;overscroll-behavior:contain;padding:12px 18px 18px;flex:1 1 auto;';
+        body.className = 'swml-tech-body';
 
-        const chipCss = (on) => 'border-radius:999px;padding:5px 10px;font-size:12px;cursor:pointer;border:1px solid '
-            + (on ? 'rgba(120,180,255,0.5)' : 'rgba(255,255,255,0.14)') + ';background:'
-            + (on ? 'rgba(90,140,255,0.22)' : 'rgba(255,255,255,0.04)') + ';color:rgba(255,255,255,'
-            + (on ? '0.95' : '0.75') + ');';
+        const mkChip = (label, on, onClick, extraClass) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'swml-tech-pick' + (on ? ' is-on' : '') + (extraClass ? ' ' + extraClass : '');
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+            b.textContent = label;
+            b.addEventListener('click', onClick);
+            return b;
+        };
+        const toggle = (code, ...repaint) => {
+            const i = picked.indexOf(code);
+            if (i >= 0) picked.splice(i, 1); else picked.push(code);
+            commit(); repaint.forEach(fn => fn());
+        };
 
         // ── tier 1 — the protocol's groups, OFFERED, with the protocol's own hints ──
         const tier1Wrap = document.createElement('div');
         function renderTier1() {
             tier1Wrap.innerHTML = '';
             if (!T) return;
-            const intro = document.createElement('div');
-            intro.style.cssText = 'font-size:11.5px;color:rgba(255,255,255,0.5);margin:2px 0 10px;';
-            intro.textContent = 'Start with two or three that deliver your image — you are never required to use more than one.';
+            const intro = document.createElement('p');
+            intro.className = 'swml-tech-lede';
+            intro.textContent = 'Start with two or three that deliver your image. One is enough; layering is your choice.';
             tier1Wrap.appendChild(intro);
             T.tier1.forEach(grp => {
-                const h = document.createElement('div');
-                h.style.cssText = 'margin:12px 0 6px;font-weight:600;font-size:12.5px;';
+                const h = document.createElement('h4');
+                h.className = 'swml-tech-group';
                 h.textContent = grp.group;
                 tier1Wrap.appendChild(h);
                 const row = document.createElement('div');
-                row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+                row.className = 'swml-tech-row';
                 grp.items.forEach(it => {
-                    const b = document.createElement('button');
-                    const on = picked.includes(it.code);
-                    b.style.cssText = chipCss(on);
-                    b.textContent = it.hint ? `${it.name} · ${it.hint}` : it.name;
-                    b.addEventListener('click', () => {
-                        const i = picked.indexOf(it.code);
-                        if (i >= 0) picked.splice(i, 1); else picked.push(it.code);
-                        commit(); renderTier1(); renderPicked();
-                    });
-                    row.appendChild(b);
+                    const chip = mkChip(it.name, picked.includes(it.code),
+                        () => toggle(it.code, renderTier1, renderPicked));
+                    if (it.hint) {
+                        const hint = document.createElement('span');
+                        hint.className = 'swml-tech-hint';
+                        hint.textContent = it.hint;
+                        chip.appendChild(hint);
+                    }
+                    row.appendChild(chip);
                 });
                 tier1Wrap.appendChild(row);
             });
@@ -1194,53 +1211,44 @@
 
         // ── tier 2 — FINDABLE. Search only; never a wall of 245 chips. ──
         const searchWrap = document.createElement('div');
-        searchWrap.style.cssText = 'margin-top:18px;border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;';
-        const searchLbl = document.createElement('div');
-        searchLbl.style.cssText = 'font-size:11.5px;color:rgba(255,255,255,0.5);margin-bottom:8px;';
+        searchWrap.className = 'swml-tech-section';
+        const searchLbl = document.createElement('p');
+        searchLbl.className = 'swml-tech-lede';
         searchLbl.textContent = 'Using a device you already know? Search for it, or add it in your own words.';
         const search = document.createElement('input');
         search.type = 'text';
+        search.className = 'swml-tech-input';
         search.placeholder = 'Search techniques…';
-        search.style.cssText = 'width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.92);font-size:13px;';
         const results = document.createElement('div');
-        results.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;';
+        results.className = 'swml-tech-row swml-tech-results';
         function renderResults() {
             results.innerHTML = '';
             const q = search.value.trim().toLowerCase();
             if (!q || !T) return;
             const hits = T.all.filter(e => e.n.toLowerCase().includes(q)).slice(0, 24);
             if (!hits.length) {
-                const none = document.createElement('div');
-                none.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.45);';
-                none.textContent = 'No match — add it in your own words below.';
+                const none = document.createElement('p');
+                none.className = 'swml-tech-empty';
+                none.textContent = 'No match. Add it in your own words below.';
                 results.appendChild(none);
                 return;
             }
-            hits.forEach(e => {
-                const b = document.createElement('button');
-                const on = picked.includes(e.c);
-                b.style.cssText = chipCss(on);
-                b.textContent = e.n;
-                b.addEventListener('click', () => {
-                    const i = picked.indexOf(e.c);
-                    if (i >= 0) picked.splice(i, 1); else picked.push(e.c);
-                    commit(); renderTier1(); renderResults(); renderPicked();
-                });
-                results.appendChild(b);
-            });
+            hits.forEach(e => results.appendChild(
+                mkChip(e.n, picked.includes(e.c), () => toggle(e.c, renderTier1, renderResults, renderPicked))));
         }
         search.addEventListener('input', renderResults);
         search.addEventListener('mousedown', e => e.stopPropagation());
 
         // ── tier 3 — the student's own words ──
         const freeRow = document.createElement('div');
-        freeRow.style.cssText = 'display:flex;gap:6px;margin-top:10px;';
+        freeRow.className = 'swml-tech-freerow';
         const freeIn = document.createElement('input');
         freeIn.type = 'text';
+        freeIn.className = 'swml-tech-input';
         freeIn.placeholder = 'Or name it yourself…';
-        freeIn.style.cssText = 'flex:1 1 auto;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.92);font-size:13px;';
         const freeAdd = document.createElement('button');
-        freeAdd.className = 'swml-quick-btn';
+        freeAdd.type = 'button';
+        freeAdd.className = 'swml-tech-add';
         freeAdd.textContent = 'Add';
         const addFree = () => {
             const v = freeIn.value.trim();
@@ -1255,42 +1263,32 @@
 
         // ── the running selection ──
         const pickedWrap = document.createElement('div');
-        pickedWrap.style.cssText = 'margin-top:16px;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;';
+        pickedWrap.className = 'swml-tech-section';
         function renderPicked() {
             pickedWrap.innerHTML = '';
-            const h = document.createElement('div');
-            h.style.cssText = 'font-size:12.5px;font-weight:600;margin-bottom:8px;';
+            const h = document.createElement('h4');
+            h.className = 'swml-tech-group';
             h.textContent = `Your devices (${picked.length + free.length})`;
             pickedWrap.appendChild(h);
             const row = document.createElement('div');
-            row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+            row.className = 'swml-tech-row';
             if (!picked.length && !free.length) {
-                const none = document.createElement('div');
-                none.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.45);';
-                none.textContent = 'None yet.';
+                const none = document.createElement('p');
+                none.className = 'swml-tech-empty';
+                none.textContent = 'None yet. Choose one above.';
                 row.appendChild(none);
             }
-            picked.forEach(code => {
-                const b = document.createElement('button');
-                b.style.cssText = chipCss(true);
-                b.textContent = _techLabel(code) + ' ✕';
-                b.addEventListener('click', () => {
-                    picked.splice(picked.indexOf(code), 1);
-                    commit(); renderTier1(); renderResults(); renderPicked();
-                });
-                row.appendChild(b);
-            });
-            free.forEach(v => {
-                const b = document.createElement('button');
-                b.style.cssText = chipCss(true);
-                b.textContent = v + ' ✕';
-                b.addEventListener('click', () => {
+            picked.forEach(code => row.appendChild(
+                mkChip(_techLabel(code), true, () => toggle(code, renderTier1, renderResults, renderPicked), 'swml-tech-remove')));
+            free.forEach(v => row.appendChild(
+                mkChip(v, true, () => {
                     free.splice(free.indexOf(v), 1);
                     commit(); renderPicked();
-                });
-                row.appendChild(b);
-            });
+                }, 'swml-tech-remove')));
             pickedWrap.appendChild(row);
+            if (confirmBtn) confirmBtn.textContent = (picked.length + free.length)
+                ? `Confirm ${picked.length + free.length} device${(picked.length + free.length) === 1 ? '' : 's'}`
+                : 'Done';
         }
 
         body.appendChild(tier1Wrap);
@@ -1298,9 +1296,18 @@
         searchWrap.appendChild(freeRow);
         body.appendChild(searchWrap);
         body.appendChild(pickedWrap);
+
+        // ── the way out (Neil: "it's not clear how to close the picker") ──
+        const foot = document.createElement('div');
+        foot.className = 'swml-tech-foot';
+        const confirmBtn = document.createElement('button');
+        confirmBtn.type = 'button';
+        confirmBtn.className = 'swml-tech-confirm';
+        foot.appendChild(confirmBtn);
+
         renderTier1(); renderPicked();
 
-        card.appendChild(head); card.appendChild(body);
+        card.appendChild(head); card.appendChild(body); card.appendChild(foot);
         overlay.appendChild(card);
         // Scroll isolation, the universal rule: block wheel/touch on the BACKDROP only —
         // the card's own body must still scroll.
@@ -1312,9 +1319,188 @@
         const onKey = e => { if (e.key === 'Escape') close(); };
         document.addEventListener('keydown', onKey);
         closeBtn.addEventListener('click', close);
+        confirmBtn.addEventListener('click', close);
         overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
         document.body.appendChild(overlay);
         setTimeout(() => search.focus(), 0);
+    }
+
+    /**
+     * v7.20.134: THE CHOICE PICKER — "recommended here, but choose anything".
+     *
+     * Neil, 2026-07-15: *"the categories are preselected per section, but I don't think that should
+     * be the case. The whole point is that students need to be creative. They need to choose.
+     * Don't you think it would be better if we created a picker that recommended those things but
+     * allowed them to choose basically anything?"*
+     *
+     * He is right, and the old dropdown made a claim the protocol never made. The protocol offers
+     * movement/pressure/decay/stillness/sound verbs AT THE INTRODUCTION and connection/growth/…
+     * AT THE METHODOLOGY — those are OFFERS for that moment, not a fence. A `<select>` renders an
+     * offer as an exhaustive list, so it silently taught "a growth verb is not available to you
+     * here", which is not what we teach.
+     *
+     * So: the section's own set comes FIRST and is labelled as the recommendation (the teaching is
+     * preserved — PEDAGOGY.md §3b), every other set of the same KIND follows, and the student can
+     * name their own. Single-select throughout: the protocol names ONE tone, ONE appeal, ONE verb
+     * family — that part was never the problem.
+     *
+     * The pools are DERIVED from OUTLINE_CRITERIA by `kind`, never hand-listed — add a section with
+     * a new tone and every tone picker gains it, with no second list to drift.
+     */
+    function _iuChoicePool(kind, exclude) {
+        const seen = new Set((exclude || []).map(s => String(s).toLowerCase()));
+        const out = [];
+        try {
+            (OUTLINE_CRITERIA.iumvcc.sections || []).forEach(sec => {
+                (sec.criteria || []).forEach(crit => {
+                    const ctls = (window.WML && window.WML.outlineRow)
+                        ? window.WML.outlineRow.controlsOf(crit) : [crit];
+                    ctls.forEach(ctl => {
+                        if (!ctl || ctl.kind !== kind || !Array.isArray(ctl.items)) return;
+                        ctl.items.forEach(it => {
+                            const k = String(it).toLowerCase();
+                            if (seen.has(k)) return;
+                            seen.add(k);
+                            out.push(it);
+                        });
+                    });
+                });
+            });
+        } catch (_) { /* a pool miss must never block the picker — recommended still renders */ }
+        return out;
+    }
+
+    function _showChoicePicker(ctl, sectionLabel, current, onPick) {
+        if (document.querySelector('.swml-tech-picker-appear')) return;
+        const recommended = Array.isArray(ctl.items) ? ctl.items : [];
+        const others = ctl.kind ? _iuChoicePool(ctl.kind, recommended) : [];
+        let value = current || '';
+
+        const overlay = document.createElement('div');
+        overlay.className = 'swml-tech-picker-overlay swml-tech-picker-appear';
+        const card = document.createElement('div');
+        card.className = 'swml-tech-card';
+        const head = document.createElement('div');
+        head.className = 'swml-tech-head';
+        const title = document.createElement('strong');
+        title.textContent = ctl.label || 'Choose one';
+        head.appendChild(title);
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'swml-tech-close';
+        closeBtn.setAttribute('aria-label', 'Close');
+        closeBtn.textContent = '✕';
+        head.appendChild(closeBtn);
+
+        const body = document.createElement('div');
+        body.className = 'swml-tech-body';
+        const confirmBtn = document.createElement('button');
+        confirmBtn.type = 'button';
+        confirmBtn.className = 'swml-tech-confirm';
+
+        const paintFoot = () => { confirmBtn.textContent = value ? 'Confirm' : 'Done'; };
+
+        const mk = (label) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            const on = String(value).toLowerCase() === String(label).toLowerCase();
+            b.className = 'swml-tech-pick' + (on ? ' is-on' : '');
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+            b.textContent = label;
+            b.addEventListener('click', () => {
+                // Single-select: picking the chosen one again clears it, so a student can back out
+                // of a choice without hunting for a "none" option.
+                value = on ? '' : label;
+                onPick(value);
+                render();
+            });
+            return b;
+        };
+
+        function render() {
+            body.innerHTML = '';
+            const lede = document.createElement('p');
+            lede.className = 'swml-tech-lede';
+            lede.textContent = 'Pick the one that fits what you are actually writing. The first group is what we recommend here; anything else is still yours to choose.';
+            body.appendChild(lede);
+
+            if (recommended.length) {
+                const h = document.createElement('h4');
+                h.className = 'swml-tech-group';
+                h.textContent = sectionLabel ? `Recommended for ${sectionLabel}` : 'Recommended';
+                body.appendChild(h);
+                const row = document.createElement('div');
+                row.className = 'swml-tech-row';
+                recommended.forEach(it => row.appendChild(mk(it)));
+                body.appendChild(row);
+            }
+            if (others.length) {
+                const sec = document.createElement('div');
+                sec.className = 'swml-tech-section';
+                const h = document.createElement('h4');
+                h.className = 'swml-tech-group';
+                h.textContent = 'Also available';
+                sec.appendChild(h);
+                const row = document.createElement('div');
+                row.className = 'swml-tech-row';
+                others.forEach(it => row.appendChild(mk(it)));
+                sec.appendChild(row);
+                body.appendChild(sec);
+            }
+
+            // Their own words. Free text is what makes "anything" true rather than a bigger fence.
+            const own = document.createElement('div');
+            own.className = 'swml-tech-section';
+            const oh = document.createElement('h4');
+            oh.className = 'swml-tech-group';
+            oh.textContent = 'Your own';
+            own.appendChild(oh);
+            const freeRow = document.createElement('div');
+            freeRow.className = 'swml-tech-freerow';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'swml-tech-input';
+            input.placeholder = 'Name it yourself…';
+            const isOwn = value && !recommended.concat(others).some(i => String(i).toLowerCase() === String(value).toLowerCase());
+            if (isOwn) input.value = value;
+            const add = document.createElement('button');
+            add.type = 'button';
+            add.className = 'swml-tech-add';
+            add.textContent = 'Use this';
+            const useOwn = () => {
+                const v = input.value.trim();
+                if (!v) return;
+                value = v;
+                onPick(value);
+                render();
+            };
+            add.addEventListener('click', useOwn);
+            input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); useOwn(); } });
+            input.addEventListener('mousedown', e => e.stopPropagation());
+            freeRow.appendChild(input); freeRow.appendChild(add);
+            own.appendChild(freeRow);
+            body.appendChild(own);
+            paintFoot();
+        }
+        render();
+
+        const foot = document.createElement('div');
+        foot.className = 'swml-tech-foot';
+        foot.appendChild(confirmBtn);
+
+        card.appendChild(head); card.appendChild(body); card.appendChild(foot);
+        overlay.appendChild(card);
+        const stop = e => { if (!card.contains(e.target)) e.preventDefault(); };
+        overlay.addEventListener('wheel', stop, { passive: false });
+        overlay.addEventListener('touchmove', stop, { passive: false });
+        overlay.addEventListener('mousedown', e => e.stopPropagation());
+        const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey); };
+        const onKey = e => { if (e.key === 'Escape') close(); };
+        document.addEventListener('keydown', onKey);
+        closeBtn.addEventListener('click', close);
+        confirmBtn.addEventListener('click', close);
+        overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+        document.body.appendChild(overlay);
     }
 
     function _showDeviceMenu() {
@@ -24051,6 +24237,8 @@
                         // v7.20.131: the technique picker holds its own selection (codes + free
                         // text), not checkbox indices — read it from the entry, not the DOM.
                         if (entry.tech) return { picked: entry.tech.picked.slice(), free: entry.tech.free.slice() };
+                        // v7.20.134: a `choice` picker persists the SAME {selected} a dropdown does.
+                        if (entry.choice) return { selected: entry.choice.value || '' };
                         const checked = [];
                         entry.boxes.forEach((c, i) => { if (c.checked) checked.push(i); });
                         const st = { checked };
@@ -24090,7 +24278,44 @@
                             group.appendChild(cl);
                         }
 
-                    if (ctl.type === 'techniques') {
+                    if (ctl.type === 'choice') {
+                        // v7.20.134: recommended-here-but-choose-anything. Renders as the same
+                        // record+button affordance the device picker uses, so the column speaks ONE
+                        // vocabulary rather than mixing native selects with pickers.
+                        entry.choice = { value: (st && st.selected) || '' };
+                        const val = document.createElement('div');
+                        val.className = 'swml-tech-chips';
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'swml-tech-more';
+                        const paint = () => {
+                            val.innerHTML = '';
+                            if (entry.choice.value) {
+                                const c = document.createElement('span');
+                                c.className = 'swml-tech-chip';
+                                c.textContent = entry.choice.value;
+                                val.appendChild(c);
+                            }
+                            btn.textContent = entry.choice.value ? 'Change' : 'Choose';
+                        };
+                        entry.choice.paint = paint;
+                        btn.addEventListener('mousedown', e => e.stopPropagation());
+                        btn.addEventListener('click', e => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            _showChoicePicker(ctl, crit.label || '', entry.choice.value, (v) => {
+                                entry.choice.value = v;
+                                paint();
+                                persistControl(entry);
+                                checkRowComplete();
+                                syncSection();
+                                if (dom._syncRowHeight) dom._syncRowHeight();
+                            });
+                        });
+                        paint();
+                        group.appendChild(val);
+                        group.appendChild(btn);
+                    } else if (ctl.type === 'techniques') {
                         // v7.20.131: the criteria column is 180px — too narrow to OFFER 14 chips
                         // plus the protocol's hints legibly. So the column carries the RECORD
                         // (what they picked) and the overlay does the teaching, where the
@@ -24315,10 +24540,25 @@
                         } catch (_) { /* never block the toggle */ }
                     }
 
-                    // Calculate min-height synchronously from criteria data.
-                    // v7.20.129: SUM the controls — a multi-control row is as tall as its whole
-                    // option column (the criteria panel is absolutely positioned at 180px wide,
-                    // so the row must reserve the height or the panel overlaps the next row).
+                    // ── ROW HEIGHT — MEASURED, NOT GUESSED (v7.20.133) ──
+                    //
+                    // The criteria panel is `position:absolute; width:180px`, so it is OUT of flow:
+                    // the row must reserve its height or the panel runs out of the section and over
+                    // the next one (Neil saw exactly that on the six-row build).
+                    //
+                    // ⭐ ROOT: this used to ESTIMATE the height by summing per-control constants
+                    // (24px a checkbox, 32px a dropdown…). An estimate is wrong the moment anything
+                    // wraps — a 7-item hook list with a two-line item, a device chip row growing as
+                    // the student picks, a longer label at a narrower zoom. It cannot be fixed by
+                    // tuning the constants; the guess itself is the defect. So: reserve the ESTIMATE
+                    // synchronously (no first-paint jump), then MEASURE the real panel and correct.
+                    // A ResizeObserver keeps it true for every later reflow — new controls included,
+                    // so the next control type cannot reintroduce this bug.
+                    //
+                    // Safe against the PM flush loop (the v7.19.866 law): the write is an ATTRIBUTE
+                    // write on this NodeView's own `dom`, which `ignoreMutation` firewalls; and it
+                    // cannot feed back, because `dom.style.minHeight` does not affect the height of
+                    // an absolutely-positioned, fixed-width child. Idempotent-guarded regardless.
                     let critH = 18;
                     if (crit.ao || crit.label) {
                         const labelLen = (crit.label || '').length;
@@ -24329,9 +24569,6 @@
                         if (ctl.type === 'checklist' && ctl.items) critH += ctl.items.length * 24;
                         else if (ctl.type === 'checkbox') critH += 24;
                         else if (ctl.type === 'dropdown') critH += 32;
-                        // v7.20.131: picker = the button + a line per picked chip (they wrap in a
-                        // 180px column). Reserved from the SAVED state, so a row that reloads with
-                        // four devices already picked still reserves the height they need.
                         else if (ctl.type === 'techniques') {
                             const _s = CTL ? CTL.stateOf(crit, savedState, ctl) : savedState;
                             const _n = (Array.isArray(_s.picked) ? _s.picked.length : 0)
@@ -24340,6 +24577,28 @@
                         }
                     });
                     dom.style.minHeight = critH + 'px';
+
+                    // The measured truth. `criteriaEl` is the panel; 12px is the breathing room
+                    // under it that Neil asked for, so the panel always reads as CONTAINED.
+                    const CRIT_GAP = 12;
+                    function syncRowHeight() {
+                        try {
+                            const h = criteriaEl.offsetHeight;
+                            if (!h) return; // collapsed / display:none — a 0-rect read is not truth
+                            const want = (h + CRIT_GAP) + 'px';
+                            if (dom.style.minHeight !== want) dom.style.minHeight = want;
+                        } catch (_) { /* never block the row */ }
+                    }
+                    dom._syncRowHeight = syncRowHeight;
+                    let _ro = null;
+                    try {
+                        if (typeof ResizeObserver === 'function') {
+                            _ro = new ResizeObserver(syncRowHeight);
+                            _ro.observe(criteriaEl);
+                        } else {
+                            setTimeout(syncRowHeight, 0); // no RO: measure once after paint
+                        }
+                    } catch (_) { setTimeout(syncRowHeight, 0); }
 
                     return {
                         dom,
@@ -24389,8 +24648,26 @@
                                     entry.tech.free = Array.isArray(cs.free) ? cs.free.slice() : [];
                                     entry.tech.paint();
                                 }
+                                // v7.20.134: same replay law for the choice picker — its value
+                                // lives in JS, so a redraw drops it unless it is restored here.
+                                if (entry.choice) {
+                                    entry.choice.value = cs.selected || '';
+                                    entry.choice.paint();
+                                }
                             });
+                            // v7.20.133: a replay can change the panel's height (chips restored),
+                            // so re-measure — the observer covers it, but this makes the corrected
+                            // height land in the same frame as the content that caused it.
+                            syncRowHeight();
                             return true;
+                        },
+                        // v7.20.133: the row's ResizeObserver outlives the NodeView unless it is
+                        // disconnected here. PM tears rows down and rebuilds them constantly (every
+                        // collapse, every redraw), so a leaked observer per row is a real leak, and
+                        // it would keep firing against a detached panel.
+                        destroy() {
+                            try { if (_ro) _ro.disconnect(); } catch (_) {}
+                            _ro = null;
                         },
                     };
                 };
@@ -31979,7 +32256,7 @@
             label: optional ? `Point ${n} (optional)` : `Point ${n}`,
             prompt,
             controls: [
-                { id: 'verb', label: 'Action verb family', type: 'dropdown', items: _IU_ACTION_VERBS },
+                { id: 'verb', label: 'Action verb family', type: 'choice', kind: 'verb', items: _IU_ACTION_VERBS },
                 // :655-656 — "2–3 layered devices for that point".
                 { id: 'devices', label: 'Devices', type: 'techniques' },
             ],
@@ -32055,9 +32332,9 @@
                         // "professional writers layer 2–3 openers — invite the layer, never force it".
                         { id: 'hook', label: 'Hook technique', type: 'checklist', choice: true, items: ['Anecdote', 'Imagine', 'Rhetorical question', 'Shocking statistic + metaphor', 'Vivid description', 'Contrast / juxtaposition', 'Extended metaphor'] },
                         // :616-618 — the protocol's own verb families, offered against is/are/was/were.
-                        { id: 'verb', label: 'Power verb family', type: 'dropdown', items: ['Movement (surge, pulse, sweep)', 'Pressure (grip, crush, suffocate)', 'Decay (crumble, wither, collapse)', 'Stillness (hang, linger, drift)', 'Sound (whisper, echo, roar)'] },
+                        { id: 'verb', label: 'Power verb family', type: 'choice', kind: 'verb', items: ['Movement (surge, pulse, sweep)', 'Pressure (grip, crush, suffocate)', 'Decay (crumble, wither, collapse)', 'Stillness (hang, linger, drift)', 'Sound (whisper, echo, roar)'] },
                         // :637 — one named tone.
-                        { id: 'tone', label: 'Tone', type: 'dropdown', items: ['Passionate', 'Urgent', 'Reflective', 'Playful', 'Concerned', 'Inspiring'] },
+                        { id: 'tone', label: 'Tone', type: 'choice', kind: 'tone', items: ['Passionate', 'Urgent', 'Reflective', 'Playful', 'Concerned', 'Inspiring'] },
                         // :619-627 — "Layer devices — MADFATHER'S CROPS (offer 2–3 to start)".
                         { id: 'devices', label: 'Devices', type: 'techniques' },
                     ]},
@@ -32066,7 +32343,7 @@
                 { id: 'urgency', label: 'Urgency', criteria: [
                     { id: 'urgency', label: 'Urgency', prompt: 'Why this matters NOW (100–150 words). What does the urgency LOOK like? Build the metaphor, extend it, make it real with concrete evidence — no invented statistics.', controls: [
                         // :646 — "ONE named emotional appeal", so a dropdown, not a checklist.
-                        { id: 'appeal', label: 'Emotional appeal', type: 'dropdown', items: ['Fear', 'Empathy', 'Outrage', 'Guilt'] },
+                        { id: 'appeal', label: 'Emotional appeal', type: 'choice', kind: 'emotion', items: ['Fear', 'Empathy', 'Outrage', 'Guilt'] },
                         // :643-646 — devices offered BY JOB here (building intensity / showing
                         // consequences / creating urgency). Same picker, same taught vocabulary.
                         { id: 'devices', label: 'Devices', type: 'techniques' },
@@ -32090,9 +32367,9 @@
                 { id: 'vision', label: 'Vision', criteria: [
                     { id: 'vision', label: 'Vision', prompt: 'The future if we act (100–150 words). What does success LOOK like? Sensory detail, and keep the contrast with the present problem explicit.', controls: [
                         // :662 — the emotion this future creates.
-                        { id: 'emotion', label: 'Emotion', type: 'dropdown', items: ['Hope', 'Excitement', 'Peace', 'Pride', 'Joy', 'Relief'] },
+                        { id: 'emotion', label: 'Emotion', type: 'choice', kind: 'emotion', items: ['Hope', 'Excitement', 'Peace', 'Pride', 'Joy', 'Relief'] },
                         // :672 — a named tone.
-                        { id: 'tone', label: 'Tone', type: 'dropdown', items: ['Optimistic', 'Hopeful', 'Inspiring', 'Passionate', 'Confident'] },
+                        { id: 'tone', label: 'Tone', type: 'choice', kind: 'tone', items: ['Optimistic', 'Hopeful', 'Inspiring', 'Passionate', 'Confident'] },
                         // :668-671 — devices by job (creating vision / building emotion / adding power).
                         { id: 'devices', label: 'Devices', type: 'techniques' },
                     ]},
@@ -32101,11 +32378,14 @@
                 { id: 'counter', label: 'Counter-Argument', criteria: [
                     { id: 'counter', label: 'Counter-Argument', prompt: 'The strongest opposing view (75–100 words). Concede it fairly ("Admittedly…"), then answer it — and bridge back by echoing the concession’s key noun.', controls: [
                         // :674-675 — the objection families that unlock a stuck student.
-                        { id: 'objection', label: 'Objection family', type: 'dropdown', items: ['Cost / practicality', 'Tradition / resistance to change', 'Unintended consequences', 'Competing priorities'] },
+                        { id: 'objection', label: 'Objection family', type: 'choice', kind: 'objection', items: ['Cost / practicality', 'Tradition / resistance to change', 'Unintended consequences', 'Competing priorities'] },
                         // :676 — "a REBUTTAL technique, layerable" ⇒ choice.
                         { id: 'rebuttal', label: 'Rebuttal technique', type: 'checklist', choice: true, items: ['Analogy', 'Rhetorical question', 'Vivid scenario', 'Contrast', 'Turn-around'] },
                         // :681-683 — rebuttal action-verb families.
-                        { id: 'verb', label: 'Rebuttal verb family', type: 'dropdown', items: ['Expose flaws (crumbles, collapses, fractures)', 'Show strength (withstands, endures, proves)', 'Reveal truth (exposes, unmasks, uncovers)', 'Overcome (outweighs, transcends, eclipses)', 'Transform (converts, reframes, reshapes)'] },
+                        { id: 'verb', label: 'Rebuttal verb family', type: 'choice', kind: 'verb', items: ['Expose flaws (crumbles, collapses, fractures)', 'Show strength (withstands, endures, proves)', 'Reveal truth (exposes, unmasks, uncovers)', 'Overcome (outweighs, transcends, eclipses)', 'Transform (converts, reframes, reshapes)'] },
+                        // v7.20.133 (Neil): devices ride EVERY section. See the note on the
+                        // Conclusion row — this ADDS to the rebuttal taxonomy, it does not replace it.
+                        { id: 'devices', label: 'Devices', type: 'techniques' },
                     ]},
                 ]},
                 // :688-694. Final image → closing approach → final sentence → verbal echo.
@@ -32113,6 +32393,27 @@
                     { id: 'conclusion', label: 'Conclusion', prompt: 'The final image (75–100 words). Draft your FINAL SENTENCE and read it aloud — it must land on a stressed word. Any call to action rides in the imagery, never a bare command.', controls: [
                         // :689-691 — "the closing approach, layerable" ⇒ choice.
                         { id: 'closing', label: 'Closing approach', type: 'checklist', choice: true, items: ['Echo the opening metaphor, resolved', 'One last vivid picture', 'Call to imagination ("Imagine…")', 'A question that lingers', 'The extended metaphor completed'] },
+                        // ⭐ v7.20.133 — DEVICES RIDE EVERY SECTION (Neil, 2026-07-15: "choosing
+                        // devices needs to be in every section because it's really, really
+                        // important that they do that").
+                        //
+                        // This REVERSES v7.20.131's §5.1 narrowing, and the reasoning is worth
+                        // keeping because the earlier call was defensible and still wrong. The
+                        // protocol offers DEVICES only at I/U/M/V; at Counter-argument it offers
+                        // *rebuttal techniques* and here *closing approaches*. From that I inferred
+                        // the picker must not appear here — reading "the protocol does not offer X
+                        // at this section" as "the student must not do X at this section". Those
+                        // are different claims. The taxonomies are ADDITIVE, not exclusive: a
+                        // conclusion still needs sound, imagery and rhythm to land, and Neil teaches
+                        // device-layering as universal craft. So the picker JOINS the closing
+                        // approach rather than replacing it. (PEDAGOGY.md §3b's "offer exactly what
+                        // the protocol teaches" still holds — it governs what a control OFFERS, not
+                        // whether a universally-taught element may appear.)
+                        //
+                        // ⚠️ The PROTOCOL now under-teaches relative to the scaffold: it does not
+                        // coach device-layering at C/C. Logged for the protocol pass — the scaffold
+                        // leads here deliberately, on Neil's ruling.
+                        { id: 'devices', label: 'Devices', type: 'techniques' },
                     ]},
                 ]},
             ],

@@ -7469,6 +7469,197 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: rgba(66, 161, 236, 0.04);
 }
 
+/* ══ v7.20.133: TECHNIQUE PICKER OVERLAY ══════════════════════════════════════
+   Was inline-styled and HARDCODED DARK — invisible-on-white in light theme, which is the exact
+   defect already logged against the device menu. Now class-based with a light pair throughout.
+   No thin outline strokes anywhere (house rule: no outline borders on default buttons) — state is
+   carried by FILL. `:focus-visible` rings are the one exception: those are accessibility, not
+   decoration. Colour vocabulary follows the canvas: soft GREEN = chosen/answered, brand PURPLE =
+   the single primary action, everything else a tinted neutral. */
+.swml-tech-picker-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(18, 14, 30, 0.62);
+    overscroll-behavior: contain;
+}
+.swml-tech-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 560px;
+    max-height: 80vh;
+    overflow: hidden;
+    border-radius: 16px;
+    background: #1b1a1f;
+    color: rgba(255,255,255,0.92);
+    box-shadow: 0 24px 64px rgba(10, 6, 20, 0.55);
+}
+.swml-tech-head {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 18px;
+    font-size: 14px;
+    background: rgba(255,255,255,0.03);
+}
+.swml-tech-close {
+    border: none;
+    background: none;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    color: rgba(255,255,255,0.5);
+    transition: background 160ms cubic-bezier(0.22,1,0.36,1), color 160ms cubic-bezier(0.22,1,0.36,1);
+}
+.swml-tech-close:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+.swml-tech-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 14px 18px 20px;
+}
+.swml-tech-lede {
+    margin: 2px 0 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.5);
+}
+.swml-tech-group {
+    margin: 16px 0 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+}
+.swml-tech-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.swml-tech-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    /* A hairline is the honest separator here; a 1px rule is not an outline stroke. */
+    border-top: 1px solid rgba(255,255,255,0.07);
+}
+.swml-tech-empty { margin: 0; font-size: 12px; color: rgba(255,255,255,0.4); }
+
+/* The chip. No border in ANY state — chosen reads as a filled pill. */
+.swml-tech-pick {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 11px;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.3;
+    cursor: pointer;
+    background: rgba(255,255,255,0.055);
+    color: rgba(255,255,255,0.72);
+    transition: background 160ms cubic-bezier(0.22,1,0.36,1), color 160ms cubic-bezier(0.22,1,0.36,1);
+}
+.swml-tech-pick:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.92); }
+.swml-tech-pick.is-on {
+    background: rgba(28, 217, 145, 0.2);
+    color: rgba(255,255,255,0.95);
+}
+.swml-tech-pick.is-on:hover { background: rgba(28, 217, 145, 0.28); }
+.swml-tech-pick:focus-visible { outline: 2px solid rgba(83, 51, 237, 0.9); outline-offset: 2px; }
+.swml-tech-hint { font-size: 10.5px; color: inherit; opacity: 0.55; }
+/* Chosen chips in the running list remove on click — say so on hover. */
+.swml-tech-remove::after { content: '✕'; font-size: 9.5px; opacity: 0.5; }
+.swml-tech-remove:hover { background: rgba(232, 88, 104, 0.24); }
+
+.swml-tech-input {
+    width: 100%;
+    border: none;
+    border-radius: 9px;
+    padding: 9px 11px;
+    font: inherit;
+    font-size: 13px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.92);
+}
+.swml-tech-input::placeholder { color: rgba(255,255,255,0.35); }
+.swml-tech-input:focus-visible { outline: 2px solid rgba(83, 51, 237, 0.9); outline-offset: 1px; }
+.swml-tech-results:empty { display: none; }
+.swml-tech-results { margin-top: 10px; }
+.swml-tech-freerow { display: flex; gap: 6px; margin-top: 10px; }
+.swml-tech-add {
+    flex: 0 0 auto;
+    border: none;
+    border-radius: 9px;
+    padding: 9px 14px;
+    font: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.8);
+    transition: background 160ms cubic-bezier(0.22,1,0.36,1);
+}
+.swml-tech-add:hover { background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.95); }
+.swml-tech-add:focus-visible { outline: 2px solid rgba(83, 51, 237, 0.9); outline-offset: 2px; }
+
+/* The way out. ONE primary action, brand purple, flat — the purple GRADIENT is reserved for
+   grade 9 and must never be spent on furniture. */
+.swml-tech-foot {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 18px;
+    background: rgba(255,255,255,0.03);
+}
+.swml-tech-confirm {
+    border: none;
+    border-radius: 9px;
+    padding: 9px 18px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #5333ed;
+    color: #fff;
+    transition: background 160ms cubic-bezier(0.22,1,0.36,1);
+}
+.swml-tech-confirm:hover { background: #6247f0; }
+.swml-tech-confirm:focus-visible { outline: 2px solid rgba(255,255,255,0.9); outline-offset: 2px; }
+
+/* ── light pair ── */
+[data-swml-theme="light"] .swml-tech-picker-overlay { background: rgba(44, 0, 62, 0.35); }
+[data-swml-theme="light"] .swml-tech-card {
+    background: #faf9fb;
+    color: rgba(0,0,0,0.85);
+    box-shadow: 0 24px 64px rgba(44, 0, 62, 0.22);
+}
+[data-swml-theme="light"] .swml-tech-head,
+[data-swml-theme="light"] .swml-tech-foot { background: rgba(0,0,0,0.025); }
+[data-swml-theme="light"] .swml-tech-close { color: rgba(0,0,0,0.45); }
+[data-swml-theme="light"] .swml-tech-close:hover { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.85); }
+[data-swml-theme="light"] .swml-tech-lede { color: rgba(0,0,0,0.5); }
+[data-swml-theme="light"] .swml-tech-group { color: rgba(0,0,0,0.45); }
+[data-swml-theme="light"] .swml-tech-section { border-top-color: rgba(0,0,0,0.08); }
+[data-swml-theme="light"] .swml-tech-empty { color: rgba(0,0,0,0.4); }
+[data-swml-theme="light"] .swml-tech-pick { background: rgba(0,0,0,0.045); color: rgba(0,0,0,0.7); }
+[data-swml-theme="light"] .swml-tech-pick:hover { background: rgba(0,0,0,0.08); color: rgba(0,0,0,0.9); }
+[data-swml-theme="light"] .swml-tech-pick.is-on { background: rgba(28, 217, 145, 0.26); color: rgba(0,0,0,0.85); }
+[data-swml-theme="light"] .swml-tech-pick.is-on:hover { background: rgba(28, 217, 145, 0.34); }
+[data-swml-theme="light"] .swml-tech-remove:hover { background: rgba(232, 88, 104, 0.2); }
+[data-swml-theme="light"] .swml-tech-input { background: rgba(0,0,0,0.05); color: rgba(0,0,0,0.85); }
+[data-swml-theme="light"] .swml-tech-input::placeholder { color: rgba(0,0,0,0.35); }
+[data-swml-theme="light"] .swml-tech-add { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.7); }
+[data-swml-theme="light"] .swml-tech-add:hover { background: rgba(0,0,0,0.1); color: rgba(0,0,0,0.9); }
+
+@media (prefers-reduced-motion: reduce) {
+    .swml-tech-pick, .swml-tech-add, .swml-tech-confirm, .swml-tech-close { transition: none; }
+}
+
 /* ── v7.20.131: TECHNIQUE PICKER — the column's record, not its menu ──
    The 180px criteria column is too narrow to OFFER 14 devices with the protocol's hints, so it
    shows what was PICKED plus one button; the overlay does the teaching. No stroke on the button
