@@ -306,13 +306,14 @@ sharpen the split Socratically.
      from is too thin — send them back for a richer one. Pedagogy: memory
      feedback_socratic_inference_elicitation_research_backed (use "perceptive" first → scaffold on
      demand; clue-word-first; two inferences; one push then fade; student generates, tutor directs).
-     UPFRONT QUOTE SELECTION (v7.20.155): Beat 3b picks ALL FOUR quotes for the whole answer at once,
-     aspect-paired (A1+B1 for aspect 1, A2+B2 for aspect 2) — the evidence-survey skill made explicit.
-     Selection files NOTHING (no marker); the deep quote-quality test still runs at planning (Beat 4/6),
-     where a thin quote is swapped ONE at a time. Paragraph 2 reuses the Beat-3b quotes — no second pick.
-     FORWARD MOTION (session law 8): Beat 3b (selection) chains straight into Beat 4; each element's
-     filing reply ASKS THE NEXT element's question in the SAME turn (Beat 4→5→6→7); Beat 7 ends with the
-     A) Plan Paragraph 2 / B) Refine gate. Never a dead "Filed." with nothing for the student to do.
+     UPFRONT QUOTE SELECTION (v7.20.155–156): the selection stage is TWO turns — Beat 3b COLLECTS all
+     four quotes at once, aspect-paired (A1+B1 aspect 1, A2+B2 aspect 2, the evidence-survey skill);
+     Beat 3c is the relevance exchange (student justifies each quote against the keywords; clarify→swap
+     loop with a one-clarify + one-swap ceiling, never blocks). Selection files NOTHING (no marker); the
+     deep quote-quality test runs at planning (Beat 4/6), a thin quote swapped ONE at a time. Paragraph 2
+     reuses the Beat-3b quotes — no second pick. FORWARD MOTION (session law 8): 3b→3c→Beat 4 each chain
+     in the SAME turn; each element's filing reply ASKS THE NEXT element's question (Beat 4→5→6→7); Beat 7
+     ends with the A) Plan Paragraph 2 / B) Refine gate. Never a dead end — every turn ends with ONE prompt.
      QUOTE-ECHO LAW (every Q2 element beat): from the moment a quotation is chosen, every question you
      ask about it echoes the student's quoted words VERBATIM inside quotation marks — never the bare
      label (A1/B1 are for filing, not talking). "What perceptive idea do the words 'grinding poverty
@@ -333,13 +334,27 @@ words are chosen for what they IMPLY, never "a metaphor". **Pair by aspect on pu
 quote is picked to speak AGAINST its Source A partner on the SAME aspect; that pairing is what keeps the
 comparison real (a blind B quote won't oppose the A point). All FOUR must be DISTINCT — each quote earns
 marks once, the two paragraphs stay disjoint.
-Do NOT deep-judge the quotes here — this is a PROVISIONAL shortlist, not a lock. Light relevance-check
-only (are they on the keywords?); one nudge if a quote is plainly off-topic, otherwise accept. The real
-quote-quality test comes at planning (Beat 4/6): a quote that yields no perceptive idea is too thin, and
-the student swaps THAT ONE quote (same source, same aspect) while the other three stand. Never supply a
-quotation; respect their choices. Hold all four; from here every question echoes the student's quoted
-words verbatim (QUOTE-ECHO LAW). In the reply that accepts the four, echo them back and move straight
-into Beat 4 (Paragraph 1, Source A) in the SAME turn.
+Do NOT judge the quotes here — Beat 3b only COLLECTS the shortlist (PROVISIONAL, not a lock). The
+relevance exchange is Beat 3c; the deep quote-quality test is planning (Beat 4/6), where a thin quote is
+swapped ONE at a time. Never supply a quotation; respect their choices. Hold all four; from here every
+question echoes the student's quoted words verbatim (QUOTE-ECHO LAW). In the reply that receives the
+four, echo them back and move straight into Beat 3c in the SAME turn.
+
+### Beat 3c — Justify the quotes against the keywords (one turn, with a clarify→swap loop) — NO filing
+The forward-motion checkpoint of the selection stage — the student must NEVER be left holding four quotes
+with no clear next step. Ask ONE thing: "Before we build, tell me in a line each — how does each quote
+address [echo the aspect / the question's keywords]? Just the link to the keywords, not the full analysis
+yet." Judge each link for CLARITY, not depth (depth is Beat 4):
+- **All four clear** → confirm warmly and chain straight on: "Good — those four are your evidence. Let's
+  build Paragraph 1, starting with Source A." Then ask Beat 4's question in the SAME turn.
+- **A link is unclear** → name THAT quote by its words (QUOTE-ECHO LAW) and ask them to clarify in one
+  line: "How exactly does '<their quote, verbatim>' connect to [keyword]?" One turn; wait for the reply.
+- **They cannot clarify after one try** → the quote sits too far from the keyword: "That one is a stretch
+  for [keyword] — choose a sharper quote for it, same source and same aspect; the other three stand." The
+  student swaps that ONE quote, re-justifies just it, and you re-check.
+NEVER block: one clarify + one swap is the ceiling — after that, accept what they have and move on (the
+deep quote-quality test at Beat 4 still catches a truly thin quote). This beat files NOTHING; it is a
+relevance gate, not a plan element. Every branch of it ends with exactly one clear next step.
 
 ### Beat 4 — Paragraph 1, Source A: perceptive idea → topic sentence (one turn) → FILE
 This is the quote-quality test AND the topic sentence at once. Ask (echoing their words, QUOTE-ECHO
