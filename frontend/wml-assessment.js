@@ -7821,6 +7821,83 @@
     }
     WML.renderPoemCards = _renderPoemCards;
 
+    /**
+     * v7.20.132: IUMVCC OUTLINE stale-shape heal (fix-list #6).
+     *
+     * v7.20.130 rebuilt the AQA Lang P2 Q5 persuasive outline from twelve two-per-section rows
+     * into six sections (one row each; Methodology one row per point). A doc SAVED before that
+     * carries the old scaffold baked in ([[reference_wml_outline_scaffold_baked_needs_onload_heal]]),
+     * so without this it keeps the old rows forever — including Neil's own QA doc, which would
+     * make the test cycle report on the OLD build.
+     *
+     * ⭐ MEASURED on both envs 2026-07-15, not assumed (the §9c rule): SEVEN docs in the world
+     * carry an IUMVCC outline (staging 4, prod 3), ALL old-shape, and **ZERO of their rows hold
+     * a single character of student text**. (The handoff's "32 docs" counted `LIKE '%iumvcc%'`,
+     * which catches the PLAN scaffold too — a different, larger population.) So there is nothing
+     * to carry, and the heal is a scaffold swap rather than a migration.
+     *
+     * Law (the _healPoetryCnShape mold): idempotent · hydration-gated · surgical (rebuild from
+     * the CURRENT doc html, never from the blank template — that would wipe the plan/response
+     * text living in the same doc) · setContent under _migrationActive · fail-loud · and
+     * DOC-UNTOUCHED on any guard miss. The text guard is the real protection: if any outline
+     * row ever holds student writing, this refuses to run and says so, whatever the measurement
+     * said the day it was written.
+     */
+    function _healIumvccOutlineShape(editor) {
+        try {
+            if (!editor || !editor.state || !editor.commands) return;
+            if (state.reviewMode) return; // tutors see the stored doc as-is
+            const html = editor.getHTML();
+            if (!html || html.indexOf('outline-iumvcc-') === -1) return; // not an IUMVCC outline doc
+            // Already the six-section shape? A section row keys on the SECTION alone
+            // (outline-iumvcc-intro); the old shape always keyed section+element.
+            if (/data-field-id="outline-iumvcc-(intro|urgency|vision|counter|conclusion)"/.test(html)) return;
+
+            const box = document.createElement('div');
+            box.innerHTML = html;
+            const secs = Array.from(box.querySelectorAll('[data-section-type="outline"]'))
+                .filter(s => s.querySelector('[data-field-id^="outline-iumvcc-"]'));
+            if (!secs.length) return;
+
+            // ⭐ NEVER rebuild over student writing. Measured zero today; if that is ever false,
+            // this doc keeps its old scaffold and we hear about it — the loud, safe direction.
+            for (const s of secs) {
+                for (const r of Array.from(s.querySelectorAll('[data-outline-row]'))) {
+                    if ((r.textContent || '').trim().length > 0) {
+                        console.warn('[WML iumvcc] outline shape-heal SKIPPED — a row holds student text '
+                            + '(field: ' + (r.getAttribute('data-field-id') || '?') + '). Doc untouched; '
+                            + 'this doc needs a carrying migration, not a scaffold swap.');
+                        return;
+                    }
+                }
+            }
+
+            // Recover the question suffix from the section label ("Outline: Introduction — Q5")
+            // so the rebuilt sections keep their own labels + fieldId namespace.
+            const lbl = secs[0].getAttribute('data-section-label') || '';
+            const m = lbl.match(/—\s*(.+)$/);
+            const partLabel = m ? m[1].trim() : null;
+
+            const fresh = buildIUMVCCOutlineSection(partLabel);
+            if (!fresh || fresh.indexOf('outline-iumvcc-') === -1) {
+                console.warn('[WML iumvcc] outline shape-heal ABORTED — the current builder produced no '
+                    + 'IUMVCC outline. Doc untouched.');
+                return;
+            }
+            secs[0].insertAdjacentHTML('beforebegin', fresh);
+            secs.forEach(s => s.remove());
+
+            _migrationActive = true;
+            try { editor.commands.setContent(box.innerHTML, false); }
+            finally { _migrationActive = false; }
+            console.log('[WML iumvcc] SHAPE-HEAL: ' + secs.length + ' stale outline section(s) rebuilt as six '
+                + '(partLabel: ' + (partLabel || 'none') + ') — no student text was present.');
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('[WML iumvcc] outline shape-heal failed (doc untouched)', e && e.message);
+        }
+    }
+
     // Orchestrator — ONE entry point so ordering is fixed: shape first (creates the
     // fields), then the additive heals, then the sibling merge (needs the fields),
     // then the poem cards. Every pass is idempotent; safe to call repeatedly.
@@ -26120,6 +26197,12 @@
                 // (all three orchestrators self-gate by family; only one fires per doc).
                 setTimeout(() => { try { _runNonfictionCnHeals(editor); } catch (_) {} }, 1800);
                 setTimeout(() => { try { _runNonfictionCnHeals(editor); } catch (_) {} }, 3800);
+                // v7.20.132: IUMVCC outline stale-shape heal — same staggered/idempotent shape
+                // (self-gates: no-op on any doc without an old-shape IUMVCC outline, which is
+                // every doc but the seven that carry one). Second pass covers the async server
+                // setContent replacing the first-pass doc.
+                setTimeout(() => { try { _healIumvccOutlineShape(editor); } catch (_) {} }, 1800);
+                setTimeout(() => { try { _healIumvccOutlineShape(editor); } catch (_) {} }, 3800);
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
