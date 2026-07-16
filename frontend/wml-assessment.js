@@ -15511,15 +15511,17 @@
             // v7.14.23: dual check — scrollWidth overflow OR toolbar collision
             const scrollOverflow = ctxBadges.scrollWidth > ctxBadges.clientWidth + 2;
             if (!scrollOverflow && !_badgesOverlapToolbar()) return;
-            // v7.20.142 (Neil's ranking): the two most important badges are Topic and the task
-            // (Outline Redraft / diag); Phase is third; board / paper / text (lowpri, redundant
-            // with the LearnDash sidebar) fold FIRST. Fold LOWEST priority first, ties → rightmost
-            // first. Keep-≥1 + fit-to-toolbar semantics unchanged — only the hide ORDER changes.
+            // v7.20.143 (Neil's ranking, header/non-training only — training env hides this row
+            // entirely, see below): the SINGLE most important badge is the TASK (Outline Redraft /
+            // diag) — it must survive down to one badge. Then Topic, then Phase; board / paper /
+            // text (lowpri, redundant with the LearnDash sidebar) fold FIRST and always. So as the
+            // header narrows: 3 badges → Topic·Phase·Task; 2 → Topic·Task; 1 → Task. Fold LOWEST
+            // priority first, ties → rightmost first. Keep-≥1 + fit-to-toolbar semantics unchanged.
             const _pri = (b) => b.classList.contains('swml-canvas-ctx-lowpri') ? 0
                 : b.classList.contains('swml-canvas-ctx-phase') ? 1
-                : b.classList.contains('swml-canvas-ctx-diag') ? 2
-                : b.classList.contains('swml-canvas-ctx-topic') ? 3
-                : 2; // unclassified badge → mid priority
+                : b.classList.contains('swml-canvas-ctx-topic') ? 2
+                : b.classList.contains('swml-canvas-ctx-diag') ? 3
+                : 2; // unclassified badge (e.g. Attempt) → mid priority, folds with Topic
             const _hideOrder = ctxAllBadges.slice().sort((a, b) =>
                 _pri(a) - _pri(b) || (ctxAllBadges.indexOf(b) - ctxAllBadges.indexOf(a)));
             const _hidden = new Set();
