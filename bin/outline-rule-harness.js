@@ -106,8 +106,14 @@ function statesFor(crit) {
 let pass = 0, fail = 0;
 const failures = [];
 
-// ══ TEST 1 — EQUIVALENCE: every real criterion behaves exactly as before ══
-realCriteria.forEach(({ crit, where }) => {
+// ══ TEST 1 — EQUIVALENCE: every SINGLE-CONTROL criterion behaves exactly as before ══
+// The oracle IS the pre-v7.20.129 rule, so it can only speak about the shape that existed then.
+// Multi-control and optional rows are new capability with no "before" to be equivalent to — they
+// are covered by TESTS 2/4/6 instead. Scoping is therefore correct, but it must never be SILENT:
+// the counts below are printed so a shrinking sweep can't read as a passing one.
+const singleCriteria = realCriteria.filter(({ crit }) => !RULE.isMulti(crit) && !crit.optional);
+const excluded = realCriteria.filter(({ crit }) => RULE.isMulti(crit) || crit.optional);
+singleCriteria.forEach(({ crit, where }) => {
   statesFor(crit).forEach(({ label, st }) => {
     [true, false].forEach(hasText => {
       const want = oracle(crit, st, hasText);
@@ -187,6 +193,60 @@ t('locked row completes with no text',
 t('locked:"true" (string form) also completes',
   RULE.complete({ id: 'x', locked: 'true' }, {}, false), true);
 
+// ══ TEST 4b — OPTIONAL rows (v7.20.130) ══
+// The protocol plans a RANGE ("their 2–3 distinct points"), so an untouched third row must not
+// block its section — but a STARTED one is a normal row. These two facts are the whole feature.
+const opt = {
+  id: 'point-3', optional: true,
+  controls: [{ id: 'verb', label: 'Action verb family', type: 'dropdown', items: ['Growth', 'Decay'] }],
+};
+t('optional row, EMPTY ⇒ complete (a two-point argument is valid)',
+  RULE.complete(opt, {}, false), true);
+t('optional row, STARTED but control unset ⇒ INCOMPLETE (started means finish it)',
+  RULE.complete(opt, {}, true), false);
+t('optional row, STARTED + control set ⇒ complete',
+  RULE.complete(opt, { c: { verb: { selected: 'Growth' } } }, true), true);
+t('optional:"true" (string form) also completes when empty',
+  RULE.complete({ id: 'x', optional: 'true' }, {}, false), true);
+t('NON-optional row, empty ⇒ incomplete (the flag is what changes it, nothing else)',
+  RULE.complete({ id: 'x', controls: opt.controls }, {}, false), false);
+t('locked BEATS optional-with-text (a carryover is satisfied either way)',
+  RULE.complete({ id: 'x', locked: true, optional: true, type: 'checkbox' }, {}, true), true);
+
+// ══ TEST 5b — THE SHIPPED IUMVCC ROWS ARE WELL-FORMED (v7.20.130) ══
+// Structural gate on the AUTHORED rows, not the engine: a typo'd control (missing id, unknown
+// type, checklist with no items) renders a row that can never complete, and the student — not
+// the harness — would be the one to find it.
+const IU = CRITERIA.iumvcc.sections;
+t('iumvcc ships SIX sections (Neil: "it\'s actually just six sections")', IU.length, 6);
+t('iumvcc section ids are the six IUMVCC letters, in order',
+  IU.map(s => s.id).join(','), 'intro,urgency,method,vision,counter,conclusion');
+t('Methodology is the only multi-row section (one row PER POINT + organisation)',
+  IU.filter(s => s.criteria.length > 1).map(s => s.id).join(','), 'method');
+t('Methodology = point-1, point-2, point-3, organisation',
+  IU.find(s => s.id === 'method').criteria.map(c => c.id).join(','), 'point-1,point-2,point-3,organisation');
+t('exactly ONE optional row ships (methodology point 3)',
+  IU.flatMap(s => s.criteria).filter(c => c.optional).map(c => c.id).join(','), 'point-3');
+t('the Introduction hook offers SEVEN openers (eight in the protocol, F ruled out by Neil)',
+  IU[0].criteria[0].controls.find(c => c.id === 'hook').items.length, 7);
+t('the hook LAYERS ⇒ choice:true (protocol :607)',
+  IU[0].criteria[0].controls.find(c => c.id === 'hook').choice, true);
+const KNOWN_TYPES = ['checklist', 'checkbox', 'dropdown'];
+IU.forEach(sec => sec.criteria.forEach(crit => {
+  RULE.controlsOf(crit).forEach((ctl, i) => {
+    t(`iumvcc.${sec.id}.${crit.id} control[${i}] has an id`, !!ctl.id, true);
+    t(`iumvcc.${sec.id}.${crit.id}.${ctl.id} type is known`, KNOWN_TYPES.includes(ctl.type), true);
+    if (ctl.type === 'checklist' || ctl.type === 'dropdown') {
+      t(`iumvcc.${sec.id}.${crit.id}.${ctl.id} offers items`, Array.isArray(ctl.items) && ctl.items.length > 0, true);
+    }
+    t(`iumvcc.${sec.id}.${crit.id}.${ctl.id} is labelled (the row label is the SECTION)`, !!ctl.label, true);
+  });
+  // Control ids must be unique WITHIN a row — the saved state namespaces by them, so a
+  // duplicate would make two controls share one slot and silently overwrite each other.
+  const ids = RULE.controlsOf(crit).map(c => c.id);
+  t(`iumvcc.${sec.id}.${crit.id} control ids are unique`, new Set(ids).size, ids.length);
+}));
+
 // ══ TEST 5 — controlsOf / isMulti ══
 t('controlsOf on a legacy crit ⇒ [crit]', RULE.controlsOf(legacy).length, 1);
 t('controlsOf on a multi crit ⇒ N', RULE.controlsOf(multi).length, 3);
@@ -195,7 +255,10 @@ t('isMulti true for multi', RULE.isMulti(multi), true);
 t('isMulti false for controls:[] (empty ⇒ not multi)', RULE.isMulti({ controls: [] }), false);
 
 // ── Report ──
-console.log(`outline-rule-harness: ${realCriteria.length} real criteria × ${statesFor({ items: [1] }).length} states × 2 text-states = equivalence sweep`);
+console.log(`outline-rule-harness: equivalence sweep = ${singleCriteria.length} single-control criteria`
+  + ` × ${statesFor({ items: [1] }).length} states × 2 text-states`
+  + ` · ${excluded.length} criteria excluded as multi-control/optional (no pre-.129 oracle exists`
+  + ` for them — covered by the multi/optional/well-formed tests instead)`);
 if (fail) {
   console.error(`\n❌ outline-rule-harness FAILED — ${fail} of ${pass + fail}`);
   failures.forEach(f => console.error('   ' + f));

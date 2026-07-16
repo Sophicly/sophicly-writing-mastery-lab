@@ -294,6 +294,58 @@ by one consumer (the FQ-time lock died in .955 for exactly this reason).
   EXCLUDED from reseed — never widen it to them. Load-time mutations remain the most dangerous
   code in WML (a migrate once wiped a marked doc) — hydration-gated, additive only.
 
+### §3b. THE OUTLINE ROW — ONE rule, three adapters (v7.20.129/.130)
+
+**"Is this row done?" has exactly ONE definition: `WML.outlineRow` (wml-core.js).** It had been
+hand-copied into three consumers, each carrying a *"mirrors X"* comment — a promise, not a
+guarantee — and they HAD drifted (the row nodeView never handled `locked`; the other two did).
+The three are now thin adapters that differ ONLY in where they read state from:
+
+| # | Adapter | Reads state from | Owns |
+|---|---|---|---|
+| 1 | row nodeView `checkRowComplete` (wml-assessment.js) | live DOM | the row's own ✓ class |
+| 2 | `checkSectionComplete` (wml-assessment.js ~8770) | live DOM | section header tick |
+| 3 | section nodeView (wml-section-block.js ~103) | PM attrs | same tick, on mount |
+
+Adapters keep only what is genuinely theirs: **text extraction** and the **CW single-select
+pick-group** (a SECTION rule — one pick completes the group — never a row rule). Anything row
+COMPLETION decides belongs in wml-core. A fourth consumer must adapt, never re-implement.
+
+**Row capabilities:**
+- **`controls: [ …N… ]` (v7.20.129)** — a multi-control row. A criterion WITHOUT it is a
+  single-control row and behaves **byte-identically to v7.20.128** (literature, CW and para-AO all
+  pass one control and are untouched). Each control renders into its own `.swml-outline-ctl` group
+  carrying its OWN rule flags (`data-ctl-id` / `data-ctl-type` / `data-choice`), so the DOM reader
+  applies the rule PER CONTROL — a row may mix a required checklist with a `choice` one, which the
+  old row-level `data-choice` could not express.
+- **`choice: true`** — ≥1 ticked. No flag ⇒ every item required. **This is a pedagogy decision, not
+  a UX one — see PEDAGOGY.md §3b** (the protocol says LAYERABLE ⇒ choice; the protocol names ONE ⇒
+  dropdown).
+- **`locked`** — read-only carryover; satisfied text or not (v7.19.679).
+- **`optional: true` (v7.20.130)** — for protocols that plan a **RANGE** (IUMVCC methodology =
+  "2–3 points"). **Empty ⇒ satisfied; started ⇒ finish it** (controls become required the moment the
+  row has text). DOM signal is the `swml-outline-optional` class on the input, exactly as
+  `swml-outline-locked` is. Safe because the row's prompt renders via
+  `.swml-outline-input[data-prompt]::before { content: attr(data-prompt) }` — a pseudo-element that
+  never enters `textContent`, so "empty" is genuinely empty
+  (`reference_wml_placeholder_defeats_emptiness_and_scroll_replay_law`).
+
+**⭐ STATE SHAPE — a persisted-identifier decision** (`feedback_key_mismatch_is_the_number_one_recurring_bug`):
+```
+single-control row (legacy, UNCHANGED): { checked: [0,2], selected: "Quote" }
+multi-control row  (new):               { c: { hook: {checked:[0]}, tone: {selected:"urgent"} } }
+```
+Checkbox indices are **per control**, so a flat `checked` array on a multi row cannot say WHICH
+control ticked. Legacy rows keep the flat shape — **every saved outline in the DB reads back with
+zero migration**, and control ids must be unique within a row or two controls silently share a slot.
+
+**Gate:** `bin/outline-rule-harness.js` (296 assertions, wired into pre-ship). Its safety argument is
+**EQUIVALENCE** — the pre-.129 rule, transcribed verbatim, runs as an ORACLE against the new one over
+every real single-control criterion × 7 states × 2 text-states. Multi/optional rows have no "before"
+to be equivalent to, so they are scoped OUT of that sweep and covered by their own tests plus a
+well-formedness gate on the authored rows; **the harness PRINTS both counts** so a shrinking sweep
+can never read as a passing one.
+
 ## §4. NUMBERS ARE CODE-OWNED (the v832–929 settlement — never re-litigate)
 
 The LLM never does arithmetic — or number RECALL — that reaches a student. The engine: parses

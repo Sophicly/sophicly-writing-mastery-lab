@@ -3713,9 +3713,16 @@ window.WML = (function() {
         // THE RULE. hasText is the caller's (it owns its own text source).
         // A LOCKED row is a read-only carryover the student cannot fill (v7.19.679) — it can
         // never be a completion requirement, text or not.
+        //
+        // v7.20.130 — OPTIONAL rows. Some protocols plan a RANGE, not a count: AQA Lang P2 Q5
+        // IUMVCC methodology is "their 2–3 distinct points" (protocol-b-planning.md:648), so a
+        // student who argues two points must not be left with a permanently incomplete section
+        // by a third baked row. `optional: true` ⇒ an EMPTY row is satisfied. Started ⇒ finish
+        // it: the moment it has text, its controls are required exactly like any other row.
+        // Distinct from `locked` (read-only, satisfied even with text the STUDENT never wrote).
         complete(crit, state, hasText) {
             if (crit && (crit.locked === true || crit.locked === 'true')) return true;
-            if (!hasText) return false;
+            if (!hasText) return !!(crit && (crit.optional === true || crit.optional === 'true'));
             return this.controlsOf(crit).every(ctl => this.controlOk(ctl, this.stateOf(crit, state, ctl)));
         },
     };

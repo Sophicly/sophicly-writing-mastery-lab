@@ -239,6 +239,39 @@ read the specs — that is the proof the capability approach works; copy it, don
 
 ---
 
+## §3b. THE SCAFFOLD DEMANDS EXACTLY WHAT THE PROTOCOL TEACHES — never more, never fewer
+
+**THE RULE (derived from the protocols, not asked; recorded 2026-07-15 with the six IUMVCC rows):**
+
+> Where a protocol plans a **RANGE**, the scaffold must let the student sit anywhere in it. Where a
+> protocol names **exactly one**, the scaffold must permit exactly one. The control's SHAPE is a
+> teaching act — it silently states what we demand.
+
+**The worked case.** `protocol-b-planning.md:648` plans the Methodology as *"their 2–3 distinct
+points"* — the count is **the student's**, chosen from their argument. So the outline bakes three
+point rows and marks the **third `optional: true`**: a two-point argument completes its section, a
+three-point argument has somewhere to write. Baking three REQUIRED rows would demand a point the
+protocol never demands (and, because a section needs every row filled, would leave a perfectly good
+two-point essay showing a permanently incomplete Methodology). Baking two would leave the
+three-point student nowhere. **Neither failure is visible to us — only to the student.**
+
+**The same rule, the other direction — `choice` vs a dropdown is pedagogy, not UX.** Where the
+protocol says an element **LAYERS** ("professional writers layer 2–3 openers — invite the layer,
+never force it" `:607`; rebuttal technique "layerable" `:676`; closing approach "layerable" `:689`)
+the control is a **checklist with `choice: true`**. Where it names **ONE** ("ONE named emotional
+appeal" `:646`; "a named TONE" `:672`; the organisation choice `:656`) the control is a
+**dropdown** — the shape makes the teaching un-ignorable, so a student cannot tick four tones and
+learn that tone is a pick-and-mix. Reach for the option-set the protocol offers **at that section**:
+IUMVCC's Counter-argument teaches *rebuttal techniques* and its Conclusion teaches *closing
+approaches*, so neither gets the MADFATHER'S CROPS device picker — that would teach a vocabulary the
+protocol never offers there (`feedback_student_content_derives_from_protocols_never_assume`).
+
+**Engine:** `optional` lives in `WML.outlineRow.complete` (wml-core.js) — empty ⇒ satisfied,
+**started ⇒ finish it** (its controls become required the moment it has text). Distinct from
+`locked` (a read-only carryover, satisfied either way). See ASSESSMENT-MECHANICS.md §3.
+
+---
+
 ## §4. WE TEACH TO THE MARK SCHEME — WE DO NOT TEACH IN ITS LANGUAGE
 
 **THE RULE (Neil, 2026-07-15, verbatim):**

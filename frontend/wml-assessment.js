@@ -8776,6 +8776,11 @@
             // NOT block completion. Mirrors the nodeView locked-row auto-satisfy.
             const locked = input.classList && input.classList.contains('swml-outline-locked');
             if (locked) return;
+            // v7.20.130: OPTIONAL row — empty is satisfied, started must finish (the rule is
+            // WML.outlineRow.complete; this adapts live DOM into it). Read BEFORE the text
+            // check below, which would otherwise clear allFilled on an empty optional row.
+            const _optional = input.classList && input.classList.contains('swml-outline-optional');
+            if (_optional && (input.textContent || '').trim().length === 0) return;
             if ((input.textContent || '').trim().length === 0) allFilled = false;
             const cbs = r.querySelectorAll('input[type="checkbox"]');
             if (Array.from(cbs).some(c => c.checked)) anyChecked = true;
@@ -23914,6 +23919,12 @@
                         contentDOM.setAttribute('contenteditable', 'false');
                         contentDOM.classList.add('swml-outline-locked');
                     }
+                    // v7.20.130: OPTIONAL rows (protocols that plan a RANGE — IUMVCC methodology
+                    // is "2–3 points"). Fully editable; the class is the DOM signal the section
+                    // reader needs, exactly as swml-outline-locked is. The RULE is
+                    // WML.outlineRow.complete — an EMPTY optional row is satisfied, a started one
+                    // is not. Row-level ✓ stays honest (empty = no tick), same as locked.
+                    if (crit.optional) contentDOM.classList.add('swml-outline-optional');
                     dom.appendChild(contentDOM);
 
                     // ── v7.15.0: Row completion — criteria check only (text check via global onUpdate) ──
@@ -31614,31 +31625,92 @@
             ],
         },
         // ── IUMVCC (persuasive/transactional writing) ──
+        //
+        // v7.20.130 — SIX SECTIONS, ONE ROW EACH (Neil 2026-07-15: "it's actually just six
+        // sections… it's six with multiple options in each one"). The twelve two-per-section rows
+        // this replaces were a v7.14.70 shape forced by an engine that rendered ONE control per
+        // row; v7.20.129's multi-control row removed that constraint.
+        //
+        // ⭐ EVERY OPTION SET BELOW IS READ FROM THE PROTOCOL — never invented, never carried over
+        // from the old rows ([[feedback_student_content_derives_from_protocols_never_assume]]).
+        // Source: protocols/aqa/language2/planning/protocol-b-planning.md:584-694, cited per row.
+        // The protocol IS the teaching process: if a row offers a vocabulary the protocol never
+        // offers at that section, the ROW is wrong. That is why the technique picker (fix #5) will
+        // land on I·U·M·V ONLY — Counter-argument teaches *rebuttal techniques* and Conclusion
+        // teaches *closing approaches*, which are different taxonomies, not the device list.
+        //
+        // `choice: true` is used ONLY where the protocol says the element LAYERS (openers ":607",
+        // rebuttal ":676", closing ":689" are each explicitly layerable). Where the protocol names
+        // exactly ONE (a named tone, ONE emotional appeal, an organisation choice), the control is
+        // a dropdown — the shape enforces the teaching, so a student cannot tick four tones.
         iumvcc: {
             sections: [
+                // :584-637. Image → feeling → opener → power verb → devices → tone.
                 { id: 'intro', label: 'Introduction', criteria: [
-                    { id: 'hook', label: 'Hook Technique', type: 'checklist', items: ['Anecdote', 'Rhetorical question', 'Vivid image', 'Contrast', 'Shocking statistic'], prompt: 'Hook the reader. Establish your voice and position.' },
-                    { id: 'tone', label: 'Tone & Form', type: 'checkbox', prompt: 'Establish audience, purpose, and form upfront' },
+                    { id: 'intro', label: 'Introduction', prompt: 'Your opening (50–100 words). What will the reader SEE? Show the image, drive it with an action verb, then layer your devices — and bridge from the image to your topic.', controls: [
+                        // :590-606 lists eight lettered openers A–H. Neil 2026-07-15 rules F (Bold
+                        // Statement with Imagery) OUT, so SEVEN ship. `choice` per :607 —
+                        // "professional writers layer 2–3 openers — invite the layer, never force it".
+                        { id: 'hook', label: 'Hook technique', type: 'checklist', choice: true, items: ['Anecdote', 'Imagine', 'Rhetorical question', 'Shocking statistic + metaphor', 'Vivid description', 'Contrast / juxtaposition', 'Extended metaphor'] },
+                        // :616-618 — the protocol's own verb families, offered against is/are/was/were.
+                        { id: 'verb', label: 'Power verb family', type: 'dropdown', items: ['Movement (surge, pulse, sweep)', 'Pressure (grip, crush, suffocate)', 'Decay (crumble, wither, collapse)', 'Stillness (hang, linger, drift)', 'Sound (whisper, echo, roar)'] },
+                        // :637 — one named tone.
+                        { id: 'tone', label: 'Tone', type: 'dropdown', items: ['Passionate', 'Urgent', 'Reflective', 'Playful', 'Concerned', 'Inspiring'] },
+                    ]},
                 ]},
+                // :638-647. Image → metaphor → how it extends → evidence → flow → devices → appeal.
                 { id: 'urgency', label: 'Urgency', criteria: [
-                    { id: 'problem', label: 'The Problem', type: 'checkbox', prompt: 'Why does this matter NOW? Show through specific imagery.' },
-                    { id: 'emotion', label: 'Emotional Appeal', type: 'checklist', items: ['Fear/concern', 'Empathy', 'Outrage', 'Guilt'], prompt: 'Evoke an emotional response in the reader' },
+                    { id: 'urgency', label: 'Urgency', prompt: 'Why this matters NOW (100–150 words). What does the urgency LOOK like? Build the metaphor, extend it, make it real with concrete evidence — no invented statistics.', controls: [
+                        // :646 — "ONE named emotional appeal", so a dropdown, not a checklist.
+                        { id: 'appeal', label: 'Emotional appeal', type: 'dropdown', items: ['Fear', 'Empathy', 'Outrage', 'Guilt'] },
+                    ]},
                 ]},
+                // :648-660. Their 2–3 points, each verb-driven; ORGANISATION comes after them.
                 { id: 'method', label: 'Methodology', criteria: [
-                    { id: 'solution', label: 'The Solution', type: 'checkbox', prompt: 'What is the solution? Paint a vivid picture of how it works.' },
-                    { id: 'devices', label: 'Persuasive Devices', type: 'checklist', items: ['Rule of three', 'Direct address', 'Figurative language', 'Expert reference'], prompt: 'Layer persuasive techniques' },
+                    { id: 'point-1', label: 'Point 1', prompt: 'Your first point (the section runs 250–350 words — it is the piece’s engine). Its image or metaphor, then extend it: concrete evidence + the emotion it should raise. Verb-driven, never "The importance of…".', controls: [
+                        { id: 'verb', label: 'Action verb family', type: 'dropdown', items: ['Connection (bridges, weaves)', 'Growth (flourishes, blooms)', 'Decay (withers, erodes, suffocates)', 'Transformation (reshapes, redefines)', 'Impact (drives, fuels)'] },
+                    ]},
+                    { id: 'point-2', label: 'Point 2', prompt: 'Your second, distinct point. Its own image or metaphor, extended the same way.', controls: [
+                        { id: 'verb', label: 'Action verb family', type: 'dropdown', items: ['Connection (bridges, weaves)', 'Growth (flourishes, blooms)', 'Decay (withers, erodes, suffocates)', 'Transformation (reshapes, redefines)', 'Impact (drives, fuels)'] },
+                    ]},
+                    // :648 plans "2–3 distinct points" — a RANGE the student chooses, so the third
+                    // row is OPTIONAL. Baking three REQUIRED rows would demand a point the protocol
+                    // never demands; baking two would leave a three-point student nowhere to write.
+                    { id: 'point-3', label: 'Point 3 (optional)', optional: true, prompt: 'A third point, if your argument has one — the protocol plans two or three. Leave this empty if two carry it.', controls: [
+                        { id: 'verb', label: 'Action verb family', type: 'dropdown', items: ['Connection (bridges, weaves)', 'Growth (flourishes, blooms)', 'Decay (withers, erodes, suffocates)', 'Transformation (reshapes, redefines)', 'Impact (drives, fuels)'] },
+                    ]},
+                    // :656 places the organisation choice "After all points" — so this row is
+                    // derived from the protocol's own sequence, not invented furniture.
+                    { id: 'organisation', label: 'Organisation', prompt: 'How do your points run, and how do you move between them? Transitions carry the imagery — never "Firstly, Secondly". Organic flow is a valid answer.', controls: [
+                        { id: 'order', label: 'Order', type: 'dropdown', items: ['Strongest first', 'Build intensity', 'Logical sequence'] },
+                    ]},
                 ]},
+                // :661-672. Success image → emotion → metaphor → sensory → rhythm → ladder → tone.
                 { id: 'vision', label: 'Vision', criteria: [
-                    { id: 'future', label: 'Positive Outcome', type: 'checkbox', prompt: 'What does the future look like if we act? Use imagery.' },
-                    { id: 'contrast', label: 'Contrast', type: 'checkbox', prompt: 'Contrast the vision with the current problem' },
+                    { id: 'vision', label: 'Vision', prompt: 'The future if we act (100–150 words). What does success LOOK like? Sensory detail, and keep the contrast with the present problem explicit.', controls: [
+                        // :662 — the emotion this future creates.
+                        { id: 'emotion', label: 'Emotion', type: 'dropdown', items: ['Hope', 'Excitement', 'Peace', 'Pride', 'Joy', 'Relief'] },
+                        // :672 — a named tone.
+                        { id: 'tone', label: 'Tone', type: 'dropdown', items: ['Optimistic', 'Hopeful', 'Inspiring', 'Passionate', 'Confident'] },
+                    ]},
                 ]},
+                // :673-687. Opposing view → concession → rebuttal technique → rebuttal verb → bridge.
                 { id: 'counter', label: 'Counter-Argument', criteria: [
-                    { id: 'acknowledge', label: 'Acknowledge Opposition', type: 'checkbox', prompt: 'Acknowledge the opposing view fairly' },
-                    { id: 'dismantle', label: 'Refutation', type: 'checkbox', prompt: 'Dismantle it with evidence or reasoning' },
+                    { id: 'counter', label: 'Counter-Argument', prompt: 'The strongest opposing view (75–100 words). Concede it fairly ("Admittedly…"), then answer it — and bridge back by echoing the concession’s key noun.', controls: [
+                        // :674-675 — the objection families that unlock a stuck student.
+                        { id: 'objection', label: 'Objection family', type: 'dropdown', items: ['Cost / practicality', 'Tradition / resistance to change', 'Unintended consequences', 'Competing priorities'] },
+                        // :676 — "a REBUTTAL technique, layerable" ⇒ choice.
+                        { id: 'rebuttal', label: 'Rebuttal technique', type: 'checklist', choice: true, items: ['Analogy', 'Rhetorical question', 'Vivid scenario', 'Contrast', 'Turn-around'] },
+                        // :681-683 — rebuttal action-verb families.
+                        { id: 'verb', label: 'Rebuttal verb family', type: 'dropdown', items: ['Expose flaws (crumbles, collapses, fractures)', 'Show strength (withstands, endures, proves)', 'Reveal truth (exposes, unmasks, uncovers)', 'Overcome (outweighs, transcends, eclipses)', 'Transform (converts, reframes, reshapes)'] },
+                    ]},
                 ]},
+                // :688-694. Final image → closing approach → final sentence → verbal echo.
                 { id: 'conclusion', label: 'Conclusion', criteria: [
-                    { id: 'cta', label: 'Call to Action', type: 'checkbox', prompt: 'Call to action. Leave a lasting image.' },
-                    { id: 'echo', label: 'Echo / Final Image', type: 'checklist', items: ['Echoes opening', 'New synthesis', 'Memorable statement'], prompt: 'Leave the reader with something powerful' },
+                    { id: 'conclusion', label: 'Conclusion', prompt: 'The final image (75–100 words). Draft your FINAL SENTENCE and read it aloud — it must land on a stressed word. Any call to action rides in the imagery, never a bare command.', controls: [
+                        // :689-691 — "the closing approach, layerable" ⇒ choice.
+                        { id: 'closing', label: 'Closing approach', type: 'checklist', choice: true, items: ['Echo the opening metaphor, resolved', 'One last vivid picture', 'Call to imagination ("Imagine…")', 'A question that lingers', 'The extended metaphor completed'] },
+                    ]},
                 ]},
             ],
         },
@@ -32956,7 +33028,23 @@
 
     /**
      * Build IUMVCC outline with two-column criteria layout (persuasive/transactional writing).
+     *
+     * v7.20.130: the fieldId RULE, stated once here rather than hand-typed per row (the literal
+     * template that used to sit at this call site was the drift risk the \u00a76 contract exists to
+     * kill \u2014 [[feedback_key_mismatch_is_the_number_one_recurring_bug]]):
+     *
+     *   a section that is ONE row keys on the SECTION      \u2192 outline-iumvcc-intro
+     *   a section with SEVERAL rows keys on section + row  \u2192 outline-iumvcc-method-point-1
+     *
+     * The first form is what makes the plan\u2194outline contract a pure PREFIX SWAP \u2014
+     * `plan-iumvcc-intro` \u2194 `outline-iumvcc-intro`, nothing re-spelled or re-cased, so it cannot
+     * drift. Re-keying the outline side is free RIGHT NOW and only now: zero outline rows hold
+     * student text on prod OR staging (measured 2026-07-15).
      */
+    function _iumvccFieldId(sec, crit) {
+        return crit.id === sec.id ? `outline-iumvcc-${sec.id}` : `outline-iumvcc-${sec.id}-${crit.id}`;
+    }
+
     function buildIUMVCCOutlineSection(partLabel) {
         const prefix = partLabel ? ` \u2014 ${partLabel}` : '';
         const sections = OUTLINE_CRITERIA.iumvcc.sections;
@@ -32964,7 +33052,7 @@
         sections.forEach(sec => {
             let rows = '';
             sec.criteria.forEach(c => {
-                rows += outlineRowHTML(c, `outline-iumvcc-${sec.id}-${c.id}`);
+                rows += outlineRowHTML(c, _iumvccFieldId(sec, c));
             });
             html += sectionHTML('outline', `Outline: ${sec.label}${prefix}`, true, null, rows);
         });
