@@ -260,16 +260,39 @@ adding rows for it would teach the wrong thing:
   reveal?" (`:476-480`).
 - **C** — a detail in EACH source, each bridged micro-to-macro, then the contrast (`:481-485`).
 - **E** — the four-fold sequence for EACH source, then "A creates [effect] while B creates
-  [effect]…" (`:486-490`).
+  [effect]…" (`:486-494`). **ONE effect per source, two per paragraph** — see below.
 - **A** — each writer's purpose, the explicit purpose-comparison as its own move, then the
   JUDGEMENT that earns the top band: "which writer's approach is more effective?" (`:491-498`).
 
-**Two mechanism calls, made from the ruling (Neil shown, 2026-07-15):**
-1. **Effects stay TWO rows, not four.** The protocol wants two distinct effect sentences PER SOURCE
-   (four per paragraph, `:486-488`). Four rows would break "the same structure" — so each of the two
-   effect rows carries both sources, and the helper text says so. The row is a plan line, not a
-   sentence counter.
-2. **JUDGEMENT rides in the A row's helper text**, not a new row — same reason.
+**⭐ THE EFFECT ROWS — ONE EFFECT PER TEXT (Neil, 2026-07-15, ruled directly):**
+
+> *"Because we ask the students to write two, and because they've got two texts — it's actually one
+> effect per text. So it still becomes two, but one per text rather than two per text, per
+> paragraph."*
+
+So the two effect rows are kept, and what changes is what each one MEANS:
+
+| row id (never changes) | single-source body | comparative body |
+|---|---|---|
+| `effects` | Effect 1 on Reader | **Effect on Reader — Source A** |
+| `effects2` | Effect 2 on Reader | **Effect on Reader — Source B** |
+
+**The count is identical (two); the second slot buys the COMPARISON instead of a second effect on
+the same text.** That is the ruling's logic and it is why "same structure, only helper text" holds
+all the way down — the rows do not even change in number, only in label.
+
+**⚠️ THIS OVERRODE THE PROTOCOL, which taught the opposite.** `protocol-b-planning.md:486-488` read
+*"two distinct effect sentences — four in total per paragraph"*. Under this ruling that is a DEFECT,
+and it was corrected in the same session (the four-fold sequence — focus/emotions/thoughts/action —
+is the ANALYSIS the student runs and was left alone; it was never a sentence count). AQA Lang P2 was
+the only protocol carrying the claim — grepped, not assumed.
+
+**JUDGEMENT rides in the A row's helper text**, not a new row — same reason: a seventh row would
+break the structure the ruling preserves.
+
+**Implementation:** this is the `v7.20.107` FOCUS-OVERLAY pattern, already built and shipped — it
+swaps a row's label/prompt/items while **ids never change**, so a reword can never drift a write-key.
+Comparative is another `focus` value, opted in via the spec's `focus` field, never a Q-id literal.
 
 **Consequence: Q4 is NOT blocked and needs no design session.** This was logged as *"the one real
 design question in the arc"* and as a Fable candidate. It was neither. What it needed was reading the

@@ -485,9 +485,13 @@ choice). Confirm all six back in a paired list.
    contrast reveal about the writers' different approaches to this aspect?"
 4. **E — Comparative effects.** For EACH source: the four-fold sequence (focus, emotions,
    thoughts, action), the compounding question (which technique creates which effect), and
-   **two distinct effect sentences** — four in total per paragraph. Then explicitly
-   comparative: "Source A creates [effect] while Source B creates [effect] — what does
-   that difference in reader impact reveal about each writer's approach?"
+   **ONE distinct effect sentence — two in total per paragraph, one per source** (Neil,
+   2026-07-15). A single-source paragraph plans two effects; a comparative paragraph plans
+   one per text, so the COUNT is unchanged — the second slot buys the comparison rather
+   than a second effect on the same source. (The four-fold sequence is the analysis the
+   student runs; it is not a sentence count.) Then explicitly comparative: "Source A
+   creates [effect] while Source B creates [effect] — what does that difference in reader
+   impact reveal about each writer's approach?"
 5. **A + JUDGEMENT.** Each writer's purpose for this aspect (tentative language). Then the
    explicit purpose-comparison — its own move, before any verdict: "How do these purposes
    compare? Are both writers trying to achieve the same thing through different means, or
