@@ -41184,28 +41184,41 @@
             let _staleOutlineToRemove = null;
             const existing = Array.from(tmp.querySelectorAll('[data-section-type="outline"]'))
                 .filter(s => (s.getAttribute('data-section-label') || '').endsWith(`— ${qId}`));
-            if (existing.length) {
-                // v7.20.149: the Q2 inference outline was reshaped 7→6 (Neil, from the mark-scheme
-                // exemplar). The additive heal cannot fix a STALE baked shape, so reshape it here —
-                // but ONLY the inference case, and ONLY when no row holds student text. Autofill is
-                // unwired today so every inference box is empty; the text-guard keeps this safe once
-                // it isn't. Body-only/comparison stay additive-only (their shapes are unchanged).
-                if (!_isInf) return;
-                const curFirst = `outline-body-1-${OUTLINE_CRITERIA.inference[0].id}-q2`;
-                const isCurrent = existing.some(s =>
-                    s.querySelector(`[data-outline-row][data-field-id="${curFirst}"]`));
-                if (isCurrent) return; // already the current shape — idempotent no-op
-                // Student text lives as the row's own content in the saved HTML (criteria panel is
-                // nodeView-rendered, never serialised) — same detection as _healIumvccOutlineShape.
-                const holdsText = existing.some(s =>
-                    Array.from(s.querySelectorAll('[data-outline-row]'))
-                        .some(r => (r.textContent || '').trim().length > 0));
-                if (holdsText) {
-                    console.warn('[WML heal v7.20.149] Q2 inference outline is a stale shape but holds '
-                        + 'student text — left untouched (needs a carrying migration, not a reshape).');
-                    return;
+            if (!_isInf) {
+                // Body-only / comparison: additive-only, shapes unchanged — never reshape.
+                if (existing.length) return;
+            } else {
+                // v7.20.149/.150: the Q2 inference outline was reshaped 7→6 (Neil, from the
+                // mark-scheme exemplar). The additive heal cannot fix a STALE baked shape, so reshape
+                // it here — but ONLY when no row holds student text (autofill is unwired today so
+                // every inference box is empty; the text-guard keeps this safe once it isn't).
+                //
+                // ⭐ v7.20.150 ROOT-CAUSE FIX: a divider + its sections are ONE group. .149 removed
+                // the outline SECTIONS but left the `OUTLINE — Q2` DIVIDER, then rebuilt a fresh
+                // divider → a DUPLICATE heading (extra TOC entry). So: (a) gather the Q2 outline
+                // dividers too, (b) "clean" requires EXACTLY ONE divider heading the current-shape
+                // sections — a duplicate/orphan divider is NOT clean and forces a rebuild, (c) the
+                // removal set includes every Q2 outline divider so the rebuild yields exactly one.
+                const q2Dividers = Array.from(tmp.querySelectorAll('[data-section-type="divider"]'))
+                    .filter(s => (s.getAttribute('data-section-label') || '') === `OUTLINE — ${qId}`);
+                if (existing.length || q2Dividers.length) {
+                    const curFirst = `outline-body-1-${OUTLINE_CRITERIA.inference[0].id}-q2`;
+                    const shapeCurrent = existing.some(s =>
+                        s.querySelector(`[data-outline-row][data-field-id="${curFirst}"]`));
+                    if (shapeCurrent && q2Dividers.length <= 1) return; // clean + current → no-op
+                    // Student text lives as the row's own content in the saved HTML (criteria panel
+                    // is nodeView-rendered, never serialised) — same detection as _healIumvccOutlineShape.
+                    const holdsText = existing.some(s =>
+                        Array.from(s.querySelectorAll('[data-outline-row]'))
+                            .some(r => (r.textContent || '').trim().length > 0));
+                    if (holdsText) {
+                        console.warn('[WML heal v7.20.150] Q2 inference outline is stale/duplicated but '
+                            + 'holds student text — left untouched (needs a carrying migration).');
+                        return;
+                    }
+                    // Remove sections AND every Q2 outline divider; the rebuild adds ONE clean group.
+                    _staleOutlineToRemove = existing.concat(q2Dividers); // removed AFTER anchor confirmed
                 }
-                _staleOutlineToRemove = existing; // remove only AFTER the plan anchor is confirmed (below)
             }
 
             // Anchor: after this question's LAST plan section (outline sits between plan and
