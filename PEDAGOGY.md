@@ -228,14 +228,52 @@ read the specs — that is the proof the capability approach works; copy it, don
   literally means ~30 rows; mirroring usefully may mean fewer. **This is the one real design
   question in the arc** and it recurs on every question of every paper, so it wants answering once.
   Weigh against PACE (`feedback_deep_but_never_dragging_pace_principle`).
-- **`comparison` BODY rows** (AQA P2 Q4 16m AO3; IGCSE P1 Q5 22m AO3). The *document* shape is ruled
-  (intro + 3 bodies + conclusion, above). What is open is the **row set inside a comparative body**:
-  the protocol teaches a comparative topic sentence (3 moves), T+E+I for BOTH sources plus a
-  choice-comparison, comparative close analysis, **four** effect sentences, and A + JUDGEMENT
-  (`protocol-b-planning.md:468-531`) — a different row set from the literature body's six. Reusing
-  the literature rows here would silently under-teach comparison.
+- ~~**`comparison` BODY rows**~~ — **RULED, 2026-07-15. NOT open, and never was the design question
+  this doc called it.** See §3c.
 - **Multi-AO questions** (IGCSE P1 Q3 = AO1+AO2) — the machinery stamps ONE AO onto every row, so
   multi-AO is a shape question, not a gate flag.
+
+---
+
+## §3c. A COMPARATIVE BODY IS TTECEA. THE COMPARISON LIVES IN THE HELPER TEXT
+
+**THE RULING (Neil, 2026-07-15, verbatim):**
+
+> *"The comparative body or comparative rows are actually a lot simpler. They still follow the same
+> TTECEA structure. And actually, the comparisons need to be integrated, so it's still the same
+> structure. The only thing that would change with the comparative body or comparative rows is in
+> the helper text. We just remind the students to integrate the comparisons. That's all."*
+
+**VERIFIED AGAINST THE PROTOCOL BEFORE RECORDING** (`protocol-b-planning.md:468-498`, beats 5–9 per
+aspect). The protocol's own labels are **T → T+E+I → C → E → A**. That IS TTECEA. Neil is right and
+this document was wrong: an earlier revision listed those five elements correctly and still concluded
+"a different row set from the literature body's six", which does not follow from its own evidence.
+**A comparative body reuses the SAME six rows.** Applies to AQA Lang P2 Q4 (16m AO3) and Edexcel
+IGCSE P1 Q5 (22m AO3), and is expected to serve the unseen-poetry comparison variants too.
+
+**What "integrated" means, and why it is a helper-text rule rather than a row rule.** The comparison
+is not a seventh element bolted on the end — it is a MOVE INSIDE each element, which is exactly why
+adding rows for it would teach the wrong thing:
+- **T** — A's concept → B's concept → *integrate*: "Both sources explore [aspect], yet A suggests…
+  whereas B emphasises…". Never "Source A does X. Source B does Y." with no relationship (`:469-475`).
+- **T+E+I** — both sources, then: "A chose [technique]; B chose [technique]. What does that CHOICE
+  reveal?" (`:476-480`).
+- **C** — a detail in EACH source, each bridged micro-to-macro, then the contrast (`:481-485`).
+- **E** — the four-fold sequence for EACH source, then "A creates [effect] while B creates
+  [effect]…" (`:486-490`).
+- **A** — each writer's purpose, the explicit purpose-comparison as its own move, then the
+  JUDGEMENT that earns the top band: "which writer's approach is more effective?" (`:491-498`).
+
+**Two mechanism calls, made from the ruling (Neil shown, 2026-07-15):**
+1. **Effects stay TWO rows, not four.** The protocol wants two distinct effect sentences PER SOURCE
+   (four per paragraph, `:486-488`). Four rows would break "the same structure" — so each of the two
+   effect rows carries both sources, and the helper text says so. The row is a plan line, not a
+   sentence counter.
+2. **JUDGEMENT rides in the A row's helper text**, not a new row — same reason.
+
+**Consequence: Q4 is NOT blocked and needs no design session.** This was logged as *"the one real
+design question in the arc"* and as a Fable candidate. It was neither. What it needed was reading the
+protocol's own element labels.
 
 ---
 
