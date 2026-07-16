@@ -208,6 +208,31 @@ analysis · 4. Effect 1 · 5. Effect 2 · 6. Author's purpose.
 (Q2 = 2 paragraphs, a different element set; Q4 = evaluation/AO4, its own set + paragraph count.
 Pull each question's real element set from the protocol/outline builder before building.)
 
+### Which questions get plan+outline · how many paragraphs · which elements (the derivation rule — Neil 2026-07-16)
+Do NOT ask which elements a question has — it DERIVES from these rules + the protocol. Full per-question
+map (every board/paper): `PROTOCOL-QUESTION-STRUCTURE-MAP.md` (plugin root).
+- **Plan+outline ONLY for questions needing STRUCTURE.** SKIP the basic retrieval ones (no plan/outline):
+  AQA Lang P1 Q1 (list 4 statements), P2 Q1 (choose 4 true statements), and any true/false /
+  mark-per-statement / short-retrieval / MCQ comprehension. Right-or-wrong; we don't teach planning for them.
+- **Paragraph count by marks (default; a protocol may override):** 8→2 body ¶ · 12→3 ¶ · 16→4 ¶ OR 5
+  (short intro + 3 strong body + short conclusion) · 20+/literature essays → full essay (intro+N body+conc).
+  Reading/analysis Qs = **body-only** TTECEA (no intro/conc). Section B extended writing = a whole-answer
+  structure, NOT TTECEA: transactional/persuasive → **IUMVCC** (Intro·Urgency·Method·Vision·Counter·
+  Conclusion); creative/narrative → **story-spine / 7-step scene**.
+- **TTECEA body bedrock** (the reused analytical skeleton — one outline element-row each; source of truth =
+  `OUTLINE_CRITERIA.literature` in wml-assessment.js): 1. Topic Sentence (AO1) · 2. Technique+Evidence+
+  Inference (AO2/AO1, one row) · 3. Close Analysis (AO2) · 4. Effect 1 on Reader (AO2) · 5. Effect 2 on
+  Reader (AO2) · 6. Author's Purpose (AO1/AO3) · 7. Context (AO3 — **only if the Q assesses AO3**).
+  Whole-essay/evaluation adds intro (Hook·Context·Thesis) + conclusion (Restated Thesis·Controlling
+  Concept·Central Purpose·Universal Message); evaluation Qs often use a SHORT intro (thesis only) + SHORT
+  conclusion (restated thesis). Single-AO Qs stamp EVERY element to that AO (AQA Lang P1 Q2/Q3 = AO2; Q4 =
+  AO4 evaluation). TTECEA is the bedrock; other questions ADAPT it (AO restriction, short intro/conc) —
+  continuous transfer of the same skill (Ericsson deliberate practice: work each element one at a time).
+- **Why the outline is element-boxes not a paragraph box:** it forces the student to treat each SENTENCE as
+  a graded unit (every sentence contributes), building the paragraph sentence-by-sentence. The PLAN is the
+  skeleton (elements as separate LINES — a plan, not prose); the OUTLINE makes them work each element into a
+  full sentence.
+
 ### Precedent + the live gap
 - **IUMVCC (AQA P2 Q5) is the working precedent** — its plan sections + outline rows already wire
   this way (`buildIUMVCCOutlineSection`, `_iumvccFieldId`). Mirror its shape, not its literal ids.
