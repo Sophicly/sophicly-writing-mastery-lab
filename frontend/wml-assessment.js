@@ -32819,6 +32819,23 @@
                 prompt: 'How does the structural choice work on the reader’s journey through the text?',
             },
         },
+        // v7.20.146 (Neil's comparative-body ruling — [[feedback_comparative_body_is_ttecea_helper_text_only]]):
+        // a comparative body is the SAME six TTECEA rows; the comparison lives in the HELPER TEXT, not a
+        // new row set. The two effect rows become ONE effect PER SOURCE (Source A / Source B) — the second
+        // slot buys the comparison, not a second effect on the same text. ids never change (write-key safe).
+        // Serves AQA Lang P2 Q4 (16m AO3); reusable by Edexcel IGCSE P1 Q5 + unseen-poetry comparison.
+        comparative: {
+            topic: { prompt: 'A conceptual claim comparing what BOTH writers convey about the topic' },
+            evidence: {
+                label: 'Technique + Evidence + Inference',
+                items: ['Technique named', 'Quote integrated', 'Inference made'],
+                prompt: 'Name the technique, integrate a quote, infer — then weave the comparison between the two sources',
+            },
+            analysis: { prompt: 'Zoom on the sharpest word/choice — and how it differs from the other source' },
+            effects: { label: 'Effect on Reader — Source A', prompt: 'How does Source A’s writer shape the reader’s response? Be specific.' },
+            effects2: { label: 'Effect on Reader — Source B', prompt: 'How does Source B’s writer shape it differently? This is where the comparison lands.' },
+            purpose: { label: 'Writers’ Purposes Compared', prompt: 'Why did each writer make these choices — and how do their purposes differ?' },
+        },
     };
 
     // v7.20.131: the Methodology action-verb families (protocol-b-planning.md:653-655), defined
@@ -34087,6 +34104,10 @@
         'aqa_19th_century':       { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
         'aqa_poetry_anthology':   { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
         'aqa_unseen_poetry':      { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        // v7.20.146: AQA Lang P2 Q4 comparison (16m, AO3) — short thesis-only intro + 3 comparative
+        // TTECEA body ¶ + short thesis-only conclusion (protocol: intro 0.5 + 3×BP 5 + conc 0.5 = 16).
+        // Body rows come via the `comparative` focus overlay; every element stamped AO3.
+        'aqa_language_p2_comparison': { introType: 'thesis_only', concType: 'thesis_only', buildAO: 'AO3', purposeAO: 'AO3' },
         // ── EDUQAS ──
         'eduqas_shakespeare_partA': { introType: 'thesis_only', concType: 'thesis_only' },
         'eduqas_shakespeare_partB': { introType: 'full', concType: 'full', buildAO: 'AO1/AO2', purposeAO: 'AO1' },
@@ -34214,7 +34235,12 @@
     function _resolveBodyOnlyOutline(qId, qType, qMarks, aosRaw, specQ) {
         const board = (state.board || '').toLowerCase().replace(/-/g, '');
         if (board !== 'aqa') return null;
-        if (_specSubjectKey() !== 'language_p1') return null;
+        // v7.20.146 (Neil, P2 outline build): P2 Q3 is the same TTECEA analysis shape as P1 Q2/Q3
+        // (single-AO, <20 marks) — admit language_p2 too. P2's OTHER reading Qs stay OUT of this
+        // body-only path by the `analysis`-type guard below: Q2 = 'short_analysis' (inference),
+        // Q4 = 'comparison' (comparative essay) — each has its own builder.
+        const _sk = _specSubjectKey();
+        if (_sk !== 'language_p1' && _sk !== 'language_p2') return null;
         if (qType !== 'analysis') return null;
         if (!(qMarks > 0 && qMarks < 20)) return null;
         // Per-QUESTION AO truth only — q.aos (authored) else the spec. topicData.aos is a
@@ -34910,7 +34936,13 @@
             // v7.20.107: body-only outline for the sub-essay analysis questions (AQA Lang P1 Q2/Q3).
             // Resolved BEFORE the gate so the gate admits them alongside the >=20 essay path.
             const _bodyOnlyOutline = _resolveBodyOnlyOutline(qId, qType, qMarks, q.aos || specQ?.aos, specQ);
-            if (mode === 'redraft' && qType !== 'multiple_choice' && (qMarks >= 20 || _bodyOnlyOutline)) {
+            // v7.20.146 (Neil, P2 outline build): AQA Lang P2 Q4 = comparison (16m, AO3). NOT body-only
+            // (it has a short intro + conclusion) and NOT >=20, so it needs its own gate admission +
+            // branch. Comparative body = same TTECEA rows via the `comparative` focus overlay (ruling
+            // feedback_comparative_body_is_ttecea_helper_text_only) — not a new element set.
+            const _isP2Comparison = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
+                && _specSubjectKey() === 'language_p2' && qType === 'comparison';
+            if (mode === 'redraft' && qType !== 'multiple_choice' && (qMarks >= 20 || _bodyOnlyOutline || _isP2Comparison)) {
                 if (_bodyOnlyOutline) {
                     // Body-only: N TTECEA paragraphs, no intro/conclusion. Checked BEFORE the
                     // writing branches — an 8-mark analysis Q can never be creative/persuasive,
@@ -34920,6 +34952,14 @@
                         bodyOnly: _bodyOnlyOutline.bodies,
                         stampAO: _bodyOnlyOutline.ao,
                         focus: _bodyOnlyOutline.focus,
+                    });
+                } else if (_isP2Comparison) {
+                    // Short intro + 3 comparative TTECEA body ¶ + short conclusion (spec key forces
+                    // the full-essay path at 16m; the overlay relabels effects → Source A / Source B).
+                    html += dividerHTML(`OUTLINE — ${qId}`);
+                    html += buildOutlineSection(q.aos || specQ?.aos, qId, qMarks, 'aqa_language_p2_comparison', {
+                        focus: 'comparative',
+                        stampAO: 'AO3',
                     });
                 } else if (isCWCourse) {
                     html += dividerHTML(`OUTLINE \u2014 ${qId}`);
