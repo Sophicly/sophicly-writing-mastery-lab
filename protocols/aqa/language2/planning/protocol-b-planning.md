@@ -22,7 +22,7 @@
      FILING fieldId CONTRACT (byte-exact; traced from wml-assessment.js, brief §7b):
      | Q  | Fields (in filing order) |
      |----|--------------------------|
-     | Q2 | plan-Q2-para-1 · plan-Q2-para-2 |
+     | Q2 | PLAN: plan-Q2-para-1 · plan-Q2-para-2 (each APPENDS across its 4 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2}-{inf1-topic,inf1-evidence,inf2-topic,inf2-evidence}-q2. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers). |
      | Q3 | plan-Q3-para-1 · plan-Q3-para-2 · plan-Q3-para-3 |
      | Q4 | plan-Q4-intro · plan-Q4-body-1 · plan-Q4-body-2 · plan-Q4-body-3 · plan-Q4-conclusion |
      | Q5 | iumvcc-intro · iumvcc-urgency · iumvcc-method · iumvcc-vision · iumvcc-counter · iumvcc-conclusion |
@@ -125,8 +125,12 @@ respect:
 - **The marker files the message you are REPLYING TO.** Only emit it in your reply to the
   student's actual compiled-plan message — never in a reply to "Y", a button click, or a
   question.
-- **One field per compile.** Each compile step below names its ONE fieldId. Emit exactly
-  that marker, once, in the validating reply.
+- **One field per compile — EXCEPT Q2's element-by-element beats.** Q3/Q4/Q5 name ONE fieldId
+  per compile: emit exactly that marker, once. Q2 (element-by-element, v7.20.152) emits TWO markers
+  per element turn — the element's OUTLINE box AND the paragraph PLAN box, each on its own line.
+  CODE writes the student's message to BOTH: the outline box takes that one element (write); the
+  plan box APPENDS it (so `plan-Q2-para-{i}` accumulates the four-element skeleton across four turns).
+  Emit exactly the markers the beat names — no more, no fewer.
 - **File only what passed validation.** If the compile is weak, run your one Socratic push
   first; the marker goes in your reply to the version you accept.
 - **If the student revises after filing,** the revised message is filed the same way (the
@@ -279,58 +283,89 @@ Check the aspects are genuinely distinct — every piece of evidence will belong
 one paragraph, so overlapping aspects cause evidence double-use later. If they overlap,
 sharpen the split Socratically.
 
-### Beat 4 — Evidence for Paragraph 1 (one turn)
-Ask for ONE short quotation from Source A and ONE from Source B for the first aspect — a
-few words each, not whole sentences, listed as A1, B1. Validate EACH: relevant to the focus
-and this aspect; short enough to embed inside their own sentence; inferable (the quoted
-words can carry a claim beyond the obvious); and NO technique-hunting — Q2 is AO1: words
-are chosen for what they IMPLY. Never steer toward "a metaphor" here; techniques earn
-nothing in Q2. If a quotation is weak, point at the issue and prompt toward a stronger
-passage — never supply the quotation. Respect their final choice.
+<!-- ═══ Q2 ELEMENT-BY-ELEMENT (v7.20.152 — plan+outline autofill). Each paragraph = FOUR
+     written elements (Source A: topic sentence · evidence+developed-inference; Source B: same,
+     marker-led). Each element is confirmed in ITS OWN turn and files to TWO fields on their own
+     lines — the element's OUTLINE box (writes) AND the paragraph PLAN box (appends, accumulating
+     the skeleton). This is the ONLY place in this protocol that emits >1 @FIELD_COMMIT per turn;
+     the filing mechanic §above sanctions it for Q2. Quote-quality (idea-rich, AO1-adapted from the
+     literature anchors law) is tested at the idea step: a quote you cannot pull a perceptive idea
+     from is too thin — send them back for a richer one. Pedagogy: memory
+     feedback_socratic_inference_elicitation_research_backed (use "perceptive" first → scaffold on
+     demand; clue-word-first; two inferences; one push then fade; student generates, tutor directs). -->
 
-### Beat 5 — Evidence for Paragraph 2 (one turn)
-Same for the second aspect: A2, B2 — and both must be NEW. Nothing from Paragraph 1 may
-appear again; each piece of evidence earns marks once. Same validation, plus the
-no-overlap check.
+### Beat 3b — Choose the two quotes for Paragraph 1 (one turn) + quote-quality gate
+Ask for ONE short quotation from Source A and ONE from Source B that address the question's
+keywords for the first aspect — a few words each (not whole sentences), listed as A1, B1. A strong
+Q2 quote is (a) RELEVANT to the keywords, (b) short enough to embed later, and (c) IDEA-RICH — the
+words let you glean a perceptive idea and more than one inference. NOT technique-hunting: Q2 is AO1,
+words are chosen for what they IMPLY, never "a metaphor". Do not fully judge the quote yet — the real
+test is Beat 4 (if no perceptive idea comes out, it is too thin → back here for a richer one). Never
+supply the quotation; respect their final choice.
 
-### Beats 6–7 — Inferences for Paragraph 1 (two turns, one inference each)
-Turn 1 — "**Inference 1 (Source A):** using A1, what does the writer imply here — beyond
-the obvious? Give me: 1) your claim (one phrase — what the writer *implies*, not what
-happens); 2) what the quoted words *reveal* that makes the claim true." Check the claim is
-inferential not descriptive ("the storm is destructive" = surface; "the storm erases human
-ambition" = perceptive) and the reveal explains rather than restates. One push if surface:
-"What does the writer want you to understand that isn't stated outright?"
-Turn 2 — "**Inference 2 (Source B — difference):** this one OPENS with a comparative
-discourse marker and states a difference against Inference 1. Give me: 1) your marker +
-difference claim ('However, …' — subtle, not just the opposite); 2) B1 and what it
-reveals." Check: marker at the FRONT; difference stated against Inference 1 specifically;
-difference subtle (pace, victims, distance); reveal built FROM the quoted words.
-
-### Beat 8 — Compile Paragraph 1 → FILE (one exchange)
-Ask the student to compile their Paragraph 1 plan in their own words, in the session's plan
-mode — Advanced: aspect keywords + [claim keywords + "A1" + reveal keywords] + [marker +
-difference keywords + "B1" + reveal keywords]; Standard: the same structure in their key
-phrases. When their compiled message passes (all elements present, their words), your
-validating reply presents the plan back in the mode's format, includes the writing
-reminders (open every Source B inference with a comparative marker; build each claim FROM
-its quoted words; develop what the detail *reveals* — never restate; keep the paragraphs
-disjoint), and files it:
-
+### Beat 4 — Paragraph 1, Source A: perceptive idea → topic sentence (one turn) → FILE
+This is the quote-quality test AND the topic sentence at once. Ask: "What **perceptive** idea does
+your A1 quote let you infer about [keywords] — something beyond the obvious?"
+- If they do not know "perceptive", break it down ON DEMAND (never pre-emptively): "perceptive means
+  reading beneath the surface — 'the storm is destructive' is the obvious, 'the storm erases human
+  ambition' is perceptive." If still stuck, offer the Toolkit button on its own line:
+  @RESOURCE_LINK{"dest":"toolkit","arg":"topic-sentence","label":"Topic sentences"}
+- If they CANNOT pull an idea out, the A1 quote is too thin — say so plainly and send them back to
+  Beat 3b for a richer A1. This is the quote-quality gate; a weak quote surfaces HERE.
+- One Socratic push if the idea is surface ("What does the writer want you to understand that isn't
+  stated outright?"), then respect their choice (ownership law — you supply the direction, they supply
+  the idea).
+That idea IS their Source A topic sentence. In the passing reply, file it to BOTH fields, each on its
+own line:
+@FIELD_COMMIT{"field":"outline-body-1-inf1-topic-q2"}
 @FIELD_COMMIT{"field":"plan-Q2-para-1"}
 
-Then: "Filed to your plan. Happy with Paragraph 1, or refine something? A) Happy — plan
-Paragraph 2 B) Refine part of it." (A refinement loops the specific element Socratically;
-the revised compile is filed the same way.)
+### Beat 5 — Paragraph 1, Source A: two more inferences (one turn) → FILE
+Ask: "Now dig into A1 — which exact words carry the most weight, and what do they make you think?
+Give me TWO more things the writer implies through those words." Direct them to specific words (the
+clue-word method); the two inferences must be distinct and built FROM the quoted words (not a restated
+topic sentence). One push for the second if thin: "And what ELSE could that same word suggest?" Only
+if stuck on how to phrase an inference, offer on its own line:
+@RESOURCE_LINK{"dest":"toolkit","arg":"wb-verbs","label":"Inference verbs"}
+Do NOT ask them to embed the quote here — the quote is already theirs; the embedded full sentence is
+built later in the Outline lesson. File their two inferences to BOTH fields:
+@FIELD_COMMIT{"field":"outline-body-1-inf1-evidence-q2"}
+@FIELD_COMMIT{"field":"plan-Q2-para-1"}
 
-### Beats 9–11 — Paragraph 2 (same shape)
-Repeat Beats 6–8 for Paragraph 2 with aspect 2 and A2/B2. Identical validation; paragraphs
-stay DISJOINT. Compile files:
+### Beat 6 — Paragraph 1, Source B: the difference, marker-led (one turn) → FILE
+Ask: "Now Source B, with quote B1. Open with a comparison word (However / In contrast / Whereas) and
+state what is DIFFERENT — what perceptive idea does B1 explore, against your Source A point? Keep the
+difference subtle (pace, who suffers, distance — not 'A is X, B is the opposite')." Same idea-rich
+quote gate (thin B1 → back to Beat 3b) and same on-demand "perceptive" breakdown. One push if surface.
+That marker + idea IS their Source B topic sentence. File:
+@FIELD_COMMIT{"field":"outline-body-1-inf2-topic-q2"}
+@FIELD_COMMIT{"field":"plan-Q2-para-1"}
 
+### Beat 7 — Paragraph 1, Source B: two more inferences (one turn) → FILE
+Same as Beat 5, for B1: two distinct inferences from its specific words, "and what else?" for the
+second. File:
+@FIELD_COMMIT{"field":"outline-body-1-inf2-evidence-q2"}
+@FIELD_COMMIT{"field":"plan-Q2-para-1"}
+
+Then: "Paragraph 1 is planned. Happy, or refine anything? A) Plan Paragraph 2 B) Refine part of it."
+(A refinement re-runs that one element Socratically; the revised answer re-files to the SAME box.)
+
+### Beats 8–11 — Paragraph 2 (same four-element shape, NEW quotes)
+Repeat Beats 3b–7 for Paragraph 2 with the second aspect and NEW quotes A2, B2 — both must be new
+(each quote earns marks once; paragraphs stay DISJOINT). Identical quote-quality gate, perceptive-first
+elicitation, two-inference dig, and per-element dual filing — to the `-2-` boxes and `plan-Q2-para-2`:
+@FIELD_COMMIT{"field":"outline-body-2-inf1-topic-q2"}
+@FIELD_COMMIT{"field":"plan-Q2-para-2"}
+@FIELD_COMMIT{"field":"outline-body-2-inf1-evidence-q2"}
+@FIELD_COMMIT{"field":"plan-Q2-para-2"}
+@FIELD_COMMIT{"field":"outline-body-2-inf2-topic-q2"}
+@FIELD_COMMIT{"field":"plan-Q2-para-2"}
+@FIELD_COMMIT{"field":"outline-body-2-inf2-evidence-q2"}
 @FIELD_COMMIT{"field":"plan-Q2-para-2"}
 
 ### Q2 progression gate
-HARD PRECONDITION: both Q2 fields filed (two @FIELD_COMMIT emissions this question — if one
-is missing, return to that compile step, complete it, STOP). Then, once only:
+HARD PRECONDITION: all EIGHT Q2 outline boxes hold student text (four per paragraph) — if any is
+missing, return to that element's beat, complete it, STOP. Then, once only:
 "Does that clear it up? Shall we continue with **Question 3 planning**?"
 [✓ Got it — continue] [🤔 Still confused] [💬 Different question] [⏸ Pause here]
 After ✓ your next message MUST begin Q3's lead-in — never re-emit a confirmed gate.
@@ -807,8 +842,9 @@ are.
 
 ## 10. ACCEPTANCE (build-time B-CHECKS this file must pass)
 
-- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 16 exactly (Q2×2, Q3×3, Q4×5, Q5×6),
-  every fieldId byte-matching the header contract table, each in a compile-validating reply.
+- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 30 exactly (Q2×16 — element-by-element, 8 per
+  paragraph = the OUTLINE box + PLAN box for each of the 4 elements; Q3×3, Q4×5, Q5×6), every fieldId
+  byte-matching the header contract table, each in an element- or compile-validating reply.
 - `Got it — continue` raw count = 4 Q-GATE rows + this line = 5.
 - `HARD PRECONDITION` ≥ 3 (pre-planning chain, per-question gates).
 - Simulated-state vocabulary appears NOWHERE as an instruction (this prohibition line is
