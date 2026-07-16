@@ -41108,9 +41108,17 @@
             const specQ = lookupQuestionSpec(qId);
             const qMarks = parseInt(specQ?.marks ?? 0)
                 || parseInt((qSection.textContent || '').match(/\[(\d+)\s*marks?\]/i)?.[1] || 0);
+            const qType = specQ?.type || null;
             // SAME resolver the doc builder uses — one gate, so heal and render can never diverge.
-            const shape = _resolveBodyOnlyOutline(qId, specQ?.type || null, qMarks, specQ?.aos, specQ);
-            if (!shape) return;
+            const shape = _resolveBodyOnlyOutline(qId, qType, qMarks, specQ?.aos, specQ);
+            // v7.20.147: Q4 comparison mirrors the render gate (_isP2Comparison, ~34943). It has
+            // its own full-essay builder (short thesis intro + 3 comparative TTECEA ¶ + short conc),
+            // so the body-only resolver returns null for it. Same-commit render+heal law
+            // ([[reference_wml_outline_scaffold_baked_needs_onload_heal]]): .146 shipped the render
+            // branch WITHOUT this heal, so baked P2 Q4 docs never gained the outline on reload.
+            const _isComp = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
+                && _specSubjectKey() === 'language_p2' && qType === 'comparison';
+            if (!shape && !_isComp) return;
 
             // Already has this question's outline? Additive only — never rebuild.
             const already = Array.from(tmp.querySelectorAll('[data-section-type="outline"]'))
@@ -41127,11 +41135,17 @@
 
             const frag = document.createElement('div');
             frag.innerHTML = dividerHTML(`OUTLINE — ${qId}`)
-                + buildOutlineSection(specQ?.aos, qId, qMarks, null, {
-                    bodyOnly: shape.bodies,
-                    stampAO: shape.ao,
-                    focus: shape.focus,
-                });
+                + (shape
+                    ? buildOutlineSection(specQ?.aos, qId, qMarks, null, {
+                        bodyOnly: shape.bodies,
+                        stampAO: shape.ao,
+                        focus: shape.focus,
+                    })
+                    // Q4 comparison: byte-identical to the render branch at ~34960.
+                    : buildOutlineSection(specQ?.aos, qId, qMarks, 'aqa_language_p2_comparison', {
+                        focus: 'comparative',
+                        stampAO: 'AO3',
+                    }));
 
             let after = anchor;
             while (frag.firstChild) {
@@ -41139,7 +41153,9 @@
                 after = after.nextSibling;
             }
             changed = true;
-            healed.push(`${qId}(${shape.bodies}¶/${shape.ao}${shape.focus ? '/' + shape.focus : ''})`);
+            healed.push(shape
+                ? `${qId}(${shape.bodies}¶/${shape.ao}${shape.focus ? '/' + shape.focus : ''})`
+                : `${qId}(comparison/AO3)`);
         });
 
         if (!changed) return;
