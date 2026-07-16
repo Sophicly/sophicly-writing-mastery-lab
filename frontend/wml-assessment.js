@@ -32927,6 +32927,24 @@
                 { id: 'message', label: 'Universal Message', ao: 'AO1', type: 'checkbox', prompt: 'The broader moral or idea that transcends the text' },
             ],
         },
+        // ── Inference (AQA Lang P2 Q2 — infer differences between two sources) ──
+        //
+        // v7.20.148 (Neil, P2 outline build). DEVIATION from the TTECEA bedrock: each paragraph is
+        // a paired Source-A-then-Source-B INFERENCE structure (2026-spec inference-led, not summary),
+        // AO1 only. 2 paragraphs × 4.0 = 8. Element set + wording are copied from the protocol, NOT
+        // invented ([[feedback_student_content_derives_from_protocols_never_assume]]).
+        // Source: protocols/aqa/language2/modules/protocol-a-assessment.md lines 398-476
+        // (also PROTOCOL-QUESTION-STRUCTURE-MAP.md Q2 row). The diagnostic-only cross-source-synthesis
+        // BONUS (+0.5) is a MARKING row, not an outline box — omitted here on purpose.
+        inference: [
+            { id: 'inf1-claim',      label: 'Inference 1 — Source A',           ao: 'AO1', type: 'checkbox', prompt: 'An inferential claim about Source A that goes beyond the obvious — read between the lines, don’t retell.' },
+            { id: 'inf1-develop',    label: 'Inference 1 — Develop',            ao: 'AO1', type: 'checkbox', prompt: 'Develop the inference in detail — your interpretation, not paraphrase.' },
+            { id: 'inf1-quote',      label: 'Inference 1 — Source A Quotation', ao: 'AO1', type: 'checkbox', prompt: 'A judicious, embedded quotation from Source A that supports the inference.' },
+            { id: 'inf2-claim',      label: 'Inference 2 — Source B',           ao: 'AO1', type: 'checkbox', prompt: 'Open with a comparative discourse marker (whereas, by contrast, however) and state the difference in Source B.' },
+            { id: 'inf2-develop',    label: 'Inference 2 — Develop',            ao: 'AO1', type: 'checkbox', prompt: 'Develop the Source B inference in detail — interpretation, not paraphrase.' },
+            { id: 'inf2-quote',      label: 'Inference 2 — Source B Quotation', ao: 'AO1', type: 'checkbox', prompt: 'A judicious, embedded quotation from Source B that supports the inference.' },
+            { id: 'perceptiveness',  label: 'Perceptiveness of the Difference', ao: 'AO1', type: 'checkbox', prompt: 'Show how your Source A and Source B points together answer the question’s focus — the difference, perceptively.' },
+        ],
         // ── IUMVCC (persuasive/transactional writing) ──
         //
         // v7.20.130 — SIX SECTIONS, ONE ROW EACH (Neil 2026-07-15: "it's actually just six
@@ -34415,6 +34433,28 @@
     }
 
     /**
+     * Build the INFERENCE outline (AQA Lang P2 Q2 — infer differences between two sources).
+     * v7.20.148 (Neil, P2 outline build). N paired-inference paragraphs, no intro/conclusion —
+     * the same body-paragraph SHAPE as the body-only path, but a different (AO1 inference) element
+     * set, so it can't reuse `_bodyRowsFor` (which is hardwired to OUTLINE_CRITERIA.literature.body).
+     * fieldIds carry the question suffix (`outline-body-1-inf1-claim-q2`), IDENTICAL to the body-only
+     * convention (§ buildOutlineSection _bodyOnly), so a P2 doc holding Q2+Q3+Q4 outlines can't collide
+     * ([[feedback_key_mismatch_is_the_number_one_recurring_bug]]).
+     */
+    function buildInferenceOutlineSection(partLabel, bodies) {
+        const prefix = partLabel ? ` — ${partLabel}` : '';
+        const _sfx = partLabel ? '-' + String(partLabel).replace(/\s/g, '').toLowerCase() : '';
+        const crits = OUTLINE_CRITERIA.inference;
+        let html = '';
+        for (let i = 1; i <= (bodies || 2); i++) {
+            let rows = '';
+            crits.forEach(c => { rows += outlineRowHTML(c, `outline-body-${i}-${c.id}${_sfx}`); });
+            html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null, rows);
+        }
+        return html;
+    }
+
+    /**
      * Build CW plot outline with two-column criteria layout (v7.15.4: archetype-specific).
      * @param {string} archetypeKey - e.g. 'heros-journey', 'tragedy', 'coming-of-age'
      */
@@ -34942,7 +34982,12 @@
             // feedback_comparative_body_is_ttecea_helper_text_only) — not a new element set.
             const _isP2Comparison = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
                 && _specSubjectKey() === 'language_p2' && qType === 'comparison';
-            if (mode === 'redraft' && qType !== 'multiple_choice' && (qMarks >= 20 || _bodyOnlyOutline || _isP2Comparison)) {
+            // v7.20.148 (Neil): AQA Lang P2 Q2 = inference (short_analysis, 8m, AO1). Its own
+            // paired-inference builder — NOT the body-only TTECEA path (that gates on qType
+            // 'analysis'; Q2 is 'short_analysis'). Below the >=20 threshold, so admitted explicitly.
+            const _isP2Inference = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
+                && _specSubjectKey() === 'language_p2' && qType === 'short_analysis';
+            if (mode === 'redraft' && qType !== 'multiple_choice' && (qMarks >= 20 || _bodyOnlyOutline || _isP2Comparison || _isP2Inference)) {
                 if (_bodyOnlyOutline) {
                     // Body-only: N TTECEA paragraphs, no intro/conclusion. Checked BEFORE the
                     // writing branches — an 8-mark analysis Q can never be creative/persuasive,
@@ -34961,6 +35006,10 @@
                         focus: 'comparative',
                         stampAO: 'AO3',
                     });
+                } else if (_isP2Inference) {
+                    // Q2 inference: 2 paired-inference paragraphs (Source A → Source B), AO1.
+                    html += dividerHTML(`OUTLINE — ${qId}`);
+                    html += buildInferenceOutlineSection(qId, 2);
                 } else if (isCWCourse) {
                     html += dividerHTML(`OUTLINE \u2014 ${qId}`);
                     html += buildCWPlotOutlineSection();
@@ -41118,7 +41167,11 @@
             // branch WITHOUT this heal, so baked P2 Q4 docs never gained the outline on reload.
             const _isComp = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
                 && _specSubjectKey() === 'language_p2' && qType === 'comparison';
-            if (!shape && !_isComp) return;
+            // v7.20.148: Q2 inference — same same-commit render+heal law; short_analysis returns
+            // null from the body-only resolver, so it needs its own admission (mirrors the render gate).
+            const _isInf = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
+                && _specSubjectKey() === 'language_p2' && qType === 'short_analysis';
+            if (!shape && !_isComp && !_isInf) return;
 
             // Already has this question's outline? Additive only — never rebuild.
             const already = Array.from(tmp.querySelectorAll('[data-section-type="outline"]'))
@@ -41142,10 +41195,13 @@
                         focus: shape.focus,
                     })
                     // Q4 comparison: byte-identical to the render branch at ~34960.
-                    : buildOutlineSection(specQ?.aos, qId, qMarks, 'aqa_language_p2_comparison', {
-                        focus: 'comparative',
-                        stampAO: 'AO3',
-                    }));
+                    : _isComp
+                        ? buildOutlineSection(specQ?.aos, qId, qMarks, 'aqa_language_p2_comparison', {
+                            focus: 'comparative',
+                            stampAO: 'AO3',
+                        })
+                        // Q2 inference: byte-identical to the render branch.
+                        : buildInferenceOutlineSection(qId, 2));
 
             let after = anchor;
             while (frag.firstChild) {
@@ -41155,7 +41211,7 @@
             changed = true;
             healed.push(shape
                 ? `${qId}(${shape.bodies}¶/${shape.ao}${shape.focus ? '/' + shape.focus : ''})`
-                : `${qId}(comparison/AO3)`);
+                : _isComp ? `${qId}(comparison/AO3)` : `${qId}(inference/AO1)`);
         });
 
         if (!changed) return;
