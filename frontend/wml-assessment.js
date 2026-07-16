@@ -3846,6 +3846,32 @@
         } catch (e) { console.warn('WML AP-FILE: repair skipped —', e && e.message); }
     }
 
+    // v7.20.145 (celebration-lane hand-off — wml-emit-sophiclyGradeUpdated-on-all-grading-paths):
+    // the WRITING assessment (task='assessment'/'redraft_assessment') was the ONE graded WML path
+    // that NEVER emitted `sophiclyGradeUpdated` — quizzes/MSQ/MSA already do (applyQuizResultToEditor
+    // ~:38518, the CANVAS TASK-SCOPING trap: correct behaviour trapped inside one path). So the
+    // LearnDash focus SPA sidebar refresh AND sophicly-celebration's grade-9 takeover stayed silent
+    // for the hardest-won 9 in the product. Emit the SAME event + detail shape on the
+    // [ASSESSMENT_COMPLETE] closing turn — the guard IS the once-mechanism (the marker appears once
+    // per completion; the consumer re-verifies server-side + dedupes atomically by (user,text,task),
+    // so an extra emit is harmless and a MISSING one is the only failure — no fragile boolean flag
+    // that could suppress a second assessment across SPA nav). Grade = CODE-OWNED _deterministicDocGrade()
+    // (the audited int, never the AI's free arithmetic which mis-bands 9→"Grade 2").
+    function _maybeEmitAssessmentGrade(reply) {
+        try {
+            if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return;
+            if (state.reviewMode) return;
+            if (!/\[ASSESSMENT_COMPLETE\]/i.test(reply || '')) return; // closing turn only
+            const g = _deterministicDocGrade();
+            if (!(g > 0)) { console.warn('WML GradeEmit: closing turn but doc grade is 0/unfiled — emit skipped'); return; }
+            document.dispatchEvent(new CustomEvent('sophiclyGradeUpdated', { detail: {
+                task: state.task, board: state.board, subject: state.subject,
+                text: state.text, grade: g,
+            } }));
+            console.log('WML GradeEmit: sophiclyGradeUpdated →', { task: state.task, text: state.text, grade: g });
+        } catch (e) { console.warn('WML GradeEmit: skipped —', e && e.message); }
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // v7.19.879 (Neil, Phase-1 enhancement a): BLIND SELF-ASSESSMENT WALK.
     // Research-optimal metacognition — the student self-rates each skill element BEFORE
@@ -12897,6 +12923,9 @@
                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                             const _r = res.reply;
                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
+                            // v7.20.145: emit sophiclyGradeUpdated on the writing-assessment closing
+                            // turn — after AP-file settles so the doc grade is final (1400 > 1200).
+                            setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
                             // v7.19.854: engine-owned closing chain — after section fills settle
                             setTimeout(() => _driveClosingChain(_r), 600);
                         }
@@ -22423,6 +22452,9 @@
                                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                                             const _r = res.reply;
                                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
+                                            // v7.20.145: emit sophiclyGradeUpdated on the writing-assessment closing
+                                            // turn — after AP-file settles so the doc grade is final (1400 > 1200).
+                                            setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
                                             // v7.19.854: engine-owned closing chain — after section fills settle
                                             setTimeout(() => _driveClosingChain(_r), 600);
                                         }
