@@ -15539,12 +15539,18 @@
             if (ctxOverflowDrop.children.length > 0) ctxOverflowBtn.style.display = '';
         }
         if (typeof ResizeObserver !== 'undefined') {
-            // v7.19.239: observe the header parent, not ctxBadges. Toolbar is
+            // v7.19.239: observe the header, not ctxBadges. Toolbar is
             // position:absolute so it doesn't take flex space — ctxBadges never
             // shrinks when the window narrows, and the resize observer never
             // fires. Watching the header (which DOES resize with the window)
             // re-runs checkCtxOverflow → _badgesOverlapToolbar() collapses chips.
-            new ResizeObserver(() => requestAnimationFrame(checkCtxOverflow)).observe(ctxBadges.parentElement || ctxBadges);
+            // v7.20.144 (Neil: "resize doesn't update live, only refresh"): the
+            // observer targeted `ctxBadges.parentElement`, but ctxBadges is not
+            // appended to headerRow until BELOW — so parentElement was null at
+            // setup and it silently fell back to observing ctxBadges (which never
+            // resizes). Observe `headerRow` directly: it exists here and is the
+            // element that actually resizes with the window / canvas column.
+            new ResizeObserver(() => requestAnimationFrame(checkCtxOverflow)).observe(headerRow);
         }
         setTimeout(checkCtxOverflow, 200);
 
