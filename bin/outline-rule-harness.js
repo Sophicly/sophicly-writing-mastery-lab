@@ -389,16 +389,42 @@ t('the tone pool crosses sections too (Vision tones reachable from the Introduct
 t('an unknown kind yields an empty pool rather than throwing',
   POOL('nonsense-kind', []).length, 0);
 
-// A `choice` completes exactly like a dropdown — same {selected} shape, so nothing re-keys.
+// v7.20.137: `choice` is now MULTI-select ({picked,free}, ≥1), like devices — but it still reads a
+// legacy single {selected} (a .134-.136 save) as one pick, so no saved outline loses its choice.
 const ch = { id: 'x', controls: [{ id: 'tone', label: 'Tone', type: 'choice', kind: 'tone', items: ['Urgent'] }] };
-t('choice with nothing selected ⇒ incomplete', RULE.complete(ch, { c: { tone: {} } }, true), false);
-t('choice with a RECOMMENDED value ⇒ complete',
+t('choice with nothing chosen ⇒ incomplete', RULE.complete(ch, { c: { tone: {} } }, true), false);
+t('choice with ONE picked ⇒ complete', RULE.complete(ch, { c: { tone: { picked: ['Urgent'] } } }, true), true);
+t('choice with MULTIPLE picked ⇒ complete (Neil: choose more than one)',
+  RULE.complete(ch, { c: { tone: { picked: ['Urgent', 'Passionate'] } } }, true), true);
+t('choice with the student’s OWN word (free) ⇒ complete',
+  RULE.complete(ch, { c: { tone: { free: ['Defiant'] } } }, true), true);
+t('choice with empty picked+free ⇒ incomplete',
+  RULE.complete(ch, { c: { tone: { picked: [], free: [] } } }, true), false);
+t('LEGACY single {selected} still completes (no saved outline loses its choice)',
   RULE.complete(ch, { c: { tone: { selected: 'Urgent' } } }, true), true);
-t('choice with the student’s OWN value ⇒ complete (it is not fenced to the list)',
-  RULE.complete(ch, { c: { tone: { selected: 'Defiant' } } }, true), true);
-t('choice persists the SAME {selected} a dropdown does (no re-key)',
-  JSON.stringify(RULE.stateOf(ch, { c: { tone: { selected: 'Urgent' } } }, { id: 'tone' })),
-  JSON.stringify({ selected: 'Urgent' }));
+
+// ⭐ v7.20.137 — THE REALISTIC FULL-ROW TEST. Neil filled a whole Introduction and the section
+// tick stayed grey. The tick derives from rule.complete on the SHIPPED intro criterion, so assert
+// that directly: the exact controls the student sees (hook + verb + tone + devices + effect), all
+// satisfied + text ⇒ complete; drop any ONE ⇒ incomplete. This is the source of truth the DOM
+// reader's data-ctl-done stamp mirrors.
+const introCrit = IU.find(s => s.id === 'intro').criteria[0];
+const introFull = { c: {
+  hook: { checked: [1] },            // one hook (choice checklist ⇒ ≥1)
+  verb: { picked: ['Movement (surge, pulse, sweep)'] },
+  tone: { picked: ['Passionate'] },
+  devices: { picked: ['Me', 'Sm'] },
+  effect: { free: ['Leads to a conclusion'] },
+} };
+t('SHIPPED Introduction: every control filled + text ⇒ COMPLETE (Neil\'s exact case)',
+  RULE.complete(introCrit, introFull, true), true);
+t('SHIPPED Introduction: filled but NO text ⇒ incomplete',
+  RULE.complete(introCrit, introFull, false), false);
+['hook', 'verb', 'tone', 'devices', 'effect'].forEach(drop => {
+  const partial = { c: Object.assign({}, introFull.c) };
+  delete partial.c[drop];
+  t(`SHIPPED Introduction: missing ${drop} ⇒ incomplete`, RULE.complete(introCrit, partial, true), false);
+});
 
 const KNOWN_TYPES = ['checklist', 'checkbox', 'dropdown', 'techniques', 'choice', 'effects'];
 IU.forEach(sec => sec.criteria.forEach(crit => {

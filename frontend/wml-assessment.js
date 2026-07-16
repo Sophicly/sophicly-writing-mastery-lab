@@ -1370,11 +1370,19 @@
         return out;
     }
 
-    function _showChoicePicker(ctl, sectionLabel, current, onPick) {
+    // v7.20.137 (Neil: "all of them should allow choosing more than one"): the choice picker is now
+    // MULTI-select, matching devices/effects. `sel` is {picked,free}; picked = chosen item strings
+    // (recommended OR "also available"), free = the student's own words. Same removable-chip column,
+    // same {picked,free} state, same completion rule as every other picker.
+    function _showChoicePicker(ctl, sectionLabel, sel, onChange) {
         if (document.querySelector('.swml-tech-picker-overlay')) return; // any picker open blocks another
         const recommended = Array.isArray(ctl.items) ? ctl.items : [];
         const others = ctl.kind ? _iuChoicePool(ctl.kind, recommended) : [];
-        let value = current || '';
+        let picked = Array.isArray(sel.picked) ? sel.picked.slice() : [];
+        let free = Array.isArray(sel.free) ? sel.free.slice() : [];
+        const onList = (v) => picked.some(x => x.toLowerCase() === v.toLowerCase());
+        const inFree = (v) => free.some(x => x.toLowerCase() === v.toLowerCase());
+        const commit = () => onChange({ picked: picked.slice(), free: free.slice() });
 
         const overlay = document.createElement('div');
         overlay.className = 'swml-tech-picker-overlay swml-tech-picker-appear';
@@ -1383,7 +1391,7 @@
         const head = document.createElement('div');
         head.className = 'swml-tech-head';
         const title = document.createElement('strong');
-        title.textContent = ctl.label || 'Choose one';
+        title.textContent = ctl.label || 'Choose';
         head.appendChild(title);
         const closeBtn = document.createElement('button');
         closeBtn.type = 'button';
@@ -1398,22 +1406,19 @@
         confirmBtn.type = 'button';
         confirmBtn.className = 'swml-tech-confirm';
 
-        const paintFoot = () => { confirmBtn.textContent = value ? 'Confirm' : 'Done'; };
-
+        const toggle = (label) => {
+            const i = picked.findIndex(x => x.toLowerCase() === label.toLowerCase());
+            if (i >= 0) picked.splice(i, 1); else picked.push(label);
+            commit(); render();
+        };
         const mk = (label) => {
             const b = document.createElement('button');
             b.type = 'button';
-            const on = String(value).toLowerCase() === String(label).toLowerCase();
+            const on = onList(label);
             b.className = 'swml-tech-pick' + (on ? ' is-on' : '');
             b.setAttribute('aria-pressed', on ? 'true' : 'false');
             b.textContent = label;
-            b.addEventListener('click', () => {
-                // Single-select: picking the chosen one again clears it, so a student can back out
-                // of a choice without hunting for a "none" option.
-                value = on ? '' : label;
-                onPick(value);
-                render();
-            });
+            b.addEventListener('click', () => toggle(label));
             return b;
         };
 
@@ -1421,7 +1426,7 @@
             body.innerHTML = '';
             const lede = document.createElement('p');
             lede.className = 'swml-tech-lede';
-            lede.textContent = 'Pick the one that fits what you are actually writing. The first group is what we recommend here; anything else is still yours to choose.';
+            lede.textContent = 'Pick what fits what you are writing — you can layer more than one. The first group is what we recommend here; anything else is still yours to choose.';
             body.appendChild(lede);
 
             if (recommended.length) {
@@ -1461,18 +1466,16 @@
             input.type = 'text';
             input.className = 'swml-tech-input';
             input.placeholder = 'Name it yourself…';
-            const isOwn = value && !recommended.concat(others).some(i => String(i).toLowerCase() === String(value).toLowerCase());
-            if (isOwn) input.value = value;
             const add = document.createElement('button');
             add.type = 'button';
             add.className = 'swml-tech-add';
-            add.textContent = 'Use this';
+            add.textContent = 'Add';
             const useOwn = () => {
                 const v = input.value.trim();
                 if (!v) return;
-                value = v;
-                onPick(value);
-                render();
+                if (!inFree(v) && !onList(v)) free.push(v);
+                input.value = '';
+                commit(); render();
             };
             add.addEventListener('click', useOwn);
             input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); useOwn(); } });
@@ -1480,7 +1483,43 @@
             freeRow.appendChild(input); freeRow.appendChild(add);
             own.appendChild(freeRow);
             body.appendChild(own);
-            paintFoot();
+
+            // The running selection — removable, matching every other picker.
+            const chosen = document.createElement('div');
+            chosen.className = 'swml-tech-section';
+            const ch = document.createElement('h4');
+            ch.className = 'swml-tech-group';
+            ch.textContent = `Your choice (${picked.length + free.length})`;
+            chosen.appendChild(ch);
+            const crow = document.createElement('div');
+            crow.className = 'swml-tech-row';
+            if (!picked.length && !free.length) {
+                const none = document.createElement('p');
+                none.className = 'swml-tech-empty';
+                none.textContent = 'None yet. Choose one above.';
+                crow.appendChild(none);
+            }
+            picked.forEach(v => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'swml-tech-pick is-on swml-tech-remove';
+                b.textContent = v;
+                b.addEventListener('click', () => toggle(v));
+                crow.appendChild(b);
+            });
+            free.forEach(v => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'swml-tech-pick is-on swml-tech-remove';
+                b.textContent = v;
+                b.addEventListener('click', () => { free.splice(free.indexOf(v), 1); commit(); render(); });
+                crow.appendChild(b);
+            });
+            chosen.appendChild(crow);
+            body.appendChild(chosen);
+
+            const n = picked.length + free.length;
+            confirmBtn.textContent = n ? `Confirm ${n}` : 'Done';
         }
         render();
 
@@ -9502,15 +9541,28 @@
             }
             groups.forEach(g => {
                 const gtype = g.getAttribute('data-ctl-type') || '';
-                // v7.20.136: `choice` and `techniques` render as buttons/chips with NO native input,
-                // so this DOM reader cannot scrape their state. The row nodeView stamps their live
-                // satisfied-ness onto the group as data-ctl-done (from the SAME WML.outlineRow rule),
-                // and we read that. Without this the section tick never lit once those controls
-                // shipped — a filled Introduction stayed grey (Neil, v7.20.135).
-                if (gtype === 'choice' || gtype === 'techniques') {
-                    if (g.getAttribute('data-ctl-done') !== '1') allFilled = false;
-                    return;
-                }
+                // ⭐ v7.20.137 — THE UNIVERSAL, CONTROL-RENDER-AGNOSTIC READ (Neil: "solve it at the
+                // root… make it a universal fix… I want to reuse the picker elsewhere, even creative
+                // writing"). This reader used to KNOW how each control drew itself — it scraped
+                // input[type=checkbox] and .swml-outline-select. Any control that renders WITHOUT a
+                // native input (every picker: devices, effects, choice, and whatever reuses the
+                // picker next) was invisible to it → a fully-filled section stayed grey. That was the
+                // bug, twice (a checkbox-shaped reader is fragile BY CONSTRUCTION).
+                //
+                // ROOT FIX: the row nodeView stamps EVERY control's satisfied-ness onto data-ctl-done
+                // — computed by the ONE rule, WML.outlineRow.controlOk, from the control's live state
+                // — and this reader trusts that stamp for every control type. A picker now counts
+                // toward completion exactly like a checkbox, and a NEW control type is first-class
+                // for free: render into a .swml-outline-ctl group, get stamped, done. Native scraping
+                // survives ONLY as a fallback for a group with no stamp yet (pre-.137 DOM, or a read
+                // before the first stamp) so the proven path is never lost. See ASSESSMENT-MECHANICS §3b.
+                const stamp = g.getAttribute('data-ctl-done');
+                if (stamp === '1') return;              // satisfied (any control type)
+                if (stamp === '0') { allFilled = false; return; } // stamped, not satisfied
+                // No stamp yet — fall back. A picker has no native input to scrape, so treat an
+                // unstamped picker as not-yet-satisfied (a later stamp will correct it); scrape
+                // native controls the proven way.
+                if (gtype === 'choice' || gtype === 'techniques' || gtype === 'effects') { allFilled = false; return; }
                 const boxes = Array.from(g.querySelectorAll('input[type="checkbox"]'));
                 const sel = g.querySelector('.swml-outline-select');
                 const ctl = {
@@ -24446,9 +24498,8 @@
                     const liveState = (entry) => {
                         // v7.20.131: the technique picker holds its own selection (codes + free
                         // text), not checkbox indices — read it from the entry, not the DOM.
+                        // v7.20.137: techniques, effects AND choice all hold {picked,free} in entry.tech.
                         if (entry.tech) return { picked: entry.tech.picked.slice(), free: entry.tech.free.slice() };
-                        // v7.20.134: a `choice` picker persists the SAME {selected} a dropdown does.
-                        if (entry.choice) return { selected: entry.choice.value || '' };
                         const checked = [];
                         entry.boxes.forEach((c, i) => { if (c.checked) checked.push(i); });
                         const st = { checked };
@@ -24493,44 +24544,7 @@
                             group.appendChild(cl);
                         }
 
-                    if (ctl.type === 'choice') {
-                        // v7.20.134: recommended-here-but-choose-anything. Renders as the same
-                        // record+button affordance the device picker uses, so the column speaks ONE
-                        // vocabulary rather than mixing native selects with pickers.
-                        entry.choice = { value: (st && st.selected) || '' };
-                        const val = document.createElement('div');
-                        val.className = 'swml-tech-chips';
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'swml-tech-more';
-                        const paint = () => {
-                            val.innerHTML = '';
-                            if (entry.choice.value) {
-                                const c = document.createElement('span');
-                                c.className = 'swml-tech-chip';
-                                c.textContent = entry.choice.value;
-                                val.appendChild(c);
-                            }
-                            btn.textContent = entry.choice.value ? 'Change' : 'Choose';
-                        };
-                        entry.choice.paint = paint;
-                        btn.addEventListener('mousedown', e => e.stopPropagation());
-                        btn.addEventListener('click', e => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            _showChoicePicker(ctl, crit.label || '', entry.choice.value, (v) => {
-                                entry.choice.value = v;
-                                paint();
-                                persistControl(entry);
-                                checkRowComplete();
-                                syncSection();
-                                if (dom._syncRowHeight) dom._syncRowHeight();
-                            });
-                        });
-                        paint();
-                        group.appendChild(val);
-                        group.appendChild(btn);
-                    } else if (ctl.type === 'techniques' || ctl.type === 'effects') {
+                    if (ctl.type === 'techniques' || ctl.type === 'effects' || ctl.type === 'choice') {
                         // v7.20.131: the criteria column is 180px — too narrow to OFFER 14 chips
                         // plus the protocol's hints legibly. So the column carries the RECORD
                         // (what they picked) and the overlay does the teaching, where the
@@ -24540,10 +24554,18 @@
                         // only the modal it opens and the noun differ. Effects have no code table,
                         // so their labels are plain strings — _techLabel passes those through
                         // unchanged, and effects only ever populate `free`.
+                        // v7.20.137 (Neil): `choice` (verb/tone/emotion/appeal/objection) joins this
+                        // branch too — it is now MULTI-select ("all of them should allow choosing
+                        // more than one"), so it needs the same removable-chip column and the same
+                        // {picked,free} state as devices. ONE affordance, one paint, one rule across
+                        // every picker; the remove-✕ that "works in devices" now works everywhere.
+                        // A legacy single {selected} (a .134-.136 save) seeds `picked` so no choice
+                        // is lost on load.
                         const _isEffects = ctl.type === 'effects';
-                        const _noun = _isEffects ? 'effects' : 'devices';
+                        const _isChoice = ctl.type === 'choice';
+                        const _noun = _isEffects ? 'effects' : (_isChoice ? '' : 'devices');
                         entry.tech = {
-                            picked: Array.isArray(st.picked) ? st.picked.slice() : [],
+                            picked: Array.isArray(st.picked) ? st.picked.slice() : (st.selected ? [st.selected] : []),
                             free: Array.isArray(st.free) ? st.free.slice() : [],
                         };
                         const chips = document.createElement('div');
@@ -24586,15 +24608,14 @@
                                 });
                                 chips.appendChild(c);
                             });
-                            btn.textContent = all.length ? ('Edit ' + _noun) : ('Choose ' + _noun);
+                            btn.textContent = (all.length ? 'Edit' : 'Choose') + (_noun ? ' ' + _noun : '');
                         };
                         entry.tech.paint = paint;
                         btn.addEventListener('mousedown', e => e.stopPropagation());
                         btn.addEventListener('click', e => {
                             e.stopPropagation();
                             e.preventDefault();
-                            const open = _isEffects ? _showEffectPicker : _showTechniquePicker;
-                            open(entry.tech, (next) => {
+                            const onChange = (next) => {
                                 entry.tech.picked = next.picked;
                                 entry.tech.free = next.free;
                                 paint();
@@ -24602,7 +24623,9 @@
                                 checkRowComplete();
                                 syncSection();
                                 if (dom._syncRowHeight) dom._syncRowHeight();
-                            });
+                            };
+                            if (_isChoice) _showChoicePicker(ctl, crit.label || '', entry.tech, onChange);
+                            else (_isEffects ? _showEffectPicker : _showTechniquePicker)(entry.tech, onChange);
                         });
                         paint();
                         group.appendChild(chips);
@@ -24833,13 +24856,13 @@
                         if (ctl.type === 'checklist' && ctl.items) critH += ctl.items.length * 24;
                         else if (ctl.type === 'checkbox') critH += 24;
                         else if (ctl.type === 'dropdown') critH += 32;
-                        else if (ctl.type === 'techniques' || ctl.type === 'effects') {
+                        else if (ctl.type === 'techniques' || ctl.type === 'effects' || ctl.type === 'choice') {
                             const _s = CTL ? CTL.stateOf(crit, savedState, ctl) : savedState;
-                            const _n = (Array.isArray(_s.picked) ? _s.picked.length : 0)
+                            let _n = (Array.isArray(_s.picked) ? _s.picked.length : 0)
                                 + (Array.isArray(_s.free) ? _s.free.length : 0);
+                            if (!_n && _s.selected) _n = 1; // legacy single-select choice
                             critH += 28 + _n * 22;
                         }
-                        else if (ctl.type === 'choice') critH += 32;
                     });
                     dom.style.minHeight = critH + 'px';
 
@@ -24908,16 +24931,13 @@
                                 // control, so a redraw would silently drop it unless replayed
                                 // here — the chips would empty while the saved doc still held
                                 // the picks (the shape of the collapse-re-default bug class).
+                                // v7.20.137: techniques/effects/choice all replay through entry.tech.
+                                // A legacy single {selected} (a .134-.136 save) seeds picked so a
+                                // redraw keeps a choice made before the multi-select change.
                                 if (entry.tech) {
-                                    entry.tech.picked = Array.isArray(cs.picked) ? cs.picked.slice() : [];
+                                    entry.tech.picked = Array.isArray(cs.picked) ? cs.picked.slice() : (cs.selected ? [cs.selected] : []);
                                     entry.tech.free = Array.isArray(cs.free) ? cs.free.slice() : [];
                                     entry.tech.paint();
-                                }
-                                // v7.20.134: same replay law for the choice picker — its value
-                                // lives in JS, so a redraw drops it unless it is restored here.
-                                if (entry.choice) {
-                                    entry.choice.value = cs.selected || '';
-                                    entry.choice.paint();
                                 }
                             });
                             // v7.20.136: re-stamp after a replay — a redraw restores the JS-held

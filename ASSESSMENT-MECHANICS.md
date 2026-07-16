@@ -311,6 +311,34 @@ Adapters keep only what is genuinely theirs: **text extraction** and the **CW si
 pick-group** (a SECTION rule — one pick completes the group — never a row rule). Anything row
 COMPLETION decides belongs in wml-core. A fourth consumer must adapt, never re-implement.
 
+#### ⭐ THE COMPLETION READ IS CONTROL-RENDER-AGNOSTIC (v7.20.137 — the root fix, twice-earned)
+
+`checkSectionComplete` (adapter #2, the live section tick) used to **scrape the DOM by control
+shape**: `input[type=checkbox]` and `.swml-outline-select`. That is fragile BY CONSTRUCTION — any
+control that renders WITHOUT a native input is invisible to it. When the pickers shipped (devices,
+effects, and the multi-select `choice` for verb/tone/emotion/appeal/objection), a fully-filled
+section stayed grey, because the reader could not see a button-and-chip control. It bit twice
+(v7.20.135, again .136 when `effects` was added and its intercept was missed).
+
+**THE RULE NOW:** the row nodeView **stamps every control's satisfied-ness** onto the group as
+`data-ctl-done` — computed by the ONE rule, `WML.outlineRow.controlOk`, from the control's live
+state (`stampGroups()` runs inside `checkRowComplete`, which `_recomputeAllCompletion` calls on
+*every* row **before** it reads any section). `checkSectionComplete` **trusts the stamp for every
+control type**; native-input scraping survives only as a fallback for a group with no stamp yet.
+So:
+
+> A control counts toward completion by what the RULE says about its state, never by whether this
+> reader recognises how it draws itself. A new control type — **including reusing the picker
+> anywhere else, e.g. creative writing** (Neil, 2026-07-16) — is first-class for free: render into
+> a `.swml-outline-ctl` group, get stamped, done. No edit to the section reader.
+
+Division of labour between the two live/mount readers: **adapter #2 (DOM, stamp)** is the LIVE
+authority — it runs on every toggle (`syncSection`) and every edit (`_recomputeAllCompletion` via
+`onUpdate`). **Adapter #3 (PM attrs)** is the MOUNT authority — it computes from the saved
+`checkState` attr at nodeView render, correct on cold load/reload. `persistState` writes only the
+live `_outlineCheckState` map (never a PM transaction — the v7.14.74 anti-pagination rule), so the
+attr lags a live edit; the DOM/stamp reader covers that window and self-heals within one recompute.
+
 **Row capabilities:**
 - **`controls: [ …N… ]` (v7.20.129)** — a multi-control row. A criterion WITHOUT it is a
   single-control row and behaves **byte-identically to v7.20.128** (literature, CW and para-AO all
@@ -321,6 +349,18 @@ COMPLETION decides belongs in wml-core. A fourth consumer must adapt, never re-i
 - **`choice: true`** — ≥1 ticked. No flag ⇒ every item required. **This is a pedagogy decision, not
   a UX one — see PEDAGOGY.md §3b** (the protocol says LAYERABLE ⇒ choice; the protocol names ONE ⇒
   dropdown).
+- **THE PICKER FAMILY — `techniques` / `effects` / `choice` (v7.20.131–137).** All three are the
+  SAME affordance: a removable-chip **record in the 180px column** + a **body-level modal** that does
+  the teaching (recommended set first, then more, then the student's own words). All persist
+  `{picked, free}` and complete at **≥1** via the shared rule; all are **MULTI-select** (Neil,
+  2026-07-16: "all of them should allow choosing more than one"). They differ only in roster source:
+  `techniques` = the generated `WML_TECHNIQUES` (245, searchable); `effects` = the fixed four-fold
+  `_EFFECTS`; `choice` = the control's own `items` (recommended) + the kind-pool (`_iuChoicePool`,
+  derived from OUTLINE_CRITERIA) + free. `choice` still reads a legacy single `{selected}` (a
+  .134-.136 save) as one pick, so no saved outline loses its value. **Reusable beyond IUMVCC** — the
+  modal is body-level and self-contained; a CW step wanting a picker adds a control of one of these
+  types (or a new roster source) and inherits the column chip, the removable ✕, the completion stamp,
+  and the scroll-isolated themed modal with zero new plumbing.
 - **`locked`** — read-only carryover; satisfied text or not (v7.19.679).
 - **`optional: true` (v7.20.130)** — for protocols that plan a **RANGE** (IUMVCC methodology =
   "2–3 points"). **Empty ⇒ satisfied; started ⇒ finish it** (controls become required the moment the

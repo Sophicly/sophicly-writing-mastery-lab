@@ -3707,20 +3707,18 @@ window.WML = (function() {
             // (protocol-b-planning.md:607/619) — demanding two would teach a rule we don't
             // teach (PEDAGOGY.md §3b). Codes, not names, so a rename in the technique table
             // can never orphan a student's saved pick.
-            // v7.20.136: the effect picker (four-fold: focus/emotions/thoughts/actions) satisfies
-            // exactly like the device picker — ONE chosen effect completes it, same {picked,free}
-            // shape, so nothing new to persist or key.
-            if (c.type === 'techniques' || c.type === 'effects') {
+            // v7.20.136/137: the effect picker (four-fold) AND the choice picker (verb/tone/
+            // emotion/appeal/objection) satisfy exactly like the device picker — ONE chosen item
+            // completes it, same {picked,free} shape. v7.20.137 (Neil: "all of them should allow
+            // choosing more than one") made `choice` MULTI-select, so it joins this branch. It
+            // still reads a legacy single `{selected}` (a .134-.136 saved value) as one pick, so
+            // nothing re-keys and no saved outline loses its choice.
+            if (c.type === 'techniques' || c.type === 'effects' || c.type === 'choice') {
                 const p = Array.isArray(s.picked) ? s.picked.length : 0;
                 const f = Array.isArray(s.free) ? s.free.filter(x => String(x || '').trim()).length : 0;
-                return (p + f) >= 1;
+                return (p + f) >= 1 || (c.type === 'choice' && !!s.selected);
             }
-            // v7.20.134: `choice` is a dropdown that stopped pretending its list was exhaustive —
-            // the protocol's set for THIS section is a RECOMMENDATION, the student may take any
-            // family or name their own (Neil: "the categories are preselected per section, but I
-            // don't think that should be the case… they need to choose"). It persists the SAME
-            // `{selected}` string a dropdown does, so the rule is the same and nothing re-keys.
-            if (c.type === 'dropdown' || c.type === 'choice') return !!s.selected;
+            if (c.type === 'dropdown') return !!s.selected;
             if (c.type === 'checklist') {
                 const need = c.choice ? 1 : Math.max(1, (Array.isArray(c.items) ? c.items.length : 1));
                 return chk >= need;
