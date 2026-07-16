@@ -211,6 +211,16 @@ Pull each question's real element set from the protocol/outline builder before b
 ### Which questions get plan+outline · how many paragraphs · which elements (the derivation rule — Neil 2026-07-16)
 Do NOT ask which elements a question has — it DERIVES from these rules + the protocol. Full per-question
 map (every board/paper): `PROTOCOL-QUESTION-STRUCTURE-MAP.md` (plugin root).
+
+**⛔ ANTI-GUESS GATE (Neil caught this twice 2026-07-16 — trust rule, not cosmetic).** The
+paragraph-count-by-marks rule below is a **FALLBACK/default only — it is a GUESS.** A question's REAL
+structure is the PROTOCOL's per-question line, already recorded + `file:line`-cited in
+`PROTOCOL-QUESTION-STRUCTURE-MAP.md`. **Before stating ANY question's structure, READ its map row and
+quote it — NEVER restate structure from the marks rule.** Proof: AQA Lang P2 Q4 = *short Intro (0.5) +
+3 comparative TTECEA BPs + short Conclusion (0.5)*, NOT the "16→4 body paragraphs" the marks rule
+implies — the map had it right; guessing from marks got it wrong. If the map and the marks-rule
+disagree, the map wins (it read the protocol); if the map is silent, read the protocol directly and
+cite it — do not fill the gap with the marks rule.
 - **Plan+outline ONLY for questions needing STRUCTURE.** SKIP the basic retrieval ones (no plan/outline):
   AQA Lang P1 Q1 (list 4 statements), P2 Q1 (choose 4 true statements), and any true/false /
   mark-per-statement / short-retrieval / MCQ comprehension. Right-or-wrong; we don't teach planning for them.
