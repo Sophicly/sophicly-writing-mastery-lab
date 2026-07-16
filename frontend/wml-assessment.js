@@ -9770,6 +9770,63 @@
             }
         } catch (_) { /* never throw */ }
     }
+    // v7.20.138 (Neil): heal docs already polluted by the pre-.138 transfer bug — stray
+    // transferred prose sitting as a loose sibling OUTSIDE a response inputField. RELOCATE the
+    // text INTO the field (never delete → no data loss); idempotent (once moved it's gone, so a
+    // second pass no-ops). RESPONSE sections ONLY: a response holding an inputField never also
+    // holds legit free prose (the language-vs-literature dichotomy at ~14632), so any non-locked
+    // paragraph in a field-bearing response IS stray. Runs under _migrationActive (suppresses the
+    // section-guard + fill-scroll); explicit saveCanvasContent persists the healed doc. PM
+    // transactions only (never a raw DOM write — the NodeView foreign-mutation law).
+    function _healStrayResponseProse() {
+        try {
+            if (!canvasEditor || state.reviewMode) return;
+            var moved = 0, guard = 0;
+            while (guard++ < 60) {
+                var job = null;
+                canvasEditor.state.doc.descendants(function(node, pos) {
+                    if (job) return false;
+                    if (node.type.name !== 'sectionBlock') return false;
+                    if (!node.attrs || node.attrs.sectionType !== 'response') return false;
+                    var fld = null, stray = null;
+                    node.forEach(function(child, offset) {
+                        if (!fld && child.type.name === 'inputField') fld = { node: child, pos: pos + 1 + offset };
+                    });
+                    if (!fld) return false; // literature response (free prose) — leave untouched
+                    node.forEach(function(child, offset) {
+                        if (stray) return;
+                        if (child.type.name === 'paragraph'
+                            && !(child.attrs && (child.attrs.locked === true || child.attrs.locked === 'true'))
+                            && (child.textContent || '').trim()) {
+                            stray = { from: pos + 1 + offset, to: pos + 1 + offset + child.nodeSize, text: (child.textContent || '').trim() };
+                        }
+                    });
+                    if (stray) { job = { field: fld, stray: stray }; return false; }
+                    return false;
+                });
+                if (!job) break;
+                var fNode = job.field.node, fPos = job.field.pos;
+                var schema = canvasEditor.schema;
+                var hb = schema.nodes.hardBreak;
+                var fieldEmpty = (fNode.textContent || '').trim() === '';
+                var innerEnd = fPos + fNode.nodeSize - 1;
+                var ins = (fieldEmpty || !hb) ? [schema.text(job.stray.text)] : [hb.create(), schema.text(job.stray.text)];
+                _migrationActive = true;
+                try {
+                    var tr = canvasEditor.state.tr;
+                    tr.insert(innerEnd, ins);
+                    tr.delete(tr.mapping.map(job.stray.from), tr.mapping.map(job.stray.to));
+                    canvasEditor.view.dispatch(tr);
+                } finally { _migrationActive = false; }
+                moved++;
+            }
+            if (moved) {
+                console.log('WML v7.20.138: relocated', moved, 'stray response paragraph(s) into their inputField');
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion();
+            }
+        } catch (e) { console.warn('WML v7.20.138: stray-prose heal error (non-fatal)', e && e.message); }
+    }
     // v7.19.774: reset the MARKING OUTPUT on a fresh assessment chat (Clear-chat restart).
     // ROOT for "the Protocol Progress sidebar still shows all-complete after I clear the
     // chat" (Neil, R&J AQA): the sidebar (_buildLitSidebarModel) is CONTENT-gated — it reads
@@ -14626,6 +14683,38 @@
             }
         } catch (_) {}
         return null;
+    }
+    // v7.20.138 (Neil: "nowhere outside the input areas should be editable on ANY WML
+    // document"): the UNIVERSAL editability invariant. A section whose writing surface is a
+    // FIELD (inputField/outlineRow) has EXACTLY that field as its editable surface — the body
+    // around it is scaffold, and a loose click there must not accept typing/paste/drop. Returns
+    // true when `pos` sits in such a FIELD-ONLY section but OUTSIDE its field. Derived purely
+    // from doc structure (no task/course opt-in) — the ONE-CONCEPT-TWO-SCAFFOLDS root (~14632):
+    //   • language answer/plan/outline sections = field(s) + locked scaffold, NO free prose → block the gaps
+    //   • literature essays = free paragraphs, NO field → returns false, body stays editable
+    //   • CN/notes sections = field(s) + student free-prose notes → hasFreeProse true → returns
+    //     false, so the notes surface is NEVER blocked (the mix-section guard — no over-lock).
+    // Fail-OPEN on any glitch so a student is never trapped mid-edit.
+    function _swmlSectionFieldOnly(state, pos) {
+        try {
+            const $p = state.doc.resolve(Math.max(0, Math.min(pos, state.doc.content.size)));
+            let secDepth = -1;
+            for (let d = $p.depth; d > 0; d--) {
+                if (FIELD_SELECT_ALL_TYPES.includes($p.node(d).type.name)) return false; // inside a field → allowed
+                if ($p.node(d).type.name === 'sectionBlock') { secDepth = d; break; }
+            }
+            if (secDepth < 0) return false; // not in a section (the doc-root guard owns that case)
+            const sec = $p.node(secDepth);
+            let hasField = false, hasFreeProse = false;
+            sec.descendants(n => {
+                if (FIELD_SELECT_ALL_TYPES.includes(n.type.name)) { hasField = true; return false; } // don't descend into the field
+                if (n.type.name === 'paragraph'
+                    && !(n.attrs && (n.attrs.locked === true || n.attrs.locked === 'true'))
+                    && (n.textContent || '').trim()) hasFreeProse = true;
+                return true;
+            });
+            return hasField && !hasFreeProse;
+        } catch (_) { return false; }
     }
     // v7.20.123 (Neil: "Cmd+A matters in ALL of the editable input rows — predictions,
     // planning, outlining, responses — it should behave the same in all of them").
@@ -26467,6 +26556,8 @@
                     if (_swmlRangeLocked(view.state, view.state.selection.from, view.state.selection.to)) return true;
                     // v7.19.649: never paste into a doc-root gap (outside every section)
                     if (!_swmlInSection(view.state, view.state.selection.from)) return true;
+                    // v7.20.138: never paste into a field-only section's body (outside its field)
+                    if (_swmlSectionFieldOnly(view.state, view.state.selection.from)) return true;
                     const { $from } = view.state.selection;
                     let insideInputField = false;
                     for (let d = $from.depth; d >= 0; d--) {
@@ -26525,7 +26616,9 @@
                 // still wins.
                 handleTextInput(view, from, to) {
                     // v7.19.649: block locked scaffold AND any doc-root gap (outside every section)
-                    return _swmlRangeLocked(view.state, from, to) || !_swmlInSection(view.state, from);
+                    // v7.20.138: AND a field-only section's body (outside its field)
+                    return _swmlRangeLocked(view.state, from, to) || !_swmlInSection(view.state, from)
+                        || _swmlSectionFieldOnly(view.state, from);
                 },
                 handleKeyDown(view, event) {
                     const k = event.key;
@@ -26538,6 +26631,8 @@
                     const sel = view.state.selection;
                     // v7.19.649: no typing/splitting in a doc-root gap (outside every section)
                     if (!_swmlInSection(view.state, sel.from)) return true;
+                    // v7.20.138: no edit in a field-only section's body (outside its field)
+                    if (_swmlSectionFieldOnly(view.state, sel.from)) return true;
                     if (!sel.empty) return _swmlRangeLocked(view.state, sel.from, sel.to);
                     if (_swmlPosLocked(view.state, sel.from)) return true;
                     // block boundary merges that would pull content into an adjacent locked node
@@ -26548,7 +26643,8 @@
                 handleDrop(view, event) {
                     try {
                         const p = view.posAtCoords({ left: event.clientX, top: event.clientY });
-                        if (p && _swmlPosLocked(view.state, p.pos)) return true;
+                        // v7.20.138: block drops into locked scaffold OR a field-only section's body
+                        if (p && (_swmlPosLocked(view.state, p.pos) || _swmlSectionFieldOnly(view.state, p.pos))) return true;
                     } catch (_) {}
                     return false;
                 },
@@ -26769,6 +26865,11 @@
                 // setContent replacing the first-pass doc.
                 setTimeout(() => { try { _healIumvccOutlineShape(editor); } catch (_) {} }, 1800);
                 setTimeout(() => { try { _healIumvccOutlineShape(editor); } catch (_) {} }, 3800);
+                // v7.20.138: relocate any stray response prose (pre-.138 transfer bug) INTO its
+                // inputField — same staggered/idempotent shape; second pass covers the async
+                // server setContent replacing the first-pass doc.
+                setTimeout(() => { try { _healStrayResponseProse(); } catch (_) {} }, 2000);
+                setTimeout(() => { try { _healStrayResponseProse(); } catch (_) {} }, 4000);
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
@@ -28047,16 +28148,9 @@
             return 'Response';
         }
 
-        /** Resolve which Response section a divider's sections should transfer to */
-        function dividerToResponseLabel(dividerLabel) {
-            const partMatch = dividerLabel.match(/PART\s+([A-Z])/i);
-            if (partMatch) return 'Response \u2014 Part ' + partMatch[1];
-            const qMatch = dividerLabel.match(/(?:PLAN|OUTLINE)\s*\u2014\s*(Q\d+\w*)/i);
-            if (qMatch) return qMatch[1] + ' Response';
-            const editor = document.getElementById('swml-tiptap-editor');
-            if (editor && findSectionByLabel(editor, 'Response \u2014 Part A')) return 'Response \u2014 Part A';
-            return 'Response';
-        }
+        // v7.20.138: dividerToResponseLabel removed \u2014 Transfer All now resolves the response
+        // per-SECTION via resolveResponseLabel (the same resolver the per-section button uses),
+        // which guarantees the provenance slot byte-aligns between the two paths.
 
         /** v7.20.89 (Neil A4): transfer PROVENANCE — remember exactly what each transfer
          *  wrote (per doc + response label + source), so a re-transfer OVERWRITES its own
@@ -28096,9 +28190,102 @@
             }
             return null;
         }
+        /** v7.20.138: the FIRST inputField inside a section node (or null). A response section
+         *  scaffolded the LANGUAGE way holds its answer in an inputField; the LITERATURE way
+         *  holds free paragraphs (null here). Returns {node, pos} at the field's absolute doc pos. */
+        function _firstInputFieldIn(secNode, secPos) {
+            var res = null;
+            secNode.forEach(function(child, offset) {
+                if (res) return;
+                if (child.type.name === 'inputField') res = { node: child, pos: secPos + 1 + offset };
+            });
+            if (res) return res;
+            // fall back to a deep scan (field could sit one level under a wrapper)
+            secNode.descendants(function(n, off) {
+                if (res) return false;
+                if (n.type.name === 'inputField') { res = { node: n, pos: secPos + 1 + off }; return false; }
+                return true;
+            });
+            return res;
+        }
+        /** v7.20.138: the hardBreak-delimited LINES of an inputField's inline content, with
+         *  absolute ranges — the field twin of _findTransferRun (which scans section children).
+         *  Finds the contiguous run of lines whose normalized text equals `parts`. */
+        function _findTransferRunInField(fNode, innerStart, parts) {
+            var lines = [], curText = '', curFrom = innerStart;
+            fNode.forEach(function(child, offset) {
+                var absStart = innerStart + offset;
+                if (child.type.name === 'hardBreak') {
+                    lines.push({ text: _transferNorm(curText), from: curFrom, to: absStart });
+                    curText = ''; curFrom = absStart + child.nodeSize;
+                } else {
+                    curText += child.textContent || '';
+                }
+            });
+            lines.push({ text: _transferNorm(curText), from: curFrom, to: innerStart + fNode.content.size });
+            for (var i = 0; i + parts.length <= lines.length; i++) {
+                var hit = true;
+                for (var j = 0; j < parts.length; j++) {
+                    if (lines[i + j].text !== parts[j]) { hit = false; break; }
+                }
+                if (hit) return { from: lines[i].from, to: lines[i + parts.length - 1].to };
+            }
+            return null;
+        }
+        /** v7.20.138 (Neil): write transferred paragraphs INTO a response inputField (not as a
+         *  loose section sibling OUTSIDE the box — the ROOT of "text ends up outside the input
+         *  area"). Accumulates lines with hardBreaks; OVERWRITES this source's prior UNTOUCHED
+         *  transfer in place (provenance twin of the literature path); appends otherwise — so a
+         *  re-transfer of the SAME outline/plan element replaces just that element's line, and a
+         *  hand-edited line in the response is never clobbered. */
+        function _transferIntoField(field, responseLabel, clean, newParts, slot, suppressScroll) {
+            var fNode = field.node, fPos = field.pos;
+            var schema = canvasEditor.schema;
+            var hb = schema.nodes.hardBreak;
+            function inlineFor(parts) {
+                var out = [];
+                parts.forEach(function(t, i) {
+                    if (i > 0 && hb) out.push(hb.create());
+                    out.push(schema.text(String(t)));
+                });
+                return out;
+            }
+            var innerStart = fPos + 1;
+            var prev = _transferRecall(slot);
+            var range = null;
+            if (prev && prev.length) range = _findTransferRunInField(fNode, innerStart, prev);
+            if (!range) {
+                range = _findTransferRunInField(fNode, innerStart, newParts);
+                if (range) { _transferRemember(slot, newParts); return true; } // already present verbatim
+            }
+            var fieldEmpty = (fNode.textContent || '').trim() === '';
+            canvasEditor.chain().command(function(ctx) {
+                var tr = ctx.tr;
+                if (range) {
+                    tr.replaceWith(range.from, range.to, inlineFor(clean));
+                } else {
+                    var innerEnd = fPos + fNode.nodeSize - 1;
+                    var nodes = inlineFor(clean);
+                    if (!fieldEmpty && hb) nodes = [hb.create()].concat(nodes);
+                    tr.insert(innerEnd, nodes);
+                }
+                return true;
+            }).run();
+            _transferRemember(slot, newParts);
+            saveCanvasContent();
+            if (!suppressScroll) {
+                try {
+                    var _ed = document.getElementById('swml-tiptap-editor');
+                    var _secEl = _ed && findSectionByLabel(_ed, responseLabel);
+                    if (_secEl) _swmlScrollToTop(_secEl, 24);
+                } catch (_) {}
+            }
+            return true;
+        }
+
         /** Write paragraphs into a response sectionBlock via TipTap.
          *  Overwrites this source's prior UNTOUCHED transfer in place; appends otherwise. */
-        function insertIntoResponse(responseLabel, paragraphs, sourceKey) {
+        function insertIntoResponse(responseLabel, paragraphs, sourceKey, suppressScroll) {
             if (!canvasEditor || !paragraphs.length) return false;
             var tPos = null, tNode = null;
             canvasEditor.state.doc.descendants(function(node, pos) {
@@ -28118,6 +28305,15 @@
             });
             var newParts = clean.map(_transferNorm);
             var slot = responseLabel + '||' + (sourceKey || '');
+            // v7.20.138 (Neil): ONE-CONCEPT-TWO-SCAFFOLDS. If this response holds its answer in an
+            // inputField (LANGUAGE papers — AQA Lang P2 Q5 / IUMVCC), the text belongs INSIDE the
+            // field; the old path appended a section-child paragraph, leaving it a loose sibling
+            // OUTSIDE the box. Route to the field-write path (SAME provenance slot, so re-transfer
+            // of a source element replaces it in place). Literature (free paragraphs, no field) below.
+            var field = _firstInputFieldIn(tNode, tPos);
+            if (field) {
+                return _transferIntoField(field, responseLabel, clean, newParts, slot, suppressScroll);
+            }
             var prev = _transferRecall(slot);
             var range = null;
             if (prev && prev.length) range = _findTransferRun(tPos, tNode, prev);
@@ -28136,12 +28332,15 @@
             _transferRemember(slot, newParts);
             saveCanvasContent();
             // v7.20.89 (Neil B8 — universal autofill-scroll law): live fill → bring the
-            // student to the section it landed in.
-            try {
-                var _ed = document.getElementById('swml-tiptap-editor');
-                var _secEl = _ed && findSectionByLabel(_ed, responseLabel);
-                if (_secEl) _swmlScrollToTop(_secEl, 24);
-            } catch (_) {}
+            // student to the section it landed in. (Transfer-All suppresses per-item scroll and
+            // scrolls once after the loop — v7.20.138.)
+            if (!suppressScroll) {
+                try {
+                    var _ed = document.getElementById('swml-tiptap-editor');
+                    var _secEl = _ed && findSectionByLabel(_ed, responseLabel);
+                    if (_secEl) _swmlScrollToTop(_secEl, 24);
+                } catch (_) {}
+            }
             return true;
         }
 
@@ -28267,15 +28466,28 @@
                     var divEl = findSectionByLabel(editor, label);
                     if (!divEl) return;
                     var sections = collectSectionsAfterDivider(divEl, targetType);
-                    var paragraphs = [];
+                    // v7.20.138 (Neil): Transfer All = the per-section transfer applied to EACH
+                    // element under ITS OWN provenance slot (targetType:label — the SAME slot the
+                    // per-section button uses). So a later single-element re-transfer, or a second
+                    // Transfer All, REPLACES that element in place instead of appending a duplicate.
+                    // (The old path joined all elements into ONE 'all:' blob, so a per-element
+                    // re-transfer found no record and appended — the duplicate bug Neil described.)
+                    // Per-item scroll suppressed; scroll to the response ONCE after the loop.
+                    var any = false, lastTarget = null;
                     sections.forEach(function(sec) {
+                        var secLabel = sec.getAttribute('data-section-label') || '';
                         var text = targetType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
-                        if (text) paragraphs.push(text);
+                        if (!text) return;
+                        var tgt = resolveResponseLabel(secLabel);
+                        if (insertIntoResponse(tgt, [text], targetType + ':' + secLabel, true)) { any = true; lastTarget = tgt; }
                     });
-                    if (!paragraphs.length) { flashTransferBtn(btn, false); return; }
-                    var target = dividerToResponseLabel(label);
-                    var ok = insertIntoResponse(target, paragraphs, 'all:' + targetType + ':' + label);
-                    flashTransferBtn(btn, ok);
+                    if (any && lastTarget) {
+                        try {
+                            var rEl = findSectionByLabel(editor, lastTarget);
+                            if (rEl) _swmlScrollToTop(rEl, 24);
+                        } catch (_) {}
+                    }
+                    flashTransferBtn(btn, any);
                 });
                 transferLayer.appendChild(btn);
             });
@@ -42755,7 +42967,8 @@ ${html}
                 // v7.19.649: same doc-root + scaffold-lock guard as the main canvas —
                 // students can only type inside the scaffolded boxes, never the gaps.
                 handleTextInput(view, from, to) {
-                    return _swmlRangeLocked(view.state, from, to) || !_swmlInSection(view.state, from);
+                    return _swmlRangeLocked(view.state, from, to) || !_swmlInSection(view.state, from)
+                        || _swmlSectionFieldOnly(view.state, from); // v7.20.138
                 },
                 handleKeyDown(view, event) {
                     const k = event.key;
@@ -42767,11 +42980,13 @@ ${html}
                     if (k !== 'Backspace' && k !== 'Delete' && k !== 'Enter' && !isCut) return false;
                     const sel = view.state.selection;
                     if (!_swmlInSection(view.state, sel.from)) return true;
+                    if (_swmlSectionFieldOnly(view.state, sel.from)) return true; // v7.20.138
                     if (!sel.empty) return _swmlRangeLocked(view.state, sel.from, sel.to);
                     return _swmlPosLocked(view.state, sel.from);
                 },
                 handlePaste(view) {
                     if (!_swmlInSection(view.state, view.state.selection.from)) return true;
+                    if (_swmlSectionFieldOnly(view.state, view.state.selection.from)) return true; // v7.20.138
                     return _swmlRangeLocked(view.state, view.state.selection.from, view.state.selection.to);
                 },
             },

@@ -907,7 +907,7 @@ card's goalposts under the student. Set-once + a one-time heal for existing docs
 stamp). Same forward-snapshot law as stage records (§8b).
 Net once built: the predicate is renamed for its real subject (student experience), not the doc.
 
-**24. One concept, two scaffolds** (⚠️ LIVE — the response body).
+**24. One concept, two scaffolds** (write/edit paths RESOLVED v7.20.138; the underlying SCAFFOLD split is still open — the migration).
 Trigger: the same conceptual thing is BUILT from different nodes in different courses, while looking
 identical to the user. Symptom: a feature keyed on the node works in half the product and silently
 misses the other half — and the user reports it as "why does it behave differently here?", because
@@ -925,6 +925,30 @@ MIGRATION (every existing lit doc), so it is a tracked build, not a drive-by. Un
 is the warning: **before keying anything on `inputField`, check whether the literature docs have one.**
 **Where else to audit:** anything reading response content by node type — word count, extraction,
 autofill targets, `@FIELD_COMMIT` destinations, the outline→response transfer.
+**WRITE + EDIT paths RESOLVED (v7.20.138 — the transfer-outside-the-input-field bug + Neil's "no
+text editable outside an input area" invariant).** Two faces of this class, one structure-aware fix:
+- **Programmatic writes** (`insertIntoResponse`): the old path always appended `{type:'paragraph'}`
+  at the section end → correct for the literature body, but on a language paper it landed the text as
+  a loose sibling OUTSIDE the `inputField`. Now `_firstInputFieldIn` detects the field and routes to
+  `_transferIntoField` (writes INTO the field's inline content, hardBreak-separated,
+  overwrite-in-place provenance via `_findTransferRunInField`); the literature append path is
+  unchanged. **RULE: any programmatic write into a response/plan section must be inputField-aware —
+  text as a loose sibling of an inputField is ALWAYS a bug.**
+- **User edits** (`_swmlSectionFieldOnly`, wired into BOTH editors' handleTextInput/KeyDown/Paste/Drop):
+  a section whose writing surface is a field (inputField/outlineRow) has EXACTLY that field editable —
+  a click in the body around it is refused. Safe by construction via `hasField && !hasFreeProse`:
+  literature essays (free paragraphs, no field) and CN/notes (field + free-prose notes) are NEVER
+  over-blocked. Joins the existing doc-root-gap guard (`_swmlInSection`) and scaffold-lock
+  (`_swmlPosLocked`) as the third editability rule.
+- **Stale docs healed:** `_healStrayResponseProse` (onCreate, staggered/idempotent) RELOCATES any
+  pre-.138 stray prose in a field-bearing RESPONSE section INTO its field (never deletes → no data
+  loss); response-only, so no CN-mix risk.
+- **Transfer All** is now the per-section transfer looped under each element's OWN provenance slot
+  (`resolveResponseLabel(secLabel)` — the same resolver the per-section button uses, so slots
+  byte-align), so a later single-element re-transfer, or a second Transfer All, REPLACES that element
+  in place instead of appending a duplicate. `dividerToResponseLabel` removed (its divider-level
+  resolution could fork the slot key). Per-item scroll suppressed; scrolls to the response once after
+  the loop.
 
 **25. A hardening pass that misses ONE member of the family** (v7.20.125 — a LIVE PROD bug).
 Trigger: a fix is applied to "all the NodeViews that need it" by enumerating the ones the bug was
