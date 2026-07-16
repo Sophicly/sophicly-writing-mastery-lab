@@ -168,6 +168,65 @@ Features added to one DON'T automatically work in the other. Checklist for any n
 
 ---
 
+## ⭐ PLAN → OUTLINE → RESPONSE — the doc lifecycle (SETTLED, do NOT relitigate — Neil, re-confirmed 2026-07-16 after multiple re-derivations)
+
+Every structured question (all EXCEPT no-structure ones — AQA P1 Q1 4-mark list, P2 Q1 true/false)
+runs this Phase-2 redraft lifecycle. **CW (creative writing) is the one TBD — not yet worked; do NOT
+assume this model applies to CW until checked.**
+
+### The three lessons (one continuous doc chain, forward-snapshot)
+1. **Planning lesson** — student works ONLY the PLAN section (Socratic planning protocol chat). The
+   OUTLINE + RESPONSE sections are not shown/worked here.
+2. **Outline lesson** — OUTLINE section shows, **already pre-filled** (from the planning autofill);
+   RESPONSE section is empty. Student converts each outline element into a full sentence, then
+   transfers to RESPONSE.
+3. **Polishing lesson** — same sections + contextual Sophia chat → **Assessment** → **Discuss w/ tutor**.
+**Coexistence law:** the outline sits ALONGSIDE the plan — it never replaces it. Never delete the
+plan-paragraph boxes when a question gains an outline.
+
+### TWO sections, TWO granularities (this is the part that keeps getting re-derived — get it right)
+- **PLAN section = ONE box per paragraph.** That box holds the WHOLE paragraph plan (every element
+  line together, accumulated). Q3 = 3 paragraphs → 3 plan boxes (`plan-Q3-para-1/2/3`). Plan
+  granularity = **paragraph**.
+- **OUTLINE section = one section per paragraph, split into ONE box per ELEMENT.** Outline
+  granularity = **element**. Q3 para-1 outline = 6 element boxes.
+- A paragraph IS its elements — so "per paragraph" (plan) and "per element" (outline) are the SAME
+  content at two layouts, NOT a conflict. Plan = all-in-one-box; outline = split-into-boxes.
+
+### The autofill (how both fill — NO decomposition)
+As the student plans in the chat, they confirm the paragraph's elements **one at a time**. Each
+confirmed element writes to BOTH:
+1. its own **outline element box** (`@FIELD_COMMIT` → the `outlineRow` for that element), AND
+2. that paragraph's **single plan box** (the element is appended to `plan-Q{n}-para-{i}`).
+The elements are already separate AT CAPTURE, so this is a copy to two destinations — **never an AI
+split / paraphrase after the fact.** `@FIELD_COMMIT` carries the student's VERBATIM words (never
+round-trips through the LLM — ownership law). Plan box accumulates; outline boxes stay separate.
+
+### Q3 paragraph elements (6; ×3 paragraphs). Q2/Q4 DIFFER — read the protocol, do not assume.
+1. Topic sentence · 2. Technical terms + evidence + inference *(ONE element/line)* · 3. Close
+analysis · 4. Effect 1 · 5. Effect 2 · 6. Author's purpose.
+(Q2 = 2 paragraphs, a different element set; Q4 = evaluation/AO4, its own set + paragraph count.
+Pull each question's real element set from the protocol/outline builder before building.)
+
+### Precedent + the live gap
+- **IUMVCC (AQA P2 Q5) is the working precedent** — its plan sections + outline rows already wire
+  this way (`buildIUMVCCOutlineSection`, `_iumvccFieldId`). Mirror its shape, not its literal ids.
+- **THE READING-Q GAP (the planning arc):** Q2/Q3/Q4 outlines already RENDER element boxes
+  (`outline-body-{i}-{elementId}-q{N}`, `-q{N}` suffix added v7.20.107) but the reading-Q **planning
+  protocol never emits `@FIELD_COMMIT` to them** → outline stays empty (Neil's "no outline sections
+  filled for Q2/Q3/Q4"). The fix is protocol + wiring (Opus lane, pedagogy already ruled — NOT
+  Fable): make the reading-Q planning chat confirm element-by-element and emit to each outline
+  element box + the paragraph plan box. **Byte-trace every fieldId pair before shipping**
+  (key-mismatch = #1 recurring bug). Only `aqa/language2/planning/protocol-b-planning.md` emits
+  `@FIELD_COMMIT` today; ~others emit 0.
+- Node types: PLAN boxes = `inputField`; OUTLINE boxes = `outlineRow`; `@FIELD_COMMIT` fills both.
+  Outline shape is BAKED into the saved doc → element/scaffold changes need an on-load heal.
+
+Fuller detail + the 3-lesson forward-snapshot chain: memory
+`reference_wml_planning_outline_response_lesson_flow`.
+
+---
+
 ## ASSESSMENT ARCHITECTURE (v7.12.22+)
 
 Three entry paths into the assessment canvas:
