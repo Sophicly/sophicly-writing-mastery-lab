@@ -32929,21 +32929,28 @@
         },
         // ── Inference (AQA Lang P2 Q2 — infer differences between two sources) ──
         //
-        // v7.20.148 (Neil, P2 outline build). DEVIATION from the TTECEA bedrock: each paragraph is
-        // a paired Source-A-then-Source-B INFERENCE structure (2026-spec inference-led, not summary),
-        // AO1 only. 2 paragraphs × 4.0 = 8. Element set + wording are copied from the protocol, NOT
-        // invented ([[feedback_student_content_derives_from_protocols_never_assume]]).
-        // Source: protocols/aqa/language2/modules/protocol-a-assessment.md lines 398-476
-        // (also PROTOCOL-QUESTION-STRUCTURE-MAP.md Q2 row). The diagnostic-only cross-source-synthesis
-        // BONUS (+0.5) is a MARKING row, not an outline box — omitted here on purpose.
+        // v7.20.149 (Neil, from the AQA mark-scheme indicative standard, Level 4 exemplar). Each
+        // paragraph = a paired Source-A-then-Source-B inference (2026 inference-led spec), AO1 only,
+        // 2 ¶ × 4.0 = 8. Structure decoded from the exemplar ("The train in Source A reflects…" →
+        // topic sentence; "…'mail van', 'dining car'…" → evidence; "…showing both the advancement…"
+        // → developed inference; "This relative luxury is a complete contrast to Source B…" → marker
+        // + topic sentence; then B evidence + developed inference). So each source part = THREE
+        // written elements: perceptive topic sentence (the inferential claim) → evidence (embedded
+        // quote) → developed inference. SIX boxes, not seven: the mark scheme's separate
+        // "Perceptiveness of the difference" (1.0) is a HOLISTIC quality of the pair, scored not
+        // written — never its own box. The "aspect" is realised AS the Source A topic sentence, not a
+        // separate element. Order = claim→quote→develop (exemplar reading order), NOT the marking
+        // table's claim→develop→quote. Wording derived from the exemplar + protocol, not invented
+        // ([[feedback_student_content_derives_from_protocols_never_assume]]).
+        // Source: AQA 8700/2 mark scheme Q2 indicative standard; protocol-a-assessment.md:398-476;
+        // protocol-b-planning.md S3 (Q2 planning); PROTOCOL-QUESTION-STRUCTURE-MAP.md Q2 row.
         inference: [
-            { id: 'inf1-claim',      label: 'Inference 1 — Source A',           ao: 'AO1', type: 'checkbox', prompt: 'An inferential claim about Source A that goes beyond the obvious — read between the lines, don’t retell.' },
-            { id: 'inf1-develop',    label: 'Inference 1 — Develop',            ao: 'AO1', type: 'checkbox', prompt: 'Develop the inference in detail — your interpretation, not paraphrase.' },
-            { id: 'inf1-quote',      label: 'Inference 1 — Source A Quotation', ao: 'AO1', type: 'checkbox', prompt: 'A judicious, embedded quotation from Source A that supports the inference.' },
-            { id: 'inf2-claim',      label: 'Inference 2 — Source B',           ao: 'AO1', type: 'checkbox', prompt: 'Open with a comparative discourse marker (whereas, by contrast, however) and state the difference in Source B.' },
-            { id: 'inf2-develop',    label: 'Inference 2 — Develop',            ao: 'AO1', type: 'checkbox', prompt: 'Develop the Source B inference in detail — interpretation, not paraphrase.' },
-            { id: 'inf2-quote',      label: 'Inference 2 — Source B Quotation', ao: 'AO1', type: 'checkbox', prompt: 'A judicious, embedded quotation from Source B that supports the inference.' },
-            { id: 'perceptiveness',  label: 'Perceptiveness of the Difference', ao: 'AO1', type: 'checkbox', prompt: 'Show how your Source A and Source B points together answer the question’s focus — the difference, perceptively.' },
+            { id: 'inf1-topic',    label: 'Source A — Perceptive Topic Sentence',          ao: 'AO1', type: 'checkbox', prompt: 'Open the paragraph with a perceptive, inferential claim about Source A — what the writer implies beyond the obvious.' },
+            { id: 'inf1-evidence', label: 'Source A — Evidence',                            ao: 'AO1', type: 'checkbox', prompt: 'A judicious, embedded quotation from Source A that your claim is built from.' },
+            { id: 'inf1-develop',  label: 'Source A — Developed Inference',                 ao: 'AO1', type: 'checkbox', prompt: 'Develop the inference — explain what the quoted words reveal. Don’t restate.' },
+            { id: 'inf2-topic',    label: 'Source B — Discourse Marker + Perceptive Topic Sentence', ao: 'AO1', type: 'checkbox', prompt: 'Open with a comparative discourse marker (However, In contrast, Whereas), then make a perceptive claim stating the difference against your Source A point.' },
+            { id: 'inf2-evidence', label: 'Source B — Evidence',                            ao: 'AO1', type: 'checkbox', prompt: 'A judicious, embedded quotation from Source B.' },
+            { id: 'inf2-develop',  label: 'Source B — Developed Inference',                 ao: 'AO1', type: 'checkbox', prompt: 'Develop the Source B inference — explain what the quoted words reveal. Don’t restate.' },
         ],
         // ── IUMVCC (persuasive/transactional writing) ──
         //
@@ -41173,10 +41180,33 @@
                 && _specSubjectKey() === 'language_p2' && qType === 'short_analysis';
             if (!shape && !_isComp && !_isInf) return;
 
-            // Already has this question's outline? Additive only — never rebuild.
-            const already = Array.from(tmp.querySelectorAll('[data-section-type="outline"]'))
-                .some(s => (s.getAttribute('data-section-label') || '').endsWith(`— ${qId}`));
-            if (already) return;
+            // Already has this question's outline?
+            let _staleOutlineToRemove = null;
+            const existing = Array.from(tmp.querySelectorAll('[data-section-type="outline"]'))
+                .filter(s => (s.getAttribute('data-section-label') || '').endsWith(`— ${qId}`));
+            if (existing.length) {
+                // v7.20.149: the Q2 inference outline was reshaped 7→6 (Neil, from the mark-scheme
+                // exemplar). The additive heal cannot fix a STALE baked shape, so reshape it here —
+                // but ONLY the inference case, and ONLY when no row holds student text. Autofill is
+                // unwired today so every inference box is empty; the text-guard keeps this safe once
+                // it isn't. Body-only/comparison stay additive-only (their shapes are unchanged).
+                if (!_isInf) return;
+                const curFirst = `outline-body-1-${OUTLINE_CRITERIA.inference[0].id}-q2`;
+                const isCurrent = existing.some(s =>
+                    s.querySelector(`[data-outline-row][data-field-id="${curFirst}"]`));
+                if (isCurrent) return; // already the current shape — idempotent no-op
+                // Student text lives as the row's own content in the saved HTML (criteria panel is
+                // nodeView-rendered, never serialised) — same detection as _healIumvccOutlineShape.
+                const holdsText = existing.some(s =>
+                    Array.from(s.querySelectorAll('[data-outline-row]'))
+                        .some(r => (r.textContent || '').trim().length > 0));
+                if (holdsText) {
+                    console.warn('[WML heal v7.20.149] Q2 inference outline is a stale shape but holds '
+                        + 'student text — left untouched (needs a carrying migration, not a reshape).');
+                    return;
+                }
+                _staleOutlineToRemove = existing; // remove only AFTER the plan anchor is confirmed (below)
+            }
 
             // Anchor: after this question's LAST plan section (outline sits between plan and
             // response, matching the fresh builder's order). No plan yet → skip; migrateMissingPlans
@@ -41184,6 +41214,8 @@
             const planSections = Array.from(tmp.querySelectorAll('[data-section-type="plan"]'))
                 .filter(s => (s.getAttribute('data-section-label') || '').endsWith(`— ${qId}`));
             if (!planSections.length) return;
+            // Safe now the anchor exists: drop the stale empty outline so the fresh shape replaces it.
+            if (_staleOutlineToRemove) _staleOutlineToRemove.forEach(s => s.remove());
             const anchor = planSections[planSections.length - 1];
 
             const frag = document.createElement('div');

@@ -100,6 +100,18 @@ The derivation rules (para-count-by-marks, skip-list, TTECEA bedrock) live in `C
   - [optional BONUS, Topic 1 Phase 1 diagnostic ONLY] Integrated cross-source synthesis beyond the pair (AO1) — +0.5
 - _Note:_ DEVIATION from TTECEA bedrock: NOT a TTECEA paragraph — each paragraph is a paired Source-A-then-Source-B INFERENCE structure (2026-spec inference-led, not summary), AO1 only. 2 paragraphs x 4.0 = 8. structureType='other' because the schema's ttecea-body label would misrepresent this shape.
 - _Source:_ `protocols/aqa/language2/modules/protocol-a-assessment.md lines 398-476`
+- **⭐ OUTLINE (planning) STRUCTURE — SETTLED (Neil, 2026-07-16, from the AQA mark-scheme Level 4 indicative-standard exemplar). This is what the OUTLINE boxes render + what the planning autofill must emit — DERIVED from the exemplar, not the marking table:**
+  Decoded from the exemplar ("The train in Source A reflects significant progress…" → topic sentence · "…'mail van', 'a dining car', 'five sleeping cars'…" → evidence · "…showing both the advancement… and the purpose of rail travel…" → developed inference · "This relative luxury is a complete contrast to Source B, where the steam engine is an earlier model…" → discourse marker + topic sentence · then Source B evidence + developed inference). Each **source part = THREE written elements**, so **6 outline boxes per paragraph, ×2 paragraphs:**
+  1. Source A — **Perceptive Topic Sentence** (the inferential claim beyond the obvious)
+  2. Source A — **Evidence** (judicious embedded quotation)
+  3. Source A — **Developed Inference** (what the quoted words reveal; develop, don't restate)
+  4. Source B — **Discourse Marker + Perceptive Topic Sentence** (comparative pivot + the perceptive difference vs the Source A point)
+  5. Source B — **Evidence**
+  6. Source B — **Developed Inference**
+  - **6 boxes, NOT 7.** The topic sentence **IS** the claim (not a separate paragraph-level "aspect" box). The mark scheme's separate **"Perceptiveness of the difference" (1.0)** is a **HOLISTIC quality of the A+B pair, scored not written** — it is NEVER its own outline box. Order = **claim → quote → develop** (exemplar reading order), NOT the marking table's claim→develop→quote.
+  - **Assessment protocol: NO structural edit needed** — its 6 half-mark criteria (lines 423-428) already map 1:1 to the 6 elements; perceptiveness (line 429, 1.0) stays a holistic quality mark. (Optional cosmetics only: relabel criterion 1 "perceptive topic sentence"; reorder the table to claim→quote→develop.)
+  - **Planning protocol: ONE edit for autofill** — Beat 3/8 currently file a separate leading "aspect" (7-element compile); collapse it INTO the Source A perceptive topic sentence → 6 elements. Then wire element-by-element `@FIELD_COMMIT` to each box: `outline-body-{i}-{inf1-topic|inf1-evidence|inf1-develop|inf2-topic|inf2-evidence|inf2-develop}-q2`. (Today the planning protocol emits only `plan-Q2-para-1|2`; outline boxes render empty until this wiring lands — the reading-Q autofill gap.)
+  - _Built:_ `OUTLINE_CRITERIA.inference` + `buildInferenceOutlineSection` (wml-assessment.js), render gate `_isP2Inference`, baked-doc reshape heal in `migrateMissingQOutlines` (v7.20.149).
 
 #### Q3 — Language Analysis — how does the writer use language to... (one source, given lines)
 - **12 marks** · AOs: AO2 · structure: **ttecea-body** · paragraphs: **3**
