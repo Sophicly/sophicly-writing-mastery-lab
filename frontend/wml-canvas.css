@@ -1713,26 +1713,29 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-canvas-light .swml-section-wc { color: #2b8a82; background: rgba(81,218,207,0.16); }
 /* Responsive badges — JS-managed overflow replaces CSS nth-child hiding */
-/* v7.20.141 (Neil): custom gradient ellipsis icon, borderless (the old 1px stroke read as a
-   generic AI outline — brand: no thin outline borders on default controls). Subtle hover fill. */
+/* v7.20.141 ellipsis icon, borderless (no generic AI outline — brand: no thin outline borders).
+   v7.20.142 (Neil): MONOCHROME currentColor matching the fullscreen button; subtle hover fill. */
 .swml-canvas-ctx-overflow {
     background: none; border: none; cursor: pointer; padding: 3px 5px; border-radius: 6px;
+    color: rgba(255,255,255,0.6);
     display: inline-flex; align-items: center; justify-content: center;
     white-space: nowrap; flex-shrink: 0; line-height: 0;
-    transition: background 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease;
 }
-.swml-canvas-ctx-overflow svg { width: 17px; height: 17px; display: block; }
-.swml-canvas-ctx-overflow:hover { background: rgba(81,218,207,0.12); }
+.swml-canvas-ctx-overflow svg { width: 16px; height: 16px; display: block; }
+.swml-canvas-ctx-overflow:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+/* v7.20.142 (Neil): dropdown impeccable pass — dark-theme surface #1c1d1f, hairline border,
+   softer elevation. */
 .swml-canvas-ctx-dropdown {
-    position: absolute; top: 100%; left: 0; margin-top: 4px;
-    display: flex; flex-direction: column; gap: 3px;
-    background: #1e1e2e; border: 1px solid rgba(81,218,207,0.15); border-radius: 8px;
-    padding: 6px; z-index: 20; box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    position: absolute; top: 100%; left: 0; margin-top: 6px;
+    display: flex; flex-direction: column; gap: 4px;
+    background: #1c1d1f; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+    padding: 7px; z-index: 20; box-shadow: 0 10px 28px rgba(0,0,0,0.5);
 }
 .swml-canvas-ctx-dropdown .swml-canvas-ctx-badge { max-width: none; }
-.swml-canvas-light .swml-canvas-ctx-overflow { color: rgba(0,0,0,0.4); border: none; }
-.swml-canvas-light .swml-canvas-ctx-overflow:hover { color: #4D76FD; background: rgba(77,118,253,0.1); }
-.swml-canvas-light .swml-canvas-ctx-dropdown { background: #fff; border-color: rgba(0,0,0,0.08); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.swml-canvas-light .swml-canvas-ctx-overflow { color: rgba(0,0,0,0.45); border: none; }
+.swml-canvas-light .swml-canvas-ctx-overflow:hover { color: rgba(0,0,0,0.75); background: rgba(0,0,0,0.06); }
+.swml-canvas-light .swml-canvas-ctx-dropdown { background: #fff; border-color: rgba(0,0,0,0.08); box-shadow: 0 10px 28px rgba(0,0,0,0.12); }
 /* Topic badge — purple accent */
 .swml-canvas-ctx-topic { background: rgba(83,51,237,0.15); color: #7c6af0; }
 .swml-canvas-light .swml-canvas-ctx-topic { background: rgba(83,51,237,0.08); color: #5333ed; }
