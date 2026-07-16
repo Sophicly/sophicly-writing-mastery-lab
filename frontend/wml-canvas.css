@@ -116,10 +116,11 @@ body.swml-embedded-active .spl-entry {
 #swml-canvas-overlay.swml-canvas-embedded .swml-canvas-ctx-badge {
     flex-shrink: 0; /* Don't crush individual badges — overflow hides extras instead */
 }
-/* Fullscreen toggle button (embedded mode) */
+/* Fullscreen toggle button (embedded mode) — v7.20.141: borderless (brand: no thin outline
+   borders on default controls); subtle hover fill. */
 .swml-canvas-fullscreen-btn {
     background: none;
-    border: 1px solid rgba(255,255,255,0.12);
+    border: none;
     border-radius: 6px;
     color: rgba(255,255,255,0.6);
     cursor: pointer;
@@ -129,14 +130,13 @@ body.swml-embedded-active .spl-entry {
     align-items: center;
     transition: all 0.2s;
 }
+.swml-canvas-fullscreen-btn svg { width: 16px; height: 16px; display: block; }
 .swml-canvas-fullscreen-btn:hover {
     background: rgba(255,255,255,0.08);
     color: rgba(255,255,255,0.9);
-    border-color: rgba(255,255,255,0.2);
 }
 [data-swml-theme="light"] .swml-canvas-fullscreen-btn {
     color: rgba(0,0,0,0.5);
-    border-color: rgba(0,0,0,0.12);
 }
 [data-swml-theme="light"] .swml-canvas-fullscreen-btn:hover {
     background: rgba(0,0,0,0.06);
@@ -1713,12 +1713,16 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-canvas-light .swml-section-wc { color: #2b8a82; background: rgba(81,218,207,0.16); }
 /* Responsive badges — JS-managed overflow replaces CSS nth-child hiding */
+/* v7.20.141 (Neil): custom gradient ellipsis icon, borderless (the old 1px stroke read as a
+   generic AI outline — brand: no thin outline borders on default controls). Subtle hover fill. */
 .swml-canvas-ctx-overflow {
-    background: none; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5);
-    cursor: pointer; font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 5px;
-    letter-spacing: 2px; white-space: nowrap; flex-shrink: 0; line-height: 1;
+    background: none; border: none; cursor: pointer; padding: 3px 5px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    white-space: nowrap; flex-shrink: 0; line-height: 0;
+    transition: background 0.15s ease;
 }
-.swml-canvas-ctx-overflow:hover { color: #51dacf; border-color: rgba(81,218,207,0.3); }
+.swml-canvas-ctx-overflow svg { width: 17px; height: 17px; display: block; }
+.swml-canvas-ctx-overflow:hover { background: rgba(81,218,207,0.12); }
 .swml-canvas-ctx-dropdown {
     position: absolute; top: 100%; left: 0; margin-top: 4px;
     display: flex; flex-direction: column; gap: 3px;
@@ -1726,8 +1730,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     padding: 6px; z-index: 20; box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 }
 .swml-canvas-ctx-dropdown .swml-canvas-ctx-badge { max-width: none; }
-.swml-canvas-light .swml-canvas-ctx-overflow { color: rgba(0,0,0,0.4); border-color: rgba(0,0,0,0.1); }
-.swml-canvas-light .swml-canvas-ctx-overflow:hover { color: #4D76FD; border-color: rgba(77,118,253,0.3); }
+.swml-canvas-light .swml-canvas-ctx-overflow { color: rgba(0,0,0,0.4); border: none; }
+.swml-canvas-light .swml-canvas-ctx-overflow:hover { color: #4D76FD; background: rgba(77,118,253,0.1); }
 .swml-canvas-light .swml-canvas-ctx-dropdown { background: #fff; border-color: rgba(0,0,0,0.08); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 /* Topic badge — purple accent */
 .swml-canvas-ctx-topic { background: rgba(83,51,237,0.15); color: #7c6af0; }

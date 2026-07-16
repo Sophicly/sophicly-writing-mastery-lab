@@ -160,6 +160,27 @@
                                 && inputsFilled === inputs && plainSelFilled === plainSel;
                             dom.setAttribute('data-section-complete', fComplete ? 'true' : 'false');
                         } else {
+                            // v7.20.141 (Neil — Q1 tick "still not working"): the true/false
+                            // statements render as checklistItem nodes — no outlineRow, no
+                            // inputField, no paragraph — so every branch above AND the free-prose
+                            // scan below missed them, and THIS nodeView (the authoritative,
+                            // render-time completion; it wipes any data-section-complete the DOM
+                            // side sets, L86-88) kept forcing the section back to incomplete. That
+                            // is why the earlier DOM-side (checkSectionComplete) fix never held.
+                            // DONE = ticked count >= number of TRUE statements (the "choose N"
+                            // count, from the `correct` attr; fallback 1). Grade-agnostic —
+                            // correctness is marked separately (so students don't guess-to-green).
+                            let chkCount = 0, chkTrue = 0, chkChecked = 0;
+                            node.forEach((child) => {
+                                if (!child.type || child.type.name !== 'checklistItem') return;
+                                chkCount++;
+                                if (child.attrs && child.attrs.correct === true) chkTrue++;
+                                if (child.attrs && child.attrs.checked) chkChecked++;
+                            });
+                            if (chkCount > 0) {
+                                const target = chkTrue > 0 ? chkTrue : 1;
+                                dom.setAttribute('data-section-complete', chkChecked >= target ? 'true' : 'false');
+                            } else {
                             // v7.19.495: free-prose section (no rows/fields, e.g. Step-1 Writer's
                             // Profile / Seed Loglines) — trackable if it has a NON-LOCKED block;
                             // complete when that block has text.
@@ -183,6 +204,7 @@
                                 if (!allItalic) hasText = true;
                             });
                             if (trackable) dom.setAttribute('data-section-complete', hasText ? 'true' : 'false');
+                            }
                         }
                     }
                 }

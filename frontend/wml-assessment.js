@@ -15470,7 +15470,9 @@
         }
 
         // Overflow ... button — shows hidden badges on small screens
-        const ctxOverflowBtn = el('button', { className: 'swml-canvas-ctx-overflow', textContent: '···', title: 'Show all' });
+        // v7.20.141 (Neil): custom gradient ellipsis icon (Elipsis.svg) replaces the "···" text.
+        const SVG_CTX_DOTS = '<svg viewBox="0 0 512.005 512.005" aria-hidden="true"><linearGradient id="swmlCtxDots" gradientUnits="userSpaceOnUse" x1="0" x2="512.005" y1="256.003" y2="256.003"><stop offset="0" stop-color="#00f2fe"/><stop offset=".2931" stop-color="#24d2fe"/><stop offset=".7956" stop-color="#4ab0fe"/><stop offset="1" stop-color="#4facfe"/></linearGradient><path d="m257.849 181.884c-40.876 0-74.131 33.25-74.131 74.118s33.255 74.118 74.131 74.118 74.131-33.25 74.131-74.118-33.255-74.118-74.131-74.118zm0 108.237c-18.82 0-34.131-15.305-34.131-34.118s15.312-34.118 34.131-34.118 34.131 15.305 34.131 34.118-15.312 34.118-34.131 34.118zm-183.718-108.237c-40.876 0-74.131 33.25-74.131 74.119s33.255 74.118 74.131 74.118 74.132-33.25 74.132-74.118-33.256-74.119-74.132-74.119zm0 108.237c-18.82 0-34.131-15.305-34.131-34.118s15.311-34.118 34.131-34.118 34.132 15.305 34.132 34.118-15.312 34.118-34.132 34.118zm425.158-35.154c-10.284 4.024-21.889-1.049-25.913-11.335-5.091-13.008-17.875-21.747-31.811-21.747-18.819 0-34.131 15.305-34.131 34.118 0 13.563 8.062 25.847 20.538 31.295 10.122 4.42 14.745 16.209 10.325 26.333-3.283 7.517-10.63 12.001-18.34 12.001-2.672 0-5.388-.539-7.993-1.676-27.051-11.812-44.53-38.485-44.53-67.952 0-40.869 33.255-74.118 74.131-74.118 30.265 0 58.018 18.956 69.059 47.169 4.026 10.285-1.049 21.887-11.335 25.912z" fill="url(#swmlCtxDots)"/></svg>';
+        const ctxOverflowBtn = el('button', { className: 'swml-canvas-ctx-overflow', innerHTML: SVG_CTX_DOTS, title: 'Show all' });
         const ctxOverflowDrop = el('div', { className: 'swml-canvas-ctx-dropdown' });
         ctxOverflowBtn.style.display = 'none';
         ctxOverflowDrop.style.display = 'none';
@@ -15493,7 +15495,10 @@
             const visible = ctxAllBadges.filter(b => b.style.display !== 'none');
             const last = visible[visible.length - 1];
             if (!last) return false;
-            return last.getBoundingClientRect().right + 8 > tbLeft;
+            // v7.20.141 (Neil: "the ellipsis still overlaps the toolbar slightly"): the overflow
+            // button sits AFTER the last badge and is NOT in ctxAllBadges, so the old +8 buffer
+            // never reserved room for it → it crept under the toolbar. Reserve its width + gap.
+            return last.getBoundingClientRect().right + 44 > tbLeft;
         }
         function checkCtxOverflow() {
             // Reset all visible
@@ -15629,22 +15634,34 @@
         }
         // Fullscreen toggle — embedded mode only (v7.14.24: reworked to trigger LD sidebar + header collapse)
         if (WML.isEmbedded) {
-            const SVG_EXPAND = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
-            const SVG_SHRINK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>';
+            // v7.20.141 (Neil): custom corner-bracket icons (Full Screen.svg) — currentColor so it
+            // inherits the header colour; the EXIT icon is the inverse (brackets point inward).
+            const SVG_EXPAND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3H3V7"/><path d="M3 17L3 21L7 21"/><path d="M17 21L21 21L21 17"/><path d="M21 7L21 3L17 3"/></svg>';
+            const SVG_SHRINK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3V8H3"/><path d="M8 21V16H3"/><path d="M16 21V16H21"/><path d="M16 3V8H21"/></svg>';
+            // v7.20.141 (Neil: "clicked again, it didn't come back — had to refresh"). ROOT: the
+            // old handler ran TWO independent classList.toggle()s (overlay + body). A canvas
+            // re-render between clicks mints a fresh `overlay` WITHOUT the fullscreen class while
+            // `body` keeps swml-fullscreen-active, so the next click ADDS the overlay class but
+            // REMOVES the body class → a stuck half-state. FIX: derive BOTH from ONE canonical
+            // source — the persistent `document.body` flag — and set them to the SAME value.
+            const _isFsNow = () => document.body.classList.contains('swml-fullscreen-active');
             const fsBtn = el('button', {
                 className: 'swml-canvas-fullscreen-btn',
-                title: 'Toggle fullscreen',
-                innerHTML: SVG_EXPAND,
+                title: _isFsNow() ? 'Exit fullscreen' : 'Enter fullscreen',
+                innerHTML: _isFsNow() ? SVG_SHRINK : SVG_EXPAND,
                 onClick: () => {
-                    const isFs = overlay.classList.toggle('swml-canvas-fullscreen');
-                    fsBtn.innerHTML = isFs ? SVG_SHRINK : SVG_EXPAND;
-                    fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
-                    // v7.14.24: CSS handles sidebar + header collapse via body class
-                    document.body.classList.toggle('swml-fullscreen-active', isFs);
+                    const goingFs = !_isFsNow();
+                    document.body.classList.toggle('swml-fullscreen-active', goingFs);
+                    overlay.classList.toggle('swml-canvas-fullscreen', goingFs);
+                    fsBtn.innerHTML = goingFs ? SVG_SHRINK : SVG_EXPAND;
+                    fsBtn.title = goingFs ? 'Exit fullscreen' : 'Enter fullscreen';
                     // Show WML theme toggle when LD header is collapsed (LD's toggle disappears)
-                    canvasThemeToggle.style.display = isFs ? '' : 'none';
+                    canvasThemeToggle.style.display = goingFs ? '' : 'none';
                 }
             });
+            // Re-render during fullscreen: the new overlay must re-adopt the class (body is the
+            // source of truth) so the layout doesn't break until the next click.
+            if (_isFsNow()) overlay.classList.add('swml-canvas-fullscreen');
             headerRight.appendChild(fsBtn);
         }
 
