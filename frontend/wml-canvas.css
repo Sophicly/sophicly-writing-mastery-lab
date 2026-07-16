@@ -7476,6 +7476,16 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
    carried by FILL. `:focus-visible` rings are the one exception: those are accessibility, not
    decoration. Colour vocabulary follows the canvas: soft GREEN = chosen/answered, brand PURPLE =
    the single primary action, everything else a tinted neutral. */
+/* v7.20.135 (Neil): blur the page behind an open modal.
+   ⚠️ TWO NAMED LANDMINES, both engineered out here rather than left to "test and see":
+   1. `backdrop-filter` silently breaks `border-radius` ON THE ELEMENT THAT CARRIES IT when a host
+      ancestor has a transform/filter — it renders a rounded rect. So the blur lives ONLY on this
+      scrim, which is a full-bleed rectangle with no corners to lose. The CARD never carries it.
+   2. Chrome flickers a blurred backdrop while scrolling — because the content BEHIND the blur
+      moves, forcing a re-sample every frame. It cannot happen here: this overlay already blocks
+      page scroll behind it (the wheel/touchmove isolation), so the backdrop source is static and
+      the only thing that scrolls is the card's own body, composited above the blur. `will-change`
+      promotes the scrim to its own layer so the card's repaints never dirty it. */
 .swml-tech-picker-overlay {
     position: fixed;
     inset: 0;
@@ -7484,8 +7494,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(18, 14, 30, 0.62);
+    background: rgba(24, 21, 32, 0.5);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    will-change: backdrop-filter;
     overscroll-behavior: contain;
+}
+/* No blur support (or blur disabled): carry the same separation with opacity alone. */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+    .swml-tech-picker-overlay { background: rgba(24, 21, 32, 0.72); }
 }
 .swml-tech-card {
     display: flex;
@@ -7632,11 +7649,19 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-tech-confirm:focus-visible { outline: 2px solid rgba(255,255,255,0.9); outline-offset: 2px; }
 
 /* ── light pair ── */
-[data-swml-theme="light"] .swml-tech-picker-overlay { background: rgba(44, 0, 62, 0.35); }
+/* v7.20.135 (Neil: "it's got a slight green tinge in light theme"): the scrim was
+   rgba(44,0,62,0.35) — the brand aubergine. Over a light canvas that reads as a muddy wash and,
+   next to the green "chosen" chips, the eye resolves the whole surface as faintly green. With the
+   blur now carrying the separation, the scrim does not need to be brand-coloured at all: a near
+   neutral ink, barely tinted, lets the card read as genuinely white. */
+[data-swml-theme="light"] .swml-tech-picker-overlay { background: rgba(38, 34, 46, 0.28); }
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+    [data-swml-theme="light"] .swml-tech-picker-overlay { background: rgba(38, 34, 46, 0.5); }
+}
 [data-swml-theme="light"] .swml-tech-card {
-    background: #faf9fb;
+    background: #fcfcfd;
     color: rgba(0,0,0,0.85);
-    box-shadow: 0 24px 64px rgba(44, 0, 62, 0.22);
+    box-shadow: 0 24px 64px rgba(30, 20, 45, 0.2);
 }
 [data-swml-theme="light"] .swml-tech-head,
 [data-swml-theme="light"] .swml-tech-foot { background: rgba(0,0,0,0.025); }
@@ -7670,14 +7695,40 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     gap: 4px;
     margin-bottom: 6px;
 }
+/* v7.20.135 (Neil): the chip removes its own device. The ✕ only appears on hover/focus, so a
+   settled column stays a clean list of what you chose rather than a row of controls. Reopening the
+   modal to drop one of seven is the kind of friction that makes a student keep all seven. */
 .swml-tech-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border: none;
+    font: inherit;
     font-size: 10.5px;
     line-height: 1.5;
     padding: 1px 7px;
     border-radius: 999px;
     background: rgba(28, 217, 145, 0.16);
     color: rgba(255,255,255,0.85);
+    cursor: pointer;
+    transition: background 150ms cubic-bezier(0.22,1,0.36,1), color 150ms cubic-bezier(0.22,1,0.36,1);
 }
+.swml-tech-chip::after {
+    content: '✕';
+    font-size: 8px;
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    transition: opacity 150ms cubic-bezier(0.22,1,0.36,1), width 150ms cubic-bezier(0.22,1,0.36,1);
+}
+.swml-tech-chip:hover,
+.swml-tech-chip:focus-visible {
+    background: rgba(232, 88, 104, 0.26);
+    color: rgba(255,255,255,0.95);
+}
+.swml-tech-chip:hover::after,
+.swml-tech-chip:focus-visible::after { opacity: 0.75; width: 8px; }
+.swml-tech-chip:focus-visible { outline: 2px solid rgba(83, 51, 237, 0.9); outline-offset: 1px; }
 .swml-tech-more {
     display: block;
     width: 100%;
@@ -7698,6 +7749,11 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-tech-chip {
     background: rgba(28, 217, 145, 0.2);
     color: rgba(0,0,0,0.75);
+}
+[data-swml-theme="light"] .swml-tech-chip:hover,
+[data-swml-theme="light"] .swml-tech-chip:focus-visible {
+    background: rgba(232, 88, 104, 0.22);
+    color: rgba(0,0,0,0.85);
 }
 [data-swml-theme="light"] .swml-tech-more {
     background: rgba(66, 161, 236, 0.12);

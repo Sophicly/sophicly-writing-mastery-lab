@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.134
+ * Version: 7.20.135
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.134');
+define('SWML_VERSION', '7.20.135');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -326,7 +326,7 @@ class Sophicly_Writing_Mastery_Lab {
             true
         );
 
-        // v7.20.134: ONE VOCABULARY — the technique index (window.WML_TECHNIQUES), GENERATED
+        // v7.20.135: ONE VOCABULARY — the technique index (window.WML_TECHNIQUES), GENERATED
         // from protocols/shared/reference/table-of-techniques.md by bin/build-techniques-index.js
         // and kept honest by that script's --check in bin/pre-ship-check.sh. The outline's
         // technique picker reads its roster from here, so the picker can never hand-type — and

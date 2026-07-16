@@ -8035,28 +8035,12 @@
             if (state.reviewMode) return; // tutors see the stored doc as-is
             const html = editor.getHTML();
             if (!html || html.indexOf('outline-iumvcc-') === -1) return; // not an IUMVCC outline doc
-            // Already the six-section shape? A section row keys on the SECTION alone
-            // (outline-iumvcc-intro); the old shape always keyed section+element.
-            if (/data-field-id="outline-iumvcc-(intro|urgency|vision|counter|conclusion)"/.test(html)) return;
 
             const box = document.createElement('div');
             box.innerHTML = html;
             const secs = Array.from(box.querySelectorAll('[data-section-type="outline"]'))
                 .filter(s => s.querySelector('[data-field-id^="outline-iumvcc-"]'));
             if (!secs.length) return;
-
-            // ⭐ NEVER rebuild over student writing. Measured zero today; if that is ever false,
-            // this doc keeps its old scaffold and we hear about it — the loud, safe direction.
-            for (const s of secs) {
-                for (const r of Array.from(s.querySelectorAll('[data-outline-row]'))) {
-                    if ((r.textContent || '').trim().length > 0) {
-                        console.warn('[WML iumvcc] outline shape-heal SKIPPED — a row holds student text '
-                            + '(field: ' + (r.getAttribute('data-field-id') || '?') + '). Doc untouched; '
-                            + 'this doc needs a carrying migration, not a scaffold swap.');
-                        return;
-                    }
-                }
-            }
 
             // Recover the question suffix from the section label ("Outline: Introduction — Q5")
             // so the rebuilt sections keep their own labels + fieldId namespace.
@@ -8066,21 +8050,73 @@
 
             const fresh = buildIUMVCCOutlineSection(partLabel);
             if (!fresh || fresh.indexOf('outline-iumvcc-') === -1) {
-                console.warn('[WML iumvcc] outline shape-heal ABORTED — the current builder produced no '
+                console.warn('[WML iumvcc] outline heal ABORTED — the current builder produced no '
                     + 'IUMVCC outline. Doc untouched.');
                 return;
             }
-            secs[0].insertAdjacentHTML('beforebegin', fresh);
+            const freshBox = document.createElement('div');
+            freshBox.innerHTML = fresh;
+
+            // ⭐ THE COMPARISON — "is this doc's scaffold what the builder makes NOW?", not "is this
+            // the old SHAPE?". v7.20.132 asked the shape question and that was the defect: once it
+            // had rebuilt a doc into six sections, it returned early forever, so v7.20.134's
+            // dropdown→picker change never reached an already-healed doc. Neil saw dropdowns on a
+            // build that had shipped pickers. Criteria are BAKED into every saved row
+            // (`data-criteria`), so ANY edit to OUTLINE_CRITERIA needs a re-bake — diffing the
+            // baked JSON against the builder's own output heals this change and every future one,
+            // which is why it is the root fix rather than another shape check.
+            const rowsOf = (root) => Array.from(root.querySelectorAll('[data-outline-row]'));
+            const bakedCrit = new Map();
+            secs.forEach(s => rowsOf(s).forEach(r =>
+                bakedCrit.set(r.getAttribute('data-field-id') || '', r.getAttribute('data-criteria') || '{}')));
+            const wantCrit = new Map();
+            rowsOf(freshBox).forEach(r =>
+                wantCrit.set(r.getAttribute('data-field-id') || '', r.getAttribute('data-criteria') || '{}'));
+            const identical = bakedCrit.size === wantCrit.size
+                && Array.from(wantCrit).every(([k, v]) => bakedCrit.get(k) === v);
+            if (identical) return; // already current — the idempotent no-op
+
+            // ⭐ CARRY the student's work across the rebuild, keyed by fieldId. Text AND check-state:
+            // Neil had seven devices picked, and a heal that silently dropped them would be a worse
+            // bug than the one it fixes. Text lives as the row's own content in the saved HTML (the
+            // criteria panel is nodeView-rendered, never serialised), so innerHTML IS the writing.
+            const carriedText = new Map(), carriedState = new Map();
+            secs.forEach(s => rowsOf(s).forEach(r => {
+                const fid = r.getAttribute('data-field-id') || '';
+                if ((r.textContent || '').trim().length > 0) carriedText.set(fid, r.innerHTML);
+                const cs = r.getAttribute('data-check-state');
+                if (cs && cs !== '{}') carriedState.set(fid, cs);
+            }));
+
+            // A row whose fieldId does NOT survive the rebuild would lose its writing. Refuse the
+            // whole heal and say so — loud and safe beats clever and lossy.
+            const survives = new Set(wantCrit.keys());
+            const orphaned = Array.from(carriedText.keys()).filter(fid => !survives.has(fid));
+            if (orphaned.length) {
+                console.warn('[WML iumvcc] outline heal SKIPPED — these rows hold student text but no '
+                    + 'longer exist in the current scaffold: ' + orphaned.join(', ')
+                    + '. Doc untouched; this needs a carrying migration, not a scaffold swap.');
+                return;
+            }
+
+            rowsOf(freshBox).forEach(r => {
+                const fid = r.getAttribute('data-field-id') || '';
+                if (carriedText.has(fid)) r.innerHTML = carriedText.get(fid);
+                if (carriedState.has(fid)) r.setAttribute('data-check-state', carriedState.get(fid));
+            });
+
+            secs[0].insertAdjacentHTML('beforebegin', freshBox.innerHTML);
             secs.forEach(s => s.remove());
 
             _migrationActive = true;
             try { editor.commands.setContent(box.innerHTML, false); }
             finally { _migrationActive = false; }
-            console.log('[WML iumvcc] SHAPE-HEAL: ' + secs.length + ' stale outline section(s) rebuilt as six '
-                + '(partLabel: ' + (partLabel || 'none') + ') — no student text was present.');
+            console.log('[WML iumvcc] SCAFFOLD-HEAL: ' + secs.length + ' outline section(s) rebuilt to the '
+                + 'current criteria (partLabel: ' + (partLabel || 'none') + ') — carried '
+                + carriedText.size + ' filled row(s) and ' + carriedState.size + ' saved selection(s).');
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
         } catch (e) {
-            console.warn('[WML iumvcc] outline shape-heal failed (doc untouched)', e && e.message);
+            console.warn('[WML iumvcc] outline scaffold-heal failed (doc untouched)', e && e.message);
         }
     }
 
@@ -24330,13 +24366,39 @@
                         const btn = document.createElement('button');
                         btn.type = 'button';
                         btn.className = 'swml-tech-more';
+                        // v7.20.135 (Neil): a chip in the column removes itself on click, with the ✕
+                        // appearing on hover. Picking seven devices and having to reopen the modal
+                        // to drop one is the kind of friction that makes students keep the seven.
+                        const dropDevice = (isFree, value) => {
+                            const list = isFree ? entry.tech.free : entry.tech.picked;
+                            const i = list.indexOf(value);
+                            if (i < 0) return;
+                            list.splice(i, 1);
+                            paint();
+                            persistControl(entry);
+                            checkRowComplete();
+                            syncSection();
+                            if (dom._syncRowHeight) dom._syncRowHeight();
+                        };
                         const paint = () => {
                             chips.innerHTML = '';
-                            const all = entry.tech.picked.map(_techLabel).concat(entry.tech.free);
-                            all.forEach(name => {
-                                const c = document.createElement('span');
+                            const all = entry.tech.picked.map(c => ({ label: _techLabel(c), value: c, free: false }))
+                                .concat(entry.tech.free.map(v => ({ label: v, value: v, free: true })));
+                            all.forEach(item => {
+                                const c = document.createElement('button');
+                                c.type = 'button';
                                 c.className = 'swml-tech-chip';
-                                c.textContent = name;
+                                c.title = 'Remove ' + item.label;
+                                c.setAttribute('aria-label', 'Remove ' + item.label);
+                                const t = document.createElement('span');
+                                t.textContent = item.label;
+                                c.appendChild(t);
+                                c.addEventListener('mousedown', e => e.stopPropagation());
+                                c.addEventListener('click', e => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    dropDevice(item.free, item.value);
+                                });
                                 chips.appendChild(c);
                             });
                             btn.textContent = all.length ? 'Edit devices' : 'Choose devices';
