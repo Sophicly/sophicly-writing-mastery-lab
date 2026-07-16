@@ -15388,7 +15388,7 @@
         if (state.reviewMode) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
         const _isCwBadge = (state.task && state.task.startsWith('cw_')) || state.mode === 'creative' || state.subject === 'creative_writing';
         if (_isCwBadge) {
-            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: 'Creative Writing Masterclass' }));
+            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-lowpri', textContent: 'Creative Writing Masterclass' }));
             // v7.15.5: Step/Trial number badge in canvas header
             const _cwDef = WML.getCwStepDef ? WML.getCwStepDef(state.task) : null;
             if (_cwDef?.step) {
@@ -15397,15 +15397,15 @@
                 ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: `Trial ${_cwDef.trial}` }));
             }
         } else {
-            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: boardLabel }));
-            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: subjectLabel }));
+            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-lowpri', textContent: boardLabel }));
+            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-lowpri', textContent: subjectLabel }));
             // v7.14.14: Skip text badge when it duplicates subject (skipTextSelect subjects like unseen_poetry, language1)
             // v7.19.594: also skip via the skipTextSelect flag — language papers' text
             // label ("Aqa lang paper 1") differs from the subject string so the
             // normalized-equality test missed it; the flag catches it reliably.
             const _skipTextHdr = WML.isSkipTextSelect && WML.isSkipTextSelect(state.subject);
             if (textLabel && !_skipTextHdr && textLabel.toLowerCase().replace(/[\s_-]/g, '') !== subjectLabel.toLowerCase().replace(/[\s_-]/g, '')) {
-                ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: textLabel }));
+                ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-lowpri', textContent: textLabel }));
             }
         }
 
@@ -15505,20 +15505,26 @@
             // v7.14.23: dual check — scrollWidth overflow OR toolbar collision
             const scrollOverflow = ctxBadges.scrollWidth > ctxBadges.clientWidth + 2;
             if (!scrollOverflow && !_badgesOverlapToolbar()) return;
-            // v7.14.24: In embedded mode, cap at 1 visible badge to prevent toolbar overlap
-            const maxVisible = WML.isEmbedded ? 1 : 1;
-            for (let i = ctxAllBadges.length - 1; i >= 1; i--) {
-                ctxAllBadges[i].style.display = 'none';
-                ctxOverflowDrop.insertBefore(
-                    el('span', { className: 'swml-canvas-ctx-badge', textContent: ctxAllBadges[i].textContent }),
-                    ctxOverflowDrop.firstChild
-                );
+            // v7.20.140 (Neil): collapse the LEAST-relevant badges FIRST — board / paper / text
+            // (redundant with the LearnDash sidebar, tagged swml-canvas-ctx-lowpri) fold into the
+            // '···' before Topic / Phase / task, which stay visible longest. The old loop
+            // collapsed strictly right-to-left, so it hid Topic/Phase first and kept board —
+            // backwards. Same keep-≥1 + fit-to-toolbar semantics, just a priority-ordered hide list.
+            const _lowpri = ctxAllBadges.filter(b => b.classList.contains('swml-canvas-ctx-lowpri'));
+            const _rest = ctxAllBadges.filter(b => !b.classList.contains('swml-canvas-ctx-lowpri'));
+            const _hideOrder = _lowpri.slice().reverse().concat(_rest.slice().reverse());
+            const _hidden = new Set();
+            for (const b of _hideOrder) {
+                if (ctxAllBadges.length - _hidden.size <= 1) break; // always keep one badge visible
+                b.style.display = 'none';
+                _hidden.add(b);
                 void ctxBadges.offsetWidth; // reflow
-                // Stop when remaining visible badges fit AND don't overlap toolbar
-                const visCount = ctxAllBadges.filter(b => b.style.display !== 'none').length;
-                if (visCount <= maxVisible) break;
                 if (ctxBadges.scrollWidth <= ctxBadges.clientWidth + 2 && !_badgesOverlapToolbar()) break;
             }
+            // Populate the dropdown in ORIGINAL left-to-right order for readability.
+            ctxAllBadges.forEach(b => {
+                if (_hidden.has(b)) ctxOverflowDrop.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: b.textContent }));
+            });
             if (ctxOverflowDrop.children.length > 0) ctxOverflowBtn.style.display = '';
         }
         if (typeof ResizeObserver !== 'undefined') {
@@ -19288,49 +19294,11 @@
             });
             rightPanel.appendChild(cwGuidanceContent);
 
-            // CW workbook Mark Complete button
-            const cwCompleteBtn = el('button', {
-                className: 'swml-go-assess-btn',
-                textContent: 'Mark Complete',
-                onClick: async () => {
-                    // Save artifact
-                    const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
-                    if (artifactKey && state.cwProjectId && canvasEditor) {
-                        const content = canvasEditor.getHTML();
-                        await WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, content);
-                    }
-                    // Mark step complete
-                    if (state.cwProjectId) {
-                        const stepKey = cwStepDef?.step ? 'step_' + cwStepDef.step : cwStepDef?.id;
-                        await WML.cwProject.markStepComplete(state.cwProjectId, stepKey);
-                    }
-                    cwCompleteBtn.textContent = 'Complete';
-                    cwCompleteBtn.disabled = true;
-                    cwCompleteBtn.style.opacity = '0.5';
-                    showToast('Step complete! Your work has been saved.');
-                    // Return to dashboard after brief delay
-                    setTimeout(() => {
-                        if (WML.renderCreativeWritingDashboard) WML.renderCreativeWritingDashboard();
-                    }, 1500);
-                }
-            });
-            cwCompleteBtn.style.marginTop = '16px';
-            rightPanel.appendChild(cwCompleteBtn);
-
-            // Back to steps button
-            rightPanel.appendChild(el('button', {
-                className: 'swml-back-link',
-                textContent: '← Back to Steps',
-                style: { marginTop: '8px' },
-                onClick: () => {
-                    if (canvasEditor) saveCanvasContent();
-                    const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
-                    if (artifactKey && state.cwProjectId && canvasEditor) {
-                        WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, canvasEditor.getHTML()).catch(() => {});
-                    }
-                    if (WML.renderCreativeWritingDashboard) WML.renderCreativeWritingDashboard();
-                }
-            }));
+            // v7.20.140 (Neil): the CW-workbook sidebar 'Mark Complete' + '← Back to Steps'
+            // buttons removed — redundant navigation. The document autosaves on every change
+            // (onUpdate debounce + the 30s periodic save), the footer/header/LearnDash controls
+            // own Mark-Complete + navigation, so these duplicated a job already covered. (They
+            // uniquely drove the archive-only CW-project step tracking, which is no longer used.)
         } else if (useTrainingEnv) {
             // ── v7.14.48: Training-environment direct rendering ──
             // Exercises with environment:'training' (assessment, mark_scheme, planning, polishing, exam_prep, CW SI)
