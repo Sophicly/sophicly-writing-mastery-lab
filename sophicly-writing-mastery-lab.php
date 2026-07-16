@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.130
+ * Version: 7.20.131
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.130');
+define('SWML_VERSION', '7.20.131');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -326,6 +326,21 @@ class Sophicly_Writing_Mastery_Lab {
             true
         );
 
+        // v7.20.131: ONE VOCABULARY — the technique index (window.WML_TECHNIQUES), GENERATED
+        // from protocols/shared/reference/table-of-techniques.md by bin/build-techniques-index.js
+        // and kept honest by that script's --check in bin/pre-ship-check.sh. The outline's
+        // technique picker reads its roster from here, so the picker can never hand-type — and
+        // never drift from — the taught vocabulary. Shipped inert at v7.20.128 (generated but
+        // never enqueued); this is the enqueue that gives it a runtime surface.
+        // Must load BEFORE wml-assessment, whose row nodeView renders the picker from it.
+        wp_enqueue_script(
+            'swml-techniques-index',
+            SWML_URL . 'frontend/wml-techniques-index.js',
+            [],
+            SWML_VERSION,
+            true
+        );
+
         // v7.19.78: Shared SectionBlock NodeView factory — must load BEFORE wml-assessment
         // so window.WML.SectionBlock.createNodeView exists when both SectionBlock Node
         // definitions in wml-assessment.js call it via addNodeView().
@@ -341,7 +356,7 @@ class Sophicly_Writing_Mastery_Lab {
         wp_enqueue_script(
             'swml-assessment',
             SWML_URL . 'frontend/wml-assessment.js',
-            ['swml-core', 'swml-section-block', 'swml-tiptap'],
+            ['swml-core', 'swml-section-block', 'swml-techniques-index', 'swml-tiptap'],
             SWML_VERSION,
             true
         );

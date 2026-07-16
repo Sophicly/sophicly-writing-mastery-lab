@@ -24,16 +24,21 @@ const ASSESS = path.join(__dirname, '..', 'frontend', 'wml-assessment.js');
 const coreSrc = fs.readFileSync(CORE, 'utf8');
 const assessSrc = fs.readFileSync(ASSESS, 'utf8');
 
-// Slice a declaration out by brace balance from its start marker.
+// Slice a declaration out by bracket balance from its start marker.
+// v7.20.131: balances the OPENER's own pair — it used to hard-code `{`/`}`, so an array
+// declaration ('[') never closed and silently returned the rest of the file.
 function slice(src, marker, opener) {
+  const closer = { '{': '}', '[': ']', '(': ')' }[opener];
+  if (!closer) throw new Error('unsupported opener: ' + opener);
   const i = src.indexOf(marker);
   if (i < 0) throw new Error('marker not found: ' + marker);
   let j = src.indexOf(opener, i), depth = 0, k = j;
   for (; k < src.length; k++) {
     const ch = src[k];
-    if (ch === '{') depth++;
-    else if (ch === '}') { depth--; if (depth === 0) break; }
+    if (ch === opener) depth++;
+    else if (ch === closer) { depth--; if (depth === 0) break; }
   }
+  if (depth !== 0) throw new Error('unbalanced ' + opener + ' after marker: ' + marker);
   let end = k + 1;
   if (src[end] === ';') end++;
   return src.slice(i, end);
@@ -45,6 +50,12 @@ vm.runInContext(
   slice(coreSrc, 'const outlineRow = {', '{') + '\nthis.outlineRow = outlineRow;',
   sandbox
 );
+// v7.20.131: OUTLINE_CRITERIA now leans on two module-scope helpers (the Methodology point
+// builder and its shared action-verb list — defined once so three point rows can't drift), so
+// they must ride into the sandbox ahead of it. Sliced from the real source like everything else
+// here: if they change, this runs the CHANGED code.
+vm.runInContext(slice(assessSrc, 'const _IU_ACTION_VERBS = [', '['), sandbox);
+vm.runInContext(slice(assessSrc, 'function _iuPoint(', '{'), sandbox);
 vm.runInContext(
   slice(assessSrc, 'const OUTLINE_CRITERIA = {', '{') + '\nthis.OUTLINE_CRITERIA = OUTLINE_CRITERIA;',
   sandbox
@@ -231,7 +242,66 @@ t('the Introduction hook offers SEVEN openers (eight in the protocol, F ruled ou
   IU[0].criteria[0].controls.find(c => c.id === 'hook').items.length, 7);
 t('the hook LAYERS ⇒ choice:true (protocol :607)',
   IU[0].criteria[0].controls.find(c => c.id === 'hook').choice, true);
-const KNOWN_TYPES = ['checklist', 'checkbox', 'dropdown'];
+// ⭐ THE PICKER LANDS ON I·U·M·V ONLY — a PEDAGOGY rule (PEDAGOGY.md §3b), so it is gated here
+// rather than trusted to a comment. The protocol offers DEVICES at those four sections
+// (:619-627 / :643-646 / :655-656 / :668-671). Counter-argument offers *rebuttal techniques*
+// and Conclusion offers *closing approaches* — different taxonomies, so the device picker there
+// would teach a vocabulary the protocol never offers at that section.
+const withPicker = IU.filter(s => s.criteria.some(c => RULE.controlsOf(c).some(ctl => ctl.type === 'techniques')));
+t('the technique picker is on Introduction, Urgency, Methodology and Vision — and NOWHERE else',
+  withPicker.map(s => s.id).join(','), 'intro,urgency,method,vision');
+t('Counter-argument has NO device picker (it teaches rebuttal techniques instead)',
+  RULE.controlsOf(IU.find(s => s.id === 'counter').criteria[0]).some(c => c.type === 'techniques'), false);
+t('Conclusion has NO device picker (it teaches closing approaches instead)',
+  RULE.controlsOf(IU.find(s => s.id === 'conclusion').criteria[0]).some(c => c.type === 'techniques'), false);
+t('every Methodology POINT gets a picker; the Organisation row does not',
+  IU.find(s => s.id === 'method').criteria
+    .filter(c => RULE.controlsOf(c).some(ctl => ctl.type === 'techniques')).map(c => c.id).join(','),
+  'point-1,point-2,point-3');
+
+// The picker's roster is GENERATED, never authored — so a `techniques` control must carry no
+// hand-typed items. If one ever does, the vocabulary has forked from the table.
+IU.flatMap(s => s.criteria).flatMap(c => RULE.controlsOf(c)).filter(c => c.type === 'techniques')
+  .forEach(c => t(`picker "${c.id}" hand-types no roster (it reads window.WML_TECHNIQUES)`, !c.items, true));
+
+// ══ TEST 5c — the picker's completion rule ══
+const pick = { id: 'x', controls: [{ id: 'devices', label: 'Devices', type: 'techniques' }] };
+t('picker with no devices ⇒ incomplete',
+  RULE.complete(pick, { c: { devices: {} } }, true), false);
+t('ONE taught device satisfies it (the layer is invited, never forced — :607)',
+  RULE.complete(pick, { c: { devices: { picked: ['Me'] } } }, true), true);
+t('the student’s OWN words satisfy it (tier 3)',
+  RULE.complete(pick, { c: { devices: { free: ['my own name for it'] } } }, true), true);
+t('whitespace-only free text does NOT satisfy it',
+  RULE.complete(pick, { c: { devices: { free: ['   '] } } }, true), false);
+t('empty picked/free arrays ⇒ incomplete',
+  RULE.complete(pick, { c: { devices: { picked: [], free: [] } } }, true), false);
+t('devices picked but the row is empty ⇒ still incomplete (text is always required)',
+  RULE.complete(pick, { c: { devices: { picked: ['Me', 'Tr'] } } }, false), false);
+
+// Every tier-1 code the picker can persist must exist in the generated index — a saved pick
+// that resolves to nothing would render as a bare code to the student.
+const idxPath = path.join(__dirname, '..', 'frontend', 'wml-techniques-index.js');
+if (fs.existsSync(idxPath)) {
+  const idxSandbox = { window: {} };
+  vm.createContext(idxSandbox);
+  vm.runInContext(fs.readFileSync(idxPath, 'utf8'), idxSandbox);
+  const TECH = idxSandbox.window.WML_TECHNIQUES;
+  t('the generated technique index loads and exposes tier1 + all', !!(TECH && TECH.tier1 && TECH.all), true);
+  const allCodes = new Set(TECH.all.map(e => e.c));
+  TECH.tier1.flatMap(g => g.items).forEach(i => {
+    t(`tier-1 "${i.name}" resolves to a real table code`, allCodes.has(i.code), true);
+  });
+  t('tier 1 is the protocol\'s 14 devices', TECH.tier1.flatMap(g => g.items).length, 14);
+  t('tier 1 carries the protocol\'s four groups',
+    TECH.tier1.map(g => g.group).join(','), 'Sound,Comparison,Structural,Intensity');
+  t('the taught word wins over the table\'s canonical (Triadic structure → Tricolon `Tr`)',
+    TECH.tier1.flatMap(g => g.items).find(i => i.code === 'Tr').name, 'Triadic structure');
+} else {
+  fail++; failures.push('MULTI the generated technique index is MISSING — run node bin/build-techniques-index.js');
+}
+
+const KNOWN_TYPES = ['checklist', 'checkbox', 'dropdown', 'techniques'];
 IU.forEach(sec => sec.criteria.forEach(crit => {
   RULE.controlsOf(crit).forEach((ctl, i) => {
     t(`iumvcc.${sec.id}.${crit.id} control[${i}] has an id`, !!ctl.id, true);

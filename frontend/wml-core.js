@@ -3701,6 +3701,17 @@ window.WML = (function() {
         controlOk(ctl, st) {
             const c = ctl || {}, s = st || {};
             const chk = Array.isArray(s.checked) ? s.checked.length : 0;
+            // v7.20.131: the TECHNIQUE PICKER. Satisfied by ONE device — from the taught 14
+            // (`picked`, table codes) or the student's own words (`free`). Deliberately NOT 2:
+            // the protocol offers "2–3 to start" but rules the layer INVITED, never forced
+            // (protocol-b-planning.md:607/619) — demanding two would teach a rule we don't
+            // teach (PEDAGOGY.md §3b). Codes, not names, so a rename in the technique table
+            // can never orphan a student's saved pick.
+            if (c.type === 'techniques') {
+                const p = Array.isArray(s.picked) ? s.picked.length : 0;
+                const f = Array.isArray(s.free) ? s.free.filter(x => String(x || '').trim()).length : 0;
+                return (p + f) >= 1;
+            }
             if (c.type === 'dropdown') return !!s.selected;
             if (c.type === 'checklist') {
                 const need = c.choice ? 1 : Math.max(1, (Array.isArray(c.items) ? c.items.length : 1));

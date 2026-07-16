@@ -1084,6 +1084,239 @@
     // The active canvas pipeline registers its sender here at mount (last mount wins —
     // matches the single-active-canvas model). The modal delivers the chosen template
     // through it as a SILENT send: AI-visible context, no giant user bubble.
+    // ══════════════════════════════════════════════════════════════
+    //  v7.20.131: THE TECHNIQUE PICKER — the outline row's device control.
+    //
+    //  ONE VOCABULARY. The roster is NEVER hand-typed here: window.WML_TECHNIQUES is
+    //  GENERATED from protocols/shared/reference/table-of-techniques.md (245 entries) by
+    //  bin/build-techniques-index.js, whose --check is wired into pre-ship. Three tiers, and
+    //  the distinction between them is PEDAGOGY, not UX (PEDAGOGY.md §3b):
+    //    tier 1 — OFFERED. The protocol's four device groups, "EXACTLY these groups"
+    //             (protocol-b-planning.md:619-627). Shown first, with the protocol's own hints.
+    //    tier 2 — FINDABLE. All 245, behind a search box. A lookup, never an offer: displaying
+    //             them would teach a vocabulary the protocol does not offer at this section.
+    //    tier 3 — the student's OWN words (free text). Their idea, their name for it.
+    //
+    //  Picks persist as CODES (`picked: ['Me','Tr']`) + free strings (`free: [...]`), so a
+    //  rename in the technique table can never orphan a saved pick. The completion rule is
+    //  WML.outlineRow.controlOk — ONE device satisfies it (the layer is invited, never forced).
+    //
+    //  The overlay is body-level `position:fixed`, OUTSIDE the ProseMirror doc — so it cannot
+    //  trip the NodeView foreign-mutation flush loop (the v7.19.866 law). Scroll-isolated per
+    //  the universal overlay rule. Shape reused from _showDeviceMenu above, which is proven.
+    // ══════════════════════════════════════════════════════════════
+    function _techIndex() {
+        const T = window.WML_TECHNIQUES;
+        if (!T || !Array.isArray(T.tier1) || !Array.isArray(T.all)) {
+            if (!window.__swmlTechIndexWarned) {
+                window.__swmlTechIndexWarned = true;
+                console.warn('WML: window.WML_TECHNIQUES missing — technique picker degraded to free text only. '
+                    + 'Check the swml-techniques-index enqueue / load order.');
+            }
+            return null;
+        }
+        return T;
+    }
+
+    // Code → the word the STUDENT was taught (tier-1 name wins over the table's canonical:
+    // the table says "Tricolon", the protocol teaches "Triadic structure" — show the taught one).
+    function _techLabel(code) {
+        const T = _techIndex();
+        if (!T) return code;
+        for (const g of T.tier1) { for (const i of g.items) { if (i.code === code) return i.name; } }
+        const hit = T.all.find(e => e.c === code);
+        return hit ? hit.n : code;
+    }
+
+    /**
+     * Open the picker. `sel` = { picked: [codes], free: [strings] } — MUTATED IN PLACE is
+     * deliberately avoided; onChange receives a fresh object so the caller owns persistence.
+     */
+    function _showTechniquePicker(sel, onChange) {
+        if (document.querySelector('.swml-tech-picker-overlay')) return;
+        const T = _techIndex();
+        let picked = Array.isArray(sel.picked) ? sel.picked.slice() : [];
+        let free = Array.isArray(sel.free) ? sel.free.slice() : [];
+        const commit = () => onChange({ picked: picked.slice(), free: free.slice() });
+
+        const overlay = document.createElement('div');
+        overlay.className = 'swml-tech-picker-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;overscroll-behavior:contain;';
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#1c1d1f;color:rgba(255,255,255,0.92);border-radius:14px;max-width:560px;width:92%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(255,255,255,0.08);';
+        const head = document.createElement('div');
+        head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.08);flex:0 0 auto;';
+        head.innerHTML = '<strong>Layer your devices</strong>';
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '✕';
+        closeBtn.style.cssText = 'background:none;border:none;color:rgba(255,255,255,0.6);font-size:16px;cursor:pointer;padding:4px 8px;';
+        head.appendChild(closeBtn);
+
+        const body = document.createElement('div');
+        body.style.cssText = 'overflow-y:auto;overscroll-behavior:contain;padding:12px 18px 18px;flex:1 1 auto;';
+
+        const chipCss = (on) => 'border-radius:999px;padding:5px 10px;font-size:12px;cursor:pointer;border:1px solid '
+            + (on ? 'rgba(120,180,255,0.5)' : 'rgba(255,255,255,0.14)') + ';background:'
+            + (on ? 'rgba(90,140,255,0.22)' : 'rgba(255,255,255,0.04)') + ';color:rgba(255,255,255,'
+            + (on ? '0.95' : '0.75') + ');';
+
+        // ── tier 1 — the protocol's groups, OFFERED, with the protocol's own hints ──
+        const tier1Wrap = document.createElement('div');
+        function renderTier1() {
+            tier1Wrap.innerHTML = '';
+            if (!T) return;
+            const intro = document.createElement('div');
+            intro.style.cssText = 'font-size:11.5px;color:rgba(255,255,255,0.5);margin:2px 0 10px;';
+            intro.textContent = 'Start with two or three that deliver your image — you are never required to use more than one.';
+            tier1Wrap.appendChild(intro);
+            T.tier1.forEach(grp => {
+                const h = document.createElement('div');
+                h.style.cssText = 'margin:12px 0 6px;font-weight:600;font-size:12.5px;';
+                h.textContent = grp.group;
+                tier1Wrap.appendChild(h);
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+                grp.items.forEach(it => {
+                    const b = document.createElement('button');
+                    const on = picked.includes(it.code);
+                    b.style.cssText = chipCss(on);
+                    b.textContent = it.hint ? `${it.name} · ${it.hint}` : it.name;
+                    b.addEventListener('click', () => {
+                        const i = picked.indexOf(it.code);
+                        if (i >= 0) picked.splice(i, 1); else picked.push(it.code);
+                        commit(); renderTier1(); renderPicked();
+                    });
+                    row.appendChild(b);
+                });
+                tier1Wrap.appendChild(row);
+            });
+        }
+
+        // ── tier 2 — FINDABLE. Search only; never a wall of 245 chips. ──
+        const searchWrap = document.createElement('div');
+        searchWrap.style.cssText = 'margin-top:18px;border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;';
+        const searchLbl = document.createElement('div');
+        searchLbl.style.cssText = 'font-size:11.5px;color:rgba(255,255,255,0.5);margin-bottom:8px;';
+        searchLbl.textContent = 'Using a device you already know? Search for it, or add it in your own words.';
+        const search = document.createElement('input');
+        search.type = 'text';
+        search.placeholder = 'Search techniques…';
+        search.style.cssText = 'width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.92);font-size:13px;';
+        const results = document.createElement('div');
+        results.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;';
+        function renderResults() {
+            results.innerHTML = '';
+            const q = search.value.trim().toLowerCase();
+            if (!q || !T) return;
+            const hits = T.all.filter(e => e.n.toLowerCase().includes(q)).slice(0, 24);
+            if (!hits.length) {
+                const none = document.createElement('div');
+                none.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.45);';
+                none.textContent = 'No match — add it in your own words below.';
+                results.appendChild(none);
+                return;
+            }
+            hits.forEach(e => {
+                const b = document.createElement('button');
+                const on = picked.includes(e.c);
+                b.style.cssText = chipCss(on);
+                b.textContent = e.n;
+                b.addEventListener('click', () => {
+                    const i = picked.indexOf(e.c);
+                    if (i >= 0) picked.splice(i, 1); else picked.push(e.c);
+                    commit(); renderTier1(); renderResults(); renderPicked();
+                });
+                results.appendChild(b);
+            });
+        }
+        search.addEventListener('input', renderResults);
+        search.addEventListener('mousedown', e => e.stopPropagation());
+
+        // ── tier 3 — the student's own words ──
+        const freeRow = document.createElement('div');
+        freeRow.style.cssText = 'display:flex;gap:6px;margin-top:10px;';
+        const freeIn = document.createElement('input');
+        freeIn.type = 'text';
+        freeIn.placeholder = 'Or name it yourself…';
+        freeIn.style.cssText = 'flex:1 1 auto;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.92);font-size:13px;';
+        const freeAdd = document.createElement('button');
+        freeAdd.className = 'swml-quick-btn';
+        freeAdd.textContent = 'Add';
+        const addFree = () => {
+            const v = freeIn.value.trim();
+            if (!v) return;
+            if (!free.includes(v)) free.push(v);
+            freeIn.value = '';
+            commit(); renderPicked();
+        };
+        freeAdd.addEventListener('click', addFree);
+        freeIn.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addFree(); } });
+        freeRow.appendChild(freeIn); freeRow.appendChild(freeAdd);
+
+        // ── the running selection ──
+        const pickedWrap = document.createElement('div');
+        pickedWrap.style.cssText = 'margin-top:16px;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;';
+        function renderPicked() {
+            pickedWrap.innerHTML = '';
+            const h = document.createElement('div');
+            h.style.cssText = 'font-size:12.5px;font-weight:600;margin-bottom:8px;';
+            h.textContent = `Your devices (${picked.length + free.length})`;
+            pickedWrap.appendChild(h);
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+            if (!picked.length && !free.length) {
+                const none = document.createElement('div');
+                none.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.45);';
+                none.textContent = 'None yet.';
+                row.appendChild(none);
+            }
+            picked.forEach(code => {
+                const b = document.createElement('button');
+                b.style.cssText = chipCss(true);
+                b.textContent = _techLabel(code) + ' ✕';
+                b.addEventListener('click', () => {
+                    picked.splice(picked.indexOf(code), 1);
+                    commit(); renderTier1(); renderResults(); renderPicked();
+                });
+                row.appendChild(b);
+            });
+            free.forEach(v => {
+                const b = document.createElement('button');
+                b.style.cssText = chipCss(true);
+                b.textContent = v + ' ✕';
+                b.addEventListener('click', () => {
+                    free.splice(free.indexOf(v), 1);
+                    commit(); renderPicked();
+                });
+                row.appendChild(b);
+            });
+            pickedWrap.appendChild(row);
+        }
+
+        body.appendChild(tier1Wrap);
+        searchWrap.appendChild(searchLbl); searchWrap.appendChild(search); searchWrap.appendChild(results);
+        searchWrap.appendChild(freeRow);
+        body.appendChild(searchWrap);
+        body.appendChild(pickedWrap);
+        renderTier1(); renderPicked();
+
+        card.appendChild(head); card.appendChild(body);
+        overlay.appendChild(card);
+        // Scroll isolation, the universal rule: block wheel/touch on the BACKDROP only —
+        // the card's own body must still scroll.
+        const stop = e => { if (!card.contains(e.target)) e.preventDefault(); };
+        overlay.addEventListener('wheel', stop, { passive: false });
+        overlay.addEventListener('touchmove', stop, { passive: false });
+        overlay.addEventListener('mousedown', e => e.stopPropagation());
+        const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey); };
+        const onKey = e => { if (e.key === 'Escape') close(); };
+        document.addEventListener('keydown', onKey);
+        closeBtn.addEventListener('click', close);
+        overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+        document.body.appendChild(overlay);
+        setTimeout(() => search.focus(), 0);
+    }
+
     function _showDeviceMenu() {
         if (document.querySelector('.swml-device-menu-overlay')) return;
         const send = window.__swmlCanvasChatSend;
@@ -23738,6 +23971,9 @@
                     // Live state read off the DOM for ONE control (the student may have just
                     // toggled it, so the DOM leads the persisted attr).
                     const liveState = (entry) => {
+                        // v7.20.131: the technique picker holds its own selection (codes + free
+                        // text), not checkbox indices — read it from the entry, not the DOM.
+                        if (entry.tech) return { picked: entry.tech.picked.slice(), free: entry.tech.free.slice() };
                         const checked = [];
                         entry.boxes.forEach((c, i) => { if (c.checked) checked.push(i); });
                         const st = { checked };
@@ -23777,7 +24013,50 @@
                             group.appendChild(cl);
                         }
 
-                    if (ctl.type === 'checklist' && ctl.items) {
+                    if (ctl.type === 'techniques') {
+                        // v7.20.131: the criteria column is 180px — too narrow to OFFER 14 chips
+                        // plus the protocol's hints legibly. So the column carries the RECORD
+                        // (what they picked) and the overlay does the teaching, where the
+                        // protocol's four groups get room for their hints. Reads its roster from
+                        // the generated window.WML_TECHNIQUES — never a hand-typed list.
+                        entry.tech = {
+                            picked: Array.isArray(st.picked) ? st.picked.slice() : [],
+                            free: Array.isArray(st.free) ? st.free.slice() : [],
+                        };
+                        const chips = document.createElement('div');
+                        chips.className = 'swml-tech-chips';
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'swml-tech-more';
+                        const paint = () => {
+                            chips.innerHTML = '';
+                            const all = entry.tech.picked.map(_techLabel).concat(entry.tech.free);
+                            all.forEach(name => {
+                                const c = document.createElement('span');
+                                c.className = 'swml-tech-chip';
+                                c.textContent = name;
+                                chips.appendChild(c);
+                            });
+                            btn.textContent = all.length ? 'Edit devices' : 'Choose devices';
+                        };
+                        entry.tech.paint = paint;
+                        btn.addEventListener('mousedown', e => e.stopPropagation());
+                        btn.addEventListener('click', e => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            _showTechniquePicker(entry.tech, (next) => {
+                                entry.tech.picked = next.picked;
+                                entry.tech.free = next.free;
+                                paint();
+                                persistControl(entry);
+                                checkRowComplete();
+                                syncSection();
+                            });
+                        });
+                        paint();
+                        group.appendChild(chips);
+                        group.appendChild(btn);
+                    } else if (ctl.type === 'checklist' && ctl.items) {
                         const list = document.createElement('div');
                         list.className = 'swml-outline-checklist';
                         ctl.items.forEach((item, idx) => {
@@ -23973,6 +24252,15 @@
                         if (ctl.type === 'checklist' && ctl.items) critH += ctl.items.length * 24;
                         else if (ctl.type === 'checkbox') critH += 24;
                         else if (ctl.type === 'dropdown') critH += 32;
+                        // v7.20.131: picker = the button + a line per picked chip (they wrap in a
+                        // 180px column). Reserved from the SAVED state, so a row that reloads with
+                        // four devices already picked still reserves the height they need.
+                        else if (ctl.type === 'techniques') {
+                            const _s = CTL ? CTL.stateOf(crit, savedState, ctl) : savedState;
+                            const _n = (Array.isArray(_s.picked) ? _s.picked.length : 0)
+                                + (Array.isArray(_s.free) ? _s.free.length : 0);
+                            critH += 28 + _n * 22;
+                        }
                     });
                     dom.style.minHeight = critH + 'px';
 
@@ -24015,6 +24303,15 @@
                                     entry.boxes.forEach((cb, i) => { cb.checked = cs.checked.includes(i); });
                                 }
                                 if (cs.selected && entry.sel) entry.sel.value = cs.selected;
+                                // v7.20.131: the picker's selection lives in JS, not in a DOM
+                                // control, so a redraw would silently drop it unless replayed
+                                // here — the chips would empty while the saved doc still held
+                                // the picks (the shape of the collapse-re-default bug class).
+                                if (entry.tech) {
+                                    entry.tech.picked = Array.isArray(cs.picked) ? cs.picked.slice() : [];
+                                    entry.tech.free = Array.isArray(cs.free) ? cs.free.slice() : [];
+                                    entry.tech.paint();
+                                }
                             });
                             return true;
                         },
@@ -31586,6 +31883,28 @@
         },
     };
 
+    // v7.20.131: the Methodology action-verb families (protocol-b-planning.md:653-655), defined
+    // ONCE. Each of the 2–3 point rows offers the identical set, so three hand-copies would be
+    // three chances to drift — the exact failure the v7.20.129 one-rule consolidation was for.
+    const _IU_ACTION_VERBS = ['Connection (bridges, weaves)', 'Growth (flourishes, blooms)',
+        'Decay (withers, erodes, suffocates)', 'Transformation (reshapes, redefines)', 'Impact (drives, fuels)'];
+
+    // One Methodology point row. `optional` is the protocol's 2–3 RANGE made real (see PEDAGOGY §3b).
+    function _iuPoint(n, prompt, optional) {
+        const crit = {
+            id: `point-${n}`,
+            label: optional ? `Point ${n} (optional)` : `Point ${n}`,
+            prompt,
+            controls: [
+                { id: 'verb', label: 'Action verb family', type: 'dropdown', items: _IU_ACTION_VERBS },
+                // :655-656 — "2–3 layered devices for that point".
+                { id: 'devices', label: 'Devices', type: 'techniques' },
+            ],
+        };
+        if (optional) crit.optional = true;
+        return crit;
+    }
+
     const OUTLINE_CRITERIA = {
         // ── Literature essay (TTECEA+C) — used by AQA, EDUQAS, Edexcel, OCR, CCEA, IGCSE ──
         literature: {
@@ -31656,6 +31975,8 @@
                         { id: 'verb', label: 'Power verb family', type: 'dropdown', items: ['Movement (surge, pulse, sweep)', 'Pressure (grip, crush, suffocate)', 'Decay (crumble, wither, collapse)', 'Stillness (hang, linger, drift)', 'Sound (whisper, echo, roar)'] },
                         // :637 — one named tone.
                         { id: 'tone', label: 'Tone', type: 'dropdown', items: ['Passionate', 'Urgent', 'Reflective', 'Playful', 'Concerned', 'Inspiring'] },
+                        // :619-627 — "Layer devices — MADFATHER'S CROPS (offer 2–3 to start)".
+                        { id: 'devices', label: 'Devices', type: 'techniques' },
                     ]},
                 ]},
                 // :638-647. Image → metaphor → how it extends → evidence → flow → devices → appeal.
@@ -31663,22 +31984,19 @@
                     { id: 'urgency', label: 'Urgency', prompt: 'Why this matters NOW (100–150 words). What does the urgency LOOK like? Build the metaphor, extend it, make it real with concrete evidence — no invented statistics.', controls: [
                         // :646 — "ONE named emotional appeal", so a dropdown, not a checklist.
                         { id: 'appeal', label: 'Emotional appeal', type: 'dropdown', items: ['Fear', 'Empathy', 'Outrage', 'Guilt'] },
+                        // :643-646 — devices offered BY JOB here (building intensity / showing
+                        // consequences / creating urgency). Same picker, same taught vocabulary.
+                        { id: 'devices', label: 'Devices', type: 'techniques' },
                     ]},
                 ]},
                 // :648-660. Their 2–3 points, each verb-driven; ORGANISATION comes after them.
                 { id: 'method', label: 'Methodology', criteria: [
-                    { id: 'point-1', label: 'Point 1', prompt: 'Your first point (the section runs 250–350 words — it is the piece’s engine). Its image or metaphor, then extend it: concrete evidence + the emotion it should raise. Verb-driven, never "The importance of…".', controls: [
-                        { id: 'verb', label: 'Action verb family', type: 'dropdown', items: ['Connection (bridges, weaves)', 'Growth (flourishes, blooms)', 'Decay (withers, erodes, suffocates)', 'Transformation (reshapes, redefines)', 'Impact (drives, fuels)'] },
-                    ]},
-                    { id: 'point-2', label: 'Point 2', prompt: 'Your second, distinct point. Its own image or metaphor, extended the same way.', controls: [
-                        { id: 'verb', label: 'Action verb family', type: 'dropdown', items: ['Connection (bridges, weaves)', 'Growth (flourishes, blooms)', 'Decay (withers, erodes, suffocates)', 'Transformation (reshapes, redefines)', 'Impact (drives, fuels)'] },
-                    ]},
+                    _iuPoint(1, 'Your first point (the section runs 250–350 words — it is the piece’s engine). Its image or metaphor, then extend it: concrete evidence + the emotion it should raise. Verb-driven, never "The importance of…".'),
+                    _iuPoint(2, 'Your second, distinct point. Its own image or metaphor, extended the same way.'),
                     // :648 plans "2–3 distinct points" — a RANGE the student chooses, so the third
                     // row is OPTIONAL. Baking three REQUIRED rows would demand a point the protocol
                     // never demands; baking two would leave a three-point student nowhere to write.
-                    { id: 'point-3', label: 'Point 3 (optional)', optional: true, prompt: 'A third point, if your argument has one — the protocol plans two or three. Leave this empty if two carry it.', controls: [
-                        { id: 'verb', label: 'Action verb family', type: 'dropdown', items: ['Connection (bridges, weaves)', 'Growth (flourishes, blooms)', 'Decay (withers, erodes, suffocates)', 'Transformation (reshapes, redefines)', 'Impact (drives, fuels)'] },
-                    ]},
+                    _iuPoint(3, 'A third point, if your argument has one — the protocol plans two or three. Leave this empty if two carry it.', true),
                     // :656 places the organisation choice "After all points" — so this row is
                     // derived from the protocol's own sequence, not invented furniture.
                     { id: 'organisation', label: 'Organisation', prompt: 'How do your points run, and how do you move between them? Transitions carry the imagery — never "Firstly, Secondly". Organic flow is a valid answer.', controls: [
@@ -31692,6 +32010,8 @@
                         { id: 'emotion', label: 'Emotion', type: 'dropdown', items: ['Hope', 'Excitement', 'Peace', 'Pride', 'Joy', 'Relief'] },
                         // :672 — a named tone.
                         { id: 'tone', label: 'Tone', type: 'dropdown', items: ['Optimistic', 'Hopeful', 'Inspiring', 'Passionate', 'Confident'] },
+                        // :668-671 — devices by job (creating vision / building emotion / adding power).
+                        { id: 'devices', label: 'Devices', type: 'techniques' },
                     ]},
                 ]},
                 // :673-687. Opposing view → concession → rebuttal technique → rebuttal verb → bridge.
