@@ -704,6 +704,64 @@
                 };
             }
 
+            // v7.20.168 (Neil QUEUE-A): PLAN/OUTLINE dividers get a firewalled in-flow ctlRow so
+            // the "Transfer All" button renders as a real HTML sibling — the last absolute overlay
+            // (.swml-transfer-layer) is retired. SCOPED to just these two divider labels; every
+            // other divider (structural headings, STORY SPINE, RESPONSE, etc.) keeps the flat
+            // default path below untouched (zero blast radius). contentDOM holds the heading text;
+            // ctlRow is a display-only sibling filled by WML.renderControlRows; ignoreMutation keeps
+            // its fills off PM's DOMObserver (the derived-card technique — §PM law).
+            if (type === 'divider') {
+                const _dLabel = (node.attrs && node.attrs.label) || '';
+                const _isTransferDivider = /^ESSAY\s*PLAN/i.test(_dLabel) || /^PLAN\s*—/i.test(_dLabel)
+                    || /^YOUR\s*(?:ESSAY\s*)?PLAN/i.test(_dLabel) || /^OUTLINE/i.test(_dLabel);
+                if (_isTransferDivider) {
+                    // marker class → CSS lays this divider out as a flex row (heading left,
+                    // Transfer-All right) WITHOUT a :has() dependency. Construction-time attr,
+                    // covered by the wrapper-attr firewall in ignoreMutation below.
+                    dom.classList.add('swml-divider-has-ctl');
+                    const contentDOM = document.createElement('div');
+                    contentDOM.className = 'swml-divider-content';
+                    dom.appendChild(contentDOM);
+
+                    const ctlRow = document.createElement('div');
+                    ctlRow.className = 'swml-ctl-row swml-ctl-row-divider';
+                    ctlRow.setAttribute('contenteditable', 'false');
+                    ctlRow.style.display = 'none';
+                    dom.appendChild(ctlRow);
+
+                    const _fillCtl = () => {
+                        try {
+                            if (window.WML && typeof window.WML.renderControlRows === 'function') {
+                                window.WML.renderControlRows();
+                            }
+                        } catch (_) { /* ignore */ }
+                    };
+                    requestAnimationFrame(_fillCtl);
+                    setTimeout(_fillCtl, 250);
+                    setTimeout(_fillCtl, 800);
+
+                    return {
+                        dom,
+                        contentDOM,
+                        ignoreMutation: (mutation) => {
+                            if (!mutation || !mutation.target) return false;
+                            if (mutation.type === 'attributes' && mutation.target === dom) return true;
+                            if (ctlRow === mutation.target || ctlRow.contains(mutation.target)) return true;
+                            return false;
+                        },
+                        update: (updatedNode) => {
+                            if (!updatedNode.type || updatedNode.type.name !== node.type.name) return false;
+                            const ua = updatedNode.attrs || {};
+                            const na = node.attrs || {};
+                            if (ua.sectionType !== na.sectionType || (ua.label || '') !== (na.label || '')) return false;
+                            node = updatedNode;
+                            return true;
+                        },
+                    };
+                }
+            }
+
             const st = getStateRef();
             const showChip = !!st
                 && st.task === 'exam_crib'

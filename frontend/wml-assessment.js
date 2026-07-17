@@ -17651,8 +17651,7 @@
                         // Re-run topic template injection, then rebuild dropdowns
                         tryTopicTemplate().then(() => {
                             applyQuizResultToEditor();
-                            if (transferLayer) { transferLayer.remove(); transferLayer = null; }
-                            setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 200);
+                            setTimeout(() => { buildDropdownOverlays(contentWrap); }, 200);
                         });
                     }
                 }, { confirmText: 'Reset', danger: true });
@@ -27093,7 +27092,7 @@
                 // is idempotent (already called from multiple sites).
                 requestAnimationFrame(() => { try { buildTableOfContents(); } catch (_) {} });
                 // Inject section controls (for resumed documents that already have sections)
-                setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 250);
+                setTimeout(() => { buildDropdownOverlays(contentWrap); }, 250);
                 // v7.14.34: Colorise section groups after DOM render
                 setTimeout(coloriseSectionGroups, 400);
             },
@@ -28114,7 +28113,7 @@
             setTimeout(coloriseSectionGroups, 1500);
             // v7.13.48: CW resource buttons are now in the sidebar (not in document)
             // Inject dropdown overlays + transfer buttons after template is ready
-            setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 200);
+            setTimeout(() => { buildDropdownOverlays(contentWrap); }, 200);
             // Re-position comment gutter after all content (cover, TOC, template) is loaded (v7.12.35)
             setTimeout(() => updateCommentGutter(), 400);
             // v7.13.92: Re-snapshot section count after template injection (sections may have been added)
@@ -28194,7 +28193,7 @@
                 console.log('WML: Cleaned corrupted/stale content');
                 saveCanvasContent();
                 // Rebuild dropdown overlays + transfer buttons after DOM cleanup
-                setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 300);
+                setTimeout(() => { buildDropdownOverlays(contentWrap); }, 300);
             }
         }
 
@@ -28242,7 +28241,9 @@
         //  Overlay-positioned buttons for transferring plan/outline text
         //  into the response section. Layer sits outside TipTap DOM.
         // ══════════════════════════════════════════════════════════════
-        let transferLayer = null;
+        // v7.20.168: transferLayer + buildTransferOverlays + positionTransferOverlays RETIRED —
+        // transfer buttons now render in-flow into each section's PM-firewalled ctlRow via
+        // _renderControlRows (no absolute overlay, no positioning pass, storm-immune).
         const SVG_TRANSFER = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>';
 
         /** Find a sectionBlock by its label (loop-based, no CSS.escape) */
@@ -28504,218 +28505,6 @@
                 el = el.nextElementSibling;
             }
             return sections;
-        }
-
-        /** Build the transfer button overlay layer */
-        function buildTransferOverlays(container) {
-            if (!canvasEditor) return;
-            // v7.19.634: clear any existing transfer layer FIRST, before the task gates.
-            // Otherwise the early-returns below (FQ / crib / codex / CW — docs with no
-            // Response section) leave a stale Transfer button behind when an earlier
-            // render built one before state.task resolved (Neil saw this on FQ).
-            if (transferLayer) { transferLayer.remove(); transferLayer = null; }
-            if (state.task === 'exam_crib') return;
-            // foundational_quiz doc has no Response section — Transfer button is redundant.
-            if (state.task === 'foundational_quiz') return;
-            // v7.19.974 (Neil): Conceptual Notes docs (all subjects — notes organiser, no
-            // Response section) — same redundancy; the button floated dead over the pills.
-            if (state.task === 'conceptual_notes') return;
-            // v7.19.224: Codex has no Response section — Transfer-to-Response buttons irrelevant.
-            if (state.task === 'mastery_codex') return;
-            // v7.19.463: CW steps have plan sections (Story Components, Story Ideas, Chosen
-            // Idea) but NO Response section — Transfer-to-Response buttons are dead/confusing.
-            if (state.task && state.task.startsWith('cw_')) return;
-            var editor = document.getElementById('swml-tiptap-editor');
-            if (!editor) return;
-            transferLayer = document.createElement('div');
-            transferLayer.className = 'swml-transfer-layer';
-            transferLayer.style.cssText = 'position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:4;visibility:hidden;';
-            var dw = editor.closest('.swml-canvas-doc');
-            if (!dw) return;
-            dw.appendChild(transferLayer);
-
-            // ── Per-section transfer buttons ──
-            var planSections = editor.querySelectorAll('[data-section-type="plan"]');
-            planSections.forEach(function(section) {
-                var label = section.getAttribute('data-section-label') || '';
-                var btn = document.createElement('button');
-                btn.className = 'swml-transfer-btn swml-transfer-visible';
-                btn.innerHTML = SVG_TRANSFER;
-                btn.title = 'Transfer to Response';
-                btn.dataset.sectionLabel = label;
-                btn.dataset.sectionType = 'plan';
-                btn.addEventListener('mousedown', function(e) { e.preventDefault(); e.stopPropagation(); });
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    var sec = findSectionByLabel(editor, label);
-                    if (!sec) return;
-                    var text = extractPlanText(sec);
-                    if (!text) { flashTransferBtn(btn, false); return; }
-                    var target = resolveResponseLabel(label);
-                    var ok = insertIntoResponse(target, [text], 'plan:' + label);
-                    flashTransferBtn(btn, ok);
-                });
-                transferLayer.appendChild(btn);
-            });
-
-            var outlineSections = editor.querySelectorAll('[data-section-type="outline"]');
-            outlineSections.forEach(function(section) {
-                var label = section.getAttribute('data-section-label') || '';
-                var btn = document.createElement('button');
-                btn.className = 'swml-transfer-btn swml-transfer-visible';
-                btn.innerHTML = SVG_TRANSFER;
-                btn.title = 'Transfer to Response';
-                btn.dataset.sectionLabel = label;
-                btn.dataset.sectionType = 'outline';
-                btn.addEventListener('mousedown', function(e) { e.preventDefault(); e.stopPropagation(); });
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    var sec = findSectionByLabel(editor, label);
-                    if (!sec) return;
-                    var text = extractOutlineText(sec);
-                    if (!text) { flashTransferBtn(btn, false); return; }
-                    var target = resolveResponseLabel(label);
-                    var ok = insertIntoResponse(target, [text], 'outline:' + label);
-                    flashTransferBtn(btn, ok);
-                });
-                transferLayer.appendChild(btn);
-            });
-
-            // ── "Transfer All" buttons on dividers ──
-            var dividers = editor.querySelectorAll('[data-section-type="divider"]');
-            dividers.forEach(function(div) {
-                var label = (div.getAttribute('data-section-label') || '').trim();
-                var targetType = null;
-                if (/^ESSAY\s*PLAN/i.test(label) || /^PLAN\s*\u2014/i.test(label) || /^YOUR\s*(?:ESSAY\s*)?PLAN/i.test(label)) targetType = 'plan';
-                else if (/^OUTLINE/i.test(label)) targetType = 'outline';
-                if (!targetType) return;
-                var btn = document.createElement('button');
-                btn.className = 'swml-transfer-all-btn';
-                btn.innerHTML = 'Transfer All ' + SVG_TRANSFER;
-                btn.dataset.dividerLabel = label;
-                btn.dataset.targetType = targetType;
-                btn.addEventListener('mousedown', function(e) { e.preventDefault(); e.stopPropagation(); });
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    var divEl = findSectionByLabel(editor, label);
-                    if (!divEl) return;
-                    var sections = collectSectionsAfterDivider(divEl, targetType);
-                    // v7.20.138 (Neil): Transfer All = the per-section transfer applied to EACH
-                    // element under ITS OWN provenance slot (targetType:label — the SAME slot the
-                    // per-section button uses). So a later single-element re-transfer, or a second
-                    // Transfer All, REPLACES that element in place instead of appending a duplicate.
-                    // (The old path joined all elements into ONE 'all:' blob, so a per-element
-                    // re-transfer found no record and appended — the duplicate bug Neil described.)
-                    // Per-item scroll suppressed; scroll to the response ONCE after the loop.
-                    var any = false, lastTarget = null;
-                    sections.forEach(function(sec) {
-                        var secLabel = sec.getAttribute('data-section-label') || '';
-                        var text = targetType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
-                        if (!text) return;
-                        var tgt = resolveResponseLabel(secLabel);
-                        if (insertIntoResponse(tgt, [text], targetType + ':' + secLabel, true)) { any = true; lastTarget = tgt; }
-                    });
-                    if (any && lastTarget) {
-                        try {
-                            var rEl = findSectionByLabel(editor, lastTarget);
-                            if (rEl) _swmlScrollToTop(rEl, 24);
-                        } catch (_) {}
-                    }
-                    flashTransferBtn(btn, any);
-                });
-                transferLayer.appendChild(btn);
-            });
-
-            positionTransferOverlays();
-            container.addEventListener('scroll', positionTransferOverlays, { passive: true });
-            // v7.19.624: reposition on RESIZE too. The dropdown layer got resize + ResizeObserver
-            // (drift fixes v7.19.168 / .174) but the transfer layer only bound SCROLL — so the
-            // Transfer-All buttons drifted off their dividers on window resize / sidebar collapse /
-            // fullscreen toggle until a scroll re-fired. Mirror the dropdown pattern, but self-clean
-            // each render so the binding always calls the CURRENT closure (transferLayer is a
-            // per-render `let` — a once-bound global handler would capture a stale, removed layer).
-            try { if (window._swmlTransferResizeObserver) window._swmlTransferResizeObserver.disconnect(); } catch (_) {}
-            if (window._swmlTransferResizeHandler) window.removeEventListener('resize', window._swmlTransferResizeHandler);
-            // v7.20.165 (Neil: transfer buttons jump up/down on a checklist tick). The tick fires
-            // the `ctlrows` NodeView redraw storm (see reference_wml_pm_nodeview_foreign_mutation_loop):
-            // the whole doc reflows repeatedly for ~3s, ResizeObserver fires every frame, and a
-            // PER-FRAME rAF reposition read the TRANSIENT mid-flush getBoundingClientRect → the
-            // absolute overlay buttons snapped to a wrong spot each frame (the visible jitter). Trailing
-            // DEBOUNCE instead: coalesce the whole reflow burst into ONE reposition after 160ms of
-            // quiet, so the buttons hold their last-good position through the storm and settle once when
-            // layout is stable. Scroll stays direct (line above) — scroll rects don't flicker. The real
-            // fix (PM widget Decorations, layout-driven, storm-immune) is queued — this kills the jitter.
-            let _tlTimer = 0;
-            const _tlReposition = function () { if (_tlTimer) clearTimeout(_tlTimer); _tlTimer = setTimeout(positionTransferOverlays, 160); };
-            window._swmlTransferResizeHandler = _tlReposition;
-            window.addEventListener('resize', _tlReposition, { passive: true });
-            if (typeof ResizeObserver !== 'undefined') {
-                const _tlRo = new ResizeObserver(_tlReposition);
-                const _tlDoc = document.querySelector('.swml-canvas-doc');
-                const _tlOverlay = document.getElementById('swml-canvas-overlay');
-                if (_tlDoc) _tlRo.observe(_tlDoc);
-                if (_tlOverlay) _tlRo.observe(_tlOverlay);
-                window._swmlTransferResizeObserver = _tlRo;
-            }
-        }
-
-        /** Position transfer buttons relative to their target sections */
-        function positionTransferOverlays() {
-            if (!transferLayer) return;
-            var editor = document.getElementById('swml-tiptap-editor');
-            if (!editor) return;
-            var dw = editor.closest('.swml-canvas-doc');
-            if (!dw) return;
-            var dwRect = dw.getBoundingClientRect();
-            var z = canvasZoom || 1;
-
-            // Per-section buttons — top-right of each section
-            transferLayer.querySelectorAll('.swml-transfer-btn').forEach(function(btn) {
-                var label = btn.dataset.sectionLabel;
-                var section = findSectionByLabel(editor, label);
-                if (!section) { btn.style.display = 'none'; return; }
-                btn.style.display = '';
-                var sRect = section.getBoundingClientRect();
-                // v7.19.689: align into the section's top-right control row at top:10
-                // (level with the ✓ completion tick) and inset to right-64 so the ↓
-                // clears the tick (right:12, 22px) with an 8px gap, instead of landing
-                // on top of it (Neil). Mirrors the .688 exam_crib chip-row tidy.
-                // v7.20.90 (Neil overlap repro): on a COLLAPSIBLE section the tick itself
-                // shifts to right:44 to clear the chevron (wml-canvas.css .swml-collapsible
-                // rule), so right-64 landed the ↓ ON the shifted tick. Key the inset off
-                // the same capability class — chevron(8+22) + tick(44+22) + 8px gap → 96.
-                var top = (sRect.top - dwRect.top) / z + 10;
-                var inset = section.classList.contains('swml-collapsible') ? 96 : 64;
-                var left = (sRect.right - dwRect.left) / z - inset;
-                btn.style.cssText = 'position:absolute;top:' + top + 'px;left:' + left + 'px;pointer-events:auto;';
-            });
-
-            // Transfer All buttons — right side of divider
-            transferLayer.querySelectorAll('.swml-transfer-all-btn').forEach(function(btn) {
-                var label = btn.dataset.dividerLabel;
-                var divider = findSectionByLabel(editor, label);
-                if (!divider) { btn.style.display = 'none'; return; }
-                btn.style.display = '';
-                var dRect = divider.getBoundingClientRect();
-                var top = (dRect.top - dwRect.top) / z + (dRect.height / z / 2) - 10;
-                // v7.19.692: right-align the pill's right edge EXACTLY to the section's
-                // right border — secs[0].getBoundingClientRect().right is that edge
-                // (border box). left = sectionRight − pillWidth, all in the doc's
-                // untransformed layout space (/z converts the screen delta; offsetWidth
-                // is already layout px). Flush with the planning-area edge, no inset
-                // (Neil: was 12px too far left). Falls back to the divider edge if a
-                // section isn't found yet.
-                var secs = collectSectionsAfterDivider(divider, btn.dataset.targetType);
-                var rightRef = (secs && secs.length) ? secs[0].getBoundingClientRect().right : dRect.right;
-                var left = (rightRef - dwRect.left) / z - btn.offsetWidth;
-                btn.style.cssText = 'position:absolute;top:' + top + 'px;left:' + left + 'px;pointer-events:auto;';
-            });
-
-            // Show layer after first positioning pass (prevents flash at wrong position)
-            if (transferLayer.style.visibility === 'hidden') transferLayer.style.visibility = 'visible';
         }
 
         // v7.19.168: Custom dropdown components — replace native <select> with
@@ -29379,6 +29168,90 @@
                     _rowFillEnd(optRow, optSig);
                     }
                 }
+            }
+
+            // ── v7.20.168 (Neil QUEUE-A): TRANSFER BUTTONS — in-flow, no overlay ──
+            // The per-section ↓ (each plan/outline section) and "Transfer All" (each PLAN/OUTLINE
+            // divider) now render into the section's own PM-firewalled ctlRow — the last absolute
+            // overlay (.swml-transfer-layer) is retired, so there is no positioning pass and the
+            // ctlrows redraw-storm can't jitter them (layout-driven, storm-immune). Same task-gates
+            // as the old buildTransferOverlays (CN + FQ already bailed at the top of this fn). Sig-
+            // idempotent + breaker-guarded like every other pass; handlers re-resolve their section
+            // at CLICK time (a built element may be a pre-redraw node).
+            const _transferGated = state.task === 'exam_crib' || state.task === 'mastery_codex'
+                || (state.task && state.task.startsWith('cw_'));
+            if (!_transferGated) {
+                const _mkTransferBtn = (label, sectionType) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'swml-transfer-btn swml-ctl-transfer';
+                    btn.setAttribute('contenteditable', 'false');
+                    btn.innerHTML = SVG_TRANSFER;
+                    btn.title = 'Transfer to Response';
+                    btn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        const sec = findSectionByLabel(editor, label);
+                        if (!sec) return;
+                        const text = sectionType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
+                        if (!text) { flashTransferBtn(btn, false); return; }
+                        const ok = insertIntoResponse(resolveResponseLabel(label), [text], sectionType + ':' + label);
+                        flashTransferBtn(btn, ok);
+                    });
+                    return btn;
+                };
+                ['plan', 'outline'].forEach((sectionType) => {
+                    editor.querySelectorAll('[data-section-type="' + sectionType + '"]').forEach((section) => {
+                        const row = _ctlRowOf(section);
+                        if (!row) return; // NodeView not mounted yet — its mount fill re-runs this pass
+                        const label = section.getAttribute('data-section-label') || '';
+                        const sig = 'transfer|' + sectionType + '|' + label;
+                        if (row.dataset.sig === sig) return;
+                        _rowFillStart(row);
+                        row.classList.add('swml-ctl-row-transfer'); // right-align the ↓ (echoes the old top-right overlay)
+                        row.appendChild(_mkTransferBtn(label, sectionType));
+                        _rowFillEnd(row, sig);
+                    });
+                });
+                // "Transfer All" on the PLAN / OUTLINE dividers (their NodeView now mounts a ctlRow).
+                editor.querySelectorAll('[data-section-type="divider"]').forEach((div) => {
+                    const label = (div.getAttribute('data-section-label') || '').trim();
+                    let targetType = null;
+                    if (/^ESSAY\s*PLAN/i.test(label) || /^PLAN\s*—/i.test(label) || /^YOUR\s*(?:ESSAY\s*)?PLAN/i.test(label)) targetType = 'plan';
+                    else if (/^OUTLINE/i.test(label)) targetType = 'outline';
+                    if (!targetType) return; // only the transfer dividers carry a ctlRow
+                    const row = _ctlRowOf(div);
+                    if (!row) return;
+                    const sig = 'transferall|' + targetType + '|' + label;
+                    if (row.dataset.sig === sig) return;
+                    _rowFillStart(row);
+                    const allBtn = document.createElement('button');
+                    allBtn.type = 'button';
+                    allBtn.className = 'swml-transfer-all-btn swml-ctl-transfer-all';
+                    allBtn.setAttribute('contenteditable', 'false');
+                    allBtn.innerHTML = 'Transfer All ' + SVG_TRANSFER;
+                    allBtn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+                    allBtn.addEventListener('click', (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        const divEl = findSectionByLabel(editor, label);
+                        if (!divEl) return;
+                        const sections = collectSectionsAfterDivider(divEl, targetType);
+                        let any = false, lastTarget = null;
+                        sections.forEach((sec) => {
+                            const secLabel = sec.getAttribute('data-section-label') || '';
+                            const text = targetType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
+                            if (!text) return;
+                            const tgt = resolveResponseLabel(secLabel);
+                            if (insertIntoResponse(tgt, [text], targetType + ':' + secLabel, true)) { any = true; lastTarget = tgt; }
+                        });
+                        if (any && lastTarget) {
+                            try { const rEl = findSectionByLabel(editor, lastTarget); if (rEl) _swmlScrollToTop(rEl, 24); } catch (_) {}
+                        }
+                        flashTransferBtn(allBtn, any);
+                    });
+                    row.appendChild(allBtn);
+                    _rowFillEnd(row, sig);
+                });
             }
         }
 
@@ -30205,8 +30078,6 @@
                 zoomInput.value = `${pct}%`;
                 zoomWrap.style.display = 'flex';
             }
-            // Reposition dropdown overlays + transfer buttons after zoom
-            requestAnimationFrame(function() { positionTransferOverlays(); });
         }
 
         // ── Pan + Zoom Transform (v7.12.41, v7.12.50 centering fix) ──
@@ -30328,7 +30199,6 @@
                 panTargetX = panOffsetX;
                 panVelocity = -e.deltaX * 0.4; // track velocity for momentum
                 updateDocTransform();
-                requestAnimationFrame(function() { positionTransferOverlays(); });
 
                 // Reset gesture state after 120ms of no horizontal input
                 clearTimeout(panGestureTimer);
@@ -30370,7 +30240,6 @@
             if (isPanning) {
                 isPanning = false;
                 contentWrap.classList.remove('swml-panning-active');
-                requestAnimationFrame(function() { positionTransferOverlays(); });
             }
         });
 
@@ -30383,7 +30252,6 @@
             panVelocity = 0;
             if (panAnimFrame) { cancelAnimationFrame(panAnimFrame); panAnimFrame = 0; }
             updateDocTransform(true); // animate = true
-            requestAnimationFrame(function() { positionTransferOverlays(); });
         });
     }
 

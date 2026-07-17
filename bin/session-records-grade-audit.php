@@ -42,6 +42,8 @@ $band = function ($pct, array $ladder) {
 
 // Which grader produced this grade? Key off task/mode/draft_type — NOT the mark denominator alone
 // (mark-scheme rows are /20 but grade on the quiz ladder; that mis-bucket is exactly the bug).
+// RULED (Neil 2026-07-17): mark_scheme (MSA) bands on the QUIZ-95 ladder — canonical, not essay-85.
+// This matches the regex below (mark_scheme → quiz family). Do not re-litigate.
 $is_quiz_family = function ($task, $mode, $dt, $max) {
     if (preg_match('#quiz|msq|foundational|mark_scheme|component|mcq#i', "$task $mode $dt")) return true;
     return $max <= 10; // safety net: /10 marks are quiz territory, essays are /20+
