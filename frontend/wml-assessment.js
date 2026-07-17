@@ -28617,7 +28617,12 @@
                 } else {
                     var innerEnd = fPos + fNode.nodeSize - 1;
                     var nodes = inlineFor(clean);
-                    if (!fieldEmpty && hb) nodes = [hb.create()].concat(nodes);
+                    // v7.20.185 (Neil): separate transferred body paragraphs with a BLANK LINE, not a
+                    // single break — each outline section (BP1, BP2, …) reads as its own paragraph in
+                    // the response. The inputField is inline-only (no paragraph nodes), so a paragraph
+                    // gap = two hardBreaks. Provenance-safe: the empty line is a non-matching line the
+                    // run-finder skips, and a re-transfer replaces only the text line between the breaks.
+                    if (!fieldEmpty && hb) nodes = [hb.create(), hb.create()].concat(nodes);
                     tr.insert(innerEnd, nodes);
                 }
                 return true;
