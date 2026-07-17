@@ -29760,6 +29760,15 @@
         }
 
         function recalculateScoreSummary() {
+            // v7.20.175 TEMP STORM DIAG — names the repeat-caller (static tracing couldn't close the
+            // loop edge). Capped at 60 so it can never spam. Remove once the caller is identified.
+            try {
+                window._wmlRecalcN = (window._wmlRecalcN || 0) + 1;
+                if (window._wmlRecalcN <= 60) {
+                    const _st = (new Error().stack || '').split('\n').slice(2, 4).map(s => s.trim()).join('  ⇐  ');
+                    console.log('[WML recalc #' + window._wmlRecalcN + '] task=' + (state && state.task) + '  caller: ' + _st);
+                }
+            } catch (_) {}
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
             let totalMarks = 0, maxTotal = 0, allSet = true;
