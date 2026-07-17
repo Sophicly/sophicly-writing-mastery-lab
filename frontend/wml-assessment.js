@@ -31747,6 +31747,8 @@
             }
             let total = 0;
             editableSections.forEach(section => {
+                // v7.20.161: same picking-section skip as the response branch below.
+                if (section.querySelector('[data-checklist-item], [data-item-id]')) return;
                 const clone = section.cloneNode(true);
                 // v7.19.148: stop stripping <h3>. Template response section has no h3
                 // (ships only <p><em>Write your essay here.</em></p><p></p>), so the
@@ -31769,10 +31771,17 @@
         }
         let total = 0;
         responseSections.forEach(section => {
+            // v7.20.161 (Neil): a statement-PICKING section (AQA Lang P2 Q1 multi-select — AI
+            // statements + a "Tick the 4 correct…" instruction) is NOT essay writing, so it must
+            // never feed the essay word count. The markup uses data-item-id/data-checked, which the
+            // old [data-checklist-item] strip never matched → the statements + instruction were
+            // counted AND re-counted inconsistently on every keystroke (the "weird increments" Neil
+            // saw). Skip the whole picking section; only genuine response prose counts.
+            if (section.querySelector('[data-checklist-item], [data-item-id]')) return;
             const clone = section.cloneNode(true);
             // v7.19.148: h3 strip removed — see note in editableSections branch above.
             // v7.18.41: exclude checklistItem statements + instruction line — see comment above.
-            clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
+            clone.querySelectorAll('[data-checklist-item], [data-item-id]').forEach(el => el.remove());
             // v7.19.696: strip scaffold/placeholder directly (was baseline-subtracted) —
             // a blank response now counts 0, not the 4 placeholder words (Neil). Student
             // italics-within-prose still count (v7.19.147 kept <em>).
