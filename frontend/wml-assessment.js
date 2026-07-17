@@ -25267,6 +25267,37 @@
             if (activePopover) { activePopover.remove(); activePopover = null; }
         }
 
+        // v7.20.167 ROOT FIX (Neil: "find the root, fix at the root"): ONE positioning
+        // helper for the comment popover, used by BOTH the initial open AND the scroll
+        // follower. It NEVER trusts a captured anchor node — it re-queries the LIVE mark
+        // by commentId every time. Root cause of the "opens top-left, snaps right on
+        // scroll" bug: the open path positioned synchronously against the anchorEl node it
+        // was handed (captured at gutter-build / click time). A section remount (the ctlrows
+        // NodeView redraw storm) detaches that node → getBoundingClientRect() returns 0×0 →
+        // top≈scrollTop-84, left=8 (top-left of view). The scroll handler already re-queried
+        // a fresh mark, which is why scrolling "fixed" it. Now both share this helper, so the
+        // divergence can't exist. Returns false when the mark can't be measured (missing /
+        // mid-remount 0×0) so the caller can retry a frame later.
+        function positionCommentPopover(pop) {
+            if (!pop) return false;
+            const cid = pop._anchorCid;
+            const popoverContainer = pop._popoverContainer || null;
+            const targetContainer = popoverContainer || contentWrap;
+            const searchRoot = popoverContainer || editorEl;
+            const freshMark = searchRoot.querySelector(`[data-comment-id="${cid}"]`);
+            if (!freshMark) return false;
+            const markRect = freshMark.getBoundingClientRect();
+            // Storm guard: a detached / mid-remount mark measures 0×0 — don't paint against it.
+            if (markRect.width === 0 && markRect.height === 0) return false;
+            const cwRect = targetContainer.getBoundingClientRect();
+            const scrollTop = popoverContainer
+                ? (targetContainer.querySelector('.swml-extract-panel-body')?.scrollTop || 0)
+                : contentWrap.scrollTop;
+            pop.style.top = (markRect.bottom - cwRect.top + scrollTop + 6) + 'px';
+            pop.style.left = Math.max(8, Math.min(markRect.left - cwRect.left, cwRect.width - 320)) + 'px';
+            return true;
+        }
+
         function showCommentPopover(commentId, anchorEl, popoverContainer) {
             closeCommentPopover();
             const c = comments[commentId];
@@ -25563,19 +25594,30 @@
                 e.stopPropagation();
             });
 
-            // Position in the appropriate container
+            // Position in the appropriate container. v7.20.167: append HIDDEN, then position
+            // against the LIVE mark on the next frame (post-layout) via the shared
+            // positionCommentPopover helper — never the captured anchorEl (which a section
+            // remount can detach → 0×0 rect → top-left). Retry one frame if still unmeasurable,
+            // then reveal. Kills the "top-left until you scroll" bug at the root.
             const targetContainer = popoverContainer || contentWrap;
-            const markRect = anchorEl.getBoundingClientRect();
-            const cwRect = targetContainer.getBoundingClientRect();
-            const scrollTop = popoverContainer ? targetContainer.querySelector('.swml-extract-panel-body')?.scrollTop || 0 : contentWrap.scrollTop;
-            pop.style.top = (markRect.bottom - cwRect.top + scrollTop + 6) + 'px';
-            pop.style.left = Math.max(8, Math.min(markRect.left - cwRect.left, cwRect.width - 320)) + 'px';
-
+            pop._anchorCid = commentId;
+            pop._popoverContainer = popoverContainer || null;
+            pop.style.visibility = 'hidden';
             targetContainer.appendChild(pop);
             activePopover = pop;
-            pop._anchorCid = commentId;
+            const _revealPop = () => { if (activePopover === pop) pop.style.visibility = ''; };
+            requestAnimationFrame(() => {
+                if (activePopover !== pop) return;
+                if (positionCommentPopover(pop)) { _revealPop(); return; }
+                requestAnimationFrame(() => {
+                    if (activePopover !== pop) return;
+                    positionCommentPopover(pop);
+                    _revealPop();
+                });
+            });
             // v7.19.560: let the "View as student" toggle re-render this popover in-place.
-            _reopenCommentPopover = () => { if (document.body.contains(anchorEl)) showCommentPopover(commentId, anchorEl, popoverContainer); };
+            // v7.20.167: guard on the comment (not the captured node) so reopen survives a remount.
+            _reopenCommentPopover = () => { if (comments[commentId]) showCommentPopover(commentId, anchorEl, popoverContainer); };
         }
 
         function findCommentRange(commentId) {
@@ -26197,15 +26239,9 @@
         contentWrap.addEventListener('scroll', () => {
             requestAnimationFrame(() => {
                 updateCommentGutter();
-                if (activePopover && activePopover._anchorCid) {
-                    const freshMark = editorEl.querySelector(`[data-comment-id="${activePopover._anchorCid}"]`);
-                    if (freshMark) {
-                        const markRect = freshMark.getBoundingClientRect();
-                        const cwRect = contentWrap.getBoundingClientRect();
-                        activePopover.style.top = (markRect.bottom - cwRect.top + contentWrap.scrollTop + 6) + 'px';
-                        activePopover.style.left = Math.min(markRect.left - cwRect.left, cwRect.width - 320) + 'px';
-                    }
-                }
+                // v7.20.167: reuse the ONE positioning helper — the scroll follower and the
+                // initial open can no longer diverge.
+                if (activePopover && activePopover._anchorCid) positionCommentPopover(activePopover);
             });
         });
 

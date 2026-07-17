@@ -491,7 +491,10 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     position: absolute;
     width: 300px;
     background: #1c1d1f;     /* v7.19.557: primary dark-theme brand colour (Neil) */
-    border: 1px solid oklch(0.38 0.01 270);
+    /* v7.20.167 (Neil impeccable pass): the opaque grey perimeter ring was heavy and
+       redundant against the shadow + blur — softened to a barely-there top-lit hairline
+       so the card just floats. Internal section dividers (header, reply) stay. */
+    border: 1px solid rgba(255,255,255,0.07);
     border-radius: 12px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.5);
     backdrop-filter: blur(12px);
@@ -915,7 +918,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 /* Light mode popover */
 .swml-canvas-light .swml-comment-popover {
     background: rgba(255,255,255,0.97);
-    border-color: rgba(0,0,0,0.1);
+    border-color: rgba(0,0,0,0.06); /* v7.20.167: match the softened dark hairline */
     box-shadow: 0 12px 40px rgba(0,0,0,0.12);
 }
 .swml-canvas-light .swml-comment-header {
