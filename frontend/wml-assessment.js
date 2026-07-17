@@ -28893,13 +28893,14 @@
         // coachmark remembers dismissal per doc+task so it never nags on re-entry. The card is mounted
         // in .swml-canvas-content OUTSIDE the PM editor (PM-safe) and positioned by the section's
         // scroll-invariant content offset, so it rides with the content.
-        const _PHASE_SECTION_TYPE = { planning: 'plan', outlining: 'outline', polishing: 'response', assessment: 'response', redraft_assessment: 'response' };
+        // planning intentionally omitted (Neil): that lesson already auto-scrolls on plan completion and
+        // the student needs to read the question first, so it just loads normally — no scroll, no coach.
+        const _PHASE_SECTION_TYPE = { outlining: 'outline', polishing: 'response', assessment: 'response', redraft_assessment: 'response' };
         const _PHASE_COACH = {
-            planning:  'Start your plan here. Work through each paragraph with Sophia — she’ll guide you.',
-            outlining: 'Your plan has been transferred here. Develop each line into a full sentence, then transfer it down to your Response.',
-            polishing: 'Here’s your response. Polish the prose — sharpen it line by line, then get it assessed.',
-            assessment: 'This is your response — Sophia is assessing it now.',
-            redraft_assessment: 'This is your redraft — Sophia is assessing it now.'
+            outlining:  { icon: '✍️', title: 'Develop your outline', body: 'Your plan has been transferred here. Turn each line into a full sentence, then transfer it down to your Response.' },
+            polishing:  { icon: '✨', title: 'Polish your response', body: 'Here’s your response. Sharpen the prose line by line, then get it assessed.' },
+            assessment: { icon: '📊', title: 'Assessment', body: 'This is your response — Sophia is assessing it now.' },
+            redraft_assessment: { icon: '📊', title: 'Reassessment', body: 'This is your redraft — Sophia is assessing it now.' }
         };
         function _phaseCoachAndScroll() {
             const type = _PHASE_SECTION_TYPE[state.task];
@@ -28912,8 +28913,8 @@
             // Auto-scroll to the phase section, but only if the student hasn't already scrolled.
             if (scroller.scrollTop < 40) { try { _swmlScrollToTop(sec, 24); } catch (_) {} }
             // One-time dismissible coachmark (remembered per doc + task).
-            const copy = _PHASE_COACH[state.task];
-            if (!copy || state.reviewMode) return;
+            const coach = _PHASE_COACH[state.task];
+            if (!coach || state.reviewMode) return;
             let dismissKey;
             try { dismissKey = 'swml_coach:' + CANVAS_SAVE_KEY() + ':' + state.task; } catch (_) { dismissKey = 'swml_coach:' + state.task; }
             try { if (localStorage.getItem(dismissKey) === '1') return; } catch (_) {}
@@ -28922,23 +28923,45 @@
             const card = document.createElement('div');
             card.className = 'swml-phase-coach';
             card.setAttribute('contenteditable', 'false');
-            const txt = document.createElement('div');
-            txt.className = 'swml-phase-coach-text';
-            txt.textContent = copy;
+            const dismiss = () => { try { localStorage.setItem(dismissKey, '1'); } catch (_) {} card.remove(); };
+            const arrow = document.createElement('div');
+            arrow.className = 'swml-phase-coach-arrow';
+            const head = document.createElement('div');
+            head.className = 'swml-phase-coach-head';
+            const icon = document.createElement('span');
+            icon.className = 'swml-phase-coach-icon';
+            icon.textContent = coach.icon;
+            const title = document.createElement('span');
+            title.className = 'swml-phase-coach-title';
+            title.textContent = coach.title;
             const close = document.createElement('button');
             close.type = 'button';
             close.className = 'swml-phase-coach-close';
             close.setAttribute('aria-label', 'Dismiss');
             close.innerHTML = '&times;';
-            close.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); try { localStorage.setItem(dismissKey, '1'); } catch (_) {} card.remove(); });
-            card.appendChild(txt);
-            card.appendChild(close);
+            close.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); dismiss(); });
+            head.appendChild(icon); head.appendChild(title); head.appendChild(close);
+            const body = document.createElement('div');
+            body.className = 'swml-phase-coach-text';
+            body.textContent = coach.body;
+            const cta = document.createElement('button');
+            cta.type = 'button';
+            cta.className = 'swml-phase-coach-cta';
+            cta.textContent = 'Got it';
+            cta.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); dismiss(); });
+            card.appendChild(arrow); card.appendChild(head); card.appendChild(body); card.appendChild(cta);
             scroller.appendChild(card);
-            // Position at the section's scroll-invariant content offset (stable even mid smooth-scroll).
+            // Adobe-style side pop-out: sit in the left gutter, top aligned with the section, arrow
+            // pointing right at it. `top` = the section's scroll-invariant content offset (stable even
+            // mid smooth-scroll); `left` clamps into the gutter so it never runs off-screen.
             requestAnimationFrame(() => {
                 if (!card.isConnected) return;
-                const top = scroller.scrollTop + (sec.getBoundingClientRect().top - scroller.getBoundingClientRect().top);
-                card.style.top = Math.max(8, top - card.offsetHeight - 10) + 'px';
+                const scRect = scroller.getBoundingClientRect();
+                const secRect = sec.getBoundingClientRect();
+                card.style.top = Math.max(8, scroller.scrollTop + (secRect.top - scRect.top)) + 'px';
+                let left = (secRect.left - scRect.left) - card.offsetWidth - 16;
+                if (left < 10) left = 10;
+                card.style.left = left + 'px';
             });
         }
 
