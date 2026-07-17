@@ -23,6 +23,12 @@
     "comparison": "Cross-text comparison requiring references to both sources",
     "choice": "Student chooses one task from multiple options"
   },
+  "_ao_cross_board_disambiguation": {
+    "READ_THIS_BEFORE_CITING_ANY_AO": "AO NUMBERS ARE NOT COMPARABLE ACROSS BOARDS. AO4 on AQA is not AO4 on Edexcel IGCSE. ALWAYS resolve an AO's MEANING from that board+paper's own 'aos_descriptions' (or this block) — NEVER from another board's numbering, and NEVER from memory.",
+    "CONTEXT_IS_LITERATURE_ONLY": "NO language paper on ANY board assesses CONTEXT. In LANGUAGE, AO3 = comparison (cross-source), never context. Context is a Literature construct only (Literature AO3; Edexcel IGCSE *Literature* AO4 = context). The oft-repeated note 'Edexcel IGCSE AO4 = context' is LITERATURE-scoped and is FALSE for language. Ratified by Neil 2026-07-17 after this was hallucinated repeatedly.",
+    "aqa_language_ao_map": "AQA 8700: AO1 = reading (retrieval/synthesis), AO2 = language & structure analysis, AO3 = comparison (P2 only), AO4 = evaluate texts critically, AO5 = writing (content & organisation), AO6 = technical accuracy (SPaG). No context anywhere.",
+    "edexcel_igcse_language_ao_map": "Edexcel IGCSE English Language A (4EA1): AO1 = reading, AO2 = language & structure analysis, AO3 = comparison, AO4 = writing content/style/communication (EQUIVALENT to AQA AO5), AO5 = technical accuracy / SPaG (EQUIVALENT to AQA AO6). IGCSE-language AO4 and AO5 are the WRITING objectives — NEVER context (Neil 2026-07-17)."
+  },
 
   "aqa": {
     "language_p1": {
@@ -336,6 +342,13 @@
       "source": "Edexcel IGCSE 4EA1/01 Spec A + June 2024 past papers",
       "total": 90,
       "time_minutes": 135,
+      "aos_descriptions": {
+        "AO1": "Read and understand a variety of texts, selecting and interpreting explicit and implicit information and ideas.",
+        "AO2": "Understand and analyse how writers use linguistic and structural devices to achieve effects and influence readers, using relevant subject terminology.",
+        "AO3": "Explore links and connections between writers' ideas and perspectives, and how these are conveyed (COMPARISON — not context).",
+        "AO4": "Communicate effectively and imaginatively, adapting form, tone and register for audience and purpose (writing CONTENT & STYLE) — EQUIVALENT to AQA AO5. NOT context.",
+        "AO5": "Write clearly and coherently, using a range of vocabulary and sentence structures with accurate spelling, grammar and punctuation (TECHNICAL ACCURACY) — EQUIVALENT to AQA AO6."
+      },
       "sections": [
         {
           "label": "Section A: Reading",
@@ -363,6 +376,13 @@
       "source": "Edexcel IGCSE 4EA1/02 Spec A + June 2024 past papers",
       "total": 60,
       "time_minutes": 90,
+      "aos_descriptions": {
+        "AO1": "Read and understand a variety of texts, selecting and interpreting explicit and implicit information and ideas.",
+        "AO2": "Understand and analyse how writers use linguistic and structural devices to achieve effects and influence readers, using relevant subject terminology.",
+        "AO3": "Explore links and connections between writers' ideas and perspectives, and how these are conveyed (COMPARISON — not context).",
+        "AO4": "Communicate effectively and imaginatively, adapting form, tone and register for audience and purpose (writing CONTENT & STYLE) — EQUIVALENT to AQA AO5. NOT context.",
+        "AO5": "Write clearly and coherently, using a range of vocabulary and sentence structures with accurate spelling, grammar and punctuation (TECHNICAL ACCURACY) — EQUIVALENT to AQA AO6."
+      },
       "sections": [
         {
           "label": "Section A: Reading — Poetry",
