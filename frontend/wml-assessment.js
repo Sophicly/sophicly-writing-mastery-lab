@@ -39281,8 +39281,17 @@
         const txt = node.textContent || '';
         // Stale = pre-tuned essay shape OR any earlier revision of the Language set
         // (v1 carried 'Linked Ideas & Paragraphs' and had no SPaG group — v7.19.836).
+        // v7.20.173 (Neil console: 1–3 byte OSCILLATING saves + "ctlrows" storm on AQA Lang P2).
+        // ROOT: the Q5-marker check was P1-ONLY ('Creative Writing (Q5)'), but the P2 SA set builds
+        // 'Transactional Writing (Q5)' (buildSelfAssessmentSection ~35307). So a fully-healed P2 doc
+        // STILL matched `stale` → this heal re-fired EVERY migrate pass → replace SA node → save →
+        // re-render → re-heal: the load storm + oscillating saves + the breaker trip. Accept EITHER
+        // Q5 label so BOTH papers reach a stable "not stale" state (idempotence is the whole point
+        // of this guard — cf. the v817 mutate-every-load wipe lesson).
+        const _q5Missing = txt.indexOf('Creative Writing (Q5)') === -1
+            && txt.indexOf('Transactional Writing (Q5)') === -1;
         const stale = /Hook|Building Sentences|Controlling Concept|Central Purpose|Universal Message/.test(txt)
-            || txt.indexOf('Creative Writing (Q5)') === -1
+            || _q5Missing
             || txt.indexOf('Linked Ideas & Paragraphs') !== -1
             || txt.indexOf('Spelling, Punctuation & Grammar') === -1;
         if (!stale) return;
