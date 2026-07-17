@@ -24401,6 +24401,22 @@
 
                     const contentDOM = document.createElement('span');
                     contentDOM.classList.add('swml-checklist-text');
+                    // v7.20.166 (Neil: "shouldn't be able to edit the statements — students will edit
+                    // them by mistake and won't know how to fix it"). A PICKING statement (the AQA Lang
+                    // P2 Q1 true/false mechanism) is FIXED reference text the student only TICKS, so its
+                    // text must be non-editable. Universal to the checklistItem mechanism — keyed on the
+                    // answer-key/authored flags (a picking statement is authored OR carries a ground-truth
+                    // `correct`), NOT the itemId: AQA P1 Q1's student-INPUT list-4 points share the
+                    // `-stmt-` id but have neither flag and MUST stay editable, so they never lock.
+                    // contenteditable=false blocks typing; the checkbox click (own handler) still ticks.
+                    const _isFixedStatement = n => !!(n && n.attrs && (n.attrs.authored === true || n.attrs.correct !== null));
+                    const _applyStmtLock = n => {
+                        const lock = _isFixedStatement(n);
+                        const has = contentDOM.getAttribute('contenteditable') === 'false';
+                        if (lock && !has) { contentDOM.setAttribute('contenteditable', 'false'); contentDOM.classList.add('swml-checklist-locked'); }
+                        else if (!lock && has) { contentDOM.removeAttribute('contenteditable'); contentDOM.classList.remove('swml-checklist-locked'); }
+                    };
+                    _applyStmtLock(node); // set BEFORE append → no MutationRecord (not yet observed)
                     dom.appendChild(contentDOM);
 
                     return {
@@ -24424,6 +24440,10 @@
                             if (updated.attrs.itemId) dom.setAttribute('data-item-id', updated.attrs.itemId);
                             if (updated.attrs.correct === true)  dom.setAttribute('data-correct', 'true');
                             if (updated.attrs.correct === false) dom.setAttribute('data-correct', 'false');
+                            // v7.20.166: re-evaluate the statement lock — _populateChecklist stamps the
+                            // answer key via setNodeMarkup (→ this update), so an AI-populated statement
+                            // becomes read-only the moment its `correct` key lands. Idempotent.
+                            _applyStmtLock(updated);
                             return true;
                         },
                         // v7.20.59 (Neil's blink repro): update() re-stamps attributes on
@@ -24435,6 +24455,10 @@
                         // contentDOM (the student-editable statement text) stays live.
                         ignoreMutation(m) {
                             if (m.type === 'attributes' && m.target === dom) return true;
+                            // v7.20.166: the statement-lock flips contenteditable/class on contentDOM;
+                            // firewall those attribute writes so PM's DOMObserver doesn't flush→redraw.
+                            // (Attribute-only — content edits are childList/characterData, still observed.)
+                            if (m.type === 'attributes' && m.target === contentDOM) return true;
                             if (checkbox.contains(m.target)) return true;
                             return false;
                         },
