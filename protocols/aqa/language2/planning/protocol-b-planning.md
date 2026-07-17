@@ -24,7 +24,7 @@
      |----|--------------------------|
      | Q2 | PLAN: plan-Q2-para-1 · plan-Q2-para-2 (each APPENDS across its 4 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2}-{inf1-topic,inf1-evidence,inf2-topic,inf2-evidence}-q2. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers). |
      | Q3 | PLAN: plan-Q3-para-1 · plan-Q3-para-2 · plan-Q3-para-3 (each APPENDS across its 6 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}-q3. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers); the Technique step files nothing (absorbed into evidence); Effects = two turns (effects + effects2). |
-     | Q4 | plan-Q4-intro · plan-Q4-body-1 · plan-Q4-body-2 · plan-Q4-body-3 · plan-Q4-conclusion |
+     | Q4 | PLAN: plan-Q4-intro · plan-Q4-body-1..3 · plan-Q4-conclusion. OUTLINE (⚠️ MIXED convention): bodies UNSUFFIXED `outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}` (context box renders but is NOT planned) · intro `outline-intro-thesis-q4` (suffixed) · conclusion `outline-conclusion-thesis` (unsuffixed). Each body element turn emits its OUTLINE box + body PLAN box; Effects = two turns (effects=Source A, effects2=Source B); intro/conclusion emit their thesis box + plan box. |
      | Q5 | iumvcc-intro · iumvcc-urgency · iumvcc-method · iumvcc-vision · iumvcc-counter · iumvcc-conclusion |
      (Q5 ids are abbreviated — "method", "counter" — never "methodology"/"counterargument".)
 
@@ -636,34 +636,55 @@ For each aspect: ONE quote from Source A + ONE from Source B, 5–10 words each,
 Validate each for completeness exactly as Q3 (fuller-version offer allowed; respect
 choice). Confirm all six back in a paired list.
 
-### Beats 5–9 per aspect ×3 — the comparative TTECEA sequence (one element per turn)
-1. **T — Comparative topic sentence, built in three moves.** Source A's concept for this
+<!-- ═══ Q4 ELEMENT-BY-ELEMENT (v7.20.158 — plan+outline autofill, mirrors Q2/Q3). Each element files
+     its OUTLINE box + the body PLAN box (verbatim append, ownership law). ⚠️ Q4 uses a MIXED fieldId
+     convention (byte-traced against the render's comparison specKey — do NOT assume the -q3 pattern):
+       • BODY boxes are UNSUFFIXED — `outline-body-{i}-{topic,evidence,analysis,effects,effects2,purpose}`
+         (NO -q4). The render also emits a 7th `context` box per body (Q4 aos=AO3 → aoRequired filter keeps
+         it) but context is NOT assessed on this paper (comparison, not context) → we DO NOT plan or fill
+         it; those three boxes stay empty. [Follow-up: render should drop context for the comparison
+         specKey — tracked in the handoff; not this port.]
+       • INTRO thesis box IS suffixed — `outline-intro-thesis-q4`.
+       • CONCLUSION thesis box is UNSUFFIXED — `outline-conclusion-thesis`.
+     COMPARATIVE mapping (§3c: comparative body = the SAME 6 TTECEA rows, helper text only): topic←Beat 1;
+     evidence←Beat 2 (T+E+I both sources); analysis←Beat 3; effects←Beat 4a (Source A's ONE effect);
+     effects2←Beat 4b (Source B's ONE effect — comparative = 1 effect PER SOURCE, ruled 2026-07-15);
+     purpose←Beat 5 (author's purpose + the comparative judgement folds in here). Effects is TWO turns
+     (two boxes; the filer writes the whole message to each marked field). FORWARD MOTION + QUOTE-ECHO LAW
+     apply. Filing markers are unrolled per body in the "Q4 filing" block below. -->
+
+### Beats 5–9 per aspect ×3 — the comparative TTECEA sequence (one element per turn) → DUAL-FILE
+Work these elements IN ORDER, one per turn; each files its OUTLINE box + the body PLAN box (literal
+markers in the "Q4 filing" block below). Effect is TWO turns (4a Source A → `effects`, 4b Source B →
+`effects2`).
+1. **T — Comparative topic sentence, built in three moves** (files the `topic` box). Source A's concept for this
    aspect (concept-led, no techniques) → Source B's concept → integrate: "How do these
    relate — similar or different? 'Both sources explore [aspect], yet Source A suggests
    [idea] whereas Source B emphasises [idea].'" Check: both concepts grounded in their
    quotes; addresses the question; technique-free; genuinely COMPARES — never "Source A
    does X. Source B does Y." with no relationship. From aspect 2 onward: how does this
    comparison deepen the previous one?
-2. **T+E+I for BOTH sources.** Source A: technique → how it serves the concept → what the
+2. **T+E+I for BOTH sources** (files the `evidence` box). Source A: technique → how it serves the concept → what the
    quote implies → TTE sentence. Then Source B: the same four moves. Then the comparative
    step: "Source A chose [technique]; Source B chose [technique]. What does that CHOICE
    reveal about each writer's perspective on this aspect?" Second-technique upgrade
    available per source, same three pathways as Q3.
-3. **C — Comparative close analysis.** Zoom into a word/sound/punctuation detail in EACH
+3. **C — Comparative close analysis** (files the `analysis` box). Zoom into a word/sound/punctuation detail in EACH
    source's quote; for each, bridge the detail back to that source's broader technique
    (micro-to-macro — never analysed in isolation); then the comparative point: "Source A's
    [detail] creates [effect] while Source B's [detail] creates [effect] — what does that
    contrast reveal about the writers' different approaches to this aspect?"
-4. **E — Comparative effects.** For EACH source: the four-fold sequence (focus, emotions,
-   thoughts, action), the compounding question (which technique creates which effect), and
-   **ONE distinct effect sentence — two in total per paragraph, one per source** (Neil,
-   2026-07-15). A single-source paragraph plans two effects; a comparative paragraph plans
-   one per text, so the COUNT is unchanged — the second slot buys the comparison rather
-   than a second effect on the same source. (The four-fold sequence is the analysis the
-   student runs; it is not a sentence count.) Then explicitly comparative: "Source A
-   creates [effect] while Source B creates [effect] — what does that difference in reader
-   impact reveal about each writer's approach?"
-5. **A + JUDGEMENT.** Each writer's purpose for this aspect (tentative language). Then the
+4a. **E — Source A's effect** (files the `effects` box — its OWN turn). Run the four-fold sequence
+   (focus, emotions, thoughts, action) + the compounding question (which technique creates which effect)
+   for SOURCE A, and land **ONE distinct effect sentence** for Source A. (Comparative paragraphs plan one
+   effect PER SOURCE — Neil, 2026-07-15 — so the count is unchanged; the second slot buys the comparison,
+   not a second effect on the same source. The four-fold sequence is the analysis the student runs, not a
+   sentence count.) File to `effects` + plan, then ask 4b.
+4b. **E — Source B's effect + the comparison** (files the `effects2` box — its OWN turn). One distinct
+   effect sentence for SOURCE B, then the explicitly comparative move: "Source A creates [effect] while
+   Source B creates [effect] — what does that difference in reader impact reveal about each writer's
+   approach?" File to `effects2` + plan, then ask element 5.
+5. **A + JUDGEMENT** (files the `purpose` box — the comparative judgement folds in here). Each writer's purpose for this aspect (tentative language). Then the
    explicit purpose-comparison — its own move, before any verdict: "How do these purposes
    compare? Are both writers trying to achieve the same thing through different means, or
    do they have fundamentally different aims — and what does that reveal about their
@@ -672,18 +693,58 @@ choice). Confirm all six back in a paired list.
    answer → push once: even if both are strong, which edges ahead for THIS aspect?) Close
    the paragraph plan by linking back to the question's exact focus.
 
-### Compile per body paragraph → FILE
-Same compile discipline as Q3, in the session's plan mode. Body 1:
+### Q4 body filing — per element, per body paragraph (dual-emit; UNSUFFIXED body ids — byte-traced)
+As you confirm EACH element, emit its TWO markers on their own lines in the SAME reply — the OUTLINE box
+(writes) and the body PLAN box (appends). Emit ONLY the current body's pair. ⚠️ Q4 body ids are
+UNSUFFIXED (no -q4). Do NOT emit to a `context` box — context is not planned on this paper. Use exactly:
 
+**Body Paragraph 1** (aspect 1):
+@FIELD_COMMIT{"field":"outline-body-1-topic"}
+@FIELD_COMMIT{"field":"plan-Q4-body-1"}
+@FIELD_COMMIT{"field":"outline-body-1-evidence"}
+@FIELD_COMMIT{"field":"plan-Q4-body-1"}
+@FIELD_COMMIT{"field":"outline-body-1-analysis"}
+@FIELD_COMMIT{"field":"plan-Q4-body-1"}
+@FIELD_COMMIT{"field":"outline-body-1-effects"}
+@FIELD_COMMIT{"field":"plan-Q4-body-1"}
+@FIELD_COMMIT{"field":"outline-body-1-effects2"}
+@FIELD_COMMIT{"field":"plan-Q4-body-1"}
+@FIELD_COMMIT{"field":"outline-body-1-purpose"}
 @FIELD_COMMIT{"field":"plan-Q4-body-1"}
 
-Body 2's compile reply carries, exactly:
-
+**Body Paragraph 2** (aspect 2):
+@FIELD_COMMIT{"field":"outline-body-2-topic"}
+@FIELD_COMMIT{"field":"plan-Q4-body-2"}
+@FIELD_COMMIT{"field":"outline-body-2-evidence"}
+@FIELD_COMMIT{"field":"plan-Q4-body-2"}
+@FIELD_COMMIT{"field":"outline-body-2-analysis"}
+@FIELD_COMMIT{"field":"plan-Q4-body-2"}
+@FIELD_COMMIT{"field":"outline-body-2-effects"}
+@FIELD_COMMIT{"field":"plan-Q4-body-2"}
+@FIELD_COMMIT{"field":"outline-body-2-effects2"}
+@FIELD_COMMIT{"field":"plan-Q4-body-2"}
+@FIELD_COMMIT{"field":"outline-body-2-purpose"}
 @FIELD_COMMIT{"field":"plan-Q4-body-2"}
 
-Body 3's compile reply carries, exactly:
-
+**Body Paragraph 3** (aspect 3):
+@FIELD_COMMIT{"field":"outline-body-3-topic"}
 @FIELD_COMMIT{"field":"plan-Q4-body-3"}
+@FIELD_COMMIT{"field":"outline-body-3-evidence"}
+@FIELD_COMMIT{"field":"plan-Q4-body-3"}
+@FIELD_COMMIT{"field":"outline-body-3-analysis"}
+@FIELD_COMMIT{"field":"plan-Q4-body-3"}
+@FIELD_COMMIT{"field":"outline-body-3-effects"}
+@FIELD_COMMIT{"field":"plan-Q4-body-3"}
+@FIELD_COMMIT{"field":"outline-body-3-effects2"}
+@FIELD_COMMIT{"field":"plan-Q4-body-3"}
+@FIELD_COMMIT{"field":"outline-body-3-purpose"}
+@FIELD_COMMIT{"field":"plan-Q4-body-3"}
+
+After each body's sixth element, present a mirror-back (display only, do NOT re-file): "Here is your
+Body Paragraph {i}, in your own words: [comparative topic] · [T+E+I both] · [comparative close] ·
+[Source A effect] · [Source B effect] · [purpose + judgement]. Does it compare BOTH sources throughout?
+A) Happy — next paragraph B) Change one element." Then: "Let's move to your next aspect." After Body 3,
+go to Beat 10.
 
 ### Beat 10 — Brief introduction (bodies first, frame last — one exchange)
 "Now frame it. A strong comparative introduction does three things: establishes the common
@@ -692,8 +753,9 @@ your overall judgement. What overarching similarity do both sources share?" → 
 key difference in how they approach it?" → "Combine into your comparative thesis: 'Both
 sources [common ground], yet Source A [approach] whereas Source B [approach].'" Review
 checks: similarity AND difference present; no technique-listing; sets up the comparison.
-Compile (brief — this is a frame, not a fourth body):
+File the comparative thesis to BOTH the intro outline box (⚠️ suffixed `-q4`) and the intro plan box:
 
+@FIELD_COMMIT{"field":"outline-intro-thesis-q4"}
 @FIELD_COMMIT{"field":"plan-Q4-intro"}
 
 ### Beat 11 — Brief conclusion (one exchange)
@@ -701,12 +763,15 @@ Compile (brief — this is a frame, not a fourth body):
 is ultimately more effective, and why — emotional impact, persuasiveness, depth, clarity?
 'Ultimately, Source A's [strength] proves more compelling because [reason]…'" Review
 checks: genuine synthesis; an evaluative judgement; nothing brand-new; connects to the
-question. Compile:
+question. File the synthesis to BOTH the conclusion outline box (⚠️ UNSUFFIXED — no -q4) and the plan box:
 
+@FIELD_COMMIT{"field":"outline-conclusion-thesis"}
 @FIELD_COMMIT{"field":"plan-Q4-conclusion"}
 
 ### Q4 progression gate
-HARD PRECONDITION: all five Q4 fields filed. Then once:
+HARD PRECONDITION: all TWENTY taught Q4 outline boxes hold student text (6 per body ×3 = 18, + intro
+thesis + conclusion thesis; the 3 `context` boxes are NOT planned on this paper and stay empty) — if any
+taught box is missing, return to that element's beat, complete it, STOP. Then once:
 "Does that clear it up? Shall we continue with **Question 5 planning**?"
 [✓ Got it — continue] [🤔 Still confused] [💬 Different question] [⏸ Pause here]
 
@@ -978,11 +1043,12 @@ are.
 
 ## 10. ACCEPTANCE (build-time B-CHECKS this file must pass)
 
-- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 63 exactly (Q2×16 — element-by-element, 8 per
+- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 98 exactly (Q2×16 — element-by-element, 8 per
   paragraph = OUTLINE box + PLAN box for each of the 4 elements; Q3×36 — element-by-element, 12 per
   paragraph = OUTLINE box + PLAN box for each of the 6 TTECEA boxes [topic·evidence·analysis·effects·
-  effects2·purpose], ×3 paragraphs; Q4×5, Q5×6), every fieldId byte-matching the header contract table,
-  each in an element- or compile-validating reply.
+  effects2·purpose], ×3 paragraphs; Q4×40 — 12 per body ×3 [same 6 boxes, UNSUFFIXED] + intro
+  (outline-intro-thesis-q4 + plan) + conclusion (outline-conclusion-thesis + plan) = 36+2+2; Q5×6), every
+  fieldId byte-matching the header contract table, each in an element- or compile-validating reply.
 - `Got it — continue` raw count = 4 Q-GATE rows + this line = 5.
 - `HARD PRECONDITION` ≥ 3 (pre-planning chain, per-question gates).
 - Simulated-state vocabulary appears NOWHERE as an instruction (this prohibition line is
