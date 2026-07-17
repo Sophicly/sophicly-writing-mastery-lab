@@ -28668,6 +28668,99 @@
         // genuinely rebuilt) and breaker-guarded (_derivedCardFillOk, PM law rule 5). Handlers
         // re-resolve their target paragraphs at CLICK time — a built-time element can be a
         // detached pre-redraw node.
+        // v7.20.168/.169 (Neil QUEUE-A): TRANSFER BUTTONS — in-flow, breaker-free.
+        // Per-section ↓ (each plan/outline section) + "Transfer All" (each PLAN/OUTLINE divider)
+        // render into the section's PM-firewalled ctlRow — the old absolute overlay is retired, so
+        // there is no positioning pass and the ctlrows storm can't jitter them (layout-driven).
+        // Self-contained + one-shot sig-idempotent (skips once painted → zero churn during a storm),
+        // so it runs BEFORE the _renderControlRows breaker (which gates only the marking widgets).
+        // Handlers re-resolve their section at CLICK time (a built element may be a pre-redraw node).
+        function _renderTransferButtons(editor) {
+            // Same task-gates as the old buildTransferOverlays (CN/FQ already bailed upstream).
+            if (state.task === 'exam_crib' || state.task === 'mastery_codex'
+                || (state.task && state.task.startsWith('cw_'))) return;
+            const _ctlRowOf = (section) => {
+                for (let i = 0; i < section.children.length; i++) {
+                    const c = section.children[i];
+                    if (c.classList && c.classList.contains('swml-ctl-row')) return c;
+                }
+                return null;
+            };
+            const _paint = (row, sig, build) => {
+                if (row.dataset.sig === sig) return; // one-shot: already painted → skip (no storm)
+                row.textContent = '';
+                build(row);
+                row.dataset.sig = sig;
+                const want = row.childNodes.length ? 'flex' : 'none';
+                if (row.style.display !== want) row.style.display = want; // idempotent (PM law rule 4)
+            };
+            const _mkTransferBtn = (label, sectionType) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'swml-transfer-btn swml-ctl-transfer';
+                btn.setAttribute('contenteditable', 'false');
+                btn.innerHTML = SVG_TRANSFER;
+                btn.title = 'Transfer to Response';
+                btn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    const sec = findSectionByLabel(editor, label);
+                    if (!sec) return;
+                    const text = sectionType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
+                    if (!text) { flashTransferBtn(btn, false); return; }
+                    const ok = insertIntoResponse(resolveResponseLabel(label), [text], sectionType + ':' + label);
+                    flashTransferBtn(btn, ok);
+                });
+                return btn;
+            };
+            ['plan', 'outline'].forEach((sectionType) => {
+                editor.querySelectorAll('[data-section-type="' + sectionType + '"]').forEach((section) => {
+                    const row = _ctlRowOf(section);
+                    if (!row) return; // NodeView not mounted yet — its mount fill re-runs this
+                    const label = section.getAttribute('data-section-label') || '';
+                    row.classList.add('swml-ctl-row-transfer'); // right-align the ↓
+                    _paint(row, 'transfer|' + sectionType + '|' + label, (r) => r.appendChild(_mkTransferBtn(label, sectionType)));
+                });
+            });
+            // "Transfer All" on the PLAN / OUTLINE dividers (their NodeView now mounts a ctlRow).
+            editor.querySelectorAll('[data-section-type="divider"]').forEach((div) => {
+                const label = (div.getAttribute('data-section-label') || '').trim();
+                let targetType = null;
+                if (/^ESSAY\s*PLAN/i.test(label) || /^PLAN\s*—/i.test(label) || /^YOUR\s*(?:ESSAY\s*)?PLAN/i.test(label)) targetType = 'plan';
+                else if (/^OUTLINE/i.test(label)) targetType = 'outline';
+                if (!targetType) return; // only the transfer dividers carry a ctlRow
+                const row = _ctlRowOf(div);
+                if (!row) return;
+                _paint(row, 'transferall|' + targetType + '|' + label, (r) => {
+                    const allBtn = document.createElement('button');
+                    allBtn.type = 'button';
+                    allBtn.className = 'swml-transfer-all-btn swml-ctl-transfer-all';
+                    allBtn.setAttribute('contenteditable', 'false');
+                    allBtn.innerHTML = 'Transfer All ' + SVG_TRANSFER;
+                    allBtn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+                    allBtn.addEventListener('click', (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        const divEl = findSectionByLabel(editor, label);
+                        if (!divEl) return;
+                        const sections = collectSectionsAfterDivider(divEl, targetType);
+                        let any = false, lastTarget = null;
+                        sections.forEach((sec) => {
+                            const secLabel = sec.getAttribute('data-section-label') || '';
+                            const text = targetType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
+                            if (!text) return;
+                            const tgt = resolveResponseLabel(secLabel);
+                            if (insertIntoResponse(tgt, [text], targetType + ':' + secLabel, true)) { any = true; lastTarget = tgt; }
+                        });
+                        if (any && lastTarget) {
+                            try { const rEl = findSectionByLabel(editor, lastTarget); if (rEl) _swmlScrollToTop(rEl, 24); } catch (_) {}
+                        }
+                        flashTransferBtn(allBtn, any);
+                    });
+                    r.appendChild(allBtn);
+                });
+            });
+        }
+
         function _renderControlRows() {
             if (!canvasEditor) return;
             const editor = document.getElementById('swml-tiptap-editor');
@@ -28682,6 +28775,12 @@
             // counter so CN/FQ can never trip it. Not a masked loop: renderControlRows writes
             // nothing on these docs (verified — poetry CN, being smaller, simply never reached 50).
             if (state.task === 'conceptual_notes' || state.task === 'foundational_quiz') return;
+            // v7.20.169 (Neil: transfer buttons vanished on the redraft doc). The transfer
+            // buttons are one-shot sig-idempotent, so they render BEFORE the breaker — if the
+            // ctlrows storm trips _derivedCardFillOk, the marking-widget passes below are
+            // suppressed (correct) but the transfer buttons must still paint. Breaker-free +
+            // idempotent → it cannot itself contribute to a storm.
+            _renderTransferButtons(editor);
             if (!_derivedCardFillOk('ctlrows')) return;
 
             const _ctlRowOf = (section) => {
@@ -29168,90 +29267,6 @@
                     _rowFillEnd(optRow, optSig);
                     }
                 }
-            }
-
-            // ── v7.20.168 (Neil QUEUE-A): TRANSFER BUTTONS — in-flow, no overlay ──
-            // The per-section ↓ (each plan/outline section) and "Transfer All" (each PLAN/OUTLINE
-            // divider) now render into the section's own PM-firewalled ctlRow — the last absolute
-            // overlay (.swml-transfer-layer) is retired, so there is no positioning pass and the
-            // ctlrows redraw-storm can't jitter them (layout-driven, storm-immune). Same task-gates
-            // as the old buildTransferOverlays (CN + FQ already bailed at the top of this fn). Sig-
-            // idempotent + breaker-guarded like every other pass; handlers re-resolve their section
-            // at CLICK time (a built element may be a pre-redraw node).
-            const _transferGated = state.task === 'exam_crib' || state.task === 'mastery_codex'
-                || (state.task && state.task.startsWith('cw_'));
-            if (!_transferGated) {
-                const _mkTransferBtn = (label, sectionType) => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'swml-transfer-btn swml-ctl-transfer';
-                    btn.setAttribute('contenteditable', 'false');
-                    btn.innerHTML = SVG_TRANSFER;
-                    btn.title = 'Transfer to Response';
-                    btn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault(); e.stopPropagation();
-                        const sec = findSectionByLabel(editor, label);
-                        if (!sec) return;
-                        const text = sectionType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
-                        if (!text) { flashTransferBtn(btn, false); return; }
-                        const ok = insertIntoResponse(resolveResponseLabel(label), [text], sectionType + ':' + label);
-                        flashTransferBtn(btn, ok);
-                    });
-                    return btn;
-                };
-                ['plan', 'outline'].forEach((sectionType) => {
-                    editor.querySelectorAll('[data-section-type="' + sectionType + '"]').forEach((section) => {
-                        const row = _ctlRowOf(section);
-                        if (!row) return; // NodeView not mounted yet — its mount fill re-runs this pass
-                        const label = section.getAttribute('data-section-label') || '';
-                        const sig = 'transfer|' + sectionType + '|' + label;
-                        if (row.dataset.sig === sig) return;
-                        _rowFillStart(row);
-                        row.classList.add('swml-ctl-row-transfer'); // right-align the ↓ (echoes the old top-right overlay)
-                        row.appendChild(_mkTransferBtn(label, sectionType));
-                        _rowFillEnd(row, sig);
-                    });
-                });
-                // "Transfer All" on the PLAN / OUTLINE dividers (their NodeView now mounts a ctlRow).
-                editor.querySelectorAll('[data-section-type="divider"]').forEach((div) => {
-                    const label = (div.getAttribute('data-section-label') || '').trim();
-                    let targetType = null;
-                    if (/^ESSAY\s*PLAN/i.test(label) || /^PLAN\s*—/i.test(label) || /^YOUR\s*(?:ESSAY\s*)?PLAN/i.test(label)) targetType = 'plan';
-                    else if (/^OUTLINE/i.test(label)) targetType = 'outline';
-                    if (!targetType) return; // only the transfer dividers carry a ctlRow
-                    const row = _ctlRowOf(div);
-                    if (!row) return;
-                    const sig = 'transferall|' + targetType + '|' + label;
-                    if (row.dataset.sig === sig) return;
-                    _rowFillStart(row);
-                    const allBtn = document.createElement('button');
-                    allBtn.type = 'button';
-                    allBtn.className = 'swml-transfer-all-btn swml-ctl-transfer-all';
-                    allBtn.setAttribute('contenteditable', 'false');
-                    allBtn.innerHTML = 'Transfer All ' + SVG_TRANSFER;
-                    allBtn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
-                    allBtn.addEventListener('click', (e) => {
-                        e.preventDefault(); e.stopPropagation();
-                        const divEl = findSectionByLabel(editor, label);
-                        if (!divEl) return;
-                        const sections = collectSectionsAfterDivider(divEl, targetType);
-                        let any = false, lastTarget = null;
-                        sections.forEach((sec) => {
-                            const secLabel = sec.getAttribute('data-section-label') || '';
-                            const text = targetType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
-                            if (!text) return;
-                            const tgt = resolveResponseLabel(secLabel);
-                            if (insertIntoResponse(tgt, [text], targetType + ':' + secLabel, true)) { any = true; lastTarget = tgt; }
-                        });
-                        if (any && lastTarget) {
-                            try { const rEl = findSectionByLabel(editor, lastTarget); if (rEl) _swmlScrollToTop(rEl, 24); } catch (_) {}
-                        }
-                        flashTransferBtn(allBtn, any);
-                    });
-                    row.appendChild(allBtn);
-                    _rowFillEnd(row, sig);
-                });
             }
         }
 

@@ -5112,7 +5112,11 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* v7.14.23: hide marking widgets in diagnostic mode (v7.19.951: in-flow control rows now).
    Also flatten the feedback header band — with no row there is nothing to reserve for. */
-.swml-canvas-diagnostic .swml-ctl-row { display: none !important; }
+/* v7.20.169 (Neil): the 'free' env (redraft/outline lessons) carries .swml-canvas-diagnostic,
+   which hid EVERY ctl-row — fine for MARKING widgets (not shown pre-assessment) but it also
+   killed the v7.20.168 in-flow TRANSFER buttons (the old overlay wasn't a ctl-row, so it escaped
+   this rule). Exempt the transfer rows; keep hiding the marking rows. */
+.swml-canvas-diagnostic .swml-ctl-row:not(.swml-ctl-row-transfer):not(.swml-ctl-row-divider) { display: none !important; }
 .swml-canvas-diagnostic .swml-section-feedback { padding-top: 16px !important; }
 /* Notice section: visible in diagnostic, hidden in assessment */
 .swml-section-notice {
