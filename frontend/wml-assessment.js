@@ -26587,17 +26587,49 @@
                 }
             } catch (_) { /* stamping is best-effort — never break the edit */ }
         }
-        function _flushEditTsStamps() {
+        function _flushEditTsStamps(force) {
             const ids = _editTsPendingIds;
             _editTsPendingIds = null;
             if (!ids || !ids.size || !canvasEditor || !canvasEditor.view || canvasEditor.view.isDestroyed) return;
+            // v7.20.179 (plan-box typing flicker ROOT): never setNodeMarkup the inputField the
+            // CARET is sitting in. The mid-type stamp node-replaced the focused textblock — the
+            // ONE per-typing operation that targets the plan box directly (outline inputs never
+            // flickered because outlineRow is not a stamp target; only its SECTION is, and
+            // section stamps are absorbed by the sectionBlock update() + attr firewall). The
+            // focused field's id is CARRIED, not dropped: it re-queues and stamps on the next
+            // flush once the caret has left — and every save force-flushes first (see
+            // saveCanvasContent → _flushEditTsStampsRef(true)), so serialized HTML always
+            // carries a ts at least as fresh as before. STAGE-RECORD newest-edit-wins safe.
+            let skipKey = null;
+            if (!force) {
+                try {
+                    if (canvasEditor.view.hasFocus()) {
+                        const $from = canvasEditor.state.selection.$from;
+                        for (let d = $from.depth; d > 0; d--) {
+                            if ($from.node(d).type.name === 'inputField') {
+                                const fid = $from.node(d).attrs.fieldId;
+                                if (fid) skipKey = 'F|' + fid;
+                                break;
+                            }
+                        }
+                    }
+                } catch (_) { skipKey = null; }
+            }
             const now = Date.now();
             const updates = [];
             canvasEditor.state.doc.descendants((node, pos) => {
                 let key = null;
                 if (node.type.name === 'sectionBlock') key = 'S|' + (node.attrs.sectionType || '') + '|' + (node.attrs.label || '');
                 else if (node.type.name === 'inputField' && node.attrs.fieldId) key = 'F|' + node.attrs.fieldId;
-                if (key && ids.has(key) && now - (node.attrs.editTs || 0) > 3000) updates.push({ pos, attrs: node.attrs });
+                if (key && ids.has(key) && now - (node.attrs.editTs || 0) > 3000) {
+                    if (key === skipKey) {
+                        // Defer the focused field — no rAF re-queue (that would spin); the
+                        // next keystroke flush or the save force-flush picks it up.
+                        (_editTsPendingIds || (_editTsPendingIds = new Set())).add(key);
+                    } else {
+                        updates.push({ pos, attrs: node.attrs });
+                    }
+                }
                 return true;
             });
             if (!updates.length) return;
@@ -26606,9 +26638,15 @@
                 updates.forEach(u => tr.setNodeMarkup(u.pos, null, { ...u.attrs, editTs: now }));
                 tr.setMeta('addToHistory', false);
                 tr.setMeta('swmlEditTs', 1);
+                // Force-flush runs synchronously inside saveCanvasContent — preventUpdate keeps
+                // the stamp from re-arming the autosave debounce mid-save (no save-flood echo).
+                if (force) tr.setMeta('preventUpdate', true);
                 canvasEditor.view.dispatch(tr);
             } catch (e) { console.warn('WML editTs: stamp failed (non-fatal)', e && e.message); }
         }
+        // v7.20.179: closure-local flush, reachable from module-scope saveCanvasContent
+        // (same idiom as _recalcScoreSummaryRef — closure-locals do NOT hoist, .898 lesson).
+        _flushEditTsStampsRef = _flushEditTsStamps;
 
         // v7.19.947: display-lock indicator hook — root attr set BEFORE ProseMirror mounts
         // (no DOMObserver yet, so this is not a foreign mutation). CSS renders the
@@ -37132,6 +37170,10 @@
     // (Neil: breadcrumb oscillated RESPONSE↔Question↔Essay-Plan). The panel itself was fine
     // because it rebuilds on open. Rebuilding after load fixes the live tracking.
     let _siRebuildRef = null;
+    // v7.20.179: hoisted ref to the closure-scoped editTs flush so saveCanvasContent can
+    // force-stamp the caret-hosting field (deferred by the rAF flush to keep :focus-within
+    // stable) right before serializing — saved HTML always carries the freshest data-edit-ts.
+    let _flushEditTsStampsRef = null;
     // v7.14.77: Patch checkbox state into HTML string AFTER getHTML() —
     // no TipTap transaction needed, zero scroll side-effects.
     function patchCheckStateIntoHTML(html) {
@@ -37175,6 +37217,12 @@
         _syncCwStep1LikedSeeds();
         // v7.19.485: keep the CW Step-3 chosen-logline artifact in sync for Step-4 carry.
         _syncCwStep3ChosenLogline();
+        // v7.20.179 (STAGE-RECORD): force-flush any deferred editTs stamp BEFORE serializing.
+        // The rAF flush skips the caret-hosting inputField (plan-box focus-flicker root) and
+        // carries its id; stamping here guarantees the saved HTML's data-edit-ts is at least
+        // as fresh as pre-.179 (the stamp txn sets preventUpdate, so it can't re-arm the
+        // autosave debounce mid-save). No-op when nothing is pending.
+        try { if (typeof _flushEditTsStampsRef === 'function') _flushEditTsStampsRef(true); } catch (_) { /* stamp is best-effort */ }
         let html = canvasEditor.getHTML();
         html = patchCheckStateIntoHTML(html);
         const wc = getResponseWordCount(canvasEditor);
