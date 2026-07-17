@@ -23779,6 +23779,70 @@
                 }, 0];
             },
 
+            // v7.20.176 STORM ROOT (ctlrows breaker + forever-oscillating saves, P2
+            // outlining/redraft doc): inputField was the LAST node rendered WITHOUT a
+            // NodeView — so it had NO ignoreMutation — while the completion passes write a
+            // runtime class onto its dom (classList.toggle('swml-input-filled', …) in the
+            // editor onUpdate rAF and _recomputeAllCompletion). Every such write was a
+            // FOREIGN attributes mutation: PM's DOMObserver flushed, marked the field's
+            // viewDesc dirty, redrew it from renderHTML (STRIPPING the runtime class), and
+            // the next completion pass re-added it — a perpetual class war. Each flush also
+            // tore down + re-created section NodeViews, re-arming 3×N _fillCtl timers (the
+            // >50/s renderControlRows breaker + the widget cursor flicker) and leaving the
+            // rendered DOM transiently doubled mid-redraw, which reparse/DOM reads kept
+            // absorbing as 1-2 byte doc diffs (the oscillating localStorage saves). Same
+            // fix, same line, same reason as every sibling (checklistItem v7.20.59,
+            // outlineRow v7.20.90, sectionBlock v7.20.125): firewall attribute writes on
+            // this NodeView's own dom. contentDOM === dom → editing behaviour is identical
+            // to the default renderer; update() re-stamps the data-attrs in place
+            // (idempotent) so an editTs stamp no longer destroys/recreates the field DOM.
+            addNodeView() {
+                return ({ node, HTMLAttributes }) => {
+                    const dom = document.createElement('div');
+                    for (const key in HTMLAttributes) {
+                        if (!Object.prototype.hasOwnProperty.call(HTMLAttributes, key)) continue;
+                        const val = HTMLAttributes[key];
+                        if (val == null || val === false) continue;
+                        try { dom.setAttribute(key, String(val)); } catch (_) { /* skip bad attrs */ }
+                    }
+                    dom.setAttribute('data-input-field', 'true');
+                    dom.classList.add('swml-input-field');
+                    // Mirror renderHTML's data-attrs from the node model, idempotently
+                    // (same-value writes fire no MutationRecord — PM law rule 4).
+                    const _syncAttrs = (n) => {
+                        const a = n.attrs || {};
+                        const want = {
+                            'data-prompt': a.prompt || '',
+                            'data-field-id': a.fieldId ? String(a.fieldId) : null,
+                            'data-edit-ts': a.editTs ? String(a.editTs) : null,
+                        };
+                        for (const k in want) {
+                            if (want[k] === null) { if (dom.hasAttribute(k)) dom.removeAttribute(k); }
+                            else if (dom.getAttribute(k) !== want[k]) dom.setAttribute(k, want[k]);
+                        }
+                    };
+                    return {
+                        dom,
+                        contentDOM: dom,
+                        // THE FIREWALL: runtime attribute writes on this dom (the completion
+                        // class, any future display-only stamp) are view-state, never doc
+                        // state — PM must not flush/redraw on them. Content edits
+                        // (childList/characterData inside) still flow to PM untouched.
+                        ignoreMutation(m) {
+                            return !!(m && m.type === 'attributes' && m.target === dom);
+                        },
+                        update(updatedNode) {
+                            if (!updatedNode.type || updatedNode.type.name !== node.type.name) return false;
+                            node = updatedNode;
+                            // Unobserved (PM pauses its DOMObserver during updates) and
+                            // covered by the attribute firewall above regardless.
+                            _syncAttrs(updatedNode);
+                            return true;
+                        },
+                    };
+                };
+            },
+
             addKeyboardShortcuts() {
                 return {
                     // Enter inside an input field inserts a line break within the field

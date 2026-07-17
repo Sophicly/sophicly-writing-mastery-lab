@@ -6629,6 +6629,16 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: rgba(255,255,255,0.35);
     font-size: 12px;
 }
+/* v7.20.176 (Neil 4f): the rule above is the grey helper-PROMPT styling, but its bare
+   `em` selector also caught STUDENT-typed italic (the I toolbar button → an <em> mark),
+   shrinking their italic prose to 12px grey "for no reason". Student italic lives INSIDE
+   an editable input field, never as a bare section label — so reset it back to normal
+   body text there. Scoped to .swml-input-field so the prompt labels keep their styling.
+   (Response free-prose italic verified separately — see handoff 4f.) */
+.swml-section-block .swml-input-field em {
+    color: inherit;
+    font-size: inherit;
+}
 
 /* Paragraphs inside sections */
 .swml-section-block p {
