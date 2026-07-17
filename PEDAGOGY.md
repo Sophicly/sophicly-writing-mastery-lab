@@ -413,6 +413,39 @@ open granularity question and the technique-picker build.
 
 ---
 
+## §6. A SECTION IS EDITABLE ONLY IN ITS AUTHORING LESSON — the section-freeze law (Neil 2026-07-17)
+
+**Principle:** a document section is editable ONLY in the lesson(s) where the student *authors* it.
+In every DOWNSTREAM lesson of that phase it is a frozen, read-only snapshot the student can still
+COMMENT on but not TYPE into. Keyed on **lesson role** (is this the authoring lesson for this
+section?), NOT on phase number, NOT on a global flag. Follows the forward-snapshot doc chain
+(`feedback_wml_forward_snapshot_doc_chain`).
+
+| Section | Editable in | Frozen (read-only + comment-only) in |
+|---|---|---|
+| **Plan** | P1: Diagnostic · P2: Planning | all lessons after the authoring lesson |
+| **Outline + Response** | Outlining + Polishing lessons | Assessment → Discuss/Mark/Feedback |
+| **Keyword / Prediction** | editable everywhere it appears (incl. P2 Planning lesson) | — never frozen |
+
+- **Why plan is free in P1 Diagnostic but protocol-authored in P2 Planning:** the diagnostic TESTS
+  the student's own planning (they must plan unaided → editable); the redraft TRAINS via the Socratic
+  planning protocol which autofills it (`feedback_diagnostic_tests_redraft_trains`). Both are still
+  "the authoring lesson" for the plan in their phase — same law, different author.
+- **From Assessment onward the WHOLE doc is frozen** (plan, outline, response) — read-only snapshot +
+  comment marks only. You mark and discuss a fixed artefact; you do not retroactively edit what was
+  assessed.
+- **Keyword/Prediction is exempt** — it does not count toward the grade, it only primes thinking, so
+  leave it editable wherever it shows (Neil: "not a big deal").
+- **Mechanism (two distinct gates):** (1) CROSS-LESSON freeze needs no persisted flag — a downstream
+  lesson simply isn't the authoring lesson, so it renders the section read-only by lesson identity.
+  (2) INTRA-LESSON submit-lock is needed ONLY in the P2 Planning lesson (AI offers a final edit →
+  student submits → plan locks even while still inside that lesson) → ONE persisted "plan submitted"
+  flag, P2-planning-only. Autofill (`@FIELD_COMMIT`, a PM transaction) still writes after lock;
+  contenteditable=false blocks only TYPING. Same lock mechanism as the .166 statement-lock. This is
+  the build spec for handoff §4b.
+
+---
+
 ## §5. WHERE THE REST OF THE PEDAGOGY CURRENTLY LIVES (to be migrated in as it is touched)
 
 Not a rewrite — the principles below are already recorded and working. Move one INTO this file when
