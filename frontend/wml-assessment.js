@@ -28897,10 +28897,10 @@
         // the student needs to read the question first, so it just loads normally — no scroll, no coach.
         const _PHASE_SECTION_TYPE = { outlining: 'outline', polishing: 'response', assessment: 'response', redraft_assessment: 'response' };
         const _PHASE_COACH = {
-            outlining:  { icon: '✍️', title: 'Develop your outline', body: 'Your plan has been transferred here. Turn each line into a full sentence, then transfer it down to your Response.' },
-            polishing:  { icon: '✨', title: 'Polish your response', body: 'Here’s your response. Sharpen the prose line by line, then get it assessed.' },
-            assessment: { icon: '📊', title: 'Assessment', body: 'This is your response — Sophia is assessing it now.' },
-            redraft_assessment: { icon: '📊', title: 'Reassessment', body: 'This is your redraft — Sophia is assessing it now.' }
+            outlining:  { icon: SVG_OUTLINE_STEP, title: 'Develop your outline', body: 'Your plan has been transferred here. Turn each line into a full sentence, then transfer it down to your Response.' },
+            polishing:  { icon: SVG_POLISH, title: 'Polish your response', body: 'Here’s your response. Sharpen the prose line by line, then get it assessed.' },
+            assessment: { icon: SVG_ASSESS, title: 'Assessment', body: 'This is your response — Sophia is assessing it now.' },
+            redraft_assessment: { icon: SVG_ASSESS, title: 'Reassessment', body: 'This is your redraft — Sophia is assessing it now.' }
         };
         function _phaseCoachAndScroll() {
             const type = _PHASE_SECTION_TYPE[state.task];
@@ -28930,7 +28930,7 @@
             head.className = 'swml-phase-coach-head';
             const icon = document.createElement('span');
             icon.className = 'swml-phase-coach-icon';
-            icon.textContent = coach.icon;
+            icon.innerHTML = coach.icon;
             const title = document.createElement('span');
             title.className = 'swml-phase-coach-title';
             title.textContent = coach.title;

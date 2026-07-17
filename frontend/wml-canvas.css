@@ -5521,7 +5521,6 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     padding: 16px 16px 14px;
     border-radius: 14px;
     background: #202128;
-    border: 1px solid rgba(255,255,255,0.08);
     box-shadow: 0 18px 44px -12px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.35);
     color: #e9e9ee;
     animation: swmlCoachIn 0.32s cubic-bezier(0.22,1,0.36,1);
@@ -5533,8 +5532,6 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     right: -7px;
     width: 12px; height: 12px;
     background: #202128;
-    border-right: 1px solid rgba(255,255,255,0.08);
-    border-top: 1px solid rgba(255,255,255,0.08);
     transform: rotate(45deg);
 }
 .swml-phase-coach-head { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
@@ -5544,8 +5541,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     display: inline-flex; align-items: center; justify-content: center;
     border-radius: 8px;
     background: rgba(83,51,237,0.18);
-    font-size: 14px;
+    color: #b9a6ff;
 }
+.swml-phase-coach-icon svg { width: 15px; height: 15px; }
 .swml-phase-coach-title { flex: 1; font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: #fbfbfd; }
 .swml-phase-coach-close {
     flex-shrink: 0; background: transparent; border: 0;
@@ -5565,13 +5563,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-phase-coach-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(83,51,237,0.4), inset 0 1px 0 rgba(255,255,255,0.22); }
 .swml-phase-coach-cta:active { transform: translateY(0) scale(0.97); }
-.swml-canvas-light .swml-phase-coach { background: #fff; border-color: rgba(20,20,30,0.1); color: #2c003e; box-shadow: 0 18px 44px -12px rgba(20,20,40,0.22), 0 2px 8px rgba(0,0,0,0.08); }
-.swml-canvas-light .swml-phase-coach-arrow { background: #fff; border-color: rgba(20,20,30,0.1); }
+.swml-canvas-light .swml-phase-coach { background: #fff; color: #2c003e; box-shadow: 0 18px 44px -12px rgba(20,20,40,0.22), 0 2px 8px rgba(0,0,0,0.08); }
+.swml-canvas-light .swml-phase-coach-arrow { background: #fff; }
 .swml-canvas-light .swml-phase-coach-title { color: #1a0b2e; }
 .swml-canvas-light .swml-phase-coach-text { color: rgba(44,0,62,0.7); }
 .swml-canvas-light .swml-phase-coach-close { color: rgba(44,0,62,0.45); }
 .swml-canvas-light .swml-phase-coach-close:hover { color: #2c003e; }
-.swml-canvas-light .swml-phase-coach-icon { background: rgba(83,51,237,0.12); }
+.swml-canvas-light .swml-phase-coach-icon { background: rgba(83,51,237,0.12); color: #5333ed; }
 .swml-transfer-all-btn svg { flex-shrink: 0; width: 11px; height: 11px; }
 .swml-transfer-all-btn:hover {
     background: linear-gradient(180deg, #5333ed, rgba(74,44,222,0.97));
