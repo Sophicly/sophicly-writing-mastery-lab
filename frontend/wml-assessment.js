@@ -31701,12 +31701,23 @@
     // (2) older docs ship the placeholder as a plain <p><em>…</em></p> with no marker,
     // so also drop paragraphs whose entire text is a known prompt. Student
     // italics-within-prose are untouched.
-    const _WC_PLACEHOLDERS = ['write your essay here.'];
+    const _WC_PLACEHOLDERS = ['write your essay here.', 'write your response here.'];
     function _stripScaffoldForCount(clone) {
         clone.querySelectorAll('[data-locked="true"]').forEach(el => el.remove());
         clone.querySelectorAll('p, h3, h4').forEach(p => {
             if (_WC_PLACEHOLDERS.indexOf((p.textContent || '').trim().toLowerCase()) !== -1) p.remove();
         });
+    }
+    // v7.20.162 (Neil): is this response section a statement-PICKING task (AQA Lang P2 Q1
+    // multi-select), NOT essay writing? Gate on the STABLE section-level label — the child
+    // checklist markers ([data-item-id]/[data-checklist-item]) live in a NodeView that re-mounts
+    // on every keystroke, so they vanish mid-render and the statements' text leaks into the count
+    // (the 44↔82 flip). The label doesn't flicker. Child-marker check kept as a fallback.
+    function _isPickingResponseSection(section) {
+        if (!section) return false;
+        const lbl = (section.getAttribute && section.getAttribute('data-section-label')) || '';
+        if (/statement/i.test(lbl)) return true;
+        return !!(section.querySelector && section.querySelector('[data-checklist-item], [data-item-id]'));
     }
     function getResponseWordCount(editor) {
         // v7.17.60: null-editor survival pattern (mirror v7.17.53 getResponseText).
@@ -31747,8 +31758,8 @@
             }
             let total = 0;
             editableSections.forEach(section => {
-                // v7.20.161: same picking-section skip as the response branch below.
-                if (section.querySelector('[data-checklist-item], [data-item-id]')) return;
+                // v7.20.161/.162: same picking-section skip as the response branch below.
+                if (_isPickingResponseSection(section)) return;
                 const clone = section.cloneNode(true);
                 // v7.19.148: stop stripping <h3>. Template response section has no h3
                 // (ships only <p><em>Write your essay here.</em></p><p></p>), so the
@@ -31771,13 +31782,14 @@
         }
         let total = 0;
         responseSections.forEach(section => {
-            // v7.20.161 (Neil): a statement-PICKING section (AQA Lang P2 Q1 multi-select — AI
+            // v7.20.161/.162 (Neil): a statement-PICKING section (AQA Lang P2 Q1 multi-select — AI
             // statements + a "Tick the 4 correct…" instruction) is NOT essay writing, so it must
-            // never feed the essay word count. The markup uses data-item-id/data-checked, which the
-            // old [data-checklist-item] strip never matched → the statements + instruction were
-            // counted AND re-counted inconsistently on every keystroke (the "weird increments" Neil
-            // saw). Skip the whole picking section; only genuine response prose counts.
-            if (section.querySelector('[data-checklist-item], [data-item-id]')) return;
+            // never feed the essay word count. v7.20.162: gate on the STABLE section-level LABEL, not
+            // the child checklist markers — those live in a NodeView that re-mounts on every keystroke,
+            // so [data-item-id]/[data-checklist-item] momentarily vanish mid-render → the statements'
+            // text got counted intermittently (the 44↔82 flip Neil saw). The section label doesn't
+            // flicker. Keep the child-marker check as a fallback for any unlabeled picking section.
+            if (_isPickingResponseSection(section)) return;
             const clone = section.cloneNode(true);
             // v7.19.148: h3 strip removed — see note in editableSections branch above.
             // v7.18.41: exclude checklistItem statements + instruction line — see comment above.
