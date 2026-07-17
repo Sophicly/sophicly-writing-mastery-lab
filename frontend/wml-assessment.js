@@ -31719,7 +31719,52 @@
         if (/statement/i.test(lbl)) return true;
         return !!(section.querySelector && section.querySelector('[data-checklist-item], [data-item-id]'));
     }
+    // v7.20.164 ROOT FIX (Neil word-count flip): count the response prose from the ProseMirror
+    // DOCUMENT MODEL, not the rendered DOM. The DOM is a projection that flickers during a NodeView
+    // redraw storm (the `ctlrows` foreign-mutation loop the circuit-breaker logs on this doc): a
+    // checklist tick fires an editTs-stamp transaction → redraw → each response inputField's text
+    // renders TWICE transiently → getResponseWordCount(DOM) read a DOUBLED section (11→21 per box,
+    // 43↔82) and painted it. The doc model is the single source of truth — it never doubles (the
+    // saved doc, serialised FROM the model, is always clean 43). Mirrors every DOM strip rule:
+    // skip picking sections (statement label OR checklistItem child), exclude checklistItem text,
+    // drop placeholder paragraphs + data-locked instruction blocks. Returns null when the model has
+    // NO response sections → caller keeps the legacy DOM path (old docs without section types).
+    function _responseWordCountFromDoc(editor) {
+        if (!editor || !editor.state || !editor.state.doc) return null;
+        let total = 0, sawResponse = false;
+        editor.state.doc.forEach(node => {
+            if (!node.type || node.type.name !== 'sectionBlock') return;
+            if (!node.attrs || node.attrs.sectionType !== 'response') return;
+            sawResponse = true;
+            const label = node.attrs.label || '';
+            // Picking-section skip (mirror _isPickingResponseSection): statement label OR checklist child.
+            let hasChecklist = false;
+            node.descendants(n => { if (n.type && n.type.name === 'checklistItem') { hasChecklist = true; return false; } return !hasChecklist; });
+            if (/statement/i.test(label) || hasChecklist) return;
+            let secText = '';
+            node.descendants(n => {
+                if (!n.type) return true;
+                if (n.type.name === 'checklistItem') return false; // never count statements
+                if (n.isTextblock) {
+                    const t = n.textContent || '';
+                    const tl = t.trim().toLowerCase();
+                    if (_WC_PLACEHOLDERS.indexOf(tl) !== -1) return false;      // scaffold placeholder
+                    if (n.attrs && (n.attrs.locked === true || n.attrs.locked === 'true')) return false; // locked instruction
+                    secText += ' ' + t;
+                    return false; // textContent already captured this block's inline text
+                }
+                return true;
+            });
+            const words = secText.trim().split(/\s+/).filter(w => w.length > 0);
+            total += words.length;
+        });
+        return sawResponse ? total : null;
+    }
     function getResponseWordCount(editor) {
+        // v7.20.164: authoritative count from the doc model (immune to the render-storm doubling).
+        // Falls through to the legacy DOM logic below only when the model has no response sections.
+        const _fromDoc = _responseWordCountFromDoc(editor);
+        if (_fromDoc !== null) return _fromDoc;
         // v7.17.60: null-editor survival pattern (mirror v7.17.53 getResponseText).
         // RunCloudRescue 2026-04-25: clear-chat handler computed wc immediately
         // after clear; canvasEditor closure was null (editor destroyed/swapped
@@ -31781,7 +31826,6 @@
             return total;
         }
         let total = 0;
-        const _wcTrace = []; // v7.20.163 DIAGNOSTIC (Neil word-count flip): per-section breakdown
         responseSections.forEach(section => {
             // v7.20.161/.162 (Neil): a statement-PICKING section (AQA Lang P2 Q1 multi-select — AI
             // statements + a "Tick the 4 correct…" instruction) is NOT essay writing, so it must
@@ -31790,7 +31834,7 @@
             // so [data-item-id]/[data-checklist-item] momentarily vanish mid-render → the statements'
             // text got counted intermittently (the 44↔82 flip Neil saw). The section label doesn't
             // flicker. Keep the child-marker check as a fallback for any unlabeled picking section.
-            const _skip = _isPickingResponseSection(section);
+            if (_isPickingResponseSection(section)) return;
             const clone = section.cloneNode(true);
             // v7.19.148: h3 strip removed — see note in editableSections branch above.
             // v7.18.41: exclude checklistItem statements + instruction line — see comment above.
@@ -31801,28 +31845,8 @@
             _stripScaffoldForCount(clone);
             const text = clone.textContent || '';
             const words = text.trim().split(/\s+/).filter(w => w.length > 0);
-            // v7.20.163 DIAGNOSTIC: capture BEFORE the skip so we can see whether a section that
-            // SHOULD skip is being counted, and what its live label + checklist state actually are.
-            _wcTrace.push({
-                label: (section.getAttribute && section.getAttribute('data-section-label')) || '(no-label)',
-                skip: _skip,
-                words: words.length,
-                hasChk: !!(section.querySelector && section.querySelector('[data-checklist-item], [data-item-id]')),
-                conn: !!(section.isConnected),
-            });
-            if (_skip) return;
             total += words.length;
         });
-        // v7.20.163 DIAGNOSTIC (Neil): log ONLY when the total CHANGES from the last computed value,
-        // so a checklist tick/untick that shifts the count prints one line naming the leaking section.
-        // Remove once the flip is root-fixed.
-        try {
-            if (getResponseWordCount._lastTotal !== total) {
-                console.warn('[WC-DEBUG v7.20.163] total ' + getResponseWordCount._lastTotal + ' → ' + total,
-                    JSON.stringify(_wcTrace));
-                getResponseWordCount._lastTotal = total;
-            }
-        } catch (_) {}
         return total;
     }
 
