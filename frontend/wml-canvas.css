@@ -193,6 +193,13 @@ body.swml-fullscreen-active #swml-canvas-overlay.swml-canvas-embedded {
 }
 body.swml-fullscreen-active { overflow: hidden !important; }
 
+/* ⭐ CANVAS DARK-THEME SURFACE LADDER (v7.20.181, Neil) — borderless; separation by ELEVATION, not lines.
+   Three intentional tiers of ONE cool-neutral hue (never a hue-contrast accent):
+     • base   #1c1d1f — .swml-canvas container / gutter (+ chat-header, chat-messages)
+     • chrome #212225 — .swml-canvas-header, .swml-canvas-plan (sidebar), .swml-canvas-status (footer)
+     • sheet  #28292b — .swml-canvas-doc (writing paper) + .swml-outline-panel popover  ← lightest = focal
+   Chrome sits BETWEEN base and sheet so the writing sheet stays the brightest focal plane.
+   Light theme has its own overrides (rgba white washes) — do NOT fold these hex values into it. */
 .swml-canvas {
     display: flex;
     gap: 0;
@@ -254,8 +261,9 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 
 /* Dark mode only: explicit backgrounds for chat area (v7.12.72) */
 .swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-header,
-.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-messages,
-.swml-canvas:not(.swml-canvas-light) .swml-canvas-status { background-color: #1c1d1f; }
+.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-messages { background-color: #1c1d1f; }
+/* v7.20.181 (Neil): status footer joins the shared chrome tier (#212225) — matches header + plan panel. */
+.swml-canvas:not(.swml-canvas-light) .swml-canvas-status { background-color: #212225; }
 
 /* ── Editor Pane ── */
 .swml-canvas-editor {
@@ -1604,8 +1612,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     justify-content: space-between;
     gap: 6px;
     padding: 8px 12px;
-    background: #1c1d1f; /* #16181d */
-    border-bottom: 1px solid oklch(0.31 0.01 270); /* oklch(0.31 0.01 270) */
+    background: #212225; /* v7.20.181 (Neil): shared chrome tier — one step above the #1c1d1f canvas base, below the #28292b sheet. Was #1c1d1f. */
+    /* v7.20.181 (Neil): canvas-header bottom border removed — cleaner edge. */
     flex-shrink: 0;
     height: 50px;
     min-width: 0;
@@ -2076,7 +2084,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     margin: 0;
     border-radius: 10px;
     background: #28292b; /* v7.14.47: match document alt colour — no backdrop-filter (Chrome flickers) */
-    border: 1px solid rgba(255,255,255,0.08);
+    /* v7.20.181 (Neil): outline-panel border removed — cleaner edge (borderless chrome). */
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     z-index: 10;
     overflow: hidden;
@@ -4473,8 +4481,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-plan {
     width: 300px;
     flex-shrink: 0;
-    border-left: 1px solid rgba(255,255,255,0.08);
-    background: rgba(0,0,0,0.2);
+    /* v7.20.181 (Neil): plan-panel left border removed — cleaner edge. */
+    background: #212225; /* v7.20.181 (Neil): shared chrome tier — matches the header; distinct from the #1c1d1f base + #28292b sheet. Was rgba(0,0,0,0.2). */
     overflow-y: auto;
     padding: 20px 16px;
 }
@@ -4549,7 +4557,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     gap: 16px;
     padding: 6px 16px;
     min-height: 36px;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    /* v7.20.181 (Neil): status footer top border removed — cleaner edge (borderless chrome). */
     font-size: 11px;
     color: rgba(255,255,255,0.35);
     flex-shrink: 0;
