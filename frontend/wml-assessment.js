@@ -28886,6 +28886,106 @@
         // genuinely rebuilt) and breaker-guarded (_derivedCardFillOk, PM law rule 5). Handlers
         // re-resolve their target paragraphs at CLICK time — a built-time element can be a
         // detached pre-redraw node.
+        // v7.20.186 (Neil): the ONE transfer-all execution, shared by the in-flow divider button
+        // and the floating outline button below. Re-resolves sections at CALL time (a divider label
+        // is stable; the DOM node may be a pre-redraw copy). Returns whether anything transferred.
+        function _runTransferAll(editor, dividerLabel, targetType) {
+            const divEl = findSectionByLabel(editor, dividerLabel);
+            if (!divEl) return false;
+            const sections = collectSectionsAfterDivider(divEl, targetType);
+            let any = false, lastTarget = null;
+            sections.forEach((sec) => {
+                const secLabel = sec.getAttribute('data-section-label') || '';
+                const text = targetType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
+                if (!text) return;
+                const tgt = resolveResponseLabel(secLabel);
+                if (insertIntoResponse(tgt, [text], targetType + ':' + secLabel, true)) { any = true; lastTarget = tgt; }
+            });
+            if (any && lastTarget) {
+                try { const rEl = findSectionByLabel(editor, lastTarget); if (rEl) _swmlScrollToTop(rEl, 24); } catch (_) {}
+            }
+            return any;
+        }
+
+        // v7.20.186 (Neil): FLOATING outline "Transfer All". The in-flow one sits at the divider top,
+        // so on a long outline you had to scroll back up to reach it. This adds ONE button that pins
+        // to the top of the canvas viewport while ANY part of an OUTLINE group is on screen, labelled
+        // with that Q, acting on the Q you're viewing; it hides when no outline group is in view.
+        // Landmines engineered out: (a) mounted in .swml-canvas-content (the scroller) OUTSIDE the PM
+        // editor, so ProseMirror's DOMObserver never sees it → no foreign-mutation storm; (b) absolute
+        // + rAF-throttled scroll repositioning (top = scrollTop + pad) → pinned to the viewport top,
+        // out of flow → zero layout shift; (c) listener attached once per scroller (guard flag).
+        function _ensureOutlineTransferFloat(editor) {
+            const scroller = editor.closest('.swml-canvas-content');
+            if (!scroller) return;
+            const _outlineDividers = () => {
+                const out = [];
+                editor.querySelectorAll('[data-section-type="divider"]').forEach((d) => {
+                    if (/^OUTLINE/i.test((d.getAttribute('data-section-label') || '').trim())) out.push(d);
+                });
+                return out;
+            };
+            let floatBtn = scroller.querySelector(':scope > .swml-outline-transfer-float');
+            if (!_outlineDividers().length) {
+                // No outline on this doc — tear down any stale float + listener (task switch).
+                if (floatBtn) floatBtn.remove();
+                if (scroller._swmlOtfHandler) { scroller.removeEventListener('scroll', scroller._swmlOtfHandler); window.removeEventListener('resize', scroller._swmlOtfHandler); scroller._swmlOtfHandler = null; }
+                return;
+            }
+            if (!floatBtn) {
+                floatBtn = document.createElement('button');
+                floatBtn.type = 'button';
+                floatBtn.className = 'swml-transfer-all-btn swml-outline-transfer-float';
+                floatBtn.setAttribute('contenteditable', 'false');
+                floatBtn.style.opacity = '0';
+                floatBtn.style.pointerEvents = 'none';
+                floatBtn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+                floatBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    const lbl = floatBtn._swmlDividerLabel;
+                    if (!lbl) return;
+                    const ok = _runTransferAll(editor, lbl, 'outline');
+                    floatBtn.classList.add(ok ? 'swml-transfer-success' : 'swml-transfer-empty');
+                    setTimeout(() => floatBtn.classList.remove('swml-transfer-success', 'swml-transfer-empty'), 1200);
+                });
+                scroller.appendChild(floatBtn);
+            }
+            const PAD = 14;
+            const update = () => {
+                const sRect = scroller.getBoundingClientRect();
+                const dividers = _outlineDividers();
+                let active = null;
+                for (let i = 0; i < dividers.length; i++) {
+                    const div = dividers[i];
+                    let last = div, el = div.nextElementSibling;
+                    while (el && el.getAttribute('data-section-type') !== 'divider') { last = el; el = el.nextElementSibling; }
+                    const gTop = div.getBoundingClientRect().top;
+                    const gBottom = last.getBoundingClientRect().bottom;
+                    if (gBottom > sRect.top + PAD && gTop < sRect.bottom - PAD) { active = { div, gBottom }; break; } // topmost intersecting group wins
+                }
+                if (!active) { floatBtn.style.opacity = '0'; floatBtn.style.pointerEvents = 'none'; return; }
+                const label = (active.div.getAttribute('data-section-label') || '').trim();
+                floatBtn._swmlDividerLabel = label;
+                const qm = label.match(/\bQ\d+\w*/i);
+                floatBtn.innerHTML = 'Transfer All' + (qm ? ' · ' + qm[0].toUpperCase() : '') + ' ' + SVG_TRANSFER;
+                // Pin to the viewport top; ride down at the group's end so it never floats past it.
+                const topAtViewport = scroller.scrollTop + PAD;
+                const groupBottomInContent = scroller.scrollTop + (active.gBottom - sRect.top);
+                const maxTop = groupBottomInContent - floatBtn.offsetHeight - PAD;
+                floatBtn.style.top = Math.max(0, Math.min(topAtViewport, maxTop)) + 'px';
+                floatBtn.style.opacity = '1';
+                floatBtn.style.pointerEvents = 'auto';
+            };
+            if (!scroller._swmlOtfHandler) {
+                let raf = null;
+                const onScroll = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = null; update(); }); };
+                scroller._swmlOtfHandler = onScroll;
+                scroller.addEventListener('scroll', onScroll, { passive: true });
+                window.addEventListener('resize', onScroll, { passive: true });
+            }
+            update();
+        }
+
         // v7.20.168/.169 (Neil QUEUE-A): TRANSFER BUTTONS — in-flow, breaker-free.
         // Per-section ↓ (each plan/outline section) + "Transfer All" (each PLAN/OUTLINE divider)
         // render into the section's PM-firewalled ctlRow — the old absolute overlay is retired, so
@@ -28967,25 +29067,12 @@
                     allBtn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
                     allBtn.addEventListener('click', (e) => {
                         e.preventDefault(); e.stopPropagation();
-                        const divEl = findSectionByLabel(editor, label);
-                        if (!divEl) return;
-                        const sections = collectSectionsAfterDivider(divEl, targetType);
-                        let any = false, lastTarget = null;
-                        sections.forEach((sec) => {
-                            const secLabel = sec.getAttribute('data-section-label') || '';
-                            const text = targetType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
-                            if (!text) return;
-                            const tgt = resolveResponseLabel(secLabel);
-                            if (insertIntoResponse(tgt, [text], targetType + ':' + secLabel, true)) { any = true; lastTarget = tgt; }
-                        });
-                        if (any && lastTarget) {
-                            try { const rEl = findSectionByLabel(editor, lastTarget); if (rEl) _swmlScrollToTop(rEl, 24); } catch (_) {}
-                        }
-                        flashTransferBtn(allBtn, any);
+                        flashTransferBtn(allBtn, _runTransferAll(editor, label, targetType));
                     });
                     r.appendChild(allBtn);
                 });
             });
+            _ensureOutlineTransferFloat(editor);
         }
 
         function _renderControlRows() {

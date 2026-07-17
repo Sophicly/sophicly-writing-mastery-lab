@@ -5483,6 +5483,23 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     outline: none;
     white-space: nowrap;
 }
+/* v7.20.186 (Neil): FLOATING outline Transfer All — pinned to the canvas-viewport top while an
+   outline group is on screen (JS sets `top`; mounted in .swml-canvas-content, outside PM). Centered
+   over the doc, a touch larger + a lifted shadow so it reads as floating above the content. Its
+   transform must keep translateX(-50%) through hover/active or centering breaks (base sets translateY). */
+.swml-outline-transfer-float {
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    padding: 6px 14px;
+    font-size: 10px;
+    border-radius: 7px;
+    box-shadow: 0 6px 20px -4px rgba(83,51,237,0.5), 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: opacity 0.18s ease, background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+}
+.swml-outline-transfer-float:hover { transform: translateX(-50%) translateY(-1px); }
+.swml-outline-transfer-float:active { transform: translateX(-50%) translateY(0) scale(0.97); }
+.swml-outline-transfer-float svg { width: 12px; height: 12px; }
 .swml-transfer-all-btn svg { flex-shrink: 0; width: 11px; height: 11px; }
 .swml-transfer-all-btn:hover {
     background: linear-gradient(180deg, #5333ed, rgba(74,44,222,0.97));
