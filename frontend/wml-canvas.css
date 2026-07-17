@@ -5521,10 +5521,25 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     opacity: 1;            /* in-flow → always visible (no hover-reveal / no positioning pass) */
     pointer-events: auto;  /* the divider sets pointer-events:none on its whole subtree */
 }
-/* per-section ↓ sits at the right of its control row — echoes the old top-right placement */
+/* per-section ↓ — v7.20.170 (Neil: "not quite the same as before"). Pinned back to the
+   section's TOP-RIGHT, just left of the ✓ completion tick, exactly where the old overlay sat
+   (inset matches the retired positionTransferOverlays: 42 normal / 74 collapsible → clears the
+   chevron+tick). Still a real firewalled child of the section, positioned RELATIVE to the
+   section (not a global layer) — moves with the section, survives resize, no positioning pass. */
+.swml-section-block[data-section-type="plan"],
+.swml-section-block[data-section-type="outline"] { position: relative; } /* positioning context for the ↓ */
 .swml-ctl-row.swml-ctl-row-transfer {
+    position: absolute;
+    top: 10px;
+    right: 42px;
+    margin: 0;
+    z-index: 2;
     justify-content: flex-end;
-    margin-top: 4px;
+}
+/* plan/outline sections are collapsible → tick shifts to right:44, so clear it (matches the old
+   96px inset: 96 − 22px button = 74px right edge). */
+.swml-section-block.swml-collapsible .swml-ctl-row.swml-ctl-row-transfer {
+    right: 74px;
 }
 /* PLAN/OUTLINE divider (marker class from the NodeView; scoped so structural/other dividers
    are untouched): REUSE the existing three-part flex (::before line · label · ::after line).
