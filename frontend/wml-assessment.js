@@ -17030,6 +17030,7 @@
             } catch(e) {}
         }
 
+        let _sectionStampRAF = 0; // v7.20.171: coalesced rAF token for the deferred section-attr stamp
         function updateOutline() {
             if (!canvasEditor) return;
             const editor = document.getElementById('swml-tiptap-editor');
@@ -17238,7 +17239,21 @@
             // ── Always update in-document section badges + numbers (v7.12.2, v7.12.56) ──
             // Runs even when outline panel is closed — keeps label checkmarks + numbers current
             if (editor) {
-                sections.forEach((s, i) => {
+                // v7.20.171 (Neil: statement-tick jitter/blink = the ctlrows storm). ROOT: this
+                // loop stamps DISPLAY-ONLY attrs (data-section-num/-complete/-codex-num) via
+                // setAttribute SYNCHRONOUSLY inside onUpdate. During a tick's transaction (or a
+                // ragged mount) a section's NodeView firewall may not be active yet, so the write is
+                // a foreign mutation → nested PM flush → redraw → re-fill → the 3s "ctlrows" storm
+                // (Neil's console trace: updateOutline:17319 → flush → _fillCtl). These attrs are
+                // read ONLY by CSS (::before section numbers/badges), and data-section-complete is
+                // ALSO stamped synchronously by checkSectionComplete — so a 1-frame defer is
+                // invisible. Deferring OUT of the re-entrant transaction lets NodeViews settle
+                // (firewalls active) before the write → no foreign flush. Coalesced: a newer pass
+                // cancels the pending one.
+                if (_sectionStampRAF) { try { cancelAnimationFrame(_sectionStampRAF); } catch (_) {} }
+                _sectionStampRAF = requestAnimationFrame(() => {
+                    _sectionStampRAF = 0;
+                    sections.forEach((s, i) => {
                     let domSection = null;
                     editor.querySelectorAll('[data-section-type]').forEach(el => {
                         if (el.getAttribute('data-section-type') === s.type &&
@@ -17321,6 +17336,7 @@
                             domSection.setAttribute('data-codex-num', _numAttr);
                         }
                     }
+                });
                 });
             }
 
