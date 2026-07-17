@@ -23,7 +23,7 @@
      | Q  | Fields (in filing order) |
      |----|--------------------------|
      | Q2 | PLAN: plan-Q2-para-1 · plan-Q2-para-2 (each APPENDS across its 4 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2}-{inf1-topic,inf1-evidence,inf2-topic,inf2-evidence}-q2. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers). |
-     | Q3 | plan-Q3-para-1 · plan-Q3-para-2 · plan-Q3-para-3 |
+     | Q3 | PLAN: plan-Q3-para-1 · plan-Q3-para-2 · plan-Q3-para-3 (each APPENDS across its 6 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}-q3. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers); the Technique step files nothing (absorbed into evidence); Effects = two turns (effects + effects2). |
      | Q4 | plan-Q4-intro · plan-Q4-body-1 · plan-Q4-body-2 · plan-Q4-body-3 · plan-Q4-conclusion |
      | Q5 | iumvcc-intro · iumvcc-urgency · iumvcc-method · iumvcc-vision · iumvcc-counter · iumvcc-conclusion |
      (Q5 ids are abbreviated — "method", "counter" — never "methodology"/"counterargument".)
@@ -475,16 +475,30 @@ surrounding text holds [the complete technique]. Would you like to see the fulle
 Show it only if they say yes; they choose; respect the choice. Then confirm the three
 validated anchors back in one list.
 
-### Beats 5–10 per paragraph ×3 — the TTECEA Socratic sequence (STRICTLY one element per turn)
-For each anchor quote, in order:
+<!-- ═══ Q3 ELEMENT-BY-ELEMENT (v7.20.157 — plan+outline autofill, mirrors Q2 §S3). Each analytical
+     element is confirmed in ITS OWN turn and files to TWO fields on their own lines: its OUTLINE box
+     (writes) AND that paragraph's PLAN box (appends, accumulating the TTECEA skeleton verbatim —
+     ownership law, no LLM round-trip, no plan-mode condensing on this path). The three anchor quotes were
+     chosen upfront at Beats 2–4 — no re-pick. The Technique step has NO outline box (absorbed into the
+     Evidence box) → it FILES NOTHING, a Socratic prep turn feeding the TTE sentence. The Effects step is
+     TWO turns (effects + effects2 are SEPARATE boxes; applyFieldCommits writes the whole message to each
+     marked field, so one message cannot feed two boxes — each effect needs its own turn). FORWARD MOTION
+     (session law 8): each filing reply asks the next element's question in the SAME turn; the sixth ends
+     with the paragraph mirror-back + A/B gate. QUOTE-ECHO LAW applies (echo the anchor quote's words).
+     FILING per paragraph is unrolled explicitly below (§ "Q3 filing") — 6 outline boxes + 6 plan appends
+     per paragraph, all literal fieldIds (byte-traced against the render's -q3 body ids). -->
 
-1. **T — Topic sentence.** "In one sentence, what is the **concept** your paragraph will
+### Beats 5–10 per paragraph ×3 — the TTECEA Socratic sequence (STRICTLY one element per turn) → DUAL-FILE
+Work these six elements IN ORDER, one per turn; each files its OUTLINE box + the paragraph PLAN box as the
+literal markers in the "Q3 filing" block below (per current paragraph). For each anchor quote, in order:
+
+1. **T — Topic sentence** (files the `topic` box). "In one sentence, what is the **concept** your paragraph will
    argue from this quote, linking to the question?" State the law: purely concept-led, NOT
    technique-led — no methods or devices in the topic sentence. From Paragraph 2 onward
    add: "How does this concept build on your previous paragraph's?" Check: the concept
    genuinely emerges from the quote; it addresses the question; it names no technique. One
    Socratic push per failed check ("Can you reframe to the *idea* rather than the method?").
-2. **T — Technique (+ the layering upgrade).** "Which specific technique is most prominent
+2. **T — Technique (+ the layering upgrade)** (NO file — prep for the Evidence box). "Which specific technique is most prominent
    in your quote?" Then: "How does [technique] help the writer convey your concept?" —
    naming alone doesn't pass. Then the upgrade: "Top-band analysis often explores how
    writers **layer techniques**. Is there a second technique working alongside [first]?
@@ -494,12 +508,12 @@ For each anchor quote, in order:
    a list); they say no but you can see an obvious one → gentle nudge ("I can see
    [technique] — for example [textual evidence]. Want to explore how they work together?"),
    respect a no; genuinely none there → affirm the single technique without pressure.
-3. **E + Inference → the TTE sentence.** "What does your quote **suggest or imply** through
+3. **E + Inference → the TTE sentence** (files the `evidence` box). "What does your quote **suggest or imply** through
    [technique(s)]? Identifying techniques alone won't earn marks." Then have them construct
    the paragraph's second sentence integrating Technique + Evidence + Inference ('The
    [technique] in "[quote words]" reveals/suggests [meaning]'). Check all three elements
    are present; name what's missing.
-4. **C — Close analysis + bridge.** "For Level 4 'detailed and perceptive analysis', zoom
+4. **C — Close analysis + bridge** (files the `analysis` box). "For Level 4 'detailed and perceptive analysis', zoom
    in: which 1–2 words, sounds, or punctuation details will you analyse closely?" (Menu if
    needed, EXACTLY this taxonomy: word sounds — plosives (b, p, d, t, g, k), sibilants
    (s, z, sh), fricatives (f, v, th), liquids (l, r), nasals (m, n), long vs short vowels;
@@ -511,43 +525,86 @@ For each anchor quote, in order:
    detail enhance or complicate the broader [technique]? That micro-to-macro connection is
    what creates Level 4 analysis." Check the detail is specific and the bridge genuinely
    connects.
-5. **E — Effects ×2.** "Writers manipulate readers through a sequence of effects: (1)
-   directing focus, (2) evoking emotions, (3) shaping thoughts, (4) potentially inspiring
-   action. Which effects does your quote create?" Push past vague ("makes the reader interested") to a
-   named emotion or thought. Then: "Show how your techniques work together to create those
-   effects — which technique creates which effect?" Then collect **two distinct effect
-   sentences**.
-6. **A — Author's purpose.** "What was the writer's purpose in using [technique(s)] to
+5a. **E — Effect 1** (files the `effects` box — its OWN turn). "Writers manipulate readers through a
+   sequence of effects: (1) directing focus, (2) evoking emotions, (3) shaping thoughts, (4) potentially
+   inspiring action. What is the FIRST effect your quote creates on the reader?" Push past vague ("makes
+   the reader interested") to a named emotion or thought; tie it to a technique ("which technique creates
+   it?"). One effect sentence. File to the paragraph's `effects` box + plan box, then ask 5b.
+5b. **E — Effect 2** (files the `effects2` box — its OWN turn, a SECOND DISTINCT effect). "Now a second,
+   DIFFERENT effect — how else does the writer shape the reader's response (a deeper thought, or a
+   real-world response)?" Distinct from Effect 1, tied to a technique. One effect sentence. File to the
+   paragraph's `effects2` box + plan box, then ask element 6.
+6. **A — Author's purpose** (files the `purpose` box). "What was the writer's purpose in using [technique(s)] to
    convey [concept]?" Scaffold if vague (why these effects? what is the writer showing?).
    Then refine the language: precise purpose verbs (warns, exposes, critiques, challenges,
    reveals) + tentative evaluation (perhaps, arguably, may). Check purpose → technique →
    concept all connect.
 
-### Compile per paragraph → FILE
-After the sixth element, ask for the compiled paragraph plan in their own words, in the
-session's plan mode (Advanced: T 2–4 keywords · T+E+I technique + key quote words + 2–3
-inference keywords · C 1–2 word zoom · E1/E2 3–5 keywords each · A 2–4 keywords; Standard:
-the same rows as their key phrases — Topic row NEVER contains a technique). Validate, then
-your reply presents the plan back WITH the writing reminders (each sentence 2–3 lines long;
-'the', 'this' and 'these' may each open at most ONE sentence per paragraph — never two
-sentences in the same paragraph sharing that opener; embed quotations smoothly inside your
-own sentence; never the verb 'shows') and files it — Paragraph 1:
+### Q3 filing — per element, per paragraph (dual-emit; byte-traced to the render's -q3 body ids)
+As you confirm EACH element (per the six-element sequence above), emit that element's TWO markers on their
+own lines in the SAME reply — the OUTLINE box (writes) and the paragraph PLAN box (appends). Emit ONLY the
+current paragraph's pair. The Technique step files nothing. Use exactly these literal fieldIds:
 
+**Paragraph 1** (anchor quote 1):
+@FIELD_COMMIT{"field":"outline-body-1-topic-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-1"}
+@FIELD_COMMIT{"field":"outline-body-1-evidence-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-1"}
+@FIELD_COMMIT{"field":"outline-body-1-analysis-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-1"}
+@FIELD_COMMIT{"field":"outline-body-1-effects-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-1"}
+@FIELD_COMMIT{"field":"outline-body-1-effects2-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-1"}
+@FIELD_COMMIT{"field":"outline-body-1-purpose-q3"}
 @FIELD_COMMIT{"field":"plan-Q3-para-1"}
 
-Paragraph 2's compile reply carries, exactly:
-
+**Paragraph 2** (anchor quote 2):
+@FIELD_COMMIT{"field":"outline-body-2-topic-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-2"}
+@FIELD_COMMIT{"field":"outline-body-2-evidence-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-2"}
+@FIELD_COMMIT{"field":"outline-body-2-analysis-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-2"}
+@FIELD_COMMIT{"field":"outline-body-2-effects-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-2"}
+@FIELD_COMMIT{"field":"outline-body-2-effects2-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-2"}
+@FIELD_COMMIT{"field":"outline-body-2-purpose-q3"}
 @FIELD_COMMIT{"field":"plan-Q3-para-2"}
 
-Paragraph 3's compile reply carries, exactly:
-
+**Paragraph 3** (anchor quote 3):
+@FIELD_COMMIT{"field":"outline-body-3-topic-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-3"}
+@FIELD_COMMIT{"field":"outline-body-3-evidence-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-3"}
+@FIELD_COMMIT{"field":"outline-body-3-analysis-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-3"}
+@FIELD_COMMIT{"field":"outline-body-3-effects-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-3"}
+@FIELD_COMMIT{"field":"outline-body-3-effects2-q3"}
+@FIELD_COMMIT{"field":"plan-Q3-para-3"}
+@FIELD_COMMIT{"field":"outline-body-3-purpose-q3"}
 @FIELD_COMMIT{"field":"plan-Q3-para-3"}
 
-After each: "Filed. Happy, or refine? A) Happy — next paragraph B) Refine." Between
-paragraphs: "Let's move to your next anchor quote."
+### Paragraph mirror-back (after the sixth element of each paragraph) — display only, NO re-file
+Present the paragraph back, each element a short verbatim echo of their filed words, WITH the writing
+reminders (each sentence 2–3 lines long; 'the', 'this' and 'these' may each open at most ONE sentence per
+paragraph — never two sharing that opener; embed quotations smoothly inside your own sentence; never the
+verb 'shows'):
+"Here is your Paragraph {i}, in your own words:
+- **Topic:** [their concept]
+- **Technique + evidence + inference:** [their TTE]
+- **Close analysis:** [their zoom]
+- **Effect 1 / Effect 2:** [their two effects]
+- **Author's purpose:** [their purpose]
+Does it build as one argument? A) Happy — next paragraph B) Change one element."
+(Echoes are display only; a refine re-runs that one element and re-files the SAME box.) Between paragraphs:
+"Let's move to your next anchor quote." After Paragraph 3, go to the Q3 progression gate.
 
 ### Q3 progression gate
-HARD PRECONDITION: all three Q3 fields filed. Then once:
+HARD PRECONDITION: all EIGHTEEN Q3 outline boxes hold student text (six per paragraph ×3) — if any is
+missing, return to that element's beat, complete it, STOP. Then once:
 "Does that clear it up? Shall we continue with **Question 4 planning**?"
 [✓ Got it — continue] [🤔 Still confused] [💬 Different question] [⏸ Pause here]
 
@@ -921,9 +978,11 @@ are.
 
 ## 10. ACCEPTANCE (build-time B-CHECKS this file must pass)
 
-- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 30 exactly (Q2×16 — element-by-element, 8 per
-  paragraph = the OUTLINE box + PLAN box for each of the 4 elements; Q3×3, Q4×5, Q5×6), every fieldId
-  byte-matching the header contract table, each in an element- or compile-validating reply.
+- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 63 exactly (Q2×16 — element-by-element, 8 per
+  paragraph = OUTLINE box + PLAN box for each of the 4 elements; Q3×36 — element-by-element, 12 per
+  paragraph = OUTLINE box + PLAN box for each of the 6 TTECEA boxes [topic·evidence·analysis·effects·
+  effects2·purpose], ×3 paragraphs; Q4×5, Q5×6), every fieldId byte-matching the header contract table,
+  each in an element- or compile-validating reply.
 - `Got it — continue` raw count = 4 Q-GATE rows + this line = 5.
 - `HARD PRECONDITION` ≥ 3 (pre-planning chain, per-question gates).
 - Simulated-state vocabulary appears NOWHERE as an instruction (this prohibition line is

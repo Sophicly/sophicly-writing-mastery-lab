@@ -206,6 +206,18 @@ defect, not a spec.**
   (bodies carry 15 of the 16 marks; `protocol-b-planning.md:442-531`).
 - **Writing questions:** P1 Q5 = the scene-structure plan IS the outline · P2 Q5 = IUMVCC.
 
+**⭐ THE ONE SHAPE-EXCEPTION — Section B fiction / narrative (Neil, re-stated 2026-07-16).** "Every
+question that needs at least a paragraph structure needs an outline" holds for every analytical /
+transactional question — BUT Section B of the fiction Language papers (the STORY / creative narrative,
+e.g. AQA P1 Q5) is the exception to the *paragraph-outline* shape. A story is not built from
+TTECEA/IUMVCC paragraphs, so its "outline" is a **narrative plan — the story-spine / scene-structure
+plot skeleton** (canonical: the Pixar-style story spine, `reference_cw_story_spine_canonical_pixar_six_beat`;
+Neil also calls it the "seven-step scene structure" — confirm which granularity the CW build uses before
+wiring, do not assert a beat count). It IS still an outline in the lesson-flow sense (planning →
+outlining → polishing all work the same skeleton), just a plot skeleton rather than a paragraph one.
+Creative writing is a SEPARATE build (out of scope of `_resolveBodyOnlyOutline`, cannot reuse TTECEA —
+see below).
+
 **WHAT IT GOVERNS.** `_resolveBodyOnlyOutline()` and `migrateMissingQOutlines()`
 (`frontend/wml-assessment.js`) — the gate deciding which questions build an outline — **for every
 board and paper, literature included** (Neil, 2026-07-15: *"We need to do it for ALL of the exam
