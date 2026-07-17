@@ -25,7 +25,7 @@
      | Q2 | PLAN: plan-Q2-para-1 · plan-Q2-para-2 (each APPENDS across its 4 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2}-{inf1-topic,inf1-evidence,inf2-topic,inf2-evidence}-q2. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers). |
      | Q3 | PLAN: plan-Q3-para-1 · plan-Q3-para-2 · plan-Q3-para-3 (each APPENDS across its 6 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}-q3. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers); the Technique step files nothing (absorbed into evidence); Effects = two turns (effects + effects2). |
      | Q4 | PLAN: plan-Q4-intro · plan-Q4-body-1..3 · plan-Q4-conclusion. OUTLINE (⚠️ MIXED convention): bodies UNSUFFIXED `outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}` (context box renders but is NOT planned) · intro `outline-intro-thesis-q4` (suffixed) · conclusion `outline-conclusion-thesis` (unsuffixed). Each body element turn emits its OUTLINE box + body PLAN box; Effects = two turns (effects=Source A, effects2=Source B); intro/conclusion emit their thesis box + plan box. |
-     | Q5 | iumvcc-intro · iumvcc-urgency · iumvcc-method · iumvcc-vision · iumvcc-counter · iumvcc-conclusion |
+     | Q5 | PLAN: iumvcc-intro · iumvcc-urgency · iumvcc-method · iumvcc-vision · iumvcc-counter · iumvcc-conclusion. OUTLINE (one row per section): outline-iumvcc-{same six stems}. Each section compile dual-emits its OUTLINE row + PLAN box (1:1 — six sections × one row each). |
      (Q5 ids are abbreviated — "method", "counter" — never "methodology"/"counterargument".)
 
      FILING ORDER ≠ DOCUMENT ORDER (audit fix 4): Q4 files bodies FIRST (Beats 5–9), then
@@ -939,30 +939,40 @@ compile in the session's plan mode (Standard: the section's elements as their ke
 — image, metaphor, development, evidence, flow, devices, target; Advanced: the same rows
 as keywords only). Every compile closes with the section's persuasive check ("does this
 make readers FEEL it through imagery and verbs — not just TELL them?"). Each section's
-compile files in its validating reply — one marker per compile, exactly these:
+compile files in its validating reply — TWO markers (plan+outline autofill, v7.20.159): the
+section's OUTLINE row AND its PLAN box, each on its own line. IUMVCC is six sections × ONE row
+each (Neil 2026-07-15) so each compile is a clean 1:1 — the whole section plan fills both boxes;
+no per-element decomposition. Byte-traced: outline rows `outline-iumvcc-{sec}` (`_iumvccFieldId`,
+one-row branch) match the plan boxes `iumvcc-{sec}` on the section stem. Emit exactly these pairs:
 
 Introduction:
 
+@FIELD_COMMIT{"field":"outline-iumvcc-intro"}
 @FIELD_COMMIT{"field":"iumvcc-intro"}
 
 Urgency:
 
+@FIELD_COMMIT{"field":"outline-iumvcc-urgency"}
 @FIELD_COMMIT{"field":"iumvcc-urgency"}
 
 Methodology:
 
+@FIELD_COMMIT{"field":"outline-iumvcc-method"}
 @FIELD_COMMIT{"field":"iumvcc-method"}
 
 Vision:
 
+@FIELD_COMMIT{"field":"outline-iumvcc-vision"}
 @FIELD_COMMIT{"field":"iumvcc-vision"}
 
 Counter-argument:
 
+@FIELD_COMMIT{"field":"outline-iumvcc-counter"}
 @FIELD_COMMIT{"field":"iumvcc-counter"}
 
 Conclusion:
 
+@FIELD_COMMIT{"field":"outline-iumvcc-conclusion"}
 @FIELD_COMMIT{"field":"iumvcc-conclusion"}
 
 ### Beat 8 — Imagery check (one turn)
@@ -988,8 +998,8 @@ ends on a stressed word; sentence lengths varied — short for punch, longer for
 development). Confident on all five, or shall we strengthen one?"
 
 ### Q5 progression gate
-HARD PRECONDITION: all six Q5 fields filed + imagery check + sentence-craft check answered.
-Then once:
+HARD PRECONDITION: all six Q5 outline rows (`outline-iumvcc-{sec}`) hold student text — equivalently
+all six section plans filed + imagery check + sentence-craft check answered. Then once:
 "Does that clear it up? Shall we continue with **your final plan review**?"
 [✓ Got it — continue] [🤔 Still confused] [💬 Different question] [⏸ Pause here]
 
@@ -1043,12 +1053,15 @@ are.
 
 ## 10. ACCEPTANCE (build-time B-CHECKS this file must pass)
 
-- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 98 exactly (Q2×16 — element-by-element, 8 per
+- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 104 exactly (Q2×16 — element-by-element, 8 per
   paragraph = OUTLINE box + PLAN box for each of the 4 elements; Q3×36 — element-by-element, 12 per
   paragraph = OUTLINE box + PLAN box for each of the 6 TTECEA boxes [topic·evidence·analysis·effects·
   effects2·purpose], ×3 paragraphs; Q4×40 — 12 per body ×3 [same 6 boxes, UNSUFFIXED] + intro
-  (outline-intro-thesis-q4 + plan) + conclusion (outline-conclusion-thesis + plan) = 36+2+2; Q5×6), every
+  (outline-intro-thesis-q4 + plan) + conclusion (outline-conclusion-thesis + plan) = 36+2+2; Q5×12 —
+  each of six IUMVCC sections dual-emits outline-iumvcc-{sec} + iumvcc-{sec}), every
   fieldId byte-matching the header contract table, each in an element- or compile-validating reply.
+  (v7.20.159: Q5×12 — each of the six IUMVCC sections dual-emits its OUTLINE row `outline-iumvcc-{sec}`
+  + its PLAN box `iumvcc-{sec}`; six sections × one row each = 12. Total = 16+36+40+12 = 104.)
 - `Got it — continue` raw count = 4 Q-GATE rows + this line = 5.
 - `HARD PRECONDITION` ≥ 3 (pre-planning chain, per-question gates).
 - Simulated-state vocabulary appears NOWHERE as an instruction (this prohibition line is
