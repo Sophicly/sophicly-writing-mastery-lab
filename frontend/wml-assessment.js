@@ -28911,10 +28911,13 @@
         // so on a long outline you had to scroll back up to reach it. This adds ONE button that pins
         // to the top of the canvas viewport while ANY part of an OUTLINE group is on screen, labelled
         // with that Q, acting on the Q you're viewing; it hides when no outline group is in view.
-        // Landmines engineered out: (a) mounted in .swml-canvas-content (the scroller) OUTSIDE the PM
-        // editor, so ProseMirror's DOMObserver never sees it → no foreign-mutation storm; (b) absolute
-        // + rAF-throttled scroll repositioning (top = scrollTop + pad) → pinned to the viewport top,
-        // out of flow → zero layout shift; (c) listener attached once per scroller (guard flag).
+        // v7.20.187 (Neil): shows ONLY when every outline section is complete (green tick) AND those
+        // sections are on screen — never over the question/plan, nor over an unfinished/empty outline.
+        // Landmines engineered out: (a) mounted in .swml-canvas-content OUTSIDE the PM editor →
+        // ProseMirror's DOMObserver never sees it (no foreign-mutation storm); (b) a position:sticky
+        // anchor (compositor-pinned — NO JS-per-frame reposition, so no scroll "friction") with
+        // height:0 (zero layout) + text-align centering (no translateX for hover to clobber → no
+        // sideways jump); (c) listeners attached once per scroller (guard flag).
         function _ensureOutlineTransferFloat(editor) {
             const scroller = editor.closest('.swml-canvas-content');
             if (!scroller) return;
@@ -28925,14 +28928,22 @@
                 });
                 return out;
             };
-            let floatBtn = scroller.querySelector(':scope > .swml-outline-transfer-float');
+            let anchor = scroller.querySelector(':scope > .swml-outline-transfer-float-anchor');
             if (!_outlineDividers().length) {
-                // No outline on this doc — tear down any stale float + listener (task switch).
-                if (floatBtn) floatBtn.remove();
-                if (scroller._swmlOtfHandler) { scroller.removeEventListener('scroll', scroller._swmlOtfHandler); window.removeEventListener('resize', scroller._swmlOtfHandler); scroller._swmlOtfHandler = null; }
+                // No outline on this doc — tear down any stale float + listeners (task switch).
+                if (anchor) anchor.remove();
+                if (scroller._swmlOtfHandler) {
+                    scroller.removeEventListener('scroll', scroller._swmlOtfHandler);
+                    scroller.removeEventListener('input', scroller._swmlOtfHandler);
+                    window.removeEventListener('resize', scroller._swmlOtfHandler);
+                    scroller._swmlOtfHandler = null;
+                }
                 return;
             }
-            if (!floatBtn) {
+            let floatBtn = anchor && anchor.querySelector('.swml-outline-transfer-float');
+            if (!anchor) {
+                anchor = document.createElement('div');
+                anchor.className = 'swml-outline-transfer-float-anchor';
                 floatBtn = document.createElement('button');
                 floatBtn.type = 'button';
                 floatBtn.className = 'swml-transfer-all-btn swml-outline-transfer-float';
@@ -28948,7 +28959,8 @@
                     floatBtn.classList.add(ok ? 'swml-transfer-success' : 'swml-transfer-empty');
                     setTimeout(() => floatBtn.classList.remove('swml-transfer-success', 'swml-transfer-empty'), 1200);
                 });
-                scroller.appendChild(floatBtn);
+                anchor.appendChild(floatBtn);
+                scroller.insertBefore(anchor, scroller.firstChild); // first child → sticky pins to the scroller top
             }
             const PAD = 14;
             const update = () => {
@@ -28957,22 +28969,28 @@
                 let active = null;
                 for (let i = 0; i < dividers.length; i++) {
                     const div = dividers[i];
-                    let last = div, el = div.nextElementSibling;
-                    while (el && el.getAttribute('data-section-type') !== 'divider') { last = el; el = el.nextElementSibling; }
-                    const gTop = div.getBoundingClientRect().top;
-                    const gBottom = last.getBoundingClientRect().bottom;
-                    if (gBottom > sRect.top + PAD && gTop < sRect.bottom - PAD) { active = { div, gBottom }; break; } // topmost intersecting group wins
+                    // The outline SECTIONS in this group (between this divider and the next divider).
+                    const secs = [];
+                    let el = div.nextElementSibling;
+                    while (el && el.getAttribute('data-section-type') !== 'divider') {
+                        if (el.getAttribute('data-section-type') === 'outline') secs.push(el);
+                        el = el.nextElementSibling;
+                    }
+                    if (!secs.length) continue;
+                    // GATE (Neil): show only when EVERY outline section is complete (green tick) — the
+                    // "ready, transfer it all" signal. Partial/empty outlines show nothing (the per-section
+                    // ↓ covers those). data-section-complete is the NodeView's node-model tick.
+                    if (!secs.every((s) => s.getAttribute('data-section-complete') === 'true')) continue;
+                    // ...and only while those sections are on screen — never over the question/plan above.
+                    const rTop = secs[0].getBoundingClientRect().top;
+                    const rBottom = secs[secs.length - 1].getBoundingClientRect().bottom;
+                    if (rBottom > sRect.top + PAD && rTop < sRect.bottom - PAD) { active = div; break; }
                 }
                 if (!active) { floatBtn.style.opacity = '0'; floatBtn.style.pointerEvents = 'none'; return; }
-                const label = (active.div.getAttribute('data-section-label') || '').trim();
+                const label = (active.getAttribute('data-section-label') || '').trim();
                 floatBtn._swmlDividerLabel = label;
                 const qm = label.match(/\bQ\d+\w*/i);
                 floatBtn.innerHTML = 'Transfer All' + (qm ? ' · ' + qm[0].toUpperCase() : '') + ' ' + SVG_TRANSFER;
-                // Pin to the viewport top; ride down at the group's end so it never floats past it.
-                const topAtViewport = scroller.scrollTop + PAD;
-                const groupBottomInContent = scroller.scrollTop + (active.gBottom - sRect.top);
-                const maxTop = groupBottomInContent - floatBtn.offsetHeight - PAD;
-                floatBtn.style.top = Math.max(0, Math.min(topAtViewport, maxTop)) + 'px';
                 floatBtn.style.opacity = '1';
                 floatBtn.style.pointerEvents = 'auto';
             };
@@ -28981,6 +28999,7 @@
                 const onScroll = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = null; update(); }); };
                 scroller._swmlOtfHandler = onScroll;
                 scroller.addEventListener('scroll', onScroll, { passive: true });
+                scroller.addEventListener('input', onScroll, { passive: true }); // completing a section flips the gate
                 window.addEventListener('resize', onScroll, { passive: true });
             }
             update();
