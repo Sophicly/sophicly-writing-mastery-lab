@@ -5504,6 +5504,11 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     transition: opacity 0.18s ease, background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
 }
 .swml-outline-transfer-float svg { width: 12px; height: 12px; }
+/* v7.20.188 (Neil): transfer buttons coincide with the green tick. A per-section ↓ appears only once
+   THAT section is complete; a divider "Transfer All" only once every target section is complete
+   (data-transferall-ready, stamped in JS since CSS can't test sibling completeness). */
+.swml-section-block:not([data-section-complete="true"]) .swml-ctl-transfer { display: none; }
+.swml-section-block[data-section-type="divider"]:not([data-transferall-ready="true"]) .swml-ctl-transfer-all { display: none; }
 .swml-transfer-all-btn svg { flex-shrink: 0; width: 11px; height: 11px; }
 .swml-transfer-all-btn:hover {
     background: linear-gradient(180deg, #5333ed, rgba(74,44,222,0.97));

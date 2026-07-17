@@ -28921,27 +28921,44 @@
         function _ensureOutlineTransferFloat(editor) {
             const scroller = editor.closest('.swml-canvas-content');
             if (!scroller) return;
-            const _outlineDividers = () => {
-                const out = [];
-                editor.querySelectorAll('[data-section-type="divider"]').forEach((d) => {
-                    if (/^OUTLINE/i.test((d.getAttribute('data-section-label') || '').trim())) out.push(d);
-                });
-                return out;
+            // v7.20.188 (Neil): all transfer buttons COINCIDE WITH THE GREEN TICK. Per-section ↓ → CSS,
+            // keyed on data-section-complete. Static divider "Transfer All" + the floating one → only
+            // when EVERY target section in the group is complete; CSS can't test sibling completeness so
+            // we stamp data-transferall-ready on each divider here and CSS gates the static button. A
+            // MutationObserver on data-section-complete drives it → ticks from typing/checkbox/picker/
+            // autofill all update live.
+            const dividerType = (label) => {
+                const l = (label || '').trim();
+                if (/^OUTLINE/i.test(l)) return 'outline';
+                if (/^ESSAY\s*PLAN/i.test(l) || /^PLAN\s*—/i.test(l) || /^YOUR\s*(?:ESSAY\s*)?PLAN/i.test(l)) return 'plan';
+                return null;
             };
+            const groupSections = (div, type) => {
+                const secs = [];
+                let el = div.nextElementSibling;
+                while (el && el.getAttribute('data-section-type') !== 'divider') {
+                    if (el.getAttribute('data-section-type') === type) secs.push(el);
+                    el = el.nextElementSibling;
+                }
+                return secs;
+            };
+            const transferDividers = () => Array.from(editor.querySelectorAll('[data-section-type="divider"]'))
+                .filter((d) => dividerType(d.getAttribute('data-section-label')));
+            const hasOutline = () => transferDividers().some((d) => dividerType(d.getAttribute('data-section-label')) === 'outline');
             let anchor = scroller.querySelector(':scope > .swml-outline-transfer-float-anchor');
-            if (!_outlineDividers().length) {
-                // No outline on this doc — tear down any stale float + listeners (task switch).
+            if (!transferDividers().length) {
+                // No transfer surface on this doc (CN/FQ/quiz) — tear everything down.
                 if (anchor) anchor.remove();
+                if (scroller._swmlOtfObserver) { scroller._swmlOtfObserver.disconnect(); scroller._swmlOtfObserver = null; }
                 if (scroller._swmlOtfHandler) {
                     scroller.removeEventListener('scroll', scroller._swmlOtfHandler);
-                    scroller.removeEventListener('input', scroller._swmlOtfHandler);
                     window.removeEventListener('resize', scroller._swmlOtfHandler);
                     scroller._swmlOtfHandler = null;
                 }
                 return;
             }
             let floatBtn = anchor && anchor.querySelector('.swml-outline-transfer-float');
-            if (!anchor) {
+            if (hasOutline() && !anchor) {
                 anchor = document.createElement('div');
                 anchor.className = 'swml-outline-transfer-float-anchor';
                 floatBtn = document.createElement('button');
@@ -28961,31 +28978,34 @@
                 });
                 anchor.appendChild(floatBtn);
                 scroller.insertBefore(anchor, scroller.firstChild); // first child → sticky pins to the scroller top
+            } else if (!hasOutline() && anchor) {
+                anchor.remove(); anchor = null; floatBtn = null;
             }
             const PAD = 14;
             const update = () => {
+                // (1) Stamp readiness on every transfer divider → CSS shows its static Transfer All only
+                //     once every target section (plan for a plan divider, outline for an outline one) is
+                //     complete. Idempotent; the write is firewalled by the divider's ignoreMutation.
+                transferDividers().forEach((div) => {
+                    const secs = groupSections(div, dividerType(div.getAttribute('data-section-label')));
+                    const ready = secs.length > 0 && secs.every((s) => s.getAttribute('data-section-complete') === 'true');
+                    const want = ready ? 'true' : 'false';
+                    if (div.getAttribute('data-transferall-ready') !== want) div.setAttribute('data-transferall-ready', want);
+                });
+                // (2) Floating Transfer All (outline docs): all-complete AND spanning the viewport-top pin
+                //     (you've scrolled INTO the outline — not while it merely peeks in from below).
+                if (!floatBtn) return;
                 const sRect = scroller.getBoundingClientRect();
-                const dividers = _outlineDividers();
+                const pinY = sRect.top + PAD;
                 let active = null;
-                for (let i = 0; i < dividers.length; i++) {
-                    const div = dividers[i];
-                    // The outline SECTIONS in this group (between this divider and the next divider).
-                    const secs = [];
-                    let el = div.nextElementSibling;
-                    while (el && el.getAttribute('data-section-type') !== 'divider') {
-                        if (el.getAttribute('data-section-type') === 'outline') secs.push(el);
-                        el = el.nextElementSibling;
-                    }
-                    if (!secs.length) continue;
-                    // GATE (Neil): show only when EVERY outline section is complete (green tick) — the
-                    // "ready, transfer it all" signal. Partial/empty outlines show nothing (the per-section
-                    // ↓ covers those). data-section-complete is the NodeView's node-model tick.
-                    if (!secs.every((s) => s.getAttribute('data-section-complete') === 'true')) continue;
-                    // ...and only while those sections are on screen — never over the question/plan above.
+                transferDividers().forEach((div) => {
+                    if (active || dividerType(div.getAttribute('data-section-label')) !== 'outline') return;
+                    const secs = groupSections(div, 'outline');
+                    if (!secs.length || !secs.every((s) => s.getAttribute('data-section-complete') === 'true')) return;
                     const rTop = secs[0].getBoundingClientRect().top;
                     const rBottom = secs[secs.length - 1].getBoundingClientRect().bottom;
-                    if (rBottom > sRect.top + PAD && rTop < sRect.bottom - PAD) { active = div; break; }
-                }
+                    if (rTop <= pinY + 24 && rBottom > pinY) active = div; // outline spans the top pin = you're IN it
+                });
                 if (!active) { floatBtn.style.opacity = '0'; floatBtn.style.pointerEvents = 'none'; return; }
                 const label = (active.getAttribute('data-section-label') || '').trim();
                 floatBtn._swmlDividerLabel = label;
@@ -28996,11 +29016,13 @@
             };
             if (!scroller._swmlOtfHandler) {
                 let raf = null;
-                const onScroll = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = null; update(); }); };
-                scroller._swmlOtfHandler = onScroll;
-                scroller.addEventListener('scroll', onScroll, { passive: true });
-                scroller.addEventListener('input', onScroll, { passive: true }); // completing a section flips the gate
-                window.addEventListener('resize', onScroll, { passive: true });
+                const schedule = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = null; update(); }); };
+                scroller._swmlOtfHandler = schedule;
+                scroller.addEventListener('scroll', schedule, { passive: true });
+                window.addEventListener('resize', schedule, { passive: true });
+                const obs = new MutationObserver(schedule); // completion ticks from any source → refresh
+                obs.observe(editor, { subtree: true, attributes: true, attributeFilter: ['data-section-complete'] });
+                scroller._swmlOtfObserver = obs;
             }
             update();
         }
