@@ -28184,7 +28184,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -28886,6 +28886,62 @@
         // genuinely rebuilt) and breaker-guarded (_derivedCardFillOk, PM law rule 5). Handlers
         // re-resolve their target paragraphs at CLICK time — a built-time element can be a
         // detached pre-redraw node.
+        // v7.20.189 (Neil): PHASE ORIENTATION. On entering a redraft-phase lesson, scroll the student
+        // straight to the FIRST section they work in this phase, and show a one-time dismissible
+        // coachmark telling them what to do here (planning→plan, outlining→outline, polishing/
+        // assessment→response). Fires once per load, only if they haven't already scrolled; the
+        // coachmark remembers dismissal per doc+task so it never nags on re-entry. The card is mounted
+        // in .swml-canvas-content OUTSIDE the PM editor (PM-safe) and positioned by the section's
+        // scroll-invariant content offset, so it rides with the content.
+        const _PHASE_SECTION_TYPE = { planning: 'plan', outlining: 'outline', polishing: 'response', assessment: 'response', redraft_assessment: 'response' };
+        const _PHASE_COACH = {
+            planning:  'Start your plan here. Work through each paragraph with Sophia — she’ll guide you.',
+            outlining: 'Your plan has been transferred here. Develop each line into a full sentence, then transfer it down to your Response.',
+            polishing: 'Here’s your response. Polish the prose — sharpen it line by line, then get it assessed.',
+            assessment: 'This is your response — Sophia is assessing it now.',
+            redraft_assessment: 'This is your redraft — Sophia is assessing it now.'
+        };
+        function _phaseCoachAndScroll() {
+            const type = _PHASE_SECTION_TYPE[state.task];
+            if (!type) return;
+            const editor = document.getElementById('swml-tiptap-editor');
+            const scroller = editor && editor.closest('.swml-canvas-content');
+            if (!editor || !scroller) return;
+            const sec = editor.querySelector('.swml-section-block[data-section-type="' + type + '"]');
+            if (!sec) return;
+            // Auto-scroll to the phase section, but only if the student hasn't already scrolled.
+            if (scroller.scrollTop < 40) { try { _swmlScrollToTop(sec, 24); } catch (_) {} }
+            // One-time dismissible coachmark (remembered per doc + task).
+            const copy = _PHASE_COACH[state.task];
+            if (!copy || state.reviewMode) return;
+            let dismissKey;
+            try { dismissKey = 'swml_coach:' + CANVAS_SAVE_KEY() + ':' + state.task; } catch (_) { dismissKey = 'swml_coach:' + state.task; }
+            try { if (localStorage.getItem(dismissKey) === '1') return; } catch (_) {}
+            const _stale = scroller.querySelector(':scope > .swml-phase-coach');
+            if (_stale) _stale.remove(); // clear a prior lesson's card if the scroller persisted across SPA nav
+            const card = document.createElement('div');
+            card.className = 'swml-phase-coach';
+            card.setAttribute('contenteditable', 'false');
+            const txt = document.createElement('div');
+            txt.className = 'swml-phase-coach-text';
+            txt.textContent = copy;
+            const close = document.createElement('button');
+            close.type = 'button';
+            close.className = 'swml-phase-coach-close';
+            close.setAttribute('aria-label', 'Dismiss');
+            close.innerHTML = '&times;';
+            close.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); try { localStorage.setItem(dismissKey, '1'); } catch (_) {} card.remove(); });
+            card.appendChild(txt);
+            card.appendChild(close);
+            scroller.appendChild(card);
+            // Position at the section's scroll-invariant content offset (stable even mid smooth-scroll).
+            requestAnimationFrame(() => {
+                if (!card.isConnected) return;
+                const top = scroller.scrollTop + (sec.getBoundingClientRect().top - scroller.getBoundingClientRect().top);
+                card.style.top = Math.max(8, top - card.offsetHeight - 10) + 'px';
+            });
+        }
+
         // v7.20.186 (Neil): the ONE transfer-all execution, shared by the in-flow divider button
         // and the floating outline button below. Re-resolves sections at CALL time (a divider label
         // is stable; the DOM node may be a pre-redraw copy). Returns whether anything transferred.
