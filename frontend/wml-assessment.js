@@ -29837,15 +29837,24 @@
                     elapsedStr = days + (days === 1 ? ' day' : ' days');
                 }
             }
+            // v7.20.174 STORM ROOT: these <p>s are EDITABLE PM content, so a raw `p.innerHTML =`
+            // write is a foreign childList mutation PM's DOMObserver absorbs as a doc transaction.
+            // Because `innerHTML =` rebuilds children UNCONDITIONALLY (even for an identical string),
+            // every recalc pass fired a transaction → onTransaction → completion-recompute + onUpdate
+            // rAF → NodeView redraw → section-block _fillCtl → renderControlRows (the ctlrows breaker
+            // trip + oscillating save sizes on P2 redraft docs). Idempotent guard = zero MutationRecord
+            // when the value is unchanged → the cascade cannot sustain (PM-law rule 4). A GENUINE grade/
+            // date change still writes once → one transaction → converges. (Neil's #1 storm, root-fixed.)
+            const _setHTML = (el, html) => { if (el.innerHTML !== html) el.innerHTML = html; };
             scoreSection.querySelectorAll('p').forEach(p => {
                 const text = p.textContent || '';
                 if (text.includes('Total Marks:')) {
                     // v7.19.816: ceiling semantics — show the capped total, with the
                     // ceiling note visible whenever it applies.
-                    p.innerHTML = `<em>Total Marks:</em> ${finalMarks} / ${maxTotal}` +
-                        (_wcPen > 0 ? ` <span style="opacity:0.6;font-size:0.9em">(max ${Math.max(0, maxTotal - _wcPen)}/${maxTotal} — word count)</span>` : '');
+                    _setHTML(p, `<em>Total Marks:</em> ${finalMarks} / ${maxTotal}` +
+                        (_wcPen > 0 ? ` <span style="opacity:0.6;font-size:0.9em">(max ${Math.max(0, maxTotal - _wcPen)}/${maxTotal} — word count)</span>` : ''));
                 } else if (text.includes('Percentage:')) {
-                    p.innerHTML = `<em>Percentage:</em> ${pct}%`;
+                    _setHTML(p, `<em>Percentage:</em> ${pct}%`);
                 } else if (text.startsWith('Grade:') || (p.querySelector('em') && p.querySelector('em').textContent.includes('Grade:'))) {
                     // v7.19.171: wrap grade value in span with tier class so the
                     // pill-style colored background renders correctly (span has
@@ -29853,10 +29862,10 @@
                     const effectiveGrade = gradeOverride ? String(gradeOverride) : (grade === 'U' ? '1' : String(grade));
                     const tierCls = 'swml-grade-value swml-grade-text-' + effectiveGrade;
                     if (gradeOverride) {
-                        p.innerHTML = `<em>Grade:</em> <span class="${tierCls}">${gradeOverride}</span> (tutor override)`;
+                        _setHTML(p, `<em>Grade:</em> <span class="${tierCls}">${gradeOverride}</span> (tutor override)`);
                     } else {
                         const inProgress = allSet ? '' : ' (in progress)';
-                        p.innerHTML = `<em>Grade:</em> <span class="${tierCls}">${grade}</span>${inProgress}`;
+                        _setHTML(p, `<em>Grade:</em> <span class="${tierCls}">${grade}</span>${inProgress}`);
                     }
                 } else if (text.includes('Date Started:')) {
                     // v7.19.764: only UPGRADE the date, never blank it. _canvasStartedAt can be
@@ -29867,19 +29876,19 @@
                     // HTML from $doc['startedAt'] (heal_score_summary_dates), so when we have no
                     // client value we leave whatever is there — it is already correct. A pristine
                     // pre-work doc has no startedAt server-side either, so it stays "—" correctly.
-                    if (startedStr) p.innerHTML = `<em>Date Started:</em> ${startedStr}`;
+                    if (startedStr) _setHTML(p, `<em>Date Started:</em> ${startedStr}`);
                 } else if (text.includes('Date Completed:')) {
                     // v7.19.770: stamps when the STUDENT completes every required section
                     // (server set-once docCompletedAt); "—" until then. Only UPGRADE (never blank
                     // a server-baked date), mirroring Date Started — UNLESS the doc has been reset
                     // (v892), in which case blank it so a cleared attempt shows no completion date.
-                    if (_docCleared) p.innerHTML = `<em>Date Completed:</em> —`;
-                    else if (completedStr) p.innerHTML = `<em>Date Completed:</em> ${completedStr}`;
+                    if (_docCleared) _setHTML(p, `<em>Date Completed:</em> —`);
+                    else if (completedStr) _setHTML(p, `<em>Date Completed:</em> ${completedStr}`);
                 } else if (text.includes('Days Elapsed:')) {
-                    p.innerHTML = `<em>Days Elapsed:</em> ${elapsedStr || '—'}`;
+                    _setHTML(p, `<em>Days Elapsed:</em> ${elapsedStr || '—'}`);
                 } else if (text.includes('Word Count:')) {
                     const wc = getResponseWordCount(canvasEditor);
-                    p.innerHTML = `<em>Word Count:</em> ${wc} / ${canvasWordTarget}`;
+                    _setHTML(p, `<em>Word Count:</em> ${wc} / ${canvasWordTarget}`);
                 }
             });
 
