@@ -28928,12 +28928,21 @@
                 });
             });
             // "Transfer All" on the PLAN / OUTLINE dividers (their NodeView now mounts a ctlRow).
+            // v7.20.182 (Neil 4a): on an OUTLINE-bearing doc the plan→response "Transfer All" is
+            // legacy — it skips the outline (element-box) step the student is meant to work. Detect
+            // whether the doc carries an OUTLINE divider (same /^OUTLINE/i rule used below) and, if so,
+            // suppress the PLAN divider's Transfer-All. Plan-only Qs (no outline divider) keep it.
+            let _docHasOutlineDivider = false;
+            editor.querySelectorAll('[data-section-type="divider"]').forEach((d) => {
+                if (/^OUTLINE/i.test((d.getAttribute('data-section-label') || '').trim())) _docHasOutlineDivider = true;
+            });
             editor.querySelectorAll('[data-section-type="divider"]').forEach((div) => {
                 const label = (div.getAttribute('data-section-label') || '').trim();
                 let targetType = null;
                 if (/^ESSAY\s*PLAN/i.test(label) || /^PLAN\s*—/i.test(label) || /^YOUR\s*(?:ESSAY\s*)?PLAN/i.test(label)) targetType = 'plan';
                 else if (/^OUTLINE/i.test(label)) targetType = 'outline';
                 if (!targetType) return; // only the transfer dividers carry a ctlRow
+                if (targetType === 'plan' && _docHasOutlineDivider) return; // 4a: outline supersedes plan→response
                 const row = _ctlRowOf(div);
                 if (!row) return;
                 _paint(row, 'transferall|' + targetType + '|' + label, (r) => {
@@ -29965,15 +29974,6 @@
         }
 
         function recalculateScoreSummary() {
-            // v7.20.175 TEMP STORM DIAG — names the repeat-caller (static tracing couldn't close the
-            // loop edge). Capped at 60 so it can never spam. Remove once the caller is identified.
-            try {
-                window._wmlRecalcN = (window._wmlRecalcN || 0) + 1;
-                if (window._wmlRecalcN <= 60) {
-                    const _st = (new Error().stack || '').split('\n').slice(2, 4).map(s => s.trim()).join('  ⇐  ');
-                    console.log('[WML recalc #' + window._wmlRecalcN + '] task=' + (state && state.task) + '  caller: ' + _st);
-                }
-            } catch (_) {}
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
             let totalMarks = 0, maxTotal = 0, allSet = true;
