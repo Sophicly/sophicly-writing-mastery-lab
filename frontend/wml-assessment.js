@@ -14977,7 +14977,20 @@
         let textSizeIndex = 3; // default 15px (matches CSS default)
         function applyTextSize() {
             const pm = document.getElementById('swml-tiptap-editor');
-            if (pm) pm.style.setProperty('--swml-editor-font-size', TEXT_SIZES[textSizeIndex] + 'px');
+            if (!pm) return;
+            // v7.20.178 (Neil 4e): the font-size var triggers a full-doc reflow, so the
+            // scroll anchor is lost and the doc visibly jumps on Smaller/Larger. Capture +
+            // restore scrollTop around the write (the _withScrollPreserve pattern used for
+            // score/grade mutations), 2-rAF so it lands AFTER the reflow settles.
+            const scroller = pm.closest('.swml-canvas-content');
+            const scrollTop = scroller ? scroller.scrollTop : 0;
+            pm.style.setProperty('--swml-editor-font-size', TEXT_SIZES[textSizeIndex] + 'px');
+            if (!scroller) return;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (scroller.scrollTop !== scrollTop) scroller.scrollTop = scrollTop;
+                });
+            });
         }
 
         // Tool click actions (resolved at click time via closures on canvasEditor)
@@ -26282,7 +26295,19 @@
 
                 const btn = el('button', {
                     className: 'swml-comment-bubble-btn',
-                    onClick: (ev) => { ev.stopPropagation(); showCommentPopover(cid, markEl); },
+                    // v7.20.178 (Neil 4g): TOGGLE. A second click on the same avatar should
+                    // CLOSE the popover, but showCommentPopover always closes-then-reopens
+                    // (25389) → the popover only flashed and stayed open. Guard: if this
+                    // comment's popover is already the open one, just close it. (stopPropagation
+                    // already blocks the outside-click closer from double-firing.)
+                    onClick: (ev) => {
+                        ev.stopPropagation();
+                        if (activePopover && activePopover._anchorCid === cid) {
+                            closeCommentPopover();
+                            return;
+                        }
+                        showCommentPopover(cid, markEl);
+                    },
                 });
 
                 // Avatar
@@ -26676,6 +26701,28 @@
                         if (event.target.closest('select')) return true;
                         return false; // let ProseMirror handle normally
                     },
+                },
+                // v7.20.178 (Neil 4d): triple-click selected the WHOLE SECTION, not the
+                // line/paragraph. Section blocks are NodeViews, so PM's default triple-click
+                // resolves the selection up to the section node. Clamp it to the deepest
+                // TEXTBLOCK under the click (the paragraph, or the input field's own content)
+                // and return true to suppress the default node-wide select. Selection-only —
+                // no doc mutation.
+                handleTripleClick(view, pos) {
+                    try {
+                        const $pos = view.state.doc.resolve(pos);
+                        for (let d = $pos.depth; d > 0; d--) {
+                            if ($pos.node(d).isTextblock) {
+                                const from = $pos.start(d);
+                                const to = $pos.end(d);
+                                if (canvasEditor) {
+                                    canvasEditor.chain().setTextSelection({ from, to }).run();
+                                    return true;
+                                }
+                            }
+                        }
+                    } catch (_) { /* fall through to PM default */ }
+                    return false;
                 },
                 // Strip structural containers and inline styles from pasted content (v7.12.59, v7.14.75)
                 transformPastedHTML(html) {
