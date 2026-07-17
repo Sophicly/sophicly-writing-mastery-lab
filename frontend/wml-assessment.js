@@ -28579,8 +28579,17 @@
             // per-render `let` — a once-bound global handler would capture a stale, removed layer).
             try { if (window._swmlTransferResizeObserver) window._swmlTransferResizeObserver.disconnect(); } catch (_) {}
             if (window._swmlTransferResizeHandler) window.removeEventListener('resize', window._swmlTransferResizeHandler);
-            let _tlRaf = 0;
-            const _tlReposition = function () { if (_tlRaf) cancelAnimationFrame(_tlRaf); _tlRaf = requestAnimationFrame(positionTransferOverlays); };
+            // v7.20.165 (Neil: transfer buttons jump up/down on a checklist tick). The tick fires
+            // the `ctlrows` NodeView redraw storm (see reference_wml_pm_nodeview_foreign_mutation_loop):
+            // the whole doc reflows repeatedly for ~3s, ResizeObserver fires every frame, and a
+            // PER-FRAME rAF reposition read the TRANSIENT mid-flush getBoundingClientRect → the
+            // absolute overlay buttons snapped to a wrong spot each frame (the visible jitter). Trailing
+            // DEBOUNCE instead: coalesce the whole reflow burst into ONE reposition after 160ms of
+            // quiet, so the buttons hold their last-good position through the storm and settle once when
+            // layout is stable. Scroll stays direct (line above) — scroll rects don't flicker. The real
+            // fix (PM widget Decorations, layout-driven, storm-immune) is queued — this kills the jitter.
+            let _tlTimer = 0;
+            const _tlReposition = function () { if (_tlTimer) clearTimeout(_tlTimer); _tlTimer = setTimeout(positionTransferOverlays, 160); };
             window._swmlTransferResizeHandler = _tlReposition;
             window.addEventListener('resize', _tlReposition, { passive: true });
             if (typeof ResizeObserver !== 'undefined') {
