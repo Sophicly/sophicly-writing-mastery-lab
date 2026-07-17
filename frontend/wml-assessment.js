@@ -31781,6 +31781,7 @@
             return total;
         }
         let total = 0;
+        const _wcTrace = []; // v7.20.163 DIAGNOSTIC (Neil word-count flip): per-section breakdown
         responseSections.forEach(section => {
             // v7.20.161/.162 (Neil): a statement-PICKING section (AQA Lang P2 Q1 multi-select — AI
             // statements + a "Tick the 4 correct…" instruction) is NOT essay writing, so it must
@@ -31789,7 +31790,7 @@
             // so [data-item-id]/[data-checklist-item] momentarily vanish mid-render → the statements'
             // text got counted intermittently (the 44↔82 flip Neil saw). The section label doesn't
             // flicker. Keep the child-marker check as a fallback for any unlabeled picking section.
-            if (_isPickingResponseSection(section)) return;
+            const _skip = _isPickingResponseSection(section);
             const clone = section.cloneNode(true);
             // v7.19.148: h3 strip removed — see note in editableSections branch above.
             // v7.18.41: exclude checklistItem statements + instruction line — see comment above.
@@ -31800,8 +31801,28 @@
             _stripScaffoldForCount(clone);
             const text = clone.textContent || '';
             const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+            // v7.20.163 DIAGNOSTIC: capture BEFORE the skip so we can see whether a section that
+            // SHOULD skip is being counted, and what its live label + checklist state actually are.
+            _wcTrace.push({
+                label: (section.getAttribute && section.getAttribute('data-section-label')) || '(no-label)',
+                skip: _skip,
+                words: words.length,
+                hasChk: !!(section.querySelector && section.querySelector('[data-checklist-item], [data-item-id]')),
+                conn: !!(section.isConnected),
+            });
+            if (_skip) return;
             total += words.length;
         });
+        // v7.20.163 DIAGNOSTIC (Neil): log ONLY when the total CHANGES from the last computed value,
+        // so a checklist tick/untick that shifts the count prints one line naming the leaking section.
+        // Remove once the flip is root-fixed.
+        try {
+            if (getResponseWordCount._lastTotal !== total) {
+                console.warn('[WC-DEBUG v7.20.163] total ' + getResponseWordCount._lastTotal + ' → ' + total,
+                    JSON.stringify(_wcTrace));
+                getResponseWordCount._lastTotal = total;
+            }
+        } catch (_) {}
         return total;
     }
 
