@@ -6334,6 +6334,17 @@
     // wml-pull-overlay.js needs the editor to replace plan-section content).
     if (window.WML) window.WML.getCanvasEditor = () => canvasEditor;
     let canvasSaveTimer = null;
+    // v7.20.177 (typing-flicker root #2): coalesces updateOutline + updateCommentCount off
+    // the keystroke path. updateOutline is O(N²) over the section list (per-section
+    // full-editor attribute scans) plus a deep cloneNode(true) of EVERY section for its
+    // indicator text, plus the in-document badge/number attr stamps — synchronously per
+    // keystroke on a 40-50-section doc that was a whole-doc scan + style pass per letter
+    // (the visible flicker). Trailing debounce: during continuous typing nothing runs; one
+    // full ATOMIC pass ~300ms after the last edit. This is NOT the reverted v7.20.171
+    // rAF-defer (that split the section-attr stamp OUT of a still-per-keystroke
+    // updateOutline, so the two halves ran out of phase and jittered WORSE) — here the
+    // whole function runs unchanged, only less often. All other callers stay direct.
+    let _typingUiRefreshTimer = null;
     // v7.14.74: Checkbox/dropdown state stored OUTSIDE TipTap to avoid transactions on click.
     // Keyed by fieldId. Flushed into TipTap attributes only before save.
     const _outlineCheckState = new Map();
@@ -26887,34 +26898,27 @@
                 if (state.task === 'mastery_codex') _paintCodexWc(editor);
 
                 // v7.15.0: Mark Plan/Response InputFields as filled/empty
-                // v7.15.0: Single debounced pass for ALL completion indicators (no per-row observers)
-                requestAnimationFrame(() => {
-                    const editorEl = editor.options.element;
-                    if (!editorEl) return;
-                    // Plan/Response InputFields (outside outline rows)
-                    editorEl.querySelectorAll('.swml-input-field').forEach(field => {
-                        if (field.closest('.swml-outline-row')) return;
-                        const text = (field.textContent || '').trim();
-                        field.classList.toggle('swml-input-filled', text.length > 0);
+                // v7.20.177 (typing-flicker root #1): the inline rAF sweep that lived here
+                // duplicated _recomputeAllCompletion byte-for-byte (fields + rows + section
+                // ticks) while onTransaction ALREADY schedules that same recompute (150ms
+                // coalesced, _scheduleCompletionRecompute) for the very transaction that
+                // fired this onUpdate — so the whole 40-50-section doc was swept TWICE per
+                // keystroke, and the two writers could transiently disagree mid-pass (the
+                // visible per-letter tick jitter). ONE writer, ONE cadence: the scheduled
+                // recompute (which is a superset — it also covers feedback/action/scores
+                // sections + the progress card). _scheduleStageRevealTag isn't lost either:
+                // onTransaction fires it for every docChanged txn, and onUpdate only ever
+                // fires on doc changes. Explicit call kept for ordering-robustness — the
+                // pending-guard makes it free.
+                _scheduleCompletionRecompute();
+                // v7.19.271: per-response-section word counts (exam_crib hides the
+                // global widget — each Q's response is its own ~650-word essay).
+                if (state.task === 'exam_crib') {
+                    requestAnimationFrame(() => {
+                        const editorEl = editor.options.element;
+                        if (editorEl) _paintCribSectionWc(editorEl);
                     });
-                    // Outline rows — call each row's checkRowComplete (criteria + text)
-                    editorEl.querySelectorAll('.swml-outline-row').forEach(row => {
-                        if (row._checkRowComplete) row._checkRowComplete();
-                    });
-                    // Section completion (batch after all rows checked)
-                    // v7.19.487: include plan/response/improvement (not just outline) so the
-                    // top-right completion tick appears live on row-based editable sections
-                    // (e.g. CW Story Components, Story Spine). checkSectionComplete early-returns
-                    // for sections with no outline rows, so free-prose sections are untouched.
-                    editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"], .swml-section-block[data-section-type="plan"], .swml-section-block[data-section-type="response"], .swml-section-block[data-section-type="improvement"]').forEach(sec => {
-                        checkSectionComplete(sec);
-                    });
-                    // v7.19.255: re-tag stage-reveal (idempotent — also runs in onTransaction)
-                    _scheduleStageRevealTag();
-                    // v7.19.271: per-response-section word counts (exam_crib hides the
-                    // global widget — each Q's response is its own ~650-word essay).
-                    if (state.task === 'exam_crib') _paintCribSectionWc(editorEl);
-                });
+                }
 
                 // Page count (content may have grown/shrunk)
                 requestAnimationFrame(updatePageCount);
@@ -26937,10 +26941,16 @@
                     saveStatus.classList.add('saving');
                     setTimeout(() => saveStatus.classList.remove('saving'), 1500);
                 }, 2000);
-                // Update outline if open
-                updateOutline();
-                // Update comment count after any editor change (marks added/removed)
-                updateCommentCount();
+                // Update outline (if open) + comment count — coalesced off the keystroke
+                // path (v7.20.177, see _typingUiRefreshTimer declaration). Both run
+                // atomically, same functions, ~300ms after the last edit.
+                clearTimeout(_typingUiRefreshTimer);
+                _typingUiRefreshTimer = setTimeout(() => {
+                    _typingUiRefreshTimer = null;
+                    if (!canvasEditor) return; // canvas torn down before the pass fired
+                    updateOutline();
+                    updateCommentCount();
+                }, 300);
             },
             onTransaction: ({ editor, transaction }) => {
                 // v7.13.92: Section Guard — revert if sections were deleted
@@ -26981,9 +26991,31 @@
                 // focus. Catches the scenario where a student types in section A,
                 // tabs/clicks into section B, and the in-flight 2s debounce hasn't
                 // yet fired. Without this, a quick focus transition can leak the
-                // most recent typing to a phantom state. Cheap — same saveCanvasContent
-                // path; no extra calls unless the user actually switches focus.
-                try { if (!state.reviewMode) saveCanvasContent(); } catch (_) {}
+                // most recent typing to a phantom state.
+                // v7.20.177 (save-flood root): blur ALSO fires for every click on an
+                // in-editor control — criteria checkboxes, feedback-mark <select>s,
+                // grade pills, transfer buttons all live INSIDE the editor DOM and steal
+                // focus from the contenteditable — and each one ran a full SYNCHRONOUS
+                // un-debounced save (getHTML + localStorage + server enqueue), stacking a
+                // second save cadence on top of the 2s autosave (the entry/localStorage
+                // console flood). Coalesce WITHIN-EDITOR focus transitions through the
+                // same canvasSaveTimer (200ms — the checklist-tick precedent, ~24449):
+                // typing resumed within 200ms folds it into the normal 2s debounce, and a
+                // widget-click burst collapses to ONE save. A genuine departure (focus
+                // leaves the editor subtree, or is lost to the page — relatedTarget null)
+                // keeps the ORIGINAL immediate save, so the phantom-state/SPA-nav
+                // safeguard is byte-identical for real exits.
+                if (state.reviewMode) return;
+                try {
+                    const _el = editor && editor.options && editor.options.element;
+                    const _to = event && event.relatedTarget;
+                    if (_el && _to && _el.contains(_to)) {
+                        clearTimeout(canvasSaveTimer);
+                        canvasSaveTimer = setTimeout(() => { saveCanvasContent(); }, 200);
+                    } else {
+                        saveCanvasContent();
+                    }
+                } catch (_) {}
             },
             onCreate: ({ editor }) => {
                 // v7.19.271: paint per-response-section word counts on first render
