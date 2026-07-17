@@ -28460,10 +28460,18 @@
             return null;
         }
 
-        /** Extract student text from a plan section (InputField textContent) */
+        /** Extract student text from a plan section (InputField). */
         function extractPlanText(sectionEl) {
             const field = sectionEl.querySelector('.swml-input-field');
-            return field ? field.textContent.trim() : '';
+            if (!field) return '';
+            // v7.20.184: textContent yields NO character at a <br>/block boundary, so a multi-line
+            // plan box ("…author's purpose."<br>"Effect 2: …") transferred GLUED ("purpose.Effect 2:").
+            // Strip tags to a SPACE via innerHTML then decode entities — same de-squash as _spaced()
+            // (~4470); matches extractOutlineText's space-join. Provenance stays consistent (the same
+            // text is both inserted and remembered, so a later run-lookup still matches).
+            const d = document.createElement('div');
+            d.innerHTML = (field.innerHTML || '').replace(/<[^>]+>/g, ' ');
+            return (d.textContent || '').replace(/\s+/g, ' ').trim();
         }
 
         /** Extract student text from an outline section (OutlineRow .swml-outline-input only) */
