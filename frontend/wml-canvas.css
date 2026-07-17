@@ -295,8 +295,8 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     flex-shrink: 0; /* Never CSS-shrink — auto-fit uses transform: scale() */
     margin: 0 auto 40px;
     background: #28292b; /* #343440 */
-    border-left: 1px solid oklch(0.38 0.01 270); /* oklch(0.38 0.01 270) */
-    border-right: 1px solid oklch(0.38 0.01 270);
+    /* v7.20.180 (Neil): removed the left/right page borders — the doc reads cleaner as a
+       floating sheet on the shader bg (the box-shadow already defines the edge). */
     padding: 48px 56px;
     box-shadow: 0 0 80px rgba(0,0,0,0.4);
     position: relative;

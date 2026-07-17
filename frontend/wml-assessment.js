@@ -14978,17 +14978,28 @@
         function applyTextSize() {
             const pm = document.getElementById('swml-tiptap-editor');
             if (!pm) return;
-            // v7.20.178 (Neil 4e): the font-size var triggers a full-doc reflow, so the
-            // scroll anchor is lost and the doc visibly jumps on Smaller/Larger. Capture +
-            // restore scrollTop around the write (the _withScrollPreserve pattern used for
-            // score/grade mutations), 2-rAF so it lands AFTER the reflow settles.
+            // v7.20.180 (Neil 4e, take 2): restoring the SAME scrollTop (v7.20.178) was a no-op —
+            // the browser already keeps scrollTop across a reflow, and when content ABOVE the caret
+            // changes height the same scrollTop shows different content = the jump. Anchor to the
+            // CARET instead: measure its offset from the scroller top before the resize, then after
+            // the reflow settles nudge scrollTop so the caret sits at the same screen offset. The
+            // text under the cursor stays put → no jump.
             const scroller = pm.closest('.swml-canvas-content');
-            const scrollTop = scroller ? scroller.scrollTop : 0;
+            let anchorPos = null, beforeTop = 0;
+            try {
+                if (scroller && canvasEditor && canvasEditor.view && !canvasEditor.view.isDestroyed) {
+                    anchorPos = canvasEditor.state.selection.from;
+                    beforeTop = canvasEditor.view.coordsAtPos(anchorPos).top - scroller.getBoundingClientRect().top;
+                }
+            } catch (_) { anchorPos = null; }
             pm.style.setProperty('--swml-editor-font-size', TEXT_SIZES[textSizeIndex] + 'px');
-            if (!scroller) return;
+            if (anchorPos == null) return;
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    if (scroller.scrollTop !== scrollTop) scroller.scrollTop = scrollTop;
+                    try {
+                        const afterTop = canvasEditor.view.coordsAtPos(anchorPos).top - scroller.getBoundingClientRect().top;
+                        scroller.scrollTop += (afterTop - beforeTop);
+                    } catch (_) { /* selection gone / view torn down — leave scroll as-is */ }
                 });
             });
         }
@@ -26749,15 +26760,28 @@
                 handleTripleClick(view, pos) {
                     try {
                         const $pos = view.state.doc.resolve(pos);
-                        for (let d = $pos.depth; d > 0; d--) {
-                            if ($pos.node(d).isTextblock) {
-                                const from = $pos.start(d);
-                                const to = $pos.end(d);
-                                if (canvasEditor) {
-                                    canvasEditor.chain().setTextSelection({ from, to }).run();
-                                    return true;
-                                }
-                            }
+                        let d = $pos.depth;
+                        while (d > 0 && !$pos.node(d).isTextblock) d--;
+                        if (d === 0 || !$pos.node(d).isTextblock) return false;
+                        const tb = $pos.node(d);
+                        const tbStart = $pos.start(d);
+                        const tbEnd = $pos.end(d);
+                        // v7.20.180 (Neil 4d take 2): .178 clamped to the textblock, but an input
+                        // field holds MULTIPLE <br>-separated lines in ONE textblock — so that still
+                        // selected the whole field ("still highlights everything in the container").
+                        // Clamp to the LINE around the click: the run bounded by the nearest
+                        // hardBreaks. No breaks (single-line field) → whole field, as before.
+                        let from = tbStart, to = tbEnd;
+                        tb.forEach((child, offset) => {
+                            if (child.type.name !== 'hardBreak') return;
+                            const bStart = tbStart + offset;
+                            const bEnd = bStart + child.nodeSize;
+                            if (bEnd <= pos) from = bEnd;                       // last break before the click
+                            else if (bStart >= pos && to === tbEnd) to = bStart; // first break after
+                        });
+                        if (canvasEditor) {
+                            canvasEditor.chain().setTextSelection({ from, to }).run();
+                            return true;
                         }
                     } catch (_) { /* fall through to PM default */ }
                     return false;
