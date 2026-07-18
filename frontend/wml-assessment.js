@@ -30078,7 +30078,6 @@
             };
             const _render = (thread) => {
                 thread = Array.isArray(thread) ? thread : [];
-                console.log('[WML tc-debug] render/rebuild — thread len:', thread.length, 'canEdit:', !!config.canSignOff, 'draft len:', _tutorCommentDraft.length);
                 const canEdit = !!config.canSignOff;
                 ui.innerHTML = '';
                 if (!thread.length && !canEdit) { ui.classList.add('swml-tutorcomment-empty'); return; } // student view, nothing yet
@@ -30146,19 +30145,22 @@
                     addBtn.textContent = 'Add comment';
                     const _add = () => {
                         const val = ta.value.trim();
-                        console.log('[WML tc-debug] Add clicked — value len:', val.length, 'scope:', _scope(), 'student:', _targetStudent());
                         if (!val) return;
                         addBtn.disabled = true; status.textContent = 'Saving…';
                         fetch(config.restUrl + 'canvas/tutorcomment', {
                             method: 'POST', headers,
                             body: JSON.stringify(Object.assign({}, _scope(), { studentId: _targetStudent(), text_note: val }))
-                        }).then(r => { console.log('[WML tc-debug] POST status', r.status); return r.json(); }).then(res => {
-                            console.log('[WML tc-debug] POST response', res);
+                        }).then(r => r.json()).then(res => {
                             if (res && res.success) { _tutorCommentDraft = ''; _tutorCommentLoadPromise = Promise.resolve({ success: true, thread: res.thread }); _render(res.thread || []); }
                             else { status.textContent = 'Save failed'; addBtn.disabled = false; }
-                        }).catch((e) => { console.warn('[WML tc-debug] POST error', e); status.textContent = 'Save failed'; addBtn.disabled = false; });
+                        }).catch(() => { status.textContent = 'Save failed'; addBtn.disabled = false; });
                     };
                     addBtn.addEventListener('click', _add);
+                    // v7.20.202: ⌘/Ctrl+Enter commits too — standard for a deliberate-submit field;
+                    // resolves the "didn't realise I had to click Add" discoverability gap.
+                    ta.addEventListener('keydown', (e) => {
+                        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); _add(); }
+                    });
                     row.appendChild(status);
                     row.appendChild(addBtn);
                     wrap.appendChild(ta);
@@ -30170,7 +30172,6 @@
 
             if (refetch || !_tutorCommentLoadPromise) {
                 const sc = _scope();
-                console.log('[WML tc-debug] load fetch — scope:', sc, 'student:', _targetStudent());
                 _tutorCommentLoadPromise = fetch(config.restUrl + `canvas/load-tutorcomment?board=${encodeURIComponent(sc.board)}&text=${encodeURIComponent(sc.text)}${sc.topicNumber ? '&topicNumber=' + sc.topicNumber : ''}&suffix=${encodeURIComponent(sc.suffix)}&studentId=${encodeURIComponent(_targetStudent())}&task=${encodeURIComponent(sc.task)}`, { headers })
                     .then(r => r.ok ? r.json() : null)
                     .catch(() => null);
