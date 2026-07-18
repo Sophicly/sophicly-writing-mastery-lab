@@ -30032,12 +30032,12 @@
         // NodeView (re)mount hook — cache-reusing fill (see wml-section-block.js signoff branch).
         try { window.WML = window.WML || {}; window.WML.renderSignoffUI = () => renderSignoffInline(false); } catch (_) { /* ignore */ }
 
-        // ── Tutor free-comment UI, IN-FLOW (v7.20.196 — same firewalled-footer technique as sign-off).
-        // Fills the .swml-tutorcomment-ui footer: editable textarea for tutor/admin/SSS (canSignOff),
-        // read-only text for everyone else. Persists to the _tutorcomment sidecar via REST (NOT the PM
-        // doc), keyed IDENTICALLY to the sign-off doc scope so write-key == read-key. Autosaves on
-        // blur + 1.2s debounce; an empty save clears the note. Low-frequency fill (no mark-change
-        // refetch), so no circuit-breaker needed; a focus guard protects an in-flight edit.
+        // ── Tutor free-comment THREAD, IN-FLOW (v7.20.199 — same firewalled-footer technique as
+        // sign-off). A tutor/admin/SSS (canSignOff) can leave MULTIPLE dated comments over time — each
+        // shows as a card with a "— {tutor} · {date}" badge; a compose box appends a new one. Everyone
+        // else sees the dated cards read-only. Persists to the _tutorcomment sidecar via REST (NOT the
+        // PM doc), keyed IDENTICALLY to the sign-off doc scope so write-key == read-key. Low-frequency
+        // fill (no mark-change refetch); a focus guard protects an in-flight compose.
         let _tutorCommentLoadPromise = null;
         function renderTutorCommentInline(refetch) {
             const editor = document.getElementById('swml-tiptap-editor');
@@ -30048,9 +30048,10 @@
             if (!sec) return;
             const ui = sec.querySelector('.swml-tutorcomment-ui');
             if (!ui) { console.warn('WML tutor-comment: .swml-tutorcomment-ui container missing — nodeView not mounted yet, skipping this pass'); return; }
-            // Don't clobber an in-flight edit (rebuilds fire on remounts).
-            const activeTa = ui.querySelector('.swml-tutorcomment-input');
-            if (activeTa && document.activeElement === activeTa) return;
+            // Don't clobber an in-flight compose (rebuilds fire on remounts): if the compose box is
+            // focused AND has unsaved text, skip this re-render so the tutor doesn't lose it.
+            const composeTa = ui.querySelector('.swml-tutorcomment-input');
+            if (composeTa && document.activeElement === composeTa && composeTa.value.trim()) return;
 
             const _scope = () => {
                 const s = WML.canvasDocScope();
@@ -30061,9 +30062,8 @@
                     task: state.task || '',
                 };
             };
-            // v7.20.198 (Neil): show the date the comment was written (like the sign-off + inline
-            // comments stamp a date). The server already stores `timestamp` (current_time('c')) on
-            // every save; format it for display. Returns '' on a bad/absent timestamp.
+            const _targetStudent = () => config.targetUserId || config.reviewStudentId || config.userId;
+            // v7.20.198 (Neil): each comment stamps its own date (like the sign-off + inline comments).
             const _fmtDate = (iso) => {
                 if (!iso) return '';
                 try {
@@ -30072,77 +30072,100 @@
                     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                 } catch (_) { return ''; }
             };
-            const _renderReadOnly = (note) => {
+            const _render = (thread) => {
+                thread = Array.isArray(thread) ? thread : [];
+                const canEdit = !!config.canSignOff;
                 ui.innerHTML = '';
-                const txt = (note && note.text) ? String(note.text) : '';
-                if (!txt) { ui.classList.add('swml-tutorcomment-empty'); return; } // nothing to show
+                if (!thread.length && !canEdit) { ui.classList.add('swml-tutorcomment-empty'); return; } // student view, nothing yet
                 ui.classList.remove('swml-tutorcomment-empty');
-                const body = document.createElement('div');
-                body.className = 'swml-tutorcomment-readonly';
-                body.textContent = txt;
-                ui.appendChild(body);
-                const byParts = [];
-                if (note.display_name) byParts.push(note.display_name);
-                const dt = _fmtDate(note.timestamp);
-                if (dt) byParts.push(dt);
-                if (byParts.length) {
-                    const by = document.createElement('div');
-                    by.className = 'swml-tutorcomment-by';
-                    by.textContent = '— ' + byParts.join(' · ');
-                    ui.appendChild(by);
+                // Existing entries — a dated card each.
+                thread.forEach((entry) => {
+                    const card = document.createElement('div');
+                    card.className = 'swml-tutorcomment-entry';
+                    const body = document.createElement('div');
+                    body.className = 'swml-tutorcomment-readonly';
+                    body.textContent = String(entry.text || '');
+                    card.appendChild(body);
+                    const badgeParts = [];
+                    if (entry.display_name) badgeParts.push(entry.display_name);
+                    const dt = _fmtDate(entry.timestamp);
+                    if (dt) badgeParts.push(dt);
+                    if (badgeParts.length) {
+                        const badge = document.createElement('div');
+                        badge.className = 'swml-tutorcomment-by';
+                        badge.textContent = '— ' + badgeParts.join(' · ');
+                        card.appendChild(badge);
+                    }
+                    if (canEdit && entry.id) {
+                        const del = document.createElement('button');
+                        del.type = 'button';
+                        del.className = 'swml-tutorcomment-del';
+                        del.title = 'Delete this comment';
+                        del.setAttribute('contenteditable', 'false');
+                        del.textContent = '✕';
+                        del.addEventListener('click', () => {
+                            del.disabled = true;
+                            fetch(config.restUrl + 'canvas/tutorcomment/delete', {
+                                method: 'POST', headers,
+                                body: JSON.stringify(Object.assign({}, _scope(), { studentId: _targetStudent(), entryId: entry.id }))
+                            }).then(r => r.json()).then(res => {
+                                if (res && res.success) { _tutorCommentLoadPromise = Promise.resolve({ success: true, thread: res.thread }); _render(res.thread || []); }
+                                else del.disabled = false;
+                            }).catch(() => { del.disabled = false; });
+                        });
+                        card.appendChild(del);
+                    }
+                    ui.appendChild(card);
+                });
+                // Compose box — tutor/admin/SSS only.
+                if (canEdit) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'swml-tutorcomment-compose';
+                    const ta = document.createElement('textarea');
+                    ta.className = 'swml-tutorcomment-input';
+                    ta.placeholder = thread.length ? 'Add another comment…' : 'Optional: write a comment for the student…';
+                    const _grow = () => { ta.style.height = 'auto'; ta.style.height = Math.max(64, ta.scrollHeight) + 'px'; };
+                    ta.addEventListener('input', _grow);
+                    const row = document.createElement('div');
+                    row.className = 'swml-tutorcomment-composerow';
+                    const status = document.createElement('span');
+                    status.className = 'swml-tutorcomment-status';
+                    const addBtn = document.createElement('button');
+                    addBtn.type = 'button';
+                    addBtn.className = 'swml-tutorcomment-add';
+                    addBtn.setAttribute('contenteditable', 'false');
+                    addBtn.textContent = 'Add comment';
+                    const _add = () => {
+                        const val = ta.value.trim();
+                        if (!val) return;
+                        addBtn.disabled = true; status.textContent = 'Saving…';
+                        fetch(config.restUrl + 'canvas/tutorcomment', {
+                            method: 'POST', headers,
+                            body: JSON.stringify(Object.assign({}, _scope(), { studentId: _targetStudent(), text_note: val }))
+                        }).then(r => r.json()).then(res => {
+                            if (res && res.success) { _tutorCommentLoadPromise = Promise.resolve({ success: true, thread: res.thread }); _render(res.thread || []); }
+                            else { status.textContent = 'Save failed'; addBtn.disabled = false; }
+                        }).catch(() => { status.textContent = 'Save failed'; addBtn.disabled = false; });
+                    };
+                    addBtn.addEventListener('click', _add);
+                    row.appendChild(status);
+                    row.appendChild(addBtn);
+                    wrap.appendChild(ta);
+                    wrap.appendChild(row);
+                    ui.appendChild(wrap);
+                    requestAnimationFrame(_grow);
                 }
-            };
-            const _applyLoaded = (note) => {
-                if (!config.canSignOff) { _renderReadOnly(note); return; }
-                ui.innerHTML = '';
-                ui.classList.remove('swml-tutorcomment-empty');
-                const ta = document.createElement('textarea');
-                ta.className = 'swml-tutorcomment-input';
-                ta.placeholder = 'Optional: write a closing comment for the student…';
-                ta.value = (note && note.text) ? String(note.text) : '';
-                const status = document.createElement('div');
-                status.className = 'swml-tutorcomment-status';
-                // v7.20.198 (Neil): auto-grow to fit the text as the tutor types (manual resize still
-                // works — the CSS keeps resize:vertical). Fires on input + once on mount for a value
-                // loaded from the server.
-                const _grow = () => { ta.style.height = 'auto'; ta.style.height = Math.max(72, ta.scrollHeight) + 'px'; };
-                // Resting status = when the current comment was last written (date stamp).
-                const _restStatus = () => { const d = _fmtDate(note && note.timestamp); status.textContent = d ? ('Last updated ' + d) : ''; };
-                _restStatus();
-                let saveTimer = null;
-                const _save = () => {
-                    const targetStudentId = config.targetUserId || config.reviewStudentId || config.userId;
-                    const sc = _scope();
-                    status.textContent = 'Saving…';
-                    fetch(config.restUrl + 'canvas/tutorcomment', {
-                        method: 'POST', headers,
-                        body: JSON.stringify(Object.assign({}, sc, { studentId: targetStudentId, text_note: ta.value }))
-                    }).then(r => r.json()).then(res => {
-                        const savedNote = (res && res.note) || null;
-                        note = savedNote; // so a later _restStatus() shows the fresh date
-                        const dt = _fmtDate(savedNote && savedNote.timestamp);
-                        status.textContent = (res && res.success) ? ('Saved ✓' + (dt ? ' · ' + dt : '')) : 'Save failed';
-                        _tutorCommentLoadPromise = Promise.resolve({ success: true, note: savedNote });
-                        setTimeout(() => { if (status.textContent.indexOf('Saved ✓') === 0) _restStatus(); }, 2500);
-                    }).catch(() => { status.textContent = 'Save failed'; });
-                };
-                ta.addEventListener('input', () => { _grow(); status.textContent = ''; if (saveTimer) clearTimeout(saveTimer); saveTimer = setTimeout(_save, 1200); });
-                ta.addEventListener('blur', () => { if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; } _save(); });
-                ui.appendChild(ta);
-                ui.appendChild(status);
-                requestAnimationFrame(_grow);
             };
 
             if (refetch || !_tutorCommentLoadPromise) {
-                const loadTargetId = config.targetUserId || config.reviewStudentId || config.userId;
                 const sc = _scope();
-                _tutorCommentLoadPromise = fetch(config.restUrl + `canvas/load-tutorcomment?board=${encodeURIComponent(sc.board)}&text=${encodeURIComponent(sc.text)}${sc.topicNumber ? '&topicNumber=' + sc.topicNumber : ''}&suffix=${encodeURIComponent(sc.suffix)}&studentId=${encodeURIComponent(loadTargetId)}&task=${encodeURIComponent(sc.task)}`, { headers })
+                _tutorCommentLoadPromise = fetch(config.restUrl + `canvas/load-tutorcomment?board=${encodeURIComponent(sc.board)}&text=${encodeURIComponent(sc.text)}${sc.topicNumber ? '&topicNumber=' + sc.topicNumber : ''}&suffix=${encodeURIComponent(sc.suffix)}&studentId=${encodeURIComponent(_targetStudent())}&task=${encodeURIComponent(sc.task)}`, { headers })
                     .then(r => r.ok ? r.json() : null)
                     .catch(() => null);
             }
             _tutorCommentLoadPromise.then(res => {
-                _applyLoaded(res && res.success ? res.note : null);
-            }).catch(() => { _applyLoaded(null); });
+                _render(res && res.success ? (res.thread || []) : []);
+            }).catch(() => { _render([]); });
         }
         // NodeView (re)mount hook (see wml-section-block.js tutorcomment branch).
         try { window.WML = window.WML || {}; window.WML.renderTutorCommentUI = () => renderTutorCommentInline(false); } catch (_) { /* ignore */ }

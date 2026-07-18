@@ -367,6 +367,10 @@ class SWML_REST_API {
             'methods' => 'POST', 'callback' => [$this, 'tutor_save_comment_note'],
             'permission_callback' => [$this, 'check_tutor_auth'],
         ]);
+        register_rest_route($namespace, '/canvas/tutorcomment/delete', [
+            'methods' => 'POST', 'callback' => [$this, 'tutor_delete_comment_note'],
+            'permission_callback' => [$this, 'check_tutor_auth'],
+        ]);
         register_rest_route($namespace, '/canvas/load-tutorcomment', [
             'methods' => 'GET', 'callback' => [$this, 'load_comment_note'],
             'permission_callback' => [$this, 'check_auth'],
@@ -4114,9 +4118,37 @@ class SWML_REST_API {
     }
 
     /**
-     * v7.20.196: Save a tutor's free-comment note (role-restricted via check_tutor_auth →
-     * tutor/admin/SSS). Persists to a user_meta sidecar on the STUDENT, mirroring tutor_signoff.
-     * An empty note deletes the record (clearing the box).
+     * v7.20.199: Decode the stored tutor-comment value into a THREAD (list of dated entries).
+     * Migrates the legacy single-object shape {text,timestamp,...} → a one-entry thread so older
+     * saves keep showing. Returns a list of well-formed entries (may be empty).
+     */
+    private function decode_comment_thread($raw) {
+        if (empty($raw)) return [];
+        $val = is_array($raw) ? $raw : json_decode($raw, true);
+        if (!is_array($val)) $val = json_decode(wp_unslash($raw), true);
+        if (!is_array($val)) return [];
+        // Legacy single-object shape → wrap as a one-entry thread.
+        if (isset($val['text'])) {
+            $val = [[
+                'id'           => $val['id'] ?? ('legacy_' . md5($val['text'] . ($val['timestamp'] ?? ''))),
+                'text'         => $val['text'],
+                'tutor_id'     => $val['tutor_id'] ?? 0,
+                'display_name' => $val['display_name'] ?? '',
+                'timestamp'    => $val['timestamp'] ?? '',
+            ]];
+        }
+        $out = [];
+        foreach ($val as $e) {
+            if (is_array($e) && isset($e['text'])) $out[] = $e;
+        }
+        return $out;
+    }
+
+    /**
+     * v7.20.199: Append a tutor free-comment entry (role-restricted via check_tutor_auth →
+     * tutor/admin/SSS). A tutor may leave MULTIPLE dated comments over time — each save APPENDS a
+     * new dated entry to the thread (never overwrites). Persists to a user_meta sidecar on the
+     * STUDENT, mirroring tutor_signoff.
      */
     public function tutor_save_comment_note($request) {
         $tutor_id = get_current_user_id();
@@ -4143,23 +4175,64 @@ class SWML_REST_API {
             return new WP_Error('missing_data', 'Missing board or text', ['status' => 400]);
         }
 
-        $note_key = $this->tutorcomment_meta_key($student_id, $board, $text, $topic_number, $suffix, $attempt, $task);
         $note_text = trim(wp_kses_post($params['text_note'] ?? $params['note'] ?? ''));
-
         if ($note_text === '') {
-            delete_user_meta($student_id, $note_key);
-            return rest_ensure_response(['success' => true, 'note' => null]);
+            return new WP_Error('empty_comment', 'Comment is empty', ['status' => 400]);
         }
 
-        $note_data = [
+        $note_key = $this->tutorcomment_meta_key($student_id, $board, $text, $topic_number, $suffix, $attempt, $task);
+        $thread   = $this->decode_comment_thread(get_user_meta($student_id, $note_key, true));
+        $entry = [
+            'id'           => uniqid('tc_', true),
             'text'         => $note_text,
             'tutor_id'     => $tutor_id,
             'display_name' => $tutor->display_name,
             'timestamp'    => current_time('c'),
         ];
-        update_user_meta($student_id, $note_key, wp_slash(wp_json_encode($note_data)));
+        $thread[] = $entry;
+        update_user_meta($student_id, $note_key, wp_slash(wp_json_encode($thread)));
 
-        return rest_ensure_response(['success' => true, 'note' => $note_data]);
+        return rest_ensure_response(['success' => true, 'thread' => $thread, 'entry' => $entry]);
+    }
+
+    /**
+     * v7.20.199: Delete one tutor-comment entry by id. A tutor may delete their OWN entries; an
+     * admin may delete any. Returns the updated thread.
+     */
+    public function tutor_delete_comment_note($request) {
+        $tutor_id = get_current_user_id();
+        $params   = $request->get_json_params();
+
+        $board        = sanitize_text_field($params['board'] ?? '');
+        $text         = sanitize_text_field($params['text'] ?? '');
+        $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
+        $suffix       = sanitize_text_field($params['suffix'] ?? '');
+        $attempt      = absint($params['attempt'] ?? 0);
+        $task         = sanitize_text_field($params['task'] ?? '');
+        $student_id   = absint($params['studentId'] ?? 0);
+        if (!$student_id) $student_id = get_current_user_id();
+
+        $auth = $this->verify_tutor_student_access($student_id);
+        if (is_wp_error($auth)) return $auth;
+
+        $entry_id = sanitize_text_field($params['entryId'] ?? '');
+        if ($entry_id === '') return new WP_Error('missing_id', 'Missing entryId', ['status' => 400]);
+
+        $note_key = $this->tutorcomment_meta_key($student_id, $board, $text, $topic_number, $suffix, $attempt, $task);
+        $thread   = $this->decode_comment_thread(get_user_meta($student_id, $note_key, true));
+        $is_admin = current_user_can('manage_options');
+        $kept = [];
+        $removed = false;
+        foreach ($thread as $e) {
+            if (($e['id'] ?? '') === $entry_id && ($is_admin || (int)($e['tutor_id'] ?? 0) === $tutor_id)) { $removed = true; continue; }
+            $kept[] = $e;
+        }
+        if (!$removed) return new WP_Error('not_found', 'Comment not found or not yours to delete', ['status' => 403]);
+
+        if (empty($kept)) delete_user_meta($student_id, $note_key);
+        else update_user_meta($student_id, $note_key, wp_slash(wp_json_encode($kept)));
+
+        return rest_ensure_response(['success' => true, 'thread' => $kept]);
     }
 
     /**
@@ -4190,18 +4263,8 @@ class SWML_REST_API {
         }
 
         $note_key = $this->tutorcomment_meta_key($student_id, $board, $text, $topic_number, $suffix, $attempt, $task);
-        $raw = get_user_meta($student_id, $note_key, true);
-        if (empty($raw)) {
-            return rest_ensure_response(['success' => true, 'note' => null]);
-        }
-        if (is_array($raw)) {
-            return rest_ensure_response(['success' => true, 'note' => $raw]);
-        }
-        $note = json_decode($raw, true);
-        if (!is_array($note)) {
-            $note = json_decode(wp_unslash($raw), true);
-        }
-        return rest_ensure_response(['success' => true, 'note' => $note]);
+        $thread   = $this->decode_comment_thread(get_user_meta($student_id, $note_key, true));
+        return rest_ensure_response(['success' => true, 'thread' => $thread]);
     }
 
     /**
