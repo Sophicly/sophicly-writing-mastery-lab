@@ -360,6 +360,18 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.20.196: Tutor free-comment note — an optional closing comment a tutor/admin/SSS
+        // writes just above the sign-off, persisted to a sidecar (mirrors sign-off) and visible
+        // read-only to every viewer (student/parent). Write role-restricted; read open to viewers.
+        register_rest_route($namespace, '/canvas/tutorcomment', [
+            'methods' => 'POST', 'callback' => [$this, 'tutor_save_comment_note'],
+            'permission_callback' => [$this, 'check_tutor_auth'],
+        ]);
+        register_rest_route($namespace, '/canvas/load-tutorcomment', [
+            'methods' => 'GET', 'callback' => [$this, 'load_comment_note'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Cover images — admin only for writes
         register_rest_route($namespace, '/covers', [
             'methods' => 'GET', 'callback' => [$this, 'get_covers'],
@@ -4081,6 +4093,115 @@ class SWML_REST_API {
         }
 
         return rest_ensure_response(['success' => true, 'signoff' => $signoff]);
+    }
+
+    /**
+     * v7.20.196: Resolve the sidecar meta key for a tutor free-comment note, mirroring the
+     * sign-off key exactly but with a '_tutorcomment' suffix (parallel to '_signoff'). Same
+     * board/text/topic/suffix/attempt scope → same document. Flat docs (Mastery Codex) reuse the
+     * flat sign-off key with the suffix swapped so the comment rides the same flat doc.
+     */
+    private function tutorcomment_meta_key($student_id, $board, $text, $topic_number, $suffix, $attempt, $task) {
+        $flat_key = $this->flat_signoff_key($task);
+        if ($flat_key !== null) {
+            return str_replace('_signoff', '_tutorcomment', $flat_key);
+        }
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+        return $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt) . '_tutorcomment';
+    }
+
+    /**
+     * v7.20.196: Save a tutor's free-comment note (role-restricted via check_tutor_auth →
+     * tutor/admin/SSS). Persists to a user_meta sidecar on the STUDENT, mirroring tutor_signoff.
+     * An empty note deletes the record (clearing the box).
+     */
+    public function tutor_save_comment_note($request) {
+        $tutor_id = get_current_user_id();
+        $tutor    = wp_get_current_user();
+        $params   = $request->get_json_params();
+
+        $board        = sanitize_text_field($params['board'] ?? '');
+        $text         = sanitize_text_field($params['text'] ?? '');
+        $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
+        $suffix       = sanitize_text_field($params['suffix'] ?? '');
+        $attempt      = absint($params['attempt'] ?? 0);
+        $task         = sanitize_text_field($params['task'] ?? '');
+        $student_id   = absint($params['studentId'] ?? 0);
+        if (!$student_id) $student_id = get_current_user_id();
+
+        // Any tutor/specialist/admin may comment for any student (same access model as sign-off;
+        // route already gated by check_tutor_auth). No self-comment restriction — a comment is not
+        // a graded rubber-stamp, so the sign-off self-guard does not apply.
+        $auth = $this->verify_tutor_student_access($student_id);
+        if (is_wp_error($auth)) return $auth;
+
+        $flat_key = $this->flat_signoff_key($task);
+        if ($flat_key === null && (empty($board) || empty($text))) {
+            return new WP_Error('missing_data', 'Missing board or text', ['status' => 400]);
+        }
+
+        $note_key = $this->tutorcomment_meta_key($student_id, $board, $text, $topic_number, $suffix, $attempt, $task);
+        $note_text = trim(wp_kses_post($params['text_note'] ?? $params['note'] ?? ''));
+
+        if ($note_text === '') {
+            delete_user_meta($student_id, $note_key);
+            return rest_ensure_response(['success' => true, 'note' => null]);
+        }
+
+        $note_data = [
+            'text'         => $note_text,
+            'tutor_id'     => $tutor_id,
+            'display_name' => $tutor->display_name,
+            'timestamp'    => current_time('c'),
+        ];
+        update_user_meta($student_id, $note_key, wp_slash(wp_json_encode($note_data)));
+
+        return rest_ensure_response(['success' => true, 'note' => $note_data]);
+    }
+
+    /**
+     * v7.20.196: Load the tutor free-comment note for a canvas document. Open to any authorized
+     * viewer (student/parent via verify_viewer_access) so everyone sees the tutor's comment.
+     */
+    public function load_comment_note($request) {
+        $viewer_id        = get_current_user_id();
+        $student_id_param = $request->get_param('studentId');
+        $student_id       = absint($student_id_param);
+        if (!$student_id) $student_id = $viewer_id;
+        $board        = sanitize_text_field($request->get_param('board') ?? '');
+        $text         = sanitize_text_field($request->get_param('text') ?? '');
+        $topic_number = $request->get_param('topicNumber');
+        $topic_number = ($topic_number !== null && $topic_number !== '') ? absint($topic_number) : null;
+        $suffix       = sanitize_text_field($request->get_param('suffix') ?? '');
+        $attempt      = absint($request->get_param('attempt') ?? 0);
+        $task         = sanitize_text_field($request->get_param('task') ?? '');
+
+        $flat_key = $this->flat_signoff_key($task);
+        if ($flat_key === null && (empty($board) || empty($text))) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
+        }
+
+        if ($student_id !== $viewer_id) {
+            $auth = $this->verify_viewer_access($student_id);
+            if (is_wp_error($auth)) return $auth;
+        }
+
+        $note_key = $this->tutorcomment_meta_key($student_id, $board, $text, $topic_number, $suffix, $attempt, $task);
+        $raw = get_user_meta($student_id, $note_key, true);
+        if (empty($raw)) {
+            return rest_ensure_response(['success' => true, 'note' => null]);
+        }
+        if (is_array($raw)) {
+            return rest_ensure_response(['success' => true, 'note' => $raw]);
+        }
+        $note = json_decode($raw, true);
+        if (!is_array($note)) {
+            $note = json_decode(wp_unslash($raw), true);
+        }
+        return rest_ensure_response(['success' => true, 'note' => $note]);
     }
 
     /**

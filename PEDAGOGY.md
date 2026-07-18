@@ -446,6 +446,112 @@ section?), NOT on phase number, NOT on a global flag. Follows the forward-snapsh
 
 ---
 
+## §6b. THE DISCUSS/MARK/FEEDBACK LESSON — one editable slot, no transfer buttons (Neil 2026-07-18)
+
+Refines §6 for the terminal discuss-feedback lessons (e.g. "Discuss Your Feedback with Your Tutor").
+These sit AFTER assessment → the whole doc is frozen by §6. Three additional rules:
+
+1. **No transfer buttons anywhere in a freeze lesson.** Per-section "↓" transfer AND "TRANSFER ALL"
+   are hidden in discuss/mark/feedback lessons — there is no downstream section to transfer INTO, so
+   they are meaningless there. (Screenshot proof 2026-07-18: they still rendered on the Macbeth
+   Discuss-Feedback lesson.)
+2. **EVERY section is frozen — including the FEEDBACK section.** No exception. Nothing in a
+   discuss-feedback lesson is typeable except the one slot in rule 3.
+3. **An optional tutor free-comment input, placed just ABOVE the tutor sign-off area.** For a tutor
+   to write a closing summary before signing off. (Comments-on-frozen-sections still work everywhere —
+   freezing blocks TYPING into the section body, not commenting.) Design (Neil 2026-07-18, refined):
+   - **EVERYWHERE the tutor sign-off renders — not feedback_discussion-only** (Neil 2026-07-18,
+     broadened). The sign-off is appended to the doc in every terminal/frozen lesson (assessment,
+     redraft_assessment, feedback_discussion), so the rule is simply: **wherever there is a sign-off,
+     there is an optional tutor-comment box just above it.** One mechanism, no per-lesson special case.
+   - **Editable by TUTOR / ADMIN / SSS only; parents + students see it READ-ONLY.** Reuse the exact
+     sign-off audience: server write route gated by `check_tutor_auth`
+     (`class-rest-api.php:792` — passes admin=manage_options, att_role tutor|specialist, sophicly_role
+     sss; rejects parents/students), edit UI gated by the same `config.canSignOff` flag the sign-off
+     uses. No new permission logic.
+   - **Tutor-authored; PERSISTS; visible read-only to EVERY viewer** — student AND parent AND anyone
+     who opens the page sees what the tutor wrote. NOT a private scratch field: durable, shared
+     feedback. **Mirror the tutor SIGN-OFF persistence path** (tutor authors → persists to a durable
+     `user_meta` sidecar keyed `canvas_meta_key(...) + '_tutorcomment'` → renders for all viewers via
+     the NodeView, refetched on every load regardless of viewerMode), NOT canvas-autosave from the
+     tutor's share-view (which may not write back to the student's canvas record — key-match risk).
+     Same requirement as sign-off ⇒ same proven mechanism (`_signoff` sidecar is the template).
+
+- **Outline in a discuss-feedback lesson is PHASE-SCOPED — absence in Phase 1 is CORRECT, not a bug
+  (verified + confirmed by Neil 2026-07-18).** Phase 1 = diagnostic = "write cold" = plan + response
+  only, NO outline (the outline is a Phase-2 redraft construct). The `_fbdiscuss` doc reseeds forward
+  from the Phase-1 diagnostic/assessment docs (v7.19.855 forward-snapshot fix — deliberately prevents
+  Phase-2 outlines leaking backward into Phase 1). So the **Phase-1 Discuss-Feedback correctly shows
+  NO outline**; the **Phase-2 (Redraft/reassessment) Discuss-Feedback correctly DOES** (it reseeds from
+  the outline-bearing Phase-2 docs). Neil's "missing outline on Macbeth" was him viewing the Phase-1
+  lesson by mistake — Phase 2 has it. Do NOT "fix" this by injecting an outline into the Phase-1
+  discuss lesson — that contradicts diagnostic=write-cold. (Root trace: mode resolves 'diagnostic' for
+  feedback_discussion, `_buildDocumentTemplate` emits OUTLINE only under `mode==='redraft'`;
+  `seed_from_sibling_stage` walks back to `_assessment`/diagnostic.)
+
+---
+
+## §7. THE CONTINGENT SCAFFOLDING LADDER — research-grounded rulings (Neil 2026-07-18)
+
+The planning/assessment help ladder (open prompt → focused hint → strategy/lens menu → worked model).
+Full design: `PLANNING-PROTOCOL-AUDIT-AND-PLAN-2026-07-18.md` §2/§9/§11. These are the SETTLED
+rulings; the research backing each is in `research/2026-07-18-*.md`.
+
+1. **A "model answer" (the deepest rung) = the single ELEMENT the student is stuck on, demonstrated
+   on an UNRELATED/parallel instance — NEVER the whole answer.** Stuck on the topic sentence → model a
+   topic sentence (on a different text); stuck on the effect line → model that one line. The student
+   then applies the *method* to their OWN material (worked-example → fading; Renkl/Sweller). Handing the
+   whole paragraph/essay = giving the answer = breaks ownership + teaches nothing.
+   **Every model shown MUST meet our gold-standard criteria** (Neil) — a model is exemplary or it is
+   not a model.
+2. **Help budget = the QUESTION is the primary unit.** 1 worked-model/near-give-away PER QUESTION
+   (final rung, EARNED — only after the thinner rungs were tried), and a SOFT ~3-per-session/paper
+   ceiling that trips a metacognitive Sophia nudge (not a hard lockout). Numbers are research-consistent
+   defaults (Wood & Wood ~3 escalating cues then demonstrate + fade; Aleven & Koedinger help-abuse/gaming
+   ⇒ lower learning; Shute elaborated>give-away) — **build them TUNABLE, not hard-coded.** Log ladder
+   depth reached per question as a help-seeking signal.
+3. **Ungrounded interpretation = no analytical (AO2) credit for the move, PLUS a small −0.5 awareness
+   penalty with a grounding fix-example.** Matches real examiner practice (AO1 requires textual
+   reference; AO2 requires analysis of method; boards credit *alternative* readings only when
+   textually supported; unsupported assertion caps the band). **Neil's rationale for the small
+   penalty:** even where the mark scheme applies no formal deduction, expert examiners *subconsciously*
+   mark down ungrounded writing — the −0.5 translates that into something quantitative the student can
+   see; its purpose is AWARENESS. **Never return a bare "no marks":** name it unsupported, point to
+   where evidence could come from, show a one-line grounded version of the student's OWN idea (fits the
+   universal "every penalty carries a fix-example" rule). **Distinguish ungrounded from wrong:**
+   supported-but-debatable = valid alternative, credit it; gate = "is there evidence?", not "do I
+   agree?". Existing penalty registry has no dedicated code — closest is **I1 (imprecise/underdeveloped
+   interpretation, −0.5)**; widen I1's detection or add a dedicated code at build.
+4. **Context/background knowledge = ask-first → build → gate-the-output (text-agnostic).** The real
+   principle (Neil): students lack DEPTH, BREADTH and NUANCE of contextual knowledge for ANY text; the
+   system must build it — for anything in the curriculum, not one worked example. Mechanism: (a)
+   ACTIVATE — Sophia asks what they already know (elaborative interrogation; Ausubel, Fiorella & Mayer);
+   (b) PRE-TRAIN — give the missing facts + connections, then the student generates the link to the text
+   themselves (ownership law; Mayer pre-training); (c) GATE OUTPUT BY AO3 — context OUTPUTS into the
+   scored plan only when the exam assesses it (AO3); when not assessed, still BUILT to fuel AO1/AO2
+   inference but NOT written as a scored element (crediting unassessed context = construct-irrelevant
+   variance, Messick). The gate DERIVES from the question's AO map, not a per-protocol hand-wire.
+5. **Prompt the student to review their PREVIOUS ASSESSMENT — timed per element (Neil 2026-07-18).**
+   Students have access to prior assessments. The protocol reminds them to check last time's feedback —
+   strengths, weaknesses, what they said they'd improve — AT THE RIGHT MOMENT: if they were weak on
+   context last time, the "check what your tutor said about context" prompt fires AT the context step,
+   not as a generic upfront reminder. Closing the feedback loop = self-regulated learning. Wires to the
+   prior-feedback data the dashboard already holds.
+6. **Keep this research portable for the CREATIVE-WRITING protocols (Neil 2026-07-18).** The same ladder
+   + ownership + grounding principles must carry into the Creative Writing course and Lang P2
+   nonfiction/fiction when those protocols are built — they need their own depth, not a thin port. Do
+   NOT assume the analytical-essay shape transfers verbatim; re-derive per the CW protocol (the doc
+   lifecycle's CW lane is still TBD, per WML CLAUDE.md).
+
+- **Cross-cutting:** help-ladder depth, the grounding gate, and the context-output gate all DERIVE from
+  the question's AO/capability profile — one per-question config — never from literal task-names (same
+  "capability, not task-name" discipline as the canvas rules). A new board/paper opts in, never silently
+  misses.
+- **Caveat before any student-facing mark-scheme QUOTE:** exact band-descriptor strings must be copied
+  from the human-readable mark-scheme PDF, never reconstructed (`feedback_never_invent_mark_scheme_claims`).
+
+---
+
 ## §5. WHERE THE REST OF THE PEDAGOGY CURRENTLY LIVES (to be migrated in as it is touched)
 
 Not a rewrite — the principles below are already recorded and working. Move one INTO this file when

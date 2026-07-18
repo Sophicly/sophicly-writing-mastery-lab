@@ -14670,6 +14670,12 @@
     // v7.15.30), and Sophia's fills use commands, which never pass through these handlers.
     const DISPLAY_LOCK_TASKS = ['assessment', 'redraft_assessment', 'feedback_discussion'];
     const DISPLAY_LOCK_SECTION_TYPES = ['response', 'plan', 'outline'];
+    // v7.20.196 (Neil): in the TERMINAL discuss-feedback lesson the whole doc is a read-only snapshot
+    // to discuss — also freeze the results family. NOT in assessment / redraft_assessment, where these
+    // are still being authored/filled by Sophia + the tutor. (Sign-off + its tutor-comment footer are
+    // section type 'signoff' — deliberately absent here, so they stay interactive; inline comment
+    // marks are applied via commands, never these input handlers, so commenting stays live too.)
+    const DISCUSS_ONLY_LOCK_SECTION_TYPES = ['feedback', 'scores', 'analytics', 'action', 'improvement'];
     function _docDisplayLocked() {
         return DISPLAY_LOCK_TASKS.includes(String(state.task || ''));
     }
@@ -14681,8 +14687,12 @@
         if (node.type.name === 'heading') return true;
         // v7.19.947: display-lock — in assessment/discuss lessons the student-authored
         // sections are read-only carryovers from the authoring lesson.
+        const _secType = String((node.attrs && node.attrs.sectionType) || '');
         if (node.type.name === 'sectionBlock' && _docDisplayLocked()
-            && DISPLAY_LOCK_SECTION_TYPES.includes(String((node.attrs && node.attrs.sectionType) || ''))) return true;
+            && DISPLAY_LOCK_SECTION_TYPES.includes(_secType)) return true;
+        // v7.20.196: the discuss-feedback lesson additionally freezes the results family.
+        if (node.type.name === 'sectionBlock' && state.task === 'feedback_discussion'
+            && DISCUSS_ONLY_LOCK_SECTION_TYPES.includes(_secType)) return true;
         // Instruction paragraphs opt in via the persisted data-locked attribute.
         return !!(node.attrs && (node.attrs.locked === true || node.attrs.locked === 'true'));
     }
@@ -18405,15 +18415,25 @@
             } else if (sourceEls.length > 0) {
                 sourceEls.forEach(src => body.appendChild(_stripChipsFromClone(src.cloneNode(true))));
             } else {
-                // v7.15.21: Prefer the Essay Question section, not the first question section (which is "About This Exercise")
-                const essayQEl = editorEl.querySelector('[data-section-type="question"][data-section-label="Essay Question"]')
-                    || editorEl.querySelector('[data-section-type="question"][data-section-label="Extract"]');
-                if (essayQEl) body.innerHTML = essayQEl.innerHTML;
-                else {
-                    // Fallback: second question section, or first if only one exists
-                    const allQ = editorEl.querySelectorAll('[data-section-type="question"]');
-                    const qEl = allQ.length > 1 ? allQ[1] : allQ[0];
-                    if (qEl) body.innerHTML = qEl.innerHTML;
+                // v7.20.196 (Neil): two-part (a)/(b) questions — the extract lives INSIDE the Part A
+                // question section, so the old fallback (which picked allQ[1] = Part B) showed Part B
+                // with NO extract. Detect the genuine two-part case by its "— Part A/B" labels and
+                // stack the extract + BOTH part questions in the pad. Everything else is unchanged.
+                const allQ = Array.from(editorEl.querySelectorAll('[data-section-type="question"]'));
+                const partQs = allQ.filter(q => /—\s*Part\s+[AB]/i.test(q.getAttribute('data-section-label') || ''));
+                if (partQs.length > 1) {
+                    body.innerHTML = '';
+                    partQs.forEach(q => body.appendChild(_stripChipsFromClone(q.cloneNode(true))));
+                } else {
+                    // v7.15.21: Prefer the Essay Question section, not the first question section (which is "About This Exercise")
+                    const essayQEl = editorEl.querySelector('[data-section-type="question"][data-section-label="Essay Question"]')
+                        || editorEl.querySelector('[data-section-type="question"][data-section-label="Extract"]');
+                    if (essayQEl) body.innerHTML = essayQEl.innerHTML;
+                    else {
+                        // Fallback: second question section, or first if only one exists
+                        const qEl = allQ.length > 1 ? allQ[1] : allQ[0];
+                        if (qEl) body.innerHTML = qEl.innerHTML;
+                    }
                 }
             }
             panel.appendChild(body);
@@ -28914,6 +28934,10 @@
                 many: 'This is your redraft across every question — Sophia is assessing the whole paper now.' }
         };
         function _phaseCoachAndScroll() {
+            // v7.20.196 (Neil): the card is body-mounted so it survives SPA navigation. Clear any
+            // prior lesson's card FIRST — before every early return below — so a no-coach / dismissed
+            // / review-mode lesson can't leave the previous page's card stranded on screen.
+            document.querySelectorAll('.swml-phase-coach').forEach(n => n.remove());
             const type = _PHASE_SECTION_TYPE[state.task];
             if (!type) return;
             const editor = document.getElementById('swml-tiptap-editor');
@@ -28931,7 +28955,6 @@
             let dismissKey;
             try { dismissKey = 'swml_coach:' + CANVAS_SAVE_KEY() + ':' + state.task; } catch (_) { dismissKey = 'swml_coach:' + state.task; }
             try { if (localStorage.getItem(dismissKey) === '1') return; } catch (_) {}
-            document.querySelectorAll('.swml-phase-coach').forEach(n => n.remove()); // clear a prior lesson's card (body-mounted, persists across SPA nav)
             const card = document.createElement('div');
             card.className = 'swml-phase-coach';
             // Body-mounted → the .swml-canvas-light ancestor no longer wraps it, so mirror the theme
@@ -28975,6 +28998,20 @@
             setTimeout(() => {
                 if (state.reviewMode) return;
                 document.body.appendChild(card); // body-mounted → position:fixed is viewport-anchored (won't ride the scroll)
+                // v7.20.196 (Neil): tie the body-mounted card to its editor's lifecycle. The moment
+                // the canvas editor leaves the DOM — SPA nav to another lesson OR out of WML entirely —
+                // remove the card so it can't persist onto the next page. Covers the non-canvas
+                // destinations that never call _phaseCoachAndScroll again. Self-disconnects when the
+                // card is dismissed ('Got it') or the editor is gone, so no observer accumulates.
+                try {
+                    const _coachObs = new MutationObserver(() => {
+                        if (!card.isConnected || !document.body.contains(editor)) {
+                            card.remove();
+                            _coachObs.disconnect();
+                        }
+                    });
+                    _coachObs.observe(document.body, { childList: true, subtree: true });
+                } catch (_) {}
                 // Pin to the TOP-RIGHT of the doc pane (Neil 2026-07-18): fixed, does not chase the
                 // section vertically (which put it bottom-right on a scrolled page). Anchored to the
                 // scroller's own rect so it clears the Sophia panel on the far right.
@@ -29049,6 +29086,12 @@
             const transferDividers = () => Array.from(editor.querySelectorAll('[data-section-type="divider"]'))
                 .filter((d) => dividerType(d.getAttribute('data-section-label')));
             const hasOutline = () => transferDividers().some((d) => dividerType(d.getAttribute('data-section-label')) === 'outline');
+            const hasPlan = () => transferDividers().some((d) => dividerType(d.getAttribute('data-section-label')) === 'plan');
+            // v7.20.196 (Neil): the FLOATING Transfer All tracks the OUTLINE group when the doc has one;
+            // on a plan-only doc (the DIAGNOSTIC — plan → response, no outline) it tracks the PLAN group
+            // instead, so the diagnostic gets the same floating Transfer All. Mirrors the .182 rule
+            // (outline supersedes plan→response): the plan group floats ONLY when no outline exists.
+            const primaryType = () => (hasOutline() ? 'outline' : (hasPlan() ? 'plan' : null));
             let anchor = scroller.querySelector(':scope > .swml-outline-transfer-float-anchor');
             if (!transferDividers().length) {
                 // No transfer surface on this doc (CN/FQ/quiz) — tear everything down.
@@ -29062,7 +29105,7 @@
                 return;
             }
             let floatBtn = anchor && anchor.querySelector('.swml-outline-transfer-float');
-            if (hasOutline() && !anchor) {
+            if (primaryType() && !anchor) {
                 anchor = document.createElement('div');
                 anchor.className = 'swml-outline-transfer-float-anchor';
                 floatBtn = document.createElement('button');
@@ -29076,13 +29119,13 @@
                     e.preventDefault(); e.stopPropagation();
                     const lbl = floatBtn._swmlDividerLabel;
                     if (!lbl) return;
-                    const ok = _runTransferAll(editor, lbl, 'outline');
+                    const ok = _runTransferAll(editor, lbl, floatBtn._swmlTargetType || 'outline');
                     floatBtn.classList.add(ok ? 'swml-transfer-success' : 'swml-transfer-empty');
                     setTimeout(() => floatBtn.classList.remove('swml-transfer-success', 'swml-transfer-empty'), 1200);
                 });
                 anchor.appendChild(floatBtn);
                 scroller.insertBefore(anchor, scroller.firstChild); // first child → sticky pins to the scroller top
-            } else if (!hasOutline() && anchor) {
+            } else if (!primaryType() && anchor) {
                 anchor.remove(); anchor = null; floatBtn = null;
             }
             const PAD = 14;
@@ -29096,23 +29139,27 @@
                     const want = ready ? 'true' : 'false';
                     if (div.getAttribute('data-transferall-ready') !== want) div.setAttribute('data-transferall-ready', want);
                 });
-                // (2) Floating Transfer All (outline docs): all-complete AND spanning the viewport-top pin
-                //     (you've scrolled INTO the outline — not while it merely peeks in from below).
+                // (2) Floating Transfer All: all-complete AND spanning the viewport-top pin (you've
+                //     scrolled INTO the group — not while it merely peeks in from below). Tracks the
+                //     OUTLINE group when the doc has one, else the PLAN group (diagnostic). v7.20.196.
                 if (!floatBtn) return;
+                const pType = primaryType();
+                if (!pType) { floatBtn.style.opacity = '0'; floatBtn.style.pointerEvents = 'none'; return; }
                 const sRect = scroller.getBoundingClientRect();
                 const pinY = sRect.top + PAD;
                 let active = null;
                 transferDividers().forEach((div) => {
-                    if (active || dividerType(div.getAttribute('data-section-label')) !== 'outline') return;
-                    const secs = groupSections(div, 'outline');
+                    if (active || dividerType(div.getAttribute('data-section-label')) !== pType) return;
+                    const secs = groupSections(div, pType);
                     if (!secs.length || !secs.every((s) => s.getAttribute('data-section-complete') === 'true')) return;
                     const rTop = secs[0].getBoundingClientRect().top;
                     const rBottom = secs[secs.length - 1].getBoundingClientRect().bottom;
-                    if (rTop <= pinY + 24 && rBottom > pinY) active = div; // outline spans the top pin = you're IN it
+                    if (rTop <= pinY + 24 && rBottom > pinY) active = div; // group spans the top pin = you're IN it
                 });
                 if (!active) { floatBtn.style.opacity = '0'; floatBtn.style.pointerEvents = 'none'; return; }
                 const label = (active.getAttribute('data-section-label') || '').trim();
                 floatBtn._swmlDividerLabel = label;
+                floatBtn._swmlTargetType = pType;
                 const qm = label.match(/\bQ\d+\w*/i);
                 floatBtn.innerHTML = 'Transfer All' + (qm ? ' · ' + qm[0].toUpperCase() : '') + ' ' + SVG_TRANSFER;
                 floatBtn.style.opacity = '1';
@@ -29142,6 +29189,11 @@
             // Same task-gates as the old buildTransferOverlays (CN/FQ already bailed upstream).
             if (state.task === 'exam_crib' || state.task === 'mastery_codex'
                 || (state.task && state.task.startsWith('cw_'))) return;
+            // v7.20.196: no transfer buttons in frozen (display-locked) lessons — assessment /
+            // redraft_assessment / feedback_discussion. The doc is a read-only snapshot there, so
+            // there is nothing downstream to transfer INTO. Hides per-section ↓, Transfer All, and
+            // the floating Transfer All. (PEDAGOGY §6b — Neil 2026-07-18.)
+            if (_docDisplayLocked()) return;
             const _ctlRowOf = (section) => {
                 for (let i = 0; i < section.children.length; i++) {
                     const c = section.children[i];
@@ -29979,6 +30031,95 @@
         }
         // NodeView (re)mount hook — cache-reusing fill (see wml-section-block.js signoff branch).
         try { window.WML = window.WML || {}; window.WML.renderSignoffUI = () => renderSignoffInline(false); } catch (_) { /* ignore */ }
+
+        // ── Tutor free-comment UI, IN-FLOW (v7.20.196 — same firewalled-footer technique as sign-off).
+        // Fills the .swml-tutorcomment-ui footer: editable textarea for tutor/admin/SSS (canSignOff),
+        // read-only text for everyone else. Persists to the _tutorcomment sidecar via REST (NOT the PM
+        // doc), keyed IDENTICALLY to the sign-off doc scope so write-key == read-key. Autosaves on
+        // blur + 1.2s debounce; an empty save clears the note. Low-frequency fill (no mark-change
+        // refetch), so no circuit-breaker needed; a focus guard protects an in-flight edit.
+        let _tutorCommentLoadPromise = null;
+        function renderTutorCommentInline(refetch) {
+            const editor = document.getElementById('swml-tiptap-editor');
+            if (!editor || !canvasEditor) return;
+            // The comment footer lives INSIDE the sign-off section (a second firewalled foot above the
+            // sign-off UI), so it rides everywhere sign-off does with no separate section/heal.
+            const sec = editor.querySelector('[data-section-type="signoff"]') || editor.querySelector('[data-section-label="Tutor Sign-off"]');
+            if (!sec) return;
+            const ui = sec.querySelector('.swml-tutorcomment-ui');
+            if (!ui) { console.warn('WML tutor-comment: .swml-tutorcomment-ui container missing — nodeView not mounted yet, skipping this pass'); return; }
+            // Don't clobber an in-flight edit (rebuilds fire on remounts).
+            const activeTa = ui.querySelector('.swml-tutorcomment-input');
+            if (activeTa && document.activeElement === activeTa) return;
+
+            const _scope = () => {
+                const s = WML.canvasDocScope();
+                return {
+                    board: state.board, text: s.text,
+                    topicNumber: s.topic || null,
+                    suffix: WML.resolveCanvasSuffix(state.task, state.phase) || '',
+                    task: state.task || '',
+                };
+            };
+            const _renderReadOnly = (note) => {
+                ui.innerHTML = '';
+                const txt = (note && note.text) ? String(note.text) : '';
+                if (!txt) { ui.classList.add('swml-tutorcomment-empty'); return; } // nothing to show
+                ui.classList.remove('swml-tutorcomment-empty');
+                const body = document.createElement('div');
+                body.className = 'swml-tutorcomment-readonly';
+                body.textContent = txt;
+                ui.appendChild(body);
+                if (note.display_name) {
+                    const by = document.createElement('div');
+                    by.className = 'swml-tutorcomment-by';
+                    by.textContent = '— ' + note.display_name;
+                    ui.appendChild(by);
+                }
+            };
+            const _applyLoaded = (note) => {
+                if (!config.canSignOff) { _renderReadOnly(note); return; }
+                ui.innerHTML = '';
+                ui.classList.remove('swml-tutorcomment-empty');
+                const ta = document.createElement('textarea');
+                ta.className = 'swml-tutorcomment-input';
+                ta.placeholder = 'Optional: write a closing comment for the student…';
+                ta.value = (note && note.text) ? String(note.text) : '';
+                const status = document.createElement('div');
+                status.className = 'swml-tutorcomment-status';
+                let saveTimer = null;
+                const _save = () => {
+                    const targetStudentId = config.targetUserId || config.reviewStudentId || config.userId;
+                    const sc = _scope();
+                    status.textContent = 'Saving…';
+                    fetch(config.restUrl + 'canvas/tutorcomment', {
+                        method: 'POST', headers,
+                        body: JSON.stringify(Object.assign({}, sc, { studentId: targetStudentId, text_note: ta.value }))
+                    }).then(r => r.json()).then(res => {
+                        status.textContent = (res && res.success) ? 'Saved ✓' : 'Save failed';
+                        _tutorCommentLoadPromise = Promise.resolve({ success: true, note: (res && res.note) || null });
+                        setTimeout(() => { if (status.textContent === 'Saved ✓') status.textContent = ''; }, 2000);
+                    }).catch(() => { status.textContent = 'Save failed'; });
+                };
+                ta.addEventListener('input', () => { status.textContent = ''; if (saveTimer) clearTimeout(saveTimer); saveTimer = setTimeout(_save, 1200); });
+                ta.addEventListener('blur', () => { if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; } _save(); });
+                ui.appendChild(ta);
+                ui.appendChild(status);
+            };
+
+            if (refetch || !_tutorCommentLoadPromise) {
+                const loadTargetId = config.targetUserId || config.reviewStudentId || config.userId;
+                const sc = _scope();
+                _tutorCommentLoadPromise = fetch(config.restUrl + `canvas/load-tutorcomment?board=${encodeURIComponent(sc.board)}&text=${encodeURIComponent(sc.text)}${sc.topicNumber ? '&topicNumber=' + sc.topicNumber : ''}&suffix=${encodeURIComponent(sc.suffix)}&studentId=${encodeURIComponent(loadTargetId)}&task=${encodeURIComponent(sc.task)}`, { headers })
+                    .then(r => r.ok ? r.json() : null)
+                    .catch(() => null);
+            }
+            _tutorCommentLoadPromise.then(res => {
+                _applyLoaded(res && res.success ? res.note : null);
+            }).catch(() => { _applyLoaded(null); });
+        }
+        // NodeView (re)mount hook (see wml-section-block.js tutorcomment branch).
+        try { window.WML = window.WML || {}; window.WML.renderTutorCommentUI = () => renderTutorCommentInline(false); } catch (_) { /* ignore */ }
         // v7.19.951: NodeView (re)mount hook for the in-flow control rows (sig-idempotent —
         // a mount storm re-runs this cheaply; only rows whose values changed rebuild).
         try { window.WML = window.WML || {}; window.WML.renderControlRows = () => _renderControlRows(); } catch (_) { /* ignore */ }
@@ -31870,7 +32011,9 @@
         },
         // EDUQAS GCSE Literature (C720QS) + Language (C700U)
         eduqas: {
-            shakespeare:      { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2' }, hasExtract: true },
+            // v7.20.196: partB AO4 restored to match literature-paper-specs.json (was AO1,AO2 — the
+            // drift this fix removes). The spec JSON via _litSpecPartAos is the authority at build.
+            shakespeare:      { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO4' }, hasExtract: true },
             modern_text:      { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
             '19th_century':   { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
             poetry_anthology: { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' } },
@@ -31935,6 +32078,27 @@
             critical_reading: { format: 'single', marks: 20, aos: 'AO1,AO2' },
         },
     };
+
+    /**
+     * v7.20.196 (Neil 2026-07-18): AO SOURCE-OF-TRUTH = literature-paper-specs.json split.sections.
+     * The per-part AOs for a two-part (a)/(b) literature question (Edexcel Shakespeare/19th-century,
+     * Eduqas Shakespeare) are a FIXED property of the board+paper — they belong to the spec JSON, NOT
+     * to a tutor-authored field (tutor authors only the question text + extract) and NOT to the
+     * drift-prone BOARD_FORMAT_DEFAULTS table (which shipped eduqas.shakespeare partB missing AO4).
+     * Returns { partA:'AO2', partB:'AO1,AO3' } from window.swmlLitSpecs[board][subject].split.sections,
+     * or null when the spec has no genuine ≥2-section split. See PEDAGOGY §7 + CLAUDE-canvas rules.
+     */
+    function _litSpecPartAos(board, subject) {
+        const specs = (typeof window !== 'undefined' && window.swmlLitSpecs) || {};
+        const row = specs[board] && specs[board][subject];
+        const secs = row && row.split && row.split.sections;
+        if (!Array.isArray(secs) || secs.length < 2) return null;
+        const aosOf = (s) => Array.isArray(s && s.aos) ? s.aos.join(',') : ((s && s.aos) || '');
+        const a = aosOf(secs[0]);
+        const b = aosOf(secs[1]);
+        if (!a && !b) return null;
+        return { partA: a, partB: b };
+    }
 
     /**
      * Generate synthetic topic data from board defaults when no template exists.
@@ -33188,6 +33352,12 @@
             } else {
                 inner += `<p>${richText(questionText)}</p>`;
             }
+        } else if (questionText && questionText.includes('\n')) {
+            // v7.20.196 (Neil): a bulleted prompt whose points sit on separate LINES (no •
+            // character — common on Part B "you must consider:" questions) was collapsing into one
+            // paragraph. Preserve line breaks so each point gets its own line, like the extract does.
+            questionText.split('\n').map(l => l.trim()).filter(Boolean)
+                .forEach(l => { inner += `<p>${richText(l)}</p>`; });
         } else {
             inner += `<p>${richText(questionText)}</p>`;
         }
@@ -36895,17 +37065,28 @@
         if (isDual) {
             const marksA = parseInt(topicData.part_a_marks) || 15;
             const marksB = parseInt(topicData.part_b_marks) || 25;
+            // v7.20.196: per-part AOs come from the spec JSON (source of truth), overriding any
+            // tutor-field / synthetic-default drift (e.g. eduqas.shakespeare partB was missing AO4).
+            // Both the question sections AND the redraft outline sections read topicData.part_*_aos,
+            // so this single override fixes every AO label for two-part questions. (PEDAGOGY §7.)
+            const _specAos = _litSpecPartAos(state.board, state.subject);
+            if (_specAos) {
+                if (_specAos.partA) topicData.part_a_aos = _specAos.partA;
+                if (_specAos.partB) topicData.part_b_aos = _specAos.partB;
+            }
+            // v7.20.196 (Neil): the Part B QUESTION moves to just before its own planning section
+            // (not stacked with Part A at the top), so the student reads Part B right where they plan
+            // it. Part A question stays at the top; Part B question is emitted inside each mode branch.
+            const _partBQuestion = () => buildQuestionSection(
+                topicData.part_b_question, topicData.part_b_extract,
+                null, topicData.part_b_marks,
+                topicData.part_b_aos, 'Part B'
+            );
             // Part A question
             html += buildQuestionSection(
                 topicData.part_a_question, topicData.part_a_extract,
                 topicData.part_a_extract_location, topicData.part_a_marks,
                 topicData.part_a_aos, 'Part A'
-            );
-            // Part B question
-            html += buildQuestionSection(
-                topicData.part_b_question, topicData.part_b_extract,
-                null, topicData.part_b_marks,
-                topicData.part_b_aos, 'Part B'
             );
 
             if (mode === 'diagnostic') {
@@ -36913,6 +37094,7 @@
                 html += buildPlanSection('Part A', marksA);
                 html += dividerHTML('RESPONSE');
                 html += buildResponseSection('Part A');
+                html += _partBQuestion();
                 html += dividerHTML('ESSAY PLAN — PART B');
                 html += buildPlanSection('Part B', marksB);
                 html += dividerHTML('RESPONSE — PART B');
@@ -36924,6 +37106,7 @@
                 html += buildOutlineSection(topicData.part_a_aos, 'Part A', marksA);
                 html += dividerHTML('RESPONSE');
                 html += buildResponseSection('Part A');
+                html += _partBQuestion();
                 html += dividerHTML('ESSAY PLAN — PART B');
                 html += buildPlanSection('Part B', marksB);
                 html += dividerHTML('OUTLINE — PART B');
@@ -36934,6 +37117,7 @@
                 // exam_practice — minimal: question + response
                 html += dividerHTML('RESPONSE');
                 html += buildResponseSection('Part A');
+                html += _partBQuestion();
                 html += dividerHTML('RESPONSE — PART B');
                 html += buildResponseSection('Part B');
             }

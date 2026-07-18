@@ -676,11 +676,24 @@
                 const contentDOM = document.createElement('div');
                 contentDOM.className = 'swml-section-content';
                 dom.appendChild(contentDOM);
+                // v7.20.196 (Neil): the optional tutor free-comment box is a SECOND firewalled footer
+                // ABOVE the sign-off UI, in the SAME sign-off section. Rendered chrome (not PM doc), so
+                // it rides everywhere sign-off does and needs NO doc-shape heal for existing docs. Its
+                // text persists to the _tutorcomment sidecar via WML.renderTutorCommentUI.
+                const noteFoot = document.createElement('div');
+                noteFoot.className = 'swml-tutorcomment-ui';
+                noteFoot.setAttribute('contenteditable', 'false');
+                dom.appendChild(noteFoot);
                 const foot = document.createElement('div');
                 foot.className = 'swml-signoff-ui';
                 foot.setAttribute('contenteditable', 'false');
                 dom.appendChild(foot);
                 const _fill = () => {
+                    try {
+                        if (window.WML && typeof window.WML.renderTutorCommentUI === 'function') {
+                            window.WML.renderTutorCommentUI();
+                        }
+                    } catch (_) { /* ignore */ }
                     try {
                         if (window.WML && typeof window.WML.renderSignoffUI === 'function') {
                             window.WML.renderSignoffUI();
@@ -699,7 +712,8 @@
                         // style/attr write on THIS section-block dom is display-only, never a doc
                         // change, so it must not trigger a DOMObserver flush/redraw loop.
                         if (mutation.type === 'attributes' && mutation.target === dom) return true;
-                        return foot === mutation.target || foot.contains(mutation.target);
+                        return foot === mutation.target || foot.contains(mutation.target)
+                            || noteFoot === mutation.target || noteFoot.contains(mutation.target);
                     },
                 };
             }

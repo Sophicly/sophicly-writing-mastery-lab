@@ -5283,6 +5283,27 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     display: flex; justify-content: center;
 }
 [data-swml-theme="light"] .swml-section-block.swml-section-signoff { background: rgba(0,0,0,0.025); }
+/* v7.20.196: tutor free-comment box — a second footer inside the sign-off section, ABOVE the
+   sign-off UI. Editable textarea for tutor/admin/SSS; read-only text for students/parents.
+   Empty + read-only (student view, no comment) collapses to nothing. */
+.swml-tutorcomment-ui { margin-top: 14px; }
+.swml-tutorcomment-ui:empty { display: none !important; }
+.swml-tutorcomment-input {
+    width: 100%; box-sizing: border-box; min-height: 68px; resize: vertical;
+    padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04); color: inherit; font: inherit; line-height: 1.5;
+}
+.swml-tutorcomment-input:focus { outline: none; border-color: rgba(83,51,237,0.55); }
+.swml-tutorcomment-status { font-size: 12px; opacity: 0.6; margin-top: 4px; min-height: 14px; }
+.swml-tutorcomment-readonly {
+    padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.04);
+    white-space: pre-wrap; line-height: 1.55;
+}
+.swml-tutorcomment-by { font-size: 12px; opacity: 0.6; margin-top: 6px; font-style: italic; }
+[data-swml-theme="light"] .swml-tutorcomment-input,
+[data-swml-theme="light"] .swml-tutorcomment-readonly {
+    background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.12);
+}
 /* First grouped section in a run: also increment major (v7.12.56, v7.12.58 divider-aware) */
 .swml-section-question + .swml-section-plan,
 .swml-section-response + .swml-section-feedback,
