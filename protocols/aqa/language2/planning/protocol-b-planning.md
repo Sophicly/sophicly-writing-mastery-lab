@@ -25,7 +25,7 @@
      | Q2 | PLAN: plan-Q2-para-1 · plan-Q2-para-2 (each APPENDS across its 4 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2}-{inf1-topic,inf1-evidence,inf2-topic,inf2-evidence}-q2. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers). |
      | Q3 | PLAN: plan-Q3-para-1 · plan-Q3-para-2 · plan-Q3-para-3 (each APPENDS across its 6 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}-q3. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers); the Technique step files nothing (absorbed into evidence); Effects = two turns (effects + effects2). |
      | Q4 | PLAN: plan-Q4-intro · plan-Q4-body-1..3 · plan-Q4-conclusion. OUTLINE (⚠️ MIXED convention): bodies UNSUFFIXED `outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}` (context box renders but is NOT planned) · intro `outline-intro-thesis-q4` (suffixed) · conclusion `outline-conclusion-thesis` (unsuffixed). Each body element turn emits its OUTLINE box + body PLAN box; Effects = two turns (effects=Source A, effects2=Source B); intro/conclusion emit their thesis box + plan box. |
-     | Q5 | PLAN: iumvcc-intro · iumvcc-urgency · iumvcc-method · iumvcc-vision · iumvcc-counter · iumvcc-conclusion. OUTLINE (one row per section): outline-iumvcc-{same six stems}. Each section compile dual-emits its OUTLINE row + PLAN box (1:1 — six sections × one row each). |
+     | Q5 | PLAN: iumvcc-intro · iumvcc-urgency · iumvcc-method · iumvcc-vision · iumvcc-counter · iumvcc-conclusion (one PLAN box per section; iumvcc-method APPENDS across its 2–3 point turns). OUTLINE: five sections are one row each `outline-iumvcc-{intro,urgency,vision,counter,conclusion}`; METHODOLOGY splits into its 2–3 points `outline-iumvcc-method-point-{1,2,3}` (one box per point). Five sections compile 1:1; Method compiles per-point (each point → its OUTLINE point box + the method PLAN box). Organisation is NOT a box — the point ORDER is the organisation. |
      (Q5 ids are abbreviated — "method", "counter" — never "methodology"/"counterargument".)
 
      FILING ORDER ≠ DOCUMENT ORDER (audit fix 4): Q4 files bodies FIRST (Beats 5–9), then
@@ -940,10 +940,15 @@ compile in the session's plan mode (Standard: the section's elements as their ke
 as keywords only). Every compile closes with the section's persuasive check ("does this
 make readers FEEL it through imagery and verbs — not just TELL them?"). Each section's
 compile files in its validating reply — TWO markers (plan+outline autofill, v7.20.159): the
-section's OUTLINE row AND its PLAN box, each on its own line. IUMVCC is six sections × ONE row
-each (Neil 2026-07-15) so each compile is a clean 1:1 — the whole section plan fills both boxes;
-no per-element decomposition. Byte-traced: outline rows `outline-iumvcc-{sec}` (`_iumvccFieldId`,
-one-row branch) match the plan boxes `iumvcc-{sec}` on the section stem. Emit exactly these pairs:
+section's OUTLINE row AND its PLAN box, each on its own line. FIVE of the six sections (Intro,
+Urgency, Vision, Counter, Conclusion) are a clean 1:1 — the whole section plan fills both boxes,
+no per-element decomposition — byte-traced: outline rows `outline-iumvcc-{sec}` (`_iumvccFieldId`,
+one-row branch) match the plan boxes `iumvcc-{sec}` on the section stem. **METHODOLOGY is the
+exception (Neil 2026-07-18):** the outline splits it into its 2–3 POINTS — one editable box per point
+(`outline-iumvcc-method-point-{1,2,3}`, `_iumvccFieldId` several-rows branch) — while the PLAN stays
+ONE box (`iumvcc-method`) that accumulates all points (like a Q3 paragraph plan). So Method compiles
+PER POINT, the other five compile whole-section. (Organisation is NOT a box — the order of the points
+IS the organisation.) Emit exactly these pairs:
 
 Introduction:
 
@@ -955,9 +960,16 @@ Urgency:
 @FIELD_COMMIT{"field":"outline-iumvcc-urgency"}
 @FIELD_COMMIT{"field":"iumvcc-urgency"}
 
-Methodology:
+Methodology (the ONE exception — three POINT rows on the outline, one PLAN box that accumulates
+all points). As you confirm EACH point in turn, emit that point's OUTLINE box + the method PLAN box
+(append) in the SAME reply: Point 1 → point-1, Point 2 → point-2, Point 3 → point-3. Emit the third
+pair ONLY if the student's argument has a third point (the protocol plans two or three):
 
-@FIELD_COMMIT{"field":"outline-iumvcc-method"}
+@FIELD_COMMIT{"field":"outline-iumvcc-method-point-1"}
+@FIELD_COMMIT{"field":"iumvcc-method"}
+@FIELD_COMMIT{"field":"outline-iumvcc-method-point-2"}
+@FIELD_COMMIT{"field":"iumvcc-method"}
+@FIELD_COMMIT{"field":"outline-iumvcc-method-point-3"}
 @FIELD_COMMIT{"field":"iumvcc-method"}
 
 Vision:
@@ -1053,15 +1065,18 @@ are.
 
 ## 10. ACCEPTANCE (build-time B-CHECKS this file must pass)
 
-- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 104 exactly (Q2×16 — element-by-element, 8 per
+- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 108 exactly (Q2×16 — element-by-element, 8 per
   paragraph = OUTLINE box + PLAN box for each of the 4 elements; Q3×36 — element-by-element, 12 per
   paragraph = OUTLINE box + PLAN box for each of the 6 TTECEA boxes [topic·evidence·analysis·effects·
   effects2·purpose], ×3 paragraphs; Q4×40 — 12 per body ×3 [same 6 boxes, UNSUFFIXED] + intro
-  (outline-intro-thesis-q4 + plan) + conclusion (outline-conclusion-thesis + plan) = 36+2+2; Q5×12 —
-  each of six IUMVCC sections dual-emits outline-iumvcc-{sec} + iumvcc-{sec}), every
+  (outline-intro-thesis-q4 + plan) + conclusion (outline-conclusion-thesis + plan) = 36+2+2; Q5×16 —
+  five sections dual-emit outline-iumvcc-{sec} + iumvcc-{sec} (=10), Methodology dual-emits its 3
+  POINTS outline-iumvcc-method-point-{1,2,3} + iumvcc-method ×3 (=6)), every
   fieldId byte-matching the header contract table, each in an element- or compile-validating reply.
-  (v7.20.159: Q5×12 — each of the six IUMVCC sections dual-emits its OUTLINE row `outline-iumvcc-{sec}`
-  + its PLAN box `iumvcc-{sec}`; six sections × one row each = 12. Total = 16+36+40+12 = 104.)
+  (v7.20.195: Q5 Methodology outline SPLITS into its 2–3 points [`outline-iumvcc-method-point-{n}`,
+  `_iumvccFieldId` several-rows branch] — one PLAN box `iumvcc-method` accumulates all points, like a
+  Q3 paragraph plan; Organisation dropped [the point ORDER is the organisation]. Five sections stay
+  1:1. Q5 = 10 + 6 = 16. Total = 16+36+40+16 = 108.)
 - `Got it — continue` raw count = 4 Q-GATE rows + this line = 5.
 - `HARD PRECONDITION` ≥ 3 (pre-planning chain, per-question gates).
 - Simulated-state vocabulary appears NOWHERE as an instruction (this prohibition line is

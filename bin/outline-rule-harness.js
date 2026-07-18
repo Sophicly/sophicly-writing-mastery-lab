@@ -244,10 +244,10 @@ const IU = CRITERIA.iumvcc.sections;
 t('iumvcc ships SIX sections (Neil: "it\'s actually just six sections")', IU.length, 6);
 t('iumvcc section ids are the six IUMVCC letters, in order',
   IU.map(s => s.id).join(','), 'intro,urgency,method,vision,counter,conclusion');
-t('Methodology is the only multi-row section (one row PER POINT + organisation)',
+t('Methodology is the only multi-row section (one row PER POINT)',
   IU.filter(s => s.criteria.length > 1).map(s => s.id).join(','), 'method');
-t('Methodology = point-1, point-2, point-3, organisation',
-  IU.find(s => s.id === 'method').criteria.map(c => c.id).join(','), 'point-1,point-2,point-3,organisation');
+t('Methodology = point-1, point-2, point-3 (Organisation removed v7.20.195 — the point ORDER is the organisation, not a prose row)',
+  IU.find(s => s.id === 'method').criteria.map(c => c.id).join(','), 'point-1,point-2,point-3');
 t('exactly ONE optional row ships (methodology point 3)',
   IU.flatMap(s => s.criteria).filter(c => c.optional).map(c => c.id).join(','), 'point-3');
 t('the Introduction hook offers SEVEN openers (eight in the protocol, F ruled out by Neil)',
@@ -277,25 +277,20 @@ t('Conclusion keeps its closing approach AND gains verb/tone/devices/effect',
   ['verb', 'tone', 'devices', 'effect'].forEach(need =>
     t(`${secId} carries a ${need} control`, ctls.includes(need), true));
 });
-// Methodology carries them on each POINT (a point is the prose row); Organisation carries none of
-// them (it orders points, it is not prose).
+// Methodology carries the universal controls on each POINT (a point is the prose row).
 ['point-1', 'point-2', 'point-3'].forEach(pid => {
   const ctls = RULE.controlsOf(IU.find(s => s.id === 'method').criteria.find(c => c.id === pid)).map(c => c.id);
   ['verb', 'tone', 'devices', 'effect'].forEach(need =>
     t(`methodology ${pid} carries a ${need} control`, ctls.includes(need), true));
 });
-t('the Organisation row is prose-free: no verb/tone/devices/effect',
-  RULE.controlsOf(IU.find(s => s.id === 'method').criteria.find(c => c.id === 'organisation'))
-    .some(c => ['verb', 'tone', 'devices', 'effect'].includes(c.id)), false);
 
 // The effect picker satisfies like the device picker: ONE chosen effect completes it, {picked,free}.
 const eff = { id: 'x', controls: [{ id: 'effect', label: 'Intended effect', type: 'effects' }] };
 t('effect with nothing chosen ⇒ incomplete', RULE.complete(eff, { c: { effect: {} } }, true), false);
 t('effect chosen (in free) ⇒ complete', RULE.complete(eff, { c: { effect: { free: ['Fear'] } } }, true), true);
 t('effect whitespace-only ⇒ incomplete', RULE.complete(eff, { c: { effect: { free: ['  '] } } }, true), false);
-// The Organisation row is the ONE row with no devices, and that is not an oversight: it plans the
-// ORDER of the points and the transitions between them, not prose that could carry a device.
-t('every Methodology POINT gets a picker; the Organisation row does not',
+// Every Methodology POINT gets a device picker — the points are the prose rows.
+t('every Methodology POINT gets a picker',
   IU.find(s => s.id === 'method').criteria
     .filter(c => RULE.controlsOf(c).some(ctl => ctl.type === 'techniques')).map(c => c.id).join(','),
   'point-1,point-2,point-3');
@@ -357,12 +352,10 @@ choiceCtls.forEach(({ s, c, ctl }) => {
   t(`iumvcc.${s.id}.${c.id}.${ctl.id} still ships its protocol recommendation`,
     Array.isArray(ctl.items) && ctl.items.length > 0, true);
 });
-// The Organisation row stays a dropdown ON PURPOSE: strongest-first / build-intensity / logical-
-// sequence is an exhaustive structural choice, not a creative palette. Nothing to "choose anything"
-// from, so a picker there would be affordance for its own sake.
-t('Organisation stays a dropdown (an exhaustive structural choice, not a palette)',
-  RULE.controlsOf(IU.find(s => s.id === 'method').criteria.find(c => c.id === 'organisation'))[0].type,
-  'dropdown');
+// v7.20.195 (Neil): Organisation removed entirely. The order of the points IS the organisation — a
+// start-to-finish decision made while writing, not a separate prose slot or dropdown. Method = 3 points.
+t('Methodology has NO organisation row (removed v7.20.195)',
+  IU.find(s => s.id === 'method').criteria.some(c => c.id === 'organisation'), false);
 // The pools must actually CROSS sections — this is the whole point of the change.
 const verbKinds = choiceCtls.filter(x => x.ctl.kind === 'verb');
 t('verb families exist in more than one section, so the pool genuinely crosses them',

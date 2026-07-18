@@ -33500,11 +33500,11 @@
                     // row is OPTIONAL. Baking three REQUIRED rows would demand a point the protocol
                     // never demands; baking two would leave a three-point student nowhere to write.
                     _iuPoint(3, 'A third point, if your argument has one — the protocol plans two or three. Leave this empty if two carry it.', true),
-                    // :656 places the organisation choice "After all points" — so this row is
-                    // derived from the protocol's own sequence, not invented furniture.
-                    { id: 'organisation', label: 'Organisation', prompt: 'How do your points run, and how do you move between them? Transitions carry the imagery — never "Firstly, Secondly". Organic flow is a valid answer.', controls: [
-                        { id: 'order', label: 'Order', type: 'dropdown', items: ['Strongest first', 'Build intensity', 'Logical sequence'] },
-                    ]},
+                    // v7.20.195 (Neil): Organisation removed. Structure is inherent in the ORDER of the
+                    // points (a start-to-finish decision the student makes as they write), not a separate
+                    // prose slot — the three points ARE the organisation. The old editable "How do your
+                    // points run…" box read as out of place. (An empty org row on a baked doc is dropped by
+                    // _healIumvccOutlineShape on load; a filled one makes the heal skip + warn — safe.)
                 ]},
                 // :661-672. Success image → emotion → metaphor → sensory → rhythm → ladder → tone.
                 { id: 'vision', label: 'Vision', criteria: [

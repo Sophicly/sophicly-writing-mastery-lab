@@ -72,6 +72,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/outline-rule-harness.js || fail=1
 fi
 
+# v7.20.195: PLANNING KEY-MATCH. The #1 recurring bug is write-key ≠ read-key — a planning protocol
+# @FIELD_COMMIT that no render box receives (the plan "saves but nothing appears"; Q5 Methodology
+# shipped exactly this). This gate renders the REAL outline builders and diffs their fieldIds against
+# each codified planning protocol's outline tags: 0 orphan writes, 0 un-allow-listed blank boxes.
+# Runs when the render or any codified planning protocol or the harness is staged.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|protocols/.*/planning/.*\.md|planning-keymatch-harness\.js'; then
+  node bin/planning-keymatch-harness.js || fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   echo ""
   echo "pre-ship gate FAILED — fix before shipping (do NOT --no-verify past it)."
