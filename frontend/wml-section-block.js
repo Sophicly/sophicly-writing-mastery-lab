@@ -715,6 +715,15 @@
                         return foot === mutation.target || foot.contains(mutation.target)
                             || noteFoot === mutation.target || noteFoot.contains(mutation.target);
                     },
+                    // v7.20.197 (Neil): the tutor-comment <textarea> lives in noteFoot. Without this,
+                    // ProseMirror intercepts its keystrokes (PM owns keydown for the editable view) so
+                    // the box renders but can't be TYPED into. stopEvent tells PM to leave events that
+                    // originate in the footer UIs to the DOM — so the textarea gets its keyboard, and
+                    // the sign-off checkbox/button keep working (they never needed it, harmless here).
+                    stopEvent: (event) => {
+                        const t = event && event.target;
+                        return !!(t && (noteFoot.contains(t) || foot.contains(t)));
+                    },
                 };
             }
 
