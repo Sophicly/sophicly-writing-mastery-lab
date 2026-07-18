@@ -5122,6 +5122,25 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-diagnostic [data-section-type="divider"][data-section-label*="SIGN-OFF"] {
     display: none !important;
 }
+/* v7.20.204 (Neil): no-plan-question notice — tells the student the simple retrieval/true-false
+   questions get no coaching BY DESIGN. Default HIDDEN; shown only in the answering env
+   (.swml-canvas-diagnostic, present on the diagnostic/free doc, ABSENT at assessment marking) so
+   "not marked now, assessed later" is never displayed on the marking view where it would be false. */
+.swml-noplan-note { display: none; }
+.swml-canvas-diagnostic .swml-noplan-note {
+    display: block;
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    border-left: 2px solid rgba(83, 51, 237, 0.4);
+    background: rgba(83, 51, 237, 0.06);
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0.75;
+}
+[data-swml-theme="light"] .swml-canvas-diagnostic .swml-noplan-note {
+    background: rgba(83, 51, 237, 0.05);
+}
 /* v7.14.23: hide marking widgets in diagnostic mode (v7.19.951: in-flow control rows now).
    Also flatten the feedback header band — with no row there is nothing to reserve for. */
 /* v7.20.169 (Neil): the 'free' env (redraft/outline lessons) carries .swml-canvas-diagnostic,

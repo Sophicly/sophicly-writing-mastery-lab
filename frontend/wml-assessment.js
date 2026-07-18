@@ -35544,6 +35544,17 @@
         const sources = meta.sources || [];
         let html = '';
 
+        // v7.20.204 (Neil): no-plan-question notice. The simple retrieval questions (AQA Lang P1 Q1
+        // "list four", P2 Q1 true-statements, and every true-false / mark-per-statement / short-
+        // retrieval / MCQ across boards) deliberately get NO planning protocol — help ∝ instruction
+        // received (PEDAGOGY §1 / §7h). Tell the student the absence of coaching is BY DESIGN so it
+        // doesn't read as a gap. Attached by CAPABILITY (the multiple_choice + retrieval≤5 branches),
+        // never a per-question hand-list. Gated to the answering env via CSS (.swml-noplan-note hides
+        // outside .swml-canvas-diagnostic) — "not marked now" is true while answering, wrong at marking.
+        const NOPLAN_NOTE = '<p class="swml-noplan-note"><em>No planning stage for this one — it’s a '
+            + 'direct-response question. Answer it as well as you can; we don’t coach the method here, '
+            + 'and it’s assessed later, not marked now. Do your best.</em></p>';
+
         // Build section divider map from specs (if available)
         const sectionMap = buildSectionMap();
 
@@ -35785,7 +35796,7 @@
                         checkboxes += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-stmt-${s}" class="swml-checklist-item swml-checklist-placeholder"><em>Waiting for statement ${s}...</em></div>`;
                     }
                 }
-                html += sectionHTML('response', `${qId} Statements`, true, null, checkboxes, _respStageAttrs);
+                html += sectionHTML('response', `${qId} Statements`, true, null, NOPLAN_NOTE + checkboxes, _respStageAttrs);
 
             } else if (qType === 'retrieval' && qMarks <= 5) {
                 // Short retrieval: one InputField per point (too simple for single area)
@@ -35795,7 +35806,7 @@
                 for (let i = 1; i <= count; i++) {
                     fields += inputHTML(`Point ${i}`, `${qId}-point-${i}`);
                 }
-                html += sectionHTML('response', `${qId} Response`, true, null, fields, _respStageAttrs);
+                html += sectionHTML('response', `${qId} Response`, true, null, NOPLAN_NOTE + fields, _respStageAttrs);
 
             } else {
                 // v7.14.61: Single InputField for ALL other question types

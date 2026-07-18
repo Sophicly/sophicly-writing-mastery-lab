@@ -577,6 +577,17 @@ rulings; the research backing each is in `research/2026-07-18-*.md`.
    NOT assume the analytical-essay shape transfers verbatim; re-derive per the CW protocol (the doc
    lifecycle's CW lane is still TBD, per WML CLAUDE.md).
 
+7k. **NO-PLAN QUESTIONS ARE TRANSPARENT — the student is TOLD coaching is withheld by design (Neil
+   2026-07-18).** The simple retrieval questions (AQA Lang P1 Q1 "list four", P2 Q1 true-statements,
+   and every true-false / mark-per-statement / short-retrieval / MCQ across boards) get NO planning
+   protocol — right-or-wrong recall we do not train (§1 — help ∝ instruction received; the
+   doc-lifecycle SKIP-plan set). A short static note on these questions tells the student to answer to
+   the best of their ability, that we do not coach the method here, and that it is assessed later — so
+   the ABSENCE of scaffolding reads as design, not a gap. Capability-derived (the `multiple_choice` +
+   `retrieval≤5` template branches in `buildMultiQuestionTemplate`), never a per-question hand-list;
+   shown only in the answering env (`.swml-noplan-note`, hidden in the marking view where "not marked
+   now" would be false). Impl v7.20.204.
+
 - **Cross-cutting:** help-ladder depth, the grounding gate, and the context-output gate all DERIVE from
   the question's AO/capability profile — one per-question config — never from literal task-names (same
   "capability, not task-name" discipline as the canvas rules). A new board/paper opts in, never silently
