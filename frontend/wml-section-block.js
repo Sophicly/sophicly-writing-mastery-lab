@@ -792,7 +792,28 @@
 
             if (!showChip) {
                 // Default path: dom IS contentDOM. Zero behavioural change vs renderHTML output.
-                return { dom, contentDOM: dom };
+                // v7.20.200 — THE SAME WRAPPER-ATTR FIREWALL the chip path below already carries
+                // (added .125), but MISSED on THIS return. Non-exam_crib docs (every ordinary
+                // lesson) take this path, so their sections had NO ignoreMutation at all. Two
+                // runtime attr writes land on every section's own dom: coloriseSectionGroups
+                // (wml-assessment.js:42705 — `style.setProperty('border-left-color', …)`) and
+                // data-section-num (.897). Un-firewalled, each is a foreign `attributes` mutation
+                // → PM DOMObserver flush → updateState → redraw every NodeView → the sign-off
+                // NodeView is recreated → the tutor-comment <textarea> inside it is destroyed
+                // mid-type (text lost, comment never saves, vanishes on nav) + the ctlrows fill
+                // storm the breaker reported. Caught by Neil's console: the captured stack was
+                // colorise@42705 → PM observer → flush → redraw → _fillCtl. These wrapper attrs are
+                // DISPLAY-ONLY; PM's source of truth is the doc, never this DOM. Content edits are
+                // childList/characterData (dom IS contentDOM here), never `attributes`, so they are
+                // untouched. Same line, same reason, as the chip/sign-off/divider siblings.
+                return {
+                    dom, contentDOM: dom,
+                    ignoreMutation: (mutation) => {
+                        if (!mutation || !mutation.target) return false;
+                        if (mutation.type === 'attributes' && mutation.target === dom) return true;
+                        return false;
+                    },
+                };
             }
 
             // Chip path: wrap content in inner div so chip can be a sibling outside contentDOM.
