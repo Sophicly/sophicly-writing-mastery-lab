@@ -40,7 +40,7 @@ This is the centrepiece: it converts our per-beat prose scaffolding into ONE res
 
 **The Goldilocks zone (the reason the ladder exists).** The design deliberately lives in the MIDDLE. Research on the *assistance dilemma* (Koedinger & Aleven 2007) places optimal learning at an **intermediate** point — mid-level *partial* support empirically beats BOTH full worked examples (too much help → shallow processing, effort + self-regulation drop) AND no help (too little → floundering → frustration). L2 (hint) and L3 (options) ARE that partial support; L1 and L4 are the guard-rails we escalate *between*, not where most learning should happen. "Not too much, not too little, at the right time" is the whole game.
 
-**TWO REGIMES — the ladder governs FAILURE only (Fable, critical — do not merge these):**
+**TWO REGIMES — the ladder governs FAILURE only (Fable, critical — do not merge these):** *(⚠️ SUPERSEDED by §11: it is now THREE regimes — WRONG · FAILED · WEAK — with stated precedence. Read §11.1 decision tree before building.)*
 - **Weak-but-OWNED answer** (the student produced something of their own, just surface-level): **ONE Socratic push for depth, then accept their choice.** UNCHANGED settled law (Session Law 1; `feedback_socratic_inference_elicitation_research_backed` "one push then fade"). Do NOT escalate an owned answer up the ladder — that turns "respect their choice" into "wear them down."
 - **FAILURE** (empty · off-track · "I don't know" — nothing ownable produced): **the ladder runs.**
 
@@ -320,3 +320,60 @@ Research → `research/2026-07-18-help-seeking-and-corrective-feedback.md`.
 **Corrections (9.3) — the WRONG regime:** target TASK/PROCESS, **NEVER SELF** (Hattie & Timperley 2007; Kluger & DeNisi 1996 — >⅓ of feedback HARMS when self-directed). Never a bare "wrong" — elaborated + response-specific (Shute 2008). Errors-as-learning protect motivation (Yeager "wise feedback" 2014; Dweck; Metcalfe). **Hypercorrection — confident errors are corrected BEST; don't soften a confident-and-wrong answer.**
 - **Recommendation — WRONG fires ONLY on a VERIFIABLE error** (misread of the text · false context/biographical fact · misidentified technique) — NOT a weak-but-valid interpretation (→ one-push regime) or empty/off-track (→ ladder). Discriminator: *is the claim falsifiable against the text or established fact?* **FORM (always 3 parts):** (1) name the error specifically · (2) why · (3) the fix. **FRAMING:** correct the error not the student; wise-feedback pair (high standard + "you'll catch this every time now"). **INTERPRETATION CAVEAT (ownership):** if it's an interpretation not a fact, correct the GROUNDING not the reading ("what in the line makes you say menacing?" — not "it isn't menacing"). **Ship a grep-able B-check** that WRONG keys on a falsifiable-error detector, never on interpretive content.
 - **Judgement calls:** exact per-paper ceiling (3 vs 4); the confident-vs-low-confidence framing assumes confidence detection — default all corrections to wise-feedback framing if not cheaply detectable.
+
+---
+
+## 10. UNIVERSAL "LAST-ATTEMPT RECAP" on the greeting/start card (Neil 2026-07-18 — captured idea, SEPARATE build)
+A dynamic, universal recap at the foot of the greeting/start card for **every quiz, assessment, AND planning start**:
+- **First attempt:** "This is your first attempt." · **Returning / restart:** "Last attempt: X / total · Y% · Grade Z" for THIS text.
+- **Data:** reads the SAME durable student-data record the dashboard reads (latest completed attempt for the text/lesson) via the shared score→%→grade helper — never a divergent copy (two-sources-drift = recurring bug).
+- **Planning caveat (planning never marks):** a planning greeting shows the last **ASSESSMENT** grade for that text (the thing being redrafted) — *"Your last assessment: Grade 5 — this redraft is how you beat it."* A strong motivational tie-in: the redraft gets a target.
+- **Brand:** OUR style, NOT the green-terminal "beat your score" arcade reference (off-brand). Purple accent, Proxima, the calm canvas dark surface-ladder. Scholarly, not gamified.
+- **Framing (ties §9 wise-feedback + the no-gamification / real-stats-are-the-motivator rulings):** growth-framed ("last time 5 — let's push past it"), never a bare low grade that deflates. Real stats ARE the motivator; a returning student primed to beat their best serves deliberate practice.
+- **Universal + dynamic:** ONE component, reads state, renders first-vs-returning — every quiz/assessment/planning greeting inherits it.
+**Scope:** cross-surface (quiz engine + assessment + planning greeting), a SEPARATE build from the P1/P2/P3 planning work. Captured here so it isn't lost.
+**Reference design (Neil):** `Quiz App.html` — the stat-strip layout to adapt (10 QUESTIONS / 15s / 70 HIGH SCORE). Port the LAYOUT, re-skin to brand (its green-terminal look is OFF-brand — CLAUDE.md §13: copy the structure, change what's named).
+
+---
+
+## 11. ⭐⭐ DEEP FABLE REVIEW — corrections to FOLD before build (2026-07-18). VERDICT: yes-with-changes.
+*The base is buildable as one system, but the newer sections (§7/§8/§9) drifted from the older ones. Apply changes 1–10 at build time; several correct earlier sections (noted inline). This section is the authority where it conflicts with §2/§7/§8/§9 above.*
+
+### 11.1 The single-turn DECISION TREE (the spine the plan was missing)
+Two axes the plan smeared together: a **classification** axis (what did the turn produce?) and a **track** axis (method-help vs knowledge-help).
+```
+CODE derives (doc + stamped history): active element · fade-adjusted rung base · content-insight WALLET · pace valve
+PRE-TRAINING (§8, at question/text OPEN, NOT under the element ceiling): ask-first → [gap] insight (SPENDS wallet) → Library reading → student derives concept.
+STUDENT TURN on the active element:
+  0. Deterministic (code): empty / IDK-regex / min-chars → verdict=failed (IDK sets idkPending; next-rung climb gated on a micro-attempt)
+  1. LLM @ELEMENT_JUDGE → verdict ∈ {wrong, resolved, weak, failed}   PRECEDENCE: wrong FIRST, then the rest.
+  • WRONG  (verifiable: misread of the words · false context/bio fact · misidentified technique) → 3-part correction (name·why·fix), wise-framing, FREE, NO rung climb, NO attempt increment → re-invite at CURRENT rung. (false CONTEXT fact → repair may hand to §8.)
+  • FAILED (nothing ownable) → climb EXACTLY ONE rung → L1→L4. L4 = worked model on an UNRELATED instance: EARNED, UNBUDGETED, one per element (resolution ends it).
+  • WEAK-but-owned → ONE Socratic push, then accept + file. Never enters the ladder.
+  • RESOLVED → @FIELD_COMMIT (verbatim) → element off-ladder → next opens at its fade base.
+  • HELP MENU (§9.2, only on verdict=failed): "Explain further" FREE (max 1/rung) · "Ask more questions" FREE · "Expert insight" SPENDS the wallet. NONE moves the rung — only contingent shift moves the rung.
+```
+The probe case (*confidently-wrong reading grounded in a false context fact*) resolves ONLY under this tree: judge fires **WRONG on the fact** → correct hard (hypercorrection) → question the now-ungrounded reading's **grounding**, never the reading → if the student then flounders, that's a **knowledge-deficit** failure → §8 knowledge move, not an L3 lens.
+
+### 11.2 The changes (fold all 10)
+1. **[§2/§7A.3/§9.3] State regime PRECEDENCE: WRONG → FAILED → WEAK/RESOLVED, and REDEFINE "off-track."** "off-track" = *non-engagement with the question* (drift), NOT "incorrect." An incorrect ANSWER is `wrong` (falsifiable) or `weak` (interpretive), never `failed`. (Most-certain re-derivation risk if unstated.)
+2. **⭐ [§7/§9.4/§2 — the ONE hard contradiction] Un-merge the content-insight budget from L4.** §7 budgeting L4 (refuse the (N+1)th) KILLS §2's low-ability guarantee (a grade-1 needs L4 far more than 3–4×/paper). TWO counters: **(i) content-insight WALLET** (Law-7 push + §9.1 pull + §8 insights) — code-counted, per-Q sub-cap 1, per-paper ceiling **3**; **(ii) L4 method models — UNCAPPED, earned-only, never refused** (naturally bounded at one per element). The spendable thing is FACTS, never MODELS. (§3.2 already had this right; §7/§9 drifted.) Marker gains `kind:'insight'|'model'|'hint'` + `source:'push'|'pull'`.
+3. **[§8.3] §8 is a PARALLEL KNOWLEDGE track run as PRE-TRAINING, not "the §2 ladder applied to context."** Method-deficit (hint→lens→model) vs knowledge-deficit (fact→reading). Kintsch: no lens fixes a missing situation model. Run ask→insight→read→derive at question/text OPEN (as `cn-section-2-context.md` already does — enhancement confirmed), carrying §2's discipline but NOT its 4-turn ceiling (a reading detour would blow it). Mid-element it surfaces only as a WRONG-correction of a false fact or a spent insight.
+4. **[§7A.3/A.5] `@ELEMENT_JUDGE` = FOUR verdicts** (`resolved|weak|failed|wrong`); `wrong` does NOT increment attempts; self-heal default stays `weak`. **Pin the marker schema byte-exact NOW: `ladder:{el,rung,regime,verdict,kind,source}`** — it's a write-key↔read-key contract (#1 bug class). Add WRONG + wallet-vs-L4 fixtures to the harness.
+5. **[§2/§3.1] Amend §2's header TWO REGIMES → THREE (+ precedence) in the same edit**; §3.1's PROTOCOL-STANDARD/PEDAGOGY codification carries: three regimes + precedence, the method-vs-knowledge two-track split, the wallet/L4 separation, the WRONG falsifiability B-check. One vocabulary, stated once (CLAUDE.md §7).
+6. **[§7B/7C-Q3] Content wallet scope = per-DOCUMENT-lifetime, derive-don't-store; resume must NOT refill (reload-farming); an explicit chat-clear resets it — ACCEPT for v1** (clearing chat also destroys fade memory + progress, so the exploit self-punishes). L4 uncapped.
+7. **[§9.2] Bound "Explain further" at ONCE per rung** (free+unlimited re-explain is the hint-refresh stall Aleven & Koedinger warn of), then collapse to "ask more questions" or a real attempt.
+8. **[§8.7 item 3] Re-sequence the context-logic unification AFTER the AQA gold-standard arc** — folding `context-drive-check` + CN §2 + body-Step-7 into one gate touches `protocols/shared/` (all boards; WML critical rule 2) = the one rebuild-adjacent item. Right goal, own consolidation arc, no behaviour change.
+9. **[§8, B-check] Fact-delivery guard:** an insight/correction supplies the fact WITHOUT stating the inference it licenses about the live quote ("Machiavelli argued rulers feign virtue — now look at 'innocent flower'" is a reading delivered as a fact). Decouple fact from the live quote mid-planning.
+10. **[§7A.1] Add the Library-reading OPEN/return to the state table** (`ladder:{kind:'reading'}` on the surrounding turn) — else the knowledge track can't self-locate on resume.
+
+### 11.3 ⭐ THE OWNERSHIP PRINCIPLE (stated once — all of §2/§8/§9 reduce to this)
+> **The student owns every interpretive claim about this text. The tutor may freely supply METHOD (how to think: hints, lenses, models on UNRELATED material) and verifiable FACT (what is true about the words, the writer, the period — including correcting the student's false facts); the tutor may NEVER supply a READING (what this text means), and may challenge a reading only through its GROUNDING.**
+Method-side = §2 L3/L4. Fact-side proactive = §8. Fact-side reactive = §9 corrections. Only leak points: change 9 (a fact that entails the reading) and a §6 menu naming *content* ("the writer's bitterness") not a *direction* ("the writer's attitude") — the drafted §6 menus pass; the 3 flagged high-risk types (synthesis, fiction, lit-context) are correctly identified.
+
+### 11.4 Open-decision updates (supersede §4 where they differ)
+- §4's four: concur. **AMENDMENT: P4.8 insight counter is now REQUIRED (load-bearing for §9's wallet), not "cheapest-or-defer."**
+- Resume fade base: L1 default, L2 only when a filed same-type sibling resolved at ≥L3. · Judge safe-default `weak`: accept (no re-ask step). · Wallet scope: per-doc-lifetime, derive, no blob. · L4: uncapped. · §9.2 override-vs-feed: **feed** (change 2 mostly dissolves it — no menu option touches the rung). · Per-paper ceiling: **3** (matches Law-7 — don't relitigate). · Corrections: default ALL to wise-feedback framing (skip confidence detection).
+- Residual "knowledge-deficit vs method-deficit mid-element": rule for v1 = **post-pre-training failures are METHOD failures** (simplest robust).
+
+**§1 (SOLID) is untouched by all of the above. Fold 1–10 → the plan is buildable as one coherent system.**
