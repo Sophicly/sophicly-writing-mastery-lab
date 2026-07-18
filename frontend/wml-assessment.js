@@ -28896,11 +28896,22 @@
         // planning intentionally omitted (Neil): that lesson already auto-scrolls on plan completion and
         // the student needs to read the question first, so it just loads normally — no scroll, no coach.
         const _PHASE_SECTION_TYPE = { outlining: 'outline', polishing: 'response', assessment: 'response', redraft_assessment: 'response' };
+        // Copy adapts to how many questions the paper carries (Neil 2026-07-18): Language papers
+        // hold several questions (Q1–Q5) so "your response" wrongly reads as just Q1; single-question
+        // papers (most Literature) keep the singular. `many` fires when the doc has >1 question block.
         const _PHASE_COACH = {
-            outlining:  { icon: SVG_OUTLINE_STEP, title: 'Develop your outline', body: 'Your plan has been transferred here. Turn each line into a full sentence, then transfer it down to your Response.' },
-            polishing:  { icon: SVG_POLISH, title: 'Polish your response', body: 'Here’s your response. Sharpen the prose line by line, then get it assessed.' },
-            assessment: { icon: SVG_ASSESS, title: 'Assessment', body: 'This is your response — Sophia is assessing it now.' },
-            redraft_assessment: { icon: SVG_ASSESS, title: 'Reassessment', body: 'This is your redraft — Sophia is assessing it now.' }
+            outlining:  { icon: SVG_OUTLINE_STEP, title: 'Develop your outline', titleMany: 'Develop your outlines',
+                one:  'Your plan has been transferred here. Turn each line into a full sentence, then transfer it down to your Response.',
+                many: 'Your plans have been transferred here. Work through every question — turn each line into a full sentence, then transfer it down to your Response.' },
+            polishing:  { icon: SVG_POLISH, title: 'Polish your response', titleMany: 'Polish your responses',
+                one:  'Here’s your response. Sharpen the prose line by line, then get it assessed.',
+                many: 'Here are your responses to every question. Sharpen the prose line by line across all of them, then get the whole paper assessed.' },
+            assessment: { icon: SVG_ASSESS, title: 'Assessment',
+                one:  'This is your response — Sophia is assessing it now.',
+                many: 'These are your responses to every question — Sophia is assessing the whole paper now.' },
+            redraft_assessment: { icon: SVG_ASSESS, title: 'Reassessment',
+                one:  'This is your redraft — Sophia is assessing it now.',
+                many: 'This is your redraft across every question — Sophia is assessing the whole paper now.' }
         };
         function _phaseCoachAndScroll() {
             const type = _PHASE_SECTION_TYPE[state.task];
@@ -28911,10 +28922,12 @@
             const sec = editor.querySelector('.swml-section-block[data-section-type="' + type + '"]');
             if (!sec) return;
             // Auto-scroll to the phase section, but only if the student hasn't already scrolled.
-            if (scroller.scrollTop < 40) { try { _swmlScrollToTop(sec, 24); } catch (_) {} }
+            let didScroll = false;
+            if (scroller.scrollTop < 40) { try { _swmlScrollToTop(sec, 24); didScroll = true; } catch (_) {} }
             // One-time dismissible coachmark (remembered per doc + task).
             const coach = _PHASE_COACH[state.task];
             if (!coach || state.reviewMode) return;
+            const multi = _planDocQuestionFacts().total > 1;
             let dismissKey;
             try { dismissKey = 'swml_coach:' + CANVAS_SAVE_KEY() + ':' + state.task; } catch (_) { dismissKey = 'swml_coach:' + state.task; }
             try { if (localStorage.getItem(dismissKey) === '1') return; } catch (_) {}
@@ -28933,7 +28946,7 @@
             icon.innerHTML = coach.icon;
             const title = document.createElement('span');
             title.className = 'swml-phase-coach-title';
-            title.textContent = coach.title;
+            title.textContent = (multi && coach.titleMany) ? coach.titleMany : coach.title;
             const close = document.createElement('button');
             close.type = 'button';
             close.className = 'swml-phase-coach-close';
@@ -28943,26 +28956,32 @@
             head.appendChild(icon); head.appendChild(title); head.appendChild(close);
             const body = document.createElement('div');
             body.className = 'swml-phase-coach-text';
-            body.textContent = coach.body;
+            body.textContent = multi ? coach.many : coach.one;
             const cta = document.createElement('button');
             cta.type = 'button';
             cta.className = 'swml-phase-coach-cta';
             cta.textContent = 'Got it';
             cta.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); dismiss(); });
             card.appendChild(arrow); card.appendChild(head); card.appendChild(body); card.appendChild(cta);
-            scroller.appendChild(card);
-            // Adobe-style side pop-out: sit in the left gutter, top aligned with the section, arrow
-            // pointing right at it. `top` = the section's scroll-invariant content offset (stable even
-            // mid smooth-scroll); `left` clamps into the gutter so it never runs off-screen.
-            requestAnimationFrame(() => {
-                if (!card.isConnected) return;
-                const scRect = scroller.getBoundingClientRect();
-                const secRect = sec.getBoundingClientRect();
-                card.style.top = Math.max(8, scroller.scrollTop + (secRect.top - scRect.top)) + 'px';
-                let left = (secRect.left - scRect.left) - card.offsetWidth - 16;
-                if (left < 10) left = 10;
-                card.style.left = left + 'px';
-            });
+            // Fade in AFTER the auto-scroll settles (Neil 2026-07-18): mount + position once the
+            // smooth-scroll has landed, so the card fades in at the section rather than during the
+            // scroll. ~520ms covers the smooth-scroll; ~140ms when we didn't scroll.
+            setTimeout(() => {
+                if (state.reviewMode) return;
+                scroller.appendChild(card);
+                // Adobe-style side pop-out: sit in the left gutter, top aligned with the section, arrow
+                // pointing right at it. `top` = the section's scroll-invariant content offset (stable
+                // even mid smooth-scroll); `left` clamps into the gutter so it never runs off-screen.
+                requestAnimationFrame(() => {
+                    if (!card.isConnected) return;
+                    const scRect = scroller.getBoundingClientRect();
+                    const secRect = sec.getBoundingClientRect();
+                    card.style.top = Math.max(8, scroller.scrollTop + (secRect.top - scRect.top)) + 'px';
+                    let left = (secRect.left - scRect.left) - card.offsetWidth - 16;
+                    if (left < 10) left = 10;
+                    card.style.left = left + 'px';
+                });
+            }, didScroll ? 520 : 140);
         }
 
         // v7.20.186 (Neil): the ONE transfer-all execution, shared by the in-flow divider button

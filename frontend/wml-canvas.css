@@ -5523,9 +5523,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     background: #202128;
     box-shadow: 0 18px 44px -12px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.35);
     color: #e9e9ee;
-    animation: swmlCoachIn 0.32s cubic-bezier(0.22,1,0.36,1);
+    animation: swmlCoachIn 0.45s ease;
 }
-@keyframes swmlCoachIn { from { opacity: 0; transform: translateX(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+/* v7.20.192 (Neil): pure fade in (mounts after the auto-scroll settles), no slide/scale. */
+@keyframes swmlCoachIn { from { opacity: 0; } to { opacity: 1; } }
 .swml-phase-coach-arrow {
     position: absolute;
     top: 22px;
