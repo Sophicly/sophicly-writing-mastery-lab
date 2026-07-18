@@ -82,6 +82,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/planning-keymatch-harness.js || fail=1
 fi
 
+# v7.20.204: C-LADDER B-CHECKS. The universal contingent-scaffolding ladder reduces to three
+# invariants (regime split · method-not-content · wrong=falsifiable). This gate asserts their
+# canonical literal lines survive in PROTOCOL-STANDARD.md (contract can't silently erode) and checks
+# every ladder-enabled planning protocol for them (dormant until the P3 retrofit opts protocols in).
+# Runs when the standard, any planning protocol, or the harness is staged.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'PROTOCOL-STANDARD\.md|protocols/.*/planning/.*\.md|ladder-check-harness\.js'; then
+  node bin/ladder-check-harness.js || fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   echo ""
   echo "pre-ship gate FAILED — fix before shipping (do NOT --no-verify past it)."
