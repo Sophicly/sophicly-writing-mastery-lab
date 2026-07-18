@@ -5103,12 +5103,16 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    ══════════════════════════════════════════ */
 
 /* ── Diagnostic Mode: hide assessment-only sections (v7.14.11) ──
-   Sections remain in DOM for assessment to populate later — just hidden from view */
+   Sections remain in DOM for assessment to populate later — just hidden from view
+   v7.20.203 (Neil): Tutor Sign-off is NO LONGER hidden here — the sign-off + tutor-comment
+   thread must appear on EVERY lesson doc (the 'free' env at 5123 also carries this class, so
+   this rule was what hid sign-off on redraft/outline/polish lessons). Sign-off is excluded
+   from the completion count by TYPE (_computeAssessmentProgress) so revealing it can't shift
+   "N of M sections". The other marking sections (feedback/scores/analytics/action) stay hidden. */
 .swml-canvas-diagnostic .swml-section-feedback,
 .swml-canvas-diagnostic .swml-section-scores,
 .swml-canvas-diagnostic .swml-section-analytics,
 .swml-canvas-diagnostic .swml-section-action,
-.swml-canvas-diagnostic .swml-section-signoff,
 .swml-canvas-diagnostic .swml-section-improvement,
 .swml-canvas-diagnostic [data-section-type="divider"][data-section-label*="FEEDBACK"],
 .swml-canvas-diagnostic [data-section-type="divider"][data-section-label*="RESULTS"],
@@ -12515,7 +12519,11 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
  * to later stages so students see only stage-relevant scaffolding:
  *   - Planning: plan sections only.
  *   - Outlining + Polishing: + outline + response sections.
- *   - Reassessment: + feedback + scores + sign-off.
+ *   - Reassessment: + feedback + scores.
+ * v7.20.203 (Neil): Tutor Sign-off is now revealed at EVERY stage (removed from the
+ * planning/outlining/polishing hide lists below, and from the diagnostic rule at ~5107) so the
+ * sign-off + tutor-comment thread rides every lesson doc. Sign-off is excluded from the completion
+ * count by TYPE, and its UI gates on canSignOff (role), never stage — so this is a pure reveal.
  * The stage class is applied to .swml-canvas-doc by wml-assessment.js (see
  * `_stageCls` near the editorEl creation).
  */
@@ -12536,7 +12544,6 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-stage-planning [data-section-type="response"]:not([data-stage-reveal="planning"]),
 .swml-stage-planning [data-section-type="feedback"],
 .swml-stage-planning [data-section-type="scores"],
-.swml-stage-planning [data-section-type="signoff"],
 .swml-stage-planning [data-section-type="analytics"],
 .swml-stage-planning [data-section-type="improvement"],
 .swml-stage-planning [data-section-type="action"],
@@ -12553,7 +12560,6 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 /* Outlining + Polishing: hide assessment-stage sections + their dividers */
 .swml-stage-outlining [data-section-type="feedback"],
 .swml-stage-outlining [data-section-type="scores"],
-.swml-stage-outlining [data-section-type="signoff"],
 .swml-stage-outlining [data-section-type="analytics"],
 .swml-stage-outlining [data-section-type="improvement"],
 .swml-stage-outlining [data-section-type="action"],
@@ -12563,7 +12569,6 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-stage-outlining [data-section-type="divider"][data-section-label*="ACTION"],
 .swml-stage-polishing [data-section-type="feedback"],
 .swml-stage-polishing [data-section-type="scores"],
-.swml-stage-polishing [data-section-type="signoff"],
 .swml-stage-polishing [data-section-type="analytics"],
 .swml-stage-polishing [data-section-type="improvement"],
 .swml-stage-polishing [data-section-type="action"],
