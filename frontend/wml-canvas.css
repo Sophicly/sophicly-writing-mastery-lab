@@ -5514,23 +5514,25 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    dismissible (✕ or "Got it"), remembered per doc+task. Absolute in .swml-canvas-content (rides with
    the content); JS sets top/left. Non-blocking — only the card takes pointer events. */
 .swml-phase-coach {
-    position: absolute;
-    z-index: 24;
+    position: fixed;
+    z-index: 10000;
     width: 288px;
-    max-width: calc(100% - 24px);
+    max-width: calc(100vw - 24px);
     padding: 16px 16px 14px;
     border-radius: 14px;
     background: #202128;
     box-shadow: 0 18px 44px -12px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.35);
     color: #e9e9ee;
-    animation: swmlCoachIn 0.45s ease;
+    animation: swmlCoachIn 0.45s cubic-bezier(0.22,1,0.36,1);
 }
-/* v7.20.192 (Neil): pure fade in (mounts after the auto-scroll settles), no slide/scale. */
-@keyframes swmlCoachIn { from { opacity: 0; } to { opacity: 1; } }
+/* v7.20.193 (Neil): viewport-FIXED (mounted on <body> after the auto-scroll settles) so it does
+   NOT ride the content scroll — it fades in from the left, in place. Sits to the RIGHT of the
+   section (the left gutter holds the course-average card), arrow on its left pointing at it. */
+@keyframes swmlCoachIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
 .swml-phase-coach-arrow {
     position: absolute;
     top: 22px;
-    right: -7px;
+    left: -6px;
     width: 12px; height: 12px;
     background: #202128;
     transform: rotate(45deg);
@@ -5564,13 +5566,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-phase-coach-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(83,51,237,0.4), inset 0 1px 0 rgba(255,255,255,0.22); }
 .swml-phase-coach-cta:active { transform: translateY(0) scale(0.97); }
-.swml-canvas-light .swml-phase-coach { background: #fff; color: #2c003e; box-shadow: 0 18px 44px -12px rgba(20,20,40,0.22), 0 2px 8px rgba(0,0,0,0.08); }
-.swml-canvas-light .swml-phase-coach-arrow { background: #fff; }
-.swml-canvas-light .swml-phase-coach-title { color: #1a0b2e; }
-.swml-canvas-light .swml-phase-coach-text { color: rgba(44,0,62,0.7); }
-.swml-canvas-light .swml-phase-coach-close { color: rgba(44,0,62,0.45); }
-.swml-canvas-light .swml-phase-coach-close:hover { color: #2c003e; }
-.swml-canvas-light .swml-phase-coach-icon { background: rgba(83,51,237,0.12); color: #5333ed; }
+/* Light theme — self-carried class (body-mounted card is outside .swml-canvas-light). */
+.swml-phase-coach--light { background: #fff; color: #2c003e; box-shadow: 0 18px 44px -12px rgba(20,20,40,0.22), 0 2px 8px rgba(0,0,0,0.08); }
+.swml-phase-coach--light .swml-phase-coach-arrow { background: #fff; }
+.swml-phase-coach--light .swml-phase-coach-title { color: #1a0b2e; }
+.swml-phase-coach--light .swml-phase-coach-text { color: rgba(44,0,62,0.7); }
+.swml-phase-coach--light .swml-phase-coach-close { color: rgba(44,0,62,0.45); }
+.swml-phase-coach--light .swml-phase-coach-close:hover { color: #2c003e; }
+.swml-phase-coach--light .swml-phase-coach-icon { background: rgba(83,51,237,0.12); color: #5333ed; }
 .swml-transfer-all-btn svg { flex-shrink: 0; width: 11px; height: 11px; }
 .swml-transfer-all-btn:hover {
     background: linear-gradient(180deg, #5333ed, rgba(74,44,222,0.97));

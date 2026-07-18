@@ -28931,10 +28931,12 @@
             let dismissKey;
             try { dismissKey = 'swml_coach:' + CANVAS_SAVE_KEY() + ':' + state.task; } catch (_) { dismissKey = 'swml_coach:' + state.task; }
             try { if (localStorage.getItem(dismissKey) === '1') return; } catch (_) {}
-            const _stale = scroller.querySelector(':scope > .swml-phase-coach');
-            if (_stale) _stale.remove(); // clear a prior lesson's card if the scroller persisted across SPA nav
+            document.querySelectorAll('.swml-phase-coach').forEach(n => n.remove()); // clear a prior lesson's card (body-mounted, persists across SPA nav)
             const card = document.createElement('div');
             card.className = 'swml-phase-coach';
+            // Body-mounted → the .swml-canvas-light ancestor no longer wraps it, so mirror the theme
+            // onto the card itself (same pattern as the highlight picker portal, ~15177).
+            card.classList.toggle('swml-phase-coach--light', !!(sec.closest('.swml-canvas-light')));
             card.setAttribute('contenteditable', 'false');
             const dismiss = () => { try { localStorage.setItem(dismissKey, '1'); } catch (_) {} card.remove(); };
             const arrow = document.createElement('div');
@@ -28968,17 +28970,20 @@
             // scroll. ~520ms covers the smooth-scroll; ~140ms when we didn't scroll.
             setTimeout(() => {
                 if (state.reviewMode) return;
-                scroller.appendChild(card);
-                // Adobe-style side pop-out: sit in the left gutter, top aligned with the section, arrow
-                // pointing right at it. `top` = the section's scroll-invariant content offset (stable
-                // even mid smooth-scroll); `left` clamps into the gutter so it never runs off-screen.
+                document.body.appendChild(card); // body-mounted → position:fixed is viewport-anchored (won't ride the scroll)
+                // Adobe-style side pop-out to the RIGHT of the section (the left gutter holds the
+                // course-average card), arrow on its left pointing at it. Viewport coords (fixed);
+                // computed after the scroll has landed so the anchor is final. Clamped to the viewport.
                 requestAnimationFrame(() => {
                     if (!card.isConnected) return;
-                    const scRect = scroller.getBoundingClientRect();
                     const secRect = sec.getBoundingClientRect();
-                    card.style.top = Math.max(8, scroller.scrollTop + (secRect.top - scRect.top)) + 'px';
-                    let left = (secRect.left - scRect.left) - card.offsetWidth - 16;
-                    if (left < 10) left = 10;
+                    const cw = card.offsetWidth, ch = card.offsetHeight;
+                    let top = secRect.top;
+                    top = Math.min(Math.max(8, top), window.innerHeight - ch - 8);
+                    let left = secRect.right + 16;
+                    if (left + cw > window.innerWidth - 8) left = window.innerWidth - 8 - cw;
+                    if (left < 8) left = 8;
+                    card.style.top = top + 'px';
                     card.style.left = left + 'px';
                 });
             }, didScroll ? 520 : 140);
