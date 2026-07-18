@@ -281,3 +281,34 @@ Same not-too-much/not-too-little discipline, with a knowledge-building rung set:
 
 ### 8.6 Build approach — AQA to GOLD STANDARD first, then borrow
 AQA (context assessed throughout) is the cleanest place to perfect the context knowledge-building flow → get it gold-standard, then borrow as much as possible for every other board/text (assessed or not). Consistency is the goal: one context flow, adapted per AO, everywhere.
+
+### 8.7 Research grounding + protocol reality (Opus-verified 2026-07-18)
+**Research (strong backing):** ask-first = prior-knowledge activation (**Ausubel 1968** "the most important single factor influencing learning is what the learner already knows"; schema — **Bransford & Johnson 1972**). Interpretation needs background knowledge: **Willingham 2009**; **Recht & Leslie 1988** (the *baseball study* — domain knowledge beat general reading skill); **Hirsch** (knowledge deficit); **Kintsch** situation-model (no domain knowledge → no situation model → an "interpretation" is a guess, not an inference — the spine of §8.1). Build-not-tell = generative learning (**Fiorella & Mayer 2015**) + elaborative interrogation (**Pressley 1987; Dunlosky 2013**) + read-then-retrieve (**Karpicke**). TIMING = **pre-training principle (Mayer 2009; Sweller)** — build context BEFORE the interpretation step to protect a novice's working memory, and don't flood (the 3-insight budget). Full research → `research/2026-07-18-context-knowledge-and-concept-driven-interpretation.md`.
+**The ONE judgement call (flag honestly):** "an ungrounded interpretation earns no marks and *shouldn't*" is an **assessment-validity STANCE** (keyed to GCSE examiner reward), not a lab finding — reader-response (Rosenblatt 1978) legitimises reader-generated meaning; research only proves grounded readings are *higher-quality / higher-inference*. Frame it as a design decision, not evidence.
+**Protocol reality — most of this ALREADY EXISTS (⭐ enhancement, not rebuild):** the ask-first → expert-insight (DYK) → derive-concept flow is built in `protocols/shared/literature/modules/conceptual-notes/cn-section-2-context.md`; the causal context→concept validation is `context-drive-check.md` (board-agnostic — "essential even if not assessed"); **Eduqas modern already states the not-assessed build-but-withhold rule verbatim** (`protocols/eduqas/modern/planning/b5-bodies.md:304` + runs CONTEXT_DRIVE_CHECK); AQA per-text context bank exists (`knowledge-text-context-banks.md`, 13 texts: dated fact + "Drives the concept" + quote anchor + critics).
+**Spec correction:** **Eduqas Shakespeare ALSO does NOT assess context** (AO1+AO2+AO4-SPaG — Neil didn't flag it; spec confirms). Add to §8.4/8.5 not-assessed list. (All other Neil claims verified against the specs.)
+**⭐ TOP-3 genuinely-NEW build items (everything else already exists):**
+1. **The Library-READING rung is net-new.** Today's "expert insight" is a DYK fact injection; there is NO "send the student to a Library source to READ, then return and derive" rung. It's the rung research rates highest (read-to-learn + retrieval, Karpicke). Build it as an escalation rung, not a subsystem.
+2. **Author the deep Macbeth context.** Neil's flagship items — **Holinshed/medieval setting, feudal system, Machiavelli/Renaissance statecraft, antithesis** — are **ABSENT from the AQA context bank** (Gunpowder Plot / James I / Divine Right / Great Chain ARE present + strong). So §8.6's "AQA to gold standard first" **starts with CONTENT authoring** (add each as dated fact + "Drives the concept" + quote anchor — the bank's existing template), not wiring.
+3. **Unify context under the §2 ladder + ONE shared output-gate.** Context logic is currently spread across `context-drive-check` + CN Section 2 + per-protocol body-Step-7, each restating the assessed/not-assessed rule → drift risk (#1 bug class). Fold into the universal ladder + one gate so every board inherits it.
+
+---
+
+## 9. HELP AGENCY & CORRECTIONS (Neil 2026-07-18) — research pending
+*Research pass in flight (help-seeking + corrective feedback). Ideas captured; design provisional.*
+
+### 9.1 Student-CALLABLE expert insights (agency + a budget they SPEND)
+A pushed "go read about X" gets ignored; a scarce resource the student *chooses* to spend gets used. Idea: give the student a **limited budget of expert insights they personally call** — a "Give me an expert insight" button — capped **per question or per paper**. Agency + scarcity → engagement.
+- Sits ALONGSIDE the system-pushed insight (Law 7, max 3/session) — decide: separate student budget vs one shared spendable budget; per-question vs per-paper cap.
+- **Research angle (help-seeking):** student-initiated help is a metacognitive skill; agency raises engagement, but *free* help breeds abuse (Aleven & Koedinger, already cited). A **capped, spendable** budget is the sweet spot — help as a resource, not a reflex.
+- **Robustness:** the budget is CODE-counted (§7) — never LLM-self-counted (the current cap's weakness).
+
+### 9.2 Struggle → a HELP-TYPE menu (agency over HOW they're helped)
+On detected struggle, offer a small choice of help TYPE via quick-action buttons — e.g. **"Explain further · Ask me more questions · Give me an expert insight."** The ladder's escalation made VISIBLE + student-chosen, within the earned-not-free discipline (appears on struggle, not always). Uses the quick-action infra that already works in planning.
+- **Open question:** does student-chosen help mode OVERRIDE the code's contingent-shift rung, or feed it? (Research: learner-control vs system-control — the assistance dilemma has a learner-control dimension.)
+
+### 9.3 CORRECTIONS — the protocol should not be AFRAID to correct, done right
+Today the protocol leans Socratic/accepting (one-push-then-accept) — correct for weak-but-*valid*, but a genuinely **WRONG** answer (a misread, a false context claim, a misidentified technique) needs correcting, not accepting — accepting it *teaches the error*.
+- **Adds a THIRD regime to §2:** weak-but-owned (push then accept) · failure/empty (ladder) · **WRONG (a definite error → correct it).** A misidentified technique isn't "weak," it's incorrect.
+- **HOW (research pending):** name the error specifically + the correction + why, without demotivating; growth-mindset / "wise feedback" framing; correct the ERROR, not the student; immediate for factual/technique errors; never a bare "wrong."
+- **Ownership caveat:** correcting a factual/technique error is NOT injection (a fact is a fact). Correcting an INTERPRETATION is trickier — correct the *reasoning/grounding*, don't impose your reading (ties to §8: a grounded reading that isn't yours stands; an ungrounded one gets questioned).
