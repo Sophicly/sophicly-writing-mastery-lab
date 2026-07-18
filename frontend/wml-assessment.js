@@ -30061,6 +30061,17 @@
                     task: state.task || '',
                 };
             };
+            // v7.20.198 (Neil): show the date the comment was written (like the sign-off + inline
+            // comments stamp a date). The server already stores `timestamp` (current_time('c')) on
+            // every save; format it for display. Returns '' on a bad/absent timestamp.
+            const _fmtDate = (iso) => {
+                if (!iso) return '';
+                try {
+                    const d = new Date(iso);
+                    if (isNaN(d.getTime())) return '';
+                    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                } catch (_) { return ''; }
+            };
             const _renderReadOnly = (note) => {
                 ui.innerHTML = '';
                 const txt = (note && note.text) ? String(note.text) : '';
@@ -30070,10 +30081,14 @@
                 body.className = 'swml-tutorcomment-readonly';
                 body.textContent = txt;
                 ui.appendChild(body);
-                if (note.display_name) {
+                const byParts = [];
+                if (note.display_name) byParts.push(note.display_name);
+                const dt = _fmtDate(note.timestamp);
+                if (dt) byParts.push(dt);
+                if (byParts.length) {
                     const by = document.createElement('div');
                     by.className = 'swml-tutorcomment-by';
-                    by.textContent = '— ' + note.display_name;
+                    by.textContent = '— ' + byParts.join(' · ');
                     ui.appendChild(by);
                 }
             };
@@ -30087,6 +30102,13 @@
                 ta.value = (note && note.text) ? String(note.text) : '';
                 const status = document.createElement('div');
                 status.className = 'swml-tutorcomment-status';
+                // v7.20.198 (Neil): auto-grow to fit the text as the tutor types (manual resize still
+                // works — the CSS keeps resize:vertical). Fires on input + once on mount for a value
+                // loaded from the server.
+                const _grow = () => { ta.style.height = 'auto'; ta.style.height = Math.max(72, ta.scrollHeight) + 'px'; };
+                // Resting status = when the current comment was last written (date stamp).
+                const _restStatus = () => { const d = _fmtDate(note && note.timestamp); status.textContent = d ? ('Last updated ' + d) : ''; };
+                _restStatus();
                 let saveTimer = null;
                 const _save = () => {
                     const targetStudentId = config.targetUserId || config.reviewStudentId || config.userId;
@@ -30096,15 +30118,19 @@
                         method: 'POST', headers,
                         body: JSON.stringify(Object.assign({}, sc, { studentId: targetStudentId, text_note: ta.value }))
                     }).then(r => r.json()).then(res => {
-                        status.textContent = (res && res.success) ? 'Saved ✓' : 'Save failed';
-                        _tutorCommentLoadPromise = Promise.resolve({ success: true, note: (res && res.note) || null });
-                        setTimeout(() => { if (status.textContent === 'Saved ✓') status.textContent = ''; }, 2000);
+                        const savedNote = (res && res.note) || null;
+                        note = savedNote; // so a later _restStatus() shows the fresh date
+                        const dt = _fmtDate(savedNote && savedNote.timestamp);
+                        status.textContent = (res && res.success) ? ('Saved ✓' + (dt ? ' · ' + dt : '')) : 'Save failed';
+                        _tutorCommentLoadPromise = Promise.resolve({ success: true, note: savedNote });
+                        setTimeout(() => { if (status.textContent.indexOf('Saved ✓') === 0) _restStatus(); }, 2500);
                     }).catch(() => { status.textContent = 'Save failed'; });
                 };
-                ta.addEventListener('input', () => { status.textContent = ''; if (saveTimer) clearTimeout(saveTimer); saveTimer = setTimeout(_save, 1200); });
+                ta.addEventListener('input', () => { _grow(); status.textContent = ''; if (saveTimer) clearTimeout(saveTimer); saveTimer = setTimeout(_save, 1200); });
                 ta.addEventListener('blur', () => { if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; } _save(); });
                 ui.appendChild(ta);
                 ui.appendChild(status);
+                requestAnimationFrame(_grow);
             };
 
             if (refetch || !_tutorCommentLoadPromise) {
