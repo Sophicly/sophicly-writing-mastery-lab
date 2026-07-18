@@ -497,21 +497,54 @@ The planning/assessment help ladder (open prompt → focused hint → strategy/l
 Full design: `PLANNING-PROTOCOL-AUDIT-AND-PLAN-2026-07-18.md` §2/§9/§11. These are the SETTLED
 rulings; the research backing each is in `research/2026-07-18-*.md`.
 
-1. **A "model answer" (the deepest rung) = the single ELEMENT the student is stuck on, demonstrated
-   on an UNRELATED/parallel instance — NEVER the whole answer.** Stuck on the topic sentence → model a
-   topic sentence (on a different text); stuck on the effect line → model that one line. The student
-   then applies the *method* to their OWN material (worked-example → fading; Renkl/Sweller). Handing the
-   whole paragraph/essay = giving the answer = breaks ownership + teaches nothing.
-   **Every model shown MUST meet our gold-standard criteria** (Neil) — a model is exemplary or it is
-   not a model.
-2. **Help budget = the QUESTION is the primary unit.** 1 worked-model/near-give-away PER QUESTION
-   (final rung, EARNED — only after the thinner rungs were tried), and a SOFT ~3-per-session/paper
-   ceiling that trips a metacognitive Sophia nudge (not a hard lockout). Numbers are research-consistent
-   defaults (Wood & Wood ~3 escalating cues then demonstrate + fade; Aleven & Koedinger help-abuse/gaming
-   ⇒ lower learning; Shute elaborated>give-away) — **build them TUNABLE, not hard-coded.** Log ladder
-   depth reached per question as a help-seeking signal.
-3. **Ungrounded interpretation = no analytical (AO2) credit for the move, PLUS a small −0.5 awareness
-   penalty with a grounding fix-example.** Matches real examiner practice (AO1 requires textual
+7. **THE LADDER IS SETTLED (Neil 2026-07-18, all 14 decisions — decision sheet A1–E2).** Four
+   rungs: open prompt → focused hint → lens menu (three ANGLES, never readings) → worked model on an
+   UNRELATED instance which the student then applies to their own material (their application files).
+   One rung per genuine failed attempt; every failed turn visibly changes the help; ceiling ~4 turns,
+   typical ≤2. The rung a student rests at IS the differentiation — never pre-label ability (grade 7
+   lives at L1; grades 4–6 resolve L1→L2; grades 1–3 produce via recognition/completion at L3/L4,
+   every time). **Every model shown MUST meet our gold-standard criteria** — a model is exemplary or
+   it is not a model. Full operating contract: `PROTOCOL-STANDARD.md` C-LADDER.
+   **WHY:** contingent-shift + the assistance dilemma (Wood & Middleton; Koedinger & Aleven — mid-level
+   partial support beats both extremes); completion effect for the floor (Renkl, van Merriënboer);
+   expertise-reversal for the ceiling (Kalyuga). Research:
+   `research/2026-07-18-scaffolding-escalation-and-socratic-tutoring.md`.
+7b. **THREE REGIMES, PRECEDENCE WRONG → FAILED → WEAK/RESOLVED.** WRONG = falsifiable error only
+   (misread · false fact · misidentified technique): 3-part wise-framed correction, free, no climb;
+   interpretations are never wrong — only their grounding is challenged. FAILED = non-engagement
+   (nothing ownable) — the only regime that climbs. WEAK-but-owned = one Socratic push then accept +
+   file; never enters the ladder. "Incorrect" is `wrong` or `weak`, never `failed`. **WHY:** accepting
+   a genuine error teaches the error (Shute; hypercorrection — Butterfield & Metcalfe); escalating an
+   owned answer wears the student down (the one-push law, settled).
+7c. **HELP ECONOMY (supersedes the old item 2 numbers — do not re-derive from them).** ONE shared
+   code-counted content-insight WALLET (system-push + student-pull draw from the same pool):
+   per-question sub-cap **1**, per-paper ceiling **4** (Neil's call — the audit doc's "3" is
+   overridden). **L4 method models are NOT wallet items: uncapped, earned-only, one per element, never
+   refused** (the unit is the ELEMENT, and refusing an earned model would starve exactly the student
+   who needs it most). Struggle menu on failure only: Explain further (free, once per rung) · Ask me
+   more questions (free) · Expert insight (spends). The menu feeds the rung; only contingent shift
+   moves it. Budgets are code-counted, never LLM-self-counted; **build the numbers TUNABLE, not
+   hard-coded.** Log ladder depth reached per question as a help-seeking signal.
+7d. **FADE, PACE, RESUME.** Fade is per element-TYPE; from paragraph 2 the first hint is the student's
+   own paragraph-1 version (zero-injection self-worked-example); redraft hints reach for the student's
+   own Planning Targets first (§1 — help calibrated to instruction received). Pace valve: ~3 elements
+   of a question resolved at L3+ → later elements open at L2. Resume: restart the element at L1 (L2
+   only if a filed same-type sibling in THIS doc resolved at ≥L3), never mid-ladder.
+7e. **THE OWNERSHIP PRINCIPLE (the line all of it reduces to).** The student owns every interpretive
+   claim about this text. The tutor may freely supply METHOD (hints, lenses, models on unrelated
+   material) and verifiable FACT (including correcting false facts); the tutor may NEVER supply a
+   READING, and may challenge a reading only through its GROUNDING. L3 menus name a DIRECTION ("the
+   writer's attitude"), never CONTENT ("the writer's bitterness"). The fact-delivery guard: a supplied
+   fact never states the inference it licenses about the live quotation.
+7f. **KNOWLEDGE IS A PARALLEL TRACK, NOT A RUNG.** Ask-first → insight → Library reading → derive runs
+   as pre-training at question/text open, outside the ladder's turn ceiling (detail in item 7h below).
+   For v1, post-pre-training mid-element failures are METHOD failures (the ladder); knowledge
+   resurfaces mid-element only as a WRONG-correction or a spent insight. (Kintsch: no lens fixes a
+   missing situation model; Mayer: pre-train before the reasoning step.)
+7g. **Ungrounded interpretation = no analytical (AO2) credit for the move, PLUS a small −0.5 awareness
+   penalty with a grounding fix-example.** *(This is the ASSESSMENT-side twin of 7b/7e's grounding
+   rule: in planning we challenge the grounding of a live reading; in marking, an ungrounded reading
+   carries this penalty.)* Matches real examiner practice (AO1 requires textual
    reference; AO2 requires analysis of method; boards credit *alternative* readings only when
    textually supported; unsupported assertion caps the band). **Neil's rationale for the small
    penalty:** even where the mark scheme applies no formal deduction, expert examiners *subconsciously*
@@ -522,7 +555,8 @@ rulings; the research backing each is in `research/2026-07-18-*.md`.
    supported-but-debatable = valid alternative, credit it; gate = "is there evidence?", not "do I
    agree?". Existing penalty registry has no dedicated code — closest is **I1 (imprecise/underdeveloped
    interpretation, −0.5)**; widen I1's detection or add a dedicated code at build.
-4. **Context/background knowledge = ask-first → build → gate-the-output (text-agnostic).** The real
+7h. **Context/background knowledge = ask-first → build → gate-the-output (text-agnostic).** *(This is
+   the parallel KNOWLEDGE track of 7f — the full mechanism + AO3 output-gate.)* The real
    principle (Neil): students lack DEPTH, BREADTH and NUANCE of contextual knowledge for ANY text; the
    system must build it — for anything in the curriculum, not one worked example. Mechanism: (a)
    ACTIVATE — Sophia asks what they already know (elaborative interrogation; Ausubel, Fiorella & Mayer);
@@ -531,13 +565,13 @@ rulings; the research backing each is in `research/2026-07-18-*.md`.
    scored plan only when the exam assesses it (AO3); when not assessed, still BUILT to fuel AO1/AO2
    inference but NOT written as a scored element (crediting unassessed context = construct-irrelevant
    variance, Messick). The gate DERIVES from the question's AO map, not a per-protocol hand-wire.
-5. **Prompt the student to review their PREVIOUS ASSESSMENT — timed per element (Neil 2026-07-18).**
+7i. **Prompt the student to review their PREVIOUS ASSESSMENT — timed per element (Neil 2026-07-18).**
    Students have access to prior assessments. The protocol reminds them to check last time's feedback —
    strengths, weaknesses, what they said they'd improve — AT THE RIGHT MOMENT: if they were weak on
    context last time, the "check what your tutor said about context" prompt fires AT the context step,
    not as a generic upfront reminder. Closing the feedback loop = self-regulated learning. Wires to the
    prior-feedback data the dashboard already holds.
-6. **Keep this research portable for the CREATIVE-WRITING protocols (Neil 2026-07-18).** The same ladder
+7j. **Keep this research portable for the CREATIVE-WRITING protocols (Neil 2026-07-18).** The same ladder
    + ownership + grounding principles must carry into the Creative Writing course and Lang P2
    nonfiction/fiction when those protocols are built — they need their own depth, not a thin port. Do
    NOT assume the analytical-essay shape transfers verbatim; re-derive per the CW protocol (the doc

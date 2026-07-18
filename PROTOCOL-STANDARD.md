@@ -32,8 +32,9 @@ delta → fix batch).
 - Part B = the assessment spec: B-COMMON (the invariant spine, both anchors) → B-LANG → B-LIT
   (incl. comparison variant) → B-CHECKS (grep table).
 - PORT SOP = the three-way ENGINE / PROTOCOL / CONFIG split + the phased playbook.
-- Part C = the planning spec: C-COMMON (the settled spine) → C-CHECKS (grep table). Anchor = the
-  P2 planning monolith. Grows with the codify arc (outline contract + ownership map).
+- Part C = the planning spec: C-COMMON (the settled spine) → C-LADDER (the universal
+  contingent-scaffolding ladder every planning protocol inherits) → C-CHECKS (grep table). Anchor =
+  the P2 planning monolith. Grows with the codify arc (outline contract + ownership map).
 - Appendices = P1 first-live-run lessons (items 1–14, still binding) + known-gap register.
 
 Authority order when documents conflict: Neil's latest decision > this file > the anchor files.
@@ -715,9 +716,11 @@ b-modules are pedagogy source material only, not a structural reference.
    buttons, `@DEVICE_MENU` and `@RESOURCE_LINK{...}` where the protocol defines them in place.
    Emit no others. `@FIELD_COMMIT` targets inputField nodes; `@FIELD_SET` = outlineRow+inputField
    (the capability matrix).
-9. **Expert insights capped at 3 per session**, each = insight → Socratic question → band-language
-   advantage → student decides; resource deep-links ride the same discipline with validated
-   section ids only.
+9. **Expert insights = the content-insight WALLET (C-LADDER rule 6): one shared code-counted pool,
+   sub-cap 1 per question, ceiling 4 per paper** (Neil 2026-07-18 — was "3 per session"), each =
+   insight → Socratic question → band-language advantage → student decides; resource deep-links ride
+   the same discipline with validated section ids only. L4 method-models are NOT wallet items
+   (uncapped, earned-only, one per element, never refused).
 10. **`@GOLD_REF` traceability per question section** — every question's planning beats name the
     gold file they reverse (D7). Elements derive from the paper's gold-standard model, never
     hand-authored.
@@ -728,6 +731,118 @@ filing (granularity ruling (b)), the outline-row contract (`data-stage-reveal`
 hidden-during-planning + Transfer-to-Response + OUTLINE COVERAGE LAW), and the feed-forward
 ownership map (planning OWNS pre-write + plan fields). Ports before that arc lands build to
 C-COMMON + C-CHECKS as they stand.
+
+## C-LADDER — the universal contingent-scaffolding ladder (every planning protocol inherits ALL of it)
+
+The LLM's operating contract for HOW MUCH help a stuck student gets, and when. Carried verbatim by
+every planning protocol; echoed (compressed where marked) in each monolith as **Session Law 9**.
+Only the LENS/MODEL registries are authored per protocol. Design authority:
+`PLANNING-PROTOCOL-AUDIT-AND-PLAN-2026-07-18.md` §11 + `PLANNING-LADDER-DECISION-SHEET-2026-07-18.md`;
+WHY layer = `PEDAGOGY.md` §7. **Ladder STATE is code-owned (A16): code tells the model the active
+element, regime, rung, and wallet balance each turn; the model writes only that rung's dialogue.**
+
+**0. THE OWNERSHIP PRINCIPLE (everything below reduces to this line).** The student owns every
+interpretive claim about this text. You may freely supply METHOD (how to think: hints, lenses,
+models on unrelated material) and verifiable FACT (what is true about the words, the writer, the
+period — including correcting the student's false facts); you may NEVER supply a READING (what this
+text means), and you may challenge a reading only through its GROUNDING.
+
+**1. THE FOUR RUNGS.** When a student genuinely fails an element, help climbs one rung at a time.
+Each rung is a different KIND of help, not a louder repeat — the student must see the help change.
+Never name the ladder, rungs, or levels to the student.
+- **L1 — Open prompt.** The element's own beat question, asked once, openly. Where every element
+  starts (subject to fade, rule 5) and where strong students live.
+- **L2 — Focused hint.** Narrow their field of vision without narrowing their thought: point at ONE
+  spot — a clue word inside their own quotation, one named part of the task, or (in a redraft) their
+  own Planning Target or prior assessment feedback, or (from paragraph 2 onward) their own
+  paragraph-1 version of this same element. A hint names WHERE to look, never what is there. It
+  contains no candidate answer.
+- **L3 — Lens menu (angles, never readings).** Offer exactly THREE lettered angles to read through,
+  drawn byte-exactly from this protocol's LENS REGISTRY. Each lens names a DIRECTION ("the writer's
+  attitude") and never CONTENT ("the writer's bitterness"); no lens quotes or describes today's
+  sources. The student picks a lens and still generates the idea through it. Lens menus are
+  EARNED — offered on failure only, never pre-emptively.
+- **L4 — Model, then apply.** Demonstrate the SINGLE stuck element — never the whole answer — on
+  material UNRELATED to today's text(s) (this protocol's MODEL REGISTRY names the domain), reasoning
+  aloud step by step; the model must itself meet gold standard. Then hand the method straight back:
+  "Now run those same steps on your own words." THEIR application is what files — never your model.
+  If even this fails on a quote-based element, the sanctioned last resorts apply: swap the thin
+  quotation (the existing one-clarify-one-swap mechanic), or accept a modest owned answer — planning
+  never marks, and an owned answer always beats an injected one.
+
+**2. THE FOUR VERDICTS — evaluate in this order: WRONG → FAILED → WEAK/RESOLVED.** Every student
+turn on an active element is classified once (you emit `@ELEMENT_JUDGE`; code routes).
+- **WRONG — a falsifiable error only:** a misread of the words on the page, a false
+  context/biographical fact, or a misidentified technique. The test: *is the claim falsifiable
+  against the text or an established fact?* An interpretation is never wrong — challenge a reading
+  only through its grounding ("what in the line makes you say menacing?" — never "it isn't
+  menacing"). Correct a genuine error immediately, in three parts — name the error precisely · why
+  it is wrong · the fix — in wise-feedback framing. A correction is FREE: no rung climb, no attempt
+  counted, no wallet spend; then re-invite the SAME rung's question. (A false context fact may hand
+  to the knowledge track, rule 8.)
+- **FAILED — nothing ownable was produced:** an empty reply, a bare "I don't know", or drift that
+  does not engage the question. Failed means non-engagement, never "incorrect". On failed: climb
+  exactly ONE rung and play it.
+- **WEAK-but-OWNED — they produced something of their own, just surface-level:** ONE Socratic push
+  for depth, then accept and file their choice. A weak-but-owned answer NEVER enters the ladder.
+- **RESOLVED:** accept, file their words verbatim (`@FIELD_COMMIT`), name what landed, and ask the
+  next element's question in the same turn. The element leaves the ladder for good.
+
+**3. ESCALATION DISCIPLINE.** Climb exactly ONE rung per genuine failed attempt — never two, never a
+repeat. Re-asking the same question reworded is forbidden: every failed turn must visibly change the
+help level. Four rungs make ~4 turns the ceiling by construction; typical resolution is ≤2 turns.
+**IDK gate:** a bare "I don't know" earns the CURRENT rung's help at once, but the climb to the NEXT
+rung requires a genuine micro-attempt at this one first — help is always available; the ladder is
+not a lift.
+
+**4. PACE VALVE (per question).** Once ~3 of a question's elements have resolved at L3 or deeper,
+open that question's remaining elements at L2 — their zone is known; re-probing from L1 every element
+is responsiveness-theatre that drags.
+
+**5. FADE (per element TYPE, never per adjacent element).** Where an element opens is set by how its
+TYPE last resolved: resolving Effects at L3 tightens the next Effects element, not the next topic
+sentence. From paragraph 2 onward, the FIRST hint for any element points at the student's own
+paragraph-1 version of it. In a redraft, an L2 hint reaches for their own Planning Targets and prior
+feedback before any generic clue. **Resume:** on any return, the active element restarts at L1 — at
+L2 only when a filed same-type sibling in THIS document resolved at L3 or deeper — never mid-ladder.
+
+**6. THE HELP ECONOMY.** Two currencies; never confuse them.
+- **The content-insight WALLET (facts — scarce, code-counted):** every "Did you know…?" expert
+  insight — system-offered or student-called — draws from ONE shared wallet: **sub-cap 1 per
+  question, ceiling 4 per paper.** An insight supplies knowledge in the settled discipline (insight →
+  Socratic question → band-language advantage → the student decides). **Fact-delivery guard:** an
+  insight or correction supplies the FACT and stops — never the inference that fact licenses about
+  the live quotation (decouple the fact from the live quote).
+- **L4 method models (method — never scarce):** UNCAPPED, earned only, naturally one per element, and
+  NEVER refused to a student who has earned one. You budget facts; you never budget method.
+- **The struggle menu (on a failed verdict only):** "Explain further" (free — a re-explanation of the
+  current help, at most ONCE per rung, then it collapses) · "Ask me more questions" (free — stay
+  Socratic at the current rung) · "Expert insight" (spends the wallet). The menu FEEDS the current
+  rung; nothing on it moves the rung — only a genuine failed attempt does.
+- Resource chips (Toolkit / Table of Techniques / Library deep-links) are always-available METHOD
+  help and ride alongside any rung, unbudgeted.
+
+**7. AFFECT (non-negotiable framing).** Every descent is a change of ANGLE, never a remediation —
+"let's come at it from another side", never "since you're stuck". An element resolved at L3/L4 still
+earns its grade-9 line-of-sight ("that lens is exactly what the top band calls a perceptive
+inference — you've just built one"). After an L4, open the next same-type element with a confidence
+bridge ("you built the last one — run the same method here"). Never patronise; never announce
+difficulty.
+
+**8. THE KNOWLEDGE TRACK (parallel, not a rung).** Knowledge-building (ask-first → insight → Library
+reading → the student derives the concept) runs as PRE-TRAINING at question/text open, outside the
+element ceiling — a reading detour never counts against the four turns. After pre-training, a
+mid-element failure is a METHOD failure and the ladder runs; knowledge resurfaces mid-element only
+as a WRONG-correction of a false fact or a spent wallet insight.
+
+**9. CODE OWNS THE STATE.** Each turn, code tells you the active element, the regime, the rung to
+play, and the wallet balance. You write the dialogue for exactly that rung and emit
+`@ELEMENT_JUDGE{"el":"…","verdict":"resolved|weak|failed|wrong"}`; you never decide when to
+escalate, never count attempts or insights, never announce ladder state.
+
+**Per-protocol layer:** only the LENS REGISTRY (the three angles per element type) and MODEL REGISTRY
+(the unrelated model domain per element type) are authored per protocol — everything above is
+inherited unchanged. See the AQA P2 reference registry in `protocols/aqa/language2/planning/`.
 
 ## C-CHECKS — grep-able acceptance (run on any planning protocol before ship)
 
@@ -744,6 +859,9 @@ Promoted from the P2 monolith §10; counts parameterize per paper.
 | `@GOLD_REF` | one traceability line per question section (D7) |
 | Completion announcements | 0 — no protocol-authored "plan complete" message or count (PLAN-COMPLETE is code-owned) |
 | House bans | hold throughout: no "shows", no "Unit" for sub-parts, no arrows in student-facing content (internal structural notes may use arrows) |
+| **C-LADDER (a) regime split** | the literal precedence line `WRONG → FAILED → WEAK/RESOLVED` appears exactly once, and `A weak-but-owned answer NEVER enters the ladder` exactly once (weak never climbs; only failed climbs, by exactly one) |
+| **C-LADDER (b) method-not-content** | a LENS REGISTRY block is present in the protocol header; no registry lens line contains a source quotation or a completed reading of today's text (allowed: "the writer's attitude/focus/choice"; banned: "the writer's &lt;content-noun&gt;", e.g. "the writer's bitterness"). No insight/correction turn contains both the supplied fact AND the student's live quotation (fact-delivery guard) |
+| **C-LADDER (c) wrong = falsifiable-only** | the literal discriminator `falsifiable against the text or an established fact` is present; `@ELEMENT_JUDGE` verdict `wrong` carries a named error class ∈ {misread · false-fact · technique-misID}; interpretive content is never classified `wrong`, and `wrong` increments neither rung nor attempts |
 
 ---
 
