@@ -28935,12 +28935,16 @@
             const card = document.createElement('div');
             card.className = 'swml-phase-coach';
             // Body-mounted → the .swml-canvas-light ancestor no longer wraps it, so mirror the theme
-            // onto the card itself (same pattern as the highlight picker portal, ~15177).
-            card.classList.toggle('swml-phase-coach--light', !!(sec.closest('.swml-canvas-light')));
+            // onto the card itself (same pattern as the highlight picker portal, ~15177). Read the
+            // canvas class, with the persisted theme as a fallback.
+            let _coachLight = false;
+            try {
+                const _cEl = editor.closest('.swml-canvas');
+                _coachLight = (_cEl && _cEl.classList.contains('swml-canvas-light')) || localStorage.getItem('swml-theme') === 'light';
+            } catch (_) {}
+            card.classList.toggle('swml-phase-coach--light', _coachLight);
             card.setAttribute('contenteditable', 'false');
             const dismiss = () => { try { localStorage.setItem(dismissKey, '1'); } catch (_) {} card.remove(); };
-            const arrow = document.createElement('div');
-            arrow.className = 'swml-phase-coach-arrow';
             const head = document.createElement('div');
             head.className = 'swml-phase-coach-head';
             const icon = document.createElement('span');
@@ -28964,26 +28968,23 @@
             cta.className = 'swml-phase-coach-cta';
             cta.textContent = 'Got it';
             cta.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); dismiss(); });
-            card.appendChild(arrow); card.appendChild(head); card.appendChild(body); card.appendChild(cta);
+            card.appendChild(head); card.appendChild(body); card.appendChild(cta);
             // Fade in AFTER the auto-scroll settles (Neil 2026-07-18): mount + position once the
-            // smooth-scroll has landed, so the card fades in at the section rather than during the
-            // scroll. ~520ms covers the smooth-scroll; ~140ms when we didn't scroll.
+            // smooth-scroll has landed, so the card fades in rather than during the scroll.
+            // ~520ms covers the smooth-scroll; ~140ms when we didn't scroll.
             setTimeout(() => {
                 if (state.reviewMode) return;
                 document.body.appendChild(card); // body-mounted → position:fixed is viewport-anchored (won't ride the scroll)
-                // Adobe-style side pop-out to the RIGHT of the section (the left gutter holds the
-                // course-average card), arrow on its left pointing at it. Viewport coords (fixed);
-                // computed after the scroll has landed so the anchor is final. Clamped to the viewport.
+                // Pin to the TOP-RIGHT of the doc pane (Neil 2026-07-18): fixed, does not chase the
+                // section vertically (which put it bottom-right on a scrolled page). Anchored to the
+                // scroller's own rect so it clears the Sophia panel on the far right.
                 requestAnimationFrame(() => {
                     if (!card.isConnected) return;
-                    const secRect = sec.getBoundingClientRect();
-                    const cw = card.offsetWidth, ch = card.offsetHeight;
-                    let top = secRect.top;
-                    top = Math.min(Math.max(8, top), window.innerHeight - ch - 8);
-                    let left = secRect.right + 16;
-                    if (left + cw > window.innerWidth - 8) left = window.innerWidth - 8 - cw;
+                    const scRect = scroller.getBoundingClientRect();
+                    const cw = card.offsetWidth;
+                    let left = scRect.right - cw - 16;
                     if (left < 8) left = 8;
-                    card.style.top = top + 'px';
+                    card.style.top = Math.max(8, scRect.top + 16) + 'px';
                     card.style.left = left + 'px';
                 });
             }, didScroll ? 520 : 140);
