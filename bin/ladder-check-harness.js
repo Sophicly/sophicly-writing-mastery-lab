@@ -94,13 +94,21 @@ if (ladderProtocols.length === 0) {
     // (c) wrong = falsifiable — the discriminator must be stated where the protocol echoes the verdicts.
     if (!/falsifiable against the text or an established fact/i.test(t)) problems.push('(c) missing the wrong=falsifiable discriminator');
 
-    // (b) method-not-content — scan LENS REGISTRY lens lines for (i) a source quotation, (ii) a
-    // completed "the writer's <content-noun>" reading. Conservative: only flags clear violations.
-    const lensLines = t.split('\n').filter(l => /the writer'?s\s+[a-z]/i.test(l));
+    // (b) method-not-content — scan ONLY actual L3 lens MENUS (a line carrying the lettered
+    // A)/B)/C) angles) for a completed "the writer's <content-noun>" reading. Restricting to
+    // lettered menus excludes explanatory prose that quotes a counter-example ("never CONTENT
+    // ('the writer's bitterness')") or the grounding template ("the writer's actual words") — those
+    // are the RULE, not a lens, so flagging them is a false positive (the harness must fail only for
+    // the right reason). Every "the writer's <noun>" on a genuine menu line is checked, not just the first.
+    const lensLines = t.split('\n').filter(l =>
+      /\bA\)/.test(l) && /\bB\)/.test(l) && /\bC\)/.test(l) && /the writer'?s\s+[a-z]/i.test(l));
     for (const l of lensLines) {
-      const m = /the writer'?s\s+([a-z]+)/i.exec(l);
-      if (m && !DIRECTION_NOUNS.has(m[1].toLowerCase())) {
-        problems.push(`(b) lens names a completed reading: "the writer's ${m[1]}" — use a DIRECTION (attitude/focus/choice), not content, in:\n         ${l.trim()}`);
+      const occ = l.match(/the writer'?s\s+[a-z]+/gi) || [];
+      for (const g of occ) {
+        const noun = /the writer'?s\s+([a-z]+)/i.exec(g)[1].toLowerCase();
+        if (!DIRECTION_NOUNS.has(noun)) {
+          problems.push(`(b) lens names a completed reading: "the writer's ${noun}" — use a DIRECTION (attitude/focus/choice), not content, in:\n         ${l.trim()}`);
+        }
       }
     }
 
@@ -114,8 +122,93 @@ if (ladderProtocols.length === 0) {
   }
 }
 
+// ── (3) EL BYTE-TRACE — the KEY-MATCH gate (CLAUDE.md §5d — the #1 recurring bug) ──────────────
+// The el a filing element declares in the CODE registry (frontend/wml-assessment.js) is echoed by
+// the LLM and is ALSO the fieldId @FIELD_COMMIT writes to. If the code registry names an el that is
+// NOT a real @FIELD_COMMIT field in the AQA P2 planning protocol, the LLM echoes an id that files
+// nowhere (write-key ≠ read-key) — the exact silent "saves fine but nothing shows up" failure.
+// This reconstructs the code's FILING els (those keyed to an outline box; synthetic q*-… els file
+// nothing and are excluded) and proves every one is a @FIELD_COMMIT field in the protocol.
+const AQA_P2_PROTO = path.join(ROOT, 'protocols', 'aqa', 'language2', 'planning', 'protocol-b-planning.md');
+const ASSESS_JS = path.join(ROOT, 'frontend', 'wml-assessment.js');
+function aqaP2FilingEls() {
+  const els = [];
+  for (let i = 1; i <= 2; i++) {                       // Q2 — inf1/inf2 × topic/evidence, -q2
+    els.push(`outline-body-${i}-inf1-topic-q2`, `outline-body-${i}-inf1-evidence-q2`,
+             `outline-body-${i}-inf2-topic-q2`, `outline-body-${i}-inf2-evidence-q2`);
+  }
+  for (let i = 1; i <= 3; i++) {                       // Q3 — TTECEA, -q3 (technique files nothing)
+    els.push(`outline-body-${i}-topic-q3`, `outline-body-${i}-evidence-q3`, `outline-body-${i}-analysis-q3`,
+             `outline-body-${i}-effects-q3`, `outline-body-${i}-effects2-q3`, `outline-body-${i}-purpose-q3`);
+  }
+  for (let i = 1; i <= 3; i++) {                       // Q4 — comparative body UNSUFFIXED
+    els.push(`outline-body-${i}-topic`, `outline-body-${i}-evidence`, `outline-body-${i}-analysis`,
+             `outline-body-${i}-effects`, `outline-body-${i}-effects2`, `outline-body-${i}-purpose`);
+  }
+  els.push('outline-intro-thesis-q4', 'outline-conclusion-thesis');
+  // Q5 — synthetic els file nothing; the section COMPILE files these (resolveBy targets).
+  els.push('outline-iumvcc-intro', 'outline-iumvcc-urgency', 'outline-iumvcc-method-point-1',
+           'outline-iumvcc-method-point-2', 'outline-iumvcc-method-point-3', 'outline-iumvcc-vision',
+           'outline-iumvcc-counter', 'outline-iumvcc-conclusion');
+  return els;
+}
+if (!fs.existsSync(AQA_P2_PROTO)) {
+  note(`— EL BYTE-TRACE: SKIP (AQA P2 planning protocol not found at ${path.relative(ROOT, AQA_P2_PROTO)}).`);
+} else {
+  const proto = fs.readFileSync(AQA_P2_PROTO, 'utf8');
+  const commitFields = new Set();
+  const re = /@FIELD_COMMIT\s*\{[^}]*?"field"\s*:\s*"([^"]+)"[^}]*\}/g;
+  let mm;
+  while ((mm = re.exec(proto)) !== null) commitFields.add(mm[1].trim());
+  const expected = aqaP2FilingEls();
+  const orphans = expected.filter(e => !commitFields.has(e));
+  // Cross-tie to the CODE: the registry source must actually build these (guards a code-side rename
+  // that the harness's own reconstruction would otherwise mask). Check the distinctive static tokens.
+  const jsSrc = fs.existsSync(ASSESS_JS) ? fs.readFileSync(ASSESS_JS, 'utf8') : '';
+  const codeTokens = ["'outline-body-'", "'-topic-q3'", "'-inf1-topic-q2'", "'outline-intro-thesis-q4'",
+                      "'outline-conclusion-thesis'", "'outline-iumvcc-intro'", "'q3-technique-p'"];
+  const missingTokens = jsSrc ? codeTokens.filter(tok => !jsSrc.includes(tok)) : ['(wml-assessment.js not found)'];
+  note(`— EL BYTE-TRACE: ${expected.length - orphans.length}/${expected.length} code filing els are real @FIELD_COMMIT fields in the AQA P2 protocol.`);
+  if (orphans.length) {
+    failed = 1;
+    note('  ❌ CODE registry el(s) with NO matching @FIELD_COMMIT field (write-key ≠ read-key — the LLM would echo an id that files nowhere):');
+    orphans.forEach(e => note(`       ${e}`));
+  }
+  if (missingTokens.length) {
+    failed = 1;
+    note('  ❌ frontend/wml-assessment.js _ladderRegistry no longer builds expected el token(s) — code/harness drift:');
+    missingTokens.forEach(t => note(`       missing token ${t}`));
+  }
+}
+
+// ── (4) ENGINE CONTRACT — lock the verdict/heal mechanics from silent erosion (as (1) locks the
+// protocol literals). These are the load-bearing lines a refactor would quietly break; the Fable
+// review's two fixes (heal-weak must not spend the push; el-specific heal-commit) are guarded here
+// so a future edit can't regress them unnoticed.
+const ENGINE_CHECKS = [
+  { file: ASSESS_JS, inv: 'wrong-class enum',            lit: "_LADDER_WRONG_CLASSES = ['misread', 'false-fact', 'technique-misid']" },
+  { file: ASSESS_JS, inv: 'wrong-without-class heals',   lit: 'wrong without valid class → heal to weak' },
+  { file: ASSESS_JS, inv: 'healed weak ≠ push spend',    lit: "s.verdict === 'weak' && s.source === 'llm'" },
+  { file: ASSESS_JS, inv: 'heal-commit is el-specific',  lit: '_ladderReplyCommitsEl(reply, told.el)' },
+  { file: ASSESS_JS, inv: 'idk gate (climb needs attempt)', lit: 'idkPending' },
+  { file: ASSESS_JS, inv: 'insight wallet signal',       lit: '_LADDER_INSIGHT_RE' },
+  { file: path.join(ROOT, 'frontend', 'wml-core.js'), inv: '@ELEMENT_JUDGE stripped from bubble', lit: '@ELEMENT_JUDGE\\s*\\{[^}]*\\}' },
+  { file: path.join(ROOT, 'frontend', 'wml-core.js'), inv: '@INSIGHT_SPENT stripped from bubble', lit: '@INSIGHT_SPENT' },
+];
+const engineMiss = [];
+for (const c of ENGINE_CHECKS) {
+  const src = fs.existsSync(c.file) ? fs.readFileSync(c.file, 'utf8') : '';
+  if (!src.includes(c.lit)) engineMiss.push(c);
+}
+note(`— ENGINE CONTRACT (ladder mechanics in wml-assessment.js / wml-core.js): ${ENGINE_CHECKS.length - engineMiss.length}/${ENGINE_CHECKS.length} load-bearing lines present.`);
+if (engineMiss.length) {
+  failed = 1;
+  note('  ❌ ladder engine mechanics have drifted (a refactor broke a guarded invariant):');
+  engineMiss.forEach(c => note(`       ${c.inv} (${path.basename(c.file)}): expected «${c.lit}»`));
+}
+
 if (failed) {
-  note('\n❌ ladder-check-harness FAILED — the C-LADDER contract or a ladder protocol has drifted.');
+  note('\n❌ ladder-check-harness FAILED — the C-LADDER contract, a ladder protocol, the el key-match, or the engine mechanics have drifted.');
   process.exit(1);
 }
-note('✅ ladder-check-harness passed (C-LADDER contract intact; ladder protocols honest).');
+note('✅ ladder-check-harness passed (C-LADDER contract intact; ladder protocols honest; el key-match verified; engine mechanics locked).');

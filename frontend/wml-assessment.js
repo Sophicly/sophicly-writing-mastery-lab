@@ -2453,6 +2453,334 @@
         return true;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // CONTINGENT-SCAFFOLDING LADDER (C-LADDER) — code-owned ladder engine (v7.20.205)
+    // Design: PLANNING-LADDER-P3-DESIGN-2026-07-18.md · PROTOCOL-STANDARD C-LADDER · PEDAGOGY §7.
+    // The LLM emits ONE @ELEMENT_JUDGE{"el","verdict"[,"class"]} per judged planning turn; CODE
+    // owns ALL state (active element, rung, regime, wallet, pace, fade, resume) — derived from the
+    // doc + code-stamped chat-history metadata. NO server meta key (the ladder:{} stamp is dropped
+    // server-side before the prompt — MUST-VERIFY passed; class-rest-api.php:1579 / router:886).
+    // Runs ONLY on AQA Lang P2 planning (the reference protocol); DORMANT (zero behaviour change)
+    // everywhere else. BOTH sendCanvasMessage pipelines (12143 + 22219) call the same helpers.
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Per-page-load run id — a RESUME (fresh load) restarts the active element at its BASE rung
+    // ("never resume mid-ladder"): in-session climbs count only stamps carrying THIS run id.
+    var _ladderRunId = 'r' + Date.now();
+    var _LADDER_WALLET_CEILING = 4;                      // Neil override (ceiling 4 per paper)
+    var _LADDER_RUNGS = {
+        1: 'L1 — open prompt (ask the beat’s own question, once, openly)',
+        2: 'L2 — focused hint (point at ONE spot inside their own words / one named part of the task; name WHERE to look, never a candidate answer)',
+        3: 'L3 — lens menu (offer EXACTLY three lettered angles, byte-exact from the LENS REGISTRY; a lens names a DIRECTION, never content; the student still generates the idea)',
+        4: 'L4 — model then apply (demonstrate the SINGLE stuck element on the MODEL REGISTRY’s unrelated domain, reasoning aloud; then hand the method back for THEIR words to file)'
+    };
+
+    // Is the ladder live for this turn? (mirrors _planPreChainActive's board/paper gate.)
+    function _ladderActive() {
+        try {
+            return !!state && state.task === 'planning'
+                && String(state.board || '').toLowerCase() === 'aqa'
+                && (typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false)
+                && !!_ladderQuestionKey();
+        } catch (_) { return false; }
+    }
+
+    // Which question? AQA Lang P2 marks are unambiguous (Q2=8·Q3=12·Q4=16·Q5=40); fall back to the
+    // question label only if marks are unset/atypical. No key → ladder dormant (safe).
+    function _ladderQuestionKey() {
+        var mk = parseInt(state && state.marks, 10) || 0;
+        if (mk === 8) return 'q2';
+        if (mk === 12) return 'q3';
+        if (mk === 16) return 'q4';
+        if (mk === 40) return 'q5';
+        var q = String((state && state.question) || '').toLowerCase();
+        var m = q.match(/\bq(?:uestion)?\s*0*([2-5])\b/);
+        return m ? ('q' + m[1]) : '';
+    }
+
+    // The element REGISTRY — ordered, per question, in PLANNING-BEAT order. Each entry:
+    //   { el, type, resolveBy }  where resolveBy is a fieldId (FILING element: resolved when that
+    //   outline box holds text) or 'stamp' (SYNTHETIC element: resolved by a `resolved`
+    //   @ELEMENT_JUDGE stamp). `el` is the identity the LLM ECHOES — byte-equal to the registry el
+    //   column in protocol-b-planning.md §1.3 and to the real @FIELD_COMMIT field ids (verified
+    //   2026-07-19: one producer, no write/read fork — CLAUDE.md §5d). Q4 body els are UNSUFFIXED;
+    //   intro is -q4-suffixed; conclusion is unsuffixed; Q2/Q3 body els are -q2/-q3 suffixed.
+    function _ladderRegistry(qKey) {
+        var r = [], i;
+        if (qKey === 'q2') {
+            r.push({ el: 'q2-overall-difference', type: 'difference', resolveBy: 'stamp' });
+            r.push({ el: 'q2-aspect-split', type: 'aspect', resolveBy: 'stamp' });
+            for (i = 1; i <= 2; i++) {
+                r.push({ el: 'outline-body-' + i + '-inf1-topic-q2', type: 'topic', resolveBy: 'outline-body-' + i + '-inf1-topic-q2' });
+                r.push({ el: 'outline-body-' + i + '-inf1-evidence-q2', type: 'evidence', resolveBy: 'outline-body-' + i + '-inf1-evidence-q2' });
+                r.push({ el: 'outline-body-' + i + '-inf2-topic-q2', type: 'topic', resolveBy: 'outline-body-' + i + '-inf2-topic-q2' });
+                r.push({ el: 'outline-body-' + i + '-inf2-evidence-q2', type: 'evidence', resolveBy: 'outline-body-' + i + '-inf2-evidence-q2' });
+            }
+        } else if (qKey === 'q3') {
+            for (i = 1; i <= 3; i++) {
+                r.push({ el: 'outline-body-' + i + '-topic-q3', type: 'topic', resolveBy: 'outline-body-' + i + '-topic-q3' });
+                r.push({ el: 'q3-technique-p' + i, type: 'technique', resolveBy: 'stamp' });
+                r.push({ el: 'outline-body-' + i + '-evidence-q3', type: 'evidence', resolveBy: 'outline-body-' + i + '-evidence-q3' });
+                r.push({ el: 'outline-body-' + i + '-analysis-q3', type: 'analysis', resolveBy: 'outline-body-' + i + '-analysis-q3' });
+                r.push({ el: 'outline-body-' + i + '-effects-q3', type: 'effect', resolveBy: 'outline-body-' + i + '-effects-q3' });
+                r.push({ el: 'outline-body-' + i + '-effects2-q3', type: 'effect', resolveBy: 'outline-body-' + i + '-effects2-q3' });
+                r.push({ el: 'outline-body-' + i + '-purpose-q3', type: 'purpose', resolveBy: 'outline-body-' + i + '-purpose-q3' });
+            }
+        } else if (qKey === 'q4') {
+            r.push({ el: 'q4-aspects', type: 'aspects', resolveBy: 'stamp' });
+            for (i = 1; i <= 3; i++) {
+                r.push({ el: 'outline-body-' + i + '-topic', type: 'topic', resolveBy: 'outline-body-' + i + '-topic' });
+                r.push({ el: 'outline-body-' + i + '-evidence', type: 'evidence', resolveBy: 'outline-body-' + i + '-evidence' });
+                r.push({ el: 'outline-body-' + i + '-analysis', type: 'analysis', resolveBy: 'outline-body-' + i + '-analysis' });
+                r.push({ el: 'outline-body-' + i + '-effects', type: 'effect', resolveBy: 'outline-body-' + i + '-effects' });
+                r.push({ el: 'outline-body-' + i + '-effects2', type: 'effect', resolveBy: 'outline-body-' + i + '-effects2' });
+                r.push({ el: 'outline-body-' + i + '-purpose', type: 'purpose', resolveBy: 'outline-body-' + i + '-purpose' });
+            }
+            r.push({ el: 'outline-intro-thesis-q4', type: 'thesis', resolveBy: 'outline-intro-thesis-q4' });
+            r.push({ el: 'outline-conclusion-thesis', type: 'conclusion', resolveBy: 'outline-conclusion-thesis' });
+        } else if (qKey === 'q5') {
+            r.push({ el: 'q5-task-analysis', type: 'task', resolveBy: 'stamp' });
+            r.push({ el: 'q5-intro-image', type: 'image', resolveBy: 'outline-iumvcc-intro' });
+            r.push({ el: 'q5-urgency-image', type: 'image', resolveBy: 'outline-iumvcc-urgency' });
+            r.push({ el: 'q5-method-point-1', type: 'point', resolveBy: 'outline-iumvcc-method-point-1' });
+            r.push({ el: 'q5-method-point-2', type: 'point', resolveBy: 'outline-iumvcc-method-point-2' });
+            r.push({ el: 'q5-method-point-3', type: 'point', resolveBy: 'outline-iumvcc-method-point-3' });
+            r.push({ el: 'q5-vision-image', type: 'image', resolveBy: 'outline-iumvcc-vision' });
+            r.push({ el: 'q5-counter-objection', type: 'objection', resolveBy: 'outline-iumvcc-counter' });
+            r.push({ el: 'q5-conclusion-image', type: 'image', resolveBy: 'outline-iumvcc-conclusion' });
+        }
+        return r;
+    }
+
+    // 'absent' (box not in this doc — fewer paragraphs/points) | 'empty' | 'filled'.
+    function _ladderFieldState(fid) {
+        if (!canvasEditor || !fid) return 'absent';
+        var found = null;
+        canvasEditor.state.doc.descendants(function (node) {
+            if (found !== null) return false;
+            if ((node.type.name === 'outlineRow' || node.type.name === 'inputField') && node.attrs && node.attrs.fieldId === fid) {
+                found = (node.textContent || '').trim();
+                return false;
+            }
+            return true;
+        });
+        if (found === null) return 'absent';
+        return found.length > 0 ? 'filled' : 'empty';
+    }
+
+    function _ladderStampsForEl(history, el) {
+        var out = [];
+        for (var i = 0; i < (history || []).length; i++) {
+            var s = history[i] && history[i].ladder;
+            if (s && s.el === el) out.push(s);
+        }
+        return out;
+    }
+    function _ladderElResolved(history, el) {
+        var st = _ladderStampsForEl(history, el);
+        for (var i = 0; i < st.length; i++) if (st[i].verdict === 'resolved') return true;
+        return false;
+    }
+    // Elements resolved at rung ≥ 3 (each counted once) — feeds PACE (≥3 → open rest at L2) and
+    // FADE (a same-TYPE sibling resolved high → open this element at L2).
+    function _ladderResolvedHigh(history, reg) {
+        var types = {}, count = 0, seen = {}, i, k;
+        for (i = 0; i < (history || []).length; i++) {
+            var s = history[i] && history[i].ladder;
+            if (!s || s.verdict !== 'resolved' || (s.rung || 0) < 3 || seen[s.el]) continue;
+            seen[s.el] = true; count++;
+            for (k = 0; k < reg.length; k++) if (reg[k].el === s.el) { types[reg[k].type] = true; break; }
+        }
+        return { types: types, count: count };
+    }
+    // The content-insight WALLET — code-counted from kind:'insight' stamps (ceiling 4/paper,
+    // sub-cap 1/question). The LLM signals a spend with @INSIGHT_SPENT; code counts, never the LLM.
+    function _ladderWallet(history, qKey) {
+        var used = 0, usedThisQ = 0;
+        for (var i = 0; i < (history || []).length; i++) {
+            var s = history[i] && history[i].ladder;
+            if (!s || !(s.kind === 'insight' || s.insightSpent)) continue;
+            used++;
+            if (s.question === qKey) usedThisQ++;
+        }
+        return { used: used, ceiling: _LADDER_WALLET_CEILING,
+                 left: Math.max(0, _LADDER_WALLET_CEILING - used),
+                 subCapLeft: Math.max(0, 1 - usedThisQ) };
+    }
+
+    // The BRAIN. Pure over (history + doc + state). Returns null when dormant; else the state
+    // block the LLM is TOLD each turn: active element, the rung to PLAY, regime, wallet balance.
+    function deriveLadderState(history) {
+        if (!_ladderActive()) return null;
+        var qKey = _ladderQuestionKey();
+        var reg = _ladderRegistry(qKey);
+        if (!reg.length) return null;
+        history = history || [];
+
+        // 1. Active element = first NOT-resolved element whose box EXISTS. Absent filing boxes
+        //    (a doc with fewer paragraphs/points than the max) are skipped, never blocked on.
+        var active = null, i, e;
+        for (i = 0; i < reg.length; i++) {
+            e = reg[i];
+            if (e.resolveBy === 'stamp') {
+                if (!_ladderElResolved(history, e.el)) { active = e; break; }
+            } else {
+                var fs = _ladderFieldState(e.resolveBy);
+                if (fs === 'absent') continue;
+                if (fs === 'empty') { active = e; break; }
+            }
+        }
+        if (!active) return { el: null, done: true, question: qKey, wallet: _ladderWallet(history, qKey) };
+
+        // 2. Base rung: 1, raised to 2 by FADE (same-type sibling resolved ≥L3) or PACE (≥3 resolved ≥L3).
+        var hi = _ladderResolvedHigh(history, reg);
+        var paceValve = hi.count >= 3;
+        var fade = hi.types[active.type] === true;
+        var base = (paceValve || fade) ? 2 : 1;
+
+        // 3. Climb: prior GENUINE (non-idkPending) failed stamps for this element THIS RUN. An
+        //    idkPending failure gives current-rung help but does not climb (help, not a lift).
+        var stamps = _ladderStampsForEl(history, active.el);
+        var climb = 0, pushSpent = false, idkPending = false, j, s;
+        for (j = 0; j < stamps.length; j++) {
+            s = stamps[j];
+            if (s.runId !== _ladderRunId) continue;               // resume: ignore prior-load climbs
+            if (s.verdict === 'failed' && s.idkPending) { idkPending = true; }
+            else if (s.verdict === 'failed') { climb++; idkPending = false; }
+            else { idkPending = false; }
+            // Only a REAL (LLM-judged) weak spends the one push. A HEALED weak (a markerless turn —
+            // a gate click, a quote-selection beat) must not delete the push before the beat opens.
+            if (s.verdict === 'weak' && s.source === 'llm') pushSpent = true;
+        }
+        var rung = Math.min(4, base + climb);
+        var regime = idkPending ? 'idk-pending' : (pushSpent ? 'owned-push' : 'normal');
+
+        return {
+            el: active.el, type: active.type, rung: rung, rungLabel: _LADDER_RUNGS[rung] || '',
+            regime: regime, pushSpent: pushSpent, idkPending: idkPending,
+            paceValve: paceValve, fade: fade, base: base, climb: climb,
+            question: qKey, wallet: _ladderWallet(history, qKey), done: false
+        };
+    }
+
+    // Deterministic pre-check (design §2.2 / §4.4): code classifies the UNAMBIGUOUS non-answers
+    // BEFORE the LLM — an empty turn, a WHOLE-TURN "I don't know", or the confusion family. The
+    // IDK/confusion branches set idkPending (help now, climb only after a genuine micro-attempt).
+    // Anchored ^…$ so a mixed turn ("dunno, maybe the writer is angry…") is NOT swallowed — it is
+    // an attempt, judged by the LLM on its merits (§4.4a). Markdown-stripped first (byte-pair rule).
+    var _LADDER_IDK_RE = /^(?:i\s*(?:really|honestly|just)?\s*(?:do\s*n[o']?t|don[o']?t|dont)\s*know|idk|dunno|no\s*idea|not\s*sure|no\s*clue|dk)[\s.!?]*$/i;
+    var _LADDER_CONFUSION_RE = /^(?:i\s*(?:do\s*n[o']?t|don[o']?t|dont)\s*(?:understand|get\s*(?:it|this)?)|i\s*don[o']?t\s*get\s*it|what\s*do\s*you\s*mean|huh|\?+|i[’']?m\s*confused|explain(?:\s*(?:again|that|it))?)[\s.!?]*$/i;
+    function _ladderPrecheck(msg) {
+        var t = (typeof _planChainNorm === 'function' ? _planChainNorm(String(msg || '')) : String(msg || '')).trim();
+        if (!t) return { verdict: 'failed', idkPending: false };
+        if (_LADDER_IDK_RE.test(t) || _LADDER_CONFUSION_RE.test(t)) return { verdict: 'failed', idkPending: true };
+        return { verdict: null, idkPending: false };
+    }
+
+    // Build the ladder:{} stamp for the assistant reply that just judged the student's turn. The
+    // LLM feeds only el/verdict/class; code owns rung/regime/kind/source/runId/question. Self-heals
+    // (design §2.1 pairing law) degrade toward the never-escalating verdict. Only stamps once
+    // element-mode has begun (any prior verdict stamp) — so the pre-planning chain / reflect turns
+    // never spuriously stamp an element.
+    var _LADDER_JUDGE_RE = /@ELEMENT_JUDGE\s*(\{[^}]*\})/;
+    var _LADDER_INSIGHT_RE = /@INSIGHT_SPENT\b/;
+    var _LADDER_WRONG_CLASSES = ['misread', 'false-fact', 'technique-misid'];
+    function applyElementJudge(aiReply, told, pre, history) {
+        try {
+            if (!told || !told.el) return null;
+            var reply = aiReply || '';
+            var insightSpent = _LADDER_INSIGHT_RE.test(reply);   // knowledge-track spend (§2.5/§4.6)
+            var begun = false, i;
+            for (i = 0; i < (history || []).length; i++) {
+                var h = history[i] && history[i].ladder;
+                if (h && h.verdict) { begun = true; break; }
+            }
+            // Attach the insight flag to every return path (a turn can BOTH spend an insight AND
+            // carry a verdict — never lose the verdict by early-returning on the insight). Wallet
+            // counts s.insightSpent. Warn-net: an insight delivered in prose but NOT signalled is a
+            // free, uncounted spend — warn (never auto-debit; a false debit is the worse error).
+            function _finish(st) {
+                if (!st) return null;
+                if (insightSpent) st.insightSpent = true;
+                else if (/did\s+you\s+know/i.test(reply)) console.warn('[WML ladder] "Did you know…?" with no @INSIGHT_SPENT — wallet may be under-counted (not auto-debited)');
+                return st;
+            }
+            function _bare() {
+                // A stamp that carries no verdict — used when the only event this turn is an insight
+                // spend before element-mode has begun (so it counts toward the wallet, nothing else).
+                return insightSpent ? { el: told.el, runId: _ladderRunId, question: told.question, kind: 'insight' } : null;
+            }
+            var stamp = { el: told.el, rung: told.rung, regime: told.regime,
+                          runId: _ladderRunId, question: told.question, kind: 'attempt' };
+
+            // Code already classified this turn (empty / idk / confusion) → trust it; LLM did not judge.
+            if (pre && pre.verdict === 'failed') {
+                if (!begun) return _finish(_bare());              // pre-chain guard (see note above)
+                stamp.verdict = 'failed'; stamp.idkPending = !!pre.idkPending; stamp.source = 'code';
+                return _finish(stamp);
+            }
+
+            // Substantive turn → parse the LLM's @ELEMENT_JUDGE (the ONE routing signal).
+            var m = reply.match(_LADDER_JUDGE_RE);
+            if (m) {
+                var payload = null;
+                try { payload = JSON.parse(m[1]); } catch (_) { payload = null; }
+                if (payload && payload.verdict) {
+                    if (payload.el && payload.el !== told.el) {
+                        console.warn('[WML ladder] el echo mismatch — told', told.el, 'got', payload.el, '(trusting told)');
+                    }
+                    var v = String(payload.verdict).toLowerCase();
+                    if (v === 'wrong') {
+                        var cls = String(payload['class'] || payload.klass || '').toLowerCase();
+                        if (_LADDER_WRONG_CLASSES.indexOf(cls) === -1) {
+                            console.warn('[WML ladder] wrong without valid class → heal to weak', payload);
+                            stamp.verdict = 'weak'; stamp.source = 'heal';
+                        } else { stamp.verdict = 'wrong'; stamp['class'] = cls; stamp.source = 'llm'; }
+                    } else if (v === 'resolved' || v === 'weak' || v === 'failed') {
+                        stamp.verdict = v; stamp.source = 'llm';
+                    } else { stamp.verdict = 'weak'; stamp.source = 'heal'; }
+                    return _finish(stamp);
+                }
+            }
+
+            // No parseable marker → self-heal. A @FIELD_COMMIT for THIS element is an unambiguous
+            // resolution AND a safe begin-signal (a commit can't occur pre-chain), so it bypasses the
+            // begun guard. Any OTHER markerless turn heals only once element-mode has begun — and a
+            // HEALED weak carries source 'heal-none' so it NEVER spends the one push (§2.4: every
+            // heal must land on the safest state — a heal that burns a teaching resource is not safe).
+            if (_ladderReplyCommitsEl(reply, told.el)) { stamp.verdict = 'resolved'; stamp.source = 'heal-commit'; return _finish(stamp); }
+            if (!begun) return _finish(_bare());
+            stamp.verdict = 'weak'; stamp.source = 'heal-none';
+            return _finish(stamp);
+        } catch (e) {
+            console.warn('[WML ladder] applyElementJudge error (non-fatal)', e && e.message);
+            return null;
+        }
+    }
+    // True iff the reply carries a @FIELD_COMMIT whose field is exactly this element (so a
+    // wrong-field commit can't spuriously resolve a synthetic el — Fable review, minor).
+    function _ladderReplyCommitsEl(reply, el) {
+        if (!reply || !el) return false;
+        var re = /@FIELD_COMMIT\s*(\{[^}]*\})/g, mm;
+        while ((mm = re.exec(reply)) !== null) {
+            try { var p = JSON.parse(mm[1]); if (p && typeof p.field === 'string' && p.field.trim() === el) return true; } catch (_) {}
+        }
+        return false;
+    }
+
+    // The compact ladder payload for the chat POST body (both pipelines call this — DRY, no drift).
+    // Null → PHP injects no ladder directive. Carries the derived state + the current turn's
+    // deterministic pre-verdict so PHP can build the TELL block.
+    function _ladderPostPayload(told, pre) {
+        if (!told) return null;
+        return {
+            el: told.el || '', rung: told.rung || 0, rungLabel: told.rungLabel || '',
+            regime: told.regime || '', walletLeft: told.wallet ? told.wallet.left : _LADDER_WALLET_CEILING,
+            walletSub: told.wallet ? told.wallet.subCapLeft : 1, pushSpent: !!told.pushSpent,
+            done: !!told.done, question: told.question || '',
+            codeVerdict: pre ? (pre.verdict || '') : '', idkPending: pre ? !!pre.idkPending : false
+        };
+    }
+
     // v7.19.429: GENERIC chat→canvas field-fill primitive (Phase 1 — first consumer: CW Step 1).
     // The AI emits a tiny judgment-only signal @FIELD_COMMIT{ "field": "<id>" } the moment it
     // judges the student has answered the current question. CODE then writes the student's
@@ -12481,6 +12809,12 @@
                     ? canvasChatHistory.slice(0, -1)
                     : canvasChatHistory.slice(0, -1).slice(-24);
 
+                // v7.20.205 C-LADDER (pipeline 1). Derive from the FULL history (prior turns'
+                // stamps) — NOT historyToSend (the -24 slice the LLM sees). Dormant off AQA P2
+                // planning → both null → no ladder param, zero behaviour change.
+                let _ladderTold = null, _ladderPre = null;
+                if (_ladderActive()) { _ladderTold = deriveLadderState(canvasChatHistory); _ladderPre = _ladderPrecheck(msg); }
+
                 const response = await _fetchChatWithRetry(API.chat, {
                     method: 'POST',
                     headers,
@@ -12523,6 +12857,8 @@
                         responseWc: (canvasEditor && state.task === 'assessment')
                             ? getResponseWordCount(canvasEditor)
                             : null,
+                        // v7.20.205 C-LADDER: derived rung/wallet/regime → PHP TELL block (dynamic_ladder).
+                        ladder: _ladderPostPayload(_ladderTold, _ladderPre),
                     })
                 });
                 const res = await response.json();
@@ -12548,6 +12884,13 @@
                     if (_walkBeat) formatted = _beatChipBlock(_walkBeat) + formatted;
                     addChatMessage(formatted, 'ai', cleanReply);
                     canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
+                    // v7.20.205 C-LADDER (pipeline 1): stamp the derived verdict on the pushed reply
+                    // BEFORE saveCanvasChat so it persists. Parses @ELEMENT_JUDGE from the POST-audit
+                    // res.reply (the pushed value), never the pre-audit body. No-op off AQA P2 planning.
+                    if (_ladderTold && _ladderTold.el) {
+                        const _lstamp = applyElementJudge(res.reply, _ladderTold, _ladderPre, canvasChatHistory);
+                        if (_lstamp) canvasChatHistory[canvasChatHistory.length - 1].ladder = _lstamp;
+                    }
                     if (res.chatId) canvasChatId = res.chatId;
                     if (res.method) console.log('WML Canvas:', res.method, 'model:', res.model);
                     saveCanvasChat(canvasChatHistory, canvasChatId);
@@ -22424,6 +22767,11 @@
                                     ? canvasChatHistory.slice(0, -1)
                                     : canvasChatHistory.slice(0, -1).slice(-24);
 
+                                // v7.20.205 C-LADDER (pipeline 2 / twin). Same derive as pipeline 1 —
+                                // FULL history, dormant off AQA P2 planning.
+                                let _ladderTold = null, _ladderPre = null;
+                                if (_ladderActive()) { _ladderTold = deriveLadderState(canvasChatHistory); _ladderPre = _ladderPrecheck(msg); }
+
                                 const response = await _fetchChatWithRetry(API.chat, {
                                     method: 'POST',
                                     headers,
@@ -22448,6 +22796,8 @@
                                         // v7.19.978: poetry Conceptual Notes one-doc flow (twin pipeline).
                                         currentPoemId: _poetryCnCurrentPoemId(canvasChatHistory),
                                         donePoemIds: _poetryCnDonePoemIds(),
+                                        // v7.20.205 C-LADDER (twin): derived rung/wallet/regime → PHP TELL.
+                                        ladder: _ladderPostPayload(_ladderTold, _ladderPre),
                                     })
                                 });
                                 const res = await response.json();
@@ -22467,6 +22817,11 @@
                                     if (_walkBeat) formatted = _beatChipBlock(_walkBeat) + formatted;
                                     addChatMessage(formatted, 'ai', cleanReply);
                                     canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
+                                    // v7.20.205 C-LADDER (twin): stamp verdict on the pushed reply before save.
+                                    if (_ladderTold && _ladderTold.el) {
+                                        const _lstamp = applyElementJudge(res.reply, _ladderTold, _ladderPre, canvasChatHistory);
+                                        if (_lstamp) canvasChatHistory[canvasChatHistory.length - 1].ladder = _lstamp;
+                                    }
                                     if (res.chatId) canvasChatId = res.chatId;
                                     if (res.method) console.log('WML Canvas:', res.method, 'model:', res.model);
                                     // Persist chat for resume

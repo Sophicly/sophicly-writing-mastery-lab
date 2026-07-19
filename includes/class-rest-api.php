@@ -1508,6 +1508,22 @@ class SWML_REST_API {
             // student hasn't picked yet — the router then serves the picker roster only.
             'current_poem_id' => sanitize_key($params['currentPoemId'] ?? ''),
             'done_poem_ids'   => array_values(array_filter(array_map('sanitize_key', (array) ($params['donePoemIds'] ?? [])))),
+            // v7.20.205 C-LADDER: the code-derived scaffolding-ladder state for THIS planning turn
+            // (active element, rung to play, regime, wallet balance, the deterministic pre-verdict).
+            // Frontend sends null off AQA Lang P2 planning → no ladder directive is built.
+            'ladder'  => (isset($params['ladder']) && is_array($params['ladder'])) ? [
+                'el'          => sanitize_text_field($params['ladder']['el'] ?? ''),
+                'rung'        => max(0, min(4, absint($params['ladder']['rung'] ?? 0))),
+                'rung_label'  => sanitize_text_field($params['ladder']['rungLabel'] ?? ''),
+                'regime'      => sanitize_text_field($params['ladder']['regime'] ?? ''),
+                'wallet_left' => max(0, absint($params['ladder']['walletLeft'] ?? 0)),
+                'wallet_sub'  => max(0, absint($params['ladder']['walletSub'] ?? 0)),
+                'push_spent'  => !empty($params['ladder']['pushSpent']),
+                'done'        => !empty($params['ladder']['done']),
+                'question'    => sanitize_text_field($params['ladder']['question'] ?? ''),
+                'code_verdict'=> sanitize_text_field($params['ladder']['codeVerdict'] ?? ''),
+                'idk_pending' => !empty($params['ladder']['idkPending']),
+            ] : null,
         ];
 
         // v7.17.47: For AQA Literature assessments, run migration inference

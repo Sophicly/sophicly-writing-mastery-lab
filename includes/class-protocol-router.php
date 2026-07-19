@@ -33,6 +33,10 @@ class SWML_Protocol_Router {
     // context block. Reset at the top of load_modular_protocol every request.
     private $dynamic_step_slice = '';
     private $dynamic_plan_state = '';
+    // v7.20.205 (C-LADDER): the code-owned scaffolding-ladder TELL block for the current planning
+    // turn — built uncached each turn from the frontend-derived state, injected beside
+    // dynamic_plan_state under WML LIVE SESSION DIRECTIVES so it always beats the cached preamble.
+    private $dynamic_ladder = '';
 
     // v7.19.593 (CACHE): set true once inject_session_context confirms a WML query,
     // so the outbound http_request_args filter knows it owns this Anthropic request
@@ -1240,6 +1244,12 @@ class SWML_Protocol_Router {
         }
         if ($state_block !== '') {
             $dynamic_parts[] = $state_block;
+        }
+        // v7.20.205 C-LADDER: the code-owned rung directive rides LAST (closest to the user turn =
+        // most weight) so it dominates any conflicting cached guidance about how much to help.
+        if (!empty($this->dynamic_ladder)) {
+            $dynamic_parts[] = $this->dynamic_ladder;
+            $this->dynamic_ladder = '';
         }
         if (!empty($dynamic_parts)) {
             $dynamic = "## WML LIVE SESSION DIRECTIVES — CURRENT TURN\n\n" . implode("\n\n", $dynamic_parts);
@@ -4276,6 +4286,45 @@ TEMPLATE;
                 $this->dynamic_plan_state = $ps;
             } else {
                 $preamble .= $ps;
+            }
+        }
+
+        // ── v7.20.205 C-LADDER TELL block (planning only; code owns the ladder state) ──
+        // The frontend derives the whole ladder (active element, rung, regime, wallet) and posts
+        // it; here we turn it into the per-turn directive the model plays. Uncached (rides the LIVE
+        // SESSION DIRECTIVES block) so it never poisons the cached preamble. Absent off AQA P2
+        // planning (frontend sends null). The three grep-strings of Law 9 live in the protocol, NOT
+        // here — this block only names THIS turn's state.
+        if ($task === 'planning' && !empty($context['ladder']) && is_array($context['ladder'])) {
+            $L = $context['ladder'];
+            if (!empty($L['done'])) {
+                $this->dynamic_ladder = "\n### C-LADDER — CURRENT TURN (code-owned state)\n"
+                    . "Every plan element for this question is already filed. Do NOT re-open, re-ask, or re-judge any of them — acknowledge the plan is complete and move the student to the question gate. Emit no @ELEMENT_JUDGE.\n";
+            } elseif (!empty($L['el'])) {
+                $ld  = "\n### C-LADDER — CURRENT TURN (code-owned state — never announce it to the student)\n";
+                $ld .= "**ACTIVE ELEMENT:** `{$L['el']}` — echo this id BYTE-FOR-BYTE as the \"el\" in your @ELEMENT_JUDGE marker; never invent or change it.\n";
+                if (!empty($L['rung_label'])) {
+                    $ld .= "**RUNG FLOOR — where the student currently SITS (a floor, NOT a ceiling):** {$L['rung_label']}\n";
+                    $ld .= "Judge THIS turn first, then act in the SAME reply: if you judge it `failed` (drift, evasion, restatement, nothing ownable), climb exactly ONE rung ABOVE this floor and play that rung's help — a different KIND of help, never the same question reworded (Law 9). If `weak`, give this floor rung's ONE push. If `resolved`, file (`@FIELD_COMMIT`) and ask the next element. If `wrong`, correct free (name · why · fix) and re-invite this floor rung.\n";
+                }
+                if (($L['regime'] ?? '') === 'owned-push') {
+                    $ld .= "**PUSH ALREADY SPENT:** the one Socratic push for this element is used. If the student's answer is owned (theirs, on the element), ACCEPT it now — file it with `@FIELD_COMMIT` if this element has an outline box, otherwise just resolve it — and do NOT push again. A weak-but-owned answer never enters the ladder.\n";
+                }
+                if (($L['code_verdict'] ?? '') === 'failed') {
+                    if (!empty($L['idk_pending'])) {
+                        $ld .= "**CODE VERDICT — FAILED (help-request / \"I don't know\"):** give THIS rung's help again, warmly, and re-invite; do NOT climb (the climb needs a genuine attempt first — help is available, the ladder is not a lift). Code has judged this turn — do NOT emit @ELEMENT_JUDGE.\n";
+                    } else {
+                        $ld .= "**CODE VERDICT — FAILED (nothing ownable):** climb exactly ONE rung above the rung named above and play it — a different KIND of help, not a louder repeat; change the ANGLE (\"let's come at it from another side\"), never scold. Offer the struggle menu. Code has judged this turn — do NOT emit @ELEMENT_JUDGE.\n";
+                    }
+                }
+                $wl = (int) ($L['wallet_left'] ?? 0);
+                $ws = (int) ($L['wallet_sub'] ?? 0);
+                if ($wl <= 0 || $ws <= 0) {
+                    $ld .= "**WALLET:** no expert insight available here ({$wl} left this paper, {$ws} for this question) — offer a resource chip instead, never an uncounted insight.\n";
+                } else {
+                    $ld .= "**WALLET:** {$wl} expert insight(s) left this paper, {$ws} for this question. When you actually deliver one, emit `@INSIGHT_SPENT` on its own line so code can count it.\n";
+                }
+                $this->dynamic_ladder = $ld;
             }
         }
 

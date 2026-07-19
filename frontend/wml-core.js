@@ -2866,6 +2866,11 @@ window.WML = (function() {
         // v7.19.854: Strip @SUMMARY_COMPLETE — the closing-chain arming marker the final-summary
         // mandate requires. It stays in history (the chain keys on it) but never renders.
         text = text.replace(/@SUMMARY_COMPLETE/g, '').trim();
+        // v7.20.205 C-LADDER: Strip @ELEMENT_JUDGE{...} (the per-turn verdict) and @INSIGHT_SPENT
+        // (the wallet-spend signal). Both stay in RAW history (code parses/stamps them there) but
+        // MUST NEVER render to the student or chip-render — strip in the same place as @FIELD_COMMIT.
+        text = text.replace(/@ELEMENT_JUDGE\s*\{[^}]*\}/g, '').trim();
+        text = text.replace(/@INSIGHT_SPENT(?:\s*\{[^}]*\})?/g, '').trim();
         // v7.19.839: collapse the blank-line stack the stripped marker lines leave behind —
         // the auto-file turn emits 12+ markers on their own lines, which stripped into a huge
         // empty gap in the bubble (Neil's screenshot).
