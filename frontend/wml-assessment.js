@@ -12545,13 +12545,20 @@
                 // v7.20.210 (Neil): question-choice buttons — picking one is still the recall
                 // act (generation effect intact); the improvement half stays free-text/mic
                 // (Headline goal asks it next anyway). DERIVED from the doc's questions.
-                bar.appendChild(_planPinHint('Tap the question that stretched you most — or tell me in your own words (more detail helps).'));
+                // v7.20.211 (Neil): the ask is TWO-part (which question + what to improve), so a
+                // click must STAGE, not send — it pre-fills the input and focuses it; the student
+                // finishes the improvement half and sends ONE complete answer.
+                bar.appendChild(_planPinHint('Tap the question that stretched you most, then finish the sentence with the ONE thing you want to do better — and send.'));
                 const rhost = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
                 rhost.querySelectorAll('[data-section-type="question"]').forEach(q => {
                     const m = /^(Q\d+)/.exec((q.getAttribute('data-section-label') || '').trim());
                     if (!m) return;
                     bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: m[1] + ' stretched me most',
-                        onClick: () => sendVal('From memory: ' + m[1] + ' asked the most of me last time.') }));
+                        onClick: () => {
+                            chatTextarea.value = 'From memory: ' + m[1] + ' asked the most of me last time. The one thing I want to do better: ';
+                            try { chatTextarea.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) { /* autosize best-effort */ }
+                            chatTextarea.focus();
+                        } }));
                 });
                 if (bar.childNodes.length === 1) bar.removeChild(bar.firstChild); // hint alone (no questions) → drop
             } else if (stage === 'headline') {
@@ -22668,13 +22675,17 @@
                                     className: 'swml-quick-btn', textContent: g, onClick: () => sendVal(_gradeKickoffValue(g)) })));
                             } else if (stage === 'reflect') {
                                 // v7.20.210 (Neil): question-choice recall buttons (twin — see primary).
-                                bar.appendChild(_planPinHint('Tap the question that stretched you most — or tell me in your own words (more detail helps).'));
+                                bar.appendChild(_planPinHint('Tap the question that stretched you most, then finish the sentence with the ONE thing you want to do better — and send.'));
                                 const rhost = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
                                 rhost.querySelectorAll('[data-section-type="question"]').forEach(q => {
                                     const m = /^(Q\d+)/.exec((q.getAttribute('data-section-label') || '').trim());
                                     if (!m) return;
                                     bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: m[1] + ' stretched me most',
-                                        onClick: () => sendVal('From memory: ' + m[1] + ' asked the most of me last time.') }));
+                                        onClick: () => {
+                                            chatTextarea.value = 'From memory: ' + m[1] + ' asked the most of me last time. The one thing I want to do better: ';
+                                            try { chatTextarea.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) { /* autosize best-effort */ }
+                                            chatTextarea.focus();
+                                        } }));
                                 });
                                 if (bar.childNodes.length === 1) bar.removeChild(bar.firstChild);
                             } else if (stage === 'headline') {
