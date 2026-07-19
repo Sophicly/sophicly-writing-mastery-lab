@@ -12612,6 +12612,13 @@
             const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
             if (!bc) return;
             _appendPlanChainActions(stage, bc);
+            // v7.20.215 (Neil): source-prediction stages auto-scroll the doc to their
+            // source on LIVE render (resume replays go through the pending hook below,
+            // which never scrolls — fill-scroll law). Pin stays as the way back.
+            if (stage === 'predA' || stage === 'predB') {
+                const _sl = stage === 'predA' ? 'A' : 'B';
+                setTimeout(() => { try { _planScrollToSection(new RegExp('source\\s*' + _sl + '\\b', 'i'), 'source'); } catch (_) { /* nav only */ } }, 350);
+            }
         }
         // v7.20.52: chain quick-actions extracted from _renderPlanChainQuestion — they
         // are DOM-only (never persisted), so a refresh mid-chain replayed the question
@@ -22732,6 +22739,10 @@
                             const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
                             if (!bc) return;
                             _appendPlanChainActions(stage, bc);
+                            if (stage === 'predA' || stage === 'predB') { // v7.20.215 (twin)
+                                const _sl = stage === 'predA' ? 'A' : 'B';
+                                setTimeout(() => { try { _planScrollToSection(new RegExp('source\\s*' + _sl + '\\b', 'i'), 'source'); } catch (_) { /* nav only */ } }, 350);
+                            }
                         }
                         // v7.20.52: chain quick-actions extracted (twin of the primary
                         // pipeline — DOM-only buttons, re-appended on replay resume).
