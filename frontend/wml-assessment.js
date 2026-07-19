@@ -696,6 +696,12 @@
         const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         return /^(language2|languagep2|languagepaper2|langp2)$/.test(s);
     }
+    // v7.20.208 (C-LADDER P1 port): the P1 twin — same normalised subject-family test,
+    // never an exact-match on state.subject (827 slug-drift rule).
+    function _isLangPaper1() {
+        const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return /^(language1|languagep1|languagepaper1|langp1)$/.test(s);
+    }
 
     // ══════════════════════════════════════════════════════════════
     //  v7.20.49: AQA Lang P2 PRE-PLANNING CHAIN (S0–S1) — shared, stateless core.
@@ -711,7 +717,18 @@
     function _planPreChainActive() {
         return state.task === 'planning'
             && (state.board || '').toLowerCase() === 'aqa'
-            && _isLangPaper2();
+            && (_isLangPaper2() || _isLangPaper1());
+    }
+    // v7.20.208: how many source sections does THIS doc carry? Drives the prediction
+    // stage list (P2 = paired sources → predA+predB; P1 = one fiction extract → predA
+    // only). Doc-derived first (the real truth); paper-derived fallback only when the
+    // editor is not yet queryable (P2 shipped with exactly 2, P1 with 1).
+    function _planChainSourceCount() {
+        try {
+            const n = document.querySelectorAll('[data-section-type="source"]').length;
+            if (n > 0) return n;
+        } catch (_) { /* fall through */ }
+        return _isLangPaper1() ? 1 : 2;
     }
     // v7.20.65 (Neil): the Phase-1 WRITE doc carries the SAME Predictions space as the
     // Phase-2 planning doc — but no chat runs there (testing environment), so the student
@@ -777,7 +794,8 @@
         if (!askedBy(/condense your plans/i)) return 'planmode';
         if (!askedBy(/do you expect this paper is about/i)) return 'predQ';
         if (!askedBy(/predict Source A will explore/i)) return 'predA';
-        if (!askedBy(/predict Source B will explore/i)) return 'predB';
+        // v7.20.208: predB only exists on a paired-source doc (P1 has one source).
+        if (_planChainSourceCount() >= 2 && !askedBy(/predict Source B will explore/i)) return 'predB';
         return null;
     }
     // v7.20.56: the chain's stage order is DERIVED (reflect slots in only when a
@@ -786,7 +804,9 @@
     function _planChainOrder() {
         const o = ['greeting'];
         if (_planReflectEligible()) o.push('reflect');
-        return o.concat(['headline', 'planmode', 'predQ', 'predA', 'predB']);
+        o.push('headline', 'planmode', 'predQ', 'predA');
+        if (_planChainSourceCount() >= 2) o.push('predB');
+        return o;
     }
     function _planChainBeat(stage) {
         const labels = {
@@ -796,7 +816,9 @@
         };
         if (!labels[stage]) return null;
         const order = _planChainOrder();
-        const idx = order.indexOf(stage === 'tidy' ? 'predB' : stage);
+        // v7.20.208: tidy shares the FINAL prediction stage's slot (predB when the doc has
+        // a second source, else predA — P1 has one source).
+        const idx = order.indexOf(stage === 'tidy' ? (order.indexOf('predB') !== -1 ? 'predB' : 'predA') : stage);
         return idx === -1 ? null : { section: labels[stage], step: idx + 1, total: order.length };
     }
     function _planSourceLabel(letter) {
@@ -859,8 +881,12 @@
                 ? `plan all ${_planCountWord(facts.planned.length)} questions in exam order — ${_planListJoin(facts.planned)} —`
                 : 'plan your questions in exam order —';
             const unNote = _planUntrainedNote(facts);
-            plain = `Hi ${fn}! Welcome to your planning session for AQA English Language Paper 2. Here's what's coming: we'll set your goals, make three quick predictions, then ${plannedPhrase} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.${unNote ? ' ' + unNote : ''}\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
-            html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>AQA English Language Paper 2</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, make three quick predictions, then ${plannedPhrase.replace(/—\s*(.+?)\s*—/, '— <strong>$1</strong> —')} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p>${unNote ? `<p style="margin-top:8px;font-size:12.5px;opacity:0.8">${unNote}</p>` : ''}</div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
+            // v7.20.208: paper name + prediction count are DERIVED (P1 = one source → two
+            // predictions; P2 = paired sources → three), never P2-literal.
+            const paperName = _isLangPaper1() ? 'AQA English Language Paper 1' : 'AQA English Language Paper 2';
+            const predCount = _planCountWord(1 + _planChainSourceCount());
+            plain = `Hi ${fn}! Welcome to your planning session for ${paperName}. Here's what's coming: we'll set your goals, make ${predCount} quick predictions, then ${plannedPhrase} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.${unNote ? ' ' + unNote : ''}\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
+            html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>${paperName}</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, make ${predCount} quick predictions, then ${plannedPhrase.replace(/—\s*(.+?)\s*—/, '— <strong>$1</strong> —')} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p>${unNote ? `<p style="margin-top:8px;font-size:12.5px;opacity:0.8">${unNote}</p>` : ''}</div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
         } else if (stage === 'reflect') {
             // v7.20.56: ask-then-reveal, beat 1 (the ASK — no AI turn, free-typed reply).
             // Research-locked framing (Kluger & DeNisi 1996): TASK-level recall only —
@@ -901,8 +927,9 @@
         } else if (stage === 'tidy') {
             // v7.20.55 (Neil): one code-owned confirm between the last prediction and the
             // first AI turn — a quick SPaG once-over of the prediction boxes.
-            plain = `All three predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the Predictions section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.\n\nClick **Continue** when you're happy with them.`;
-            html = `<p>All three predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the <strong>Predictions</strong> section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.</p><p style="margin-top:8px">Click <strong>Continue</strong> when you're happy with them.</p>`;
+            const tidyCount = _planCountWord(1 + _planChainSourceCount());
+            plain = `All ${tidyCount} predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the Predictions section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.\n\nClick **Continue** when you're happy with them.`;
+            html = `<p>All ${tidyCount} predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the <strong>Predictions</strong> section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.</p><p style="margin-top:8px">Click <strong>Continue</strong> when you're happy with them.</p>`;
         }
         return { plain: plain, html: html };
     }
@@ -1020,15 +1047,20 @@
             if (target) _swmlScrollToTop(target);
         } catch (_) { /* non-fatal */ }
     }
-    // v7.20.55: does the incoming reply answer the chain's FINAL question (Source B)?
-    // True only when the last visible history message is the predB ask itself — once the
-    // tidy card (or any other assistant turn) follows, the reply flows through to the AI.
-    function _planChainAnswersPredB(history) {
+    // v7.20.55: does the incoming reply answer the chain's FINAL prediction question?
+    // v7.20.208: the final prediction is doc-derived — Source B on a paired-source paper
+    // (P2), Source A on a one-source paper (P1). True only when the last visible history
+    // message is that final ask itself — once the tidy card (or any other assistant turn)
+    // follows, the reply flows through to the AI.
+    function _planChainAnswersFinalPred(history) {
+        const finalRe = _planChainSourceCount() >= 2
+            ? /predict Source B will explore/i
+            : /predict Source A will explore/i;
         for (let i = history.length - 1; i >= 0; i--) {
             const m = history[i];
             if (m.hidden) continue;
             if (m.role !== 'assistant') return false;
-            return /predict Source B will explore/i.test(_planChainNorm(m.content));
+            return finalRe.test(_planChainNorm(m.content));
         }
         return false;
     }
@@ -2484,11 +2516,21 @@
         try {
             return !!state && state.task === 'planning'
                 && String(state.board || '').toLowerCase() === 'aqa'
-                && (typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false);
+                && ((typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false)
+                    || (typeof _isLangPaper1 === 'function' ? _isLangPaper1() : false));
         } catch (_) { return false; }
     }
-    // The paper's questions in exam order — deriveLadderState walks these registries in sequence.
-    var _LADDER_QUESTION_ORDER = ['q2', 'q3', 'q4', 'q5'];
+    // v7.20.208 (PORT-RECIPE engine step 0): PAPER CONFIG — the walk, TELL, stamps and
+    // verdict routing are SHARED; a paper contributes only its question order + registries.
+    // Never fork deriveLadderState per paper.
+    function _ladderPaperKey() {
+        return (typeof _isLangPaper1 === 'function' && _isLangPaper1()) ? 'p1' : 'p2';
+    }
+    // Each paper's questions in exam order — deriveLadderState walks these registries in
+    // sequence. P1's Q5 is CREATIVE WRITING: OUTSIDE the ladder by ruling (CW ladder shape
+    // TBD — doc-lifecycle law), so p1 ends at q4.
+    var _LADDER_QUESTION_ORDERS = { p2: ['q2', 'q3', 'q4', 'q5'], p1: ['q2', 'q3', 'q4'] };
+    function _ladderQuestionOrder() { return _LADDER_QUESTION_ORDERS[_ladderPaperKey()]; }
 
     // The element REGISTRY — ordered, per question, in PLANNING-BEAT order. Each entry:
     //   { el, type, resolveBy }  where resolveBy is a fieldId (FILING element: resolved when that
@@ -2498,6 +2540,55 @@
     //   2026-07-19: one producer, no write/read fork — CLAUDE.md §5d). Q4 body els are UNSUFFIXED;
     //   intro is -q4-suffixed; conclusion is unsuffixed; Q2/Q3 body els are -q2/-q3 suffixed.
     function _ladderRegistry(qKey) {
+        return _ladderPaperKey() === 'p1' ? _ladderRegistryP1(qKey) : _ladderRegistryP2(qKey);
+    }
+    // ── AQA Language Paper 1 registries (v7.20.208 — byte-traced against the render:
+    // Q2/Q3 = _resolveBodyOnlyOutline body-only ids, -q2/-q3 suffixed, 2 paragraphs each;
+    // Q4 = the full-essay evaluation shape — bodies UNSUFFIXED, intro -q4-suffixed,
+    // conclusion unsuffixed — and the el column of language1 protocol-b-planning.md).
+    // Q2 topic/evidence/analysis/effects/purpose share TYPES with Q3/Q4 rows deliberately:
+    // fade is per-question scoped (v7.20.206), so no cross-question pre-opening happens.
+    // Q3's feature beat gets its OWN type ('feature') — structural-feature spotting is a
+    // different skill from language-technique spotting (type = the SKILL, recipe §3).
+    function _ladderRegistryP1(qKey) {
+        var r = [], i;
+        if (qKey === 'q2') {
+            for (i = 1; i <= 2; i++) {
+                r.push({ el: 'outline-body-' + i + '-topic-q2', type: 'topic', resolveBy: 'outline-body-' + i + '-topic-q2' });
+                r.push({ el: 'q2-technique-p' + i, type: 'technique', resolveBy: 'stamp' });
+                r.push({ el: 'outline-body-' + i + '-evidence-q2', type: 'evidence', resolveBy: 'outline-body-' + i + '-evidence-q2' });
+                r.push({ el: 'outline-body-' + i + '-analysis-q2', type: 'analysis', resolveBy: 'outline-body-' + i + '-analysis-q2' });
+                r.push({ el: 'outline-body-' + i + '-effects-q2', type: 'effect', resolveBy: 'outline-body-' + i + '-effects-q2' });
+                r.push({ el: 'outline-body-' + i + '-effects2-q2', type: 'effect', resolveBy: 'outline-body-' + i + '-effects2-q2' });
+                r.push({ el: 'outline-body-' + i + '-purpose-q2', type: 'purpose', resolveBy: 'outline-body-' + i + '-purpose-q2' });
+            }
+        } else if (qKey === 'q3') {
+            for (i = 1; i <= 2; i++) {
+                r.push({ el: 'outline-body-' + i + '-topic-q3', type: 'topic', resolveBy: 'outline-body-' + i + '-topic-q3' });
+                r.push({ el: 'q3-feature-p' + i, type: 'feature', resolveBy: 'stamp' });
+                r.push({ el: 'outline-body-' + i + '-evidence-q3', type: 'evidence', resolveBy: 'outline-body-' + i + '-evidence-q3' });
+                r.push({ el: 'outline-body-' + i + '-analysis-q3', type: 'analysis', resolveBy: 'outline-body-' + i + '-analysis-q3' });
+                r.push({ el: 'outline-body-' + i + '-effects-q3', type: 'effect', resolveBy: 'outline-body-' + i + '-effects-q3' });
+                r.push({ el: 'outline-body-' + i + '-effects2-q3', type: 'effect', resolveBy: 'outline-body-' + i + '-effects2-q3' });
+                r.push({ el: 'outline-body-' + i + '-purpose-q3', type: 'purpose', resolveBy: 'outline-body-' + i + '-purpose-q3' });
+            }
+        } else if (qKey === 'q4') {
+            r.push({ el: 'q4-concepts', type: 'concepts', resolveBy: 'stamp' });
+            for (i = 1; i <= 3; i++) {
+                r.push({ el: 'outline-body-' + i + '-topic', type: 'topic', resolveBy: 'outline-body-' + i + '-topic' });
+                r.push({ el: 'q4-technique-b' + i, type: 'technique', resolveBy: 'stamp' });
+                r.push({ el: 'outline-body-' + i + '-evidence', type: 'evidence', resolveBy: 'outline-body-' + i + '-evidence' });
+                r.push({ el: 'outline-body-' + i + '-analysis', type: 'analysis', resolveBy: 'outline-body-' + i + '-analysis' });
+                r.push({ el: 'outline-body-' + i + '-effects', type: 'effect', resolveBy: 'outline-body-' + i + '-effects' });
+                r.push({ el: 'outline-body-' + i + '-effects2', type: 'effect', resolveBy: 'outline-body-' + i + '-effects2' });
+                r.push({ el: 'outline-body-' + i + '-purpose', type: 'purpose', resolveBy: 'outline-body-' + i + '-purpose' });
+            }
+            r.push({ el: 'outline-intro-thesis-q4', type: 'thesis', resolveBy: 'outline-intro-thesis-q4' });
+            r.push({ el: 'outline-conclusion-thesis', type: 'conclusion', resolveBy: 'outline-conclusion-thesis' });
+        }
+        return r;
+    }
+    function _ladderRegistryP2(qKey) {
         var r = [], i;
         if (qKey === 'q2') {
             r.push({ el: 'q2-overall-difference', type: 'difference', resolveBy: 'stamp' });
@@ -2622,8 +2713,9 @@
         history = history || [];
 
         var anyBox = false, active = null, activeQ = '', reg = null;
-        for (var qi = 0; qi < _LADDER_QUESTION_ORDER.length && !active; qi++) {
-            var qk = _LADDER_QUESTION_ORDER[qi];
+        var _qOrder = _ladderQuestionOrder();
+        for (var qi = 0; qi < _qOrder.length && !active; qi++) {
+            var qk = _qOrder[qi];
             var r = _ladderRegistry(qk);
             // Pass 1: which filing boxes does THIS doc hold for this question?
             var states = [], present = 0, i;
@@ -12612,7 +12704,7 @@
                 // v7.20.55: then ONE code-owned tidy step (SPaG once-over of the prediction
                 // boxes) before anything rides to the AI — its Continue button (or any typed
                 // reply after it) is the first AI-bound turn.
-                const _wasPredB = _planChainAnswersPredB(canvasChatHistory);
+                const _wasPredB = _planChainAnswersFinalPred(canvasChatHistory);
                 _planChainFilePrediction(canvasChatHistory, msg);
                 if (_wasPredB) {
                     const _tdSilent = canvasSilentSend;
@@ -22663,7 +22755,7 @@
                                 }
                                 // v7.20.55: tidy step after the final prediction (twin — see
                                 // primary pipeline for the law).
-                                const _wasPredB2 = _planChainAnswersPredB(canvasChatHistory);
+                                const _wasPredB2 = _planChainAnswersFinalPred(canvasChatHistory);
                                 _planChainFilePrediction(canvasChatHistory, msg);
                                 if (_wasPredB2) {
                                     const _tdSilent2 = canvasSilentSend;
@@ -40898,8 +40990,10 @@
                     sectionHTML('notes', 'Predictions: The Unseen Text', true, null,
                         inputHTML('3 predicted themes for the unseen text (from its title, author and date only).', 'pred-unseen'));
             }
-        } else if (planning) {
+        } else if (planning && !_isLangPaper1()) {
             // Literal P2 trio — the S1d chain files these exact fieldIds. Unchanged.
+            // v7.20.208: P1 planning falls through to the generic per-source branch below
+            // (one source → pred-paper + pred-source-a — the SAME ladder the chain files).
             block = dividerHTML('PREDICTIONS') +
                 sectionHTML('notes', 'Predictions: This Paper', true, null,
                     inputHTML('3 themes you expect this paper is about — committed before reading, never marked.', 'pred-paper')) +
@@ -41779,7 +41873,10 @@
         // row). Done-ness derives from the chain's stage detection over the live history
         // (same source as the interceptor — one truth), with the prediction FIELDS as the
         // resume-proof fallback when no history getter is registered yet.
-        const predsFiled = !!(fieldText('pred-paper') && fieldText('pred-source-a') && fieldText('pred-source-b'));
+        // v7.20.208: pred-source-b is required only when the doc HAS that box (P1 = one
+        // source → pred-paper + pred-source-a only; a hard-AND on b never ticked on P1).
+        const predsFiled = !!(fieldText('pred-paper') && fieldText('pred-source-a')
+            && (!host.querySelector('[data-field-id="pred-source-b"]') || fieldText('pred-source-b')));
         if (host.querySelector('[data-field-id="pred-paper"]')) {
             // v7.20.53: the CHAIN (history) is the ONE truth for Setup done-ness — the doc
             // fields survive chat clears/abandoned runs, so raw predsFiled ticked
@@ -41803,10 +41900,15 @@
                     } else if (!hist.some(m => m.role === 'assistant')) {
                         stageIdx = 0;
                     } else {
-                        // stage null = predB ASKED (or a legacy chat the chain never owned).
+                        // stage null = the FINAL prediction ASKED (or a legacy chat the
+                        // chain never owned). v7.20.208: the final prediction is predB on
+                        // a paired-source paper, predA on a one-source paper (P1).
                         // Asked ≠ answered: only reach L when a user reply follows the ask.
+                        const _finalPredRe = _planChainSourceCount() >= 2
+                            ? /predict Source B will explore/i
+                            : /predict Source A will explore/i;
                         let bIdx = -1;
-                        hist.forEach((m, i) => { if (m.role === 'assistant' && /predict Source B will explore/i.test(_planChainNorm(m.content))) bIdx = i; });
+                        hist.forEach((m, i) => { if (m.role === 'assistant' && _finalPredRe.test(_planChainNorm(m.content))) bIdx = i; });
                         stageIdx = (bIdx !== -1 && !hist.some((m, i) => i > bIdx && m.role === 'user')) ? (L - 1) : L;
                     }
                 }

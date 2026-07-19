@@ -4299,7 +4299,7 @@ TEMPLATE;
             $L = $context['ladder'];
             if (!empty($L['done'])) {
                 $this->dynamic_ladder = "\n### C-LADDER — CURRENT TURN (code-owned state)\n"
-                    . "Every plan element across the document is already filed. Do NOT re-open, re-ask, or re-judge any of them — acknowledge the plan is complete and move the student forward (the wrap-up / question gate). Emit no @ELEMENT_JUDGE.\n";
+                    . "Every LADDERED plan element across the document is already filed. Do NOT re-open, re-ask, or re-judge any of them. Emit no @ELEMENT_JUDGE. Move the student forward to the protocol's next stage — any remaining un-laddered planning stage (e.g. a creative-writing scene spine), the wrap-up, or the question gate.\n";
             } elseif (!empty($L['el'])) {
                 $ld  = "\n### C-LADDER — CURRENT TURN (code-owned state — never announce it to the student)\n";
                 $ld .= "**ACTIVE ELEMENT:** `{$L['el']}` — echo this id BYTE-FOR-BYTE as the \"el\" in your @ELEMENT_JUDGE marker; never invent or change it.\n";

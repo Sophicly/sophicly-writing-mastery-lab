@@ -49,6 +49,11 @@ vm.createContext(sandbox);
 const isP2Match = src.match(/function _isLangPaper2\(\) \{[\s\S]*?\n    \}/);
 if (!isP2Match) { console.error('❌ ladder-sim: cannot slice _isLangPaper2'); process.exit(1); }
 vm.runInContext(isP2Match[0], sandbox);
+// v7.20.208: the P1 twin gate is sliced from the REAL source too — the P1 activation leg
+// (subject-family normalisation) is itself under test, exactly as P2's.
+const isP1Match = src.match(/function _isLangPaper1\(\) \{[\s\S]*?\n    \}/);
+if (!isP1Match) { console.error('❌ ladder-sim: cannot slice _isLangPaper1'); process.exit(1); }
+vm.runInContext(isP1Match[0], sandbox);
 vm.runInContext(moduleSrc, sandbox);
 
 // Fake PM doc: rows = [{fieldId, text}] → canvasEditor.state.doc.descendants walking outlineRows.
@@ -309,6 +314,88 @@ ok(pc('**I don\'t know**').idkPending === true, 'H8: markdown-wrapped IDK still 
 ok(pc('The writer uses a metaphor to suggest decay').verdict === null, 'H9: real answer → null (LLM judges)');
 ok(pc('Explain further').idkPending === true, 'H10: struggle-menu "Explain further" → free-tier help, no climb, no LLM judge');
 ok(pc('Ask me more questions').idkPending === true, 'H11: struggle-menu "Ask me more questions" → same gate');
+
+// ═══ P1. AQA LANGUAGE PAPER 1 (v7.20.208 port — paper config + registries + walk arms) ════════
+// REAL lesson state (staging shortcode, verified 2026-07-19: board="aqa"
+// text="aqa_lang_paper_1" subject="language" topic="1", NO marks attr). At runtime the
+// subject resolves to the paper-style family form — the fixture uses 'language_p1' so the
+// gate's normalisation leg is exercised, never a designed-state literal.
+sandbox.state.subject = 'language_p1'; sandbox.state.marks = 0; sandbox.state.question = '';
+function p1Doc(filled) {
+  filled = filled || {};
+  const rows = [];
+  for (let i = 1; i <= 2; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) {
+    const fid = `outline-body-${i}-${s}-q2`; rows.push({ fieldId: fid, text: filled[fid] || '' });
+  }
+  for (let i = 1; i <= 2; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) {
+    const fid = `outline-body-${i}-${s}-q3`; rows.push({ fieldId: fid, text: filled[fid] || '' });
+  }
+  for (let i = 1; i <= 3; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) {
+    const fid = `outline-body-${i}-${s}`; rows.push({ fieldId: fid, text: filled[fid] || '' });
+  }
+  rows.push({ fieldId: 'outline-intro-thesis-q4', text: filled['outline-intro-thesis-q4'] || '' });
+  rows.push({ fieldId: 'outline-conclusion-thesis', text: filled['outline-conclusion-thesis'] || '' });
+  return rows;
+}
+// Registry dispatch: the SAME qKey resolves to the paper's own shape.
+const p1q2 = call('_ladderRegistry', 'q2').map(e => e.el);
+ok(p1q2.includes('outline-body-1-topic-q2') && p1q2.includes('q2-technique-p1') && !p1q2.includes('q2-overall-difference'),
+   'P1-R1: subject language_p1 → q2 registry is the P1 TTECEA shape (not P2 inference)');
+const p1q3 = call('_ladderRegistry', 'q3').map(e => e.el);
+ok(p1q3.includes('q3-feature-p1') && !p1q3.includes('outline-body-3-topic-q3'),
+   'P1-R2: P1 q3 = structural-feature synthetic, 2 paragraphs only');
+const p1q4 = call('_ladderRegistry', 'q4').map(e => e.el);
+ok(p1q4.includes('q4-concepts') && p1q4.includes('q4-technique-b1') && p1q4.includes('outline-body-1-topic')
+   && p1q4.includes('outline-intro-thesis-q4') && p1q4.includes('outline-conclusion-thesis'),
+   'P1-R3: P1 q4 = concepts + per-body technique synthetics + unsuffixed bodies + mixed-convention frame');
+ok(call('_ladderQuestionOrder').join(',') === 'q2,q3,q4',
+   'P1-R4: P1 question order ends at q4 — Q5 (creative writing) OUTSIDE the ladder by ruling');
+sandbox.state.subject = 'language2';
+ok(call('_ladderRegistry', 'q2').map(e => e.el).includes('q2-overall-difference'),
+   'P1-R5: subject back to language2 → P2 registry again (dispatch is live, no cross-paper bleed)');
+sandbox.state.subject = 'language_p1';
+// Walk arms on the whole-paper P1 doc:
+mkDoc(p1Doc());
+let stP = call('deriveLadderState', []);
+ok(stP && stP.el === 'outline-body-1-topic-q2' && stP.question === 'q2' && stP.rung === 1,
+   'P1-A1: REAL P1 state + fresh whole-paper doc → ladder LIVE, Q2 first el, L1');
+mkDoc(p1Doc({ 'outline-body-1-topic-q2': 'their concept' }));
+stP = call('deriveLadderState', []);
+ok(stP && stP.el === 'q2-technique-p1', 'P1-A2: topic filled → technique synthetic gates');
+const p1q2Done = {};
+for (let i = 1; i <= 2; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) p1q2Done[`outline-body-${i}-${s}-q2`] = 'done';
+mkDoc(p1Doc(p1q2Done));
+stP = call('deriveLadderState', [stamp('q2-technique-p1', 'resolved'), stamp('q2-technique-p2', 'resolved')]);
+ok(stP && stP.el === 'outline-body-1-topic-q3' && stP.question === 'q3',
+   'P1-A3: Q2 fully planned → walk crosses into Q3 (structure)', stP && `${stP.el}/${stP.question}`);
+const p1q3Done = Object.assign({}, p1q2Done);
+for (let i = 1; i <= 2; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) p1q3Done[`outline-body-${i}-${s}-q3`] = 'done';
+mkDoc(p1Doc(p1q3Done));
+stP = call('deriveLadderState', [stamp('q2-technique-p1', 'resolved'), stamp('q2-technique-p2', 'resolved'),
+  stamp('q3-feature-p1', 'resolved'), stamp('q3-feature-p2', 'resolved')]);
+ok(stP && stP.el === 'q4-concepts' && stP.question === 'q4',
+   'P1-A4: Q3 done → Q4 concepts beat active (evaluation opens on the stamp beat)', stP && stP.el);
+const p1q4Done = Object.assign({}, p1q3Done);
+for (let i = 1; i <= 3; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) p1q4Done[`outline-body-${i}-${s}`] = 'done';
+p1q4Done['outline-intro-thesis-q4'] = 'thesis';
+mkDoc(p1Doc(p1q4Done));
+const p1Stamps = [stamp('q2-technique-p1', 'resolved'), stamp('q2-technique-p2', 'resolved'),
+  stamp('q3-feature-p1', 'resolved'), stamp('q3-feature-p2', 'resolved'),
+  stamp('q4-concepts', 'resolved', { question: 'q4' }), stamp('q4-technique-b1', 'resolved', { question: 'q4' }),
+  stamp('q4-technique-b2', 'resolved', { question: 'q4' }), stamp('q4-technique-b3', 'resolved', { question: 'q4' })];
+stP = call('deriveLadderState', p1Stamps);
+ok(stP && stP.el === 'outline-conclusion-thesis' && stP.question === 'q4',
+   'P1-A5: Q4 bodies+intro filled → conclusion active (bodies→frame order holds)', stP && stP.el);
+p1q4Done['outline-conclusion-thesis'] = 'synthesis';
+mkDoc(p1Doc(p1q4Done));
+stP = call('deriveLadderState', p1Stamps);
+ok(stP && stP.done === true, 'P1-A6: every laddered element filed → done (Q5 scene spine never blocks it)');
+// A P1 doc holding ONLY the Q5 scene rows (deferred-to-Story-Steps shape) → dormant, never done.
+warns.length = 0;
+mkDoc(['hook', 'setup', 'reaction', 'epiphany', 'proaction', 'climax', 'denouement'].map(s => ({ fieldId: `plan-scene-Q5-${s}`, text: '' })));
+ok(call('deriveLadderState', []) === null, 'P1-A7: scene-rows-only doc → dormant (CW outside the ladder), never done-on-empty');
+ok(warns.some(w => /no outline boxes/.test(w)), 'P1-A8: …and warns loudly');
+sandbox.state.subject = 'language2';
 
 // ═══ REPORT ═══════════════════════════════════════════════════════════════════════════════════
 console.log(`— LADDER SIM: ${passed}/${passed + failed} behavioural assertions passed (real sliced engine, scripted sessions).`);

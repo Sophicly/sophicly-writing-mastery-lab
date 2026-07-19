@@ -4,138 +4,16 @@
     "version": "1.0.0",
     "base_path": "protocols/aqa/language1",
     "planning": {
+        "_destitched": "v7.20.208 — planning fed WHOLE (mirror of AQA P2's v7.20.49 de-stitch). protocol-b-planning.md is the monolith; the b1–b6 slice files moved to planning/_superseded/ (do NOT port from them). Pseudo-code modules (knowledge-algorithm-planning, state-management, graceful-degradation) pruned — engine owns control-flow now.",
         "always": [
             "modules/foundation-lang1.md",
-            "language/modules/knowledge-algorithm-planning.md",
-            "modules/knowledge-hub.md",
-            "modules/knowledge-ttecea-lang.md",
+            "planning/protocol-b-planning.md",
             "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
             "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
             "language/modules/ttecea-rationale-lang.md"
         ],
-        "groups": [
-            {
-                "id": "setup",
-                "label": "Setup",
-                "steps": [
-                    1
-                ]
-            },
-            {
-                "id": "q2",
-                "label": "Q2",
-                "steps": [
-                    2,
-                    3,
-                    4
-                ]
-            },
-            {
-                "id": "q3",
-                "label": "Q3",
-                "steps": [
-                    5,
-                    6,
-                    7
-                ]
-            },
-            {
-                "id": "q4",
-                "label": "Q4",
-                "steps": [
-                    8,
-                    9,
-                    10
-                ]
-            },
-            {
-                "id": "q5",
-                "label": "Q5",
-                "steps": [
-                    11,
-                    12
-                ]
-            }
-        ],
-        "steps": {
-            "1": {
-                "label": "Setup & Goals",
-                "files": [
-                    "planning/b-intro.md",
-                    "planning/b1-setup.md",
-                    "planning/b2-goals.md"
-                ]
-            },
-            "2": {
-                "label": "Q2: Anchor Quotes",
-                "files": [
-                    "planning/b3-evidence.md"
-                ]
-            },
-            "3": {
-                "label": "Q2: Body Paragraphs 1-2",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "4": {
-                "label": "Q2: Final Plan",
-                "files": [
-                    "planning/b6-final.md"
-                ]
-            },
-            "5": {
-                "label": "Q3: Anchor Quotes",
-                "files": [
-                    "planning/b3-evidence.md"
-                ]
-            },
-            "6": {
-                "label": "Q3: Body Paragraphs 1-2",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "7": {
-                "label": "Q3: Final Plan",
-                "files": [
-                    "planning/b6-final.md"
-                ]
-            },
-            "8": {
-                "label": "Q4: Anchor Quotes",
-                "files": [
-                    "planning/b3-evidence.md"
-                ]
-            },
-            "9": {
-                "label": "Q4: Body Paragraphs 1-3",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "10": {
-                "label": "Q4: Intro, Conclusion & Plan",
-                "files": [
-                    "planning/b5-structure.md",
-                    "planning/b6-final.md"
-                ]
-            },
-            "11": {
-                "label": "Q5: Story Spine",
-                "files": [
-                    "planning/b5-structure.md"
-                ]
-            },
-            "12": {
-                "label": "Q5: Final Plan",
-                "files": [
-                    "planning/b6-final.md"
-                ]
-            }
-        }
+        "steps": {},
+        "groups": []
     },
     "assessment": {
         "always": [

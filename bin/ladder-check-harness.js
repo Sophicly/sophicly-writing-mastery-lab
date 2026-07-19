@@ -181,6 +181,68 @@ if (!fs.existsSync(AQA_P2_PROTO)) {
   }
 }
 
+// ── (3b) EL BYTE-TRACE — AQA P1 (v7.20.208 port; same KEY-MATCH gate as (3)) ───────────────────
+// P1 registry els (_ladderRegistryP1) vs the P1 planning monolith's @FIELD_COMMIT fields.
+// Q2/Q3 = TTECEA ×2 with -q2/-q3 suffixes; Q4 = bodies UNSUFFIXED + suffixed intro thesis +
+// unsuffixed conclusion thesis. Synthetic els (q2-technique-p*, q3-feature-p*, q4-concepts,
+// q4-technique-b*) file nothing and are excluded. Q5 scene rows are NOT registry els (CW is
+// outside the ladder) but ARE protocol filings — checked as protocol fields only.
+const AQA_P1_PROTO = path.join(ROOT, 'protocols', 'aqa', 'language1', 'planning', 'protocol-b-planning.md');
+function aqaP1FilingEls() {
+  const els = [];
+  for (let i = 1; i <= 2; i++) {
+    els.push(`outline-body-${i}-topic-q2`, `outline-body-${i}-evidence-q2`, `outline-body-${i}-analysis-q2`,
+             `outline-body-${i}-effects-q2`, `outline-body-${i}-effects2-q2`, `outline-body-${i}-purpose-q2`);
+  }
+  for (let i = 1; i <= 2; i++) {
+    els.push(`outline-body-${i}-topic-q3`, `outline-body-${i}-evidence-q3`, `outline-body-${i}-analysis-q3`,
+             `outline-body-${i}-effects-q3`, `outline-body-${i}-effects2-q3`, `outline-body-${i}-purpose-q3`);
+  }
+  for (let i = 1; i <= 3; i++) {
+    els.push(`outline-body-${i}-topic`, `outline-body-${i}-evidence`, `outline-body-${i}-analysis`,
+             `outline-body-${i}-effects`, `outline-body-${i}-effects2`, `outline-body-${i}-purpose`);
+  }
+  els.push('outline-intro-thesis-q4', 'outline-conclusion-thesis');
+  return els;
+}
+if (!fs.existsSync(AQA_P1_PROTO)) {
+  note(`— EL BYTE-TRACE (P1): SKIP (AQA P1 planning protocol not found at ${path.relative(ROOT, AQA_P1_PROTO)}).`);
+} else {
+  const protoP1 = fs.readFileSync(AQA_P1_PROTO, 'utf8');
+  const commitFieldsP1 = new Set();
+  const reP1 = /@FIELD_COMMIT\s*\{[^}]*?"field"\s*:\s*"([^"]+)"[^}]*\}/g;
+  let m1;
+  while ((m1 = reP1.exec(protoP1)) !== null) commitFieldsP1.add(m1[1].trim());
+  const expectedP1 = aqaP1FilingEls();
+  const orphansP1 = expectedP1.filter(e => !commitFieldsP1.has(e));
+  // Plan-side + Q5 scene filings the protocol must also target (template-real ids, no registry).
+  const planFieldsP1 = ['plan-Q2-para-1', 'plan-Q2-para-2', 'plan-Q3-para-1', 'plan-Q3-para-2',
+    'plan-body-1', 'plan-body-2', 'plan-body-3', 'plan-intro', 'plan-conclusion',
+    'plan-scene-Q5-hook', 'plan-scene-Q5-setup', 'plan-scene-Q5-reaction', 'plan-scene-Q5-epiphany',
+    'plan-scene-Q5-proaction', 'plan-scene-Q5-climax', 'plan-scene-Q5-denouement'];
+  const planMissP1 = planFieldsP1.filter(e => !commitFieldsP1.has(e));
+  const jsSrcP1 = fs.existsSync(ASSESS_JS) ? fs.readFileSync(ASSESS_JS, 'utf8') : '';
+  const codeTokensP1 = ["'q2-technique-p'", "'q3-feature-p'", "'q4-concepts'", "'q4-technique-b'",
+                        '_ladderRegistryP1', '_ladderQuestionOrder'];
+  const missingTokensP1 = jsSrcP1 ? codeTokensP1.filter(tok => !jsSrcP1.includes(tok)) : ['(wml-assessment.js not found)'];
+  note(`— EL BYTE-TRACE (P1): ${expectedP1.length - orphansP1.length}/${expectedP1.length} code filing els + ${planFieldsP1.length - planMissP1.length}/${planFieldsP1.length} plan/scene fields are real @FIELD_COMMIT fields in the AQA P1 protocol.`);
+  if (orphansP1.length) {
+    failed = 1;
+    note('  ❌ P1 CODE registry el(s) with NO matching @FIELD_COMMIT field (write-key ≠ read-key):');
+    orphansP1.forEach(e => note(`       ${e}`));
+  }
+  if (planMissP1.length) {
+    failed = 1;
+    note('  ❌ P1 plan/scene field(s) the protocol never files (silent no-op on the doc):');
+    planMissP1.forEach(e => note(`       ${e}`));
+  }
+  if (missingTokensP1.length) {
+    failed = 1;
+    note('  ❌ frontend/wml-assessment.js no longer builds expected P1 el token(s) — code/harness drift:');
+    missingTokensP1.forEach(t => note(`       missing token ${t}`));
+  }
+}
+
 // ── (4) ENGINE CONTRACT — lock the verdict/heal mechanics from silent erosion (as (1) locks the
 // protocol literals). These are the load-bearing lines a refactor would quietly break; the Fable
 // review's two fixes (heal-weak must not spend the push; el-specific heal-commit) are guarded here
