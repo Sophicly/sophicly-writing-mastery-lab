@@ -597,6 +597,28 @@ rulings; the research backing each is in `research/2026-07-18-*.md`.
 
 ---
 
+## §8. WRITING CYCLES ARE ONCE-AND-MOVE-ON; RETRY-PULL IS FOR QUIZZES (Neil 2026-07-19)
+
+**The ruling (verbatim intent):** for writing/assessment cycles (diagnostic write,
+assessment, planning, outlining, polishing, reassessment) students are encouraged to
+**attempt it once, finish it, move on — and that's how they should be doing it all the
+time.** Students who re-run assessed cycles get stuck "going round and round in circles" —
+they stop progressing, which is the opposite of what the practice is for.
+
+**Scope split — do not over-apply:**
+- **QUIZZES (FQ / MSQ / MSA)** are the retry-encouraged surface: bank-driven, code-marked,
+  cheap. The sidebar's best-score (MAX) aggregation exists to pull retries HERE.
+- **WRITING cycles**: attempt 1 is the course — sacred, never gated, never metered.
+  RE-attempts are the exception, not a feature. The Silver-plan fair-use cap (cost arc)
+  meters writing re-attempts only, framed as the designed flow, never as a paywall.
+- Recommenders and messaging point a finished student FORWARD (next topic, redraft depth,
+  CN) — never back into re-running a completed assessed cycle.
+
+**Why:** forward motion is the same law the C-LADDER runs on (§7); circling trains
+cramming-adjacent habits and costs the most (each full writing cycle = £0.50–£2 of AI vs
+pennies for quizzes). One rule serves learning and unit economics simultaneously.
+Memory: `feedback_writing_cycles_once_and_move_on`. Pairs with `feedback_no_assessment_chasing`.
+
 ## §5. WHERE THE REST OF THE PEDAGOGY CURRENTLY LIVES (to be migrated in as it is touched)
 
 Not a rewrite — the principles below are already recorded and working. Move one INTO this file when
