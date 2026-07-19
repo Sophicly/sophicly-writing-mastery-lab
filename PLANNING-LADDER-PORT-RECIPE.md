@@ -95,6 +95,35 @@ VERBATIM into PROTOCOL-STANDARD as the C-LADDER companion block (the C-CHECKS pr
 protocols then reference, never fork. What differed = per-paper by design → stays in each
 protocol. Update this recipe with anything P1 taught that P2 didn't.
 
+## What the P1 port taught (v7.20.208, 2026-07-19 — additions the P2 build couldn't know)
+
+1. **Engine step 0 is DONE.** `_ladderPaperKey()` + `_LADDER_QUESTION_ORDERS` + the
+   `_ladderRegistry` dispatcher (`_ladderRegistryP1` / `_ladderRegistryP2`) now exist. A new
+   paper adds: a `_isXxx()` gate leg in `_ladderActive`, an order entry, a registry fn — the
+   walk/TELL/stamps are untouched, as designed.
+2. **The PRE-PLANNING CHAIN is part of every port** (it wasn't in §0's shared list). It is
+   paper-gated (`_planPreChainActive`) and its prediction stages are now SOURCE-COUNT-derived
+   (`_planChainSourceCount`: doc-derived, paper fallback): predB + the tidy trigger + the
+   sidebar's final-pred detection + `predsFiled` all key on it, and the greeting/tidy texts
+   derive paper name + prediction count. The predictions SECTION falls to the generic
+   per-source branch for non-P2 papers (pred-paper + pred-source-a…). A port to a paper with
+   a different source count touches NOTHING — it derives.
+3. **An un-laddered stage after the last laddered question is safe**: P1 Q5 (CW scene spine)
+   runs after Q4 resolves. The TELL's done-branch wording is stage-neutral ("every LADDERED
+   element… move to the protocol's next stage") — never re-tighten it to "the plan is
+   complete".
+4. **No-gold-files papers** (P1 has no a-qN-gold.md — golds live in the assessment cards):
+   the monolith's traceability block cites protocol-a-assessment.md sections in prose instead
+   of `@GOLD_REF` lines; check-gold-shapes stays out of it.
+5. **Activation proof without a browser**: subject derives server-side in
+   `render_embedded_wml` (subject==='language' + text → `text_to_template_slug` →
+   `language_pN`); read that chain against the real shortcode and put the DERIVED form in the
+   sim fixture (P1 used 'language_p1'). The real lesson may already exist under a misleading
+   title — search post_content for `task="planning"` + the text slug, never trust titles
+   (P1's planning lesson lives in topic 42364, titled "Diagnostic Assessment… Q5").
+6. **Negative test, cheap form**: python-swap one @FIELD_COMMIT fieldId in the real protocol
+   → run ladder-check-harness → it must name exactly that orphan el → swap back, re-run green.
+
 ## Paper-specific watchlist (from the P2 build — check each on every port)
 - One doc = whole paper? (P2 yes; if a paper is one-lesson-per-question the doc walk simply
   finds one question's boxes — no code change.)
