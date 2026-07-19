@@ -1046,6 +1046,57 @@
         hint.textContent = text;
         return hint;
     }
+    // v7.20.212 (Neil): Reflect submit-gate — same pattern as the self-assessment card:
+    // send stays greyed until BOTH halves exist (a question chosen/named AND the
+    // improvement text after the staged prefix). Engineered against the one named
+    // failure (a permanently stuck grey button): a watchdog interval re-checks the
+    // pending state every 800ms and fully releases + detaches the moment Reflect is
+    // no longer the pending ask — chat can never be locked beyond the stage itself.
+    function _planReflectGate(ta, btn) {
+        if (!ta || !btn || btn._swmlReflectGated) return;
+        btn._swmlReflectGated = true;
+        const pending = () => {
+            try {
+                const hist = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null;
+                if (!hist) return false;
+                for (let i = hist.length - 1; i >= 0; i--) {
+                    const m = hist[i];
+                    if (m && m.hidden) continue;
+                    if (m && m.role === 'assistant') return /when you sat this paper last time/i.test(_planChainNorm(m.content));
+                    if (m && m.role === 'user') return false; // answered — gate over
+                }
+            } catch (_) { /* fail open */ }
+            return false;
+        };
+        const incomplete = () => {
+            const v = (ta.value || '').trim();
+            return !v || /^From memory: Q\d+ asked the most of me last time\. The one thing I want to do better:$/.test(v);
+        };
+        const apply = (on) => {
+            btn.disabled = on;
+            btn.style.opacity = on ? '0.4' : '';
+            btn.style.cursor = on ? 'not-allowed' : '';
+        };
+        const onKey = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey && pending() && incomplete()) { e.preventDefault(); e.stopImmediatePropagation(); }
+        };
+        const tick = () => {
+            const pOn = pending();
+            apply(pOn && incomplete());
+            if (!pOn) {
+                clearInterval(iv);
+                ta.removeEventListener('input', onIn);
+                ta.removeEventListener('keydown', onKey, true);
+                apply(false);
+                btn._swmlReflectGated = false;
+            }
+        };
+        const onIn = () => tick();
+        ta.addEventListener('input', onIn);
+        ta.addEventListener('keydown', onKey, true); // capture: beats the send handler while gated
+        const iv = setInterval(tick, 800);
+        tick();
+    }
     function _planScrollToSection(re, sectionType) {
         try {
             const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
@@ -12561,6 +12612,7 @@
                         } }));
                 });
                 if (bar.childNodes.length === 1) bar.removeChild(bar.firstChild); // hint alone (no questions) → drop
+                _planReflectGate(chatTextarea, chatSendBtn); // v7.20.212: both halves before send enables
             } else if (stage === 'headline') {
                 _preChainGoalOptions().forEach(opt => bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: opt,
@@ -22688,6 +22740,7 @@
                                         } }));
                                 });
                                 if (bar.childNodes.length === 1) bar.removeChild(bar.firstChild);
+                                _planReflectGate(chatTextarea, chatSendBtn); // v7.20.212 (twin)
                             } else if (stage === 'headline') {
                                 _preChainGoalOptions().forEach(opt => bar.appendChild(el('button', {
                                     className: 'swml-quick-btn', textContent: opt,
