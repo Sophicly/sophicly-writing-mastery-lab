@@ -24,7 +24,7 @@ Store level in SESSION_STATE.capability_level. Default: K4.
 
 **CLASSIFY_SELECTION():** When a student selects a sentence or passage to polish in Protocol C, identify its function within the essay:
 - Introduction element (hook / building sentence / thesis)
-- Body paragraph element (topic sentence / TTE sentence / close analysis / effect / purpose / AO4 context)
+- Body paragraph element (topic sentence / TEI sentence / close analysis / effect / purpose / AO4 context)
 - Conclusion element (restated thesis / controlling concept / AO4 / universal message)
 Use this classification to determine which Level criteria apply and which polishing focus areas are most relevant. Do not ask the student to label their own selection unless it is genuinely ambiguous.
 

@@ -108,7 +108,7 @@ The AQA mark scheme at Level \[X+1\] requires '\[relevant descriptor\]'.
 
 What specific improvement will help you achieve that? For example:
 - **Stronger comparative claim** (for topic sentences)
-- **Clearer technique identification** (for TTE sentences)
+- **Clearer technique identification** (for TEI sentences)
 - **Deeper close analysis** (for word-level examination)
 - **More developed effects** (for reader impact)
 - **Tighter integration** (for evidence embedding)

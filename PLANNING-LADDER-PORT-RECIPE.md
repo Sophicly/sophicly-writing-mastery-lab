@@ -95,7 +95,22 @@ VERBATIM into PROTOCOL-STANDARD as the C-LADDER companion block (the C-CHECKS pr
 protocols then reference, never fork. What differed = per-paper by design → stays in each
 protocol. Update this recipe with anything P1 taught that P2 didn't.
 
-## What the P1 port taught (v7.20.208, 2026-07-19 — additions the P2 build couldn't know)
+## What the P1 port taught
+
+### v7.20.209 additions (Neil's first live P1 drive — port these WITH the mold)
+- **The engine dispatch is part of the port surface.** `applyFieldCommits` sat inside the
+  `cw_` guard in BOTH pipelines — every ladder filing no-opped live while all static gates
+  stayed green (sim calls functions directly; the gate lived in pipeline dispatch). The
+  ladder-check harness now asserts the call sites are ungated (PIPELINE DISPATCH check).
+  Cascade: unfiled doc ⇒ `deriveLadderState` never advances (it reads doc field state) ⇒
+  TELL/rung frozen ⇒ push mis-accounting. One live drive caught what 74 sim assertions
+  could not — budget ONE real-drive leg per port.
+- **Monolith mold gained laws 5 (never name the machinery) + 5b (dictation tolerance) and
+  the `technique-misID` mini-check arm** — copy the current P1/P2 monolith text verbatim;
+  they are universal voice/UX laws, not paper content.
+- **"TTE sentence" is banned — the element is the TEI sentence** (Technique + Evidence +
+  Inference). Renamed across all protocols 2026-07-19; new ports must not reintroduce it.
+ (v7.20.208, 2026-07-19 — additions the P2 build couldn't know)
 
 1. **Engine step 0 is DONE.** `_ladderPaperKey()` + `_LADDER_QUESTION_ORDERS` + the
    `_ladderRegistry` dispatcher (`_ladderRegistryP1` / `_ladderRegistryP2`) now exist. A new

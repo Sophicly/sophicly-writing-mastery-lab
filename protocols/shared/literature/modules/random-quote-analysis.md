@@ -309,7 +309,7 @@ The AI's comparison paragraph must demonstrate ALL of the following (same criter
 
 **What makes this Gold Standard:**
 - Topic sentence is conceptual: 'deep psychological twist' and 'disintegration of sanity'
-- TTE sentence integrates technique (alliteration), evidence ('brains… been'), and inference (grimness of death) in one complex construction
+- TEI sentence integrates technique (alliteration), evidence ('brains… been'), and inference (grimness of death) in one complex construction
 - Close analysis zooms to 'The time has been' with precise interpretation (nostalgic, elegiac)
 - Effect 1: audience witnesses pity and horror — directed emotional response
 - Effect 2: rhetorical question ('Yet, is this haunting guilt truly unnatural?') prompts audience to reflect on guilt as inherent consequence

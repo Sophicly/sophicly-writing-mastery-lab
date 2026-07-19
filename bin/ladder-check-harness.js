@@ -269,6 +269,24 @@ if (engineMiss.length) {
   engineMiss.forEach(c => note(`       ${c.inv} (${path.basename(c.file)}): expected «${c.lit}»`));
 }
 
+// ── (5) PIPELINE DISPATCH — the consumer must be UNGATED (v7.20.209, Neil's live P1 drive:
+// applyFieldCommits sat inside the cw_ guard in BOTH pipelines, so every C-LADDER planning
+// filing silently no-opped — 26 markers emitted, zero fields written. Task-scoping rule 1.)
+// Check: every applyFieldCommits(res.reply CALL must NOT sit within 12 lines after a cw_ gate.
+{
+  const src = fs.existsSync(ASSESS_JS) ? fs.readFileSync(ASSESS_JS, 'utf8') : '';
+  const lines = src.split('\n');
+  const callIdx = [];
+  lines.forEach((l, i) => { if (l.includes('applyFieldCommits(res.reply')) callIdx.push(i); });
+  const gated = callIdx.filter(i => lines.slice(Math.max(0, i - 12), i).some(l => l.includes("startsWith('cw_')")));
+  note(`— PIPELINE DISPATCH: ${callIdx.length} applyFieldCommits call site(s); ${gated.length} gated behind cw_.`);
+  if (callIdx.length < 2 || gated.length) {
+    failed = 1;
+    if (callIdx.length < 2) note('  ❌ expected ≥2 applyFieldCommits(res.reply…) call sites (one per chat pipeline).');
+    gated.forEach(i => note(`       ❌ call at line ${i + 1} sits inside/just after a cw_ guard — planning filings will silently no-op.`));
+  }
+}
+
 if (failed) {
   note('\n❌ ladder-check-harness FAILED — the C-LADDER contract, a ladder protocol, the el key-match, or the engine mechanics have drifted.');
   process.exit(1);

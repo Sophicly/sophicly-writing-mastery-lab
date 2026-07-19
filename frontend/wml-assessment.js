@@ -816,10 +816,11 @@
         };
         if (!labels[stage]) return null;
         const order = _planChainOrder();
-        // v7.20.208: tidy shares the FINAL prediction stage's slot (predB when the doc has
-        // a second source, else predA — P1 has one source).
-        const idx = order.indexOf(stage === 'tidy' ? (order.indexOf('predB') !== -1 ? 'predB' : 'predA') : stage);
-        return idx === -1 ? null : { section: labels[stage], step: idx + 1, total: order.length };
+        // v7.20.209 (Neil's drive): tidy gets its OWN displayed slot — sharing the final
+        // prediction's slot showed "Step 6 of 6" twice in a row (predA then tidy).
+        if (stage === 'tidy') return { section: labels.tidy, step: order.length + 1, total: order.length + 1 };
+        const idx = order.indexOf(stage);
+        return idx === -1 ? null : { section: labels[stage], step: idx + 1, total: order.length + 1 };
     }
     function _planSourceLabel(letter) {
         try {
@@ -927,9 +928,12 @@
         } else if (stage === 'tidy') {
             // v7.20.55 (Neil): one code-owned confirm between the last prediction and the
             // first AI turn — a quick SPaG once-over of the prediction boxes.
-            const tidyCount = _planCountWord(1 + _planChainSourceCount());
-            plain = `All ${tidyCount} predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the Predictions section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.\n\nClick **Continue** when you're happy with them.`;
-            html = `<p>All ${tidyCount} predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the <strong>Predictions</strong> section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.</p><p style="margin-top:8px">Click <strong>Continue</strong> when you're happy with them.</p>`;
+            // v7.20.209: "All two predictions" read wrong on P1 (1 paper + 1 source = 2) —
+            // two → "Both", three+ keeps "All {word}". Count stays doc-derived.
+            const _tidyN = 1 + _planChainSourceCount();
+            const tidyLead = _tidyN === 2 ? 'Both' : `All ${_planCountWord(_tidyN)}`;
+            plain = `${tidyLead} predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the Predictions section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.\n\nClick **Continue** when you're happy with them.`;
+            html = `<p>${tidyLead} predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the <strong>Predictions</strong> section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.</p><p style="margin-top:8px">Click <strong>Continue</strong> when you're happy with them.</p>`;
         }
         return { plain: plain, html: html };
     }
@@ -1034,6 +1038,14 @@
     // v7.20.55: optional sectionType filter — label-only matching sent "📍 Source B" to
     // the "Predictions: Source B" NOTES section (first label match in doc order), and
     // left "📍 Source A" parked on its predictions box instead of the source text.
+    // v7.20.209 (Neil): one-line hint above pin bars — same mold as the feedback-gate
+    // swml-quick-hint (the ONE shared hint shape; module scope so BOTH pipeline twins reach it).
+    function _planPinHint(text) {
+        const hint = el('div', { className: 'swml-quick-hint' });
+        hint.style.cssText = 'font-size:11px;opacity:0.7;margin-bottom:6px;line-height:1.4;';
+        hint.textContent = text;
+        return hint;
+    }
     function _planScrollToSection(re, sectionType) {
         try {
             const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
@@ -2954,6 +2966,10 @@
             // (shared with the deterministic CW-Step-1 controller).
             let wrote = false;
             fields.forEach(fid => { if (_writeOutlineRowField(fid, verbatim)) wrote = true; });
+            // v7.20.209: SILENT-SKIP guard (task-scoping rule 4) — markers present but zero
+            // writes is the "saved fine but nothing shows up" class; name the fields loudly.
+            // (Exact-dup skips also land here — that's signal too on a fresh turn.)
+            if (!wrote) console.warn('[WML FieldFill] @FIELD_COMMIT present but nothing written', fields);
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
             // v7.20.50: planning filings advance the granular canvas-derived sidebar.
             if (wrote && state.task === 'planning') setTimeout(_refreshPlanningSidebar, 250);
@@ -12538,6 +12554,8 @@
                 // v7.20.53 (Neil): deep-link buttons — scroll to each question, never
                 // submit. DERIVED from the doc's question sections (dynamic per paper:
                 // Eduqas 10 Qs, IGCSE 6…). Bar persists after clicks (it's navigation).
+                // v7.20.209 (Neil): say what the pins DO — students forgot mid-stage.
+                bar.appendChild(_planPinHint('📍 Tap a pin to jump to that question in your document.'));
                 const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
                 host.querySelectorAll('[data-section-type="question"]').forEach(q => {
                     const m = /^(Q\d+)/.exec((q.getAttribute('data-section-label') || '').trim());
@@ -12546,15 +12564,18 @@
                     bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + qid,
                         onClick: () => _planScrollToSection(new RegExp('^' + qid + '\\b', 'i'), 'question') }));
                 });
+                if (bar.childNodes.length === 1) bar.removeChild(bar.firstChild); // hint alone (no pins) → drop
             } else if (stage === 'predA' || stage === 'predB') {
                 // v7.20.53: same deep-link for the source being predicted.
                 // v7.20.55: type-filtered to SOURCE sections (label-only match hit the
                 // predictions boxes first in doc order).
                 const letter = stage === 'predA' ? 'A' : 'B';
+                bar.appendChild(_planPinHint('📍 Tap the pin to jump to the source in your document.'));
                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + _planSourceLabel(letter),
                     onClick: () => _planScrollToSection(new RegExp('source\\s*' + letter + '\\b', 'i'), 'source') }));
             } else if (stage === 'tidy') {
                 // v7.20.55: SPaG once-over — nav to the predictions + a silent continue.
+                bar.appendChild(_planPinHint('📍 Tap the pin to jump to your predictions, tidy them, then continue.'));
                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 Predictions',
                     onClick: () => _planScrollToSection(/^Predictions/i) }));
                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✓ Continue to planning',
@@ -13436,10 +13457,14 @@
                             }
                         }
 
+                        // v7.20.209: @FIELD_COMMIT consumer runs UNCONDITIONALLY (self-guarding
+                        // no-op without markers) — it lived inside the cw_ guard below, so the
+                        // C-LADDER planning filings (P1 AND P2) silently no-opped: 26 markers in
+                        // Neil's live P1 drive, zero fields written (CANVAS TASK-SCOPING rule 1).
+                        applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                         // v7.14.69: CW sub-step progress tracking
                         if (state.task && state.task.startsWith('cw_')) {
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
-                            applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySpineSynthesis(res.reply); // v7.19.651: deterministic Step-4 spine backstop (marker-independent)
                             // v7.19.504: Step-1 seed-logline self-heal — after the turn settles
                             // (loading cleared), re-emit markers if the rows didn't fill.
@@ -22638,6 +22663,7 @@
                                         className: 'swml-quick-btn', textContent: pair[0], onClick: () => sendVal(pair[1]) })));
                             } else if (stage === 'predQ') {
                                 // v7.20.53 (Neil): deep-link buttons — doc-derived, scroll-only (twin).
+                                bar.appendChild(_planPinHint('📍 Tap a pin to jump to that question in your document.'));
                                 const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
                                 host.querySelectorAll('[data-section-type="question"]').forEach(q => {
                                     const m = /^(Q\d+)/.exec((q.getAttribute('data-section-label') || '').trim());
@@ -22646,13 +22672,16 @@
                                     bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + qid,
                                         onClick: () => _planScrollToSection(new RegExp('^' + qid + '\\b', 'i'), 'question') }));
                                 });
+                                if (bar.childNodes.length === 1) bar.removeChild(bar.firstChild); // hint alone (no pins) → drop
                             } else if (stage === 'predA' || stage === 'predB') {
                                 // v7.20.55: type-filtered to SOURCE sections (twin).
                                 const letter = stage === 'predA' ? 'A' : 'B';
+                                bar.appendChild(_planPinHint('📍 Tap the pin to jump to the source in your document.'));
                                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + _planSourceLabel(letter),
                                     onClick: () => _planScrollToSection(new RegExp('source\\s*' + letter + '\\b', 'i'), 'source') }));
                             } else if (stage === 'tidy') {
                                 // v7.20.55: SPaG once-over (twin).
+                                bar.appendChild(_planPinHint('📍 Tap the pin to jump to your predictions, tidy them, then continue.'));
                                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 Predictions',
                                     onClick: () => _planScrollToSection(/^Predictions/i) }));
                                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✓ Continue to planning',
@@ -23011,10 +23040,12 @@
                                             setTimeout(() => _driveClosingChain(_r), 600);
                                         }
 
+                                        // v7.20.209: unconditional — was inside the cw_ guard; see
+                                        // main-pipeline note (CANVAS TASK-SCOPING rule 1).
+                                        applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                                         // v7.14.69: CW sub-step progress tracking (training-env pipeline)
                                         if (state.task && state.task.startsWith('cw_')) {
                                             applyCwSubstepProgress(detectCwSubstep(res.reply));
-                            applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySpineSynthesis(res.reply); // v7.19.651: deterministic Step-4 spine backstop (marker-independent)
                                         }
 
@@ -41930,11 +41961,35 @@
             // run's answers (doc survives chat clears; Neil's jump-to-Q2 repro).
             add('Predictions', 'Setup', histAvailable ? stageIdx >= L : predsFiled);
         }
+        // v7.20.209: plan-row done-ness — the chat HISTORY (this run's @FIELD_COMMITs) is
+        // the ONE truth when available, exactly as v7.20.53 ruled for the Setup rows above.
+        // Raw field text survives chat clears / abandoned runs (Neil's live P1 repro: junk
+        // "PLAN PARAGRAPH 1" in plan-Q2-para-1 ticked Q2 ✓ and parked current on Q3 while
+        // the fresh run was still at Q2's anchors). Fields remain the no-history fallback.
+        // Field-id keyed → universal for every paper's plan/scene/intro/conclusion rows.
+        let committed = null;
+        try {
+            const hist2 = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null;
+            if (hist2) {
+                committed = {};
+                const cre = /@FIELD_COMMIT\s*(\{[^}]*\})/g;
+                hist2.forEach(m2 => {
+                    if (m2.role !== 'assistant') return;
+                    let mm;
+                    while ((mm = cre.exec(String(m2.content || ''))) !== null) {
+                        try { const p = JSON.parse(mm[1]); if (p && p.field) committed[String(p.field).trim()] = true; } catch (_) { /* skip */ }
+                    }
+                });
+            }
+        } catch (_) { committed = null; /* field fallback stands */ }
         planSecs.forEach(sec => {
             const raw = (sec.getAttribute('data-section-label') || '').replace(/^Plan:\s*/i, '');
             const m = /—\s*(Q\d+)\s*$/.exec(raw);
             const input = sec.querySelector('[data-field-id]');
-            const done = !!(input && (input.textContent || '').trim());
+            const fid = input ? (input.getAttribute('data-field-id') || '') : '';
+            const done = committed
+                ? !!(fid && committed[fid])
+                : !!(input && (input.textContent || '').trim());
             add(raw.replace(/\s*—\s*Q\d+\s*$/, ''), m ? m[1] : '', done);
         });
         add('Final Review', '', false);

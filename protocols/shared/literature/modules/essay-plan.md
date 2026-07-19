@@ -348,7 +348,7 @@ For each ⚠️ NEEDS IMPROVEMENT element, give specific, actionable feedback:
 
 For each ✅ STRONG element, briefly praise the specific quality:
 
-- *"Your TTE sentence for Body Paragraph 2 was excellent — technique named, evidence embedded, inference clear, all in one fluid sentence. That's exactly Level 5-6 quality."*
+- *"Your TEI sentence for Body Paragraph 2 was excellent — technique named, evidence embedded, inference clear, all in one fluid sentence. That's exactly Level 5-6 quality."*
 
 **Step 4 — Summarise with a clear picture:**
 
@@ -665,7 +665,7 @@ All three modes produce a plan in the following format. Populate every section w
 | Building Sentence | Specific and historically grounded, not generic |
 | Thesis | Names all three key ideas clearly in one sentence |
 | Topic Sentences | Concept-level (**AO1** Level 5-6), not surface observations |
-| TTE sentence | Technique named + quote embedded + inference stated — all in one integrated element |
+| TEI sentence | Technique named + quote embedded + inference stated — all in one integrated element |
 | Techniques | Named precisely; interrelationships identified where possible |
 | Quotes | Technique-rich; B/M/E sequencing followed; directly addresses question keywords |
 | Close Analysis | Zooms to specific words; explores connotation and implication |
