@@ -140,6 +140,27 @@ mkDoc([{ fieldId: 'outline-iumvcc-intro', text: '' }, { fieldId: 'outline-iumvcc
 stA = call('deriveLadderState', [stamp('q5-task-analysis', 'resolved')]);
 ok(stA && stA.el === 'q5-intro-image' && stA.question === 'q5',
    'A10: Q5-only doc → q5 derived from doc, task-analysis stamp honoured', stA && `${stA.el}/${stA.question}`);
+// v7.20.207 (delta-verify F10): the Q4 walk arm — the one registry arm no fixture drove.
+function q4Doc(filled) {
+  filled = filled || {};
+  const rows = [];
+  for (let i = 1; i <= 3; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) {
+    const fid = `outline-body-${i}-${s}`; rows.push({ fieldId: fid, text: filled[fid] || '' });
+  }
+  rows.push({ fieldId: 'outline-intro-thesis-q4', text: filled['outline-intro-thesis-q4'] || '' });
+  rows.push({ fieldId: 'outline-conclusion-thesis', text: filled['outline-conclusion-thesis'] || '' });
+  return rows;
+}
+mkDoc(q4Doc());
+stA = call('deriveLadderState', []);
+ok(stA && stA.el === 'q4-aspects' && stA.question === 'q4', 'A13: Q4-only doc, fresh → q4-aspects (Beat 1) active');
+const q4Fill = {};
+for (let i = 1; i <= 3; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) q4Fill[`outline-body-${i}-${s}`] = 'done';
+q4Fill['outline-intro-thesis-q4'] = 'thesis';
+mkDoc(q4Doc(q4Fill));
+stA = call('deriveLadderState', [stamp('q4-aspects', 'resolved', { question: 'q4' })]);
+ok(stA && stA.el === 'outline-conclusion-thesis' && stA.question === 'q4',
+   'A14: Q4 bodies+intro filled → conclusion active (bodies→frame order holds)', stA && stA.el);
 
 // Registry shape: Q4 body unsuffixed + intro suffixed + conclusion unsuffixed (the byte-trace law).
 const q4reg = call('_ladderRegistry', 'q4').map(e => e.el);
@@ -166,6 +187,10 @@ for (let i = 1; i <= 2; i++) for (const s of ['topic', 'evidence', 'analysis', '
 mkDoc(q3Doc(fullFill).filter(r => !r.fieldId.includes('-3-')));
 st = call('deriveLadderState', [stamp('q3-technique-p1', 'resolved'), stamp('q3-technique-p2', 'resolved'), stamp('q3-technique-p3', 'resolved')]);
 ok(st && st.done === true, 'B4: all present boxes filled + synthetics resolved → done (absent ¶3 skipped)');
+// v7.20.207 (delta-verify F1): same partial doc WITHOUT the ¶3 technique stamp — the synthetic has
+// no later PRESENT filing el (¶3 pruned) → phantom beat, must NOT pin; done still reached.
+st = call('deriveLadderState', [stamp('q3-technique-p1', 'resolved'), stamp('q3-technique-p2', 'resolved')]);
+ok(st && st.done === true, 'B4b: pruned-doc synthetic tail never pins (no later PRESENT el → passed)', st && (st.done ? 'done' : st.el));
 // Editor not mounted → dormant for the turn (v7.20.206: never a phantom derive off a mount race).
 sandbox.canvasEditor = null;
 ok(call('deriveLadderState', []) === null, 'B5: null editor → null (dormant turn, no phantom TELL)');

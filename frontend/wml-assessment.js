@@ -2643,11 +2643,15 @@
                 var e = r[i];
                 if (e.resolveBy === 'stamp') {
                     if (_ladderElResolved(history, e.el)) continue;
-                    var passed = false;
+                    // v7.20.207 (delta-verify F1): if NO later PRESENT filing el exists in this
+                    // question (a pruned/partial doc tail), the synthetic is a phantom beat — treat
+                    // as passed, never pin the TELL to a paragraph that isn't in the doc.
+                    var passed = false, laterPresent = false;
                     for (var k = i + 1; k < r.length; k++) {
                         if (r[k].resolveBy === 'stamp') { if (_ladderElResolved(history, r[k].el)) { passed = true; break; } }
-                        else if (states[k] === 'filled') { passed = true; break; }
+                        else if (states[k] !== 'absent') { laterPresent = true; if (states[k] === 'filled') { passed = true; break; } }
                     }
+                    if (!passed && !laterPresent) passed = true;
                     if (passed) continue;
                     active = e; activeQ = qk; break;
                 } else {
@@ -2717,8 +2721,7 @@
     // (design §2.1 pairing law) degrade toward the never-escalating verdict. Only stamps once
     // element-mode has begun (any prior verdict stamp) — so the pre-planning chain / reflect turns
     // never spuriously stamp an element.
-    var _LADDER_JUDGE_RE = /@ELEMENT_JUDGE\s*(\{[^}]*\})/;
-    var _LADDER_INSIGHT_RE = /@INSIGHT_SPENT\b/;
+    var _LADDER_INSIGHT_RE = /@INSIGHT_SPENT\b/i;
     var _LADDER_WRONG_CLASSES = ['misread', 'false-fact', 'technique-misid'];
     function applyElementJudge(aiReply, told, pre, history) {
         try {
@@ -2761,7 +2764,7 @@
             // el "<the active element id…>") which is parseable JSON; if the model echoes it
             // before its real marker, first-match parsing loses the real verdict. A payload is
             // valid iff its verdict is one of the four AND its el holds no template placeholder.
-            var payload = null, re = /@ELEMENT_JUDGE\s*(\{[^}]*\})/g, m;
+            var payload = null, re = /@ELEMENT_JUDGE\s*(\{[^}]*\})/gi, m;   // /i: strip is /gi — a lowercased marker must not be hidden-yet-unparsed (delta-verify F5)
             while ((m = re.exec(reply)) !== null) {
                 var cand = null;
                 try { cand = JSON.parse(m[1]); } catch (_) { continue; }
