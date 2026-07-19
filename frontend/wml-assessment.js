@@ -1110,6 +1110,38 @@
         bc.appendChild(card);
         return card;
     }
+    // v7.20.214 (Neil, asked 3x live): UNIVERSAL question-focus scroll — when planning
+    // moves to a question (chain ends -> first LLM turn, or the active question changes),
+    // the document scrolls to that question's section. Engine-derived (deriveLadderState
+    // owns the active question) — no protocol markers, no reply-text regex, works for any
+    // paper. LIVE turns only (called from the response handlers; replays never call it —
+    // fill-scroll law). Chain-authored bubbles carry .beat — that's the planning-start tell.
+    let _ladderFocusQ = null;
+    function _planLadderFocusScroll() {
+        try {
+            if (!state || state.task !== 'planning') return;
+            const hist = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null;
+            if (!hist || !hist.length) return;
+            const st = deriveLadderState(hist);
+            const q = st && st.question ? String(st.question).toUpperCase() : null;
+            if (!q) return;
+            let prevAssistant = null, seenCurrent = false;
+            for (let i = hist.length - 1; i >= 0; i--) {
+                const m = hist[i];
+                if (!m || m.role !== 'assistant') continue;
+                if (!seenCurrent) { seenCurrent = true; continue; }
+                prevAssistant = m; break;
+            }
+            const planningJustStarted = !!(prevAssistant && prevAssistant.beat);
+            if (_ladderFocusQ === null) {
+                _ladderFocusQ = q;
+                if (!planningJustStarted) return;   // baseline after reload — never scroll on mount
+            }
+            if (!planningJustStarted && _ladderFocusQ === q) return;
+            _ladderFocusQ = q;
+            _planScrollToSection(new RegExp('^' + q + '\\b', 'i'), 'question');
+        } catch (_) { /* focus scroll must never block a turn */ }
+    }
     function _planScrollToSection(re, sectionType) {
         try {
             const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
@@ -13531,6 +13563,7 @@
                         // C-LADDER planning filings (P1 AND P2) silently no-opped: 26 markers in
                         // Neil's live P1 drive, zero fields written (CANVAS TASK-SCOPING rule 1).
                         applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
+                        _planLadderFocusScroll(); // v7.20.214: scroll doc to the question now in focus
                         // v7.14.69: CW sub-step progress tracking
                         if (state.task && state.task.startsWith('cw_')) {
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
@@ -23115,6 +23148,7 @@
                                         // v7.20.209: unconditional — was inside the cw_ guard; see
                                         // main-pipeline note (CANVAS TASK-SCOPING rule 1).
                                         applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
+                                        _planLadderFocusScroll(); // v7.20.214 (twin)
                                         // v7.14.69: CW sub-step progress tracking (training-env pipeline)
                                         if (state.task && state.task.startsWith('cw_')) {
                                             applyCwSubstepProgress(detectCwSubstep(res.reply));
@@ -42059,9 +42093,17 @@
             const m = /—\s*(Q\d+)\s*$/.exec(raw);
             const input = sec.querySelector('[data-field-id]');
             const fid = input ? (input.getAttribute('data-field-id') || '') : '';
-            const done = committed
-                ? !!(fid && committed[fid])
-                : !!(input && (input.textContent || '').trim());
+            let done;
+            if (committed) {
+                done = !!(fid && committed[fid]);
+            } else {
+                // v7.20.214: label-echo guard — junk like "PLAN PARAGRAPH 1" (a section
+                // label echoed into the field by an old heal) must not tick the row.
+                const txt = (input ? (input.textContent || '') : '').trim();
+                const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+                const labelEcho = txt && norm('plan ' + raw).indexOf(norm(txt)) !== -1;
+                done = !!(txt && !labelEcho);
+            }
             add(raw.replace(/\s*—\s*Q\d+\s*$/, ''), m ? m[1] : '', done);
         });
         add('Final Review', '', false);
