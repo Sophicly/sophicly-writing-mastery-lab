@@ -1046,56 +1046,69 @@
         hint.textContent = text;
         return hint;
     }
-    // v7.20.212 (Neil): Reflect submit-gate — same pattern as the self-assessment card:
-    // send stays greyed until BOTH halves exist (a question chosen/named AND the
-    // improvement text after the staged prefix). Engineered against the one named
-    // failure (a permanently stuck grey button): a watchdog interval re-checks the
-    // pending state every 800ms and fully releases + detaches the moment Reflect is
-    // no longer the pending ask — chat can never be locked beyond the stage itself.
-    function _planReflectGate(ta, btn) {
-        if (!ta || !btn || btn._swmlReflectGated) return;
-        btn._swmlReflectGated = true;
-        const pending = () => {
-            try {
-                const hist = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null;
-                if (!hist) return false;
-                for (let i = hist.length - 1; i >= 0; i--) {
-                    const m = hist[i];
-                    if (m && m.hidden) continue;
-                    if (m && m.role === 'assistant') return /when you sat this paper last time/i.test(_planChainNorm(m.content));
-                    if (m && m.role === 'user') return false; // answered — gate over
-                }
-            } catch (_) { /* fail open */ }
-            return false;
+    // v7.20.213 (Neil): Reflect = a designed IN-MESSAGE card — same interaction mold as
+    // the CN element-opener / self-rating cards (the pattern students already know):
+    // question chips + input + mic inside the bubble, card-owned submit gated until BOTH
+    // halves exist. Reuses the swml-cn-opener classes + _attachPanelMic (the ONE shared
+    // mic impl) — no new CSS, no global send-button gating. DOM-only; the resume hook
+    // re-renders it while Reflect is the pending ask.
+    function _planReflectCard(bc, chatTextarea, sendFn) {
+        const card = el('div', { className: 'swml-cn-opener' });
+        card.appendChild(el('div', { className: 'swml-cn-opener-framing',
+            textContent: 'Reflect — from memory, before I show you the record.' }));
+        card.appendChild(el('div', { className: 'swml-cn-opener-q',
+            textContent: 'Which question asked more of you than you expected last time? Pick one.' }));
+        let picked = null;
+        const grid = el('div', { className: 'swml-cn-opener-stances' });
+        const ta = el('textarea', { className: 'swml-cn-opener-justify',
+            placeholder: 'And the ONE thing you most want to do better this time…' });
+        ta.rows = 2;
+        const send = el('button', { className: 'swml-quick-btn swml-cn-opener-send', textContent: 'Send' });
+        const refresh = () => {
+            const ok = !!picked && !!ta.value.trim();
+            send.disabled = !ok;
+            send.classList.toggle('swml-cn-opener-send-ready', ok);
         };
-        const incomplete = () => {
-            const v = (ta.value || '').trim();
-            return !v || /^From memory: Q\d+ asked the most of me last time\. The one thing I want to do better:$/.test(v);
-        };
-        const apply = (on) => {
-            btn.disabled = on;
-            btn.style.opacity = on ? '0.4' : '';
-            btn.style.cursor = on ? 'not-allowed' : '';
-        };
-        const onKey = (e) => {
-            if (e.key === 'Enter' && !e.shiftKey && pending() && incomplete()) { e.preventDefault(); e.stopImmediatePropagation(); }
-        };
-        const tick = () => {
-            const pOn = pending();
-            apply(pOn && incomplete());
-            if (!pOn) {
-                clearInterval(iv);
-                ta.removeEventListener('input', onIn);
-                ta.removeEventListener('keydown', onKey, true);
-                apply(false);
-                btn._swmlReflectGated = false;
-            }
-        };
-        const onIn = () => tick();
-        ta.addEventListener('input', onIn);
-        ta.addEventListener('keydown', onKey, true); // capture: beats the send handler while gated
-        const iv = setInterval(tick, 800);
-        tick();
+        const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
+        const chips = [];
+        host.querySelectorAll('[data-section-type="question"]').forEach(q => {
+            const m = /^(Q\d+)/.exec((q.getAttribute('data-section-label') || '').trim());
+            if (!m) return;
+            const b = el('button', { className: 'swml-quick-btn swml-cn-opener-stance', textContent: m[1],
+                onClick: () => {
+                    picked = picked === m[1] ? null : m[1];
+                    chips.forEach(c => c.classList.toggle('swml-quick-toggle-on', c.textContent === picked));
+                    refresh();
+                } });
+            chips.push(b);
+            grid.appendChild(b);
+        });
+        if (!chips.length) return null;   // no question sections mounted → plain free-text stands
+        ta.addEventListener('input', refresh);
+        const mic = el('button', { className: 'swml-cn-opener-mic', innerHTML: SVG_MIC, title: 'Speak your answer' });
+        mic.type = 'button';
+        _attachPanelMic(ta, mic, refresh);
+        const taRow = el('div', { className: 'swml-cn-opener-tarow' });
+        taRow.appendChild(ta);
+        taRow.appendChild(mic);
+        card.appendChild(grid);
+        card.appendChild(taRow);
+        card.appendChild(send);
+        refresh();
+        send.addEventListener('click', () => {
+            if (!picked || !ta.value.trim()) return;
+            try { if (mic._swmlStopMic) mic._swmlStopMic(); } catch (_) { /* best-effort */ }
+            const better = ta.value.trim();
+            card.classList.add('swml-cn-opener-done');
+            card.innerHTML = '';
+            card.appendChild(el('div', { className: 'swml-cn-opener-summary',
+                textContent: '✓ ' + picked + ' — ' + better }));
+            // VISIBLE user message (reflect-recall files the student's verbatim words)
+            chatTextarea.value = 'From memory: ' + picked + ' asked the most of me last time. The one thing I want to do better: ' + better;
+            sendFn();
+        });
+        bc.appendChild(card);
+        return card;
     }
     function _planScrollToSection(re, sectionType) {
         try {
@@ -12593,26 +12606,9 @@
                 ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: g, onClick: () => sendVal(_gradeKickoffValue(g)) })));
             } else if (stage === 'reflect') {
-                // v7.20.210 (Neil): question-choice buttons — picking one is still the recall
-                // act (generation effect intact); the improvement half stays free-text/mic
-                // (Headline goal asks it next anyway). DERIVED from the doc's questions.
-                // v7.20.211 (Neil): the ask is TWO-part (which question + what to improve), so a
-                // click must STAGE, not send — it pre-fills the input and focuses it; the student
-                // finishes the improvement half and sends ONE complete answer.
-                bar.appendChild(_planPinHint('Tap the question that stretched you most, then finish the sentence with the ONE thing you want to do better — and send.'));
-                const rhost = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
-                rhost.querySelectorAll('[data-section-type="question"]').forEach(q => {
-                    const m = /^(Q\d+)/.exec((q.getAttribute('data-section-label') || '').trim());
-                    if (!m) return;
-                    bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: m[1] + ' stretched me most',
-                        onClick: () => {
-                            chatTextarea.value = 'From memory: ' + m[1] + ' asked the most of me last time. The one thing I want to do better: ';
-                            try { chatTextarea.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) { /* autosize best-effort */ }
-                            chatTextarea.focus();
-                        } }));
-                });
-                if (bar.childNodes.length === 1) bar.removeChild(bar.firstChild); // hint alone (no questions) → drop
-                _planReflectGate(chatTextarea, chatSendBtn); // v7.20.212: both halves before send enables
+                // v7.20.213 (Neil): in-message designed card — chips + input + mic + own
+                // gated submit (the self-rating pattern). Doc-derived questions.
+                _planReflectCard(bc, chatTextarea, sendCanvasMessageQueued);
             } else if (stage === 'headline') {
                 _preChainGoalOptions().forEach(opt => bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: opt,
@@ -22726,21 +22722,7 @@
                                 ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => bar.appendChild(el('button', {
                                     className: 'swml-quick-btn', textContent: g, onClick: () => sendVal(_gradeKickoffValue(g)) })));
                             } else if (stage === 'reflect') {
-                                // v7.20.210 (Neil): question-choice recall buttons (twin — see primary).
-                                bar.appendChild(_planPinHint('Tap the question that stretched you most, then finish the sentence with the ONE thing you want to do better — and send.'));
-                                const rhost = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
-                                rhost.querySelectorAll('[data-section-type="question"]').forEach(q => {
-                                    const m = /^(Q\d+)/.exec((q.getAttribute('data-section-label') || '').trim());
-                                    if (!m) return;
-                                    bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: m[1] + ' stretched me most',
-                                        onClick: () => {
-                                            chatTextarea.value = 'From memory: ' + m[1] + ' asked the most of me last time. The one thing I want to do better: ';
-                                            try { chatTextarea.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) { /* autosize best-effort */ }
-                                            chatTextarea.focus();
-                                        } }));
-                                });
-                                if (bar.childNodes.length === 1) bar.removeChild(bar.firstChild);
-                                _planReflectGate(chatTextarea, chatSendBtn); // v7.20.212 (twin)
+                                _planReflectCard(bc, chatTextarea, sendCanvasMessageQueued); // v7.20.213 (twin)
                             } else if (stage === 'headline') {
                                 _preChainGoalOptions().forEach(opt => bar.appendChild(el('button', {
                                     className: 'swml-quick-btn', textContent: opt,
