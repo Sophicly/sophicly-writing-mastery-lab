@@ -2474,28 +2474,21 @@
         4: 'L4 — model then apply (demonstrate the SINGLE stuck element on the MODEL REGISTRY’s unrelated domain, reasoning aloud; then hand the method back for THEIR words to file)'
     };
 
-    // Is the ladder live for this turn? (mirrors _planPreChainActive's board/paper gate.)
+    // Is the ladder live for this turn? (mirrors _planPreChainActive's board/paper gate — the same
+    // pair proven live on the real lesson.) The ACTIVE QUESTION is NOT gated here: the P2 planning
+    // session plans the WHOLE paper (Q2→Q5, one doc, one chat — protocol §0), so the question is
+    // derived from the DOC each turn by deriveLadderState, never from a per-lesson scalar.
+    // (v7.20.206 4-lens review: state.marks has NO producer on a guided lesson — the old marks/label
+    // key left the ladder silently dormant on the exact lesson it shipped for. §0c slug-trace class.)
     function _ladderActive() {
         try {
             return !!state && state.task === 'planning'
                 && String(state.board || '').toLowerCase() === 'aqa'
-                && (typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false)
-                && !!_ladderQuestionKey();
+                && (typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false);
         } catch (_) { return false; }
     }
-
-    // Which question? AQA Lang P2 marks are unambiguous (Q2=8·Q3=12·Q4=16·Q5=40); fall back to the
-    // question label only if marks are unset/atypical. No key → ladder dormant (safe).
-    function _ladderQuestionKey() {
-        var mk = parseInt(state && state.marks, 10) || 0;
-        if (mk === 8) return 'q2';
-        if (mk === 12) return 'q3';
-        if (mk === 16) return 'q4';
-        if (mk === 40) return 'q5';
-        var q = String((state && state.question) || '').toLowerCase();
-        var m = q.match(/\bq(?:uestion)?\s*0*([2-5])\b/);
-        return m ? ('q' + m[1]) : '';
-    }
+    // The paper's questions in exam order — deriveLadderState walks these registries in sequence.
+    var _LADDER_QUESTION_ORDER = ['q2', 'q3', 'q4', 'q5'];
 
     // The element REGISTRY — ordered, per question, in PLANNING-BEAT order. Each entry:
     //   { el, type, resolveBy }  where resolveBy is a fieldId (FILING element: resolved when that
@@ -2512,7 +2505,10 @@
             for (i = 1; i <= 2; i++) {
                 r.push({ el: 'outline-body-' + i + '-inf1-topic-q2', type: 'topic', resolveBy: 'outline-body-' + i + '-inf1-topic-q2' });
                 r.push({ el: 'outline-body-' + i + '-inf1-evidence-q2', type: 'evidence', resolveBy: 'outline-body-' + i + '-inf1-evidence-q2' });
-                r.push({ el: 'outline-body-' + i + '-inf2-topic-q2', type: 'topic', resolveBy: 'outline-body-' + i + '-inf2-topic-q2' });
+                // inf2-topic is Beat 6 (the marker-led DIFFERENCE sentence, model M2) — a different
+                // skill from Beat 4's perceptive idea (M1), so it gets its own type: fade must not
+                // open it at L2 off a Beat-4 high-resolve the student hasn't practised (review §7).
+                r.push({ el: 'outline-body-' + i + '-inf2-topic-q2', type: 'difference-topic', resolveBy: 'outline-body-' + i + '-inf2-topic-q2' });
                 r.push({ el: 'outline-body-' + i + '-inf2-evidence-q2', type: 'evidence', resolveBy: 'outline-body-' + i + '-inf2-evidence-q2' });
             }
         } else if (qKey === 'q3') {
@@ -2581,12 +2577,15 @@
         return false;
     }
     // Elements resolved at rung ≥ 3 (each counted once) — feeds PACE (≥3 → open rest at L2) and
-    // FADE (a same-TYPE sibling resolved high → open this element at L2).
-    function _ladderResolvedHigh(history, reg) {
+    // FADE (a same-TYPE sibling resolved high → open this element at L2). SCOPED to the active
+    // question (qKey): pace/fade earned on Q2 must not pre-open Q3's untouched skills (design §7d
+    // "~3 els resolved ≥L3 in this Q"; v7.20.206 review: count was paper-wide, now per-question).
+    function _ladderResolvedHigh(history, reg, qKey) {
         var types = {}, count = 0, seen = {}, i, k;
         for (i = 0; i < (history || []).length; i++) {
             var s = history[i] && history[i].ladder;
             if (!s || s.verdict !== 'resolved' || (s.rung || 0) < 3 || seen[s.el]) continue;
+            if (qKey && s.question && s.question !== qKey) continue;
             seen[s.el] = true; count++;
             for (k = 0; k < reg.length; k++) if (reg[k].el === s.el) { types[reg[k].type] = true; break; }
         }
@@ -2609,30 +2608,64 @@
 
     // The BRAIN. Pure over (history + doc + state). Returns null when dormant; else the state
     // block the LLM is TOLD each turn: active element, the rung to PLAY, regime, wallet balance.
+    //
+    // v7.20.206 (4-lens review): the ACTIVE QUESTION is DOC-DERIVED. The P2 planning session plans
+    // the whole paper (Q2→Q5, one doc, one chat), so we walk every question's registry in exam
+    // order and the first unresolved element names BOTH the question and the element. A question
+    // with zero present filing boxes is not planned in this doc (e.g. a Q5-only transactional
+    // topic) and is skipped whole. Guards: no editor → null (never a phantom derive off a
+    // pre-mount race); no filing boxes ANYWHERE → null + warn (legacy pre-outline bake — dormant,
+    // NEVER done:true on an empty plan). done:true only when real boxes existed and all resolved.
     function deriveLadderState(history) {
         if (!_ladderActive()) return null;
-        var qKey = _ladderQuestionKey();
-        var reg = _ladderRegistry(qKey);
-        if (!reg.length) return null;
+        if (!canvasEditor) return null;
         history = history || [];
 
-        // 1. Active element = first NOT-resolved element whose box EXISTS. Absent filing boxes
-        //    (a doc with fewer paragraphs/points than the max) are skipped, never blocked on.
-        var active = null, i, e;
-        for (i = 0; i < reg.length; i++) {
-            e = reg[i];
-            if (e.resolveBy === 'stamp') {
-                if (!_ladderElResolved(history, e.el)) { active = e; break; }
-            } else {
-                var fs = _ladderFieldState(e.resolveBy);
-                if (fs === 'absent') continue;
-                if (fs === 'empty') { active = e; break; }
+        var anyBox = false, active = null, activeQ = '', reg = null;
+        for (var qi = 0; qi < _LADDER_QUESTION_ORDER.length && !active; qi++) {
+            var qk = _LADDER_QUESTION_ORDER[qi];
+            var r = _ladderRegistry(qk);
+            // Pass 1: which filing boxes does THIS doc hold for this question?
+            var states = [], present = 0, i;
+            for (i = 0; i < r.length; i++) {
+                if (r[i].resolveBy === 'stamp') { states.push(null); continue; }
+                var fs = _ladderFieldState(r[i].resolveBy);
+                states.push(fs);
+                if (fs !== 'absent') present++;
+            }
+            if (!present) continue;                    // question not planned in this doc → skip whole
+            anyBox = true;
+            // Pass 2: first unresolved element. Synthetic (stamp) els also resolve by IMPLICATION:
+            // if any LATER element of this question is already filled/resolved, the chat moved past
+            // the synthetic beat (missed marker / legacy mid-plan doc) — never pin the TELL to a
+            // beat the conversation left behind (review: synthetic-wedge).
+            for (i = 0; i < r.length; i++) {
+                var e = r[i];
+                if (e.resolveBy === 'stamp') {
+                    if (_ladderElResolved(history, e.el)) continue;
+                    var passed = false;
+                    for (var k = i + 1; k < r.length; k++) {
+                        if (r[k].resolveBy === 'stamp') { if (_ladderElResolved(history, r[k].el)) { passed = true; break; } }
+                        else if (states[k] === 'filled') { passed = true; break; }
+                    }
+                    if (passed) continue;
+                    active = e; activeQ = qk; break;
+                } else {
+                    if (states[i] === 'absent') continue;
+                    if (states[i] === 'empty') { active = e; activeQ = qk; break; }
+                }
             }
         }
-        if (!active) return { el: null, done: true, question: qKey, wallet: _ladderWallet(history, qKey) };
+        if (!anyBox) {
+            console.warn('[WML ladder] no outline boxes in this doc (legacy pre-outline bake?) — ladder dormant, never done-on-empty');
+            return null;
+        }
+        if (!active) return { el: null, done: true, question: '', wallet: _ladderWallet(history, '') };
+        var qKey = activeQ;
+        reg = _ladderRegistry(qKey);
 
         // 2. Base rung: 1, raised to 2 by FADE (same-type sibling resolved ≥L3) or PACE (≥3 resolved ≥L3).
-        var hi = _ladderResolvedHigh(history, reg);
+        var hi = _ladderResolvedHigh(history, reg, qKey);
         var paceValve = hi.count >= 3;
         var fade = hi.types[active.type] === true;
         var base = (paceValve || fade) ? 2 : 1;
@@ -2668,7 +2701,10 @@
     // Anchored ^…$ so a mixed turn ("dunno, maybe the writer is angry…") is NOT swallowed — it is
     // an attempt, judged by the LLM on its merits (§4.4a). Markdown-stripped first (byte-pair rule).
     var _LADDER_IDK_RE = /^(?:i\s*(?:really|honestly|just)?\s*(?:do\s*n[o']?t|don[o']?t|dont)\s*know|idk|dunno|no\s*idea|not\s*sure|no\s*clue|dk)[\s.!?]*$/i;
-    var _LADDER_CONFUSION_RE = /^(?:i\s*(?:do\s*n[o']?t|don[o']?t|dont)\s*(?:understand|get\s*(?:it|this)?)|i\s*don[o']?t\s*get\s*it|what\s*do\s*you\s*mean|huh|\?+|i[’']?m\s*confused|explain(?:\s*(?:again|that|it))?)[\s.!?]*$/i;
+    // v7.20.206: + the struggle menu's two FREE labels ("Explain further" / "Ask me more
+    // questions") — free-tier help calls must earn current-rung help with NO climb and NO LLM
+    // verdict (the menu feeds the rung, never moves it), same gate as IDK/confusion.
+    var _LADDER_CONFUSION_RE = /^(?:i\s*(?:do\s*n[o']?t|don[o']?t|dont)\s*(?:understand|get\s*(?:it|this)?)|i\s*don[o']?t\s*get\s*it|what\s*do\s*you\s*mean|huh|\?+|i[’']?m\s*confused|explain(?:\s*(?:again|that|it|further|more))?|ask\s*me\s*more\s*questions?)[\s.!?]*$/i;
     function _ladderPrecheck(msg) {
         var t = (typeof _planChainNorm === 'function' ? _planChainNorm(String(msg || '')) : String(msg || '')).trim();
         if (!t) return { verdict: 'failed', idkPending: false };
@@ -2720,10 +2756,22 @@
             }
 
             // Substantive turn → parse the LLM's @ELEMENT_JUDGE (the ONE routing signal).
-            var m = reply.match(_LADDER_JUDGE_RE);
-            if (m) {
-                var payload = null;
-                try { payload = JSON.parse(m[1]); } catch (_) { payload = null; }
+            // v7.20.206: iterate ALL matches and take the first VALID one — the protocol's own
+            // annex contains a literal marker template ("verdict":"resolved|weak|failed|wrong",
+            // el "<the active element id…>") which is parseable JSON; if the model echoes it
+            // before its real marker, first-match parsing loses the real verdict. A payload is
+            // valid iff its verdict is one of the four AND its el holds no template placeholder.
+            var payload = null, re = /@ELEMENT_JUDGE\s*(\{[^}]*\})/g, m;
+            while ((m = re.exec(reply)) !== null) {
+                var cand = null;
+                try { cand = JSON.parse(m[1]); } catch (_) { continue; }
+                if (!cand || !cand.verdict) continue;
+                var cv = String(cand.verdict).toLowerCase();
+                if (['resolved', 'weak', 'failed', 'wrong'].indexOf(cv) === -1) continue;   // template echo
+                if (typeof cand.el === 'string' && cand.el.indexOf('<') !== -1) continue;   // placeholder el
+                payload = cand; break;
+            }
+            {
                 if (payload && payload.verdict) {
                     if (payload.el && payload.el !== told.el) {
                         console.warn('[WML ladder] el echo mismatch — told', told.el, 'got', payload.el, '(trusting told)');

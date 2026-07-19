@@ -4299,13 +4299,25 @@ TEMPLATE;
             $L = $context['ladder'];
             if (!empty($L['done'])) {
                 $this->dynamic_ladder = "\n### C-LADDER — CURRENT TURN (code-owned state)\n"
-                    . "Every plan element for this question is already filed. Do NOT re-open, re-ask, or re-judge any of them — acknowledge the plan is complete and move the student to the question gate. Emit no @ELEMENT_JUDGE.\n";
+                    . "Every plan element across the document is already filed. Do NOT re-open, re-ask, or re-judge any of them — acknowledge the plan is complete and move the student forward (the wrap-up / question gate). Emit no @ELEMENT_JUDGE.\n";
             } elseif (!empty($L['el'])) {
                 $ld  = "\n### C-LADDER — CURRENT TURN (code-owned state — never announce it to the student)\n";
                 $ld .= "**ACTIVE ELEMENT:** `{$L['el']}` — echo this id BYTE-FOR-BYTE as the \"el\" in your @ELEMENT_JUDGE marker; never invent or change it.\n";
+                // v7.20.206 (review): the judge instruction must carry the annex's exemptions —
+                // positioned last, this block WINS over the cached protocol, so without the
+                // qualifier an obedient model judges gate clicks / quote selection / predictions,
+                // and an LLM-path verdict has no begun-guard (a weak spends the push, a failed
+                // climbs, before the beat opens).
+                $ld .= "**JUDGE ONLY REAL ATTEMPTS:** emit @ELEMENT_JUDGE only when this turn genuinely attempts (or refuses) the ACTIVE ELEMENT's question. Emit NO verdict on: button or Y replies, gate clicks, the pre-planning chain, quote-selection and anchor-quote beats, detour questions, prediction revisits, mirror-backs, or knowledge exchanges — even though this block names an active element.\n";
                 if (!empty($L['rung_label'])) {
                     $ld .= "**RUNG FLOOR — where the student currently SITS (a floor, NOT a ceiling):** {$L['rung_label']}\n";
-                    $ld .= "Judge THIS turn first, then act in the SAME reply: if you judge it `failed` (drift, evasion, restatement, nothing ownable), climb exactly ONE rung ABOVE this floor and play that rung's help — a different KIND of help, never the same question reworded (Law 9). If `weak`, give this floor rung's ONE push. If `resolved`, file (`@FIELD_COMMIT`) and ask the next element. If `wrong`, correct free (name · why · fix) and re-invite this floor rung.\n";
+                    if ((int) ($L['rung'] ?? 0) >= 4) {
+                        // v7.20.206: at L4 there is no rung above — the protocol's terminal rule
+                        // applies instead of a climb instruction (review finding 5).
+                        $ld .= "On a judged turn, act in the SAME reply: if `failed`, you are at the LAST rung — no further climb exists. Apply Law 9's terminal rule: model the single stuck element again on the unrelated domain, and if it is a quote-based element that still will not yield, swap that ONE thin quotation (the swap mechanic) or accept a modest owned answer — an owned answer always beats an injected one. If `weak`, give this rung's ONE push. If `resolved`, file (`@FIELD_COMMIT`) and ask the next element. If `wrong`, correct free (name · why · fix) and re-invite.\n";
+                    } else {
+                        $ld .= "On a judged turn, act in the SAME reply: if you judge it `failed` (drift, evasion, restatement, nothing ownable), climb exactly ONE rung ABOVE this floor and play that rung's help — a different KIND of help, never the same question reworded (Law 9). If `weak`, give this floor rung's ONE push. If `resolved`, file (`@FIELD_COMMIT`) and ask the next element. If `wrong`, correct free (name · why · fix) and re-invite this floor rung.\n";
+                    }
                 }
                 if (($L['regime'] ?? '') === 'owned-push') {
                     $ld .= "**PUSH ALREADY SPENT:** the one Socratic push for this element is used. If the student's answer is owned (theirs, on the element), ACCEPT it now — file it with `@FIELD_COMMIT` if this element has an outline box, otherwise just resolve it — and do NOT push again. A weak-but-owned answer never enters the ladder.\n";

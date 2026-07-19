@@ -2869,8 +2869,10 @@ window.WML = (function() {
         // v7.20.205 C-LADDER: Strip @ELEMENT_JUDGE{...} (the per-turn verdict) and @INSIGHT_SPENT
         // (the wallet-spend signal). Both stay in RAW history (code parses/stamps them there) but
         // MUST NEVER render to the student or chip-render — strip in the same place as @FIELD_COMMIT.
-        text = text.replace(/@ELEMENT_JUDGE\s*\{[^}]*\}/g, '').trim();
-        text = text.replace(/@INSIGHT_SPENT(?:\s*\{[^}]*\})?/g, '').trim();
+        // v7.20.206: payload OPTIONAL + case-insensitive — a bare/newline-broken/lowercased marker
+        // must still never reach the bubble (the parser stays strict; heal covers the parse side).
+        text = text.replace(/@ELEMENT_JUDGE(?:\s*\{[^}]*\})?/gi, '').trim();
+        text = text.replace(/@INSIGHT_SPENT(?:\s*\{[^}]*\})?/gi, '').trim();
         // v7.19.839: collapse the blank-line stack the stripped marker lines leave behind —
         // the auto-file turn emits 12+ markers on their own lines, which stripped into a huge
         // empty gap in the bubble (Neil's screenshot).

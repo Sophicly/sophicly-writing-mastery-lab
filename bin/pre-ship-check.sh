@@ -92,6 +92,15 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/ladder-check-harness.js || fail=1
 fi
 
+# v7.20.206: C-LADDER SIMULATION (behavioural evals — WWAD). Drives the REAL sliced engine
+# through scripted sessions: climb/cap/fade/pace/IDK-gate/resume/self-heals/wallet/pre-check.
+# The static ladder-check guards the CONTRACT text; this guards the MACHINE's behaviour.
+# Runs when the engine or the harness is staged.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|ladder-sim-harness\.js'; then
+  node bin/ladder-sim-harness.js || fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   echo ""
   echo "pre-ship gate FAILED — fix before shipping (do NOT --no-verify past it)."

@@ -1,0 +1,291 @@
+#!/usr/bin/env node
+/* eslint-env node */
+/* Node build-time harness — NOT shipped to the browser. Run: node bin/ladder-sim-harness.js */
+//
+// v7.20.206 — C-LADDER SIMULATION HARNESS (the behavioural layer the static checks can't give).
+//
+// WWAD: an LLM-in-the-loop feature is assessed with EVALS, not vibes — scripted sessions driven
+// through the REAL shipped state machine, outcomes asserted. The ladder engine is a pure function
+// over (history, doc, state), so every worked example in PLANNING-LADDER-P3-DESIGN-2026-07-18.md
+// §2.3/§2.4 and every Fable-review invariant becomes an executable fixture here — no LLM needed.
+//
+// Not a reimplementation: the C-LADDER module is sliced VERBATIM out of wml-assessment.js
+// (same method as bin/outline-rule-harness.js) and executed in a vm sandbox with only the four
+// module-scope collaborators stubbed (state, canvasEditor, _isLangPaper2, _planChainNorm).
+// If the engine changes, this runs the CHANGED code.
+//
+// Covered invariant families:
+//   A. activation + question resolution      E. verdict routing (applyElementJudge)
+//   B. active-element scan / doc states      F. self-heals land SAFE (never escalate/spend)
+//   C. rung math: climb·cap·fade·pace·IDK    G. wallet counting + sub-cap
+//   D. resume (runId — climbs die, resolutions survive)   H. deterministic pre-check regexes
+
+const fs = require('fs');
+const vm = require('vm');
+const path = require('path');
+
+const ASSESS = path.join(__dirname, '..', 'frontend', 'wml-assessment.js');
+const src = fs.readFileSync(ASSESS, 'utf8');
+
+const START = "var _ladderRunId = 'r' + Date.now();";
+const END = '// v7.19.429: GENERIC chat→canvas field-fill primitive';
+const i0 = src.indexOf(START), i1 = src.indexOf(END);
+if (i0 < 0 || i1 < 0 || i1 <= i0) { console.error('❌ ladder-sim: cannot slice C-LADDER module (markers moved)'); process.exit(1); }
+const moduleSrc = src.slice(i0, i1);
+
+// ── sandbox: stub ONLY the module's external collaborators ────────────────────────────────────
+const warns = [];
+const sandbox = {
+  console: { warn: (...a) => warns.push(a.join(' ')), log: () => {} },
+  Date, Math, JSON, String, parseInt, parseFloat,
+  state: { task: 'planning', board: 'aqa', subject: 'language2', marks: 12, question: 'Q3' },
+  _planChainNorm: (s) => String(s || '').replace(/\*/g, ''),
+  canvasEditor: null, // set per-fixture via mkDoc
+};
+vm.createContext(sandbox);
+// _isLangPaper2 is sliced from the REAL source (not stubbed) — the subject-gate leg is itself
+// under test (the real lesson's subject arrives as "language"-family forms; a stub returning
+// true would blind the A4 dormancy fixture to a gate regression).
+const isP2Match = src.match(/function _isLangPaper2\(\) \{[\s\S]*?\n    \}/);
+if (!isP2Match) { console.error('❌ ladder-sim: cannot slice _isLangPaper2'); process.exit(1); }
+vm.runInContext(isP2Match[0], sandbox);
+vm.runInContext(moduleSrc, sandbox);
+
+// Fake PM doc: rows = [{fieldId, text}] → canvasEditor.state.doc.descendants walking outlineRows.
+function mkDoc(rows) {
+  sandbox.canvasEditor = {
+    state: { doc: { descendants(cb) {
+      for (const r of rows) {
+        const node = { type: { name: r.type || 'outlineRow' }, attrs: { fieldId: r.fieldId }, textContent: r.text || '' };
+        if (cb(node) === false) return;
+      }
+    } } }
+  };
+}
+// The Q3 planning doc: all 18 TTECEA outline boxes present (empty unless named in `filled`).
+function q3Doc(filled) {
+  filled = filled || {};
+  const rows = [];
+  for (let i = 1; i <= 3; i++) {
+    for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) {
+      const fid = `outline-body-${i}-${s}-q3`;
+      rows.push({ fieldId: fid, text: filled[fid] || '' });
+    }
+  }
+  return rows;
+}
+const call = (fn, ...args) => sandbox[fn](...args);
+const setRun = (id) => vm.runInContext(`_ladderRunId = ${JSON.stringify(id)};`, sandbox);
+const RUN = () => vm.runInContext('_ladderRunId', sandbox);
+
+let passed = 0, failed = 0;
+function ok(cond, label, detail) {
+  if (cond) { passed++; }
+  else { failed++; console.log(`  ❌ ${label}${detail ? ' — ' + detail : ''}`); }
+}
+// A judged-turn stamp as the engine would have written it (helper for history fixtures).
+function stamp(el, verdict, extra) {
+  return Object.assign({ role: 'assistant', content: 'x', ladder: Object.assign(
+    { el, verdict, rung: 1, regime: 'normal', runId: RUN(), question: 'q3', kind: 'attempt', source: 'llm' }, extra) }, {});
+}
+
+// ═══ A. ACTIVATION + DOC-DERIVED QUESTION RESOLUTION (v7.20.206 — the real-lesson shape) ═════
+// The REAL P2 planning lesson carries NO marks attr and NO question label (staging shortcode,
+// verified 2026-07-19: board="aqa" subject="language" text="aqa_lang_paper_2"). The question is
+// derived from the DOC — these fixtures run with marks=30/question='' (the real values).
+mkDoc(q3Doc());
+sandbox.state.marks = 30; sandbox.state.question = '';
+let stA = call('deriveLadderState', []);
+ok(stA && stA.el === 'outline-body-1-topic-q3' && stA.question === 'q3',
+   'A1: REAL lesson state (marks 30, no label) + Q3 doc → ladder LIVE, question doc-derived');
+sandbox.state.task = 'assessment';
+ok(call('deriveLadderState', []) === null, 'A2: non-planning task → dormant');
+sandbox.state.task = 'planning'; sandbox.state.board = 'edexcel';
+ok(call('deriveLadderState', []) === null, 'A3: non-AQA board → dormant');
+sandbox.state.board = 'aqa'; sandbox.state.subject = 'literature';
+ok(call('deriveLadderState', []) === null, 'A4: non-P2 subject → dormant');
+sandbox.state.subject = 'language2';
+// The whole-paper MONOLITH doc (Q2 + Q3 boxes; the real lesson shape):
+function monolithDoc(filled) {
+  filled = filled || {};
+  const rows = [];
+  for (let i = 1; i <= 2; i++) for (const s of ['inf1-topic', 'inf1-evidence', 'inf2-topic', 'inf2-evidence']) {
+    const fid = `outline-body-${i}-${s}-q2`; rows.push({ fieldId: fid, text: filled[fid] || '' });
+  }
+  return rows.concat(q3Doc(filled));
+}
+mkDoc(monolithDoc());
+stA = call('deriveLadderState', []);
+ok(stA && stA.el === 'q2-overall-difference' && stA.question === 'q2',
+   'A5: monolith doc, nothing filled → Q2 first (exam order), synthetic Beat-1 el active');
+// Whole Q2 complete → walk crosses into Q3:
+const q2Done = {};
+for (let i = 1; i <= 2; i++) for (const s of ['inf1-topic', 'inf1-evidence', 'inf2-topic', 'inf2-evidence']) q2Done[`outline-body-${i}-${s}-q2`] = 'done';
+mkDoc(monolithDoc(q2Done));
+stA = call('deriveLadderState', [stamp('q2-overall-difference', 'resolved'), stamp('q2-aspect-split', 'resolved')]);
+ok(stA && stA.el === 'outline-body-1-topic-q3' && stA.question === 'q3',
+   'A6: Q2 fully planned → active crosses to Q3 first el (one session, whole paper)', stA && `${stA.el}/${stA.question}`);
+// Implied synthetic resolution (legacy mid-plan doc / missed marker — never pin a passed beat):
+mkDoc(monolithDoc({ 'outline-body-1-inf1-topic-q2': 'their filed idea' }));
+stA = call('deriveLadderState', []);
+ok(stA && stA.el === 'outline-body-1-inf1-evidence-q2',
+   'A7: synthetic unstamped but LATER box filled → implied resolved, active moves on (no wedge)', stA && stA.el);
+// All-absent (legacy pre-outline bake) → dormant + warn, NEVER done-on-empty:
+warns.length = 0;
+mkDoc([{ fieldId: 'some-legacy-box', text: '' }]);
+ok(call('deriveLadderState', []) === null, 'A8: doc with NO ladder boxes → null (dormant), never done:true');
+ok(warns.some(w => /no outline boxes/.test(w)), 'A9: …and warns loudly (silent-dormant is the failure that shipped .205)');
+// Q5-only transactional doc → q5 derived (q2-q4 skipped whole):
+mkDoc([{ fieldId: 'outline-iumvcc-intro', text: '' }, { fieldId: 'outline-iumvcc-urgency', text: '' }]);
+stA = call('deriveLadderState', [stamp('q5-task-analysis', 'resolved')]);
+ok(stA && stA.el === 'q5-intro-image' && stA.question === 'q5',
+   'A10: Q5-only doc → q5 derived from doc, task-analysis stamp honoured', stA && `${stA.el}/${stA.question}`);
+
+// Registry shape: Q4 body unsuffixed + intro suffixed + conclusion unsuffixed (the byte-trace law).
+const q4reg = call('_ladderRegistry', 'q4').map(e => e.el);
+ok(q4reg.includes('outline-body-1-topic') && !q4reg.includes('outline-body-1-topic-q4'),
+   'A11: Q4 body els UNSUFFIXED');
+ok(q4reg.includes('outline-intro-thesis-q4') && q4reg.includes('outline-conclusion-thesis'),
+   'A12: Q4 intro suffixed + conclusion unsuffixed');
+
+// ═══ B. ACTIVE-ELEMENT SCAN ═══════════════════════════════════════════════════════════════════
+mkDoc(q3Doc());
+let st = call('deriveLadderState', []);
+ok(st && st.el === 'outline-body-1-topic-q3' && st.rung === 1, 'B1: fresh doc → first el, L1');
+mkDoc(q3Doc({ 'outline-body-1-topic-q3': 'The concept of decay' }));
+st = call('deriveLadderState', [stamp('q3-technique-p1', 'resolved')]);
+ok(st && st.el === 'outline-body-1-evidence-q3',
+   'B2: topic filled + technique stamp-resolved → evidence active', st && st.el);
+mkDoc(q3Doc({ 'outline-body-1-topic-q3': 'x' }));
+st = call('deriveLadderState', []);
+ok(st && st.el === 'q3-technique-p1', 'B3: synthetic el (technique) gates until stamp-resolved');
+// Absent boxes are skipped, never blocked on (a 2-paragraph doc).
+mkDoc(q3Doc().filter(r => !r.fieldId.includes('-3-')));
+const fullFill = {};
+for (let i = 1; i <= 2; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) fullFill[`outline-body-${i}-${s}-q3`] = 'done';
+mkDoc(q3Doc(fullFill).filter(r => !r.fieldId.includes('-3-')));
+st = call('deriveLadderState', [stamp('q3-technique-p1', 'resolved'), stamp('q3-technique-p2', 'resolved'), stamp('q3-technique-p3', 'resolved')]);
+ok(st && st.done === true, 'B4: all present boxes filled + synthetics resolved → done (absent ¶3 skipped)');
+// Editor not mounted → dormant for the turn (v7.20.206: never a phantom derive off a mount race).
+sandbox.canvasEditor = null;
+ok(call('deriveLadderState', []) === null, 'B5: null editor → null (dormant turn, no phantom TELL)');
+
+// ═══ C. RUNG MATH ═════════════════════════════════════════════════════════════════════════════
+mkDoc(q3Doc());
+const el1 = 'outline-body-1-topic-q3';
+st = call('deriveLadderState', [stamp(el1, 'failed')]);
+ok(st.rung === 2, 'C1: 1 genuine failed → L2');
+st = call('deriveLadderState', [stamp(el1, 'failed'), stamp(el1, 'failed'), stamp(el1, 'failed')]);
+ok(st.rung === 4, 'C2: 3 failed → L4');
+st = call('deriveLadderState', [stamp(el1, 'failed'), stamp(el1, 'failed'), stamp(el1, 'failed'), stamp(el1, 'failed')]);
+ok(st.rung === 4, 'C3: 4th failed → still L4 (hard cap, never 5)');
+st = call('deriveLadderState', [stamp(el1, 'failed', { idkPending: true, source: 'code' })]);
+ok(st.rung === 1 && st.regime === 'idk-pending', 'C4: IDK-failed → NO climb, idk-pending regime');
+st = call('deriveLadderState', [stamp(el1, 'failed', { idkPending: true, source: 'code' }), stamp(el1, 'failed')]);
+ok(st.rung === 2, 'C5: IDK then genuine failed → one climb only');
+st = call('deriveLadderState', [stamp(el1, 'weak')]);
+ok(st.rung === 1 && st.pushSpent === true && st.regime === 'owned-push', 'C6: llm-weak → push spent, NO climb');
+st = call('deriveLadderState', [stamp(el1, 'weak', { source: 'heal-none' })]);
+ok(st.pushSpent === false, 'C7: HEALED weak → push NOT spent (Fable fix F)');
+// FADE: para-1 topic resolved at L3 → para-2 topic opens at L2.
+const fadeFill = {};
+for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose']) fadeFill[`outline-body-1-${s}-q3`] = 'done';
+mkDoc(q3Doc(fadeFill));
+st = call('deriveLadderState', [stamp('outline-body-1-topic-q3', 'resolved', { rung: 3 }), stamp('q3-technique-p1', 'resolved'), stamp('q3-technique-p2', 'resolved')]);
+ok(st.el === 'outline-body-2-topic-q3' && st.base === 2 && st.fade === true,
+   'C8: same-type sibling resolved ≥L3 → FADE, base L2', st && `${st.el} base=${st.base}`);
+// PACE: 3 distinct els resolved ≥L3 → everything else opens at L2.
+mkDoc(q3Doc(fadeFill));
+st = call('deriveLadderState', [
+  stamp('outline-body-1-evidence-q3', 'resolved', { rung: 3 }),
+  stamp('outline-body-1-analysis-q3', 'resolved', { rung: 4 }),
+  stamp('outline-body-1-effects-q3', 'resolved', { rung: 3 }),
+  stamp('q3-technique-p1', 'resolved'), stamp('q3-technique-p2', 'resolved')]);
+ok(st.paceValve === true && st.base === 2, 'C9: 3 els resolved ≥L3 → PACE valve, base L2');
+// v7.20.206: pace/fade earned on ANOTHER question must not pre-open this one (per-question scope).
+mkDoc(q3Doc());
+st = call('deriveLadderState', [
+  stamp('outline-body-1-inf1-topic-q2', 'resolved', { rung: 3, question: 'q2' }),
+  stamp('outline-body-1-inf1-evidence-q2', 'resolved', { rung: 4, question: 'q2' }),
+  stamp('outline-body-2-inf1-topic-q2', 'resolved', { rung: 3, question: 'q2' })]);
+ok(st.paceValve === false && st.base === 1, 'C10: 3 high-resolves on Q2 do NOT pace Q3 (scope law)');
+
+// ═══ D. RESUME (runId) ════════════════════════════════════════════════════════════════════════
+mkDoc(q3Doc());
+const oldRun = RUN();
+const histD = [stamp(el1, 'failed'), stamp(el1, 'failed')]; // two climbs this "session"
+setRun('r-reload');
+st = call('deriveLadderState', histD);
+ok(st.el === el1 && st.rung === 1, 'D1: reload (new runId) → climbs die, base rung restart');
+// but resolutions SURVIVE reload (fade persists):
+mkDoc(q3Doc(fadeFill));
+st = call('deriveLadderState', [Object.assign({}, stamp('outline-body-1-topic-q3', 'resolved', { rung: 3 })), stamp('q3-technique-p1', 'resolved'), stamp('q3-technique-p2', 'resolved')].map(m => { m.ladder.runId = oldRun; return m; }));
+ok(st.el === 'outline-body-2-topic-q3' && st.base === 2, 'D2: prior-run RESOLUTIONS survive reload (fade holds)');
+setRun(oldRun);
+
+// ═══ E+F. VERDICT ROUTING + SELF-HEALS (applyElementJudge on the real shipped code) ══════════
+const TOLD = { el: el1, rung: 2, regime: 'normal', question: 'q3' };
+const BEGUN = [stamp(el1, 'weak')]; // element-mode already begun
+let s;
+s = call('applyElementJudge', '@ELEMENT_JUDGE{"el":"outline-body-1-topic-q3","verdict":"resolved"}\nGreat.', TOLD, { verdict: null }, BEGUN);
+ok(s && s.verdict === 'resolved' && s.source === 'llm', 'E1: clean resolved marker parsed');
+s = call('applyElementJudge', '@ELEMENT_JUDGE{"el":"outline-body-1-topic-q3","verdict":"wrong","class":"technique-misID"}', TOLD, { verdict: null }, BEGUN);
+ok(s && s.verdict === 'wrong' && s['class'] === 'technique-misid', 'E2: wrong+class parsed (case-normalised)');
+s = call('applyElementJudge', '@ELEMENT_JUDGE{"el":"outline-body-1-topic-q3","verdict":"wrong"}', TOLD, { verdict: null }, BEGUN);
+ok(s && s.verdict === 'weak' && s.source === 'heal', 'F1: wrong WITHOUT class → heals to weak (never escalates)');
+warns.length = 0;
+s = call('applyElementJudge', '@ELEMENT_JUDGE{"el":"outline-body-9-BOGUS","verdict":"failed"}', TOLD, { verdict: null }, BEGUN);
+ok(s && s.el === el1 && s.verdict === 'failed', 'E3: el mismatch → told id trusted, verdict kept');
+ok(warns.some(w => /mismatch/.test(w)), 'E4: el mismatch warns loudly');
+s = call('applyElementJudge', '@ELEMENT_JUDGE{bad json,,}', TOLD, { verdict: null }, BEGUN);
+ok(s && s.verdict === 'weak' && /heal/.test(s.source), 'F2: garbage JSON → safe heal to weak');
+s = call('applyElementJudge', 'Filed. @FIELD_COMMIT{"field":"outline-body-1-topic-q3"}', TOLD, { verdict: null }, BEGUN);
+ok(s && s.verdict === 'resolved' && s.source === 'heal-commit', 'F3: commit-without-judge → heals resolved (the file IS the resolution)');
+s = call('applyElementJudge', 'Filed. @FIELD_COMMIT{"field":"plan-Q3-para-1"}', TOLD, { verdict: null }, []);
+ok(s === null, 'F4: OTHER-field commit pre-begin → no spurious stamp (el-specific heal-commit)');
+s = call('applyElementJudge', 'Filed both. @FIELD_COMMIT{"field":"plan-Q3-para-1"}\n@FIELD_COMMIT{"field":"outline-body-1-topic-q3"}', TOLD, { verdict: null }, []);
+ok(s && s.verdict === 'resolved', 'F5: dual filing (plan+outline) → the el\'s own commit found among several');
+s = call('applyElementJudge', 'What a thoughtful start to the session.', TOLD, { verdict: null }, []);
+ok(s === null, 'F6: markerless turn BEFORE element-mode → no stamp (pre-chain protected)');
+s = call('applyElementJudge', 'Try once more?', TOLD, { verdict: null }, BEGUN);
+ok(s && s.verdict === 'weak' && s.source === 'heal-none', 'F7: markerless judged turn → weak heal (safe: no climb, no push spend)');
+s = call('applyElementJudge', 'x', TOLD, { verdict: 'failed', idkPending: true }, BEGUN);
+ok(s && s.verdict === 'failed' && s.idkPending === true && s.source === 'code', 'E5: code pre-verdict wins (LLM never judged)');
+// v7.20.206: the protocol annex's literal marker TEMPLATE is parseable JSON — if echoed before the
+// real marker, first-match parsing loses the real verdict. Parser must skip template echoes.
+s = call('applyElementJudge',
+  '@ELEMENT_JUDGE{"el":"<the active element id from the state block, byte-exact>","verdict":"resolved|weak|failed|wrong"}\n@ELEMENT_JUDGE{"el":"outline-body-1-topic-q3","verdict":"resolved"}',
+  TOLD, { verdict: null }, BEGUN);
+ok(s && s.verdict === 'resolved' && s.source === 'llm', 'E6: annex template echo skipped — the REAL marker wins');
+// insight co-parse (Fable fix G2): a reply carrying BOTH keeps the verdict AND the spend.
+s = call('applyElementJudge', '@INSIGHT_SPENT\n@ELEMENT_JUDGE{"el":"outline-body-1-topic-q3","verdict":"resolved"}', TOLD, { verdict: null }, BEGUN);
+ok(s && s.verdict === 'resolved' && s.insightSpent === true, 'G1: insight + verdict co-parsed (verdict never lost)');
+warns.length = 0;
+s = call('applyElementJudge', 'Did you know Dickens serialised his novels?', TOLD, { verdict: null }, BEGUN);
+ok(warns.some(w => /INSIGHT_SPENT/.test(w)), 'G2: "Did you know" without @INSIGHT_SPENT → warn-net fires (no auto-debit)');
+ok(s && !s.insightSpent, 'G3: …and no spend is recorded (false debit is the worse error)');
+
+// ═══ G. WALLET ════════════════════════════════════════════════════════════════════════════════
+let w = call('_ladderWallet', [stamp(el1, 'resolved', { insightSpent: true }), { role: 'assistant', content: 'k', ladder: { el: 'e2', kind: 'insight', question: 'q3', runId: RUN() } }], 'q3');
+ok(w.used === 2 && w.left === 2 && w.subCapLeft === 0, 'W1: verdict-riding spend + kind:insight both count; sub-cap 1/question exhausted');
+w = call('_ladderWallet', [{ role: 'assistant', content: 'k', ladder: { el: 'e', kind: 'insight', question: 'q2', runId: 'r-old' } }], 'q3');
+ok(w.used === 1 && w.subCapLeft === 1, 'W2: cross-question spend counts to ceiling, not this question\'s sub-cap (and survives reload)');
+
+// ═══ H. DETERMINISTIC PRE-CHECK ═══════════════════════════════════════════════════════════════
+const pc = (m) => call('_ladderPrecheck', m);
+ok(pc('').verdict === 'failed' && !pc('').idkPending, 'H1: empty → failed (no idk gate)');
+ok(pc('idk.').idkPending === true, 'H2: bare "idk." → failed + idkPending');
+ok(pc("I don't know").idkPending === true, 'H3: bare IDK → idkPending');
+ok(pc("dunno, maybe the writer is angry at the city?").verdict === null, 'H4: IDK + content = ATTEMPT (not swallowed — §4.4a)');
+ok(pc('what do you mean').idkPending === true, 'H5: confusion family → idkPending');
+ok(pc('???').idkPending === true, 'H6: bare ??? → confusion');
+ok(pc('Not sure — maybe anger?').verdict === null, 'H7: hedge + content = attempt');
+ok(pc('**I don\'t know**').idkPending === true, 'H8: markdown-wrapped IDK still caught (byte-pair rule)');
+ok(pc('The writer uses a metaphor to suggest decay').verdict === null, 'H9: real answer → null (LLM judges)');
+ok(pc('Explain further').idkPending === true, 'H10: struggle-menu "Explain further" → free-tier help, no climb, no LLM judge');
+ok(pc('Ask me more questions').idkPending === true, 'H11: struggle-menu "Ask me more questions" → same gate');
+
+// ═══ REPORT ═══════════════════════════════════════════════════════════════════════════════════
+console.log(`— LADDER SIM: ${passed}/${passed + failed} behavioural assertions passed (real sliced engine, scripted sessions).`);
+if (failed) { console.log(`\n❌ ladder-sim-harness FAILED — ${failed} assertion(s); the shipped state machine violates the design contract.`); process.exit(1); }
+console.log('✅ ladder-sim-harness passed (climb/cap/fade/pace/IDK/resume/heals/wallet/pre-check all hold on the shipped code).');

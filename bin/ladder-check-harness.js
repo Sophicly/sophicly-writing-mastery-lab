@@ -192,8 +192,8 @@ const ENGINE_CHECKS = [
   { file: ASSESS_JS, inv: 'heal-commit is el-specific',  lit: '_ladderReplyCommitsEl(reply, told.el)' },
   { file: ASSESS_JS, inv: 'idk gate (climb needs attempt)', lit: 'idkPending' },
   { file: ASSESS_JS, inv: 'insight wallet signal',       lit: '_LADDER_INSIGHT_RE' },
-  { file: path.join(ROOT, 'frontend', 'wml-core.js'), inv: '@ELEMENT_JUDGE stripped from bubble', lit: '@ELEMENT_JUDGE\\s*\\{[^}]*\\}' },
-  { file: path.join(ROOT, 'frontend', 'wml-core.js'), inv: '@INSIGHT_SPENT stripped from bubble', lit: '@INSIGHT_SPENT' },
+  { file: path.join(ROOT, 'frontend', 'wml-core.js'), inv: '@ELEMENT_JUDGE stripped (payload-optional, case-insensitive)', lit: '@ELEMENT_JUDGE(?:\\s*\\{[^}]*\\})?/gi' },
+  { file: path.join(ROOT, 'frontend', 'wml-core.js'), inv: '@INSIGHT_SPENT stripped (payload-optional, case-insensitive)', lit: '@INSIGHT_SPENT(?:\\s*\\{[^}]*\\})?/gi' },
 ];
 const engineMiss = [];
 for (const c of ENGINE_CHECKS) {
