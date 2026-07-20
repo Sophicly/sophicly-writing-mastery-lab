@@ -2588,7 +2588,20 @@
                 let f = null;
                 host.querySelectorAll('[data-field-id]').forEach(n => { if (!f && n.getAttribute('data-field-id') === fid) f = n; });
                 const sec = f && (f.closest('.swml-section-block') || f);
-                if (sec) _swmlScrollToTop(sec);
+                if (!sec) return;
+                // v7.20.222 (Neil): scroll only to VISIBLE targets. In the planning lesson the
+                // OUTLINE sections are hidden (they surface in the outlining lesson), so every
+                // element's @FIELD_COMMIT fill scrolled toward a display:none box — a 0×0 rect
+                // resolves to an arbitrary position, read as "random small scrolls" mid-question.
+                // Capability check, not a task gate: any hidden fill target stays scroll-silent
+                // (the write itself always lands); visible targets (plan box at approval, action
+                // plan, CW rows) keep the v7.20.52 behaviour.
+                const _r = sec.getBoundingClientRect();
+                if (sec.offsetParent === null || (_r.width === 0 && _r.height === 0)) {
+                    console.log('WML FillScroll: target', fid, 'is hidden in this lesson — fill landed, scroll skipped');
+                    return;
+                }
+                _swmlScrollToTop(sec);
             } catch (_) { /* non-fatal */ }
         }, 400);
     }
