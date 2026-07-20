@@ -3023,7 +3023,9 @@ TEMPLATE;
             $topic_for_phase = (int) ($context['topic_number'] ?? 0);
             if ($topic_for_phase > 0 && !empty($context['text']) && class_exists('SWML_Session_Manager')) {
                 $p1_att = SWML_Session_Manager::current_attempt($user_id, $context['board'], $context['text'], $topic_for_phase);
-                $p1_rec = SWML_Session_Manager::get_phase_result($user_id, $context['board'], $context['text'], $topic_for_phase, 'initial', $p1_att);
+                // v7.20.227: latest record in the re-mark fork chain (see get_latest_phase_result)
+                // — base-attempt read quoted the OLDEST run's grade into the preamble.
+                $p1_rec = SWML_Session_Manager::get_latest_phase_result($user_id, $context['board'], $context['text'], $topic_for_phase, 'initial', $p1_att);
                 if (is_array($p1_rec) && ($p1_rec['status'] ?? '') === 'complete' && trim((string) ($p1_rec['grade'] ?? '')) !== '') {
                     $p1_g  = trim((string) $p1_rec['grade']);
                     $p1_ts = trim((string) ($p1_rec['total_score'] ?? ''));

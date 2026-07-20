@@ -5085,8 +5085,11 @@ class SWML_REST_API {
 
         // v7.15.44: Attempt 1 uses the legacy un-suffixed key, attempt 2+ uses __aN
         // v7.20.56: read through the canonical shared reader (slash-tolerant decode).
-        $initial = SWML_Session_Manager::get_phase_result($user_id, $board, $text, $topic, 'initial', $attempt);
-        $redraft = SWML_Session_Manager::get_phase_result($user_id, $board, $text, $topic, 'redraft', $attempt);
+        // v7.20.227: serve the LATEST record in the re-mark fork chain — v7.19.843
+        // files re-marks as __a{N} without bumping the bare index, so reading the
+        // base attempt quoted the OLDEST run (planning-reveal stale-grade bug).
+        $initial = SWML_Session_Manager::get_latest_phase_result($user_id, $board, $text, $topic, 'initial', $attempt);
+        $redraft = SWML_Session_Manager::get_latest_phase_result($user_id, $board, $text, $topic, 'redraft', $attempt);
 
         return rest_ensure_response([
             'initial' => $initial,

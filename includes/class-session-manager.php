@@ -790,6 +790,39 @@ class SWML_Session_Manager {
     }
 
     /**
+     * v7.20.227: LATEST record in the re-mark fork chain. complete_phase
+     * (v7.19.843) files a re-mark whose grade/total differ as the NEXT free
+     * __a{N} slot — deliberately without bumping the bare attempt index (the
+     * doc is shared; only the grade history forks). So the newest truth lives
+     * at the highest contiguous slot from the base attempt, while a reader
+     * asking for the base attempt gets the OLDEST run (the planning-reveal
+     * stale-grade bug, Neil 2026-07-20). Walk the same ladder the writer
+     * probes (bounded +50, mirroring complete_phase) and return the newest
+     * record BY completed_at, not by slot: an idempotent re-commit lands on
+     * whichever slot already holds matching values and refreshes its
+     * timestamp — so a re-achieved old result updates a LOW slot while a
+     * higher slot holds an older run (verified live: P1 __a2 re-stamped
+     * 07-07 14:22, after __a5's 08:55). Tie/empty timestamp → higher slot
+     * wins. No record at the base attempt = null — fresh-student semantics
+     * unchanged.
+     */
+    public static function get_latest_phase_result($user_id, $board, $text, $topic, $phase = 'initial', $attempt = 1) {
+        $base      = max(1, (int) $attempt);
+        $latest    = null;
+        $latest_ts = '';
+        for ($n = $base; $n < $base + 50; $n++) {
+            $rec = self::get_phase_result($user_id, $board, $text, $topic, $phase, $n);
+            if (!$rec) break;
+            $ts = (string) ($rec['completed_at'] ?? '');
+            if ($latest === null || $ts >= $latest_ts) {
+                $latest    = $rec;
+                $latest_ts = $ts;
+            }
+        }
+        return $latest;
+    }
+
+    /**
      * Ordered list of paragraph keys. Used by progression logic + UI labels.
      */
     public static function assessment_paragraph_order() {
