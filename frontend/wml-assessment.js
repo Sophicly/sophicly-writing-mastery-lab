@@ -12097,14 +12097,28 @@
                         // v7.20.53: fresh run — wipe the chain's own prediction captures
                         // (per-run commitments; stale ones forked sidebar done-ness).
                         _resetPlanningPredictions();
-                        setTimeout(() => {
-                            if (canvasEditor && canvasEditor.options?.element) {
-                                canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage();
-                            } else {
-                                console.warn('WML: Editor destroyed after clear — cannot auto-send. Reloading canvas.');
-                                renderCanvasWorkspace();
-                            }
-                        }, 200);
+                        // v7.20.218 (Neil's console capture — the "whole WML refreshes on clear"
+                        // root): the aliveness probe read options.element, which false-negatives
+                        // in the training-env render path → EVERY clear fell into the full
+                        // renderCanvasWorkspace rebuild. Probe the editor's real liveness
+                        // (isDestroyed + mounted view DOM), retry across transient states, and
+                        // rebuild only if it is genuinely dead.
+                        {
+                            let _clearTries = 0;
+                            const _postClearSend = () => {
+                                const alive = canvasEditor && !canvasEditor.isDestroyed
+                                    && canvasEditor.view && canvasEditor.view.dom && canvasEditor.view.dom.isConnected;
+                                if (alive) {
+                                    canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage();
+                                } else if (++_clearTries < 8) {
+                                    setTimeout(_postClearSend, 200);
+                                } else {
+                                    console.warn('WML: editor genuinely dead after clear (8 probes) — rebuilding canvas.');
+                                    renderCanvasWorkspace();
+                                }
+                            };
+                            setTimeout(_postClearSend, 200);
+                        }
                         } else if (_poetryCnPickerActive()) {
                         // v7.19.983: poetry-CN chat-clear → re-render the programmatic picker fresh
                         // (mirror the boot gate). currentPoemId is cleared by the fresh chat, so no
