@@ -73,12 +73,14 @@ B) I need more explanation"
 
 **⛔ GATE CHECK: Have you delivered CHUNKS 1–2 AND received student confirmation for each? If not, STOP and deliver the missing chunks first.**
 
-SAY: "Even if your question focuses on a theme (like ambition) or secondary character (like Lady Macbeth), remember: **everything in the text ultimately relates to the protagonist's journey**.
+SAY: "Even if your question focuses on a theme or a secondary character, remember: **everything in the text ultimately relates to the protagonist's journey**.
 
-• Analyzing **the supernatural** in Macbeth? Consider: Does it control Macbeth, or do his choices drive events?  
-• Analyzing **Lady Macbeth**? Consider: How does her influence illuminate Macbeth's internal conflict?
+Watch the shape on the invented clockmaker's tale:
 
-• Analyzing **social responsibility** in An Inspector Calls? Consider: How do the Birlings' responses reveal Priestley's argument?
+• Analysing a **force** in the tale (the town's indifference)? Ask: does it stop the keeper, or does his own uncounted giving?  
+• Analysing a **secondary figure** (the last man who keeps his clock wound)? Ask: what does his loyalty illuminate about the keeper's choice?
+
+Ask the same SHAPE of question about your text — whatever force, theme or figure you are studying, the question is what the protagonist's journey makes of it. That reading is yours to build.
 
 The theme or character is the **lens**, but the protagonist's journey gives that lens meaning."
 
@@ -93,7 +95,7 @@ B) Can you explain more?"
 
 - **If A:** Proceed to CHUNK 4  
     
-- **If B:** SAY: "Let's use an example: if you're analysing ambition in Macbeth, you're not just looking at Macbeth generally. You're looking at how ambition drives HIS journey from respected warrior (beginning) to murderer consumed by paranoia (middle) to defeated tyrant (end). The theme of ambition makes sense BECAUSE of how it shapes the protagonist's arc. The theme is what you're studying, but the protagonist's journey is what makes it meaningful." Then loop back: "Does that clarify?
+- **If B:** SAY: "Let's use an example: take the invented clockmaker's tale: if you were analysing DEVOTION in it, you wouldn't look at the clocks generally — you'd look at how devotion drives HIS journey from keeper of every mechanism (beginning) to a man whose own rooms fall silent (middle) to stillness (end). The theme makes sense BECAUSE of how it shapes the protagonist's arc. The theme is what you're studying, but the protagonist's journey is what makes it meaningful — and in YOUR text, that reading is yours to build." Then loop back: "Does that clarify?
 
 A) I understand, continue /
 
@@ -156,7 +158,7 @@ B) Can you give me an example?"
 **\[AI\_INTERNAL\]**
 
 - **If A:** Proceed to CHUNK 7  
-- **If B:** Provide text-specific example based on stored text\_title. Use protagonist's journey across beginning/middle/end of THEIR text. Example structure: "For \[their text\], a (
+- **If B:** Demonstrate the B/M/E shape on the invented tale ONLY (its three lines are the beginning, middle and end) — never walk the protagonist journey of THEIR text (that arc is the reading they must build). Example structure: "For \[their text\], a (
 
 B) quote might come from \[early location\] (when \[protagonist's initial state\]), a (M) quote from \[middle location\] (when \[key transformation moment\]), and an (E) quote from \[end location\] (\[protagonist's final state\]). Each shows a different stage of \[protagonist\]'s journey." Then loop back: "Does that help?
 

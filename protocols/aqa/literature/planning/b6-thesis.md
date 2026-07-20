@@ -10,7 +10,7 @@ Ask: "Before we synthesize your thesis, let's review what you've discovered. Ple
 * Body 2 (Middle): What concept did you explore?  
 * Body 3 (End): What concept did you explore?
 
-You can refer back to your workbook or summarize them in your own words."
+You can refer back to your document's Body Paragraph plan sections or summarize them in your own words."
 
 \[AI\_INTERNAL\]: Wait for student response.
 
