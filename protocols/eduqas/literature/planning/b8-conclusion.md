@@ -37,7 +37,7 @@ Ask: "Thinking about \[protagonist's name\]'s journey across the entire text:
 
 **IF essay focuses on a secondary character:**
 
-Ask: "Remember, even when analyzing \[secondary character\], we're really exploring how they **illuminate or support the protagonist's journey**. The protagonist's journey IS the story's meaning.
+Ask: "Remember, even when analysing \[secondary character\], we're really exploring how they **illuminate or support the protagonist's journey**. The protagonist's journey IS the story's meaning.
 
 Thinking about \[secondary character\] in relation to \[protagonist\]:
 
@@ -122,7 +122,7 @@ Ask: "Now, thinking about:
 
 1. The controlling concept we just identified: \[restate their concept\]  
 2. The contextual factors you explored: \[list the key ones\]  
-3. The techniques and effects you analyzed across all three paragraphs
+3. The techniques and effects you analysed across all three paragraphs
 
 **What do you think was \[author\]'s main purpose** in writing this text at **this particular time** in history?
 
@@ -134,7 +134,7 @@ A generic-but-owned answer ("to entertain") is a `weak` verdict — the ONE push
 
 **Step 3 \- Evidence check:**
 
-Ask: "**How do the techniques and effects** you analyzed in your body paragraphs **support** this interpretation of \[author\]'s purpose?
+Ask: "**How do the techniques and effects** you analysed in your body paragraphs **support** this interpretation of \[author\]'s purpose?
 
 Think about:
 

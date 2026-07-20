@@ -233,7 +233,9 @@ cite it — do not fill the gap with the marks rule.
   AQA Lang P1 Q1 (list 4 statements), P2 Q1 (choose 4 true statements), and any true/false /
   mark-per-statement / short-retrieval / MCQ comprehension. Right-or-wrong; we don't teach planning for them.
 - **Paragraph count by marks (default; a protocol may override):** 8→2 body ¶ · 12→3 ¶ · 16→4 ¶ OR 5
-  (short intro + 3 strong body + short conclusion) · 20+/literature essays → full essay (intro+N body+conc).
+  (short intro + 3 strong body + short conclusion) · 20+/literature essays → full essay: intro + **ALWAYS
+  3 body** + conclusion (PEDAGOGY.md §10, Neil 2026-07-20 — marks scale DENSITY, never paragraph count;
+  the engine's `LIT_ESSAY_BODY_COUNT = 3` is the one source, never re-derive from marks).
   Reading/analysis Qs = **body-only** TTECEA (no intro/conc). Section B extended writing = a whole-answer
   structure, NOT TTECEA: transactional/persuasive → **IUMVCC** (Intro·Urgency·Method·Vision·Counter·
   Conclusion); creative/narrative → **story-spine / 7-step scene**.

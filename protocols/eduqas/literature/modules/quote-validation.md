@@ -10,7 +10,7 @@
 A substantial anchor quote is one that:
 
 * Captures a **complete technique** (not a fragment)  
-* Contains **analyzable literary features** (metaphor, simile, imagery pattern, semantic field, structural significance, etc.)  
+* Contains **analysable literary features** (metaphor, simile, imagery pattern, semantic field, structural significance, etc.)  
 * Provides enough **textual material** for close analysis (typically 5-10 words for prose, 1-2 lines for poetry)  
 * Hasn't accidentally **broken** or **truncated** a technique the writer is using
 
@@ -33,7 +33,7 @@ A substantial anchor quote is one that:
      
    - Student selects: one word from a pattern  
    - But misses: multiple related words forming a semantic field of disease/decay/corruption  
-   - Result: They can't analyze the cumulative effect  
+   - Result: They can't analyse the cumulative effect  
    - **Apply this thinking to:** Any pattern of related words or imagery
 
    
@@ -42,7 +42,7 @@ A substantial anchor quote is one that:
      
    - Student selects: middle of soliloquy  
    - But misses: opening that demonstrates structural choice or shift in perspective  
-   - Result: They can't analyze the structural pattern  
+   - Result: They can't analyse the structural pattern  
    - **Apply this thinking to:** Any structural feature where context matters
 
    
@@ -51,10 +51,10 @@ A substantial anchor quote is one that:
      
    - Student selects: half of a rhyming couplet  
    - But misses: complete couplet that shows rhyme scheme significance  
-   - Result: They lose opportunity to analyze form  
+   - Result: They lose opportunity to analyse form  
    - **Apply this thinking to:** Rhyme schemes, enjambment, caesura, stanzaic patterns
 
-**General Principle:** For ANY technique the student is trying to analyze, check whether they've selected enough text to capture the complete technique.
+**General Principle:** For ANY technique the student is trying to analyse, check whether they've selected enough text to capture the complete technique.
 
 ### **Quote Validation Process (Execute After Student Provides Quotes)**
 
@@ -66,7 +66,7 @@ A substantial anchor quote is one that:
 
 **STEP 2: Scan for Technique Completeness**
 
-For each quote, check if the student has captured the **complete technique** they're trying to analyze.
+For each quote, check if the student has captured the **complete technique** they're trying to analyse.
 
 **Language Techniques \- Pattern Recognition (Examples):**
 
@@ -80,15 +80,15 @@ For each quote, check if the student has captured the **complete technique** the
 
 - If from **soliloquy/aside**, does quote show the introspective nature?  
 - If from **act/scene opening or closing**, does quote demonstrate structural significance?  
-- If analyzing **juxtaposition**, does quote capture both contrasting elements?  
+- If analysing **juxtaposition**, does quote capture both contrasting elements?  
 - If from **turning point**, does quote show the moment of change?
 
 **Poetic Form \- Completeness Recognition (Examples):**
 
-- If analyzing **rhyme scheme**, does quote include both rhyming lines?  
-- If analyzing **enjambment**, does quote show the run-on across lines?  
-- If analyzing **caesura**, does quote show the mid-line break?  
-- If analyzing **stanza structure**, does quote capture structural significance?
+- If analysing **rhyme scheme**, does quote include both rhyming lines?  
+- If analysing **enjambment**, does quote show the run-on across lines?  
+- If analysing **caesura**, does quote show the mid-line break?  
+- If analysing **stanza structure**, does quote capture structural significance?
 
 **STEP 3: Provide Socratic Guidance**
 
@@ -100,7 +100,7 @@ For each quote, check if the student has captured the **complete technique** the
 
 For example, you could select: '\[suggest improved quote that captures complete technique\]'
 
-This would give you more to analyze because \[explain advantage \- e.g., 'you could then examine how the extended metaphor develops' OR 'you could explore the cumulative effect of the semantic field'\].
+This would give you more to analyse because \[explain advantage \- e.g., 'you could then examine how the extended metaphor develops' OR 'you could explore the cumulative effect of the semantic field'\].
 
 Would you like to adjust your quote, or do you prefer to stay with your original selection?"
 

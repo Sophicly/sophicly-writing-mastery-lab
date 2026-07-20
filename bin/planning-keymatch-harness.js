@@ -62,6 +62,9 @@ const parts = [
 const captured = [];
 const explicit = {
   console,
+  // v7.20.236: the lit body-count constant is declared outside the sliced region — read its
+  // REAL value from the source so a code-side change flows through (never a hardcoded twin).
+  LIT_ESSAY_BODY_COUNT: parseInt((src.match(/var LIT_ESSAY_BODY_COUNT = (\d+)/) || [, '3'])[1], 10),
   outlineRowHTML: (crit, fid) => { captured.push(fid); return ''; },
   sectionHTML: (t, l, a, b, inner) => inner || '',
   // subject/state are set PER CASE at the top of each render() — order-safe.

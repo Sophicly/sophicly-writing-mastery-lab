@@ -223,7 +223,7 @@ A) Yes, this plan is strong B) No, let's refine it"
 @FIELD_SET{"field":"plan-intro","value":"Hook: … | Building: … | Thesis: …"}
 Then tell the student their introduction plan has been filed into the 'Introduction' plan section of their document.
 
-**Transition:** "Excellent. You've now set up your argument with a compelling introduction that meets Level \[5/6\] standards. The final piece of your essay plan is the **conclusion**—where we'll synthesize everything you've analyzed and connect it to a universal message."
+**Transition:** "Excellent. You've now set up your argument with a compelling introduction that meets Level \[5/6\] standards. The final piece of your essay plan is the **conclusion**—where we'll synthesize everything you've analysed and connect it to a universal message."
 
 **Proceed to B.8 Conclusion**.
 

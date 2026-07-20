@@ -135,6 +135,16 @@ LENSES (brief the reviewer with all of them):
 Fix every CONFIRMED defect in the same cycle, then re-run the mechanical gates. Two builder
 self-passes are NOT a substitute — author-blindness is the failure mode this step exists for.
 
+**⭐ DEFECT BACK-PROPAGATION (Neil 2026-07-20 — every port's review hardens ALL ports):**
+every CONFIRMED defect found on a port is immediately re-checked against EVERY previously
+shipped ladder port (AQA lit, AQA Lang P1/P2, and each completed family port): apply the
+same grep/check that found it to each prior port's equivalent surface, document the result
+per port (clean / same defect found+fixed), and fix any hits in the SAME cycle. A defect
+class that recurs across ≥2 ports gets added to the six lenses (or a harness row, if
+mechanically checkable) so it is caught at build time thereafter. Precedent: the lit module
+sweep's NO_META_LEAK find was a latent ALL-boards defect — one port's review repaired every
+board. The back-propagation table rides the port's handoff.
+
 **THE STOP RULE (convergence criterion — never decide "enough passes" by feel):** review
 passes repeat until an independent adversarial pass returns **ZERO findings of MEDIUM or
 higher severity**. A pass that finds a MEDIUM+ defect gets its fixes applied and ONE more
@@ -263,6 +273,38 @@ protocol. Update this recipe with anything P1 taught that P2 didn't.
 10. **Wallet supersession is part of the port:** legacy self-counted insight counters
     (b-intro's "DYK counter: max 3/session") must be rewritten to point at the code-counted
     wallet — two counters means the LLM obeys whichever it read last.
+
+## What the EDUQAS 19th-c port taught (port #1 in Opus's hands, v7.20.235 — the 6 logged recipe gaps, now NORMATIVE)
+
+1. **⭐ RENDER-STRUCTURE TRACE (new mandatory §1 step).** Before any markers: verify the
+   paper's REAL marks produce a RENDER whose body count equals the spec/registry body count.
+   The render derives `marks >= 40 ? 4 : 3` (buildOutlineSection/buildPlanSection/
+   getExamPrepDocTemplate), ignoring `spec.split.body_count` — every 40-mark/3-body lit
+   paper (eduqas 19th-c, ocr, edexcel-igcse modern-prose…) renders a 4th DEAD body box the
+   protocol never fills. ⛔ BATCH BLOCKER until the render honours spec body_count (3 sites,
+   one signature change, baked-doc heal audit — its own engineering unit, Neil-decided).
+   A port hitting this mismatch FLAGS it and does not ship student-facing; protocol-correct
+   ≠ student-shippable.
+2. **New-BOARD-of-existing-family ≠ new family.** If the subject-family predicate and the
+   board-agnostic registry/order already cover the paper (`_isLitEssay` matches
+   `19thcentury`), the ONLY engine change is widening `_ladderActive`'s board arm —
+   subject-scoped so unported sibling dirs stay dormant. Do NOT add a redundant gate
+   leg/registry fn. §0's "add gate leg + order + registry" applies to NEW FAMILIES only.
+3. **`_ladderActive` is board-gated** — §0's shared list omitted this; the board arm is
+   exactly what a new-board port widens. Named here so no reader re-derives it from source.
+4. **§1 precondition on a DIVERGED copy:** grep `@FIELD_COMMIT` and `@FIELD_SET`
+   SEPARATELY; legacy `@CONFIRM_ELEMENT` markers are NOT a filing layer (they count toward
+   neither). Expect divergence from the mold dir (banned parallel-text examples, TTE-not-TEI
+   wording, self-run scaffolds, module refs that must resolve against the TARGET manifest) —
+   splice surgically, never wholesale-copy the mold's files.
+5. **Keymatch case uses REAL marks, never fudged.** A body-count mismatch at real marks is
+   a RENDER-DEFECT signal (gap 1), not a reason to fake `marks` in the fixture or ship a
+   red gate; substitute coverage = fanout auto-enforcement + the port's ladder-check
+   byte-trace until the render fix lands, and say so in the port report.
+6. **§2 fallback when no real lesson exists:** triangulate the shortcode convention from
+   (a) the SAME subject on another board and (b) a sibling paper on the SAME board, then
+   slug-trace the pair through the router (subject→dir map) and the spec JSON. Never invent
+   values; record the triangulation in the port report.
 
 ## Paper-specific watchlist (from the P2 build — check each on every port)
 - One doc = whole paper? (P2 yes; if a paper is one-lesson-per-question the doc walk simply

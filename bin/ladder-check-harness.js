@@ -412,6 +412,19 @@ for (const c of ENGINE_CHECKS) {
   const src = fs.existsSync(c.file) ? fs.readFileSync(c.file, 'utf8') : '';
   if (!src.includes(c.lit)) engineMiss.push(c);
 }
+// v7.20.236 (Neil ruling, PEDAGOGY.md §10): lit essays are ALWAYS 3 body paragraphs — marks
+// scale density, never structure. ONE constant, and the old marks-derived count must never return.
+{
+  const src236 = fs.existsSync(ASSESS_JS) ? fs.readFileSync(ASSESS_JS, 'utf8') : '';
+  if (!src236.includes('var LIT_ESSAY_BODY_COUNT = 3')) {
+    failed = 1;
+    note('  ❌ LIT_ESSAY_BODY_COUNT constant missing — lit body count must be the single constant 3 (PEDAGOGY.md §10).');
+  }
+  if (/marks\s*>=\s*40\s*\?\s*4\s*:\s*3/.test(src236)) {
+    failed = 1;
+    note('  ❌ a `marks >= 40 ? 4 : 3` body-count derivation has returned — banned by PEDAGOGY.md §10 (density scales, structure never).');
+  }
+}
 note(`— ENGINE CONTRACT (ladder mechanics in wml-assessment.js / wml-core.js): ${ENGINE_CHECKS.length - engineMiss.length}/${ENGINE_CHECKS.length} load-bearing lines present.`);
 if (engineMiss.length) {
   failed = 1;

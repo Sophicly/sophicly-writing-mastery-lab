@@ -33,11 +33,11 @@
 
 - ❌ "Dickens critiques capitalism"  
     
-- ✅ "Dickens appears to critique capitalism"  
+- ✅ "The author appears to critique unexamined progress"  
     
-- ❌ "The ghost represents Scrooge's guilt"  
+- ❌ "The empty boat represents the town's ingratitude"  
     
-- ✅ "The ghost could be interpreted as representing Scrooge's guilt"
+- ✅ "The empty boat could be interpreted as representing the town's ingratitude"
 
 **Rationale:** We cannot definitively know authorial intent. Students must learn to make evidence-based arguments while acknowledging interpretive nature of literary analysis.
 

@@ -711,6 +711,14 @@
         const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         return /^(shakespeare|moderntext|19thcentury|nineteenthcentury)$/.test(s);
     }
+    // v7.20.236 — LIT ESSAYS ARE ALWAYS 3 BODY PARAGRAPHS (Neil ruling 2026-07-20, PEDAGOGY.md §10):
+    // intro + 3 bodies + conclusion = 5 paragraphs at ANY tariff (20 or 40 marks). Marks scale the
+    // DENSITY of writing and of what is assessed — never the paragraph count. The old
+    // marks-forty-gets-four derivation rendered a 4th DEAD body box on every 40-mark lit paper
+    // (eduqas 19th-c, ocr, igcse modern-prose) that no protocol/registry ever fills. ONE constant,
+    // three consumers (buildPlanSection, buildOutlineSection, getExamPrepDocTemplate) — never
+    // re-derive body count from marks.
+    var LIT_ESSAY_BODY_COUNT = 3;
 
     // ══════════════════════════════════════════════════════════════
     //  v7.20.49: AQA Lang P2 PRE-PLANNING CHAIN (S0–S1) — shared, stateless core.
@@ -34428,7 +34436,7 @@
         if (fullEssay) {
             html += sectionHTML('plan', `Plan: Introduction${prefix}`, true, null,
                 inputHTML('Introduce your argument BRIEFLY.', 'plan-intro'));
-            const bodyCount = marks >= 40 ? 4 : 3;
+            const bodyCount = LIT_ESSAY_BODY_COUNT;
             for (let i = 1; i <= bodyCount; i++) {
                 html += sectionHTML('plan', `Plan: Body Paragraph ${i}${prefix}`, true, null,
                     inputHTML(`Focus only on KEY IDEA #${i}.`, `plan-body-${i}`));
@@ -36079,7 +36087,7 @@
 
             // Body paragraphs — shared TTEECA with AO filtering.
             // v7.20.107: legacy UNSUFFIXED body fieldIds (''), unchanged — no baked-doc drift.
-            const bodyCount = marks >= 40 ? 4 : 3;
+            const bodyCount = LIT_ESSAY_BODY_COUNT;
             for (let i = 1; i <= bodyCount; i++) {
                 html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null, _bodyRowsFor(i, ''));
             }
@@ -37765,7 +37773,7 @@
             html += dividerHTML('GRADE 9 MODEL');
             html += sectionHTML('feedback', 'Model: Introduction', false, null,
                 '<p><em>The Grade 9 model introduction will appear here after your attempt.</em></p>');
-            for (let i = 1; i <= (marks >= 40 ? 4 : 3); i++) {
+            for (let i = 1; i <= LIT_ESSAY_BODY_COUNT; i++) {
                 html += sectionHTML('feedback', 'Model: Body Paragraph ' + i, false, null,
                     '<p><em>The Grade 9 body paragraph ' + i + ' will appear here.</em></p>');
             }

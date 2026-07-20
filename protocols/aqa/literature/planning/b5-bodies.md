@@ -67,17 +67,16 @@ B) I'm confused about this connection"
 
 **CHUNK 4: Concrete Example**
 
-SAY: "Let's use *An Inspector Calls* as an example:
+SAY: "Let's use an invented tale as the example, so your own text stays yours to read — a three-line tale about a clockmaker:
 
-- **Context**: Priestley wrote this in 1945, just before WWII ended, urgently concerned about preventing a third world war  
-- **Concepts**: Social responsibility, collective consequence, interconnectedness  
-- **Methods driven by that urgency**:  
-  - Play format (not novel) → audiences experience it collectively  
-  - Didactic structure → the play itself teaches, like a lesson  
-  - Simple, direct language → everyone (theaters or pubs) can understand  
-  - Explicit ending → "fire and blood and anguish" \- unusually direct because the message is too urgent to leave ambiguous
+- **Context**: it comes from a town that had just built its first factory, where hours were being bought and sold for the first time  
+- **Concepts**: devotion that forgets itself; time turned into currency  
+- **Methods driven by that concept**:  
+  - Told in three bare lines → nothing decorative survives in a town that bills by the minute  
+  - Antithesis ('the town ticked; his rooms fell silent') → his gift and his loss held in one breath  
+  - A closing pun ('his hands, at last, were still') → craftsman and craft stopping together
 
-The methods aren't random—they're concept-driven. Each technique serves the specific idea Priestley wants to convey."
+The methods aren't random—they're concept-driven. Each technique serves the idea the tale's author wants to convey — and every technique in YOUR text serves its author's concept the same way."
 
 ASK: "A) That makes sense \- how do I use this?  
 B) Can you explain how this applies to my essay?"
@@ -123,7 +122,7 @@ B) Can you briefly recap the framework?"
 
 **Important:** Your topic sentence must be purely concept-led, NOT technique-led. Focus only on the big idea or theme \- you'll explore the author's techniques in detail starting from sentence 2\. Avoid mentioning methods, devices, or techniques here.
 
-**Protagonist Connection:** Even if the question focuses on a theme or secondary character, consider: How does this concept relate to the protagonist's journey? For example, if analyzing the supernatural in Macbeth, think about whether it controls Macbeth or whether his choices drive events. The protagonist's journey IS the story's meaning."
+**Protagonist Connection:** Even if the question focuses on a theme or secondary character, consider: How does this concept relate to the protagonist's journey? For example, in the invented clockmaker's tale, you would ask whether the town's indifference stops him or whether his own uncounted giving does — the question is always what the protagonist's journey makes of the force you are studying. The protagonist's journey IS the story's meaning."
 
 **For Body Paragraphs 2 & 3, ADD:** "How does this concept build on or transition from your previous paragraph's **concept**? How does it deepen our understanding of the protagonist's journey?"
 
@@ -162,7 +161,7 @@ B) Can you briefly recap the framework?"
 
    
 
-   For example, in Macbeth's 'Will all great Neptune's ocean wash this blood clean from my hand?'—the rhetorical question \+ blood symbolism \+ mythological allusion \+ hyperbole all compound together to create an overwhelming sense that guilt is inescapable. How do your techniques interact?"
+   For example, on the invented tale's line 'his hands, at last, were still'—the pun \+ the caesura around 'at last' \+ the closing finality of 'still' all compound together to create an overwhelming sense that craftsman and craft stop together. How do your techniques interact?"
 
    
 
@@ -208,9 +207,9 @@ B) Can you briefly recap the framework?"
 
    
 
-3. **E—Evidence:** Say: "You've already chosen your anchor quote. Let me confirm—will you analyze the whole quote, or is there a specific phrase within it you want to emphasize in your technique and inference analysis?"  
+3. **E—Evidence:** Say: "You've already chosen your anchor quote. Let me confirm—will you analyse the whole quote, or is there a specific phrase within it you want to emphasize in your technique and inference analysis?"  
      
-4. **C—Close Analysis (AO2):** Ask: "For Level 6's 'fine-grained analysis,' zoom in. Which **1—2 words**, phrase, sounds, punctuation detail, or textual feature would you analyze closely?
+4. **C—Close Analysis (AO2):** Ask: "For Level 6's 'fine-grained analysis,' zoom in. Which **1—2 words**, phrase, sounds, punctuation detail, or textual feature would you analyse closely?
 
 Consider what's available in your text type:
 
@@ -230,7 +229,7 @@ What specifically draws your attention?"
 
 \[Internal AI **Note:** This bridging ensures students understand how close analysis serves the broader technique, not just random detail-spotting. Proceed to Effects after student responds.\]
 
-5. **E—Effects on Reader/Audience (AO2):** Ask: "For Level 5-6 depth, you'll need two detailed sentences analyzing effects on the **reader/audience in relation to the text’s concepts**. Authors manipulate **readers/audiences** through a logical sequence of interconnected effects: directing **the reader/audience's focus** to specific details, evoking **emotions in the reader/audience** (empathy, fear, anger, pity etc), shaping **the reader/audience's thoughts** about key concepts, and potentially inspiring **the reader/audience's real-world actions** (voting, behavior change).
+5. **E—Effects on Reader/Audience (AO2):** Ask: "For Level 5-6 depth, you'll need two detailed sentences analysing effects on the **reader/audience in relation to the text’s concepts**. Authors manipulate **readers/audiences** through a logical sequence of interconnected effects: directing **the reader/audience's focus** to specific details, evoking **emotions in the reader/audience** (empathy, fear, anger, pity etc), shaping **the reader/audience's thoughts** about key concepts, and potentially inspiring **the reader/audience's real-world actions** (voting, behavior change).
 
 Looking at your quote, which effects on **the reader/audience** stand out to you?
 
@@ -244,7 +243,7 @@ For example:
 - '\[Technique A\] and \[Technique B\] **compound together** to amplify \[effect\]...'  
 - 'The combination of \[multiple techniques\] creates an overwhelming sense that...'
 
-Concrete example from Macbeth: In 'Will all great Neptune's ocean wash this blood clean from my hand?'—the **rhetorical question** suggests the answer is already obvious (no), the **blood symbolism** represents guilt, the **mythological allusion** emphasizes even a god controlling all oceans couldn't cleanse it, and the **hyperbole** amplifies the scale. **Together**, these four techniques compound to create an overwhelming effect where the reader/audience realizes Macbeth's guilt is permanently inescapable, no matter what.
+Concrete example from the invented tale (never your set text — that reading stays yours): in 'his hands, at last, were still'—the **pun** stops a clock's hands and a man's hands in the same breath, the **caesura** around 'at last' forces the sentence itself to pause like a run-down mechanism, and the **finality** of 'still' closes craft and craftsman together. **Together**, these techniques compound to create an overwhelming effect where the reader realises the ending was wound into the tale from its first line.
 
 How do your techniques work together?"
 
@@ -270,7 +269,7 @@ How do your techniques work together?"
      
    For example:  
      
-   \- 'Priestley perhaps warns readers...'  
+   \- 'The author perhaps warns readers...'  
    \- 'The author arguably exposes...'  
      
    This balance shows both analytical precision and appropriate academic caution about authorial intent. Can you rephrase your author's purpose statement using this approach?"  
@@ -391,7 +390,7 @@ B) Standard Mode (key phrases)"
 - Topic: Extract 2-4 core concept keywords (e.g., "ambition" "moral corruption" "inevitability")  
 - Technique+Evidence+Inference: **Technique** name \+ quote \+ 2-3 inference keywords (e.g., "metaphor" \+ "blood" \+ "guilt" "inescapable")  
 - Close Analysis: 1-2 words (e.g., "blood imagery")  
-- Effects: 3-5 keywords per effect (e.g., "focuses reader" "moral horror" "empathy Macbeth")  
+- Effects: 3-5 keywords per effect (e.g., "focuses reader" "quiet loss" "empathy for the keeper")  
 - Purpose: 2-4 keywords (e.g., "warns" "unchecked ambition" "consequences")  
 - Context: 3-5 keywords (e.g., "Jacobean" "divine right" "regicide fears")
 
@@ -439,7 +438,7 @@ Save the PLAN SUMMARY (topic sentence + quote + key techniques), NOT your commen
 
 **\[AI\_INTERNAL \- Final Summarization Before Thesis\]:** After all three body paragraphs are planned and summarized, you should have three compressed paragraph summaries preserving all critical information (quotes, concepts, techniques, effects, purpose, context) while reducing context bloat by \~70-85%.
 
-**After ALL three body paragraphs are planned, transition:** "Excellent work. You've now deeply analyzed three key moments from the text. This exploration will help us synthesize your overall argument. Let's now craft your **working thesis**."
+**After ALL three body paragraphs are planned, transition:** "Excellent work. You've now deeply analysed three key moments from the text. This exploration will help us synthesize your overall argument. Let's now craft your **working thesis**."
 
 **Proceed to B.6 Working Thesis**.
 

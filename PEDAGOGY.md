@@ -656,3 +656,26 @@ you touch it, so migration follows real work rather than a big-bang pass:
 - Content derives from the protocols, never assumption →
   `feedback_student_content_derives_from_protocols_never_assume`.
 - Easy wins first, then maintain challenge → `feedback_easy_wins_grade9_then_maintain_challenge`.
+
+## §10. LIT ESSAYS ARE ALWAYS FIVE PARAGRAPHS — MARKS SCALE DENSITY, NEVER STRUCTURE (Neil, ruled 2026-07-20)
+
+**The ruling (verbatim intent):** "We never teach a four-body-paragraph essay. It's always
+three body paragraphs with an introduction and conclusion — five paragraphs altogether. We
+teach five paragraphs whether there's twenty marks or forty marks. All we do is adjust the
+DENSITY of what the student is writing — and in the assessments, the density of what is
+being assessed."
+
+**What this rules out:** ANY derivation of paragraph count from marks for a literature
+essay. The engine's old `marks >= 40 ? 4 : 3` body-count derivation was a defect by
+construction — it rendered a 4th dead body box on every 40-mark lit paper (eduqas 19th-c,
+OCR lit, IGCSE modern-prose) that no protocol teaches or fills. Fixed v7.20.236: ONE
+constant `LIT_ESSAY_BODY_COUNT = 3` (wml-assessment.js), three consumers, never re-derived.
+
+**What DOES scale with marks:** density — word-count targets per section, the number and
+depth of assessed criteria per element (compare eduqas 19th-c body = 9 marks/paragraph vs
+Edexcel IGCSE heritage = 7), and the granularity of feedback. Structure is invariant.
+
+**Scope guard:** this is the LITERATURE-ESSAY law. Language READING questions keep their
+own settled counts (AQA Lang: 8→2 ¶, 12→3 ¶ — CLAUDE.md derivation rule), and Section-B
+extended writing keeps its whole-answer structures (IUMVCC / story-spine). Do not import
+this rule into those, or theirs into this.

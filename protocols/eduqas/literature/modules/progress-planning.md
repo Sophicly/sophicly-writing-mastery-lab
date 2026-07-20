@@ -75,7 +75,7 @@
 **Part B.10: Final Instructions**
 
 * total\_steps \= 1  
-* Step 1: Next steps and workbook instructions
+* Step 1: Next steps and document instructions
 
 **Dynamic Progress Bar for Multi-Paragraph Planning:**
 

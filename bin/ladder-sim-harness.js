@@ -112,7 +112,7 @@ ok(stA && stA.el === 'outline-body-1-topic-q3' && stA.question === 'q3',
 sandbox.state.task = 'assessment';
 ok(call('deriveLadderState', []) === null, 'A2: non-planning task → dormant');
 sandbox.state.task = 'planning'; sandbox.state.board = 'edexcel';
-ok(call('deriveLadderState', []) === null, 'A3: non-AQA board → dormant');
+ok(call('deriveLadderState', []) === null, 'A3: unported board (edexcel) → dormant');
 sandbox.state.board = 'aqa'; sandbox.state.subject = 'literature';
 ok(call('deriveLadderState', []) === null, 'A4: non-P2 subject → dormant');
 sandbox.state.subject = 'language2';
