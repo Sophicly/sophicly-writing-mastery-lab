@@ -193,14 +193,22 @@ plan-paragraph boxes when a question gains an outline.
 - A paragraph IS its elements — so "per paragraph" (plan) and "per element" (outline) are the SAME
   content at two layouts, NOT a conflict. Plan = all-in-one-box; outline = split-into-boxes.
 
-### The autofill (how both fill — NO decomposition)
-As the student plans in the chat, they confirm the paragraph's elements **one at a time**. Each
-confirmed element writes to BOTH:
-1. its own **outline element box** (`@FIELD_COMMIT` → the `outlineRow` for that element), AND
-2. that paragraph's **single plan box** (the element is appended to `plan-Q{n}-para-{i}`).
-The elements are already separate AT CAPTURE, so this is a copy to two destinations — **never an AI
-split / paraphrase after the fact.** `@FIELD_COMMIT` carries the student's VERBATIM words (never
-round-trips through the LLM — ownership law). Plan box accumulates; outline boxes stay separate.
+### The autofill (v7.20.221 — two grades, ONE source, converging at approval; Neil 2026-07-20)
+Two content grades, one lifecycle:
+1. **LIVE (during planning):** each confirmed element `@FIELD_COMMIT`s the student's VERBATIM
+   words into its own **outline element box** only (immediate feedback; resume-from-doc reads it).
+   Plan boxes do NOT fill live (the raw-dictation-accumulating alarm, v7.20.216).
+2. **AT MIRROR-BACK APPROVAL (A-Happy):** ONE `@FIELD_SET` per paragraph carries the REFINED
+   plan (student's own words condensed to their plan mode — the approval click IS the ownership
+   checkpoint, so this is not injection). The ENGINE (`_planFanoutToOutline`, wml-assessment.js)
+   then writes that same value to BOTH destinations: the **plan box** as one LINE per labelled
+   element (the original "elements as separate LINES — a plan, not prose" spec), and each
+   **outline element box** per-element (replacing the raw dictation with the refined text).
+   Deterministic, code-owned, label→fieldId mapping byte-traced against the protocol registry —
+   NEVER a second set of LLM markers.
+**The law restored:** plan and outline hold the SAME content at two layouts ("copy to two
+destinations"), now at the approved grade. Replays (`applyFieldSets(…, {replay:true})`) may fill
+empty rows or untouched auto-fills only — a student's outlining-lesson edits are never clobbered.
 
 ### Q3 paragraph elements (6; ×3 paragraphs). Q2/Q4 DIFFER — read the protocol, do not assume.
 1. Topic sentence · 2. Technical terms + evidence + inference *(ONE element/line)* · 3. Close

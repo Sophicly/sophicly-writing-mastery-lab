@@ -3323,7 +3323,9 @@
                     _suppressFillScroll = true;
                     try {
                         history.forEach(m => {
-                            if (m && m.role === 'assistant' && m.content && m.content.indexOf('@FIELD_SET') !== -1) applyFieldSets(m.content);
+                            // v7.20.221: replay flag — a load-time re-fire may fill EMPTY rows or
+                            // untouched prior auto-fills, but never clobber student work.
+                            if (m && m.role === 'assistant' && m.content && m.content.indexOf('@FIELD_SET') !== -1) applyFieldSets(m.content, { replay: true });
                         });
                     } finally { _suppressFillScroll = false; }
                 }
@@ -4237,7 +4239,102 @@
             return found;
         } catch (_) { return ''; }
     }
-    function applyFieldSets(aiReply) {
+    // ── v7.20.221 (Neil): PLAN⇄OUTLINE convergence — restores the original doc-lifecycle
+    // law ("copy to two destinations, one content") at the APPROVED grade. The mirror-back
+    // A)-Happy @FIELD_SET is the single source: its labelled value renders as LINES in the
+    // plan box (the original "elements as separate LINES — a plan, not prose" spec; the
+    // ' | ' clump was an undisclosed compromise) AND fans out per-element to that
+    // paragraph's outline boxes, replacing the raw dictation with the same refined text.
+    // Deterministic + code-owned: no new LLM markers, so nothing new can misfire.
+    // Normalised compare (whitespace+pipes stripped) because a multiline node's textContent
+    // drops separators — exact string compare would break every dup/provenance guard.
+    function _fsNorm(s) { return String(s || '').replace(/[\s|]+/g, ''); }
+    // Split a labelled ' | ' plan value into {label, text} segments (label = up to first ':').
+    function _planFieldSegments(value) {
+        return String(value || '').split(/\s*\|\s*/).map(seg => {
+            const i = seg.indexOf(':');
+            if (i === -1) return { label: '', text: seg.trim() };
+            return { label: seg.slice(0, i).trim(), text: seg.slice(i + 1).trim() };
+        }).filter(s => s.text);
+    }
+    // Segments → PM inline content: one line per segment via hardBreak (canvas schema has
+    // it — see 24683); no-hardBreak fallback = the legacy ' | ' single line.
+    function _planLinesContent(segs) {
+        const hasBr = !!(canvasEditor && canvasEditor.schema.nodes && canvasEditor.schema.nodes.hardBreak);
+        if (!hasBr) return [{ type: 'text', text: segs.map(s => (s.label ? s.label + ': ' : '') + s.text).join(' | ') }];
+        const out = [];
+        segs.forEach((s, i) => {
+            if (i) out.push({ type: 'hardBreak' });
+            out.push({ type: 'text', text: (s.label ? s.label + ': ' : '') + s.text });
+        });
+        return out;
+    }
+    // plan field → its outline destination(s). BYTE-TRACED against the P1 protocol registry
+    // (protocol-b-planning.md:27-29): Q2/Q3 outlines carry -q{N} suffixes; Q4 bodies are
+    // UNSUFFIXED; intro/conclusion are single whole-value boxes with their own mixed ids.
+    // Q5 scene rows + unknown plan ids → null (no outline pair). New papers extend HERE.
+    function _planOutlineTargets(planField) {
+        let m = /^plan-Q([23])-para-([12])$/.exec(planField);
+        if (m) { const q = m[1], p = m[2]; return { mode: 'elements', make: el => 'outline-body-' + p + '-' + el + '-q' + q }; }
+        m = /^plan-body-([123])$/.exec(planField);
+        if (m) { const b = m[1]; return { mode: 'elements', make: el => 'outline-body-' + b + '-' + el }; }
+        if (planField === 'plan-intro') return { mode: 'whole', target: 'outline-intro-thesis-q4' };
+        if (planField === 'plan-conclusion') return { mode: 'whole', target: 'outline-conclusion-thesis' };
+        return null;
+    }
+    // Label → outline element key. Tolerant prefixes (Q3 says "Structural feature+…",
+    // Q4 says "Purpose+judgement") — unrecognised labels warn + skip (fail loud, raw kept).
+    function _planLabelElement(label) {
+        const l = (label || '').toLowerCase();
+        if (!l) return null;
+        if (l.indexOf('topic') === 0) return 'topic';
+        if (l.indexOf('tei') === 0 || l.indexOf('technique') === 0 || l.indexOf('structural') === 0) return 'evidence';
+        if (l.indexOf('close') === 0) return 'analysis';
+        if (/^effect\s*1/.test(l)) return 'effects';
+        if (/^effect\s*2/.test(l)) return 'effects2';
+        if (l.indexOf('purpose') === 0 || l.indexOf('author') === 0) return 'purpose';
+        return null;
+    }
+    // The fan-out. live=true (approval turn): the refined text supersedes the raw dictation
+    // unconditionally — the A)-Happy click IS the consent. live=false (transcript replay):
+    // only fills an EMPTY row or re-fills an untouched prior fan-out (provenance hash) —
+    // a student's outlining-lesson edits are NEVER clobbered by a load-time replay.
+    function _planFanoutToOutline(planField, value, live) {
+        try {
+            const t = _planOutlineTargets(planField);
+            if (!t || !canvasEditor) return;
+            const segs = _planFieldSegments(value);
+            if (!segs.length) return;
+            const writes = [];
+            if (t.mode === 'elements') {
+                segs.forEach(seg => {
+                    const elKey = _planLabelElement(seg.label);
+                    if (!elKey) { console.warn('WML PlanFan: unrecognised label', JSON.stringify(seg.label), 'in', planField, '— segment skipped'); return; }
+                    writes.push({ fid: t.make(elKey), content: [{ type: 'text', text: seg.text }], norm: _fsNorm(seg.text) });
+                });
+            } else {
+                writes.push({ fid: t.target, content: _planLinesContent(segs), norm: _fsNorm(segs.map(s => (s.label ? s.label + ': ' : '') + s.text).join(' ')) });
+            }
+            let wrote = 0;
+            writes.forEach(w => {
+                let pos = null, node = null;
+                canvasEditor.state.doc.descendants((n, p) => {
+                    if (pos !== null) return false;
+                    if ((n.type.name === 'outlineRow' || n.type.name === 'inputField') && n.attrs && n.attrs.fieldId === w.fid) { pos = p; node = n; return false; }
+                    return true;
+                });
+                if (pos === null) { console.warn('WML PlanFan: no row for', w.fid, '(mapping miss — check the protocol registry)'); return; }
+                const existing = (node.textContent || '').trim();
+                if (_fsNorm(existing) === w.norm) return;                 // already refined — idempotent
+                if (!live && existing && _autoFillRecall('fan:' + w.fid) !== _autoFillHash(_fsNorm(existing))) return; // replay: student work wins
+                canvasEditor.commands.insertContentAt({ from: pos + 1, to: pos + node.nodeSize - 1 }, w.content);
+                _autoFillRemember('fan:' + w.fid, w.norm);
+                wrote++;
+            });
+            if (wrote) console.log('WML PlanFan:', planField, '→ refined', wrote, 'outline box(es)');
+        } catch (e) { console.warn('WML PlanFan: error (non-fatal)', e && e.message); }
+    }
+    function applyFieldSets(aiReply, opts) {
         try {
             if (!aiReply || !canvasEditor) return;
             const re = /@FIELD_SET\s*(\{[^}]*\})/g;
@@ -4266,7 +4363,7 @@
                 if (fid && val) sets.push({ field: fid, value: val });
             }
             if (!sets.length) return;
-            _applyFieldValueSets(sets);
+            _applyFieldValueSets(sets, opts);
         } catch (e) {
             console.warn('WML FieldSet: error (non-fatal)', e && e.message);
         }
@@ -4276,9 +4373,10 @@
     // (FQ concept-note autofill) can file values through the exact same PM path —
     // same idempotence, same auto-fill provenance (student edits always win) —
     // without round-tripping through a synthetic @FIELD_SET string.
-    function _applyFieldValueSets(sets) {
+    function _applyFieldValueSets(sets, opts) {
         try {
             if (!sets || !sets.length || !canvasEditor) return;
+            const _live = !(opts && opts.replay);   // v7.20.221: replay = load-time transcript re-fire
             let wrote = false;
             sets.forEach(s => {
                 // v7.19.872: student's own target-grade choice wins over the AI's re-guess.
@@ -4317,7 +4415,15 @@
                     return;
                 }
                 const existing = (targetNode.textContent || '').trim();
-                if (existing === s.value) return; // identical re-fire — skip
+                const isPlan = /^plan-/.test(s.field);
+                // v7.20.221: PLAN⇄OUTLINE convergence — the approved plan value also refines
+                // that paragraph's outline element boxes (self-guarded per row; replay-safe).
+                // Runs even when the plan box itself dup-skips, so a re-fire can heal a
+                // partially-filled outline without touching anything the student owns.
+                if (isPlan) _planFanoutToOutline(s.field, s.value, _live);
+                // v7.20.221: plan boxes are MULTILINE (textContent drops separators), so their
+                // dup/provenance guards compare NORMALISED (whitespace+pipes stripped).
+                if (isPlan ? (_fsNorm(existing) === _fsNorm(s.value)) : (existing === s.value)) return; // identical re-fire — skip
                 // v7.19.830: inputField targets (Action Plan / Analytics auto-file) are the
                 // student's EDITABLE boxes — fill only while EMPTY. Heal replays and re-emit
                 // repair turns re-fire these markers; they must never clobber a student edit.
@@ -4325,14 +4431,17 @@
                 if (targetKind === 'inputField' && existing) {
                     // v7.19.844: replace ONLY untouched auto-fill (hash provenance) — a
                     // fresh run's feedback supersedes the old run's; student edits win.
-                    if (_autoFillRecall(s.field) !== _autoFillHash(existing)) {
+                    const _provHash = isPlan ? _autoFillHash(_fsNorm(existing)) : _autoFillHash(existing);
+                    if (_autoFillRecall(s.field) !== _provHash) {
                         // v7.20.217 (Neil): PLAN boxes APPEND under student content instead of
                         // refusing — their notes stay, the approved plan lands beneath.
-                        // Exact-dup guard: a re-fired approval never doubles up.
-                        if (/^plan-/.test(s.field)) {
-                            if (existing.indexOf(s.value) !== -1) return;
+                        // Normalised-dup guard: a re-fired approval never doubles up.
+                        if (isPlan) {
+                            if (_fsNorm(existing).indexOf(_fsNorm(s.value)) !== -1) return;
                             const endPos = targetPos + targetNode.nodeSize - 1;
-                            canvasEditor.commands.insertContentAt(endPos, { type: 'text', text: ' — ' + s.value });
+                            const _hasBr = !!(canvasEditor.schema.nodes && canvasEditor.schema.nodes.hardBreak);
+                            const _sep = _hasBr ? [{ type: 'hardBreak' }] : [{ type: 'text', text: ' — ' }];
+                            canvasEditor.commands.insertContentAt(endPos, _sep.concat(_planLinesContent(_planFieldSegments(s.value))));
                             console.log('WML FieldSet: plan field', s.field, 'had student content — APPENDED approved plan');
                             wrote = true;
                             _scrollToFilledField(s.field);
@@ -4345,9 +4454,12 @@
                 }
                 const from = targetPos + 1;
                 const to = targetPos + targetNode.nodeSize - 1;
-                canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: s.value });
+                // v7.20.221: plan boxes render one LINE per labelled element (the original
+                // "elements as separate LINES" spec); everything else keeps the plain write.
+                canvasEditor.commands.insertContentAt({ from: from, to: to },
+                    isPlan ? _planLinesContent(_planFieldSegments(s.value)) : { type: 'text', text: s.value });
                 console.log('WML FieldSet: wrote', s.value.length, 'chars →', s.field);
-                if (targetKind === 'inputField') _autoFillRemember(s.field, s.value);
+                if (targetKind === 'inputField') _autoFillRemember(s.field, isPlan ? _fsNorm(s.value) : s.value);
                 wrote = true;
                 // v7.20.52 (Neil): universal scroll-to-fill — debounced, last write wins.
                 // Supersedes the v7.19.839 action/analytics-only Action Plan scroll.
@@ -12066,8 +12178,15 @@
                         // projected score available on this path; finishing is always better).
                         : (state.task === 'mark_scheme_unit' && (state.step === 1 || state.bridgeStep === 1))
                             ? 'Clearing now ends this Mark Scheme Quiz round. Every round counts toward your grade, so you\u2019ll score higher by finishing \u2014 answer every question, then see your full feedback at the end. (In the real exam there are no restarts.) Clear anyway?'
+                        // v7.20.221 (Neil): in PLANNING, clear = start the plan fresh \u2014 one button,
+                        // one meaning. Supersedes the .219 separate Start-fresh button.
+                        : (state.task === 'planning')
+                            ? 'Clear this chat and start your plan fresh? Your whole plan \u2014 every element you have filed \u2014 will be cleared, and you will begin again from the top. This cannot be undone.'
                             : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
                     async () => {
+                        // v7.20.221 (Neil): planning clear-chat wipes the whole plan (fields +
+                        // per-run localStorage) before the existing .218 restart runs from step 1.
+                        if (state.task === 'planning') { _wipeAllPlanningFields(); _wipePlanningLocalState(); }
                         if (_ctlRecord) await _quizCtl.abandonRound();
                         if (state.task === 'foundational_quiz' && !_fqDeterministic() && _fqIsMidRound(canvasChatHistory)) {
                             // v7.19.570: bailed mid-round \u2014 record it as incomplete (0) so
@@ -12292,61 +12411,6 @@
             }
         });
         chatHeader.appendChild(clearChatBtn);
-
-        // v7.20.219 (Neil): "Start fresh" — planning only. Clear-chat PRESERVES the plan
-        // (forward-snapshot law) and resumes from the doc; that surprised students who
-        // expected "start over". This is the explicit second intent: wipe the whole plan
-        // and re-run from step 1. NO new attempt (Neil: attempts "created so many
-        // complications") — same topic attempt, doc row kept, only field contents cleared,
-        // so nothing new lands in the dashboard. Capability-gated to planning (extend to
-        // outlining/polishing later via a predicate, never a literal-name cascade).
-        if (state.task === 'planning') {
-            // Shares the render closure with clearChatBtn, so canvasEditor / chatTextarea /
-            // sendCanvasMessage (closure-locals) are reachable — mirrors the .218 planning
-            // restart probe rather than refactoring that not-yet-verified block.
-            const _startFreshRestart = () => {
-                let _tries = 0;
-                const _go = () => {
-                    const alive = canvasEditor && !canvasEditor.isDestroyed
-                        && canvasEditor.view && canvasEditor.view.dom && canvasEditor.view.dom.isConnected;
-                    if (alive) {
-                        canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage();
-                    } else if (++_tries < 8) {
-                        setTimeout(_go, 200);
-                    } else {
-                        console.warn('WML start-fresh: editor dead after 8 probes — rebuilding canvas.');
-                        renderCanvasWorkspace();
-                    }
-                };
-                setTimeout(_go, 200);
-            };
-            const startFreshBtn = el('button', {
-                className: 'swml-clear-chat-btn swml-startfresh-btn',
-                title: 'Start this plan fresh',
-                innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
-                onClick: () => {
-                    showConfirm(
-                        'Start this plan fresh? Your whole plan — every element you have filed — will be cleared and you will begin again from the top. This cannot be undone.',
-                        async () => {
-                            _wipeAllPlanningFields();   // empty every plan/outline/prediction field + save
-                            _wipePlanningLocalState();  // clear per-run confidence predictions
-                            await clearCanvasChat();    // fresh chat (server + local) before restart
-                            canvasChatHistory.length = 0;
-                            canvasChatId = '';
-                            _markFreshChat();           // next send opens a fresh AI conversation
-                            chatMessages.innerHTML = '';
-                            state.plan = {};
-                            updateProgress(1);
-                            _startFreshRestart();       // probe editor alive → silent "Let's begin!" → step 1
-                            console.log('WML Canvas: plan started fresh');
-                        },
-                        { confirmText: 'Start Fresh', cancelText: 'Cancel', danger: true }
-                    );
-                }
-            });
-            chatHeader.appendChild(startFreshBtn);
-        }
-
         chatPanel.appendChild(chatHeader);
 
         chatPanel.appendChild(chatMessages);
@@ -22219,8 +22283,14 @@
                             innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
                             onClick: () => {
                                 showConfirm(
-                                    'Clear this assessment chat and start fresh? Your document and essay are preserved — only the chat messages will be removed.',
+                                    // v7.20.221 (Neil): planning clear = start the plan fresh (twin of the
+                                    // training-env fork — dual-pipeline law). Polishing keeps the doc.
+                                    state.task === 'planning'
+                                        ? 'Clear this chat and start your plan fresh? Your whole plan — every element you have filed — will be cleared, and you will begin again from the top. This cannot be undone.'
+                                        : 'Clear this assessment chat and start fresh? Your document and essay are preserved — only the chat messages will be removed.',
                                     async () => {
+                                        // v7.20.221: wipe gates on PLANNING only — polishing shares this branch.
+                                        if (state.task === 'planning') { _wipeAllPlanningFields(); _wipePlanningLocalState(); }
                                         await clearCanvasChat(); // v7.19.575: await so the stale server chat is gone before any restart send
                                         canvasChatHistory.length = 0;
                                         canvasChatId = '';

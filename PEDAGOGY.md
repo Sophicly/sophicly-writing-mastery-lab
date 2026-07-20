@@ -619,7 +619,30 @@ cramming-adjacent habits and costs the most (each full writing cycle = £0.50–
 pennies for quizzes). One rule serves learning and unit economics simultaneously.
 Memory: `feedback_writing_cycles_once_and_move_on`. Pairs with `feedback_no_assessment_chasing`.
 
-## §5. WHERE THE REST OF THE PEDAGOGY CURRENTLY LIVES (to be migrated in as it is touched)
+## §9. THE OUTLINE CARRIES THE APPROVED PLAN, NOT THE RAW DICTATION (Neil, ruled 2026-07-20)
+
+**THE RULE:** after a paragraph's mirror-back approval (A-Happy), the outline element boxes and
+the plan box hold the SAME refined text — the student's own words, condensed to their plan mode,
+approved at the mirror-back. The raw dictation captured live during planning is a WORKING state,
+not the deliverable: it fills the outline boxes as the student speaks (immediate feedback), and
+the approval upgrades it in place.
+
+**Why this is ownership-clean, not injection:** the refined version contains only the student's
+ideas and phrases (the condensation the protocol already mandates for the plan box); the approval
+click is the consent checkpoint. What the ownership law forbids is the LLM ADDING interpretive
+content — condensing the student's own confirmed words is drafting, not authorship (CLAUDE.md
+§Behavioural 6).
+
+**Why pedagogically:** the Outlining lesson asks the student to expand each element into a full
+sentence. Expanding a clean, refined keyword line trains exactly that skill; expanding their own
+unpunctuated mic ramble trains transcription-tidying instead. The plan is the skeleton; the
+outline works each bone — both must show the same skeleton.
+
+**Mechanics (engine-owned, never a second marker set):** `_planFanoutToOutline` in
+wml-assessment.js; replay-guarded so outlining-lesson edits are never overwritten. Also ruled
+same day: **planning clear-chat = start the plan fresh** (wipe + restart from step 1 — one
+button, one meaning; the attempts model was tried and rejected as too complicated), and the plan
+box renders one line per element (original spec restored).
 
 Not a rewrite — the principles below are already recorded and working. Move one INTO this file when
 you touch it, so migration follows real work rather than a big-bang pass:
