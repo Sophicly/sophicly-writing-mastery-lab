@@ -160,7 +160,15 @@ progress, workflow-entry), not just the step files the builder edited. Legacy sc
 macros, stuck-detect sequences, or self-counted insight limits in a module ride every step
 and fight the ladder exactly like an unconverted beat. Module conflicts are retired by a
 NAMED, SCOPED supersession block in the port's ladder text (see b-ladder.md ⛔ SUPERSESSION —
-the lit mold), never by editing shared modules other boards depend on. Known accepted edge:
+the lit mold), never by editing shared modules other boards depend on.
+**⭐ LOCAL-SHADOWS-SHARED (the .237 trap):** manifest module names resolve BASE-PATH FIRST,
+then shared (`class-protocol-router.php` ~2013) — a board-local copy SHADOWS the shared one.
+Any fix landed in a shared module is INERT for a board carrying a local copy of that file
+(eduqas's local macros-utility still stripped marker payloads after the shared .232 whitelist).
+Before fixing "a shared module", list which boards carry a local shadow (`ls
+protocols/*/*/modules/<name>` vs `protocols/shared/modules/<name>`) and land the fix in EVERY
+copy the router actually serves; the reviewer's sweep must read the copies the TARGET
+manifest resolves, not the shared file. Known accepted edge:
 if the code state block ever fails to inject, the supersession predicate goes false and the
 legacy module machinery resurrects for that turn — an intentional degradation fallback
 (some scaffolding beats none), not a defect.
