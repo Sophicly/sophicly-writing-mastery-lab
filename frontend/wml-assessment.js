@@ -4287,24 +4287,35 @@
         });
         return out;
     }
-    // plan field → its outline destination(s). BYTE-TRACED against the P1 protocol registry
-    // (protocol-b-planning.md:27-29): Q2/Q3 outlines carry -q{N} suffixes; Q4 bodies are
-    // UNSUFFIXED; intro/conclusion are single whole-value boxes with their own mixed ids.
-    // Q5 scene rows + unknown plan ids → null (no outline pair). New papers extend HERE.
+    // plan field → its outline destination(s). BYTE-TRACED against the protocol registries
+    // (P1 protocol-b-planning.md:27-29 · P2 :25-28): Q2/Q3 outlines carry -q{N} suffixes;
+    // Q4 bodies are UNSUFFIXED; intro/conclusion are single whole-value boxes with their own
+    // mixed ids. P1 and P2 share plan-Q{2,3}-para-{i} ids with DIFFERENT element sets —
+    // collision-safe because the LABELS drive the element key and the label sets are
+    // disjoint (TTECEA vs Source A/B inference). Q5 scene rows (P1) and IUMVCC compiles
+    // (P2, bare iumvcc-* ids) → null (no fan-out pair). New papers extend HERE.
     function _planOutlineTargets(planField) {
-        let m = /^plan-Q([23])-para-([12])$/.exec(planField);
+        let m = /^plan-Q([23])-para-([123])$/.exec(planField);
         if (m) { const q = m[1], p = m[2]; return { mode: 'elements', make: el => 'outline-body-' + p + '-' + el + '-q' + q }; }
-        m = /^plan-body-([123])$/.exec(planField);
+        m = /^plan-(?:Q4-)?body-([123])$/.exec(planField); // P1 plan-body-{i} · P2 plan-Q4-body-{i}
         if (m) { const b = m[1]; return { mode: 'elements', make: el => 'outline-body-' + b + '-' + el }; }
-        if (planField === 'plan-intro') return { mode: 'whole', target: 'outline-intro-thesis-q4' };
-        if (planField === 'plan-conclusion') return { mode: 'whole', target: 'outline-conclusion-thesis' };
+        if (planField === 'plan-intro' || planField === 'plan-Q4-intro') return { mode: 'whole', target: 'outline-intro-thesis-q4' };
+        if (planField === 'plan-conclusion' || planField === 'plan-Q4-conclusion') return { mode: 'whole', target: 'outline-conclusion-thesis' };
         return null;
     }
     // Label → outline element key. Tolerant prefixes (Q3 says "Structural feature+…",
     // Q4 says "Purpose+judgement") — unrecognised labels warn + skip (fail loud, raw kept).
+    // v7.20.226 P2 families: paired-inference (Source A/B topic+inferences → inf{1,2}-*)
+    // and comparative per-source effects (Effect Source A/B → effects/effects2).
     function _planLabelElement(label) {
         const l = (label || '').toLowerCase();
         if (!l) return null;
+        if (/^source\s*a\s*topic/.test(l)) return 'inf1-topic';
+        if (/^source\s*a\s*inference/.test(l)) return 'inf1-evidence';
+        if (/^source\s*b\s*difference/.test(l)) return 'inf2-topic';
+        if (/^source\s*b\s*inference/.test(l)) return 'inf2-evidence';
+        if (/^effect\s*source\s*a/.test(l)) return 'effects';
+        if (/^effect\s*source\s*b/.test(l)) return 'effects2';
         if (l.indexOf('topic') === 0) return 'topic';
         if (l.indexOf('tei') === 0 || l.indexOf('technique') === 0 || l.indexOf('structural') === 0) return 'evidence';
         if (l.indexOf('close') === 0) return 'analysis';

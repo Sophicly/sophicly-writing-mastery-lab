@@ -168,11 +168,29 @@ if (!fs.existsSync(AQA_P2_PROTO)) {
   const codeTokens = ["'outline-body-'", "'-topic-q3'", "'-inf1-topic-q2'", "'outline-intro-thesis-q4'",
                       "'outline-conclusion-thesis'", "'outline-iumvcc-intro'", "'q3-technique-p'"];
   const missingTokens = jsSrc ? codeTokens.filter(tok => !jsSrc.includes(tok)) : ['(wml-assessment.js not found)'];
-  note(`— EL BYTE-TRACE: ${expected.length - orphans.length}/${expected.length} code filing els are real @FIELD_COMMIT fields in the AQA P2 protocol.`);
+  // v7.20.226: P2 plan boxes moved to the @FIELD_SET side (the P1 .216 model — approved
+  // structure at mirror-back approval, never per-element commits). IUMVCC plan boxes stay
+  // commit-side by design (the student composes each compile — it IS the approved form).
+  const setFieldsP2 = new Set();
+  { const reS2 = /@FIELD_SET\{"field":"([^"]+)"/g; let mS2;
+    while ((mS2 = reS2.exec(proto)) !== null) setFieldsP2.add(mS2[1]); }
+  const planFieldsP2 = ['plan-Q2-para-1', 'plan-Q2-para-2', 'plan-Q3-para-1', 'plan-Q3-para-2',
+    'plan-Q3-para-3', 'plan-Q4-body-1', 'plan-Q4-body-2', 'plan-Q4-body-3',
+    'plan-Q4-intro', 'plan-Q4-conclusion'];
+  const iumvccPlanP2 = ['iumvcc-intro', 'iumvcc-urgency', 'iumvcc-method', 'iumvcc-vision',
+    'iumvcc-counter', 'iumvcc-conclusion'];
+  const planMissP2 = planFieldsP2.filter(e => !setFieldsP2.has(e))
+    .concat(iumvccPlanP2.filter(e => !commitFields.has(e)));
+  note(`— EL BYTE-TRACE: ${expected.length - orphans.length}/${expected.length} code filing els + ${planFieldsP2.length + iumvccPlanP2.length - planMissP2.length}/${planFieldsP2.length + iumvccPlanP2.length} plan(@FIELD_SET)/IUMVCC(@FIELD_COMMIT) fields are real in the AQA P2 protocol.`);
   if (orphans.length) {
     failed = 1;
     note('  ❌ CODE registry el(s) with NO matching @FIELD_COMMIT field (write-key ≠ read-key — the LLM would echo an id that files nowhere):');
     orphans.forEach(e => note(`       ${e}`));
+  }
+  if (planMissP2.length) {
+    failed = 1;
+    note('  ❌ P2 plan/IUMVCC field(s) missing from the protocol (plan → @FIELD_SET template; iumvcc → @FIELD_COMMIT):');
+    planMissP2.forEach(e => note(`       ${e}`));
   }
   if (missingTokens.length) {
     failed = 1;

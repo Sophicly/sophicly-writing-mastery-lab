@@ -254,14 +254,12 @@ cite it — do not fill the gap with the marks rule.
 ### Precedent + the live gap
 - **IUMVCC (AQA P2 Q5) is the working precedent** — its plan sections + outline rows already wire
   this way (`buildIUMVCCOutlineSection`, `_iumvccFieldId`). Mirror its shape, not its literal ids.
-- **THE READING-Q GAP (the planning arc):** Q2/Q3/Q4 outlines already RENDER element boxes
-  (`outline-body-{i}-{elementId}-q{N}`, `-q{N}` suffix added v7.20.107) but the reading-Q **planning
-  protocol never emits `@FIELD_COMMIT` to them** → outline stays empty (Neil's "no outline sections
-  filled for Q2/Q3/Q4"). The fix is protocol + wiring (Opus lane, pedagogy already ruled — NOT
-  Fable): make the reading-Q planning chat confirm element-by-element and emit to each outline
-  element box + the paragraph plan box. **Byte-trace every fieldId pair before shipping**
-  (key-mismatch = #1 recurring bug). Only `aqa/language2/planning/protocol-b-planning.md` emits
-  `@FIELD_COMMIT` today; ~others emit 0.
+- **THE READING-Q GAP — CLOSED for AQA P1 + P2 (v7.20.209–.226).** Both AQA Language planning
+  protocols now emit element-by-element `@FIELD_COMMIT` (outline) + approval `@FIELD_SET`
+  (plan) per the two-grade autofill above. Enforcement is mechanical: `plan-fanout-harness`
+  + `planning-keymatch-harness` + `ladder-check` in pre-ship — a port with a wrong label or
+  drifted fieldId cannot ship. Remaining papers (other boards, literature) still emit 0
+  markers — each port follows `PLANNING-LADDER-PORT-RECIPE.md` (§1b two-grade rule).
 - Node types: PLAN boxes = `inputField`; OUTLINE boxes = `outlineRow`; `@FIELD_COMMIT` fills both.
   Outline shape is BAKED into the saved doc → element/scaffold changes need an on-load heal.
 

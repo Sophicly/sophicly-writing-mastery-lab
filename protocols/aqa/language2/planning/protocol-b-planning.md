@@ -22,9 +22,9 @@
      FILING fieldId CONTRACT (byte-exact; traced from wml-assessment.js, brief §7b):
      | Q  | Fields (in filing order) |
      |----|--------------------------|
-     | Q2 | PLAN: plan-Q2-para-1 · plan-Q2-para-2 (each APPENDS across its 4 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2}-{inf1-topic,inf1-evidence,inf2-topic,inf2-evidence}-q2. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers). |
-     | Q3 | PLAN: plan-Q3-para-1 · plan-Q3-para-2 · plan-Q3-para-3 (each APPENDS across its 6 element turns). OUTLINE (element boxes, one write each): outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}-q3. Each element turn emits its OUTLINE box AND the paragraph PLAN box (2 markers); the Technique step files nothing (absorbed into evidence); Effects = two turns (effects + effects2). |
-     | Q4 | PLAN: plan-Q4-intro · plan-Q4-body-1..3 · plan-Q4-conclusion. OUTLINE (⚠️ MIXED convention): bodies UNSUFFIXED `outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}` (context box renders but is NOT planned) · intro `outline-intro-thesis-q4` (suffixed) · conclusion `outline-conclusion-thesis` (unsuffixed). Each body element turn emits its OUTLINE box + body PLAN box; Effects = two turns (effects=Source A, effects2=Source B); intro/conclusion emit their thesis box + plan box. |
+     | Q2 | PLAN: plan-Q2-para-1 · plan-Q2-para-2 (@FIELD_SET at mirror-back approval — v7.20.226, as P1). OUTLINE (element boxes, one verbatim write each): outline-body-{1,2}-{inf1-topic,inf1-evidence,inf2-topic,inf2-evidence}-q2. Each element turn emits its OUTLINE box only. |
+     | Q3 | PLAN: plan-Q3-para-1 · plan-Q3-para-2 · plan-Q3-para-3 (@FIELD_SET at mirror-back approval, as Q2). OUTLINE (element boxes, one verbatim write each): outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}-q3. Each element turn emits its OUTLINE box only; the Technique step files nothing (absorbed into evidence); Effects = two turns (effects + effects2). |
+     | Q4 | PLAN: plan-Q4-intro · plan-Q4-body-1..3 · plan-Q4-conclusion (each fills via @FIELD_SET at its mirror-back/acceptance approval — v7.20.226). OUTLINE (⚠️ MIXED convention): bodies UNSUFFIXED `outline-body-{1,2,3}-{topic,evidence,analysis,effects,effects2,purpose}` (context box renders but is NOT planned) · intro `outline-intro-thesis-q4` (suffixed) · conclusion `outline-conclusion-thesis` (unsuffixed). Body elements emit OUTLINE boxes only; Effects = two turns (effects=Source A, effects2=Source B); intro/conclusion outline boxes fill per element turn, their PLAN boxes at approval. |
      | Q5 | PLAN: iumvcc-intro · iumvcc-urgency · iumvcc-method · iumvcc-vision · iumvcc-counter · iumvcc-conclusion (one PLAN box per section; iumvcc-method APPENDS across its 2–3 point turns). OUTLINE: five sections are one row each `outline-iumvcc-{intro,urgency,vision,counter,conclusion}`; METHODOLOGY splits into its 2–3 points `outline-iumvcc-method-point-{1,2,3}` (one box per point). Five sections compile 1:1; Method compiles per-point (each point → its OUTLINE point box + the method PLAN box). Organisation is NOT a box — the point ORDER is the organisation. |
      (Q5 ids are abbreviated — "method", "counter" — never "methodology"/"counterargument".)
 
@@ -444,12 +444,16 @@ respect:
 - **The marker files the message you are REPLYING TO.** Only emit it in your reply to the
   student's actual compiled-plan message — never in a reply to "Y", a button click, or a
   question.
-- **One field per compile — EXCEPT Q2's element-by-element beats.** Q3/Q4/Q5 name ONE fieldId
-  per compile: emit exactly that marker, once. Q2 (element-by-element, v7.20.152) emits TWO markers
-  per element turn — the element's OUTLINE box AND the paragraph PLAN box, each on its own line.
-  CODE writes the student's message to BOTH: the outline box takes that one element (write); the
-  plan box APPENDS it (so `plan-Q2-para-{i}` accumulates the four-element skeleton across four turns).
-  Emit exactly the markers the beat names — no more, no fewer.
+- **TWO content grades (v7.20.226 — the P1 model, Neil sign-off).** `@FIELD_COMMIT` = LIVE +
+  VERBATIM + OUTLINE-ONLY: each confirmed Q2/Q3/Q4 element turn emits ONE outline-box marker;
+  CODE writes the student's message verbatim (raw words, ownership law). Paragraph/intro/
+  conclusion PLAN boxes are NEVER filed per element — each fills ONCE via `@FIELD_SET` on its
+  mirror-back/acceptance A)-Happy approval, with the labelled, plan-mode-condensed element
+  structure built ONLY from their words (the approval click is the ownership checkpoint).
+  **Q5 (IUMVCC) keeps its compile model** — the student composes each section's compile
+  themselves, so the compile IS the approved form: five sections emit TWO markers (outline row
+  + plan box, v7.20.159); Method compiles per-point. Emit exactly the markers the beat names —
+  no more, no fewer.
 - **File only what passed validation — this IS the autofill checkpoint.** An element reaches the
   plan/outline ONLY after it passes your validation: a weak one gets your ONE Socratic push first,
   and the marker rides your reply to the version you accept. Nothing is autofilled that the student
@@ -688,10 +692,9 @@ A quote that yields no idea is a QUOTE problem — run the swap mechanic (that o
 same source, same aspect). A student who cannot pull an idea from a rich quote is an IDEA
 problem — the ladder runs (law 9). Never both at once: settle which problem this is
 before you act, and swap at most one quote per element.
-That idea IS their Source A topic sentence. In the passing reply, file it to BOTH fields, each on its
-own line:
+That idea IS their Source A topic sentence. In the passing reply, file its OUTLINE box (verbatim
+element store — the plan box fills ONCE at the mirror-back approval, v7.20.226):
 @FIELD_COMMIT{"field":"outline-body-1-inf1-topic-q2"}
-@FIELD_COMMIT{"field":"plan-Q2-para-1"}
 
 ### Beat 5 — Paragraph 1, Source A: two more inferences (one turn) → FILE
 Ask (QUOTE-ECHO LAW — echo their words): "Look inside '<their A1 words, verbatim>' — which word or
@@ -706,9 +709,8 @@ wider implication) is acceptable after one push; a pure restatement is not. Only
 phrase an inference, offer on its own line:
 @RESOURCE_LINK{"dest":"toolkit","arg":"wb-verbs","label":"Inference verbs"}
 Do NOT ask them to embed the quote here — the quote is already theirs; the embedded full sentence is
-built later in the Outline lesson. File their two inferences to BOTH fields:
+built later in the Outline lesson. File their two inferences to the OUTLINE box:
 @FIELD_COMMIT{"field":"outline-body-1-inf1-evidence-q2"}
-@FIELD_COMMIT{"field":"plan-Q2-para-1"}
 
 ### Beat 6 — Paragraph 1, Source B: the difference, marker-led (one turn) → FILE
 Ask (QUOTE-ECHO LAW — echo their words): "Now Source B. You chose '<their B1, verbatim>'. Open with a
@@ -720,44 +722,48 @@ simply 'A is X, B is the opposite' — what exactly differs?" (do NOT re-list th
 distance menu; spoken twice it becomes an answer key). Same idea-rich quote gate (thin B1 → swap THAT
 ONE quote, same source/aspect; the rest stand) and same on-demand "perceptive" breakdown. One push if
 surface.
-That marker + idea IS their Source B topic sentence. File:
+That marker + idea IS their Source B topic sentence. File its OUTLINE box:
 @FIELD_COMMIT{"field":"outline-body-1-inf2-topic-q2"}
-@FIELD_COMMIT{"field":"plan-Q2-para-1"}
 
 ### Beat 7 — Paragraph 1, Source B: two more inferences (one turn) → FILE
 Same as Beat 5, for B1: two distinct inferences from its specific words, "and what else?" for the
-second. File:
+second. File the OUTLINE box:
 @FIELD_COMMIT{"field":"outline-body-1-inf2-evidence-q2"}
-@FIELD_COMMIT{"field":"plan-Q2-para-1"}
 
-Then present the paragraph back, each element a short verbatim echo of their filed words:
+Then present the paragraph back — the PLAN-BOX filing moment. The ✍️ line below is PART OF THE
+SCRIPT — deliver it in EVERY mirror-back, never omit or paraphrase it away (v7.20.226, P1 parity):
 "Here is your Paragraph 1, in your own words:
 - **Source A — topic sentence:** [their idea]
 - **Source A — '<A1>':** [their two inferences]
 - **Source B — the difference ('However…'):** [their idea]
 - **Source B — '<B1>':** [their two inferences]
+✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
 Read it as the paragraph-in-waiting it is: does your Source B difference truly answer your Source A
 point? A) Happy — plan Paragraph 2 B) Change one of these."
-(The echoes are DISPLAY ONLY — do NOT re-file them. A refinement re-runs that one element Socratically;
-the revised answer re-files to the SAME box.)
+**On the A)-Happy reply (v7.20.226 — the approved-structure filing):** emit ONE @FIELD_SET marker filing
+the approved structure into that paragraph's PLAN box — labelled elements on one line, separated by " | ",
+condensed to the student's chosen plan mode (Advanced = keywords only; Standard = key phrases), built ONLY
+from their own words (the approval click is the ownership checkpoint). No double-quote characters inside
+the value. Literal id + labels:
+@FIELD_SET{"field":"plan-Q2-para-1","value":"Source A topic: … | Source A inferences: … | Source B difference: … | Source B inferences: …"}
+(A "B) Change one of these" refinement re-runs that one element Socratically; the revised answer re-files
+its OUTLINE box, then the mirror-back re-presents — the fresh A)-Happy re-emits the @FIELD_SET, which
+supersedes the earlier auto-fill.)
 
 ### Beats 8–11 — Paragraph 2 (same four-element shape — quotes A2/B2 already chosen at Beat 3b)
 No new quote-pick — A2 and B2 were selected upfront at Beat 3b (already distinct from A1/B1; paragraphs
 stay DISJOINT). Open by echoing the second aspect and its quotes: "Now Paragraph 2 — your second aspect
 was [echo from Beat 3], with '<A2, verbatim>' and '<B2, verbatim>'. Same build: Source A first." Then
-repeat Beats 4–7 for Paragraph 2 using A2, B2 — filing to the `-2-` boxes and `plan-Q2-para-2`.
+repeat Beats 4–7 for Paragraph 2 using A2, B2 — filing to the `-2-` OUTLINE boxes only.
 Identical quote-quality gate (thin quote → swap THAT ONE, same source/aspect), QUOTE-ECHO LAW,
-perceptive-first elicitation, distinct-angle two-inference dig, and per-element dual filing. Close with
-the SAME paragraph mirror-back as Beat 7 (each element a verbatim echo of their filed words, display
-only, do NOT re-file):
+perceptive-first elicitation, distinct-angle two-inference dig, per-element OUTLINE filing. Close with
+the SAME paragraph mirror-back as Beat 7 — including its ✍️ script line — and on the A)-Happy reply
+emit Paragraph 2's @FIELD_SET (same rule, same labels):
 @FIELD_COMMIT{"field":"outline-body-2-inf1-topic-q2"}
-@FIELD_COMMIT{"field":"plan-Q2-para-2"}
 @FIELD_COMMIT{"field":"outline-body-2-inf1-evidence-q2"}
-@FIELD_COMMIT{"field":"plan-Q2-para-2"}
 @FIELD_COMMIT{"field":"outline-body-2-inf2-topic-q2"}
-@FIELD_COMMIT{"field":"plan-Q2-para-2"}
 @FIELD_COMMIT{"field":"outline-body-2-inf2-evidence-q2"}
-@FIELD_COMMIT{"field":"plan-Q2-para-2"}
+@FIELD_SET{"field":"plan-Q2-para-2","value":"Source A topic: … | Source A inferences: … | Source B difference: … | Source B inferences: …"}
 
 ### Q2 progression gate
 HARD PRECONDITION: all EIGHT Q2 outline boxes hold student text (four per paragraph) — if any is
@@ -808,12 +814,13 @@ concept, inference or effect from a sound anchor is an IDEA problem — the ladd
      marked field, so one message cannot feed two boxes — each effect needs its own turn). FORWARD MOTION
      (session law 8): each filing reply asks the next element's question in the SAME turn; the sixth ends
      with the paragraph mirror-back + A/B gate. QUOTE-ECHO LAW applies (echo the anchor quote's words).
-     FILING per paragraph is unrolled explicitly below (§ "Q3 filing") — 6 outline boxes + 6 plan appends
-     per paragraph, all literal fieldIds (byte-traced against the render's -q3 body ids). -->
+     FILING per paragraph is unrolled explicitly below (§ "Q3 filing") — 6 OUTLINE boxes per paragraph
+     (verbatim store); the paragraph PLAN box fills ONCE via @FIELD_SET at the mirror-back approval
+     (v7.20.226 two-grade model), all literal fieldIds (byte-traced against the render's -q3 body ids). -->
 
-### Beats 5–10 per paragraph ×3 — the TTECEA Socratic sequence (STRICTLY one element per turn) → DUAL-FILE
-Work these six elements IN ORDER, one per turn; each files its OUTLINE box + the paragraph PLAN box as the
-literal markers in the "Q3 filing" block below (per current paragraph). For each anchor quote, in order:
+### Beats 5–10 per paragraph ×3 — the TTECEA Socratic sequence (STRICTLY one element per turn) → OUTLINE-FILE
+Work these six elements IN ORDER, one per turn; each files its OUTLINE box as the literal markers in the
+"Q3 filing" block below (per current paragraph). For each anchor quote, in order:
 
 1. **T — Topic sentence** (files the `topic` box). "In one sentence, what is the **concept** your paragraph will
    argue from this quote, linking to the question?" State the law: purely concept-led, NOT
@@ -852,78 +859,70 @@ literal markers in the "Q3 filing" block below (per current paragraph). For each
    sequence of effects: (1) directing focus, (2) evoking emotions, (3) shaping thoughts, (4) potentially
    inspiring action. What is the FIRST effect your quote creates on the reader?" Push past vague ("makes
    the reader interested") to a named emotion or thought; tie it to a technique ("which technique creates
-   it?"). One effect sentence. File to the paragraph's `effects` box + plan box, then ask 5b.
+   it?"). One effect sentence. File to the paragraph's `effects` OUTLINE box, then ask 5b.
 5b. **E — Effect 2** (files the `effects2` box — its OWN turn, a SECOND DISTINCT effect). "Now a second,
    DIFFERENT effect — how else does the writer shape the reader's response (a deeper thought, or a
    real-world response)?" Distinct from Effect 1, tied to a technique. One effect sentence. File to the
-   paragraph's `effects2` box + plan box, then ask element 6.
+   paragraph's `effects2` OUTLINE box, then ask element 6.
 6. **A — Author's purpose** (files the `purpose` box). "What was the writer's purpose in using [technique(s)] to
    convey [concept]?" Scaffold if vague (why these effects? what is the writer showing?).
    Then refine the language: precise purpose verbs (warns, exposes, critiques, challenges,
    reveals) + tentative evaluation (perhaps, arguably, may). Check purpose → technique →
    concept all connect.
 
-### Q3 filing — per element, per paragraph (dual-emit; byte-traced to the render's -q3 body ids)
-As you confirm EACH element (per the six-element sequence above), emit that element's TWO markers on their
-own lines in the SAME reply — the OUTLINE box (writes) and the paragraph PLAN box (appends). Emit ONLY the
-current paragraph's pair. The Technique step files nothing. Use exactly these literal fieldIds:
+### Q3 filing — OUTLINE per element; PLAN box at mirror-back approval (v7.20.226)
+As you confirm EACH element (per the six-element sequence above), emit that element's OUTLINE marker on its
+own line in the SAME reply (verbatim capture — the element store). The paragraph PLAN box is NOT filed per
+element — it fills ONCE, at the mirror-back approval (see the mirror-back section). The Technique step
+files nothing. Use exactly these literal fieldIds:
 
 **Paragraph 1** (anchor quote 1):
 @FIELD_COMMIT{"field":"outline-body-1-topic-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-1"}
 @FIELD_COMMIT{"field":"outline-body-1-evidence-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-1"}
 @FIELD_COMMIT{"field":"outline-body-1-analysis-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-1"}
 @FIELD_COMMIT{"field":"outline-body-1-effects-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-1"}
 @FIELD_COMMIT{"field":"outline-body-1-effects2-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-1"}
 @FIELD_COMMIT{"field":"outline-body-1-purpose-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-1"}
 
 **Paragraph 2** (anchor quote 2):
 @FIELD_COMMIT{"field":"outline-body-2-topic-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-2"}
 @FIELD_COMMIT{"field":"outline-body-2-evidence-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-2"}
 @FIELD_COMMIT{"field":"outline-body-2-analysis-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-2"}
 @FIELD_COMMIT{"field":"outline-body-2-effects-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-2"}
 @FIELD_COMMIT{"field":"outline-body-2-effects2-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-2"}
 @FIELD_COMMIT{"field":"outline-body-2-purpose-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-2"}
 
 **Paragraph 3** (anchor quote 3):
 @FIELD_COMMIT{"field":"outline-body-3-topic-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-3"}
 @FIELD_COMMIT{"field":"outline-body-3-evidence-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-3"}
 @FIELD_COMMIT{"field":"outline-body-3-analysis-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-3"}
 @FIELD_COMMIT{"field":"outline-body-3-effects-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-3"}
 @FIELD_COMMIT{"field":"outline-body-3-effects2-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-3"}
 @FIELD_COMMIT{"field":"outline-body-3-purpose-q3"}
-@FIELD_COMMIT{"field":"plan-Q3-para-3"}
 
-### Paragraph mirror-back (after the sixth element of each paragraph) — display only, NO re-file
-Present the paragraph back, each element a short verbatim echo of their filed words, WITH the writing
-reminders (each sentence 2–3 lines long; 'the', 'this' and 'these' may each open at most ONE sentence per
-paragraph — never two sharing that opener; embed quotations smoothly inside your own sentence; never the
-verb 'shows'):
+### Paragraph mirror-back (after the sixth element of each paragraph) — the PLAN-BOX filing moment
+Present the paragraph back, each element a short verbatim echo of their filed words. The ✍️ line
+below is PART OF THE SCRIPT — deliver it in EVERY mirror-back, never omit or paraphrase it away
+(v7.20.226, P1 parity — an instruction outside the script was skipped in live testing):
 "Here is your Paragraph {i}, in your own words:
 - **Topic:** [their concept]
 - **Technique + evidence + inference:** [their TTE]
 - **Close analysis:** [their zoom]
 - **Effect 1 / Effect 2:** [their two effects]
 - **Author's purpose:** [their purpose]
+✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
 Does it build as one argument? A) Happy — next paragraph B) Change one element."
-(Echoes are display only; a refine re-runs that one element and re-files the SAME box.) Between paragraphs:
-"Let's move to your next anchor quote." After Paragraph 3, go to the Q3 progression gate.
+**On the A)-Happy reply (v7.20.226 — the approved-structure filing):** emit ONE @FIELD_SET marker filing
+the approved structure into that paragraph's PLAN box — labelled elements on one line, separated by " | ",
+condensed to the student's chosen plan mode (Advanced = keywords only; Standard = key phrases), built ONLY
+from their own words (the approval click is the ownership checkpoint). No double-quote characters inside
+the value. Literal ids:
+@FIELD_SET{"field":"plan-Q3-para-1","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: …"}
+@FIELD_SET{"field":"plan-Q3-para-2","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: …"}
+@FIELD_SET{"field":"plan-Q3-para-3","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: …"}
+(A "B) Change one element" refine re-runs that element, re-files its OUTLINE box, then re-presents the
+mirror-back — the fresh A)-Happy re-emits the @FIELD_SET, which supersedes the earlier auto-fill.)
+Between paragraphs: "Let's move to your next anchor quote." After Paragraph 3, go to the Q3 progression gate.
 
 ### Q3 progression gate
 HARD PRECONDITION: all EIGHTEEN Q3 outline boxes hold student text (six per paragraph ×3) — if any is
@@ -1021,58 +1020,49 @@ markers in the "Q4 filing" block below). Effect is TWO turns (4a Source A → `e
    answer → push once: even if both are strong, which edges ahead for THIS aspect?) Close
    the paragraph plan by linking back to the question's exact focus.
 
-### Q4 body filing — per element, per body paragraph (dual-emit; UNSUFFIXED body ids — byte-traced)
-As you confirm EACH element, emit its TWO markers on their own lines in the SAME reply — the OUTLINE box
-(writes) and the body PLAN box (appends). Emit ONLY the current body's pair. ⚠️ Q4 body ids are
-UNSUFFIXED (no -q4). Do NOT emit to a `context` box — context is not planned on this paper. Use exactly:
+### Q4 body filing — OUTLINE per element; body PLAN boxes at mirror-back approval (v7.20.226)
+As you confirm EACH element, emit its OUTLINE marker on its own line in the SAME reply (verbatim
+element store). Each body's PLAN box fills ONCE at that body's mirror-back approval. ⚠️ Q4 body ids
+are UNSUFFIXED (no -q4). Do NOT emit to a `context` box — context is not planned on this paper. Use
+exactly:
 
 **Body Paragraph 1** (aspect 1):
 @FIELD_COMMIT{"field":"outline-body-1-topic"}
-@FIELD_COMMIT{"field":"plan-Q4-body-1"}
 @FIELD_COMMIT{"field":"outline-body-1-evidence"}
-@FIELD_COMMIT{"field":"plan-Q4-body-1"}
 @FIELD_COMMIT{"field":"outline-body-1-analysis"}
-@FIELD_COMMIT{"field":"plan-Q4-body-1"}
 @FIELD_COMMIT{"field":"outline-body-1-effects"}
-@FIELD_COMMIT{"field":"plan-Q4-body-1"}
 @FIELD_COMMIT{"field":"outline-body-1-effects2"}
-@FIELD_COMMIT{"field":"plan-Q4-body-1"}
 @FIELD_COMMIT{"field":"outline-body-1-purpose"}
-@FIELD_COMMIT{"field":"plan-Q4-body-1"}
 
 **Body Paragraph 2** (aspect 2):
 @FIELD_COMMIT{"field":"outline-body-2-topic"}
-@FIELD_COMMIT{"field":"plan-Q4-body-2"}
 @FIELD_COMMIT{"field":"outline-body-2-evidence"}
-@FIELD_COMMIT{"field":"plan-Q4-body-2"}
 @FIELD_COMMIT{"field":"outline-body-2-analysis"}
-@FIELD_COMMIT{"field":"plan-Q4-body-2"}
 @FIELD_COMMIT{"field":"outline-body-2-effects"}
-@FIELD_COMMIT{"field":"plan-Q4-body-2"}
 @FIELD_COMMIT{"field":"outline-body-2-effects2"}
-@FIELD_COMMIT{"field":"plan-Q4-body-2"}
 @FIELD_COMMIT{"field":"outline-body-2-purpose"}
-@FIELD_COMMIT{"field":"plan-Q4-body-2"}
 
 **Body Paragraph 3** (aspect 3):
 @FIELD_COMMIT{"field":"outline-body-3-topic"}
-@FIELD_COMMIT{"field":"plan-Q4-body-3"}
 @FIELD_COMMIT{"field":"outline-body-3-evidence"}
-@FIELD_COMMIT{"field":"plan-Q4-body-3"}
 @FIELD_COMMIT{"field":"outline-body-3-analysis"}
-@FIELD_COMMIT{"field":"plan-Q4-body-3"}
 @FIELD_COMMIT{"field":"outline-body-3-effects"}
-@FIELD_COMMIT{"field":"plan-Q4-body-3"}
 @FIELD_COMMIT{"field":"outline-body-3-effects2"}
-@FIELD_COMMIT{"field":"plan-Q4-body-3"}
 @FIELD_COMMIT{"field":"outline-body-3-purpose"}
-@FIELD_COMMIT{"field":"plan-Q4-body-3"}
 
-After each body's sixth element, present a mirror-back (display only, do NOT re-file): "Here is your
+After each body's sixth element, present a mirror-back — the PLAN-BOX filing moment. The ✍️ line is
+PART OF THE SCRIPT — deliver it in EVERY mirror-back, never omit it (v7.20.226, P1 parity): "Here is your
 Body Paragraph {i}, in your own words: [comparative topic] · [T+E+I both] · [comparative close] ·
-[Source A effect] · [Source B effect] · [purpose + judgement]. Does it compare BOTH sources throughout?
-A) Happy — next paragraph B) Change one element." Then: "Let's move to your next aspect." After Body 3,
-go to Beat 10.
+[Source A effect] · [Source B effect] · [purpose + judgement].
+✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
+Does it compare BOTH sources throughout?
+A) Happy — next paragraph B) Change one element." On the A)-Happy reply, emit that body's @FIELD_SET
+(labelled, " | "-separated, plan-mode-condensed, only their words, no double quotes — per-source effect
+labels, byte-matching the engine's label map):
+@FIELD_SET{"field":"plan-Q4-body-1","value":"Topic: … | TEI: … | Close analysis: … | Effect Source A: … | Effect Source B: … | Purpose+judgement: …"}
+@FIELD_SET{"field":"plan-Q4-body-2","value":"…"}
+@FIELD_SET{"field":"plan-Q4-body-3","value":"…"}
+Then: "Let's move to your next aspect." After Body 3, go to Beat 10.
 
 ### Beat 10 — Brief introduction (bodies first, frame last — one exchange)
 "Now frame it. A strong comparative introduction does three things: establishes the common
@@ -1081,20 +1071,24 @@ your overall judgement. What overarching similarity do both sources share?" → 
 key difference in how they approach it?" → "Combine into your comparative thesis: 'Both
 sources [common ground], yet Source A [approach] whereas Source B [approach].'" Review
 checks: similarity AND difference present; no technique-listing; sets up the comparison.
-File the comparative thesis to BOTH the intro outline box (⚠️ suffixed `-q4`) and the intro plan box:
+File the comparative thesis to the intro OUTLINE box (⚠️ suffixed `-q4`); in the SAME accepting
+reply — the acceptance IS the approval on this one-exchange beat — emit the intro PLAN box's
+@FIELD_SET (plan-mode-condensed, only their words, no double quotes):
 
 @FIELD_COMMIT{"field":"outline-intro-thesis-q4"}
-@FIELD_COMMIT{"field":"plan-Q4-intro"}
+@FIELD_SET{"field":"plan-Q4-intro","value":"Common ground: … | Key difference: … | Comparative thesis: …"}
 
 ### Beat 11 — Brief conclusion (one exchange)
 "A strong comparative conclusion synthesises rather than repeats: which writer's approach
 is ultimately more effective, and why — emotional impact, persuasiveness, depth, clarity?
 'Ultimately, Source A's [strength] proves more compelling because [reason]…'" Review
 checks: genuine synthesis; an evaluative judgement; nothing brand-new; connects to the
-question. File the synthesis to BOTH the conclusion outline box (⚠️ UNSUFFIXED — no -q4) and the plan box:
+question. File the synthesis to the conclusion OUTLINE box (⚠️ UNSUFFIXED — no -q4); in the SAME
+accepting reply — the acceptance IS the approval — emit the conclusion PLAN box's @FIELD_SET
+(plan-mode-condensed, only their words, no double quotes):
 
 @FIELD_COMMIT{"field":"outline-conclusion-thesis"}
-@FIELD_COMMIT{"field":"plan-Q4-conclusion"}
+@FIELD_SET{"field":"plan-Q4-conclusion","value":"Judgement: … | Reason: …"}
 
 ### Q4 progression gate
 HARD PRECONDITION: all TWENTY taught Q4 outline boxes hold student text (6 per body ×3 = 18, + intro
@@ -1393,18 +1387,23 @@ are.
 
 ## 10. ACCEPTANCE (build-time B-CHECKS this file must pass)
 
-- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 108 exactly (Q2×16 — element-by-element, 8 per
-  paragraph = OUTLINE box + PLAN box for each of the 4 elements; Q3×36 — element-by-element, 12 per
-  paragraph = OUTLINE box + PLAN box for each of the 6 TTECEA boxes [topic·evidence·analysis·effects·
-  effects2·purpose], ×3 paragraphs; Q4×40 — 12 per body ×3 [same 6 boxes, UNSUFFIXED] + intro
-  (outline-intro-thesis-q4 + plan) + conclusion (outline-conclusion-thesis + plan) = 36+2+2; Q5×16 —
-  five sections dual-emit outline-iumvcc-{sec} + iumvcc-{sec} (=10), Methodology dual-emits its 3
-  POINTS outline-iumvcc-method-point-{1,2,3} + iumvcc-method ×3 (=6)), every
-  fieldId byte-matching the header contract table, each in an element- or compile-validating reply.
-  (v7.20.195: Q5 Methodology outline SPLITS into its 2–3 points [`outline-iumvcc-method-point-{n}`,
-  `_iumvccFieldId` several-rows branch] — one PLAN box `iumvcc-method` accumulates all points, like a
-  Q3 paragraph plan; Organisation dropped [the point ORDER is the organisation]. Five sections stay
-  1:1. Q5 = 10 + 6 = 16. Total = 16+36+40+16 = 108.)
+- Literal `@FIELD_COMMIT{"field":"…"}` marker greps = 65 (62 real field markers + 3
+  instructional placeholders `<id>`×2/`…`×1; v7.20.226 two-grade model:
+  Q2×8 — element-by-element, 4 OUTLINE boxes per paragraph ×2; Q3×18 — 6 TTECEA OUTLINE boxes
+  [topic·evidence·analysis·effects·effects2·purpose] ×3 paragraphs; Q4×20 — 6 per body ×3
+  [UNSUFFIXED] + outline-intro-thesis-q4 + outline-conclusion-thesis; Q5×16 — five sections
+  dual-emit outline-iumvcc-{sec} + iumvcc-{sec} (=10), Methodology dual-emits its 3 POINTS
+  outline-iumvcc-method-point-{1,2,3} + iumvcc-method ×3 (=6) — Q5 KEEPS the compile model:
+  the student composes each compile, so the compile IS the approved form), every fieldId
+  byte-matching the header contract table, each in an element- or compile-validating reply.
+  (The pre-.226 count was 108 — outline+plan dual-emits on Q2/Q3/Q4.)
+- Literal `@FIELD_SET{"field":"plan-` greps = 11 (10 templates — Q2×2 paragraph mirror-backs ·
+  Q3×3 · Q4×3 bodies + intro + conclusion — plus this check line) — the approved-structure
+  filings; labels byte-match the engine's label map (plan-fanout-harness enforces).
+- The literal mirror-back reminder script line `✍️ When you write it:` appears exactly 4×
+  (Q2 Beat-7 script + Q3 script + Q4 script + this check line; Q2 Beats 8–11 inherit
+  Beat 7's by explicit reference) — part of the quoted script, delivered every mirror-back
+  (v7.20.226, P1 parity).
 - `Got it — continue` raw count = 4 Q-GATE rows + this line = 5.
 - `HARD PRECONDITION` ≥ 3 (pre-planning chain, per-question gates).
 - Simulated-state vocabulary appears NOWHERE as an instruction (this prohibition line is
