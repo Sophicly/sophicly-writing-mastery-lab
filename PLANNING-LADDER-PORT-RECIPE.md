@@ -38,6 +38,26 @@ The ladder rides `@FIELD_COMMIT` + outline rows. Most planning protocols emit **
    DIFFER per question even within a paper (P2: `-q2`/`-q3` suffixed, Q4 body UNSUFFIXED, intro
    suffixed, conclusion unsuffixed) — never assume, read the builder.
 
+### 1b. ⭐ TWO CONTENT GRADES (v7.20.216/.221 — Neil sign-off on P1; NON-NEGOTIABLE on every port)
+The filing layer has TWO grades, ONE source, converging at approval (the restored doc-lifecycle
+law: plan and outline hold the SAME content at two layouts):
+- **`@FIELD_COMMIT` = LIVE + VERBATIM + OUTLINE-ONLY.** Each confirmed element files the
+  student's raw words into its outline element box AS THEY PLAN. Plan boxes NEVER fill live
+  (raw-dictation accumulation was the .216 alarm).
+- **`@FIELD_SET` = ONCE, AT MIRROR-BACK APPROVAL, PLAN BOX.** One marker per paragraph,
+  labelled elements ` | `-separated, plan-mode-condensed, ONLY the student's words (the
+  A-Happy click is the ownership checkpoint — PEDAGOGY.md §9).
+- **The ENGINE does the rest — never add a second marker set.** `_applyFieldValueSets`
+  renders the plan value as one LINE per labelled element, and `_planFanoutToOutline`
+  writes the same refined text per-element into the outline boxes (replacing the raw).
+  New papers extend `_planOutlineTargets` (plan field → outline ids) and, if the paper
+  introduces new element labels, `_planLabelElement` (label → element key: lit adds
+  `Context:`; comparative adds per-source effect labels).
+- **The gate:** `bin/plan-fanout-harness.js` (pre-ship) runs every protocol's literal
+  @FIELD_SET templates through the real sliced engine and fails on any unmapped label or
+  unreal outline id. It skips unconverted protocols — your port is enforced the moment its
+  first plan @FIELD_SET lands. Do not ship a port while it reports FAIL.
+
 ## 2. REAL-STATE VERIFY (the .205 lesson — do this FIRST, not last)
 The P2 ladder shipped silently dormant because the gate keyed on `state.marks`, which the real
 lesson never sets. Before writing the gate or any fixture:

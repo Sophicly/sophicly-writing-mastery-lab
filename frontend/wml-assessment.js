@@ -1141,7 +1141,12 @@
             card.appendChild(el('div', { className: 'swml-cn-opener-summary',
                 textContent: '✓ ' + picked + ' — ' + better }));
             // VISIBLE user message (reflect-recall files the student's verbatim words)
-            chatTextarea.value = 'From memory: ' + picked + ' asked the most of me last time. The one thing I want to do better: ' + better;
+            // v7.20.224 (Neil live): dedup guard — a dictated/pasted answer that already
+            // contains the template phrasing must not get the prefix AGAIN (his Step-2
+            // bubble showed "From memory: … The one thing…: From memory: … better analysis").
+            chatTextarea.value = /from memory:|asked the most of me last time/i.test(better)
+                ? better
+                : 'From memory: ' + picked + ' asked the most of me last time. The one thing I want to do better: ' + better;
             sendFn();
         });
         bc.appendChild(card);
