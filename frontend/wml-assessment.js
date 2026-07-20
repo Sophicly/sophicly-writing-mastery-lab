@@ -1033,6 +1033,43 @@
             }
         } catch (e) { console.warn('WML plan-chain: prediction reset failed (non-fatal)', e && e.message); }
     }
+    // v7.20.219 (Neil, "Start fresh"): unlike chat-clear (which PRESERVES the plan —
+    // forward-snapshot law), "Start fresh" clears the student's whole plan so they can
+    // re-run from the top. Generic node-type sweep (inputField + outlineRow) so it
+    // covers EVERY planning lesson's field set without a per-protocol fieldId list.
+    // Doc row + section structure persist; only field CONTENTS are emptied, then saved.
+    // Deletes BOTTOM-UP so each deleteRange can't invalidate a still-queued position.
+    function _wipeAllPlanningFields() {
+        try {
+            if (!canvasEditor) return 0;
+            const targets = [];
+            canvasEditor.state.doc.descendants((node, pos) => {
+                if ((node.type.name === 'outlineRow' || node.type.name === 'inputField')
+                    && (node.textContent || '').trim()) {
+                    targets.push({ pos, size: node.nodeSize });
+                }
+                return true;
+            });
+            let wiped = 0;
+            targets.sort((a, b) => b.pos - a.pos).forEach(t => {
+                canvasEditor.commands.deleteRange({ from: t.pos + 1, to: t.pos + t.size - 1 });
+                wiped++;
+            });
+            if (wiped && typeof saveCanvasContent === 'function') saveCanvasContent();
+            console.log('WML start-fresh: wiped', wiped, 'plan/outline field(s)');
+            return wiped;
+        } catch (e) { console.warn('WML start-fresh: field wipe failed (non-fatal)', e && e.message); return 0; }
+    }
+    // v7.20.219: per-run localStorage a doc-field wipe can't reach — the numeric
+    // confidence predictions keyed by doc. Cleared so a fresh run re-asks them.
+    function _wipePlanningLocalState() {
+        try {
+            const prefix = 'swml_pred:' + _calibDocKey() + ':';
+            Object.keys(localStorage)
+                .filter(k => k.indexOf(prefix) === 0)
+                .forEach(k => localStorage.removeItem(k));
+        } catch (e) { /* storage may be disabled */ }
+    }
     // v7.20.53 (Neil): deep-link scroll for chain asks — scroll-only, never submits.
     // Loop-based label match (never CSS.escape — WML rule); first matching section wins.
     // v7.20.55: optional sectionType filter — label-only matching sent "📍 Source B" to
@@ -12246,6 +12283,61 @@
             }
         });
         chatHeader.appendChild(clearChatBtn);
+
+        // v7.20.219 (Neil): "Start fresh" — planning only. Clear-chat PRESERVES the plan
+        // (forward-snapshot law) and resumes from the doc; that surprised students who
+        // expected "start over". This is the explicit second intent: wipe the whole plan
+        // and re-run from step 1. NO new attempt (Neil: attempts "created so many
+        // complications") — same topic attempt, doc row kept, only field contents cleared,
+        // so nothing new lands in the dashboard. Capability-gated to planning (extend to
+        // outlining/polishing later via a predicate, never a literal-name cascade).
+        if (state.task === 'planning') {
+            // Shares the render closure with clearChatBtn, so canvasEditor / chatTextarea /
+            // sendCanvasMessage (closure-locals) are reachable — mirrors the .218 planning
+            // restart probe rather than refactoring that not-yet-verified block.
+            const _startFreshRestart = () => {
+                let _tries = 0;
+                const _go = () => {
+                    const alive = canvasEditor && !canvasEditor.isDestroyed
+                        && canvasEditor.view && canvasEditor.view.dom && canvasEditor.view.dom.isConnected;
+                    if (alive) {
+                        canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage();
+                    } else if (++_tries < 8) {
+                        setTimeout(_go, 200);
+                    } else {
+                        console.warn('WML start-fresh: editor dead after 8 probes — rebuilding canvas.');
+                        renderCanvasWorkspace();
+                    }
+                };
+                setTimeout(_go, 200);
+            };
+            const startFreshBtn = el('button', {
+                className: 'swml-clear-chat-btn swml-startfresh-btn',
+                title: 'Start this plan fresh',
+                innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+                onClick: () => {
+                    showConfirm(
+                        'Start this plan fresh? Your whole plan — every element you have filed — will be cleared and you will begin again from the top. This cannot be undone.',
+                        async () => {
+                            _wipeAllPlanningFields();   // empty every plan/outline/prediction field + save
+                            _wipePlanningLocalState();  // clear per-run confidence predictions
+                            await clearCanvasChat();    // fresh chat (server + local) before restart
+                            canvasChatHistory.length = 0;
+                            canvasChatId = '';
+                            _markFreshChat();           // next send opens a fresh AI conversation
+                            chatMessages.innerHTML = '';
+                            state.plan = {};
+                            updateProgress(1);
+                            _startFreshRestart();       // probe editor alive → silent "Let's begin!" → step 1
+                            console.log('WML Canvas: plan started fresh');
+                        },
+                        { confirmText: 'Start Fresh', cancelText: 'Cancel', danger: true }
+                    );
+                }
+            });
+            chatHeader.appendChild(startFreshBtn);
+        }
+
         chatPanel.appendChild(chatHeader);
 
         chatPanel.appendChild(chatMessages);
