@@ -651,16 +651,18 @@ files nothing. Use exactly these literal fieldIds:
 @FIELD_COMMIT{"field":"outline-body-2-purpose-q2"}
 
 ### Paragraph mirror-back (after the sixth element of each paragraph) — the PLAN-BOX filing moment
-Present the paragraph back, each element a short verbatim echo of their filed words, WITH the writing
-reminders (each sentence 2–3 lines long; 'the', 'this' and 'these' may each open at most ONE sentence per
-paragraph — never two sharing that opener; embed quotations smoothly inside your own sentence; never the
-verb 'shows'):
+Present the paragraph back, each element a short verbatim echo of their filed words. The ✍️ line
+below is PART OF THE SCRIPT — deliver it in EVERY mirror-back, never omit or paraphrase it away
+(v7.20.225, Neil: the writing reminders ride the moment each paragraph locks in, not only the
+Final Review — an instruction outside the script was skipped in live testing, so it now lives
+inside the quoted message):
 "Here is your Paragraph {i}, in your own words:
 - **Topic:** [their concept]
 - **Technique + evidence + inference:** [their TEI]
 - **Close analysis:** [their zoom]
 - **Effect 1 / Effect 2:** [their two effects]
 - **Author's purpose:** [their purpose]
+✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
 Does it build as one argument? A) Happy — next paragraph B) Change one element."
 **On the A)-Happy reply (v7.20.216 — the approved-structure filing):** emit ONE @FIELD_SET marker filing
 the approved structure into that paragraph's PLAN box — labelled elements on one line, separated by " | ",
@@ -767,7 +769,8 @@ feature step files nothing. Use exactly these literal fieldIds:
 
 ### Paragraph mirror-back (after the sixth element of each paragraph) — the PLAN-BOX filing moment
 As Q2's mirror-back, with the structural labels ("**Structural feature + located evidence +
-inference:**"). "Does it build as one argument? A) Happy — next paragraph B) Change one
+inference:**") — INCLUDING Q2's ✍️ writing-reminder script line, delivered every mirror-back.
+"Does it build as one argument? A) Happy — next paragraph B) Change one
 element." On the A)-Happy reply, emit the paragraph's @FIELD_SET exactly as Q2's rule
 (labelled elements, " | "-separated, plan-mode-condensed, only their words, no double quotes):
 @FIELD_SET{"field":"plan-Q3-para-1","value":"Topic: … | Structural feature+evidence+inference: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: …"}
@@ -867,7 +870,9 @@ UNSUFFIXED (no -q4), and the PLAN boxes are the generic full-essay ids (no Q4 na
 
 After each body's sixth element, present a mirror-back: "Here is your
 Body Paragraph {i}, in your own words: [evaluative topic] · [T+E+I] · [close analysis] · [Effect 1] ·
-[Effect 2] · [purpose + judgement]. Does every element keep testing the statement's keywords?
+[Effect 2] · [purpose + judgement].
+✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
+Does every element keep testing the statement's keywords?
 A) Happy — next paragraph B) Change one element." On the A)-Happy reply, emit that body's @FIELD_SET
 (Q2's rule — labelled, " | "-separated, plan-mode-condensed, only their words, no double quotes):
 @FIELD_SET{"field":"plan-body-1","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose+judgement: …"}
@@ -1007,14 +1012,18 @@ are.
 
 ## 10. ACCEPTANCE (build-time B-CHECKS this file must pass)
 
-- Literal `@FIELD_COMMIT{"field":"…"}` marker lines = 95 exactly (Q2×24 — element-by-element,
-  12 per paragraph = OUTLINE box + PLAN box for each of the 6 TTECEA boxes [topic·evidence·
-  analysis·effects·effects2·purpose], ×2 paragraphs; Q3×24 — same shape, ×2 paragraphs,
-  -q3 suffix; Q4×40 — 12 per body ×3 [same 6 boxes, UNSUFFIXED, plan-body-{i}] + intro
-  (outline-intro-thesis-q4 + plan-intro) + conclusion (outline-conclusion-thesis +
-  plan-conclusion) = 36+2+2; Q5×7 — the seven scene rows, single-emit), every fieldId
-  byte-matching the header contract table, each in an element- or beat-validating reply.
+- Literal `@FIELD_COMMIT{"field":"…"}` marker greps = 54 (v7.20.216 two-grade model: 51 real
+  field markers — 42 body-element OUTLINE boxes [7 bodies × 6 TTECEA boxes: Q2×2 ¶ `-q2`,
+  Q3×2 ¶ `-q3`, Q4×3 UNSUFFIXED] + `outline-intro-thesis-q4` + `outline-conclusion-thesis`
+  + Q5×7 scene rows single-emit — plus 3 instructional placeholders `<id>`×2/`…`×1; plan
+  boxes fill via @FIELD_SET at mirror-back approval, 9 templates, NEVER @FIELD_COMMIT),
+  every fieldId byte-matching the header contract table, each in an element- or
+  beat-validating reply. (The pre-.216 count was 95 — outline+plan pairs; stale line
+  caught v7.20.225.)
 - `Got it — continue` raw count = 4 Q-GATE rows + this line = 5.
+- The literal mirror-back reminder script line `✍️ When you write it:` appears exactly 3×
+  (Q2 script + Q4 script + this check line; Q3 inherits Q2's by explicit reference) — it is
+  part of the quoted script, delivered every mirror-back (v7.20.225, Neil "harden it").
 - `HARD PRECONDITION` ≥ 3 (pre-planning chain, per-question gates).
 - Simulated-state vocabulary appears NOWHERE as an instruction (this prohibition line is
   its only occurrence in the file).
