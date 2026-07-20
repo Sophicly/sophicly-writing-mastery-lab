@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.233
+ * Version: 7.20.234
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.233');
+define('SWML_VERSION', '7.20.234');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -770,6 +770,37 @@ class Sophicly_Writing_Mastery_Lab {
             // v7.20.38: per-lesson CN stage override (bridge picker "CN Stage" field).
             if (!empty($bridge_entry['cn_stage'])) {
                 $cn_stage = absint($bridge_entry['cn_stage']);
+            }
+
+            // v7.20.234: SHARED-LESSON RENDER HEAL — universal fix for the
+            // "INHERITED badge was admin-display-only" gap (see the bridge's own
+            // Pass-4 comment, class-learndash-bridge.php v2.29.28). A shared
+            // sfwd-topic renders in courses that never got a bridge entry, so
+            // task/phase/topic fell to shortcode atts baked from the lesson's
+            // ORIGIN course (Lang-P1 leftovers on post 54953, poetry leftovers
+            // on 42455 — Neil's Macbeth double-assessment, 2026-07-20). Trust
+            // ladder: explicit bridge entry (above, wins) > the lesson's OWN
+            // identity (slug/title via the bridge derivation registry) > baked
+            // shortcode atts (origin artifact, last resort).
+            if (empty($bridge_entry['wml_task']) && class_exists('Sophicly_LearnDash_Bridge')) {
+                $derived = Sophicly_LearnDash_Bridge::init()->derive_wml_task_from_topic($post_id, $course_id);
+                if (is_array($derived) && !empty($derived['task'])) {
+                    if ($task && $task !== $derived['task']) {
+                        // Shared-stale signal: baked att contradicts the lesson's identity.
+                        error_log(sprintf('[WML] shared-lesson heal: post %d course %d baked task "%s" -> derived "%s"', $post_id, $course_id, $task, $derived['task']));
+                    }
+                    $task = sanitize_key($derived['task']);
+                    if (!empty($derived['phase'])) {
+                        $phase = sanitize_key($derived['phase']);
+                    }
+                    // Topic: accept a derived topic only from explicit evidence
+                    // (slug suffix / unit slug / task convention) — derive's
+                    // last-resort "topic 1" must not clobber a real baked topic.
+                    $t_src = $derived['topic_source'] ?? 'default';
+                    if ('default' !== $t_src || !$topic) {
+                        $topic = absint($derived['topic']);
+                    }
+                }
             }
         }
 
