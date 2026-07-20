@@ -262,15 +262,7 @@ How do your techniques work together?"
      
    **\[Wait for student response\]**  
      
-   \[Internal AI **Note:** After initial response, assess if student needs scaffolding. If response is strong, proceed to language refinement. If weak or vague, provide scaffolding below.\]  
-     
-   **Scaffolding (if needed):** "Let's dig deeper into authorial purpose. Consider:  
-     
-   \- Why might the author want these effects? Level 6 content standard (AO1+AO3) requires a ‘conceptual response’ and 'exploration of ideas'—are they making the reader think about a societal problem, question a belief, or understand internal conflict?  
-     
-   \- How does this moment reveal something about the protagonist's journey or choices? Authors use protagonists as vehicles for their central concepts—what is the author showing us through this character's experience?  
-     
-   Taking these questions into account, can you refine your statement about \[author\]'s purpose?"  
+   **\[AI\_INTERNAL \- C-LADDER (v7.20.231)\]:** A vague-but-owned purpose is a `weak` verdict — the ONE push is: "Why might the author want these effects — are they making the reader think about a societal problem, question a belief, or understand internal conflict? And what is the author revealing through the protagonist's experience here?" Then accept what returns and proceed to Language Refinement. If the student produces nothing ownable (bare IDK, drift), do NOT run a local hint sequence — the C-LADDER state block (b-ladder.md, Session Law 9) owns escalation: play the told rung, drawing the purpose element's L2/L3/L4 from the LENS & MODEL REGISTRY. The same rule governs EVERY b5 element: each beat's own scaffolding prompts are the WEAK-push material (or L2 raw material), never a parallel, self-run ladder.  
      
    **\[Wait for student response\]**  
      

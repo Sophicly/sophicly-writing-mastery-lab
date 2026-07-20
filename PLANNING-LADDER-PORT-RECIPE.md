@@ -103,6 +103,38 @@ byte-exact — the harness lens-scan checks lettered A)/B)/C) menus), the model-
 - Negative-test one mutation (break a rule in a scratch copy → harness must fail for the
   right reason).
 
+## 5b. ⭐ MANDATORY ADVERSARIAL REVIEW PASS (before ship — an INDEPENDENT fresh-context reviewer, never the builder)
+
+Every port gets one adversarial review by a reviewer who did NOT build it (fresh-context
+agent), briefed to REFUTE and to report only defects that survive its own verification, with
+file:line cites. This is a GATE, not a nicety: on the P2 build it produced the .206 fix
+batch; on the LIT build (v7.20.230/.231) it caught 2 defects TWO builder self-passes missed
+(a beat still hand-running its own scaffold; lenses naming candidate concepts). The SIX
+LENSES (brief the reviewer with all of them):
+
+- **A. OWNERSHIP:** METHOD and verifiable FACT only — never a READING. Hunt L2 hints, L3
+  lenses, L4 scripts, and every splice for handed interpretations, set-text content, or a
+  model that leaks an answer. A lens naming a CANDIDATE CONCEPT the student could adopt
+  wholesale is content, not a direction.
+- **B. CONTRACT COMPLIANCE:** diff the port's ladder text against PROTOCOL-STANDARD §C-LADDER
+  and the P2 mold — any universal rule missing, weakened, or quietly reworded (including in
+  the port's own acceptance block)?
+- **C. REGISTRY/BEAT BYTE-MATCH:** every registry el ↔ literal @FIELD_COMMIT field or
+  declared synthetic; JS registry + order ↔ protocol tables ↔ the real beat sequence;
+  @FIELD_SET labels ↔ the fan-out label map.
+- **D. INTERNAL CONTRADICTIONS:** any surviving text still hand-running a scaffold sequence,
+  self-counting insights, or otherwise fighting the code-owned ladder? Check EVERY beat of
+  every step file, not just the ones the builder says were converted.
+- **E. LANGUAGE BANS:** British English; no "shows" as analytical verb; no "Unit N"
+  sub-part labels; no arrows in student-facing content; machinery words (rung/ladder/
+  wallet/verdict) never in student-facing scripts.
+- **F. MODEL SCRIPTS:** each L4 script itself meets gold standard (no "shows", tentative
+  purpose verbs, invented-domain content only, no set-text quotation) and ends handing the
+  method back to the student's own words.
+
+Fix every CONFIRMED defect in the same cycle, then re-run the mechanical gates. Two builder
+self-passes are NOT a substitute — author-blindness is the failure mode this step exists for.
+
 ## 6. SHIP
 Version bump → `bin/pre-ship-check.sh` (all harnesses) → commit → staging → **one real
 planning-chat drive** (weak → one push; drift → visible help change; IDK → no climb; wrong fact

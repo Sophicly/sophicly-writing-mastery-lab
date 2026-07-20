@@ -213,7 +213,7 @@ chosen at b4 are OUTSIDE the ladder — the keyword-validation exchange owns the
 
 | Element (el) | L2 hint | L3 lenses (byte-exact) | L4 model |
 |---|---|---|---|
-| Overarching concept — b6 Step 2 · el `lit-overarching-concept` · files nothing | "Set your three topic-sentence concepts side by side — if each is a branch, what trunk are they growing from?" | A) a truth learned or an innocence lost · B) one value tested against another · C) power — gained, lost, or paid for | TALE → finding the trunk across the tale's three moments (script bank M6L, first half) |
+| Overarching concept — b6 Step 2 · el `lit-overarching-concept` · files nothing | "Set your three topic-sentence concepts side by side — if each is a branch, what trunk are they growing from?" | A) what the protagonist ends with that they did not begin with · B) one value tested against another · C) what all three of your moments put at stake | TALE → finding the trunk across the tale's three moments (script bank M6L, first half) |
 | Working thesis — b6 Step 3 · el `lit-working-thesis` · files nothing (refined form files at b7) | "You have the trunk [echo theirs] — now claim something ABOUT it, and let your three branch concepts prove it." | A) what the author ARGUES about the trunk · B) what the journey PROVES about it · C) what the reader is left believing | TALE → the three-point thesis on the tale (script bank M5L) |
 | Refined thesis — b7 Step 1 · `outline-intro-thesis` | "Read your thesis against your three body plans — does each branch still appear in it, and is every verb earning its place?" | *(Working thesis's lenses, reused — one registry entry, cited twice)* | TALE → M5L reused, restated tighter |
 | Hook — b7 Step 2 · `outline-intro-hook` | "Your thesis is about [echo their focus] — what would make a stranger CURIOUS about that exact idea, in one sentence?" | A) a fact that surprises · B) a question that unsettles · C) a claim that defies expectation | TALE → one hook built on the tale's theme in the student's chosen technique's shape (M1L's step-shape: obvious → loaded → underneath) |
@@ -287,7 +287,8 @@ your three anchors all pull on — then what it still says now."
 - The three C-LADDER contract literals appear above: the precedence line
   (`WRONG → FAILED → WEAK/RESOLVED`), the weak-never-climbs law, and the wrong=falsifiable
   discriminator.
-- Every L3 lens cell names a DIRECTION or category — no lens quotes or describes this text,
-  any set text, or a completed reading.
+- Every L3 lens cell names a DIRECTION — never CONTENT: no lens quotes or describes this
+  text, any set text, a completed reading, or a candidate concept the student could adopt
+  wholesale.
 - Every L4 script models on the invented tale only; no set-text quotation appears anywhere
   in this file.
