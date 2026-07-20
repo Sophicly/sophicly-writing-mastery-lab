@@ -178,7 +178,7 @@ B) Can you briefly recap the framework?"
 
    
 
-   **Building Your Second Sentence (TTE Structure):** After student provides inference, guide them to construct their analytical foundation with three integrated elements:
+   **Building Your Second Sentence (TEI Structure):** After student provides inference, guide them to construct their analytical foundation with three integrated elements:
 
    
 
@@ -200,11 +200,11 @@ B) Can you briefly recap the framework?"
 
    
 
-   This TTE structure ensures your analysis is grounded in the text and meaningful—not just technique-spotting. Take your time crafting this sentence, as it anchors your entire paragraph."
+   This TEI structure ensures your analysis is grounded in the text and meaningful—not just technique-spotting. Take your time crafting this sentence, as it anchors your entire paragraph."
 
    
 
-   \[Internal AI **Note:** This explicit TTE construction moment teaches the systematic second-sentence structure that becomes assessable in Protocol A. Validate the student produces all three elements before proceeding to Evidence confirmation.\]
+   \[Internal AI **Note:** This explicit TEI construction moment teaches the systematic second-sentence structure that becomes assessable in Protocol A. Validate the student produces all three elements before proceeding to Evidence confirmation.\]
 
    
 
@@ -250,9 +250,13 @@ How do your techniques work together?"
 
 \[Internal AI **Note:** Validate that student shows technique interrelationships creating effects, not just lists techniques then lists effects separately. This connection is critical for Level 6.\]
 
-**Your task:** Write two distinct sentences exploring these effects, showing how your techniques create them. You have **complete freedom** to distribute focus, emotion, thoughts, and potential action across your sentences however works best for your analysis.
+**Your task (TWO turns, one effect sentence each — v7.20.228):** You'll write two distinct effect sentences, one at a time, showing how your techniques create them. You have **complete freedom** to distribute focus, emotion, thoughts, and potential action across your sentences however works best for your analysis.
 
-**Optional guidance:** Many students find it effective to trace the logical sequence \- covering focus \+ emotion in sentence 1, then thoughts \+ potential action in sentence 2\. But you decide based on what's most powerful in manipulating **the reader/audience's** response to your quote."
+**Effect 1 turn:** "Write your FIRST effect sentence now — one detailed sentence on the strongest effect this quote creates on the reader/audience, tied to the technique that creates it." \[Wait for the sentence; accept it and file the `effects` outline box in the accepting reply.\]
+
+**Effect 2 turn:** "Now a second, DISTINCT effect — how else does the author shape the reader/audience's response (a deeper thought, or a potential real-world action)? One sentence, tied to a technique." \[Wait; accept and file the `effects2` outline box.\]
+
+**Optional guidance (offer if the student hesitates):** Many students find it effective to trace the logical sequence \- focus \+ emotion in the first sentence, then thoughts \+ potential action in the second. But you decide based on what's most powerful in manipulating **the reader/audience's** response to your quote."
 
 6. **A—Author's Purpose (AO1/AO3):** Ask: "What do you think was \[author\]'s purpose in using \[technique(s)\] to convey your concept that \[restate concept\]?"  
      
@@ -286,6 +290,46 @@ How do your techniques work together?"
 7. **C—Context (AO3):** Ask: "For Level 5-6's 'detailed links between context/text,' look at the **[TEXT] context bank** loaded into your session (per-text dated facts and critical voices for AO3 substrate). Which one or two factors are most relevant to this paragraph's concept, and how do they DRIVE that concept?"  
      
    \[Internal AI **Note:** Pull substrate from `protocols/aqa/literature/modules/knowledge-text-context-banks.md` for the active text. Hand the student ONE named fact / voice at a time — never list every fact at once. Causal language required ("drove" / "compelled" / "shaped" / "forced"); reject correlational ("relates to" / "connects with"). After student responds, run CONTEXT\_DRIVE\_CHECK() per `context-drive-check.md` to validate causal relationship. If text bank is missing or the active text is not yet covered, fall back to Socratic prompt without substrate but flag the gap to Neil for substrate-bank extension.\]
+
+### b5 filing — OUTLINE box per element; PLAN box at the plan approval (two content grades, v7.20.228)
+As the student's answer to EACH element above is accepted, emit that element's OUTLINE marker on its own
+line in the SAME accepting reply (verbatim capture — CODE files the student's message into the box; the
+element store). The paragraph PLAN box is NOT filed per element — it fills ONCE, at the plan approval
+below. The Technique question (element 2's first beats) and the Evidence confirmation (element 3) file
+NOTHING — both are absorbed into the TEI sentence, which files the `evidence` box. Effects file as TWO
+turns (Effect 1 → `effects`, Effect 2 → `effects2`). Use exactly these literal fieldIds:
+
+**Body Paragraph 1** (Beginning anchor):
+@FIELD_COMMIT{"field":"outline-body-1-topic"}
+@FIELD_COMMIT{"field":"outline-body-1-evidence"}
+@FIELD_COMMIT{"field":"outline-body-1-analysis"}
+@FIELD_COMMIT{"field":"outline-body-1-effects"}
+@FIELD_COMMIT{"field":"outline-body-1-effects2"}
+@FIELD_COMMIT{"field":"outline-body-1-purpose"}
+@FIELD_COMMIT{"field":"outline-body-1-context"}
+
+**Body Paragraph 2** (Middle anchor):
+@FIELD_COMMIT{"field":"outline-body-2-topic"}
+@FIELD_COMMIT{"field":"outline-body-2-evidence"}
+@FIELD_COMMIT{"field":"outline-body-2-analysis"}
+@FIELD_COMMIT{"field":"outline-body-2-effects"}
+@FIELD_COMMIT{"field":"outline-body-2-effects2"}
+@FIELD_COMMIT{"field":"outline-body-2-purpose"}
+@FIELD_COMMIT{"field":"outline-body-2-context"}
+
+**Body Paragraph 3** (End anchor):
+@FIELD_COMMIT{"field":"outline-body-3-topic"}
+@FIELD_COMMIT{"field":"outline-body-3-evidence"}
+@FIELD_COMMIT{"field":"outline-body-3-analysis"}
+@FIELD_COMMIT{"field":"outline-body-3-effects"}
+@FIELD_COMMIT{"field":"outline-body-3-effects2"}
+@FIELD_COMMIT{"field":"outline-body-3-purpose"}
+@FIELD_COMMIT{"field":"outline-body-3-context"}
+
+Element → box mapping (per the numbered sequence above): 1 Topic Sentence → `topic` · 2's final TEI
+sentence → `evidence` · 4 Close Analysis → `analysis` · 5 Effect 1 → `effects` · 5 Effect 2 →
+`effects2` · 6 Author's Purpose → `purpose` (file the refined statement, after Language Refinement) ·
+7 Context → `context` (file the answer that passes CONTEXT_DRIVE_CHECK).
 
 **After Each Body Plan:**
 
@@ -371,15 +415,23 @@ B) Standard Mode (key phrases)"
 
 Both formats use ONLY student's responses—never introduce new content. Just condense to appropriate detail level.
 
-**Confirm:** "Review this plan against Level 5-6 criteria. Are you happy with it?
+**Confirm (the ✍️ line below is PART OF THE SCRIPT — deliver it with EVERY plan presentation, never omit or paraphrase it away):**
+
+"✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
+
+Review this plan against Level 5-6 criteria. Are you happy with it?
 
 A) Yes, this plan works well
 
 B) No, I want to refine it"
 
-**If B:** "Which part would you like to refine to better meet Level \[5/6\] standards?" → Socratic dialogue to revise → loop until A
+**If B:** "Which part would you like to refine to better meet Level \[5/6\] standards?" → Socratic dialogue to revise → loop until A (a refined element also re-files its OUTLINE box; the fresh A re-emits the @FIELD_SET below, which supersedes the earlier auto-fill).
 
-**If A:** "Copy this plan into the 'Body Paragraph \[1/2/3\]' section of your workbook."
+**If A (v7.20.228 — the approved-structure filing):** CODE files the plan for the student — do NOT tell them to copy it. Emit ONE @FIELD_SET marker filing the approved structure into that paragraph's PLAN box — labelled elements on one line, separated by " | ", condensed to the paragraph's chosen mode (Advanced = keywords only; Standard = key phrases), built ONLY from the student's own words (the approval click is the ownership checkpoint). No double-quote characters inside the value. Literal ids:
+@FIELD_SET{"field":"plan-body-1","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: … | Context: …"}
+@FIELD_SET{"field":"plan-body-2","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: … | Context: …"}
+@FIELD_SET{"field":"plan-body-3","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: … | Context: …"}
+Then tell the student their plan has been filed into the 'Body Paragraph \[1/2/3\]' plan section of their document.
 
 **[AI_INTERNAL — Save per paragraph]** Use the confirm marker matching the current paragraph number:
 <!-- @CONFIRM_ELEMENT: element_type="body_para_1" label="Body Paragraph 1 Plan" -->

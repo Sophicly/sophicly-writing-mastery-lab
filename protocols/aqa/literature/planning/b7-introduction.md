@@ -162,6 +162,14 @@ Say: "Let me check these building sentences meet Level 5-6 criteria:
 
 ### **Step 4: Present Plan**
 
+### b7 filing — OUTLINE box per element; PLAN box at the plan approval (two content grades, v7.20.228)
+As each element above is accepted, emit its OUTLINE marker on its own line in the SAME accepting reply
+(verbatim capture — CODE files the student's message into the box). The introduction PLAN box fills ONCE,
+at the approval below. Literal ids:
+@FIELD_COMMIT{"field":"outline-intro-thesis"} — Step 1's refined thesis, in the reply that accepts it
+@FIELD_COMMIT{"field":"outline-intro-hook"} — Step 2's hook, once its quality scaffold passes
+@FIELD_COMMIT{"field":"outline-intro-building"} — Step 3's building sentences, once accepted
+
 **Plan Format Choice:**
 
 SAY: "Excellent work. Now I need to present your introduction plan. Same choice as before:
@@ -224,15 +232,21 @@ Both formats use ONLY student's responses—never introduce new content. Just co
 
 ---
 
-**Confirm:** "Review this plan. Happy with it meeting Level \[5/6\] standards?
+**Confirm (the ✍️ line below is PART OF THE SCRIPT — deliver it with EVERY plan presentation, never omit or paraphrase it away):**
+
+"✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
+
+Review this plan. Happy with it meeting Level \[5/6\] standards?
 
 A) Yes, this plan is strong
 
 B) No, let's refine it"
 
-**\[AI\_INTERNAL\]:** If B, refine via Socratic dialogue → loop until A.
+**\[AI\_INTERNAL\]:** If B, refine via Socratic dialogue → loop until A (a refined element also re-files its OUTLINE box; the fresh A re-emits the @FIELD_SET below).
 
-**If A:** "Copy this into the **'Introduction' section** of your workbook."
+**If A (v7.20.228 — the approved-structure filing):** CODE files the plan for the student — do NOT tell them to copy it. Emit ONE @FIELD_SET marker — labelled elements on one line, " | "-separated, condensed to the chosen mode, built ONLY from the student's own words. No double-quote characters inside the value:
+@FIELD_SET{"field":"plan-intro","value":"Hook: … | Building: … | Thesis: …"}
+Then tell the student their introduction plan has been filed into the 'Introduction' plan section of their document.
 
 <!-- @CONFIRM_ELEMENT: element_type="introduction" label="Introduction Plan" -->
 

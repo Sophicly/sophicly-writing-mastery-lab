@@ -124,12 +124,29 @@ const CASES = [{
     ];
   },
   allow: [],
+}, {
+  // v7.20.228 (lit two-grade port). The protocol is the whole planning DIR (b1..b10 stage
+  // files — filing markers live in b5/b7/b8). Render mirrors the REAL single-part redraft
+  // dispatch (wml-assessment.js ~38089-38102): buildOutlineSection(topicData.aos, null, marks)
+  // with the R&J lesson's real values — aos 'AO1,AO2,AO3,AO4' (AQA Shakespeare, AO4 = SPaG),
+  // marks 34 → 3 bodies + standard intro/conclusion. REAL lesson state verified 2026-07-20:
+  // board=aqa text=romeo_and_juliet subject=shakespeare (staging post 42392).
+  name: 'AQA Literature (Shakespeare/R&J)',
+  protocols: fs.readdirSync(path.join(ROOT, 'protocols', 'aqa', 'literature', 'planning'))
+    .filter(f => f.endsWith('.md')).sort()
+    .map(f => path.join(ROOT, 'protocols', 'aqa', 'literature', 'planning', f)),
+  render: () => {
+    sandbox._specSubjectKey = () => 'shakespeare';
+    sandbox.state.subject = 'shakespeare';
+    return renderIds(() => sandbox.buildOutlineSection('AO1,AO2,AO3,AO4', null, 34));
+  },
+  allow: [],
 }];
 
 let failed = 0;
 for (const c of CASES) {
   const rendered = new Set(c.render());
-  const proto = fs.readFileSync(c.protocol, 'utf8');
+  const proto = (c.protocols || [c.protocol]).map(p => fs.readFileSync(p, 'utf8')).join('\n\n');
   const tags = new Set();
   let m; const re = /@FIELD_COMMIT\{"field":"(outline-[^"]+)"/g;
   while ((m = re.exec(proto))) tags.add(m[1]);

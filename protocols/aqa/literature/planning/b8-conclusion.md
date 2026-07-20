@@ -234,6 +234,15 @@ Ask: "Try completing one of these sentences:
 
 ---
 
+### b8 filing — OUTLINE box per element; PLAN box at the plan approval (two content grades, v7.20.228)
+As each of the four elements above is accepted, emit its OUTLINE marker on its own line in the SAME
+accepting reply (verbatim capture — CODE files the student's message into the box). The conclusion PLAN
+box fills ONCE, at the approval below. Literal ids:
+@FIELD_COMMIT{"field":"outline-conclusion-thesis"} — the restated thesis, once accepted
+@FIELD_COMMIT{"field":"outline-conclusion-concept"} — the controlling concept, once its scaffold passes
+@FIELD_COMMIT{"field":"outline-conclusion-purpose"} — the author's central purpose, once accepted
+@FIELD_COMMIT{"field":"outline-conclusion-message"} — the universal message, once accepted
+
 **Plan Format Choice (BEFORE presenting plan):**
 
 SAY: "Excellent work on all four conclusion elements. Now I need to present your conclusion plan. Same choice:
@@ -293,15 +302,21 @@ B) Standard Mode (key phrases)"
 - All elements as key phrases from student's responses  
 - Maintain analytical language but condensed to essential phrase chunks
 
-**Confirm:** "Review this plan against Level 5-6 standards. Happy with it?
+**Confirm (the ✍️ line below is PART OF THE SCRIPT — deliver it with EVERY plan presentation, never omit or paraphrase it away):**
+
+"✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
+
+Review this plan against Level 5-6 standards. Happy with it?
 
 A) Yes, this conclusion plan works
 
 B) No, I want to refine it"
 
-**If B:** "Which element would you like to refine?" → Return to that specific section → Socratic dialogue to improve → loop until A
+**If B:** "Which element would you like to refine?" → Return to that specific section → Socratic dialogue to improve → loop until A (a refined element also re-files its OUTLINE box; the fresh A re-emits the @FIELD_SET below).
 
-**If A:** "Copy this into the **'Conclusion' section** of your workbook."
+**If A (v7.20.228 — the approved-structure filing):** CODE files the plan for the student — do NOT tell them to copy it. Emit ONE @FIELD_SET marker — labelled elements on one line, " | "-separated, condensed to the chosen mode, built ONLY from the student's own words. No double-quote characters inside the value:
+@FIELD_SET{"field":"plan-conclusion","value":"Restated thesis: … | Controlling concept: … | Central purpose: … | Universal message: …"}
+Then tell the student their conclusion plan has been filed into the 'Conclusion' plan section of their document.
 
 <!-- @CONFIRM_ELEMENT: element_type="conclusion" label="Conclusion Plan" -->
 

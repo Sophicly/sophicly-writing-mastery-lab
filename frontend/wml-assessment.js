@@ -4294,22 +4294,70 @@
     // collision-safe because the LABELS drive the element key and the label sets are
     // disjoint (TTECEA vs Source A/B inference). Q5 scene rows (P1) and IUMVCC compiles
     // (P2, bare iumvcc-* ids) → null (no fan-out pair). New papers extend HERE.
-    function _planOutlineTargets(planField) {
+    // v7.20.228 (lit port): does the live doc carry an outline/input row with this fieldId?
+    // Used to pick the lit per-element intro/conclusion fan-out vs the lang whole-box one —
+    // a CAPABILITY probe (what rows exist), never a paper literal. Harness-safe: callers may
+    // inject their own probe (the fan-out harness passes its @FIELD_COMMIT id set).
+    function _planRowExists(fid) {
+        try {
+            if (!canvasEditor) return false;
+            let found = false;
+            canvasEditor.state.doc.descendants(n => {
+                if (found) return false;
+                if ((n.type.name === 'outlineRow' || n.type.name === 'inputField') && n.attrs && n.attrs.fieldId === fid) { found = true; return false; }
+                return true;
+            });
+            return found;
+        } catch (_) { return false; }
+    }
+    function _planOutlineTargets(planField, rowExists) {
+        const has = rowExists || _planRowExists;
         let m = /^plan-Q([23])-para-([123])$/.exec(planField);
         if (m) { const q = m[1], p = m[2]; return { mode: 'elements', make: el => 'outline-body-' + p + '-' + el + '-q' + q }; }
-        m = /^plan-(?:Q4-)?body-([123])$/.exec(planField); // P1 plan-body-{i} · P2 plan-Q4-body-{i}
+        m = /^plan-(?:Q4-)?body-([123])$/.exec(planField); // P1 plan-body-{i} · lit plan-body-{i} · P2 plan-Q4-body-{i}
         if (m) { const b = m[1]; return { mode: 'elements', make: el => 'outline-body-' + b + '-' + el }; }
-        if (planField === 'plan-intro' || planField === 'plan-Q4-intro') return { mode: 'whole', target: 'outline-intro-thesis-q4' };
-        if (planField === 'plan-conclusion' || planField === 'plan-Q4-conclusion') return { mode: 'whole', target: 'outline-conclusion-thesis' };
+        if (planField === 'plan-intro' || planField === 'plan-Q4-intro') {
+            // v7.20.228: LITERATURE essay docs carry per-element intro rows (unsuffixed
+            // hook/building/thesis) — fan per element with the intro label family. Lang P1 Q4
+            // docs carry only the single suffixed thesis box — whole-mode, unchanged.
+            if (planField === 'plan-intro' && has('outline-intro-hook')) {
+                return { mode: 'elements', family: 'intro', make: el => 'outline-intro-' + el };
+            }
+            return { mode: 'whole', target: 'outline-intro-thesis-q4' };
+        }
+        if (planField === 'plan-conclusion' || planField === 'plan-Q4-conclusion') {
+            // v7.20.228: lit conclusion = 4 element rows (thesis/concept/purpose/message).
+            if (planField === 'plan-conclusion' && has('outline-conclusion-concept')) {
+                return { mode: 'elements', family: 'conclusion', make: el => 'outline-conclusion-' + el };
+            }
+            return { mode: 'whole', target: 'outline-conclusion-thesis' };
+        }
         return null;
     }
     // Label → outline element key. Tolerant prefixes (Q3 says "Structural feature+…",
     // Q4 says "Purpose+judgement") — unrecognised labels warn + skip (fail loud, raw kept).
     // v7.20.226 P2 families: paired-inference (Source A/B topic+inferences → inf{1,2}-*)
     // and comparative per-source effects (Effect Source A/B → effects/effects2).
-    function _planLabelElement(label) {
+    // v7.20.228 (lit port): optional FAMILY arg for the per-element intro/conclusion fan-outs
+    // — 'Thesis' is ambiguous across families (intro thesis row vs conclusion restated-thesis
+    // row), so the target's family scopes the map. No family = the body map (incl. new
+    // Context → context, the lit TTECEA+C 7th element).
+    function _planLabelElement(label, family) {
         const l = (label || '').toLowerCase();
         if (!l) return null;
+        if (family === 'intro') {
+            if (l.indexOf('hook') === 0) return 'hook';
+            if (l.indexOf('building') === 0) return 'building';
+            if (l.indexOf('thesis') === 0) return 'thesis';
+            return null;
+        }
+        if (family === 'conclusion') {
+            if (l.indexOf('restated') === 0 || l.indexOf('thesis') === 0) return 'thesis';
+            if (l.indexOf('controlling') === 0) return 'concept';
+            if (l.indexOf('central') === 0 || l.indexOf('author') === 0 || l.indexOf('purpose') === 0) return 'purpose';
+            if (l.indexOf('universal') === 0 || l.indexOf('message') === 0) return 'message';
+            return null;
+        }
         if (/^source\s*a\s*topic/.test(l)) return 'inf1-topic';
         if (/^source\s*a\s*inference/.test(l)) return 'inf1-evidence';
         if (/^source\s*b\s*difference/.test(l)) return 'inf2-topic';
@@ -4322,6 +4370,7 @@
         if (/^effect\s*1/.test(l)) return 'effects';
         if (/^effect\s*2/.test(l)) return 'effects2';
         if (l.indexOf('purpose') === 0 || l.indexOf('author') === 0) return 'purpose';
+        if (l.indexOf('context') === 0) return 'context';
         return null;
     }
     // The fan-out. live=true (approval turn): the refined text supersedes the raw dictation
@@ -4337,7 +4386,7 @@
             const writes = [];
             if (t.mode === 'elements') {
                 segs.forEach(seg => {
-                    const elKey = _planLabelElement(seg.label);
+                    const elKey = _planLabelElement(seg.label, t.family);
                     if (!elKey) { console.warn('WML PlanFan: unrecognised label', JSON.stringify(seg.label), 'in', planField, '— segment skipped'); return; }
                     writes.push({ fid: t.make(elKey), content: [{ type: 'text', text: seg.text }], norm: _fsNorm(seg.text) });
                 });

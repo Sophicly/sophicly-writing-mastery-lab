@@ -39,25 +39,38 @@ function slice(name) {
     }
     console.error('❌ plan-fanout-harness: unbalanced braces slicing ' + name); process.exit(1);
 }
+// v7.20.228: _planRowExists is _planOutlineTargets' default doc probe — sliced so the
+// reference resolves; the harness always injects its own probe (the @FIELD_COMMIT id set),
+// so the canvasEditor path never runs here.
 const { _planFieldSegments, _planOutlineTargets, _planLabelElement } = new Function(
-    slice('_planFieldSegments') + slice('_planOutlineTargets') + slice('_planLabelElement')
+    'const canvasEditor = null;'
+    + slice('_planRowExists') + slice('_planFieldSegments') + slice('_planOutlineTargets') + slice('_planLabelElement')
     + '; return { _planFieldSegments, _planOutlineTargets, _planLabelElement };'
 )();
 
-// Every planning protocol on disk, all boards.
+// Every planning protocol on disk, all boards. A "protocol" is the whole planning DIRECTORY
+// (v7.20.228): the lang papers keep everything in protocol-b-planning.md, but literature
+// splits across b1..b10 stage files — @FIELD_SET templates and @FIELD_COMMIT ids must be
+// collected across the dir, since that is the unit the router serves per session.
 function findProtocols(dir, out) {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
         const p = path.join(dir, e.name);
-        if (e.isDirectory()) findProtocols(p, out);
-        else if (e.name === 'protocol-b-planning.md' && p.includes(path.sep + 'planning' + path.sep)) out.push(p);
+        if (e.isDirectory()) {
+            if (e.name === 'planning') out.push(p);
+            else findProtocols(p, out);
+        }
     }
     return out;
+}
+function readProtocolDir(dir) {
+    return fs.readdirSync(dir).filter(f => f.endsWith('.md')).sort()
+        .map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n\n');
 }
 
 let fail = 0, checkedProtocols = 0, totalIds = 0;
 for (const file of findProtocols(path.join(ROOT, 'protocols'), [])) {
     const rel = path.relative(ROOT, file);
-    const proto = fs.readFileSync(file, 'utf8');
+    const proto = readProtocolDir(file);
 
     const templates = [];
     for (const m of proto.matchAll(/@FIELD_SET\{"field":"(plan-[^"]+)","value":"([^"]*)"\}/g)) {
@@ -78,7 +91,10 @@ for (const file of findProtocols(path.join(ROOT, 'protocols'), [])) {
             const sib = t.field.replace(/\d+$/, '1');
             if (sib !== t.field && byField[sib] && /:/.test(byField[sib])) value = byField[sib];
         }
-        const target = _planOutlineTargets(t.field);
+        // v7.20.228: the probe = this protocol's own @FIELD_COMMIT id set — the same rows the
+        // doc renders (planning-keymatch proves commits ↔ rendered rows separately). This is
+        // how the doc-aware lit intro/conclusion branches resolve without a live editor.
+        const target = _planOutlineTargets(t.field, id => real.has(id));
         if (!target) {
             // Scene rows etc. legitimately have no outline pair ONLY if the protocol
             // declares them single-emit — a plan-* @FIELD_SET with no mapping is suspect.
@@ -88,7 +104,7 @@ for (const file of findProtocols(path.join(ROOT, 'protocols'), [])) {
         const wanted = target.mode === 'whole'
             ? [target.target]
             : _planFieldSegments(value).map(s => {
-                const el = _planLabelElement(s.label);
+                const el = _planLabelElement(s.label, target.family);
                 return el ? target.make(el) : ('UNMAPPED<' + s.label + '>');
             });
         for (const id of wanted) {
