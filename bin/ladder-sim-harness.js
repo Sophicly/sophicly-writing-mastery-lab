@@ -433,6 +433,29 @@ sandbox.state.subject = 'literature';
 ok(call('deriveLadderState', []) === null, 'LIT-G1: bare "literature" subject stays dormant (no real lesson carries it)');
 sandbox.state.subject = 'modern_text';
 ok(call('_ladderQuestionOrder').join(',') === 'bodies,intro,conclusion', 'LIT-G2: modern_text joins the essay family (router map)');
+// ── EDUQAS 19th-CENTURY leg (v7.20.235 — the first recipe-driven lit-family port) ─────────────
+// Real convention (verified 2026-07-20): the parallel AQA christmas_carol lesson carries
+// subject="19th_century"; the eduqas modern lesson carries board="eduqas" — so an eduqas 19th-c
+// lesson is board="eduqas" subject="19th_century" (router eduqas+19th_century → literature dir).
+// _ladderActive board-gates; the port widened it to admit ONLY eduqas 19th-c so the sibling eduqas
+// subjects (shakespeare/modern — routed elsewhere, no b-ladder yet) can't silently enable.
+sandbox.state.board = 'eduqas'; sandbox.state.subject = '19th_century'; sandbox.state.marks = 0; sandbox.state.question = '';
+ok(call('_ladderQuestionOrder').join(',') === 'bodies,intro,conclusion',
+   'LIT-EDU1: eduqas 19th_century → lit essay family (board-agnostic registry + order)');
+mkDoc(litDoc());
+let stEdu = call('deriveLadderState', []);
+ok(stEdu && stEdu.el === 'outline-body-1-topic' && stEdu.question === 'bodies' && stEdu.rung === 1,
+   'LIT-EDU2: eduqas 19th-c planning + fresh lit doc → ladder LIVE, body-1 topic first, L1', stEdu && stEdu.el);
+sandbox.state.subject = 'shakespeare';
+ok(call('deriveLadderState', []) === null,
+   'LIT-EDU3: eduqas Shakespeare (no b-ladder ported) → dormant (sibling never silently enabled)');
+sandbox.state.subject = 'modern_text';
+ok(call('deriveLadderState', []) === null,
+   'LIT-EDU4: eduqas modern_text (routes to eduqas/modern, no ladder) → dormant');
+sandbox.state.board = 'edexcel'; sandbox.state.subject = '19th_century';
+ok(call('deriveLadderState', []) === null,
+   'LIT-EDU5: edexcel 19th_century (not yet ported) → dormant (board-scoped gate holds)');
+sandbox.state.board = 'aqa';
 sandbox.state.subject = 'shakespeare';
 // Walk arms:
 mkDoc(litDoc());

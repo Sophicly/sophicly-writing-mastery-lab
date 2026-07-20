@@ -2695,11 +2695,26 @@
     // key left the ladder silently dormant on the exact lesson it shipped for. §0c slug-trace class.)
     function _ladderActive() {
         try {
-            return !!state && state.task === 'planning'
-                && String(state.board || '').toLowerCase() === 'aqa'
-                && ((typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false)
+            if (!state || state.task !== 'planning') return false;
+            var _board = String(state.board || '').toLowerCase();
+            // AQA: Lang P2 / Lang P1 / all Literature-essay subjects are ported.
+            if (_board === 'aqa') {
+                return (typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false)
                     || (typeof _isLangPaper1 === 'function' ? _isLangPaper1() : false)
-                    || (typeof _isLitEssay === 'function' ? _isLitEssay() : false));
+                    || (typeof _isLitEssay === 'function' ? _isLitEssay() : false);
+            }
+            // Eduqas: ONLY 19th-century prose (Component 2 Section B) is ported (v7.20.235). Its
+            // subject routes to protocols/eduqas/literature/ (which now carries b-ladder.md + the
+            // two-grade filing splices). Eduqas Shakespeare/modern route to eduqas/{shakespeare,
+            // modern}/ — NO ladder module there — so keep them dormant (else the ladder would fire
+            // with no Session Law 9 / filing markers: a silent-broken sibling, the CANVAS
+            // TASK-SCOPING #1 trap). Subject-scoped, never a bare _isLitEssay() (which also matches
+            // shakespeare/moderntext).
+            if (_board === 'eduqas') {
+                var _subj = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                return /^(19thcentury|nineteenthcentury)$/.test(_subj);
+            }
+            return false;
         } catch (_) { return false; }
     }
     // v7.20.208 (PORT-RECIPE engine step 0): PAPER CONFIG — the walk, TELL, stamps and

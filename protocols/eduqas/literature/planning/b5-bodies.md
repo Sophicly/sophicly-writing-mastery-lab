@@ -82,7 +82,7 @@ A) Yes, let's start planning B) Can you explain the framework again?"
 
    
 
-   **Building Your Second Sentence (TTE Structure):** After student provides inference, guide them to construct their analytical foundation with three integrated elements:
+   **Building Your Second Sentence (TEI Structure):** After student provides inference, guide them to construct their analytical foundation with three integrated elements:
 
    
 
@@ -104,11 +104,11 @@ A) Yes, let's start planning B) Can you explain the framework again?"
 
    
 
-   This TTE structure ensures your analysis is grounded in the text and meaningful—not just technique-spotting. Take your time crafting this sentence, as it anchors your entire paragraph."
+   This TEI structure ensures your analysis is grounded in the text and meaningful—not just technique-spotting. Take your time crafting this sentence, as it anchors your entire paragraph."
 
    
 
-   \[Internal AI Note: This explicit TTE construction moment teaches the systematic second-sentence structure that becomes assessable in Protocol A. Validate the student produces all three elements before proceeding to Evidence confirmation.\]
+   \[Internal AI Note: This explicit TEI construction moment teaches the systematic second-sentence structure that becomes assessable in Protocol A. Validate the student produces all three elements before proceeding to Evidence confirmation.\]
 
    
 
@@ -154,23 +154,19 @@ How do your techniques work together?"
 
 \[Internal AI Note: Validate that student shows technique interrelationships creating effects, not just lists techniques then lists effects separately. This connection is critical for Level 6.\]
 
-**Your task:** Write two distinct sentences exploring these effects, showing how your techniques create them. You have **complete freedom** to distribute focus, emotion, thoughts, and potential action across your sentences however works best for your analysis.
+**Your task (TWO turns, one effect sentence each — v7.20.235):** You'll write two distinct effect sentences, one at a time, showing how your techniques create them. You have **complete freedom** to distribute focus, emotion, thoughts, and potential action across your sentences however works best for your analysis.
 
-**Optional guidance:** Many students find it effective to trace the logical sequence \- covering focus \+ emotion in sentence 1, then thoughts \+ potential action in sentence 2\. But you decide based on what's most powerful in manipulating **the reader/audience's** response to your quote."
+**Effect 1 turn:** "Write your FIRST effect sentence now — one detailed sentence on the strongest effect this quote creates on the reader/audience, tied to the technique that creates it." \[Wait for the sentence; accept it and file the `effects` outline box in the accepting reply.\]
+
+**Effect 2 turn:** "Now a second, DISTINCT effect — how else does the author shape the reader/audience's response (a deeper thought, or a potential real-world action)? One sentence, tied to a technique." \[Wait; accept and file the `effects2` outline box.\]
+
+**Optional guidance (offer if the student hesitates):** Many students find it effective to trace the logical sequence \- focus \+ emotion in the first sentence, then thoughts \+ potential action in the second. But you decide based on what's most powerful in manipulating **the reader/audience's** response to your quote."
 
 6. **A—Author's Purpose (AO1/AO3):** Ask: "What do you think was \[author\]'s purpose in using \[technique(s)\] to convey your concept that \[restate concept\]?"  
      
    **\[Wait for student response\]**  
      
-   \[Internal AI **Note:** After initial response, assess if student needs scaffolding. If response is strong, proceed to language refinement. If weak or vague, provide scaffolding below.\]  
-     
-   **Scaffolding (if needed):** "Let's dig deeper into authorial purpose. Consider:  
-     
-   \- Why might the author want these effects? Level 6 content standard (AO1+AO3) requires a ‘conceptual response’ and 'exploration of ideas'—are they making the reader think about a societal problem, question a belief, or understand internal conflict?  
-     
-   \- How does this moment reveal something about the protagonist's journey or choices? Authors use protagonists as vehicles for their central concepts—what is the author showing us through this character's experience?  
-     
-   Taking these questions into account, can you refine your statement about \[author\]'s purpose?"  
+   **\[AI\_INTERNAL \- C-LADDER (v7.20.235)\]:** A vague-but-owned purpose is a `weak` verdict — the ONE push is: "Why might the author want these effects — are they making the reader think about a societal problem, question a belief, or understand internal conflict? And what is the author revealing through the protagonist's experience here?" Then accept what returns and proceed to Language Refinement. If the student produces nothing ownable (bare IDK, drift), do NOT run a local hint sequence — the C-LADDER state block (b-ladder.md, Session Law 9) owns escalation: play the told rung, drawing the purpose element's L2/L3/L4 from the LENS & MODEL REGISTRY. The same rule governs EVERY b5 element: each beat's own scaffolding prompts are the WEAK-push material (or L2 raw material), never a parallel, self-run ladder.  
      
    **\[Wait for student response\]**  
      
@@ -190,6 +186,46 @@ How do your techniques work together?"
 7. **C—Context (AO3):** Ask: "For Level 5-6's 'detailed links between context/text,' how might historical, social, or cultural context have driven the author to make these choices and explore this concept?"  
      
    \[Internal AI Note: After student responds, run CONTEXT\_DRIVE\_CHECK() to ensure causal relationship\]
+
+### b5 filing — OUTLINE box per element; PLAN box at the plan approval (two content grades, v7.20.235)
+As the student's answer to EACH element above is accepted, emit that element's OUTLINE marker on its own
+line in the SAME accepting reply (verbatim capture — CODE files the student's message into the box; the
+element store). The paragraph PLAN box is NOT filed per element — it fills ONCE, at the plan approval
+below. The Technique question (element 2's first beats) and the Evidence confirmation (element 3) file
+NOTHING — both are absorbed into the TEI sentence, which files the `evidence` box. Effects file as TWO
+turns (Effect 1 → `effects`, Effect 2 → `effects2`). Use exactly these literal fieldIds:
+
+**Body Paragraph 1** (Beginning anchor):
+@FIELD_COMMIT{"field":"outline-body-1-topic"}
+@FIELD_COMMIT{"field":"outline-body-1-evidence"}
+@FIELD_COMMIT{"field":"outline-body-1-analysis"}
+@FIELD_COMMIT{"field":"outline-body-1-effects"}
+@FIELD_COMMIT{"field":"outline-body-1-effects2"}
+@FIELD_COMMIT{"field":"outline-body-1-purpose"}
+@FIELD_COMMIT{"field":"outline-body-1-context"}
+
+**Body Paragraph 2** (Middle anchor):
+@FIELD_COMMIT{"field":"outline-body-2-topic"}
+@FIELD_COMMIT{"field":"outline-body-2-evidence"}
+@FIELD_COMMIT{"field":"outline-body-2-analysis"}
+@FIELD_COMMIT{"field":"outline-body-2-effects"}
+@FIELD_COMMIT{"field":"outline-body-2-effects2"}
+@FIELD_COMMIT{"field":"outline-body-2-purpose"}
+@FIELD_COMMIT{"field":"outline-body-2-context"}
+
+**Body Paragraph 3** (End anchor):
+@FIELD_COMMIT{"field":"outline-body-3-topic"}
+@FIELD_COMMIT{"field":"outline-body-3-evidence"}
+@FIELD_COMMIT{"field":"outline-body-3-analysis"}
+@FIELD_COMMIT{"field":"outline-body-3-effects"}
+@FIELD_COMMIT{"field":"outline-body-3-effects2"}
+@FIELD_COMMIT{"field":"outline-body-3-purpose"}
+@FIELD_COMMIT{"field":"outline-body-3-context"}
+
+Element → box mapping (per the numbered sequence above): 1 Topic Sentence → `topic` · 2's final TEI
+sentence → `evidence` · 4 Close Analysis → `analysis` · 5 Effect 1 → `effects` · 5 Effect 2 →
+`effects2` · 6 Author's Purpose → `purpose` (file the refined statement, after Language Refinement) ·
+7 Context → `context` (file the answer that passes CONTEXT_DRIVE_CHECK).
 
 **After Each Body Plan:**
 
@@ -247,15 +283,23 @@ Which mode works best for you right now? Type A or B."
 - **Author's Purpose:** \[3-5 or 5-8 purpose keywords with evaluative modal\]  
 - **Context:** \[3-5 or 5-8 context keywords\]"
 
-**Confirm:** "Review this plan against Level 5-6 criteria. Are you happy with it?
+**Confirm (the ✍️ line below is PART OF THE SCRIPT — deliver it with EVERY plan presentation, never omit or paraphrase it away):**
+
+"✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
+
+Review this plan against Level 5-6 criteria. Are you happy with it?
 
 A) Yes, this plan works well B) No, I want to refine it C) Adjust keyword density (switch between advanced/standard mode for this section)"
 
 **If C:** Toggle `planning_mode` for this section only, regenerate plan with new density, return to confirmation
 
-**If B:** "Which part would you like to refine to better meet Level \[5/6\] standards?" → Socratic dialogue to revise → loop until A
+**If B:** "Which part would you like to refine to better meet Level \[5/6\] standards?" → Socratic dialogue to revise → loop until A (a refined element also re-files its OUTLINE box; the fresh A re-emits the @FIELD_SET below, which supersedes the earlier auto-fill).
 
-**If A:** "Copy this plan into the 'Body Paragraph \[1/2/3\]' section of your workbook."
+**If A (v7.20.235 — the approved-structure filing):** CODE files the plan for the student — do NOT tell them to copy it. Emit ONE @FIELD_SET marker filing the approved structure into that paragraph's PLAN box — labelled elements on one line, separated by " | ", condensed to the paragraph's chosen mode (Advanced = keywords only; Standard = key phrases), built ONLY from the student's own words (the approval click is the ownership checkpoint). No double-quote characters inside the value. Literal ids:
+@FIELD_SET{"field":"plan-body-1","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: … | Context: …"}
+@FIELD_SET{"field":"plan-body-2","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: … | Context: …"}
+@FIELD_SET{"field":"plan-body-3","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: … | Context: …"}
+Then tell the student their plan has been filed into the 'Body Paragraph \[1/2/3\]' plan section of their document.
 
 **\[AI\_INTERNAL \- Progressive Context Management\]:** After student confirms paragraph plan, execute SUMMARIZE\_COMPLETED(paragraph\_number) to compress the completed paragraph's conversation history into structured summary. This maintains context efficiency for long sessions.
 

@@ -348,6 +348,51 @@ if (!fs.existsSync(AQA_LIT_PLAN_DIR)) {
   }
 }
 
+// ── (3d) EL BYTE-TRACE — EDUQAS 19th-CENTURY LITERATURE (v7.20.235 port; same gate as (3c)) ──────
+// Eduqas 19th-c prose (Component 2 Section B) rides the SAME board-agnostic lit registry
+// (_ladderRegistryLit) and the SAME outline/plan fieldIds as AQA lit — the engine gate _isLitEssay
+// is subject-keyed (19thcentury), so no per-board engine leg was needed. This block proves the
+// eduqas planning dir's @FIELD_COMMIT/@FIELD_SET ids and its manifest match that shared registry.
+const EDU_LIT_PLAN_DIR = path.join(ROOT, 'protocols', 'eduqas', 'literature', 'planning');
+if (!fs.existsSync(EDU_LIT_PLAN_DIR)) {
+  note(`— EL BYTE-TRACE (EDUQAS LIT): SKIP (eduqas lit planning dir not found at ${path.relative(ROOT, EDU_LIT_PLAN_DIR)}).`);
+} else {
+  const protoEdu = fs.readdirSync(EDU_LIT_PLAN_DIR).filter(f => f.endsWith('.md'))
+    .map(f => fs.readFileSync(path.join(EDU_LIT_PLAN_DIR, f), 'utf8')).join('\n');
+  const commitFieldsEdu = new Set();
+  const reEdu = /@FIELD_COMMIT\s*\{[^}]*?"field"\s*:\s*"([^"]+)"[^}]*\}/g;
+  let mE;
+  while ((mE = reEdu.exec(protoEdu)) !== null) commitFieldsEdu.add(mE[1].trim());
+  const expectedEdu = aqaLitFilingEls();
+  const orphansEdu = expectedEdu.filter(e => !commitFieldsEdu.has(e));
+  const setFieldsEdu = new Set();
+  { const reSE = /@FIELD_SET\{"field":"([^"]+)"/g; let mSE;
+    while ((mSE = reSE.exec(protoEdu)) !== null) setFieldsEdu.add(mSE[1]); }
+  const planFieldsEdu = ['plan-body-1', 'plan-body-2', 'plan-body-3', 'plan-intro', 'plan-conclusion'];
+  const planMissEdu = planFieldsEdu.filter(e => !setFieldsEdu.has(e));
+  const eduManifest = path.join(ROOT, 'protocols', 'eduqas', 'literature', 'manifest.json');
+  let eduManifestOk = false;
+  try {
+    const mf = JSON.parse(fs.readFileSync(eduManifest, 'utf8'));
+    eduManifestOk = (mf.planning && Array.isArray(mf.planning.always) && mf.planning.always.includes('planning/b-ladder.md'));
+  } catch (_) { eduManifestOk = false; }
+  note(`— EL BYTE-TRACE (EDUQAS LIT): ${expectedEdu.length - orphansEdu.length}/${expectedEdu.length} code filing els + ${planFieldsEdu.length - planMissEdu.length}/${planFieldsEdu.length} plan @FIELD_SET fields are real in the eduqas lit planning files; b-ladder.md always-loaded: ${eduManifestOk ? 'yes' : 'NO'}.`);
+  if (orphansEdu.length) {
+    failed = 1;
+    note('  ❌ EDUQAS LIT CODE registry el(s) with NO matching @FIELD_COMMIT field (write-key ≠ read-key):');
+    orphansEdu.forEach(e => note(`       ${e}`));
+  }
+  if (planMissEdu.length) {
+    failed = 1;
+    note('  ❌ EDUQAS LIT plan @FIELD_SET field(s) missing from the eduqas lit planning files:');
+    planMissEdu.forEach(e => note(`       ${e}`));
+  }
+  if (!eduManifestOk) {
+    failed = 1;
+    note('  ❌ protocols/eduqas/literature/manifest.json planning.always does not include planning/b-ladder.md — the ladder contract would vanish on unlisted steps.');
+  }
+}
+
 // ── (4) ENGINE CONTRACT — lock the verdict/heal mechanics from silent erosion (as (1) locks the
 // protocol literals). These are the load-bearing lines a refactor would quietly break; the Fable
 // review's two fixes (heal-weak must not spend the push; el-specific heal-commit) are guarded here

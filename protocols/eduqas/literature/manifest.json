@@ -22,7 +22,8 @@
             "modules/anti-hallucination.md",
             "modules/workflow-entry.md",
             "modules/knowledge-core.md",
-            "planning/b-intro.md"
+            "planning/b-intro.md",
+            "planning/b-ladder.md"
         ],
         "steps": {
             "1": {

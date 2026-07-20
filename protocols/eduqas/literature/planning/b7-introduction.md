@@ -71,27 +71,14 @@ Store hook and proceed to Step 3\.
 
 Say: "I can see you're working on your hook, but let's strengthen it to meet Level 4-5 criteria. \[Identify specific issue: stock phrase/generic/disconnected/technique mismatch\]"
 
-→ **LEVEL 1 \- Anchor to thesis and technique:** "Your thesis is about \[student's thesis focus\]. How could your \[selected technique\] directly connect to THIS specific idea? What would make a reader curious about your particular argument?"
+**\[AI\_INTERNAL \- C-LADDER (v7.20.235)\]:** A stock or weak hook that is still THEIRS is a `weak` verdict — the ONE push is: "Your thesis is about \[student's thesis focus\]. How could your \[selected technique\] directly connect to THIS specific idea? What would make a reader curious about your particular argument?" Then accept what returns. If the student produces nothing ownable (bare IDK, drift), do NOT run a local hint sequence — the C-LADDER state block (b-ladder.md, Session Law 9) owns escalation: play the rung it names, drawing the hook element's L2/L3/L4 from the LENS & MODEL REGISTRY. The technique-specific angles below are L2 raw material (each names WHERE to look for the student's chosen technique, never a candidate hook):
 
-Wait for student response.
+- **Technique 1 (Surprising Historical Fact):** point at the period/setting corner of the text's context — a lesser-known fact zone that touches \[thesis focus\].
+- **Technique 2 (Provocative Question):** point at the assumption about \[thesis focus\] their essay is going to overturn.
+- **Technique 3 (Intriguing Quote):** point at the author, a contemporary or a critic whose words touch \[thesis focus\] — never hand them the quote.
+- **Technique 4 (Counter-Intuitive Concept Claim):** point at the gap between what people expect of \[thesis focus\] and what their three body concepts prove.
 
-→ **LEVEL 2 \- Provide technique-specific prompts based on student's selection:**
-
-**IF Technique 1 (Surprising Historical Fact):** "Think about a specific, lesser-known fact about \[novel's setting/period/author's context\] that directly relates to \[thesis focus\]. What historical detail would shock someone or challenge their assumptions?"
-
-**IF Technique 2 (Provocative Question):** "What's a question about \[thesis focus\] that forces the reader to reconsider their assumptions? It should be answerable through your essay, not just rhetorical."
-
-**IF Technique 3 (Intriguing Quote):** "Is there a quote from \[author\], a contemporary writer, or a critic that captures something paradoxical or striking about \[thesis focus\]? The quote should illuminate, not just describe."
-
-**IF Technique 4 (Counter-Intuitive Concept Claim):** "What's an unexpected truth about \[thesis focus\] in this novel that defies common expectations? What would surprise someone familiar with the text?"
-
-Wait for student response.
-
-→ **LEVEL 3 \- Deploy "Did You Know" with model example:** Provide a text-specific "Did You Know" insight that demonstrates the technique, then say: "Now, using that as inspiration, how could you craft your hook to connect your \[selected technique\] to \[thesis focus\]?"
-
-Wait for student response.
-
-Execute full scaffolding sequence (cycling through levels as needed) until hook meets assessment criteria.
+A "Did you know…?" here is an expert insight — wallet-governed (sub-cap/ceiling per Session Law 9), emit `@INSIGHT_SPENT` when delivered; never an uncounted model example.
 
 **After student revises:**
 
@@ -129,15 +116,9 @@ Draft 2-3 sentences that establish this contextual grounding. Introduce the text
 
 Wait for student response first.
 
-**IF student struggles** (indicators: "I don't know", vague answer, no causal link):
+A vague-but-owned attempt (context named, causal link thin) is a `weak` verdict — the ONE push is: "In your body paragraphs, you mentioned \[reference any context from their body plans\]. Can you expand on how that contextual factor drove \[author\]'s exploration of \[concept\]?" Then accept what returns. If the student produces nothing ownable, the C-LADDER state block owns escalation (b-ladder.md, Session Law 9) — play the told rung, drawing the building element's L2/L3/L4 from the LENS & MODEL REGISTRY.
 
-→ **LEVEL 1 \- Anchor to their body paragraph context:** "In your body paragraphs, you mentioned \[reference any context from their body plans\]. Can you expand on how that contextual factor drove \[author\]'s exploration of \[concept\]?"
-
-→ **LEVEL 2 \- Provide historical anchor:** "Let me give you a contextual starting point: \[Provide 1-2 sentences of relevant historical/social context for the text\]. How might this context have driven \[author\] to explore \[student's concept\]?"
-
-→ **LEVEL 3 \- Deploy "Did You Know":** Provide text-specific contextual insight, then return to Level 1 with new perspective.
-
-Execute full scaffolding sequence before accepting incomplete response.
+A context FACT here is fact-side help, sanctioned at any rung in the settled discipline: hand ONE named historical fact (dated where possible) from the text context bank loaded into your session (if available for the active text), keep it clear of the student's live quotation (fact-delivery guard), and let THEM build the causal bridge — never bridge it for them. One item per turn, never a list. Delivered as a "Did you know…?" it is an expert insight — wallet-governed, emit `@INSIGHT_SPENT`. If no bank covers the active text, fall back to a generic period-anchored fact and flag the gap to Neil for substrate-bank extension.
 
 **After student responds:**
 
@@ -153,6 +134,16 @@ Say: "Let me check these building sentences meet Level 5-6 criteria:
 \[Provide specific feedback\]"
 
 **\[AI\_INTERNAL\]:** Store student's building sentences once validated.
+
+---
+
+### b7 filing — OUTLINE box per element; PLAN box at the plan approval (two content grades, v7.20.235)
+As each element above is accepted, emit its OUTLINE marker on its own line in the SAME accepting reply
+(verbatim capture — CODE files the student's message into the box). The introduction PLAN box fills ONCE,
+at the approval below. Literal ids:
+@FIELD_COMMIT{"field":"outline-intro-thesis"} — Step 1's refined thesis, in the reply that accepts it
+@FIELD_COMMIT{"field":"outline-intro-hook"} — Step 2's hook, once its quality scaffold passes
+@FIELD_COMMIT{"field":"outline-intro-building"} — Step 3's building sentences, once accepted
 
 ---
 
@@ -218,13 +209,19 @@ Both formats use ONLY student's responses—never introduce new content. Just co
 
 ---
 
-**Confirm:** "Review this plan. Happy with it meeting Level \[5/6\] standards?
+**Confirm (the ✍️ line below is PART OF THE SCRIPT — deliver it with EVERY plan presentation, never omit or paraphrase it away):**
+
+"✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
+
+Review this plan. Happy with it meeting Level \[5/6\] standards?
 
 A) Yes, this plan is strong B) No, let's refine it"
 
-**\[AI\_INTERNAL\]:** If B, refine via Socratic dialogue → loop until A.
+**\[AI\_INTERNAL\]:** If B, refine via Socratic dialogue → loop until A (a refined element also re-files its OUTLINE box; the fresh A re-emits the @FIELD_SET below).
 
-**If A:** "Copy this into the **'Introduction' section** of your workbook."
+**If A (v7.20.235 — the approved-structure filing):** CODE files the plan for the student — do NOT tell them to copy it. Emit ONE @FIELD_SET marker — labelled elements on one line, " | "-separated, condensed to the chosen mode, built ONLY from the student's own words. No double-quote characters inside the value:
+@FIELD_SET{"field":"plan-intro","value":"Hook: … | Building: … | Thesis: …"}
+Then tell the student their introduction plan has been filed into the 'Introduction' plan section of their document.
 
 **Transition:** "Excellent. You've now set up your argument with a compelling introduction that meets Level \[5/6\] standards. The final piece of your essay plan is the **conclusion**—where we'll synthesize everything you've analyzed and connect it to a universal message."
 
