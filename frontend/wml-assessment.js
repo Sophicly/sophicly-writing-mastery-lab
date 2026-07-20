@@ -1170,12 +1170,21 @@
                 prevAssistant = m; break;
             }
             const planningJustStarted = !!(prevAssistant && prevAssistant.beat);
+            // v7.20.220 (Neil, live "scrolls to bottom of Q1"): scroll ONLY on genuine
+            // planning-start or a real question CHANGE. The old guard also re-fired whenever
+            // the PREVIOUS turn carried .beat (walk beats ~L13276, mirror-back beats ~L13648,
+            // prediction reveals) — mid-Q2 that kept planningJustStarted true, yanking the doc
+            // back up to the active question's heading. A same-question turn must NEVER
+            // re-scroll, whatever .beat the prior turn set.
             if (_ladderFocusQ === null) {
-                _ladderFocusQ = q;
-                if (!planningJustStarted) return;   // baseline after reload — never scroll on mount
+                _ladderFocusQ = q;                   // first call: baseline
+                if (planningJustStarted) {           // genuine planning start — scroll once
+                    _planScrollToSection(new RegExp('^' + q + '\\b', 'i'), 'question');
+                }
+                return;                              // reload/resume mid-work: no yank
             }
-            if (!planningJustStarted && _ladderFocusQ === q) return;
-            _ladderFocusQ = q;
+            if (_ladderFocusQ === q) return;         // same question — never re-scroll (.beat-proof)
+            _ladderFocusQ = q;                        // question genuinely advanced
             _planScrollToSection(new RegExp('^' + q + '\\b', 'i'), 'question');
         } catch (_) { /* focus scroll must never block a turn */ }
     }
