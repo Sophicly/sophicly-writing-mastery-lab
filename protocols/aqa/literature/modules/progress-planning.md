@@ -45,15 +45,16 @@
 
 **Part B.5: Body Paragraph Planning**
 
-* total\_steps \= 21 (3 paragraphs × 7 steps each)  
+* total\_steps \= 24 (3 paragraphs × 8 steps each — v7.20.232, matches the C-LADDER element registry)  
 * Per paragraph cycle:  
   - Step 1: **Topic** Sentence (conceptual, context-driven)  
   - Step 2: **Technique** identification  
   - Step 3: **Evidence** integration (use anchor quote)  
   - Step 4: **Close analysis** planning  
-  - Step 5: **Effects** on reader  
-  - Step 6: **Author's purpose**  
-  - Step 7: **Context** integration (**AO3**)  
+  - Step 5: **Effect 1** on reader/audience (its own turn)  
+  - Step 6: **Effect 2** on reader/audience (its own turn)  
+  - Step 7: **Author's purpose**  
+  - Step 8: **Context** integration (**AO3**)  
 * Repeat cycle for paragraphs 2 and 3
 
 **Part B.6: Thesis Synthesis**
@@ -63,9 +64,10 @@
 
 **Part B.7: Introduction Planning**
 
-* total\_steps \= 2  
-* Step 1: Hook creation  
-* Step 2: Building sentences \+ thesis
+* total\_steps \= 3 (v7.20.232 — matches b7's beat order: thesis first)  
+* Step 1: Refine thesis  
+* Step 2: Hook creation  
+* Step 3: Building sentences
 
 **Part B.8: Conclusion Planning**
 

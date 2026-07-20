@@ -135,6 +135,21 @@ LENSES (brief the reviewer with all of them):
 Fix every CONFIRMED defect in the same cycle, then re-run the mechanical gates. Two builder
 self-passes are NOT a substitute — author-blindness is the failure mode this step exists for.
 
+**THE STOP RULE (convergence criterion — never decide "enough passes" by feel):** review
+passes repeat until an independent adversarial pass returns **ZERO findings of MEDIUM or
+higher severity**. A pass that finds a MEDIUM+ defect gets its fixes applied and ONE more
+confirming pass (scope the re-pass to unswept surface + the found defect's class — not a
+full re-sweep of already-verified-clean lenses). A pass returning only LOW/none = converged,
+STOP; further passes are theatre. Note what static passes can NEVER catch: live LLM
+behaviour (marker emission at the right turns, rung-playing quality) — that residual is the
+one real planning drive (§6), not another review.
+
+**SWEEP SCOPE (the LIT pass-3 lesson):** the reviewer's target list must include EVERY file
+the manifest loads for the task — the `always` and per-step MODULE files (macros, knowledge,
+progress, workflow-entry), not just the step files the builder edited. Legacy scaffold
+macros, stuck-detect sequences, or self-counted insight limits in a module ride every step
+and fight the ladder exactly like an unconverted beat.
+
 ## 6. SHIP
 Version bump → `bin/pre-ship-check.sh` (all harnesses) → commit → staging → **one real
 planning-chat drive** (weak → one push; drift → visible help change; IDK → no climb; wrong fact

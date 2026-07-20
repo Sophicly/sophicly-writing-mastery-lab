@@ -7,11 +7,41 @@
      Design authority: PROTOCOL-STANDARD.md §C-LADDER (inherited unchanged) +
      PLANNING-LADDER-PORT-RECIPE.md. Only the registries and scripts below are lit-authored;
      the contract itself is the universal one — do not fork it here.
-     RECONCILIATION (supersession, decided at this port): (1) the WALLET below supersedes
-     b-intro's old "DYK counter (max 3 per session)" — insights are code-counted now, never
-     self-counted; (2) where a step file carries its own "scaffolding" or "LEVEL" prompt
-     sequences, those are RAW MATERIAL for this ladder's rungs (the beat's one weak-push, or
-     L2 hint content) — never a parallel, self-run ladder. The state block decides depth. -->
+     RECONCILIATION (supersession, decided at this port): see the SUPERSESSION law block
+     below — it is LAW TEXT, not commentary, and names every legacy mechanism it retires. -->
+
+### ⛔ SUPERSESSION — the ladder retires the legacy Socratic Engine for THIS protocol's planning (v7.20.232)
+
+While this planning session's C-LADDER is active (the state block names an active element or
+`done`), the following module mechanisms are **SUPERSEDED — do not run them**. Their prompt
+content survives only as RAW MATERIAL for this ladder's rungs (the beat's ONE weak-push, or
+L2 hint content); help depth, escalation, verdicts and insight counting belong to CODE alone.
+This clause is scoped to THIS protocol's planning — other tasks and other boards' protocols
+keep using these modules unchanged.
+
+- **Stuck/escalation sequences:** `STUCK_DETECT()`, `SCAFFOLD_THINKING()` and the
+  `EQ_PROMPT()`/`EVALUATE_RESPONSE_QUALITY()` judging loop (macros-socratic);
+  `STUCK_RESPONSE_SEQUENCE` (macros-utility AND graceful-degradation's copy);
+  foundation Rule 4's "never accept I-don't-know / thought-starter after 2-3 attempts".
+  On a struggling student: judge the turn once via `@ELEMENT_JUDGE`, play the told rung.
+  Never count attempts yourself; never re-ask reworded (error-recovery's "try again +
+  restate" is likewise superseded on laddered elements — a blank reply is `failed`).
+- **Insight counters:** foundation Rule 7's "max 3 per session / track mentally",
+  session-state's `dyk_count`, graceful-degradation's DYK increment, and
+  question-redirection's stuck-triggered `EXPERT_INSIGHT_PROMPT`. ONE wallet exists — the
+  code-counted one (Session Law 9): sub-cap 1 per arc, ceiling 4, balance told each turn,
+  `@INSIGHT_SPENT` on every delivery.
+- **Validation gates on laddered elements:** `CONTEXT_CHECK` / `ANALYSIS_CHECK` /
+  `EFFECTS_CHECK` / `CONTEXT_DRIVE_CHECK` keep their pedagogical CONTENT (what good looks
+  like — causal-not-correlational, micro-serving-macro) as the beat's own checks for the
+  weak/resolved judgement, but their ACCEPT/REJECT loops, quality tiers, attempt counts and
+  STUCK triggers do not run — verdicts are `@ELEMENT_JUDGE` only.
+- **Depth profiles:** K3/K4 support-level rules never alter rung depth and never earn
+  pre-emptive concept options — lens menus are EARNED on failure, from the registry only.
+- **Set-text models:** the knowledge-model-plan gold plan is SHAPE-ONLY reference — never
+  display its content to a student (for a Macbeth student it IS the answer). L4 models come
+  from the Clockmaker tale and the M-script bank exclusively. The sentence scanner
+  (macros-scanner) is polish-side machinery — never run it during laddered planning.
 
 ### Session Law 9 — THE CONTINGENT-SCAFFOLDING LADDER (C-LADDER — code owns the state; you play the rung you are told)
 

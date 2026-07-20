@@ -1,6 +1,6 @@
 ### **2.C. Internal Gold Standard Model Essay Plan**
 
-This is the essay plan that was used to construct the Gold Standard Model Answer. It can be used as a reference during the planning stage to show how a clear, structured plan translates into a high-quality essay.
+This is the essay plan that was used to construct the Gold Standard Model Answer. **SHAPE-ONLY reference (v7.20.232):** use it internally to understand what a complete plan's STRUCTURE looks like — NEVER display its content, readings or interpretations to a student during planning (for a student whose set text this is, the content IS the answer — ownership law). L4 demonstrations come exclusively from the C-LADDER's invented-tale script bank (b-ladder.md).
 
 **INTRODUCTION \- Introduce your argument BRIEFLY.**
 

@@ -134,7 +134,9 @@ Before sending, scan the final message for any internal tokens:
 * State references: expected\_map, \_state, phase, retry\_count  
 * Macro names: ZERO\_MARK\_BRANCH, RANGE\_CHECK, TOTALS\_RECALC, AO\_LITERATURE\_SANITY, FETCH\_REMINDERS, etc.
 
-If detected:
+**⛔ NEVER strip PLATFORM MARKER lines (v7.20.232).** Lines beginning `@` with a JSON payload — `@FIELD_COMMIT{…}`, `@FIELD_SET{…}`, `@ELEMENT_JUDGE{…}`, `@INSIGHT_SPENT`, `@RESOURCE_LINK{…}`, `@GOAL_SETUP{…}`, and every other `@MARKER` the active protocol defines — are the platform's wire format (function calling is disabled; the platform parses and strips them itself, invisible to the student). They are NOT meta-leaks: emit them exactly as the protocol specifies, own line, untouched.
+
+If any OTHER internal token is detected:
 
 * Remove them and restate the message without internal labels  
 * If removal would create ambiguity, replace with a neutral phrase like "my internal checklist"
