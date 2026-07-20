@@ -46,6 +46,10 @@ const parts = [
   slice('const OUTLINE_SPECS = {'),
   slice('function needsFullEssayStructure(', '('),
   slice('function getOutlineSpecKey(', '('),
+  // v7.20.223: REAL body-count + body-only resolver (were stubs) — the P1 case needs the
+  // genuine paragraph arithmetic, and a stub that drifts from the shipped code proves nothing.
+  slice('function getParagraphCount(', '('),
+  slice('function _resolveBodyOnlyOutline(', '('),
   slice('function buildIntroCriteria(', '('),
   slice('function buildConclusionCriteria(', '('),
   slice('function buildOutlineSection(', '('),
@@ -60,7 +64,7 @@ const explicit = {
   console,
   outlineRowHTML: (crit, fid) => { captured.push(fid); return ''; },
   sectionHTML: (t, l, a, b, inner) => inner || '',
-  getParagraphCount: (m) => Math.ceil(m / 5),
+  // subject/state are set PER CASE at the top of each render() — order-safe.
   _specSubjectKey: () => 'language_p2',
   state: { board: 'aqa', subject: 'language_p2' },
 };
@@ -84,6 +88,7 @@ const CASES = [{
   name: 'AQA Lang P2',
   protocol: path.join(ROOT, 'protocols', 'aqa', 'language2', 'planning', 'protocol-b-planning.md'),
   render: () => [
+    ...(sandbox._specSubjectKey = () => 'language_p2', sandbox.state.subject = 'language_p2', []),
     ...renderIds(() => sandbox.buildInferenceOutlineSection('Q2', 2)),
     ...renderIds(() => sandbox.buildOutlineSection(['AO2'], 'Q3', 12, null, { bodyOnly: 3, stampAO: 'AO2' })),
     ...renderIds(() => sandbox.buildOutlineSection(['AO3'], 'Q4', 16, 'aqa_language_p2_comparison', { focus: 'comparative', stampAO: 'AO3' })),
@@ -96,6 +101,29 @@ const CASES = [{
     // it comes from the source, never the planning chat. (Tracked render-gate cleanup, QUEUE#1.)
     'outline-body-1-context', 'outline-body-2-context', 'outline-body-3-context',
   ],
+}, {
+  // v7.20.223 (Neil: "check the rest of the questions in AQA Language Paper 1"). The P1 case the
+  // file's own TODO promised. Mirrors the REAL question dispatch (wml-assessment.js ~36583-36620):
+  // Q2/Q3 route through the real _resolveBodyOnlyOutline (spec facts: analysis · 8m · AO2 ·
+  // focus language/structure per protocols/shared/language-paper-specs.json); Q4 (evaluation,
+  // 20m, AO4) takes the plain >=20 full-essay branch; Q5 is creative writing — the Scene
+  // Structure plan IS its outline, no outline block renders (and its plan-scene rows are
+  // single-emit @FIELD_COMMITs, excluded from fan-out by design).
+  name: 'AQA Lang P1',
+  protocol: path.join(ROOT, 'protocols', 'aqa', 'language1', 'planning', 'protocol-b-planning.md'),
+  render: () => {
+    sandbox._specSubjectKey = () => 'language_p1';
+    sandbox.state.subject = 'language_p1';
+    const q2 = sandbox._resolveBodyOnlyOutline('Q2', 'analysis', 8, ['AO2'], { focus: 'language' });
+    const q3 = sandbox._resolveBodyOnlyOutline('Q3', 'analysis', 8, ['AO2'], { focus: 'structure' });
+    if (!q2 || !q3) throw new Error('P1 Q2/Q3 no longer admitted by _resolveBodyOnlyOutline — dispatch changed, update this case');
+    return [
+      ...renderIds(() => sandbox.buildOutlineSection(['AO2'], 'Q2', 8, null, { bodyOnly: q2.bodies, stampAO: q2.ao, focus: q2.focus })),
+      ...renderIds(() => sandbox.buildOutlineSection(['AO2'], 'Q3', 8, null, { bodyOnly: q3.bodies, stampAO: q3.ao, focus: q3.focus })),
+      ...renderIds(() => sandbox.buildOutlineSection(['AO4'], 'Q4', 20)),
+    ];
+  },
+  allow: [],
 }];
 
 let failed = 0;

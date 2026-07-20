@@ -82,6 +82,17 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/planning-keymatch-harness.js || fail=1
 fi
 
+# v7.20.223: PLAN⇄OUTLINE FAN-OUT (Neil's reliability ask). Every planning protocol's literal
+# @FIELD_SET plan templates run through the REAL SLICED engine mapping (_planOutlineTargets +
+# _planLabelElement); every generated outline id must be a real @FIELD_COMMIT id in that protocol,
+# every label must map. Unconverted protocols (no plan @FIELD_SETs) are skipped and start being
+# enforced the moment their conversion ships. Negative-proven (label typo → UNMAPPED, exit 1).
+# Runs when the engine, any planning protocol, or the harness is staged.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|protocols/.*/planning/.*\.md|plan-fanout-harness\.js'; then
+  node bin/plan-fanout-harness.js || fail=1
+fi
+
 # v7.20.204: C-LADDER B-CHECKS. The universal contingent-scaffolding ladder reduces to three
 # invariants (regime split · method-not-content · wrong=falsifiable). This gate asserts their
 # canonical literal lines survive in PROTOCOL-STANDARD.md (contract can't silently erode) and checks
