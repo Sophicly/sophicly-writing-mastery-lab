@@ -216,16 +216,22 @@ if (!fs.existsSync(AQA_P1_PROTO)) {
   const expectedP1 = aqaP1FilingEls();
   const orphansP1 = expectedP1.filter(e => !commitFieldsP1.has(e));
   // Plan-side + Q5 scene filings the protocol must also target (template-real ids, no registry).
+  // v7.20.216: plan boxes fill via @FIELD_SET at mirror-back approval (approved structure),
+  // NOT per-element @FIELD_COMMIT (raw verbatim — outline-only now). Scene rows stay commits.
+  const setFieldsP1 = new Set();
+  { const reS = /@FIELD_SET\{"field":"([^"]+)"/g; let mS;
+    while ((mS = reS.exec(protoP1)) !== null) setFieldsP1.add(mS[1]); }
   const planFieldsP1 = ['plan-Q2-para-1', 'plan-Q2-para-2', 'plan-Q3-para-1', 'plan-Q3-para-2',
-    'plan-body-1', 'plan-body-2', 'plan-body-3', 'plan-intro', 'plan-conclusion',
-    'plan-scene-Q5-hook', 'plan-scene-Q5-setup', 'plan-scene-Q5-reaction', 'plan-scene-Q5-epiphany',
-    'plan-scene-Q5-proaction', 'plan-scene-Q5-climax', 'plan-scene-Q5-denouement'];
-  const planMissP1 = planFieldsP1.filter(e => !commitFieldsP1.has(e));
+    'plan-body-1', 'plan-body-2', 'plan-body-3', 'plan-intro', 'plan-conclusion'];
+  const sceneFieldsP1 = ['plan-scene-Q5-hook', 'plan-scene-Q5-setup', 'plan-scene-Q5-reaction',
+    'plan-scene-Q5-epiphany', 'plan-scene-Q5-proaction', 'plan-scene-Q5-climax', 'plan-scene-Q5-denouement'];
+  const planMissP1 = planFieldsP1.filter(e => !setFieldsP1.has(e))
+    .concat(sceneFieldsP1.filter(e => !commitFieldsP1.has(e)));
   const jsSrcP1 = fs.existsSync(ASSESS_JS) ? fs.readFileSync(ASSESS_JS, 'utf8') : '';
   const codeTokensP1 = ["'q2-technique-p'", "'q3-feature-p'", "'q4-concepts'", "'q4-technique-b'",
                         '_ladderRegistryP1', '_ladderQuestionOrder'];
   const missingTokensP1 = jsSrcP1 ? codeTokensP1.filter(tok => !jsSrcP1.includes(tok)) : ['(wml-assessment.js not found)'];
-  note(`— EL BYTE-TRACE (P1): ${expectedP1.length - orphansP1.length}/${expectedP1.length} code filing els + ${planFieldsP1.length - planMissP1.length}/${planFieldsP1.length} plan/scene fields are real @FIELD_COMMIT fields in the AQA P1 protocol.`);
+  note(`— EL BYTE-TRACE (P1): ${expectedP1.length - orphansP1.length}/${expectedP1.length} code filing els + ${planFieldsP1.length + sceneFieldsP1.length - planMissP1.length}/${planFieldsP1.length + sceneFieldsP1.length} plan(@FIELD_SET)/scene(@FIELD_COMMIT) fields are real @FIELD_COMMIT fields in the AQA P1 protocol.`);
   if (orphansP1.length) {
     failed = 1;
     note('  ❌ P1 CODE registry el(s) with NO matching @FIELD_COMMIT field (write-key ≠ read-key):');

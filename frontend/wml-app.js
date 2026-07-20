@@ -4974,7 +4974,10 @@
                     if (head.length >= 2 && head.length <= 50) rawLabel = head;
                 }
                 let label = rawLabel.length > 50 ? rawLabel.substring(0, 47) + '...' : rawLabel;
-                numberedOptions.push({ label: `${m[1]}. ${label}`, value: m[1], rawLen: rawLabel.length, isQ: /\?/.test(line) });
+                numberedOptions.push({ label: `${m[1]}. ${label}`, value: m[1], rawLen: rawLabel.length, isQ: /\?/.test(line),
+                    // v7.20.216: a candidate that IS a quotation (quote-wrapped) is the AI
+                    // recapping evidence (anchor lists), never an answer option.
+                    isQuote: /^["\u201C\u2018']/.test(rawLabel) && /["\u201D\u2019']$/.test(rawLabel) });
             }
         }
         if (numberedOptions.length >= 2 && numberedOptions.length <= 6) {
@@ -5003,7 +5006,12 @@
             // and unaffected.
             const _asksToAnswer = /answer\s+(?:these|all|the\s+following|both|each)\s*(?:two|three|four|five|\d+)?\s*questions/i.test(text);
             const _allInterrogative = numberedOptions.every(o => o.isQ);
-            if (_allHeadings || _has4ButtonRow || _asksToAnswer || _allInterrogative) {
+            // v7.20.216 (Neil live repro): "So your two anchors are: 1. \"wind lashing…\"
+            // 2. \"thinking about…\"" rendered the QUOTES as buttons on a concept question
+            // (avg-length guard sat at exactly the 55 boundary). Quote-wrapped lists are
+            // recaps — suppress regardless of length.
+            const _allQuoted = numberedOptions.every(o => o.isQuote);
+            if (_allHeadings || _has4ButtonRow || _asksToAnswer || _allInterrogative || _allQuoted) {
                 // Drop through — let downstream detectors handle (e.g. 4-button gate
                 // renders elsewhere via wml-assessment.js:2292+).
             } else {
