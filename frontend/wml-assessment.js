@@ -4280,6 +4280,18 @@
                     // v7.19.844: replace ONLY untouched auto-fill (hash provenance) — a
                     // fresh run's feedback supersedes the old run's; student edits win.
                     if (_autoFillRecall(s.field) !== _autoFillHash(existing)) {
+                        // v7.20.217 (Neil): PLAN boxes APPEND under student content instead of
+                        // refusing — their notes stay, the approved plan lands beneath.
+                        // Exact-dup guard: a re-fired approval never doubles up.
+                        if (/^plan-/.test(s.field)) {
+                            if (existing.indexOf(s.value) !== -1) return;
+                            const endPos = targetPos + targetNode.nodeSize - 1;
+                            canvasEditor.commands.insertContentAt(endPos, { type: 'text', text: ' — ' + s.value });
+                            console.log('WML FieldSet: plan field', s.field, 'had student content — APPENDED approved plan');
+                            wrote = true;
+                            _scrollToFilledField(s.field);
+                            return;
+                        }
                         console.log('WML FieldSet: field', s.field, 'has student content — kept');
                         return;
                     }
