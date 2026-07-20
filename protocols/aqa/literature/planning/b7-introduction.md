@@ -68,27 +68,14 @@ Store hook and proceed to Step 3\.
 
 Say: "I can see you're working on your hook, but let's strengthen it to meet Level 4-5 criteria. \[Identify specific issue: stock phrase/generic/disconnected/technique mismatch\]"
 
-→ **LEVEL 1 \- Anchor to thesis and technique:** "Your thesis is about \[student's thesis focus\]. How could your \[selected technique\] directly connect to THIS specific idea? What would make a reader curious about your particular argument?"
+**\[AI\_INTERNAL \- C-LADDER (v7.20.229)\]:** A stock or weak hook that is still THEIRS is a `weak` verdict — the ONE push is: "Your thesis is about \[student's thesis focus\]. How could your \[selected technique\] directly connect to THIS specific idea? What would make a reader curious about your particular argument?" Then accept what returns. If the student produces nothing ownable (bare IDK, drift), do NOT run a local hint sequence — the C-LADDER state block (b-ladder.md, Session Law 9) owns escalation: play the rung it names, drawing the hook element's L2/L3/L4 from the LENS & MODEL REGISTRY. The technique-specific angles below are L2 raw material (each names WHERE to look for the student's chosen technique, never a candidate hook):
 
-Wait for student response.
+- **Technique 1 (Surprising Historical Fact):** point at the period/setting corner of their context bank — a lesser-known fact zone that touches \[thesis focus\].
+- **Technique 2 (Provocative Question):** point at the assumption a reader holds about \[thesis focus\] that their essay overturns.
+- **Technique 3 (Intriguing Quote):** point at where a critic's or the author's own recorded words might sit — never supplying one.
+- **Technique 4 (Counter-Intuitive Concept Claim):** point at the gap between what people expect of \[thesis focus\] and what their three body concepts prove.
 
-→ **LEVEL 2 \- Provide technique-specific prompts based on student's selection:**
-
-**IF Technique 1 (Surprising Historical Fact):** "Think about a specific, lesser-known fact about \[novel's setting/period/author's context\] that directly relates to \[thesis focus\]. What historical detail would shock someone or challenge their assumptions?"
-
-**IF Technique 2 (Provocative Question):** "What's a question about \[thesis focus\] that forces the reader to reconsider their assumptions? It should be answerable through your essay, not just rhetorical."
-
-**IF Technique 3 (Intriguing Quote):** "Is there a quote from \[author\], a contemporary writer, or a critic that captures something paradoxical or striking about \[thesis focus\]? The quote should illuminate, not just describe."
-
-**IF Technique 4 (Counter-Intuitive Concept Claim):** "What's an unexpected truth about \[thesis focus\] in this novel that defies common expectations? What would surprise someone familiar with the text?"
-
-Wait for student response.
-
-→ **LEVEL 3 \- Deploy "Did You Know" with model example:** Provide a text-specific "Did You Know" insight that demonstrates the technique, then say: "Now, using that as inspiration, how could you craft your hook to connect your \[selected technique\] to \[thesis focus\]?"
-
-Wait for student response.
-
-Execute full scaffolding sequence (cycling through levels as needed) until hook meets assessment criteria.
+A "Did you know…?" here is an expert insight — wallet-governed (sub-cap/ceiling per Session Law 9), emit `@INSIGHT_SPENT` when delivered; never an uncounted model example.
 
 **After student revises:**
 
@@ -124,21 +111,13 @@ For Level 5-6's 'detailed understanding of context,' think about:
 
 Draft 2-3 sentences that establish this contextual grounding. Introduce the text title and author naturally within these sentences."
 
-**\[AI\_INTERNAL \- Scaffolding Sequence\]:**
+**\[AI\_INTERNAL \- C-LADDER (v7.20.229)\]:**
 
 Wait for student response first.
 
-**IF student struggles** (indicators: "I don't know", vague answer, no causal link):
+A vague-but-owned attempt (context named, causal link thin) is a `weak` verdict — the ONE push is: "In your body paragraphs, you mentioned \[reference any context from their body plans\]. Can you expand on how that contextual factor drove \[author\]'s exploration of \[concept\]?" Then accept what returns. If the student produces nothing ownable, the C-LADDER state block owns escalation (b-ladder.md, Session Law 9) — play the told rung, drawing the building element's L2/L3/L4 from the LENS & MODEL REGISTRY.
 
-→ **LEVEL 1 \- Anchor to their body paragraph context:** "In your body paragraphs, you mentioned \[reference any context from their body plans\]. Can you expand on how that contextual factor drove \[author\]'s exploration of \[concept\]?"
-
-→ **LEVEL 2 \- Provide historical anchor from text-context-bank:** "Let me give you a contextual starting point from the **[TEXT] context bank** loaded into your session. \[Pull ONE named historical fact (dated, named source) from `protocols/aqa/literature/modules/knowledge-text-context-banks.md` matching the active text — e.g. for Macbeth: 'James I held that monarchs answer to God alone, so killing one is theological warfare not just political treason — and the Jacobean audience would have read regicide through that frame.'\] How might this context have driven \[author\] to explore \[student's concept\]?"
-
-\[Internal AI **Note:** Hand ONE substrate item per turn — never list every fact. If the text-context-bank does not yet cover the active text, fall back to a generic period-anchored fact for the era and flag the gap to Neil for substrate-bank extension.\]
-
-→ **LEVEL 3 \- Deploy "Did You Know":** Provide text-specific contextual insight, then return to Level 1 with new perspective.
-
-Execute full scaffolding sequence before accepting incomplete response.
+A context-bank FACT here is fact-side help, sanctioned at any rung in the settled discipline: hand ONE named historical fact (dated, named source) from `protocols/aqa/literature/modules/knowledge-text-context-banks.md` matching the active text, keep it clear of the student's live quotation (fact-delivery guard), and let THEM build the causal bridge — never bridge it for them. One substrate item per turn, never the list. Delivered as a "Did you know…?" it is an expert insight — wallet-governed, emit `@INSIGHT_SPENT`. If the bank does not cover the active text, fall back to a generic period-anchored fact and flag the gap to Neil for substrate-bank extension.
 
 **After student responds:**
 

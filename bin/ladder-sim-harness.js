@@ -54,6 +54,12 @@ vm.runInContext(isP2Match[0], sandbox);
 const isP1Match = src.match(/function _isLangPaper1\(\) \{[\s\S]*?\n    \}/);
 if (!isP1Match) { console.error('❌ ladder-sim: cannot slice _isLangPaper1'); process.exit(1); }
 vm.runInContext(isP1Match[0], sandbox);
+// v7.20.229: the LIT essay-family gate is sliced from the REAL source too — the subject-family
+// normalisation leg (shakespeare / modern_text / 19th_century, never bare 'literature') is
+// itself under test.
+const isLitMatch = src.match(/function _isLitEssay\(\) \{[\s\S]*?\n    \}/);
+if (!isLitMatch) { console.error('❌ ladder-sim: cannot slice _isLitEssay'); process.exit(1); }
+vm.runInContext(isLitMatch[0], sandbox);
 vm.runInContext(moduleSrc, sandbox);
 
 // Fake PM doc: rows = [{fieldId, text}] → canvasEditor.state.doc.descendants walking outlineRows.
@@ -395,6 +401,83 @@ warns.length = 0;
 mkDoc(['hook', 'setup', 'reaction', 'epiphany', 'proaction', 'climax', 'denouement'].map(s => ({ fieldId: `plan-scene-Q5-${s}`, text: '' })));
 ok(call('deriveLadderState', []) === null, 'P1-A7: scene-rows-only doc → dormant (CW outside the ladder), never done-on-empty');
 ok(warns.some(w => /no outline boxes/.test(w)), 'P1-A8: …and warns loudly');
+sandbox.state.subject = 'language2';
+
+// ═══ LIT. AQA LITERATURE (v7.20.229 port — essay family, three-arc walk) ══════════════════════
+// REAL lesson state (staging post 42392, verified 2026-07-20: board="aqa"
+// text="romeo_and_juliet" subject="shakespeare" topic="1" phase="redraft" task="planning").
+// The fixture uses 'shakespeare' — the real value, never a designed-state literal.
+sandbox.state.subject = 'shakespeare'; sandbox.state.marks = 0; sandbox.state.question = '';
+function litDoc(filled) {
+  filled = filled || {};
+  const rows = [];
+  for (let i = 1; i <= 3; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose', 'context']) {
+    const fid = `outline-body-${i}-${s}`; rows.push({ fieldId: fid, text: filled[fid] || '' });
+  }
+  for (const s of ['thesis', 'hook', 'building']) rows.push({ fieldId: `outline-intro-${s}`, text: filled[`outline-intro-${s}`] || '' });
+  for (const s of ['thesis', 'concept', 'purpose', 'message']) rows.push({ fieldId: `outline-conclusion-${s}`, text: filled[`outline-conclusion-${s}`] || '' });
+  return rows;
+}
+// Registry dispatch + shape:
+const litBodies = call('_ladderRegistry', 'bodies').map(e => e.el);
+ok(litBodies.includes('outline-body-1-context') && litBodies.includes('lit-technique-b1')
+   && !litBodies.includes('q4-aspects') && !litBodies.includes('outline-body-1-topic-q3'),
+   'LIT-R1: subject shakespeare → bodies registry = TTECEA+C incl. context row (not a lang shape)');
+ok(call('_ladderQuestionOrder').join(',') === 'bodies,intro,conclusion',
+   'LIT-R2: lit walk order = bodies → intro → conclusion (bodies-first ruling)');
+const litIntro = call('_ladderRegistry', 'intro').map(e => e.el);
+ok(litIntro.join(',') === 'lit-overarching-concept,lit-working-thesis,outline-intro-thesis,outline-intro-hook,outline-intro-building',
+   'LIT-R3: intro arc = b6 synthesis synthetics then b7 thesis→hook→building (planning-beat order)');
+// Gate family test:
+sandbox.state.subject = 'literature';
+ok(call('deriveLadderState', []) === null, 'LIT-G1: bare "literature" subject stays dormant (no real lesson carries it)');
+sandbox.state.subject = 'modern_text';
+ok(call('_ladderQuestionOrder').join(',') === 'bodies,intro,conclusion', 'LIT-G2: modern_text joins the essay family (router map)');
+sandbox.state.subject = 'shakespeare';
+// Walk arms:
+mkDoc(litDoc());
+let stL = call('deriveLadderState', []);
+ok(stL && stL.el === 'outline-body-1-topic' && stL.question === 'bodies' && stL.rung === 1,
+   'LIT-A1: REAL lit state + fresh doc → ladder LIVE, body-1 topic first, L1');
+mkDoc(litDoc({ 'outline-body-1-topic': 'their concept' }));
+stL = call('deriveLadderState', []);
+ok(stL && stL.el === 'lit-technique-b1', 'LIT-A2: topic filled → technique synthetic gates');
+const litBodiesDone = {};
+for (let i = 1; i <= 3; i++) for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose', 'context']) litBodiesDone[`outline-body-${i}-${s}`] = 'done';
+const litTechStamps = [stamp('lit-technique-b1', 'resolved', { question: 'bodies' }),
+  stamp('lit-technique-b2', 'resolved', { question: 'bodies' }), stamp('lit-technique-b3', 'resolved', { question: 'bodies' })];
+mkDoc(litDoc(litBodiesDone));
+stL = call('deriveLadderState', litTechStamps);
+ok(stL && stL.el === 'lit-overarching-concept' && stL.question === 'intro',
+   'LIT-A3: bodies arc complete → intro arc opens on the b6 synthesis beat', stL && `${stL.el}/${stL.question}`);
+// Implied resolution: a resumed doc with the refined thesis already filed never re-pins b6.
+const litIntroFill = Object.assign({ 'outline-intro-thesis': 'their refined thesis' }, litBodiesDone);
+mkDoc(litDoc(litIntroFill));
+stL = call('deriveLadderState', litTechStamps);
+ok(stL && stL.el === 'outline-intro-hook',
+   'LIT-A4: refined thesis filed, b6 synthetics unstamped → implied resolved, hook active (no wedge)', stL && stL.el);
+const litAllDone = Object.assign({}, litBodiesDone);
+for (const s of ['thesis', 'hook', 'building']) litAllDone[`outline-intro-${s}`] = 'done';
+for (const s of ['thesis', 'concept', 'purpose', 'message']) litAllDone[`outline-conclusion-${s}`] = 'done';
+mkDoc(litDoc(litAllDone));
+stL = call('deriveLadderState', litTechStamps.concat([
+  stamp('lit-overarching-concept', 'resolved', { question: 'intro' }), stamp('lit-working-thesis', 'resolved', { question: 'intro' })]));
+ok(stL && stL.done === true, 'LIT-A5: every laddered element filed → done');
+// Fade across paragraphs (the point of one bodies arc):
+const litFade = {};
+for (const s of ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose', 'context']) litFade[`outline-body-1-${s}`] = 'done';
+mkDoc(litDoc(litFade));
+stL = call('deriveLadderState', [stamp('outline-body-1-topic', 'resolved', { rung: 3, question: 'bodies' })].concat(litTechStamps));
+ok(stL && stL.el === 'outline-body-2-topic' && stL.base === 2 && stL.fade === true,
+   'LIT-C1: body-1 topic resolved ≥L3 → body-2 topic opens L2 (fade carries across paragraphs)', stL && `${stL.el} base=${stL.base}`);
+// Arc scope: high-resolves in bodies must not pace the intro arc.
+mkDoc(litDoc(litBodiesDone));
+stL = call('deriveLadderState', litTechStamps.concat([
+  stamp('outline-body-1-evidence', 'resolved', { rung: 3, question: 'bodies' }),
+  stamp('outline-body-1-analysis', 'resolved', { rung: 4, question: 'bodies' }),
+  stamp('outline-body-2-evidence', 'resolved', { rung: 3, question: 'bodies' })]));
+ok(stL && stL.question === 'intro' && stL.paceValve === false && stL.base === 1,
+   'LIT-C2: 3 high-resolves in bodies do NOT pace the intro arc (per-question scope law)');
 sandbox.state.subject = 'language2';
 
 // ═══ REPORT ═══════════════════════════════════════════════════════════════════════════════════

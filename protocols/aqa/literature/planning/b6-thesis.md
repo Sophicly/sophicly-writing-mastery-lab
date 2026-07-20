@@ -71,85 +71,15 @@ IF still incorrect → Increment to Hint Level 3
 
 ---
 
-**HINT LEVEL 3 \- Workbook Reference:**
+**HINT LEVEL 3 \- Document Reference (final level — v7.20.229; the plan lives in the DOCUMENT, beside this chat):**
 
-Say: "You're struggling with Body \[X\]. **Look at your workbook now** under 'Body Paragraph Plans' \- find your Body \[X\] topic sentence.
-
-What concept does that topic sentence introduce?"
+Say: "Your Body \[X\] plan is already filed in your document, right beside this chat. Open the **Body Paragraph \[X\]** plan section and read your topic sentence there. Then tell me in your own words: what concept does it introduce?"
 
 \[AI\_INTERNAL\]: Wait for response. Validate.
 
 IF correct → "Great \- you found it. Now \[address next incorrect paragraph OR proceed if all correct\]"
 
-IF still says they can't find it/don't have workbook → Increment to Hint Level 4
-
----
-
-**HINT LEVEL 4 \- More Specific Keywords:**
-
-Say: "Let me give you more specific keywords from Body \[X\]: \[4-5 keywords now, including protagonist name and key theme words \- e.g., "Macbeth" "ambition" "corrupts" "moral decay"\]
-
-Now what concept were you exploring?"
-
-\[AI\_INTERNAL\]: Wait for response. Validate.
-
-IF correct → "Yes \- that's it for Body \[X\]. Now \[address next incorrect paragraph OR proceed if all correct\]"
-
-IF still incorrect → Increment to Hint Level 5
-
----
-
-**HINT LEVEL 5 \- Theme/Character Connection Prompt:**
-
-Say: "Think about it this way for Body \[X\]:
-
-You were analyzing how \[protagonist\] \[specific action/moment from that section \- e.g., "considers murder" / "loses control" / "faces consequences"\].
-
-What abstract concept or theme did this moment reveal about \[protagonist\]'s journey?"
-
-\[AI\_INTERNAL\]: Wait for response. Validate.
-
-IF correct → "Exactly \- that's your Body \[X\] concept. Now \[address next incorrect paragraph OR proceed if all correct\]"
-
-IF still incorrect → Return to Hint Level 3 (workbook reference) with more direct instruction
-
----
-
-**HINT LEVEL 6 \- Final Workbook Insistence:**
-
-Say: "I need you to actually read your Body \[X\] topic sentence from your workbook. I can see you're struggling to recall it from memory.
-
-**Stop and find your workbook right now.** Open to 'Body Paragraph Plans' and locate Body \[X\].
-
-Read your topic sentence out loud to yourself. Then tell me: what concept does it introduce?"
-
-\[AI\_INTERNAL\]: Wait for response. Validate.
-
-IF correct → "Perfect \- that's Body \[X\]. Now \[continue with any remaining incorrect paragraphs OR exit loop\]"
-
-IF student insists they don't have workbook/can't find it → Proceed to Hint Level 7
-
----
-
-**HINT LEVEL 7 \- Workflow Pause:**
-
-Say: "Without your workbook, we can't continue to thesis development. Your topic sentences are essential \- I need to know what YOU actually wrote, not what you vaguely remember.
-
-Here are your options:
-
-A) Pause this session now, retrieve your workbook, and return when you have it
-
-B) Continue trying to recall \- I'll keep giving you hints C) Skip thesis development for now and return to it later with your workbook
-
-Which would you prefer? (Type A, B, or C)"
-
-\[AI\_INTERNAL\]: Wait for choice.
-
-IF A → "Understood. Type 'resume' when you have your workbook and we'll continue from thesis development." → HALT workflow until student types 'resume'
-
-IF B → "Alright. Let's try again with fresh perspective. For Body \[X\], you were exploring..." → Return to Hint Level 2 with slightly different wording
-
-IF C → "Understood. Let's move forward without the thesis for now. You'll need to develop it later before your introduction." → SET: thesis\_skipped \= true → Jump to next appropriate section (or end planning session)
+IF still stuck → Quote their OWN filed topic sentence back verbatim: "Here is what you wrote: '\[their Body \[X\] topic sentence\]' \- that concept is what Body \[X\] argues." Confirm they see it, then move on to the next paragraph or exit the loop. This is recall support in THEIR OWN words \- never new content. This recall loop is KNOWLEDGE-TRACK (b-ladder.md): no @ELEMENT\_JUDGE is ever emitted inside it.
 
 ---
 

@@ -13,7 +13,7 @@
 - Current substep: 1  
 - Paragraphs to plan: 3 (default, may adjust based on question)  
 - Current paragraph: not yet set (determined during B.5)  
-- DYK counter: 0 (max 3 per session)  
+- Expert insights ("Did you know…?") are governed by the C-LADDER wallet (b-ladder.md, Session Law 9): code-counted, sub-cap 1 per section, ceiling 4 per essay — never self-counted  
 - Execute FETCH\_REMINDERS() to load past feedback
 
 **MANDATORY WORKFLOW ENFORCEMENT:** ALL steps B.1, B.2, B.4, B.5, B.6, B.7, B.8 are MANDATORY and cannot be skipped. ONLY B.3 (Diagnostic Import) is optional and requires user consent.

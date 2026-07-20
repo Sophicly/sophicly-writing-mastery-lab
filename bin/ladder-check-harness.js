@@ -74,17 +74,29 @@ const protoDir = path.join(ROOT, 'protocols');
 const planningFiles = [];
 if (fs.existsSync(protoDir)) walk(protoDir, planningFiles);
 
-const ladderProtocols = planningFiles.filter(p => {
-  const t = fs.readFileSync(p, 'utf8');
-  return /Session Law 9/i.test(t) || /LENS REGISTRY/i.test(t);
-});
+// v7.20.229: the invariant UNIT is the PROTOCOL, not the file — modular protocols (lit) split
+// the ladder module (b-ladder.md) from the step files that reference it, so each planning DIR's
+// .md files are concatenated and checked once. Monolith dirs (P1/P2) reduce to the same check.
+// _superseded copies are excluded (stale text must not join a live unit).
+const unitMap = new Map();
+for (const p of planningFiles) {
+  if (p.includes('_superseded')) continue;
+  const dir = path.dirname(p);
+  if (!unitMap.has(dir)) unitMap.set(dir, []);
+  unitMap.get(dir).push(p);
+}
+const ladderUnits = [];
+for (const [dir, files] of unitMap) {
+  const t = files.sort().map(f => fs.readFileSync(f, 'utf8')).join('\n');
+  if (/Session Law 9/i.test(t) || /LENS REGISTRY/i.test(t)) ladderUnits.push({ dir, t });
+}
 
-if (ladderProtocols.length === 0) {
+if (ladderUnits.length === 0) {
   note('— PROTOCOLS: no planning protocol has opted into the ladder yet (Session Law 9 / LENS REGISTRY) — nothing to check. (AQA P2 retrofit is bundled into P3.)');
 } else {
-  for (const p of ladderProtocols) {
-    const rel = path.relative(ROOT, p);
-    const t = fs.readFileSync(p, 'utf8');
+  for (const u of ladderUnits) {
+    const rel = path.relative(ROOT, u.dir);
+    const t = u.t;
     const problems = [];
 
     // (a) regime split — the precedence line + the weak-never-climbs law must both be present.
@@ -264,6 +276,75 @@ if (!fs.existsSync(AQA_P1_PROTO)) {
     failed = 1;
     note('  ❌ frontend/wml-assessment.js no longer builds expected P1 el token(s) — code/harness drift:');
     missingTokensP1.forEach(t => note(`       missing token ${t}`));
+  }
+}
+
+// ── (3c) EL BYTE-TRACE — AQA LITERATURE (v7.20.229 port; same KEY-MATCH gate as (3)) ───────────
+// Lit registry els (_ladderRegistryLit) vs the lit planning STEP FILES' @FIELD_COMMIT fields
+// (modular protocol — filings live across b4/b5/b7/b8, so all planning/*.md are concatenated).
+// Bodies = TTECEA+C ×3 UNSUFFIXED incl. the AO3 `context` row; intro/conclusion = per-element
+// UNSUFFIXED. Synthetic els (lit-technique-b*, lit-overarching-concept, lit-working-thesis)
+// file nothing and are excluded. Plan boxes fill via @FIELD_SET at each arc's approval.
+const AQA_LIT_PLAN_DIR = path.join(ROOT, 'protocols', 'aqa', 'literature', 'planning');
+function aqaLitFilingEls() {
+  const els = [];
+  for (let i = 1; i <= 3; i++) {
+    els.push(`outline-body-${i}-topic`, `outline-body-${i}-evidence`, `outline-body-${i}-analysis`,
+             `outline-body-${i}-effects`, `outline-body-${i}-effects2`, `outline-body-${i}-purpose`,
+             `outline-body-${i}-context`);
+  }
+  els.push('outline-intro-thesis', 'outline-intro-hook', 'outline-intro-building');
+  els.push('outline-conclusion-thesis', 'outline-conclusion-concept', 'outline-conclusion-purpose',
+           'outline-conclusion-message');
+  return els;
+}
+if (!fs.existsSync(AQA_LIT_PLAN_DIR)) {
+  note(`— EL BYTE-TRACE (LIT): SKIP (lit planning dir not found at ${path.relative(ROOT, AQA_LIT_PLAN_DIR)}).`);
+} else {
+  const protoLit = fs.readdirSync(AQA_LIT_PLAN_DIR).filter(f => f.endsWith('.md'))
+    .map(f => fs.readFileSync(path.join(AQA_LIT_PLAN_DIR, f), 'utf8')).join('\n');
+  const commitFieldsLit = new Set();
+  const reLit = /@FIELD_COMMIT\s*\{[^}]*?"field"\s*:\s*"([^"]+)"[^}]*\}/g;
+  let mL;
+  while ((mL = reLit.exec(protoLit)) !== null) commitFieldsLit.add(mL[1].trim());
+  const expectedLit = aqaLitFilingEls();
+  const orphansLit = expectedLit.filter(e => !commitFieldsLit.has(e));
+  const setFieldsLit = new Set();
+  { const reSL = /@FIELD_SET\{"field":"([^"]+)"/g; let mSL;
+    while ((mSL = reSL.exec(protoLit)) !== null) setFieldsLit.add(mSL[1]); }
+  const planFieldsLit = ['plan-body-1', 'plan-body-2', 'plan-body-3', 'plan-intro', 'plan-conclusion'];
+  const planMissLit = planFieldsLit.filter(e => !setFieldsLit.has(e));
+  const jsSrcLit = fs.existsSync(ASSESS_JS) ? fs.readFileSync(ASSESS_JS, 'utf8') : '';
+  const codeTokensLit = ["'lit-technique-b'", "'lit-overarching-concept'", "'lit-working-thesis'",
+                         '_ladderRegistryLit', '_isLitEssay'];
+  const missingTokensLit = jsSrcLit ? codeTokensLit.filter(tok => !jsSrcLit.includes(tok)) : ['(wml-assessment.js not found)'];
+  // The ladder module must ride the manifest's ALWAYS list — a step-scoped ladder file means
+  // Session Law 9 vanishes on every step that doesn't name it (silent contract loss).
+  const litManifest = path.join(ROOT, 'protocols', 'aqa', 'literature', 'manifest.json');
+  let manifestOk = false;
+  try {
+    const mf = JSON.parse(fs.readFileSync(litManifest, 'utf8'));
+    manifestOk = (mf.planning && Array.isArray(mf.planning.always) && mf.planning.always.includes('planning/b-ladder.md'));
+  } catch (_) { manifestOk = false; }
+  note(`— EL BYTE-TRACE (LIT): ${expectedLit.length - orphansLit.length}/${expectedLit.length} code filing els + ${planFieldsLit.length - planMissLit.length}/${planFieldsLit.length} plan @FIELD_SET fields are real in the lit planning files; b-ladder.md always-loaded: ${manifestOk ? 'yes' : 'NO'}.`);
+  if (orphansLit.length) {
+    failed = 1;
+    note('  ❌ LIT CODE registry el(s) with NO matching @FIELD_COMMIT field (write-key ≠ read-key):');
+    orphansLit.forEach(e => note(`       ${e}`));
+  }
+  if (planMissLit.length) {
+    failed = 1;
+    note('  ❌ LIT plan @FIELD_SET field(s) missing from the lit planning files:');
+    planMissLit.forEach(e => note(`       ${e}`));
+  }
+  if (missingTokensLit.length) {
+    failed = 1;
+    note('  ❌ frontend/wml-assessment.js no longer builds expected LIT el token(s) — code/harness drift:');
+    missingTokensLit.forEach(t => note(`       missing token ${t}`));
+  }
+  if (!manifestOk) {
+    failed = 1;
+    note('  ❌ protocols/aqa/literature/manifest.json planning.always does not include planning/b-ladder.md — the ladder contract would vanish on unlisted steps.');
   }
 }
 

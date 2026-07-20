@@ -702,6 +702,15 @@
         const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         return /^(language1|languagep1|languagepaper1|langp1)$/.test(s);
     }
+    // v7.20.229 (C-LADDER lit port): the AQA Literature ESSAY family — the subjects the router
+    // serves protocols/aqa/literature/ for (real lesson verified 2026-07-20: subject="shakespeare",
+    // staging post 42392; router map: shakespeare / modern_text / 19th_century → 'literature').
+    // Poetry and unseen have their OWN protocols — never this family. Bare 'literature' stays
+    // dormant (no real lesson carries it; the sim's A4 dormancy fixture asserts exactly that).
+    function _isLitEssay() {
+        const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return /^(shakespeare|moderntext|19thcentury|nineteenthcentury)$/.test(s);
+    }
 
     // ══════════════════════════════════════════════════════════════
     //  v7.20.49: AQA Lang P2 PRE-PLANNING CHAIN (S0–S1) — shared, stateless core.
@@ -2689,19 +2698,25 @@
             return !!state && state.task === 'planning'
                 && String(state.board || '').toLowerCase() === 'aqa'
                 && ((typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false)
-                    || (typeof _isLangPaper1 === 'function' ? _isLangPaper1() : false));
+                    || (typeof _isLangPaper1 === 'function' ? _isLangPaper1() : false)
+                    || (typeof _isLitEssay === 'function' ? _isLitEssay() : false));
         } catch (_) { return false; }
     }
     // v7.20.208 (PORT-RECIPE engine step 0): PAPER CONFIG — the walk, TELL, stamps and
     // verdict routing are SHARED; a paper contributes only its question order + registries.
     // Never fork deriveLadderState per paper.
     function _ladderPaperKey() {
+        if (typeof _isLitEssay === 'function' && _isLitEssay()) return 'lit';
         return (typeof _isLangPaper1 === 'function' && _isLangPaper1()) ? 'p1' : 'p2';
     }
     // Each paper's questions in exam order — deriveLadderState walks these registries in
     // sequence. P1's Q5 is CREATIVE WRITING: OUTSIDE the ladder by ruling (CW ladder shape
-    // TBD — doc-lifecycle law), so p1 ends at q4.
-    var _LADDER_QUESTION_ORDERS = { p2: ['q2', 'q3', 'q4', 'q5'], p1: ['q2', 'q3', 'q4'] };
+    // TBD — doc-lifecycle law), so p1 ends at q4. LIT (v7.20.229) is ONE essay walked as
+    // three ARCS in planning-beat order (bodies FIRST — b5 → b6/b7 → b8, the Neil 2026-07-20
+    // bodies-first ruling): 'bodies' is a single walk unit so fade/pace carry across the three
+    // TTECEA+C paragraphs (the P2-Q3 precedent), and the wallet's per-question sub-cap lands
+    // 1 per arc (bodies · intro · conclusion) under the universal ceiling of 4.
+    var _LADDER_QUESTION_ORDERS = { p2: ['q2', 'q3', 'q4', 'q5'], p1: ['q2', 'q3', 'q4'], lit: ['bodies', 'intro', 'conclusion'] };
     function _ladderQuestionOrder() { return _LADDER_QUESTION_ORDERS[_ladderPaperKey()]; }
 
     // The element REGISTRY — ordered, per question, in PLANNING-BEAT order. Each entry:
@@ -2712,7 +2727,45 @@
     //   2026-07-19: one producer, no write/read fork — CLAUDE.md §5d). Q4 body els are UNSUFFIXED;
     //   intro is -q4-suffixed; conclusion is unsuffixed; Q2/Q3 body els are -q2/-q3 suffixed.
     function _ladderRegistry(qKey) {
-        return _ladderPaperKey() === 'p1' ? _ladderRegistryP1(qKey) : _ladderRegistryP2(qKey);
+        var pk = _ladderPaperKey();
+        if (pk === 'lit') return _ladderRegistryLit(qKey);
+        return pk === 'p1' ? _ladderRegistryP1(qKey) : _ladderRegistryP2(qKey);
+    }
+    // ── AQA Literature essay registry (v7.20.229 — byte-traced against the lit render:
+    // bodies UNSUFFIXED outline-body-{i}-{el} ×3 incl. the AO3 `context` row (renders for lit
+    // only); intro/conclusion UNSUFFIXED per-element rows, b5→b7→b8 filing ids). The same
+    // unsuffixed body ids also exist in P1/P2 Q4 registries — papers are disjoint by the
+    // _ladderActive gate, so no cross-paper bleed. Types are SKILLS (recipe §3): the b6
+    // synthesis beats and b8's concept share 'concept-synthesis' deliberately (fade: a trunk
+    // found at L3 in b6 opens b8's controlling concept at L2 — same skill, practised);
+    // working/refined/restated thesis share 'thesis' for the same reason. b4 anchors are
+    // OUTSIDE the ladder (quote-selection ruling); b6 Step-1 recall is knowledge-track.
+    function _ladderRegistryLit(qKey) {
+        var r = [], i;
+        if (qKey === 'bodies') {
+            for (i = 1; i <= 3; i++) {
+                r.push({ el: 'outline-body-' + i + '-topic', type: 'topic', resolveBy: 'outline-body-' + i + '-topic' });
+                r.push({ el: 'lit-technique-b' + i, type: 'technique', resolveBy: 'stamp' });
+                r.push({ el: 'outline-body-' + i + '-evidence', type: 'evidence', resolveBy: 'outline-body-' + i + '-evidence' });
+                r.push({ el: 'outline-body-' + i + '-analysis', type: 'analysis', resolveBy: 'outline-body-' + i + '-analysis' });
+                r.push({ el: 'outline-body-' + i + '-effects', type: 'effect', resolveBy: 'outline-body-' + i + '-effects' });
+                r.push({ el: 'outline-body-' + i + '-effects2', type: 'effect', resolveBy: 'outline-body-' + i + '-effects2' });
+                r.push({ el: 'outline-body-' + i + '-purpose', type: 'purpose', resolveBy: 'outline-body-' + i + '-purpose' });
+                r.push({ el: 'outline-body-' + i + '-context', type: 'context', resolveBy: 'outline-body-' + i + '-context' });
+            }
+        } else if (qKey === 'intro') {
+            r.push({ el: 'lit-overarching-concept', type: 'concept-synthesis', resolveBy: 'stamp' });
+            r.push({ el: 'lit-working-thesis', type: 'thesis', resolveBy: 'stamp' });
+            r.push({ el: 'outline-intro-thesis', type: 'thesis', resolveBy: 'outline-intro-thesis' });
+            r.push({ el: 'outline-intro-hook', type: 'hook', resolveBy: 'outline-intro-hook' });
+            r.push({ el: 'outline-intro-building', type: 'building', resolveBy: 'outline-intro-building' });
+        } else if (qKey === 'conclusion') {
+            r.push({ el: 'outline-conclusion-thesis', type: 'thesis', resolveBy: 'outline-conclusion-thesis' });
+            r.push({ el: 'outline-conclusion-concept', type: 'concept-synthesis', resolveBy: 'outline-conclusion-concept' });
+            r.push({ el: 'outline-conclusion-purpose', type: 'central-purpose', resolveBy: 'outline-conclusion-purpose' });
+            r.push({ el: 'outline-conclusion-message', type: 'universal-message', resolveBy: 'outline-conclusion-message' });
+        }
+        return r;
     }
     // ── AQA Language Paper 1 registries (v7.20.208 — byte-traced against the render:
     // Q2/Q3 = _resolveBodyOnlyOutline body-only ids, -q2/-q3 suffixed, 2 paragraphs each;

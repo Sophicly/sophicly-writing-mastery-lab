@@ -254,12 +254,14 @@ cite it — do not fill the gap with the marks rule.
 ### Precedent + the live gap
 - **IUMVCC (AQA P2 Q5) is the working precedent** — its plan sections + outline rows already wire
   this way (`buildIUMVCCOutlineSection`, `_iumvccFieldId`). Mirror its shape, not its literal ids.
-- **THE READING-Q GAP — CLOSED for AQA P1 + P2 (v7.20.209–.226).** Both AQA Language planning
-  protocols now emit element-by-element `@FIELD_COMMIT` (outline) + approval `@FIELD_SET`
-  (plan) per the two-grade autofill above. Enforcement is mechanical: `plan-fanout-harness`
-  + `planning-keymatch-harness` + `ladder-check` in pre-ship — a port with a wrong label or
-  drifted fieldId cannot ship. Remaining papers (other boards, literature) still emit 0
-  markers — each port follows `PLANNING-LADDER-PORT-RECIPE.md` (§1b two-grade rule).
+- **THE READING-Q GAP — CLOSED for AQA P1 + P2 (v7.20.209–.226) AND AQA Literature
+  (filing .228, C-LADDER .229).** All three AQA planning protocols now emit element-by-element
+  `@FIELD_COMMIT` (outline) + approval `@FIELD_SET` (plan) per the two-grade autofill above;
+  AQA Lit also carries the full C-LADDER (modular pattern: `planning/b-ladder.md` on the
+  manifest's ALWAYS list — laws/registry/scripts ride every step). Enforcement is mechanical:
+  `plan-fanout-harness` + `planning-keymatch-harness` + `ladder-check` in pre-ship — a port
+  with a wrong label or drifted fieldId cannot ship. Remaining papers (other boards) still
+  emit 0 markers — each port follows `PLANNING-LADDER-PORT-RECIPE.md` (§1b two-grade rule).
 - Node types: PLAN boxes = `inputField`; OUTLINE boxes = `outlineRow`; `@FIELD_COMMIT` fills both.
   Outline shape is BAKED into the saved doc → element/scaffold changes need an on-load heal.
 

@@ -159,6 +159,59 @@ protocol. Update this recipe with anything P1 taught that P2 didn't.
 6. **Negative test, cheap form**: python-swap one @FIELD_COMMIT fieldId in the real protocol
    → run ladder-check-harness → it must name exactly that orphan el → swap back, re-run green.
 
+## What the LIT port taught (v7.20.229 — first MODULAR protocol + first single-essay paper; Eduqas/Edexcel lit ports follow THIS shape)
+
+1. **Modular protocols get a `b-ladder.md` on the manifest's ALWAYS list.** A step-file
+   protocol (b1…b10 + manifest slicing) cannot carry Session Law 9 inside one step — the
+   contract would vanish on every other step. The whole ladder module (Session Law 9 +
+   verdict contract + LENS & MODEL REGISTRY + model-script bank + acceptance block) lives in
+   ONE new always-loaded file; step files carry only short `[AI_INTERNAL — C-LADDER]`
+   handover splices. ladder-check now treats the planning DIR as the invariant unit
+   (concatenated), and asserts the manifest `always` entry exists — a step-scoped ladder
+   file is a hard fail.
+2. **A single-essay paper walks as ARCS, not questions.** Lit order =
+   `['bodies', 'intro', 'conclusion']` (planning-beat order — bodies first, Neil's
+   2026-07-20 ruling). 'bodies' is ONE walk unit so fade/pace carry across the three
+   TTECEA+C paragraphs (the P2-Q3 precedent: 3 paragraphs = one question); the wallet's
+   per-question sub-cap then lands 1 insight per arc under the universal ceiling 4 — no new
+   wallet law needed.
+3. **Convert the beats' hand-authored scaffolds — never leave them running beside the
+   ladder.** Legacy step files carried their own "LEVEL 1-4" stuck sequences (b7 hook,
+   b8 concept/purpose/message). Left in place they double-ladder (the LLM obeys the local
+   sequence, code's rung state desyncs) and one (b8's LEVEL-3 "thought-starter") flatly
+   supplied a READING — an ownership violation. Rule: the beat's first stuck-question
+   becomes the WEAK-push; pointing prompts become L2 raw material; category menus become L3
+   lenses; every "deploy Did You Know" becomes wallet-governed (`@INSIGHT_SPENT`); any
+   assemble-it-for-them scaffold DIES. Same for stale media: the b6 "workbook" recall levels
+   became a document-pointer (the plan lives IN the doc beside the chat).
+4. **One narrative model domain for the whole paper.** Lit L4s all run on ONE invented tale
+   ("The Clockmaker" — three lines, beginning/middle/end) so the model domain itself mirrors
+   the B/M/E anchor arc the protocol teaches. A lit-family port needs its OWN invented tale
+   (never reuse another paper's verbatim — students cross papers), same three-moment shape.
+   NEVER use other set texts as parallel examples (the old b8 universal-message scaffold
+   quoted A Christmas Carol/Macbeth messages — if the student's text IS one of those, the
+   example is the answer).
+5. **Recall of the student's own filed work is KNOWLEDGE-TRACK, not a laddered element**
+   (b6 Step 1). No @ELEMENT_JUDGE inside it; quoting their own filed words back is recall
+   support, not injection.
+6. **Synthesis beats that file nothing later get implied-resolution cover** — b6's
+   `lit-overarching-concept`/`lit-working-thesis` (stamp-resolved) are implied-resolved when
+   the b7 refined thesis box is filled, so a resumed doc never re-pins b6 (sim LIT-A4).
+7. **Shared TYPE = deliberate fade bridges:** b6 concept ↔ b8 controlling concept share
+   'concept-synthesis'; working/refined/restated thesis share 'thesis' — a skill practised in
+   the intro arc opens its conclusion twin at L2. Distinct skills (hook, building,
+   central-purpose, universal-message) keep their own types even though each has no sibling.
+8. **Unsuffixed el collisions across papers are fine** — lit body els equal P1/P2 Q4's
+   (`outline-body-{i}-topic` …); papers are disjoint by the `_ladderActive` gate, no bleed
+   (sim LIT-R1 + P1-R5 prove dispatch).
+9. **Gate = the essay-family subject set the router serves the protocol dir for**
+   (`shakespeare|modern_text|19th_century` → aqa/literature), byte-normalised like the lang
+   twins. Bare `literature` stays dormant (no real lesson carries it; sim asserts it).
+   Verify the family against the ROUTER's subject→dir map, never guess.
+10. **Wallet supersession is part of the port:** legacy self-counted insight counters
+    (b-intro's "DYK counter: max 3/session") must be rewritten to point at the code-counted
+    wallet — two counters means the LLM obeys whichever it read last.
+
 ## Paper-specific watchlist (from the P2 build — check each on every port)
 - One doc = whole paper? (P2 yes; if a paper is one-lesson-per-question the doc walk simply
   finds one question's boxes — no code change.)

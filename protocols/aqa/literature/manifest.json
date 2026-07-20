@@ -23,7 +23,8 @@
             "modules/knowledge-core.md",
             "modules/knowledge-text-context-banks.md",
             "../../shared/literature/modules/context-drive-check.md",
-            "planning/b-intro.md"
+            "planning/b-intro.md",
+            "planning/b-ladder.md"
         ],
         "steps": {
             "1": {
