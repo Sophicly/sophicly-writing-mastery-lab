@@ -219,5 +219,15 @@ protocol. Update this recipe with anything P1 taught that P2 didn't.
   P1 Q5 = creative writing: design first (Fable), don't port TTECEA mechanics onto it.
 - Split questions (Edexcel IGCSE multi-part): registry per PART; el naming must follow the
   real fieldIds, never invented part labels.
+- **⚠️ EDUQAS DUAL-PART PLAN-ID LANDMINE (spotted 2026-07-20, unfixed — fix BEFORE any Eduqas
+  markers land):** the dual-part doc dispatch calls buildPlanSection('Part A'/'Part B')
+  (wml-assessment.js ~38039-38056) but buildPlanSection's plan fieldIds are NOT part-suffixed
+  (plan-intro / plan-body-{i} / plan-conclusion, ~34307-34329) — a two-part Eduqas doc renders
+  DUPLICATE plan fieldIds across parts (write-key collision, the #1 bug class). Outline ids
+  ARE part-suffixed. The Eduqas port must part-suffix the plan ids + on-load heal BAKED docs
+  first. Verified Eduqas Shakespeare structure (map rows, cited): part (a) 15m = 3 BP + SHORT
+  intro (thesis only) + SHORT conclusion (restated thesis only), anchors ALL from the extract
+  (the anchors-ruling exception); part (b) 25m (20+5 SPaG) = full intro + 3 BP + full 4-element
+  conclusion, B/M/E whole play; NO Context row either part (AO1+AO2 only).
 - Wallet ceiling is per-CHAT (emergent 4/paper on P2 = sub-cap 1 × 4 laddered questions).
   A paper with >4 laddered questions needs a real cross-question count decision — flag to Neil.
