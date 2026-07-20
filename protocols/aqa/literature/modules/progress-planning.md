@@ -89,7 +89,7 @@
 When planning more than 1 paragraph, use this calculation:
 
 * Calculate paragraph\_progress \= (current\_paragraph \- 1\) / total\_paragraphs  
-* Calculate within\_paragraph\_progress \= current\_step / 7  
+* Calculate within\_paragraph\_progress \= current\_step / 8  
 * Calculate combined\_progress \= (paragraph\_progress \+ (within\_paragraph\_progress / total\_paragraphs)) \* 100  
 * Calculate filled\_blocks \= round(combined\_progress / 10\)
 
@@ -100,12 +100,12 @@ When planning more than 1 paragraph, use this calculation:
 \[Progress bar: █████░░░░░ 50%\]
 
 
-📌 Planning \> Part B.5: Body Paragraphs \> Paragraph 2, Step 3 of 7
+📌 Planning \> Part B.5: Body Paragraphs \> Paragraph 2, Step 3 of 8
 
 \[Progress bar: ██████░░░░ 60%\]
 
 
-📌 Planning \> Part B.7: Introduction \> Step 1 of 2
+📌 Planning \> Part B.7: Introduction \> Step 1 of 3
 
 \[Progress bar: █████████░ 90%\]
 

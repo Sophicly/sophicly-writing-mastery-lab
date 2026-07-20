@@ -148,7 +148,12 @@ one real planning drive (§6), not another review.
 the manifest loads for the task — the `always` and per-step MODULE files (macros, knowledge,
 progress, workflow-entry), not just the step files the builder edited. Legacy scaffold
 macros, stuck-detect sequences, or self-counted insight limits in a module ride every step
-and fight the ladder exactly like an unconverted beat.
+and fight the ladder exactly like an unconverted beat. Module conflicts are retired by a
+NAMED, SCOPED supersession block in the port's ladder text (see b-ladder.md ⛔ SUPERSESSION —
+the lit mold), never by editing shared modules other boards depend on. Known accepted edge:
+if the code state block ever fails to inject, the supersession predicate goes false and the
+legacy module machinery resurrects for that turn — an intentional degradation fallback
+(some scaffolding beats none), not a defect.
 
 ## 6. SHIP
 Version bump → `bin/pre-ship-check.sh` (all harnesses) → commit → staging → **one real
