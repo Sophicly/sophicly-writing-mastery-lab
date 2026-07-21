@@ -37,7 +37,7 @@ PARAGRAPH \[X\] PLAN (COMPLETED & VALIDATED ✓)
 
 \*\*Topic Sentence:\*\* "\[Student's conceptual topic sentence\]"
 
-\*\*TTE Sentence:\*\* Technique="\[technique name\]" \+ Evidence="\[specific quote words\]" \+ Inference="\[meaning/interpretation\]"
+\*\*TEI Sentence:\*\* Technique="\[technique name\]" \+ Evidence="\[specific quote words\]" \+ Inference="\[meaning/interpretation\]"
 
 \*\*Close Analysis:\*\* Focused on \[specific words/phrases\] \- \[analytical observations\]
 

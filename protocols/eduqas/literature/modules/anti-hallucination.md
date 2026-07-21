@@ -31,7 +31,7 @@
 
 **Example transformations:**
 
-- ❌ "Dickens critiques capitalism"  
+- ❌ "The author critiques unexamined progress"  
     
 - ✅ "The author appears to critique unexamined progress"  
     

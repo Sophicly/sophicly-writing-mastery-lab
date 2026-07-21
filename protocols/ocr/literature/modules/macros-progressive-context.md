@@ -38,7 +38,7 @@ PARAGRAPH \[X\] PLAN (COMPLETED & VALIDATED ✓)
 
 \*\*Topic Sentence:\*\* \[Keywords only \- e.g., "power corrupts, Macbeth transformation, consequences ambition"\]
 
-\*\*TTE Sentence:\*\* 
+\*\*TEI Sentence:\*\* 
 
 \- Technique: \[technique name, e.g., "dramatic irony, metaphor"\]
 

@@ -136,7 +136,9 @@ Before sending, scan the final message for any internal tokens:
 * State references: expected\_map, \_state, phase, retry\_count  
 * Macro names: ZERO\_MARK\_BRANCH, RANGE\_CHECK, TOTALS\_RECALC, AO\_LITERATURE\_SANITY, FETCH\_REMINDERS, etc.
 
-If detected:
+**⛔ NEVER strip PLATFORM MARKER lines (v7.20.238).** Lines beginning `@` with a JSON payload — `@FIELD_COMMIT{…}`, `@FIELD_SET{…}`, `@ELEMENT_JUDGE{…}`, `@INSIGHT_SPENT`, `@RESOURCE_LINK{…}`, `@GOAL_SETUP{…}`, and every other `@MARKER` the active protocol defines — are the platform's wire format (function calling is disabled; the platform parses and strips them itself, invisible to the student). They are NOT meta-leaks: emit them exactly as the protocol specifies, own line, untouched.
+
+If any OTHER internal token is detected:
 
 * Remove them and restate the message without internal labels  
 * If removal would create ambiguity, replace with a neutral phrase like "my internal checklist"
@@ -192,11 +194,11 @@ If Protocol B or C elements detected in Protocol A context:
 
 SELECT the appropriate thought-starter based on source check:
 
-**IF triggered from CONTEXT\_CHECK (struggling with concept):** PROVIDE: A half-formed conceptual sentence with blanks for student to complete FORMAT: "\[Author\] uses this moment to explore the concept of \_\_\_\_\_ \[theme area\], specifically showing how \_\_\_\_\_ \[character/situation\] reveals \_\_\_\_\_ \[aspect of human nature/society\]." EXAMPLE: "Dickens uses this moment to explore the concept of social responsibility, specifically showing how Scrooge's isolation reveals \_\_\_\_\_."
+**IF triggered from CONTEXT\_CHECK (struggling with concept):** PROVIDE: A half-formed conceptual sentence with blanks for student to complete FORMAT: "\[Author\] uses this moment to explore the concept of \_\_\_\_\_ \[theme area\], specifically showing how \_\_\_\_\_ \[character/situation\] reveals \_\_\_\_\_ \[aspect of human nature/society\]." EXAMPLE (invented text — never the student's set text): "The author uses this moment to explore the concept of obsolescence, specifically showing how the lamplighter's empty round reveals \_\_\_\_\_."
 
-**IF triggered from ANALYSIS\_CHECK (struggling with word-level analysis):** PROVIDE: A model of word-choice analysis using ONE word from their quote, then ask them to analyze a DIFFERENT word FORMAT: "Let's look at the word '\[word 1\]'. \[Author\]'s choice of '\[word 1\]' rather than '\[alternative\]' \[effect\] because \[reason\]. Now, using that same approach, analyze the word '\[word 2\]' from your quote." EXAMPLE: "Let's look at the word 'surplus'. Dickens's choice of 'surplus' rather than 'extra' dehumanizes the poor by treating them as economic calculations. Now, using that same approach, analyze the word 'population' from your quote."
+**IF triggered from ANALYSIS\_CHECK (struggling with word-level analysis):** PROVIDE: A model of word-choice analysis using ONE word from their quote, then ask them to analyze a DIFFERENT word FORMAT: "Let's look at the word '\[word 1\]'. \[Author\]'s choice of '\[word 1\]' rather than '\[alternative\]' \[effect\] because \[reason\]. Now, using that same approach, analyze the word '\[word 2\]' from your quote." EXAMPLE (invented text): "Let's look at the word 'round' in an invented line about a lamplighter — the choice of 'round' rather than 'route' makes his work circular and unending, a ritual rather than a job. Now, using that same approach, analyse a word from YOUR quote."
 
-**IF triggered from CONTEXT\_DRIVE\_CHECK (struggling with causal connection):** PROVIDE: A causal chain template with the historical context filled in, asking student to complete the "therefore" statement FORMAT: "In \[historical period\], \[specific context fact\] meant that \[consequence\]. THEREFORE, \[author\] was compelled to explore \[concept\] because \_\_\_\_\_." EXAMPLE: "In Victorian England, the Poor Law Amendment Act of 1834 made workhouses deliberately harsh to deter the poor from seeking help. THEREFORE, Dickens was compelled to explore social responsibility because \_\_\_\_\_."
+**IF triggered from CONTEXT\_DRIVE\_CHECK (struggling with causal connection):** PROVIDE: A causal chain template with the historical context filled in, asking student to complete the "therefore" statement FORMAT: "In \[historical period\], \[specific context fact\] meant that \[consequence\]. THEREFORE, \[author\] was compelled to explore \[concept\] because \_\_\_\_\_." EXAMPLE (invented text): "In the tale's town, electric light arrived street by street, and the lamplighters' rounds were cancelled one by one. THEREFORE, the tale's author was compelled to explore what progress costs the people it passes over because \_\_\_\_\_." (For the student's REAL text, the context FACT may come from the context bank — but the causal completion stays theirs.)
 
 **STEP 3 \- Student Completion:** INSTRUCTION: "Now complete this thought-starter in your own words. Take the framework and develop it with your own thinking."
 
