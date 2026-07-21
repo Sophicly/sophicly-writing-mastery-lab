@@ -112,6 +112,15 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/ladder-sim-harness.js || fail=1
 fi
 
+# KNOWN-CONTEXT LINT (WML CLAUDE.md #3 — the paste-wall law). A CONVERTED planning protocol must
+# never re-ask the student for context the session already holds (poem/text/question). Hard-fails
+# only for converted lanes; unconverted boards WARN (tracked debt). Runs when any planning protocol
+# or the lint itself is staged (or --all).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'protocols/.*/planning/.*\.md|known-context-lint\.js'; then
+  node bin/known-context-lint.js || fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   echo ""
   echo "pre-ship gate FAILED — fix before shipping (do NOT --no-verify past it)."

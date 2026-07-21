@@ -17,6 +17,28 @@
 
 1. **Protocol markdown files are content, not code.** Edit them for pedagogy, not for bug fixes.
 2. **Never modify shared modules** (`protocols/shared/`) without understanding ALL exam boards use them.
+3. **⭐ NEVER ASK THE STUDENT FOR WHAT THE SYSTEM ALREADY HOLDS (Neil, 2026-07-21 — the paste-wall law).**
+   A protocol step that asks the student to type, paste, or identify any context the session already
+   binds — text/poem title, author, poem or extract TEXT, the question, board, paper, topic, phase —
+   is a DEFECT, not a design choice. Resolve it from the shortcode atts / `topicData` /
+   `swml_poems_*` banks / stored state, and open the chat already knowing it ("We're planning your
+   comparison of X and Y for: '[question]'"). The ONLY legitimate student inputs are (a) genuine
+   unknowns the system cannot hold (their own ideas, answers, choices), and (b) deliberate RETRIEVAL
+   TESTS where producing the thing IS the pedagogy (quizzes, recall checks — explicitly framed as
+   such). Even genuine choices are PICKS (chips/pickers from a code-owned list), never free-typed
+   pastes — paste survives only as the off-bank fallback. Proof of the failure class: poetry b1
+   demanded two FULL POEMS pasted while the doc rendered the focus poem beside the chat, and it
+   survived a full port + mechanical gate because no rule named it. (Twin of root CLAUDE.md §14
+   never-show-a-raw-ID: §14 = never SHOW machine data raw; this = never DEMAND known data back.)
+4. **⭐ PROGRAMMATIC-FIRST for deterministic turns (Neil, 2026-07-21).** Any chat turn whose output is
+   100% pre-scripted or derivable from stored state — fixed teaching chunks and their "explain more"
+   expansions, menus/format choices, canned confirmations, summaries of stored state, wrap-ups — is
+   served by CODE (scripted-sequence turns, quick-action chips, pickers), never by an API round-trip.
+   The API is called ONLY for genuine judgment: reading the student's free text, Socratic dialogue,
+   wrong/weak/resolved verdicts, plan condensation at approval. Reference precedent: the S0–S1
+   pre-planning chain (code-owned turns, no AI round-trip). ~35% of a poetry planning session's API
+   calls were deterministic before this rule. Watch-it: a turn is judgment the moment it READS the
+   student (an A/B tap is deterministic; "explain in your own words" is not) — never strip those.
 
 ---
 
