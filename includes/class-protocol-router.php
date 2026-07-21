@@ -6502,8 +6502,11 @@ TEMPLATE;
         // v7.20.239: 19th-century novels are out of 30 (no AO4/SPaG), Shakespeare/Modern
         // out of 34. Twin of the grid override in load_modular_protocol(); keeps the
         // authoritative headline Total + grade boundaries on the right denominator.
+        // v7.20.241: poetry_anthology is ALSO /30 (comparative essay: Intro 3 + Body 7×3 +
+        // Conclusion 6, no AO4/SPaG) — matches the JS _is30 gate in _litSectionParams
+        // (wml-assessment.js) and the poetry assessment protocol's own arithmetic.
         $subject = str_replace('-', '_', strtolower((string) $subject));
-        $max = ($subject === '19th_century') ? 30 : 34;
+        $max = in_array($subject, ['19th_century', 'poetry_anthology'], true) ? 30 : 34;
         $block  = "\n\n---\n\n<assessment_state authoritative=\"true\">\n";
         $block .= "Every section of this essay is now marked (Introduction → Conclusion). This is the wrap-up stretch.\n";
         $block .= "If the final section's calibration/gate exchange is still open, finish that first. Then, in ONE message, emit the Final Summary:\n";
