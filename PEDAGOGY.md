@@ -588,6 +588,27 @@ rulings; the research backing each is in `research/2026-07-18-*.md`.
    shown only in the answering env (`.swml-noplan-note`, hidden in the marking view where "not marked
    now" would be false). Impl v7.20.204.
 
+7l. **L4 WORKED MODELS DRAW ON REAL CURRICULUM MATERIAL — NEVER INVENTED (Neil 2026-07-21).** The
+   rung-4 model is shown on an UNRELATED instance (§7/§7e) so it never hands the student their own
+   answer — but "unrelated" means a DIFFERENT **real** text, not a fabricated one. When the curriculum
+   already holds abundant usable material, inventing a model is the wrong default: real exemplars are
+   richer, truer to the exam, and if a student later recalls one across the course's time-lapse that is
+   a LEARNING GAIN, not leakage.
+   - **Poetry:** L4 = a DIFFERENT anthology poem (any poem other than today's two being compared). NO
+     exclusion guard needed — Neil 2026-07-21: the time-lapse before they meet that poem in their own
+     comparison makes recall a feature, not pre-emption ("if they can recall it, it's probably a good
+     thing").
+   - **Set texts (lit):** modelling on the student's OWN set text IS the answer, so the unrelated
+     instance must be another REAL text the course teaches (a different author / extract / poem), NOT an
+     invented tale.
+   - **The only hard line:** never model on TODAY's exact live material (that = injection). Any other
+     real curriculum instance is fair game.
+   - ⚠ **DEBT — retrofit lit off invented models.** AQA Literature currently INVENTS its L4 models (the
+     "Clockmaker tale" + M-script bank in `aqa/literature/planning/b-ladder.md`). Neil 2026-07-21: "we
+     shouldn't be inventing models… why would we have to invent a text when we have so many that we
+     can use?" Queue a retrofit to real material. Lit keeps working until then; every NEW port (poetry
+     onward) uses real curriculum material from the start. Tracked: `~/.claude/handoffs/open/wml-backlog.md`.
+
 - **Cross-cutting:** help-ladder depth, the grounding gate, and the context-output gate all DERIVE from
   the question's AO/capability profile — one per-question config — never from literal task-names (same
   "capability, not task-name" discipline as the canvas rules). A new board/paper opts in, never silently

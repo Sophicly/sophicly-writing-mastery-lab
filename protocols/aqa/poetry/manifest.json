@@ -9,7 +9,8 @@
             "modules/communication-standards.md",
             "modules/macros-poetry.md",
             "modules/guards-progress-poetry.md",
-            "modules/knowledge-poetry.md"
+            "modules/knowledge-poetry.md",
+            "planning/b-ladder-poetry.md"
         ],
         "steps": {
             "1": {

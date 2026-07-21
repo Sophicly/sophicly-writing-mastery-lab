@@ -711,6 +711,21 @@
         const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         return /^(shakespeare|moderntext|19thcentury|nineteenthcentury)$/.test(s);
     }
+    // v7.20.244 — AQA poetry anthology comparison rides the LIT ladder engine (identical fieldIds +
+    // bodies/intro/conclusion walk). Kept SEPARATE from _isLitEssay so the many doc/word-count
+    // consumers of _isLitEssay stay unchanged; only the ladder gate + paperKey opt poetry in.
+    // unseen_poetry (AO1-only, no AO3) is OUT of scope — excluded here.
+    function _isPoetryLadder() {
+        // v7.20.245: ACTIVE — b1-b9 rewritten lean to the ladder-era shape and now emit the
+        // two-grade @FIELD_COMMIT (outline) + @FIELD_SET (plan) filing markers; b-ladder-poetry.md
+        // is back on the poetry manifest planning.always list. unseen_poetry stays OUT (excluded
+        // by the poetryanthology subject check below). To de-activate, flip this back to false AND
+        // drop the ladder module from the manifest.
+        var _POETRY_LADDER_READY = true;
+        if (!_POETRY_LADDER_READY) return false;
+        const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return s === 'poetryanthology';
+    }
     // v7.20.236 — LIT ESSAYS ARE ALWAYS 3 BODY PARAGRAPHS (Neil ruling 2026-07-20, PEDAGOGY.md §10):
     // intro + 3 bodies + conclusion = 5 paragraphs at ANY tariff (20 or 40 marks). Marks scale the
     // DENSITY of writing and of what is assessed — never the paragraph count. The old
@@ -2709,7 +2724,8 @@
             if (_board === 'aqa') {
                 return (typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false)
                     || (typeof _isLangPaper1 === 'function' ? _isLangPaper1() : false)
-                    || (typeof _isLitEssay === 'function' ? _isLitEssay() : false);
+                    || (typeof _isLitEssay === 'function' ? _isLitEssay() : false)
+                    || (typeof _isPoetryLadder === 'function' ? _isPoetryLadder() : false);
             }
             // Eduqas: ONLY 19th-century prose (Component 2 Section B) is ported (v7.20.235). Its
             // subject routes to protocols/eduqas/literature/ (which now carries b-ladder.md + the
@@ -2729,7 +2745,8 @@
     // verdict routing are SHARED; a paper contributes only its question order + registries.
     // Never fork deriveLadderState per paper.
     function _ladderPaperKey() {
-        if (typeof _isLitEssay === 'function' && _isLitEssay()) return 'lit';
+        // poetry anthology reuses the lit registry + walk (identical fieldIds / bodies-intro-conclusion)
+        if ((typeof _isLitEssay === 'function' && _isLitEssay()) || (typeof _isPoetryLadder === 'function' && _isPoetryLadder())) return 'lit';
         return (typeof _isLangPaper1 === 'function' && _isLangPaper1()) ? 'p1' : 'p2';
     }
     // Each paper's questions in exam order — deriveLadderState walks these registries in
@@ -4449,6 +4466,8 @@
         if (/^source\s*b\s*inference/.test(l)) return 'inf2-evidence';
         if (/^effect\s*source\s*a/.test(l)) return 'effects';
         if (/^effect\s*source\s*b/.test(l)) return 'effects2';
+        if (/^effect\s*poem\s*a/.test(l)) return 'effects';   // poetry comparative per-poem effect split
+        if (/^effect\s*poem\s*b/.test(l)) return 'effects2';
         if (l.indexOf('topic') === 0) return 'topic';
         if (l.indexOf('tei') === 0 || l.indexOf('technique') === 0 || l.indexOf('structural') === 0) return 'evidence';
         if (l.indexOf('close') === 0) return 'analysis';
@@ -34560,6 +34579,21 @@
             effects2: { label: 'Effect on Reader — Source B', prompt: 'How does Source B’s writer shape it differently? This is where the comparison lands.' },
             purpose: { label: 'Writers’ Purposes Compared', prompt: 'Why did each writer make these choices — and how do their purposes differ?' },
         },
+        // AQA poetry comparison (Body 1 Form / Body 2 Structure / Body 3 Language): same TTECEA+C rows,
+        // the comparison lives in the HELPER TEXT + the per-poem effect split (effects = Poem A,
+        // effects2 = Poem B). "Poem" not "Source" — students compare poems (CLAUDE.md §14). ids unchanged.
+        comparativePoetry: {
+            topic: { prompt: 'A conceptual claim comparing what BOTH poets convey about the topic' },
+            evidence: {
+                label: 'Technique + Evidence + Inference',
+                items: ['Technique named', 'Quote integrated', 'Inference made'],
+                prompt: 'Name the technique, integrate a quote, infer — then weave the comparison between the two poems',
+            },
+            analysis: { prompt: 'Zoom on the sharpest word/choice — and how it differs from the other poem' },
+            effects: { label: 'Effect on Reader — Poem A', prompt: 'How does Poem A’s poet shape the reader’s response? Be specific.' },
+            effects2: { label: 'Effect on Reader — Poem B', prompt: 'How does Poem B’s poet shape it differently? This is where the comparison lands.' },
+            purpose: { label: 'Poets’ Purposes Compared', prompt: 'Why did each poet make these choices — and how do their purposes differ?' },
+        },
     };
 
     // v7.20.131: the Methodology action-verb families (protocol-b-planning.md:653-655), defined
@@ -38232,7 +38266,12 @@
                 if (state.subject === 'creative_writing') {
                     html += buildCWPlotOutlineSection();
                 } else {
-                    html += buildOutlineSection(topicData.aos, null, marks);
+                    // Poetry comparison (ladder-active): comparative per-poem outline labels
+                    // (Effect — Poem A/B, comparative helper text). fieldIds unchanged. unseen
+                    // poetry is excluded by _isPoetryLadder(), so it keeps default single-text labels.
+                    var _poetryFocus = (typeof _isPoetryLadder === 'function' && _isPoetryLadder())
+                        ? { focus: 'comparativePoetry' } : undefined;
+                    html += buildOutlineSection(topicData.aos, null, marks, null, _poetryFocus);
                 }
                 html += dividerHTML('RESPONSE');
                 html += buildResponseSection(null);
