@@ -184,11 +184,15 @@ SAY: "Now let me provide my formal assessment of your introduction."
    - Your score: \[X\]/1.5
    - Why: \[Specific explanation\]
 
-**Penalties Applied (max 2 penalties \= \-0.5 total):**
+**Penalties Applied (max 2 penalties — the total is the SUM of the codes applied, no fixed cap; full registry in penalty-codes-poetry.md):**
 
-* **\[AI\_INTERNAL\]:** Apply maximum 2 penalties from codes: INT-NC (No comparison \-0.5), INT-TH (Thesis not comparative \-0.5), INT-CT (Context not compared \-0.25), INT-HK (Hook missing/weak \-0.25), W1 (Weak analytical verb \-0.25)
+* CMP1 (Setup/thesis not comparative — no argument built across BOTH poems \-0.5)
+* F1 (Weak analytical verb — "shows"/"tells us"/"uses" etc. \-0.5 per instance)
+* C1 (Clarity/flow lapse creating ambiguity \-0.5)
 
-**Penalties actually applied:** \[List specific penalties\]
+**\[AI\_INTERNAL\]:** A missing/weak hook or absent contextual comparison is scored in the Introduction criteria above — NOT a separate penalty (ONE FAULT, ONE CHARGE — never charge the same words twice). Every penalty must quote the student's verbatim phrase (or state "Absent") and carry a before→after fix.
+
+**Penalties actually applied:** \[List — each as `CODE — plain name (−X)` with the student's verbatim phrase + fix\]
 
 **Total penalties:** \-\[X\] marks
 
@@ -341,7 +345,7 @@ SAY: "Now let me provide my formal assessment of Body Paragraph 1."
 
 * **Expected focus:** FORM (genre/type of poem)
 * **Actual focus:** \[What the paragraph actually analyzes\]
-* **\[If mismatch\]:** "Your paragraph focuses on \[actual focus\] rather than FORM. For Body Paragraph 1, you should be comparing the TYPES of poems (sonnet, dramatic monologue, etc.), not \[what they actually analyzed\]. Penalty BP-WF applied."
+* **\[If mismatch\]:** "Your paragraph focuses on \[actual focus\] rather than FORM. For Body Paragraph 1, you should be comparing the TYPES of poems (sonnet, dramatic monologue, etc.), not \[what they actually analyzed\]. Penalty CMP2 applied."
 
 * **Mark Breakdown (Detailed Scoring):**
 
@@ -385,22 +389,21 @@ SAY: "Now let me provide my formal assessment of Body Paragraph 1."
    - Your score: \[X\]/1.0
    - Why: \[Explanation\]
 
-**Penalties Applied (max 3 penalties \= \-1.5 total):**
+**Penalties Applied (max 3 penalties — the total is the SUM of the codes applied, no fixed cap; full registry in penalty-codes-poetry.md):**
 
-* BP-NC (No sustained comparison \-1.0)
-* BP-WF (Wrong focus area \-0.5)
-* BP-TM (Technique missing/vague \-0.5)
-* BP-EV (Evidence missing or from only one poem \-0.5)
-* BP-CA (Close analysis missing/superficial \-0.5)
-* BP-EF (Effects underdeveloped \-0.5)
-* BP-TI (Technique interplay absent \-0.25)
-* BP-AP (Author's purpose not comparative \-0.5)
-* BP-CT (Context not comparative \-0.5)
-* BP-SH (Uses "shows" \-0.25 per instance)
-* BP-QH (Quote not integrated \-0.25 per instance)
-* BP-OR (TTECEA order incorrect \-0.5) \[Redraft only\]
+* CMP1 (No sustained comparison / poems treated separately \-0.5)
+* CMP2 (Wrong focus for this paragraph — Form/Structure/Language mismatch \-0.5)
+* F1 (Weak analytical verb — "shows"/"tells us"/"uses" etc. \-0.5 per instance)
+* H1 (Quote not integrated / hanging quote \-0.5)
+* Q1 (Evidence weak or drawn from only one poem \-0.5)
+* I1 (Close analysis missing/superficial — no word-level zoom \-0.5)
+* E2 (Effects underdeveloped or not differentiated per poet \-0.5)
+* X1 (Context irrelevant or not causally linked \-0.5)
+* STR2 (TTECEA order incorrect \-0.5) \[Redraft only\]
 
-**Penalties actually applied:** \[List\]
+**\[AI\_INTERNAL\]:** Missing/vague technique, absent technique-interplay and non-comparative author's purpose are NOT separate penalties — they are already reflected in the criterion scores above (ONE FAULT, ONE CHARGE — never charge the same words twice). Every penalty must quote the student's verbatim phrase (or state "Absent") and carry a before→after fix.
+
+**Penalties actually applied:** \[List — each as `CODE — plain name (−X)` with the student's verbatim phrase + fix\]
 
 **Total penalties:** \-\[X\] marks
 
@@ -574,7 +577,7 @@ SAY: "Now let me provide my formal assessment of Body Paragraph 2."
 
 * **Expected focus:** STRUCTURE (internal patterns)
 * **Actual focus:** \[What the paragraph actually analyzes\]
-* **\[If mismatch\]:** "Your paragraph focuses on \[actual focus\] rather than STRUCTURE. For Body Paragraph 2, you should be comparing structural elements (metre, rhyme, enjambment, etc.), not \[what they analyzed\]. Penalty BP-WF applied."
+* **\[If mismatch\]:** "Your paragraph focuses on \[actual focus\] rather than STRUCTURE. For Body Paragraph 2, you should be comparing structural elements (metre, rhyme, enjambment, etc.), not \[what they analyzed\]. Penalty CMP2 applied."
 
 * **Mark Breakdown (Detailed Scoring):**
 
@@ -618,7 +621,23 @@ SAY: "Now let me provide my formal assessment of Body Paragraph 2."
    - Your score: \[X\]/1.0
    - Why: \[Explanation\]
 
-**Penalties Applied:** \[List from penalty codes\]
+**Penalties Applied (max 3 penalties — the total is the SUM of the codes applied, no fixed cap; full registry in penalty-codes-poetry.md):**
+
+* CMP1 (No sustained comparison / poems treated separately \-0.5)
+* CMP2 (Wrong focus for this paragraph — Form/Structure/Language mismatch \-0.5)
+* F1 (Weak analytical verb — "shows"/"tells us"/"uses" etc. \-0.5 per instance)
+* H1 (Quote not integrated / hanging quote \-0.5)
+* Q1 (Evidence weak or drawn from only one poem \-0.5)
+* I1 (Close analysis missing/superficial — no word-level zoom \-0.5)
+* E2 (Effects underdeveloped or not differentiated per poet \-0.5)
+* X1 (Context irrelevant or not causally linked \-0.5)
+* STR2 (TTECEA order incorrect \-0.5) \[Redraft only\]
+
+**\[AI\_INTERNAL\]:** Missing/vague technique, absent technique-interplay and non-comparative author's purpose are NOT separate penalties — they are already reflected in the criterion scores above (ONE FAULT, ONE CHARGE — never charge the same words twice). Every penalty must quote the student's verbatim phrase (or state "Absent") and carry a before→after fix.
+
+**Penalties actually applied:** \[List — each as `CODE — plain name (−X)` with the student's verbatim phrase + fix\]
+
+**Total penalties:** \-\[X\] marks
 
 Total Mark for Body Paragraph 2: \[score\]/7   *(canonical line — plain score/max, line-final, NOTHING after the value; the engine parses exactly this form)*
 
@@ -814,7 +833,23 @@ SAY: "Now let me provide my formal assessment of Body Paragraph 3."
    - Your score: \[X\]/1.0
    - Why: \[Explanation\]
 
-**Penalties Applied:** \[List\]
+**Penalties Applied (max 3 penalties — the total is the SUM of the codes applied, no fixed cap; full registry in penalty-codes-poetry.md):**
+
+* CMP1 (No sustained comparison / poems treated separately \-0.5)
+* CMP2 (Wrong focus for this paragraph — Form/Structure/Language mismatch \-0.5)
+* F1 (Weak analytical verb — "shows"/"tells us"/"uses" etc. \-0.5 per instance)
+* H1 (Quote not integrated / hanging quote \-0.5)
+* Q1 (Evidence weak or drawn from only one poem \-0.5)
+* I1 (Close analysis missing/superficial — no word-level zoom \-0.5)
+* E2 (Effects underdeveloped or not differentiated per poet \-0.5)
+* X1 (Context irrelevant or not causally linked \-0.5)
+* STR2 (TTECEA order incorrect \-0.5) \[Redraft only\]
+
+**\[AI\_INTERNAL\]:** Missing/vague technique, absent technique-interplay and non-comparative author's purpose are NOT separate penalties — they are already reflected in the criterion scores above (ONE FAULT, ONE CHARGE — never charge the same words twice). Every penalty must quote the student's verbatim phrase (or state "Absent") and carry a before→after fix.
+
+**Penalties actually applied:** \[List — each as `CODE — plain name (−X)` with the student's verbatim phrase + fix\]
+
+**Total penalties:** \-\[X\] marks
 
 Total Mark for Body Paragraph 3: \[score\]/7   *(canonical line — plain score/max, line-final, NOTHING after the value; the engine parses exactly this form)*
 
@@ -980,16 +1015,18 @@ SAY: "Now let me provide my formal assessment of your conclusion."
    - Your score: \[X\]/1.0
    - Why: \[Explanation\]
 
-**Penalties Applied (max 2 penalties \= \-1.0 total):**
+**Penalties Applied (max 2 penalties — the total is the SUM of the codes applied, no fixed cap; full registry in penalty-codes-poetry.md):**
 
-* CON-NC (No sustained comparison \-0.5)
-* CON-TH (Thesis not restated/not comparative \-0.5)
-* CON-NI (No new insight \-0.5)
-* CON-EV (No evaluative judgement \-0.5)
-* CON-AB (Abrupt ending \-0.25)
-* W1 (Weak analytical verb \-0.25)
+* CMP1 (No sustained comparison / restated thesis not comparative \-0.5)
+* E1 (No evaluative judgement — which poem is more effective and why \-0.5)
+* P2 (No new insight / no perceptive synthesis across both poems \-0.5)
+* F1 (Weak analytical verb — "shows"/"tells us"/"uses" etc. \-0.5 per instance)
 
-**Penalties actually applied:** \[List\]
+**\[AI\_INTERNAL\]:** An abrupt ending or a thesis simply repeated (not developed) is scored in the Conclusion criteria above — NOT a separate penalty (ONE FAULT, ONE CHARGE). Every penalty must quote the student's verbatim phrase (or state "Absent") and carry a before→after fix.
+
+**Penalties actually applied:** \[List — each as `CODE — plain name (−X)` with the student's verbatim phrase + fix\]
+
+**Total penalties:** \-\[X\] marks
 
 Total Mark for Conclusion: \[score\]/6   *(canonical line — plain score/max, line-final, NOTHING after the value; the engine parses exactly this form)*
 
@@ -1107,7 +1144,7 @@ Ready to proceed?"
   * **AQA Level Alignment:** "Overall, your comparative essay demonstrates **Level \[X\]** qualities as described in the AQA poetry mark scheme: '\[quote relevant overall descriptor\]'" — plus the per-section level pattern (reference the levels already cited per section; never invent a whole-essay descriptor that doesn't exist).
   * **The Metacognitive Journey block** (below) — self-rating pattern, AO-targeting pattern, headline-goal closure, overall calibration.
   * **Word-count-ceiling explanation** if the ceiling applied — never a bare cap (the filed summary must explain itself): "Word-count ceiling: your essay was \[X\] words against the \[450-word diagnostic / 650-word redraft\] target, so your total is capped at \[30 − WC\_penalty\]/30 (−\[P\] marks — a full-length essay removes the cap)".
-  * **Penalty & Ceiling Ledger:** sum every penalty actually deducted across all five sections, grouped by code with its PLAIN-ENGLISH name and count (e.g. "BP-SH — uses 'shows' ×4 = −1.0 · INT-HK — hook missing/weak ×1 = −0.25 — total −1.25 marks"; never a bare code), **each code followed by its itemised instances — location + verbatim phrase + the fix** (e.g. "Body 1: 'this shows the form' → 'this dramatises the form' · Body 3: 'is about' → 'interrogates'") so the student can find and fix every one, plus the word-count ceiling's cost if it reduced the total. Then, on its own line: "**Without penalties you'd be on \[X+P\]/30 = \[Y\]% — a Grade \[N\]** (canonical ladder). Penalty marks are the cheapest marks to reclaim: they are habits, not skills." Honest numbers only — sum what your cards actually deducted; never estimate.
+  * **Penalty & Ceiling Ledger:** sum every penalty actually deducted across all five sections, grouped by code with its PLAIN-ENGLISH name and count (e.g. "F1 — weak analytical verb ×4 = −2.0 · CMP1 — no sustained comparison ×1 = −0.5 — total −2.5 marks"; never a bare code), **each code followed by its itemised instances — location + verbatim phrase + the fix** (e.g. "Body 1: 'this shows the form' → 'this dramatises the form' · Body 3: 'is about' → 'interrogates'") so the student can find and fix every one, plus the word-count ceiling's cost if it reduced the total. Then, on its own line: "**Without penalties you'd be on \[X+P\]/30 = \[Y\]% — a Grade \[N\]** (canonical ladder). Penalty marks are the cheapest marks to reclaim: they are habits, not skills." Honest numbers only — sum what your cards actually deducted; never estimate.
   * **Key Strength** (one, named with verbatim evidence) and **Priority Targets** (two, ranked by mark gain, AO-labelled).
   * **Weakest area is CODE-PROVIDED:** the SYSTEM filing turn appends the code-derived weakest area (lowest mark ratio) — the FIRST Priority Target and the Analytics "Top Missed Areas" MUST be that area, never re-ranked yourself. An appended blind-SA CALIBRATION note is annotation only: it MUST NOT change any mark, grade, or Priority Target.
   Then `@SECTION_END` on its own line, followed by ONE chat line: "📋 Your full examiner's summary is now in the **Overall Feedback** section of your document — review it there."

@@ -74,6 +74,7 @@
             "modules/guards-progress-poetry.md",
             "modules/knowledge-poetry.md",
             "modules/model-answers-poetry.md",
+            "modules/penalty-codes-poetry.md",
             "modules/protocol-a-assessment-poetry.md",
             "mark-scheme/marking-fairness-universal.md"
         ],
