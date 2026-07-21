@@ -3510,12 +3510,18 @@
     // v7.19.709: deterministic params for a literature section's reflection panel, so the frontend
     // can RENDER the next section's @REFLECT_GATE panel itself when the model loops the progression
     // gate (Neil: Body 2/3/Conclusion were never reached). Mirrors the protocol marker data
-    // (maxes are the folded SpaG split: intro 3, body 8, conclusion 7 = 34).
+    // (Shakespeare/Modern maxes are the folded SpaG split: intro 3, body 8, conclusion 7 = 34).
+    // v7.20.239: 19th-century novels are out of 30 (no AO4/SPaG) — Body /7, Conclusion /6.
+    // Mirrors the server-side grid override so the fallback panel predicts the right max.
     function _litSectionParams(label) {
         const t = String(label || '').toLowerCase();
         const ao = ['AO1', 'AO2', 'AO3'];
+        const _subj = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const _is19c = (_subj === '19thcentury' || _subj === 'nineteenthcentury');
+        const _bodyMax = _is19c ? 7 : 8;
+        const _conclMax = _is19c ? 6 : 7;
         if (t.indexOf('introduc') !== -1) return { q: 'Introduction', skill: 'set up the argument the whole essay will unfold', ao: ao, max: 3 };
-        if (t.indexOf('conclus') !== -1) return { q: 'Conclusion', skill: 'synthesise the whole argument into a cohesive, resonant close', ao: ao, max: 7 };
+        if (t.indexOf('conclus') !== -1) return { q: 'Conclusion', skill: 'synthesise the whole argument into a cohesive, resonant close', ao: ao, max: _conclMax };
         // v7.19.722: accept word-numbers ("Body Two") as well as digits ("Body 2"). The model
         // drifts between forms when it re-emits the progression gate, and a digit-only match used
         // to return null for "Body Two" → the deterministic loop-breaker never fired and later
@@ -3527,7 +3533,7 @@
             const wm = t.match(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\b/);
             if (wm) n = words[wm[1]];
         }
-        if (n) return { q: 'Body ' + n, skill: 'develop the argument in this body paragraph through precise close analysis', ao: ao, max: 8 };
+        if (n) return { q: 'Body ' + n, skill: 'develop the argument in this body paragraph through precise close analysis', ao: ao, max: _bodyMax };
         return null;
     }
 

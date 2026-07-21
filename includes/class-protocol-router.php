@@ -2117,6 +2117,34 @@ class SWML_Protocol_Router {
 
         $assembled = implode("\n\n", $parts);
 
+        // v7.20.239: 19th-CENTURY NOVEL mark-scheme override. The AQA literature
+        // protocol-a-assessment.md is authored for Shakespeare/Modern (essay /34:
+        // Body /8 ×3, Conclusion /7, plus AO4/SPaG folded into penalties). 19th-century
+        // novels are NOT assessed for AO4/SPaG, so per the official AQA scheme they are
+        // out of 30 (AO1+AO2+AO3 only). Same essay skeleton, 4 marks lighter: Body /7,
+        // Conclusion /6. Shakespeare ('shakespeare') and Modern ('modern_text') are
+        // untouched — this is gated to subject '19th_century' only. Code-owned + appended
+        // AUTHORITATIVE (loads last, so the model weights it over the Shakespeare grid;
+        // WML playbook §PROTOCOL ROUTER rule 6). The final Total/34→/30 twin lives in
+        // assessment_lit_final_summary_mandate(). Neil-approved element deltas 2026-07-21.
+        if ($subject === '19th_century' && $task === 'assessment') {
+            // Fail-loud: if the Shakespeare grid the override references ever drifts
+            // (element renamed / worth changed), the override silently references dead
+            // text. Surface it — never a silent generic /34 for a 19th-century essay.
+            if (strpos($assembled, 'Topic sentence links to thesis and question') === false
+                || strpos($assembled, 'Total Mark for Body Paragraph') === false) {
+                error_log('WML Router: 19th_century override — expected Shakespeare grid anchors NOT found in assembled assessment protocol; grid may have drifted (subject=19th_century). Override appended anyway; verify protocol-a-assessment.md element names.');
+            }
+            $assembled .= "\n\n---\n\n"
+                . "⛔ **[AI_INTERNAL] 19TH-CENTURY NOVEL — MARK-SCHEME OVERRIDE (AUTHORITATIVE).** "
+                . "This text is a 19th-century novel. The mark scheme above is authored for Shakespeare/Modern texts (essay out of 34). "
+                . "19th-century novels are NOT assessed for AO4/SPaG, so this essay is out of **30**. Apply EXACTLY these overrides — they REPLACE the values above; change NOTHING else:\n"
+                . "- **Each Body Paragraph is out of 7** (not 8): \"Topic sentence links to thesis and question (AO1)\" is worth **0.5** (not 1.0); \"Evaluates author's purpose (AO1)\" is worth **0.5** (not 1.0). Every other body element keeps its stated worth. The body total line MUST read `Total Mark for Body Paragraph [X]: [score]/7`.\n"
+                . "- **The Conclusion is out of 6** (not 7): \"Evaluates author's purpose (AO1)\" is worth **1.0** (not 2.0). Every other conclusion element keeps its stated worth. The conclusion total line MUST read `Total Mark for Conclusion: [score]/6`.\n"
+                . "- **The Introduction is unchanged (out of 3).**\n"
+                . "- **The whole-essay total is out of 30** (Introduction 3 + Body 7 ×3 + Conclusion 6). The final result line MUST read `Total: [X]/30`. There is NO AO4/SPaG mark for this text.\n";
+        }
+
         // v7.19.978: fail-loud guard against a silent generic-degrade. The poetry CN
         // one-doc flow lives ENTIRELY in pn-conceptual-notes.md. If that file failed to
         // resolve (e.g. a manifest path typo), the 3 shared modules + pn-reference.md alone
@@ -6467,15 +6495,20 @@ TEMPLATE;
      * ending (R&J 04-Jul: 3-in-one action plan, early wrap line, no section fill,
      * no rebuild offer). Same two-phase engine-owned closing chain as language.
      */
-    private function assessment_lit_final_summary_mandate() {
+    private function assessment_lit_final_summary_mandate($subject = '') {
         if (self::assessment_history_marker_seen('@SUMMARY_COMPLETE')) {
             return self::assessment_closing_questions_block();
         }
+        // v7.20.239: 19th-century novels are out of 30 (no AO4/SPaG), Shakespeare/Modern
+        // out of 34. Twin of the grid override in load_modular_protocol(); keeps the
+        // authoritative headline Total + grade boundaries on the right denominator.
+        $subject = str_replace('-', '_', strtolower((string) $subject));
+        $max = ($subject === '19th_century') ? 30 : 34;
         $block  = "\n\n---\n\n<assessment_state authoritative=\"true\">\n";
         $block .= "Every section of this essay is now marked (Introduction → Conclusion). This is the wrap-up stretch.\n";
         $block .= "If the final section's calibration/gate exchange is still open, finish that first. Then, in ONE message, emit the Final Summary:\n";
-        $block .= "1. Chat result lines on their own lines: `Total: X/34` then `Grade: N` — Total = sum of the five section totals from this conversation, with the word-count ceiling applied as a MIN (never a deduction); grade from the canonical ladder.\n";
-        $block .= "GRADE BOUNDARIES (/34): " . self::grade_boundaries_table_line(34) . ".\n";
+        $block .= "1. Chat result lines on their own lines: `Total: X/{$max}` then `Grade: N` — Total = sum of the five section totals from this conversation, with the word-count ceiling applied as a MIN (never a deduction); grade from the canonical ladder.\n";
+        $block .= "GRADE BOUNDARIES (/{$max}): " . self::grade_boundaries_table_line($max) . ".\n";
         $block .= "2. The complete Overall Feedback `@SECTION_BEGIN{\"section\":\"Overall Feedback\"}` … `@SECTION_END` fill exactly as the protocol's Final Summary step specifies (Total & Grade with the mark, Technical Accuracy, per-section level pattern, metacognitive journey + headline-goal closure, itemised Penalty & Ceiling Ledger, Key Strength, Priority Targets, word-count-ceiling explanation and extra-paragraph note where applicable).\n";
         $block .= "3. End the message with `@SUMMARY_COMPLETE` on its own line (system marker — the platform strips it from display).\n";
         $block .= "4. Ask NOTHING in this turn: the system asks the action-plan and transfer questions itself, one per turn. Do NOT emit `[ASSESSMENT_COMPLETE]`, do NOT declare the assessment wrapped, do NOT offer to rebuild a paragraph — those come later, code-driven.\n";
@@ -6617,7 +6650,7 @@ TEMPLATE;
         // code-asked questions phase). Lit previously had NO wrap-up state here: after
         // the Conclusion the model free-styled the ending (R&J 04-Jul verdict).
         if ($current === 'done') {
-            return $this->assessment_lit_final_summary_mandate();
+            return $this->assessment_lit_final_summary_mandate($context['subject'] ?? '');
         }
         // v7.19.854: family-first leniency flag (lit family) — code-computed; the
         // protocol's first-diagnostic vs trained branches key on THIS line, never on

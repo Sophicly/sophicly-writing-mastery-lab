@@ -862,8 +862,8 @@ SAY: "Thank you. Now here's my formal assessment of Body Paragraph 1."
    - Your score: \[X\]/0.5
    - Why: \[Explanation\]
 
-5. **Comparative close analysis \- examination of BOTH quotes showing how FORM techniques compare/contrast (AO2)** \- Worth: 1.0 mark
-   - Your score: \[X\]/1.0
+5. **Comparative close analysis \- examination of BOTH quotes showing how FORM techniques compare/contrast (AO2)** \- Worth: 1.5 marks
+   - Your score: \[X\]/1.5
    - Why: \[Explanation\]
 
 6. **Comparative effects (2 sentences) \- how each poet's FORM affects the reader DIFFERENTLY (AO2)** \- Worth: 1.0 mark
@@ -874,8 +874,8 @@ SAY: "Thank you. Now here's my formal assessment of Body Paragraph 1."
    - Your score: \[X\]/0.5
    - Why: \[Explanation\]
 
-8. **Comparative author's purpose \- why EACH poet chose their specific FORM (AO1/AO2)** \- Worth: 0.5 marks
-   - Your score: \[X\]/0.5
+8. **Comparative author's purpose \- why EACH poet chose their specific FORM (AO1/AO2)** \- Worth: 1.0 mark
+   - Your score: \[X\]/1.0
    - Why: \[Explanation\]
 
 9. **Comparative context \- how EACH poet's context shapes their FORM choice (AO3)** \- Worth: 1.0 mark
@@ -1141,8 +1141,8 @@ SAY: "Thank you. Now here's my formal assessment of Body Paragraph 2."
    - Your score: \[X\]/0.5
    - Why: \[Explanation\]
 
-5. **Comparative close analysis \- examination of BOTH quotes showing how STRUCTURE techniques compare/contrast (AO2)** \- Worth: 1.0 mark
-   - Your score: \[X\]/1.0
+5. **Comparative close analysis \- examination of BOTH quotes showing how STRUCTURE techniques compare/contrast (AO2)** \- Worth: 1.5 marks
+   - Your score: \[X\]/1.5
    - Why: \[Explanation\]
 
 6. **Comparative effects (2 sentences) \- how each poet's STRUCTURE affects the reader DIFFERENTLY (AO2)** \- Worth: 1.0 mark
@@ -1153,8 +1153,8 @@ SAY: "Thank you. Now here's my formal assessment of Body Paragraph 2."
    - Your score: \[X\]/0.5
    - Why: \[Explanation\]
 
-8. **Comparative author's purpose \- why EACH poet chose their specific STRUCTURAL approach (AO1/AO2)** \- Worth: 0.5 marks
-   - Your score: \[X\]/0.5
+8. **Comparative author's purpose \- why EACH poet chose their specific STRUCTURAL approach (AO1/AO2)** \- Worth: 1.0 mark
+   - Your score: \[X\]/1.0
    - Why: \[Explanation\]
 
 9. **Comparative context \- how EACH poet's context shapes their STRUCTURE choice (AO3)** \- Worth: 1.0 mark
@@ -1383,8 +1383,8 @@ SAY: "Thank you. Now here's my formal assessment of Body Paragraph 3."
    - Your score: \[X\]/0.5
    - Why: \[Explanation\]
 
-5. **Comparative close analysis \- word-level examination of BOTH quotes (AO2)** \- Worth: 1.0 mark
-   - Your score: \[X\]/1.0
+5. **Comparative close analysis \- word-level examination of BOTH quotes (AO2)** \- Worth: 1.5 marks
+   - Your score: \[X\]/1.5
    - Why: \[Explanation\]
 
 6. **Comparative effects (2 sentences) \- how each poet's LANGUAGE affects the reader DIFFERENTLY (AO2)** \- Worth: 1.0 mark
@@ -1395,8 +1395,8 @@ SAY: "Thank you. Now here's my formal assessment of Body Paragraph 3."
    - Your score: \[X\]/0.5
    - Why: \[Explanation\]
 
-8. **Comparative author's purpose \- why EACH poet chose their specific LANGUAGE (AO1/AO2)** \- Worth: 0.5 marks
-   - Your score: \[X\]/0.5
+8. **Comparative author's purpose \- why EACH poet chose their specific LANGUAGE (AO1/AO2)** \- Worth: 1.0 mark
+   - Your score: \[X\]/1.0
    - Why: \[Explanation\]
 
 9. **Comparative context \- how EACH poet's context shapes their LANGUAGE choices (AO3)** \- Worth: 1.0 mark
