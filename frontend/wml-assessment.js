@@ -3516,10 +3516,13 @@
     function _litSectionParams(label) {
         const t = String(label || '').toLowerCase();
         const ao = ['AO1', 'AO2', 'AO3'];
+        // v7.20.240: poetry_anthology (/30) shares the 19th-century split (Body 7 / Conc 6);
+        // Shakespeare/Modern stay 8/7 (/34); Intro is 3 for both. These fallback-panel maxes
+        // must match the pre-seeded feedback boxes (buildFeedbackSection via getMarkSplit(30)).
         const _subj = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        const _is19c = (_subj === '19thcentury' || _subj === 'nineteenthcentury');
-        const _bodyMax = _is19c ? 7 : 8;
-        const _conclMax = _is19c ? 6 : 7;
+        const _is30 = (_subj === '19thcentury' || _subj === 'nineteenthcentury' || _subj === 'poetryanthology');
+        const _bodyMax = _is30 ? 7 : 8;
+        const _conclMax = _is30 ? 6 : 7;
         if (t.indexOf('introduc') !== -1) return { q: 'Introduction', skill: 'set up the argument the whole essay will unfold', ao: ao, max: 3 };
         if (t.indexOf('conclus') !== -1) return { q: 'Conclusion', skill: 'synthesise the whole argument into a cohesive, resonant close', ao: ao, max: _conclMax };
         // v7.19.722: accept word-numbers ("Body Two") as well as digits ("Body 2"). The model
