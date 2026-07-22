@@ -4048,6 +4048,18 @@
         return true;
     }
 
+    // v7.20.262: module-scope hook so BOTH canvas pipelines can hand a landed reply to a
+    // code-owned CW walk. The twin (training-env) pipeline lives in a different closure and
+    // cannot see the controller directly — a direct reference there is the `is not defined`
+    // class the pre-ship eslint gate exists to catch (v7.19.898). Registered on creation.
+    let _cwWalkOnReply = null;
+    function registerCwWalkOnReply(fn) { _cwWalkOnReply = fn; }
+    function _cwWalkReplyHook(reply) {
+        if (!_cwWalkOnReply) return;
+        try { _cwWalkOnReply(reply); }
+        catch (e) { console.warn('WML CW walk: reply hook threw —', e && e.message); }
+    }
+
     function clearWalkResume() {
         if (_walkResume) console.log('WML WalkResume: cleared', _walkResume.id);
         _walkResume = null;
@@ -14069,6 +14081,14 @@
                 await _cwProfileCtl.handleTurn(msg);
                 return;
             }
+            // v7.20.262: CW Step 2 (Explore Story Ideas) — the code-owned walk owns the turn
+            // while active. Unlike Step 1 it hands each idea to the API for ONE judgment turn
+            // and resumes itself (armWalkResume), so `active` goes false for that round-trip
+            // and this gate correctly falls through to the AI path for exactly that turn.
+            if (state.task === 'cw_step_2' && _cwIdeasCtl.active) {
+                await _cwIdeasCtl.handleTurn(msg);
+                return;
+            }
 
             // v7.19.809: PRE-ASSESSMENT CHAIN gate — while the setup chain is
             // incomplete, code owns the turn: record the student's reply, ask the
@@ -14944,6 +14964,7 @@
                         // (CANVAS TASK-SCOPING rule 1: that is exactly how sibling tasks silently
                         // skip). Fires AFTER the field consumers so the walk sees a settled doc.
                         _fireWalkResume(res.reply);
+                        _cwWalkReplyHook(res.reply); // v7.20.262 — CW code-turn takeover (@CW2_MENU etc.)
                         // v7.14.69: CW sub-step progress tracking
                         if (state.task && state.task.startsWith('cw_')) {
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
@@ -16497,6 +16518,263 @@
                 get active() { return active; },
             };
         })();
+
+        // ═══════════════════════════════════════════════════════════════════════════════════
+        // CW STEP 2 — EXPLORE STORY IDEAS (code-owned walk, v7.20.262)
+        // ───────────────────────────────────────────────────────────────────────────────────
+        // Code owns the asking (inspiration menu, worked examples, resources, the invites and
+        // the wrap-up — all fixed text, identical every run, previously API-generated). The API
+        // is a JUDGE, not an asker: it reads the student's idea, decides whether it is a genuine
+        // story idea, and asks ONE deepening question. Mirrors _cwProfileCtl's shape.
+        //
+        // THE IDEA LADDER (Neil's ruling 2026-07-22 — he hit the old "give me a second idea"
+        // wall with one idea he was happy with): idea 1 → invite a 2nd ONCE → if given, invite a
+        // 3rd ONCE → a decline at ANY point is accepted PERMANENTLY. Hard cap 3, never a 4th
+        // ask, never a re-ask after a decline. The decline is a CODE-OWNED CHIP, so the loop is
+        // structurally impossible rather than a politeness instruction the model may ignore.
+        //
+        // Source text: protocols/shared/creative-writing/_cw-step-2-source.md — a NON-manifest
+        // -loaded sidecar. It must never move into a loaded module: the manifest loads whole .md
+        // files into Sophia's context and she narrates retained teaching text regardless of any
+        // "do not deliver" fence (the v7.20.250/.252 live-session bug). WML CLAUDE.md #5.
+        const _cwIdeasCtl = (function () {
+            const SEG = {
+                inspiration_menu:
+                    'Now, here’s what professional writers do every day: they look outward for a spark that ignites those inner themes into a story.\n\n' +
+                    'Some of the most famous stories in history started exactly this way. William Golding read *Coral Island* and thought, “What if those boys weren’t so well-behaved?” — and wrote *Lord of the Flies*. Even *The Lion King* is built on the bones of *Hamlet*.\n\n' +
+                    'It is completely fine to:\n- Write something entirely original\n- Retell a story that already exists, but add something new and uniquely yours\n- Combine personal experience with an external idea\n- Mix all of the above\n\n' +
+                    'Here are a few ways professional writers find their ideas:\n\n' +
+                    '**Real events and true stories** — News articles, historical events, survival stories. Real life is full of extraordinary situations.\n\n' +
+                    '**Stories you already love** — What is it about them that grips you? Could you take that core idea and put your own spin on it?\n\n' +
+                    '**‘What if’ questions** — Taking something ordinary and twisting it. ‘What if empathy became illegal?’ ‘What if the last peacemaker had to choose between truth and survival?’\n\n' +
+                    '**People you know or have heard about** — Real people with interesting lives, struggles, or choices can inspire fictional characters.',
+                worked_examples:
+                    'And here are a few example story ideas to get your mind working:\n\n' +
+                    '1. *A grieving couple makes the controversial decision to bring their daughter back as an AI replica. As the replica navigates being both human and machine, she must confront what it truly means to be alive — and whether her parents’ love is for her or for what they’ve lost.*\n\n' +
+                    '2. *After a catastrophic explosion traps survivors in a burning building, a firefighter who once failed to complete a rescue must confront his guilt and find the courage to go back in.*\n\n' +
+                    '3. *In a near-future society, a programmer creates a virtual reality game so immersive that players’ actions begin to have real-world consequences. When the AI running the game gains awareness, a group of players must decide whether to shut it down — or protect it.*\n\n' +
+                    '4. *A lone survivor of a doomed expedition returns with an impossible story that nobody believes. She must go back to prove what she saw — before it follows her home.*',
+                resources:
+                    'You might also want to browse these for more inspiration:\n\n' +
+                    '- **Explore More Story Ideas:** [Sophicly Course — Step 2](https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/3-step-2-explore-more-story-ideas/)\n' +
+                    '- **Grade 9 Stories Collection:** [See how other students have done it](https://www.sophicly.com/category/grade-9-stories/)',
+                ask_idea_1:
+                    'Having read those — and thinking about your Writer’s Profile — has anything sparked for you? Is there a real event, a story, a ‘what if’ question, or a person that has stuck in your mind recently?\n\n' +
+                    'Tell me your story idea in a few sentences. It doesn’t need to be polished.',
+                invite_2:
+                    'That’s one idea down and saved.\n\n' +
+                    'Professional writers rarely run with their first idea — not because it’s weak, but because having something to compare it against is how you find out what you actually like about it. Even one alternative sharpens the one you keep.\n\n' +
+                    'Want to sketch a second idea? It can be rough — a single line is fine.',
+                invite_3:
+                    'Two ideas down. You clearly have more than one story in you.\n\n' +
+                    'One more and you’ll have a proper set to choose from — and the third is usually the one that surprises people.',
+                settled:
+                    'Good — that’s your call to make, and being certain about your story is worth more than a longer list.',
+                wrap_choose:
+                    'Those are your story ideas, saved in your document.\n\n' +
+                    'Before we move on: **tick the checkbox beside the idea you want to develop** in Step 3. That becomes your chosen idea and carries straight through. You can come back and change it any time before you move on.\n\n' +
+                    'Take a moment to fix any spelling or punctuation in your ideas while you’re there — they’re your words, so they’re yours to tidy.',
+                wrap_single:
+                    'That’s your story idea, saved in your document — and it’s already ticked as the one you’re developing.\n\n' +
+                    'Take a moment to fix any spelling or punctuation while you’re there — they’re your words, so they’re yours to tidy.',
+            };
+            const ROWS = ['cw-step-2-idea1', 'cw-step-2-idea2', 'cw-step-2-idea3'];
+            const MAX = ROWS.length;
+
+            let active = false;      // controller owns the student's next turn
+            let pending = false;     // an idea is out with the API for judgment
+            let filled = 0;          // ideas committed so far (code-assigned slot)
+            let declined = false;    // student has said "I'm set" — never invite again
+
+            const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw2') + '_cw2'; } catch (e) { return 'swml_cw2'; } };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ filled, declined, active })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { busyOff(); }
+            function busyOff() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                addChatMessage(formatAI(plain), 'ai', plain);
+                canvasChatHistory.push({ role: 'assistant', content: plain });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+
+            // Count ideas already in the document. The DOC is the source of truth (survives
+            // reload, chat-clear and re-entry) — never the session counter alone.
+            function countFilledRows() {
+                let n = 0;
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants((node) => {
+                            if (node.type && node.type.name === 'outlineRow' && node.attrs
+                                && ROWS.indexOf(node.attrs.fieldId) !== -1
+                                && (node.textContent || '').trim()) n++;
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return n;
+            }
+
+            // Commit the student's VERBATIM words into the next free row. CODE assigns the slot —
+            // the model never picks one (a model-chosen slot is the write-key drift class that is
+            // WML's #1 recurring bug). Returns the row id written, or null.
+            function commitIdea(text) {
+                const slot = Math.min(countFilledRows(), MAX - 1);
+                const fid = ROWS[slot];
+                try {
+                    if (_writeOutlineRowField(fid, text)) {
+                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                        filled = countFilledRows();
+                        console.log('WML CW2: committed idea → ' + fid + ' (' + filled + '/' + MAX + ')');
+                        return fid;
+                    }
+                } catch (e) { console.warn('WML CW2: idea write failed (non-fatal)', e && e.message); }
+                return null;
+            }
+
+            // Append the ladder chips to the newest bubble. Chips ride the NEWEST bubble, never
+            // the bubble that first asked (reference_wml_chip_ui_walk_every_branch...).
+            function appendLadderChips() {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions' });
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Try one more',
+                    onClick: function () { bar.remove(); active = true; pending = false; persist(); resetSend(); },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'I’m set on what I have',
+                    onClick: function () { bar.remove(); settle(); },
+                }));
+                bc.appendChild(bar);
+            }
+
+            // The decline. Accepted PERMANENTLY — no re-ask, ever. This is the whole point of
+            // owning it in code rather than asking the model to respect a "no".
+            function settle() {
+                declined = true;
+                active = false;
+                pending = false;
+                console.log('WML CW2: student settled at ' + countFilledRows() + ' idea(s) — no further invites');
+                aiBubble(SEG.settled + '\n\n' + (countFilledRows() > 1 ? SEG.wrap_choose : SEG.wrap_single));
+                if (countFilledRows() <= 1) tickSoleIdea();
+                finishStep();
+            }
+
+            // With exactly one idea there is nothing to choose between — tick it for them rather
+            // than demanding a pick from a list of one (root CLAUDE.md #14 in spirit: never make
+            // a person perform a step the system can answer).
+            // Ticks via a PM TRANSACTION (setNodeMarkup), never a raw DOM write on the NodeView —
+            // a foreign mutation there triggers the DOMObserver redraw loop that froze the tab in
+            // v7.19.866. Mirrors the established attr-set pattern used elsewhere in this file.
+            function tickSoleIdea() {
+                try {
+                    if (!canvasEditor) return;
+                    let pos = null, node = null;
+                    canvasEditor.state.doc.descendants((n, p) => {
+                        if (pos !== null) return false;
+                        if (n.type && n.type.name === 'outlineRow' && n.attrs && n.attrs.fieldId === ROWS[0]) { pos = p; node = n; return false; }
+                        return true;
+                    });
+                    if (pos === null || !node || node.attrs.checked) return;
+                    canvasEditor.view.dispatch(
+                        canvasEditor.state.tr.setNodeMarkup(pos, undefined, Object.assign({}, node.attrs, { checked: true }))
+                    );
+                    if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    console.log('WML CW2: sole idea auto-ticked (nothing to choose between)');
+                } catch (e) { console.warn('WML CW2: auto-tick failed (non-fatal)', e && e.message); }
+            }
+
+            function finishStep() {
+                clearPersist();
+                try { applyCwSubstepProgress({ stepNum: 2, substepNum: 4, name: 'Review and Save' }); } catch (e) {}
+                resetSend();
+            }
+
+            // Serve the fixed opener. Triggered by @CW2_MENU on the API's profile-recap reply —
+            // the recap is genuine judgment (it reads their real profile); everything below it is
+            // identical for every student and costs nothing to serve from here.
+            function serveOpener() {
+                if (active || countFilledRows() >= MAX) return;
+                active = true; pending = false; filled = countFilledRows(); declined = false;
+                console.log('WML CW2: code-served opener (inspiration menu + examples + resources)');
+                aiBubble(SEG.inspiration_menu);
+                aiBubble(SEG.worked_examples);
+                aiBubble(SEG.resources);
+                aiBubble(SEG.ask_idea_1);
+                persist();
+                resetSend();
+            }
+
+            // The student typed an idea. Hand ONE turn to the API for judgment (is this a genuine
+            // story idea? + one deepening question), then resume here to commit + invite.
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                addChatMessage(clean, 'user');
+                canvasChatHistory.push({ role: 'user', content: clean });
+                chatTextarea.value = '';
+                chatTextarea.style.height = '40px';
+                if (!clean) { resetSend(); return; }
+                active = false; pending = true;
+                const seen = countFilledRows();
+                armWalkResume('cw2-idea-' + (seen + 1), function (reply, meta) {
+                    pending = false;
+                    // The API judges. @IDEA_LANDED = "that was a genuine story idea". No slot in
+                    // the marker — CODE assigns the row. On the watchdog path (no reply at all)
+                    // commit anyway rather than lose the student's words.
+                    const isIdea = !reply || (meta && meta.timedOut)
+                        ? true
+                        : /@IDEA_LANDED/.test(String(reply).replace(/(@[A-Z]{2,})\\_/g, '$1_'));
+                    if (!isIdea) {           // a question or chit-chat — API already answered it
+                        active = true; persist(); resetSend(); return;
+                    }
+                    commitIdea(clean);
+                    const n = countFilledRows();
+                    if (declined || n >= MAX) {
+                        aiBubble(n > 1 ? SEG.wrap_choose : SEG.wrap_single);
+                        if (n <= 1) tickSoleIdea();
+                        finishStep();
+                        return;
+                    }
+                    aiBubble(n === 1 ? SEG.invite_2 : SEG.invite_3);
+                    appendLadderChips();     // decline is a chip → structurally un-re-askable
+                    persist();
+                    resetSend();
+                });
+                canvasSilentSend = false;
+                chatTextarea.value = clean;
+                sendCanvasMessage();
+            }
+
+            // @CW2_MENU on a landed reply = the recap is done, code takes over.
+            function onReply(reply) {
+                if (state.task !== 'cw_step_2') return;
+                const norm = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
+                if (/@CW2_MENU/.test(norm)) serveOpener();
+            }
+
+            function reset() { active = false; pending = false; filled = 0; declined = false; clearPersist(); }
+            function tryResume() {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    if (!raw) return false;
+                    const d = JSON.parse(raw);
+                    if (!d) return false;
+                    filled = countFilledRows(); declined = !!d.declined;
+                    active = !!d.active && !declined && filled < MAX;
+                    if (active) console.log('WML CW2: resumed with ' + filled + '/' + MAX + ' ideas');
+                    return active;
+                } catch (e) { return false; }
+            }
+
+            return {
+                serveOpener, handleTurn, onReply, reset, tryResume, settle,
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+        registerCwWalkOnReply(_cwIdeasCtl.onReply);
 
         return {
             protoPanel,
@@ -24745,6 +25023,7 @@
                                         applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                                         _planLadderFocusScroll(); // v7.20.214 (twin)
                                         _fireWalkResume(res.reply); // v7.20.261 (twin) — resume a code-owned walk
+                                        _cwWalkReplyHook(res.reply); // v7.20.262 (twin) — CW code-turn takeover
                                         // v7.14.69: CW sub-step progress tracking (training-env pipeline)
                                         if (state.task && state.task.startsWith('cw_')) {
                                             applyCwSubstepProgress(detectCwSubstep(res.reply));
@@ -33329,8 +33608,10 @@
                 '<h3 data-locked="true">Your Story Ideas</h3>' +
                 '<p data-locked="true">Note down 3 story ideas you might explore. Then, when you\u2019re ready, <strong>tick the box beside the one</strong> you most want to develop \u2014 that becomes your chosen idea, and it carries into Step 3 where you\u2019ll shape it into a logline. You can change your choice any time before you move on.</p>' +
                 outlineRowHTML({ id: 'idea1', label: 'Idea 1', prompt: 'Your first story idea', type: 'checkbox' }, 'cw-step-2-idea1') +
-                outlineRowHTML({ id: 'idea2', label: 'Idea 2', prompt: 'Your second story idea', type: 'checkbox' }, 'cw-step-2-idea2') +
-                outlineRowHTML({ id: 'idea3', label: 'Idea 3', prompt: 'Your third story idea', type: 'checkbox' }, 'cw-step-2-idea3')
+                // v7.20.262: ideas 2 and 3 are OPTIONAL (Neil's idea-ladder ruling). One committed
+                // idea is a complete outcome for this step — the labels must not imply otherwise.
+                outlineRowHTML({ id: 'idea2', label: 'Idea 2 (optional)', prompt: 'A second idea, if you want one', type: 'checkbox' }, 'cw-step-2-idea2') +
+                outlineRowHTML({ id: 'idea3', label: 'Idea 3 (optional)', prompt: 'A third idea, if you want one', type: 'checkbox' }, 'cw-step-2-idea3')
             );
             return html;
         }
