@@ -228,6 +228,17 @@ protocol. Update this recipe with anything P1 taught that P2 didn't.
    (P1's planning lesson lives in topic 42364, titled "Diagnostic Assessment… Q5").
 6. **Negative test, cheap form**: python-swap one @FIELD_COMMIT fieldId in the real protocol
    → run ladder-check-harness → it must name exactly that orphan el → swap back, re-run green.
+7. **⭐ WIDEN EVERY DERIVED-UI PREDICATE — the sidebar model is part of the port (v7.20.256
+   lesson).** `_buildPlanningSidebarModel` + `_refreshPlanningSidebar`'s retry gate key on a
+   de-stitch predicate (`_planPreChainActive() || _poetryPlanActive() || …`). A port that
+   de-stitches a paper's chain but does not add its predicate leg ships the GENERIC essay
+   sidebar (the poetry miss: chain shipped .246–.255, predicate never widened — the model's
+   own comment said "ports widen the predicate" and nothing enforced it). Port checklist:
+   (a) add the paper's leg to BOTH gates; (b) add its code-owned pre-chain captures as Setup
+   rows (done-ness from the SAME history markers the interceptor keys on — one truth);
+   (c) confirm the paper's plan-fill marker is in the committed-map regex
+   (`@FIELD_(COMMIT|SET)`); (d) drive the lesson and SEE the granular rows before calling
+   the port done.
 
 ## What the LIT port taught (v7.20.229 — first MODULAR protocol + first single-essay paper; Eduqas/Edexcel lit ports follow THIS shape)
 

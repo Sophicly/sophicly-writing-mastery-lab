@@ -12544,7 +12544,9 @@
             // v7.20.51: de-stitched planning gets the granular canvas-derived model after
             // the doc settles — hide at first paint instead of flashing the generic
             // planning defaults (same no-flash rule as Language/Lit/server paths; Neil).
-            const _planExpected = _planPreChainActive();
+            // v7.20.257: + poetry (the generic→fade→granular flash Neil saw was this gate
+            // never widened when poetry de-stitched — same class as the model predicate).
+            const _planExpected = _planPreChainActive() || _poetryPlanActive();
             if (_langModel) {
                 _renderSidebarSteps(protoSteps, _langModel.steps, { alwaysGroup: true });
             } else if (_litModel) {
@@ -19677,6 +19679,11 @@
             const stepsUrl = `${config.restUrl}protocol-steps?board=${encodeURIComponent(state.board)}&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task)}`;
             fetch(stepsUrl, { headers }).then(r => r.json()).then(data => {
                 if (data.success && data.steps && data.steps.length > 0) {
+                    // v7.20.257: a de-stitched planning task's sidebar is CANVAS-DERIVED
+                    // (_buildPlanningSidebarModel) — this async server repaint landing after
+                    // the granular model applied would stomp it back to the manifest list
+                    // (the generic→granular→generic flash class). Skip entirely.
+                    if (_planPreChainActive() || _poetryPlanActive()) return;
                     const container = document.getElementById('swml-progress-steps');
                     if (!container) return;
                     container.innerHTML = '';
@@ -23333,15 +23340,16 @@
                                 _renderSidebarSteps(protoSteps, _langModel2.steps, { alwaysGroup: true });
                             } else if (_litModel2) {
                                 _renderSidebarSteps(protoSteps, _litModel2.steps, { alwaysGroup: true });
-                            } else if (_langExpected2 || _expectServerSidebar() || _litAssess2 || _planPreChainActive()) {
+                            } else if (_langExpected2 || _expectServerSidebar() || _litAssess2 || _planPreChainActive() || _poetryPlanActive()) {
                                 // v7.19.715: embedded pipeline parity — hide (don't flash the
                                 // generic flat-8) whenever a granular model is expected: Language,
                                 // server sidebar, OR a Literature assessment whose model is still
                                 // building. _refreshLangSidebar reveals+paints it once ready (12936).
+                                // v7.20.257: + poetry planning (no-flash gate, twin parity).
                                 protoSteps.style.display = 'none';
                                 // v7.20.52: planning — seed generic beneath the hidden panel
                                 // (twin of the primary paint site; never reveal an empty panel).
-                                if (_planPreChainActive() && typeof getSteps === 'function') {
+                                if ((_planPreChainActive() || _poetryPlanActive()) && typeof getSteps === 'function') {
                                     const _pgs = getSteps() || [];
                                     if (_pgs.length) _renderSidebarSteps(protoSteps, _pgs.map((s, i) => ({ step: i + 1, label: s.label, group: s.group, display: s.display })));
                                 }
@@ -23361,7 +23369,7 @@
                             protoBody.appendChild(protoSteps);
                             if (_langExpected2 || _litAssess2) setTimeout(_refreshLangSidebar, 0);
                             // v7.20.52: planning paint-site schedule (twin — see primary site).
-                            if (_planPreChainActive()) setTimeout(_refreshPlanningSidebar, 0);
+                            if (_planPreChainActive() || _poetryPlanActive()) setTimeout(_refreshPlanningSidebar, 0);
                         }
 
                         // Bottom buttons — matching original sidebar, with icon+text for collapsed mode
@@ -43590,7 +43598,30 @@
                 });
             }
         } catch (_) { committed = null; /* field fallback stands */ }
-        planSecs.forEach(sec => {
+        // v7.20.257 (Neil — granularity bar = the Lang models): poetry derives ONE ROW PER
+        // OUTLINE ELEMENT (the fields b5 files live via @FIELD_COMMIT — Topic / TEI / Close
+        // analysis / Effects / Purpose / Context), grouped by paragraph, in the WALK's
+        // bodies-first order (bodies → intro → conclusion, the 2026-07-20 ruling) so the
+        // "current" pointer tracks what the student is actually doing. Labels read from each
+        // row's own criterion label (derived, never hand-authored). Coarse plan-box rows are
+        // the same content at paragraph grain — element rows replace them, no duplicates.
+        // No-history done-ness stays FALSE (never falsely ticked; the retry ladder repaints
+        // once the accessor mounts). Docs without outline sections fall to the plan-row loop.
+        const _poetryOutSecs = _poetryPlanActive()
+            ? Array.from(host.querySelectorAll('[data-section-type="outline"]')) : [];
+        if (_poetryOutSecs.length) {
+            const rank = (lbl) => /body/i.test(lbl) ? 0 : /intro/i.test(lbl) ? 1 : 2;
+            _poetryOutSecs.sort((a, b) => rank(a.getAttribute('data-section-label') || '') - rank(b.getAttribute('data-section-label') || ''));
+            _poetryOutSecs.forEach(sec => {
+                const g = (sec.getAttribute('data-section-label') || '').replace(/^Outline:\s*/i, '').trim();
+                sec.querySelectorAll('[data-outline-row][data-field-id]').forEach(row => {
+                    const fid = row.getAttribute('data-field-id') || '';
+                    const lab = row.querySelector('.swml-outline-criterion-label');
+                    add((lab && lab.textContent.trim()) || fid.replace(/^outline-/, '').replace(/-/g, ' '),
+                        g, !!(committed && fid && committed[fid]));
+                });
+            });
+        } else planSecs.forEach(sec => {
             const raw = (sec.getAttribute('data-section-label') || '').replace(/^Plan:\s*/i, '');
             const m = /—\s*(Q\d+)\s*$/.exec(raw);
             const input = sec.querySelector('[data-field-id]');
@@ -43606,7 +43637,9 @@
                 const labelEcho = txt && norm('plan ' + raw).indexOf(norm(txt)) !== -1;
                 done = !!(txt && !labelEcho);
             }
-            add(raw.replace(/\s*—\s*Q\d+\s*$/, ''), m ? m[1] : '', done);
+            // v7.20.257 (Neil): a row outside a labelled group reads as unregistered —
+            // poetry's fallback plan rows group under the doc's own section name.
+            add(raw.replace(/\s*—\s*Q\d+\s*$/, ''), m ? m[1] : (_poetryPlanActive() ? 'Essay Plan' : ''), done);
         });
         add('Final Review', '', false);
         let current = steps.length;
