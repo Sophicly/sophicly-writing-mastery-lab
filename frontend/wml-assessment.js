@@ -1279,10 +1279,41 @@
     //     reply.derived:true  = code-composed recap (NOT in the md → harness skips)
     //     set:{ pmode }        = store the plan-mode pick (@PMODE marker + state)
     const SEQUENCES = {
-        // b4 "Why Form, Structure, and Language?" — source: b4-anchors.md:12-35.
+        // b2A Step 3 "Comparative Focus Confirmation" — source: b2-goals-keywords.md:32-37.
+        // (Step 2 framing stays API — it interpolates the student's keywords + rides the same
+        // keyword-confirm turn, so converting it would ADD a handoff for no round-trip saved.)
+        poetry_b2a_teach: {
+            resume: "Yes, that makes sense.",
+            chunks: [
+                {
+                    plain: "For poetry comparison, comparison must be **sustained throughout** — never Poem A paragraph then Poem B paragraph. Every body paragraph weaves BOTH poems together. Does this make sense?",
+                    options: [
+                        { label: 'Yes, I understand', advance: true },
+                        { label: 'Can you explain more?', advance: false, reply: { plain: "Instead of 'In Poem A the poet does X. In Poem B the poet does Y,' you write 'While Poet A employs X to achieve effect 1, Poet B's contrasting Y creates effect 2, revealing…' Every sentence is comparative — showing the examiner you can synthesise both poems, not describe each one separately." } },
+                    ],
+                },
+            ],
+        },
+        // b3 bodies-first note + the 6-quote overview + b4 "Why Form, Structure, and Language?"
+        // (CHUNK 1-4) — one code-served flow AFTER the feedback beat. Sources: b3-diagnostic.md:16/24
+        // + b4-anchors.md:5/12-35.
         poetry_b4_teach: {
             resume: "I'm ready to select my six anchor quotes.",
             chunks: [
+                { // b3 pedagogical note — why plan body paragraphs first (b3-diagnostic.md:16).
+                    plain: "A quick note on sequence: **we'll plan your three body paragraphs first, then your introduction, then your conclusion.** This seems backwards, but your comparative ideas *should* evolve as you plan. Plan the introduction first and you lock yourself into ideas before you've explored the comparison. Planning bodies first lets you discover your strongest comparative arguments, then craft an introduction that reflects your *developed* thinking — a cohesive whole, not an essay forced to match early guesses.",
+                    options: [
+                        { label: "I understand, let's continue", advance: true },
+                        { label: 'Can you explain more?', advance: false, reply: { plain: "When you plan body paragraphs, you engage deeply with your anchor quotes from BOTH poems, discover comparative connections, and sharpen your argument. Plan the introduction *after* and you introduce the comparative argument you actually developed — more precise thesis, more cohesive essay." } },
+                    ],
+                },
+                { // Transition + 6-quote overview (b3-diagnostic.md:24 + b4-anchors.md:5).
+                    plain: "2 Form quotes (1 per poem) → Body 1 · 2 Structure quotes → Body 2 · 2 Language quotes → Body 3.",
+                    text: "Now let's understand WHY we organise quotes by **Form, Structure, and Language** — then gather your **six anchor quotes** (two from each poem, one focus area each):",
+                    options: [
+                        { label: "Got it — why these three?", advance: true },
+                    ],
+                },
                 { // CHUNK 1 — Teaching mechanism.
                     plain: "Before we select your six anchor quotes, let's understand why we organise poetry comparison around **Form, Structure, and Language**. It's a teaching mechanism that makes you compare like with like — how each poet handles the SAME dimension of craft, not a metaphor in one poem against a rhyme scheme in the other.",
                     options: [
@@ -1380,6 +1411,13 @@
         try { const o = JSON.parse(m[1]); if (o && o.id && SEQUENCES[o.id]) return String(o.id); } catch (_) {}
         return '';
     }
+    // Loop guard: true once a sequence has completed (@SEQ_DONE in history). If the API misbehaves
+    // and re-emits its @PLAY_SEQ after the fact, the launch sites ignore it rather than replay.
+    function _seqAlreadyPlayed(seqId, history) {
+        return (history || []).some(function (m) {
+            return new RegExp('@SEQ_DONE\\{[^\\n]*"' + seqId + '"').test((m && m.content) || '');
+        });
+    }
     // Resume-safety: if a sequence was launched but never completed (page reload mid-teaching),
     // return { seq, i } for the furthest shown-but-unfinished beat so boot re-offers its chips.
     // Complete = a @SEQ_DONE marker for that seq exists after the last shown beat.
@@ -1404,8 +1442,13 @@
     function _playSequence(seqId, ctx, fromIndex, resumeChips) {
         const seq = SEQUENCES[seqId];
         if (!seq) { console.warn('WML seq: unknown sequence', seqId); return; }
-        // `plain` = byte-verbatim port (harness-checked); `text` = code-composed (recap/mode).
-        const bodyOf = function (o) { return o ? (o.plain || o.text || '') : ''; };
+        // `plain` = byte-verbatim port (harness-checked); `text` = code-composed (recap/mode/transition).
+        // When BOTH are present the code-composed `text` intro leads the verbatim `plain` line.
+        const bodyOf = function (o) {
+            if (!o) return '';
+            if (o.text && o.plain) return o.text + '\n' + o.plain;
+            return o.plain || o.text || '';
+        };
         const serve = function (plain) {
             ctx.addChatMessage(formatAI(plain), 'ai', plain, { suppressActions: true });
         };
@@ -1465,6 +1508,57 @@
             return;
         }
         renderChunk(fromIndex || 0);
+    }
+
+    // ── Piece 2 Batch 2 (v7.20.251): FEEDBACK ACKNOWLEDGMENT ──
+    // The b3 diagnostic feedback recap is API-generated (it READS the student's stored targets =
+    // judgment). But Neil's law: "if you give me feedback I should acknowledge I've read it —
+    // even 'I understand', maybe an option to add another goal — THEN move on." So the API ends
+    // the recap with @ACK_FEEDBACK; code renders the recap normally and appends the ack chips.
+    // True while a feedback recap is showing and the student has not yet acknowledged it.
+    function _poetryFeedbackAckPending(history) {
+        const h = history || [];
+        for (let i = h.length - 1; i >= 0; i--) {
+            if (h[i].role === 'user') return false;                        // already acked / moved on
+            if (h[i].role === 'assistant' && /@ACK_FEEDBACK/.test(h[i].content || '')) return true;
+        }
+        return false;
+    }
+    // Append the ack chips (understand / add-a-goal) to the last (feedback recap) bubble. On either,
+    // silent-resume so the API proceeds to the bodies-first teaching. "Add another goal" files an
+    // element_type='goal' (reusing the pgoal primitive) so it lands on the panel/sidebar.
+    function _appendFeedbackAck(ctx) {
+        const bubble = ctx.chatMessages.lastElementChild;
+        const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+        if (!bc || bc.querySelector('.swml-quick-actions')) return;
+        const bar = el('div', { className: 'swml-quick-actions' });
+        const done = function (line) {
+            bar.remove();
+            ctx.setSilent(true);
+            ctx.chatTextarea.value = line;
+            ctx.send();
+        };
+        bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'I understand', onClick: function () { done('Understood — thanks.'); } }));
+        bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Add another goal', onClick: function () {
+            const g = (window.prompt('What extra goal would you like to add for this essay?') || '').trim();
+            if (!g) return;
+            apiPost(API.planElement, { type: 'goal', content: g, step: state.step || 1 })
+                .catch(function (e) { console.warn('WML feedback-ack goal save failed:', e && e.message); });
+            ctx.history.push({ role: 'user', content: '@GOAL' + JSON.stringify({ level: '', skill: g, goal: g }), preChain: true, hidden: true });
+            saveCanvasChat(ctx.history, ctx.chatId);
+            done('I want to add a goal: ' + g + '. Understood — thanks.');
+        } }));
+        bc.appendChild(bar);
+    }
+    // Shared resume resolver for the poetry code-owned turns (chips are DOM-only, never saved).
+    // On reload / a stray typed turn: re-offer whichever code turn is live — a mid-play teaching
+    // sequence, or a pending feedback acknowledgment.
+    function _poetryResumeCodeTurn(ctx) {
+        if (!_poetryPlanActive()) return false;
+        const r = _poetrySeqResumeFor(ctx.history);
+        if (r) { _playSequence(r.seq, ctx, r.i, true); return true; }
+        if (_poetryFeedbackAckPending(ctx.history)) { _appendFeedbackAck(ctx); return true; }
+        return false;
     }
 
     // v7.20.56: ask-then-reveal, beat 2 (the REVEAL) — prepended to whatever chain
@@ -13613,14 +13707,11 @@
         // (never saved), so on reload mid-teaching the restore block re-offers the current
         // beat's chips against the replayed bubbles. No-ops off poetry / when no seq is live.
         window.__swmlPoetrySeqResume = function () {
-            if (!_poetryPlanActive()) return;
-            var r = _poetrySeqResumeFor(canvasChatHistory);
-            if (!r) return;
-            _playSequence(r.seq, {
+            _poetryResumeCodeTurn({
                 addChatMessage: addChatMessage, chatMessages: chatMessages,
                 history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
                 send: sendCanvasMessageQueued, setSilent: function (v) { canvasSilentSend = v; },
-            }, r.i, true);
+            });
         };
 
         // sendCanvasMessage — AI Engine chat
@@ -13698,14 +13789,14 @@
             // file predictions verbatim into the document, ask the next capture — no AI
             // round-trip. The boot's silent "Let's begin!" renders the S0 greeting card.
             if (_poetryPlanActive()) {
-                // Piece 2: a teaching sequence is mid-play — the beat advances by CHIP, not by
-                // typing. If the student types anyway, don't leak it to the API; re-offer the
-                // current beat's chips (guarded so a stray keystroke can't desync the flow).
-                if (!canvasSilentSend && _poetrySeqResumeFor(canvasChatHistory)) {
+                // Piece 2: a code-owned turn (teaching sequence or feedback acknowledgment) is
+                // live — it advances by CHIP, not by typing. If the student types anyway, don't
+                // leak it to the API; re-offer the chips (guarded so a stray keystroke can't desync).
+                if (!canvasSilentSend && (_poetrySeqResumeFor(canvasChatHistory) || _poetryFeedbackAckPending(canvasChatHistory))) {
                     chatTextarea.value = '';
                     chatTextarea.style.height = '40px';
                     if (window.__swmlPoetrySeqResume) window.__swmlPoetrySeqResume();
-                    console.log('WML poetry-seq: typed turn during teaching — re-offered chips (no AI turn)');
+                    console.log('WML poetry-seq: typed turn during a code turn — re-offered chips (no AI turn)');
                     return;
                 }
                 const _ppStage = _poetryPlanStageFor(canvasChatHistory);
@@ -14086,6 +14177,10 @@
                     // Piece 2 (v7.20.250): the API handed off to the code-owned teaching player
                     // (@PLAY_SEQ). Suppress the marker-only reply; play the ported chunks instead.
                     var _seqPlay = _poetryPlanActive() ? _detectPlaySeq(res.reply) : '';
+                    if (_seqPlay && _seqAlreadyPlayed(_seqPlay, canvasChatHistory)) {
+                        console.warn('WML poetry-seq: "' + _seqPlay + '" already completed — ignoring re-emit (loop guard)');
+                        _seqPlay = '';
+                    }
                     if (_seqPlay) {
                         canvasChatHistory.push({ role: 'assistant', content: res.reply, hidden: true });
                         _playSequence(_seqPlay, {
@@ -14097,6 +14192,15 @@
                     } else {
                         addChatMessage(formatted, 'ai', cleanReply);
                         canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
+                        // Piece 2 Batch 2: the API-generated feedback recap requires an explicit
+                        // acknowledgment (@ACK_FEEDBACK) — append the understand / add-a-goal chips.
+                        if (_poetryPlanActive() && /@ACK_FEEDBACK/.test(res.reply)) {
+                            _appendFeedbackAck({
+                                addChatMessage: addChatMessage, chatMessages: chatMessages,
+                                history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
+                                send: sendCanvasMessageQueued, setSilent: function (v) { canvasSilentSend = v; },
+                            });
+                        }
                     }
                     // v7.20.205 C-LADDER (pipeline 1): stamp the derived verdict on the pushed reply
                     // BEFORE saveCanvasChat so it persists. Parses @ELEMENT_JUDGE from the POST-audit
@@ -23802,14 +23906,11 @@
                         window.__swmlPlanChainResume = _resumePlanChainActions;
                         // Piece 2 (v7.20.250): poetry teaching-sequence resume hook (twin).
                         window.__swmlPoetrySeqResume = function () {
-                            if (!_poetryPlanActive()) return;
-                            var r = _poetrySeqResumeFor(canvasChatHistory);
-                            if (!r) return;
-                            _playSequence(r.seq, {
+                            _poetryResumeCodeTurn({
                                 addChatMessage: addChatMessage, chatMessages: chatMessages,
                                 history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
                                 send: sendCanvasMessage, setSilent: function (v) { canvasSilentSend = v; },
-                            }, r.i, true);
+                            });
                         };
 
                         async function sendCanvasMessage() {
@@ -23848,13 +23949,13 @@
                             // v7.20.49: PRE-PLANNING CHAIN gate (mirrors primary pipeline) —
                             // AQA Lang P2 planning monolith S0–S1 captures, code-owned.
                             if (_poetryPlanActive()) {
-                                // Piece 2: teaching sequence mid-play — advance by CHIP not typing.
-                                // A stray typed turn re-offers the current beat's chips (no AI leak).
-                                if (!canvasSilentSend && _poetrySeqResumeFor(canvasChatHistory)) {
+                                // Piece 2: a code-owned turn (teaching or feedback ack) is live —
+                                // advance by CHIP not typing. A stray typed turn re-offers chips (no leak).
+                                if (!canvasSilentSend && (_poetrySeqResumeFor(canvasChatHistory) || _poetryFeedbackAckPending(canvasChatHistory))) {
                                     chatTextarea.value = '';
                                     chatTextarea.style.height = '40px';
                                     if (window.__swmlPoetrySeqResume) window.__swmlPoetrySeqResume();
-                                    console.log('WML poetry-seq: typed turn during teaching — re-offered chips (no AI turn)');
+                                    console.log('WML poetry-seq: typed turn during a code turn — re-offered chips (no AI turn)');
                                     return;
                                 }
                                 const _ppStage = _poetryPlanStageFor(canvasChatHistory);
@@ -24113,6 +24214,10 @@
                                     // Piece 2 (v7.20.250): API handed off to the code-owned teaching
                                     // player (@PLAY_SEQ) — play ported chunks; suppress the marker reply.
                                     var _seqPlay = _poetryPlanActive() ? _detectPlaySeq(res.reply) : '';
+                                    if (_seqPlay && _seqAlreadyPlayed(_seqPlay, canvasChatHistory)) {
+                                        console.warn('WML poetry-seq: "' + _seqPlay + '" already completed — ignoring re-emit (loop guard)');
+                                        _seqPlay = '';
+                                    }
                                     if (_seqPlay) {
                                         canvasChatHistory.push({ role: 'assistant', content: res.reply, hidden: true });
                                         _playSequence(_seqPlay, {
@@ -24124,6 +24229,14 @@
                                     } else {
                                         addChatMessage(formatted, 'ai', cleanReply);
                                         canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
+                                        // Piece 2 Batch 2: feedback recap requires an ack (@ACK_FEEDBACK).
+                                        if (_poetryPlanActive() && /@ACK_FEEDBACK/.test(res.reply)) {
+                                            _appendFeedbackAck({
+                                                addChatMessage: addChatMessage, chatMessages: chatMessages,
+                                                history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
+                                                send: sendCanvasMessage, setSilent: function (v) { canvasSilentSend = v; },
+                                            });
+                                        }
                                     }
                                     // v7.20.205 C-LADDER (twin): stamp verdict on the pushed reply before save.
                                     if (_ladderTold && _ladderTold.el) {

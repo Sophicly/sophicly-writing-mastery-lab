@@ -25,10 +25,12 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const ASSESS = path.join(ROOT, 'frontend', 'wml-assessment.js');
-// sequence id → the protocol module it ports from.
+const PLAN = path.join(ROOT, 'protocols', 'aqa', 'poetry', 'planning');
+// sequence id → the protocol module(s) it ports from (a plain may come from ANY listed source).
 const SOURCE = {
-    poetry_b4_teach: path.join(ROOT, 'protocols', 'aqa', 'poetry', 'planning', 'b4-anchors.md'),
-    poetry_b5_teach: path.join(ROOT, 'protocols', 'aqa', 'poetry', 'planning', 'b5-bodies.md'),
+    poetry_b2a_teach: [path.join(PLAN, 'b2-goals-keywords.md')],
+    poetry_b4_teach: [path.join(PLAN, 'b3-diagnostic.md'), path.join(PLAN, 'b4-anchors.md')],
+    poetry_b5_teach: [path.join(PLAN, 'b5-bodies.md')],
 };
 
 function fail(msg) { console.error('  ✗ ' + msg); }
@@ -76,16 +78,17 @@ let checked = 0, misses = 0;
 Object.keys(SOURCE).forEach(id => {
     const block = blocks[id];
     if (!block) { fail(id + ': not found in SEQUENCES'); misses++; return; }
-    const src = fs.readFileSync(SOURCE[id], 'utf8');
+    const files = SOURCE[id];
+    const srcs = files.map(f => fs.readFileSync(f, 'utf8'));
     plains(block).forEach((p, idx) => {
         if (p == null) { fail(id + ' plain#' + idx + ': unparseable literal'); misses++; return; }
         p.split(/\n\n+/).forEach(seg => {
             const s = seg.trim();
             if (!s) return;
             checked++;
-            if (!src.includes(s)) {
+            if (!srcs.some(src => src.includes(s))) {
                 misses++;
-                fail(id + ': segment NOT verbatim in ' + path.basename(SOURCE[id]) + ':\n      «' + s.slice(0, 90).replace(/\n/g, '⏎') + (s.length > 90 ? '…' : '') + '»');
+                fail(id + ': segment NOT verbatim in ' + files.map(f => path.basename(f)).join('/') + ':\n      «' + s.slice(0, 90).replace(/\n/g, '⏎') + (s.length > 90 ? '…' : '') + '»');
             }
         });
     });

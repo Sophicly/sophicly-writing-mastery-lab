@@ -7,19 +7,17 @@
 
 ---
 
-### ⚙️ CODE-SERVED TEACHING — do NOT narrate the chunks below (v7.20.250)
+### ⚙️ CODE-SERVED TEACHING — already played at B.3; do NOT re-emit (v7.20.250 / .251)
 
-**The Form/Structure/Language teaching (CHUNK 1–4) is played by the CLIENT** — a code-owned
-scripted-sequence player with per-beat acknowledgment and built-in "explain more" expansions.
-At this point your ENTIRE output is one line:
+**The Form/Structure/Language teaching (CHUNK 1–4) was played by the CLIENT at B.3** — it is the
+tail of the `poetry_b4_teach` sequence (bodies-first note → six-quote overview → CHUNK 1–4), fired
+by the B.3 marker. By the time you read the student's *"I'm ready to select my six anchor quotes."*
+the teaching is DONE.
 
-> **Emit exactly `@PLAY_SEQ{"id":"poetry_b4_teach"}` and STOP.**
+> **Do NOT emit `@PLAY_SEQ` here, and do NOT narrate the chunks. Proceed DIRECTLY to FORM Quotes.**
 
-Do NOT write the chunk text, the F/S/L definitions, the A/B options, the Ozymandias
-illustration, or any teaching. The client plays all four chunks, then silently returns the
-student to you with *"I'm ready to select my six anchor quotes."* — at which point you RESUME
-at **FORM Quotes** (the Socratic form-identification below), never the teaching. The chunk text
-that follows is retained ONLY as the canonical source the player ports from — do not deliver it.
+Emitting the marker again would replay the whole teaching (loop). The chunk text that follows is
+retained ONLY as the canonical source the player ports from — do not deliver it.
 
 ### **[AI_INTERNAL — CODE-SERVED SOURCE, do NOT deliver] Why Form, Structure, and Language?**
 

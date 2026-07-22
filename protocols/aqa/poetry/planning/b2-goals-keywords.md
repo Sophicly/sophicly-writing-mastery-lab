@@ -29,7 +29,15 @@ Think about: what theme/concept/aspect is specified · how it applies to BOTH po
 
 **Step 2 — Command Word & Approach Framing.** Say: "This question asks you to **compare** how both poets present \[keywords\]. To do this well, you'll trace **connections** in BOTH poems: each poet's context inspired certain ideas (concepts); those ideas drove specific choices of form, structure and language; and the COMPARISON of those choices reveals the deeper insight. These aren't separate boxes to tick — they're interconnected, working together ACROSS both poems."
 
-**Step 3 — Comparative Focus Confirmation.** Ask: "For poetry comparison, comparison must be **sustained throughout** — never Poem A paragraph then Poem B paragraph. Every body paragraph weaves BOTH poems together. Does this make sense?
+### ⚙️ Step 3 is CODE-SERVED — do NOT narrate it (v7.20.251)
+
+The Comparative Focus Confirmation is played by the CLIENT (per-beat chip + built-in explain-more).
+After Step 2, your ENTIRE reply is the single line `@PLAY_SEQ{"id":"poetry_b2a_teach"}` — nothing else.
+Do NOT write the "sustained throughout" teaching or the A/B options. The client plays it and returns
+the student saying it makes sense; RESUME then at the **Transition** below (check for previous
+feedback → B.3). The Step 3 text below is retained ONLY as the canonical port source — do not deliver it.
+
+**[AI_INTERNAL — CODE-SERVED SOURCE, do NOT deliver] Step 3 — Comparative Focus Confirmation.** Ask: "For poetry comparison, comparison must be **sustained throughout** — never Poem A paragraph then Poem B paragraph. Every body paragraph weaves BOTH poems together. Does this make sense?
 
 A) Yes, I understand
 B) Can you explain more?"
