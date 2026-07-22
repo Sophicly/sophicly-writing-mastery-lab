@@ -4080,6 +4080,7 @@
             // all resolve to the same section.
             const normLabel = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
             let wrote = false;
+            let firstWrittenLabel = ''; // v7.20.258: seed-scroll target (Neil: every seed scrolls)
             blocks.forEach(blk => {
                 const wantKey = normLabel(blk.label);
                 let targetPos = null, targetNode = null;
@@ -4117,8 +4118,32 @@
                 canvasEditor.commands.insertContentAt({ from: from, to: to }, html);
                 console.log('WML SectionFill: wrote', blk.body.length, 'chars →', JSON.stringify(blk.label));
                 wrote = true;
+                if (!firstWrittenLabel) firstWrittenLabel = blk.label;
             });
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+            // v7.20.258 (Neil): EVERY seed scrolls the doc to its section — the @FIELD_SET
+            // path already does (fill-scroll law); this @SECTION_BEGIN path was the one fill
+            // class that never did (the Writer's Profile landed off-screen). Deferred so the
+            // PM write + NodeView remount settle first (mirrors _scrollDocToField). Guarded by
+            // the replay flag so a future load-time caller can never yank the doc on load.
+            if (wrote && firstWrittenLabel && !_suppressFillScroll) {
+                const wantKey = normLabel(firstWrittenLabel);
+                setTimeout(() => {
+                    try {
+                        const host = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+                        if (!host) return;
+                        // Loop-based label match (never CSS.escape — WML rule), punctuation-
+                        // insensitive (curly vs straight apostrophe in "Writer's Profile").
+                        const secs = host.querySelectorAll('.swml-section-block[data-section-label]');
+                        for (let i = 0; i < secs.length; i++) {
+                            if (normLabel(secs[i].getAttribute('data-section-label')) === wantKey) {
+                                _swmlScrollToTop(secs[i], 24);
+                                break;
+                            }
+                        }
+                    } catch (_) { /* never block the fill */ }
+                }, 350);
+            }
         } catch (e) {
             console.warn('WML SectionFill: error (non-fatal)', e && e.message);
         }

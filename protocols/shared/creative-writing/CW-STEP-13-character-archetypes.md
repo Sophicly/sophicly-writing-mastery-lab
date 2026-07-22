@@ -13,7 +13,7 @@
 
 Archetypes are universal character patterns recognised across all cultures. Your protagonist will shift between archetypes as they transform. This shift IS the visible evidence of their change.
 
-**The 9 Core Archetypes:**
+**The 10 Core Archetypes:**
 
 | Archetype | Traits | Effect on Reader |
 |-----------|--------|-----------------|
