@@ -233,12 +233,19 @@ protocol. Update this recipe with anything P1 taught that P2 didn't.
    de-stitch predicate (`_planPreChainActive() || _poetryPlanActive() || …`). A port that
    de-stitches a paper's chain but does not add its predicate leg ships the GENERIC essay
    sidebar (the poetry miss: chain shipped .246–.255, predicate never widened — the model's
-   own comment said "ports widen the predicate" and nothing enforced it). Port checklist:
-   (a) add the paper's leg to BOTH gates; (b) add its code-owned pre-chain captures as Setup
-   rows (done-ness from the SAME history markers the interceptor keys on — one truth);
-   (c) confirm the paper's plan-fill marker is in the committed-map regex
-   (`@FIELD_(COMMIT|SET)`); (d) drive the lesson and SEE the granular rows before calling
-   the port done.
+   own comment said "ports widen the predicate" and nothing enforced it). Port checklist —
+   the predicate has FIVE gate sites (all found the hard way, .256/.257):
+   (a) `_buildPlanningSidebarModel` + `_refreshPlanningSidebar`'s retry gate; (b) the
+   FIRST-PAINT no-flash hides at BOTH twins' paint sites (`_planExpected` in the training
+   shell + the embedded twin's hide/seed/kick trio) — miss these and the student sees the
+   generic list flash then fade to granular; (c) the `/protocol-steps` Site-3 async repaint
+   SKIP (it lands after the granular model applies and stomps it back to the manifest list);
+   (d) add the paper's code-owned pre-chain captures as Setup rows (done-ness from the SAME
+   history markers the interceptor keys on — one truth) and confirm its plan-fill marker is
+   in the committed-map regex (`@FIELD_(COMMIT|SET)`); (e) drive the lesson and SEE the
+   granular rows appear with NO generic flash before calling the port done. Granularity bar
+   = one row per live-filled doc FIELD (outline elements for essay papers), grouped per
+   paragraph/question, in the WALK's order (bodies-first where the pedagogy rules it).
 
 ## What the LIT port taught (v7.20.229 — first MODULAR protocol + first single-essay paper; Eduqas/Edexcel lit ports follow THIS shape)
 
