@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.254';
+var WML_BUILD = '7.20.255';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2888,6 +2888,10 @@ window.WML = (function() {
         // names FIRST so both the strip below and _detectPlaySeq see a canonical form (Fable, F4).
         text = text.replace(/(@[A-Z]{2,})\\_/g, '$1_');
         text = text.replace(/@PLAY_SEQ(?:\s*\{[^}]*\})?/gi, '').trim();
+        // v7.20.255: @COMPARISON_CONFIRMED — the poetry comparison-choice justify verdict. The
+        // model affirms the student's reasoning then emits this; code promotes the tentative pick
+        // to the committed choice. Stays in RAW history (code keys on it), never renders.
+        text = text.replace(/@COMPARISON_CONFIRMED(?:\s*\{[^}]*\})?/gi, '').trim();
         text = text.replace(/@ACK_FEEDBACK(?:\s*\{[^}]*\})?/gi, '').trim();
         text = text.replace(/@SEQ_ACK(?:\s*\{[^}]*\})?/gi, '').trim();
         text = text.replace(/@SEQ_DONE(?:\s*\{[^}]*\})?/gi, '').trim();

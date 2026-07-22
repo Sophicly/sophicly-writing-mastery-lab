@@ -1520,6 +1520,10 @@ class SWML_REST_API {
             // v7.20.250 Piece 2: the code-picked plan-mode (advanced|standard), chosen ONCE by the
             // client at b5 entry. The router tells the API to compile each body plan at this density.
             'poetry_plan_mode' => sanitize_key($params['poetryPlanMode'] ?? ($params['poetry_plan_mode'] ?? '')),
+            // v7.20.255 poetry PLANNING: comparison-choice JUSTIFY turn. 1 → the student has
+            // tentatively picked a comparison poem and their latest message is the reason WHY;
+            // the router replaces the normal grounding with a light-gate justify directive.
+            'poetry_justify' => absint($params['poetryJustify'] ?? ($params['poetry_justify'] ?? 0)),
             // v7.20.205 C-LADDER: the code-derived scaffolding-ladder state for THIS planning turn
             // (active element, rung to play, regime, wallet balance, the deterministic pre-verdict).
             // Frontend sends null off AQA Lang P2 planning → no ladder directive is built.

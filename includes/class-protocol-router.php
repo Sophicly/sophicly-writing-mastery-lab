@@ -1590,6 +1590,30 @@ class SWML_Protocol_Router {
         // ── Gate: the session already holds everything; never re-ask or demand a paste ──
         $b .= "The lesson is fully set up. NEVER ask the student to name, identify, type, or paste the focus poem, the comparison poem, or the question — all three are below. NEVER re-run any 'setup', 'readiness', or 'which poem' step. Quote ONLY from the two poem texts printed below — never from memory.\n\n";
 
+        // ── Comparison-choice JUSTIFY turn (v7.20.255) — before the plan is locked, the student
+        // has TENTATIVELY picked a comparison poem and their latest message is the reason WHY.
+        // Judge it with a light think-gate; on a genuine link, CONFIRM so the interface locks the
+        // choice and moves on. This is the ONLY thing to do this turn — return early. ──
+        if (!empty($context['poetry_justify']) && $comp_id !== '') {
+            $comp_label  = $comp_title !== '' ? $comp_title : $comp_id;
+            $focus_label = $focus_title !== '' ? $focus_title : 'the focus poem';
+            $b .= "**⚠️ COMPARISON-CHOICE CHECK — this is the ONLY thing to do this turn. Do NOT start planning, goal-setting, key-words, or quote selection; emit no other markers.**\n"
+                . "The student has TENTATIVELY chosen **{$comp_label}** to compare with **{$focus_label}** for the question below, and their LATEST message is their reason WHY. Judge it with a LIGHT touch — the goal is to make them THINK before committing, not to block them:\n"
+                . "- If they give ANY genuine connection (a shared theme, feeling, situation, or an interesting contrast — even briefly stated), AFFIRM it warmly in one or two sentences (build on their link; name the shared ground), then emit `@COMPARISON_CONFIRMED` on its OWN line as the LAST line. Ask nothing further.\n"
+                . "- ONLY if they clearly cannot connect the poems (no real link, or they say they don't know): do NOT emit the marker. In one short, encouraging paragraph, suggest the single STRONGEST pairing for {$focus_label} from the anthology and say why in a sentence, then invite them to reconsider or share their thinking. Never lecture.\n"
+                . "Keep it to one short paragraph. The two poem texts are below to inform your judgement.\n\n";
+            if (trim($question) !== '') {
+                $b .= "### The essay question\n{$question}\n\n";
+            }
+            if ($focus_title !== '' && trim($focus_text) !== '') {
+                $b .= "### Focus poem: {$focus_title}" . ($focus_poet !== '' ? " — {$focus_poet}" : '') . "\n```\n" . trim($focus_text) . "\n```\n\n";
+            }
+            if (trim($comp_text) !== '') {
+                $b .= "### Tentative comparison poem: {$comp_label}" . ($comp_poet !== '' ? " — {$comp_poet}" : '') . "\n```\n" . trim($comp_text) . "\n```\n\n";
+            }
+            return $b;
+        }
+
         if ($goal !== '') {
             // v7.20.248: the INTERFACE has already run B.2 Goal Setting AND asked the B.2A
             // key-words question via code-served picker turns. The student's key-words ANSWER

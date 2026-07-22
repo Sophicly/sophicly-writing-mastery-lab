@@ -1063,8 +1063,11 @@
         const hasAssistant = h.some(m => m.role === 'assistant');
         const askedGreeting = h.some(m => m.role === 'assistant'
             && /planning your comparison of/i.test(_planChainNorm(m.content || '')));
-        // 1. Greeting + comparison-poem pick.
+        // 1. Greeting + comparison-poem pick → justify (light think-gate) → commit.
         if (!_poetryComparisonId(h)) {
+            // Picked (tentative) but not yet committed: the student is justifying WHY. The intercept
+            // lets that typed turn flow to the API (justify-branch), which confirms → code commits.
+            if (_poetryTentativeComparison(h)) return 'pjustify';
             if (hasAssistant && !askedGreeting) return null; // pre-build / legacy chat — don't hijack
             return 'pgreet';
         }
@@ -1152,25 +1155,34 @@
         const rec = (POEM_PAIRINGS[focusId] || []).map(function (id) { return byId[id]; })
             .filter(Boolean).filter(function (p) { return p.id !== focusId; });
         const recSet = {}; rec.forEach(function (p) { recSet[p.id] = true; });
-        const bar = el('div', { className: 'swml-quick-actions' });
+        // Choice hint — this pick commits them to a long plan, so guide a strong thematic match.
+        bc.appendChild(el('p', { className: 'swml-cmp-choose-hint',
+            textContent: 'Pick the poem with the strongest link to your focus poem — a shared theme or a sharp contrast. You’ll commit to it for the whole plan, so choose well.' }));
+        const bar = el('div', { className: 'swml-quick-actions swml-cmp-chip-bar' });
         const pick = function (p) {
             bar.remove();
             state.comparisonPoem = p.id;
             state.comparisonPoemTitle = p.title;
             state.comparisonPoemText = cleanPoemField(p.poem_text || '');
             try { if (_revealComparisonPoemBtn) _revealComparisonPoemBtn(); } catch (_) {}
-            ctx.history.push({ role: 'user', content: '@COMPARISON_POEM' + JSON.stringify({ id: p.id, title: p.title }), preChain: true, hidden: true });
+            // TENTATIVE — not committed until the student justifies WHY (light think-gate). Code
+            // emits the committed @COMPARISON_POEM only after the API confirms the reasoning; the
+            // student's next (typed) turn is their justification and flows to the API.
+            ctx.history.push({ role: 'user', content: '@COMPARISON_TENTATIVE' + JSON.stringify({ id: p.id, title: p.title }), preChain: true, hidden: true });
             saveCanvasChat(ctx.history, ctx.chatId);
-            ctx.setSilent(true);
-            ctx.chatTextarea.value = 'I\'ll compare with ' + p.title + '.';
-            ctx.send();
+            _renderPoetryJustifyPrompt(p, ctx);
         };
         const addChip = function (p, star) {
-            bar.appendChild(el('button', {
-                className: 'swml-quick-btn',
-                textContent: (star ? '★ ' : '') + p.title + (p.poet ? ' — ' + p.poet : ''),
-                onClick: function () { pick(p); },
-            }));
+            const btn = el('button', { className: 'swml-quick-btn' + (star ? ' swml-cmp-rec-chip' : '') });
+            const desc = star ? (POEM_THEMES[p.id] || '') : '';
+            if (desc) {
+                btn.innerHTML = '<span class="swml-cmp-rec-title">★ ' + escapeHTML(p.title) + (p.poet ? ' — ' + escapeHTML(p.poet) : '') + '</span>'
+                    + '<span class="swml-cmp-rec-desc">' + escapeHTML(desc) + '</span>';
+            } else {
+                btn.textContent = (star ? '★ ' : '') + p.title + (p.poet ? ' — ' + p.poet : '');
+            }
+            btn.addEventListener('click', function () { pick(p); });
+            bar.appendChild(btn);
         };
         rec.forEach(function (p) { addChip(p, true); });
         const rest = others.filter(function (p) { return !recSet[p.id]; });
@@ -1199,17 +1211,93 @@
     // { id, title } ('' when none chosen yet). The button/panel live in renderCanvasWorkspace; the
     // reveal hook is set there and called by the comparison pick() below for the live-pick case.
     let _revealComparisonPoemBtn = null;
+    // Read the LAST marker of a given name ({id,title}) from history. Shared by the committed
+    // (@COMPARISON_POEM) and tentative (@COMPARISON_TENTATIVE) comparison resolvers.
+    function _lastPoemMarker(history, name) {
+        const h = history || [];
+        const re = new RegExp('@' + name + '(\\{[^\\n]*\\})');
+        for (let i = h.length - 1; i >= 0; i--) {
+            const m = re.exec((h[i] && h[i].content) || '');
+            if (m) { try { const o = JSON.parse(m[1]); if (o && o.id) return { id: String(o.id), title: o.title || '' }; } catch (_) {} }
+        }
+        return null;
+    }
+    // The TENTATIVE comparison pick (picked but not yet justified/committed). '' → none.
+    function _poetryTentativeComparison(history) { return _lastPoemMarker(history, 'COMPARISON_TENTATIVE'); }
+    // For the viewer button: the current comparison (committed first, else tentative, else live state).
     function _comparisonPoemPick() {
-        if (state.comparisonPoem) return { id: String(state.comparisonPoem), title: state.comparisonPoemTitle || '' };
         try {
             const h = (window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : []) || [];
-            for (let i = h.length - 1; i >= 0; i--) {
-                const c = (h[i] && h[i].content) || '';
-                const m = /@COMPARISON_POEM(\{[^\n]*\})/.exec(c);
-                if (m) { try { const o = JSON.parse(m[1]); if (o && o.id) return { id: String(o.id), title: o.title || '' }; } catch (_) {} }
-            }
+            const committed = _lastPoemMarker(h, 'COMPARISON_POEM');
+            if (committed) return committed;
+            const tentative = _poetryTentativeComparison(h);
+            if (tentative) return tentative;
         } catch (_) {}
+        if (state.comparisonPoem) return { id: String(state.comparisonPoem), title: state.comparisonPoemTitle || '' };
         return { id: '', title: '' };
+    }
+    // One-line theme descriptor per AQA Love & Relationships anthology poem (what it's about +
+    // its angle on love/relationships). Shown under each ★ recommended comparison chip so the
+    // student picks a strong thematic match. Keyed by the swml_poems / POEM_PAIRINGS ids.
+    // Authored from the real anthology (§5c — never invented); Neil sanity-checks in test.
+    const POEM_THEMES = {
+        when_we_two_parted:        'A secret love’s end, remembered years later in silence, grief and betrayal.',
+        loves_philosophy:          'A playful, persuasive argument that all nature pairs — so lovers should unite too.',
+        porphyrias_lover:          'A chilling monologue: a lover kills to freeze one perfect moment of possession.',
+        sonnet_29_i_think_of_thee: 'Longing so intense the speaker’s thoughts wind around the absent beloved like vines.',
+        neutral_tones:             'A dead relationship recalled through a bleak winter scene — love soured to numbness.',
+        letters_from_yorkshire:    'Love kept alive across distance, two lives connected by letters and small gestures.',
+        the_farmers_bride:         'A frightened young wife and her baffled husband — love as entrapment and distance.',
+        walking_away:              'A father’s ache as he watches his child grow independent and move away.',
+        eden_rock:                 'A grown child’s tender vision of dead parents — love reaching across death.',
+        follower:                  'A son who once followed his ploughman father, now leading as the father declines.',
+        mother_any_distance:       'A son feeling the pull between a mother’s hold and his need to break free.',
+        before_you_were_mine:      'A daughter imagining her mother’s vivid, carefree life before motherhood.',
+        winter_swans:              'A couple’s rift healing wordlessly as they watch swans — love repaired.',
+        singh_song:                'A newlywed shopkeeper besotted with his bride — love bright and comic amid duty.',
+        climbing_my_grandfather:   'A grandchild “climbing” a grandfather like a mountain — love, awe and closeness.',
+    };
+    // pjustify: after a TENTATIVE pick, code asks the student to justify WHY (light think-gate).
+    // Their typed answer flows to the API (justify-branch injection) which judges + confirms.
+    // Code-served, zero API. Carries the commit warning (choose carefully; restart is costly).
+    function _renderPoetryJustifyPrompt(p, ctx) {
+        _poetryPlanLessonData().then(function (info) {
+            const focus = escapeHTML(info.focusTitle || state.poemTitle || 'your focus poem');
+            const html = '<p>Good choice — <strong>' + escapeHTML(p.title) + '</strong>.</p>'
+                + '<p style="margin-top:8px">Before we lock it in: in a sentence, <strong>why this poem?</strong> '
+                + 'What connects it to <strong>' + focus + '</strong> for this question — a shared theme, feeling, or an interesting contrast?</p>'
+                + '<p style="margin-top:8px" class="swml-cmp-commit-note">Choose carefully. Once we start, planning is a long, focused process — if you later want a different poem, it’s best to finish here and begin a fresh attempt rather than restarting.</p>';
+            const plain = 'Before we lock it in: why this poem? What connects ' + p.title + ' to ' + (info.focusTitle || 'your focus poem') + ' — a shared theme or a contrast?';
+            ctx.addChatMessage(html, 'ai', plain, { suppressActions: true });
+            ctx.history.push({ role: 'assistant', content: plain });
+            saveCanvasChat(ctx.history, ctx.chatId);
+            const bubble = ctx.chatMessages.lastElementChild;
+            const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+            _appendComparisonRepickChip(bc, ctx); // escape hatch: pick a different poem before committing
+        });
+    }
+    // Append a "Choose a different poem" chip (the escape hatch during pjustify — before the choice is
+    // committed). Re-renders the comparison picker; the new pick pushes a fresh @COMPARISON_TENTATIVE
+    // marker which wins (last-marker-wins in _poetryTentativeComparison). Idempotent per bubble.
+    function _appendComparisonRepickChip(targetBc, ctx) {
+        if (!targetBc || targetBc.querySelector('.swml-cmp-repick')) return;
+        const bar = el('div', { className: 'swml-quick-actions swml-cmp-repick' });
+        bar.appendChild(el('button', {
+            className: 'swml-quick-btn', textContent: 'Choose a different poem',
+            onClick: function () {
+                bar.remove();
+                _poetryPlanLessonData().then(function (info) {
+                    ctx.addChatMessage('<p>No problem — choose the poem you’d like to compare with instead:</p>', 'ai',
+                        'Choose the poem you’d like to compare with instead:', { suppressActions: true });
+                    ctx.history.push({ role: 'assistant', content: 'Choose the poem you’d like to compare with instead:' });
+                    saveCanvasChat(ctx.history, ctx.chatId);
+                    const bubble = ctx.chatMessages.lastElementChild;
+                    const bc2 = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                    if (bc2) _appendPoetryComparisonChips(bc2, info, ctx);
+                });
+            }
+        }));
+        targetBc.appendChild(bar);
     }
     // ── pgoal: code-served goal setting (level + skill picks, zero API) ──
     function _renderPoetryGoal(ctx) {
@@ -1587,6 +1675,28 @@
     // feedback-ack (marker or recap-shape) → code-trigger b2a on the keyword-save turn.
     function _poetryPostReplyCodeTurn(reply, ctx) {
         const norm = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
+        // v7.20.255: comparison-choice justify verdict. The API affirms the student's reasoning then
+        // emits @COMPARISON_CONFIRMED; CODE owns the LOCK — promote the TENTATIVE pick to the committed
+        // @COMPARISON_POEM marker, then continue the code chain at the goal stage (pgoal). The affirming
+        // text already rendered as the reply bubble; this adds the goal question beneath it.
+        if (/@COMPARISON_CONFIRMED/.test(norm)) {
+            const t = _poetryTentativeComparison(ctx.history);
+            if (t && !_poetryComparisonId(ctx.history)) {
+                ctx.history.push({ role: 'user', content: '@COMPARISON_POEM' + JSON.stringify({ id: t.id, title: t.title }), preChain: true, hidden: true });
+                saveCanvasChat(ctx.history, ctx.chatId);
+                _renderPoetryPlanQuestion('pgoal', ctx);
+                return;
+            }
+        }
+        // Still tentative after a reply = the API COACHED the pick (no confirm). Offer the escape
+        // hatch so the student can switch poems (or re-type a stronger justification). This also
+        // recovers the rare forgotten-token case (model affirmed but didn't emit the marker).
+        if (_poetryTentativeComparison(ctx.history) && !_poetryComparisonId(ctx.history)) {
+            const _b = ctx.chatMessages && ctx.chatMessages.lastElementChild;
+            const _bc = _b ? (_b.querySelector('.swml-bubble-content') || _b) : null;
+            _appendComparisonRepickChip(_bc, ctx);
+            return;
+        }
         // Fail loud: a @PLAY_SEQ we can't resolve (typo'd id / broken JSON) must never vanish silently.
         if (_hasPlaySeqMarker(reply) && !_detectPlaySeq(reply)) {
             console.warn('WML poetry-seq: reply carries an UNPLAYABLE @PLAY_SEQ marker — check id/JSON:', norm.slice(0, 140));
@@ -13869,7 +13979,18 @@
                     return;
                 }
                 const _ppStage = _poetryPlanStageFor(canvasChatHistory);
-                if (_ppStage) {
+                // pjustify + a SILENT/boot send (resume "Let's begin!") must NOT leak to the API —
+                // the saved "why this poem?" prompt already stands; only the student's TYPED
+                // justification goes to the API. Swallow the boot send.
+                if (_ppStage === 'pjustify' && canvasSilentSend) {
+                    canvasSilentSend = false;
+                    chatTextarea.value = ''; chatTextarea.style.height = '40px';
+                    console.log('WML poetry-plan: pjustify resume — awaiting typed justification (no AI turn)');
+                    return;
+                }
+                // pjustify's typed turn IS the student's justification — it must reach the API
+                // (justify-branch judges → confirms → code commits). Every other stage is code-served.
+                if (_ppStage && _ppStage !== 'pjustify') {
                     const _pSilent = canvasSilentSend;
                     canvasSilentSend = false;
                     if (!_pSilent) addChatMessage(msg, 'user');
@@ -14199,7 +14320,10 @@
                         // v7.20.246 poetry PLANNING: the chosen comparison poem id (from the
                         // b1 chip pick, resume-safe via the @COMPARISON_POEM history marker).
                         // The router injects BOTH poems' text by id. '' off a poetry-plan doc.
-                        comparison_poem: _poetryComparisonId(canvasChatHistory) || (state.comparisonPoem || ''),
+                        comparison_poem: _poetryComparisonId(canvasChatHistory) || (_poetryTentativeComparison(canvasChatHistory) || {}).id || (state.comparisonPoem || ''),
+                        // v7.20.255: pjustify turn → the API judges the student's reason for the pick and
+                        // confirms (@COMPARISON_CONFIRMED) so code can commit the choice. 0 otherwise.
+                        poetry_justify: (_poetryPlanStageFor(canvasChatHistory) === 'pjustify') ? 1 : 0,
                         // v7.20.248: the code-served goal (level + skill). Present → router gates
                         // the API to SKIP B.2 goal-setup + the B.2A key-words opener (code owns
                         // them) and resume at keyword validation. '' off a poetry-plan doc.
@@ -24131,7 +24255,19 @@
                                     return;
                                 }
                                 const _ppStage = _poetryPlanStageFor(canvasChatHistory);
-                                if (_ppStage) {
+                                // pjustify + a SILENT/boot send (resume "Let's begin!") must NOT leak to
+                                // the API — the saved "why this poem?" prompt already stands; only the
+                                // student's TYPED justification goes to the API. Swallow the boot send.
+                                if (_ppStage === 'pjustify' && canvasSilentSend) {
+                                    canvasSilentSend = false;
+                                    chatTextarea.value = ''; chatTextarea.style.height = '40px';
+                                    console.log('WML poetry-plan: pjustify resume — awaiting typed justification (no AI turn)');
+                                    return;
+                                }
+                                // pjustify's typed turn IS the student's justification — it must reach
+                                // the API (justify-branch judges → confirms → code commits). Other
+                                // stages are code-served here.
+                                if (_ppStage && _ppStage !== 'pjustify') {
                                     const _pSilent = canvasSilentSend;
                                     canvasSilentSend = false;
                                     if (!_pSilent) addChatMessage(msg, 'user');
@@ -24358,7 +24494,9 @@
                                         // v7.20.246 poetry PLANNING: the chosen comparison poem id
                                         // (b1 chip pick, resume-safe via @COMPARISON_POEM marker).
                                         // Router injects BOTH poems' text by id. '' off poetry-plan.
-                                        comparison_poem: _poetryComparisonId(canvasChatHistory) || (state.comparisonPoem || ''),
+                                        comparison_poem: _poetryComparisonId(canvasChatHistory) || (_poetryTentativeComparison(canvasChatHistory) || {}).id || (state.comparisonPoem || ''),
+                                        // v7.20.255: pjustify → API judges the pick reason + confirms so code commits.
+                                        poetry_justify: (_poetryPlanStageFor(canvasChatHistory) === 'pjustify') ? 1 : 0,
                                         // v7.20.248: code-served goal (level + skill) → router
                                         // gates the API to skip B.2 + the B.2A key-words opener.
                                         poetry_goal: (_poetryGoalFromHistory(canvasChatHistory) || {}).goal || '',
