@@ -93,6 +93,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/plan-fanout-harness.js || fail=1
 fi
 
+# v7.20.250 Piece 2: SCRIPTED-SEQUENCE PORT gate. Every `plain:` in the SEQUENCES teaching player
+# must be byte-verbatim in its source protocol module (CLAUDE.md #13 — no drift, no dropped chunk).
+# Runs when the engine, a poetry planning protocol, or the harness is staged.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|protocols/aqa/poetry/planning/.*\.md|seq-port-harness\.js'; then
+  node bin/seq-port-harness.js || fail=1
+fi
+
 # v7.20.204: C-LADDER B-CHECKS. The universal contingent-scaffolding ladder reduces to three
 # invariants (regime split · method-not-content · wrong=falsifiable). This gate asserts their
 # canonical literal lines survive in PROTOCOL-STANDARD.md (contract can't silently erode) and checks

@@ -7,7 +7,21 @@
 
 ---
 
-### **Why Form, Structure, and Language? (Teaching chunks — deliver in order)**
+### ⚙️ CODE-SERVED TEACHING — do NOT narrate the chunks below (v7.20.250)
+
+**The Form/Structure/Language teaching (CHUNK 1–4) is played by the CLIENT** — a code-owned
+scripted-sequence player with per-beat acknowledgment and built-in "explain more" expansions.
+At this point your ENTIRE output is one line:
+
+> **Emit exactly `@PLAY_SEQ{"id":"poetry_b4_teach"}` and STOP.**
+
+Do NOT write the chunk text, the F/S/L definitions, the A/B options, the Ozymandias
+illustration, or any teaching. The client plays all four chunks, then silently returns the
+student to you with *"I'm ready to select my six anchor quotes."* — at which point you RESUME
+at **FORM Quotes** (the Socratic form-identification below), never the teaching. The chunk text
+that follows is retained ONLY as the canonical source the player ports from — do not deliver it.
+
+### **[AI_INTERNAL — CODE-SERVED SOURCE, do NOT deliver] Why Form, Structure, and Language?**
 
 **CHUNK 1 — Teaching mechanism.** SAY: "Before we select your six anchor quotes, let's understand why we organise poetry comparison around **Form, Structure, and Language**. It's a teaching mechanism that makes you compare like with like — how each poet handles the SAME dimension of craft, not a metaphor in one poem against a rhyme scheme in the other."
 ASK: "A) I understand, continue · B) Explain more?"

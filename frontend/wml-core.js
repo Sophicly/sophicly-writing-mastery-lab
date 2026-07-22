@@ -2873,6 +2873,13 @@ window.WML = (function() {
         // must still never reach the bubble (the parser stays strict; heal covers the parse side).
         text = text.replace(/@ELEMENT_JUDGE(?:\s*\{[^}]*\})?/gi, '').trim();
         text = text.replace(/@INSIGHT_SPENT(?:\s*\{[^}]*\})?/gi, '').trim();
+        // Piece 2 (v7.20.250): scripted-sequence player markers. @PLAY_SEQ = the API's hand-off
+        // to the code-owned teaching player; @SEQ_ACK/@SEQ_DONE/@PMODE = the player's own hidden
+        // audit/state markers. All stay in RAW history (code keys on them) but NEVER render.
+        text = text.replace(/@PLAY_SEQ(?:\s*\{[^}]*\})?/gi, '').trim();
+        text = text.replace(/@SEQ_ACK(?:\s*\{[^}]*\})?/gi, '').trim();
+        text = text.replace(/@SEQ_DONE(?:\s*\{[^}]*\})?/gi, '').trim();
+        text = text.replace(/@PMODE(?:\s*\{[^}]*\})?/gi, '').trim();
         // v7.19.839: collapse the blank-line stack the stripped marker lines leave behind —
         // the auto-file turn emits 12+ markers on their own lines, which stripped into a huge
         // empty gap in the bubble (Neil's screenshot).

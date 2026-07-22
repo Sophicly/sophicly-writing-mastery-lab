@@ -1496,6 +1496,7 @@ class SWML_Protocol_Router {
         $topic_number = absint($context['topic_number'] ?? 0);
         $comp_id = sanitize_key($context['comparison_poem'] ?? '');
         $goal    = sanitize_text_field($context['poetry_goal'] ?? '');
+        $mode    = sanitize_key($context['poetry_plan_mode'] ?? ''); // v7.20.250: advanced|standard
 
         $b = "\n\n## ⚠️ POETRY COMPARISON — SESSION DATA (read before anything else) ⚠️\n\n";
 
@@ -1601,6 +1602,18 @@ class SWML_Protocol_Router {
         } else {
             $b .= "Begin at **B.2 Goal Setting** (or wherever the conversation already is).\n\n";
         }
+
+        // v7.20.250 Piece 2 — CODE-SERVED TEACHING GATE. Two deterministic teaching stretches are
+        // played by the CLIENT (a scripted-sequence player), NOT narrated by you. This gate overrides
+        // the (still-expanded) chunk text in the b4/b5 protocol modules — mirror of the goal gate.
+        $b .= "**⚠️ TWO TEACHING STRETCHES ARE CLIENT-PLAYED — DO NOT NARRATE THEM.**\n"
+            . "- At **B.4**, the moment you reach the *Why Form, Structure, and Language?* teaching (CHUNK 1–4): your ENTIRE reply is the single line `@PLAY_SEQ{\"id\":\"poetry_b4_teach\"}` — nothing else. Do NOT write the F/S/L definitions, the A/B options, or the Ozymandias illustration. The client plays all four chunks and returns the student saying they are ready to select their six quotes; RESUME then at **B.4 FORM Quotes** (Socratic form identification).\n"
+            . "- At **B.5**, the moment you reach the *Why Comparative TTECEA+C?* rationale (CHUNK 1–4) AND the Advanced/Standard plan-mode question: your ENTIRE reply is the single line `@PLAY_SEQ{\"id\":\"poetry_b5_teach\"}` — nothing else. The client plays the rationale, asks the mode ONCE, and returns the student ready to plan Body 1; RESUME then at the **B.5 Element Sequence** (Body 1, element 1 Topic).\n"
+            . "- Never emit `@PLAY_SEQ` more than once per stretch, and never narrate a chunk you have already handed to the client.\n";
+        if ($mode === 'advanced' || $mode === 'standard') {
+            $b .= "- The student has ALREADY chosen their plan-mode: **{$mode}**. Do NOT ask the Advanced/Standard question again; compile each body plan at that density (advanced = keywords/key phrases; standard = fuller phrase chunks), using ONLY the student's own words.\n";
+        }
+        $b .= "\n";
 
         if (trim($question) !== '') {
             $b .= "### The essay question\n{$question}\n\n";

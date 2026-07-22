@@ -1517,6 +1517,9 @@ class SWML_REST_API {
             // router gates the API to SKIP B.2 goal-setup + the B.2A key-words opener (the
             // interface owns them) and resume at keyword validation.
             'poetry_goal' => sanitize_text_field($params['poetryGoal'] ?? ($params['poetry_goal'] ?? '')),
+            // v7.20.250 Piece 2: the code-picked plan-mode (advanced|standard), chosen ONCE by the
+            // client at b5 entry. The router tells the API to compile each body plan at this density.
+            'poetry_plan_mode' => sanitize_key($params['poetryPlanMode'] ?? ($params['poetry_plan_mode'] ?? '')),
             // v7.20.205 C-LADDER: the code-derived scaffolding-ladder state for THIS planning turn
             // (active element, rung to play, regime, wallet balance, the deterministic pre-verdict).
             // Frontend sends null off AQA Lang P2 planning → no ladder directive is built.
