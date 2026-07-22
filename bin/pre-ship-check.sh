@@ -93,6 +93,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/plan-fanout-harness.js || fail=1
 fi
 
+# v7.20.252 (Fable F1): the JS build-stamp (frontend/wml-core.js WML_BUILD, logged on load for
+# stale-client diagnosis) must equal the plugin version, or the console log lies about freshness.
+JS_BUILD=$(grep -oE "var WML_BUILD = '[^']+'" frontend/wml-core.js 2>/dev/null | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
+PHP_VER=$(grep -oE "SWML_VERSION', '[^']+'" sophicly-writing-mastery-lab.php 2>/dev/null | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
+if [ -n "$JS_BUILD" ] && [ -n "$PHP_VER" ] && [ "$JS_BUILD" != "$PHP_VER" ]; then
+  echo "❌ WML_BUILD ($JS_BUILD) != SWML_VERSION ($PHP_VER) — bump wml-core.js WML_BUILD to match."; fail=1
+fi
+
 # v7.20.250 Piece 2: SCRIPTED-SEQUENCE PORT gate. Every `plain:` in the SEQUENCES teaching player
 # must be byte-verbatim in its source protocol module (CLAUDE.md #13 — no drift, no dropped chunk).
 # Runs when the engine, a poetry planning protocol, or the harness is staged.

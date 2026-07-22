@@ -39,6 +39,24 @@
    pre-planning chain (code-owned turns, no AI round-trip). ~35% of a poetry planning session's API
    calls were deterministic before this rule. Watch-it: a turn is judgment the moment it READS the
    student (an A/B tap is deterministic; "explain in your own words" is not) — never strip those.
+5. **⭐ CODE-SERVED SOURCE TEXT MUST NEVER SIT IN A MANIFEST-LOADED MODULE (Neil, 2026-07-22 — the
+   retained-source law).** When a deterministic turn is converted from LLM-narrated to CODE-served
+   (a `@PLAY_SEQ` scripted-sequence beat, a chip menu, any canned text), its teaching/source text must
+   NOT remain inside a protocol module the manifest loads into the LLM context. **The manifest loads
+   WHOLE `.md` files** (`protocols/{board}/{subject}/manifest.json` → `load_modular_protocol`), so any
+   teaching text left in a loaded module is IN the model's context — and **the model narrates it
+   regardless of any "do NOT deliver" / "[AI_INTERNAL — CODE-SERVED SOURCE]" fence** (the protocol
+   loads LAST and dominates the prepended router gate — see PROTOCOL ROUTER PREAMBLE RULES §6). The
+   byte-diff-harness source lives in a **non-loaded sidecar** (leading `_`, absent from the manifest —
+   e.g. `protocols/aqa/poetry/planning/_seq-source.md`); the loaded module carries ONLY the marker
+   directive. Enforced mechanically: `bin/seq-port-harness.js`'s retained-source guard FAILS if any
+   `SEQUENCES` `plain` (≥40 chars) appears in a manifest-loaded module. **Why this is a law:** the
+   Piece-2 port (v7.20.250/.251) kept the chunk text in b2/b3/b4/b5 "so the harness could check it,"
+   and the model narrated the whole teaching in a live session — the gate lost to the in-file text
+   (v7.20.252 fix). The miss = not tracing whether the retained text lands in the LLM payload
+   (read-before-write on the *model-input* side, not just the code side). Before retaining ANY text
+   "for reference" in a protocol file, ask: does the manifest load this file into context? If yes, the
+   reference belongs in a sidecar.
 
 ---
 

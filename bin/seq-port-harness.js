@@ -26,11 +26,14 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const ASSESS = path.join(ROOT, 'frontend', 'wml-assessment.js');
 const PLAN = path.join(ROOT, 'protocols', 'aqa', 'poetry', 'planning');
-// sequence id → the protocol module(s) it ports from (a plain may come from ANY listed source).
+// The canonical port source is the NON-loaded sidecar (v7.20.252). It is deliberately absent
+// from manifest.json so the model never sees the teaching text (the retained-source defect).
+const SIDECAR = path.join(PLAN, '_seq-source.md');
+// sequence id → source file(s) the `plain` strings must appear in (verbatim substrings).
 const SOURCE = {
-    poetry_b2a_teach: [path.join(PLAN, 'b2-goals-keywords.md')],
-    poetry_b4_teach: [path.join(PLAN, 'b3-diagnostic.md'), path.join(PLAN, 'b4-anchors.md')],
-    poetry_b5_teach: [path.join(PLAN, 'b5-bodies.md')],
+    poetry_b2a_teach: [SIDECAR],
+    poetry_b4_teach: [SIDECAR],
+    poetry_b5_teach: [SIDECAR],
 };
 
 function fail(msg) { console.error('  ✗ ' + msg); }
@@ -74,6 +77,7 @@ function plains(block) {
 const js = fs.readFileSync(ASSESS, 'utf8');
 const blocks = sequenceBlocks(js);
 let checked = 0, misses = 0;
+const allSegs = []; // every plain segment — reused by the not-in-loaded-context guard below
 
 Object.keys(SOURCE).forEach(id => {
     const block = blocks[id];
@@ -86,6 +90,7 @@ Object.keys(SOURCE).forEach(id => {
             const s = seg.trim();
             if (!s) return;
             checked++;
+            allSegs.push(s);
             if (!srcs.some(src => src.includes(s))) {
                 misses++;
                 fail(id + ': segment NOT verbatim in ' + files.map(f => path.basename(f)).join('/') + ':\n      «' + s.slice(0, 90).replace(/\n/g, '⏎') + (s.length > 90 ? '…' : '') + '»');
@@ -94,8 +99,74 @@ Object.keys(SOURCE).forEach(id => {
     });
 });
 
+// ── RETAINED-SOURCE GUARD (v7.20.252 — the LAW made mechanical) ──
+// Code-served teaching text must NEVER sit in a MANIFEST-LOADED module, or the model narrates it
+// (regardless of "do NOT deliver"). Assert no SEQUENCES `plain` segment appears in any file the
+// poetry manifest loads. The sidecar (_seq-source.md) is intentionally NOT in the manifest.
+(function () {
+    const manifestPath = path.join(ROOT, 'protocols', 'aqa', 'poetry', 'manifest.json');
+    if (!fs.existsSync(manifestPath)) { console.log('seq-port-harness: (no poetry manifest — retained-source guard skipped)'); return; }
+    let man;
+    try { man = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); }
+    catch (e) { misses++; fail('manifest.json unparseable: ' + e.message); return; }
+    // Manifest is keyed by protocol GROUP (planning/assessment/polishing), each with `always` +
+    // `steps.*.files`; paths resolve under `base_path`. Collect every file any group loads.
+    const rel = new Set();
+    ['planning', 'assessment', 'polishing'].forEach(g => {
+        const grp = man[g];
+        if (!grp) return;
+        (grp.always || []).forEach(f => rel.add(f));
+        Object.values(grp.steps || {}).forEach(s => (s.files || []).forEach(f => rel.add(f)));
+    });
+    const base = path.join(ROOT, man.base_path || 'protocols/aqa/poetry');
+    let loadedFilesChecked = 0;
+    rel.forEach(r => {
+        const fp = path.join(base, r);
+        if (!fs.existsSync(fp)) return;
+        loadedFilesChecked++;
+        const body = fs.readFileSync(fp, 'utf8');
+        // Longest segments are the most diagnostic; a short shared phrase could false-positive,
+        // so only flag segments ≥ 40 chars (real teaching lines, not incidental words).
+        allSegs.filter(s => s.length >= 40).forEach(s => {
+            if (body.includes(s)) {
+                misses++;
+                fail('LOADED module ' + r + ' contains code-served teaching text (model would narrate it) — move it to _seq-source.md:\n      «' + s.slice(0, 90).replace(/\n/g, '⏎') + (s.length > 90 ? '…' : '') + '»');
+            }
+        });
+    });
+    if (!misses) console.log('seq-port-harness: retained-source guard ok — ' + loadedFilesChecked + ' manifest-loaded modules, none carry code-served teaching text.');
+})();
+
+// ── POEM_PAIRINGS closed-set invariant (Piece 1 comparison-chip recommendations) ──
+// Every recommendation id must be a known poem (a key of the map), each focus lists exactly 5,
+// and no focus recommends itself. A typo'd id here silently drops that chip — catch it here.
+(function () {
+    const start = js.indexOf('const POEM_PAIRINGS = {');
+    if (start === -1) return; // map absent → nothing to check
+    let i = js.indexOf('{', start), depth = 0, end = -1;
+    for (; i < js.length; i++) { const c = js[i]; if (c === '{') depth++; else if (c === '}') { depth--; if (depth === 0) { end = i; break; } } }
+    const body = js.slice(start, end + 1);
+    const rows = {};
+    const re = /(\w+):\s*\[([^\]]*)\]/g;
+    let m;
+    while ((m = re.exec(body)) !== null) {
+        rows[m[1]] = (m[2].match(/'([^']+)'/g) || []).map(s => s.replace(/'/g, ''));
+    }
+    const keys = Object.keys(rows);
+    const keySet = new Set(keys);
+    keys.forEach(focus => {
+        const list = rows[focus];
+        if (list.length !== 5) { misses++; fail('POEM_PAIRINGS[' + focus + ']: ' + list.length + ' recommendations (expected 5)'); }
+        list.forEach(id => {
+            if (!keySet.has(id)) { misses++; fail('POEM_PAIRINGS[' + focus + ']: unknown poem id "' + id + '" (not a focus key)'); }
+            if (id === focus) { misses++; fail('POEM_PAIRINGS[' + focus + ']: recommends itself'); }
+        });
+    });
+    if (!misses) console.log('seq-port-harness: POEM_PAIRINGS ok — ' + keys.length + ' focus poems, all recommendations valid + closed.');
+})();
+
 if (misses) {
-    console.error('\nseq-port-harness: FAIL — ' + misses + ' ported segment(s) drifted from source. Fix the SEQUENCES `plain` to match the .md byte-for-byte (or mark a deliberately code-composed line as `text:`).');
+    console.error('\nseq-port-harness: FAIL — ' + misses + ' issue(s). Fix the SEQUENCES `plain` to match the .md byte-for-byte (or mark a code-composed line as `text:`), and keep POEM_PAIRINGS a closed set of 5 valid ids.');
     process.exit(1);
 }
 console.log('seq-port-harness: PASS — ' + checked + ' ported segments verbatim against source modules.');

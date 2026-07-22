@@ -1603,15 +1603,16 @@ class SWML_Protocol_Router {
             $b .= "Begin at **B.2 Goal Setting** (or wherever the conversation already is).\n\n";
         }
 
-        // v7.20.250/.251 Piece 2 — CODE-SERVED TURN GATE. Deterministic teaching stretches + the
-        // feedback acknowledgment are handled by the CLIENT, NOT narrated by you. This gate overrides
-        // the (still-expanded) text in the b2A/b3/b4/b5 modules — mirror of the goal gate.
-        $b .= "**⚠️ SEVERAL TURNS ARE CLIENT-PLAYED — DO NOT NARRATE THEM.** Each is one marker line, nothing else:\n"
-            . "- **B.2A Step 3** (Comparative Focus Confirmation): after Step 2, your ENTIRE reply is `@PLAY_SEQ{\"id\":\"poetry_b2a_teach\"}`. The client plays it and returns the student; RESUME at the **B.2A Transition** (check for previous feedback → B.3).\n"
-            . "- **B.3 feedback recap**: if the student consents to a feedback scan, present the pinned targets and end that SAME message with `@ACK_FEEDBACK` on its own line, then STOP. The client shows an *I understand / Add another goal* chip; when the student acknowledges they return with \"Understood\" — RESUME at the B.3 Pedagogical Note (below).\n"
-            . "- **B.3 Pedagogical Note → B.4 teaching**: the moment you reach the *why plan bodies first* note, your ENTIRE reply is `@PLAY_SEQ{\"id\":\"poetry_b4_teach\"}`. This ONE sequence plays the note, the six-quote overview, AND the B.4 Form/Structure/Language chunks. The student returns ready to select six quotes; RESUME at **B.4 FORM Quotes** (Socratic form identification). **Do NOT emit `@PLAY_SEQ` again at B.4** — the teaching is already done (re-emitting would loop the whole stretch).\n"
-            . "- **B.5** (*Why Comparative TTECEA+C?* rationale + the Advanced/Standard plan-mode question): your ENTIRE reply is `@PLAY_SEQ{\"id\":\"poetry_b5_teach\"}`. The client plays the rationale, asks the mode ONCE, and returns the student ready to plan Body 1; RESUME at the **B.5 Element Sequence** (Body 1, element 1 Topic).\n"
-            . "- Never emit any `@PLAY_SEQ` more than once, and never narrate a chunk you have already handed to the client.\n";
+        // v7.20.252 Piece 2 — CODE-SERVED TURN GATE. Deterministic teaching + the feedback ack are
+        // handled by the CLIENT. The teaching SOURCE no longer lives in any loaded module (moved to a
+        // non-loaded sidecar), so there is nothing to "override" — this states what the client owns.
+        // The client CODE-TRIGGERS the b2A + B.3→B.4 teaching (no signal from you); only B.5 uses a marker.
+        $b .= "**⚠️ SEVERAL TURNS ARE CLIENT-PLAYED — DO NOT NARRATE THEM. Mostly you send NO signal:**\n"
+            . "- **B.2A Step 3** (Comparative Focus): the client plays it AUTOMATICALLY when you save the keywords (`@FIELD_SET{\"field\":\"kw-focus\"}`). After Step 2 framing, STOP — no marker, no teaching. RESUME after at the **B.2A Transition** (check for previous feedback → B.3).\n"
+            . "- **B.3 feedback recap**: present the pinned targets and end that SAME message with `@ACK_FEEDBACK` on its own line, then STOP. The client appends an *I understand / Add another goal* chip; the student's acknowledgment advances the flow.\n"
+            . "- **B.3 Pedagogical Note → B.4 teaching**: the client plays this WHOLE stretch (note → six-quote overview → Form/Structure/Language) AUTOMATICALLY when the student clicks *I understand* on the recap. Emit NO marker; narrate nothing. When the student returns ready to select six quotes, RESUME at **B.4 FORM Quotes** (Socratic form identification).\n"
+            . "- **B.5** (*Why Comparative TTECEA+C?* rationale + the Advanced/Standard plan-mode question) is the ONE place you SIGNAL: your ENTIRE reply is `@PLAY_SEQ{\"id\":\"poetry_b5_teach\"}`. The client plays the rationale, asks the mode ONCE, and returns the student ready to plan Body 1; RESUME at the **B.5 Element Sequence** (Body 1, element 1 Topic).\n"
+            . "- Never narrate a teaching chunk, and never emit `@PLAY_SEQ` more than once.\n";
         if ($mode === 'advanced' || $mode === 'standard') {
             $b .= "- The student has ALREADY chosen their plan-mode: **{$mode}**. Do NOT ask the Advanced/Standard question again; compile each body plan at that density (advanced = keywords/key phrases; standard = fuller phrase chunks), using ONLY the student's own words.\n";
         }

@@ -17,26 +17,15 @@ student acknowledges, they return with "Understood" and you RESUME at the Pedago
 
 ---
 
-### ⚙️ From here to the six-quote selection is CODE-SERVED (v7.20.251)
+### ⚙️ From here to the six-quote selection is CODE-SERVED — no marker from you (v7.20.252)
 
 The Pedagogical Note (why plan bodies first), the six-quote overview, and the B.4 Form/Structure/
-Language teaching are ALL played by the CLIENT as one scripted sequence. At this point your ENTIRE
-reply is the single line `@PLAY_SEQ{"id":"poetry_b4_teach"}` — nothing else. Do NOT narrate the note,
-the overview, or the F/S/L chunks. The client plays the whole stretch and returns the student saying
-they are ready to select their six anchor quotes; RESUME then at **B.4 FORM Quotes** (Socratic form
-identification). Emit this marker ONCE — never again for this stretch. The text below is retained ONLY
-as the canonical port source — do not deliver it.
-
-**[AI_INTERNAL — CODE-SERVED SOURCE, do NOT deliver] Pedagogical Note — Why We Plan Body Paragraphs First.**
-
-Say: "A quick note on sequence: **we'll plan your three body paragraphs first, then your introduction, then your conclusion.** This seems backwards, but your comparative ideas *should* evolve as you plan. Plan the introduction first and you lock yourself into ideas before you've explored the comparison. Planning bodies first lets you discover your strongest comparative arguments, then craft an introduction that reflects your *developed* thinking — a cohesive whole, not an essay forced to match early guesses."
-
-**Ask:** "Does this sequence make sense?
-A) I understand, let's continue
-B) Can you explain more?"
-
-**If B:** Say: "When you plan body paragraphs, you engage deeply with your anchor quotes from BOTH poems, discover comparative connections, and sharpen your argument. Plan the introduction *after* and you introduce the comparative argument you actually developed — more precise thesis, more cohesive essay." Then re-ask; if still genuinely stuck, the C-LADDER (b-ladder-poetry.md, Session Law 9) owns the escalation.
-
-**Transition:** "Now let's understand WHY we organise quotes by **Form, Structure, and Language** — then gather your **six anchor quotes** (two from each poem, one focus area each)."
+Language teaching are ALL played by the CLIENT as one scripted sequence, triggered AUTOMATICALLY when
+the student ACKNOWLEDGES their feedback (the "I understand" chip the client appends to your recap).
+You emit NO marker and narrate NONE of it. So once you have presented the feedback recap (ending with
+`@ACK_FEEDBACK` — see above; if the student consented to no scan, just say so briefly), STOP. The
+client plays the whole note → overview → F/S/L stretch and the student returns ready to select their
+six anchor quotes; RESUME then at **B.4 FORM Quotes** (Socratic form identification). The teaching text
+lives in the non-loaded `_seq-source.md` sidecar; you never receive it and cannot narrate it.
 
 **Proceed to B.4 Anchors**.

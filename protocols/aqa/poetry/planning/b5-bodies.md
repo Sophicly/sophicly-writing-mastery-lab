@@ -23,33 +23,9 @@ Do NOT write the chunk text, the TTECEA+C table, the Owen/Hughes example, or the
 Advanced/Standard mode question. The client plays the four rationale chunks, then asks the
 plan-mode choice ONCE (storing it), then silently returns the student with *"I'm ready to plan
 Body 1."* — at which point you RESUME at **The Comparative TTECEA+C Element Sequence** (Body 1,
-element 1 Topic), never the teaching. The chunk text below is retained ONLY as the canonical
-source the player ports from — do not deliver it.
-
-### **[AI_INTERNAL — CODE-SERVED SOURCE, do NOT deliver] Why Comparative TTECEA+C?**
-
-**CHUNK 1.** SAY: "You may have been taught PEE, PETL, PEAK at school. Useful starts, but **inherently limited** — they don't cover every mark-scheme criterion, and they don't build in COMPARISON. That's where Comparative TTECEA+C comes in."
-ASK: "A) Tell me more · B) Why are PEE/PETL limited for comparison?"
-**If B:** "They typically miss Close Analysis, Effects on readers, and Author's Purpose — 3–4 marks a paragraph. And they're built for single-text analysis: they never prompt you to weave comparison throughout. Comparative TTECEA+C fixes both." Then re-ask.
-
-**CHUNK 2.** SAY: "Comparative TTECEA+C targets EVERY assessable element while sustaining comparison:
-- **T**opic = comparative conceptual foundation (what BOTH poets explore, and how differently) — AO1
-- **T**echnique = the method carrying each poem's idea — AO2
-- **E**vidence = textual proof from BOTH poems — AO1
-- **C**lose analysis = micro-examination of a word/sound in EACH quote — AO2
-- **E**ffects = reader impact of EACH poem, compared — AO2
-- **A**uthor's purpose = why EACH poet chose this — AO1/AO2
-- **+C**ontext = the factor DRIVING each poet, compared — AO3
-Mark-scheme-complete AND comparison-integrated."
-ASK: "A) What's next? · B) That's a lot to remember."
-**If B:** "You won't memorise it — I walk you through each element one question at a time. By the end it feels natural." Then re-ask.
-
-**CHUNK 3.** SAY: "Crucially, context, concepts and methods aren't separate boxes — they're one system: **Context (AO3) → Concepts (AO1) → Methods (AO2)**. Each poet's context inspires their concepts, which drive their techniques. For comparison this means: **Different contexts → different concepts → different methods → different effects.**"
-ASK: "A) Show me an example · B) I'm confused about this connection."
-**If B:** "Poets don't pick techniques at random — they choose methods that best carry their concept, and their world shapes what they want to say. Two poets on the same theme write differently *because* their contexts and concepts differ." Then proceed to CHUNK 4.
-
-**CHUNK 4 — a real example on OTHER poems (never the student's two).** SAY: "Watch the shape once, somewhere else — two war poems, Owen's *Exposure* and Hughes's *Bayonet Charge*. Same subject, opposite craft: Owen's lyric form makes suffering feel collective; Hughes's fragmented narrative makes it feel like sudden, isolating chaos. Same theme, different form → different concept → different effect. That's the comparative move you'll make on your own two poems." *(Fuller worked models arrive from the ladder if you get stuck — always on other poems, never yours.)*
-ASK: "Ready to plan Body 1? A) Yes · B) Quick recap first." **If B:** one-line recap of TTECEA+C, then proceed.
+element 1 Topic), never the teaching. The rationale chunk text is NOT in this file — it lives in the
+non-loaded `_seq-source.md` sidecar (the player's canonical port source), so you never receive it and
+cannot narrate it.
 
 ---
 

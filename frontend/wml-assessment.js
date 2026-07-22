@@ -998,17 +998,17 @@
         climbing_my_grandfather:   ['follower', 'walking_away', 'before_you_were_mine', 'eden_rock', 'mother_any_distance'],
         follower:                  ['climbing_my_grandfather', 'walking_away', 'mother_any_distance', 'before_you_were_mine', 'eden_rock'],
         walking_away:              ['mother_any_distance', 'follower', 'eden_rock', 'climbing_my_grandfather', 'before_you_were_mine'],
-        before_you_were_mine:      ['follower', 'climbing_my_grandfather', 'walking_away', 'eden_rock', 'mother_any_distance'],
+        before_you_were_mine:      ['eden_rock', 'follower', 'mother_any_distance', 'walking_away', 'climbing_my_grandfather'],
         mother_any_distance:       ['walking_away', 'follower', 'before_you_were_mine', 'climbing_my_grandfather', 'eden_rock'],
-        eden_rock:                 ['walking_away', 'follower', 'climbing_my_grandfather', 'before_you_were_mine', 'neutral_tones'],
+        eden_rock:                 ['before_you_were_mine', 'walking_away', 'follower', 'climbing_my_grandfather', 'mother_any_distance'],
         neutral_tones:             ['when_we_two_parted', 'winter_swans', 'porphyrias_lover', 'the_farmers_bride', 'letters_from_yorkshire'],
         winter_swans:              ['loves_philosophy', 'neutral_tones', 'sonnet_29_i_think_of_thee', 'when_we_two_parted', 'letters_from_yorkshire'],
         when_we_two_parted:        ['neutral_tones', 'porphyrias_lover', 'the_farmers_bride', 'winter_swans', 'loves_philosophy'],
         loves_philosophy:          ['sonnet_29_i_think_of_thee', 'winter_swans', 'singh_song', 'porphyrias_lover', 'when_we_two_parted'],
-        sonnet_29_i_think_of_thee: ['loves_philosophy', 'winter_swans', 'letters_from_yorkshire', 'singh_song', 'before_you_were_mine'],
-        singh_song:                ['loves_philosophy', 'sonnet_29_i_think_of_thee', 'winter_swans', 'letters_from_yorkshire', 'before_you_were_mine'],
-        letters_from_yorkshire:    ['winter_swans', 'sonnet_29_i_think_of_thee', 'walking_away', 'neutral_tones', 'mother_any_distance'],
-        the_farmers_bride:         ['porphyrias_lover', 'when_we_two_parted', 'neutral_tones', 'loves_philosophy', 'winter_swans'],
+        sonnet_29_i_think_of_thee: ['loves_philosophy', 'winter_swans', 'letters_from_yorkshire', 'singh_song', 'the_farmers_bride'],
+        singh_song:                ['loves_philosophy', 'sonnet_29_i_think_of_thee', 'the_farmers_bride', 'winter_swans', 'letters_from_yorkshire'],
+        letters_from_yorkshire:    ['sonnet_29_i_think_of_thee', 'mother_any_distance', 'winter_swans', 'walking_away', 'neutral_tones'],
+        the_farmers_bride:         ['porphyrias_lover', 'singh_song', 'neutral_tones', 'when_we_two_parted', 'loves_philosophy'],
         porphyrias_lover:          ['the_farmers_bride', 'when_we_two_parted', 'neutral_tones', 'loves_philosophy', 'singh_song'],
     };
     // The student's chosen comparison poem id, recovered from the hidden @COMPARISON_POEM
@@ -1405,11 +1405,20 @@
     }
     // Detect the API's hand-off marker in a reply: @PLAY_SEQ{"id":"poetry_b4_teach"}.
     // Returns the sequence id (if known) or ''.
+    // v7.20.252 (Fable F4): tolerant + byte-paired with the wml-core strip. Un-escape markdown
+    // underscores (`@PLAY\_SEQ`) and allow whitespace before the JSON so detection and strip can
+    // never diverge (a marker the strip removes but detect misses = silent skip / raw leak).
     function _detectPlaySeq(reply) {
-        const m = /@PLAY_SEQ(\{[^\n}]*\})/.exec(String(reply || ''));
+        const s = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
+        const m = /@PLAY_SEQ\s*(\{[^\n}]*\})/.exec(s);
         if (!m) return '';
         try { const o = JSON.parse(m[1]); if (o && o.id && SEQUENCES[o.id]) return String(o.id); } catch (_) {}
         return '';
+    }
+    // True when a reply CARRIES a @PLAY_SEQ marker (tolerant) — used to fail loud when one is
+    // present but _detectPlaySeq can't resolve it to a playable sequence (typo'd id / bad JSON).
+    function _hasPlaySeqMarker(reply) {
+        return /@PLAY_SEQ/.test(String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_'));
     }
     // Loop guard: true once a sequence has completed (@SEQ_DONE in history). If the API misbehaves
     // and re-emits its @PLAY_SEQ after the fact, the launch sites ignore it rather than replay.
@@ -1532,13 +1541,15 @@
         const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
         if (!bc || bc.querySelector('.swml-quick-actions')) return;
         const bar = el('div', { className: 'swml-quick-actions' });
-        const done = function (line) {
+        // v7.20.252 (Fable F3): the ack click IS the transition to the bodies-first teaching —
+        // CODE-play poetry_b4_teach directly rather than sending a line and hoping the model emits
+        // the marker. The player's own resume then hands back to the API at B.4 FORM Quotes.
+        const ackAndPlay = function () {
             bar.remove();
-            ctx.setSilent(true);
-            ctx.chatTextarea.value = line;
-            ctx.send();
+            if (_seqAlreadyPlayed('poetry_b4_teach', ctx.history)) { ctx.setSilent(true); ctx.chatTextarea.value = 'Understood — thanks.'; ctx.send(); return; }
+            _playSequence('poetry_b4_teach', ctx);
         };
-        bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'I understand', onClick: function () { done('Understood — thanks.'); } }));
+        bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'I understand', onClick: ackAndPlay }));
         bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Add another goal', onClick: function () {
             const g = (window.prompt('What extra goal would you like to add for this essay?') || '').trim();
             if (!g) return;
@@ -1546,9 +1557,36 @@
                 .catch(function (e) { console.warn('WML feedback-ack goal save failed:', e && e.message); });
             ctx.history.push({ role: 'user', content: '@GOAL' + JSON.stringify({ level: '', skill: g, goal: g }), preChain: true, hidden: true });
             saveCanvasChat(ctx.history, ctx.chatId);
-            done('I want to add a goal: ' + g + '. Understood — thanks.');
+            ackAndPlay();
         } }));
         bc.appendChild(bar);
+    }
+    // v7.20.252 (Fable F3/F4/F5): after EVERY poetry-plan API reply, decide if a code-owned turn
+    // takes over — WITHOUT depending on the model emitting a marker for the code-detectable
+    // transitions. Shared by both response twins. Order: fail-loud on an unplayable marker →
+    // feedback-ack (marker or recap-shape) → code-trigger b2a on the keyword-save turn.
+    function _poetryPostReplyCodeTurn(reply, ctx) {
+        const norm = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
+        // Fail loud: a @PLAY_SEQ we can't resolve (typo'd id / broken JSON) must never vanish silently.
+        if (_hasPlaySeqMarker(reply) && !_detectPlaySeq(reply)) {
+            console.warn('WML poetry-seq: reply carries an UNPLAYABLE @PLAY_SEQ marker — check id/JSON:', norm.slice(0, 140));
+        }
+        // Feedback recap → ack chips. Primary = the @ACK_FEEDBACK marker; fallback = the recap SHAPE
+        // (targets recap) even if the model forgot the marker, but only in the feedback window
+        // (after b2a, before b4) so it can't fire on an unrelated reply. The ack click code-plays b4.
+        const ackMarker = /@ACK_FEEDBACK/.test(norm);
+        // Match the TARGETS-LISTING recap only — NOT the "let's check for previous feedback" lead-in
+        // (that lead-in precedes the recap and would false-trigger the chips a turn early).
+        const recapShape = _seqAlreadyPlayed('poetry_b2a_teach', ctx.history)
+            && !_seqAlreadyPlayed('poetry_b4_teach', ctx.history)
+            && /recurring targets?|pinned targets?|priority target|Targets\s*\(\d\s*\/\s*\d\)/i.test(reply);
+        if (ackMarker || recapShape) { _appendFeedbackAck(ctx); return; }
+        // Code-trigger b2a (Step 3 comparative-focus): the keyword @FIELD_SET save turn IS the
+        // transition — play it directly instead of asking the model to emit @PLAY_SEQ.
+        if (!_seqAlreadyPlayed('poetry_b2a_teach', ctx.history)
+            && /@FIELD_SET\s*\{[^}]*"field"\s*:\s*"kw-focus"/.test(norm)) {
+            _playSequence('poetry_b2a_teach', ctx);
+        }
     }
     // Shared resume resolver for the poetry code-owned turns (chips are DOM-only, never saved).
     // On reload / a stray typed turn: re-offer whichever code turn is live — a mid-play teaching
@@ -14190,17 +14228,14 @@
                         });
                         console.log('WML poetry-seq: playing "' + _seqPlay + '" (code-served, no AI turn)');
                     } else {
-                        addChatMessage(formatted, 'ai', cleanReply);
+                        // v7.20.252 (Fable F4): a marker-only reply strips to empty — never a blank bubble.
+                        if (cleanReply && cleanReply.trim()) addChatMessage(formatted, 'ai', cleanReply);
                         canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
-                        // Piece 2 Batch 2: the API-generated feedback recap requires an explicit
-                        // acknowledgment (@ACK_FEEDBACK) — append the understand / add-a-goal chips.
-                        if (_poetryPlanActive() && /@ACK_FEEDBACK/.test(res.reply)) {
-                            _appendFeedbackAck({
-                                addChatMessage: addChatMessage, chatMessages: chatMessages,
-                                history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
-                                send: sendCanvasMessageQueued, setSilent: function (v) { canvasSilentSend = v; },
-                            });
-                        }
+                        if (_poetryPlanActive()) _poetryPostReplyCodeTurn(res.reply, {
+                            addChatMessage: addChatMessage, chatMessages: chatMessages,
+                            history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
+                            send: sendCanvasMessageQueued, setSilent: function (v) { canvasSilentSend = v; },
+                        });
                     }
                     // v7.20.205 C-LADDER (pipeline 1): stamp the derived verdict on the pushed reply
                     // BEFORE saveCanvasChat so it persists. Parses @ELEMENT_JUDGE from the POST-audit
@@ -24227,16 +24262,14 @@
                                         });
                                         console.log('WML poetry-seq: playing "' + _seqPlay + '" (code-served, no AI turn)');
                                     } else {
-                                        addChatMessage(formatted, 'ai', cleanReply);
+                                        // v7.20.252 (Fable F4): marker-only reply strips to empty — never a blank bubble.
+                                        if (cleanReply && cleanReply.trim()) addChatMessage(formatted, 'ai', cleanReply);
                                         canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
-                                        // Piece 2 Batch 2: feedback recap requires an ack (@ACK_FEEDBACK).
-                                        if (_poetryPlanActive() && /@ACK_FEEDBACK/.test(res.reply)) {
-                                            _appendFeedbackAck({
-                                                addChatMessage: addChatMessage, chatMessages: chatMessages,
-                                                history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
-                                                send: sendCanvasMessage, setSilent: function (v) { canvasSilentSend = v; },
-                                            });
-                                        }
+                                        if (_poetryPlanActive()) _poetryPostReplyCodeTurn(res.reply, {
+                                            addChatMessage: addChatMessage, chatMessages: chatMessages,
+                                            history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
+                                            send: sendCanvasMessage, setSilent: function (v) { canvasSilentSend = v; },
+                                        });
                                     }
                                     // v7.20.205 C-LADDER (twin): stamp verdict on the pushed reply before save.
                                     if (_ladderTold && _ladderTold.el) {

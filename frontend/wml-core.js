@@ -7,6 +7,13 @@
  * consume from this namespace.
  */
 
+// v7.20.252 (Fable F1): the BUILD version baked into this FILE (not the page HTML). Logged on load
+// so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
+// OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
+// Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
+var WML_BUILD = '7.20.252';
+try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
+
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
 // The Sophicly Toasts plugin shows a "Document Shared" toast to tutors that
 // links here with ?review=1&share_id=N. Firing this flips the row's status
@@ -2876,6 +2883,10 @@ window.WML = (function() {
         // Piece 2 (v7.20.250): scripted-sequence player markers. @PLAY_SEQ = the API's hand-off
         // to the code-owned teaching player; @SEQ_ACK/@SEQ_DONE/@PMODE = the player's own hidden
         // audit/state markers. All stay in RAW history (code keys on them) but NEVER render.
+        // v7.20.252: markdown-escaped underscores (`@PLAY\_SEQ`) leak past the strip AND the client
+        // detector — the model emits them because formatAI/markdown escapes `_`. Un-escape marker
+        // names FIRST so both the strip below and _detectPlaySeq see a canonical form (Fable, F4).
+        text = text.replace(/(@[A-Z]{2,})\\_/g, '$1_');
         text = text.replace(/@PLAY_SEQ(?:\s*\{[^}]*\})?/gi, '').trim();
         text = text.replace(/@ACK_FEEDBACK(?:\s*\{[^}]*\})?/gi, '').trim();
         text = text.replace(/@SEQ_ACK(?:\s*\{[^}]*\})?/gi, '').trim();
