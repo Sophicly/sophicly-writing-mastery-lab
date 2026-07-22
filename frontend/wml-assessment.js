@@ -3394,6 +3394,17 @@
                 host.querySelectorAll('[data-field-id]').forEach(n => { if (!f && n.getAttribute('data-field-id') === fid) f = n; });
                 const sec = f && (f.closest('.swml-section-block') || f);
                 if (!sec) return;
+                // v7.20.260 (Neil — CW Step 1 q6/q8/q9 "autofilled but didn't scroll"): scroll to
+                // the FIELD when its section holds more than one. A section-level scroll only
+                // MOVES for the first field in a group; every later fill re-scrolls the same
+                // section to the same place, so the just-filled field stays below the fold and
+                // reads as "no scroll". Bites every multi-field section: CW Step 1 (3-4 questions
+                // per well), outline sections in the outlining lesson (6-7 element rows each),
+                // multi-field CN/notes. Single-field sections (plan boxes, predictions) keep
+                // section-scroll — unchanged, and why this hid so long. Same granularity
+                // applyAssessmentFeedback already uses (it scrolls to the box's own h3 region).
+                const _multiField = sec.querySelectorAll('[data-field-id]').length > 1;
+                const target = _multiField ? (f.closest('[data-outline-row]') || f) : sec;
                 // v7.20.222 (Neil): scroll only to VISIBLE targets. In the planning lesson the
                 // OUTLINE sections are hidden (they surface in the outlining lesson), so every
                 // element's @FIELD_COMMIT fill scrolled toward a display:none box — a 0×0 rect
@@ -3401,12 +3412,12 @@
                 // Capability check, not a task gate: any hidden fill target stays scroll-silent
                 // (the write itself always lands); visible targets (plan box at approval, action
                 // plan, CW rows) keep the v7.20.52 behaviour.
-                const _r = sec.getBoundingClientRect();
-                if (sec.offsetParent === null || (_r.width === 0 && _r.height === 0)) {
+                const _r = target.getBoundingClientRect();
+                if (target.offsetParent === null || (_r.width === 0 && _r.height === 0)) {
                     console.log('WML FillScroll: target', fid, 'is hidden in this lesson — fill landed, scroll skipped');
                     return;
                 }
-                _swmlScrollToTop(sec);
+                _swmlScrollToTop(target, _multiField ? 24 : undefined);
             } catch (_) { /* non-fatal */ }
         }, 400);
     }
@@ -9899,7 +9910,12 @@
                 const host = canvasEditor && canvasEditor.options && canvasEditor.options.element;
                 const fld = host && host.querySelector('[data-input-field][data-field-id="' + fieldId + '"]');
                 const sec = fld && fld.closest('.swml-section-block');
-                if (sec) _swmlScrollToTop(sec, 24);
+                // v7.20.260: field-granular when the section holds more than one field —
+                // parity with _scrollToFilledField (a section scroll doesn't MOVE for the
+                // 2nd+ field in a group, leaving the just-filled row below the fold).
+                if (!sec) return;
+                const multi = sec.querySelectorAll('[data-field-id]').length > 1;
+                _swmlScrollToTop(multi ? fld : sec, 24);
             } catch (_) { /* never block the fill */ }
         }, 350);
     }
