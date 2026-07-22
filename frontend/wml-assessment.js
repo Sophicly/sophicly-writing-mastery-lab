@@ -14095,6 +14095,11 @@
                 await _cwLoglineCtl.handleTurn(msg);
                 return;
             }
+            // v7.20.264: CW Step 4 (Story Spine) — chip menus + student-written beats.
+            if (state.task === 'cw_step_4' && _cwSpineCtl.active) {
+                await _cwSpineCtl.handleTurn(msg);
+                return;
+            }
 
             // v7.19.809: PRE-ASSESSMENT CHAIN gate — while the setup chain is
             // incomplete, code owns the turn: record the student's reply, ask the
@@ -16957,9 +16962,252 @@
             };
         })();
 
+        // ═══════════════════════════════════════════════════════════════════════════════════
+        // CW STEP 4 — STORY SPINE (code-owned walk, v7.20.264)
+        // ───────────────────────────────────────────────────────────────────────────────────
+        // Six Pixar-spine beats. The heaviest programmatic win in the arc: SIX of its turns are
+        // pure menus (unmet need · incident type · goal type · obstacle type · stakes ·
+        // throughline). The old protocol even says "present as quick-action button options" and
+        // then paid API rates to render them. They are chips now — a tap, not a generation.
+        //
+        // OWNERSHIP FIX (as Step 3): the beats were composed by Sophia and @FIELD_SET in. The
+        // STUDENT writes each beat now; it goes in verbatim. The present-tense / no-lead-in shape
+        // is stated in the ASK rather than repaired afterwards, and the student tidies their own
+        // spelling in the row.
+        //
+        // PASTE-WALL FIX (WML CLAUDE.md #3): Step 4 used to re-ask flaw, inciting incident, goal,
+        // obstacle and stakes — all five already answered in Step 3 and sitting in the student's
+        // document. Code now ECHOES the Step-3 answer and asks them to DEVELOP it into a beat.
+        //
+        // API RETAINED (Neil confirmed — do not strip): the per-beat verdict, the two IRONY
+        // follow-ups (beats 3 and 6), and the STEP-8 COHERENCE CHECK, which reads all six beats
+        // together and finds the causal gap. That check is the entire point of a *spine* rather
+        // than six boxes and is the highest-value call in the whole CW arc.
+        const _cwSpineCtl = (function () {
+            const NEEDS = ['Safety', 'Love & Belonging', 'Esteem', 'Control over my life', 'Purpose', 'Reaching my potential'];
+            const INCIDENTS = ['An Arrival', 'A Proposition', 'A Twist of Fate'];
+            const GOALS = ['Win', 'Stop', 'Retrieve', 'Escape', 'Revenge', 'Deliver', 'Maintain'];
+            const OBSTACLES = ['A single person', 'A group or society', 'A force of nature'];
+            const STAKES = ['Personal stakes', 'Public stakes'];
+            const THROUGHLINES = ['The protagonist succeeds', 'The protagonist is defeated', 'The protagonist abandons the goal'];
+
+            // echo = the Step-3 row whose answer is shown back instead of being re-asked.
+            const BEATS = [
+                { fid: 'cw-step-4-beat1', lead: 'At first', chips: NEEDS, chipQ:
+                    '**Beat 1 of 6 — “At first…”**\n\nThis beat is your protagonist’s ordinary world, before the story starts. Every interesting character has an **unmet need** — something missing that stops them being truly happy.\n\nWhich is closest to what your protagonist is missing?',
+                  ask: 'Now write Beat 1.\n\n**One sentence, present tense**, picking up straight after “At first,” — show us who your protagonist is and how their everyday life reveals that unmet need and their flaw.\n\n*(Example shape: “…a lonely watchmaker fixes other people’s clocks and never once winds his own.”)*' },
+                { fid: 'cw-step-4-beat2', lead: 'And then', ask:
+                    '**Beat 2 of 6 — “And then…”**\n\nThis is the repeated routine that *proves* the stuck state — the physical evidence of the problem.\n\n- Someone lonely might eat dinner alone in front of the TV every night.\n- Someone trapped might stare out of the window at aeroplanes every afternoon.\n- Someone arrogant might correct their friends over small, pointless details.\n\nMake it a concrete, visible action — something we could film — not an abstract feeling.\n\n**One sentence, present tense**, after “And then,”.' },
+                { fid: 'cw-step-4-beat3', lead: 'Until', chips: INCIDENTS, echo: 'cw-step-3-incident', chipQ:
+                    '**Beat 3 of 6 — “Until…”**\n\nThis is the inciting incident — the event that shatters the ordinary world. You already named yours in Step 3:',
+                  ask: 'Now develop it into Beat 3.\n\n**One sentence, present tense**, after “Until,” — the moment everything changes.',
+                  irony: 'One more thought before we move on. Sometimes the *worst* thing to happen to a character is secretly the exact opportunity they needed.\n\n**How is this event secretly a chance for your protagonist to face the unmet need from Beat 1?**' },
+                { fid: 'cw-step-4-beat4', lead: 'And because of this', chips: GOALS, echo: 'cw-step-3-goal', chipQ:
+                    '**Beat 4 of 6 — “And because of this…”**\n\nThe event gives your protagonist a goal. In Step 3 you said it was:',
+                  ask: 'Now write Beat 4 — what they *decide to do* in response to the inciting incident.\n\n**One sentence, present tense**, after “And because of this,”.' },
+                { fid: 'cw-step-4-beat5', lead: 'And because of this', chips: OBSTACLES, echo: 'cw-step-3-obstacle', chipQ:
+                    '**Beat 5 of 6 — “And because of this…”**\n\nThe Road of Trials — where your protagonist meets the force standing in their way. From Step 3:',
+                  ask: 'Now write Beat 5 — the major challenge that follows *directly* from their decision in Beat 4.\n\n**One sentence, present tense**, after “And because of this,”.' },
+                { fid: 'cw-step-4-beat6', lead: 'Until finally', chips: STAKES, echo: 'cw-step-3-stakes', chipQ:
+                    '**Beat 6 of 6 — “Until finally…”**\n\nThe climax. This is where your protagonist has a **self-revelation** — they overcome their flaw and show they’ve changed (or, in a tragedy, fail to). In Step 3 you said the stakes were:',
+                  ask: 'Now write Beat 6 — how the conflict resolves and what your protagonist learns.\n\n**One sentence, present tense**, after “Until finally,”.',
+                  irony: 'Last one. Think back to what your protagonist *thought* they wanted at the start.\n\n**How does what they actually get in the end contrast with what they thought they wanted?** (A character who wanted treasure might find friendship. A character who wanted revenge might find peace in forgiveness.)' },
+            ];
+            const WRAP =
+                'That’s your complete Story Spine — six beats, each one causing the next.\n\n' +
+                'Read it back in your document from top to bottom. That chain of cause and effect is the skeleton your whole story hangs on.\n\n' +
+                'Tidy up any spelling or punctuation while you’re in there — they’re your sentences, so they’re yours to polish.';
+
+            let active = false, pending = false, idx = 0;
+            let phase = 'chip';    // 'chip' → 'beat' → 'irony'
+            let throughline = '';
+
+            const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw4') + '_cw4'; } catch (e) { return 'swml_cw4'; } };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                addChatMessage(formatAI(plain), 'ai', plain);
+                canvasChatHistory.push({ role: 'assistant', content: plain });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants((n) => {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
+                                && n.attrs && n.attrs.fieldId === fid) { out = (n.textContent || '').trim(); return false; }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            function firstEmptyBeat() {
+                for (let i = 0; i < BEATS.length; i++) if (!rowText(BEATS[i].fid)) return i;
+                return BEATS.length;
+            }
+
+            // Generic chip bar on the NEWEST bubble. A pick is a TAP — zero API, zero tokens.
+            // This is the single biggest programmatic win in the CW arc: six turns that the old
+            // protocol generated as prose are now menus.
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions' });
+                options.forEach(function (opt) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: function () { bar.remove(); onPick(opt); },
+                    }));
+                });
+                bc.appendChild(bar);
+            }
+
+            function serveChip() {
+                const b = BEATS[idx];
+                let body = b.chipQ;
+                // Echo the Step-3 answer rather than re-asking for it (paste-wall law).
+                if (b.echo) {
+                    const prior = rowText(b.echo);
+                    body += prior ? '\n\n> ' + prior : '\n\n*(nothing recorded in Step 3 — tell me in your own words as you write the beat)*';
+                }
+                aiBubble(body);
+                chipBar(b.chips, function (pick) {
+                    canvasChatHistory.push({ role: 'user', content: pick, hidden: true });
+                    addChatMessage(pick, 'user');
+                    phase = 'beat';
+                    aiBubble(b.ask);
+                    persist();
+                    resetSend();
+                });
+                persist();
+                resetSend();
+            }
+
+            function serveCurrent() {
+                if (idx >= BEATS.length) { serveThroughline(); return; }
+                const b = BEATS[idx];
+                if (b.chips && phase === 'chip') { serveChip(); return; }
+                phase = 'beat';
+                aiBubble(b.ask);
+                persist();
+                resetSend();
+            }
+
+            // After beat 6: the throughline pick, then the coherence check — the one call that
+            // reads ALL SIX beats together. Never strip it: it is what makes this a spine.
+            function serveThroughline() {
+                aiBubble('All six beats are down.\n\nBefore we check them, one last choice. The strongest stories have a clear **dramatic throughline**. Which best describes your ending?');
+                chipBar(THROUGHLINES, function (pick) {
+                    throughline = pick;
+                    canvasChatHistory.push({ role: 'user', content: pick, hidden: true });
+                    addChatMessage(pick, 'user');
+                    fireCoherenceCheck();
+                });
+                persist();
+                resetSend();
+            }
+
+            function fireCoherenceCheck() {
+                const beats = BEATS.map(function (b, i) { return (i + 1) + '. ' + b.lead + ', ' + (rowText(b.fid) || '(blank)'); }).join('\n');
+                const ctx = '[STORY SPINE COHERENCE CHECK — the student’s six beats and chosen throughline. '
+                    + 'Check that each beat CAUSES the next, that the ending matches the throughline, that the '
+                    + 'obstacle tests the protagonist’s flaw, and that the resolution addresses the Beat 1 unmet '
+                    + 'need. Name any causal gap with ONE Socratic question. Do not rewrite their beats and do '
+                    + 'not correct their spelling.]\n\nTHROUGHLINE: ' + throughline + '\n\n' + beats;
+                canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
+                active = false; pending = true;
+                armWalkResume('cw4-coherence', function () {
+                    pending = false;
+                    active = false;
+                    clearPersist();
+                    aiBubble(WRAP);
+                    try { applyCwSubstepProgress({ stepNum: 4, substepNum: 5, name: 'Review and Save' }); } catch (e) {}
+                    resetSend();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'That’s all six beats — please check they flow logically.';
+                sendCanvasMessage();
+            }
+
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                addChatMessage(clean, 'user');
+                canvasChatHistory.push({ role: 'user', content: clean });
+                chatTextarea.value = '';
+                chatTextarea.style.height = '40px';
+                if (!clean) { resetSend(); return; }
+                const b = BEATS[idx];
+                if (!b) { serveThroughline(); return; }
+                const wasIrony = (phase === 'irony');
+                active = false; pending = true;
+                armWalkResume('cw4-' + b.fid + '-' + phase, function (reply, meta) {
+                    pending = false;
+                    const ok = !reply || (meta && meta.timedOut)
+                        ? true
+                        : /@BEAT_OK/.test(String(reply).replace(/(@[A-Z]{2,})\\_/g, '$1_'));
+                    if (!ok) { active = true; persist(); resetSend(); return; }
+                    // Both the beat and its irony answer land in the SAME row — the irony
+                    // deepens the beat rather than being a separate box. _writeOutlineRowField
+                    // appends when the row already holds text.
+                    try {
+                        if (_writeOutlineRowField(b.fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    } catch (e) { console.warn('WML CW4: write failed (non-fatal)', e && e.message); }
+                    active = true;
+                    if (!wasIrony && b.irony) { phase = 'irony'; aiBubble(b.irony); persist(); resetSend(); return; }
+                    idx = firstEmptyBeat();
+                    phase = 'chip';
+                    if (idx >= BEATS.length) { serveThroughline(); return; }
+                    serveCurrent();
+                });
+                canvasSilentSend = false;
+                chatTextarea.value = clean;
+                sendCanvasMessage();
+            }
+
+            function onReply(reply) {
+                if (state.task !== 'cw_step_4') return;
+                const norm = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
+                if (!/@CW4_START/.test(norm)) return;
+                if (active) return;
+                idx = firstEmptyBeat();
+                if (idx >= BEATS.length) return;
+                active = true; pending = false; phase = 'chip';
+                console.log('WML CW4: code-served spine walk start at beat ' + (idx + 1) + '/' + BEATS.length);
+                serveCurrent();
+            }
+
+            function reset() { active = false; pending = false; idx = 0; phase = 'chip'; throughline = ''; clearPersist(); }
+            function tryResume() {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    if (!raw) return false;
+                    const d = JSON.parse(raw);
+                    if (!d || !d.active) return false;
+                    idx = firstEmptyBeat();
+                    phase = d.phase || 'chip';
+                    throughline = d.throughline || '';
+                    active = idx < BEATS.length;
+                    if (active) console.log('WML CW4: resumed at beat ' + (idx + 1) + '/' + BEATS.length + ' (' + phase + ')');
+                    return active;
+                } catch (e) { return false; }
+            }
+
+            return {
+                handleTurn, onReply, reset, tryResume,
+                get active() { return active; },
+            };
+        })();
+
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
+            _cwSpineCtl.onReply(reply);
         });
 
         return {

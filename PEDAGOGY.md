@@ -700,3 +700,63 @@ Edexcel IGCSE heritage = 7), and the granularity of feedback. Structure is invar
 own settled counts (AQA Lang: 8→2 ¶, 12→3 ¶ — CLAUDE.md derivation rule), and Section-B
 extended writing keeps its whole-answer structures (IUMVCC / story-spine). Do not import
 this rule into those, or theirs into this.
+
+---
+
+## §11. THE STUDENT DOES THEIR OWN SPaG — Sophia never tidies their prose (Neil, ruled 2026-07-22)
+
+**The ruling.** When a student's words go into a document row — a story idea, a logline, a spine beat,
+any free-text answer — they go in **verbatim**, and **the student fixes their own spelling,
+punctuation and grammar**. Sophia never silently cleans up a sentence, never offers "a tidier
+version", and never writes a polished rewrite into a row the student authored.
+
+**Why it is pedagogy, not preference.** Two reasons, both load-bearing:
+
+1. **This is a writing course and SPaG is assessed** (AO6 / technical accuracy). If the AI repairs
+   every sentence, the student never practises the repair. The correction IS the exercise.
+2. **It hides the evidence.** A silently tidied row shows Neil polished prose instead of what the
+   student actually writes — so their real, recurring error patterns become invisible to the person
+   teaching them. The document must show the student's true writing.
+
+**What Sophia does instead:** comments on the **CONCEPT** — is this a flaw or just a quirk, does this
+beat causally follow the last one, is this obstacle specific enough. Idea-level refinement is worth an
+API call; prose-level tidying is worth none, and costs the student the practice.
+
+**Where the shape constraint goes.** When a row needs a particular form (a spine beat is one sentence,
+present tense, no lead-in connective), that constraint is stated **in the ASK**, up front — never
+repaired afterwards by an AI pass. Cheaper, and it teaches the constraint instead of hiding it.
+
+*(Implemented v7.20.262–.264 across CW Steps 2–4. Pairs with §9 — the approved-plan law is about
+CONTENT grade, this is about who owns the surface polish: the student, always.)*
+
+---
+
+## §12. ONE COMMITTED IDEA BEATS THREE FORCED ONES — the CW Step 2 idea ladder (Neil, ruled 2026-07-22)
+
+**The ruling.** CW Step 2 asks for a story idea. If the student lands one they are committed to, **one
+is a complete and valid outcome**. The ladder:
+
+1. Idea 1 lands → saved → one deepening question.
+2. Invite a second **once**, framed as pedagogy (professional writers rarely run with their first;
+   one alternative sharpens the one you keep).
+3. If they give a second, invite a third **once**.
+4. **A decline at ANY point is final.** No fourth ask. No re-ask after a decline, ever.
+
+**Why.** The protocol previously demanded three and would not stop asking; Neil drove it with one idea
+he was happy with and it kept pushing. Two ideas invented purely to satisfy a counter are fake ideas
+the student will never pick — they teach nothing, cost the most tokens in the step, and train the
+student that the system doesn't listen when they say no.
+
+**The mechanism matters as much as the rule.** The decline is a **code-owned chip**, not an
+instruction to the model. A "please respect a no" in a protocol is a request the model may ignore;
+a code-owned decline makes the loop *structurally impossible*. Any rule about how much a student is
+demanded of should be enforced where it cannot be re-litigated.
+
+**The distinction that stops this being over-applied.** This is NOT a general "fewer is fine" rule.
+Step 3 asks for **three loglines and keeps all three** — because three *ideas* is busywork, whereas
+three *loglines* is the same story through three lenses (action / goal / character-arc), which is
+deliberate practice, and it scaffolds (formula 3 is easy after 1 and 2). Ask: **is the repetition
+generating throwaway alternatives, or practising the same skill through different lenses?** The first
+gets an escape hatch; the second does not.
+
+*(Implemented v7.20.262. Pairs with §0's procedure — this ruling is now written, so do not re-ask it.)*
