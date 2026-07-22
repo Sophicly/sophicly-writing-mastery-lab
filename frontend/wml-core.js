@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.262';
+var WML_BUILD = '7.20.263';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2861,12 +2861,16 @@ window.WML = (function() {
         text = text.replace(/\[SUBSTEP_COMPLETE:\s*[^\]]*\]/g, '').trim();
         // v7.19.429: Strip @FIELD_COMMIT{...} chat→canvas field-fill signals (never shown to the student)
         text = text.replace(/@FIELD_COMMIT\s*\{[^}]*\}/g, '').trim();
-        // v7.20.262: CW Step 2 code-turn signals — bare markers, no JSON payload.
+        // v7.20.263: CW Step 2 code-turn signals — bare markers, no JSON payload.
         // @CW2_MENU  = recap done, code serves the inspiration menu.
         // @IDEA_LANDED = that message was a genuine story idea (CODE picks the row).
         // Tolerant of the model escaping the underscore (@CW2\_MENU), same as the other consumers.
         text = text.replace(/@CW2\\?_MENU/g, '').trim();
         text = text.replace(/@IDEA\\?_LANDED/g, '').trim();
+        // v7.20.263: CW Step 3 — @CW3_START (recap done, code serves the walk) and
+        // @COMPONENT_OK (that answer is solid; code banks it and advances).
+        text = text.replace(/@CW3\\?_START/g, '').trim();
+        text = text.replace(/@COMPONENT\\?_OK/g, '').trim();
         // v7.19.434: Strip @SECTION_BEGIN{...}...@SECTION_END synthesis blocks (Phase 2 — the
         // wrapped profile/loglines are written into the canvas section, not echoed in the bubble).
         text = text.replace(/@SECTION_BEGIN\s*\{[^}]*\}[\s\S]*?@SECTION_END/g, '').trim();

@@ -14089,6 +14089,12 @@
                 await _cwIdeasCtl.handleTurn(msg);
                 return;
             }
+            // v7.20.263: CW Step 3 (Logline) — same walk shape: 7 component asks then 3 logline
+            // formulas, each handing ONE turn to the API for a verdict before advancing.
+            if (state.task === 'cw_step_3' && _cwLoglineCtl.active) {
+                await _cwLoglineCtl.handleTurn(msg);
+                return;
+            }
 
             // v7.19.809: PRE-ASSESSMENT CHAIN gate — while the setup chain is
             // incomplete, code owns the turn: record the student's reply, ask the
@@ -16774,7 +16780,187 @@
                 get pending() { return pending; },
             };
         })();
-        registerCwWalkOnReply(_cwIdeasCtl.onReply);
+        // ═══════════════════════════════════════════════════════════════════════════════════
+        // CW STEP 3 — LOGLINE (code-owned walk, v7.20.263)
+        // ───────────────────────────────────────────────────────────────────────────────────
+        // Seven component asks, then three logline formulas. Code serves every ask (teaching +
+        // worked examples + the question — all fixed); the API is a JUDGE on each answer.
+        //
+        // OWNERSHIP FIX: the old protocol had SOPHIA compose all three loglines and @FIELD_SET
+        // them into the document (CW-STEP-03-logline.md:237) — the student's only act was
+        // ticking one. That is the exact thing CW-STEP-02 forbids one file over, applied to the
+        // single most important sentence in the course. Now the STUDENT writes each logline, it
+        // goes in verbatim, and the API comments on the CONCEPT only. Sophia never writes into
+        // a logline row and never rewrites their prose (SPaG is the student's own job).
+        //
+        // Source text: protocols/shared/creative-writing/_cw-step-3-source.md (non-loaded sidecar).
+        const _cwLoglineCtl = (function () {
+            const SEG = {
+                intro:
+                    'We’re going to take that idea and turn it into a **logline** — a single sentence that captures the DNA of your story.\n\n' +
+                    'Loglines come from the film industry, where a writer has to pitch a whole story in one breath. But the real value is that a logline forces clarity: if you can’t say your story in a sentence, the concept isn’t sharp yet.\n\n' +
+                    'First we’ll break your idea into its building blocks — seven of them, one at a time. Then you’ll use those blocks to write three loglines yourself.',
+                formulas_intro: 'You now have all seven building blocks. Here they are, in your own words:',
+                formulas_bridge:
+                    'Now you’re going to write three loglines — the same story through three different lenses. Each formula emphasises something different, and writing all three is how you find out which version of your story you actually want to tell.\n\n' +
+                    'You write them; I’ll tell you where the concept is strong and where it’s still fuzzy.',
+                wrap:
+                    'That’s all three — the same story told through action, through stakes, and through your protagonist’s inner change.\n\n' +
+                    '**Tick the checkbox beside the one you most want to develop.** It drops into your *Chosen Logline* box, where you can fine-tune the wording. Pick the one that pulls at you most: strongest personal meaning, clearest conflict.\n\n' +
+                    'While you’re in there, tidy up any spelling or punctuation — they’re your sentences, so they’re yours to polish.',
+            };
+            // Asked in DOCUMENT-ROW ORDER so the field-granular fill-scroll walks down the page
+            // instead of jumping around (v7.20.260 law).
+            const COMPONENTS = [
+                { fid: 'cw-step-3-protagonist', label: 'Protagonist', ask:
+                    '**1 of 7 — Your protagonist**\n\nYour protagonist isn’t simply the main character — they’re the character who **changes the most**, and whose change reveals what your story is really about.\n\n**Which character experiences the greatest change, and whose change reveals the meaning of your story?** Tell me who they are, too — name, age, situation, whatever feels important.' },
+                { fid: 'cw-step-3-flaw', label: 'Flaw', ask:
+                    '**2 of 7 — The flaw**\n\nIn the strongest stories the protagonist isn’t perfect — they have a **flaw**. A flaw is usually an **emotional shield**: a visible behaviour they’ve built to protect themselves from a deeper hurt.\n\n- In *A Christmas Carol*, Scrooge’s flaw is **greed** — money is his shield against people who could hurt him.\n- In *Macbeth*, it’s **ambition** — a shield over deep insecurity about his own worth.\n- In *The Hunger Games*, Katniss’s flaw is **emotional detachment** — a shield against the grief of losing people she loves.\n\n**What is the emotional shield your protagonist uses to protect themselves?**' },
+                { fid: 'cw-step-3-wound', label: 'Wound', ask:
+                    '**3 of 7 — The wound**\n\nYou’ve named the shield. Now name what it’s protecting. Behind a strong flaw there is almost always a **wound** — a deeper hurt, fear or loss the protagonist would rather not feel. The flaw is the visible armour; the wound is the soft thing underneath it.\n\n- Scrooge’s flaw is greed — the **wound** is the loneliness of a loveless past.\n- Katniss’s flaw is detachment — the **wound** is the terror of loss, having already lost her father.\n\n**What deeper hurt or fear is your protagonist’s flaw covering up?**' },
+                { fid: 'cw-step-3-incident', label: 'Inciting Incident', ask:
+                    '**4 of 7 — The inciting incident**\n\nThis is the event that shatters your protagonist’s normal life and forces them into the story — the moment their emotional shield stops working.\n\n- In *A Christmas Carol*, Marley’s ghost arrives and Scrooge can no longer hide behind his wealth.\n- In *Stranger Things*, Will Byers disappears and the safe ordinary world breaks.\n\n**What external event forces your protagonist out of their normal life?**' },
+                { fid: 'cw-step-3-goal', label: 'Goal', ask:
+                    '**5 of 7 — The goal**\n\nThat event gives your protagonist a **goal** — something they desperately want. In the strongest stories the external goal stands for a deeper internal need the protagonist doesn’t fully understand yet.\n\n- In *Star Wars*, Luke’s external goal is to rescue Leia. His internal need is to find his identity.\n- In *A Christmas Carol*, Scrooge’s external goal is to protect his wealth. His internal need is connection.\n\n**What is the one physical, visible thing your protagonist is trying to achieve — and what deeper need does it represent?**' },
+                { fid: 'cw-step-3-obstacle', label: 'Obstacle', ask:
+                    '**6 of 7 — The obstacle**\n\nA story’s central conflict is designed to attack the protagonist’s greatest weakness. The most powerful obstacles force them to confront the very flaw they’ve been hiding behind — often an antagonist who is a **dark mirror** of the protagonist.\n\n- In *An Inspector Calls*, Inspector Goole forces Sheila to confront her family’s complicity — attacking her wilful ignorance.\n- In *Macbeth*, Lady Macbeth amplifies his ambition while attacking his hesitation.\n\n**Who or what stands in your protagonist’s way — and how does it target their flaw specifically?**' },
+                { fid: 'cw-step-3-stakes', label: 'Stakes', ask:
+                    '**7 of 7 — The stakes**\n\nStakes are what make the reader care. If your protagonist fails, what are the specific consequences? The strongest stakes are **personal**:\n\n- *“If he fails, the world ends.”* — vague; we don’t feel it.\n- *“If he fails, his little sister goes into the arena alone.”* — specific; we feel it instantly.\n\n**If your protagonist fails, what exactly do they stand to lose — and why would that be devastating for them?**' },
+            ];
+            const FORMULAS = [
+                { fid: 'cw-step-3-logline-1', ask:
+                    '**Logline 1 of 3 — Action-oriented**\n\n> **INCITING INCIDENT + PROTAGONIST + ACTION + ANTAGONIST**\n\n- *“After being rescued by a German bounty hunter, a freed slave sets out to rescue his wife from a brutal Mississippi plantation owner.”* — **Django Unchained**\n- *“When a young boy disappears, his mother, a police chief, and his three friends must confront terrifying forces to get him back.”* — **Stranger Things**\n\n**Write your story as one sentence using this formula.**' },
+                { fid: 'cw-step-3-logline-2', ask:
+                    '**Logline 2 of 3 — Goal-oriented**\n\n> **PROTAGONIST + ACTION + ANTAGONIST + GOAL + STAKE**\n\n- *“Luke Skywalker, a spirited farm boy, joins rebel forces to fight the evil Darth Vader and rescue Princess Leia from certain death at the hands of the Empire.”* — **Star Wars**\n\nSame story, but this one leads with who they are and what they stand to lose.\n\n**Write your second logline.**' },
+                { fid: 'cw-step-3-logline-3', ask:
+                    '**Logline 3 of 3 — Character-arc oriented**\n\n> **PROTAGONIST has an opportunity to DO SOMETHING LIFE-CHANGING but must learn to CHANGE THEIR FLAW so they can find a solution TO THE PROBLEM**\n\n- *“An old, greedy capitalist called Scrooge has an opportunity to improve the lives of those around him but he must learn to let go of his fear of human relationships so he can become more generous and find a solution to his and others’ unhappiness.”* — **A Christmas Carol**\n- *“A young daughter of a capitalist family called Sheila has an opportunity to improve the lives of those around her but she must learn to recognise the injustices that she and her family commit so she can become more selfless and help find a solution to her society’s inequalities.”* — **An Inspector Calls**\n\nThis one is about your protagonist’s inner journey — the flaw and the wound you named earlier.\n\n**Write your third logline.**' },
+            ];
+            const STEPS = COMPONENTS.concat(FORMULAS);   // 7 + 3, walked in order
+
+            let active = false, pending = false, idx = 0;
+
+            const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw3') + '_cw3'; } catch (e) { return 'swml_cw3'; } };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, active })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                addChatMessage(formatAI(plain), 'ai', plain);
+                canvasChatHistory.push({ role: 'assistant', content: plain });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants((n) => {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
+                                && n.attrs && n.attrs.fieldId === fid) { out = (n.textContent || '').trim(); return false; }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            // Resume from the DOCUMENT, not a counter — the doc survives reload and chat-clear.
+            function firstEmptyIndex() {
+                for (let i = 0; i < STEPS.length; i++) if (!rowText(STEPS[i].fid)) return i;
+                return STEPS.length;
+            }
+
+            function serveCurrent() {
+                if (idx >= STEPS.length) { finish(); return; }
+                // The three formulas open with the student's own components echoed back — never
+                // ask for what the system already holds (WML CLAUDE.md #3).
+                if (idx === COMPONENTS.length) {
+                    const lines = COMPONENTS.map(c => '- **' + c.label + ':** ' + (rowText(c.fid) || '*(blank)*'));
+                    aiBubble(SEG.formulas_intro + '\n\n' + lines.join('\n'));
+                    aiBubble(SEG.formulas_bridge);
+                }
+                aiBubble(STEPS[idx].ask);
+                persist();
+                resetSend();
+            }
+
+            function finish() {
+                active = false; pending = false;
+                clearPersist();
+                aiBubble(SEG.wrap);
+                try { applyCwSubstepProgress({ stepNum: 3, substepNum: 4, name: 'Review and Save' }); } catch (e) {}
+                resetSend();
+            }
+
+            // The student answered. Hand ONE turn to the API for judgment; resume here.
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                addChatMessage(clean, 'user');
+                canvasChatHistory.push({ role: 'user', content: clean });
+                chatTextarea.value = '';
+                chatTextarea.style.height = '40px';
+                if (!clean) { resetSend(); return; }
+                const step = STEPS[idx];
+                if (!step) { finish(); return; }
+                active = false; pending = true;
+                armWalkResume('cw3-' + step.fid, function (reply, meta) {
+                    pending = false;
+                    // @COMPONENT_OK = solid, bank it and move on. Absent = the API pushed for
+                    // more, so the student answers the SAME question again (no advance).
+                    // On the watchdog path bank it rather than lose their words.
+                    const ok = !reply || (meta && meta.timedOut)
+                        ? true
+                        : /@COMPONENT_OK/.test(String(reply).replace(/(@[A-Z]{2,})\\_/g, '$1_'));
+                    if (!ok) { active = true; persist(); resetSend(); return; }
+                    try {
+                        if (_writeOutlineRowField(step.fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    } catch (e) { console.warn('WML CW3: write failed (non-fatal)', e && e.message); }
+                    idx = firstEmptyIndex();
+                    if (idx >= STEPS.length) { finish(); return; }
+                    active = true;
+                    serveCurrent();
+                });
+                canvasSilentSend = false;
+                chatTextarea.value = clean;
+                sendCanvasMessage();
+            }
+
+            function onReply(reply) {
+                if (state.task !== 'cw_step_3') return;
+                const norm = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
+                if (!/@CW3\_START/.test(norm) && !/@CW3_START/.test(norm)) return;
+                if (active) return;
+                idx = firstEmptyIndex();
+                if (idx >= STEPS.length) return;
+                active = true; pending = false;
+                console.log('WML CW3: code-served walk start at step ' + (idx + 1) + '/' + STEPS.length);
+                aiBubble(SEG.intro);
+                serveCurrent();
+            }
+
+            function reset() { active = false; pending = false; idx = 0; clearPersist(); }
+            function tryResume() {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    if (!raw) return false;
+                    const d = JSON.parse(raw);
+                    if (!d || !d.active) return false;
+                    idx = firstEmptyIndex();
+                    active = idx < STEPS.length;
+                    if (active) console.log('WML CW3: resumed at step ' + (idx + 1) + '/' + STEPS.length);
+                    return active;
+                } catch (e) { return false; }
+            }
+
+            return {
+                handleTurn, onReply, reset, tryResume,
+                get active() { return active; },
+            };
+        })();
+
+        registerCwWalkOnReply(function (reply) {
+            _cwIdeasCtl.onReply(reply);
+            _cwLoglineCtl.onReply(reply);
+        });
 
         return {
             protoPanel,
