@@ -73,3 +73,46 @@
 
 ## SEQUENCE + VERSION
 Piece 3 (lint) → Piece 1 (b1) → Piece 2 (player). Bump v7.20.246. Commit per piece. Fable precision-corrects each before the next. `pre-ship-check --all` GREEN + staging live-drive before prod.
+
+---
+
+## ⭐ RECON-VERIFIED (Opus, 2026-07-21h — byte-level; supersedes spec assumptions where noted)
+
+**Seam correction — the spec's `needsTextPicker` setup-picker assumption (line 15) is WRONG for guided lessons.**
+- Guided planning lessons SKIP the setup picker: `wml-app.js:752` — `if (state.task) selectTask(...)`. Shortcode sets `state.task='planning'` → setup screens (incl. `renderComparisonPoemSelect`) never fire. So `state.poem` / `state.comparisonPoem*` are NOT set by any picker for a real lesson.
+- The REAL seam = the **code-served planning chain** (`_planChain*` in `frontend/wml-assessment.js`), which intercepts `sendCanvasMessage` and plays fixed turns with quick-action chips, NO API round-trip. Renderers: `_renderPlanChainQuestion` (:12965), `_appendPlanChainActions` (:12999), stage detection `_planPreChainStageFor` (:810), stage texts `_planChainQuestionText` (:908), order `_planChainOrder` (:836), beats `_planChainBeat` (:843).
+- **Poetry is NOT on this chain.** `_planPreChainActive()` (:749-753) = `task==='planning' && board==='aqa' && (_isLangPaper1()||_isLangPaper2())`. Poetry planning currently opens via the API/protocol (b1-setup.md → LLM). **Piece 1 must add a poetry arm to this chain**, reusing the render/intercept plumbing.
+
+**Comparison-poem picker logic to CLONE (into an inline chain-stage chip bar, NOT the setup screen):** `renderComparisonPoemSelect` (`wml-app.js:2818-2901`).
+- Fetch: `fetch(\`${config.restUrl}poems?board=${state.board}&anthology=${state.text}\`, {headers})` → `res.poems` = `[{id,title,poet,poem_text}]`.
+- Exclude focus: `.filter(p => p.id !== <focusPoemId>)`.
+- On tap set: `state.comparisonPoem=p.id; state.comparisonPoemTitle=p.title; state.comparisonPoemText=p.poem_text||''`. These state fields already exist + are read in the preamble (`wml-app.js:6682-6685`, `6944-6945`, `7327`).
+- Off-bank fallback = typed input (the ONE surviving paste; mark `<!-- lint-ok: fallback -->`).
+
+**Server key-map is SOLVED server-side.** REST `poems` route → `poems_option_rows($board,$text)` (`class-rest-api.php:696-708`) walks the canonical slug ladder (`love_relationships_poetry`→`love_relationships`). Client passes `anthology=state.text` raw — no client key-building. Bank storage key = `swml_topics/poems_{sanitize_key(board)}_{sanitize_key(anthology)}` (`class-topic-questions.php:332,774`).
+
+**topicData (poetry topic) fields — verified against `class-topic-questions.php:623-657`:** `focus_poem` (TITLE string, `sanitize_text_field`), `focus_poet`, `comparison_poem`, `comparison_poet`, `question_text`, `question_format` (`'single'` for these). Focus poem TEXT is NOT in topicData — look it up in the bank by matching `focus_poem` title → poem `id`. `topicData` reaches the client via the topic-question fetch (`wml-app.js:6563-6569`, var `topicQuestion`).
+
+**Data-on-target (staging, verified 2026-07-21h):**
+- `swml_topics_aqa_love_relationships` = 16 topics. Every real topic has `focus_poem` + `question_text` populated; **`comparison_poem` = BLANK on all** → the picker IS needed (design holds). Also identical twin key `swml_topics_aqa_love_relationships_poetry` (slug ladder covers both).
+- `swml_poems_aqa_love_relationships` = **15 poems** ✅. Topic #2 = Conceptual Notes (no focus poem).
+- ⚠ **MARKDOWN LEAK — all 15 bank rows:** `title` has LEADING `**` (`"**When We Two Parted"`), `poet` has TRAILING `**` (`"Lord Byron**"`). Same defect already shows in the existing assessment picker. FIX = shared `cleanPoemField()` strip-on-render (robust vs source; Neil #7 shared-surface) — applied to BOTH the new chips and `renderComparisonPoemSelect`. Root option: also clean the bank source via wp eval.
+
+**Theme→cluster map:** Opus authors from the real AQA L&R anthology thematic groupings in the model-answer resources (NOT Fable, NOT invented — literary pairing knowledge). Chips ship with flat "all-15 − focus + Browse" as the working fallback day 1; theme-ordering rides the same piece.
+
+**Piece 1 minimal shippable (kills paste wall = unblocks prod):** poetry chain arm = `greeting(focus-poem+question confirm, code-served from topicData) → comparison-pick(inline chips) → hand to protocol at B.2`. b1-setup.md drops Steps 3–5. Lint CONVERTED promotion (`aqa/poetry/planning` + `aqa/literature/planning`) = LAST step, proves the fix.
+
+**PIPELINE CONFIRMED (decisive, not inferred): poetry planning = CANVAS pipeline.** `wml-app.js:2955-2967` — `planning` was REMOVED from `chatTasks` (v7.14.33: "planning + polishing removed — now canvas-based via EXERCISE_MANIFEST") → routes to `renderCanvasWorkspace` (wml-assessment.js). So the `_planChain` (canvas) IS the seam. ⚠ The `wml-app.js:6636-6713` preamble (comparison-poem-text injection at :6682-6685, topicQuestion at :6692-6707) is the OLD **MAIN-CHAT** greeting (`API.chat`, `state.chatId`, `addMessage`) used by the surviving `chatTasks` (assessment/essay_plan/model_answer/conceptual_notes) — NOT poetry planning. Do not wire Piece 1 there.
+
+**Two intercept sites (DUAL PIPELINE — wire BOTH):** `wml-assessment.js:13189` (assessment twin) + `:23266` (training twin). Pattern per site: `if (_planPreChainActive()) { stage = _planPreChainStageFor(history); if (stage) { render, return; } }`. Add the poetry arm alongside — either extend `_planPreChainActive`+`_planPreChainStageFor` with a poetry branch, or a parallel `_poetryPlanChain*` set (poetry stages differ structurally: async bank-fetch chips vs text predictions → a PARALLEL set is cleaner, reuses `_renderPlanChainQuestion`/`_appendPlanChainActions` render plumbing + the intercept shape).
+
+**⚠ LAST RECON THREAD (must resolve at build, do NOT assume):** how does the CANVAS poetry-planning preamble get the FOCUS + COMPARISON poem full text into the API context (so b4/b5 quote validation has it)? The `:6682-6685` comparison-text injection is MAIN-CHAT only. Find the canvas/router preamble builder (likely server-side `class-protocol-router.php inject_session_context` / a `build_poetry_*_injection` like CN's) and confirm it reads `state.comparisonPoemText` + a focus-poem text. If it doesn't, the greeting stage must set `state.poem/poemTitle/poemAuthor/poemText` (focus, from bank by `topicData.focus_poem` title→id) AND `state.comparisonPoem*` (from chip), and the canvas preamble must inject both. This is the "downstream quote work unchanged" guarantee — verify it end-to-end before calling Piece 1 done (#15).
+
+**⚠ THREAD RESOLVED — and it ENLARGES the build (PHP, not JS-only).** Poetry PLANNING has NO poem-text injection today. `build_poetry_cn_injection` (`class-protocol-router.php:1353`, called at the `$skip_block` :1019) injects poem full text ONLY for Conceptual Notes. For poetry PLANNING the poem text reaches the API **solely via the student's b1 paste (Steps 3–4)** — that is the paste wall's reason to exist. So Piece 1 MUST add planning-side injection:
+- **New `build_poetry_planning_injection($context)` in class-protocol-router.php** (mirror `build_poetry_cn_injection` :1353-1460: same `swml_poems_{board}_{anthology}` lookup + slug-ladder, first-non-empty-`poem_text` wins). Inject BOTH the focus poem (id from `topicData.focus_poem` title→bank match) AND the comparison poem (from `state.comparisonPoem`/`comparison_poem` passed in the session context). Gate it on poetry + task=planning; wire it at the `$skip_block` assembly the way :1019 wires CN.
+- **Client must pass the comparison poem id/text into the canvas session context** so the router can resolve it (the chip sets `state.comparisonPoem*`; confirm the canvas chat request forwards it — `selectTask` already sends `comparison_poem`/`comparison_poem_title` at wml-app.js:2948-2949, but NOT `comparison_poem_text`; the router re-looks-up text from the bank by id, so id is enough).
+- Focus poem id: resolve `topicData.focus_poem` (title) → bank poem `id`. The CN injection already walks the bank rows — reuse that match logic.
+
+**BUILD SPANS 3 LAYERS:** PHP (router injection) + JS (wml-assessment.js poetry chain arm ×2 sites + chips + `cleanPoemField`; wml-app.js state/context forwarding) + protocol markdown (b1-setup.md) + lint promotion + theme map + version bump. This is a multi-layer feature (#15/#16 — plan the whole chain), NOT a JS picker clone. Estimate: substantial; do NOT one-shot without full context budget.
+
+**RECON STATUS: 100% COMPLETE.** Pipeline verified (canvas), seam verified (`_planChain` dual sites), picker-clone-source verified, topicData fields verified, data-on-target verified, markdown leak verified, poem-text-injection gap verified. Build is fully execution-ready against this spec.

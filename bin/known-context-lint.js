@@ -26,7 +26,11 @@ const ROOT = path.join(__dirname, '..');
 // ROLLOUT: a lane is added here the MOMENT its b1 stops demanding pasted context — the promotion
 // IS the "fix proven" assertion (the lane must be clean, or the gate goes red). Empty until the
 // Phase-1 b1 poem-picker lands and flips aqa/poetry/planning + aqa/literature/planning clean.
-const CONVERTED = [];
+// v7.20.246: aqa/poetry/planning CONVERTED — b1 opens code-served (focus poem + question from
+// topicData, comparison poem from the b1 theme-chip picker; the router injects both texts).
+// aqa/literature/planning is NOT converted yet (single-text essays need a different fix — its b1
+// still asks for the text title + question; separate, tracked work).
+const CONVERTED = ['aqa/poetry/planning'];
 
 // Demand-phrases: asking the student to hand over context the system holds. Case-insensitive.
 // Each carries a short label for the failure message.

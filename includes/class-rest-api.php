@@ -1508,6 +1508,11 @@ class SWML_REST_API {
             // student hasn't picked yet — the router then serves the picker roster only.
             'current_poem_id' => sanitize_key($params['currentPoemId'] ?? ''),
             'done_poem_ids'   => array_values(array_filter(array_map('sanitize_key', (array) ($params['donePoemIds'] ?? [])))),
+            // v7.20.246 poetry PLANNING: the student's chosen COMPARISON poem id (the b1
+            // theme-chip pick). The router looks its full text up from the bank by id and
+            // injects BOTH the focus poem (resolved server-side from topicData) and this
+            // comparison poem — so b4/b5 quote validation has both texts without any paste.
+            'comparison_poem' => sanitize_key($params['comparisonPoem'] ?? ($params['comparison_poem'] ?? '')),
             // v7.20.205 C-LADDER: the code-derived scaffolding-ladder state for THIS planning turn
             // (active element, rung to play, regime, wallet balance, the deterministic pre-verdict).
             // Frontend sends null off AQA Lang P2 planning → no ladder directive is built.

@@ -969,6 +969,187 @@
         }
         return { plain: plain, html: html };
     }
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // v7.20.246 POETRY COMPARISON PLANNING (b1) — the paste-wall killer.
+    // A parallel code-served chain arm for AQA poetry planning. It opens the lesson already
+    // knowing the FOCUS poem + question (resolved from the topic bank) and offers the
+    // COMPARISON poem as inline theme-matched chips loaded from the anthology bank — so the
+    // student never pastes a poem. On pick, the choice is recorded as a hidden
+    // @COMPARISON_POEM marker in chat history (resume-safe; the router re-looks-up the text
+    // by id) and the turn hands off to the protocol at B.2. Module-scope so BOTH canvas
+    // twins can call it; the twin-local chat objects arrive via `ctx`.
+    // ────────────────────────────────────────────────────────────────────────────
+    function _poetryPlanActive() {
+        return state.task === 'planning'
+            && (state.board || '').toLowerCase() === 'aqa'
+            && (state.subject || '') === 'poetry_anthology';
+    }
+    // Strip markdown-import asterisk artefacts from a bank field (all 15 L&R rows leak a
+    // leading/trailing ** on title/poet). Shared by the chips AND any bank render.
+    function cleanPoemField(s) {
+        return String(s == null ? '' : s).replace(/^[*\s]+/, '').replace(/[*\s]+$/, '').trim();
+    }
+    // Focus-poem-keyed comparison recommendations (deterministic — keyed off the KNOWN focus
+    // poem, no free-text question parsing). ids match get_anthology_poems_map / the
+    // swml_poems_aqa_love_relationships bank. Each list = ~5 canonical AQA Love &
+    // Relationships thematic pairings for that focus poem.
+    const POEM_PAIRINGS = {
+        climbing_my_grandfather:   ['follower', 'walking_away', 'before_you_were_mine', 'eden_rock', 'mother_any_distance'],
+        follower:                  ['climbing_my_grandfather', 'walking_away', 'mother_any_distance', 'before_you_were_mine', 'eden_rock'],
+        walking_away:              ['mother_any_distance', 'follower', 'eden_rock', 'climbing_my_grandfather', 'before_you_were_mine'],
+        before_you_were_mine:      ['follower', 'climbing_my_grandfather', 'walking_away', 'eden_rock', 'mother_any_distance'],
+        mother_any_distance:       ['walking_away', 'follower', 'before_you_were_mine', 'climbing_my_grandfather', 'eden_rock'],
+        eden_rock:                 ['walking_away', 'follower', 'climbing_my_grandfather', 'before_you_were_mine', 'neutral_tones'],
+        neutral_tones:             ['when_we_two_parted', 'winter_swans', 'porphyrias_lover', 'the_farmers_bride', 'letters_from_yorkshire'],
+        winter_swans:              ['loves_philosophy', 'neutral_tones', 'sonnet_29_i_think_of_thee', 'when_we_two_parted', 'letters_from_yorkshire'],
+        when_we_two_parted:        ['neutral_tones', 'porphyrias_lover', 'the_farmers_bride', 'winter_swans', 'loves_philosophy'],
+        loves_philosophy:          ['sonnet_29_i_think_of_thee', 'winter_swans', 'singh_song', 'porphyrias_lover', 'when_we_two_parted'],
+        sonnet_29_i_think_of_thee: ['loves_philosophy', 'winter_swans', 'letters_from_yorkshire', 'singh_song', 'before_you_were_mine'],
+        singh_song:                ['loves_philosophy', 'sonnet_29_i_think_of_thee', 'winter_swans', 'letters_from_yorkshire', 'before_you_were_mine'],
+        letters_from_yorkshire:    ['winter_swans', 'sonnet_29_i_think_of_thee', 'walking_away', 'neutral_tones', 'mother_any_distance'],
+        the_farmers_bride:         ['porphyrias_lover', 'when_we_two_parted', 'neutral_tones', 'loves_philosophy', 'winter_swans'],
+        porphyrias_lover:          ['the_farmers_bride', 'when_we_two_parted', 'neutral_tones', 'loves_philosophy', 'singh_song'],
+    };
+    // The student's chosen comparison poem id, recovered from the hidden @COMPARISON_POEM
+    // marker in chat history (resume-safe source of truth). '' when none chosen yet.
+    function _poetryComparisonId(history) {
+        const h = history || [];
+        for (let i = h.length - 1; i >= 0; i--) {
+            const c = (h[i] && h[i].content) || '';
+            const m = /@COMPARISON_POEM(\{[^\n]*\})/.exec(c);
+            if (m) { try { const o = JSON.parse(m[1]); if (o && o.id) return String(o.id); } catch (_) {} }
+        }
+        return '';
+    }
+    // Which poetry-plan stage (if any) the code should serve for this history.
+    // 'pgreet' = the greeting + comparison-chip picker (the render is idempotent, so it is
+    // safe to re-serve on resume / when the student types instead of tapping). null once a
+    // comparison is chosen (protocol owns B.2+) or on a legacy/live conversation.
+    function _poetryPlanStageFor(history) {
+        if (!_poetryPlanActive()) return null;
+        const h = history || [];
+        if (_poetryComparisonId(h)) return null;
+        const askedGreeting = h.some(m => m.role === 'assistant'
+            && /planning your comparison of/i.test(_planChainNorm(m.content || '')));
+        const hasAssistant = h.some(m => m.role === 'assistant');
+        if (hasAssistant && !askedGreeting) return null; // pre-build / legacy chat — don't hijack
+        return 'pgreet';
+    }
+    // Fetch this lesson's focus poem + question + the anthology poem list. Resolves the focus
+    // poem's id by title match so the chips exclude it and downstream state holds it.
+    // Returns { focusId, focusTitle, focusPoet, question, poems:[{id,title,poet,poem_text}] }.
+    function _poetryPlanLessonData() {
+        const bt = 'board=' + encodeURIComponent(state.board || '') + '&text=' + encodeURIComponent(state.text || '');
+        return Promise.all([
+            fetch(API.topicQuestions + '?' + bt, { headers }).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(API.poems + '?' + bt, { headers }).then(r => r.ok ? r.json() : null).catch(() => null),
+        ]).then(function (res) {
+            const tq = res[0], pr = res[1];
+            const poems = ((pr && pr.poems) || []).map(function (p) {
+                return { id: p.id, title: cleanPoemField(p.title), poet: cleanPoemField(p.poet), poem_text: p.poem_text || '' };
+            });
+            let focusTitle = '', focusPoet = '', question = '';
+            const topics = (tq && (tq.topics || (Array.isArray(tq) ? tq : null))) || [];
+            const tn = parseInt(state.topicNumber || 0, 10);
+            let topic = null;
+            for (let i = 0; i < topics.length; i++) { if (parseInt(topics[i].topic_number || 0, 10) === tn) { topic = topics[i]; break; } }
+            if (topic) { focusTitle = cleanPoemField(topic.focus_poem || ''); focusPoet = cleanPoemField(topic.focus_poet || ''); question = topic.question_text || ''; }
+            if (!question) question = state.question || '';
+            const norm = function (s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ''); };
+            let focusId = '';
+            if (focusTitle) {
+                const f = poems.find(function (p) { return norm(p.title) === norm(focusTitle); });
+                if (f) { focusId = f.id; if (!focusPoet) focusPoet = f.poet; }
+            }
+            return { focusId: focusId, focusTitle: focusTitle, focusPoet: focusPoet, question: question, poems: poems };
+        });
+    }
+    // Render the poetry greeting + comparison-chip picker (the only code-served poetry turn).
+    // ctx = { addChatMessage, chatMessages, history, chatId, chatTextarea, send, setSilent }.
+    // Idempotent: if the greeting is already in history (resume / typed-bypass) it re-appends
+    // only the picker, never a duplicate greeting.
+    function _renderPoetryPlanQuestion(stage, ctx) {
+        if (stage !== 'pgreet') return;
+        const already = (ctx.history || []).some(function (m) {
+            return m.role === 'assistant' && /planning your comparison of/i.test(_planChainNorm(m.content || ''));
+        });
+        ctx.addChatMessage(already ? '<p>Loading your anthology…</p>' : '<p>Setting up your poetry comparison…</p>',
+            'ai', 'Setting up your poetry comparison…', { suppressActions: true });
+        const bubble = ctx.chatMessages.lastElementChild;
+        const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+        _poetryPlanLessonData().then(function (info) {
+            // Persist the focus poem into state so the chips exclude it AND the per-turn
+            // forward / preamble hold it.
+            if (info.focusId) { state.poem = info.focusId; state.poemTitle = info.focusTitle; state.poemAuthor = info.focusPoet; }
+            let html, plain;
+            if (already) {
+                plain = 'Choose the poem you\'ll compare it with:';
+                html = '<p>Choose the poem you\'ll compare <strong>' + escapeHTML(info.focusTitle || 'your focus poem') + '</strong> with:</p>';
+            } else {
+                const poetBit = info.focusPoet ? ' by ' + escapeHTML(info.focusPoet) : '';
+                const qBit = info.question ? ' for: <em>' + escapeHTML(info.question) + '</em>' : '';
+                plain = 'We\'re planning your comparison of ' + (info.focusTitle || 'your focus poem') + (info.question ? ' for: ' + info.question : '') + '. Choose the poem to compare it with:';
+                html = '<p>We\'re <strong>planning your comparison of ' + escapeHTML(info.focusTitle || 'your focus poem') + '</strong>' + poetBit + qBit + '.</p><p style="margin-top:8px">Choose the anthology poem you\'ll compare it with:</p>';
+            }
+            if (bc) bc.innerHTML = html;
+            if (!already) {
+                ctx.history.push({ role: 'assistant', content: plain });
+                saveCanvasChat(ctx.history, ctx.chatId);
+            }
+            if (bc) _appendPoetryComparisonChips(bc, info, ctx);
+        });
+    }
+    // Build the comparison-poem chips into `bc`. ~5 focus-keyed theme picks + Browse-all +
+    // an off-bank typed fallback. On pick: set state.comparison* + record the hidden marker
+    // + silent hand-off to the protocol.
+    function _appendPoetryComparisonChips(bc, info, ctx) {
+        const focusId = info.focusId || state.poem || '';
+        const byId = {}; info.poems.forEach(function (p) { byId[p.id] = p; });
+        const others = info.poems.filter(function (p) { return p.id !== focusId; });
+        const rec = (POEM_PAIRINGS[focusId] || []).map(function (id) { return byId[id]; })
+            .filter(Boolean).filter(function (p) { return p.id !== focusId; });
+        const recSet = {}; rec.forEach(function (p) { recSet[p.id] = true; });
+        const bar = el('div', { className: 'swml-quick-actions' });
+        const pick = function (p) {
+            bar.remove();
+            state.comparisonPoem = p.id;
+            state.comparisonPoemTitle = p.title;
+            state.comparisonPoemText = cleanPoemField(p.poem_text || '');
+            ctx.history.push({ role: 'user', content: '@COMPARISON_POEM' + JSON.stringify({ id: p.id, title: p.title }), preChain: true, hidden: true });
+            saveCanvasChat(ctx.history, ctx.chatId);
+            ctx.setSilent(true);
+            ctx.chatTextarea.value = 'I\'ll compare with ' + p.title + '.';
+            ctx.send();
+        };
+        const addChip = function (p, star) {
+            bar.appendChild(el('button', {
+                className: 'swml-quick-btn',
+                textContent: (star ? '★ ' : '') + p.title + (p.poet ? ' — ' + p.poet : ''),
+                onClick: function () { pick(p); },
+            }));
+        };
+        rec.forEach(function (p) { addChip(p, true); });
+        const rest = others.filter(function (p) { return !recSet[p.id]; });
+        if (rest.length) {
+            const moreBtn = el('button', { className: 'swml-quick-btn', textContent: 'Browse all ' + others.length + ' poems' });
+            moreBtn.addEventListener('click', function () { moreBtn.remove(); rest.forEach(function (p) { addChip(p, false); }); });
+            bar.appendChild(moreBtn);
+        } else if (!rec.length) {
+            others.forEach(function (p) { addChip(p, false); });
+        }
+        // Off-bank fallback — the ONE surviving paste path (student types an off-anthology
+        // title; they paste its text in chat and the AI reads it from the conversation).
+        const offBtn = el('button', { className: 'swml-quick-btn', textContent: 'Another poem (not listed)' });
+        offBtn.addEventListener('click', function () {
+            const title = (window.prompt('Type the title of the poem you want to compare with:') || '').trim();
+            if (!title) return;
+            pick({ id: title.toLowerCase().replace(/\s+/g, '_'), title: title, poet: '', poem_text: '' });
+        });
+        bar.appendChild(offBtn);
+        bc.appendChild(bar);
+    }
+
     // v7.20.56: ask-then-reveal, beat 2 (the REVEAL) — prepended to whatever chain
     // question renders immediately after the student's recall answer (ordering-
     // robust by construction). Grade / total / priority target are interpolated
@@ -13186,6 +13367,30 @@
             // While the setup chain is incomplete, code owns the turn: record the reply,
             // file predictions verbatim into the document, ask the next capture — no AI
             // round-trip. The boot's silent "Let's begin!" renders the S0 greeting card.
+            if (_poetryPlanActive()) {
+                const _ppStage = _poetryPlanStageFor(canvasChatHistory);
+                if (_ppStage) {
+                    const _pSilent = canvasSilentSend;
+                    canvasSilentSend = false;
+                    if (!_pSilent) addChatMessage(msg, 'user');
+                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _pSilent });
+                    chatTextarea.value = '';
+                    chatTextarea.style.height = '40px';
+                    _renderPoetryPlanQuestion(_ppStage, {
+                        addChatMessage: addChatMessage,
+                        chatMessages: chatMessages,
+                        history: canvasChatHistory,
+                        chatId: canvasChatId,
+                        chatTextarea: chatTextarea,
+                        send: sendCanvasMessageQueued,
+                        setSilent: function (v) { canvasSilentSend = v; },
+                    });
+                    setTimeout(_refreshPlanningSidebar, 250);
+                    console.log('WML poetry-plan: code-served "' + _ppStage + '" (no AI turn)');
+                    return;
+                }
+                // stage null → comparison chosen or legacy → fall through to the API (B.2+).
+            }
             if (_planPreChainActive()) {
                 _prefetchPriorPhase(); // v7.20.56: idempotent — arms the reflect stage
                 const _ppcStage = _planPreChainStageFor(canvasChatHistory);
@@ -13491,6 +13696,10 @@
                         // complete (picker excludes them). Empty/[] off a poetry-CN doc.
                         currentPoemId: _poetryCnCurrentPoemId(canvasChatHistory),
                         donePoemIds: _poetryCnDonePoemIds(),
+                        // v7.20.246 poetry PLANNING: the chosen comparison poem id (from the
+                        // b1 chip pick, resume-safe via the @COMPARISON_POEM history marker).
+                        // The router injects BOTH poems' text by id. '' off a poetry-plan doc.
+                        comparison_poem: _poetryComparisonId(canvasChatHistory) || (state.comparisonPoem || ''),
                         // v7.17.47: attempt + suffix required for assessment state pointer
                         attempt: state.attempt || 1,
                         suffix: (typeof WML !== 'undefined' && WML.resolveStorageSuffix)
@@ -23261,6 +23470,30 @@
 
                             // v7.20.49: PRE-PLANNING CHAIN gate (mirrors primary pipeline) —
                             // AQA Lang P2 planning monolith S0–S1 captures, code-owned.
+                            if (_poetryPlanActive()) {
+                                const _ppStage = _poetryPlanStageFor(canvasChatHistory);
+                                if (_ppStage) {
+                                    const _pSilent = canvasSilentSend;
+                                    canvasSilentSend = false;
+                                    if (!_pSilent) addChatMessage(msg, 'user');
+                                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _pSilent });
+                                    chatTextarea.value = '';
+                                    chatTextarea.style.height = '40px';
+                                    _renderPoetryPlanQuestion(_ppStage, {
+                                        addChatMessage: addChatMessage,
+                                        chatMessages: chatMessages,
+                                        history: canvasChatHistory,
+                                        chatId: canvasChatId,
+                                        chatTextarea: chatTextarea,
+                                        send: sendCanvasMessage,
+                                        setSilent: function (v) { canvasSilentSend = v; },
+                                    });
+                                    setTimeout(_refreshPlanningSidebar, 250);
+                                    console.log('WML poetry-plan: code-served "' + _ppStage + '" (no AI turn)');
+                                    return;
+                                }
+                                // stage null → comparison chosen or legacy → fall through to the API (B.2+).
+                            }
                             if (_planPreChainActive()) {
                                 _prefetchPriorPhase(); // v7.20.56: arms the reflect stage (twin)
                                 const _ppcStage = _planPreChainStageFor(canvasChatHistory);
@@ -23463,6 +23696,10 @@
                                         // v7.19.978: poetry Conceptual Notes one-doc flow (twin pipeline).
                                         currentPoemId: _poetryCnCurrentPoemId(canvasChatHistory),
                                         donePoemIds: _poetryCnDonePoemIds(),
+                                        // v7.20.246 poetry PLANNING: the chosen comparison poem id
+                                        // (b1 chip pick, resume-safe via @COMPARISON_POEM marker).
+                                        // Router injects BOTH poems' text by id. '' off poetry-plan.
+                                        comparison_poem: _poetryComparisonId(canvasChatHistory) || (state.comparisonPoem || ''),
                                         // v7.20.205 C-LADDER (twin): derived rung/wallet/regime → PHP TELL.
                                         ladder: _ladderPostPayload(_ladderTold, _ladderPre),
                                     })

@@ -1015,7 +1015,13 @@ class SWML_Protocol_Router {
             // model improvise a poem list or ask the student to paste the poem.
             $poem_title = $context['poem_title'] ?? '';
             $poem = $context['poem'] ?? '';
-            if ($task === 'conceptual_notes' && $is_poetry_sub) {
+            if ($task === 'planning' && $is_poetry_sub) {
+                // v7.20.246: poetry comparison PLANNING (b1) — kill the paste wall. The
+                // focus poem + question resolve server-side from topicData; the comparison
+                // poem id arrives from the b1 theme-chip pick. Injects BOTH poems' full text
+                // so all downstream b4/b5 quote work needs no student paste.
+                $skip_block = $this->build_poetry_planning_injection($context);
+            } else if ($task === 'conceptual_notes' && $is_poetry_sub) {
                 $skip_block = $this->build_poetry_cn_injection($context);
             } else if ($task === 'conceptual_notes' && $is_nonfiction_sub) {
                 // v7.20.38: nonfiction anthology one-doc walk — same data contract as poetry
@@ -1463,6 +1469,155 @@ class SWML_Protocol_Router {
             }
         } else {
             $b .= "\nNo poem selected yet — present the picker (two-step disclosure: ~5 recommended if a recommended list is provided, then \"See all poems…\") and wait for the student's choice.\n";
+        }
+
+        return $b;
+    }
+
+    /**
+     * v7.20.246: Poetry comparison PLANNING injection (b1 — the paste-wall killer).
+     *
+     * Poetry planning compares a FOCUS poem (printed on the exam paper, fixed by the topic)
+     * against a COMPARISON poem the student picks from the anthology. Before v246 the ONLY
+     * path for both poems' text into the API was the student pasting them in b1 Steps 3-5
+     * (the paste wall). This resolves both server-side instead:
+     *   - focus poem: topicData.focus_poem (TITLE) for this board/text/topic → roster id →
+     *     full text from the swml_poems_{board}_{anthology} bank.
+     *   - comparison poem: the id from the b1 theme-chip pick ($context['comparison_poem'])
+     *     → full text from the same bank.
+     *   - the question: topicData.question_text (fallback $context['question']).
+     * Injected as authoritative session data with a hard gate: never re-ask, never demand a
+     * paste, quote ONLY from these two texts. Fails loud (never invents) on a missing text.
+     * Mirrors build_poetry_cn_injection's bank walk + canonical slug ladder.
+     */
+    private function build_poetry_planning_injection($context) {
+        $board = sanitize_key($context['board'] ?? '');
+        $text  = (string) ($context['text'] ?? '');
+        $topic_number = absint($context['topic_number'] ?? 0);
+        $comp_id = sanitize_key($context['comparison_poem'] ?? '');
+
+        $b = "\n\n## ⚠️ POETRY COMPARISON — SESSION DATA (read before anything else) ⚠️\n\n";
+
+        // ── Roster (same source + slug ladder as build_poetry_cn_injection) ──
+        $map = class_exists('Sophicly_Writing_Mastery_Lab')
+            ? Sophicly_Writing_Mastery_Lab::instance()->get_anthology_poems_map()
+            : [];
+        $canon = class_exists('SWML_REST_API') ? SWML_REST_API::canonical_slug($text) : $text;
+        $cands = [];
+        foreach ([$text, $canon, preg_replace('/_poetry$/', '', $text), $text . '_poetry',
+                  preg_replace('/_poetry$/', '', (string) $canon), $canon . '_poetry'] as $c) {
+            $c = (string) $c;
+            if ($c !== '' && !in_array($c, $cands, true)) $cands[] = $c;
+        }
+        $anthology = '';
+        $roster = [];
+        foreach ($cands as $c) {
+            if (!empty($map[$board . '|' . $c])) { $anthology = $c; $roster = $map[$board . '|' . $c]; break; }
+        }
+
+        // ── Topic → focus poem TITLE + the question (server-authoritative) ──
+        $topic = null;
+        if (class_exists('SWML_Topic_Questions') && $topic_number > 0) {
+            foreach ($cands as $c) {
+                $t = SWML_Topic_Questions::get_topic($board, $c, $topic_number);
+                if ($t) { $topic = $t; break; }
+            }
+        }
+        $focus_title = $topic ? trim((string) ($topic['focus_poem'] ?? ''), "* \t") : '';
+        $focus_poet  = $topic ? trim((string) ($topic['focus_poet'] ?? ''), "* \t") : '';
+        $question    = $topic ? (string) ($topic['question_text'] ?? '') : '';
+        if (trim($question) === '') $question = (string) ($context['question'] ?? '');
+
+        if (empty($roster)) {
+            error_log("WML Poetry-Planning: NO ROSTER board={$board} text={$text} (tried " . implode(',', $cands) . ")");
+            $b .= "**POEM BANK UNAVAILABLE.** Tell the student plainly that their anthology isn't loaded yet and to report it to their tutor. Do NOT invent poems, guess any poem's contents, or ask the student to paste a poem.\n";
+            return $b;
+        }
+
+        // Focus poem id by title match (both sides cleaned of markdown + punctuation).
+        $norm = function ($s) { return preg_replace('/[^a-z0-9]+/', '', strtolower(trim((string) $s, "* \t"))); };
+        $focus_id = '';
+        if ($focus_title !== '') {
+            foreach ($roster as $p) {
+                if ($norm($p['title'] ?? '') === $norm($focus_title)) {
+                    $focus_id = $p['id'] ?? '';
+                    if ($focus_poet === '') $focus_poet = trim((string) ($p['poet'] ?? ''), "* \t");
+                    break;
+                }
+            }
+        }
+
+        // Comparison title/poet from the roster (id → row).
+        $comp_title = ''; $comp_poet = '';
+        if ($comp_id !== '') {
+            foreach ($roster as $p) {
+                if (($p['id'] ?? '') === $comp_id) {
+                    $comp_title = trim((string) ($p['title'] ?? ''), "* \t");
+                    $comp_poet  = trim((string) ($p['poet'] ?? ''), "* \t");
+                    break;
+                }
+            }
+        }
+
+        // Poem-text resolver — walk every swml_poems_{board}_* option for an id with non-empty
+        // poem_text (slug-independent; same as build_poetry_cn_injection, fixes slug-drift misses).
+        $resolve_text = function ($poem_id) use ($board, $anthology) {
+            $poem_id = sanitize_key($poem_id);
+            if ($poem_id === '') return '';
+            global $wpdb;
+            $opt_names = $wpdb->get_col($wpdb->prepare(
+                "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+                $wpdb->esc_like('swml_poems_' . $board . '_') . '%'
+            ));
+            array_unshift($opt_names, 'swml_poems_' . $board . '_' . $anthology);
+            foreach (array_unique($opt_names) as $opt) {
+                $rows = get_option($opt, []);
+                if (!is_array($rows)) continue;
+                foreach ($rows as $r) {
+                    if (is_array($r) && sanitize_key($r['id'] ?? '') === $poem_id
+                        && trim((string) ($r['poem_text'] ?? '')) !== '') {
+                        return (string) $r['poem_text'];
+                    }
+                }
+            }
+            return '';
+        };
+        $focus_text = $resolve_text($focus_id);
+        $comp_text  = $resolve_text($comp_id);
+
+        // ── Gate: the session already holds everything; never re-ask or demand a paste ──
+        $b .= "The lesson is fully set up. NEVER ask the student to name, identify, type, or paste the focus poem, the comparison poem, or the question — all three are below. NEVER re-run any 'setup', 'readiness', or 'which poem' step. Begin at **B.2 Goal Setting** (or wherever the conversation already is). Quote ONLY from the two poem texts printed below — never from memory.\n\n";
+
+        if (trim($question) !== '') {
+            $b .= "### The essay question\n{$question}\n\n";
+        }
+
+        // Focus poem
+        if ($focus_title !== '') {
+            $b .= "### Focus poem (fixed by the exam paper): {$focus_title}" . ($focus_poet !== '' ? " — {$focus_poet}" : '') . "\n";
+            if (trim($focus_text) !== '') {
+                $b .= "#### Full text of {$focus_title} — quote ONLY from this:\n```\n" . trim($focus_text) . "\n```\n\n";
+            } else {
+                error_log("WML Poetry-Planning: focus text MISSING title='{$focus_title}' id='{$focus_id}' board={$board} anth={$anthology}");
+                $b .= "**FOCUS POEM TEXT UNAVAILABLE** — tell the student it isn't loaded yet and to report it; do NOT quote it from memory or invent lines.\n\n";
+            }
+        } else {
+            error_log("WML Poetry-Planning: NO focus poem for topic {$topic_number} board={$board} text={$text}");
+            $b .= "**FOCUS POEM NOT SET** for this topic — work with the comparison poem the student picked and tell them the focus poem isn't configured yet; do NOT invent one.\n\n";
+        }
+
+        // Comparison poem
+        if ($comp_id !== '') {
+            $comp_label = $comp_title !== '' ? $comp_title : $comp_id;
+            $b .= "### Comparison poem (the student's anthology choice): {$comp_label}" . ($comp_poet !== '' ? " — {$comp_poet}" : '') . "\n";
+            if (trim($comp_text) !== '') {
+                $b .= "#### Full text of {$comp_label} — quote ONLY from this:\n```\n" . trim($comp_text) . "\n```\n\n";
+            } else {
+                error_log("WML Poetry-Planning: comparison text MISSING id='{$comp_id}' board={$board} anth={$anthology}");
+                $b .= "**COMPARISON POEM TEXT UNAVAILABLE** — the student chose this poem but its text isn't loaded. If they typed an off-anthology poem, its pasted text will be in the conversation — use that; otherwise tell them to report it and do NOT quote it from memory.\n\n";
+            }
+        } else {
+            $b .= "The student has not yet chosen a comparison poem. Wait for their b1 pick before comparative work — do NOT invent one or ask them to paste it.\n\n";
         }
 
         return $b;
