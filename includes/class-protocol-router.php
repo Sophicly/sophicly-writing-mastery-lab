@@ -1495,6 +1495,7 @@ class SWML_Protocol_Router {
         $text  = (string) ($context['text'] ?? '');
         $topic_number = absint($context['topic_number'] ?? 0);
         $comp_id = sanitize_key($context['comparison_poem'] ?? '');
+        $goal    = sanitize_text_field($context['poetry_goal'] ?? '');
 
         $b = "\n\n## ⚠️ POETRY COMPARISON — SESSION DATA (read before anything else) ⚠️\n\n";
 
@@ -1586,7 +1587,20 @@ class SWML_Protocol_Router {
         $comp_text  = $resolve_text($comp_id);
 
         // ── Gate: the session already holds everything; never re-ask or demand a paste ──
-        $b .= "The lesson is fully set up. NEVER ask the student to name, identify, type, or paste the focus poem, the comparison poem, or the question — all three are below. NEVER re-run any 'setup', 'readiness', or 'which poem' step. Begin at **B.2 Goal Setting** (or wherever the conversation already is). Quote ONLY from the two poem texts printed below — never from memory.\n\n";
+        $b .= "The lesson is fully set up. NEVER ask the student to name, identify, type, or paste the focus poem, the comparison poem, or the question — all three are below. NEVER re-run any 'setup', 'readiness', or 'which poem' step. Quote ONLY from the two poem texts printed below — never from memory.\n\n";
+
+        if ($goal !== '') {
+            // v7.20.248: the INTERFACE has already run B.2 Goal Setting AND asked the B.2A
+            // key-words question via code-served picker turns. The student's key-words ANSWER
+            // is the latest user message. Gate the model past those steps so it does not
+            // re-ask them (the code owns them) and files the keywords into the correct doc box.
+            $b .= "**⚠️ B.2 GOAL + THE B.2A KEY-WORDS QUESTION ARE ALREADY DONE — the interface handled them. DO NOT REPEAT EITHER.**\n"
+                . "- The student's goal is already set: **{$goal}**. Do NOT run goal setting, do NOT ask what Level they are aiming for, do NOT emit @GOAL_SETUP or a goal panel. Keep the goal in mind when you give feedback.\n"
+                . "- The interface has ALREADY asked the student to identify the key words of the question. **Their key-words answer is the LATEST user message.** Do NOT re-ask 'what are the key words' or restate the question as a fresh question.\n"
+                . "- Begin DIRECTLY at **B.2A Socratic Validation** of their key-words answer: judge it (Accurate / Incomplete / Off-target) and guide as the protocol says. When it is accurate, FILE it into the document by emitting, on its own line, `@FIELD_SET{\"field\":\"kw-focus\",\"value\":\"<their confirmed key words>\"}` — then continue to B.2A Step 2 (command-word framing) and onward.\n\n";
+        } else {
+            $b .= "Begin at **B.2 Goal Setting** (or wherever the conversation already is).\n\n";
+        }
 
         if (trim($question) !== '') {
             $b .= "### The essay question\n{$question}\n\n";

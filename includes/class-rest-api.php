@@ -1513,6 +1513,10 @@ class SWML_REST_API {
             // injects BOTH the focus poem (resolved server-side from topicData) and this
             // comparison poem — so b4/b5 quote validation has both texts without any paste.
             'comparison_poem' => sanitize_key($params['comparisonPoem'] ?? ($params['comparison_poem'] ?? '')),
+            // v7.20.248 poetry PLANNING: the code-served goal (level + skill). Present → the
+            // router gates the API to SKIP B.2 goal-setup + the B.2A key-words opener (the
+            // interface owns them) and resume at keyword validation.
+            'poetry_goal' => sanitize_text_field($params['poetryGoal'] ?? ($params['poetry_goal'] ?? '')),
             // v7.20.205 C-LADDER: the code-derived scaffolding-ladder state for THIS planning turn
             // (active element, rung to play, regime, wallet balance, the deterministic pre-verdict).
             // Frontend sends null off AQA Lang P2 planning → no ladder directive is built.

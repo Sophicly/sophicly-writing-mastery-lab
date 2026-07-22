@@ -1022,19 +1022,59 @@
         }
         return '';
     }
-    // Which poetry-plan stage (if any) the code should serve for this history.
-    // 'pgreet' = the greeting + comparison-chip picker (the render is idempotent, so it is
-    // safe to re-serve on resume / when the student types instead of tapping). null once a
-    // comparison is chosen (protocol owns B.2+) or on a legacy/live conversation.
+    // The student's chosen goal (level + skill), recovered from the hidden @GOAL marker.
+    // Returns { level, skill, goal } or null. Resume-safe (history is persisted).
+    function _poetryGoalFromHistory(history) {
+        const h = history || [];
+        for (let i = h.length - 1; i >= 0; i--) {
+            const c = (h[i] && h[i].content) || '';
+            const m = /@GOAL(\{[^\n]*\})/.exec(c);
+            if (m) { try { const o = JSON.parse(m[1]); if (o && o.goal) return o; } catch (_) {} }
+        }
+        return null;
+    }
+    // True once the code has served the keyword-identification opener — so the student's next
+    // free-text turn is their answer, which the API then validates Socratically + files.
+    function _poetryKeywordAsked(history) {
+        return (history || []).some(function (m) {
+            return m.role === 'assistant' && /what are the key words/i.test(_planChainNorm(m.content || ''));
+        });
+    }
+    // Target-level options (AQA poetry comparison = Levels 1-6; the top three are the live
+    // targets) + the skill-focus options (the deliberate-practice target the student picks).
+    const PGOAL_LEVELS = [
+        { id: 'Level 6', label: 'Level 6 (top band)', desc: 'critical, exploratory, conceptualised — context drives the argument' },
+        { id: 'Level 5', label: 'Level 5', desc: 'thoughtful, developed comparison with well-integrated context' },
+        { id: 'Level 4', label: 'Level 4', desc: 'clear, explained comparison beginning to develop analysis' },
+    ];
+    const PGOAL_SKILLS = [
+        'Make context DRIVE the argument (not bolt-on)',
+        'Zoom into specific words for AO2',
+        'Sustain the comparison across both poems',
+        'Build a conceptualised thesis',
+    ];
+    // Which poetry-plan stage (if any) the code should serve for this history. Ordered:
+    // pgreet (greeting + comparison pick) → pgoal (level + skill picks) → pkeyword (question
+    // key-words opener). Each render is idempotent / resume-safe. Returns null once all three
+    // are done → the protocol owns everything from the keyword verdict onward.
     function _poetryPlanStageFor(history) {
         if (!_poetryPlanActive()) return null;
         const h = history || [];
-        if (_poetryComparisonId(h)) return null;
+        const hasAssistant = h.some(m => m.role === 'assistant');
         const askedGreeting = h.some(m => m.role === 'assistant'
             && /planning your comparison of/i.test(_planChainNorm(m.content || '')));
-        const hasAssistant = h.some(m => m.role === 'assistant');
-        if (hasAssistant && !askedGreeting) return null; // pre-build / legacy chat — don't hijack
-        return 'pgreet';
+        // 1. Greeting + comparison-poem pick.
+        if (!_poetryComparisonId(h)) {
+            if (hasAssistant && !askedGreeting) return null; // pre-build / legacy chat — don't hijack
+            return 'pgreet';
+        }
+        // 2. Goal (level + skill picks) — code files element_type='goal'.
+        if (!_poetryGoalFromHistory(h)) return 'pgoal';
+        // 3. Keyword-identification opener — code asks; the student's answer then goes to the
+        //    API for Socratic validation + the @FIELD_SET kw-focus fill (v7.20.247 seeding fix).
+        if (!_poetryKeywordAsked(h)) return 'pkeyword';
+        // 4. Chain complete.
+        return null;
     }
     // Fetch this lesson's focus poem + question + the anthology poem list. Resolves the focus
     // poem's id by title match so the chips exclude it and downstream state holds it.
@@ -1070,6 +1110,8 @@
     // Idempotent: if the greeting is already in history (resume / typed-bypass) it re-appends
     // only the picker, never a duplicate greeting.
     function _renderPoetryPlanQuestion(stage, ctx) {
+        if (stage === 'pgoal') { _renderPoetryGoal(ctx); return; }
+        if (stage === 'pkeyword') { _renderPoetryKeyword(ctx); return; }
         if (stage !== 'pgreet') return;
         const already = (ctx.history || []).some(function (m) {
             return m.role === 'assistant' && /planning your comparison of/i.test(_planChainNorm(m.content || ''));
@@ -1148,6 +1190,72 @@
         });
         bar.appendChild(offBtn);
         bc.appendChild(bar);
+    }
+    // ── pgoal: code-served goal setting (level + skill picks, zero API) ──
+    function _renderPoetryGoal(ctx) {
+        _poetryPlanLessonData().then(function (info) {
+            const focus = info.focusTitle || state.poemTitle || 'your focus poem';
+            const compTitle = state.comparisonPoemTitle || '';
+            const vs = compTitle ? (' against <strong>' + escapeHTML(compTitle) + '</strong>') : '';
+            const html = '<p>Great — planning <strong>' + escapeHTML(focus) + '</strong>' + vs + '.</p>'
+                + '<p style="margin-top:8px">Before we choose quotes — what <strong>AQA Level</strong> are you aiming for?</p>';
+            const plain = 'Great — planning ' + focus + (compTitle ? ' against ' + compTitle : '') + '. What AQA Level are you aiming for?';
+            ctx.addChatMessage(html, 'ai', plain, { suppressActions: true });
+            ctx.history.push({ role: 'assistant', content: plain });
+            saveCanvasChat(ctx.history, ctx.chatId);
+            const bubble = ctx.chatMessages.lastElementChild;
+            const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+            if (bc) _appendPoetryGoalChips(bc, ctx);
+        });
+    }
+    // Two-step chip flow: pick Level → pick skill focus → file element_type='goal' + hand off.
+    function _appendPoetryGoalChips(bc, ctx) {
+        const bar = el('div', { className: 'swml-quick-actions' });
+        const commit = function (level, skill) {
+            bar.remove();
+            const goalStr = level + ' — ' + skill;
+            // File the goal (element_type='goal') via the same primitive the protocol used.
+            apiPost(API.planElement, { type: 'goal', content: goalStr, step: state.step || 1 })
+                .catch(function (e) { console.warn('WML poetry-goal save failed:', e && e.message); });
+            ctx.history.push({ role: 'user', content: '@GOAL' + JSON.stringify({ level: level, skill: skill, goal: goalStr }), preChain: true, hidden: true });
+            saveCanvasChat(ctx.history, ctx.chatId);
+            ctx.addChatMessage('<p>🎯 Goal set: <strong>' + escapeHTML(goalStr) + '</strong></p>', 'ai', 'Goal set: ' + goalStr, { suppressActions: true });
+            ctx.history.push({ role: 'assistant', content: 'Goal set: ' + goalStr });
+            saveCanvasChat(ctx.history, ctx.chatId);
+            ctx.setSilent(true);
+            ctx.chatTextarea.value = 'My goal: ' + goalStr;
+            ctx.send();
+        };
+        const showSkills = function (level) {
+            bar.innerHTML = '';
+            bar.appendChild(el('div', { className: 'swml-quick-hint', style: { width: '100%', opacity: '0.75', fontSize: '13px', marginBottom: '4px' }, textContent: level + ' — and the ONE skill you most want to sharpen:' }));
+            PGOAL_SKILLS.forEach(function (sk) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: sk, onClick: function () { commit(level, sk); } }));
+            });
+            bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Something else', onClick: function () {
+                const s = (window.prompt('What skill do you most want to improve in this essay?') || '').trim();
+                if (s) commit(level, s);
+            } }));
+        };
+        PGOAL_LEVELS.forEach(function (lv) {
+            bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: lv.label, title: lv.desc, onClick: function () { showSkills(lv.id); } }));
+        });
+        bc.appendChild(bar);
+    }
+    // ── pkeyword: code-served keyword-identification OPENER (deterministic). The student's
+    // free-text answer then goes to the API for Socratic validation + the @FIELD_SET kw-focus
+    // fill. No send here — we wait for the student to type their answer.
+    function _renderPoetryKeyword(ctx) {
+        _poetryPlanLessonData().then(function (info) {
+            const q = info.question || state.question || '';
+            const qBit = q ? ('<p style="margin-top:8px">Your question: <em>' + escapeHTML(q) + '</em></p>') : '';
+            const html = '<p>🎯 Goal set. Now let\'s make sure we understand the question before choosing quotes.</p>' + qBit
+                + '<p style="margin-top:8px"><strong>What are the key words</strong> or concepts it asks you to focus on — for BOTH poems? List the ones you think matter most.</p>';
+            const plain = 'Goal set. Now the question' + (q ? ": '" + q + "'" : '') + '. What are the key words or concepts it asks you to focus on in your comparison? List the ones that matter most.';
+            ctx.addChatMessage(html, 'ai', plain, { suppressActions: true });
+            ctx.history.push({ role: 'assistant', content: plain });
+            saveCanvasChat(ctx.history, ctx.chatId);
+        });
     }
 
     // v7.20.56: ask-then-reveal, beat 2 (the REVEAL) — prepended to whatever chain
@@ -13700,6 +13808,10 @@
                         // b1 chip pick, resume-safe via the @COMPARISON_POEM history marker).
                         // The router injects BOTH poems' text by id. '' off a poetry-plan doc.
                         comparison_poem: _poetryComparisonId(canvasChatHistory) || (state.comparisonPoem || ''),
+                        // v7.20.248: the code-served goal (level + skill). Present → router gates
+                        // the API to SKIP B.2 goal-setup + the B.2A key-words opener (code owns
+                        // them) and resume at keyword validation. '' off a poetry-plan doc.
+                        poetry_goal: (_poetryGoalFromHistory(canvasChatHistory) || {}).goal || '',
                         // v7.17.47: attempt + suffix required for assessment state pointer
                         attempt: state.attempt || 1,
                         suffix: (typeof WML !== 'undefined' && WML.resolveStorageSuffix)
@@ -23700,6 +23812,9 @@
                                         // (b1 chip pick, resume-safe via @COMPARISON_POEM marker).
                                         // Router injects BOTH poems' text by id. '' off poetry-plan.
                                         comparison_poem: _poetryComparisonId(canvasChatHistory) || (state.comparisonPoem || ''),
+                                        // v7.20.248: code-served goal (level + skill) → router
+                                        // gates the API to skip B.2 + the B.2A key-words opener.
+                                        poetry_goal: (_poetryGoalFromHistory(canvasChatHistory) || {}).goal || '',
                                         // v7.20.205 C-LADDER (twin): derived rung/wallet/regime → PHP TELL.
                                         ladder: _ladderPostPayload(_ladderTold, _ladderPre),
                                     })
