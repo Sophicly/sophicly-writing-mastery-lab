@@ -1158,6 +1158,7 @@
             state.comparisonPoem = p.id;
             state.comparisonPoemTitle = p.title;
             state.comparisonPoemText = cleanPoemField(p.poem_text || '');
+            try { if (_revealComparisonPoemBtn) _revealComparisonPoemBtn(); } catch (_) {}
             ctx.history.push({ role: 'user', content: '@COMPARISON_POEM' + JSON.stringify({ id: p.id, title: p.title }), preChain: true, hidden: true });
             saveCanvasChat(ctx.history, ctx.chatId);
             ctx.setSilent(true);
@@ -1190,6 +1191,25 @@
         });
         bar.appendChild(offBtn);
         bc.appendChild(bar);
+    }
+    // ── Comparison-Poem viewer (BUILD 2, v7.20.253) — the doc only renders the FOCUS poem, so
+    // the student otherwise cannot see the poem they picked to compare against. This resolves the
+    // chosen comparison poem resume-safe: live state → the durable @COMPARISON_POEM history marker
+    // (twin-local canvasChatHistory, reachable at module scope via the exposed accessor). Returns
+    // { id, title } ('' when none chosen yet). The button/panel live in renderCanvasWorkspace; the
+    // reveal hook is set there and called by the comparison pick() below for the live-pick case.
+    let _revealComparisonPoemBtn = null;
+    function _comparisonPoemPick() {
+        if (state.comparisonPoem) return { id: String(state.comparisonPoem), title: state.comparisonPoemTitle || '' };
+        try {
+            const h = (window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : []) || [];
+            for (let i = h.length - 1; i >= 0; i--) {
+                const c = (h[i] && h[i].content) || '';
+                const m = /@COMPARISON_POEM(\{[^\n]*\})/.exec(c);
+                if (m) { try { const o = JSON.parse(m[1]); if (o && o.id) return { id: String(o.id), title: o.title || '' }; } catch (_) {} }
+            }
+        } catch (_) {}
+        return { id: '', title: '' };
     }
     // ── pgoal: code-served goal setting (level + skill picks, zero API) ──
     function _renderPoetryGoal(ctx) {
@@ -20644,6 +20664,112 @@
                 if (any) priorAttemptsBtn.style.display = '';
             }).catch(() => { /* button stays hidden */ });
         }
+
+        // ── Comparison-Poem viewer (BUILD 2, v7.20.253) — mirrors the Previous Assessments
+        // popover. Opens a scroll-isolated side panel showing the chosen comparison poem's full
+        // text plus a Browse-the-anthology list (the doc renders only the FOCUS poem). Universal
+        // anthology-comparison affordance: shown whenever a comparison poem is set (poetry today).
+        let _cmpPanel = null;
+        function _cmpRenderPanel(bodyWrap, info, pick) {
+            const byId = {}; (info.poems || []).forEach(p => { byId[p.id] = p; });
+            const focusId = info.focusId || state.poem || '';
+            bodyWrap.innerHTML = '';
+            const showWrap = el('div', { className: 'swml-cmp-show' });
+            bodyWrap.appendChild(showWrap);
+            const show = (poem, tag, offTitle) => {
+                showWrap.innerHTML = '';
+                const titleRow = el('div', { className: 'swml-cmp-titlerow' });
+                titleRow.appendChild(el('span', { className: 'swml-cmp-title', textContent: poem ? poem.title : (offTitle || 'Comparison poem') }));
+                if (tag) titleRow.appendChild(el('span', { className: 'swml-cmp-tag', textContent: tag }));
+                showWrap.appendChild(titleRow);
+                if (poem && poem.poet) showWrap.appendChild(el('div', { className: 'swml-cmp-poet', textContent: '— ' + poem.poet }));
+                const body = el('div', { className: 'swml-cmp-poem-text' });
+                if (poem && poem.poem_text) {
+                    _renderPoemBody(body, poem.poem_text);
+                } else {
+                    body.innerHTML = '<p class="swml-cmp-offbank">This is an off-anthology poem, so its text isn’t in our bank. You pasted it into the chat when you chose it — scroll the conversation to reread it.</p>';
+                }
+                showWrap.appendChild(body);
+            };
+            // Default view = the comparison poem (bank text if we hold it; else the off-bank note).
+            const cmp = pick.id ? byId[pick.id] : null;
+            if (cmp) show(cmp, 'Your comparison poem', '');
+            else if (pick.id) show(null, 'Your comparison poem', pick.title);
+            else showWrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'No comparison poem selected yet.' }));
+            // Browse the anthology — collapsible (reuses the prior-group collapse styling).
+            const wrap = el('div', { className: 'swml-prior-groupwrap swml-prior-collapsed swml-cmp-browse' });
+            const head = el('button', {
+                className: 'swml-prior-group', type: 'button',
+                innerHTML: '<span class="swml-prior-group-chev"></span> Browse the anthology <span class="swml-prior-group-count">' + (info.poems || []).length + '</span>'
+            });
+            head.addEventListener('click', () => wrap.classList.toggle('swml-prior-collapsed'));
+            wrap.appendChild(head);
+            const gbody = el('div', { className: 'swml-prior-groupbody' });
+            (info.poems || []).forEach(p => {
+                const isFocus = p.id === focusId, isCmp = p.id === pick.id;
+                const row = el('button', {
+                    className: 'swml-prior-row', type: 'button',
+                    onClick: () => show(p, isFocus ? 'Focus poem' : (isCmp ? 'Your comparison poem' : ''), '')
+                });
+                const main = el('div', { className: 'swml-prior-row-main' });
+                main.appendChild(el('span', { className: 'swml-prior-row-label', textContent: p.title + (p.poet ? ' — ' + p.poet : '') }));
+                if (isFocus) main.appendChild(el('span', { className: 'swml-cmp-rowtag', textContent: 'focus' }));
+                else if (isCmp) main.appendChild(el('span', { className: 'swml-cmp-rowtag', textContent: 'comparison' }));
+                row.appendChild(main);
+                gbody.appendChild(row);
+            });
+            wrap.appendChild(gbody);
+            bodyWrap.appendChild(wrap);
+        }
+        async function _cmpTogglePanel(anchorBtn) {
+            if (_cmpPanel) { _cmpPanel.remove(); _cmpPanel = null; anchorBtn.classList.remove('is-active'); return; }
+            _cmpPanel = el('div', { className: 'swml-extract-panel swml-cmp-poem-panel' });
+            const hdr = el('div', { className: 'swml-extract-panel-header' });
+            hdr.appendChild(el('span', { textContent: 'Comparison Poem' }));
+            hdr.appendChild(el('button', {
+                className: 'swml-extract-panel-close', textContent: '✕',
+                onClick: () => { if (_cmpPanel) { _cmpPanel.remove(); _cmpPanel = null; anchorBtn.classList.remove('is-active'); } }
+            }));
+            _cmpPanel.appendChild(hdr);
+            const bodyWrap = el('div', { className: 'swml-extract-panel-body swml-cmp-poem-body' });
+            bodyWrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Loading…' }));
+            _cmpPanel.appendChild(bodyWrap);
+            _makePanelInteractive(_cmpPanel); // drag + resize like the other pads
+            try {
+                const r = anchorBtn.getBoundingClientRect();
+                _cmpPanel.style.top = Math.max(12, r.top - 8) + 'px';
+                _cmpPanel.style.left = (r.right + 10) + 'px';
+                _cmpPanel.style.right = 'auto';
+            } catch (_) { /* default CSS position stands */ }
+            document.body.appendChild(_cmpPanel);
+            anchorBtn.classList.add('is-active');
+            try {
+                const info = await _poetryPlanLessonData();
+                if (!_cmpPanel) return; // closed while loading
+                _cmpRenderPanel(bodyWrap, info, _comparisonPoemPick());
+            } catch (_) {
+                if (!_cmpPanel) return;
+                bodyWrap.innerHTML = '';
+                bodyWrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Couldn’t load the anthology — try again in a moment.' }));
+            }
+        }
+        const SVG_CMP_POEM = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a3 3 0 0 1 3 3v14a2.5 2.5 0 0 0-2.5-2.5H3z"/><path d="M21 18a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-5a3 3 0 0 0-3 3v14a2.5 2.5 0 0 1 2.5-2.5H21z"/></svg>';
+        const comparisonPoemBtn = el('button', {
+            className: 'swml-outline-btn swml-cmp-poem-btn',
+            'data-tooltip': 'Comparison Poem',
+            'data-tooltip-pos': 'right',
+            'aria-label': 'Comparison Poem',
+            innerHTML: SVG_CMP_POEM,
+            onClick: (e) => { e.stopPropagation(); _cmpTogglePanel(comparisonPoemBtn); }
+        });
+        comparisonPoemBtn.style.display = 'none'; // empty-state law: hidden until a comparison poem is set
+        btnColumn.appendChild(comparisonPoemBtn);
+        // Reveal: live pick() calls the module hook; on resume the initial + one deferred check
+        // catch the durable marker (the history accessor may init just after this render pass).
+        _revealComparisonPoemBtn = () => { comparisonPoemBtn.style.display = ''; };
+        const _cmpInitReveal = () => { if (_comparisonPoemPick().id) comparisonPoemBtn.style.display = ''; };
+        _cmpInitReveal();
+        setTimeout(_cmpInitReveal, 600);
 
         const extractBtn = el('button', {
             className: 'swml-extract-btn',

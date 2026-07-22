@@ -5013,6 +5013,34 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 [data-swml-theme="light"] .swml-prior-row-date { color: rgba(28,29,31,0.4); }
 [data-swml-theme="light"] .swml-pa-ungraded { background: rgba(28,29,31,0.08); color: rgba(28,29,31,0.45); }
 [data-swml-theme="light"] .swml-prior-empty { color: rgba(28,29,31,0.5); }
+
+/* ── v7.20.253: Comparison-Poem viewer (BUILD 2) ── */
+.swml-cmp-poem-panel { width: 360px; }
+.swml-cmp-poem-btn.is-active { color: #7cc4f8; background: #223140; }
+.swml-canvas-light .swml-cmp-poem-btn.is-active { color: #1668b0; background: #ddeafa; }
+.swml-cmp-show { margin: 0 0 4px; }
+.swml-cmp-titlerow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.swml-cmp-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.9); }
+.swml-cmp-poet { font-size: 12px; color: rgba(255,255,255,0.5); margin: 3px 0 10px; }
+.swml-cmp-tag {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 999px; background: rgba(81,218,207,0.14); color: #51dacf;
+}
+.swml-cmp-poem-text { margin-top: 2px; }
+.swml-cmp-offbank {
+    font-size: 12px; line-height: 1.6; color: #f5a623;
+    background: rgba(245,166,35,0.08); border-radius: 8px; padding: 10px 12px; margin: 0;
+}
+.swml-cmp-rowtag {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    color: rgba(255,255,255,0.38); flex-shrink: 0;
+}
+.swml-cmp-browse { margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 2px; }
+[data-swml-theme="light"] .swml-cmp-title { color: rgba(28,29,31,0.9); }
+[data-swml-theme="light"] .swml-cmp-poet { color: rgba(28,29,31,0.5); }
+[data-swml-theme="light"] .swml-cmp-offbank { color: #9a6a10; background: rgba(245,166,35,0.12); }
+[data-swml-theme="light"] .swml-cmp-rowtag { color: rgba(28,29,31,0.4); }
+[data-swml-theme="light"] .swml-cmp-browse { border-top-color: rgba(28,29,31,0.08); }
 [data-swml-theme="light"] .swml-prior-note { color: rgba(28,29,31,0.5); border-top-color: rgba(28,29,31,0.08); }
 
 .swml-extract-panel-body h3 {
