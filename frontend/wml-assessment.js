@@ -13012,8 +13012,14 @@
                             ? 'Clearing now ends this Mark Scheme Quiz round. Every round counts toward your grade, so you\u2019ll score higher by finishing \u2014 answer every question, then see your full feedback at the end. (In the real exam there are no restarts.) Clear anyway?'
                         // v7.20.221 (Neil): in PLANNING, clear = start the plan fresh \u2014 one button,
                         // one meaning. Supersedes the .219 separate Start-fresh button.
+                        // v7.20.254 (Neil): restart is EXPENSIVE (an API cost for us) and long +
+                        // stressful for the student (poetry planning is the most arduous flow), so
+                        // the confirm now actively DISCOURAGES it and points to a fresh attempt for a
+                        // different comparison poem rather than a mid-session restart.
                         : (state.task === 'planning')
-                            ? 'Clear this chat and start your plan fresh? Your whole plan \u2014 every element you have filed \u2014 will be cleared, and you will begin again from the top. This cannot be undone.'
+                            ? (_poetryPlanActive()
+                                ? 'Start your whole plan over? Poetry planning is long and demanding \u2014 we strongly recommend finishing this one rather than restarting. Every element you have filed will be cleared and you will begin again from the top; this cannot be undone, and it means redoing all of that work. To compare a different poem, finish here and start a fresh attempt instead. Restart anyway?'
+                                : 'Start your whole plan over? Planning is long and demanding \u2014 we recommend finishing rather than restarting. Every element you have filed will be cleared and you will begin again from the top; this cannot be undone. Restart anyway?')
                             : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
                     async () => {
                         // v7.20.221 (Neil): planning clear-chat wipes the whole plan (fields +
@@ -13105,13 +13111,18 @@
                             const _postClearSend = () => {
                                 const alive = canvasEditor && !canvasEditor.isDestroyed
                                     && canvasEditor.view && canvasEditor.view.dom && canvasEditor.view.dom.isConnected;
-                                if (alive) {
+                                // v7.20.254 (Neil — "clear refreshes the whole WML, should just
+                                // refresh the chat"): planning clear must NEVER rebuild the workspace.
+                                // The editor is not destroyed on clear, and the post-clear re-greet
+                                // renders into the CHAT (poetry pgreet chips / Lang _planChain), not
+                                // the doc — so a full renderCanvasWorkspace() was pure churn and IS
+                                // the whole-WML refresh flash. Wait briefly for the editor to settle,
+                                // then re-greet in place regardless (the doc DOM persists).
+                                if (alive || ++_clearTries >= 8) {
+                                    if (!alive) console.warn('WML: editor probe unsettled after clear (8×) — re-greeting in place (no rebuild).');
                                     canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage();
-                                } else if (++_clearTries < 8) {
-                                    setTimeout(_postClearSend, 200);
                                 } else {
-                                    console.warn('WML: editor genuinely dead after clear (8 probes) — rebuilding canvas.');
-                                    renderCanvasWorkspace();
+                                    setTimeout(_postClearSend, 200);
                                 }
                             };
                             setTimeout(_postClearSend, 200);
