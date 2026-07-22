@@ -1590,8 +1590,15 @@
                             ctx.history.push({ role: 'assistant', content: _rtext });
                         }
                         saveCanvasChat(ctx.history, ctx.chatId);
-                        if (opt.advance) renderChunk(idx + 1);
-                        else appendOptions(bc, chunk, idx); // explain-more → re-offer
+                        if (opt.advance) { renderChunk(idx + 1); return; }
+                        // v7.20.256 (Neil): explain-more chips must ride the NEWEST bubble — the
+                        // expansion just served. Re-offering on the original beat bubble left the
+                        // student staring at a chip-less expansion with the way forward stranded
+                        // a bubble above (dead-end). And offer only the ADVANCING option(s): the
+                        // expansion has been read; a second "Explain more" would only repeat it.
+                        const _fwd = chunk.options.filter(function (o) { return o.advance; });
+                        appendOptions(_rtext ? lastBubbleContent() : bc,
+                            { options: _fwd.length ? _fwd : chunk.options }, idx);
                     },
                 }));
             });
@@ -1685,6 +1692,7 @@
                 ctx.history.push({ role: 'user', content: '@COMPARISON_POEM' + JSON.stringify({ id: t.id, title: t.title }), preChain: true, hidden: true });
                 saveCanvasChat(ctx.history, ctx.chatId);
                 _renderPoetryPlanQuestion('pgoal', ctx);
+                setTimeout(_refreshPlanningSidebar, 250); // v7.20.256: tick the Comparison-poem row on commit
                 return;
             }
         }
@@ -43464,10 +43472,12 @@
      * zero per-paper wiring. Rendered through _applyServerSidebar (one render path).
      */
     function _buildPlanningSidebarModel() {
-        // De-stitched planning ONLY (today: AQA P2 via the chain predicate) — sliced
-        // papers still advance their manifest steps via [PROGRESS: N] tags, and this
-        // model's numbering would fight them. Ports widen the predicate as they de-stitch.
-        if (!_planPreChainActive() || !canvasEditor) return null;
+        // De-stitched planning ONLY — sliced papers still advance their manifest steps
+        // via [PROGRESS: N] tags, and this model's numbering would fight them. Ports
+        // widen the predicate as they de-stitch. v7.20.256: + poetry (its programmatic
+        // chain de-stitched at .246–.255 but the predicate was never widened, so poetry
+        // fell to the generic essay list — the exact canvas-rule-5 miss).
+        if (!(_planPreChainActive() || _poetryPlanActive()) || !canvasEditor) return null;
         const host = canvasEditor.options && canvasEditor.options.element;
         if (!host) return null;
         const fieldText = (fid) => {
@@ -43539,6 +43549,23 @@
             // run's answers (doc survives chat clears; Neil's jump-to-Q2 repro).
             add('Predictions', 'Setup', histAvailable ? stageIdx >= L : predsFiled);
         }
+        // v7.20.256: poetry Setup rows — the programmatic chain's own stages (canvas rule
+        // 5b: every code-owned pre-chain capture gets a row). Done-ness derives from the
+        // SAME history markers the interceptor keys on (one truth): the committed
+        // @COMPARISON_POEM (post-justify), @GOAL, and the kw-focus @FIELD_SET. The kw
+        // field's text is the no-history fallback only (clear-chat wipes it, so it can't
+        // tick from a stale run).
+        if (_poetryPlanActive()) {
+            let ph = null;
+            try { ph = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null; } catch (_) { /* rows stay pending */ }
+            const phh = ph || [];
+            const kwDone = phh.some(m => m.role === 'assistant'
+                && /@FIELD_SET\s*\{[^}]*"field"\s*:\s*"kw-focus"/.test(String(m.content || '').replace(/(@[A-Z]{2,})\\_/g, '$1_')))
+                || (!ph && !!fieldText('kw-focus'));
+            add('Comparison poem', 'Setup', !!_poetryComparisonId(phh));
+            add('Grade goal', 'Setup', !!_poetryGoalFromHistory(phh));
+            add('Question key words', 'Setup', kwDone);
+        }
         // v7.20.209: plan-row done-ness — the chat HISTORY (this run's @FIELD_COMMITs) is
         // the ONE truth when available, exactly as v7.20.53 ruled for the Setup rows above.
         // Raw field text survives chat clears / abandoned runs (Neil's live P1 repro: junk
@@ -43550,11 +43577,14 @@
             const hist2 = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null;
             if (hist2) {
                 committed = {};
-                const cre = /@FIELD_COMMIT\s*(\{[^}]*\})/g;
+                // v7.20.256: + @FIELD_SET — plan boxes fill via the approval @FIELD_SET
+                // fan-out (poetry: kw-focus + all 5 plan boxes; Lang: the A-Happy mirror-
+                // back), so a COMMIT-only map never ticked those rows. Additive widen.
+                const cre = /@FIELD_(?:COMMIT|SET)\s*(\{[^}]*\})/g;
                 hist2.forEach(m2 => {
                     if (m2.role !== 'assistant') return;
                     let mm;
-                    while ((mm = cre.exec(String(m2.content || ''))) !== null) {
+                    while ((mm = cre.exec(String(m2.content || '').replace(/(@[A-Z]{2,})\\_/g, '$1_'))) !== null) {
                         try { const p = JSON.parse(mm[1]); if (p && p.field) committed[String(p.field).trim()] = true; } catch (_) { /* skip */ }
                     }
                 });
@@ -43594,7 +43624,7 @@
             if (isRetry !== true) _planSidebarTries = 0;
             const model = _buildPlanningSidebarModel();
             if (model && typeof _applyServerSidebar === 'function') { _planSidebarTries = 0; _applyServerSidebar(model); return; }
-            if (_planPreChainActive()) {
+            if (_planPreChainActive() || _poetryPlanActive()) { // v7.20.256: poetry rides the same retry ladder
                 if (_planSidebarTries < 12) {
                     _planSidebarTries++;
                     setTimeout(() => _refreshPlanningSidebar(true), 350);
