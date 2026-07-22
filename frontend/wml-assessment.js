@@ -3978,6 +3978,83 @@
     // (graceful degradation: worst case is blank, never wrong words). Protocol-agnostic: any
     // protocol adopts it by listing field ids + telling the AI when to emit. Runs in BOTH chat
     // pipelines (called beside applyCwSubstepProgress at each AI-response handler).
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // CODE-OWNED WALK ↔ API JUDGE HANDOFF (v7.20.261)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // A deterministic walk controller owns the asking (teaching text, examples, questions,
+    // chip menus — all fixed, all free) and hands ONE turn to the API when it needs a genuine
+    // judgment on the student's free text (solid-vs-thin verdict, Socratic push, concept
+    // refinement, coherence check). It then RESUMES itself and serves the next code turn.
+    //
+    // Why this exists: _cwProfileCtl (CW Step 1) hands off to the API exactly once, at the
+    // very end, and never comes back (`active = false` → fireSynthesis). CW Steps 2-4 need
+    // that handoff MID-WALK — 7× in Step 3 (one verdict per story component), 6× in Step 4
+    // (one per spine beat). Poetry BUILD 1 ("player v2 — mid-sequence API interruption +
+    // resume") is the same missing piece, so this is written as a shared capability rather
+    // than improvised per step. See CW-STEPS-2-4-PROGRAMMATIC-SPEC.md §6.
+    //
+    // Contract: arm BEFORE the send; the hook fires ONCE when that reply lands, in BOTH
+    // canvas pipelines (DUAL CHAT PIPELINE rule). Engineered against the failure modes we
+    // can name (CLAUDE.md §0d — a named failure is designed out in the same change):
+    //   · fires exactly once           → disarmed before the callback runs
+    //   · never on a load/replay       → call sites are inside the LIVE reply handler only
+    //   · never after a task switch    → the arming task is stamped and re-checked at fire
+    //   · never strands the student    → watchdog resumes the walk if no reply ever lands
+    //   · a throwing callback          → caught + warned; never breaks the chat pipeline
+    let _walkResume = null;          // { id, fn, task, seq }
+    let _walkResumeSeq = 0;
+    let _walkResumeTimer = null;
+    const WALK_RESUME_TIMEOUT_MS = 45000;
+
+    function armWalkResume(id, fn, opts) {
+        if (typeof fn !== 'function') { console.warn('WML WalkResume: arm ignored — no callback for', id); return; }
+        if (_walkResume) console.warn('WML WalkResume: replacing an un-fired hook', _walkResume.id, '→', id);
+        clearTimeout(_walkResumeTimer);
+        const seq = ++_walkResumeSeq;
+        _walkResume = { id: id, fn: fn, task: (state && state.task) || '', seq: seq };
+        console.log('WML WalkResume: armed', id, '(seq ' + seq + ')');
+        // Watchdog — an API turn that errors, is cancelled, or never returns would otherwise
+        // leave a code-owned walk permanently parked with no way for the student to continue.
+        // Resume anyway and let the walk carry on without that verdict (fail forward, loudly).
+        const ms = (opts && opts.timeoutMs) || WALK_RESUME_TIMEOUT_MS;
+        _walkResumeTimer = setTimeout(function () {
+            if (!_walkResume || _walkResume.seq !== seq) return;
+            console.warn('WML WalkResume: TIMEOUT after ' + ms + 'ms for', id, '— resuming the walk without the verdict');
+            _fireWalkResume(null, { timedOut: true });
+        }, ms);
+    }
+
+    // Fire the armed hook, if any. `reply` is the AI text that just landed (null on timeout).
+    function _fireWalkResume(reply, meta) {
+        const hook = _walkResume;
+        if (!hook) return false;
+        // A task switch mid-flight (student navigated to another lesson) must not resume a
+        // walk that no longer owns the screen.
+        const nowTask = (state && state.task) || '';
+        if (hook.task && nowTask && hook.task !== nowTask) {
+            console.warn('WML WalkResume: dropping', hook.id, '— task changed', hook.task, '→', nowTask);
+            clearWalkResume();
+            return false;
+        }
+        _walkResume = null;                 // disarm FIRST — a throwing or re-arming callback
+        clearTimeout(_walkResumeTimer);     // must never be able to fire this same hook twice
+        _walkResumeTimer = null;
+        try {
+            console.log('WML WalkResume: firing', hook.id, (meta && meta.timedOut) ? '(timeout path)' : '');
+            hook.fn(reply, meta || {});
+        } catch (e) {
+            console.warn('WML WalkResume: callback threw for', hook.id, '—', e && e.message);
+        }
+        return true;
+    }
+
+    function clearWalkResume() {
+        if (_walkResume) console.log('WML WalkResume: cleared', _walkResume.id);
+        _walkResume = null;
+        clearTimeout(_walkResumeTimer);
+        _walkResumeTimer = null;
+    }
+
     function applyFieldCommits(aiReply, studentMsg) {
         try {
             if (!aiReply || !canvasEditor) return;
@@ -13241,6 +13318,9 @@
                             // showed the AI "Welcome back" greeting + Let's-begin button and
                             // the walk never ran (controller bypassed \u2192 AI sat on the new
                             // wait-for-answers protocol).
+                            // v7.20.261: drop any armed walk-resume hook first — a cleared chat
+                            // must not have a stale mid-walk judgment fire into the fresh session.
+                            clearWalkResume();
                             setTimeout(() => { _cwProfileCtl.reset(); _cwProfileCtl.start(); }, 200);
                         } else if (isCwTask && cwStepDef) {
                             const stepLabel = cwStepDef.label || 'this step';
@@ -14858,6 +14938,12 @@
                         // Neil's live P1 drive, zero fields written (CANVAS TASK-SCOPING rule 1).
                         applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                         _planLadderFocusScroll(); // v7.20.214: scroll doc to the question now in focus
+                        // v7.20.261: a code-owned walk that handed this turn to the API for a
+                        // judgment resumes here and serves its next (free) code turn. No-op when
+                        // nothing is armed. Runs UNCONDITIONALLY — never nest it in a task guard
+                        // (CANVAS TASK-SCOPING rule 1: that is exactly how sibling tasks silently
+                        // skip). Fires AFTER the field consumers so the walk sees a settled doc.
+                        _fireWalkResume(res.reply);
                         // v7.14.69: CW sub-step progress tracking
                         if (state.task && state.task.startsWith('cw_')) {
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
@@ -24658,6 +24744,7 @@
                                         // main-pipeline note (CANVAS TASK-SCOPING rule 1).
                                         applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                                         _planLadderFocusScroll(); // v7.20.214 (twin)
+                                        _fireWalkResume(res.reply); // v7.20.261 (twin) — resume a code-owned walk
                                         // v7.14.69: CW sub-step progress tracking (training-env pipeline)
                                         if (state.task && state.task.startsWith('cw_')) {
                                             applyCwSubstepProgress(detectCwSubstep(res.reply));
