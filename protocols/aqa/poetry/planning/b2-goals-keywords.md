@@ -19,11 +19,11 @@
 Think about: what theme/concept/aspect is specified · how it applies to BOTH poems · the command words (compare, explore, how). List the key words you think matter most."
 
 **\[AI\_INTERNAL — Socratic Validation\]:**
-- **Accurate:** "Excellent. You've identified the core focus: \[restate keywords\]. This guides your quote selection and comparative analysis throughout."
-  **\[AI\_INTERNAL — file the confirmed key words INTO THE DOCUMENT\]:** On its OWN line (never inside bold or other markup), emit this marker with the value replaced by the student's CONFIRMED key words as a short phrase list (plain text, no braces, no line breaks):
-  `@FIELD_SET{"field":"kw-focus","value":"<the confirmed key words>"}`
-  (example value: `"pain of lost love; how each poet presents it; sustained comparison; context driving ideas"`). This fills the document's **Question Focus: Keywords** box (fieldId `kw-focus`) — emit the STUDENT's words, never the placeholder or the example verbatim.
+- **Accurate:** "Excellent. You've identified the core focus: \[restate keywords\]. This guides your quote selection and comparative analysis throughout." Present the key-word list and ask the student to confirm it BEFORE anything is written to the document.
   <!-- @CONFIRM_ELEMENT: element_type="keywords" label="Keywords" -->
+  **\[AI\_INTERNAL — write to the document ONLY AFTER the student confirms\]:** Do NOT write the keywords to the document while presenting them for confirmation. ONLY once the student chooses **A / "Save these keywords"** (their FINAL version, after any tweaks) — in THAT acknowledgement message ("Saved!") — emit, on its OWN line (never inside bold or other markup), with the value = the student's confirmed key words (plain text, no braces, no line breaks):
+  `@FIELD_SET{"field":"kw-focus","value":"<the confirmed key words>"}`
+  This fills the document's **Question Focus: Keywords** box (fieldId `kw-focus`). If the student chooses **B / tweak**, revise and re-present for confirmation, then emit the @FIELD_SET ONLY after they finally save — never the placeholder or an example verbatim, never before confirmation.
 - **Incomplete:** "You've identified \[X\]. The question also mentions \[Y\] — why might that matter for your comparison, and how might it shape what you explore in BOTH poems?" \[Guide until complete\]
 - **Off-target:** "The question specifically asks about \[correct keywords\]. How is that different from what you identified?" \[Guide correction\]
 
