@@ -20,6 +20,9 @@ Think about: what theme/concept/aspect is specified · how it applies to BOTH po
 
 **\[AI\_INTERNAL — Socratic Validation\]:**
 - **Accurate:** "Excellent. You've identified the core focus: \[restate keywords\]. This guides your quote selection and comparative analysis throughout."
+  **\[AI\_INTERNAL — file the confirmed key words INTO THE DOCUMENT\]:** On its OWN line (never inside bold or other markup), emit this marker with the value replaced by the student's CONFIRMED key words as a short phrase list (plain text, no braces, no line breaks):
+  `@FIELD_SET{"field":"kw-focus","value":"<the confirmed key words>"}`
+  (example value: `"pain of lost love; how each poet presents it; sustained comparison; context driving ideas"`). This fills the document's **Question Focus: Keywords** box (fieldId `kw-focus`) — emit the STUDENT's words, never the placeholder or the example verbatim.
   <!-- @CONFIRM_ELEMENT: element_type="keywords" label="Keywords" -->
 - **Incomplete:** "You've identified \[X\]. The question also mentions \[Y\] — why might that matter for your comparison, and how might it shape what you explore in BOTH poems?" \[Guide until complete\]
 - **Off-target:** "The question specifically asks about \[correct keywords\]. How is that different from what you identified?" \[Guide correction\]
