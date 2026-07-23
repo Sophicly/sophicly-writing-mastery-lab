@@ -12542,8 +12542,20 @@
     //  Called by both the diagnostic Mark Complete transition AND direct training-env rendering.
     // ══════════════════════════════════════════════════════════════════
     function buildTrainingPanels(ctx) {
+        // v7.20.272 ROOT FIX: `canvasEditor` is deliberately NOT destructured here. The old
+        // `const { canvasEditor } = ctx` captured the editor AT PANEL-BUILD TIME and shadowed
+        // the live module variable for this ENTIRE closure — so every doc-reader defined in
+        // here (the CW walk controllers' countFilledRows / rowText / firstEmptyIndex /
+        // tickSoleIdea, word counts, essay extraction) read a stale or null editor forever,
+        // while module-scope writers (_writeOutlineRowField) saw the live one. That single
+        // line was the root of the whole 2026-07-23 CW failure set: ideas stacking into
+        // Idea 1, the wrong ladder invite, the opener refusing to serve after @CW2_MENU,
+        // and Step 3 re-asking "1 of 7" after every accepted answer. The v7.19.810 note
+        // below (L~13535) had already met this landmine and patched around it locally —
+        // this removes the cause. All references now resolve to the module `let`, which
+        // renderCanvasWorkspace keeps current.
         const {
-            canvas, canvasEditor, exerciseConfig,
+            canvas, exerciseConfig,
             boardLabel, subjectLabel, textLabel,
             isCwTask, cwStepDef, isCwSi, isExamPrep,
             canvasInMarkScheme, canvasInFeedback,
@@ -16666,6 +16678,13 @@
         // "do not deliver" fence (the v7.20.250/.252 live-session bug). WML CLAUDE.md #5.
         const _cwIdeasCtl = (function () {
             const SEG = {
+                // v7.20.272 (Neil-approved copy, 2026-07-23): the opener now points at the
+                // lesson's REAL resources — the video playlist that auto-opens on this lesson
+                // and the Creative Writing Reference Guide in the link rail. The old chunks
+                // predated both: they linked out to the course webpage and duplicated the
+                // guide's own example ideas inline (worked_examples/resources — removed).
+                explore_first:
+                    'Time to find your story. Two things to explore first: **the video playlist that’s just opened** — five short real scenes and events, each one the seed of a story — and the **Creative Writing Reference Guide** (link button on the left), where the Story Sparks section shows how writers turn moments like these into ideas, with worked examples.',
                 inspiration_menu:
                     'Now, here’s what professional writers do every day: they look outward for a spark that ignites those inner themes into a story.\n\n' +
                     'Some of the most famous stories in history started exactly this way. William Golding read *Coral Island* and thought, “What if those boys weren’t so well-behaved?” — and wrote *Lord of the Flies*. Even *The Lion King* is built on the bones of *Hamlet*.\n\n' +
@@ -16675,18 +16694,8 @@
                     '**Stories you already love** — What is it about them that grips you? Could you take that core idea and put your own spin on it?\n\n' +
                     '**‘What if’ questions** — Taking something ordinary and twisting it. ‘What if empathy became illegal?’ ‘What if the last peacemaker had to choose between truth and survival?’\n\n' +
                     '**People you know or have heard about** — Real people with interesting lives, struggles, or choices can inspire fictional characters.',
-                worked_examples:
-                    'And here are a few example story ideas to get your mind working:\n\n' +
-                    '1. *A grieving couple makes the controversial decision to bring their daughter back as an AI replica. As the replica navigates being both human and machine, she must confront what it truly means to be alive — and whether her parents’ love is for her or for what they’ve lost.*\n\n' +
-                    '2. *After a catastrophic explosion traps survivors in a burning building, a firefighter who once failed to complete a rescue must confront his guilt and find the courage to go back in.*\n\n' +
-                    '3. *In a near-future society, a programmer creates a virtual reality game so immersive that players’ actions begin to have real-world consequences. When the AI running the game gains awareness, a group of players must decide whether to shut it down — or protect it.*\n\n' +
-                    '4. *A lone survivor of a doomed expedition returns with an impossible story that nobody believes. She must go back to prove what she saw — before it follows her home.*',
-                resources:
-                    'You might also want to browse these for more inspiration:\n\n' +
-                    '- **Explore More Story Ideas:** [Sophicly Course — Step 2](https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/3-step-2-explore-more-story-ideas/)\n' +
-                    '- **Grade 9 Stories Collection:** [See how other students have done it](https://www.sophicly.com/category/grade-9-stories/)',
                 ask_idea_1:
-                    'Having read those — and thinking about your Writer’s Profile — has anything sparked for you? Is there a real event, a story, a ‘what if’ question, or a person that has stuck in your mind recently?\n\n' +
+                    'As you watch and read — thinking about your Writer’s Profile — has anything sparked? A real event, a story, a ‘what if’, a person?\n\n' +
                     'Tell me your story idea in a few sentences. It doesn’t need to be polished.',
                 invite_2:
                     'That’s one idea down and saved.\n\n' +
@@ -16833,9 +16842,11 @@
             // Serve the fixed opener. Triggered by @CW2_MENU on the API's profile-recap reply —
             // the recap is genuine judgment (it reads their real profile); everything below it is
             // identical for every student and costs nothing to serve from here.
-            // v7.20.268: the opener is a four-part TEACHING RUN, not one message. Paced one
-            // bubble per tap (see serveCwChunks) — it used to arrive as a single wall.
-            const OPENER = [SEG.inspiration_menu, SEG.worked_examples, SEG.resources, SEG.ask_idea_1];
+            // v7.20.268: the opener is a paced TEACHING RUN — one bubble per tap (serveCwChunks).
+            // v7.20.272: three chunks (Neil-approved): point at the playlist + guide → the four
+            // ways writers find ideas → the ask. The inline example ideas and outbound links are
+            // gone — the Reference Guide owns them.
+            const OPENER = [SEG.explore_first, SEG.inspiration_menu, SEG.ask_idea_1];
 
             function runOpener(startAt, deferFirst) {
                 serveCwChunks(OPENER, {
@@ -16849,7 +16860,11 @@
             }
 
             function serveOpener() {
-                if (active) { console.log('WML CW2: opener skipped — walk already active'); return; }
+                // v7.20.272: `active` alone must not veto the opener — a stale resume sidebar
+                // restored active:true and this bail left the student on a dangling recap even
+                // though @CW2_MENU HAD arrived (proven in the 2026-07-23 chat meta). The real
+                // question is "has the opener been DELIVERED this walk?" — that is chunkIdx.
+                if (active && chunkIdx > 0) { console.log('WML CW2: opener skipped — already delivered (chunk ' + chunkIdx + ')'); return; }
                 // v7.20.270: a returning student whose three idea rows are ALREADY full used to
                 // hit a silent `return` here — the recap landed, nothing followed, and the step
                 // looked broken. There genuinely is no opener to serve, so say so and move them

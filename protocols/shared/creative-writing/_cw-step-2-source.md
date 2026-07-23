@@ -35,28 +35,17 @@ Here are a few ways professional writers find their ideas:
 
 **People you know or have heard about** — Real people with interesting lives, struggles, or choices can inspire fictional characters.
 
-## SEG: worked_examples
+## SEG: explore_first
 
-And here are a few example story ideas to get your mind working:
+(v7.20.272, Neil-approved 2026-07-23 — replaces the removed `worked_examples` + `resources`
+segments: the opener now points at the lesson's REAL resources — the auto-opening video playlist
+and the Reference Guide, whose Story Sparks section owns the worked examples.)
 
-1. *A grieving couple makes the controversial decision to bring their daughter back as an AI replica. As the replica navigates being both human and machine, she must confront what it truly means to be alive — and whether her parents' love is for her or for what they've lost.*
-
-2. *After a catastrophic explosion traps survivors in a burning building, a firefighter who once failed to complete a rescue must confront his guilt and find the courage to go back in.*
-
-3. *In a near-future society, a programmer creates a virtual reality game so immersive that players' actions begin to have real-world consequences. When the AI running the game gains awareness, a group of players must decide whether to shut it down — or protect it.*
-
-4. *A lone survivor of a doomed expedition returns with an impossible story that nobody believes. She must go back to prove what she saw — before it follows her home.*
-
-## SEG: resources
-
-You might also want to browse these for more inspiration:
-
-- **Explore More Story Ideas:** [Sophicly Course — Step 2](https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/3-step-2-explore-more-story-ideas/)
-- **Grade 9 Stories Collection:** [See how other students have done it](https://www.sophicly.com/category/grade-9-stories/)
+Time to find your story. Two things to explore first: **the video playlist that's just opened** — five short real scenes and events, each one the seed of a story — and the **Creative Writing Reference Guide** (link button on the left), where the Story Sparks section shows how writers turn moments like these into ideas, with worked examples.
 
 ## SEG: ask_idea_1
 
-Having read those — and thinking about your Writer's Profile — has anything sparked for you? Is there a real event, a story, a 'what if' question, or a person that has stuck in your mind recently?
+As you watch and read — thinking about your Writer's Profile — has anything sparked? A real event, a story, a 'what if', a person?
 
 Tell me your story idea in a few sentences. It doesn't need to be polished.
 
