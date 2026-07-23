@@ -39,6 +39,21 @@
    pre-planning chain (code-owned turns, no AI round-trip). ~35% of a poetry planning session's API
    calls were deterministic before this rule. Watch-it: a turn is judgment the moment it READS the
    student (an A/B tap is deterministic; "explain in your own words" is not) — never strip those.
+4b. **⭐ PACING IS A FEATURE — a code-served run delivers ONE bubble per tap (Neil, 2026-07-23).**
+   Going programmatic-first silently deletes pacing. While the API narrated a teaching run, each
+   chunk arrived on its own round-trip, so the one-at-a-time rhythm was a free by-product of
+   latency. Serve the same text from code and it all lands in a single frame — Neil on the CW
+   Step 2 opener: *"all of the messages just came at once. No, they need to come one at a time,
+   and there needs to be an acknowledgment quick-action button to move on to the next one,
+   because nobody's gonna read that."* So: **any code-served run that emits more than one bubble
+   MUST page** — emit one chunk, gate the next behind a `Continue →` chip, repeat; the LAST chunk
+   is the question and never carries a chip (the student answers it). Use the shared
+   `serveCwChunks(chunks, opts)` (wml-assessment.js, v7.20.268) — never a bare run of `aiBubble()`
+   calls. Resume-safe by design: delivered bubbles replay from saved history, so `deferFirst`
+   re-attaches the chip for the NEXT chunk instead of auto-emitting it. **Gate for every future
+   port (Steps 5-29, poetry, CN): after converting a turn to code, count consecutive `aiBubble()`
+   calls — more than one in a row is the wall, by construction.**
+
 5. **⭐ CODE-SERVED SOURCE TEXT MUST NEVER SIT IN A MANIFEST-LOADED MODULE (Neil, 2026-07-22 — the
    retained-source law).** When a deterministic turn is converted from LLM-narrated to CODE-served
    (a `@PLAY_SEQ` scripted-sequence beat, a chip menu, any canned text), its teaching/source text must
