@@ -1517,7 +1517,7 @@
     // underscores (`@PLAY\_SEQ`) and allow whitespace before the JSON so detection and strip can
     // never diverge (a marker the strip removes but detect misses = silent skip / raw leak).
     function _detectPlaySeq(reply) {
-        const s = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
+        const s = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
         const m = /@PLAY_SEQ\s*(\{[^\n}]*\})/.exec(s);
         if (!m) return '';
         try { const o = JSON.parse(m[1]); if (o && o.id && SEQUENCES[o.id]) return String(o.id); } catch (_) {}
@@ -1526,7 +1526,7 @@
     // True when a reply CARRIES a @PLAY_SEQ marker (tolerant) — used to fail loud when one is
     // present but _detectPlaySeq can't resolve it to a playable sequence (typo'd id / bad JSON).
     function _hasPlaySeqMarker(reply) {
-        return /@PLAY_SEQ/.test(String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_'));
+        return /@PLAY_SEQ/.test(String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'));
     }
     // Loop guard: true once a sequence has completed (@SEQ_DONE in history). If the API misbehaves
     // and re-emits its @PLAY_SEQ after the fact, the launch sites ignore it rather than replay.
@@ -1681,7 +1681,7 @@
     // transitions. Shared by both response twins. Order: fail-loud on an unplayable marker →
     // feedback-ack (marker or recap-shape) → code-trigger b2a on the keyword-save turn.
     function _poetryPostReplyCodeTurn(reply, ctx) {
-        const norm = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
+        const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
         // v7.20.255: comparison-choice justify verdict. The API affirms the student's reasoning then
         // emits @COMPARISON_CONFIRMED; CODE owns the LOCK — promote the TENTATIVE pick to the committed
         // @COMPARISON_POEM marker, then continue the code chain at the goal stage (pgoal). The affirming
@@ -16596,9 +16596,15 @@
             let pending = false;     // an idea is out with the API for judgment
             let filled = 0;          // ideas committed so far (code-assigned slot)
             let declined = false;    // student has said "I'm set" — never invite again
+            // v7.20.265: the ladder chips are DOM-only (never saved to chat history), so a
+            // reload while they are showing left the student with an invite and no way to
+            // answer it — `active` is false at that point, so a typed reply fell through to
+            // the raw AI path and the walk was dead. Persist the fact that a CHOICE is
+            // outstanding and re-attach the bar on resume.
+            let awaitingChoice = false;
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw2') + '_cw2'; } catch (e) { return 'swml_cw2'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ filled, declined, active })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ filled, declined, active, awaitingChoice })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { busyOff(); }
             function busyOff() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
@@ -16651,13 +16657,15 @@
                 const bar = el('div', { className: 'swml-quick-actions' });
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'Try one more',
-                    onClick: function () { bar.remove(); active = true; pending = false; persist(); resetSend(); },
+                    onClick: function () { bar.remove(); awaitingChoice = false; active = true; pending = false; persist(); resetSend(); },
                 }));
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'I’m set on what I have',
-                    onClick: function () { bar.remove(); settle(); },
+                    onClick: function () { bar.remove(); awaitingChoice = false; settle(); },
                 }));
                 bc.appendChild(bar);
+                awaitingChoice = true;
+                persist();
             }
 
             // The decline. Accepted PERMANENTLY — no re-ask, ever. This is the whole point of
@@ -16666,6 +16674,7 @@
                 declined = true;
                 active = false;
                 pending = false;
+                awaitingChoice = false;
                 console.log('WML CW2: student settled at ' + countFilledRows() + ' idea(s) — no further invites');
                 aiBubble(SEG.settled + '\n\n' + (countFilledRows() > 1 ? SEG.wrap_choose : SEG.wrap_single));
                 if (countFilledRows() <= 1) tickSoleIdea();
@@ -16722,11 +16731,12 @@
             async function handleTurn(msg) {
                 if (pending) return;
                 const clean = (msg || '').trim();
-                addChatMessage(clean, 'user');
-                canvasChatHistory.push({ role: 'user', content: clean });
-                chatTextarea.value = '';
-                chatTextarea.style.height = '40px';
                 if (!clean) { resetSend(); return; }
+                // v7.20.265: the user bubble AND the history entry are written by
+                // sendCanvasMessage (it is NOT a silent send). Writing them here as well —
+                // copied from _cwProfileCtl, which never sends — rendered every student turn
+                // TWICE and doubled it in canvasChatHistory (so Sophia saw it twice and
+                // userMsgCount was inflated). ONE writer only: the send.
                 active = false; pending = true;
                 const seen = countFilledRows();
                 armWalkResume('cw2-idea-' + (seen + 1), function (reply, meta) {
@@ -16736,7 +16746,7 @@
                     // commit anyway rather than lose the student's words.
                     const isIdea = !reply || (meta && meta.timedOut)
                         ? true
-                        : /@IDEA_LANDED/.test(String(reply).replace(/(@[A-Z]{2,})\\_/g, '$1_'));
+                        : /@IDEA_LANDED/.test(String(reply).replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'));
                     if (!isIdea) {           // a question or chit-chat — API already answered it
                         active = true; persist(); resetSend(); return;
                     }
@@ -16761,11 +16771,11 @@
             // @CW2_MENU on a landed reply = the recap is done, code takes over.
             function onReply(reply) {
                 if (state.task !== 'cw_step_2') return;
-                const norm = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
+                const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
                 if (/@CW2_MENU/.test(norm)) serveOpener();
             }
 
-            function reset() { active = false; pending = false; filled = 0; declined = false; clearPersist(); }
+            function reset() { active = false; pending = false; filled = 0; declined = false; awaitingChoice = false; clearPersist(); }
             function tryResume() {
                 try {
                     const raw = localStorage.getItem(lsKey());
@@ -16774,6 +16784,18 @@
                     if (!d) return false;
                     filled = countFilledRows(); declined = !!d.declined;
                     active = !!d.active && !declined && filled < MAX;
+                    // v7.20.265: a reload mid-invite resumes into the CHOICE, not into a typed
+                    // turn. The invite bubble is already replayed from saved history; only the
+                    // (DOM-only) chip bar needs re-attaching to it.
+                    awaitingChoice = !!d.awaitingChoice && !declined && filled < MAX;
+                    if (awaitingChoice) {
+                        setTimeout(function () {
+                            if (!awaitingChoice) return;
+                            console.log('WML CW2: resumed awaiting the ladder choice — chips re-attached');
+                            appendLadderChips();
+                        }, 400);
+                        return true;
+                    }
                     if (active) console.log('WML CW2: resumed with ' + filled + '/' + MAX + ' ideas');
                     return active;
                 } catch (e) { return false; }
@@ -16781,6 +16803,8 @@
 
             return {
                 serveOpener, handleTurn, onReply, reset, tryResume, settle,
+                forceStart: serveOpener,
+                atStart: function () { return countFilledRows() === 0 && !declined && !awaitingChoice; },
                 get active() { return active; },
                 get pending() { return pending; },
             };
@@ -16899,11 +16923,8 @@
             async function handleTurn(msg) {
                 if (pending) return;
                 const clean = (msg || '').trim();
-                addChatMessage(clean, 'user');
-                canvasChatHistory.push({ role: 'user', content: clean });
-                chatTextarea.value = '';
-                chatTextarea.style.height = '40px';
                 if (!clean) { resetSend(); return; }
+                // v7.20.265: bubble + history are the send's job — see the CW2 note. (Double-write.)
                 const step = STEPS[idx];
                 if (!step) { finish(); return; }
                 active = false; pending = true;
@@ -16914,7 +16935,7 @@
                     // On the watchdog path bank it rather than lose their words.
                     const ok = !reply || (meta && meta.timedOut)
                         ? true
-                        : /@COMPONENT_OK/.test(String(reply).replace(/(@[A-Z]{2,})\\_/g, '$1_'));
+                        : /@COMPONENT_OK/.test(String(reply).replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'));
                     if (!ok) { active = true; persist(); resetSend(); return; }
                     try {
                         if (_writeOutlineRowField(step.fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
@@ -16929,17 +16950,21 @@
                 sendCanvasMessage();
             }
 
-            function onReply(reply) {
-                if (state.task !== 'cw_step_3') return;
-                const norm = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
-                if (!/@CW3\_START/.test(norm) && !/@CW3_START/.test(norm)) return;
-                if (active) return;
+            function startWalk() {
+                if (active || pending) return;
                 idx = firstEmptyIndex();
                 if (idx >= STEPS.length) return;
                 active = true; pending = false;
                 console.log('WML CW3: code-served walk start at step ' + (idx + 1) + '/' + STEPS.length);
-                aiBubble(SEG.intro);
+                if (idx === 0) aiBubble(SEG.intro);
                 serveCurrent();
+            }
+
+            function onReply(reply) {
+                if (state.task !== 'cw_step_3') return;
+                const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                if (!/@CW3_START/.test(norm)) return;
+                startWalk();
             }
 
             function reset() { active = false; pending = false; idx = 0; clearPersist(); }
@@ -16958,7 +16983,10 @@
 
             return {
                 handleTurn, onReply, reset, tryResume,
+                forceStart: startWalk,
+                atStart: function () { return firstEmptyIndex() === 0; },
                 get active() { return active; },
+                get pending() { return pending; },
             };
         })();
 
@@ -17076,16 +17104,34 @@
                     body += prior ? '\n\n> ' + prior : '\n\n*(nothing recorded in Step 3 — tell me in your own words as you write the beat)*';
                 }
                 aiBubble(body);
-                chipBar(b.chips, function (pick) {
-                    canvasChatHistory.push({ role: 'user', content: pick, hidden: true });
+                chipBar(b.chips, onBeatChipPick(b));
+                persist();
+                resetSend();
+            }
+
+            // v7.20.265: NOT hidden — a chip pick IS the student's answer, so it must replay
+            // on reload like any other user turn. `hidden` makes the resume loop skip it,
+            // which erased their choice from the transcript.
+            function onBeatChipPick(b) {
+                return function (pick) {
+                    canvasChatHistory.push({ role: 'user', content: pick });
                     addChatMessage(pick, 'user');
                     phase = 'beat';
                     aiBubble(b.ask);
                     persist();
                     resetSend();
-                });
-                persist();
-                resetSend();
+                };
+            }
+
+            // v7.20.265: chip bars are DOM-only. On resume the QUESTION bubble replays from
+            // saved history but the bar does not — leaving the student with a menu and no
+            // buttons, and `active` true, so a typed reply was mis-committed as the BEAT.
+            // Re-attach the right bar for the phase we resumed into. (Same defect class as
+            // the poetry-CN picker re-render at the boot resume gate.)
+            function reattachChips() {
+                if (phase === 'throughline') { chipBar(THROUGHLINES, onThroughlinePick); return; }
+                const b = BEATS[idx];
+                if (b && b.chips && phase === 'chip') chipBar(b.chips, onBeatChipPick(b));
             }
 
             function serveCurrent() {
@@ -17100,14 +17146,24 @@
 
             // After beat 6: the throughline pick, then the coherence check — the one call that
             // reads ALL SIX beats together. Never strip it: it is what makes this a spine.
+            function onThroughlinePick(pick) {
+                throughline = pick;
+                persist();                       // v7.20.265: bank the pick BEFORE the send
+                canvasChatHistory.push({ role: 'user', content: pick });
+                addChatMessage(pick, 'user');
+                fireCoherenceCheck();
+            }
+            function serveWrap() {
+                aiBubble(WRAP);
+                try { applyCwSubstepProgress({ stepNum: 4, substepNum: 5, name: 'Review and Save' }); } catch (e) {}
+                resetSend();
+            }
             function serveThroughline() {
+                // v7.20.265: stamp the phase so a reload here re-attaches THESE chips rather
+                // than the (already-finished) beat menu.
+                phase = 'throughline';
                 aiBubble('All six beats are down.\n\nBefore we check them, one last choice. The strongest stories have a clear **dramatic throughline**. Which best describes your ending?');
-                chipBar(THROUGHLINES, function (pick) {
-                    throughline = pick;
-                    canvasChatHistory.push({ role: 'user', content: pick, hidden: true });
-                    addChatMessage(pick, 'user');
-                    fireCoherenceCheck();
-                });
+                chipBar(THROUGHLINES, onThroughlinePick);
                 persist();
                 resetSend();
             }
@@ -17121,13 +17177,12 @@
                     + 'not correct their spelling.]\n\nTHROUGHLINE: ' + throughline + '\n\n' + beats;
                 canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
                 active = false; pending = true;
+                phase = 'coherence'; persist();   // v7.20.265: a reload here resumes into the wrap
                 armWalkResume('cw4-coherence', function () {
                     pending = false;
                     active = false;
                     clearPersist();
-                    aiBubble(WRAP);
-                    try { applyCwSubstepProgress({ stepNum: 4, substepNum: 5, name: 'Review and Save' }); } catch (e) {}
-                    resetSend();
+                    serveWrap();
                 }, { timeoutMs: 60000 });
                 canvasSilentSend = true;
                 chatTextarea.value = 'That’s all six beats — please check they flow logically.';
@@ -17137,11 +17192,8 @@
             async function handleTurn(msg) {
                 if (pending) return;
                 const clean = (msg || '').trim();
-                addChatMessage(clean, 'user');
-                canvasChatHistory.push({ role: 'user', content: clean });
-                chatTextarea.value = '';
-                chatTextarea.style.height = '40px';
                 if (!clean) { resetSend(); return; }
+                // v7.20.265: bubble + history are the send's job — see the CW2 note. (Double-write.)
                 const b = BEATS[idx];
                 if (!b) { serveThroughline(); return; }
                 const wasIrony = (phase === 'irony');
@@ -17150,7 +17202,7 @@
                     pending = false;
                     const ok = !reply || (meta && meta.timedOut)
                         ? true
-                        : /@BEAT_OK/.test(String(reply).replace(/(@[A-Z]{2,})\\_/g, '$1_'));
+                        : /@BEAT_OK/.test(String(reply).replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'));
                     if (!ok) { active = true; persist(); resetSend(); return; }
                     // Both the beat and its irony answer land in the SAME row — the irony
                     // deepens the beat rather than being a separate box. _writeOutlineRowField
@@ -17170,16 +17222,20 @@
                 sendCanvasMessage();
             }
 
-            function onReply(reply) {
-                if (state.task !== 'cw_step_4') return;
-                const norm = String(reply || '').replace(/(@[A-Z]{2,})\\_/g, '$1_');
-                if (!/@CW4_START/.test(norm)) return;
-                if (active) return;
+            function startWalk() {
+                if (active || pending) return;
                 idx = firstEmptyBeat();
                 if (idx >= BEATS.length) return;
                 active = true; pending = false; phase = 'chip';
                 console.log('WML CW4: code-served spine walk start at beat ' + (idx + 1) + '/' + BEATS.length);
                 serveCurrent();
+            }
+
+            function onReply(reply) {
+                if (state.task !== 'cw_step_4') return;
+                const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                if (!/@CW4_START/.test(norm)) return;
+                startWalk();
             }
 
             function reset() { active = false; pending = false; idx = 0; phase = 'chip'; throughline = ''; clearPersist(); }
@@ -17188,26 +17244,73 @@
                     const raw = localStorage.getItem(lsKey());
                     if (!raw) return false;
                     const d = JSON.parse(raw);
-                    if (!d || !d.active) return false;
+                    if (!d) return false;
                     idx = firstEmptyBeat();
                     phase = d.phase || 'chip';
                     throughline = d.throughline || '';
-                    active = idx < BEATS.length;
-                    if (active) console.log('WML CW4: resumed at beat ' + (idx + 1) + '/' + BEATS.length + ' (' + phase + ')');
-                    return active;
+                    // v7.20.265: with all six beats written the walk was parked on the
+                    // throughline pick or inside the coherence check — the old
+                    // `active = idx < BEATS.length` made BOTH resolve to inert, so the student
+                    // came back to a dead step with no wrap and no sub-step progress.
+                    if (idx >= BEATS.length) {
+                        if (phase === 'coherence') {
+                            clearPersist(); active = false; pending = false;
+                            console.warn('WML CW4: resumed after an unfinished coherence check — serving the wrap');
+                            setTimeout(serveWrap, 500);
+                            return false;
+                        }
+                        phase = 'throughline'; active = true; pending = false;
+                        console.log('WML CW4: resumed at the throughline choice — chips re-attached');
+                        setTimeout(reattachChips, 400);
+                        return true;
+                    }
+                    active = true; pending = false;
+                    console.log('WML CW4: resumed at beat ' + (idx + 1) + '/' + BEATS.length + ' (' + phase + ')');
+                    if (phase === 'chip') setTimeout(reattachChips, 400);
+                    return true;
                 } catch (e) { return false; }
             }
 
             return {
                 handleTurn, onReply, reset, tryResume,
+                forceStart: startWalk,
+                atStart: function () { return firstEmptyBeat() === 0; },
                 get active() { return active; },
+                get pending() { return pending; },
             };
         })();
 
+        // v7.20.265: FAIL-LOUD START FALLBACK.
+        // All three walks begin on a marker the model must emit (@CW2_MENU / @CW3_START /
+        // @CW4_START). If it never arrives — a paraphrase, a dropped marker, a protocol file
+        // the router didn't load — the student sits on the recap forever: no opener, no chips,
+        // no way in, and NOTHING in the console says why. That was named as a known risk when
+        // Steps 2-4 shipped and left unengineered; CLAUDE.md §0d says a failure you can name
+        // gets designed out in the same change, so here it is.
+        //
+        // Fires only when the walk has DEMONSTRABLY never started: right task, controller
+        // idle, no judgment in flight, and not one row written yet. Two idle replies of grace
+        // (the recap turn itself is legitimately markerless) — then serve the opener and warn.
+        let _cwStartMisses = 0;
+        let _cwStartMissTask = '';
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
             _cwSpineCtl.onReply(reply);
+
+            const t = (state && state.task) || '';
+            const ctl = t === 'cw_step_2' ? _cwIdeasCtl
+                : t === 'cw_step_3' ? _cwLoglineCtl
+                : t === 'cw_step_4' ? _cwSpineCtl : null;
+            if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
+            if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
+            if (ctl.active || ctl.pending || !ctl.atStart()) { _cwStartMisses = 0; return; }
+            if (++_cwStartMisses < 2) return;
+            _cwStartMisses = 0;
+            console.warn('WML CW: ' + t + ' — start marker never arrived after 2 replies. '
+                + 'Code-serving the opener anyway. The protocol should have emitted it; check '
+                + 'that the router loaded the rewritten module and that the marker survived.');
+            try { ctl.forceStart(); } catch (e) { console.warn('WML CW: forceStart threw —', e && e.message); }
         });
 
         return {
@@ -17222,6 +17325,12 @@
             sendCanvasMessageQueued,   // v7.19.926: UI-driven sends defer instead of dropping
             quizCtl: _quizCtl,
             cwProfileCtl: _cwProfileCtl,
+            // v7.20.265: Steps 2-4 were never exported, so their tryResume() could not be
+            // called from the boot resume gate — every sidecar they wrote was write-only and
+            // a reload mid-walk killed the walk (typed replies fell through to the raw AI).
+            cwIdeasCtl: _cwIdeasCtl,
+            cwLoglineCtl: _cwLoglineCtl,
+            cwSpineCtl: _cwSpineCtl,
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
             set canvasChatId(v) { canvasChatId = v; },
@@ -22959,6 +23068,12 @@
                     if (state.task === 'cw_step_1' && tp.cwProfileCtl) {
                         tp.cwProfileCtl.tryResume();
                     }
+                    // v7.20.265: CW Steps 2-4 resume the same way. Bubbles are already replayed
+                    // above; these restore position only — plus the DOM-only chip bars, which
+                    // never survive a reload and left the student with a menu and no buttons.
+                    if (state.task === 'cw_step_2' && tp.cwIdeasCtl) tp.cwIdeasCtl.tryResume();
+                    if (state.task === 'cw_step_3' && tp.cwLoglineCtl) tp.cwLoglineCtl.tryResume();
+                    if (state.task === 'cw_step_4' && tp.cwSpineCtl) tp.cwSpineCtl.tryResume();
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
                     // (student types on); only re-surface the programmatic picker when NO poem is
                     // active (last poem finished, or none picked yet). The picker bubble is DOM-only
@@ -44411,7 +44526,7 @@
             try { ph = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null; } catch (_) { /* rows stay pending */ }
             const phh = ph || [];
             const kwDone = phh.some(m => m.role === 'assistant'
-                && /@FIELD_SET\s*\{[^}]*"field"\s*:\s*"kw-focus"/.test(String(m.content || '').replace(/(@[A-Z]{2,})\\_/g, '$1_')))
+                && /@FIELD_SET\s*\{[^}]*"field"\s*:\s*"kw-focus"/.test(String(m.content || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_')))
                 || (!ph && !!fieldText('kw-focus'));
             add('Comparison poem', 'Setup', !!_poetryComparisonId(phh));
             add('Grade goal', 'Setup', !!_poetryGoalFromHistory(phh));
@@ -44435,7 +44550,7 @@
                 hist2.forEach(m2 => {
                     if (m2.role !== 'assistant') return;
                     let mm;
-                    while ((mm = cre.exec(String(m2.content || '').replace(/(@[A-Z]{2,})\\_/g, '$1_'))) !== null) {
+                    while ((mm = cre.exec(String(m2.content || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'))) !== null) {
                         try { const p = JSON.parse(mm[1]); if (p && p.field) committed[String(p.field).trim()] = true; } catch (_) { /* skip */ }
                     }
                 });
