@@ -4074,6 +4074,19 @@
         });
     }
 
+    // v7.20.276: opened by the CW Step-2 chat video gate button (wml-assessment openVideo).
+    // Uses the SAME cache the lesson's own video button reads, so it always has the real CW
+    // videos; wmlVideo.open() re-loads + autoplays even if the playlist was already open (the
+    // "nothing happened" bug). Falls back to _all if the current section has no dedicated videos.
+    WML.openCwVideos = function () {
+        try {
+            fetchAllVideos().then(cache => {
+                const sectionVideos = (cache[state.step] && cache[state.step].length) ? cache[state.step] : (cache._all || []);
+                if (sectionVideos.length && window.wmlVideo) wmlVideo.open(sectionVideos);
+            }).catch(() => {});
+        } catch (e) {}
+    };
+
     function checkVideoTooltip() {
         const btn = $('#swml-video-btn');
         if (!btn) return;

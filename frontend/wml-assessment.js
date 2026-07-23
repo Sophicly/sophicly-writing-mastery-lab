@@ -16728,12 +16728,12 @@
                 // a [Watch…] button; beat 1 points at the guide and carries a [See how…] button;
                 // beat 2 points at the Take-Notes tab; beat 3 is the ask (no chip — they type).
                 // The BUTTONS are the explicit action cue the old prose-only opener lacked.
-                explore_first:
-                    'Time to find your story.\n\n' +
-                    'Start by watching. The video playlist that’s just opened has **five short real scenes and events** — each one the seed of a story. Watch them with your Writer’s Profile in mind: which moments pull at the themes you already care about?\n\n' +
-                    'Tap below when you’re ready to watch.',
+                // v7.20.276 (Neil): order swapped to GUIDE first, VIDEO second — reading is the
+                // arduous bit, get it done, finish on the enjoyable five scenes. So beat 0 =
+                // inspiration_menu (opens the step + the guide), beat 1 = explore_first (video).
                 inspiration_menu:
-                    'Now, here’s what professional writers do every day: they look outward for a spark that ignites those inner themes into a story.\n\n' +
+                    'Time to find your story.\n\n' +
+                    'Here’s what professional writers do every day: they look outward for a spark that ignites their inner themes into a story.\n\n' +
                     'Some of the most famous stories in history started exactly this way. William Golding read *Coral Island* and thought, “What if those boys weren’t so well-behaved?” — and wrote *Lord of the Flies*. Even *The Lion King* is built on the bones of *Hamlet*.\n\n' +
                     'It is completely fine to:\n- Write something entirely original\n- Retell a story that already exists, but add something new and uniquely yours\n- Combine personal experience with an external idea\n- Mix all of the above\n\n' +
                     'A few ways professional writers find their ideas:\n\n' +
@@ -16741,7 +16741,11 @@
                     '**Stories you already love** — What is it about them that grips you? Could you take that core idea and put your own spin on it?\n\n' +
                     '**‘What if’ questions** — Taking something ordinary and twisting it. ‘What if empathy became illegal?’ ‘What if the last peacemaker had to choose between truth and survival?’\n\n' +
                     '**People you know or have heard about** — Real people with interesting lives, struggles, or choices can inspire fictional characters.\n\n' +
-                    'The **Creative Writing Reference Guide** goes deeper — its *Story Sparks* section shows exactly how a writer turns a moment like these into a story idea, with worked examples. Open it below and have a read.',
+                    'Start by reading. The **Creative Writing Reference Guide’s Story Sparks** section shows exactly how a writer turns a moment like these into a story idea, with worked examples. Open it below and have a read.',
+                explore_first:
+                    'Now the fun part — watch.\n\n' +
+                    'The video playlist has **five short real scenes and events**, each one the seed of a story. Watch them with your Writer’s Profile in mind: which moments pull at the themes you already care about?\n\n' +
+                    'Tap below to play the first one.',
                 notes_pointer:
                     'Something already forming? Jot it down in the **Take Notes** tab on the right — rough is completely fine, it’s just a scratchpad for you. You don’t have to; it’s there if you want it.\n\n' +
                     'When you’re ready, carry on.',
@@ -16900,25 +16904,16 @@
             // beat 2 = Take-Notes pointer (plain Continue) → beat 3 = the ask (no chip, they type).
             // Order = video (raw sparks) FIRST, then guide (method). The gates are a HARD gate:
             // the ask does not appear until both resource buttons have been clicked.
-            const OPENER = [SEG.explore_first, SEG.inspiration_menu, SEG.notes_pointer, SEG.ask_idea_1];
+            // v7.20.276: GUIDE beat 0, VIDEO beat 1 (Neil — read first, then watch).
+            const OPENER = [SEG.inspiration_menu, SEG.explore_first, SEG.notes_pointer, SEG.ask_idea_1];
 
-            // Open the lesson's video playlist. It auto-opens on this lesson, so this re-focuses
-            // it if the student closed it. Re-fetches via the established resources endpoint;
-            // FAIL-OPEN — no videos / fetch error just means the Continue still appears.
+            // Open + PLAY the lesson's video playlist. v7.20.276: routes through WML.openCwVideos
+            // (wml-app.js) — the SAME cache the lesson's own video button uses — so it always has
+            // the real CW videos and wmlVideo.open() re-loads + autoplays even if the playlist was
+            // already open (Neil: "when I clicked it, nothing happened"). FAIL-OPEN.
             function openVideo() {
                 try {
-                    const url = config.restUrl + 'resources?task=' + encodeURIComponent(state.task || 'cw_step_2')
-                        + '&step=' + encodeURIComponent((typeof cwStepDef === 'object' && cwStepDef && cwStepDef.step) || 2)
-                        + '&board=' + encodeURIComponent(state.board || '')
-                        + '&subject=' + encodeURIComponent(state.subject || '');
-                    fetch(url, { headers })
-                        .then(function (r) { return r.json(); })
-                        .then(function (data) {
-                            if (data && data.videos && data.videos.length && window.wmlVideo) {
-                                wmlVideo.open(data.videos, { size: 'medium' });
-                            }
-                        })
-                        .catch(function () {});
+                    if (window.WML && typeof window.WML.openCwVideos === 'function') { window.WML.openCwVideos(); }
                 } catch (e) { /* fail-open */ }
             }
             // Open the Creative Writing Reference Guide, scrolled to the Story Sparks section.
@@ -16926,8 +16921,8 @@
                 try { if (typeof showGuidePanel === 'function') showGuidePanel('Story Sparks'); } catch (e) { /* fail-open */ }
             }
             const OPENER_GATES = {
-                0: { label: '▶ Watch 5 real scenes that can become stories', onOpen: openVideo },
-                1: { label: '📖 See how writers turn moments into ideas', onOpen: openGuide },
+                0: { label: '📖 See how writers turn moments into ideas', onOpen: openGuide },
+                1: { label: '▶ Watch 5 real scenes that can become stories', onOpen: openVideo },
             };
 
             function runOpener(startAt, deferFirst) {

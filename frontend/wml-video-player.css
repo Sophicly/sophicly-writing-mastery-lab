@@ -160,19 +160,40 @@
     font-size: 9px; color: rgba(255,255,255,0.3);
 }
 
-/* ── Minimised State ── */
+/* ── Minimised State ── v7.20.276 (Neil): NO purple gradient. The expand control
+   is the house-standard button — ported from .sb-related__arrow (teal on dark,
+   deepened teal on light), borderless, radiating halo on hover, scarlab play
+   icon in currentColor. Same styling in both themes. ── */
 .wml-vp-minimised {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 10px; cursor: pointer;
-    background: linear-gradient(135deg, rgba(83,51,237,0.3), rgba(44,0,62,0.5));
+    gap: 10px; padding: 8px 10px; cursor: pointer;
+    background: rgba(255,255,255,0.04);
 }
 .wml-vp-mini-title {
     font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 600;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
 }
 .wml-vp-mini-expand {
-    width: 24px; height: 24px;
+    position: relative;
+    width: 34px; height: 34px; padding: 0; flex: 0 0 auto;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #0e1214; background: #51dacf;
+    border: none; border-radius: 50%;
+    isolation: isolate; cursor: pointer;
+    transition: box-shadow .5s ease, background .25s ease;
 }
+.wml-vp-mini-expand::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    z-index: -1; background: #51dacf;
+    transition: transform .5s ease, opacity .5s ease;
+}
+.wml-vp-mini-expand:hover::after { transform: scale(1.5); opacity: 0; }
+.wml-vp-mini-expand svg { width: 16px; height: 16px; display: block; margin-left: 1px; }
+.wml-vp-mini-expand:focus-visible { outline: 2px solid #51dacf; outline-offset: 3px; }
+html[data-theme="light"] .wml-vp-mini-expand,
+html.light .wml-vp-mini-expand { color: #ffffff; background: #0e9b8d; }
+html[data-theme="light"] .wml-vp-mini-expand::after,
+html.light .wml-vp-mini-expand::after { background: #0e9b8d; }
 
 /* ── Scrollbar ── */
 .wml-vp-playlist::-webkit-scrollbar { width: 4px; }
