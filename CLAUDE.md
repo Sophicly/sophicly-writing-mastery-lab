@@ -326,12 +326,38 @@ Three entry paths into the assessment canvas:
 
 **Assessment Complete Detection** triggers when ANY match in an AI message: `[ASSESSMENT_COMPLETE]` code word, `## Session Complete` heading, both `Total: X/Y` AND `Grade: N` in the same message, or keywords (`Key Strength`, `Priority Target`, `Action Plan`, `Grand Total`).
 
-**Mark Complete Button** — three states via `setAssessBtnState('dormant'|'ready'|'done')`:
-- **Dormant:** Grey. Click → warning confirmation.
-- **Ready:** Green, pulses 3×. Click → saves.
-- **Done:** Green static. Disabled (`pointer-events: none`).
+### ⭐ MARK COMPLETE LIVES IN THE FOOTER — ONE control, never the sidebar (Neil, 2026-07-23)
 
-Uses icon-btn pattern (`swml-btn-icon` + `swml-btn-text`) for collapsed sidebar support.
+**SETTLED. Do not relitigate, do not "restore" the sidebar button.** There is exactly ONE
+Mark Complete in WML: the **footer** control in the canvas status bar. The old sidebar
+3D-push button (`build3DButton('Mark Complete', …)` + `setAssessBtnState()`, wml-assessment.js
+~12743) is **retired** — it was assessment-only, so the control appeared in the sidebar on some
+tasks and in the footer on others, and that inconsistency is exactly why Neil killed it. Anything
+still referencing `assessCompleteBtnRef` / `setAssessBtnState` is legacy: leave it inert, never
+re-surface it, and never add a second completion control anywhere.
+
+**The footer control is a PROXY, not ours.** It mirrors LearnDash's own button
+(`.spl-footer .learndash_mark_complete_button`) and forwards the click. WML does not own
+completion — LD does. Consequences that WILL look like bugs and are not:
+
+- **A completed lesson has NO button.** `learndash_mark_complete()` returns an empty string once
+  the step is complete, so the footer proxy has nothing to mirror. Re-testing a step you already
+  finished = no button. (Proved 2026-07-23: prod topics 41228/41172 complete → 0 bytes; 41177
+  incomplete → 331 bytes.)
+- **Unit pages never get it.** `etch-theme-child/single-sfwd-focus.php:1162` gates on
+  `$is_topic_page && ! $is_review_mode`, where `$is_topic_page = (post_type === 'sfwd-topic')`.
+  A Sophicly "Unit" (`sfwd-lessons`) is completed by finishing its lessons.
+- **Review mode never gets it** — a reviewer must never complete a lesson against the student.
+
+**When it's genuinely missing**, the console says which gate closed (v7.20.267, the
+`no LearnDash Mark Complete in the footer` line). Only the *lesson page + not review + still
+absent* branch is a real defect; the rest are by design. The proxy also retries ~6s for a late
+footer (v7.20.266) — a JS-built footer delayed by a perf plugin used to lose the button silently.
+
+**Diagnosing it — never guess, query LD:** `wp --user=<id> eval` with the post set up as global
+`$post`, then compare `learndash_is_item_complete()` against `strlen(trim(learndash_mark_complete($p)))`.
+**Without `--user=`, `learndash_mark_complete()` returns empty for EVERY step** and you will
+"prove" a bug that isn't there.
 
 ---
 
