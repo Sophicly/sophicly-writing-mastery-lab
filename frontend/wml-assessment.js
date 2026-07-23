@@ -16531,6 +16531,55 @@
         })();
 
         // ═══════════════════════════════════════════════════════════════════════════════════
+        // PACED DELIVERY FOR CODE-SERVED TEACHING RUNS (v7.20.268)
+        // ───────────────────────────────────────────────────────────────────────────────────
+        // Neil, 2026-07-23, on the Step 2 opener: "all of the messages just came at once. No,
+        // they need to come one at a time, and there needs to be an acknowledgment quick-action
+        // button to move on to the next one, because nobody's gonna read that."
+        //
+        // He is right, and it's a self-inflicted wound of going programmatic-first: when the API
+        // narrated these turns they arrived one per round-trip, so the PACING was a free side
+        // effect of the latency. Serving them from code removed the latency and the pacing with
+        // it — four bubbles landed in the same frame. Pacing is a FEATURE and now has to be
+        // explicit: emit ONE chunk, gate the next behind a tap, repeat. The LAST chunk is the
+        // question and never carries a chip — the student answers it instead.
+        //
+        // Resume-safe: the emitted bubbles are already in saved history, so a reload replays
+        // them; only the (DOM-only) chip needs re-attaching, which `deferFirst` does — it waits
+        // on a tap instead of auto-emitting the next chunk.
+        function serveCwChunks(chunks, opts) {
+            opts = opts || {};
+            const emit = opts.emit;
+            const onIndex = opts.onIndex;
+            const onDone = opts.onDone;
+            const label = opts.label || 'Continue →';
+            let i = opts.startAt || 0;
+
+            function attach() {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions swml-cw-chunk-nav' });
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn',
+                    textContent: label,
+                    onClick: function () { bar.remove(); step(); },
+                }));
+                bc.appendChild(bar);
+            }
+            function step() {
+                if (i >= chunks.length) { if (onDone) onDone(); return; }
+                emit(chunks[i]);
+                i++;
+                if (onIndex) onIndex(i);
+                if (i >= chunks.length) { if (onDone) onDone(); return; }
+                attach();
+            }
+            if (opts.deferFirst) attach(); else step();
+            return { reattach: attach, get index() { return i; } };
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════════════
         // CW STEP 2 — EXPLORE STORY IDEAS (code-owned walk, v7.20.262)
         // ───────────────────────────────────────────────────────────────────────────────────
         // Code owns the asking (inspiration menu, worked examples, resources, the invites and
@@ -16602,9 +16651,12 @@
             // the raw AI path and the walk was dead. Persist the fact that a CHOICE is
             // outstanding and re-attach the bar on resume.
             let awaitingChoice = false;
+            // v7.20.268: how many opener chunks have been delivered. Persisted so a reload
+            // mid-teaching-run resumes at the right chunk with its Continue chip re-attached.
+            let chunkIdx = 0;
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw2') + '_cw2'; } catch (e) { return 'swml_cw2'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ filled, declined, active, awaitingChoice })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ filled, declined, active, awaitingChoice, chunkIdx })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { busyOff(); }
             function busyOff() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
@@ -16714,16 +16766,28 @@
             // Serve the fixed opener. Triggered by @CW2_MENU on the API's profile-recap reply —
             // the recap is genuine judgment (it reads their real profile); everything below it is
             // identical for every student and costs nothing to serve from here.
+            // v7.20.268: the opener is a four-part TEACHING RUN, not one message. Paced one
+            // bubble per tap (see serveCwChunks) — it used to arrive as a single wall.
+            const OPENER = [SEG.inspiration_menu, SEG.worked_examples, SEG.resources, SEG.ask_idea_1];
+
+            function runOpener(startAt, deferFirst) {
+                serveCwChunks(OPENER, {
+                    emit: aiBubble,
+                    startAt: startAt || 0,
+                    deferFirst: !!deferFirst,
+                    onIndex: function (i) { chunkIdx = i; persist(); },
+                    onDone: function () { chunkIdx = OPENER.length; persist(); resetSend(); },
+                });
+                resetSend();
+            }
+
             function serveOpener() {
                 if (active || countFilledRows() >= MAX) return;
                 active = true; pending = false; filled = countFilledRows(); declined = false;
-                console.log('WML CW2: code-served opener (inspiration menu + examples + resources)');
-                aiBubble(SEG.inspiration_menu);
-                aiBubble(SEG.worked_examples);
-                aiBubble(SEG.resources);
-                aiBubble(SEG.ask_idea_1);
+                chunkIdx = 0;
+                console.log('WML CW2: code-served opener (paced — ' + OPENER.length + ' chunks)');
+                runOpener(0, false);
                 persist();
-                resetSend();
             }
 
             // The student typed an idea. Hand ONE turn to the API for judgment (is this a genuine
@@ -16775,7 +16839,7 @@
                 if (/@CW2_MENU/.test(norm)) serveOpener();
             }
 
-            function reset() { active = false; pending = false; filled = 0; declined = false; awaitingChoice = false; clearPersist(); }
+            function reset() { active = false; pending = false; filled = 0; declined = false; awaitingChoice = false; chunkIdx = 0; clearPersist(); }
             function tryResume() {
                 try {
                     const raw = localStorage.getItem(lsKey());
@@ -16787,6 +16851,16 @@
                     // v7.20.265: a reload mid-invite resumes into the CHOICE, not into a typed
                     // turn. The invite bubble is already replayed from saved history; only the
                     // (DOM-only) chip bar needs re-attaching to it.
+                    // v7.20.268: a reload PART-WAY THROUGH the opener run. The delivered bubbles
+                    // replay from saved history; re-attach the Continue chip for the next chunk
+                    // (deferFirst) instead of auto-emitting it, so the pacing survives a refresh.
+                    chunkIdx = typeof d.chunkIdx === 'number' ? d.chunkIdx : 0;
+                    if (!!d.active && chunkIdx > 0 && chunkIdx < OPENER.length && filled === 0) {
+                        active = true; pending = false; awaitingChoice = false;
+                        console.log('WML CW2: resumed mid-opener at chunk ' + chunkIdx + '/' + OPENER.length);
+                        setTimeout(function () { runOpener(chunkIdx, true); }, 400);
+                        return true;
+                    }
                     awaitingChoice = !!d.awaitingChoice && !declined && filled < MAX;
                     if (awaitingChoice) {
                         setTimeout(function () {
@@ -16897,16 +16971,29 @@
                 return STEPS.length;
             }
 
-            function serveCurrent() {
-                if (idx >= STEPS.length) { finish(); return; }
+            // v7.20.268: paced like Step 2's opener. Two points in this walk emit more than one
+            // bubble — the run's own intro, and the hand-off into the three formulas — and both
+            // used to land as a wall. Each extra bubble is now gated behind a Continue tap; the
+            // ask is always LAST and never carries a chip.
+            function chunksFor(i, withIntro) {
+                const out = [];
+                if (withIntro) out.push(SEG.intro);
                 // The three formulas open with the student's own components echoed back — never
                 // ask for what the system already holds (WML CLAUDE.md #3).
-                if (idx === COMPONENTS.length) {
+                if (i === COMPONENTS.length) {
                     const lines = COMPONENTS.map(c => '- **' + c.label + ':** ' + (rowText(c.fid) || '*(blank)*'));
-                    aiBubble(SEG.formulas_intro + '\n\n' + lines.join('\n'));
-                    aiBubble(SEG.formulas_bridge);
+                    out.push(SEG.formulas_intro + '\n\n' + lines.join('\n'));
+                    out.push(SEG.formulas_bridge);
                 }
-                aiBubble(STEPS[idx].ask);
+                out.push(STEPS[i].ask);
+                return out;
+            }
+
+            function serveCurrent(withIntro) {
+                if (idx >= STEPS.length) { finish(); return; }
+                const chunks = chunksFor(idx, withIntro);
+                if (chunks.length === 1) { aiBubble(chunks[0]); persist(); resetSend(); return; }
+                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { persist(); resetSend(); } });
                 persist();
                 resetSend();
             }
@@ -16956,8 +17043,7 @@
                 if (idx >= STEPS.length) return;
                 active = true; pending = false;
                 console.log('WML CW3: code-served walk start at step ' + (idx + 1) + '/' + STEPS.length);
-                if (idx === 0) aiBubble(SEG.intro);
-                serveCurrent();
+                serveCurrent(idx === 0);   // v7.20.268: intro rides the paced run, not a wall
             }
 
             function onReply(reply) {
