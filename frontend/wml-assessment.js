@@ -40976,6 +40976,15 @@
     // Logline row (a ONE-TIME copy on tick; the student then refines it freely — we do
     // NOT re-derive on every save, which would clobber their refinements). Mirrors the
     // proven tryFillChosenIdea row-write (insertContentAt under _migrationActive).
+    // v7.20.273: the last text THIS CODE wrote into cw-step-3-chosen. The ownership rule
+    // hangs off it: while the chosen box still holds exactly what we last derived (or is
+    // empty), it is DERIVED state and tracks the ticked draft — including edits made to the
+    // draft AFTER ticking, and text that arrives AFTER an empty row was ticked (both were
+    // silent dead-ends before: the transfer was a one-shot copy at tick time, so Neil ticked
+    // an empty Logline 2 and the Chosen box stayed blank forever). The moment the student
+    // types in the chosen box itself, its content stops matching this sig and it becomes
+    // THEIR refinement — never overwritten again (the v7.19.485 refine-here design).
+    let _lastDerivedChosenLogline = null;
     function _transferChosenLogline(loglineFieldId) {
         try {
             if (!canvasEditor) return;
@@ -40987,14 +40996,61 @@
                 }
                 return true;
             });
-            if (!srcText || destPos === null || !destNode) return;
+            if (destPos === null || !destNode) return;
+            if (!srcText) {
+                // Ticking an empty draft is legitimate (choosing before writing) — say so
+                // instead of silently doing nothing; the derive pass fills it when text lands.
+                console.log('WML CW: ticked', loglineFieldId, 'is still empty — Chosen Logline will fill as soon as it has text');
+                return;
+            }
+            const chosenNow = (destNode.textContent || '').trim();
+            if (chosenNow && chosenNow !== _lastDerivedChosenLogline && chosenNow !== srcText) {
+                console.log('WML CW: chosen logline holds the student’s own refinement — not overwriting on re-tick');
+                return;
+            }
+            if (chosenNow === srcText) { _lastDerivedChosenLogline = srcText; return; }
             const from = destPos + 1, to = destPos + destNode.nodeSize - 1;
             _migrationActive = true;
             try { canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: srcText }); }
             finally { _migrationActive = false; }
+            _lastDerivedChosenLogline = srcText;
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
             console.log('WML CW: chosen logline transferred from', loglineFieldId, '→', srcText.slice(0, 40));
         } catch (_) { /* never throw out of a click handler */ }
+    }
+
+    // v7.20.273: continuous derive — re-run the transfer from whichever logline row is
+    // TICKED, on every Step-3 save (autosave fires on edits, so a draft edited after
+    // ticking propagates within the debounce). Ownership guard as above: a chosen box the
+    // student has refined is never touched.
+    function _deriveChosenLoglineFromTick() {
+        try {
+            if (state.task !== 'cw_step_3' || !canvasEditor) return;
+            let tickedFid = '';
+            const isTicked = (fid, attrCheckState) => {
+                // Live ticks land in the _outlineCheckState Map (patched into HTML only at
+                // save — see patchCheckStateIntoHTML); node attrs carry ticks restored from
+                // a LOADED doc. Consult the Map first, attrs as the fallback.
+                try {
+                    const live = _outlineCheckState.get(fid);
+                    if (live && Array.isArray(live.checked)) return live.checked.length > 0;
+                } catch (_) {}
+                try {
+                    const cs = JSON.parse(attrCheckState || '{}');
+                    return Array.isArray(cs.checked) && cs.checked.length > 0;
+                } catch (_) { return false; }
+            };
+            canvasEditor.state.doc.descendants((node) => {
+                if (tickedFid) return false;
+                if (node.type && node.type.name === 'outlineRow' && node.attrs
+                    && /^cw-step-3-logline-\d$/.test(node.attrs.fieldId || '')
+                    && isTicked(node.attrs.fieldId, node.attrs.checkState)) {
+                    tickedFid = node.attrs.fieldId;
+                }
+                return true;
+            });
+            if (tickedFid) _transferChosenLogline(tickedFid);
+        } catch (_) { /* derive is best-effort */ }
     }
     // v7.19.485: keep the project's `chosen_logline` artifact in sync with the FINAL
     // Chosen Logline row (captures the student's refinements, not just the ticked draft)
@@ -41081,6 +41137,10 @@
         _syncCwStep2ChosenIdea();
         // v7.19.666: keep the CW Step-1 liked-seeds artifact in sync with the ticked loglines.
         _syncCwStep1LikedSeeds();
+        // v7.20.273: DERIVE the Chosen Logline row from the ticked draft BEFORE syncing it
+        // out — a draft edited after ticking (or ticked while still empty) now propagates on
+        // the autosave that edit triggers. A student-refined chosen box is never overwritten.
+        _deriveChosenLoglineFromTick();
         // v7.19.485: keep the CW Step-3 chosen-logline artifact in sync for Step-4 carry.
         _syncCwStep3ChosenLogline();
         // v7.20.179 (STAGE-RECORD): force-flush any deferred editTs stamp BEFORE serializing.
