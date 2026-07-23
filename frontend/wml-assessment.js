@@ -195,7 +195,7 @@
         setTimeout(() => overlay.remove(), 240);
     }
 
-    function showGuidePanel() {
+    function showGuidePanel(anchorText) {
         if ($('#swml-guide-overlay')) { closeGuidePanel(); return; }
 
         // Layer 3 (scroll isolation): lock the page behind the drawer; restore on close.
@@ -259,6 +259,21 @@
             }
             buildGuideToc(toc, tocItems, body);
             _setupGuideSelectionMenu(article);
+            // v7.20.275: optional deep-link — scroll to the heading whose text contains
+            // anchorText (e.g. 'Story Sparks'), so a chat resource button lands the student on
+            // the relevant section rather than the top. Text-match (not id) — robust to the
+            // markdown renderer's id scheme. Fail-safe: no match → stays at the top.
+            if (anchorText) {
+                try {
+                    var heads = article.querySelectorAll('h1,h2,h3,h4');
+                    for (var hI = 0; hI < heads.length; hI++) {
+                        if ((heads[hI].textContent || '').toLowerCase().indexOf(String(anchorText).toLowerCase()) !== -1) {
+                            heads[hI].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            break;
+                        }
+                    }
+                } catch (e) { /* deep-link is best-effort */ }
+            }
         };
         if (cwGuideCache != null) { render(cwGuideCache); return; }
         fetch(`${config.restUrl}cw-guide`, { headers })
@@ -16639,11 +16654,36 @@
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
                 if (!bc || bc.querySelector('.swml-quick-actions')) return;
                 const bar = el('div', { className: 'swml-quick-actions swml-cw-chunk-nav' });
-                bar.appendChild(el('button', {
-                    className: 'swml-quick-btn',
-                    textContent: label,
-                    onClick: function () { bar.remove(); step(); },
-                }));
+                // v7.20.275: RESOURCE GATE. `opts.gates[k]` = a gate on the chunk at index k
+                // (the chunk just shown = i-1 here). A gated chunk shows a resource button that
+                // OPENS the resource, THEN reveals Continue — the student can't advance without
+                // clicking it (hard gate). FAIL-OPEN: if the open throws, Continue still appears,
+                // so a broken resource never dead-ends the walk. No gates → original behaviour
+                // (Step 3 and every other caller pass none).
+                const gate = (opts.gates && i - 1 >= 0) ? opts.gates[i - 1] : null;
+                if (gate) {
+                    const gateBtn = el('button', {
+                        className: 'swml-quick-btn',
+                        textContent: gate.label,
+                        onClick: function () {
+                            try { if (typeof gate.onOpen === 'function') gate.onOpen(); }
+                            catch (e) { console.warn('WML: resource gate open failed (fail-open) —', e && e.message); }
+                            gateBtn.remove();
+                            bar.appendChild(el('button', {
+                                className: 'swml-quick-btn',
+                                textContent: label,
+                                onClick: function () { bar.remove(); step(); },
+                            }));
+                        },
+                    });
+                    bar.appendChild(gateBtn);
+                } else {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn',
+                        textContent: label,
+                        onClick: function () { bar.remove(); step(); },
+                    }));
+                }
                 bc.appendChild(bar);
             }
             function step() {
@@ -16683,20 +16723,31 @@
                 // and the Creative Writing Reference Guide in the link rail. The old chunks
                 // predated both: they linked out to the course webpage and duplicated the
                 // guide's own example ideas inline (worked_examples/resources — removed).
+                // v7.20.275: the opener is now RESOURCE-GATED (Neil, 2026-07-23 — Step 2 was too
+                // weak at telling the student what to DO). Beat 0 points at the video and carries
+                // a [Watch…] button; beat 1 points at the guide and carries a [See how…] button;
+                // beat 2 points at the Take-Notes tab; beat 3 is the ask (no chip — they type).
+                // The BUTTONS are the explicit action cue the old prose-only opener lacked.
                 explore_first:
-                    'Time to find your story. Two things to explore first: **the video playlist that’s just opened** — five short real scenes and events, each one the seed of a story — and the **Creative Writing Reference Guide** (link button on the left), where the Story Sparks section shows how writers turn moments like these into ideas, with worked examples.',
+                    'Time to find your story.\n\n' +
+                    'Start by watching. The video playlist that’s just opened has **five short real scenes and events** — each one the seed of a story. Watch them with your Writer’s Profile in mind: which moments pull at the themes you already care about?\n\n' +
+                    'Tap below when you’re ready to watch.',
                 inspiration_menu:
                     'Now, here’s what professional writers do every day: they look outward for a spark that ignites those inner themes into a story.\n\n' +
                     'Some of the most famous stories in history started exactly this way. William Golding read *Coral Island* and thought, “What if those boys weren’t so well-behaved?” — and wrote *Lord of the Flies*. Even *The Lion King* is built on the bones of *Hamlet*.\n\n' +
                     'It is completely fine to:\n- Write something entirely original\n- Retell a story that already exists, but add something new and uniquely yours\n- Combine personal experience with an external idea\n- Mix all of the above\n\n' +
-                    'Here are a few ways professional writers find their ideas:\n\n' +
+                    'A few ways professional writers find their ideas:\n\n' +
                     '**Real events and true stories** — News articles, historical events, survival stories. Real life is full of extraordinary situations.\n\n' +
                     '**Stories you already love** — What is it about them that grips you? Could you take that core idea and put your own spin on it?\n\n' +
                     '**‘What if’ questions** — Taking something ordinary and twisting it. ‘What if empathy became illegal?’ ‘What if the last peacemaker had to choose between truth and survival?’\n\n' +
-                    '**People you know or have heard about** — Real people with interesting lives, struggles, or choices can inspire fictional characters.',
+                    '**People you know or have heard about** — Real people with interesting lives, struggles, or choices can inspire fictional characters.\n\n' +
+                    'The **Creative Writing Reference Guide** goes deeper — its *Story Sparks* section shows exactly how a writer turns a moment like these into a story idea, with worked examples. Open it below and have a read.',
+                notes_pointer:
+                    'Something already forming? Jot it down in the **Take Notes** tab on the right — rough is completely fine, it’s just a scratchpad for you. You don’t have to; it’s there if you want it.\n\n' +
+                    'When you’re ready, carry on.',
                 ask_idea_1:
                     'As you watch and read — thinking about your Writer’s Profile — has anything sparked? A real event, a story, a ‘what if’, a person?\n\n' +
-                    'Tell me your story idea in a few sentences. It doesn’t need to be polished.',
+                    'Tell me your story idea in a few sentences. It doesn’t need to be polished — you’ll develop your chosen idea properly in Step 3. Right now we’re just getting the seed down.',
                 invite_2:
                     'That’s one idea down and saved.\n\n' +
                     'Professional writers rarely run with their first idea — not because it’s weak, but because having something to compare it against is how you find out what you actually like about it. Even one alternative sharpens the one you keep.\n\n' +
@@ -16843,16 +16894,48 @@
             // the recap is genuine judgment (it reads their real profile); everything below it is
             // identical for every student and costs nothing to serve from here.
             // v7.20.268: the opener is a paced TEACHING RUN — one bubble per tap (serveCwChunks).
-            // v7.20.272: three chunks (Neil-approved): point at the playlist + guide → the four
-            // ways writers find ideas → the ask. The inline example ideas and outbound links are
-            // gone — the Reference Guide owns them.
-            const OPENER = [SEG.explore_first, SEG.inspiration_menu, SEG.ask_idea_1];
+            // v7.20.275: FOUR beats, resource-GATED (Neil, 2026-07-23 — the old opener taught but
+            // never told the student what to DO). Beat 0 = video (button opens the playlist) →
+            // beat 1 = the four ways + guide (button opens the Reference Guide at Story Sparks) →
+            // beat 2 = Take-Notes pointer (plain Continue) → beat 3 = the ask (no chip, they type).
+            // Order = video (raw sparks) FIRST, then guide (method). The gates are a HARD gate:
+            // the ask does not appear until both resource buttons have been clicked.
+            const OPENER = [SEG.explore_first, SEG.inspiration_menu, SEG.notes_pointer, SEG.ask_idea_1];
+
+            // Open the lesson's video playlist. It auto-opens on this lesson, so this re-focuses
+            // it if the student closed it. Re-fetches via the established resources endpoint;
+            // FAIL-OPEN — no videos / fetch error just means the Continue still appears.
+            function openVideo() {
+                try {
+                    const url = config.restUrl + 'resources?task=' + encodeURIComponent(state.task || 'cw_step_2')
+                        + '&step=' + encodeURIComponent((typeof cwStepDef === 'object' && cwStepDef && cwStepDef.step) || 2)
+                        + '&board=' + encodeURIComponent(state.board || '')
+                        + '&subject=' + encodeURIComponent(state.subject || '');
+                    fetch(url, { headers })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (data && data.videos && data.videos.length && window.wmlVideo) {
+                                wmlVideo.open(data.videos, { size: 'medium' });
+                            }
+                        })
+                        .catch(function () {});
+                } catch (e) { /* fail-open */ }
+            }
+            // Open the Creative Writing Reference Guide, scrolled to the Story Sparks section.
+            function openGuide() {
+                try { if (typeof showGuidePanel === 'function') showGuidePanel('Story Sparks'); } catch (e) { /* fail-open */ }
+            }
+            const OPENER_GATES = {
+                0: { label: '▶ Watch 5 real scenes that can become stories', onOpen: openVideo },
+                1: { label: '📖 See how writers turn moments into ideas', onOpen: openGuide },
+            };
 
             function runOpener(startAt, deferFirst) {
                 serveCwChunks(OPENER, {
                     emit: aiBubble,
                     startAt: startAt || 0,
                     deferFirst: !!deferFirst,
+                    gates: OPENER_GATES,
                     onIndex: function (i) { chunkIdx = i; persist(); },
                     onDone: function () { chunkIdx = OPENER.length; persist(); resetSend(); },
                 });

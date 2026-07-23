@@ -247,6 +247,31 @@ what to SKIP (asking the designed question) AND what to still do (the full devel
 
 ---
 
+## A17. Action clarity + Orient/Bridge + Pacing (Neil, 2026-07-23 — universal, ALL boards/steps)
+
+Born from CW Step 2, which *taught* well but was weak at telling a solo student what to DO next.
+Three laws, every step, every board:
+
+1. **ACTION CLARITY.** Every step ends with either **a BUTTON** (open a resource / tick a choice /
+   advance) OR **a genuine free-text input-ask** (where producing the answer IS the point — a recall
+   test, their own idea/answer). Free-text input is the ONE legit no-button case — the other half of
+   the rule, not an exception. **Prefer a button wherever one fits** (open the guide, watch the video,
+   open the Writer's Profile, Continue →). Prose with NO action of either kind = a defect that leaves
+   a solo student interpreting. (Extends A9 "options render as buttons".)
+2. **ORIENT + BRIDGE.** Every step states what it IS doing AND how it connects to the next
+   ("these are rough seeds — you'll develop your chosen one in Step 3"). The student always knows
+   where they are in the arc and why.
+3. **PACING (reinforced — WML CLAUDE.md 4b).** Even pure-teaching beats carry an action cue: ONE
+   bubble, then a `Continue →` tap. NEVER dump 2–3 bubbles in one frame. This regresses whenever a
+   run goes programmatic (the API latency that used to pace it is gone). Gate: count CONSECUTIVE
+   `aiBubble()` calls — >1 in a row is the wall → route through `serveCwChunks`.
+
+**Grep-able acceptance:** every code-served step ends on an action chip OR a free-text input-ask;
+each opener names its purpose + the hand-off to the next step; no >1 consecutive `aiBubble()`.
+Reference impl: CW Step 2 resource-gated opener (`_cwIdeasCtl`, `serveCwChunks` gates, v7.20.275).
+
+---
+
 # PART B — ASSESSMENT PROTOCOL SPEC
 
 Mark VALUES/criteria differ per board+paper (read that paper's real mark scheme); the COMPONENTS and
