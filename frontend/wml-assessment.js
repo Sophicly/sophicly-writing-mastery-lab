@@ -20608,15 +20608,34 @@
                         }
                         if (++_ldTries >= 20) {
                             clearInterval(_ldPoll);
-                            // NOT necessarily a bug: LD renders no button when the lesson is already
-                            // complete or its progression gate is unmet. Say which, rather than
-                            // leaving a silent hole in the footer.
-                            const done = document.querySelector('.learndash-complete, .ld-status-complete, .spl-footer .ld-status-complete');
-                            console.log('WML: no LearnDash Mark Complete button in the DOM after 6s \u2014 '
-                                + 'footer proxy not mounted. ' + (done
-                                    ? 'LD reports this lesson ALREADY COMPLETE, so this is expected.'
-                                    : 'LD rendered none: the lesson is either already complete or gated by '
-                                      + 'incomplete required steps. Selector tried: ' + LD_COMPLETE_SEL));
+                            // v7.20.267: the .266 message ASSERTED "already complete or gated" without
+                            // checking \u2014 and that is the LEAST likely of the three causes. The focus
+                            // template gates Mark Complete on `$is_topic_page && ! $is_review_mode`
+                            // (etch-theme-child/single-sfwd-focus.php:1162), so a Unit page or a review
+                            // session legitimately has no button and LD is never even consulted. Report
+                            // WHICH gate closed \u2014 a guard must never assert an unverified cause.
+                            const isReview = !!(window.splRestConfig && window.splRestConfig.isReviewMode)
+                                || !!document.querySelector('.spl-is-review');
+                            const bodyCls = document.body.className || '';
+                            const isUnit  = /\bsingle-sfwd-lessons\b/.test(bodyCls);
+                            const isTopic = /\bsingle-sfwd-topic\b/.test(bodyCls);
+                            let why;
+                            if (isReview) {
+                                why = 'REVIEW MODE. The focus template omits Mark Complete so a reviewer can '
+                                    + 'never complete a lesson against the student (single-sfwd-focus.php:1162). Expected.';
+                            } else if (isUnit) {
+                                why = 'this is a UNIT page (sfwd-lessons). The template renders Mark Complete only on a '
+                                    + 'LESSON page (sfwd-topic) \u2014 single-sfwd-focus.php:1162. Expected: a unit completes '
+                                    + 'when its lessons do.';
+                            } else if (isTopic) {
+                                why = 'this IS a lesson page (sfwd-topic) and NOT review mode, so learndash_mark_complete() '
+                                    + 'returned empty \u2014 LD considers it already complete or gated by incomplete required '
+                                    + 'steps. THIS is the case worth investigating.';
+                            } else {
+                                why = 'page type undetermined from body classes \u2192 "' + bodyCls + '".';
+                            }
+                            console.log('WML: no LearnDash Mark Complete in the footer \u2014 ' + why
+                                + ' (selector tried: ' + LD_COMPLETE_SEL + ')');
                         }
                     }, 300);
                 }

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.266';
+var WML_BUILD = '7.20.267';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2900,7 +2900,7 @@ window.WML = (function() {
         // v7.20.252: markdown-escaped underscores (`@PLAY\_SEQ`) leak past the strip AND the client
         // detector — the model emits them because formatAI/markdown escapes `_`. Un-escape marker
         // names FIRST so both the strip below and _detectPlaySeq see a canonical form (Fable, F4).
-        // v7.20.266: the marker-name class must accept DIGITS — @CW2_MENU / @CW3_START /
+        // v7.20.267: the marker-name class must accept DIGITS — @CW2_MENU / @CW3_START /
         // @CW4_START all carry one, so `[A-Z]{2,}` stopped matching at the `2` and their
         // escaped form (`@CW2\_MENU`) survived the un-escape. The strip lines above are
         // `\\?_`-tolerant, so the marker never rendered — it silently failed DETECTION only,
