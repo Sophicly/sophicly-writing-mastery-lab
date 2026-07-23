@@ -4075,6 +4075,29 @@
         catch (e) { console.warn('WML CW walk: reply hook threw —', e && e.message); }
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // CW WALK STATE DIES WITH THE CHAT — universal law (v7.20.277, Neil 2026-07-23)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // ROOT of the "cleared the chat, walk never restarted, no buttons" class: every code-owned
+    // walk persists its progress (chunkIdx / awaitingChoice / active) in localStorage, and a
+    // chat-clear wiped the TRANSCRIPT but not the WALK STATE. The next hand-off marker then hit
+    // "already delivered — skip" and the student got a recap ending in silence. Twin stores that
+    // must reset together (the #1 recurring key/twin-store class).
+    //
+    // Fix at the choke point: every walk controller registers here on creation, and
+    // clearCanvasChat() — the ONE place the transcript dies — resets them ALL. A future walk
+    // added to the registry is covered by construction; one that forgets to register is caught
+    // by the serveOpener evidence guard (its belt-and-braces twin).
+    let _cwWalkCtlRegistry = [];
+    function registerCwWalkCtls(list) { _cwWalkCtlRegistry = Array.isArray(list) ? list : []; }
+    function resetCwWalks(reason) {
+        let n = 0;
+        _cwWalkCtlRegistry.forEach(function (c) {
+            try { if (c && typeof c.reset === 'function') { c.reset(); n++; } } catch (e) {}
+        });
+        if (n) console.log('WML CW: reset ' + n + ' walk controller(s) — ' + (reason || 'chat cleared'));
+    }
+
     function clearWalkResume() {
         if (_walkResume) console.log('WML WalkResume: cleared', _walkResume.id);
         _walkResume = null;
@@ -4099,8 +4122,12 @@
     // the send, in BOTH canvas pipelines. Every present and future entry path is covered by
     // construction, and no path can be added later that forgets to prime. Idempotent — an
     // already-primed history costs one array scan and no fetch.
+    // v7.20.277: step 3 primes `chosen_idea` — the AUTHORITATIVE tick-derived value. Without it
+    // the model hunted the raw doc and restated a Step-1 SPARK as "your chosen idea" (the
+    // Sparks section reads like a polished idea; the real chosen row can be one rough line).
+    // Code knows the answer; the model must never have to guess it (programmatic-first).
     const CW_STEP_DEPS = {
-        2: ['writer_profile'], 3: ['writer_profile', 'story_ideas'],
+        2: ['writer_profile'], 3: ['writer_profile', 'story_ideas', 'chosen_idea'],
         4: ['logline'], 5: ['brief_outline'], 6: ['plot_structure_choice'],
         8: ['plot_outline'], 9: ['plot_outline', 'scene_selection'],
     };
@@ -4108,20 +4135,34 @@
     function _cwDepTag(key) { return '[CONTEXT FROM PREVIOUS STEP] ' + _cwDepLabel(key) + ':'; }
 
     // Returns the first dependency that could not be loaded (the caller's missingPrereq), or null.
+    // v7.20.277: primes REFRESH to the current artifact value on every send. The old "tag present
+    // → skip, no fetch" idempotency froze the FIRST value into the chat forever — re-tick an idea
+    // in Step 2, return to Step 3, and the stale prime contradicted the updated doc. Now: value
+    // unchanged → in-place skip; changed → the primed message is UPDATED in place (the model
+    // always sees the live choice); missing → pushed. Cost: 1-3 tiny artifact GETs per send.
     async function ensureCwStepContext(history, projectId, stepNum) {
         const deps = CW_STEP_DEPS[stepNum];
         if (!deps || !projectId || !Array.isArray(history)) return null;
         let missing = null;
         for (const key of deps) {
             const tag = _cwDepTag(key);
-            if (history.some(m => m && m.role === 'user' && typeof m.content === 'string'
-                && m.content.indexOf(tag) === 0)) continue;      // already primed — no fetch
             try {
                 const art = await WML.cwProject.loadArtifact(projectId, key);
-                if (art && art.success && art.value) {
-                    history.push({ role: 'user', content: tag + '\n\n' + art.value, hidden: true });
-                    console.log('WML CW: primed ' + _cwDepLabel(key) + ' into context (step ' + stepNum + ')');
-                } else if (!missing) {
+                const val = (art && art.success && art.value) ? art.value : '';
+                const existing = history.find(m => m && m.role === 'user' && typeof m.content === 'string'
+                    && m.content.indexOf(tag) === 0);
+                if (val) {
+                    const want = tag + '\n\n' + val;
+                    if (existing) {
+                        if (existing.content !== want) {
+                            existing.content = want;
+                            console.log('WML CW: refreshed stale ' + _cwDepLabel(key) + ' prime (step ' + stepNum + ')');
+                        }
+                    } else {
+                        history.push({ role: 'user', content: want, hidden: true });
+                        console.log('WML CW: primed ' + _cwDepLabel(key) + ' into context (step ' + stepNum + ')');
+                    }
+                } else if (!existing && !missing) {
                     missing = key;
                     console.warn('WML CW: prior-step artifact "' + key + '" is EMPTY or missing for step '
                         + stepNum + ' — the protocol will have to degrade gracefully.');
@@ -12496,6 +12537,10 @@
     // and the AI resumed at Q5 instead of starting fresh.
     async function clearCanvasChat() {
         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch (e) {}
+        // v7.20.277: the walk state dies WITH the chat — see resetCwWalks. Without this a
+        // cleared chat left chunkIdx behind and the next hand-off marker skipped the whole
+        // opener ("no buttons", Neil 2026-07-23).
+        try { resetCwWalks('chat cleared'); } catch (e) {}
         // v7.18.45: chat-clear suffix MUST match save + load (`_chatStorageSuffix()`),
         // NOT base `WML.resolveStorageSuffix()`. For mark_scheme_unit, save writes to
         // `_msu_s${bridgeStep}` (e.g. `_msu_s1`) but pre-v7.18.45 clear deleted base
@@ -16942,7 +16987,24 @@
                 // restored active:true and this bail left the student on a dangling recap even
                 // though @CW2_MENU HAD arrived (proven in the 2026-07-23 chat meta). The real
                 // question is "has the opener been DELIVERED this walk?" — that is chunkIdx.
-                if (active && chunkIdx > 0) { console.log('WML CW2: opener skipped — already delivered (chunk ' + chunkIdx + ')'); return; }
+                // v7.20.277 ROOT: "delivered" must be EVIDENCE in the CURRENT chat, never the
+                // persisted counter alone — a chat-clear used to leave chunkIdx>0 behind, so the
+                // fresh recap arrived, this bail fired, and the student got a recap ending in
+                // silence: no buttons, dead step (Neil, 2026-07-23, third recurrence). The
+                // transcript IS the walk's twin store: if the first opener chunk is nowhere in
+                // this chat, the opener has NOT run this walk — reset the stale state and serve.
+                let delivered = false;
+                try {
+                    const sig = OPENER[0].slice(0, 40);
+                    delivered = (canvasChatHistory || []).some(function (m) {
+                        return m && m.role === 'assistant' && typeof m.content === 'string' && m.content.indexOf(sig) !== -1;
+                    });
+                } catch (e) {}
+                if (active && chunkIdx > 0 && delivered) { console.log('WML CW2: opener skipped — already delivered (chunk ' + chunkIdx + ')'); return; }
+                if (chunkIdx > 0 && !delivered) {
+                    console.log('WML CW2: stale walk state (chunk ' + chunkIdx + ') but no opener in this chat — resetting and serving fresh');
+                    chunkIdx = 0; declined = false; awaitingChoice = false; active = false;
+                }
                 // v7.20.270: a returning student whose three idea rows are ALREADY full used to
                 // hit a silent `return` here — the recap landed, nothing followed, and the step
                 // looked broken. There genuinely is no opener to serve, so say so and move them
@@ -17552,6 +17614,9 @@
         // (the recap turn itself is legitimately markerless) — then serve the opener and warn.
         let _cwStartMisses = 0;
         let _cwStartMissTask = '';
+        // v7.20.277: chat-clear resets every walk (see resetCwWalks). Registered together so a
+        // future controller added here is covered by construction.
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl]);
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
