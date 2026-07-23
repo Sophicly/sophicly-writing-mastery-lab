@@ -31437,6 +31437,40 @@
                 console.warn('WML CW: healed polluted Step-2 doc (carried Step-3 content) — restored from ' + source);
             } catch (e) { console.log('WML CW: Step-2 heal skipped —', e && e.message); }
         };
+        // v7.20.271: HEAL legacy Step-2 docs that PREDATE the "YOUR STORY IDEAS" section
+        // entirely (pre-.262 workbook shape — Neil's own doc dates from 2023). Without the
+        // idea rows the whole .262 walk is inert: commitIdea has nowhere to write,
+        // countFilledRows reads 0 forever, tickSoleIdea finds no node, and the Sparks heal
+        // above returns early because cw-step-2-idea1 is its anchor. The BAKED law
+        // (reference_wml_outline_scaffold_baked_needs_onload_heal) says every scaffold change
+        // ships with an on-load heal — the .262 port skipped it; this is that heal.
+        // APPEND-only (never setContent — a legacy doc may hold the student's real writing),
+        // idempotent, same mold as tryHealCwStep2SparksSection.
+        const tryHealCwStep2IdeasSection = () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 2) return;
+            try {
+                let hasIdea1 = false;
+                canvasEditor.state.doc.descendants((n) => {
+                    if (hasIdea1) return false;
+                    if (n.type.name === 'outlineRow' && n.attrs && n.attrs.fieldId === 'cw-step-2-idea1') { hasIdea1 = true; return false; }
+                    return true;
+                });
+                if (hasIdea1) return;
+                const ideasHTML = dividerHTML('YOUR STORY IDEAS') +
+                    sectionHTML('plan', 'Story Ideas', true, null,
+                        '<h3 data-locked="true">Your Story Ideas</h3>' +
+                        '<p data-locked="true">Note down 3 story ideas you might explore. Then, when you’re ready, <strong>tick the box beside the one</strong> you most want to develop — that becomes your chosen idea, and it carries into Step 3 where you’ll shape it into a logline. You can change your choice any time before you move on.</p>' +
+                        outlineRowHTML({ id: 'idea1', label: 'Idea 1', prompt: 'Your first story idea', type: 'checkbox' }, 'cw-step-2-idea1') +
+                        outlineRowHTML({ id: 'idea2', label: 'Idea 2 (optional)', prompt: 'A second idea, if you want one', type: 'checkbox' }, 'cw-step-2-idea2') +
+                        outlineRowHTML({ id: 'idea3', label: 'Idea 3 (optional)', prompt: 'A third idea, if you want one', type: 'checkbox' }, 'cw-step-2-idea3'));
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt(canvasEditor.state.doc.content.size, ideasHTML); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.warn('WML CW: Step-2 doc predated the YOUR STORY IDEAS section — healed in (append; legacy content preserved)');
+            } catch (e) { console.log('WML CW: step2 ideas heal skipped —', e && e.message); }
+        };
         // v7.19.473: scaffold-lock phase 2 — lock instruction PARAGRAPHS that are template
         // scaffold. Structural rule: in a CW section that contains input rows (outlineRow/
         // inputField), the loose paragraphs are always scaffold (answers live in the rows), so
@@ -31473,7 +31507,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
