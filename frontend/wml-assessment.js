@@ -35724,6 +35724,31 @@
             const words = secText.trim().split(/\s+/).filter(w => w.length > 0);
             total += words.length;
         });
+        // v7.20.274 (Neil): on CW tasks, STUDENT WORDS IN INPUT ROWS COUNT. Step 1's wells
+        // (Inner World / Moral Compass / Imagination / External Sources) hold the student's
+        // answers in outlineRow boxes inside non-response sections, so the response-only rule
+        // reported 0 words for students who had plainly written — "those are their words."
+        // Rows only (prompts/labels live in attrs, not content); placeholder text skipped;
+        // response sections above stay counted once. Scoped to cw_* — Language keeps the
+        // response-only rule (widening there re-inflates counts against the 650 targets,
+        // the exact bug the v7.19.102 revert removed).
+        const _isCwDoc = state && state.task && state.task.indexOf('cw_') === 0;
+        if (_isCwDoc) {
+            editor.state.doc.forEach(node => {
+                if (!node.type || node.type.name !== 'sectionBlock') return;
+                if (node.attrs && node.attrs.sectionType === 'response') return; // already counted
+                node.descendants(n => {
+                    if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')) {
+                        const t = (n.textContent || '').trim();
+                        if (!t || _WC_PLACEHOLDERS.indexOf(t.toLowerCase()) !== -1) return false;
+                        total += t.split(/\s+/).filter(w => w.length > 0).length;
+                        return false;
+                    }
+                    return true;
+                });
+            });
+            return total;   // CW: the doc model is authoritative even with no response section
+        }
         return sawResponse ? total : null;
     }
     function getResponseWordCount(editor) {
