@@ -4067,6 +4067,67 @@
         _walkResumeTimer = null;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // CW PRIOR-STEP CONTEXT — primed at the SEND, not at one entry path (v7.20.269)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Every CW step whose first AI turn is a JUDGMENT on the student's earlier work needs that
+    // work in context: Step 2 opens by recapping their Writer's Profile, Step 3 uses the profile
+    // AND their story ideas. It arrives as hidden `[CONTEXT FROM PREVIOUS STEP]` messages.
+    //
+    // The bug (Neil, 2026-07-23 — "it's saying it can't read my writer's profile, but my
+    // writer's profile is there"): those messages were pushed on exactly ONE path — a first-ever
+    // fresh entry. A RESUME and a CHAT-CLEAR both skipped it, so the model genuinely held no
+    // profile and fell back to "it hasn't come through to me yet". That is also a paste-wall
+    // violation (WML CLAUDE.md #3 — never ask the student for what the system already holds).
+    //
+    // Fixed at the CHOKE POINT rather than by patching each entry path: prime immediately before
+    // the send, in BOTH canvas pipelines. Every present and future entry path is covered by
+    // construction, and no path can be added later that forgets to prime. Idempotent — an
+    // already-primed history costs one array scan and no fetch.
+    const CW_STEP_DEPS = {
+        2: ['writer_profile'], 3: ['writer_profile', 'story_ideas'],
+        4: ['logline'], 5: ['brief_outline'], 6: ['plot_structure_choice'],
+        8: ['plot_outline'], 9: ['plot_outline', 'scene_selection'],
+    };
+    function _cwDepLabel(key) { return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+    function _cwDepTag(key) { return '[CONTEXT FROM PREVIOUS STEP] ' + _cwDepLabel(key) + ':'; }
+
+    // Returns the first dependency that could not be loaded (the caller's missingPrereq), or null.
+    async function ensureCwStepContext(history, projectId, stepNum) {
+        const deps = CW_STEP_DEPS[stepNum];
+        if (!deps || !projectId || !Array.isArray(history)) return null;
+        let missing = null;
+        for (const key of deps) {
+            const tag = _cwDepTag(key);
+            if (history.some(m => m && m.role === 'user' && typeof m.content === 'string'
+                && m.content.indexOf(tag) === 0)) continue;      // already primed — no fetch
+            try {
+                const art = await WML.cwProject.loadArtifact(projectId, key);
+                if (art && art.success && art.value) {
+                    history.push({ role: 'user', content: tag + '\n\n' + art.value, hidden: true });
+                    console.log('WML CW: primed ' + _cwDepLabel(key) + ' into context (step ' + stepNum + ')');
+                } else if (!missing) {
+                    missing = key;
+                    console.warn('WML CW: prior-step artifact "' + key + '" is EMPTY or missing for step '
+                        + stepNum + ' — the protocol will have to degrade gracefully.');
+                }
+            } catch (e) {
+                if (!missing) missing = key;
+                console.warn('WML CW: prior-step artifact "' + key + '" failed to load —', e && e.message);
+            }
+        }
+        return missing;
+    }
+
+    // Convenience wrapper for the send path: resolves the step from state, no-ops off CW.
+    async function primeCwContext(history) {
+        try {
+            if (!state.task || state.task.indexOf('cw_') !== 0 || !state.cwProjectId) return;
+            const def = (typeof WML.getCwStepDef === 'function') ? WML.getCwStepDef(state.task) : null;
+            if (def && def.step) await ensureCwStepContext(history, state.cwProjectId, def.step);
+        } catch (e) { console.warn('WML CW: context priming threw (non-fatal) —', e && e.message); }
+    }
+
     function applyFieldCommits(aiReply, studentMsg) {
         try {
             if (!aiReply || !canvasEditor) return;
@@ -14255,6 +14316,12 @@
                 try { canvasRecognition.stop(); } catch(e) {}
             }
 
+            // v7.20.269: prime prior-step CW artifacts BEFORE the turn is built. This is the
+            // choke point every entry path funnels through (fresh / resume / chat-clear / SPA
+            // re-entry), so no path can reach the model without the profile it is asked to
+            // recap. Idempotent + no-op off CW.
+            await primeCwContext(canvasChatHistory);
+
             const isSilent = canvasSilentSend;
             canvasSilentSend = false;
             if (!isSilent) addChatMessage(msg, 'user');
@@ -23413,30 +23480,13 @@
                         } catch (e) { console.log('WML CW: No plot outline to load'); }
                     }
 
-                    // Load dependency artifacts
-                    const cwDependencies = {
-                        2: ['writer_profile'], 3: ['writer_profile', 'story_ideas'],
-                        4: ['logline'], 5: ['brief_outline'], 6: ['plot_structure_choice'],
-                        8: ['plot_outline'], 9: ['plot_outline', 'scene_selection'],
-                    };
-                    const deps = cwDependencies[cwStepDef?.step];
-                    let missingPrereq = null;
-                    if (deps && projectId) {
-                        for (const depKey of deps) {
-                            try {
-                                const depArtifact = await WML.cwProject.loadArtifact(projectId, depKey);
-                                if (depArtifact?.success && depArtifact.value) {
-                                    const depLabel = depKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                                    // v7.15.5: hidden flag keeps message in AI context but hides from student chat UI
-                                    tp.canvasChatHistory.push({ role: 'user', content: `[CONTEXT FROM PREVIOUS STEP] ${depLabel}:\n\n${depArtifact.value}`, hidden: true });
-                                } else if (!missingPrereq) {
-                                    missingPrereq = depKey;
-                                }
-                            } catch (e) {
-                                if (!missingPrereq) missingPrereq = depKey;
-                            }
-                        }
-                    }
+                    // Load dependency artifacts (map now lives at CW_STEP_DEPS — one source)
+                    // v7.20.269: ONE writer for prior-step context — ensureCwStepContext (which the
+                    // send path also calls, so resume + chat-clear are covered too). The loop that
+                    // lived here was reachable on a fresh entry ONLY, which is why a resumed or
+                    // cleared Step 2 chat had no Writer's Profile.
+                    const missingPrereq = await ensureCwStepContext(
+                        tp.canvasChatHistory, projectId, cwStepDef?.step);
 
                     // Step-aware greeting
                     const cwPrevContext = {
@@ -25460,6 +25510,11 @@
                                 try { canvasRecognition.stop(); } catch(e) {}
                             }
 
+                            // v7.20.269 (twin): prime prior-step CW artifacts before the turn is
+                            // built — same choke point as the primary pipeline (DUAL CHAT PIPELINE
+                            // rule: a fix that lands in one pipeline only is half a fix).
+                            await primeCwContext(canvasChatHistory);
+
                             // v7.14.3: Silent send — add to history but don't show user bubble
                             const isSilent = canvasSilentSend;
                             canvasSilentSend = false;
@@ -26242,35 +26297,13 @@
                                                 } catch (e) { console.log('WML CW: No plot outline to load'); }
                                             }
 
-                                            // v7.13.41: Load dependency artifacts into chat context
-                                            // Steps 2+ need the Writer Profile; steps 3+ also need story ideas, etc.
-                                            const cwDependencies = {
-                                                2: ['writer_profile'], 3: ['writer_profile', 'story_ideas'],
-                                                4: ['logline'], 5: ['brief_outline'], 6: ['plot_structure_choice'],
-                                                8: ['plot_outline'], 9: ['plot_outline', 'scene_selection'],
-                                            };
-                                            const deps = cwDependencies[cwStepDef?.step];
-                                            let missingPrereq = null;
-                                            if (deps && projectId) {
-                                                for (const depKey of deps) {
-                                                    try {
-                                                        const depArtifact = await WML.cwProject.loadArtifact(projectId, depKey);
-                                                        if (depArtifact?.success && depArtifact.value) {
-                                                            const depLabel = depKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                                                            const contextMsg = `[CONTEXT FROM PREVIOUS STEP] ${depLabel}:\n\n${depArtifact.value}`;
-                                                            // v7.15.5: hidden flag keeps message in AI context but hides from student chat UI
-                                                            canvasChatHistory.push({ role: 'user', content: contextMsg, hidden: true });
-                                                            console.log('WML CW: Loaded dependency artifact:', depKey);
-                                                        } else if (!missingPrereq) {
-                                                            // v7.13.45: Track first missing prerequisite
-                                                            missingPrereq = depKey;
-                                                        }
-                                                    } catch (e) {
-                                                        if (!missingPrereq) missingPrereq = depKey;
-                                                        console.log('WML CW: Could not load dependency:', depKey);
-                                                    }
-                                                }
-                                            }
+                                            // v7.13.41 / v7.20.269: prior-step artifacts into chat context.
+                                            // Steps 2+ need the Writer Profile; steps 3+ also need story ideas.
+                                            // Same ONE writer as the main pipeline and the send path — the
+                                            // duplicated loop here was a second place to forget (and a second
+                                            // copy of the dependency map to drift).
+                                            const missingPrereq = await ensureCwStepContext(
+                                                canvasChatHistory, projectId, cwStepDef?.step);
 
                                             // v7.13.45: Step-aware greeting — references previous step's work
                                             const cwPrevContext = {
