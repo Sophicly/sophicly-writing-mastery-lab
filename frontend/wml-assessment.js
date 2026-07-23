@@ -16849,7 +16849,17 @@
             }
 
             function serveOpener() {
-                if (active || countFilledRows() >= MAX) return;
+                if (active) { console.log('WML CW2: opener skipped — walk already active'); return; }
+                // v7.20.270: a returning student whose three idea rows are ALREADY full used to
+                // hit a silent `return` here — the recap landed, nothing followed, and the step
+                // looked broken. There genuinely is no opener to serve, so say so and move them
+                // on to the choice instead of leaving the turn dangling.
+                if (countFilledRows() >= MAX) {
+                    console.log('WML CW2: opener skipped — all ' + MAX + ' idea rows already filled; serving the wrap');
+                    aiBubble(SEG.wrap_choose);
+                    finishStep();
+                    return;
+                }
                 active = true; pending = false; filled = countFilledRows(); declined = false;
                 chunkIdx = 0;
                 console.log('WML CW2: code-served opener (paced — ' + OPENER.length + ' chunks)');
@@ -16945,7 +16955,10 @@
             return {
                 serveOpener, handleTurn, onReply, reset, tryResume, settle,
                 forceStart: serveOpener,
-                atStart: function () { return countFilledRows() === 0 && !declined && !awaitingChoice; },
+                // v7.20.270: "hasn't started" is ROOM LEFT, not a pristine doc. Keying on ===0 meant a
+                // returning student with ideas already banked could never trigger the fallback —
+                // exactly the cohort most likely to hit it (Neil's Step 2 rows date from 2023).
+                atStart: function () { return countFilledRows() < MAX && !declined && !awaitingChoice; },
                 get active() { return active; },
                 get pending() { return pending; },
             };
@@ -17137,7 +17150,7 @@
             return {
                 handleTurn, onReply, reset, tryResume,
                 forceStart: startWalk,
-                atStart: function () { return firstEmptyIndex() === 0; },
+                atStart: function () { return firstEmptyIndex() < STEPS.length; },   // v7.20.270: room left, not pristine
                 get active() { return active; },
                 get pending() { return pending; },
             };
@@ -17427,7 +17440,7 @@
             return {
                 handleTurn, onReply, reset, tryResume,
                 forceStart: startWalk,
-                atStart: function () { return firstEmptyBeat() === 0; },
+                atStart: function () { return firstEmptyBeat() < BEATS.length; },    // v7.20.270: room left, not pristine
                 get active() { return active; },
                 get pending() { return pending; },
             };
@@ -17458,9 +17471,17 @@
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
             if (ctl.active || ctl.pending || !ctl.atStart()) { _cwStartMisses = 0; return; }
-            if (++_cwStartMisses < 2) return;
+            // v7.20.270: fire on the FIRST idle reply, not the second. The .265 grace of two
+            // assumed more replies would follow — but these steps hand over on their opening
+            // turn, so if that one reply carries no marker there is never a second: the student
+            // is left staring at a recap that ends "Now let's find your story." and nothing more
+            // (Neil, 2026-07-23). One idle reply IS the failure. The controller's own guards
+            // (active / pending / atStart) already prevent a mid-walk or post-walk misfire, and
+            // onReply runs BEFORE this in the same hook — so a marker that DID arrive has
+            // already set `active` and we never reach here.
+            if (++_cwStartMisses < 1) return;
             _cwStartMisses = 0;
-            console.warn('WML CW: ' + t + ' — start marker never arrived after 2 replies. '
+            console.warn('WML CW: ' + t + ' — start marker never arrived on the hand-off reply. '
                 + 'Code-serving the opener anyway. The protocol should have emitted it; check '
                 + 'that the router loaded the rewritten module and that the marker survived.');
             try { ctl.forceStart(); } catch (e) { console.warn('WML CW: forceStart threw —', e && e.message); }
