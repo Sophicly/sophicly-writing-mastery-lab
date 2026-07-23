@@ -20555,9 +20555,16 @@
                     onClick: () => { window.location.href = ldPrevLink.href; }
                 }));
             }
-            // Mark Complete
-            const ldMarkBtn = document.querySelector('.spl-footer .learndash_mark_complete_button, .learndash_mark_complete_button');
-            if (ldMarkBtn) {
+            // Mark Complete \u2014 a PROXY for LearnDash's own button, not our own control.
+            // v7.20.266 (Neil: "the WML has lost its Mark Complete button"): this was a ONE-SHOT
+            // query at status-bar build time. If LD's footer had not rendered yet \u2014 it can be
+            // late when the footer is JS-built and a perf plugin delays that script \u2014 the proxy
+            // was never created, never retried, and never said a word. Prev/Next hid the failure
+            // because they carry a `.ld-content-actions` fallback selector that matches LD's own
+            // nav, so the bar still LOOKED right with a hole where Mark Complete should be.
+            // Now: try, then keep watching briefly, then say plainly what happened either way.
+            const LD_COMPLETE_SEL = '.spl-footer .learndash_mark_complete_button, .learndash_mark_complete_button';
+            function buildLdCompleteProxy(ldMarkBtn) {
                 const markBtn = el('button', {
                     className: 'swml-status-btn swml-ld-complete',
                     innerHTML: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Mark Complete',
@@ -20568,7 +20575,51 @@
                         markBtn.disabled = true;
                     }
                 });
-                ldNav.appendChild(markBtn);
+                return markBtn;
+            }
+            // Insert between Previous and Next so the order never depends on arrival time.
+            function mountLdCompleteProxy(ldMarkBtn) {
+                if (ldNav.querySelector('.swml-ld-complete')) return;
+                const markBtn = buildLdCompleteProxy(ldMarkBtn);
+                const nextBtn = ldNav.querySelector('.swml-ld-next');
+                if (nextBtn) ldNav.insertBefore(markBtn, nextBtn);
+                else ldNav.appendChild(markBtn);
+                // The bar is only appended when it has children (below) \u2014 a proxy that arrives
+                // after that check would otherwise mount into a detached node and never show.
+                if (!ldNav.isConnected) statusBar.appendChild(ldNav);
+            }
+            {
+                const found = document.querySelector(LD_COMPLETE_SEL);
+                if (found) {
+                    mountLdCompleteProxy(found);
+                } else {
+                    // Watch for a late footer. Bounded (~6s) so a lesson that legitimately has no
+                    // Mark Complete costs one observer and one log line, not a permanent watcher.
+                    let _ldTries = 0;
+                    const _ldPoll = setInterval(() => {
+                        const late = document.querySelector(LD_COMPLETE_SEL);
+                        if (late) {
+                            clearInterval(_ldPoll);
+                            console.warn('WML: LearnDash Mark Complete arrived LATE (' + (_ldTries * 300)
+                                + 'ms after the status bar was built) \u2014 proxy mounted. If this recurs, the '
+                                + 'footer script is being delayed (check the perf plugin\u2019s JS-delay list).');
+                            mountLdCompleteProxy(late);
+                            return;
+                        }
+                        if (++_ldTries >= 20) {
+                            clearInterval(_ldPoll);
+                            // NOT necessarily a bug: LD renders no button when the lesson is already
+                            // complete or its progression gate is unmet. Say which, rather than
+                            // leaving a silent hole in the footer.
+                            const done = document.querySelector('.learndash-complete, .ld-status-complete, .spl-footer .ld-status-complete');
+                            console.log('WML: no LearnDash Mark Complete button in the DOM after 6s \u2014 '
+                                + 'footer proxy not mounted. ' + (done
+                                    ? 'LD reports this lesson ALREADY COMPLETE, so this is expected.'
+                                    : 'LD rendered none: the lesson is either already complete or gated by '
+                                      + 'incomplete required steps. Selector tried: ' + LD_COMPLETE_SEL));
+                        }
+                    }, 300);
+                }
             }
             // Next lesson
             const ldNextLink = document.querySelector('.spl-footer .spl-btn-next, .ld-content-actions a.ld-button:not(.ld-button-reverse)');

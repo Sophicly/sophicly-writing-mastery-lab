@@ -760,3 +760,51 @@ generating throwaway alternatives, or practising the same skill through differen
 gets an escape hatch; the second does not.
 
 *(Implemented v7.20.262. Pairs with §0's procedure — this ruling is now written, so do not re-ask it.)*
+
+---
+
+## §13. VERDICTS ARE WITHHELD UNTIL THE END; SELECTING AN ANSWER ADVANCES (Neil, ruled 2026-07-23)
+
+**The ruling.** In every multi-question interactive component (scenario / "Code of the
+Quest", MSQ-style checks, true-false, matching — the whole family), the student is NOT
+told whether an answer is right or wrong at the moment they give it. **All verdicts are
+revealed together at the end**, after Submit. And selecting an answer **advances to the
+next question automatically** — there is no per-question CHECK step.
+
+**Why (Neil's reasoning, verbatim intent).** Two separate problems, one ruling:
+
+1. **Immediate right/wrong creates restart temptation.** A student who sees "✗ wrong" on
+   question 2 of 5 now knows their score is capped, and the rational move becomes
+   *restart and re-run the whole thing* rather than finish honestly. That converts a
+   diagnostic into a slot machine. Withholding the verdict removes the information that
+   makes restarting attractive **at source** — there is nothing to peek at mid-run. This
+   is the same logic as `feedback_writing_cycles_once_and_move_on` and
+   `feedback_diagnostic_tests_redraft_trains`: the measurement must be allowed to
+   measure. (It also protects the grade-aggregation model — every attempt counts toward
+   the average, so an attempt abandoned at Q2 is a real cost, not a free retry.)
+2. **Choose → CHECK → read verdict → NEXT is three actions where one will do.** Neil,
+   driving it live: *"I'm choosing my answer, and then I have to check it, and then it
+   tells me it's right, and then I have to press the next button."* Selecting IS the
+   commitment; the UI should honour it and move.
+
+**What this means in build terms (all components, no exceptions):**
+- **No per-question CHECK / CHECK ALL button.** Selecting an option commits it.
+- **Auto-advance on selection**, with a short beat (~300ms) so the choice visibly
+  registers before the move — instant advance reads as a glitch and punishes a mis-tap.
+- **PREVIOUS remains, and answers stay changeable** until Submit. Auto-advance is a
+  convenience, never a lock. A student who mis-taps must be able to go back and fix it —
+  this is what stops auto-advance becoming a trap.
+- **The last question advances to the Submit state**, never into nothing.
+- **Submit reveals everything at once:** score, grade, and the per-question explanation
+  for every question — right AND wrong. The teaching content is not reduced; it is
+  **relocated to the end**, where it can be read as one coherent debrief.
+- **Restart stays honest.** The existing "this attempt will be graded as-is" confirmation
+  is correct and stays — it makes the cost explicit rather than hiding it.
+
+**The one thing this ruling does NOT change.** Deliberate-practice retry-pull on QUIZZES
+is untouched (§8): quizzes are for maxing out through repetition. This ruling governs the
+*within-attempt* reveal, not whether a student may attempt again.
+
+**Watch-it for the next build.** "Reveal at the end" is a property of the COMPONENT
+FAMILY, not of one component. Any new interactive that scores multiple items inherits
+it by default — a component shipping per-question verdicts is a defect, not a variant.
