@@ -723,7 +723,7 @@
 
             if (texts.length === 0) {
                 const input = el('input', { className: 'swml-text-input', placeholder: 'e.g. Macbeth, An Inspector Calls...',
-                    style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '15px', outline: 'none', fontFamily: 'inherit' } });
+                    style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '16px', outline: 'none', fontFamily: 'inherit' } });
                 grid.appendChild(input);
                 grid.appendChild(el('button', { className: 'swml-task-btn', style: { marginTop: '12px', width: '100%' }, textContent: 'Continue →',
                     onClick: () => { if (input.value.trim()) { state.text = input.value.trim().toLowerCase().replace(/\s+/g, '_'); afterTextSelected(); } } }));
@@ -801,7 +801,7 @@
                         // No texts in bank — show free text input as fallback
                         grid.appendChild(el('p', { className: 'swml-setup-hint', textContent: labels.fallback }));
                         const input = el('input', { className: 'swml-text-input', placeholder: labels.placeholder,
-                            style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '15px', outline: 'none', fontFamily: 'inherit' } });
+                            style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '16px', outline: 'none', fontFamily: 'inherit' } });
                         grid.appendChild(input);
                         grid.appendChild(el('button', { className: 'swml-task-btn', style: { marginTop: '12px', width: '100%' }, textContent: 'Continue →',
                             onClick: () => {
@@ -831,7 +831,7 @@
                 .catch(() => {
                     loading.textContent = 'Could not load texts. Type the title below.';
                     const input = el('input', { placeholder: labels.placeholder,
-                        style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '15px', outline: 'none', fontFamily: 'inherit' } });
+                        style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '16px', outline: 'none', fontFamily: 'inherit' } });
                     grid.appendChild(input);
                     grid.appendChild(el('button', { className: 'swml-task-btn', style: { marginTop: '12px', width: '100%' }, textContent: 'Continue →',
                         onClick: () => {
@@ -1377,12 +1377,27 @@
             const SVG_QUILL = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7DF9E9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.5 -1.5"/><path d="M14.5 3.5c3.5 -1 6.5 0 7.5 1l-2 2c-1.5 -.5 -2.5 0 -3.5 1l-4 4c-1 1 -1.5 2.5 -1 3.5l2 2c-1 1 -3 2 -7 2l-1 1"/></svg>';
             card.innerHTML = '<div style="text-align:center;margin-bottom:16px">' + SVG_QUILL + '</div>';
 
+            // v7.20.287: fontSize MUST be >= 16px. Below 16px, iOS Safari auto-zooms
+            // the page on focus — which, on a 100vh overflow:hidden layout, shoved this
+            // field off-screen and made it un-typeable on iPad (matches the v7.19.425
+            // fix for the sibling .swml-cw-project-overlay__input, also pinned to 16px).
             const nameInput = el('input', {
                 type: 'text',
                 placeholder: 'e.g. The Lost Garden, My Dystopian Future...',
                 maxLength: 60,
-                style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '15px', outline: 'none', fontFamily: 'inherit' } });
+                autocapitalize: 'words',
+                autocorrect: 'off',
+                style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '16px', outline: 'none', fontFamily: 'inherit', WebkitUserSelect: 'text', userSelect: 'text' } });
             card.appendChild(nameInput);
+
+            // v7.20.287: belt-and-braces keyboard avoidance. Even with the scrollable
+            // .swml-setup, iOS does not reliably scroll a focused field clear of the
+            // on-screen keyboard, so do it ourselves once the keyboard has animated in.
+            nameInput.addEventListener('focus', () => {
+                setTimeout(() => {
+                    try { nameInput.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}
+                }, 350);
+            });
 
             const errorMsg = el('div', { style: { color: '#ff6b6b', fontSize: '12px', marginTop: '6px', minHeight: '18px' } });
             card.appendChild(errorMsg);
@@ -2856,7 +2871,7 @@
                         // No other poems — fall back to text input
                         grid.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'No other poems in the bank. Type your comparison poem below.' }));
                         const input = el('input', { className: 'swml-text-input', placeholder: 'e.g. London, Tissue, Exposure...',
-                            style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '15px', outline: 'none', fontFamily: 'inherit' } });
+                            style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '16px', outline: 'none', fontFamily: 'inherit' } });
                         grid.appendChild(input);
                         grid.appendChild(el('button', { className: 'swml-task-btn', style: { marginTop: '12px', width: '100%' }, textContent: 'Continue →',
                             onClick: () => {
@@ -2885,7 +2900,7 @@
                 .catch(() => {
                     loading.textContent = 'Could not load poems. Type your comparison poem below.';
                     const input = el('input', { placeholder: 'Comparison poem title...',
-                        style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '15px', outline: 'none', fontFamily: 'inherit' } });
+                        style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '16px', outline: 'none', fontFamily: 'inherit' } });
                     grid.appendChild(input);
                     grid.appendChild(el('button', { className: 'swml-task-btn', style: { marginTop: '12px', width: '100%' }, textContent: 'Continue →',
                         onClick: () => {
