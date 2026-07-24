@@ -38,6 +38,15 @@ Every beat ask states the shape up front — **one sentence, present tense, no l
 (the connective is already the row's label). This is stated in the ASK rather than repaired by an AI
 clean-up pass afterwards: cheaper, and it teaches the constraint instead of hiding it.
 
+v7.20.282 INTERACTION REDESIGN (Neil, 2026-07-24): every beat ask = **"A strong X beat:" criteria
+bullets → worked example → "Write your Beat N." LAST**. The examples build ONE complete Scrooge
+spine across the six beats ("counts his coins alone" → "eats thin gruel alone" → "Marley's ghost on
+Christmas Eve" → "agrees to follow three spirits" → "the Cratchits' table" → "faced with his own
+grave, chooses people over money"), so the student watches a story they know assemble in parallel
+with theirs. Beat 1's chipQ carries the walk orientation (spine concept · same rhythm as Step 3 ·
+the two helper buttons · don't-overthink) as its opening paragraph — a single bubble, so it is
+pacing-law safe and resume-safe by construction.
+
 ## The two irony follow-ups (API — retained, Neil confirmed)
 
 - **After Beat 3:** "Sometimes the *worst* thing to happen to a character is secretly the exact

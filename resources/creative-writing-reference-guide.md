@@ -343,6 +343,8 @@ The character who will change the most — the heart of your story. But before a
 
 In your logline, introduce them in a few words that hint at who they are *and* what's wrong: not "a girl", but "a guarded, self-reliant teenager". *Erin Brockovich* opens on an unemployed single mother, honest and fighting for her children, snubbed and wronged — courage and unfair injury stacked in minutes, and we are hers for the whole film.
 
+Two more openings that bond us instantly. *The Hunger Games* begins with Katniss hunting to feed her mother and little sister, then volunteering to take Prim's place in the arena — competence, love and raw courage in a single scene. *Spider-Man* opens on Peter Parker, a kind and gifted boy who is bullied and overlooked, an unfair injury that puts us on his side before he lifts a finger.
+
 #### 2. The flaw (the emotional shield)
 
 This is the building block students find hardest — and the one that separates a flat story from a moving one. It is worth slowing right down here.
@@ -356,8 +358,10 @@ Worked examples — notice the visible shield every time:
 - **Ebenezer Scrooge** (*A Christmas Carol*, Dickens, 1843) — **Flaw:** greed. **The shield in action:** he hoards money and drives people away, because wealth cannot reject him the way people can.
 - **Katniss Everdeen** (*The Hunger Games*, Collins, 2008) — **Flaw:** cold detachment. **The shield in action:** she keeps everyone at arm's length so their loss can never break her.
 - **Macbeth** (Shakespeare, c.1606) — **Flaw:** ruthless ambition, warring with guilt. **The shield in action:** he seizes power to prove his own worth — and here the arc is a *fall*: he never lowers the shield, and it destroys him. (A flaw can lead to ruin as well as growth; both reveal meaning.)
+- **Simba** (*The Lion King*, 1994) — **Flaw:** he runs from responsibility. **The shield in action:** he escapes into a carefree, "no worries" life far from home, because a life with no duties can never fail him the way he believes he failed his father.
+- **Elsa** (*Frozen*, 2013) — **Flaw:** fearful self-isolation. **The shield in action:** she locks everyone out and hides her power behind closed doors, because a sister she never touches is a sister she can never harm.
 
-**How to find your protagonist's flaw.** Start with a visible behaviour, then dig beneath it. If your first answer is a surface trait — "he's clumsy", "she's shy", "he's arrogant" — ask the harder question: *what is that behaviour protecting them from?* Keep asking "but why?" until you reach a *feeling*, not just a habit. Two traps: don't give a flaw that never touches the plot (if the story would unfold identically without it, the flaw isn't doing its job); and don't let them shed it too easily — earned change moves a reader, easy change doesn't.
+**How to find your protagonist's flaw.** Start with a visible behaviour, then dig beneath it. If your first answer is a surface trait — "he's clumsy", "she's shy", "he's arrogant" — ask the harder question: *what is that behaviour protecting them from?* Keep asking "but why?" until you reach a *feeling*, not just a habit. Two traps: don't give a flaw that never touches the plot (if the story would unfold identically without it, the flaw isn't doing its job); and don't let them shed it too easily — earned change moves a reader, easy change doesn't. Weak vs strong: "he's a bit selfish" is only a label; "he cannot bring himself to say sorry, even when it costs him the people he loves" is a flaw with teeth.
 
 #### 3. The wound
 
@@ -367,11 +371,11 @@ A wound is **one specific hurt from the past** that the protagonist would rather
 
 Three rules that keep a wound powerful:
 
-- **Line the wound up with the flaw.** Scrooge's wound is the loneliness of a loveless past; his shield is greed — money can't abandon him the way people did. Katniss's wound is the terror of loss, having already lost her father; her shield is detachment. The armour always fits the injury exactly.
+- **Line the wound up with the flaw.** Scrooge's wound is the loneliness of a loveless past; his shield is greed — money can't abandon him the way people did. Katniss's wound is the terror of loss, having already lost her father; her shield is detachment. Batman's wound is watching his parents die when he was a boy; his shield is the mask — becoming a symbol so grief can never touch the child underneath. Woody's wound in *Toy Story* is the dread of being replaced and forgotten; his shield is controlling everyone around him to stay the favourite. The armour always fits the injury exactly.
 - **Never name it in the opening.** We should *see* the wound in behaviour long before anyone says it aloud. Dumping the full backstory on page one pushes readers away; reveal it slowly. (McKee: the deep need is *sensed* through what a character does, never explained.)
 - **Heal it in visible steps, not a speech.** Edson maps the arc as **EXPRESS → BATTLE → OVERCOME**: first the character finally *says* the hurt out loud (often without realising it); then they take a bold action against it that *fails*, and the shield goes back up; then, near the climax, a braver, more honest action lets them drop the shield for good — and prove they've changed. Michael Hauge names the same journey **Identity → Essence**: from the mask they hide behind to the true self they were always afraid to show.
 
-**How to find your protagonist's wound.** Take the shield you named in the flaw, and ask: *what would have to have happened to a person to make them build this?* A shield of arrogance may sit over a wound of once being made to feel worthless. A shield of detachment may sit over the loss of someone loved. When you can name the single moment, you have the wound.
+**How to find your protagonist's wound.** Take the shield you named in the flaw, and ask: *what would have to have happened to a person to make them build this?* A shield of arrogance may sit over a wound of once being made to feel worthless. A shield of detachment may sit over the loss of someone loved. When you can name the single moment, you have the wound. Weak vs strong: "he had a hard childhood" runs nothing, because it is a fog; "the afternoon his closest friend moved away without a word of goodbye" runs everything, because it is a single, namable moment.
 
 #### 4. The inciting incident
 
@@ -380,6 +384,9 @@ The event that **shatters the protagonist's normal life** and drags them into th
 - Marley's ghost arrives and Scrooge can no longer hide behind his wealth.
 - Will Byers vanishes and the safe, ordinary world of *Stranger Things* breaks open.
 - In *Erin Brockovich*, a careless boss lets her poke into one file — a tiny push that launches the whole quest.
+- Prim's name is drawn at the reaping, and Katniss volunteers to take her place — in a single breath the ordinary world of *The Hunger Games* is over.
+- Hagrid finds Harry and tells him, *"You're a wizard, Harry"* — and the cupboard under the stairs can no longer hold his life.
+- A diver snatches Nemo before his father's eyes, and the small, safe world Marlin built in *Finding Nemo* is shattered in an instant.
 
 It can be huge or tiny, chosen or accidental — but for your main plot it must happen **on the page**, where the reader feels its full weight, never buried in backstory. Without an inciting incident a character just *exists*; with one, a story *begins*.
 
@@ -388,17 +395,17 @@ It can be huge or tiny, chosen or accidental — but for your main plot it must 
 The inciting incident hands the protagonist a **goal** — a single, physical, visible thing they are now trying to achieve. Two rules make a goal strong:
 
 - **Make it one clear, picturable finish line.** Michael Hauge's test: not "get rich" but "a bank balance of £100,000"; not "be happy" but a specific image the reader can see the character reaching. A vague want gives the reader nothing to anticipate. State it early, and cut anything that doesn't serve it.
-- **Give it a hidden second layer — the internal need.** The richest goals stand for a deeper need the character doesn't yet understand. Luke Skywalker's external goal is to rescue the princess; his internal need is to discover who he is meant to become. The visible goal drives the *plot*; the invisible need drives the *meaning* — and, in the best stories, chasing the outer goal is exactly what forces the inner need into the open.
+- **Give it a hidden second layer — the internal need.** The richest goals stand for a deeper need the character doesn't yet understand. Luke Skywalker's external goal is to rescue the princess; his internal need is to discover who he is meant to become. The visible goal drives the *plot*; the invisible need drives the *meaning* — and, in the best stories, chasing the outer goal is exactly what forces the inner need into the open. The same double layer runs through *Finding Nemo*: Marlin's outer goal is to cross the ocean and bring his son home, while his inner need is to stop letting fear rule him and learn to let go. In *Moana*, the outer goal is to return a stolen relic and heal a dying island; the inner need is to discover who she is beneath everyone's expectations.
 
 #### 6. The obstacle
 
-The formidable force standing in the protagonist's way. Robert McKee states the law more strongly than any other rule in storytelling — his **Principle of Antagonism**: *a protagonist can only be as compelling as the forces of antagonism make them.* Weak opposition, weak story. So make the obstacle genuinely powerful, and remember McKee's warning that "forces of antagonism" are not only a villain — they are the **sum of everything** pushing against the character's will: an enemy, yes, but also society, circumstance, and the character's own fear.
+The formidable force standing in the protagonist's way. Robert McKee states the law more strongly than any other rule in storytelling — his **Principle of Antagonism**: *a protagonist can only be as compelling as the forces of antagonism make them.* Weak opposition, weak story. So make the obstacle genuinely powerful, and remember McKee's warning that "forces of antagonism" are not only a villain — they are the **sum of everything** pushing against the character's will: an enemy, yes, but also society, circumstance, and the character's own fear. Weak vs strong: a bumbling, easily-outwitted guard makes a forgettable hero; an opponent who knows the protagonist's every weakness and wants the very same prize makes a great one.
 
 What makes an obstacle *the right one* for your story:
 
-- **It attacks the flaw.** Truby's "true opponent" is the character best able to strike the protagonist's greatest weakness, forcing them either to face it and grow, or be destroyed. The obstacle is often a **dark mirror** — it embodies the very flaw the protagonist must overcome, so that beating it *means* changing. In *An Inspector Calls*, Inspector Goole forces a comfortable family to confront the wilful blindness they'd rather keep.
-- **It wants the same thing.** The strongest opponents compete for the *same goal* as the protagonist, so every clash is head-on rather than a passing quarrel.
-- **It gets personal, and it escalates.** Edson's advice is blunt — "get mean": work out the worst that could happen and make it happen, and let the threat rise steadily and grow more personal as the story climbs.
+- **It attacks the flaw.** Truby's "true opponent" is the character best able to strike the protagonist's greatest weakness, forcing them either to face it and grow, or be destroyed. The obstacle is often a **dark mirror** — it embodies the very flaw the protagonist must overcome, so that beating it *means* changing. In *An Inspector Calls*, Inspector Goole forces a comfortable family to confront the wilful blindness they'd rather keep. *The Lion King*'s Scar is the same dark mirror: he embodies the selfish, throne-grabbing ambition Simba must reject, so beating him means Simba finally shouldering the duty he ran from.
+- **It wants the same thing.** The strongest opponents compete for the *same goal* as the protagonist, so every clash is head-on rather than a passing quarrel. In *The Hunger Games*, every other tribute is chasing the one prize Katniss needs — survival — so each encounter is a head-on collision, never a passing quarrel.
+- **It gets personal, and it escalates.** Edson's advice is blunt — "get mean": work out the worst that could happen and make it happen, and let the threat rise steadily and grow more personal as the story climbs. In *Up*, the explorer Muntz begins as Carl's boyhood hero and ends a murderous, personal threat — the danger rising and turning more personal at every turn.
 
 *(Two more elements you'll meet as your story grows past the logline: the **ally** — the character who sees the wound the protagonist is hiding and won't let them hide — and the **battle**, the climax where the protagonist faces the opponent and, really, faces their own flaw. You'll build both in Steps 4–6.)*
 
@@ -406,7 +413,7 @@ What makes an obstacle *the right one* for your story:
 
 What the protagonist stands to **lose** if they fail — the reason the reader cares. Three tests keep stakes strong:
 
-- **Make them personal and specific.** "If she fails, the world ends" is vague; "if she fails, her little sister goes into the arena alone" is felt instantly. We care most when we can *picture* exactly what would be lost.
+- **Make them personal and specific.** "If she fails, the world ends" is vague; "if she fails, her little sister goes into the arena alone" is felt instantly. We care most when we can *picture* exactly what would be lost. In *A Christmas Carol* the stake is not "the poor will suffer" but Tiny Tim's empty stool and abandoned crutch — one image you cannot forget. In *Finding Nemo*, if Marlin fails he loses the only family he has left, having already lost the rest.
 - **Make the loss matter as much as survival.** Edson's question is the one to ask of any story: *what does the hero lose if they fail?* — and the answer must be huge, even in a comedy or romance. Truby goes further: the deepest jeopardy is **moral** — keep alive the question of whether the character will do the *right* thing, so that losing would cost them who they are, not just what they want.
 - **Raise them as you go.** McKee's stories climb through a chain of rising risk: each step should put what the character loves in greater danger than the step before. Stakes that stay flat drain the tension out of a story.
 
@@ -416,10 +423,13 @@ At Sophicly we offer three formulas. Each tells the *same* story but leans on a 
 
 1. **Action-oriented** — *Inciting Incident + Protagonist + Action + Antagonist.*
    *"When a young boy disappears, his mother, a police chief, and his friends must confront terrifying forces to get him back."* — *Stranger Things*
+   *"When her little sister is chosen to fight to the death, a self-reliant teenager volunteers in her place and must outlast an arena built to kill her."* — *The Hunger Games*
 2. **Goal-oriented** — *Protagonist + Action + Antagonist + Goal + Stake.*
    *"Luke Skywalker, a spirited farm boy, joins the rebels to fight Darth Vader and rescue Princess Leia from certain death."* — *Star Wars*
+   *"Marlin, an anxious clownfish, braves sharks, jellyfish and the open ocean to rescue his captured son and bring him safely home."* — *Finding Nemo*
 3. **Character-arc oriented** — *Protagonist has an opportunity to do something life-changing but must overcome their flaw to find a solution.*
    *"An old, greedy miser called Scrooge has the chance to improve the lives of those around him, but he must let go of his fear of human connection so he can become generous and find happiness."* — *A Christmas Carol*
+   *"A guilt-ridden young lion has the chance to reclaim his kingdom, but must let go of the shame he has been running from and accept who he is meant to be."* — *The Lion King*
 
 The third formula is worth dwelling on: it puts the **change** at the centre — exactly where the meaning lives.
 
@@ -448,13 +458,22 @@ Michael Hauge, in *Storytelling Made Easy*, teaches exactly this spine in six mo
 5. **The obstacle that attacks the flaw.** *But…* The opposition hits, and — crucially — it strikes at their **specific flaw**, forcing the hardest choice of the story. This is the beat that separates a real story from a chase.
 6. **The resolution.** *Until finally…* The story lands. What they *actually* get should contrast with what they *thought* they wanted — that gap is where the meaning lives, and it should answer the unmet need you set up in beat 1.
 
+**The six beats in action.** Here is the spine of *Toy Story* in six causal moves — read it as one breath and feel each *because of that*:
+
+1. **The ordinary world.** Woody is Andy's favourite toy and the confident leader of the toybox.
+2. **The inciting incident.** A dazzling new toy, Buzz Lightyear, arrives and takes his place.
+3. **The goal.** *Because of that,* Woody sets out to push Buzz aside and win back his spot.
+4. **The pursuit.** *Because of that,* his scheme goes wrong and both toys end up lost, far from home.
+5. **The obstacle attacks the flaw.** *But* stranded together, Woody's jealousy nearly gets them both destroyed — he is forced to set it aside and rely on the rival he resents.
+6. **The resolution.** *Until finally* they save each other, and Woody learns that being loved is not the same as being the only one loved — the very fear that drove him.
+
 ### The throughline: pick your ending
 
 Before you write the beats, decide the *shape* of the arc — Sophia will offer this as a choice:
 
 - **Succeeds** — they reach the goal and grow (Scrooge; most adventures).
 - **Defeated** — they fail, and the failure is the warning (Macbeth; tragedy).
-- **Abandons the goal** — they discover they wanted the wrong thing, and walk away wiser.
+- **Abandons the goal** — they discover they wanted the wrong thing, and walk away wiser (Woody in *Toy Story*, giving up being the one favourite to choose friendship instead).
 
 Your beat 6 must match the throughline you chose. A story that promises a triumph and delivers a defeat (or the reverse) leaves a reader feeling cheated.
 
@@ -476,12 +495,12 @@ Every one of the eight archetypes is a variation of the **Hero's Journey** — t
 
 ### The eight archetypes
 
-1. **The Hero's Journey (original)** — the universal transformation story: a call to adventure, trials and mentors, and a return home changed. Choose it when your story is fundamentally about a character discovering who they are meant to become. *(The Lord of the Rings, Star Wars.)*
-2. **Coming of Age** — growth from youthful innocence to hard-won maturity, taught by a rough education in how the world really works. Choose it for a young protagonist crossing into adulthood. *(Jane Eyre, Great Expectations.)*
-3. **Overcoming the Monster** — the protagonist confronts a powerful, seemingly unbeatable evil and must find the courage to defeat it. The "monster" is often an externalised version of their own fear. Choose it for a story of threat and courage. *(Beowulf, Jaws, The Hunger Games.)*
+1. **The Hero's Journey (original)** — the universal transformation story: a call to adventure, trials and mentors, and a return home changed. Choose it when your story is fundamentally about a character discovering who they are meant to become. *(The Lord of the Rings, Star Wars.)* Simba in *The Lion King* walks the same path: a frightened cub who flees his home returns as the king he was born to be.
+2. **Coming of Age** — growth from youthful innocence to hard-won maturity, taught by a rough education in how the world really works. Choose it for a young protagonist crossing into adulthood. *(Jane Eyre, Great Expectations.)* Across the *Harry Potter* books a neglected, unwanted boy grows into someone who chooses courage and sacrifice over his own safety.
+3. **Overcoming the Monster** — the protagonist confronts a powerful, seemingly unbeatable evil and must find the courage to defeat it. The "monster" is often an externalised version of their own fear. Choose it for a story of threat and courage. *(Beowulf, Jaws, The Hunger Games.)* In *Stranger Things* a band of children must find the nerve to face the Demogorgon that has crept into their town — the monster as their own fear made flesh.
 4. **Rags to Riches** — the protagonist rises from humble or oppressed beginnings through virtue and perseverance — but the truest versions warn that outer riches mean nothing without inner growth. Choose it for a story of earned transformation. *(Cinderella, Great Expectations.)*
-5. **Rebirth / Redemption** — a flawed protagonist is given a second chance and is transformed for the better. Choose it when your story is about someone changing who they *are*, not just what they have. *(A Christmas Carol.)*
-6. **The Quest** — the protagonist journeys toward a specific, distant goal, meeting trials along the way, and discovers themselves in the pursuit. Choose it for a story driven by a clear external objective. *(The Odyssey, Raiders of the Lost Ark.)*
+5. **Rebirth / Redemption** — a flawed protagonist is given a second chance and is transformed for the better. Choose it when your story is about someone changing who they *are*, not just what they have. *(A Christmas Carol.)* *Star Wars* closes on the same note: Darth Vader's final choice to save his son redeems a lifetime of wrong.
+6. **The Quest** — the protagonist journeys toward a specific, distant goal, meeting trials along the way, and discovers themselves in the pursuit. Choose it for a story driven by a clear external objective. *(The Odyssey, Raiders of the Lost Ark.)* *Moana* sails beyond a forbidden reef to return a stolen relic, and learns who she truly is along the way.
 7. **Tragedy** — the Hero's Journey *in reverse*: a protagonist of real stature falls, destroyed by their own fatal flaw. Choose it when your story is a warning — the change is a fall, and the fall is the meaning. *(Macbeth, Romeo and Juliet.)*
 8. **Voyage and Return** — the protagonist is swept into a strange, unfamiliar world, is changed by the experience, and returns home able to live more fully. Choose it for a story where an unknown world teaches the protagonist about their own. *(Alice in Wonderland, The Wizard of Oz.)*
 
@@ -506,12 +525,21 @@ Now you build the detailed, beat-by-beat outline of your chosen archetype. Every
 - **Stage V — The Final Push.** The protagonist returns to their true self, drops the shield for good, and drives to the **climax** — the decisive confrontation (the "battle") and a thrilling escape from destruction. This is where the change is finally won.
 - **Stage VI — Goal and Aftermath.** The transformation completes; the world is set right; and the **final image mirrors the opening** — showing, by contrast, exactly how far the protagonist has travelled. This is the "after" picture that proves the change was real.
 
+**The six stages in action.** Watch them run through *Harry Potter and the Philosopher's Stone*:
+
+- **Setup.** Harry lives unloved in the cupboard under the stairs, believing he is nobody — until the Hogwarts letters flood the house and Hagrid reveals that he is a wizard.
+- **The Dream Stage.** He steps into the wonder of Diagon Alley and Hogwarts, finds true friends in Ron and Hermione, and is guided by mentors as he crosses into the magical world.
+- **Initial Fascination.** He wavers between the unwanted boy he was and the wizard he is becoming, tested by lessons, rivals and the deepening mystery of the Stone.
+- **The Nightmare Stage.** The path to the Stone nearly beats them, his friends fall one by one, and Harry reaches his lowest point, facing the danger alone.
+- **The Final Push.** He stops hiding, stands up to Voldemort himself, and guards the Stone.
+- **Goal and Aftermath.** The school is safe, and the boy from the cupboard heads home for the summer knowing, at last, that he belongs somewhere — the final image mirroring the first, yet everything is changed.
+
 ### Making each beat *rich*, not literal
 
 For every beat, ask not just *what happens* but *what is this beat for* — what does it need to do to the protagonist's inner journey? Two principles keep an outline strong:
 
 - **Build, don't repeat.** Before inventing a new event, check your Story Spine and logline — you often already have the seed, and developing it is better than bolting on something new.
-- **Push past the literal.** The first idea for a beat is usually the obvious one. Ask what the beat could mean **symbolically** — how a physical event could also carry the story's theme. That's the difference between a plot that merely *works* and one that *resonates*.
+- **Push past the literal.** The first idea for a beat is usually the obvious one. Ask what the beat could mean **symbolically** — how a physical event could also carry the story's theme. That's the difference between a plot that merely *works* and one that *resonates*. For instance, a "lowest point" could literally be losing a fight; but in *The Lion King* it is Simba fleeing his home and denying who he is — the same beat made to carry the story's theme of running from responsibility.
 
 By the end of Step 6 you have a complete, stage-by-stage plot — every beat chosen for a reason — and you're ready to start writing the story itself.
 
