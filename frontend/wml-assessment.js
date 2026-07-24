@@ -17187,9 +17187,17 @@
             const STEPS = COMPONENTS.concat(FORMULAS);   // 7 + 3, walked in order
 
             let active = false, pending = false, idx = 0;
+            // v7.20.283 ROOT FIX (Neil's live catch): when Sophia PUSHES (no @COMPONENT_OK), the
+            // student's answer used to be DISCARDED — only the message in flight when the OK
+            // finally arrived was banked, so a push cycle filed the last FRAGMENT ("she's afraid
+            // of being controlled") as the whole component. `draft` accumulates EVERY answer in
+            // the push cycle; the eventual bank writes all of it, verbatim, newline-joined.
+            // Persisted, so a reload mid-push can't lose the earlier answers.
+            let draft = '';
+            const acc = (clean) => (draft ? draft + '\n' + clean : clean);
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw3') + '_cw3'; } catch (e) { return 'swml_cw3'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, active })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, active, draft })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -17241,6 +17249,20 @@
             function guideAnchorForStep(i) {
                 return (i < COMPONENTS.length) ? COMPONENTS[i].label : 'shape your logline';
             }
+            // v7.20.283 (Neil): per-component DEEP-DIVE chips into the Table of Techniques.
+            // Symbols verified against sophicly-techniques.js data ('Wa' = "Want (Goal) vs
+            // Need", 'Ey' = Empathy). window.SophiclyTable.open(sym) is the notes-rail stub
+            // contract — present from page load wherever the rail renders; it lazy-loads the
+            // bundle and opens straight to the card. Availability-gated like the S0 chips.
+            const TECH = {
+                'cw-step-3-protagonist': [{ s: 'Pr', l: 'Protagonist' }, { s: 'Ey', l: 'Empathy — making us care' }],
+                'cw-step-3-flaw':     [{ s: 'Fw', l: 'The Flaw' }],
+                'cw-step-3-wound':    [{ s: 'Wu', l: 'The Wound & Shield' }],
+                'cw-step-3-incident': [{ s: 'Ii', l: 'Inciting Incident' }],
+                'cw-step-3-goal':     [{ s: 'Wa', l: 'Want vs Need' }],
+                'cw-step-3-obstacle': [{ s: 'Ax', l: 'The Antagonist' }],
+                'cw-step-3-stakes':   [{ s: 'Sk', l: 'Stakes' }],
+            };
             // Helper buttons on each ask — [📖 Guidance] opens the reference guide at THIS
             // component's section; [👤 Your Writer's Profile] opens the student's own profile.
             // Non-gating (they still type their answer). DOM-only like the chips → re-attached
@@ -17259,6 +17281,16 @@
                     className: 'swml-quick-btn', textContent: '👤 Your Writer’s Profile',
                     onClick: function () { try { var t = document.querySelector('.swml-wp-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
                 }));
+                // v7.20.283: deep-dive chips into the Table of Techniques for this component.
+                const tech = TECH[(STEPS[i] || {}).fid] || [];
+                if (tech.length && window.SophiclyTable && window.SophiclyTable.open) {
+                    tech.forEach(function (t) {
+                        bar.appendChild(el('button', {
+                            className: 'swml-quick-btn', textContent: '🗂 ' + t.l,
+                            onClick: function () { try { window.SophiclyTable.open(t.s); } catch (e) {} },
+                        }));
+                    });
+                }
                 bc.appendChild(bar);
             }
             function serveCurrent(withIntro) {
@@ -17296,9 +17328,13 @@
                     const ok = !reply || (meta && meta.timedOut)
                         ? true
                         : /@COMPONENT_OK/.test(String(reply).replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'));
-                    if (!ok) { active = true; persist(); resetSend(); return; }
+                    // v7.20.283: a PUSH retains the answer — the follow-up ADDS to it. The bank
+                    // writes the WHOLE cycle, never just the final fragment.
+                    if (!ok) { draft = acc(clean); active = true; persist(); resetSend(); return; }
+                    const full = acc(clean);
+                    draft = '';
                     try {
-                        if (_writeOutlineRowField(step.fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                        if (_writeOutlineRowField(step.fid, full) && typeof saveCanvasContent === 'function') saveCanvasContent();
                     } catch (e) { console.warn('WML CW3: write failed (non-fatal)', e && e.message); }
                     idx = firstEmptyIndex();
                     if (idx >= STEPS.length) { finish(); return; }
@@ -17326,13 +17362,14 @@
                 startWalk();
             }
 
-            function reset() { active = false; pending = false; idx = 0; clearPersist(); }
+            function reset() { active = false; pending = false; idx = 0; draft = ''; clearPersist(); }
             function tryResume() {
                 try {
                     const raw = localStorage.getItem(lsKey());
                     if (!raw) return false;
                     const d = JSON.parse(raw);
                     if (!d || !d.active) return false;
+                    draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
                     idx = firstEmptyIndex();
                     active = idx < STEPS.length;
                     if (active) {
@@ -17419,9 +17456,13 @@
             let active = false, pending = false, idx = 0;
             let phase = 'chip';    // 'chip' → 'beat' → 'irony'
             let throughline = '';
+            // v7.20.283: same push-cycle accumulation as CW3 — a pushed beat banks EVERYTHING
+            // the student said for it, not the final fragment. Persisted across reloads.
+            let draft = '';
+            const acc = (clean) => (draft ? draft + '\n' + clean : clean);
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw4') + '_cw4'; } catch (e) { return 'swml_cw4'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -17510,6 +17551,15 @@
             // v7.20.281: helper buttons on each beat ask — [📖 Guidance] opens the guide at the
             // Step-4 "Story Spine" section; [👤 Your Writer's Profile] opens the student's own
             // profile. Mirror of the Step-3 walk. Non-gating; DOM-only → re-attached on resume.
+            // v7.20.283: + per-beat deep-dive chips into the Table of Techniques (symbols
+            // verified against sophicly-techniques.js data; same contract as the CW3 chips).
+            const TECH4 = {
+                'cw-step-4-beat1': [{ s: 'Pr', l: 'Protagonist' }],
+                'cw-step-4-beat3': [{ s: 'Ii', l: 'Inciting Incident' }],
+                'cw-step-4-beat4': [{ s: 'Wa', l: 'Want vs Need' }],
+                'cw-step-4-beat5': [{ s: 'Ax', l: 'The Antagonist' }],
+                'cw-step-4-beat6': [{ s: 'Sk', l: 'Stakes' }],
+            };
             function appendSpineButtons() {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
@@ -17523,6 +17573,15 @@
                     className: 'swml-quick-btn', textContent: '👤 Your Writer’s Profile',
                     onClick: function () { try { var t = document.querySelector('.swml-wp-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
                 }));
+                const tech = TECH4[(BEATS[idx] || {}).fid] || [];
+                if (tech.length && window.SophiclyTable && window.SophiclyTable.open) {
+                    tech.forEach(function (t) {
+                        bar.appendChild(el('button', {
+                            className: 'swml-quick-btn', textContent: '🗂 ' + t.l,
+                            onClick: function () { try { window.SophiclyTable.open(t.s); } catch (e) {} },
+                        }));
+                    });
+                }
                 bc.appendChild(bar);
             }
             function serveCurrent() {
@@ -17595,12 +17654,15 @@
                     const ok = !reply || (meta && meta.timedOut)
                         ? true
                         : /@BEAT_OK/.test(String(reply).replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'));
-                    if (!ok) { active = true; persist(); resetSend(); return; }
+                    // v7.20.283: a PUSH retains the answer — bank the whole cycle on accept.
+                    if (!ok) { draft = acc(clean); active = true; persist(); resetSend(); return; }
+                    const full = acc(clean);
+                    draft = '';
                     // Both the beat and its irony answer land in the SAME row — the irony
                     // deepens the beat rather than being a separate box. _writeOutlineRowField
                     // appends when the row already holds text.
                     try {
-                        if (_writeOutlineRowField(b.fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                        if (_writeOutlineRowField(b.fid, full) && typeof saveCanvasContent === 'function') saveCanvasContent();
                     } catch (e) { console.warn('WML CW4: write failed (non-fatal)', e && e.message); }
                     active = true;
                     if (!wasIrony && b.irony) { phase = 'irony'; aiBubble(b.irony); persist(); resetSend(); return; }
@@ -17630,13 +17692,14 @@
                 startWalk();
             }
 
-            function reset() { active = false; pending = false; idx = 0; phase = 'chip'; throughline = ''; clearPersist(); }
+            function reset() { active = false; pending = false; idx = 0; phase = 'chip'; throughline = ''; draft = ''; clearPersist(); }
             function tryResume() {
                 try {
                     const raw = localStorage.getItem(lsKey());
                     if (!raw) return false;
                     const d = JSON.parse(raw);
                     if (!d) return false;
+                    draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
                     idx = firstEmptyBeat();
                     phase = d.phase || 'chip';
                     throughline = d.throughline || '';
