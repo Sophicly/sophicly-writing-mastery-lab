@@ -195,49 +195,6 @@
         setTimeout(() => overlay.remove(), 240);
     }
 
-    // v7.20.280: the student's OWN Writer's Profile in an overlay — reuses the guide drawer
-    // shell + renderGuideMarkdown, fetches the `writer_profile` artifact. Opened by the
-    // [👤 Your Writer's Profile] button in the Step-3 walk so a student can connect each story
-    // component back to who they are (the skill-transfer-to-literature goal).
-    function showCwProfilePanel() {
-        if ($('#swml-guide-overlay')) { closeGuidePanel(); return; }
-        const prevBodyOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        const overlay = el('div', { className: 'swml-guide-overlay', id: 'swml-guide-overlay' });
-        const drawer  = el('div', { className: 'swml-guide-drawer' });
-        const header = el('div', { className: 'swml-guide-header' }, [
-            el('span', { className: 'swml-guide-title', textContent: 'Your Writer’s Profile' }),
-            el('button', { className: 'swml-guide-close', innerHTML: '&times;', 'aria-label': 'Close', onClick: () => closeGuidePanel() }),
-        ]);
-        const main = el('div', { className: 'swml-guide-main' });
-        const body = el('div', { className: 'swml-guide-body', id: 'swml-guide-body' });
-        body.appendChild(el('div', { className: 'swml-guide-loading', textContent: 'Loading your profile…' }));
-        main.appendChild(body);
-        drawer.appendChild(header); drawer.appendChild(main); overlay.appendChild(drawer);
-        const stopOnBackdrop = (e) => { if (e.target === overlay) e.preventDefault(); };
-        overlay.addEventListener('wheel', stopOnBackdrop, { passive: false });
-        overlay.addEventListener('touchmove', stopOnBackdrop, { passive: false });
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeGuidePanel(); });
-        const onKey = (e) => { if (e.key === 'Escape') closeGuidePanel(); };
-        document.addEventListener('keydown', onKey);
-        overlay._cleanup = () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prevBodyOverflow; };
-        document.body.appendChild(overlay);
-        requestAnimationFrame(() => overlay.classList.add('open'));
-        const render = (md) => {
-            const out = renderGuideMarkdown(md);
-            const article = el('div', { className: 'swml-guide-article' });
-            article.innerHTML = out.html;
-            body.innerHTML = '';
-            body.appendChild(article);
-        };
-        const pid = state.cwProjectId;
-        if (!pid || !(window.WML && WML.cwProject)) { render('Your Writer’s Profile isn’t available here yet.'); return; }
-        WML.cwProject.loadArtifact(pid, 'writer_profile').then(art => {
-            const val = (art && art.success && typeof art.value === 'string' && art.value.trim()) ? art.value : '';
-            render(val || 'Your Writer’s Profile is empty — complete Step 1 to build it.');
-        }).catch(() => render('Couldn’t load your Writer’s Profile right now.'));
-    }
-
     function showGuidePanel(anchorText) {
         if ($('#swml-guide-overlay')) { closeGuidePanel(); return; }
 
@@ -17289,7 +17246,7 @@
                 }));
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: '👤 Your Writer’s Profile',
-                    onClick: function () { try { if (typeof showCwProfilePanel === 'function') showCwProfilePanel(); } catch (e) {} },
+                    onClick: function () { try { var t = document.querySelector('.swml-wp-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
                 }));
                 bc.appendChild(bar);
             }
@@ -17515,6 +17472,7 @@
                     addChatMessage(pick, 'user');
                     phase = 'beat';
                     aiBubble(b.ask);
+                    appendSpineButtons();
                     persist();
                     resetSend();
                 };
@@ -17528,15 +17486,36 @@
             function reattachChips() {
                 if (phase === 'throughline') { chipBar(THROUGHLINES, onThroughlinePick); return; }
                 const b = BEATS[idx];
-                if (b && b.chips && phase === 'chip') chipBar(b.chips, onBeatChipPick(b));
+                if (b && b.chips && phase === 'chip') { chipBar(b.chips, onBeatChipPick(b)); return; }
+                // v7.20.281: on a beat/irony phase the ask replays but its helper buttons don't.
+                if (phase === 'beat' || phase === 'irony') setTimeout(function () { try { appendSpineButtons(); } catch (e) {} }, 400);
             }
 
+            // v7.20.281: helper buttons on each beat ask — [📖 Guidance] opens the guide at the
+            // Step-4 "Story Spine" section; [👤 Your Writer's Profile] opens the student's own
+            // profile. Mirror of the Step-3 walk. Non-gating; DOM-only → re-attached on resume.
+            function appendSpineButtons() {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions swml-cw-help' });
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '📖 Guidance',
+                    onClick: function () { try { if (typeof showGuidePanel === 'function') showGuidePanel('Story Spine'); } catch (e) {} },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '👤 Your Writer’s Profile',
+                    onClick: function () { try { var t = document.querySelector('.swml-wp-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
+                bc.appendChild(bar);
+            }
             function serveCurrent() {
                 if (idx >= BEATS.length) { serveThroughline(); return; }
                 const b = BEATS[idx];
                 if (b.chips && phase === 'chip') { serveChip(); return; }
                 phase = 'beat';
                 aiBubble(b.ask);
+                appendSpineButtons();
                 persist();
                 resetSend();
             }
