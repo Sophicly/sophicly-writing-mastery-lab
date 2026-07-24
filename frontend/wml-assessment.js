@@ -17184,7 +17184,17 @@
                 { fid: 'cw-step-3-logline-3', ask:
                     '**Logline 3 of 3 — Character-arc oriented**\n\n> **PROTAGONIST has an opportunity to DO SOMETHING LIFE-CHANGING but must learn to CHANGE THEIR FLAW so they can find a solution TO THE PROBLEM**\n\n- *“An old, greedy capitalist called Scrooge has an opportunity to improve the lives of those around him but he must learn to let go of his fear of human relationships so he can become more generous and find a solution to his and others’ unhappiness.”* — **A Christmas Carol**\n- *“A young daughter of a capitalist family called Sheila has an opportunity to improve the lives of those around her but she must learn to recognise the injustices that she and her family commit so she can become more selfless and help find a solution to her society’s inequalities.”* — **An Inspector Calls**\n\nThis one is about your protagonist’s inner journey — the flaw and the wound you named earlier.\n\n**What I’ll be looking for:** the opportunity, the flaw they must change, and the solution changing it unlocks — the change sits at the centre, which is exactly where the meaning lives.\n\n**Write your third logline.**' },
             ];
-            const STEPS = COMPONENTS.concat(FORMULAS);   // 7 + 3, walked in order
+            // v7.20.289: a push cycle has TWO kinds, and they bank differently.
+            //   'accumulate' — COMPONENTS. A push asks for a MISSING DETAIL, so the
+            //     follow-up ADDS to the earlier answer and the whole cycle is banked
+            //     together (the v7.20.283 protagonist fix).
+            //   'rewrite'    — FORMULAS. A push asks the student to REWRITE the whole
+            //     logline, so the newest complete sentence REPLACES the earlier one.
+            //     Accumulating here filed BOTH drafts into the Chosen Logline box
+            //     (Neil's live catch on logline 3, 2026-07-24).
+            // The kind is stamped at construction so a 4th formula can't miss it.
+            const STEPS = COMPONENTS.map(s => Object.assign({ cycle: 'accumulate' }, s))
+                .concat(FORMULAS.map(s => Object.assign({ cycle: 'rewrite' }, s)));   // 7 + 3, walked in order
 
             let active = false, pending = false, idx = 0;
             // v7.20.283 ROOT FIX (Neil's live catch): when Sophia PUSHES (no @COMPONENT_OK), the
@@ -17194,7 +17204,12 @@
             // the push cycle; the eventual bank writes all of it, verbatim, newline-joined.
             // Persisted, so a reload mid-push can't lose the earlier answers.
             let draft = '';
-            const acc = (clean) => (draft ? draft + '\n' + clean : clean);
+            // v7.20.289: 'rewrite' steps keep only the LATEST complete answer; 'accumulate'
+            // steps join the whole cycle. See the STEPS construction above for why.
+            const acc = (clean, st) => {
+                if (st && st.cycle === 'rewrite') return clean;
+                return draft ? draft + '\n' + clean : clean;
+            };
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw3') + '_cw3'; } catch (e) { return 'swml_cw3'; } };
             function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, active, draft })); } catch (e) {} }
@@ -17328,10 +17343,12 @@
                     const ok = !reply || (meta && meta.timedOut)
                         ? true
                         : /@COMPONENT_OK/.test(String(reply).replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'));
-                    // v7.20.283: a PUSH retains the answer — the follow-up ADDS to it. The bank
-                    // writes the WHOLE cycle, never just the final fragment.
-                    if (!ok) { draft = acc(clean); active = true; persist(); resetSend(); return; }
-                    const full = acc(clean);
+                    // v7.20.283: a PUSH retains the answer — on an 'accumulate' step the follow-up
+                    // ADDS to it and the bank writes the WHOLE cycle, never just the final fragment.
+                    // v7.20.289: on a 'rewrite' step (the loglines) the follow-up REPLACES it —
+                    // the student re-writes the whole sentence, so accumulating filed both drafts.
+                    if (!ok) { draft = acc(clean, step); active = true; persist(); resetSend(); return; }
+                    const full = acc(clean, step);
                     draft = '';
                     try {
                         if (_writeOutlineRowField(step.fid, full) && typeof saveCanvasContent === 'function') saveCanvasContent();

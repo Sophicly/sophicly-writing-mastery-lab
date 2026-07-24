@@ -71,11 +71,21 @@
    5. **ORIENTATION AT WALK START** — how the walk works, the help buttons, and
       "don't overthink it" (rough now, polish later), served as PACED chunks. FIRST-PERSON
       Sophia throughout — never "the system"/"the platform" (protocol voice rule).
-   6. **⭐ PUSH-CYCLE ACCUMULATION (root law — the v7.20.283 protagonist bug).** A walk that
-      banks student answers MUST accumulate EVERY answer of a push cycle in persisted state
-      and bank the WHOLE cycle verbatim on accept. Banking only the in-flight message files
-      the final FRAGMENT as the whole answer. Protocol twin: judge the ACCUMULATED answer
-      against the STATED criteria only; the push stays on the CURRENT component/beat.
+   6. **⭐ PUSH-CYCLE BANKING — decide ACCUMULATE vs REWRITE per ask (v7.20.283 + .289).**
+      A walk that banks student answers MUST persist every answer of a push cycle, and each
+      ask declares HOW the cycle banks:
+      - **`accumulate`** (default; the .283 protagonist bug) — the push asks for a MISSING
+        DETAIL, so the follow-up ADDS and the WHOLE cycle is banked verbatim on accept.
+        Banking only the in-flight message files the final FRAGMENT as the whole answer.
+      - **`rewrite`** (the .289 logline bug) — the ask owns ONE self-contained artefact (a
+        logline, a thesis, a title), so a push means "write it again, better" and only the
+        LATEST complete answer is banked. Accumulating files every draft into one box —
+        Neil's live catch: the Chosen Logline box held both attempts stitched together.
+      Stamp the kind at STEPS construction (`{cycle:'accumulate'|'rewrite'}`) so a newly
+      added ask cannot inherit the wrong one silently. **Protocol twin, both directions:**
+      judge against the STATED criteria only and keep the push on the CURRENT component; and
+      on a `rewrite` ask, the push MUST demand the COMPLETE artefact rewritten — asking to
+      "rewrite the middle section" banks a fragment, which is the .283 bug in reverse.
    7. **⭐ GATES ARE EPHEMERAL (the v7.20.284 fossil-gate bug).** A prerequisite / "go back
       to Step N" message is DERIVED state — render it DOM-only, NEVER persist it into chat
       history, or it replays forever after the prerequisite is satisfied. Persist real
