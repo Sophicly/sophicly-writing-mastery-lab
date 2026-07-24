@@ -128,6 +128,26 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/ladder-sim-harness.js || fail=1
 fi
 
+# v7.20.290: WALK STOP-RULE GATE. A code-owned walk means CODE serves every ask; if the protocol
+# does not order the model to END its reply at the verdict signal, the model invents the next ask
+# and the student sees TWO competing questions (Neil's live catch: Step 4 doubled every beat from 2
+# on, under two different beat numberings — CW-STEP-03 carried the rule, CW-STEP-04 never got it).
+# Any CW protocol emitting a verdict signal MUST carry the stop rule. Runs when a CW protocol is
+# staged (or --all), so Steps 5/6 cannot ship the same gap.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'protocols/shared/creative-writing/CW-STEP-.*\.md'; then
+  _cwdir="protocols/shared/creative-writing"
+  for _f in "$_cwdir"/CW-STEP-*.md; do
+    [ -e "$_f" ] || continue
+    if grep -qE '@[A-Z0-9_]+_OK' "$_f" && ! grep -qE 'reply ENDS there' "$_f"; then
+      echo "❌ walk stop-rule MISSING in $_f — a protocol with a verdict signal must tell the model"
+      echo "   its reply ENDS at that signal and it must never introduce/preview/number the next ask."
+      fail=1
+    fi
+  done
+  [ "$fail" = "1" ] || echo "✅ walk stop-rule gate passed (every CW verdict-signal protocol ends its reply at the signal)."
+fi
+
 # KNOWN-CONTEXT LINT (WML CLAUDE.md #3 — the paste-wall law). A CONVERTED planning protocol must
 # never re-ask the student for context the session already holds (poem/text/question). Hard-fails
 # only for converted lanes; unconverted boards WARN (tracked debt). Runs when any planning protocol

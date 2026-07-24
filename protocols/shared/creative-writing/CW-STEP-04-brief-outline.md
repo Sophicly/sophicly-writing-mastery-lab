@@ -36,8 +36,12 @@ cause-and-effect chain of the protagonist's journey — each event *causes* the 
 
 After each beat the student writes, decide: **does this work as a beat?**
 
-- **If YES** — one or two sentences on what's strong, plus `@BEAT_OK` on its own line. Code banks
-  their verbatim sentence and serves the next beat. Do not ask a further question.
+- **If YES** — one or two sentences on what's strong, then `@BEAT_OK` on its own line **as the FINAL
+  line — your reply ENDS there.** Code banks their verbatim sentence and serves the next beat.
+  **Never introduce, preview, title, number, or ask the next beat yourself** ("Beat 5 of 6 — Until
+  finally…" is the SYSTEM's line, not yours) — doing so shows the student two competing questions,
+  under two different beat numberings, and desynchronises the walk. Do not ask a further question
+  and do not announce what is being saved.
 - **If NO** — omit the signal and ask ONE Socratic question. They will rewrite the same beat.
 
 **Judge against the stated criteria.** Every beat prompt spelled out what makes that beat strong

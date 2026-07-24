@@ -4039,6 +4039,38 @@
         }, ms);
     }
 
+    // v7.20.290 — DUPLICATE-ASK GUARD (Neil's live catch: Step 4 served "Beat 5 of 6" TWICE, once
+    // as the model's invention and once for real, under two different beat numberings).
+    //
+    // While a code-owned walk is armed, CODE owns every ask. So an ask header in the MODEL's reply
+    // is, by construction, a duplicate — there is no case where the model legitimately emits one.
+    // The protocol tells it not to (CW-STEP-03/04 §1.3 "your reply ENDS there"), but a protocol
+    // rule is a request to an LLM, not a guarantee; this makes it structurally impossible for the
+    // student to see two competing questions.
+    //
+    // Matches the code-owned ask header shape only — a bolded, line-leading "<Label> N of M —"
+    // ("Beat 5 of 6 —", "Logline 2 of 3 —"). Prose like "your Beat 5 of 6 is strong" cannot match
+    // (not line-leading, not bolded, no dash). Verdict markers are PRESERVED: they are re-appended
+    // after truncation, so @BEAT_OK / @COMPONENT_OK still drive the walk even when the model buried
+    // one after its invented ask.
+    const _WALK_ASK_HEADER = /^[ \t]*\*\*[A-Z][A-Za-z'’ ]{1,24}\s+\d+\s+of\s+\d+\s*[—–-]/m;
+    function _stripDuplicateWalkAsk(reply) {
+        if (!reply || !_walkResume) return reply;
+        const m = _WALK_ASK_HEADER.exec(String(reply));
+        if (!m) return reply;
+        const head = String(reply).slice(0, m.index).trimEnd();
+        // Re-attach any verdict markers that lived in the discarded tail — losing one would park
+        // the walk (no advance) and cost the student their turn.
+        const tail = String(reply).slice(m.index);
+        const markers = (tail.match(/@[A-Z][A-Z0-9_]*\b/g) || [])
+            .filter(t => !head.includes(t));
+        const out = markers.length ? (head + '\n' + markers.join('\n')) : head;
+        console.warn('WML WalkGuard: model emitted a code-owned ask header ("' +
+            m[0].trim() + '") while ' + _walkResume.id + ' was armed — truncated' +
+            (markers.length ? ' (preserved ' + markers.join(',') + ')' : ''));
+        return out;
+    }
+
     // Fire the armed hook, if any. `reply` is the AI text that just landed (null on timeout).
     function _fireWalkResume(reply, meta) {
         const hook = _walkResume;
@@ -14655,6 +14687,7 @@
                     // recompute card arithmetic + re-band %/grades on the canonical ladder,
                     // so chat, doc cards, sidebar and Score Summary all read corrected numbers.
                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
+                    res.reply = _stripDuplicateWalkAsk(res.reply); // v7.20.290: code owns the asks while a walk is armed — never show two competing questions
                     let cleanReply = stripAIInternals(res.reply);
                     // v7.19.989: hard-strip the raw progress breadcrumb + any improvised bar at the
                     // SOURCE too (belt-and-braces with withProgressChip — the pin must never show).
@@ -26130,6 +26163,7 @@
                                 if (res.success && res.reply) {
                                     // v7.19.832: deterministic mark integrity (see pipeline 1 twin).
                                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
+                    res.reply = _stripDuplicateWalkAsk(res.reply); // v7.20.290: code owns the asks while a walk is armed — never show two competing questions
                                     let cleanReply = stripAIInternals(res.reply);
                                     // v7.19.989: hard-strip raw breadcrumb + bar at source (twin).
                                     cleanReply = _stripRawProgressLines(cleanReply);
