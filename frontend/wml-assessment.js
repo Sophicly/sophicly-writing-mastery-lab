@@ -23885,6 +23885,35 @@
                         8: 'You\u2019ve built your plot outline and explored values. Now choose your scene(s).',
                         9: 'You\u2019ve chosen your scene(s). Now write your first draft.',
                     };
+                    // v7.20.286: echo the actual Step-5 choice into the Step-6 greeting (paste-wall /
+                    // echo-known-data law \u2014 the system HOLDS the choice; naming it earns the student's
+                    // trust). Resolve via the SAME read order tryLoadPlotTemplate uses:
+                    // in-session memory \u2192 plot_structure_key \u2192 plot_structure_choice.
+                    if (stepNum === 6 && state.cwProjectId && !(missingPrereq && stepNum > 1)) {
+                        const CW_STRUCT_NAMES = {
+                            'heros-journey': 'the Hero\u2019s Journey', 'rebirth-redemption': 'Rebirth / Redemption',
+                            'tragedy': 'Tragedy', 'rags-to-riches': 'Rags to Riches', 'the-quest': 'The Quest',
+                            'overcoming-the-monster': 'Overcoming the Monster', 'voyage-and-return': 'Voyage and Return',
+                            'coming-of-age': 'Coming of Age'
+                        };
+                        let _structSlug = null;
+                        try {
+                            const memSlug = (window._wmlCwPlotStructure && window._wmlCwPlotStructure[state.cwProjectId]) || null;
+                            _structSlug = memSlug ? resolvePlotStructureSlug(memSlug) : null;
+                            if (!_structSlug) {
+                                const ka = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_key');
+                                _structSlug = (ka?.success && ka.value) ? resolvePlotStructureSlug(ka.value) : null;
+                            }
+                            if (!_structSlug) {
+                                const ca = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_choice');
+                                _structSlug = (ca?.success && ca.value) ? resolvePlotStructureSlug(ca.value) : null;
+                            }
+                        } catch (_) {}
+                        const _structName = _structSlug && CW_STRUCT_NAMES[_structSlug];
+                        if (_structName) {
+                            cwPrevContext[6] = `In Step 5, you chose **${_structName}**. Now we\u2019ll build a detailed plot outline.`;
+                        }
+                    }
                     const prevCtx = cwPrevContext[stepNum] || `Let\u2019s continue with **${stepLabel}**.`;
                     const introLine = `Welcome to Step ${stepNum}: **${stepLabel}**\n\n${prevCtx}`;
                     let greetingText;
@@ -23907,16 +23936,17 @@
                     }
 
                     setTimeout(() => {
+                        // v7.20.286: ONLY the prereq branch needs a hardcoded button. The normal
+                        // greeting ends in "hit the button below and let's get started", so the
+                        // launch-prompt detector (wml-app.js) already emits a single "▶ Let's go"
+                        // chip — a hardcoded "Let's begin" here double-emitted (Neil's Step-6
+                        // two-button screenshot). The prereq greeting has no launch phrase, so it
+                        // gets no detector chip and still needs its own "Back to Steps" button.
+                        if (!(missingPrereq && stepNum > 1)) return;
                         const startBar = el('div', { className: 'swml-quick-actions' });
-                        if (missingPrereq && stepNum > 1) {
-                            startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Back to Steps',
-                                onClick: () => { startBar.remove(); closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); }
-                            }));
-                        } else {
-                            startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: "Let's begin",
-                                onClick: () => { startBar.remove(); tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessageQueued(); }
-                            }));
-                        }
+                        startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Back to Steps',
+                            onClick: () => { startBar.remove(); closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); }
+                        }));
                         const greetBubble = tp.chatMessages.lastElementChild;
                         if (greetBubble) {
                             const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
@@ -26707,6 +26737,33 @@
                                                 8: 'You\u2019ve built your plot outline and explored your story\u2019s values. Now it\u2019s time to choose which scene(s) to bring to life in your first draft.',
                                                 9: 'You\u2019ve chosen your scene(s). Now it\u2019s time to write your first draft \u2014 focusing on basic prose style.',
                                             };
+                                            // v7.20.286: echo the actual Step-5 choice (paste-wall / echo-known-data
+                                            // law). Twin of the main-pipeline block \u2014 same read order.
+                                            if (stepNum === 6 && projectId && !(missingPrereq && stepNum > 1)) {
+                                                const CW_STRUCT_NAMES = {
+                                                    'heros-journey': 'the Hero\u2019s Journey', 'rebirth-redemption': 'Rebirth / Redemption',
+                                                    'tragedy': 'Tragedy', 'rags-to-riches': 'Rags to Riches', 'the-quest': 'The Quest',
+                                                    'overcoming-the-monster': 'Overcoming the Monster', 'voyage-and-return': 'Voyage and Return',
+                                                    'coming-of-age': 'Coming of Age'
+                                                };
+                                                let _structSlug = null;
+                                                try {
+                                                    const memSlug = (window._wmlCwPlotStructure && window._wmlCwPlotStructure[projectId]) || null;
+                                                    _structSlug = memSlug ? resolvePlotStructureSlug(memSlug) : null;
+                                                    if (!_structSlug) {
+                                                        const ka = await WML.cwProject.loadArtifact(projectId, 'plot_structure_key');
+                                                        _structSlug = (ka?.success && ka.value) ? resolvePlotStructureSlug(ka.value) : null;
+                                                    }
+                                                    if (!_structSlug) {
+                                                        const ca = await WML.cwProject.loadArtifact(projectId, 'plot_structure_choice');
+                                                        _structSlug = (ca?.success && ca.value) ? resolvePlotStructureSlug(ca.value) : null;
+                                                    }
+                                                } catch (_) {}
+                                                const _structName = _structSlug && CW_STRUCT_NAMES[_structSlug];
+                                                if (_structName) {
+                                                    cwPrevContext[6] = `In Step 5, you chose **${_structName}**. Now we\u2019ll build a detailed, stage-by-stage plot outline \u2014 your master document for the rest of the course.`;
+                                                }
+                                            }
                                             const prevCtx = cwPrevContext[stepNum] || `You\u2019ve been building your story step by step. Let\u2019s continue with **${stepLabel}**.`;
                                             const introLine = stepNum === 1
                                                 ? `Welcome to Step 1: **${stepLabel}**\n\n${prevCtx}`
@@ -26734,21 +26791,17 @@
 
                                             // Quick action: "Let's begin" or "Back to Steps" button
                                             setTimeout(() => {
+                                                // v7.20.286: only the prereq branch needs a hardcoded button — the
+                                                // normal greeting's "hit the button below…" triggers the launch-prompt
+                                                // detector's single "▶ Let's go" chip, so a hardcoded "Let's begin"
+                                                // double-emitted. Twin of the main-pipeline fix.
+                                                if (!(missingPrereq && stepNum > 1)) return;
                                                 const startBar = el('div', { className: 'swml-quick-actions' });
-                                                if (missingPrereq && stepNum > 1) {
-                                                    // Missing prerequisite — show "Back to Steps" button
-                                                    startBar.appendChild(el('button', {
-                                                        className: 'swml-quick-btn',
-                                                        textContent: 'Back to Steps',
-                                                        onClick: () => { startBar.remove(); closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); }
-                                                    }));
-                                                } else {
-                                                    startBar.appendChild(el('button', {
-                                                        className: 'swml-quick-btn',
-                                                        textContent: "Let's begin",
-                                                        onClick: () => { startBar.remove(); chatTextarea.value = "Let's begin!"; sendCanvasMessageQueued(); }
-                                                    }));
-                                                }
+                                                startBar.appendChild(el('button', {
+                                                    className: 'swml-quick-btn',
+                                                    textContent: 'Back to Steps',
+                                                    onClick: () => { startBar.remove(); closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); }
+                                                }));
                                                 const greetBubble = chatMessages.lastElementChild;
                                                 if (greetBubble) {
                                                     const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
