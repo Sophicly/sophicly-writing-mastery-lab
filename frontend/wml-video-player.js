@@ -41,6 +41,17 @@
             container.style.display = 'flex';
             state.open = true;
             state.minimised = false;
+            // v7.20.278: FORCE the expanded DOM. open() used to set state.minimised=false but
+            // never reset the child displays (that logic lived only in toggleMinimise), so
+            // re-opening a MINIMISED player left the dead 200px pill — the video never showed
+            // (Neil, 2026-07-23: "it doesn't open the player and start the video").
+            container.classList.remove('wml-vp--min');
+            const _b = container.querySelector('.wml-vp-body');
+            const _h = container.querySelector('.wml-vp-header');
+            const _m = container.querySelector('.wml-vp-minimised');
+            if (_b) _b.style.display = 'block';
+            if (_h) _h.style.display = 'flex';
+            if (_m) _m.style.display = 'none';
             // Allow caller to set initial size (e.g. 'large' for feedback canvas)
             if (options?.size && SIZES[options.size]) state.size = options.size;
             applySize();
@@ -60,6 +71,23 @@
             if (video) video.pause();
             if (container) container.style.display = 'none';
             state.open = false;
+        },
+        // v7.20.278: bring an already-open (possibly minimised) player to the front, un-minimise
+        // it and resume playback — so the CW Step-2 video button always DOES something visible
+        // even when the lesson already auto-opened the playlist. No re-fetch.
+        expandAndPlay() {
+            if (!container || !state.open) return;
+            state.minimised = false;
+            container.classList.remove('wml-vp--min');
+            const b = container.querySelector('.wml-vp-body');
+            const h = container.querySelector('.wml-vp-header');
+            const m = container.querySelector('.wml-vp-minimised');
+            if (b) b.style.display = 'block';
+            if (h) h.style.display = 'flex';
+            if (m) m.style.display = 'none';
+            applySize();
+            container.style.display = 'flex';
+            if (video) { video.play().catch(() => { video.muted = true; video.play().catch(() => {}); }); }
         },
         isOpen() { return state.open; },
     };
@@ -328,11 +356,15 @@
             body.style.display = 'none';
             header.style.display = 'none';
             mini.style.display = 'flex';
-            container.style.width = '200px';
+            // v7.20.278: collapse to a ROUND house-standard button (Neil) — the CSS keys off
+            // this class to drop the panel chrome and shrink to the circular teal control.
+            container.classList.add('wml-vp--min');
+            container.style.width = 'auto';
         } else {
             body.style.display = 'block';
             header.style.display = 'flex';
             mini.style.display = 'none';
+            container.classList.remove('wml-vp--min');
             applySize();
         }
     }

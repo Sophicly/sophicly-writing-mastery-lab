@@ -4080,10 +4080,17 @@
     // "nothing happened" bug). Falls back to _all if the current section has no dedicated videos.
     WML.openCwVideos = function () {
         try {
+            // Lesson already auto-opened it (possibly minimised)? Just bring it forward + play —
+            // no re-fetch, and it's guaranteed to have the right videos (v7.20.278).
+            if (window.wmlVideo && typeof wmlVideo.isOpen === 'function' && wmlVideo.isOpen()) {
+                if (typeof wmlVideo.expandAndPlay === 'function') wmlVideo.expandAndPlay();
+                return;
+            }
             fetchAllVideos().then(cache => {
                 const sectionVideos = (cache[state.step] && cache[state.step].length) ? cache[state.step] : (cache._all || []);
                 if (sectionVideos.length && window.wmlVideo) wmlVideo.open(sectionVideos);
-            }).catch(() => {});
+                else console.warn('WML CW: no videos to open for step', state.step, '— cache keys:', Object.keys(cache || {}));
+            }).catch(e => console.warn('WML CW: openCwVideos fetch failed —', e && e.message));
         } catch (e) {}
     };
 

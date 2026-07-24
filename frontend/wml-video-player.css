@@ -160,26 +160,31 @@
     font-size: 9px; color: rgba(255,255,255,0.3);
 }
 
-/* ── Minimised State ── v7.20.276 (Neil): NO purple gradient. The expand control
-   is the house-standard button — ported from .sb-related__arrow (teal on dark,
-   deepened teal on light), borderless, radiating halo on hover, scarlab play
-   icon in currentColor. Same styling in both themes. ── */
+/* ── Minimised State ── v7.20.278 (Neil): the player collapses to a SINGLE ROUND
+   house-standard button — ported 1:1 from the library's .sb-related__arrow (teal
+   on dark, deepened teal on light), borderless, radiating halo on hover — carrying
+   the scarlab play icon. NO purple. The container chrome (dark panel, shadow,
+   corners) is dropped so only the circle shows. ── */
+.wml-vp.wml-vp--min {
+    width: auto;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 50%;
+    overflow: visible;                 /* let the halo radiate past the circle */
+}
 .wml-vp-minimised {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 10px; padding: 8px 10px; cursor: pointer;
-    background: rgba(255,255,255,0.04);
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; cursor: pointer; background: transparent;
 }
-.wml-vp-mini-title {
-    font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 600;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
-}
+.wml-vp-mini-title { display: none; }  /* round button only — no title bar */
 .wml-vp-mini-expand {
     position: relative;
-    width: 34px; height: 34px; padding: 0; flex: 0 0 auto;
+    width: 52px; height: 52px; padding: 0; flex: 0 0 auto;
     display: inline-flex; align-items: center; justify-content: center;
     color: #0e1214; background: #51dacf;
     border: none; border-radius: 50%;
     isolation: isolate; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
     transition: box-shadow .5s ease, background .25s ease;
 }
 .wml-vp-mini-expand::after {
@@ -188,7 +193,7 @@
     transition: transform .5s ease, opacity .5s ease;
 }
 .wml-vp-mini-expand:hover::after { transform: scale(1.5); opacity: 0; }
-.wml-vp-mini-expand svg { width: 16px; height: 16px; display: block; margin-left: 1px; }
+.wml-vp-mini-expand svg { width: 22px; height: 22px; display: block; margin-left: 2px; }
 .wml-vp-mini-expand:focus-visible { outline: 2px solid #51dacf; outline-offset: 3px; }
 html[data-theme="light"] .wml-vp-mini-expand,
 html.light .wml-vp-mini-expand { color: #ffffff; background: #0e9b8d; }
