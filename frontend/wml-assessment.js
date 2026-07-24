@@ -23260,6 +23260,28 @@
                         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                     }
                 }
+                // v7.20.284 (Neil's live catch): the prerequisite-gate greeting ("It looks like
+                // you haven't completed **Step N**") used to be SAVED into chat history, so it
+                // replayed FOREVER — even after the student completed the missing step (his
+                // Step-5/6 chats were fossilised on a gate whose artifacts verifiably exist on
+                // prod). The gate is EPHEMERAL now (greet blocks no longer persist it); any
+                // already-saved gate is stripped here. A chat that held only the gate becomes
+                // empty, so the fresh-entry greet re-runs and re-checks the dependencies LIVE.
+                // Idempotent per load — no mid-load save needed.
+                if (isCwSi && savedChat && savedChat.history && savedChat.history.length > 0) {
+                    const GATE_RE = /It looks like you haven[’']t completed \*\*Step \d/;
+                    const before = savedChat.history.length;
+                    savedChat.history = savedChat.history.filter(m =>
+                        !(m && m.role === 'assistant' && GATE_RE.test(m.content || '')));
+                    if (savedChat.history.length !== before) {
+                        console.log('WML CW: stripped ' + (before - savedChat.history.length)
+                            + ' fossil prerequisite-gate message(s) — deps re-check on this entry');
+                        if (!savedChat.history.length) {
+                            savedChat = null;
+                            try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch (e) {}
+                        }
+                    }
+                }
                 // v7.14.68: Discard stale/broken planning chats — assessment bleed-through or paste requests
                 if ((state.task === 'planning' || state.task === 'polishing') && savedChat && savedChat.history && savedChat.history.length > 0) {
                     const firstAI = savedChat.history.find(m => m.role === 'assistant');
@@ -23826,8 +23848,13 @@
                         greetingText = `${introLine}\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
                     }
                     tp.addChatMessage(formatAI(greetingText), 'ai', greetingText);
-                    tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
-                    saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
+                    // v7.20.284: the prerequisite GATE is EPHEMERAL — persisting it fossilised
+                    // "go back to Step N" beyond the point the step was completed. Real
+                    // greetings persist; the gate re-derives on every entry.
+                    if (!(missingPrereq && stepNum > 1)) {
+                        tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
+                        saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
+                    }
 
                     setTimeout(() => {
                         const startBar = el('div', { className: 'swml-quick-actions' });
@@ -26648,8 +26675,12 @@
                                                 greetingText = `${introLine}\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
                                             }
                                             addChatMessage(formatAI(greetingText), 'ai', greetingText);
-                                            canvasChatHistory.push({ role: 'assistant', content: greetingText });
-                                            saveCanvasChat(canvasChatHistory, canvasChatId);
+                                            // v7.20.284: gate greetings are EPHEMERAL — see the
+                                            // twin greet block in the main pipeline.
+                                            if (!(missingPrereq && stepNum > 1)) {
+                                                canvasChatHistory.push({ role: 'assistant', content: greetingText });
+                                                saveCanvasChat(canvasChatHistory, canvasChatId);
+                                            }
 
                                             // Quick action: "Let's begin" or "Back to Steps" button
                                             setTimeout(() => {
