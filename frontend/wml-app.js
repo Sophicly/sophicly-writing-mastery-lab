@@ -190,6 +190,29 @@
      * @param {string} direction - 'forward' (slide left) or 'back' (slide right)
      */
     let _navGuard = false; // Prevents double-render from rapid clicks (v7.12.61)
+    // v7.20.288: keyboard-safe setup height. On iOS the on-screen keyboard shrinks the
+    // VISUAL viewport but leaves the LAYOUT viewport (100vh) untouched, so a setup card
+    // centred in a 100%-height box gets centred behind the keyboard — unreachable, because
+    // the screen deliberately does not scroll (scrolling it exposes the document beneath).
+    // Publishing visualViewport.height as --swml-setup-h lets the same flex centring place
+    // the card in the space ABOVE the keyboard. No-op on desktop and on any device with a
+    // hardware keyboard, where visual and layout viewports agree.
+    (function bindSetupViewportHeight() {
+        const vv = window.visualViewport;
+        if (!vv) return; // pre-iOS 13 / old browsers keep the 100% fallback
+        let raf = 0;
+        const apply = () => {
+            raf = 0;
+            const root = document.getElementById('swml-root');
+            if (!root) return;
+            root.style.setProperty('--swml-setup-h', Math.round(vv.height) + 'px');
+        };
+        const schedule = () => { if (!raf) raf = requestAnimationFrame(apply); };
+        vv.addEventListener('resize', schedule);
+        vv.addEventListener('scroll', schedule);
+        schedule();
+    })();
+
     function transitionSetup(buildContent, direction = 'forward') {
         if (_navGuard) return;
         _navGuard = true;
@@ -1389,15 +1412,6 @@
                 autocorrect: 'off',
                 style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '16px', outline: 'none', fontFamily: 'inherit', WebkitUserSelect: 'text', userSelect: 'text' } });
             card.appendChild(nameInput);
-
-            // v7.20.287: belt-and-braces keyboard avoidance. Even with the scrollable
-            // .swml-setup, iOS does not reliably scroll a focused field clear of the
-            // on-screen keyboard, so do it ourselves once the keyboard has animated in.
-            nameInput.addEventListener('focus', () => {
-                setTimeout(() => {
-                    try { nameInput.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}
-                }, 350);
-            });
 
             const errorMsg = el('div', { style: { color: '#ff6b6b', fontSize: '12px', marginTop: '6px', minHeight: '18px' } });
             card.appendChild(errorMsg);
