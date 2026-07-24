@@ -195,6 +195,49 @@
         setTimeout(() => overlay.remove(), 240);
     }
 
+    // v7.20.280: the student's OWN Writer's Profile in an overlay — reuses the guide drawer
+    // shell + renderGuideMarkdown, fetches the `writer_profile` artifact. Opened by the
+    // [👤 Your Writer's Profile] button in the Step-3 walk so a student can connect each story
+    // component back to who they are (the skill-transfer-to-literature goal).
+    function showCwProfilePanel() {
+        if ($('#swml-guide-overlay')) { closeGuidePanel(); return; }
+        const prevBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const overlay = el('div', { className: 'swml-guide-overlay', id: 'swml-guide-overlay' });
+        const drawer  = el('div', { className: 'swml-guide-drawer' });
+        const header = el('div', { className: 'swml-guide-header' }, [
+            el('span', { className: 'swml-guide-title', textContent: 'Your Writer’s Profile' }),
+            el('button', { className: 'swml-guide-close', innerHTML: '&times;', 'aria-label': 'Close', onClick: () => closeGuidePanel() }),
+        ]);
+        const main = el('div', { className: 'swml-guide-main' });
+        const body = el('div', { className: 'swml-guide-body', id: 'swml-guide-body' });
+        body.appendChild(el('div', { className: 'swml-guide-loading', textContent: 'Loading your profile…' }));
+        main.appendChild(body);
+        drawer.appendChild(header); drawer.appendChild(main); overlay.appendChild(drawer);
+        const stopOnBackdrop = (e) => { if (e.target === overlay) e.preventDefault(); };
+        overlay.addEventListener('wheel', stopOnBackdrop, { passive: false });
+        overlay.addEventListener('touchmove', stopOnBackdrop, { passive: false });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeGuidePanel(); });
+        const onKey = (e) => { if (e.key === 'Escape') closeGuidePanel(); };
+        document.addEventListener('keydown', onKey);
+        overlay._cleanup = () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prevBodyOverflow; };
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('open'));
+        const render = (md) => {
+            const out = renderGuideMarkdown(md);
+            const article = el('div', { className: 'swml-guide-article' });
+            article.innerHTML = out.html;
+            body.innerHTML = '';
+            body.appendChild(article);
+        };
+        const pid = state.cwProjectId;
+        if (!pid || !(window.WML && WML.cwProject)) { render('Your Writer’s Profile isn’t available here yet.'); return; }
+        WML.cwProject.loadArtifact(pid, 'writer_profile').then(art => {
+            const val = (art && art.success && typeof art.value === 'string' && art.value.trim()) ? art.value : '';
+            render(val || 'Your Writer’s Profile is empty — complete Step 1 to build it.');
+        }).catch(() => render('Couldn’t load your Writer’s Profile right now.'));
+    }
+
     function showGuidePanel(anchorText) {
         if ($('#swml-guide-overlay')) { closeGuidePanel(); return; }
 
@@ -17224,11 +17267,38 @@
                 return out;
             }
 
+            // v7.20.280: the guide section for a step. A COMPONENT's label is contained in its
+            // guide heading ("Flaw" → "#### 2. The flaw…"), so the label IS the anchor;
+            // the three logline formulas point at the "shape your logline" section.
+            function guideAnchorForStep(i) {
+                return (i < COMPONENTS.length) ? COMPONENTS[i].label : 'shape your logline';
+            }
+            // Helper buttons on each ask — [📖 Guidance] opens the reference guide at THIS
+            // component's section; [👤 Your Writer's Profile] opens the student's own profile.
+            // Non-gating (they still type their answer). DOM-only like the chips → re-attached
+            // on resume by tryResume.
+            function appendStepButtons(i) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions swml-cw-help' });
+                const anchor = guideAnchorForStep(i);
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '📖 Guidance',
+                    onClick: function () { try { if (typeof showGuidePanel === 'function') showGuidePanel(anchor); } catch (e) {} },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '👤 Your Writer’s Profile',
+                    onClick: function () { try { if (typeof showCwProfilePanel === 'function') showCwProfilePanel(); } catch (e) {} },
+                }));
+                bc.appendChild(bar);
+            }
             function serveCurrent(withIntro) {
                 if (idx >= STEPS.length) { finish(); return; }
+                const stepIdx = idx;
                 const chunks = chunksFor(idx, withIntro);
-                if (chunks.length === 1) { aiBubble(chunks[0]); persist(); resetSend(); return; }
-                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { persist(); resetSend(); } });
+                if (chunks.length === 1) { aiBubble(chunks[0]); appendStepButtons(stepIdx); persist(); resetSend(); return; }
+                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { appendStepButtons(stepIdx); persist(); resetSend(); } });
                 persist();
                 resetSend();
             }
@@ -17297,7 +17367,13 @@
                     if (!d || !d.active) return false;
                     idx = firstEmptyIndex();
                     active = idx < STEPS.length;
-                    if (active) console.log('WML CW3: resumed at step ' + (idx + 1) + '/' + STEPS.length);
+                    if (active) {
+                        console.log('WML CW3: resumed at step ' + (idx + 1) + '/' + STEPS.length);
+                        // v7.20.280: the ask replays from history but its DOM-only helper buttons
+                        // don't — re-attach them to the replayed ask (chips-die-on-reload landmine).
+                        const at = idx;
+                        setTimeout(function () { try { appendStepButtons(at); } catch (e) {} }, 400);
+                    }
                     return active;
                 } catch (e) { return false; }
             }
