@@ -53,6 +53,37 @@
    re-attaches the chip for the NEXT chunk instead of auto-emitting it. **Gate for every future
    port (Steps 5-29, poetry, CN): after converting a turn to code, count consecutive `aiBubble()`
    calls — more than one in a row is the wall, by construction.**
+4c. **⭐⭐ THE ASK TEMPLATE + WALK LAWS — codified at Neil's order (2026-07-24: "Opus keeps
+   slacking with the interaction… codify it"). This is THE mechanism for every code-served
+   walk, present and future.** Reference impl: `_cwLoglineCtl` / `_cwSpineCtl`
+   (wml-assessment.js, v7.20.282–.285). Every CODE-served ask that requests student input:
+   1. **CRITERIA UPFRONT** — "A strong X:" bullets BEFORE the question. The student always
+      knows what is wanted; never a vague ask Socratically mined afterwards.
+   2. **WORKED EXAMPLES IN THE ASK** — 2–3, varied texts students know, a weak-vs-strong pair
+      where it teaches. Examples replace API round-trips (Neil: "examples will help the
+      students a lot"). Multi-step walks may thread ONE story across all asks (the CW4
+      Scrooge spine) so a known example assembles in parallel with the student's.
+   3. **POINT AT THE HELP** — 📖 Guidance (reference guide at this section) · 👤 Writer's
+      Profile · 🗂 technique deep-dive chips where a Table-of-Techniques card exists
+      (deep-link via `window.SophiclyTable.open(sym)`; symbols verified against table data).
+   4. **THE CONCRETE ACTION LAST** — the ask ENDS on the question (checklist form when
+      multi-part). Never leave the student at a teaching paragraph.
+   5. **ORIENTATION AT WALK START** — how the walk works, the help buttons, and
+      "don't overthink it" (rough now, polish later), served as PACED chunks. FIRST-PERSON
+      Sophia throughout — never "the system"/"the platform" (protocol voice rule).
+   6. **⭐ PUSH-CYCLE ACCUMULATION (root law — the v7.20.283 protagonist bug).** A walk that
+      banks student answers MUST accumulate EVERY answer of a push cycle in persisted state
+      and bank the WHOLE cycle verbatim on accept. Banking only the in-flight message files
+      the final FRAGMENT as the whole answer. Protocol twin: judge the ACCUMULATED answer
+      against the STATED criteria only; the push stays on the CURRENT component/beat.
+   7. **⭐ GATES ARE EPHEMERAL (the v7.20.284 fossil-gate bug).** A prerequisite / "go back
+      to Step N" message is DERIVED state — render it DOM-only, NEVER persist it into chat
+      history, or it replays forever after the prerequisite is satisfied. Persist real
+      teaching turns only; anything derived re-derives on every entry.
+   8. **PICKS: single-tap for one-of-N; MULTI-SELECT (toggle + Continue) when the honest
+      answer is "several"** — a main pick may stage into an optional "any others?" multi
+      (the CW4 unmet-needs pattern, v7.20.285). A pick is a transcript-visible user turn,
+      never `hidden`.
 
 5. **⭐ CODE-SERVED SOURCE TEXT MUST NEVER SIT IN A MANIFEST-LOADED MODULE (Neil, 2026-07-22 — the
    retained-source law).** When a deterministic turn is converted from LLM-narrated to CODE-served

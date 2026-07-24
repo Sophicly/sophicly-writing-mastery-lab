@@ -8,7 +8,7 @@ left in a loaded module is narrated by Sophia regardless of any fence.
 
 | Menu | Options |
 |---|---|
-| Unmet need (Beat 1) | Safety · Love & Belonging · Esteem · Control over my life · Purpose · Reaching my potential |
+| Unmet need (Beat 1) | Safety · Love & Belonging · Esteem · Control over my life · Purpose · Reaching my potential — **two-stage since v7.20.285**: MAIN need (single tap, chipQ names Scrooge's main-vs-underneath example) then "any others?" MULTI-select (toggle + Continue, optional; both picks land in the transcript) |
 | Inciting-incident type (Beat 3) | An Arrival · A Proposition · A Twist of Fate |
 | Goal type (Beat 4) | Win · Stop · Retrieve · Escape · Revenge · Deliver · Maintain |
 | Obstacle type (Beat 5) | A single person · A group or society · A force of nature |

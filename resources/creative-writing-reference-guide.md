@@ -481,6 +481,119 @@ Your beat 6 must match the throughline you chose. A story that promises a triump
 
 When your six beats are in, read them as one paragraph and check: does **each beat cause the next** ("and because of that…", never "and then…")? Does the **ending answer the need** you set up in beat 1? Does the **obstacle attack the flaw**, not just get in the way? If all three hold, your skeleton is sound and you're ready to choose the fuller structure that fits it.
 
+### A reference for each beat
+
+The overview above gives you the shape. This is the close-up: for every beat, what it *is*, what makes a strong one, a couple of worked examples from stories you already know, and the trap to avoid. Sophia walks you through these six one at a time — this section is here for you to lean on whenever you get stuck on a beat.
+
+#### The main unmet need — and the needs beneath it
+
+Every interesting character wants something they haven't got. Sophia will offer you six kinds of unmet need to choose from:
+
+- **Safety** — to feel secure, unthreatened, out of danger.
+- **Love & Belonging** — to be wanted, connected, part of something.
+- **Esteem** — to be respected, valued, thought well of.
+- **Control over my life** — to have a say in what happens to them.
+- **Purpose** — to matter, to have a reason to get up in the morning.
+- **Reaching my potential** — to become everything they could be.
+
+A complex character usually carries **several** of these at once — but **one leads**, and that leading need is the spine of their whole arc. Scrooge's *main* unmet need is **Love & Belonging**: he is cut off from everyone. Underneath it sit **Safety** (his terror of poverty) and **Esteem** (he would rather be feared than liked). You name the *main* one first; the others enrich it. Katniss leads with **Safety** (keeping her family alive) with **Love & Belonging** beneath; Simba in *The Lion King* leads with **Esteem** (to deserve his father's throne) with **Purpose** underneath. Pick the one need that, if answered, would change everything — that is the one your ending must pay off.
+
+#### Beat 1 — "At first…"
+
+Your protagonist's ordinary world, *before* the story starts. One sentence, present tense, opening straight after "At first,".
+
+**A strong Beat 1:**
+- introduces the protagonist inside their normal life;
+- lets us *glimpse* the unmet need and the flaw at work — carried by a detail, never announced;
+- pictures a scene a camera could film, rather than naming a feeling.
+
+**Examples:**
+- *"At first, a miserly old money-lender counts his coins alone while carol-singers hurry past his door."* — Scrooge, the spine we build alongside yours.
+- *"At first, Woody is the favourite toy and rules the toybox, certain no one could ever replace him."* — *Toy Story*.
+- Weak: *"At first, a boy is lonely and unhappy."* — this only labels the feeling. Strong: *"At first, a boy eats lunch at the edge of the field, watching the others pick teams without him."* — the same loneliness, now something we can see.
+
+**Common trap:** naming the emotion ("he is sad") instead of revealing it through a picture. Let the empty chair, the untouched phone, the locked door do the work.
+
+#### Beat 2 — "And then…"
+
+The repeated routine that *proves* the stuck state — the physical evidence of the problem. One sentence, present tense, after "And then,".
+
+**A strong Beat 2:**
+- a **concrete, visible action** a camera could film, never an abstract feeling;
+- **repeated** — this is what they do *every single day*;
+- fresh evidence, not a re-run of Beat 1.
+
+**Examples:**
+- *"And then, every evening Scrooge eats thin gruel alone by a mean little fire, checking the day's ledgers twice."*
+- *"And then, each morning Marlin checks the reef twice for danger and forbids Nemo from swimming past the drop-off."* — *Finding Nemo*: the routine reveals the fear.
+- *"And then, every day Carl polishes the same house, waters the same plant, and waves away anyone who knocks."* — *Up*.
+
+**Common trap:** drifting into a feeling ("and then he feels trapped") instead of a habit we can watch, or simply restating Beat 1. The daily action *is* the argument.
+
+#### Beat 3 — "Until…"
+
+The inciting incident — the event that shatters the ordinary world. One sentence, present tense, after "Until,".
+
+**A strong Beat 3:**
+- a **single event on a particular day** — the moment everything changes;
+- something concrete that *happens to* the protagonist and forces a reaction;
+- an external event, never a feeling and never a decision (the decision is Beat 4).
+
+**Examples:**
+- *"Until, on Christmas Eve, the ghost of his dead business partner walks through his door dragging chains of cash-boxes."* — Scrooge.
+- *"Until, on his eleventh birthday, a letter arrives that no one will let him read."* — *Harry Potter*.
+- *"Until, at the reaping, her little sister's name is drawn from the bowl."* — *The Hunger Games*.
+
+**Common trap:** making it a *decision* ("until he decides to change") or a slow drift ("until things gradually get worse"). It must be one thing that happens, on one day, from outside.
+
+#### Beat 4 — "And because of this…"
+
+What the protagonist *decides to do* in response to the inciting incident. One sentence, present tense, after "And because of this,".
+
+**A strong Beat 4:**
+- a **decision and an action** that follow *directly* from Beat 3 — cause and effect, not a new random event;
+- driven by the protagonist's own choice, not something that merely happens to them;
+- the action that commits them to their goal.
+
+**Examples:**
+- *"And because of this, Scrooge agrees to follow three spirits through his past, his present and his future."*
+- *"And because of this, Katniss volunteers in her sister's place and is taken away to train for the Games."* — *The Hunger Games*.
+- *"And because of this, Moana sails beyond the reef to find Maui and put right what has gone wrong."* — *Moana*.
+
+**Common trap:** a passive reaction, or a fresh unrelated event. Ask: does this beat follow *because of* Beat 3, and does my protagonist *choose* it? If either answer is no, it isn't Beat 4 yet.
+
+#### Beat 5 — "And because of this…"
+
+The major challenge — the Road of Trials — that follows directly from the decision in Beat 4. One sentence, present tense, after "And because of this,".
+
+**A strong Beat 5:**
+- follows *directly* from Beat 4 — the challenge is caused by the choice they made;
+- **attacks the flaw** — the trial lands exactly where the protagonist is weakest;
+- forces the hardest choice of the story, not just a hard task.
+
+**Examples:**
+- *"And because of this, Scrooge must stand unseen at the Cratchits' table and watch what his greed has cost the people around him."*
+- *"And because of this, Marlin must swim into the open ocean and trust strangers to reach his son — the very risk his fear forbids."* — *Finding Nemo*.
+- Weak: *"And because of this, a huge battle takes place."* — a generic obstacle that tests nothing inside him. Strong: *"And because of this, Simba must return home and admit the truth about his father's death that he has spent years running from."* — *The Lion King*: the trial strikes his exact weakness.
+
+**Common trap:** an obstacle that is merely *difficult* rather than one that attacks the flaw. A chase where the character is tested on the outside but never on the inside is not a real Beat 5.
+
+#### Beat 6 — "Until finally…"
+
+The climax and the self-revelation — where the conflict resolves and the protagonist changes (or, in a tragedy, refuses to). One sentence, present tense, after "Until finally,".
+
+**A strong Beat 6:**
+- carries the **self-revelation** — they face the flaw and change, or (in a tragedy) refuse and fall;
+- what they *actually* get contrasts with what they *thought* they wanted;
+- answers the unmet need you set up in Beat 1, and matches the ending you chose.
+
+**Examples:**
+- *"Until finally, faced with his own neglected grave, Scrooge chooses people over money and wakes on Christmas morning a changed man."*
+- *"Until finally, Simba defeats Scar and takes his place as king, understanding at last that he cannot outrun who he is."* — *The Lion King*.
+- Tragedy: *"Until finally, Macbeth holds the crown and nothing else, and dies knowing the ambition he chased has cost him everything he had."* — *Macbeth*: the fall answers the need by its absence.
+
+**Common trap:** a victory with no inner change ("until finally he wins and is happy"), or an ending that answers a *different* need than the one set up in Beat 1. The gap between what they wanted and what they got is where the meaning lives — make sure it pays off the need you opened with.
+
 ---
 
 ## Step 5 — Choose Your Plot Structure
@@ -533,6 +646,115 @@ Now you build the detailed, beat-by-beat outline of your chosen archetype. Every
 - **The Nightmare Stage.** The path to the Stone nearly beats them, his friends fall one by one, and Harry reaches his lowest point, facing the danger alone.
 - **The Final Push.** He stops hiding, stands up to Voldemort himself, and guards the Stone.
 - **Goal and Aftermath.** The school is safe, and the boy from the cupboard heads home for the summer knowing, at last, that he belongs somewhere — the final image mirroring the first, yet everything is changed.
+
+### The eight structures, stage by stage
+
+Every archetype runs on the same six stages you just met — underneath, they are all the Hero's Journey. What changes from one structure to the next is the **flavour** of each stage: what the "dream" feels like, what "everything goes wrong" means, and above all how the story *ends*. This is the section to glance at once you know which structure you chose in Step 5. Find yours below, read how it colours each stage, and study the worked example — then invent your own events to fill the same shape.
+
+**Keep it rough.** You are sketching main concepts here, not writing scenes. One clear phrase per stage is plenty — *"lowest point: he denies who he is while home falls apart"*. You'll deepen every beat across later drafts; right now you only need the shape. There are no wrong answers, only sketches you'll refine.
+
+#### The Hero's Journey, stage by stage
+
+*What it is:* the universal transformation — a character leaves who they were, is tested, and returns changed. *Choose it* when your story is fundamentally about your protagonist discovering who they are meant to become.
+
+- **Setup.** Establish the ordinary world and the mask the protagonist hides behind, then break it with the call. *The Lion King:* Simba is the cocky cub prince of the Pride Lands; his father Mufasa is killed and Scar convinces him it was his fault.
+- **Dream Stage.** The adventure opens and it feels freeing; new friends or a guide appear; the threshold is crossed. *The Lion King:* Simba flees far from home and finds Timon and Pumbaa, who teach him a careless "no worries" life.
+- **Initial Fascination.** The protagonist wavers between the old self and the new as complications gather. *The Lion King:* Simba grows up content, until Nala arrives with news of home and the life he has buried starts to pull at him.
+- **Nightmare Stage.** What the protagonist relied on fails, and they hit their lowest point. *The Lion King:* still crushed by guilt, Simba refuses to go back — denying who he is while the Pride Lands starve under Scar.
+- **Final Push.** The protagonist drops the mask, accepts their true self, and drives to the climax. *The Lion King:* guided by Rafiki and his father's memory, Simba returns, confronts Scar, and learns the truth about Mufasa's death.
+- **Goal and Aftermath.** The transformation completes and the final image mirrors the first. *The Lion King:* Simba takes his place as king, and the closing image of a new cub raised on Pride Rock mirrors his own beginning — the circle complete.
+
+#### Coming of Age, stage by stage
+
+*What it is:* growth from innocence to hard-won maturity, taught by a rough education in how the world really works. *Choose it* for a young protagonist crossing into adulthood. The ordinary world is innocence; the "nightmare" is often the loss of a childish belief; the aftermath is a wiser, older self.
+
+- **Setup.** A young protagonist in a small or naive world, unaware of how much they have to learn. *Harry Potter (the series):* Harry lives unloved and ordinary, believing he is nobody special.
+- **Dream Stage.** A thrilling new world opens and the protagonist tastes belonging for the first time. *Harry Potter:* Hogwarts welcomes him; he finds friends, talent, and a place he fits at last.
+- **Initial Fascination.** Wonder gives way to the first hard lessons as the world proves more complicated than it seemed. *Harry Potter:* the magic dazzles, but loss, unfairness and danger teach him the world is not simply good.
+- **Nightmare Stage.** A painful truth strips away the protagonist's innocence. *Harry Potter:* he learns that trusted adults can fail him, that allies can betray, and that surviving will cost him dearly.
+- **Final Push.** The protagonist chooses to act like the adult they are becoming, not the child they were. *Harry Potter:* he stops waiting to be rescued and chooses courage and sacrifice over his own safety.
+- **Goal and Aftermath.** The protagonist stands changed — no longer innocent, but wiser and more fully themselves. *Harry Potter:* the neglected boy of the opening has become someone who protects others; the distance travelled is unmistakable.
+
+#### Overcoming the Monster, stage by stage
+
+*What it is:* the protagonist confronts a powerful, seemingly unbeatable evil and must find the courage to defeat it — the monster is often their own fear made flesh. *Choose it* for a story of threat and courage. A dominating external Shadow shapes every stage.
+
+- **Setup.** The ordinary world, and the first sign of the threat. *Stranger Things (season one):* a quiet town and a close band of friends — until Will Byers vanishes and something inhuman is loose.
+- **Dream Stage.** The protagonists begin to fight back and feel briefly capable; allies gather. *Stranger Things:* the boys find Eleven, whose powers make the hunt feel winnable, and they band together.
+- **Initial Fascination.** The threat proves larger and stranger than first believed; complications mount. *Stranger Things:* the danger widens, the adults disbelieve them, and it creeps closer to home.
+- **Nightmare Stage.** The monster reaches full power and hope collapses. *Stranger Things:* the creature strikes, a friend is gravely endangered, and the children face a foe far beyond them.
+- **Final Push.** The protagonists find their nerve and face the monster directly. *Stranger Things:* they stop running, lay a trap, and Eleven spends everything she has to destroy the Demogorgon.
+- **Goal and Aftermath.** The monster is beaten and the world steadies, though a mark remains. *Stranger Things:* the town is safe and Will is home, yet the survivors carry what they saw — the fear faced, not forgotten.
+
+#### Rags to Riches, stage by stage
+
+*What it is:* the protagonist rises from humble or oppressed beginnings through virtue and perseverance — but the truest versions warn that outer riches mean nothing without inner growth. *Choose it* for a story of earned transformation.
+
+- **Setup.** The protagonist is low, overlooked or oppressed, their worth unseen. *Cinderella:* Cinderella is treated as a servant in her own home — kind, but powerless.
+- **Dream Stage.** A first taste of a bigger, brighter life arrives. *Cinderella:* with help she reaches the ball and, for one night, is seen for who she truly is.
+- **Initial Fascination.** The new height is thrilling but fragile; the old life still threatens. *Cinderella:* the night is magical, but midnight looms and the borrowed splendour cannot last.
+- **Nightmare Stage.** The riches are snatched away and the protagonist is cast back down. *Cinderella:* she flees at midnight and is locked away, her chance apparently lost.
+- **Final Push.** True worth, not luck, wins through. *Cinderella:* the slipper fits — her real self, not the fine gown, is what is finally recognised.
+- **Goal and Aftermath.** The protagonist rises for good, and the best versions make clear the real gain is inner. *Cinderella:* she is lifted out of cruelty at last, her patient kindness the thing that was truly rewarded.
+
+#### Rebirth and Redemption, stage by stage
+
+*What it is:* a flawed protagonist is given a second chance and is transformed for the better — a change of *self*, not just of circumstance. *Choose it* when your story is about someone changing who they are. (It is Tragedy's mirror image: same six stages, opposite direction.)
+
+- **Setup.** The protagonist is trapped in their flaw, and something disrupts it. *A Christmas Carol:* Scrooge is a cold miser until Marley's ghost arrives to warn him.
+- **Dream Stage.** The protagonist is given a wider view that stirs something long buried. *A Christmas Carol:* the Ghost of Christmas Past carries Scrooge back to his lonely youth, and old feeling flickers awake.
+- **Initial Fascination.** They begin to see themselves honestly, resisting and softening by turns. *A Christmas Carol:* the Ghost of Christmas Present reveals the warmth he has shut out, and his defences start to crack.
+- **Nightmare Stage.** The protagonist confronts the full cost of who they have become. *A Christmas Carol:* the final spirit reveals Tiny Tim's empty stool and Scrooge's own unmourned grave — the darkest point.
+- **Final Push.** Given the chance, the protagonist chooses to change. *A Christmas Carol:* Scrooge wakes on Christmas morning and throws himself into generosity, seizing his second chance.
+- **Goal and Aftermath.** A genuinely new self, proven in action; the final image reverses the first. *A Christmas Carol:* the man who drove everyone away now keeps Christmas better than anyone — the miser of the opening unrecognisable.
+
+#### The Quest, stage by stage
+
+*What it is:* the protagonist journeys toward a specific, distant goal, meeting trials along the way, and discovers themselves in the pursuit. *Choose it* for a story driven by a clear external objective. Every stage organises around the road to that goal; self-discovery is the by-product.
+
+- **Setup.** The ordinary world and the pull of a distant goal. *Moana:* Moana is heir to her island, drawn to the sea her people forbid, until a creeping blight forces her hand.
+- **Dream Stage.** The protagonist sets out and the journey feels like destiny; a guide appears. *Moana:* she sails beyond the reef at last and finds the demigod Maui, who can help return the stolen relic.
+- **Initial Fascination.** The road proves harder than hoped; the goal drifts in and out of reach. *Moana:* storms, monsters and Maui's doubts test her, and she questions whether she was ever the right one.
+- **Nightmare Stage.** A crushing setback makes the goal look impossible. *Moana:* Maui abandons her after a defeat, and, alone, she nearly gives up and turns for home.
+- **Final Push.** The protagonist finds who they are and completes the quest on their own terms. *Moana:* she grasps her own worth apart from everyone's expectations, turns back, and restores the relic.
+- **Goal and Aftermath.** The goal is won, and the protagonist is changed by the road to it. *Moana:* the island heals and she becomes the wayfinder she was always meant to be — the journey, not just the prize, having made her.
+
+#### Tragedy, stage by stage
+
+*What it is:* the Hero's Journey in reverse — a protagonist of real stature falls, destroyed by their own fatal flaw. *Choose it* when your story is a warning: the change is a fall, and the fall is the meaning. This is the one structure where the stages **invert** — the "dream" is the rise and the "nightmare" is the fall, with no redemptive final push.
+
+- **Setup.** A protagonist of stature, with a flaw waiting to be tempted. *Macbeth:* Macbeth is a loyal, honoured soldier when the witches plant the thought of the crown.
+- **Dream Stage.** The rise begins and ambition tastes sweet. *Macbeth:* he murders King Duncan and seizes the throne — the goal, terribly, achieved.
+- **Initial Fascination.** The protagonist is drawn deeper and cannot stop. *Macbeth:* to hold the crown he kills again, and guilt and paranoia begin to grip him.
+- **Nightmare Stage.** The flaw brings ruin down; instead of redemption, the fall accelerates. *Macbeth:* his wife breaks under guilt, his enemies gather, and the tyrant is left utterly alone.
+- **Final Push (inverted).** Rather than dropping the flaw, the protagonist clings to it to the end. *Macbeth:* he chooses to fight on to the last, defiant, and is killed.
+- **Goal and Aftermath.** The world is set right by the protagonist's *removal*, and the warning lands. *Macbeth:* order returns to Scotland without him — the fall itself the lesson about unchecked ambition.
+
+#### Voyage and Return, stage by stage
+
+*What it is:* the protagonist is swept into a strange, unfamiliar world, is changed by the experience, and returns home able to live more fully. *Choose it* for a story where an unknown world teaches the protagonist about their own. Home bookends the tale; the strange world is the teacher.
+
+- **Setup.** The ordinary world, and a quiet discontent with it. *The Wizard of Oz:* Dorothy is restless on the grey Kansas farm, wishing she were somewhere over the rainbow.
+- **Dream Stage.** The protagonist is swept into a vivid, unfamiliar world. *The Wizard of Oz:* a cyclone drops her into the colour and wonder of Oz.
+- **Initial Fascination.** The new world delights, then turns unsettling as its dangers appear. *The Wizard of Oz:* she gathers companions on the road to the Emerald City, but the Wicked Witch hunts her every step.
+- **Nightmare Stage.** The strange world turns threatening and the way home seems lost. *The Wizard of Oz:* captured by the Witch and cut off from her friends, Dorothy despairs of ever getting back.
+- **Final Push.** The protagonist meets the world's greatest test and finds the answer within. *The Wizard of Oz:* she defeats the Witch and learns the power to go home was hers all along.
+- **Goal and Aftermath.** Home again, the protagonist sees it — and themselves — with new eyes. *The Wizard of Oz:* Dorothy wakes in Kansas certain that "there's no place like home", the ordinary world now precious.
+
+### Where the eight structures differ
+
+All eight share the same six stages, so the real difference is one of *emphasis* — and, above all, of *ending*. This is why your Step-5 choice matters: pick the shape whose emphasis matches the change at your story's heart.
+
+- **Hero's Journey** — the balanced original: leave, be tested, return transformed. The other seven are all tilts of this.
+- **Coming of Age** — tilts the change toward *growing up*. Innocence at the start, a hard lesson at the low point, maturity at the end.
+- **Overcoming the Monster** — tilts toward an external *threat*. A powerful Shadow dominates; the nightmare is the monster at full strength; the final push is the battle.
+- **Rags to Riches** — tilts toward *rising*. The ordinary world is low and overlooked, and the warning is that outer riches are hollow without inner growth.
+- **Rebirth and Redemption** — tilts toward *moral* change. The protagonist starts flawed or worse, the story is the earning of a second chance, and the new self is the point.
+- **The Quest** — tilts toward an external *objective*. The stages organise around the journey to a distant goal; self-discovery is the by-product.
+- **Tragedy** — the one *reversal*: the same six stages run downhill. The "dream" is the rise, the "nightmare" is the fall, and there is no redemptive final push. It is Rebirth's mirror image.
+- **Voyage and Return** — tilts toward a *round trip*. Home bookends the tale, a strange world does the teaching, and the reward is living more fully back where you began.
+
+Two practical notes. First, these tilts *combine* — as Step 5 said, most strong stories pick one backbone and borrow a beat or two from another (Overcoming the Monster with a Coming-of-Age heart is *The Hunger Games*). Second, whichever you chose, the six stages are the same underneath, so you are never learning a brand-new shape here — only which colour to paint it.
 
 ### Making each beat *rich*, not literal
 

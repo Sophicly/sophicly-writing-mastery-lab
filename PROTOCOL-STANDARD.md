@@ -270,6 +270,17 @@ Three laws, every step, every board:
 each opener names its purpose + the hand-off to the next step; no >1 consecutive `aiBubble()`.
 Reference impl: CW Step 2 resource-gated opener (`_cwIdeasCtl`, `serveCwChunks` gates, v7.20.275).
 
+4. **THE ASK TEMPLATE (Neil, 2026-07-24 — codified; full law = WML CLAUDE.md 4c).** Every
+   code-served ask: criteria upfront ("A strong X:") → worked examples (varied texts,
+   weak-vs-strong pair where it teaches) → help pointers (📖 guide · 👤 profile · 🗂 technique
+   card) → the concrete question LAST. Orientation + "don't overthink it" at walk start.
+5. **JUDGMENT-SIDE TWIN (protocol rules, every walk protocol).** First-person Sophia, never
+   "the system". Judge ONLY against the criteria the ask stated; praise/push NAMES the
+   criterion; the push stays on the CURRENT component; judge the ACCUMULATED push-cycle
+   answer, never the latest fragment (code banks the whole cycle — WML CLAUDE.md 4c.6).
+   Prerequisite gates are EPHEMERAL — never persisted into chat history (4c.7).
+   Reference impl: CW-STEP-03/04 §1.3 + `_cwLoglineCtl`/`_cwSpineCtl` (v7.20.282–.285).
+
 ---
 
 # PART B — ASSESSMENT PROTOCOL SPEC

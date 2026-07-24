@@ -17429,7 +17429,7 @@
             // bubble — pacing-law safe and resume-safe by construction).
             const BEATS = [
                 { fid: 'cw-step-4-beat1', lead: 'At first', chips: NEEDS, chipQ:
-                    '**Beat 1 of 6 — “At first…”**\n\nYour logline is set. Now the story needs a skeleton: the **Story Spine** — six beats where each event *causes* the next. Same rhythm as Step 3: for each beat I’ll tell you what makes it strong, give you an example, and you write **one sentence** of your own. **📖 Guidance** and **👤 Your Writer’s Profile** sit under every question, and the same rule applies — **don’t overthink it**: rough sentences now, polish later.\n\nThis first beat is your protagonist’s ordinary world, before the story starts. Every interesting character has an **unmet need** — something missing that stops them being truly happy.\n\nWhich is closest to what your protagonist is missing?',
+                    '**Beat 1 of 6 — “At first…”**\n\nYour logline is set. Now the story needs a skeleton: the **Story Spine** — six beats where each event *causes* the next. Same rhythm as Step 3: for each beat I’ll tell you what makes it strong, give you an example, and you write **one sentence** of your own. **📖 Guidance** and **👤 Your Writer’s Profile** sit under every question, and the same rule applies — **don’t overthink it**: rough sentences now, polish later.\n\nThis first beat is your protagonist’s ordinary world, before the story starts. Every interesting character has an **unmet need** — something missing that stops them being truly happy. Complex characters usually carry several, but **one leads**. Scrooge’s main unmet need is *Love & Belonging* — with *Safety* and *Esteem* sitting underneath it.\n\n**Which is your protagonist’s MAIN unmet need?**',
                   ask: 'Now write Beat 1.\n\n**A strong “At first…” beat:**\n\n- one sentence, **present tense**, picking up straight after “At first,”\n- introduces your protagonist *and* lets us glimpse the unmet need and the flaw in their everyday life\n\nExamples:\n\n- *“At first, a miserly old money-lender counts his coins alone while carol-singers hurry past his door.”* — Scrooge’s spine, which we’ll build alongside yours\n- *“At first, a lonely watchmaker fixes other people’s clocks and never once winds his own.”*\n\n**Write your Beat 1.**' },
                 { fid: 'cw-step-4-beat2', lead: 'And then', ask:
                     '**Beat 2 of 6 — “And then…”**\n\nThis is the repeated routine that *proves* the stuck state — the physical evidence of the problem.\n\n**A strong “And then…” beat:**\n\n- one sentence, **present tense**, after “And then,”\n- a **concrete, visible action** — something a camera could film, never an abstract feeling\n- **repeated** — this is what they do every single day\n\nExamples:\n\n- *“And then, every evening Scrooge eats thin gruel alone by a mean little fire, checking the day’s ledgers twice.”*\n- Someone lonely eats dinner alone in front of the TV every night; someone trapped stares out of the window at aeroplanes every afternoon.\n\n**Write your Beat 2.**' },
@@ -17462,7 +17462,7 @@
             const acc = (clean) => (draft ? draft + '\n' + clean : clean);
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw4') + '_cw4'; } catch (e) { return 'swml_cw4'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft, need: mainNeed })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -17523,16 +17523,63 @@
             // v7.20.265: NOT hidden — a chip pick IS the student's answer, so it must replay
             // on reload like any other user turn. `hidden` makes the resume loop skip it,
             // which erased their choice from the transcript.
+            // v7.20.285 (Neil): complex characters carry SEVERAL unmet needs — one leads.
+            // Beat 1 is now two stages: MAIN need (single tap) → "any others?" MULTI-select
+            // (optional, Continue commits). Both picks land in the transcript as user turns.
+            const SEC_ASK = 'Good. Most complex characters carry more than one unmet need — the main one leads, the others deepen them. **Tap any OTHER unmet needs your protagonist also carries**, then Continue. (Just the one? Continue straight away.)';
+            let mainNeed = '';
             function onBeatChipPick(b) {
                 return function (pick) {
                     canvasChatHistory.push({ role: 'user', content: pick });
                     addChatMessage(pick, 'user');
+                    if (b.fid === 'cw-step-4-beat1') {
+                        mainNeed = pick;
+                        phase = 'chip2';
+                        aiBubble(SEC_ASK);
+                        chipBarMulti(NEEDS.filter(function (n) { return n !== pick; }), onSecondaryNeedsDone);
+                        persist();
+                        resetSend();
+                        return;
+                    }
                     phase = 'beat';
                     aiBubble(b.ask);
                     appendSpineButtons();
                     persist();
                     resetSend();
                 };
+            }
+            function onSecondaryNeedsDone(picks) {
+                const msg = picks.length ? 'Also: ' + picks.join(', ') : 'Just the one — that’s the main need.';
+                canvasChatHistory.push({ role: 'user', content: msg });
+                addChatMessage(msg, 'user');
+                phase = 'beat';
+                aiBubble(BEATS[0].ask);
+                appendSpineButtons();
+                persist();
+                resetSend();
+            }
+            // Multi-select chip bar: taps TOGGLE (✓ prefix), Continue commits the selection.
+            // DOM-only like chipBar → re-attached on resume by reattachChips.
+            function chipBarMulti(options, onDone) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions' });
+                const sel = [];
+                options.forEach(function (opt) {
+                    const btn = el('button', { className: 'swml-quick-btn', textContent: opt });
+                    btn.addEventListener('click', function () {
+                        const i = sel.indexOf(opt);
+                        if (i === -1) { sel.push(opt); btn.textContent = '✓ ' + opt; }
+                        else { sel.splice(i, 1); btn.textContent = opt; }
+                    });
+                    bar.appendChild(btn);
+                });
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Continue →',
+                    onClick: function () { bar.remove(); onDone(sel.slice()); },
+                }));
+                bc.appendChild(bar);
             }
 
             // v7.20.265: chip bars are DOM-only. On resume the QUESTION bubble replays from
@@ -17542,6 +17589,8 @@
             // the poetry-CN picker re-render at the boot resume gate.)
             function reattachChips() {
                 if (phase === 'throughline') { chipBar(THROUGHLINES, onThroughlinePick); return; }
+                // v7.20.285: resumed mid "any others?" — re-attach the multi-select bar.
+                if (phase === 'chip2') { chipBarMulti(NEEDS.filter(function (n) { return n !== mainNeed; }), onSecondaryNeedsDone); return; }
                 const b = BEATS[idx];
                 if (b && b.chips && phase === 'chip') { chipBar(b.chips, onBeatChipPick(b)); return; }
                 // v7.20.281: on a beat/irony phase the ask replays but its helper buttons don't.
@@ -17700,6 +17749,7 @@
                     const d = JSON.parse(raw);
                     if (!d) return false;
                     draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
+                    mainNeed = (typeof d.need === 'string') ? d.need : '';  // v7.20.285: chip2 resume needs the main pick
                     idx = firstEmptyBeat();
                     phase = d.phase || 'chip';
                     throughline = d.throughline || '';
