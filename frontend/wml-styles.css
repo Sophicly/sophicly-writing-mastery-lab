@@ -221,6 +221,33 @@ body.swml-page {
     max-width: 620px;
     width: 100%;
     text-align: center;
+    /* v7.20.295 — THE OTHER HALF OF v7.20.288 (Fatou, uid 1330: still could not get past the
+       project-name field on her iPad after .288 shipped).
+       .288 bound the OUTER box to the visual viewport so the card re-centres above the keyboard,
+       and that part works. But the card itself had no bound and no scroller: when the keyboard
+       shrinks the visual viewport BELOW the card's natural height (iPad landscape leaves ~300px
+       against a ~450px card), a centred flex item overflows its container at BOTH ends, and with
+       no scroll on the outer (deliberate — scrolling it exposes the document beneath) and none on
+       the inner, the Continue button is simply unreachable. Her brother's iPad is fine because a
+       different orientation — or a keyboard case, which raises no on-screen keyboard — leaves
+       enough room.
+       This is the "outer locked + bounded inner scroller" pattern the .288 comment names and did
+       not implement (cf. .swml-cw-scroll-wrap), and it satisfies both standing rules at once:
+       root CLAUDE.md "CONTENT MUST SCROLL WHEN IT OVERFLOWS" §1/§2, and Neil's 2026-07-24 ruling
+       that this screen must not scroll as a layer. */
+    max-height: 100%;
+    overflow-y: auto;
+    min-height: 0;                 /* §2 flexbox trap: a flex item defaults to min-height:auto and
+                                      grows past the container instead of scrolling */
+    overscroll-behavior: contain;  /* never chain the scroll to the document underneath */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;         /* the card is the surface; a bar on it reads as a defect */
+}
+.swml-setup-inner::-webkit-scrollbar { width: 0; height: 0; }
+/* A keyboard-shrunk iPad viewport can be ~300px tall; 40px of padding top and bottom is a
+   quarter of it. Give the card that space back before asking it to scroll. */
+@media (max-height: 560px) {
+    .swml-setup { padding: 16px; }
 }
 .swml-logo {
     display: inline-flex;

@@ -211,6 +211,25 @@
         vv.addEventListener('resize', schedule);
         vv.addEventListener('scroll', schedule);
         schedule();
+
+        // v7.20.295: .swml-setup-inner is now a bounded scroller (wml-styles.css), which makes the
+        // Continue button REACHABLE when the keyboard shrinks the viewport. But iOS is unreliable
+        // about scrolling a focused input into view inside a NESTED scroller — it scrolls the
+        // outer one, which here is height-locked and cannot move. So bring the focused field into
+        // view ourselves, both when it gains focus and when the keyboard resize lands (the shrink
+        // arrives a beat AFTER focus, so the first scroll is computed against the old height).
+        const revealFocused = () => {
+            const a = document.activeElement;
+            if (!a || !a.closest) return;
+            const scroller = a.closest('.swml-setup-inner');
+            if (!scroller) return;
+            try { a.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { try { a.scrollIntoView(false); } catch (_) {} }
+        };
+        document.addEventListener('focusin', (e) => {
+            if (!e.target || !e.target.closest || !e.target.closest('.swml-setup-inner')) return;
+            setTimeout(revealFocused, 320);   // let the keyboard animation finish
+        });
+        vv.addEventListener('resize', () => setTimeout(revealFocused, 60));
     })();
 
     function transitionSetup(buildContent, direction = 'forward') {

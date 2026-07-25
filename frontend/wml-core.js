@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.294';
+var WML_BUILD = '7.20.295';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2875,7 +2875,7 @@ window.WML = (function() {
         // @BEAT_OK (that beat is solid; code banks it and advances).
         text = text.replace(/@CW4\\?_START/g, '').trim();
         text = text.replace(/@BEAT\\?_OK/g, '').trim();
-        // v7.20.294: CW Step 4 coherence check — @COHERENCE_BEAT:N names the beat the check wants
+        // v7.20.295: CW Step 4 coherence check — @COHERENCE_BEAT:N names the beat the check wants
         // the student to reconsider (code then offers to rewrite it); @COHERENCE_OK clears the
         // spine. Machine-read only: they stay in history for the resume path but never render.
         text = text.replace(/@COHERENCE\\?_BEAT[:\s]*[1-6]/g, '').trim();
