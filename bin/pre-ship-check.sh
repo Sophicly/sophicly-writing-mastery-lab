@@ -142,6 +142,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw6-sim-harness.js || fail=1
 fi
 
+# v7.20.297: CW STEP-5 STRUCTURE WALK GATE. Step 5 shipped to prod filing NOTHING — the protocol had
+# no filing marker, so nine document rows stayed empty through a whole session while the model told
+# the student it had saved. Nothing errored, so nothing caught it. The gate that would have: drive the
+# real walk and assert every row holds the student's words. Also holds the ONE-API-call budget, the
+# eight label→key resolutions (the v7.19.438 silent-fallback bug) and the Step-6 structure carry.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|cw5-sim-harness\.js'; then
+  node bin/cw5-sim-harness.js || fail=1
+fi
+
 # v7.20.290: WALK STOP-RULE GATE. A code-owned walk means CODE serves every ask; if the protocol
 # does not order the model to END its reply at the verdict signal, the model invents the next ask
 # and the student sees TWO competing questions (Neil's live catch: Step 4 doubled every beat from 2

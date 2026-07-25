@@ -51,6 +51,13 @@ function braceSliceFrom(s, idx, open, close) {
         const c = s[k];
         if (c === open) d++;
         else if (c === close) { d--; if (d === 0) return { text: s.slice(start, k + 1), end: k + 1 }; }
+        else if (c === '/' && s[k + 1] === '/') {
+            // A LINE COMMENT. Skipping these is not tidiness: an apostrophe in ordinary prose
+            // ("the dropdown's saved selection") reads as an opening quote to the scanner below and
+            // swallows the rest of the file, so the slice silently returns null.
+            while (k < s.length && s[k] !== '\n') k++;
+        }
+        else if (c === '/' && s[k + 1] === '*') { k += 2; while (k < s.length && !(s[k] === '*' && s[k + 1] === '/')) k++; k++; }
         else if (c === '"' || c === "'" || c === '`') {
             const q = c; k++;
             while (k < s.length && s[k] !== q) { if (s[k] === '\\') k++; k++; }

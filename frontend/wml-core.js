@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.296';
+var WML_BUILD = '7.20.297';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2885,6 +2885,12 @@ window.WML = (function() {
         // @OUTLINE_GAP (the sampled finish check). Machine-read only: they stay in RAW history
         // for the resume path but must never render. `\\?_`-tolerant like every marker above,
         // because formatAI's own markdown escaping turns `_` into `\_`.
+        // v7.20.297: CW Step 5 — @CW5_START (greeting done, code serves the structure walk) and the
+        // reflection verdict: @STRUCTURE_OK (their pick stands) / @STRUCTURE_SWAP:<key> (a different
+        // archetype fits better; code then offers the switch). Machine-read only.
+        text = text.replace(/@CW5\\?_START/g, '').trim();
+        text = text.replace(/@STRUCTURE\\?_SWAP[:\s]*[a-z-]+/g, '').trim();
+        text = text.replace(/@STRUCTURE\\?_OK/g, '').trim();
         text = text.replace(/@CW6\\?_START/g, '').trim();
         text = text.replace(/@STAGE\\?_(OK|GAP)/g, '').trim();
         text = text.replace(/@OUTLINE\\?_(OK|GAP)/g, '').trim();

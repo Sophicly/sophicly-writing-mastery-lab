@@ -3529,6 +3529,57 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════════
+    // SET AN OUTLINE ROW'S DROPDOWN FROM CODE (v7.20.297)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Twin of _tickOutlineRow, for `type: 'dropdown'` rows. Same PM law: the selection lives in
+    // `_outlineCheckState` and is baked into the saved HTML by patchCheckStateIntoHTML, never in a
+    // transaction. The only DOM touch is `select.value`, a PROPERTY assignment — no MutationRecord,
+    // so PM's DOMObserver cannot see it and cannot flush.
+    //
+    // ⚠ THE SIDE EFFECT THAT MATTERS: the Step-5 archetype dropdown's own change handler ALSO
+    // writes `window._wmlCwPlotStructure[projectId]` and the `plot_structure_key` artifact — that
+    // synchronous in-session carry is what stops Step 6 building for a stale choice (v7.19.443/.444).
+    // A code-set selection must reproduce it, or a chip pick would silently leave Step 6 on the
+    // previous structure. That is a write-key ≠ read-key failure in disguise (§5d), so it lives HERE,
+    // in the one setter, rather than in each caller.
+    function _setOutlineDropdown(fid, label) {
+        if (!fid || !label) return false;
+        try {
+            const prev = _outlineCheckState.get(fid);
+            _outlineCheckState.set(fid, Object.assign({}, prev || {}, { selected: label }));
+            let rowEl = null;
+            document.querySelectorAll('[data-outline-row]').forEach((r) => {
+                if (!rowEl && r.getAttribute('data-field-id') === fid) rowEl = r;
+            });
+            if (rowEl) {
+                const sel = rowEl.querySelector('select');
+                if (sel && sel.value !== label) { sel.value = label; sel.classList.add('swml-select-filled'); }
+                if (typeof rowEl._checkRowComplete === 'function') rowEl._checkRowComplete();
+                const sec = rowEl.closest('.swml-section-block');
+                if (sec && typeof checkSectionComplete === 'function') checkSectionComplete(sec);
+                if (window.WML && typeof window.WML.updateProgressSummary === 'function') window.WML.updateProgressSummary();
+            }
+            // The Step-6 carry — see the warning above.
+            if (fid === 'cw-step-5-primary-archetype' && state.cwProjectId && window.WML && WML.cwProject) {
+                const slug = resolvePlotStructureSlug(label);
+                if (slug) {
+                    window._wmlCwPlotStructure = window._wmlCwPlotStructure || {};
+                    window._wmlCwPlotStructure[state.cwProjectId] = slug;
+                    WML.cwProject.saveArtifact(state.cwProjectId, 'plot_structure_key', slug).catch(() => {});
+                    console.log('WML CW: Step 5 plot structure saved →', slug, '(code-set: in-memory + artifact)');
+                } else {
+                    console.warn('WML CW: Step 5 archetype label did not resolve to a structure key —', label,
+                        '— Step 6 would fall back to the default. Check the dropdown items against resolvePlotStructureSlug.');
+                }
+            }
+            return true;
+        } catch (e) {
+            console.warn('WML: dropdown set failed for', fid, '—', e && e.message);
+            return false;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
     // CONTINGENT-SCAFFOLDING LADDER (C-LADDER) — code-owned ladder engine (v7.20.205)
     // Design: PLANNING-LADDER-P3-DESIGN-2026-07-18.md · PROTOCOL-STANDARD C-LADDER · PEDAGOGY §7.
     // The LLM emits ONE @ELEMENT_JUDGE{"el","verdict"[,"class"]} per judged planning turn; CODE
@@ -14448,6 +14499,13 @@
                 await _cwSpineCtl.handleTurn(msg);
                 return;
             }
+            // v7.20.297: CW Step 5 (Choose Plot Structure) — nine code-served asks, all auto-filing.
+            // `active` goes false only for the ONE reflection call, so this gate correctly falls
+            // through for exactly that turn.
+            if (state.task === 'cw_step_5' && _cwStructureCtl.active) {
+                await _cwStructureCtl.handleTurn(msg);
+                return;
+            }
             // v7.20.296: CW Step 6 (Plot Outline) — ~100 template-derived asks, filed verbatim.
             // The controller owns every beat turn with NO round-trip; `active` goes false only for
             // the seven judgment calls (six stage micro-checks + the sampled finish check) and an
@@ -18786,7 +18844,19 @@
             // the buttons do not, which leaves the student with a menu and no way to use it (the
             // .265 defect class). Re-attach the right bar for the phase we resumed into.
             function reattachChips() {
-                if (phase === 'anchor' && ASKS[i]) { chipBar(['That’s still right →', 'I’d sharpen it'], onAnchorChoice); return; }
+                // KIND-AWARE (same fix as CW5's reattach, same reason): the STEP tells us what the
+                // student is being asked for. Keyed on phase alone, an anchor step resumed while the
+                // persisted phase said 'ask' lost its confirm chips, and the student had to retype an
+                // answer the system already held — the paste-wall law failing on the resume path only.
+                if (ASKS[i] && ASKS[i].kind === 'anchor' && phase !== 'anchor-fix') {
+                    if (_cwDocValue('brief_outline', ANCHOR_SRC[ASKS[i].anchorKind])) {
+                        chipBar(['That’s still right →', 'I’d sharpen it'], onAnchorChoice);
+                        phase = 'anchor'; persist();
+                    } else {
+                        helpBar(ASKS[i]);
+                    }
+                    return;
+                }
                 if (phase === 'stage-choice' && checkStage >= 0) { chipBar(['Sharpen this stage’s arc →', 'Leave it as it is →'], onStageChoice); return; }
                 if (phase === 'finish-choice') { chipBar(['Rewrite my final image →', 'Leave it as it is →'], onFinishChoice); return; }
                 if (phase === 'stage-fix' && checkStage >= 0) {
@@ -18870,6 +18940,587 @@
             };
         })();
 
+        // ═══════════════════════════════════════════════════════════════════════════════════
+        // CW STEP 5 — CHOOSE YOUR PLOT STRUCTURE (code-owned walk, v7.20.297)
+        // ───────────────────────────────────────────────────────────────────────────────────
+        // ⭐ WHY THIS EXISTS (Neil, 2026-07-25, live on prod, flagged as an emergency): Step 5 was
+        // still the 343-line LLM protocol, and it had TWO defects that fed each other.
+        //
+        //   1. NOTHING FILED. The protocol carried no filing marker of any kind — not one
+        //      @FIELD_COMMIT in 343 lines. Verified on Neil's prod project: ZERO markers in the
+        //      whole Step-5 chat, and all NINE Step-5 rows EMPTY while the six code-filled Step-4
+        //      carry rows above them were populated. Worse than silent: the model announced "Let
+        //      me save your reflection" and emitted an empty code fence. It told the student it
+        //      had saved. It could not save.
+        //   2. EVERY TURN WAS AN API CALL — including the eight-archetype menu, which the protocol
+        //      itself says to "present as quick-action buttons" and then paid API rates to render
+        //      as prose, and three fixed justification questions.
+        //
+        // Now: CODE owns all nine asks, the menu is a chip pick, and every answer is filed VERBATIM
+        // with the row auto-ticked in the same write. Full run = ONE API call.
+        //
+        // ⭐ THE ONE API CALL IS DELIBERATE (Neil: "maybe a little bit of reflection"). It is the
+        // single most valuable turn in the step, and it is the one Neil watched work on prod: the
+        // student picks Overcoming the Monster, and Sophia notices the story is really a
+        // Rebirth/Redemption — because the protagonist dies, is reborn and lets go of a wound —
+        // and asks which change is the REAL ending. That is judgment on the student's own material
+        // (§4b watch-it: a turn that READS the student is never stripped to save a call). It fires
+        // ONCE, after the pick, and never re-spends on a resume.
+        //
+        // ⭐ MENU CONTENT HAS NO NEW AUTHOR. The eight archetype summaries are read from
+        // CW_PLOT_ARCHETYPE_META — the same source the Step-6 document header renders — so the menu
+        // cannot drift from the rest of the course (CLAUDE.md #7: don't average conflicting copies,
+        // have one). The dropdown labels come from CW5_ARCHETYPE_ITEMS, the one producer.
+        const _cwStructureCtl = (function () {
+            const ORDER = Object.keys(CW5_ARCHETYPE_ITEMS);
+
+            // ── the nine asks. Every one is §4c-shaped: criteria upfront · ONE worked example
+            // inline · help pointers · the concrete action LAST. `more` feeds rung 1, `tech` rung 2.
+            // Technique symbols are PROD-verified (bin/cw6-prod-technique-symbols.txt).
+            const STEPS = [
+                {
+                    fid: 'cw-step-5-context', label: 'Context',
+                    title: '**1 of 9 — Your Context**',
+                    body: 'Every real writing choice starts with something true. **Context** is what put this story in your head in the first place — an experience, something you noticed, a question you cannot let go of.\n\n'
+                        + '**A strong answer:**\n\n'
+                        + '- names something REAL and specific to you — not "I like sci-fi", but what in sci-fi keeps pulling you back\n'
+                        + '- one or two sentences; this is a note to yourself, not an essay\n\n'
+                        + 'Example: *Dickens walked through London and saw children working in factories while the men who owned them dined well. That is his context — not "Victorian England", but a thing he actually saw and could not unsee.*\n\n'
+                        + '**What inspired YOUR story?**',
+                    more: [
+                        '*Priestley had just come through two world wars and watched the same comfortable people avoid responsibility both times — that is why An Inspector Calls exists.*',
+                        '*Steinbeck worked alongside migrant labourers in California and saw men make plans they were never going to be allowed to keep.*',
+                        '*Shelley was nineteen, had lost a baby, and was surrounded by men excited about galvanism and what electricity might animate.*',
+                    ],
+                    tech: [], guide: 'Step 5 — Choose Your Plot Structure',
+                    profile: true,
+                },
+                {
+                    fid: 'cw-step-5-concept', label: 'Concept',
+                    title: '**2 of 9 — Your Concept**',
+                    body: 'Your **concept** is what your story is about UNDERNEATH the plot. Not the events — the idea about life the events are there to prove.\n\n'
+                        + '**A strong answer:**\n\n'
+                        + '- a statement about PEOPLE or LIFE, not a summary of what happens\n'
+                        + '- something a reader could disagree with — that is how you know it is an idea and not a description\n\n'
+                        + 'Weak → strong:\n\n'
+                        + '- ✗ *"It is about a girl who becomes an AI and fights an empire."* — that is the plot.\n'
+                        + '- ✓ *"It is about what is left of a person when you take away their body — and whether that is where being human actually lives."* — now it is a concept.\n\n'
+                        + 'Example: *A Christmas Carol\'s plot is a man visited by ghosts. Its concept is that greed cuts you off from other people, and that it is never too late to come back.*\n\n'
+                        + '**What is YOUR story really about, beneath the plot?**',
+                    more: [
+                        '*Of Mice and Men — plot: two labourers chase a farm. Concept: the people at the bottom are allowed to dream, but not to arrive.*',
+                        '*Macbeth — plot: a soldier murders a king. Concept: ambition with nothing to check it will eat the person holding it.*',
+                        '*Frankenstein — plot: a student makes a creature. Concept: creating something is not the same as being willing to care for it.*',
+                    ],
+                    tech: [{ s: 'Th', l: 'Theme' }, { s: 'Ag', l: 'Allegory' }],
+                    guide: 'Step 5 — Choose Your Plot Structure',
+                },
+                {
+                    fid: 'cw-step-5-technique', label: 'Technique Thinking',
+                    title: '**3 of 9 — Your Technique Thinking**',
+                    body: 'Now the third link in the chain: **technique**. Context shapes the concept; the concept decides the technique. The biggest technique choice you make is the SHAPE of the story.\n\n'
+                        + 'Before I show you the eight shapes in detail, I want your instinct first — because your own thinking matters more than my menu.\n\n'
+                        + '**A strong answer:**\n\n'
+                        + '- name one or two shapes and say WHY, in terms of your concept\n'
+                        + '- "I don\'t know yet" is not a wrong answer — but have a guess anyway\n\n'
+                        + 'Example: *Dickens chose Rebirth/Redemption because his concept was that a person can come back from selfishness — and that shape IS a person coming back. The structure carries the meaning.*\n\n'
+                        + 'The eight: Hero\'s Journey · Coming of Age · Overcoming the Monster · Rags to Riches · Rebirth / Redemption · The Quest · Tragedy · Voyage and Return.\n\n'
+                        + '**Which one or two feel closest to your concept, and why?**',
+                    more: [
+                        '*A story about the cost of war could be a Tragedy (what it destroys), a Rebirth (finding peace after violence) or a Hero\'s Journey (growing into courage) — same events, three different meanings.*',
+                        '*Priestley\'s concept was collective responsibility, so he did NOT use a Hero\'s Journey — one hero saving everyone would have argued against his own point.*',
+                    ],
+                    tech: [{ s: 'Th', l: 'Theme' }],
+                    guide: 'The eight archetypes',
+                },
+                { kind: 'pick', fid: 'cw-step-5-primary-archetype', label: 'Your Primary Archetype' },
+                {
+                    fid: 'cw-step-5-why-fits', label: 'Why This Structure Fits',
+                    title: '**5 of 9 — Why this structure fits your themes**',
+                    body: 'Now justify it properly — this is the part that turns a preference into a craft decision.\n\n'
+                        + '**A strong answer:**\n\n'
+                        + '- connects the SHAPE to your CONCEPT — the structure should be doing the same job as your idea\n'
+                        + '- names one theme your story explores and shows how this shape carries it\n\n'
+                        + 'Example: *"My concept is that it is never too late to change. Rebirth/Redemption is literally the shape of a person changing — so the structure is arguing my point before a single event happens."*\n\n'
+                        + 'Weak → strong:\n\n'
+                        + '- ✗ *"It fits because my story has a monster in it."* — that is a plot detail, not a theme.\n'
+                        + '- ✓ *"My theme is that fear is what the monster is really made of, so Overcoming the Monster lets the external fight and her internal one be the same fight."*\n\n'
+                        + '**How does your chosen structure reflect the themes your story explores?**',
+                    more: [
+                        '*Tragedy fits a story about unchecked ambition because the rise-then-fall IS the warning — the shape delivers the theme without anyone having to state it.*',
+                        '*Voyage and Return fits a story about appreciating home, because the reader only feels the value of the ordinary world after being taken out of it.*',
+                    ],
+                    tech: [{ s: 'Th', l: 'Theme' }, { s: 'Cy', l: 'Cyclical Structure' }],
+                    guide: 'Choosing well — and combining',
+                },
+                {
+                    fid: 'cw-step-5-emotion', label: 'Desired Reader Emotion',
+                    title: '**6 of 9 — The effect on your reader**',
+                    body: 'Different shapes leave readers in different places. A Tragedy leaves catharsis and warning. Overcoming the Monster leaves triumph and relief. Rebirth/Redemption leaves hope — usually with something bruised in it.\n\n'
+                        + '**A strong answer:**\n\n'
+                        + '- name the FEELING you want on the last page, in ordinary words\n'
+                        + '- one feeling, not five. If you name five you have not chosen\n'
+                        + '- mixed feelings are allowed and are usually stronger — "relieved, but not comfortable"\n\n'
+                        + 'Example: *"I want them to feel that it was worth it, and to be a bit angry that it had to cost her that much."*\n\n'
+                        + '**When someone puts your story down, what do you want them to FEEL?**',
+                    more: [
+                        '*An Inspector Calls wants you uneasy, not satisfied — that is why the phone rings again at the end.*',
+                        '*Of Mice and Men wants you to feel the loss as necessary and unbearable at once, which is why nobody in the book explains it to you.*',
+                        '*A Christmas Carol wants you warm, and slightly implicated.*',
+                    ],
+                    tech: [{ s: 'Ct', l: 'Catharsis' }, { s: 'Md', l: 'Mood' }],
+                    guide: 'Choosing well — and combining',
+                },
+                {
+                    fid: 'cw-step-5-theme', label: 'Thematic Message / Moral',
+                    title: '**7 of 9 — The meaning your structure adds**',
+                    body: 'Tell the same events in a different shape and the MEANING changes. So what does your shape make your story SAY?\n\n'
+                        + '**A strong answer:**\n\n'
+                        + '- one sentence a reader could take away and repeat\n'
+                        + '- it should be arguable, not a platitude — "be kind" is not a message, it is a poster\n\n'
+                        + 'Weak → strong:\n\n'
+                        + '- ✗ *"Humanity is important."* — nobody disagrees, so it says nothing.\n'
+                        + '- ✓ *"Being human is a choice you keep making, not a body you happen to have."* — that is a claim, and your story can prove it.\n\n'
+                        + 'Example: *Animal Farm\'s message is not "revolutions are bad" — it is that the people who lead a revolution end up needing the same lies as the people they replaced.*\n\n'
+                        + '**What is the central idea about life your story is arguing?**',
+                    more: [
+                        '*Macbeth: getting the thing you were willing to destroy yourself for is the punishment, not the reward.*',
+                        '*Great Expectations: becoming a gentleman did not make Pip better, and the man he was ashamed of was the best person in the book.*',
+                    ],
+                    tech: [{ s: 'Th', l: 'Theme' }, { s: 'Tz', l: 'Theme Stated' }],
+                    guide: 'Choosing well — and combining',
+                },
+                {
+                    fid: 'cw-step-5-connection', label: 'Connection to Protagonist',
+                    title: '**8 of 9 — How the structure tests your protagonist**',
+                    body: 'A shape is not decoration — it is a machine for putting pressure on ONE person. This is the question that makes the next step (your full outline) write itself.\n\n'
+                        + '**A strong answer:**\n\n'
+                        + '- names your protagonist\'s FLAW (from Step 3) and says where this shape attacks it\n'
+                        + '- says what they are like at the END that they were not at the start\n\n'
+                        + 'Example: *"Her flaw is that she cannot ask anyone for help. Rebirth/Redemption puts her in a body she cannot fix alone, so the shape forces the one thing she refuses to do — and by the end asking is what saves her mother."*\n\n'
+                        + '**How will this structure test your protagonist\'s flaw and drive their transformation?**',
+                    more: [
+                        '*Scrooge\'s flaw is that he has decided people cost more than they give — so Rebirth marches him through three rooms full of people he has cost.*',
+                        '*Katniss\'s flaw is that she trusts no one — so Overcoming the Monster puts her in an arena where surviving requires an alliance.*',
+                    ],
+                    tech: [{ s: 'Fw', l: 'The Flaw' }, { s: 'Pr', l: 'Protagonist' }],
+                    guide: 'Choosing well — and combining',
+                },
+                { kind: 'multi', fid: 'cw-step-5-secondary', label: 'Secondary Archetypes' },
+            ];
+            const PICK_I = STEPS.findIndex(function (s) { return s.kind === 'pick'; });
+
+            let active = false, pending = false, i = 0;
+            // 'orient' → 'ask' → 'menu' → 'pick' → 'push' → 'push-choice' → 'multi' → done
+            let phase = 'ask';
+            let pushed = false;            // the ONE API call has been spent — never spend it twice
+            let swapKey = '';              // the archetype the reflection suggested instead, if any
+            let secPicks = [];
+
+            const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw5') + '_cw5'; } catch (e) { return 'swml_cw5'; } };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, pushed, swapKey, active })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                addChatMessage(formatAI(plain), 'ai', plain);
+                canvasChatHistory.push({ role: 'assistant', content: plain });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function userTurn(text) { canvasChatHistory.push({ role: 'user', content: text }); addChatMessage(text, 'user'); }
+
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
+                                && n.attrs && n.attrs.fieldId === fid) { out = (n.textContent || '').trim(); return false; }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            // The pick lives in the row's DROPDOWN, not its text — so "done" for that step is a
+            // check-state read, not a rowText read. Getting this wrong would make the walk re-ask a
+            // choice the student had already made (and re-spend the reflection call).
+            function pickValue() {
+                const fid = STEPS[PICK_I].fid;
+                try {
+                    const live = _outlineCheckState.get(fid);
+                    if (live && live.selected) return live.selected;
+                    let out = '';
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && n.type.name === 'outlineRow' && n.attrs && n.attrs.fieldId === fid) {
+                                try { out = (JSON.parse(n.attrs.checkState || '{}').selected) || ''; } catch (_) {}
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
+                    return out;
+                } catch (e) { return ''; }
+            }
+            function stepDone(n) {
+                const s = STEPS[n];
+                if (!s) return true;
+                if (s.kind === 'pick') return !!pickValue();
+                return !!rowText(s.fid);
+            }
+            function firstEmpty() { for (let n = 0; n < STEPS.length; n++) if (!stepDone(n)) return n; return STEPS.length; }
+
+            // ── chips ──
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions' });
+                options.forEach(function (opt) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: function () { bar.remove(); onPick(opt); },
+                    }));
+                });
+                bc.appendChild(bar);
+            }
+            function chipBarMulti(options, onDone) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions' });
+                const sel = [];
+                options.forEach(function (opt) {
+                    const btn = el('button', { className: 'swml-quick-btn', textContent: opt });
+                    btn.addEventListener('click', function () {
+                        const x = sel.indexOf(opt);
+                        if (x === -1) { sel.push(opt); btn.textContent = '✓ ' + opt; }
+                        else { sel.splice(x, 1); btn.textContent = opt; }
+                    });
+                    bar.appendChild(btn);
+                });
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Continue →',
+                    onClick: function () { bar.remove(); onDone(sel.slice()); },
+                }));
+                bc.appendChild(bar);
+            }
+
+            // ⭐ THE HELP LADDER (§4c.9) — rungs 0-2 are free; Ask Sophia is last and quieter.
+            function helpBar(s) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions swml-cw-help' });
+                if ((s.more || []).length) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: '💡 More examples',
+                        onClick: function () { serveMore(s); },
+                    }));
+                }
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '📖 Guidance',
+                    onClick: function () { try { if (typeof showGuidePanel === 'function') showGuidePanel(s.guide || 'Step 5 — Choose Your Plot Structure'); } catch (e) {} },
+                }));
+                if (s.profile) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: '👤 Your Writer’s Profile',
+                        onClick: function () { try { var t = document.querySelector('.swml-wp-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                    }));
+                }
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '🧩 Story Components',
+                    onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '🗒 Story Spine',
+                    onClick: function () { try { var t = document.querySelector('.swml-ss-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
+                ((s.tech) || []).forEach(function (t) {
+                    if (!(window.SophiclyTable && window.SophiclyTable.open)) return;
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: '🗂 ' + t.l,
+                        onClick: function () { try { window.SophiclyTable.open(t.s); } catch (e) {} },
+                    }));
+                });
+                bc.appendChild(bar);
+            }
+            function serveMore(s) {
+                if (!(s.more || []).length) return;
+                aiBubble('**More examples — ' + s.label + '**\n\n' + s.more.map(function (m) { return '- ' + m; }).join('\n')
+                    + '\n\nNow yours. Rough is fine — this is thinking, not an essay.');
+                helpBar(s);
+                resetSend();
+            }
+
+            // ── the ask ──
+            function serveAsk() {
+                const s = STEPS[i];
+                phase = 'ask';
+                aiBubble(s.title + '\n\n' + s.body);
+                helpBar(s);
+                persist();
+                resetSend();
+            }
+
+            // ── the eight-archetype MENU: paced teaching chunks, then a chip pick. The old
+            // protocol printed this as prose and paid API rates for a list it already told itself
+            // to render as buttons. Content comes from CW_PLOT_ARCHETYPE_META — one source.
+            function menuChunks() {
+                const half = [];
+                ORDER.forEach(function (k, n) {
+                    const meta = CW_PLOT_ARCHETYPE_META[k] || {};
+                    const arch = OUTLINE_CRITERIA.cwPlotArchetypes[k] || {};
+                    const line = '**' + (arch.label || _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[k])) + '** — ' + (meta.what || '')
+                        + (meta.suits ? '\n\n*Choose it for:* ' + meta.suits : '');
+                    half[n < 4 ? 0 : 1] = (half[n < 4 ? 0 : 1] ? half[n < 4 ? 0 : 1] + '\n\n' + line : line);
+                });
+                return [
+                    '**4 of 9 — The eight shapes**\n\nAll eight are versions of the Hero\'s Journey underneath. What changes is the KIND of transformation and, above all, how the story ENDS. Here are the first four.\n\n' + half[0],
+                    'And the other four.\n\n' + half[1],
+                ];
+            }
+            const PICK_PROMPT = 'Take this one seriously: your Step-6 outline, your scenes and every draft build on it. You can change it later, but only by coming back here — which rebuilds the work that follows.\n\n**Which of these is the SPINE of your story?**';
+            function servePickPrompt() {
+                phase = 'pick'; persist();
+                aiBubble(PICK_PROMPT);
+                chipBar(ORDER.map(function (k) { return _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[k]); }), onPick);
+                resetSend();
+            }
+            // `skipTeaching` is the RESUME path: the two menu chunks are already in saved history and
+            // replay from it, so re-emitting them would duplicate the whole menu on every reload.
+            function serveMenu(skipTeaching) {
+                if (skipTeaching) { servePickPrompt(); return; }
+                phase = 'menu'; persist();
+                serveCwChunks(menuChunks(), { emit: aiBubble, onDone: servePickPrompt });
+            }
+            function onPick(chipLabel) {
+                const key = ORDER.filter(function (k) { return _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[k]) === chipLabel; })[0];
+                userTurn(chipLabel);
+                if (!key) { console.warn('WML CW5: chip label did not resolve to an archetype —', chipLabel); advance(); return; }
+                // Sets the dropdown, ticks the row, AND carries the choice to Step 6 (see
+                // _setOutlineDropdown — the in-session carry is what stops Step 6 building stale).
+                _setOutlineDropdown(STEPS[PICK_I].fid, CW5_ARCHETYPE_ITEMS[key]);
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                if (pushed) { advance(); return; }
+                firePush(key);
+            }
+
+            // ── ⭐ THE ONE API CALL — the reflection push, on the student's own material. ──
+            function firePush(key) {
+                const arch = OUTLINE_CRITERIA.cwPlotArchetypes[key] || {};
+                const spine = CW_STEP4_SPINE.map(function (b) { return b.label + ': ' + (_cwDocValue('brief_outline', b.fid) || '(blank)'); }).join('\n');
+                const ctx = '[PLOT-STRUCTURE REFLECTION — the ONE judgment turn in this step. The student has just'
+                    + ' chosen an archetype. Read their own concept and their own six-beat spine and decide whether the'
+                    + ' shape they picked is really the shape of THIS story. Most stories carry two archetypes; the'
+                    + ' question is which is PRIMARY, and the primary one is whichever change the ENDING is actually'
+                    + ' about.'
+                    + ' If their pick is right, say in two or three sentences WHY it is right, naming the specific thing'
+                    + ' in their spine that proves it, and end with @STRUCTURE_OK.'
+                    + ' If a different archetype fits better, name it, explain the distinction in plain terms (external'
+                    + ' change vs internal change), and ask ONE question that lets the STUDENT decide — never decide for'
+                    + ' them — then end with "@STRUCTURE_SWAP:<key>" where <key> is exactly one of: '
+                    + ORDER.join(' | ') + '.'
+                    + ' Do NOT list the archetypes again, do NOT ask anything else, do NOT mention the marker.'
+                    + ' Reply ENDS at the marker.]'
+                    + '\n\nTHEIR PICK: ' + (arch.label || key) + ' (' + key + ')'
+                    + '\nTHEIR CONTEXT: ' + (rowText('cw-step-5-context') || '(blank)')
+                    + '\nTHEIR CONCEPT: ' + (rowText('cw-step-5-concept') || '(blank)')
+                    + '\nTHEIR OWN TECHNIQUE THINKING: ' + (rowText('cw-step-5-technique') || '(blank)')
+                    + '\nTHEIR LOGLINE: ' + (_cwDocValue('logline', 'cw-step-3-chosen') || '(not recorded)')
+                    + '\nTHEIR STORY SPINE:\n' + spine;
+                canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
+                active = false; pending = true; pushed = true; phase = 'push'; persist();
+                armWalkResume('cw5-push', function (reply, meta) {
+                    pending = false;
+                    const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                    const m = (!reply || (meta && meta.timedOut)) ? null : /@STRUCTURE_SWAP[:\s]*([a-z-]+)/.exec(norm);
+                    const suggested = m && ORDER.indexOf(m[1]) !== -1 ? m[1] : '';
+                    // FAIL-OPEN: no marker, an unknown key, or a failed call → their pick stands.
+                    if (!suggested) { active = true; swapKey = ''; phase = 'ask'; persist(); advance(); return; }
+                    swapKey = suggested; phase = 'push-choice'; active = true; persist();
+                    servePushChoice();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'I’ve chosen ' + (arch.label || key) + ' — is that really the shape of my story?';
+                sendCanvasMessage();
+            }
+            function servePushChoice() {
+                const cur = pickValue();
+                aiBubble('It is your call, and either answer is a real one — a structure you have thought about and kept is stronger than one you changed because you were asked to.');
+                chipBar(['Switch to ' + _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[swapKey]) + ' →', 'Keep ' + _cw5ChipLabel(cur || '') + ' →'], onPushChoice);
+                resetSend();
+            }
+            function onPushChoice(pick) {
+                userTurn(pick);
+                if (pick.indexOf('Switch to') === 0) {
+                    _setOutlineDropdown(STEPS[PICK_I].fid, CW5_ARCHETYPE_ITEMS[swapKey]);
+                    if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    aiBubble('Changed — your document now reads **' + _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[swapKey]) + '**, and Step 6 will build that structure.');
+                }
+                swapKey = ''; phase = 'ask'; persist();
+                advance();
+            }
+
+            // ── secondary elements: MULTI-SELECT (§4c.8 — the honest answer is "several") ──
+            function serveMulti() {
+                const cur = pickValue();
+                phase = 'multi'; persist();
+                aiBubble('**9 of 9 — Secondary elements**\n\nThe most interesting stories do not follow one shape rigidly — they BLEND. *The Hunger Games* is primarily Overcoming the Monster with strong Coming of Age (Katniss grows up fast) and The Quest (she is fighting towards a goal). *A Christmas Carol* is Rebirth/Redemption with Voyage and Return inside it (the ghost journeys).\n\n'
+                    + 'You have chosen **' + (_cw5ChipLabel(cur || '') || 'your primary shape') + '** as your spine. **Tap any other shapes whose elements you want woven in**, then Continue. (None at all is a perfectly good answer — just press Continue.)');
+                chipBarMulti(ORDER.filter(function (k) { return CW5_ARCHETYPE_ITEMS[k] !== cur; })
+                    .map(function (k) { return _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[k]); }), onMultiDone);
+                resetSend();
+            }
+            function onMultiDone(picks) {
+                secPicks = picks;
+                const text = picks.length ? picks.join(', ') : 'None — one shape, kept clean.';
+                userTurn(picks.length ? 'Also weaving in: ' + text : text);
+                fileAnswer(STEPS[STEPS.length - 1], text, false);
+                active = false; clearPersist();
+                serveWrap();
+            }
+
+            function fileAnswer(s, text, replace) {
+                const clean = String(text || '').trim();
+                if (!clean) return false;
+                let wrote = false;
+                try { wrote = _writeOutlineRowField(s.fid, clean, replace ? { replace: true } : undefined); }
+                catch (e) { console.warn('WML CW5: write failed (non-fatal) for ' + s.fid + ' —', e && e.message); }
+                try { _tickOutlineRow(s.fid); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                return wrote;
+            }
+
+            function advance() {
+                i = firstEmpty();
+                active = true;
+                // The sidebar has three sub-steps for Step 5 (CW_SIDEBAR_STEPS[5]) — derived from
+                // where the walk actually is, never a hand-stamped count the protocol invents.
+                try {
+                    if (i > PICK_I) applyCwSubstepProgress({ stepNum: 5, substepNum: 2, name: 'Choose Structure' });
+                    else if (i > 0) applyCwSubstepProgress({ stepNum: 5, substepNum: 1, name: 'Explore Templates' });
+                } catch (e) {}
+                if (i >= STEPS.length) { active = false; clearPersist(); serveWrap(); return; }
+                serveCurrent();
+            }
+            function serveCurrent() {
+                const s = STEPS[i];
+                if (!s) { serveWrap(); return; }
+                if (s.kind === 'pick') { serveMenu(); return; }
+                if (s.kind === 'multi') { serveMulti(); return; }
+                serveAsk();
+            }
+            function serveWrap() {
+                const cur = pickValue();
+                aiBubble('**That is your plot structure decided, and all of it is in your document.**\n\n'
+                    + 'Your spine: **' + (_cw5ChipLabel(cur || '') || '(not set)') + '**'
+                    + (secPicks.length ? ', with elements of ' + secPicks.join(', ') : '')
+                    + '.\n\nRead your Pre-Work Reflection and Primary Choice sections back — those are your words, so tidy any spelling while you are in there. Step 6 builds your full stage-by-stage outline on exactly this shape.');
+                try { applyCwSubstepProgress({ stepNum: 5, substepNum: 3, name: 'Confirm Choice' }); } catch (e) {}
+                phase = 'done';
+                resetSend();
+            }
+
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                const s = STEPS[i];
+                if (!s || s.kind === 'pick' || s.kind === 'multi') { resetSend(); return; }   // those are taps
+                userTurn(clean);
+                // No per-answer judgment ⇒ no push cycle, so there is no accumulate/rewrite
+                // ambiguity here (§4c.6): each ask owns one row and files once.
+                fileAnswer(s, clean, false);
+                advance();
+            }
+
+            function startWalk() {
+                if (active || pending) return;
+                Promise.all([
+                    _cwLoadDocValues(state.cwProjectId, 'brief_outline'),
+                    _cwLoadDocValues(state.cwProjectId, 'logline'),
+                ]).then(function () {
+                    i = firstEmpty();
+                    if (i >= STEPS.length) { active = false; console.log('WML CW5: every row already filled — nothing to walk.'); return; }
+                    active = true; pending = false; phase = 'ask';
+                    console.log('WML CW5: code-served structure walk start at step ' + (i + 1) + '/' + STEPS.length);
+                    if (i === 0) { serveOrientation(); return; }
+                    serveCurrent();
+                });
+            }
+            function serveOrientation() {
+                phase = 'orient'; persist();
+                serveCwChunks([
+                    'You have a logline and a six-beat spine. Now we choose the **shape** of the story — and this is the decision everything after it is built on.',
+                    'Here is the idea that makes this a craft choice rather than a guess. **Context → Concept → Technique.** What inspired you shapes what your story is ABOUT; what it is about decides the shape that best carries it. Dickens saw child poverty (context), wanted to show that greed destroys people and generosity redeems them (concept), and chose **Rebirth/Redemption** because that shape IS a person coming back (technique). The structure was arguing his point before a single ghost appeared.',
+                    'So: three short questions of your own thinking first, then I show you all eight shapes and you pick, then five questions that turn the pick into a real decision. **I file every answer into your document as you go** — those are your words, in your own sections.\n\nUnder each question you get **💡 More examples**, **📖 Guidance**, your **👤 Writer\'s Profile**, **🧩 Story Components** and **🗒 Story Spine**. All free — use them before you ask me.',
+                    '**Don\'t overthink any of it.** Rough answers now; you will sharpen all of this across seven drafts. A blank box is the only wrong answer.',
+                ], { emit: aiBubble, onDone: function () { phase = 'ask'; persist(); serveCurrent(); } });
+            }
+
+            // ⭐ KIND-AWARE, not phase-only (found by bin/cw5-sim-harness.js before it ever shipped).
+            // A phase-only reattach dead-ends the walk: reload while parked ON the archetype menu and
+            // the persisted phase is whatever it was when it was last written, so the chips are never
+            // re-attached, a typed reply is refused (a pick is a tap), and the student sits on a menu
+            // with no buttons and no way forward. The STEP KIND is the truth about what the student is
+            // being asked for; the phase only refines it.
+            function reattachChips() {
+                if (phase === 'push-choice' && swapKey) { servePushChoice(); return; }
+                const s = STEPS[i];
+                if (s && s.kind === 'pick') { serveMenu(true); return; }
+                if (s && s.kind === 'multi') { serveMulti(); return; }
+                if (s) helpBar(s);
+            }
+
+            function onReply(reply) {
+                if (state.task !== 'cw_step_5') return;
+                const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                if (!/@CW5_START/.test(norm)) return;
+                startWalk();
+            }
+            function reset() { active = false; pending = false; i = 0; phase = 'ask'; pushed = false; swapKey = ''; secPicks = []; clearPersist(); }
+            function tryResume() {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    if (!raw) return false;
+                    const d = JSON.parse(raw);
+                    if (!d) return false;
+                    _cwLoadDocValues(state.cwProjectId, 'brief_outline');
+                    _cwLoadDocValues(state.cwProjectId, 'logline');
+                    pushed = !!d.pushed;
+                    swapKey = ORDER.indexOf(d.swapKey) !== -1 ? d.swapKey : '';
+                    phase = d.phase || 'ask';
+                    i = firstEmpty();
+                    // A reload while the reflection call was in flight. The call is gone and it has
+                    // already been PAID FOR — never re-spend it. Fall forward to the next ask.
+                    if (phase === 'push') {
+                        phase = 'ask'; persist();
+                        console.warn('WML CW5: resumed after an unfinished reflection turn — continuing (the call is not re-spent).');
+                        active = true; pending = false;
+                        setTimeout(advance, 500);
+                        return true;
+                    }
+                    if (phase === 'done' || i >= STEPS.length) { clearPersist(); active = false; pending = false; return false; }
+                    if (phase === 'push-choice' && !swapKey) phase = 'ask';   // nothing to switch to
+                    active = true; pending = false;
+                    console.log('WML CW5: resumed at step ' + (i + 1) + '/' + STEPS.length + ' (phase ' + phase + ')');
+                    setTimeout(reattachChips, 400);
+                    return true;
+                } catch (e) { return false; }
+            }
+
+            return {
+                handleTurn, onReply, reset, tryResume,
+                forceStart: startWalk,
+                atStart: function () { return firstEmpty() < STEPS.length; },
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+
         // v7.20.265: FAIL-LOUD START FALLBACK.
         // All three walks begin on a marker the model must emit (@CW2_MENU / @CW3_START /
         // @CW4_START). If it never arrives — a paraphrase, a dropped marker, a protocol file
@@ -18885,17 +19536,19 @@
         let _cwStartMissTask = '';
         // v7.20.277: chat-clear resets every walk (see resetCwWalks). Registered together so a
         // future controller added here is covered by construction.
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwOutlineCtl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl]);
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
             _cwSpineCtl.onReply(reply);
+            _cwStructureCtl.onReply(reply);
             _cwOutlineCtl.onReply(reply);
 
             const t = (state && state.task) || '';
             const ctl = t === 'cw_step_2' ? _cwIdeasCtl
                 : t === 'cw_step_3' ? _cwLoglineCtl
                 : t === 'cw_step_4' ? _cwSpineCtl
+                : t === 'cw_step_5' ? _cwStructureCtl
                 : t === 'cw_step_6' ? _cwOutlineCtl : null;
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
@@ -18934,6 +19587,7 @@
             cwIdeasCtl: _cwIdeasCtl,
             cwLoglineCtl: _cwLoglineCtl,
             cwSpineCtl: _cwSpineCtl,
+            cwStructureCtl: _cwStructureCtl,   // v7.20.297 — boot resume calls tryResume() on this
             cwOutlineCtl: _cwOutlineCtl,       // v7.20.296 — boot resume calls tryResume() on this
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
@@ -24918,6 +25572,7 @@
                     if (state.task === 'cw_step_2' && tp.cwIdeasCtl) tp.cwIdeasCtl.tryResume();
                     if (state.task === 'cw_step_3' && tp.cwLoglineCtl) tp.cwLoglineCtl.tryResume();
                     if (state.task === 'cw_step_4' && tp.cwSpineCtl) tp.cwSpineCtl.tryResume();
+                    if (state.task === 'cw_step_5' && tp.cwStructureCtl) tp.cwStructureCtl.tryResume();
                     if (state.task === 'cw_step_6' && tp.cwOutlineCtl) tp.cwOutlineCtl.tryResume();
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
                     // (student types on); only re-surface the programmatic picker when NO poem is
@@ -36284,7 +36939,7 @@
             html += sectionHTML('plan', 'Primary Choice', true, null,
                 '<h3>Your Primary Archetype</h3>' +
                 '<p><em>Take this decision seriously. The plot structure you choose here shapes everything downstream \u2014 your Step 6 outline, your scenes, your draft and your redrafts all build on it. You can change it later, but only by returning to this step and re-choosing, which rebuilds the work that follows. So choose the shape that genuinely carries your concept, your theme and your protagonist\u2019s transformation.</em></p>' +
-                outlineRowHTML({ id: 'archetype', label: 'Your Primary Archetype', type: 'dropdown', items: ['Hero\u2019s Journey (Original)', 'Tragedy + Hero\u2019s Journey', 'Rags to Riches + Hero\u2019s Journey', 'Rebirth / Redemption + Hero\u2019s Journey', 'The Quest + Hero\u2019s Journey', 'Overcoming the Monster + Hero\u2019s Journey', 'Voyage and Return + Hero\u2019s Journey', 'Coming of Age + Hero\u2019s Journey'], prompt: 'Which plot structure best fits your story?' }, 'cw-step-5-primary-archetype') +
+                outlineRowHTML({ id: 'archetype', label: 'Your Primary Archetype', type: 'dropdown', items: CW5_ARCHETYPE_ITEM_LIST, prompt: 'Which plot structure best fits your story?' }, 'cw-step-5-primary-archetype') +
                 outlineRowHTML({ id: 'why-fits', label: 'Why This Structure Fits', prompt: 'Explain why this archetype best suits your story concept' }, 'cw-step-5-why-fits')
             );
             html += dividerHTML('SECONDARY ELEMENTS');
@@ -40411,6 +41066,36 @@
     // call it, and bin/cw6-outline-harness.js FAILS the ship if any other site hand-builds an
     // `outline-cw-…` id. §5e granularity: the id names one ROW of one STAGE of one STRUCTURE —
     // proven unique across all 801 askable rows of all eight templates by the same harness.
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // CW STEP 5 — THE ARCHETYPE LABELS, ONE PRODUCER (v7.20.297)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // These eight strings are a THREE-WAY key: the Step-5 dropdown's <option> values, the labels
+    // `resolvePlotStructureSlug()` parses into an archetype key, and (as of .297) the labels the
+    // code-served chip menu sets. Three producers of one string is precisely the §5d shape, and it
+    // has already bitten once: v7.19.438 slugified the whole label, so "Rebirth / Redemption +
+    // Hero's Journey" became `rebirth-redemption-hero-s-journey`, matched no archetype, and EVERY
+    // non-default choice silently fell back to Hero's Journey. So: one map, keyed by the archetype
+    // key it must resolve to, and bin/cw5-sim-harness.js asserts resolvePlotStructureSlug(item)
+    // === key for all eight. Byte-identical to the pre-.297 literal list — students have these
+    // strings saved in live documents, so the VALUES must never be "tidied".
+    // Order = the order the <options> have always been in; do not reorder.
+    const CW5_ARCHETYPE_ITEMS = {
+        'heros-journey': 'Hero’s Journey (Original)',
+        'tragedy': 'Tragedy + Hero’s Journey',
+        'rags-to-riches': 'Rags to Riches + Hero’s Journey',
+        'rebirth-redemption': 'Rebirth / Redemption + Hero’s Journey',
+        'the-quest': 'The Quest + Hero’s Journey',
+        'overcoming-the-monster': 'Overcoming the Monster + Hero’s Journey',
+        'voyage-and-return': 'Voyage and Return + Hero’s Journey',
+        'coming-of-age': 'Coming of Age + Hero’s Journey',
+    };
+    const CW5_ARCHETYPE_ITEM_LIST = Object.keys(CW5_ARCHETYPE_ITEMS).map(function (k) { return CW5_ARCHETYPE_ITEMS[k]; });
+    // The chip label is DERIVED from the dropdown item, never hand-typed — so the menu can never
+    // drift from the thing it sets. ("Rebirth / Redemption + Hero's Journey" → "Rebirth / Redemption".)
+    function _cw5ChipLabel(item) {
+        return String(item || '').replace(/\s*\+\s*Hero’s Journey\s*$/, '').replace(/\s*\(Original\)\s*$/, '').trim();
+    }
+
     function _cw6RowFieldId(archetypeKey, sectionId, criterionId) {
         return 'outline-cw-' + archetypeKey + '-' + sectionId + '-' + criterionId;
     }
