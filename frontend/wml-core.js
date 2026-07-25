@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.295';
+var WML_BUILD = '7.20.296';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2880,6 +2880,14 @@ window.WML = (function() {
         // spine. Machine-read only: they stay in history for the resume path but never render.
         text = text.replace(/@COHERENCE\\?_BEAT[:\s]*[1-6]/g, '').trim();
         text = text.replace(/@COHERENCE\\?_OK/g, '').trim();
+        // v7.20.296: CW Step 6 — @CW6_START (greeting done, code serves the outline walk),
+        // @STAGE_OK / @STAGE_GAP (the per-stage micro-check verdict) and @OUTLINE_OK /
+        // @OUTLINE_GAP (the sampled finish check). Machine-read only: they stay in RAW history
+        // for the resume path but must never render. `\\?_`-tolerant like every marker above,
+        // because formatAI's own markdown escaping turns `_` into `\_`.
+        text = text.replace(/@CW6\\?_START/g, '').trim();
+        text = text.replace(/@STAGE\\?_(OK|GAP)/g, '').trim();
+        text = text.replace(/@OUTLINE\\?_(OK|GAP)/g, '').trim();
         // v7.19.434: Strip @SECTION_BEGIN{...}...@SECTION_END synthesis blocks (Phase 2 — the
         // wrapped profile/loglines are written into the canvas section, not echoed in the bubble).
         text = text.replace(/@SECTION_BEGIN\s*\{[^}]*\}[\s\S]*?@SECTION_END/g, '').trim();

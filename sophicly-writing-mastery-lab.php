@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.295
+ * Version: 7.20.296
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.295');
+define('SWML_VERSION', '7.20.296');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -341,6 +341,20 @@ class Sophicly_Writing_Mastery_Lab {
             true
         );
 
+        // v7.20.296: CW Step-6 CONCEPT MAP (window.WML_CW6_CONCEPTS) — the row → story-concept
+        // map that gives the Step-6 outline walk its criteria, worked examples, "more examples"
+        // and technique-card deep links WITHOUT an API call. 801 askable beat rows across the
+        // eight archetype templates reduce to ~70 recurring concepts (WML CLAUDE.md 4c.9,
+        // "map to concepts, never author per row"); coverage + PROD symbol validity are gated by
+        // bin/cw6-outline-harness.js. Must load BEFORE wml-assessment, whose _cwOutlineCtl reads it.
+        wp_enqueue_script(
+            'swml-cw6-concepts',
+            SWML_URL . 'frontend/wml-cw6-concepts.js',
+            [],
+            SWML_VERSION,
+            true
+        );
+
         // v7.19.78: Shared SectionBlock NodeView factory — must load BEFORE wml-assessment
         // so window.WML.SectionBlock.createNodeView exists when both SectionBlock Node
         // definitions in wml-assessment.js call it via addNodeView().
@@ -356,7 +370,7 @@ class Sophicly_Writing_Mastery_Lab {
         wp_enqueue_script(
             'swml-assessment',
             SWML_URL . 'frontend/wml-assessment.js',
-            ['swml-core', 'swml-section-block', 'swml-techniques-index', 'swml-tiptap'],
+            ['swml-core', 'swml-section-block', 'swml-techniques-index', 'swml-cw6-concepts', 'swml-tiptap'],
             SWML_VERSION,
             true
         );

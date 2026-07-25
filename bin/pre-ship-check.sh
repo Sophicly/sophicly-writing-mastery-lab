@@ -128,6 +128,20 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/ladder-sim-harness.js || fail=1
 fi
 
+# v7.20.296: CW STEP-6 OUTLINE WALK GATE. The walk and the doc builder must agree on every one of
+# 801 row ids (§5d key-match, §5e granularity), the technique chips must name symbols the DEPLOYED
+# table actually carries, the guide deep-links must resolve, and the concept map must cover the rows
+# it claims to. All four are invisible failures at runtime — a lost answer, an empty card panel, a
+# dead help button, an ask with no example — so they are checked mechanically, not remembered.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-cw6-concepts\.js|cw6-outline-harness\.js|cw6-prod-technique-symbols\.txt'; then
+  node bin/cw6-outline-harness.js || fail=1
+  # Layer 2 (pre-ship 0b, RUN THE FLOW): drives the REAL sliced _cwOutlineCtl through a full ~100-ask
+  # run of all eight archetypes, every resume position, both fail-open paths and the GAP revision —
+  # and holds the API budget at 6 round-trips. Neil cannot hand-test 800 taps; the machine can.
+  node bin/cw6-sim-harness.js || fail=1
+fi
+
 # v7.20.290: WALK STOP-RULE GATE. A code-owned walk means CODE serves every ask; if the protocol
 # does not order the model to END its reply at the verdict signal, the model invents the next ask
 # and the student sees TWO competing questions (Neil's live catch: Step 4 doubled every beat from 2

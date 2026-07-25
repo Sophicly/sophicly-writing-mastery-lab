@@ -3484,6 +3484,51 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════════
+    // AUTO-TICK AN OUTLINE ROW'S CHECKBOX (v7.20.296)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Neil, 2026-07-25, on the CW Step-6 walk: hand-ticking ~100 boxes after answering ~100
+    // questions dies. The answer and the tick are ONE action, so code does both in one write.
+    //
+    // ⭐ PM LAW (WML CLAUDE.md PROSEMIRROR NODEVIEW, the v7.19.866 freeze class): checkbox state
+    // is NOT a ProseMirror attribute at write time. It lives in the `_outlineCheckState` Map and
+    // is baked into the saved HTML by patchCheckStateIntoHTML — exactly the path the student's own
+    // click takes (the NodeView's persistState). So this NEVER opens a transaction and never
+    // writes an attribute onto a NodeView's dom. The only DOM touch is `input.checked = true`,
+    // which is a PROPERTY assignment: it produces no MutationRecord, so PM's DOMObserver cannot
+    // see it and cannot flush → no redraw, no remount loop.
+    //
+    // Row ✓ and the section header ✓ are then recomputed through the SAME two functions the click
+    // handler uses (dom._checkRowComplete, exposed by the NodeView, and checkSectionComplete), so
+    // the tick, the row class and the header can't disagree (the v7.20.98 stale-header class).
+    // Loop-based attribute lookup — never CSS.escape (WML rule).
+    function _tickOutlineRow(fid) {
+        if (!fid) return false;
+        try {
+            const prev = _outlineCheckState.get(fid);
+            if (prev && Array.isArray(prev.checked) && prev.checked.indexOf(0) !== -1) return false;  // already ticked
+            _outlineCheckState.set(fid, { checked: [0] });
+            let rowEl = null;
+            document.querySelectorAll('[data-outline-row]').forEach((r) => {
+                if (!rowEl && r.getAttribute('data-field-id') === fid) rowEl = r;
+            });
+            if (rowEl) {
+                const cb = rowEl.querySelector('input[type="checkbox"]');
+                if (cb && !cb.checked) cb.checked = true;                       // property, not attribute
+                if (typeof rowEl._checkRowComplete === 'function') rowEl._checkRowComplete();
+                const sec = rowEl.closest('.swml-section-block');
+                if (sec && typeof checkSectionComplete === 'function') checkSectionComplete(sec);
+                if (window.WML && typeof window.WML.updateProgressSummary === 'function') window.WML.updateProgressSummary();
+            }
+            return true;
+        } catch (e) {
+            // Fail LOUD but never block the filing — the text is the student's work; the tick is
+            // convenience, and a thrown tick must not swallow the answer.
+            console.warn('WML: auto-tick failed for', fid, '—', e && e.message);
+            return false;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
     // CONTINGENT-SCAFFOLDING LADDER (C-LADDER) — code-owned ladder engine (v7.20.205)
     // Design: PLANNING-LADDER-P3-DESIGN-2026-07-18.md · PROTOCOL-STANDARD C-LADDER · PEDAGOGY §7.
     // The LLM emits ONE @ELEMENT_JUDGE{"el","verdict"[,"class"]} per judged planning turn; CODE
@@ -14403,6 +14448,14 @@
                 await _cwSpineCtl.handleTurn(msg);
                 return;
             }
+            // v7.20.296: CW Step 6 (Plot Outline) — ~100 template-derived asks, filed verbatim.
+            // The controller owns every beat turn with NO round-trip; `active` goes false only for
+            // the seven judgment calls (six stage micro-checks + the sampled finish check) and an
+            // on-demand Ask-Sophia, and this gate correctly falls through for exactly those.
+            if (state.task === 'cw_step_6' && _cwOutlineCtl.active) {
+                await _cwOutlineCtl.handleTurn(msg);
+                return;
+            }
 
             // v7.19.809: PRE-ASSESSMENT CHAIN gate — while the setup chain is
             // incomplete, code owns the turn: record the student's reply, ask the
@@ -18101,6 +18154,722 @@
             };
         })();
 
+        // ═══════════════════════════════════════════════════════════════════════════════════
+        // CW STEP 6 — THE PLOT OUTLINE WALK (code-owned, template-driven, v7.20.296)
+        // ───────────────────────────────────────────────────────────────────────────────────
+        // Design: CW-STEP-5-6-UPDATES-E2E-PLAN.md §3b/§3c/§4/§4b. Laws: WML CLAUDE.md §4b
+        // (pacing), §4c (ask template + walk laws), §4c.9 (the help ladder).
+        //
+        // ⭐ WHY THIS IS PROGRAMMATIC. Step 6 asks ~100 questions — 801 askable rows across the
+        // eight archetype templates, 97–104 per structure. Neil, 2026-07-25: "if it's LLM it's
+        // gonna cost us an absolute fortune in API calls." The length is not a problem to solve;
+        // it is the REASON for the design. A full run now costs SIX small API calls — FIVE
+        // inter-stage micro-checks (one as each of stages I-V completes; Stage VI has no next stage
+        // to cause, so its check rolls into the finish one) plus ONE sampled finish check — and
+        // whatever Ask-Sophia the student chooses to spend. No call ever reads the whole document.
+        // Held mechanically: bin/cw6-sim-harness.js drives a full run of all eight archetypes and
+        // FAILS if the round-trip count is anything but 6.
+        //
+        // ⭐ TEMPLATE-DRIVEN, ZERO PER-ARCHETYPE AUTHORING. Every ask is derived from the chosen
+        // archetype's own `label` + `prompt` in OUTLINE_CRITERIA.cwPlotArchetypes, enriched by the
+        // CONCEPT MAP (frontend/wml-cw6-concepts.js). Tragedy's different beats ride automatically
+        // because the walk READS the template rather than hard-coding beats.
+        //
+        // ⭐ THREE ALTITUDES — fractal scaffolding, so the student never faces a blank row in a
+        // void (Neil's "beginning and end" framing):
+        //   1. STORY BOOKENDS. Code ECHOES their Step-4 Beat 1 into Stage I and Beat 6 into Stage
+        //      VI and never re-asks (the paste-wall law, WML CLAUDE.md §3). Light confirm chips —
+        //      keep as the anchor, or sharpen it (ideas evolve between Step 4 and Step 6). ONLY
+        //      those two map: beats 2–5 EXPAND across the middle stages and are never a 1:1 map.
+        //      A spine beat ANCHORS a stage; it never FILLS one (Stage I alone holds ~15 rows).
+        //   2. STAGE BOOKENDS. On entering each stage: how does the protagonist BEGIN it, and how
+        //      are they different when they LEAVE it? Filed into that stage's `stage_arc` row.
+        //   3. EVERY ELEMENT, one at a time, written between the two points already fixed.
+        //
+        // ⭐ PER BEAT: ONE ask (criteria upfront · ONE worked example inline · the write
+        // instruction LAST) → the student's words filed VERBATIM (Neil: "we just wanna auto file
+        // the student's own words… I'll get them to check over their own writing manually") →
+        // the checkbox AUTO-TICKED in the same write. No judgment, no push, no round-trip.
+        //
+        // ⛔ NOTHING IS SKIPPABLE (Neil ruling). Every element is asked, in order. The length is
+        // paid for with momentum, examples, "rough is fine" and per-stage progress — never by
+        // skipping rows.
+        //
+        // Resume is DOC-DERIVED: the walk restarts at the first empty row, so a reload, an SPA
+        // nav, or a Step-5 re-choice that rebuilds the document all resolve by construction.
+        const _cwOutlineCtl = (function () {
+            const CM = window.WML_CW6_CONCEPTS || { STAGES: {}, CONCEPTS: [] };
+            if (!window.WML_CW6_CONCEPTS) {
+                console.warn('WML CW6: window.WML_CW6_CONCEPTS missing — the walk will still run, but every '
+                    + 'ask falls back to the template prompt with no worked example. Check that '
+                    + 'frontend/wml-cw6-concepts.js is enqueued BEFORE wml-assessment.js.');
+            }
+            // The reference guide's own per-structure section, for the [📖 Guidance] rung. Text
+            // match (showGuidePanel is substring/case-insensitive), verified against
+            // resources/creative-writing-reference-guide.md by bin/cw6-outline-harness.js.
+            const GUIDE_ANCHOR = {
+                'heros-journey': "Hero's Journey, stage by stage",
+                'coming-of-age': 'Coming of Age, stage by stage',
+                'overcoming-the-monster': 'Overcoming the Monster, stage by stage',
+                'rags-to-riches': 'Rags to Riches, stage by stage',
+                'rebirth-redemption': 'Rebirth and Redemption, stage by stage',
+                'the-quest': 'The Quest, stage by stage',
+                'tragedy': 'Tragedy, stage by stage',
+                'voyage-and-return': 'Voyage and Return, stage by stage',
+            };
+            const NUDGE_ANCHOR = 'Making each beat';   // "Making each beat *rich*, not literal"
+
+            // ── state ──
+            let key = '';          // archetype key the DOC is built for (the doc is authoritative)
+            let ASKS = [];         // the ordered ask list, derived from that archetype's template
+            let stages = [];       // [{ id, label, name, job, ex, from, to }] — `to` exclusive
+            let active = false, pending = false, i = 0;
+            // 'orient' → 'anchor' → 'anchor-fix' → 'ask' → 'stagecheck' → 'stage-choice'
+            //          → 'stage-fix' → 'finish' → 'finish-choice' → 'finish-fix' → done
+            let phase = 'ask';
+            let checkStage = -1;   // the stage a micro-check / its revision belongs to
+            
+            const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw6') + '_cw6'; } catch (e) { return 'swml_cw6'; } };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, checkStage, active, key })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                addChatMessage(formatAI(plain), 'ai', plain);
+                canvasChatHistory.push({ role: 'assistant', content: plain });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function userTurn(text) {
+                canvasChatHistory.push({ role: 'user', content: text });
+                addChatMessage(text, 'user');
+            }
+
+            // ── the ask list, DERIVED from the template (never hand-authored) ──
+            function conceptFor(label, prompt) {
+                const hay = (label || '') + ' — ' + (prompt || '');
+                for (let k = 0; k < CM.CONCEPTS.length; k++) { if (CM.CONCEPTS[k].m.test(hay)) return CM.CONCEPTS[k]; }
+                return null;
+            }
+            function buildAsks(k) {
+                const arch = OUTLINE_CRITERIA.cwPlotArchetypes[k];
+                ASKS = []; stages = [];
+                if (!arch || !Array.isArray(arch.sections)) return;
+                arch.sections.forEach(function (sec, si) {
+                    const meta = CM.STAGES[sec.id] || { name: sec.label, job: '', ex: '' };
+                    const from = ASKS.length;
+                    _cw6FrameRowsFor(sec.id).forEach(function (fr) {
+                        ASKS.push({
+                            kind: fr === 'stage_arc' ? 'arc' : 'anchor', anchorKind: fr, stage: si,
+                            fid: _cw6RowFieldId(k, sec.id, fr),
+                            label: CW6_FRAME_ROWS[fr].label, prompt: CW6_FRAME_ROWS[fr].prompt, concept: null,
+                        });
+                    });
+                    sec.criteria.forEach(function (c) {
+                        // turning-point / marker render as divider HEADINGS and carry NO fieldId —
+                        // they are signposts, so the walk skips them (same rule as the builder).
+                        if (c.beatType === 'turning-point' || c.beatType === 'marker') return;
+                        ASKS.push({
+                            kind: 'beat', stage: si, fid: _cw6RowFieldId(k, sec.id, c.id),
+                            label: c.label || '', prompt: c.prompt || '', concept: conceptFor(c.label, c.prompt),
+                        });
+                    });
+                    stages.push({ id: sec.id, label: sec.label, name: meta.name, job: meta.job, ex: meta.ex, from: from, to: ASKS.length });
+                });
+                // Per-stage counts for the ask headers + the sidebar ("Setup — 9 of 15").
+                ASKS.forEach(function (a) {
+                    const s = stages[a.stage];
+                    a.nInStage = (a.kind === 'anchor' ? 0 : 0);   // filled below
+                    a.stageTotal = s.to - s.from;
+                });
+                stages.forEach(function (s) { for (let n = s.from; n < s.to; n++) ASKS[n].nInStage = n - s.from + 1; });
+            }
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
+                                && n.attrs && n.attrs.fieldId === fid) { out = (n.textContent || '').trim(); return false; }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            // Resume position, derived from the DOCUMENT — not from a counter. Covers reload, SPA
+            // nav, a student typing straight into a row, and a Step-5 re-choice rebuild (§4b: the
+            // walk needs no migration by construction).
+            function firstEmptyAsk() {
+                for (let n = 0; n < ASKS.length; n++) if (!rowText(ASKS[n].fid)) return n;
+                return ASKS.length;
+            }
+            function stageDone(si) {
+                const s = stages[si];
+                if (!s) return false;
+                for (let n = s.from; n < s.to; n++) if (!rowText(ASKS[n].fid)) return false;
+                return true;
+            }
+            // Find a row in a stage by a label pattern — used by the sampled finish check so it
+            // reads the load-bearing points rather than a hard-coded beat number (the labels vary
+            // per archetype; a literal beat id would silently read the wrong row on 7 of 8).
+            function findRow(si, re) {
+                const s = stages[si];
+                if (!s) return null;
+                for (let n = s.from; n < s.to; n++) if (re.test(ASKS[n].label)) return ASKS[n];
+                return null;
+            }
+
+            // ── chips (DOM-only; re-attached on resume by reattachChips) ──
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions' });
+                options.forEach(function (opt) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: function () { bar.remove(); onPick(opt); },
+                    }));
+                });
+                bc.appendChild(bar);
+            }
+
+            // ⭐ THE HELP LADDER (WML CLAUDE.md §4c.9). Neil, 2026-07-25: "maybe they could ask
+            // Sophia, but only as a last resort, so we leave that option buried underneath a few
+            // options." Rungs 0-2 are FREE; rung 3 is the only one that spends a call, and it is
+            // visually last. A stuck student must always be able to get unstuck for nothing.
+            function helpBar(a) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions swml-cw-help' });
+                // Rung 1 — more worked examples, code-served. Zero API.
+                const more = (a.concept && a.concept.more) || [];
+                if (more.length) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: '💡 More examples',
+                        onClick: function () { serveMoreExamples(a); },
+                    }));
+                }
+                // Rung 2 — the guide at THIS structure's stage section, and the concept's card.
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '📖 Guidance',
+                    onClick: function () {
+                        try {
+                            const anchor = (a.concept && a.concept.nudge) ? NUDGE_ANCHOR : (GUIDE_ANCHOR[key] || 'The six stages');
+                            if (typeof showGuidePanel === 'function') showGuidePanel(anchor);
+                        } catch (e) {}
+                    },
+                }));
+                const tech = (a.concept && a.concept.tech) || [];
+                if (tech.length && window.SophiclyTable && window.SophiclyTable.open) {
+                    tech.forEach(function (t) {
+                        bar.appendChild(el('button', {
+                            className: 'swml-quick-btn', textContent: '🗂 ' + t.l,
+                            onClick: function () { try { window.SophiclyTable.open(t.s); } catch (e) {} },
+                        }));
+                    });
+                }
+                // Their own earlier work, on tap — never re-asked for (paste-wall law).
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '🗒 Story Spine',
+                    onClick: function () { try { var t = document.querySelector('.swml-ss-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
+                // Rung 3 — the ONLY rung that costs an API call. Last, and quieter.
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn swml-cw-help-last', textContent: '🤔 Still stuck — ask Sophia',
+                    onClick: function () { askSophia(a); },
+                }));
+                bc.appendChild(bar);
+            }
+            function serveMoreExamples(a) {
+                const more = (a.concept && a.concept.more) || [];
+                if (!more.length) return;
+                aiBubble('**More examples — ' + (a.concept.name || a.label) + '**\n\n'
+                    + more.map(function (m) { return '- ' + m; }).join('\n')
+                    + '\n\nNow write yours. Rough is fine — you will deepen it in later drafts.');
+                helpBar(a);          // the ladder stays available on the new bubble
+                resetSend();
+            }
+
+            // ── the ASK (WML CLAUDE.md §4c: criteria upfront · worked example · action LAST) ──
+            const GENERIC_CRIT = [
+                'one clear sentence — what HAPPENS, not how it feels',
+                'something a camera could film: a place, a person, an action',
+                'rough is fine. You will deepen every beat across the later drafts',
+            ];
+            function askBody(a) {
+                const s = stages[a.stage];
+                const c = a.concept;
+                let out = '**' + s.name + ' · ' + a.nInStage + ' of ' + a.stageTotal + '**\n\n';
+                if (a.kind === 'arc') {
+                    out += 'Before the beats, fix the two ends of this stage. ' + s.name + ' is where '
+                        + s.job + '.\n\n'
+                        + '**Tell me both:**\n\n'
+                        + '1. How does your protagonist **BEGIN** this stage?\n'
+                        + '2. How are they **DIFFERENT** when they **LEAVE** it?\n\n'
+                        + 'Example: ' + s.ex + '\n\n'
+                        + 'One or two sentences covering both. Every beat below then gets written between those two points.';
+                    return out;
+                }
+                out += '**' + a.label + '**\n\n';
+                // The template's own prompt, when it says more than the label already did.
+                const p = (a.prompt || '').trim();
+                if (p && p.replace(/[.…]$/, '').toLowerCase() !== (a.label || '').replace(/[.…]$/, '').toLowerCase()) out += p + '\n\n';
+                out += '**A strong version of this beat:**\n\n'
+                    + ((c && c.crit) || GENERIC_CRIT).map(function (b) { return '- ' + b; }).join('\n') + '\n\n'
+                    + 'Example: ' + ((c && c.ex) || s.ex) + '\n\n';
+                // The symbolic nudge — Neil ruling 2026-07-25: image / symbol / turning-point beats
+                // ONLY. On all ~100 rows it becomes wallpaper by beat 15 and trains skimming.
+                if (c && c.nudge) {
+                    out += '**Push past the literal.** The first idea is usually the obvious one — what could '
+                        + 'this beat *stand for* in YOUR story? A physical event that also carries your theme is '
+                        + 'the difference between a plot that works and one that resonates.\n\n';
+                }
+                out += '**Write this beat.**';
+                return out;
+            }
+            function serveAsk() {
+                const a = ASKS[i];
+                phase = 'ask';
+                aiBubble(askBody(a));
+                helpBar(a);
+                persist();
+                resetSend();
+            }
+
+            // ── ALTITUDE 1 — the story bookends, ECHOED from Step 4, never re-asked ──
+            const ANCHOR_SRC = { story_open: 'cw-step-4-beat1', story_close: 'cw-step-4-beat6' };
+            function serveAnchor() {
+                const a = ASKS[i];
+                const prior = _cwDocValue('brief_outline', ANCHOR_SRC[a.anchorKind]);
+                if (!prior) {
+                    // Nothing recorded in Step 4 (they skipped it, or it is an older project). Do
+                    // NOT offer a confirm with nothing to confirm — ask for it, once, plainly.
+                    console.warn('WML CW6: no Step-4 ' + ANCHOR_SRC[a.anchorKind] + ' to echo — asking for the anchor directly.');
+                    phase = 'anchor-fix';
+                    aiBubble(a.anchorKind === 'story_open'
+                        ? '**Your story’s opening**\n\nIn Step 4 you sketched where your story begins, but I cannot find it — so tell me here in one sentence: **where does your story open?** Present tense, one moment, your protagonist in their ordinary life.'
+                        : '**Your story’s ending**\n\nIn Step 4 you sketched how your story ends, but I cannot find it — so tell me here in one sentence: **how does your story end?** What has changed for your protagonist by the last page?');
+                    helpBar(a);
+                    persist();
+                    resetSend();
+                    return;
+                }
+                phase = 'anchor';
+                aiBubble(a.anchorKind === 'story_open'
+                    ? '**Stage I — Setup**\n\nEverything in this stage builds out from the opening you already planned. From your Story Spine:\n\n> ' + prior + '\n\nThat is your anchor: Stage I ends at the event that breaks this world open, and every beat in between sits between the two.\n\n**Does that still hold?**'
+                    : '**Stage VI — Goal and Aftermath**\n\nThis is the ending you planned in Step 4:\n\n> ' + prior + '\n\nYou have built the whole middle since you wrote that. **Does that ending still hold, now you know what your protagonist has been through?**');
+                chipBar(['That’s still right →', 'I’d sharpen it'], onAnchorChoice);
+                persist();
+                resetSend();
+            }
+            function onAnchorChoice(pick) {
+                const a = ASKS[i];
+                userTurn(pick);
+                if (pick.indexOf('sharpen') !== -1) {
+                    phase = 'anchor-fix';
+                    // §4c.6 REWRITE cycle: an anchor is ONE self-contained sentence, so the new
+                    // version REPLACES the old. Asking for "the bit you're changing" would file a
+                    // fragment as the whole answer — the .283 bug in reverse.
+                    aiBubble('Write the **whole thing again**, sharpened — one sentence, present tense. Your new version is what goes into this outline.\n\n'
+                        + '*(Your Step-4 spine stays exactly as it was — Step 4 is the record of what you did in Step 4. This only changes your Step-6 outline.)*');
+                    helpBar(a);
+                    persist();
+                    resetSend();
+                    return;
+                }
+                // Keep it: carry the Step-4 sentence into the Step-6 row verbatim. It is THEIR
+                // sentence, and the confirming tap is the ownership checkpoint.
+                fileAnswer(a, _cwDocValue('brief_outline', ANCHOR_SRC[a.anchorKind]), false);
+                advance();
+            }
+
+            // ── filing: verbatim text + AUTO-TICK, one write, no API ──
+            function fileAnswer(a, text, replace) {
+                const clean = String(text || '').trim();
+                if (!clean) return false;
+                let wrote = false;
+                try {
+                    wrote = _writeOutlineRowField(a.fid, clean, replace ? { replace: true } : undefined);
+                } catch (e) { console.warn('WML CW6: write failed (non-fatal) for ' + a.fid + ' —', e && e.message); }
+                // Auto-tick regardless of whether the write was a no-op (a re-fire of the same
+                // text returns false but the row IS answered).
+                try { _tickOutlineRow(a.fid); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                return wrote;
+            }
+
+            // ── advance: doc-derived, and the gate for the per-stage micro-check ──
+            function advance() {
+                const prev = ASKS[i] ? ASKS[i].stage : -1;
+                i = firstEmptyAsk();
+                active = true;
+                // Stage just completed? Stamp the sidebar and run its micro-check (API 1-6 of 7).
+                if (prev >= 0 && stageDone(prev)) {
+                    try { applyCwSubstepProgress({ stepNum: 6, substepNum: prev + 1, name: stages[prev].label }); } catch (e) {}
+                    if (prev < stages.length - 1) { fireStageCheck(prev); return; }
+                }
+                if (i >= ASKS.length) { fireFinishCheck(); return; }
+                serveCurrent();
+            }
+            function serveCurrent() {
+                if (i >= ASKS.length) { fireFinishCheck(); return; }
+                const a = ASKS[i];
+                // Entering a new stage on a beat/arc ask: pace the stage orientation first.
+                if (a.kind === 'anchor') { serveAnchor(); return; }
+                serveAsk();
+            }
+
+            // ── COHERENCE LAYER 2 — the per-stage micro-check. Reads ONLY that stage's two
+            // bookend answers plus its entry and exit beat. Never the document. Six small calls.
+            // Verdict: does the stage travel from its stated entry to its stated exit, and does
+            // its exit CAUSE the next stage's entry? ONE Socratic question on a gap, then a real
+            // revision — a question we do not listen to is worse than no question (the .294
+            // lesson: it teaches the student that answering is optional).
+            function fireStageCheck(si) {
+                const s = stages[si];
+                const next = stages[si + 1];
+                const arcAsk = ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)];
+                const firstBeat = ASKS.slice(s.from, s.to).filter(function (a) { return a.kind === 'beat'; })[0];
+                const beats = ASKS.slice(s.from, s.to).filter(function (a) { return a.kind === 'beat'; });
+                const lastBeat = beats[beats.length - 1];
+                const ctx = '[STAGE COHERENCE MICRO-CHECK — ' + s.name + ' of the student’s ' + (OUTLINE_CRITERIA.cwPlotArchetypes[key] || {}).label
+                    + ' outline. Check TWO things only: (1) does this stage actually TRAVEL from the'
+                    + ' entry state to the exit state the student described, or is the arc claimed'
+                    + ' rather than shown; (2) does the stage’s final event plausibly CAUSE the next'
+                    + ' stage, which is "' + (next ? next.name + ' — ' + next.job : 'the ending') + '".'
+                    + ' If both hold, say so in one or two sentences. If not, name the ONE weakest link'
+                    + ' with ONE Socratic question — never rewrite their words, never correct spelling,'
+                    + ' never mention other stages or ask for more beats.'
+                    + ' END YOUR REPLY WITH EXACTLY ONE MARKER ON ITS OWN LINE: "@STAGE_OK" if the stage'
+                    + ' holds and you have no question, or "@STAGE_GAP" if you asked one. The marker is'
+                    + ' machine-read and never shown — do not mention it or ask the student to act on it.]'
+                    + '\n\nSTAGE ARC (entry → exit): ' + (arcAsk ? (rowText(arcAsk.fid) || '(blank)') : '(no arc row)')
+                    + '\nFIRST EVENT — "' + (firstBeat ? firstBeat.label : '?') + '": ' + (firstBeat ? (rowText(firstBeat.fid) || '(blank)') : '')
+                    + '\nFINAL EVENT — "' + (lastBeat ? lastBeat.label : '?') + '": ' + (lastBeat ? (rowText(lastBeat.fid) || '(blank)') : '');
+                canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
+                active = false; pending = true; checkStage = si; phase = 'stagecheck'; persist();
+                armWalkResume('cw6-stage-' + si, function (reply, meta) {
+                    pending = false;
+                    const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                    const gap = !(!reply || (meta && meta.timedOut)) && /@STAGE_GAP/.test(norm);
+                    // FAIL-OPEN by design: a dropped marker or a failed call must never strand the
+                    // student on a revision prompt with nothing to revise.
+                    if (!gap) { active = true; checkStage = -1; phase = 'ask'; persist(); serveStageOpener(si + 1); return; }
+                    phase = 'stage-choice'; active = true; persist();
+                    serveStageChoice();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'That’s ' + s.name + ' complete — please check it hangs together.';
+                sendCanvasMessage();
+            }
+            function serveStageChoice() {
+                aiBubble('You can answer that by **rewriting this stage’s arc** — or leave it as it stands. Either is a real choice; a stage you have thought about and kept is stronger than one you changed because you were asked to.');
+                chipBar(['Sharpen this stage’s arc →', 'Leave it as it is →'], onStageChoice);
+                resetSend();
+            }
+            function onStageChoice(pick) {
+                userTurn(pick);
+                const si = checkStage;
+                if (pick.indexOf('Leave it') === 0) {
+                    checkStage = -1; phase = 'ask'; persist();
+                    serveStageOpener(si + 1);
+                    return;
+                }
+                const s = stages[si];
+                const arcAsk = ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)];
+                phase = 'stage-fix'; active = true; persist();
+                aiBubble('**Rewriting the arc of ' + s.name + '**\n\nWrite the **whole arc again** — both ends, not just the part you are changing. Your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> ' + (arcAsk ? (rowText(arcAsk.fid) || '*(blank)*') : '*(blank)*'));
+                if (arcAsk) helpBar(arcAsk);
+                resetSend();
+            }
+
+            // ── the paced stage orientation (WML CLAUDE.md §4b: one bubble per tap) ──
+            function serveStageOpener(si) {
+                if (si >= stages.length) { i = firstEmptyAsk(); if (i >= ASKS.length) { fireFinishCheck(); return; } serveCurrent(); return; }
+                const s = stages[si];
+                i = firstEmptyAsk();
+                if (i >= ASKS.length) { fireFinishCheck(); return; }
+                // Only orient if we are actually at the top of that stage (a resume mid-stage must
+                // not replay the orientation).
+                if (ASKS[i].stage !== si || ASKS[i].nInStage !== 1) { serveCurrent(); return; }
+                phase = 'ask'; persist();
+                serveCwChunks([
+                    '**' + s.name + '** — ' + s.job + '.\n\nThat is the job of this stage. There are **' + (s.to - s.from)
+                        + '** things to fill in here, and I will take you through them one at a time.',
+                ], { emit: aiBubble, onDone: function () { serveCurrent(); } });
+            }
+
+            // ── COHERENCE LAYER 3 — the sampled finish check. ONE call reading the three
+            // load-bearing points of what they WROTE (opening image · climax · final image) plus
+            // their logline, including the opening/closing-image mirror the templates themselves
+            // state. Not a Step-4 redo: Step 4 checked the PLAN. Never reads the document.
+            function fireFinishCheck() {
+                const lastStage = stages.length - 1;
+                const openImg = findRow(0, /opening image/i) || ASKS[stages[0].from];
+                const climax = findRow(lastStage - 1, /fatal blow|nick of time|seizes the sword|true power|win the prize|battle/i)
+                    || (function () { const b = ASKS.slice(stages[lastStage - 1].from, stages[lastStage - 1].to).filter(function (a) { return a.kind === 'beat'; }); return b[b.length - 1]; })();
+                const finalImg = findRow(lastStage, /final image/i) || ASKS[stages[lastStage].to - 1];
+                const logline = _cwDocValue('logline', 'cw-step-3-chosen') || _cwDocValue('brief_outline', 'cw-step-4-chosen-logline');
+                const ctx = '[WHOLE-STORY SAMPLED CHECK — the student has just finished a full stage-by-stage plot'
+                    + ' outline. You are reading THREE load-bearing points of it, not the whole thing.'
+                    + ' Check: (1) does the FINAL IMAGE mirror the OPENING IMAGE, so the contrast shows how far'
+                    + ' the protagonist has travelled — this is a criterion the plot template itself states;'
+                    + ' (2) does the climax deliver what the logline promised. Say what is working in one or two'
+                    + ' sentences. If one of the three points is weak, name it with ONE Socratic question — never'
+                    + ' rewrite their words, never correct spelling, and never ask for more beats.'
+                    + ' END YOUR REPLY WITH EXACTLY ONE MARKER ON ITS OWN LINE: "@OUTLINE_OK" if it holds and you'
+                    + ' have no question, or "@OUTLINE_GAP" if you asked one. The marker is machine-read and never'
+                    + ' shown — do not mention it or ask the student to act on it.]'
+                    + '\n\nTHEIR LOGLINE: ' + (logline || '(not recorded)')
+                    + '\nOPENING — "' + (openImg ? openImg.label : '?') + '": ' + (openImg ? (rowText(openImg.fid) || '(blank)') : '')
+                    + '\nCLIMAX — "' + (climax ? climax.label : '?') + '": ' + (climax ? (rowText(climax.fid) || '(blank)') : '')
+                    + '\nFINAL IMAGE — "' + (finalImg ? finalImg.label : '?') + '": ' + (finalImg ? (rowText(finalImg.fid) || '(blank)') : '');
+                canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
+                active = false; pending = true; phase = 'finish';
+                _finishFixAsk = finalImg || null;
+                persist();
+                armWalkResume('cw6-finish', function (reply, meta) {
+                    pending = false;
+                    const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                    const gap = !(!reply || (meta && meta.timedOut)) && /@OUTLINE_GAP/.test(norm);
+                    if (!gap || !_finishFixAsk) { active = false; clearPersist(); serveWrap(); return; }
+                    phase = 'finish-choice'; active = true; persist();
+                    serveFinishChoice();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'That’s my whole outline done — please check the ending lands.';
+                sendCanvasMessage();
+            }
+            let _finishFixAsk = null;
+            function serveFinishChoice() {
+                aiBubble('You can answer that by **rewriting your final image** — or leave it as it stands. It is your ending; a version you have thought about and kept is stronger than one you changed because you were asked to.');
+                chipBar(['Rewrite my final image →', 'Leave it as it is →'], onFinishChoice);
+                resetSend();
+            }
+            function onFinishChoice(pick) {
+                userTurn(pick);
+                if (pick.indexOf('Leave it') === 0) { active = false; clearPersist(); serveWrap(); return; }
+                phase = 'finish-fix'; active = true; persist();
+                aiBubble('**Rewriting your final image**\n\nWrite the **whole image again** — one picture, not a summary. Mirror your opening image, and let the contrast do the telling.\n\nHere is what you have now:\n\n> ' + (rowText(_finishFixAsk.fid) || '*(blank)*'));
+                helpBar(_finishFixAsk);
+                resetSend();
+            }
+            function serveWrap() {
+                aiBubble('**That is your complete plot outline — all six stages, every beat.**\n\n'
+                    + 'Read it back in your document from the top. That is the shape of your whole story, and you wrote every line of it.\n\n'
+                    + 'Tidy up any spelling or punctuation while you are in there — they are your sentences, so they are yours to polish. Nothing here is locked: you will come back and deepen this outline in every update lesson from here on.');
+                try { applyCwSubstepProgress({ stepNum: 6, substepNum: 7, name: 'Review and Save' }); } catch (e) {}
+                phase = 'done';
+                resetSend();
+            }
+
+            // ── RUNG 3 — Ask Sophia. The only rung that spends a call, and only on a tap. ──
+            function askSophia(a) {
+                if (pending) return;
+                userTurn('🤔 Still stuck — can you give me an example for MY story?');
+                const logline = _cwDocValue('logline', 'cw-step-3-chosen') || _cwDocValue('brief_outline', 'cw-step-4-chosen-logline');
+                const spine = CW_STEP4_SPINE.map(function (b) { return b.label + ': ' + (_cwDocValue('brief_outline', b.fid) || '(blank)'); }).join('\n');
+                const ctx = '[THE STUDENT IS STUCK ON ONE BEAT of their plot outline and asked for an example'
+                    + ' FOR THEIR OWN STORY. Give exactly ONE concrete suggestion that fits the story below, in'
+                    + ' one or two sentences, and frame it as a possibility they may take or reject ("one way this'
+                    + ' could go…"). Then hand it straight back — "what would happen in YOUR version?". Do NOT'
+                    + ' write the beat for them, do NOT give a list of options, do NOT move on to another beat,'
+                    + ' and do NOT emit any marker.]'
+                    + '\n\nTHEIR LOGLINE: ' + (logline || '(not recorded)')
+                    + '\nTHEIR STORY SPINE:\n' + spine
+                    + '\n\nTHE BEAT THEY ARE STUCK ON — "' + a.label + '": ' + (a.prompt || '');
+                canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
+                const wasPhase = phase;
+                active = false; pending = true;
+                armWalkResume('cw6-help-' + a.fid, function () {
+                    // The help turn must NOT consume the beat: we come back to the same ask, with
+                    // the ladder still attached, and the student writes their own version.
+                    pending = false; active = true; phase = wasPhase; persist();
+                    setTimeout(function () { try { helpBar(a); } catch (e) {} }, 400);
+                    resetSend();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'I’m stuck on this beat — can you give me an example for my story?';
+                sendCanvasMessage();
+            }
+
+            // ── the turn: NO API on a beat. Write, tick, next. ──
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                if (phase === 'stage-fix') {
+                    const s = stages[checkStage];
+                    const arcAsk = s ? ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)] : null;
+                    userTurn(clean);
+                    if (arcAsk) fileAnswer(arcAsk, clean, true);      // rewrite cycle → replace
+                    aiBubble('Updated — that stage’s arc now reads your new version in the document.');
+                    const si = checkStage;
+                    checkStage = -1; phase = 'ask'; persist();
+                    serveStageOpener(si + 1);
+                    return;
+                }
+                if (phase === 'finish-fix') {
+                    userTurn(clean);
+                    if (_finishFixAsk) fileAnswer(_finishFixAsk, clean, true);
+                    aiBubble('Updated — your final image now reads your new version in the document.');
+                    active = false; clearPersist();
+                    serveWrap();
+                    return;
+                }
+                const a = ASKS[i];
+                if (!a) { fireFinishCheck(); return; }
+                userTurn(clean);
+                // `anchor-fix` is a REWRITE (one self-contained sentence → replace); a beat or an
+                // arc is its first fill, where append and write are the same thing.
+                fileAnswer(a, clean, phase === 'anchor-fix');
+                advance();
+            }
+
+            // ── start / resume ──
+            function resolveKey() {
+                // The DOC is authoritative: the walk must write into the rows that EXIST. A doc
+                // built for Rags to Riches with a Step-5 choice of Tragedy still needs Rags rows
+                // written (tryLoadPlotTemplate owns the rebuild; the walk never fights it).
+                let k = null;
+                try { k = detectBuiltPlotSlug(canvasEditor); } catch (e) {}
+                if (k) return k;
+                try {
+                    const mem = (window._wmlCwPlotStructure && window._wmlCwPlotStructure[state.cwProjectId]) || null;
+                    if (mem) k = resolvePlotStructureSlug(mem);
+                } catch (e) {}
+                return k || 'heros-journey';
+            }
+            function startWalk() {
+                if (active || pending) return;
+                key = resolveKey();
+                buildAsks(key);
+                if (!ASKS.length) {
+                    console.warn('WML CW6: no askable rows for "' + key + '" — the plot document has not been built yet. '
+                        + 'The walk will start on the next load, once tryLoadPlotTemplate has run.');
+                    return;
+                }
+                // The anchors ECHO the Step-4 spine, which lives in the `brief_outline` artifact —
+                // this document is Step 6, so a live-editor read can never find it. Load it BEFORE
+                // the first serve (resolves instantly once cached; a failure just falls back to
+                // asking for the anchor directly).
+                Promise.all([
+                    _cwLoadDocValues(state.cwProjectId, 'brief_outline'),
+                    _cwLoadDocValues(state.cwProjectId, 'logline'),
+                ]).then(function () {
+                    i = firstEmptyAsk();
+                    if (i >= ASKS.length) { active = false; console.log('WML CW6: every row already filled — nothing to walk.'); return; }
+                    active = true; pending = false; phase = 'ask';
+                    console.log('WML CW6: code-served outline walk start at ' + (i + 1) + '/' + ASKS.length
+                        + ' (' + key + ', stage ' + (ASKS[i].stage + 1) + ')');
+                    if (i === 0) { serveOrientation(); return; }
+                    serveCurrent();
+                });
+            }
+            // Orientation (§4c.5): how the walk works, where the help lives, and "don't overthink
+            // it" — PACED, first person, one bubble per tap.
+            function serveOrientation() {
+                phase = 'orient'; persist();
+                const arch = OUTLINE_CRITERIA.cwPlotArchetypes[key] || {};
+                const chunks = [
+                    'Your plot structure is set: **' + (arch.label || 'your chosen structure') + '**. Now we build the whole story out, stage by stage — this is the longest step in the course, and by the end of it you will have a complete plot.',
+                    'Here is how it works. Each of the **six stages** starts with two quick questions about where your protagonist enters it and how they leave it. Then I take you through that stage’s beats **one at a time**. For every one you get what makes it strong, a worked example, and then you write **one sentence** of your own. I file your words into your document exactly as you write them and tick the box for you.',
+                    'Under every question there are buttons: **💡 More examples** for two or three more, **📖 Guidance** for the reference guide at the right section, **🗂** cards for the technique itself, and your **🗒 Story Spine**. Those cost you nothing, so use them first. **🤔 Still stuck — ask Sophia** is there as a last resort if none of them get you moving.',
+                    'One rule above all: **don’t overthink it.** Rough sentences now. You will come back and deepen every single beat in the update lessons and across seven drafts — nothing you write here is final, and a blank outline is the only wrong one.',
+                ];
+                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { phase = 'ask'; persist(); serveCurrent(); } });
+            }
+
+            // Chip bars are DOM-only: the QUESTION bubble replays from saved history on reload but
+            // the buttons do not, which leaves the student with a menu and no way to use it (the
+            // .265 defect class). Re-attach the right bar for the phase we resumed into.
+            function reattachChips() {
+                if (phase === 'anchor' && ASKS[i]) { chipBar(['That’s still right →', 'I’d sharpen it'], onAnchorChoice); return; }
+                if (phase === 'stage-choice' && checkStage >= 0) { chipBar(['Sharpen this stage’s arc →', 'Leave it as it is →'], onStageChoice); return; }
+                if (phase === 'finish-choice') { chipBar(['Rewrite my final image →', 'Leave it as it is →'], onFinishChoice); return; }
+                if (phase === 'stage-fix' && checkStage >= 0) {
+                    const s = stages[checkStage];
+                    const arcAsk = s ? ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)] : null;
+                    if (arcAsk) helpBar(arcAsk);
+                    return;
+                }
+                if (phase === 'finish-fix' && _finishFixAsk) { helpBar(_finishFixAsk); return; }
+                if (ASKS[i]) helpBar(ASKS[i]);
+            }
+
+            function onReply(reply) {
+                if (state.task !== 'cw_step_6') return;
+                const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                if (!/@CW6_START/.test(norm)) return;
+                startWalk();
+            }
+            function reset() { active = false; pending = false; i = 0; phase = 'ask'; checkStage = -1; _finishFixAsk = null; clearPersist(); }
+            function tryResume() {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    if (!raw) return false;
+                    const d = JSON.parse(raw);
+                    if (!d) return false;
+                    key = resolveKey();
+                    buildAsks(key);
+                    if (!ASKS.length) return false;
+                    _cwLoadDocValues(state.cwProjectId, 'brief_outline');
+                    _cwLoadDocValues(state.cwProjectId, 'logline');
+                    checkStage = (typeof d.checkStage === 'number') ? d.checkStage : -1;
+                    phase = d.phase || 'ask';
+                    i = firstEmptyAsk();
+                    // A reload during a check-in-flight: the call is gone, so fall FORWARD rather
+                    // than stranding the student on a prompt with nothing behind it.
+                    if (phase === 'stagecheck') {
+                        phase = 'ask'; const si = checkStage; checkStage = -1; persist();
+                        console.warn('WML CW6: resumed after an unfinished stage check — continuing the walk.');
+                        active = true; pending = false;
+                        setTimeout(function () { serveStageOpener(si + 1); }, 500);
+                        return true;
+                    }
+                    if (phase === 'finish') {
+                        clearPersist(); active = false; pending = false;
+                        console.warn('WML CW6: resumed after an unfinished finish check — serving the wrap.');
+                        setTimeout(serveWrap, 500);
+                        return false;
+                    }
+                    if (phase === 'done' || (i >= ASKS.length && phase !== 'finish-fix' && phase !== 'finish-choice')) {
+                        clearPersist(); active = false; pending = false;
+                        return false;
+                    }
+                    if ((phase === 'finish-choice' || phase === 'finish-fix') && !_finishFixAsk) {
+                        // The row reference is derived, not persisted — rebuild it or fall to the wrap.
+                        _finishFixAsk = findRow(stages.length - 1, /final image/i) || null;
+                        if (!_finishFixAsk) {
+                            clearPersist(); active = false; pending = false;
+                            console.warn('WML CW6: resumed into a finish revision with no final-image row — serving the wrap.');
+                            setTimeout(serveWrap, 500);
+                            return false;
+                        }
+                    }
+                    active = true; pending = false;
+                    console.log('WML CW6: resumed at ' + (i + 1) + '/' + ASKS.length + ' (' + key + ', phase ' + phase + ')');
+                    setTimeout(reattachChips, 400);
+                    return true;
+                } catch (e) { return false; }
+            }
+
+            return {
+                handleTurn, onReply, reset, tryResume,
+                forceStart: startWalk,
+                // v7.20.270 shape: "room left", not "pristine" — the force-start fallback must fire
+                // for a student resuming a half-finished outline too.
+                atStart: function () {
+                    try { if (!ASKS.length) { key = resolveKey(); buildAsks(key); } } catch (e) {}
+                    return ASKS.length > 0 && firstEmptyAsk() < ASKS.length;
+                },
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+
         // v7.20.265: FAIL-LOUD START FALLBACK.
         // All three walks begin on a marker the model must emit (@CW2_MENU / @CW3_START /
         // @CW4_START). If it never arrives — a paraphrase, a dropped marker, a protocol file
@@ -18116,16 +18885,18 @@
         let _cwStartMissTask = '';
         // v7.20.277: chat-clear resets every walk (see resetCwWalks). Registered together so a
         // future controller added here is covered by construction.
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwOutlineCtl]);
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
             _cwSpineCtl.onReply(reply);
+            _cwOutlineCtl.onReply(reply);
 
             const t = (state && state.task) || '';
             const ctl = t === 'cw_step_2' ? _cwIdeasCtl
                 : t === 'cw_step_3' ? _cwLoglineCtl
-                : t === 'cw_step_4' ? _cwSpineCtl : null;
+                : t === 'cw_step_4' ? _cwSpineCtl
+                : t === 'cw_step_6' ? _cwOutlineCtl : null;
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
             if (ctl.active || ctl.pending || !ctl.atStart()) { _cwStartMisses = 0; return; }
@@ -18163,6 +18934,7 @@
             cwIdeasCtl: _cwIdeasCtl,
             cwLoglineCtl: _cwLoglineCtl,
             cwSpineCtl: _cwSpineCtl,
+            cwOutlineCtl: _cwOutlineCtl,       // v7.20.296 — boot resume calls tryResume() on this
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
             set canvasChatId(v) { canvasChatId = v; },
@@ -24146,6 +24918,7 @@
                     if (state.task === 'cw_step_2' && tp.cwIdeasCtl) tp.cwIdeasCtl.tryResume();
                     if (state.task === 'cw_step_3' && tp.cwLoglineCtl) tp.cwLoglineCtl.tryResume();
                     if (state.task === 'cw_step_4' && tp.cwSpineCtl) tp.cwSpineCtl.tryResume();
+                    if (state.task === 'cw_step_6' && tp.cwOutlineCtl) tp.cwOutlineCtl.tryResume();
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
                     // (student types on); only re-surface the programmatic picker when NO poem is
                     // active (last poem finished, or none picked yet). The picker bubble is DOM-only
@@ -31884,6 +32657,64 @@
                 console.log('WML CW: Step 3 wound row healed into existing doc');
             } catch (e) { console.log('WML CW: wound heal skipped —', e && e.message); }
         };
+        // v7.20.296: HEAL existing Step-6 docs created before the THREE-ALTITUDE frame rows
+        // (story_open · story_close · stage_arc) were added to buildCWPlotOutlineSection.
+        //
+        // ⭐ WHY A HEAL IS MANDATORY HERE: outline SHAPE is baked into the saved document
+        // (memory reference_wml_outline_scaffold_baked_needs_onload_heal), so a student who has
+        // already opened Step 6 has a doc with beats and NO frame rows. Without this, the walk's
+        // Altitude 1/2 writes would hit `_writeOutlineRowField` → "no outlineRow for field" →
+        // the answer is lost with a console warning only. Neil cannot see a console warning.
+        //
+        // Idempotent (skips any frame row already present, per stage), and hydration-gated by
+        // running inside the same post-load chain as every other heal
+        // (feedback_wml_doc_mutations_on_load_are_dangerous). Runs under _migrationActive so the
+        // section-count guard leaves the inserts alone. Never rebuilds and never deletes: it only
+        // INSERTS missing rows at the top of each stage, so student text cannot be clobbered.
+        const tryHealCwStep6StageArcs = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 6) return;
+            try {
+                const key = detectBuiltPlotSlug(canvasEditor);
+                if (!key) return;                                  // placeholder still, or not a plot doc
+                const arch = OUTLINE_CRITERIA.cwPlotArchetypes[key];
+                if (!arch || !Array.isArray(arch.sections)) return;
+                let inserted = 0;
+                // One section at a time, LAST section first: every insert shifts the positions of
+                // everything after it, so working backwards keeps the earlier scans valid.
+                for (let si = arch.sections.length - 1; si >= 0; si--) {
+                    const sec = arch.sections[si];
+                    const want = _cw6FrameRowsFor(sec.id);
+                    // Anchor = this stage's FIRST existing row (a beat, or a frame row already healed).
+                    const stagePrefix = _cw6RowFieldId(key, sec.id, '');
+                    let anchorPos = null;
+                    const have = {};
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (node.type.name !== 'outlineRow' || !node.attrs || typeof node.attrs.fieldId !== 'string') return true;
+                        const f = node.attrs.fieldId;
+                        if (f.indexOf(stagePrefix) !== 0) return true;
+                        if (anchorPos === null) anchorPos = pos;
+                        have[f.slice(stagePrefix.length)] = true;
+                        return true;
+                    });
+                    if (anchorPos === null) continue;              // this stage has no rows at all — nothing to anchor to
+                    // Insert in REVERSE want-order at the same position, so the final order matches
+                    // _cw6FrameRowsFor exactly (each insert pushes the previous one down).
+                    for (let wi = want.length - 1; wi >= 0; wi--) {
+                        const fr = want[wi];
+                        if (have[fr]) continue;
+                        const html = outlineRowHTML(CW6_FRAME_ROWS[fr], _cw6RowFieldId(key, sec.id, fr));
+                        _migrationActive = true;
+                        try { canvasEditor.commands.insertContentAt(anchorPos, html); }
+                        finally { _migrationActive = false; }
+                        inserted++;
+                    }
+                }
+                if (!inserted) return;
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 6 frame rows healed into existing doc —', inserted, 'row(s) inserted for', key);
+            } catch (e) { console.log('WML CW: Step 6 frame-row heal skipped —', e && e.message); }
+        };
         // v7.19.485: CW Step 4 — fill the "Your Chosen Logline" carry row from the Step-3
         // choice (the `chosen_logline` artifact, kept in sync with the Step-3 Chosen Logline
         // row). Refreshes on every Step-4 load so it tracks the current Step-3 logline.
@@ -32361,7 +33192,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -39570,6 +40401,41 @@
         return has;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // CW STEP 6 — THE ONE CANONICAL ROW-ID PRODUCER (v7.20.296)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Root CLAUDE.md §5d: the #1 recurring Sophicly bug is a write-key ≠ read-key mismatch, and
+    // Step 6 has TWO producers by construction — the doc BUILDER emits the row, the programmatic
+    // WALK writes into it. One character apart and every answer the student types lands where no
+    // read looks, silently. So there is exactly ONE function that builds the string, both sides
+    // call it, and bin/cw6-outline-harness.js FAILS the ship if any other site hand-builds an
+    // `outline-cw-…` id. §5e granularity: the id names one ROW of one STAGE of one STRUCTURE —
+    // proven unique across all 801 askable rows of all eight templates by the same harness.
+    function _cw6RowFieldId(archetypeKey, sectionId, criterionId) {
+        return 'outline-cw-' + archetypeKey + '-' + sectionId + '-' + criterionId;
+    }
+    // v7.20.296: the THREE ALTITUDES need three rows the original template never had.
+    //   story_open  (Stage I)  — their Step-4 Beat 1, echoed as the story's opening anchor
+    //   story_close (Stage VI) — their Step-4 Beat 6, echoed as the story's closing anchor
+    //   stage_arc   (each stage) — how the protagonist ENTERS this stage and how they are
+    //                              different when they LEAVE it (the per-stage bookends)
+    // A spine beat ANCHORS a stage, it never FILLS one (Neil, 2026-07-25) — Stage I alone holds
+    // ~15 beats, so these sit ABOVE the beats as the frame the student writes between.
+    const CW6_FRAME_ROWS = {
+        stage_arc: { id: 'stage_arc', label: 'This stage’s arc', beatType: 'neutral', type: 'checkbox',
+            prompt: 'How your protagonist ENTERS this stage — and how they are different when they LEAVE it' },
+        story_open: { id: 'story_open', label: 'Your story opens (Step 4)', beatType: 'neutral', type: 'checkbox',
+            prompt: 'The opening of your story, carried from your Story Spine Beat 1 — the anchor Stage I builds out from' },
+        story_close: { id: 'story_close', label: 'Your story ends (Step 4)', beatType: 'neutral', type: 'checkbox',
+            prompt: 'The ending you planned in your Story Spine Beat 6 — the anchor Stage VI builds toward' },
+    };
+    // Which frame rows lead a given stage, in order. Read by the builder AND the on-load heal.
+    function _cw6FrameRowsFor(sectionId) {
+        if (sectionId === 'setup') return ['story_open', 'stage_arc'];
+        if (sectionId === 'aftermath') return ['story_close', 'stage_arc'];
+        return ['stage_arc'];
+    }
+
     function buildCWPlotOutlineSection(archetypeKey) {
         const key = archetypeKey || 'heros-journey';
         const archetype = OUTLINE_CRITERIA.cwPlotArchetypes[key]
@@ -39605,13 +40471,18 @@
         );
         archetype.sections.forEach(sec => {
             let rows = '';
+            // v7.20.296: the frame rows lead the stage — the student writes every beat below
+            // BETWEEN two points they have already fixed, never into a blank row in a void.
+            _cw6FrameRowsFor(sec.id).forEach(fr => {
+                rows += outlineRowHTML(CW6_FRAME_ROWS[fr], _cw6RowFieldId(key, sec.id, fr));
+            });
             sec.criteria.forEach(c => {
                 // Turning points + markers → full-width divider headings, not input rows (v7.15.4)
                 if (c.beatType === 'turning-point' || c.beatType === 'marker') {
                     const cls = c.beatType === 'turning-point' ? 'swml-plot-turning-point' : 'swml-plot-marker';
                     rows += `<div class="${cls}"><strong>${escapeHTML(c.prompt || c.label)}</strong></div>`;
                 } else {
-                    rows += outlineRowHTML(c, `outline-cw-${key}-${sec.id}-${c.id}`);
+                    rows += outlineRowHTML(c, _cw6RowFieldId(key, sec.id, c.id));
                 }
             });
             html += sectionHTML('outline', `Outline: ${sec.label}`, true, null, rows);
