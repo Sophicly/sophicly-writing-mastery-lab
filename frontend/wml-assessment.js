@@ -4090,7 +4090,18 @@
         { fid: 'cw-step-3-obstacle',    label: 'Obstacle' },
         { fid: 'cw-step-3-stakes',      label: 'Stakes' },
     ];
-    let _cwStep3Cache = { id: '', map: null };
+    // v7.20.292: the Story Spine is needed in later steps for exactly the same reason as the
+    // components (Neil: "I think I need to see that as well in the subsequent steps").
+    const CW_STEP4_SPINE = [
+        { fid: 'cw-step-4-beat1', label: 'Beat 1 — At first…' },
+        { fid: 'cw-step-4-beat2', label: 'Beat 2 — And then…' },
+        { fid: 'cw-step-4-beat3', label: 'Beat 3 — Until…' },
+        { fid: 'cw-step-4-beat4', label: 'Beat 4 — And because of this…' },
+        { fid: 'cw-step-4-beat5', label: 'Beat 5 — And because of this…' },
+        { fid: 'cw-step-4-beat6', label: 'Beat 6 — Until finally…' },
+    ];
+    // One cache per source artifact: { artifactKey: { id: projectId, map: {fid: text} } }.
+    const _cwDocCache = {};
     function _cwParseFieldMap(html) {
         const map = {};
         try {
@@ -4105,25 +4116,52 @@
         return map;
     }
     // Synchronous read of whatever is already cached ('' when not loaded yet / absent).
-    function _cwStep3Value(fid) {
-        return (_cwStep3Cache.map && _cwStep3Cache.map[fid]) || '';
+    function _cwDocValue(artifactKey, fid) {
+        const c = _cwDocCache[artifactKey];
+        return (c && c.map && c.map[fid]) || '';
     }
-    function _cwLoadStep3Values(projectId, force) {
+    function _cwLoadDocValues(projectId, artifactKey, force) {
         if (!projectId) return Promise.resolve({});
-        if (!force && _cwStep3Cache.id === projectId && _cwStep3Cache.map) {
-            return Promise.resolve(_cwStep3Cache.map);
-        }
-        return WML.cwProject.loadArtifact(projectId, 'logline').then(function (art) {
+        const c = _cwDocCache[artifactKey];
+        if (!force && c && c.id === projectId && c.map) return Promise.resolve(c.map);
+        return WML.cwProject.loadArtifact(projectId, artifactKey).then(function (art) {
             const map = (art && art.success && art.value) ? _cwParseFieldMap(art.value) : {};
-            _cwStep3Cache = { id: projectId, map: map };
-            const found = CW_STEP3_COMPONENTS.filter(function (c) { return map[c.fid]; }).length;
-            console.log('WML CW: step-3 components loaded —', found + '/' + CW_STEP3_COMPONENTS.length, 'present');
+            _cwDocCache[artifactKey] = { id: projectId, map: map };
+            console.log('WML CW: "' + artifactKey + '" doc values loaded —', Object.keys(map).length, 'fields');
             return map;
         }).catch(function (e) {
-            console.warn('WML CW: step-3 components load failed —', e && e.message);
-            _cwStep3Cache = { id: projectId, map: {} };
+            console.warn('WML CW: "' + artifactKey + '" load failed —', e && e.message);
+            _cwDocCache[artifactKey] = { id: projectId, map: {} };
             return {};
         });
+    }
+    // Step 3's components live in the `logline` doc artifact; Step 4's spine in `brief_outline`.
+    function _cwStep3Value(fid) { return _cwDocValue('logline', fid); }
+    function _cwLoadStep3Values(projectId, force) { return _cwLoadDocValues(projectId, 'logline', force); }
+
+    // v7.20.292: ONE resolver for "which plot structure did they choose?", shared by every
+    // greeting path. Was inlined twice in .286 and STILL missed the "Welcome back" resume
+    // greeting — which is the one Neil actually saw, so the echo never appeared for him.
+    const CW_STRUCT_NAMES = {
+        'heros-journey': 'the Hero’s Journey', 'rebirth-redemption': 'Rebirth / Redemption',
+        'tragedy': 'Tragedy', 'rags-to-riches': 'Rags to Riches', 'the-quest': 'The Quest',
+        'overcoming-the-monster': 'Overcoming the Monster', 'voyage-and-return': 'Voyage and Return',
+        'coming-of-age': 'Coming of Age',
+    };
+    // Same read order tryLoadPlotTemplate uses: in-session memory → key artifact → choice doc.
+    function _cwPlotStructureName(projectId) {
+        if (!projectId) return Promise.resolve('');
+        const mem = (window._wmlCwPlotStructure && window._wmlCwPlotStructure[projectId]) || null;
+        const fromMem = mem ? resolvePlotStructureSlug(mem) : null;
+        if (fromMem) return Promise.resolve(CW_STRUCT_NAMES[fromMem] || '');
+        return WML.cwProject.loadArtifact(projectId, 'plot_structure_key').then(function (ka) {
+            const s = (ka && ka.success && ka.value) ? resolvePlotStructureSlug(ka.value) : null;
+            if (s) return CW_STRUCT_NAMES[s] || '';
+            return WML.cwProject.loadArtifact(projectId, 'plot_structure_choice').then(function (ca) {
+                const s2 = (ca && ca.success && ca.value) ? resolvePlotStructureSlug(ca.value) : null;
+                return s2 ? (CW_STRUCT_NAMES[s2] || '') : '';
+            });
+        }).catch(function () { return ''; });
     }
 
     // Fire the armed hook, if any. `reply` is the AI text that just landed (null on timeout).
@@ -13557,10 +13595,19 @@
                         } else if (isCwTask && cwStepDef) {
                             const stepLabel = cwStepDef.label || 'this step';
                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
-                            const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
-                            addChatMessage(formatAI(gt), 'ai', gt);
-                            canvasChatHistory.push({ role: 'assistant', content: gt });
-                            saveCanvasChat(canvasChatHistory, canvasChatId);
+                            // v7.20.292: the RESUME greeting must echo the chosen structure too. .286 patched only
+                            // the FRESH-entry greeting, so the one Neil actually saw stayed anonymous.
+                            const _emitBack = function (extra) {
+                                const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**${extra}\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
+                                addChatMessage(formatAI(gt), 'ai', gt);
+                                canvasChatHistory.push({ role: 'assistant', content: gt });
+                                saveCanvasChat(canvasChatHistory, canvasChatId);
+                            };
+                            if (stepNum === 6) {
+                                _cwPlotStructureName(state.cwProjectId).then(function (n) {
+                                    _emitBack(n ? `\n\nYou chose **${n}** in Step 5.` : '');
+                                });
+                            } else { _emitBack(''); }
                             // v7.17.46: Removed hardcoded "Let's begin" button.
                             // The launch-prompt detector (wml-app.js:4354) already
                             // emits "▶ Let's go" because the greeting contains
@@ -17389,6 +17436,14 @@
                     className: 'swml-quick-btn', textContent: '🧩 Story Components',
                     onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
                 }));
+                // v7.20.292: Step-4 spine, on tap. Only useful once Step 4 exists — Step 3's own
+                // walk PRECEDES it, so the chip is added for step 4+ walks only.
+                if (state.task !== 'cw_step_3') {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: '🗒 Story Spine',
+                        onClick: function () { try { var t = document.querySelector('.swml-ss-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                    }));
+                }
                 // v7.20.283: deep-dive chips into the Table of Techniques for this component.
                 const tech = TECH[(STEPS[i] || {}).fid] || [];
                 if (tech.length && window.SophiclyTable && window.SophiclyTable.open) {
@@ -17741,6 +17796,14 @@
                     className: 'swml-quick-btn', textContent: '🧩 Story Components',
                     onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
                 }));
+                // v7.20.292: Step-4 spine, on tap. Only useful once Step 4 exists — Step 3's own
+                // walk PRECEDES it, so the chip is added for step 4+ walks only.
+                if (state.task !== 'cw_step_3') {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: '🗒 Story Spine',
+                        onClick: function () { try { var t = document.querySelector('.swml-ss-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                    }));
+                }
                 const tech = TECH4[(BEATS[idx] || {}).fid] || [];
                 if (tech.length && window.SophiclyTable && window.SophiclyTable.open) {
                     tech.forEach(function (t) {
@@ -19447,7 +19510,7 @@
         let resPanel = null;
         let resDetachBtn = null; // hoisted for floatRes/dockRes access
         let wpPanel = null, wpTrigger = null, resTrigger = null; // v7.19.474: Writer's Profile panel (forward refs for mutual-exclusivity)
-        let scTrigger = null; // v7.20.291: Story Components — second trigger on the SAME panel shell
+        let scTrigger = null, ssTrigger = null; // v7.20.291/.292: Story Components + Story Spine — extra triggers on the SAME panel shell
         if (cwPanelRes && cwPanelRes.length > 0) {
             const SVG_LINK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 
@@ -19469,7 +19532,7 @@
                     // so they overlapped in the shared dock slot).
                     if (isOpen) {
                         try { toggleOutlinePanel(false); } catch (_) {}
-                        if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); }
+                        if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); }
                     }
                 }
             });
@@ -19583,6 +19646,7 @@
         if (state.task && state.task.indexOf('cw_') === 0 && state.cwProjectId) {
             const SVG_PROFILE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>';
             // v7.20.291: Story Components — puzzle piece, distinct from the profile's person icon.
+            const SVG_SPINE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v16"/><path d="M9 6h10"/><path d="M9 12h10"/><path d="M9 18h10"/></svg>';
             const SVG_COMPONENTS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5V5.5a2.5 2.5 0 0 1 5 0V7h5v5h-1.5a2.5 2.5 0 0 0 0 5H20v3H4z"/></svg>';
             // Swap content with a short opacity fade-in so async loads + refreshes settle
             // smoothly rather than popping in.
@@ -19697,6 +19761,33 @@
                 });
             };
 
+            // v7.20.292: Story Spine — the Step-4 beats, same shell, third mode.
+            const _loadStorySpinePanel = function (bodyEl) {
+                const pid = state.cwProjectId;
+                if (!pid) {
+                    _setWpBody(bodyEl, '<p class="swml-wp-empty">Open a Creative Writing project to see your story spine.</p>');
+                    return;
+                }
+                _setWpBody(bodyEl, '<p class="swml-wp-empty">Loading your story spine…</p>');
+                _cwLoadDocValues(pid, 'brief_outline', true).then(function (map) {
+                    const rows = CW_STEP4_SPINE
+                        .filter(function (b) { return map[b.fid]; })
+                        .map(function (b) {
+                            return '<div class="swml-wp-item"><div class="swml-wp-item-label">' + _scEsc(b.label) +
+                                '</div><div class="swml-wp-item-text">' + _scEsc(map[b.fid]) + '</div></div>';
+                        });
+                    if (!rows.length) {
+                        _setWpBody(bodyEl, '<p class="swml-wp-empty">Nothing recorded yet — your story spine is built in Step 4.</p>');
+                        bodyEl._wpHasContent = false;
+                        return;
+                    }
+                    _setWpBody(bodyEl, rows.join(''));
+                    bodyEl._wpHasContent = true;
+                }).catch(function () {
+                    _setWpBody(bodyEl, '<p class="swml-wp-empty">Couldn’t load your story spine right now.</p>');
+                });
+            };
+
             wpPanel = el('div', { className: 'swml-outline-panel swml-resources-panel swml-wp-panel' });
             const wpGrip = el('div', { className: 'swml-outline-grip' });
             wpGrip.innerHTML = '<span class="swml-outline-grip-dots">⠷</span>';
@@ -19713,7 +19804,8 @@
                 onClick: () => {
                     wpPanel.classList.remove('swml-resources-open');
                     wpTrigger.classList.remove('is-active');
-                    if (scTrigger) scTrigger.classList.remove('is-active'); // v7.20.291: both triggers share this shell
+                    if (scTrigger) scTrigger.classList.remove('is-active'); // v7.20.291/.292: all three triggers share this shell
+                    if (ssTrigger) ssTrigger.classList.remove('is-active');
                     if (wpFloating) { wpPanel.style.opacity = '0'; wpPanel.style.transform = 'translateX(-12px)'; setTimeout(() => { dockWp(); wpPanel.style.opacity = ''; wpPanel.style.transform = ''; }, 250); }
                 }
             });
@@ -19739,34 +19831,46 @@
             // closes, if the same mode's trigger is tapped again). Switching mode while open
             // swaps content rather than closing — tapping the other button should just show it.
             const _wpTitle = wpHeader.querySelector('span');
-            function _openWpMode(mode, trigger) {
+            // v7.20.292: THREE modes on the one shell. Table-driven so a fourth source is a row,
+            // not another branch to keep in sync in five places.
+            const WP_MODES = {
+                profile:    { title: 'Writer’s Profile',  note: true,  load: function () { _loadWriterProfilePanel(wpBody); } },
+                components: { title: 'Story Components',  note: false, load: function () { _loadStoryComponentsPanel(wpBody); } },
+                spine:      { title: 'Story Spine',       note: false, load: function () { _loadStorySpinePanel(wpBody); } },
+            };
+            function _wpTriggerFor(mode) {
+                return mode === 'components' ? scTrigger : mode === 'spine' ? ssTrigger : wpTrigger;
+            }
+            function _wpClearTriggers() {
+                [wpTrigger, scTrigger, ssTrigger].forEach(function (t) { if (t) t.classList.remove('is-active'); });
+            }
+            function _openWpMode(mode) {
+                const cfg = WP_MODES[mode] || WP_MODES.profile;
                 const already = wpPanel.classList.contains('swml-resources-open');
-                if (already && wpMode === mode) {
+                if (already && wpMode === mode) {          // same trigger again → close
                     wpPanel.classList.remove('swml-resources-open');
-                    if (wpTrigger) wpTrigger.classList.remove('is-active');
-                    if (scTrigger) scTrigger.classList.remove('is-active');
+                    _wpClearTriggers();
                     return;
                 }
                 if (wpMode !== mode) { wpBody._wpHasContent = false; }  // content is not interchangeable
                 wpMode = mode;
-                if (_wpTitle) _wpTitle.textContent = (mode === 'components') ? 'Story Components' : 'Writer’s Profile';
-                wpNote.style.display = (mode === 'components') ? 'none' : '';
+                if (_wpTitle) _wpTitle.textContent = cfg.title;
+                wpNote.style.display = cfg.note ? '' : 'none';
                 wpPanel.classList.add('swml-resources-open');
-                if (wpTrigger) wpTrigger.classList.toggle('is-active', mode === 'profile');
-                if (scTrigger) scTrigger.classList.toggle('is-active', mode === 'components');
+                _wpClearTriggers();
+                const t = _wpTriggerFor(mode);
+                if (t) t.classList.add('is-active');
                 // mutually exclusive with the other two rail panels
                 if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
                 try { toggleOutlinePanel(false); } catch (_) {}
-                // Refresh on every open so Step-1 / Step-3 edits show (v7.19.480).
-                if (mode === 'components') _loadStoryComponentsPanel(wpBody);
-                else _loadWriterProfilePanel(wpBody);
+                cfg.load();   // refresh on every open so upstream edits show (v7.19.480)
             }
 
             wpTrigger = el('button', {
                 className: 'swml-outline-btn swml-wp-trigger',
                 'data-tooltip': 'Writer’s Profile', 'data-tooltip-pos': 'right',
                 'aria-label': 'Writer’s Profile', innerHTML: SVG_PROFILE,
-                onClick: (e) => { e.stopPropagation(); _openWpMode('profile', wpTrigger); }
+                onClick: (e) => { e.stopPropagation(); _openWpMode('profile'); }
             });
             btnColumn.appendChild(wpTrigger);
 
@@ -19777,9 +19881,18 @@
                 className: 'swml-outline-btn swml-sc-trigger',
                 'data-tooltip': 'Story Components', 'data-tooltip-pos': 'right',
                 'aria-label': 'Story Components', innerHTML: SVG_COMPONENTS,
-                onClick: (e) => { e.stopPropagation(); _openWpMode('components', scTrigger); }
+                onClick: (e) => { e.stopPropagation(); _openWpMode('components'); }
             });
             btnColumn.appendChild(scTrigger);
+
+            // Story Spine — the Step-4 beats, readable from every later step (Neil, 2026-07-25).
+            ssTrigger = el('button', {
+                className: 'swml-outline-btn swml-ss-trigger',
+                'data-tooltip': 'Story Spine', 'data-tooltip-pos': 'right',
+                'aria-label': 'Story Spine', innerHTML: SVG_SPINE,
+                onClick: (e) => { e.stopPropagation(); _openWpMode('spine'); }
+            });
+            btnColumn.appendChild(ssTrigger);
 
             // ── float / dock / drag / resize / click-outside (mirror of the resources panel) ──
             let wpFloating = false;
@@ -19866,11 +19979,12 @@
                 // v7.20.291: BOTH triggers own this shell — without .swml-sc-trigger here the
                 // Story Components click would be treated as "outside" and close the panel it
                 // had just opened.
-                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger, .swml-sc-trigger')) return;
+                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger, .swml-sc-trigger, .swml-ss-trigger')) return;
                 if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return; // v7.19.951: widgets live in in-flow control rows now (+ body-portaled popovers)
                 wpPanel.classList.remove('swml-resources-open');
                 wpTrigger.classList.remove('is-active');
                 if (scTrigger) scTrigger.classList.remove('is-active');
+                if (ssTrigger) ssTrigger.classList.remove('is-active');
             });
         }
 
@@ -20305,7 +20419,7 @@
             if (outlineOpen) {
                 // v7.19.476: mutually exclusive with the resources + Writer's Profile panels
                 if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
-                if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); }
+                if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); }
                 updateOutline();
                 requestAnimationFrame(updateScrollSpy);
             }
@@ -24099,34 +24213,10 @@
                         8: 'You\u2019ve built your plot outline and explored values. Now choose your scene(s).',
                         9: 'You\u2019ve chosen your scene(s). Now write your first draft.',
                     };
-                    // v7.20.286: echo the actual Step-5 choice into the Step-6 greeting (paste-wall /
-                    // echo-known-data law \u2014 the system HOLDS the choice; naming it earns the student's
-                    // trust). Resolve via the SAME read order tryLoadPlotTemplate uses:
-                    // in-session memory \u2192 plot_structure_key \u2192 plot_structure_choice.
-                    if (stepNum === 6 && state.cwProjectId && !(missingPrereq && stepNum > 1)) {
-                        const CW_STRUCT_NAMES = {
-                            'heros-journey': 'the Hero\u2019s Journey', 'rebirth-redemption': 'Rebirth / Redemption',
-                            'tragedy': 'Tragedy', 'rags-to-riches': 'Rags to Riches', 'the-quest': 'The Quest',
-                            'overcoming-the-monster': 'Overcoming the Monster', 'voyage-and-return': 'Voyage and Return',
-                            'coming-of-age': 'Coming of Age'
-                        };
-                        let _structSlug = null;
-                        try {
-                            const memSlug = (window._wmlCwPlotStructure && window._wmlCwPlotStructure[state.cwProjectId]) || null;
-                            _structSlug = memSlug ? resolvePlotStructureSlug(memSlug) : null;
-                            if (!_structSlug) {
-                                const ka = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_key');
-                                _structSlug = (ka?.success && ka.value) ? resolvePlotStructureSlug(ka.value) : null;
-                            }
-                            if (!_structSlug) {
-                                const ca = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_choice');
-                                _structSlug = (ca?.success && ca.value) ? resolvePlotStructureSlug(ca.value) : null;
-                            }
-                        } catch (_) {}
-                        const _structName = _structSlug && CW_STRUCT_NAMES[_structSlug];
-                        if (_structName) {
-                            cwPrevContext[6] = `In Step 5, you chose **${_structName}**. Now we\u2019ll build a detailed plot outline.`;
-                        }
+                    // v7.20.292: name the chosen structure (shared resolver — see _cwPlotStructureName).
+                    if (stepNum === 6) {
+                        const _sn = await _cwPlotStructureName(state.cwProjectId);
+                        if (_sn) cwPrevContext[6] = `In Step 5, you chose **${_sn}**. Now we\u2019ll build a detailed plot outline.`;
                     }
                     const prevCtx = cwPrevContext[stepNum] || `Let\u2019s continue with **${stepLabel}**.`;
                     const introLine = `Welcome to Step ${stepNum}: **${stepLabel}**\n\n${prevCtx}`;
@@ -25277,10 +25367,19 @@
                                         if (isCwTask && cwStepDef) {
                                             const stepLabel = cwStepDef.label || 'this step';
                                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
-                                            const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
-                                            addChatMessage(formatAI(gt), 'ai', gt);
-                                            canvasChatHistory.push({ role: 'assistant', content: gt });
-                                            saveCanvasChat(canvasChatHistory, canvasChatId);
+                                            // v7.20.292: the RESUME greeting must echo the chosen structure too. .286 patched only
+                                            // the FRESH-entry greeting, so the one Neil actually saw stayed anonymous.
+                                            const _emitBack = function (extra) {
+                                                const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**${extra}\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
+                                                addChatMessage(formatAI(gt), 'ai', gt);
+                                                canvasChatHistory.push({ role: 'assistant', content: gt });
+                                                saveCanvasChat(canvasChatHistory, canvasChatId);
+                                            };
+                                            if (stepNum === 6) {
+                                                _cwPlotStructureName(state.cwProjectId).then(function (n) {
+                                                    _emitBack(n ? `\n\nYou chose **${n}** in Step 5.` : '');
+                                                });
+                                            } else { _emitBack(''); }
                                             // v7.17.46: Removed hardcoded "Let's begin"
                                             // button — detector emits "▶ Let's go".
                                         } else if (state.task === 'planning' || state.task === 'polishing') {
@@ -26952,32 +27051,10 @@
                                                 8: 'You\u2019ve built your plot outline and explored your story\u2019s values. Now it\u2019s time to choose which scene(s) to bring to life in your first draft.',
                                                 9: 'You\u2019ve chosen your scene(s). Now it\u2019s time to write your first draft \u2014 focusing on basic prose style.',
                                             };
-                                            // v7.20.286: echo the actual Step-5 choice (paste-wall / echo-known-data
-                                            // law). Twin of the main-pipeline block \u2014 same read order.
-                                            if (stepNum === 6 && projectId && !(missingPrereq && stepNum > 1)) {
-                                                const CW_STRUCT_NAMES = {
-                                                    'heros-journey': 'the Hero\u2019s Journey', 'rebirth-redemption': 'Rebirth / Redemption',
-                                                    'tragedy': 'Tragedy', 'rags-to-riches': 'Rags to Riches', 'the-quest': 'The Quest',
-                                                    'overcoming-the-monster': 'Overcoming the Monster', 'voyage-and-return': 'Voyage and Return',
-                                                    'coming-of-age': 'Coming of Age'
-                                                };
-                                                let _structSlug = null;
-                                                try {
-                                                    const memSlug = (window._wmlCwPlotStructure && window._wmlCwPlotStructure[projectId]) || null;
-                                                    _structSlug = memSlug ? resolvePlotStructureSlug(memSlug) : null;
-                                                    if (!_structSlug) {
-                                                        const ka = await WML.cwProject.loadArtifact(projectId, 'plot_structure_key');
-                                                        _structSlug = (ka?.success && ka.value) ? resolvePlotStructureSlug(ka.value) : null;
-                                                    }
-                                                    if (!_structSlug) {
-                                                        const ca = await WML.cwProject.loadArtifact(projectId, 'plot_structure_choice');
-                                                        _structSlug = (ca?.success && ca.value) ? resolvePlotStructureSlug(ca.value) : null;
-                                                    }
-                                                } catch (_) {}
-                                                const _structName = _structSlug && CW_STRUCT_NAMES[_structSlug];
-                                                if (_structName) {
-                                                    cwPrevContext[6] = `In Step 5, you chose **${_structName}**. Now we\u2019ll build a detailed, stage-by-stage plot outline \u2014 your master document for the rest of the course.`;
-                                                }
+                                            // v7.20.292: name the chosen structure (shared resolver — see _cwPlotStructureName).
+                                            if (stepNum === 6) {
+                                                const _sn = await _cwPlotStructureName(state.cwProjectId);
+                                                if (_sn) cwPrevContext[6] = `In Step 5, you chose **${_sn}**. Now we\u2019ll build a detailed, stage-by-stage plot outline \u2014 your master document for the rest of the course.`;
                                             }
                                             const prevCtx = cwPrevContext[stepNum] || `You\u2019ve been building your story step by step. Let\u2019s continue with **${stepLabel}**.`;
                                             const introLine = stepNum === 1
