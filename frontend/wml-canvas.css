@@ -3427,6 +3427,24 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-canvas-light .swml-cw-project-overlay__list-meta { color: rgba(44,0,62,0.55); }
 
+/* v7.20.299: marks the most recently edited project so "the one you're on" is unambiguous
+   when a student has more than one. Teal = progress (BRAND colour semantics), never purple. */
+.swml-cw-project-overlay__list-tag {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #1CD991;
+    background: rgba(28,217,145,0.12);
+}
+.swml-canvas-light .swml-cw-project-overlay__list-tag {
+    color: #0f7a52;
+    background: rgba(28,217,145,0.16);
+}
+
 .swml-cw-project-overlay__new-btn {
     padding: 12px 16px;
     font-size: 14px; font-weight: 600;

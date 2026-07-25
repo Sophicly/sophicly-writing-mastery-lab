@@ -44737,12 +44737,27 @@
                 nameEl.textContent = p.name || 'Untitled project';
                 btn.appendChild(nameEl);
 
+                // v7.20.299: show REAL progress, derived server-side from what is actually in the
+                // artifacts (derive_cw_project_progress). `current_step` reads 0 on every live
+                // project because it only moves when a step is marked complete, so the picker used
+                // to show a project holding eight answers and one never opened as identical —
+                // which is exactly how Rifat (uid 1386) lost track of his own work. The most
+                // recently edited project is also marked, so "the one you're on" is unambiguous.
+                const bits = [];
+                if (p.progress_label) bits.push(p.progress_label);
                 const dateLabel = _formatDate(p.updated || p.created);
-                if (dateLabel) {
+                if (dateLabel) bits.push('last edited ' + dateLabel);
+                if (bits.length) {
                     const metaEl = document.createElement('div');
                     metaEl.className = 'swml-cw-project-overlay__list-meta';
-                    metaEl.textContent = 'Last edited ' + dateLabel;
+                    metaEl.textContent = bits.join(' · ');
                     btn.appendChild(metaEl);
+                }
+                if (idx === 0 && sorted.length > 1) {
+                    const tagEl = document.createElement('div');
+                    tagEl.className = 'swml-cw-project-overlay__list-tag';
+                    tagEl.textContent = 'Carry on with this one';
+                    btn.appendChild(tagEl);
                 }
 
                 btn.addEventListener('click', async () => {
@@ -44902,11 +44917,47 @@
                 });
             }
         } catch (e) {
-            console.warn('WML v7.17.29: CW project resolve failed, falling back to silent create', e);
-            const c = await WML.cwProject.create('My Story', 'standalone');
-            if (c?.success && c.project) {
-                state.cwProjectId = c.project.id;
-                state.cwProjectName = c.project.name || 'My Story';
+            // v7.20.299: this used to "fall back to silent create" — it minted a brand-new empty
+            // project called 'My Story' whenever the resolve threw. If the student ALREADY had a
+            // project, that silently FORKED them into an empty one holding none of their work,
+            // with no error and a name they never chose. Rifat (uid 1386) came back to a blank
+            // Step 1 and reported eight answers missing; they were safe in the project he had
+            // named himself the day before. NEVER create while we cannot prove the student has
+            // no projects — retry the read first, and if it still fails, say so and create
+            // nothing. A visible error beats an invisible fork.
+            console.warn('WML CW: project resolve failed — retrying the read before creating anything', e && e.message);
+            try {
+                const retry = await WML.cwProject.list();
+                const existing = retry?.projects || [];
+                if (existing.length > 0) {
+                    const sorted = [...existing].sort((a, b) =>
+                        (b.updated || b.created || '').localeCompare(a.updated || a.created || '')
+                    );
+                    state.cwProjectId = sorted[0].id;
+                    state.cwProjectName = sorted[0].name || '';
+                    try { sessionStorage.setItem('swml_cw_active_project', sorted[0].id); } catch (_) {}
+                    console.warn('WML CW: recovered on retry — resumed the most recent project "'
+                        + state.cwProjectName + '" instead of creating a duplicate.');
+                } else {
+                    // Genuinely a first-time student: creating is correct here, and cannot fork.
+                    const c = await WML.cwProject.create('My Story', 'standalone');
+                    if (c?.success && c.project) {
+                        state.cwProjectId = c.project.id;
+                        state.cwProjectName = c.project.name || 'My Story';
+                    }
+                }
+            } catch (e2) {
+                // Still failing. Do NOT create — a fork here is worse than a stall, because the
+                // student cannot tell an empty duplicate from their real work.
+                console.error('WML CW: could not read your projects — refusing to create a new one '
+                    + '(that would hide your existing work). Ask the student to reload.', e2 && e2.message);
+                // NOTE: addChatMessage lives inside renderCanvasWorkspace's closure and is NOT
+                // reachable from module scope (the v7.19.898 out-of-scope class). alert() is,
+                // and this is a hard dead end the student must actually see.
+                try {
+                    alert('I could not open your projects just then — please reload the page.\n\n'
+                        + 'Your work is safe; nothing has been lost.');
+                } catch (_) {}
             }
         }
         // v7.17.29 fix: post-resolution, load the project artifact directly into

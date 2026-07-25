@@ -6347,6 +6347,73 @@ class SWML_REST_API {
     }
 
     /**
+     * v7.20.299: DERIVED per-project progress for the project picker.
+     *
+     * Why this exists: `current_step` on the index entry only advances inside
+     * update_step_completion(), i.e. when a step is explicitly marked complete. Students do not
+     * do that, so it reads 0 on every live project — the picker could not tell a project holding
+     * eight answers from one that had never been opened. Never trust a counter that something
+     * else has to remember to increment; count the work itself.
+     *
+     * Reads the step number straight off the field ids (`cw-step-{N}-...`), which every CW step
+     * already stamps through its one canonical id producer — so this needs no artifact→step map
+     * to drift out of date, and a new step is covered the day it ships.
+     *
+     * @return array{answered:int,total_rows:int,furthest_step:int,step_progress:array,progress_label:string}
+     */
+    private static function derive_cw_project_progress($user_id, $project_id) {
+        $empty = [
+            'answered' => 0, 'total_rows' => 0, 'furthest_step' => 0,
+            'step_progress' => [], 'progress_label' => 'Not started',
+        ];
+        $project = SWML_Session_Manager::get_project($user_id, sanitize_key($project_id));
+        if (!is_array($project)) { return $empty; }
+
+        $per_step = [];   // step => ['filled' => n, 'total' => n]
+        foreach ($project as $key => $value) {
+            if (!is_string($value) || $value === '') { continue; }
+            if (strpos($value, 'data-field-id="cw-step-') === false) { continue; }
+            // Each row: <div ... data-field-id="cw-step-N-..." ...>ANSWER</div>
+            if (!preg_match_all(
+                '/<div [^>]*data-field-id="cw-step-(\d+)-[^"]*"[^>]*>(.*?)<\/div>/s',
+                $value, $matches, PREG_SET_ORDER
+            )) { continue; }
+            foreach ($matches as $m) {
+                $step = (int) $m[1];
+                if ($step < 1) { continue; }
+                if (!isset($per_step[$step])) { $per_step[$step] = ['filled' => 0, 'total' => 0]; }
+                $per_step[$step]['total']++;
+                if (trim(wp_strip_all_tags($m[2])) !== '') { $per_step[$step]['filled']++; }
+            }
+        }
+        if (empty($per_step)) { return $empty; }
+        ksort($per_step);
+
+        $answered = 0; $total = 0; $furthest = 0;
+        foreach ($per_step as $step => $counts) {
+            $answered += $counts['filled'];
+            $total    += $counts['total'];
+            if ($counts['filled'] > 0) { $furthest = $step; }
+        }
+
+        // Human label — never a bare number (root CLAUDE.md §14: show what a thing IS).
+        if ($answered === 0) {
+            $label = 'Not started';
+        } else {
+            $c = $per_step[$furthest];
+            $label = sprintf('Step %d — %d of %d answered', $furthest, $c['filled'], $c['total']);
+        }
+
+        return [
+            'answered'       => $answered,
+            'total_rows'     => $total,
+            'furthest_step'  => $furthest,
+            'step_progress'  => $per_step,
+            'progress_label' => $label,
+        ];
+    }
+
+    /**
      * Load a creative writing project by ID, or list all projects.
      * GET ?project_id=cwp_xxx  → full project data
      * GET (no params)          → project index (list)
@@ -6366,8 +6433,16 @@ class SWML_REST_API {
         $project_id = sanitize_key($request->get_param('project_id') ?? '');
 
         if (empty($project_id)) {
-            // List all projects
+            // List all projects.
+            // v7.20.299: stamp DERIVED progress onto every entry. `current_step` only ever moves
+            // when a step is marked complete, and students do not do that — it reads 0 on all 16
+            // live projects, so the picker showed every project as identically empty. Rifat
+            // (uid 1386) could not tell his 8-answers-in project from his abandoned one and
+            // reported his work missing. Count what is actually IN the artifacts instead.
             $index = SWML_Session_Manager::list_projects($user_id);
+            foreach ($index as $pid => $entry) {
+                $index[$pid] = array_merge($entry, self::derive_cw_project_progress($user_id, $pid));
+            }
             return rest_ensure_response([
                 'success'  => true,
                 'projects' => array_values($index),
