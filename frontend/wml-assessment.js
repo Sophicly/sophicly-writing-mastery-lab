@@ -4095,7 +4095,10 @@
         // Re-attach any verdict markers that lived in the discarded tail — losing one would park
         // the walk (no advance) and cost the student their turn.
         const tail = String(reply).slice(m.index);
-        const markers = (tail.match(/@[A-Z][A-Z0-9_]*\b/g) || [])
+        // v7.20.294: keep a marker's numeric argument (@COHERENCE_BEAT:5). The old `\b`-terminated
+        // match re-attached a bare "@COHERENCE_BEAT", which its consumer cannot read — the walk
+        // would fail open to the wrap and silently drop the revision offer.
+        const markers = (tail.match(/@[A-Z][A-Z0-9_]*(?::\s*\d+)?/g) || [])
             .filter(t => !head.includes(t));
         const out = markers.length ? (head + '\n' + markers.join('\n')) : head;
         console.warn('WML WalkGuard: model emitted a code-owned ask header ("' +
@@ -17628,23 +17631,23 @@
             const BEATS = [
                 { fid: 'cw-step-4-beat1', lead: 'At first', chips: NEEDS, chipQ:
                     '**Beat 1 of 6 — “At first…”**\n\nYour logline is set. Now the story needs a skeleton: the **Story Spine** — six beats where each event *causes* the next. Same rhythm as Step 3: for each beat I’ll tell you what makes it strong, give you an example, and you write **one sentence** of your own. **📖 Guidance** and **👤 Your Writer’s Profile** sit under every question, and the same rule applies — **don’t overthink it**: rough sentences now, polish later.\n\nThis first beat is your protagonist’s ordinary world, before the story starts. Every interesting character has an **unmet need** — something missing that stops them being truly happy. Complex characters usually carry several, but **one leads**. Scrooge’s main unmet need is *Love & Belonging* — with *Safety* and *Esteem* sitting underneath it.\n\n**Which is your protagonist’s MAIN unmet need?**',
-                  ask: 'Now write Beat 1.\n\n**A strong “At first…” beat:**\n\n- one sentence, **present tense**, picking up straight after “At first,”\n- introduces your protagonist *and* lets us glimpse the unmet need and the flaw in their everyday life\n\nExamples:\n\n- *“At first, a miserly old money-lender counts his coins alone while carol-singers hurry past his door.”* — Scrooge’s spine, which we’ll build alongside yours\n- *“At first, a lonely watchmaker fixes other people’s clocks and never once winds his own.”*\n\n**Write your Beat 1.**' },
+                  ask: 'Now write Beat 1.\n\n**A strong “At first…” beat:**\n\n- one sentence, **present tense**, picking up straight after “At first,”\n- introduces your protagonist in their everyday life\n- **shows the PRESSURE, not just the reaction.** The unmet need has to be visible as something acting *on* them — a rule, a person, a system, an absence. A character who simply “rebels” tells us how they behave; we need to see what they are up against.\n\nWeak → strong:\n\n- ✗ *“At first, a boy is angry all the time and argues with everyone.”* — that is his reaction. What is pressing on him?\n- ✓ *“At first, a boy sits through every mealtime in a house where nobody has said his brother’s name since the funeral.”* — now we feel the pressure, and his anger has somewhere to come from.\n\nExample: *“At first, a miserly old money-lender counts his coins alone while carol-singers hurry past his door.”* — Scrooge’s spine, which we’ll build alongside yours.\n\n**Write your Beat 1.**' },
                 { fid: 'cw-step-4-beat2', lead: 'And then', ask:
-                    '**Beat 2 of 6 — “And then…”**\n\nThis is the repeated routine that *proves* the stuck state — the physical evidence of the problem.\n\n**A strong “And then…” beat:**\n\n- one sentence, **present tense**, after “And then,”\n- a **concrete, visible action** — something a camera could film, never an abstract feeling\n- **repeated** — this is what they do every single day\n\nExamples:\n\n- *“And then, every evening Scrooge eats thin gruel alone by a mean little fire, checking the day’s ledgers twice.”*\n- Someone lonely eats dinner alone in front of the TV every night; someone trapped stares out of the window at aeroplanes every afternoon.\n\n**Write your Beat 2.**' },
+                    '**Beat 2 of 6 — “And then…”**\n\nThis is the repeated routine that *proves* the stuck state — the physical evidence of the problem.\n\n**A strong “And then…” beat:**\n\n- one sentence, **present tense**, after “And then,”\n- **ONE action a camera could film** — a single thing you could point a lens at\n- **repeated** — this is what they do every single day\n\n**The trap:** naming behaviours instead of showing one. *Rebels · disobeys · breaks the rules · struggles · acts out* are **labels**, and a camera cannot film a label. If you could not draw it, it is not this beat yet.\n\nWeak → strong:\n\n- ✗ *“And then, every day he breaks the rules at school, ignores his mother and gets into trouble.”* — three labels, no picture.\n- ✓ *“And then, every morning he takes the long way to school past the empty house on the corner, and never once looks at it.”* — one filmable action, and it says more than all three labels did.\n\nExample: *“And then, every evening Scrooge eats thin gruel alone by a mean little fire, checking the day’s ledgers twice.”*\n\n**Write your Beat 2 — one thing they do, that a camera could film.**' },
                 { fid: 'cw-step-4-beat3', lead: 'Until', chips: INCIDENTS, echo: 'cw-step-3-incident', chipQ:
                     '**Beat 3 of 6 — “Until…”**\n\nThis is the inciting incident — the event that shatters the ordinary world. You already named yours in Step 3:',
                   ask: 'Now develop it into Beat 3.\n\n**A strong “Until…” beat:**\n\n- one sentence, **present tense**, after “Until,”\n- a **single event on a particular day** — the moment everything changes\n\nExample: *“Until, on Christmas Eve, the ghost of his dead business partner walks through his door dragging chains of cash-boxes.”*\n\n**Write your Beat 3.**',
-                  irony: 'One more thought before we move on. Sometimes the *worst* thing to happen to a character is secretly the exact opportunity they needed.\n\n**How is this event secretly a chance for your protagonist to face the unmet need from Beat 1?**' },
+                  irony: 'One more thought before we move on — and this is the one that separates a good story from a memorable one.\n\n**Irony** is when a thing turns out to be the opposite of what it appeared. The strongest inciting incidents are ironic: the disaster *is* the opportunity, hidden inside a catastrophe.\n\n- Scrooge is visited by the dead — and it is the visit that finally gives him a life.\n- Macbeth is handed a prophecy that promises him everything — and obeying it costs him everything.\n- The Inspector destroys the Birlings’ comfortable evening — and offers them the only chance they get to become better people.\n\nNotice the shape: the event takes something away, and in taking it away it hands the character the one thing they could not get otherwise.\n\n**How is this event secretly a chance for your protagonist to face the unmet need from Beat 1?**' },
                 { fid: 'cw-step-4-beat4', lead: 'And because of this', chips: GOALS, echo: 'cw-step-3-goal', chipQ:
                     '**Beat 4 of 6 — “And because of this…”**\n\nThe event gives your protagonist a goal. In Step 3 you said it was:',
-                  ask: 'Now write Beat 4 — what they *decide to do* in response to the inciting incident.\n\n**A strong Beat 4:**\n\n- one sentence, **present tense**, after “And because of this,”\n- a **decision and an action** that follows directly from the inciting incident — cause and effect, not a new random event\n\nExample: *“And because of this, Scrooge agrees to follow three spirits through his past, his present and his future.”*\n\n**Write your Beat 4.**' },
+                  ask: 'Now write Beat 4 — what they *decide to do* in response to the inciting incident.\n\n**A strong Beat 4:**\n\n- one sentence, **present tense**, after “And because of this,”\n- a **decision and an action** that follows directly from the inciting incident — cause and effect, not a new random event\n- it must be **caused by Beat 3.** Say it aloud with “…and *because of that*…” between them. If it still works after a shrug, the chain is broken.\n\nWeak → strong:\n\n- ✗ *“And because of this, she decides to be braver and starts standing up for herself.”* — a feeling, not a decision; nothing has actually happened.\n- ✓ *“And because of this, she walks into the recruiting hall and signs her name under a false classification.”* — a decision you can watch her make, straight out of Beat 3.\n\nExample: *“And because of this, Scrooge agrees to follow three spirits through his past, his present and his future.”*\n\n**Write your Beat 4.**' },
                 { fid: 'cw-step-4-beat5', lead: 'And because of this', chips: OBSTACLES, echo: 'cw-step-3-obstacle', chipQ:
                     '**Beat 5 of 6 — “And because of this…”**\n\nThe Road of Trials — where your protagonist meets the force standing in their way. From Step 3:',
-                  ask: 'Now write Beat 5 — the major challenge that follows *directly* from their decision in Beat 4.\n\n**A strong Beat 5:**\n\n- one sentence, **present tense**, after “And because of this,”\n- the obstacle **attacks the flaw** — the trial lands exactly where your protagonist is weakest\n\nExample: *“And because of this, Scrooge must stand unseen at the Cratchits’ Christmas table and watch what his greed has cost the people around him.”*\n\n**Write your Beat 5.**' },
+                  ask: 'Now write Beat 5 — the major challenge that follows *directly* from their decision in Beat 4.\n\n**A strong Beat 5:**\n\n- one sentence, **present tense**, after “And because of this,”\n- the obstacle **attacks the flaw** — the trial lands exactly where your protagonist is weakest\n\n⚠ **Beat 5 does NOT resolve anything.** Your protagonist does not change here, does not let go of the wound, does not win. That is Beat 6’s job, and if you spend it now the ending has nothing left to do. If your sentence contains *finally · learns · realises · lets go · saves*, it belongs in Beat 6 — and Beat 5 is still empty.\n\nWeak → strong:\n\n- ✗ *“And because of this, she finally lets go of her old resentment so that she can save everyone.”* — that is the resolution. It is Beat 6.\n- ✓ *“And because of this, the people she is trying to save vote to hand her over, and she cannot make herself trust them enough to explain why.”* — the trial, landing straight on the flaw, still unresolved.\n\nExample: *“And because of this, Scrooge must stand unseen at the Cratchits’ Christmas table and watch what his greed has cost the people around him.”*\n\n**Write your Beat 5 — the worst pressure, not the answer to it.**' },
                 { fid: 'cw-step-4-beat6', lead: 'Until finally', chips: STAKES, echo: 'cw-step-3-stakes', chipQ:
                     '**Beat 6 of 6 — “Until finally…”**\n\nThe climax. This is where your protagonist has a **self-revelation** — they overcome their flaw and prove they’ve changed (or, in a tragedy, fail to). In Step 3 you said the stakes were:',
                   ask: 'Now write Beat 6 — how the conflict resolves and what your protagonist learns.\n\n**A strong “Until finally…” beat:**\n\n- one sentence, **present tense**, after “Until finally,”\n- carries the **self-revelation** — they face the flaw and change, or (in a tragedy) refuse and fall\n\nExample: *“Until finally, faced with his own neglected grave, Scrooge chooses people over money and wakes on Christmas morning a changed man.”*\n\n**Write your Beat 6.**',
-                  irony: 'Last one. Think back to what your protagonist *thought* they wanted at the start.\n\n**How does what they actually get in the end contrast with what they thought they wanted?** (A character who wanted treasure might find friendship. A character who wanted revenge might find peace in forgiveness.)' },
+                  irony: 'Last one — and this is where **duality** does its work.\n\nA character wants one thing on the surface (the **want**) and needs a different, truer thing underneath (the **need**). They are usually opposites, and the ending is where the two finally collide. What the character *gets* should answer the need, not the want — that gap is what makes an ending land instead of just stopping.\n\n- Scrooge wants his money left alone; what he needs, and finally gets, is people.\n- Macbeth wants the crown; what he gets is the crown, and it is worthless — the want granted *is* the punishment.\n- Jane Eyre wants Rochester; what she needs first is to belong to herself, which is why she has to leave before she can return.\n\n**How does what your protagonist actually gets at the end contrast with what they thought they wanted?**' },
             ];
             const WRAP =
                 'That’s your complete Story Spine — six beats, each one causing the next.\n\n' +
@@ -17652,15 +17655,16 @@
                 'Tidy up any spelling or punctuation while you’re in there — they’re your sentences, so they’re yours to polish.';
 
             let active = false, pending = false, idx = 0;
-            let phase = 'chip';    // 'chip' → 'beat' → 'irony'
+            let phase = 'chip';    // 'chip' → 'beat' → 'irony' → … → 'coherence' → 'coh-choice' → 'coh-fix'
             let throughline = '';
+            let cohBeat = -1;      // v7.20.294: the beat the coherence check flagged, if any
             // v7.20.283: same push-cycle accumulation as CW3 — a pushed beat banks EVERYTHING
             // the student said for it, not the final fragment. Persisted across reloads.
             let draft = '';
             const acc = (clean) => (draft ? draft + '\n' + clean : clean);
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw4') + '_cw4'; } catch (e) { return 'swml_cw4'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft, need: mainNeed })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft, need: mainNeed, cohBeat })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -17791,6 +17795,9 @@
             // the poetry-CN picker re-render at the boot resume gate.)
             function reattachChips() {
                 if (phase === 'throughline') { chipBar(THROUGHLINES, onThroughlinePick); return; }
+                // v7.20.294: resumed on the coherence revision offer — re-attach its two chips.
+                if (phase === 'coh-choice' && cohBeat >= 0) { chipBar(['Rewrite Beat ' + (cohBeat + 1) + ' →', 'Leave it as it is →'], onCohChoice); return; }
+                if (phase === 'coh-fix') { setTimeout(function () { try { appendSpineButtons(); } catch (e) {} }, 400); return; }
                 // v7.20.285: resumed mid "any others?" — re-attach the multi-select bar.
                 if (phase === 'chip2') { chipBarMulti(NEEDS.filter(function (n) { return n !== mainNeed; }), onSecondaryNeedsDone); return; }
                 const b = BEATS[idx];
@@ -17804,12 +17811,21 @@
             // profile. Mirror of the Step-3 walk. Non-gating; DOM-only → re-attached on resume.
             // v7.20.283: + per-beat deep-dive chips into the Table of Techniques (symbols
             // verified against sophicly-techniques.js data; same contract as the CW3 chips).
+            // v7.20.294: beats 3 and 6 each ask an IRONY/DUALITY question, so they now carry the
+            // matching cards. `Dj` Duality and `Di` Dramatic Irony are BOTH present in the shipped
+            // 237-card table (verified against the prod asset, not the repo — those two agree).
+            // ⚠ `Wa` (Want vs Need) is NOT in the prod asset: the 290-card build that contains it
+            // has not been deployed (notes 2.6.112 bumped the version but the data did not ride —
+            // see handoff notes-FROM-wmlA-table-of-techniques-…-2026-07-25.md §1). Until the notes
+            // chat lands it, that chip opens the table with no card. Kept, not removed: the wiring
+            // is correct and the fix is a deploy, but do NOT add more chips for symbols that only
+            // exist in the undeployed build — verify against the PROD asset first.
             const TECH4 = {
                 'cw-step-4-beat1': [{ s: 'Pr', l: 'Protagonist' }],
-                'cw-step-4-beat3': [{ s: 'Ii', l: 'Inciting Incident' }],
+                'cw-step-4-beat3': [{ s: 'Ii', l: 'Inciting Incident' }, { s: 'Di', l: 'Dramatic Irony' }],
                 'cw-step-4-beat4': [{ s: 'Wa', l: 'Want vs Need' }],
                 'cw-step-4-beat5': [{ s: 'Ax', l: 'The Antagonist' }],
-                'cw-step-4-beat6': [{ s: 'Sk', l: 'Stakes' }],
+                'cw-step-4-beat6': [{ s: 'Sk', l: 'Stakes' }, { s: 'Dj', l: 'Duality' }],
             };
             function appendSpineButtons() {
                 const bubble = chatMessages.lastElementChild;
@@ -17883,31 +17899,93 @@
                 resetSend();
             }
 
+            // v7.20.294 (Neil's live catch): the coherence check asked the single most perceptive
+            // question of the whole session — "what is the connection between the AI colony and the
+            // empire's classification system?" — and then printed the wrap OVER it in the same turn.
+            // `active` went false, so there was nowhere to answer, and nothing reached the document.
+            // Neil: "nothing added to the actual outline itself, we didn't use it to improve anything."
+            // A question we don't listen to is worse than no question: it teaches the student that
+            // answering is optional, which is exactly the "say whatever gets me past the step" failure.
+            //
+            // Now the check ENDS in a revision. The model names the beat it doubts (@COHERENCE_BEAT:N)
+            // or clears the spine (@COHERENCE_OK); code then offers to rewrite THAT beat. The rewrite
+            // is a `rewrite` cycle (4c.6) — a beat is one self-contained sentence, so the new answer
+            // REPLACES the row rather than accumulating onto it. No extra judgment call: the student
+            // owns the rewrite, we just file it.
+            const COH_MARK = /@COHERENCE_BEAT[:\s]*([1-6])/;
             function fireCoherenceCheck() {
                 const beats = BEATS.map(function (b, i) { return (i + 1) + '. ' + b.lead + ', ' + (rowText(b.fid) || '(blank)'); }).join('\n');
                 const ctx = '[STORY SPINE COHERENCE CHECK — the student’s six beats and chosen throughline. '
                     + 'Check that each beat CAUSES the next, that the ending matches the throughline, that the '
                     + 'obstacle tests the protagonist’s flaw, and that the resolution addresses the Beat 1 unmet '
                     + 'need. Name any causal gap with ONE Socratic question. Do not rewrite their beats and do '
-                    + 'not correct their spelling.]\n\nTHROUGHLINE: ' + throughline + '\n\n' + beats;
+                    + 'not correct their spelling. '
+                    + 'END YOUR REPLY WITH EXACTLY ONE MARKER ON ITS OWN LINE: if your question is about a '
+                    + 'specific beat, "@COHERENCE_BEAT:N" where N is 1-6 (the beat the student should reconsider); '
+                    + 'if the spine holds and you have no question, "@COHERENCE_OK". The marker is machine-read '
+                    + 'and never shown — do not mention it, and do not ask the student to act on it.]'
+                    + '\n\nTHROUGHLINE: ' + throughline + '\n\n' + beats;
                 canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
                 active = false; pending = true;
-                phase = 'coherence'; persist();   // v7.20.265: a reload here resumes into the wrap
-                armWalkResume('cw4-coherence', function () {
+                phase = 'coherence'; persist();
+                armWalkResume('cw4-coherence', function (reply, meta) {
                     pending = false;
-                    active = false;
-                    clearPersist();
-                    serveWrap();
+                    const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                    const m = (!reply || (meta && meta.timedOut)) ? null : COH_MARK.exec(norm);
+                    // No beat named (marker absent, @COHERENCE_OK, or the call failed) → the spine
+                    // stands; wrap as before. FAIL-OPEN by design: a dropped marker must never
+                    // strand the student on a revision prompt with nothing to revise.
+                    if (!m) { active = false; clearPersist(); serveWrap(); return; }
+                    cohBeat = parseInt(m[1], 10) - 1;
+                    if (!(cohBeat >= 0 && cohBeat < BEATS.length)) { active = false; clearPersist(); serveWrap(); return; }
+                    phase = 'coh-choice'; active = true; persist();
+                    serveCohChoice();
                 }, { timeoutMs: 60000 });
                 canvasSilentSend = true;
                 chatTextarea.value = 'That’s all six beats — please check they flow logically.';
                 sendCanvasMessage();
             }
 
+            // The revision offer. DOM-only chips (re-attached by reattachChips on resume).
+            function serveCohChoice() {
+                const n = cohBeat + 1;
+                aiBubble('You can answer that by **rewriting Beat ' + n + '** — or leave it as it stands. Either is a real choice; a spine you have thought about and kept is stronger than one you changed because you were asked to.');
+                chipBar(['Rewrite Beat ' + n + ' →', 'Leave it as it is →'], onCohChoice);
+                resetSend();
+            }
+            function onCohChoice(pick) {
+                canvasChatHistory.push({ role: 'user', content: pick });
+                addChatMessage(pick, 'user');
+                if (pick.indexOf('Leave it') === 0) {
+                    active = false; clearPersist(); serveWrap(); return;
+                }
+                const b = BEATS[cohBeat];
+                phase = 'coh-fix'; active = true; persist();
+                aiBubble('**Rewriting Beat ' + (cohBeat + 1) + ' — “' + b.lead + '…”**\n\nWrite the **whole beat again**, not just the part you are changing — one sentence, present tense, after “' + b.lead + ',”. Your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> ' + (rowText(b.fid) || '*(blank)*'));
+                appendSpineButtons();
+                resetSend();
+            }
+
             async function handleTurn(msg) {
                 if (pending) return;
                 const clean = (msg || '').trim();
                 if (!clean) { resetSend(); return; }
+                // v7.20.294: the coherence revision. The student owns this rewrite, so there is NO
+                // judgment call and NO API round-trip — file it and wrap. `replace:true` because a
+                // beat is one self-contained sentence (4c.6 `rewrite` cycle): appending would stitch
+                // the old and new beats into one row, which is the .289 logline bug.
+                if (phase === 'coh-fix' && cohBeat >= 0) {
+                    const cb = BEATS[cohBeat];
+                    canvasChatHistory.push({ role: 'user', content: clean });
+                    addChatMessage(clean, 'user');
+                    try {
+                        if (_writeOutlineRowField(cb.fid, clean, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    } catch (e) { console.warn('WML CW4: coherence rewrite failed (non-fatal)', e && e.message); }
+                    aiBubble('Updated — Beat ' + (cohBeat + 1) + ' now reads your new version in the document.');
+                    active = false; cohBeat = -1; clearPersist();
+                    serveWrap();
+                    return;
+                }
                 // v7.20.265: bubble + history are the send's job — see the CW2 note. (Double-write.)
                 const b = BEATS[idx];
                 if (!b) { serveThroughline(); return; }
@@ -17960,7 +18038,7 @@
                 startWalk();
             }
 
-            function reset() { active = false; pending = false; idx = 0; phase = 'chip'; throughline = ''; draft = ''; clearPersist(); }
+            function reset() { active = false; pending = false; idx = 0; phase = 'chip'; throughline = ''; draft = ''; cohBeat = -1; clearPersist(); }
             function tryResume() {
                 try {
                     const raw = localStorage.getItem(lsKey());
@@ -17971,9 +18049,26 @@
                     _cwLoadStep3Values(state.cwProjectId);
                     draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
                     mainNeed = (typeof d.need === 'string') ? d.need : '';  // v7.20.285: chip2 resume needs the main pick
+                    cohBeat = (typeof d.cohBeat === 'number') ? d.cohBeat : -1;  // v7.20.294
                     idx = firstEmptyBeat();
                     phase = d.phase || 'chip';
                     throughline = d.throughline || '';
+                    // v7.20.294: a reload during the coherence revision. Every beat is filled, so the
+                    // block below would otherwise read this as "parked on the throughline" and serve
+                    // the wrong chips. Resume the revision instead; a lost cohBeat falls through to
+                    // the wrap rather than stranding the student on an offer it cannot honour.
+                    if ((phase === 'coh-choice' || phase === 'coh-fix') && cohBeat >= 0 && cohBeat < BEATS.length) {
+                        active = true; pending = false;
+                        console.log('WML CW4: resumed at the coherence revision for beat ' + (cohBeat + 1) + ' (' + phase + ')');
+                        setTimeout(reattachChips, 400);
+                        return true;
+                    }
+                    if (phase === 'coh-choice' || phase === 'coh-fix') {
+                        clearPersist(); active = false; pending = false; cohBeat = -1;
+                        console.warn('WML CW4: resumed into a coherence revision with no beat recorded — serving the wrap');
+                        setTimeout(serveWrap, 500);
+                        return false;
+                    }
                     // v7.20.265: with all six beats written the walk was parked on the
                     // throughline pick or inside the coherence check — the old
                     // `active = idx < BEATS.length` made BOTH resolve to inert, so the student
