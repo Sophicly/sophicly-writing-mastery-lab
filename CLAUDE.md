@@ -94,6 +94,36 @@
       answer is "several"** — a main pick may stage into an optional "any others?" multi
       (the CW4 unmet-needs pattern, v7.20.285). A pick is a transcript-visible user turn,
       never `hidden`.
+   9. **⭐ THE HELP LADDER — Sophia is the LAST rung, never the first (Neil, 2026-07-25).**
+      *"If we make it so that the students have lots of examples and very clear criteria,
+      they'll become much less reliant on the API… maybe they could ask Sophia, but only as
+      a last resort, so we leave that option buried underneath a few options."* A stuck
+      student must be able to get unstuck WITHOUT spending an API call. Every ask carries the
+      rungs in this order, cheapest first, and only the last one costs anything:
+      - **Rung 0 — the ask** (free): criteria upfront + **ONE short worked example INLINE**
+        so the instruction is never abstract, ending on the question (4c.1/2/4).
+      - **Rung 1 — `[💡 More examples]`** (free): 2–3 further worked examples served from
+        code as a NEW bubble. Keeps the ask short without losing the examples.
+      - **Rung 2 — `[📖 Guidance]` + `[🗂 <Technique>]`** (free): the guide at this section,
+        and the Table of Techniques card for the exact concept.
+      - **Rung 3 — `[🤔 Still stuck — ask Sophia]`**: visually last and quieter. **This is
+        the only rung that calls the API.**
+      **DEPTH LIVES IN THE TABLE OF TECHNIQUES, NOT THE REFERENCE GUIDE (Neil's ruling,
+      2026-07-25).** The 217 technique cards already carry, per concept, a definition + THREE
+      worked examples from varied texts + reader effects, and the chat already deep-links them
+      (`window.SophiclyTable.open(sym)`). The reference guide keeps STRUCTURE-level teaching
+      (what Rags to Riches is, how the six stages work) and must NOT duplicate per-concept
+      depth — two copies of ~40 concepts is the drift class.
+      **AND: MAP TO CONCEPTS, NEVER AUTHOR PER ROW.** The eight Step-6 plot templates hold
+      **865 beat rows** (106–112 each) — per-row authoring is a job that never finishes. Those
+      865 rows are ~40 RECURRING concepts reworded (opening image · theme stated · inciting
+      incident · false identity · B story · turning point · dark night · ticking clock…), and
+      112 of them already exist as narrative/structure/archetype technique cards. The
+      deliverable is a **row → technique-symbol map**; a concept with no card gets a NEW
+      technique entry (which improves the table everywhere else). Never re-author what a card
+      already holds. **Judgment is NOT a rung** — the ladder governs the HELP direction only.
+      A turn that READS the student's free text is still judgment (4b watch-it) and is never
+      stripped to save a call.
 
 5. **⭐ CODE-SERVED SOURCE TEXT MUST NEVER SIT IN A MANIFEST-LOADED MODULE (Neil, 2026-07-22 — the
    retained-source law).** When a deterministic turn is converted from LLM-narrated to CODE-served

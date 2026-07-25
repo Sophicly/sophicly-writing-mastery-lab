@@ -59,6 +59,51 @@ The decision is real but light: pick the archetype that fits the story. 4c walk:
 **API calls in Step 5: zero required.** (Optional single "Ask Sophia — which fits my story?"
 fallback chip = one call, on demand.)
 
+### 3b. THE HELP LADDER — applies to EVERY ask in Phases A, B and C (Neil ruling, 2026-07-25)
+
+Codified as WML CLAUDE.md **4c.9**; the short form, because it shapes how every ask below is
+written. Neil: *"if we make it so that the students have lots of examples and very clear
+criteria… they'll become much less reliant on the API… maybe they could ask Sophia, but only as
+a last resort, so we leave that option buried underneath a few options."*
+
+**Rung 0** the ask — criteria + **ONE worked example inline** (never abstract), ends on the
+question · **Rung 1** `[💡 More examples]` → 2–3 more, code-served as a new bubble ·
+**Rung 2** `[📖 Guidance]` + `[🗂 <Technique>]` → guide section + the concept's technique card ·
+**Rung 3** `[🤔 Still stuck — ask Sophia]`, visually last and quieter — **the only rung that
+spends an API call.**
+
+Two rulings that decide where the content comes from:
+- **Depth lives in the TABLE OF TECHNIQUES, not the reference guide.** The 217 cards already
+  carry per concept a definition + THREE worked examples from varied texts + reader effects, and
+  the chat already deep-links them (`window.SophiclyTable.open(sym)`). The guide keeps
+  STRUCTURE-level teaching (what Rags to Riches is, how the six stages work) and does not
+  duplicate ~40 concepts into a second, drifting copy.
+- **Map to concepts, never author per row.** The eight plot templates hold **865 beat rows**
+  (106–112 each) — verified by count, not estimated. Per-row authoring never finishes. Those rows
+  are ~40 recurring concepts reworded, and 112 concepts already exist as narrative/structure/
+  archetype cards. Phase B's deliverable is a **row → technique-symbol map**; a concept with no
+  card gets a new technique entry. This is what makes Rung 1/2 nearly free to build.
+
+Judgment is NOT a rung — the ladder governs the HELP direction only. A turn that reads the
+student's free text stays a judgment call (4b watch-it) and is never stripped to save a call.
+
+### 3c. SEEDED BOOKENDS IN STEP 6 — ANSWERED (Neil, 2026-07-25)
+
+Neil: *"a spine beat anchors a stage, never fills it — I agree… I'm not saying re-ask, but maybe
+the student just wants to see if there's anything, because as you're doing this the student's
+ideas will be evolving, so they might want to fine-tune it a bit."* Ruled:
+1. **Echo as the anchor, never re-ask** (paste-wall law). A stage holds MANY beats (Stage I ~9 of
+   its ~15 rows), so a spine beat ANCHORS the stage; the student still works its elements.
+2. **Light confirm, not a review gate:** `[That's still right →]` / `[I'd sharpen it]`. The
+   second opens a free-text rewrite; the first moves straight on. Mandatory review every stage
+   would fight forward-motion, but the OPTION matters because ideas evolve between Step 4 and 6.
+3. **An edit is a `rewrite` cycle, not `accumulate`** (4c.6) — one self-contained sentence.
+   Getting this wrong stitches two openings together: the .289 logline bug.
+4. **An edit writes to the STEP-6 doc ONLY, never back to Step 4** (stage-record law is
+   forward-only; the Step-4 artifact is the historical record of what they did in Step 4).
+5. **Beat 6 → Stage VI: same pattern, stronger prompt** — "You planned to end here — does that
+   still hold, now you've built the middle?"
+
 ## 4. Phase B — Step 6: the programmatic element walk (RULINGS APPLIED, Neil 2026-07-24)
 
 One controller (`_cwOutlineCtl`), driven ENTIRELY by the chosen archetype's template — zero
