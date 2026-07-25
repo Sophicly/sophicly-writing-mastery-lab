@@ -13968,19 +13968,44 @@
                     canvasRecognition.interimResults = true;
                     canvasRecognition.lang = 'en-GB';
                     let finalTranscript = '';
+                    // v7.20.298: `continuous: true` keeps ONE recognition object alive for the
+                    // whole session, so `finalTranscript` outlived every send. onresult then
+                    // overwrote the box with the WHOLE accumulated transcript — so a box the
+                    // student had cleared (or that a send had emptied) refilled itself on their
+                    // next syllable. Rifat, on prod: "that box is not disappearing… when I tried
+                    // getting rid of it it just comes back", and the run-on dictation got filed
+                    // verbatim into his Step-1 Regret row. Anchor on what is ALREADY in the box
+                    // and re-anchor whenever anything but us changed it.
+                    let micBase = '';           // text present when dictation started — never overwritten
+                    let micLastWritten = null;  // the exact value WE last wrote; anything else = an outside edit
                     canvasRecognition.onresult = (e) => {
                         if (canvasChatLoading) { console.warn('WML Mic: onresult BLOCKED — canvasChatLoading is true'); return; }
                         _micNoSpeechRetries = 0; // speech detected, reset retry counter
+                        // The box changed outside dictation (send cleared it, or the student
+                        // edited/cleared it by hand). Re-anchor to what is there NOW and drop the
+                        // stale transcript, so nothing the student removed can come back.
+                        if (micLastWritten !== null && chatTextarea.value !== micLastWritten) {
+                            const cur = chatTextarea.value || '';
+                            micBase = cur ? cur.replace(/\s+$/, '') + ' ' : '';
+                            finalTranscript = '';
+                            console.log('WML Mic: box changed outside dictation — re-anchored (base ' + micBase.length + ' chars)');
+                        }
                         let interim = '';
                         for (let i = e.resultIndex; i < e.results.length; i++) {
                             if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
                             else interim += e.results[i][0].transcript;
                         }
-                        chatTextarea.value = finalTranscript + interim;
+                        chatTextarea.value = micBase + finalTranscript + interim;
+                        micLastWritten = chatTextarea.value;
                         chatTextarea.dispatchEvent(new Event('input'));
                     };
                     canvasRecognition.onstart = () => {
-                        canvasListening = true; finalTranscript = chatTextarea.value || '';
+                        // v7.20.298: seed the ANCHOR (kept intact) rather than the transcript —
+                        // seeding finalTranscript re-appended the box into itself on every restart.
+                        const _cur = chatTextarea.value || '';
+                        micBase = _cur ? _cur.replace(/\s+$/, '') + ' ' : '';
+                        finalTranscript = ''; micLastWritten = null;
+                        canvasListening = true;
                         console.log('WML Mic: onstart — canvasChatLoading:', canvasChatLoading, 'retries:', _micNoSpeechRetries);
                         /* v7.20.57: no icon swap — CSS morphs SVG_MIC into the record dot via .swml-mic-active */
                         chatMicBtn.classList.add('swml-mic-active'); try { localStorage.setItem(MIC_TIP_KEY, '1'); } catch (_) {} // v7.19.834: mic users never see the tip
@@ -14027,7 +14052,13 @@
                             const msg = isHTTP
                                 ? 'Voice input requires a secure (HTTPS) connection. Please use the production site or type your response instead.'
                                 : 'Voice input failed — please check your microphone permissions in Chrome settings.';
-                            addChatMessage(`<p style="font-size:12px;color:rgba(255,200,100,0.8);">${msg}</p>`, 'system');
+                            // v7.20.298: was role 'system' — the ONLY 'system' call in the file.
+                            // addChatMessage renders every non-'ai' role through
+                            // `el('p', { textContent: text })`, so the markup printed LITERALLY
+                            // ("<p style=...>Voice input failed…</p>") inside a right-aligned
+                            // bubble that looks like the STUDENT said it. Rendered HTML needs the
+                            // 'ai' role; matches the sibling error notices below.
+                            addChatMessage('<p>' + escapeHTML(msg) + '</p>', 'ai', msg, { suppressActions: true });
                         } else if (e.error === 'no-speech') {
                             console.warn('WML Mic: no speech detected after', MIC_MAX_RETRIES, 'retries');
                         }
@@ -14472,6 +14503,37 @@
             if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme' && _quizCtl.active) {
                 await _quizCtl.handleTurn(msg);
                 return;
+            }
+            // ══════════════════════════════════════════════════════════════════════════════
+            // v7.20.298: ROOT FIX for the SILENT-SWALLOW class (prod, 2026-07-25).
+            // A code-served CW walk keeps `active` in memory and used to restore it ONLY from a
+            // localStorage sidecar. Lose that sidecar — a new device, cleared or blocked storage,
+            // a private window, an overnight return, a canvas remount — and the walk was silently
+            // DEAD. Every answer the student then typed fell through to the AI path, and the AI
+            // has the walk's own questions in its context (they live in the document as
+            // data-prompt / data-criteria), so it convincingly carried on interviewing them while
+            // filing NOTHING into the document. Fatou (uid 1330) answered all twelve Step-1
+            // questions on prod and all twelve rows stayed empty; only the closing synthesis
+            // markers wrote, so the doc looked half-finished rather than broken.
+            // Re-derive from the DOCUMENT before conceding the turn to the AI.
+            // NOT armed while a walk has deliberately handed ONE turn to the API for a verdict
+            // (_walkResume) — that inactive state is intended and must fall through.
+            if (!_walkResume) {
+                const _cwCtls = {
+                    cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
+                    cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
+                };
+                const _cwCtl = _cwCtls[state.task];
+                if (_cwCtl && !_cwCtl.active) {
+                    let _revived = false;
+                    try { _revived = !!_cwCtl.tryResume(); }
+                    catch (e) { console.warn('WML CW: revive threw for ' + state.task, e && e.message); }
+                    // Fail LOUD either way — a walk turn that reaches the AI files nothing, and
+                    // that must never again be invisible.
+                    console.warn(_revived
+                        ? 'WML CW: ' + state.task + ' walk had gone inactive — REVIVED from the document; this answer WILL be filed.'
+                        : 'WML CW: ' + state.task + ' walk is inactive and could not be revived — this turn goes to the AI and will NOT be filed into the document.');
+                }
             }
             // v7.19.660: CW Step 1 (Writer's Profile) — deterministic walk owns the turn
             // (code-driven 12 questions, no AI per answer). Falls through only once the
@@ -16933,13 +16995,54 @@
             // Resume a partly-finished walk after reload (null-safe). The current question
             // bubble is ALREADY replayed from saved chat — restore position only, never
             // re-render (would double-show the question). Mirrors _quizCtl.rehydrate.
+            // v7.20.298: first UNANSWERED question according to the DOCUMENT. The doc is the
+            // durable source of truth — it survives a new device, cleared storage, a private
+            // window and a remount, none of which the localStorage sidecar does. Returns -1 when
+            // the editor is not up yet, so the caller falls back to the chat rather than
+            // resuming at Q1 and re-asking questions the student already answered.
+            function docIdx() {
+                if (!canvasEditor) return -1;
+                const box = readBoxAnswers();
+                let n = 0;
+                while (n < TOTAL && box[n]) n++;
+                return n;
+            }
+            // v7.20.298: the last question the student was actually SHOWN, read back off the
+            // replayed transcript. Matches the "**Question N of 12**" header renderQ() writes.
+            function chatIdx() {
+                for (let i = canvasChatHistory.length - 1; i >= 0; i--) {
+                    const m = canvasChatHistory[i];
+                    if (!m || m.role !== 'assistant') continue;
+                    const hit = /\*\*Question\s+(\d+)\s+of\s+(\d+)/.exec(String(m.content || ''));
+                    if (hit) return Math.max(0, Math.min(parseInt(hit[1], 10) - 1, TOTAL - 1));
+                }
+                return -1;
+            }
             function tryResume() {
                 try {
                     const raw = localStorage.getItem(lsKey());
-                    if (!raw) return false;
-                    const d = JSON.parse(raw);
-                    if (!d || typeof d.idx !== 'number' || d.idx >= TOTAL) return false;
-                    idx = d.idx; answers = Array.isArray(d.answers) ? d.answers : []; nudgedFor = -1; active = true;
+                    const d = raw ? JSON.parse(raw) : null;
+                    let at = (d && typeof d.idx === 'number') ? d.idx : -1;
+                    // v7.20.298: NO usable sidecar — the defect that cost Fatou (uid 1330) all
+                    // twelve answers. `active` used to stay false here, so every reply she typed
+                    // fell through to the raw AI, which has the twelve prompts in its context
+                    // (they live in the document as data-prompt) and so convincingly continued
+                    // the interview while filing NOTHING. Derive the position instead: the
+                    // document knows what is answered and the transcript knows what was asked.
+                    if (at < 0 || at >= TOTAL) {
+                        const fromDoc = docIdx();
+                        const fromChat = chatIdx();
+                        if (fromChat < 0 && fromDoc <= 0) return false;   // walk never ran here
+                        // Take the EARLIER of the two so an unfiled answer is re-asked rather
+                        // than skipped — never step past an empty row.
+                        at = (fromDoc >= 0 && fromChat >= 0) ? Math.min(fromDoc, fromChat)
+                           : (fromDoc >= 0 ? fromDoc : fromChat);
+                        if (at >= TOTAL) return false;
+                        console.warn('WML CWP1: sidecar missing — resumed from the document/transcript at Q'
+                            + (at + 1) + '/' + TOTAL + ' (doc ' + fromDoc + ', chat ' + fromChat + ')');
+                    }
+                    idx = at; answers = (d && Array.isArray(d.answers)) ? d.answers : []; nudgedFor = -1; active = true;
+                    persist();   // re-seed the sidecar so the next turn takes the fast path
                     console.log('WML CWP1: resumed at Q' + (idx + 1) + '/' + TOTAL);
                     return true;
                 } catch (e) { return false; }
@@ -17356,12 +17459,14 @@
             function reset() { active = false; pending = false; filled = 0; declined = false; awaitingChoice = false; chunkIdx = 0; clearPersist(); }
             function tryResume() {
                 try {
+                    // v7.20.298: a MISSING sidecar is no longer fatal. countFilledRows() already
+                    // reads the position out of the document, so derive rather than conceding the
+                    // turn to the AI (which fills nothing) — see _cwProfileCtl.tryResume.
                     const raw = localStorage.getItem(lsKey());
-                    if (!raw) return false;
-                    const d = JSON.parse(raw);
-                    if (!d) return false;
+                    const d = (raw ? JSON.parse(raw) : null) || {};
+                    if (!raw) console.warn('WML CW2: sidecar missing — resuming from the document.');
                     filled = countFilledRows(); declined = !!d.declined;
-                    active = !!d.active && !declined && filled < MAX;
+                    active = (raw ? !!d.active : true) && !declined && filled < MAX;
                     // v7.20.265: a reload mid-invite resumes into the CHOICE, not into a typed
                     // turn. The invite bubble is already replayed from saved history; only the
                     // (DOM-only) chip bar needs re-attaching to it.
@@ -17677,10 +17782,12 @@
             function reset() { active = false; pending = false; idx = 0; draft = ''; clearPersist(); }
             function tryResume() {
                 try {
+                    // v7.20.298: a MISSING sidecar is no longer fatal — firstEmptyIndex() already
+                    // reads the position out of the document. The `!d.active` bail is gone too:
+                    // `active = idx < STEPS.length` below is the honest finished-or-not test.
                     const raw = localStorage.getItem(lsKey());
-                    if (!raw) return false;
-                    const d = JSON.parse(raw);
-                    if (!d || !d.active) return false;
+                    const d = (raw ? JSON.parse(raw) : null) || {};
+                    if (!raw) console.warn('WML CW3: sidecar missing — resuming from the document.');
                     draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
                     idx = firstEmptyIndex();
                     active = idx < STEPS.length;
@@ -18152,10 +18259,11 @@
             function reset() { active = false; pending = false; idx = 0; phase = 'chip'; throughline = ''; draft = ''; cohBeat = -1; clearPersist(); }
             function tryResume() {
                 try {
+                    // v7.20.298: a MISSING sidecar is no longer fatal — firstEmptyBeat() already
+                    // reads the position out of the document (see _cwProfileCtl.tryResume).
                     const raw = localStorage.getItem(lsKey());
-                    if (!raw) return false;
-                    const d = JSON.parse(raw);
-                    if (!d) return false;
+                    const d = (raw ? JSON.parse(raw) : null) || {};
+                    if (!raw) console.warn('WML CW4: sidecar missing — resuming from the document.');
                     // v7.20.291: warm the Step-3 components for the re-served beat's echo.
                     _cwLoadStep3Values(state.cwProjectId);
                     draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
@@ -18878,10 +18986,11 @@
             function reset() { active = false; pending = false; i = 0; phase = 'ask'; checkStage = -1; _finishFixAsk = null; clearPersist(); }
             function tryResume() {
                 try {
+                    // v7.20.298: a MISSING sidecar is no longer fatal — firstEmptyAsk() already
+                    // reads the position out of the document (see _cwProfileCtl.tryResume).
                     const raw = localStorage.getItem(lsKey());
-                    if (!raw) return false;
-                    const d = JSON.parse(raw);
-                    if (!d) return false;
+                    const d = (raw ? JSON.parse(raw) : null) || {};
+                    if (!raw) console.warn('WML CW6: sidecar missing — resuming from the document.');
                     key = resolveKey();
                     buildAsks(key);
                     if (!ASKS.length) return false;
@@ -19484,10 +19593,11 @@
             function reset() { active = false; pending = false; i = 0; phase = 'ask'; pushed = false; swapKey = ''; secPicks = []; clearPersist(); }
             function tryResume() {
                 try {
+                    // v7.20.298: a MISSING sidecar is no longer fatal — firstEmpty() already reads
+                    // the position out of the document (see _cwProfileCtl.tryResume).
                     const raw = localStorage.getItem(lsKey());
-                    if (!raw) return false;
-                    const d = JSON.parse(raw);
-                    if (!d) return false;
+                    const d = (raw ? JSON.parse(raw) : null) || {};
+                    if (!raw) console.warn('WML CW5: sidecar missing — resuming from the document.');
                     _cwLoadDocValues(state.cwProjectId, 'brief_outline');
                     _cwLoadDocValues(state.cwProjectId, 'logline');
                     pushed = !!d.pushed;

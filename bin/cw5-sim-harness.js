@@ -369,6 +369,31 @@ Object.keys(ITEMS).forEach(function (k) {
     });
 }
 
+// ── 4b. v7.20.298: NO SIDECAR AT ALL (new device / cleared storage / overnight return). ────
+// The prod defect: tryResume() bailed the instant localStorage was empty, even though
+// firstEmpty() already reads the position out of the document. The walk then sat inactive and
+// every answer the student typed went to the AI, which files NOTHING. uid 1330 lost twelve
+// Step-1 answers this way. A wiped sidecar must resume from the DOCUMENT and finish the run.
+{
+    [0, 3, 6].forEach(function (n) {
+        const pre = ROW_IDS.slice(0, n).filter((f) => f !== 'cw-step-5-primary-archetype');
+        const w = makeWorld({ prefillRows: pre, prefillPick: n > 3 ? ITEMS['tragedy'] : '' });
+        // Deliberately write NOTHING to localStorage.
+        ok(w.deps.localStorage.getItem('sim_cw5') === null, 'no-sidecar@' + n + ': sidecar should be absent');
+        ok(w.ctl.tryResume(), 'no-sidecar@' + n + ': tryResume() must rebuild from the doc, not bail');
+        let guard = 0;
+        while (guard++ < 60) {
+            if (w.armed) { w.resolveApi('@STRUCTURE_OK'); continue; }
+            if (w.tapMulti(['Tragedy'])) continue;
+            if (w.tap('Rags to Riches')) continue;
+            if (!w.ctl.active) break;
+            w.ctl.handleTurn('resumed');
+        }
+        const empty = ROW_IDS.filter((f) => f !== 'cw-step-5-primary-archetype' && !w.rows.get(f));
+        ok(empty.length === 0, 'no-sidecar@' + n + ': finished with empty rows — ' + empty.join(', '));
+    });
+}
+
 console.log('   ' + asserts.pass + ' behavioural assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
 if (fail) { console.error('\ncw5-sim-harness FAILED'); process.exit(1); }
 console.log('✅ cw5-sim-harness passed (9 asks all filed + ticked, ONE API call, Step-6 carry intact).');

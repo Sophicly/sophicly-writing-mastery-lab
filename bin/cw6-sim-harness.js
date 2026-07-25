@@ -360,6 +360,34 @@ for (const k of KEYS) {
     if (!bad) console.log('   ✓ resume from ' + points.length + ' positions: each rebuilt from the doc and completed the run');
 })();
 
+// ── v7.20.298: NO SIDECAR AT ALL — the prod defect that cost uid 1330 twelve answers. ──────
+// The walk used to `return false` the moment localStorage held nothing, even though the
+// document already knew the position. The student's typed answers then fell through to the
+// AI, which files nothing. A wiped sidecar must resume from the DOCUMENT and finish the run.
+(function resumeWithNoSidecar() {
+    const k = 'rags-to-riches';
+    const probe = makeWorld(k);
+    const total = probe.order.length;
+    let bad = 0;
+    [0, 16, 60, total - 1].forEach(function (n) {
+        const w = makeWorld(k, { prefill: probe.order.slice(0, n) });
+        // Deliberately write NOTHING to localStorage — a new device / cleared storage.
+        if (!ok(w.deps.localStorage.getItem('sim_cw6') === null, 'no-sidecar@' + n + ': sidecar should be absent')) bad++;
+        if (!ok(w.ctl.tryResume(), 'no-sidecar@' + n + ': tryResume() must rebuild from the doc, not bail')) { bad++; return; }
+        let guard = 0;
+        while (guard++ < total * 4) {
+            if (w.armed) { w.resolveApi(/^cw6-stage-/.test(w.armed.id) ? '@STAGE_OK' : '@OUTLINE_OK'); continue; }
+            if (w.tap('still right')) continue;
+            if (!w.ctl.active) break;
+            w.ctl.handleTurn('resumed answer');
+        }
+        const filled = [...w.rows.values()].filter(function (t) { return t; }).length;
+        if (!ok(filled === total, 'no-sidecar@' + n + ': finished with ' + filled + '/' + total + ' rows filled')) bad++;
+        if (!ok(!w.lostWrite, 'no-sidecar@' + n + ': write to a non-existent row ' + w.lostWrite)) bad++;
+    });
+    if (!bad) console.log('   ✓ wiped sidecar: resumed from the document at 4 positions and completed the run');
+})();
+
 // ── FAIL-OPEN: a dropped marker must never strand the student. ────────────────────────────
 (function failOpen() {
     const k = 'tragedy';
