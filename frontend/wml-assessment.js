@@ -4039,6 +4039,39 @@
         }, ms);
     }
 
+    // v7.20.293 — DOCKED RAIL-PANEL WIDTH CLAMP (Neil's live catch: the Story Components panel
+    // "sitting underneath the chat panel").
+    //
+    // ROOT (not z-index): a DOCKED rail panel (outline / resources / writer's-profile shell) is a
+    // child of `.swml-canvas-content`, which is `overflow-y:auto; overflow-x:hidden` — a CLIPPING
+    // scroll container. A child wider than it is sliced off at its right edge, and no z-index can
+    // escape a clipping ancestor. It only LOOKS like a stacking bug because the cut lands exactly
+    // where the chat pane starts. The docked east/west resize had a lower clamp (180) and no upper
+    // one, so dragging wide silently cut the panel off. A panel that genuinely needs more width
+    // detaches (position:fixed, reparented to body) — that path escapes the clip and is unclamped.
+    function _swmlDockedMaxW(panel) {
+        const wrap = panel && panel.closest && panel.closest('.swml-canvas-content');
+        if (!wrap) return Infinity;
+        const wr = wrap.getBoundingClientRect();
+        const pr = panel.getBoundingClientRect();
+        const innerRight = wr.left + wrap.clientWidth;   // clientWidth excludes the scrollbar gutter
+        return Math.max(180, innerRight - pr.left - 12); // 12px breathing room inside the container
+    }
+    // Re-clamp when the CONTAINER narrows (chat-pane drag, window resize) — otherwise a panel sized
+    // legally at drag time gets clipped later. Idempotent: only writes when actually over.
+    function _swmlReclampDockedPanels() {
+        document.querySelectorAll('.swml-canvas-content .swml-outline-panel').forEach(function (p) {
+            if (p.classList.contains('swml-outline-detached')) return;
+            const cur = parseFloat(p.style.width);
+            if (!cur) return;
+            const max = _swmlDockedMaxW(p);
+            if (cur > max) {
+                p.style.width = max + 'px';
+                if (p.style.marginRight) p.style.marginRight = (-max) + 'px';
+            }
+        });
+    }
+
     // v7.20.290 — DUPLICATE-ASK GUARD (Neil's live catch: Step 4 served "Beat 5 of 6" TWICE, once
     // as the model's invention and once for real, under two different beat numberings).
     //
@@ -19279,6 +19312,13 @@
 
         // Content area
         const contentWrap = el('div', { className: 'swml-canvas-content' });
+        // v7.20.293: the container clips its children (overflow-x:hidden), so a docked rail panel
+        // sized legally at drag time gets sliced off the moment the container narrows (chat-pane
+        // drag, window resize). Re-clamp on every container resize. Writing a panel width cannot
+        // change the container's own box, so this cannot feed back.
+        try {
+            if (window.ResizeObserver) new ResizeObserver(_swmlReclampDockedPanels).observe(contentWrap);
+        } catch (_) {}
         // v7.19.213: Add codex class so CSS counter scope offsets section numbering
         // (About the Codex = 0, Unit 1 children = 1.1, 1.2, ...). Pairs with
         // .swml-codex-doc counter-reset rule in wml-canvas.css.
@@ -19969,7 +20009,7 @@
                 if (wpRDir.includes('w')) { w = Math.max(180, wpRSW - dx); l = wpRSL + (wpRSW - w); }
                 if (wpRDir.includes('s')) h = Math.max(200, wpRSH + dy);
                 if (wpRDir.includes('n')) { h = Math.max(200, wpRSH - dy); t = wpRST + (wpRSH - h); }
-                if (!wpFloating) { wpPanel.style.width = w + 'px'; }
+                if (!wpFloating) { wpPanel.style.width = Math.min(w, _swmlDockedMaxW(wpPanel)) + 'px'; } // v7.20.293: docked width can't exceed the clipping scroll container
                 else { Object.assign(wpPanel.style, { width: w + 'px', height: h + 'px', left: l + 'px', top: t + 'px' }); }
             });
             document.addEventListener('mouseup', () => { if (wpR) { _wpJustResized = true; setTimeout(() => { _wpJustResized = false; }, 50); } wpR = false; });
@@ -20568,6 +20608,7 @@
             // fight the sticky margin layout (margin: -30px -220px 0 8px).
             // Sync the negative right margin so float-over math stays correct.
             if (!outlineFloating) {
+                w = Math.min(w, _swmlDockedMaxW(outlinePanel)); // v7.20.293: docked width can't exceed the clipping scroll container
                 outlinePanel.style.width = w + 'px';
                 outlinePanel.style.marginRight = (-w) + 'px';
             } else {
@@ -20667,7 +20708,7 @@
                 if (rsDir.includes('n')) { h = Math.max(200, rsSH - dy); t = rsST + (rsSH - h); }
                 if (!resFloating) {
                     // Docked: width only (panel is absolutely positioned in the button column).
-                    resPanel.style.width = w + 'px';
+                    resPanel.style.width = Math.min(w, _swmlDockedMaxW(resPanel)) + 'px'; // v7.20.293: docked width can't exceed the clipping scroll container
                 } else {
                     Object.assign(resPanel.style, { width: w+'px', height: h+'px', left: l+'px', top: t+'px' });
                 }
