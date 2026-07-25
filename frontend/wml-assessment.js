@@ -4071,6 +4071,61 @@
         return out;
     }
 
+    // v7.20.291 — STEP-3 STORY COMPONENTS, readable from ANY later CW step.
+    // Step 3's rows live in the STEP-3 document. A later step has a DIFFERENT doc open, so
+    // reading them through the live editor can never succeed — that is why every Step-4 beat
+    // echoed "(nothing recorded in Step 3)" for the goal/obstacle/stakes the student had in
+    // fact recorded (Neil's live catch), re-asking for context the system already held
+    // (WML CLAUDE.md #3, the paste-wall law). The durable copy is the Step-3 doc artifact.
+    //
+    // Parsing note: outlineRow.renderHTML emits only the content hole, so a serialised row's
+    // textContent is the STUDENT'S ANSWER — label/prompt/criteria are NodeView-only chrome and
+    // never reach the artifact. Same assumption resolvePlotStructureSlug already ships on.
+    const CW_STEP3_COMPONENTS = [
+        { fid: 'cw-step-3-protagonist', label: 'Protagonist' },
+        { fid: 'cw-step-3-flaw',        label: 'Flaw' },
+        { fid: 'cw-step-3-wound',       label: 'Wound' },
+        { fid: 'cw-step-3-incident',    label: 'Inciting Incident' },
+        { fid: 'cw-step-3-goal',        label: 'Goal' },
+        { fid: 'cw-step-3-obstacle',    label: 'Obstacle' },
+        { fid: 'cw-step-3-stakes',      label: 'Stakes' },
+    ];
+    let _cwStep3Cache = { id: '', map: null };
+    function _cwParseFieldMap(html) {
+        const map = {};
+        try {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = String(html || '');
+            tmp.querySelectorAll('[data-field-id]').forEach(function (n) {
+                const fid = n.getAttribute('data-field-id');
+                const txt = (n.textContent || '').trim();
+                if (fid && txt && !map[fid]) map[fid] = txt;
+            });
+        } catch (e) {}
+        return map;
+    }
+    // Synchronous read of whatever is already cached ('' when not loaded yet / absent).
+    function _cwStep3Value(fid) {
+        return (_cwStep3Cache.map && _cwStep3Cache.map[fid]) || '';
+    }
+    function _cwLoadStep3Values(projectId, force) {
+        if (!projectId) return Promise.resolve({});
+        if (!force && _cwStep3Cache.id === projectId && _cwStep3Cache.map) {
+            return Promise.resolve(_cwStep3Cache.map);
+        }
+        return WML.cwProject.loadArtifact(projectId, 'logline').then(function (art) {
+            const map = (art && art.success && art.value) ? _cwParseFieldMap(art.value) : {};
+            _cwStep3Cache = { id: projectId, map: map };
+            const found = CW_STEP3_COMPONENTS.filter(function (c) { return map[c.fid]; }).length;
+            console.log('WML CW: step-3 components loaded —', found + '/' + CW_STEP3_COMPONENTS.length, 'present');
+            return map;
+        }).catch(function (e) {
+            console.warn('WML CW: step-3 components load failed —', e && e.message);
+            _cwStep3Cache = { id: projectId, map: {} };
+            return {};
+        });
+    }
+
     // Fire the armed hook, if any. `reply` is the AI text that just landed (null on timeout).
     function _fireWalkResume(reply, meta) {
         const hook = _walkResume;
@@ -17329,6 +17384,11 @@
                     className: 'swml-quick-btn', textContent: '👤 Your Writer’s Profile',
                     onClick: function () { try { var t = document.querySelector('.swml-wp-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
                 }));
+                // v7.20.291: the Step-3 components, on tap, from inside the walk.
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '🧩 Story Components',
+                    onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
                 // v7.20.283: deep-dive chips into the Table of Techniques for this component.
                 const tech = TECH[(STEPS[i] || {}).fid] || [];
                 if (tech.length && window.SophiclyTable && window.SophiclyTable.open) {
@@ -17532,6 +17592,10 @@
                         });
                     }
                 } catch (e) {}
+                // v7.20.291: a `cw-step-3-*` row is NOT in this document — Step 4 has its own doc
+                // open — so the live-editor read above always misses and the beat echoed
+                // "(nothing recorded in Step 3)". Fall back to the Step-3 artifact (primed below).
+                if (!out && fid.indexOf('cw-step-3-') === 0) out = _cwStep3Value(fid);
                 return out;
             }
             function firstEmptyBeat() {
@@ -17672,6 +17736,11 @@
                     className: 'swml-quick-btn', textContent: '👤 Your Writer’s Profile',
                     onClick: function () { try { var t = document.querySelector('.swml-wp-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
                 }));
+                // v7.20.291: the Step-3 components, on tap, from inside the walk.
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '🧩 Story Components',
+                    onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
                 const tech = TECH4[(BEATS[idx] || {}).fid] || [];
                 if (tech.length && window.SophiclyTable && window.SophiclyTable.open) {
                     tech.forEach(function (t) {
@@ -17781,7 +17850,11 @@
                 if (idx >= BEATS.length) return;
                 active = true; pending = false; phase = 'chip';
                 console.log('WML CW4: code-served spine walk start at beat ' + (idx + 1) + '/' + BEATS.length);
-                serveCurrent();
+                // v7.20.291: the beats ECHO the student's Step-3 components, which live in the
+                // Step-3 doc artifact — load it BEFORE the first serve so the echo is populated
+                // rather than falling back to "(nothing recorded in Step 3)". Resolves instantly
+                // once cached; never blocks the walk (a failed load just serves the old fallback).
+                _cwLoadStep3Values(state.cwProjectId).then(function () { serveCurrent(); });
             }
 
             function onReply(reply) {
@@ -17798,6 +17871,8 @@
                     if (!raw) return false;
                     const d = JSON.parse(raw);
                     if (!d) return false;
+                    // v7.20.291: warm the Step-3 components for the re-served beat's echo.
+                    _cwLoadStep3Values(state.cwProjectId);
                     draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
                     mainNeed = (typeof d.need === 'string') ? d.need : '';  // v7.20.285: chip2 resume needs the main pick
                     idx = firstEmptyBeat();
@@ -19372,6 +19447,7 @@
         let resPanel = null;
         let resDetachBtn = null; // hoisted for floatRes/dockRes access
         let wpPanel = null, wpTrigger = null, resTrigger = null; // v7.19.474: Writer's Profile panel (forward refs for mutual-exclusivity)
+        let scTrigger = null; // v7.20.291: Story Components — second trigger on the SAME panel shell
         if (cwPanelRes && cwPanelRes.length > 0) {
             const SVG_LINK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 
@@ -19393,7 +19469,7 @@
                     // so they overlapped in the shared dock slot).
                     if (isOpen) {
                         try { toggleOutlinePanel(false); } catch (_) {}
-                        if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); }
+                        if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); }
                     }
                 }
             });
@@ -19506,6 +19582,8 @@
         // use the inline task check.
         if (state.task && state.task.indexOf('cw_') === 0 && state.cwProjectId) {
             const SVG_PROFILE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>';
+            // v7.20.291: Story Components — puzzle piece, distinct from the profile's person icon.
+            const SVG_COMPONENTS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5V5.5a2.5 2.5 0 0 1 5 0V7h5v5h-1.5a2.5 2.5 0 0 0 0 5H20v3H4z"/></svg>';
             // Swap content with a short opacity fade-in so async loads + refreshes settle
             // smoothly rather than popping in.
             const _setWpBody = (bodyEl, html) => {
@@ -19565,6 +19643,60 @@
                     _setWpBody(bodyEl, '<p class="swml-wp-empty">Couldn’t load your Writer’s Profile right now.</p>');
                 }
             };
+            // v7.20.291 — STORY COMPONENTS share this panel SHELL (Neil: "a little button like
+            // story components… I'd like to be able to pull it out at any time"). One shell, two
+            // triggers, body swapped by mode: the alternative was a third copy of the ~150-line
+            // float/dock/drag/resize machinery (resources and profile already duplicate it), which
+            // would have added no capability and put two working panels at risk. Sharing the shell
+            // means Story Components inherits detach/drag/resize for free and cannot drift from
+            // its sibling. Extracting a real factory is tracked debt, not this change.
+            let wpMode = 'profile';
+            // Values are the student's own free text — escape before injecting.
+            const _scEsc = (s) => String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const _loadStoryComponentsPanel = function (bodyEl) {
+                const pid = state.cwProjectId;
+                if (!pid) {
+                    _setWpBody(bodyEl, '<p class="swml-wp-empty">Open a Creative Writing project to see your story components.</p>');
+                    return;
+                }
+                _setWpBody(bodyEl, '<p class="swml-wp-empty">Loading your story components…</p>');
+                Promise.all([
+                    _cwLoadStep3Values(pid, true),   // always refresh — Step-3 edits must show
+                    WML.cwProject.loadArtifact(pid, 'chosen_logline').catch(function () { return null; }),
+                ]).then(function (r) {
+                    const map = r[0] || {};
+                    let logline = '';
+                    try {
+                        const a = r[1];
+                        if (a && a.success && a.value) {
+                            logline = /<[a-z][\s\S]*>/i.test(String(a.value))
+                                ? (_cwParseFieldMap(a.value)['cw-step-4-chosen-logline'] || '')
+                                : String(a.value).trim();
+                        }
+                    } catch (e) {}
+                    const rows = CW_STEP3_COMPONENTS
+                        .filter(function (c) { return map[c.fid]; })
+                        .map(function (c) {
+                            return '<div class="swml-wp-item"><div class="swml-wp-item-label">' + _scEsc(c.label) +
+                                '</div><div class="swml-wp-item-text">' + _scEsc(map[c.fid]) + '</div></div>';
+                        });
+                    if (!rows.length && !logline) {
+                        _setWpBody(bodyEl, '<p class="swml-wp-empty">Nothing recorded yet — your story components are built in Step 3.</p>');
+                        bodyEl._wpHasContent = false;
+                        return;
+                    }
+                    const head = logline
+                        ? '<div class="swml-wp-item"><div class="swml-wp-item-label">Chosen Logline</div>' +
+                          '<div class="swml-wp-item-text">' + _scEsc(logline) + '</div></div>'
+                        : '';
+                    _setWpBody(bodyEl, head + rows.join(''));
+                    bodyEl._wpHasContent = true;
+                }).catch(function () {
+                    _setWpBody(bodyEl, '<p class="swml-wp-empty">Couldn’t load your story components right now.</p>');
+                });
+            };
+
             wpPanel = el('div', { className: 'swml-outline-panel swml-resources-panel swml-wp-panel' });
             const wpGrip = el('div', { className: 'swml-outline-grip' });
             wpGrip.innerHTML = '<span class="swml-outline-grip-dots">⠷</span>';
@@ -19581,6 +19713,7 @@
                 onClick: () => {
                     wpPanel.classList.remove('swml-resources-open');
                     wpTrigger.classList.remove('is-active');
+                    if (scTrigger) scTrigger.classList.remove('is-active'); // v7.20.291: both triggers share this shell
                     if (wpFloating) { wpPanel.style.opacity = '0'; wpPanel.style.transform = 'translateX(-12px)'; setTimeout(() => { dockWp(); wpPanel.style.opacity = ''; wpPanel.style.transform = ''; }, 250); }
                 }
             });
@@ -19602,24 +19735,51 @@
             });
             btnColumn.appendChild(wpPanel);
 
+            // v7.20.291: ONE shell, TWO modes. Re-points the header/note/body, then opens (or
+            // closes, if the same mode's trigger is tapped again). Switching mode while open
+            // swaps content rather than closing — tapping the other button should just show it.
+            const _wpTitle = wpHeader.querySelector('span');
+            function _openWpMode(mode, trigger) {
+                const already = wpPanel.classList.contains('swml-resources-open');
+                if (already && wpMode === mode) {
+                    wpPanel.classList.remove('swml-resources-open');
+                    if (wpTrigger) wpTrigger.classList.remove('is-active');
+                    if (scTrigger) scTrigger.classList.remove('is-active');
+                    return;
+                }
+                if (wpMode !== mode) { wpBody._wpHasContent = false; }  // content is not interchangeable
+                wpMode = mode;
+                if (_wpTitle) _wpTitle.textContent = (mode === 'components') ? 'Story Components' : 'Writer’s Profile';
+                wpNote.style.display = (mode === 'components') ? 'none' : '';
+                wpPanel.classList.add('swml-resources-open');
+                if (wpTrigger) wpTrigger.classList.toggle('is-active', mode === 'profile');
+                if (scTrigger) scTrigger.classList.toggle('is-active', mode === 'components');
+                // mutually exclusive with the other two rail panels
+                if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
+                try { toggleOutlinePanel(false); } catch (_) {}
+                // Refresh on every open so Step-1 / Step-3 edits show (v7.19.480).
+                if (mode === 'components') _loadStoryComponentsPanel(wpBody);
+                else _loadWriterProfilePanel(wpBody);
+            }
+
             wpTrigger = el('button', {
                 className: 'swml-outline-btn swml-wp-trigger',
                 'data-tooltip': 'Writer’s Profile', 'data-tooltip-pos': 'right',
                 'aria-label': 'Writer’s Profile', innerHTML: SVG_PROFILE,
-                onClick: (e) => {
-                    e.stopPropagation();
-                    const open = wpPanel.classList.toggle('swml-resources-open');
-                    wpTrigger.classList.toggle('is-active', open);
-                    if (open) {
-                        // mutually exclusive with the other two rail panels
-                        if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
-                        try { toggleOutlinePanel(false); } catch (_) {}
-                        // v7.19.480: refresh on every open so Step-1 edits show (was load-once).
-                        _loadWriterProfilePanel(wpBody);
-                    }
-                }
+                onClick: (e) => { e.stopPropagation(); _openWpMode('profile', wpTrigger); }
             });
             btnColumn.appendChild(wpTrigger);
+
+            // Story Components — the student's Step-3 protagonist/flaw/wound/incident/goal/
+            // obstacle/stakes + chosen logline, readable from any later step (Neil: planning
+            // loglines and beats without them "was quite difficult").
+            scTrigger = el('button', {
+                className: 'swml-outline-btn swml-sc-trigger',
+                'data-tooltip': 'Story Components', 'data-tooltip-pos': 'right',
+                'aria-label': 'Story Components', innerHTML: SVG_COMPONENTS,
+                onClick: (e) => { e.stopPropagation(); _openWpMode('components', scTrigger); }
+            });
+            btnColumn.appendChild(scTrigger);
 
             // ── float / dock / drag / resize / click-outside (mirror of the resources panel) ──
             let wpFloating = false;
@@ -19703,10 +19863,14 @@
             contentWrap.addEventListener('click', (e) => {
                 if (!wpPanel.classList.contains('swml-resources-open')) return;
                 if (wpFloating || _wpJustResized) return;
-                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger')) return;
+                // v7.20.291: BOTH triggers own this shell — without .swml-sc-trigger here the
+                // Story Components click would be treated as "outside" and close the panel it
+                // had just opened.
+                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger, .swml-sc-trigger')) return;
                 if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return; // v7.19.951: widgets live in in-flow control rows now (+ body-portaled popovers)
                 wpPanel.classList.remove('swml-resources-open');
                 wpTrigger.classList.remove('is-active');
+                if (scTrigger) scTrigger.classList.remove('is-active');
             });
         }
 
@@ -20141,7 +20305,7 @@
             if (outlineOpen) {
                 // v7.19.476: mutually exclusive with the resources + Writer's Profile panels
                 if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
-                if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); }
+                if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); }
                 updateOutline();
                 requestAnimationFrame(updateScrollSpy);
             }
