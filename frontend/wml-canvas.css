@@ -2712,6 +2712,34 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: #42A1EC;
     background: rgba(66,161,236,0.1);
 }
+
+/* ══ v7.20.304: LIGHT-THEME RAIL ELEVATION — Stripe-style ══════════════════════════
+   Two things make a Stripe shadow read as expensive rather than as a drop shadow:
+   it is LAYERED (a tight contact shadow plus a wider soft one), and it is tinted
+   BLUE-GREY — rgba(50,50,93) — not black. Pure-black shadows go muddy on a white
+   surface; the blue tint keeps the chip looking lit rather than dirty.
+
+   Declared here, after BOTH light mechanisms in this file — [data-swml-theme="light"]
+   (~line 2389, a heavy 8px offset blur) and .swml-canvas-light (~line 2700, a flat 1px)
+   — because each sets its own box-shadow and either would otherwise win by source
+   order. Same specificity, later position, so this is the one that lands.
+
+   DELIBERATE OMISSION: Stripe's own recipe opens with a `0 0 0 1px` hairline ring.
+   Left out — BRAND.md forbids thin outline borders on default buttons, and the comment
+   at the top of .swml-outline-btn says so explicitly. Say the word and it goes back in
+   at ~4% alpha; it is the one piece of the Stripe look that is missing. */
+[data-swml-theme="light"] .swml-outline-btn,
+.swml-canvas-light .swml-outline-btn {
+    box-shadow:
+        0 2px 5px -1px rgba(50, 50, 93, 0.10),
+        0 1px 3px -1px rgba(0, 0, 0, 0.06);
+}
+[data-swml-theme="light"] .swml-outline-btn:hover,
+.swml-canvas-light .swml-outline-btn:hover {
+    box-shadow:
+        0 6px 14px -2px rgba(50, 50, 93, 0.15),
+        0 3px 6px -3px rgba(0, 0, 0, 0.09);
+}
 /* v7.19.449: NO local ::after tooltip here — WML already has a global JS tooltip
    system (wml-core.js ~124) that renders `data-tooltip` as a styled pill. A CSS
    ::after would be a SECOND tooltip on top of it (the double-tooltip Neil saw). The
