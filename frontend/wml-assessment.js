@@ -13152,8 +13152,9 @@
                 if (artifactKey && canvasEditor) {
                     await WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, canvasEditor.getHTML());
                 }
-                const stepKey = cwStepDef?.step ? 'step_' + cwStepDef.step : cwStepDef?.id;
-                await WML.cwProject.markStepComplete(state.cwProjectId, stepKey);
+                // v7.20.308: was `markStepComplete(pid, 'step_' + N)` — a method that does not
+                // exist, given a key shape the server rejects. One canonical writer, bare integer.
+                await _cwWriteStepCompletion(state.cwProjectId, cwStepDef?.step, 'cw-si assess button');
                 assessBtn.style.display = 'none';
                 showToast('Step complete! Your work has been saved.');
                 setTimeout(() => {
@@ -23126,10 +23127,28 @@
                     className: 'swml-status-btn swml-ld-complete',
                     innerHTML: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Mark Complete',
                     title: 'Mark this lesson complete in LearnDash',
-                    onClick: () => {
-                        ldMarkBtn.click();
+                    onClick: async () => {
                         markBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Completing\u2026';
                         markBtn.disabled = true;
+                        // v7.20.308: record the completion against THIS CW project before handing
+                        // off to LearnDash. This click is the real completion event \u2014 the only
+                        // moment a student actually declares a step done \u2014 so it is where the one
+                        // writer lives. (The two former call sites are gated on the
+                        // self-instruction tier and never fire for a student inside LD Focus.)
+                        //
+                        // Awaited, not fire-and-forget: LD's click can navigate, and an in-flight
+                        // fetch dies with the page. Raced against 2.5s so a slow or hung write can
+                        // never hold LearnDash completion hostage \u2014 LD is the source of truth for
+                        // completion, we are only mirroring it per-project.
+                        const _cwPid  = (window.WML && WML.state && WML.state.cwProjectId) || '';
+                        const _cwStep = _cwCurrentStepNumber();
+                        if (_cwPid && _cwStep) {
+                            await Promise.race([
+                                _cwWriteStepCompletion(_cwPid, _cwStep, 'footer Mark Complete'),
+                                new Promise((r) => setTimeout(r, 2500)),
+                            ]);
+                        }
+                        ldMarkBtn.click();
                     }
                 });
                 return markBtn;
@@ -26991,8 +27010,8 @@
                                 if (artifactKey && canvasEditor) {
                                     await WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, canvasEditor.getHTML());
                                 }
-                                const stepKey = cwStepDef?.step ? 'step_' + cwStepDef.step : cwStepDef?.id;
-                                await WML.cwProject.markStepComplete(state.cwProjectId, stepKey);
+                                // v7.20.308: see the sibling site — ghost method + rejected key shape.
+                                await _cwWriteStepCompletion(state.cwProjectId, cwStepDef?.step, 'cw-si sidebar button');
                                 assessBtn.style.display = 'none';
                                 showToast('Step complete! Your work has been saved.');
                                 setTimeout(() => {
@@ -44931,6 +44950,54 @@
     }
 
     // Entry point for the CW project flow on cw_step_1.
+    // ══ v7.20.308: THE CW step-completion writer ══════════════════════════════════════════
+    // Replaces a GHOST FUNCTION PAIR. `WML.cwProject.markStepComplete()` was called twice and
+    // DEFINED NOWHERE, while `WML.cwProject.completeStep()` was defined and never called — so
+    // every CW step completion since the feature shipped wrote precisely nothing, silently
+    // (an undefined method on a namespace object throws into a catch that only warns).
+    //
+    // Fixing the NAME alone would still have written nothing: the callers passed
+    // `'step_' + N`, and the server does `absint($params['step'])` and rejects 0
+    // (class-rest-api.php:6600-6604), so `'step_9'` became 0 and was refused. Two independent
+    // faults stacked on one code path, which is why it never surfaced as an error.
+    //
+    // KEY SHAPE, decided once: a BARE INTEGER matching `data-cw-step` — what the server stores
+    // via absint and what the shipped sidebar reads back as stepComp[n]. Trials are untouched;
+    // they live in trial_completion and already work.
+    //
+    // Everything routes through here so there is one producer of that key.
+    async function _cwWriteStepCompletion(projectId, step, where) {
+        const n = parseInt(step, 10);
+        if (!projectId || !n) {
+            console.warn('WML CW: step completion NOT written from ' + where
+                + ' — projectId=' + projectId + ' step=' + step + ' (needs both)');
+            return false;
+        }
+        try {
+            const res = await WML.cwProject.completeStep(projectId, n, true);
+            if (res && res.success) {
+                console.log('WML CW: step ' + n + ' marked complete on ' + projectId + ' (' + where + ')');
+                return true;
+            }
+            // Review mode refuses by design (v7.20.301) — not a defect, do not shout.
+            if (res && res.review_readonly) { return false; }
+            console.warn('WML CW: step completion REFUSED from ' + where + ' — '
+                + ((res && res.message) || 'no response from the server'));
+            return false;
+        } catch (e) {
+            console.warn('WML CW: step completion FAILED from ' + where, e && e.message);
+            return false;
+        }
+    }
+
+    // The CW step number for the lesson currently open. Derived from the task the session is
+    // already bound to (`cw_step_<N>`), so it cannot disagree with what the student is looking at.
+    function _cwCurrentStepNumber() {
+        const t = String((window.WML && WML.state && WML.state.task) || '');
+        const m = /^cw_step_(\d+)$/.exec(t);
+        return m ? parseInt(m[1], 10) : 0;
+    }
+
     async function _resolveCWProjectOnEntry() {
         try {
             const res = await WML.cwProject.list();
