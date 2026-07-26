@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.308';
+var WML_BUILD = '7.20.309';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2573,8 +2573,21 @@ window.WML = (function() {
         },
         /** Create a new project. Returns { success, project }. */
         create(name, courseContext = 'standalone') {
-            return _cwReadOnly('create a project') || _cwBroadcast(
-                apiPost(API.cwProject, { action: 'create', name, course_context: courseContext, lesson_url: _lu() }),
+            const blocked = _cwReadOnly('create a project');
+            if (blocked) { return blocked; }
+            return _cwBroadcast(
+                apiPost(API.cwProject, { action: 'create', name, course_context: courseContext, lesson_url: _lu() })
+                    .then((res) => {
+                        // v7.20.309: the new-story gate refused. Surface it HERE, once, rather than
+                        // at each of the four places a story can be started — a refusal the student
+                        // cannot see is indistinguishable from the button being broken, and gating
+                        // per call site is how one of them silently misses it.
+                        if (res && res.new_story_gate && res.message) {
+                            try { showToast('✍️ <strong>One story at a time</strong><br>' + res.message, 14000, true); }
+                            catch (e) { console.warn('WML CW new-story gate:', res.message); }
+                        }
+                        return res;
+                    }),
                 { event: 'project_create' }
             );
         },

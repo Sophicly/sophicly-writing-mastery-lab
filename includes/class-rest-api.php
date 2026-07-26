@@ -6295,12 +6295,88 @@ class SWML_REST_API {
      * POST { action: 'create', name: '...', course_context: '...' }
      * POST { action: 'update', project_id: '...', name: '...', status: '...' }
      */
+    /**
+     * v7.20.309: THE new-story gate. Returns null when the student may start a new story, or a
+     * describable refusal when they may not.
+     *
+     * Neil's ruling (2026-07-26): "no problem with them having more than one project, but I just
+     * wanna make sure they focus on one. Once they get used to that, then they can start a new
+     * one." So a student earns the right to a new story by carrying their CURRENT one to
+     * Step 9 (Draft 1) and Trial 1 — far enough to have actually drafted something, not just
+     * planned it. Switching between stories they already have stays completely free; only
+     * CREATING is gated.
+     *
+     * Keyed on the most-recently-updated project, deliberately — "have they finished ANY story"
+     * would let a student who finished story one abandon story two half-built and open story
+     * three, which is the exact behaviour the ruling exists to prevent.
+     *
+     * READS PER-PROJECT STATE, NEVER LEARNDASH. LearnDash records completion per USER, so it
+     * would report Step 9 from story one and wave story three straight through — the whole
+     * reason step_completion is per-project. Trials likewise come from this project's own
+     * `trials` array, derived exactly as load_cw_project derives trial_completion.
+     */
+    private static function cw_new_story_block($user_id) {
+        $index = SWML_Session_Manager::list_projects($user_id);
+        if (!is_array($index) || !count($index)) { return null; }   // first story is always free
+
+        // Most recently touched — 'updated' is a MySQL datetime, which sorts lexically.
+        $current = null; $current_id = ''; $best = '';
+        foreach ($index as $pid => $entry) {
+            $stamp = (string) ($entry['updated'] ?? $entry['created'] ?? '');
+            if ($current === null || strcmp($stamp, $best) > 0) { $current = $entry; $current_id = $pid; $best = $stamp; }
+        }
+        if ($current === null) { return null; }
+
+        $project = SWML_Session_Manager::get_project($user_id, $current_id);
+        if (!is_array($project)) { return null; }   // unreadable → never block on our own failure
+
+        $step_9 = !empty($project['step_completion'][9]);
+
+        $trial_1 = false;
+        foreach ((array) ($project['trials'] ?? []) as $t) {
+            if (!is_array($t)) { continue; }
+            if (absint($t['trial'] ?? $t['trial_number'] ?? 0) === 1) { $trial_1 = true; break; }
+        }
+
+        if ($step_9 && $trial_1) { return null; }
+
+        $needs = [];
+        if (!$step_9)  { $needs[] = 'Step 9 (Draft 1)'; }
+        if (!$trial_1) { $needs[] = 'Trial 1'; }
+
+        // Name, never the id — a student must never be shown a machine key (root CLAUDE.md §14).
+        return [
+            'story_name' => (string) ($current['name'] ?? 'your current story'),
+            'needs'      => $needs,
+        ];
+    }
+
     public function save_cw_project($request) {
         $user_id = get_current_user_id();
         $params = $request->get_json_params();
         $action = sanitize_key($params['action'] ?? 'create');
 
         if ($action === 'create') {
+            // v7.20.309: enforced HERE, at the API boundary, not in the overlays. There are four
+            // separate places a new story can be started (entry switcher, step-1 picker, project
+            // selector, naming overlay); gating each is how one of them silently misses it.
+            $block = self::cw_new_story_block($user_id);
+            if ($block !== null) {
+                return rest_ensure_response([
+                    'success'        => false,
+                    'new_story_gate' => true,
+                    'story_name'     => $block['story_name'],
+                    'needs'          => $block['needs'],
+                    'message'        => sprintf(
+                        'Let\'s finish “%s” first — you\'re not far off. You need %s before starting a new story. '
+                        . 'Carrying one story the whole way through is where the real craft is built; '
+                        . 'you can switch back to any story you\'ve already started whenever you like.',
+                        $block['story_name'],
+                        implode(' and ', $block['needs'])
+                    ),
+                ]);
+            }
+
             $name = sanitize_text_field($params['name'] ?? 'Untitled Story');
             $course_context = sanitize_key($params['course_context'] ?? 'standalone');
             $entry = SWML_Session_Manager::create_project($user_id, $name, $course_context);
