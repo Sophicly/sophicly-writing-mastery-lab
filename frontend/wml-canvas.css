@@ -2433,22 +2433,66 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-outline-btn {
     display: grid;
     place-items: center;
+    /* Safe here: the rail tooltip is a single body-level pill positioned from
+       getBoundingClientRect (wml-core.js:78) — it is NOT a child pseudo-element, so
+       clipping the button cannot clip the tooltip. */
+    overflow: hidden;
+    isolation: isolate;
 }
-.swml-outline-btn > svg { grid-area: 1 / 1; }
-.swml-outline-btn > svg.swml-rail-hue {
-    color: var(--swml-rail-hue, #42A1EC);
-    clip-path: circle(0% at 50% 58%);
-    transition: clip-path 0.38s cubic-bezier(0.22, 0.7, 0.28, 1);
+/* THE COLOUR FLOOD — the whole chip, not the icon. Matches the reference exactly:
+   an inset:0 ::before carrying the hue, revealed by a circle growing from the centre. */
+.swml-outline-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--swml-rail-hue);
+    border-radius: inherit;
+    /* .1px rather than 0 — a zero-radius circle snaps rather than eases in some engines. */
+    clip-path: circle(0.1px at 50% 50%);
+    opacity: 0;
+    /* Asymmetric on purpose, copied from the reference: the colour arrives in 1s and
+       LEAVES over 1.5s after a .2s beat. The slow retreat is the whole character of the
+       effect — symmetrical timing feels like a plain hover state. */
+    transition: clip-path 1.5s ease 0.2s, opacity 0.4s ease;
+    z-index: 0;
     pointer-events: none;
 }
-/* circle(150%) not circle(100%): at 100% the radius resolves off the box diagonal
-   and leaves unfilled slivers in the corners of a square icon. Overshoot instead. */
+.swml-outline-btn:hover::before,
+.swml-outline-btn:focus-visible::before {
+    clip-path: circle(100% at 50% 50%);
+    opacity: 1;
+    transition: clip-path 1s ease, opacity 1s ease;
+}
+/* Both icon layers ride above the flood, stacked in one grid cell. */
+.swml-outline-btn > svg {
+    grid-area: 1 / 1;
+    position: relative;
+    z-index: 1;
+}
+/* The revealed icon is the SAME icon in the ink that reads on the flooded chip —
+   so as the circle sweeps past, background and icon change together as one tile. */
+.swml-outline-btn > svg.swml-rail-hue {
+    color: var(--swml-rail-ink, #16181B);
+    clip-path: circle(0.1px at 50% 50%);
+    opacity: 0;
+    transition: clip-path 1.5s ease 0.2s, opacity 0.4s ease;
+    pointer-events: none;
+}
 .swml-outline-btn:hover > svg.swml-rail-hue,
 .swml-outline-btn:focus-visible > svg.swml-rail-hue {
-    clip-path: circle(150% at 50% 58%);
+    clip-path: circle(100% at 50% 50%);
+    opacity: 1;
+    transition: clip-path 1s ease, opacity 0s;
 }
+/* The subtle swell. NOT from the reference site — it has no transform at all; this is
+   the lift Neil saw on the Apple-icon demo, done as a scale rather than a raise. */
+.swml-outline-btn { transition: color 0.2s, background 0.2s, box-shadow 0.2s, opacity 0.2s, transform 0.32s cubic-bezier(0.22, 0.7, 0.28, 1); }
+.swml-outline-btn:hover { transform: scale(1.09); }
 @media (prefers-reduced-motion: reduce) {
-    .swml-outline-btn > svg.swml-rail-hue { transition: none; }
+    .swml-outline-btn,
+    .swml-outline-btn::before,
+    .swml-outline-btn > svg.swml-rail-hue { transition-duration: 0.01ms; }
+    .swml-outline-btn:hover { transform: none; }
 }
 
 /* Per-button hue. Same specificity as the default, so SOURCE ORDER decides —
@@ -2482,6 +2526,17 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-light .swml-prior-attempts-btn         { --swml-rail-hue: #1668B0; }
 [data-swml-theme="light"] .swml-cmp-poem-btn,
 .swml-canvas-light .swml-cmp-poem-btn               { --swml-rail-hue: #C2334C; }
+
+/* Ink on the flooded chip. Dark theme floods with a BRIGHT hue so the icon goes near-black
+   (the default above); light theme floods with a DEEP hue so it goes white. Without this the
+   icon would vanish into its own flood at the moment the circle passes over it. */
+[data-swml-theme="light"] .swml-outline-btn,
+.swml-canvas-light .swml-outline-btn { --swml-rail-ink: #FFFFFF; }
+
+/* The light theme already had `transform: translateY(-1px)` on hover at a higher specificity,
+   which would beat the scale above. One control, one motion — the swell replaces the nudge. */
+[data-swml-theme="light"] .swml-outline-btn:hover,
+.swml-canvas-light .swml-outline-btn:hover { transform: scale(1.09); }
 /* ── Light mode — Outline ── */
 .swml-canvas-light .swml-outline-panel {
     background: #ffffff; /* v7.19.49: solid white — was rgba 0.92 see-through */
