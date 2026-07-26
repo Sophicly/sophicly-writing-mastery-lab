@@ -6424,7 +6424,14 @@ class SWML_REST_API {
         // view ANOTHER user's CW projects so the focus sidebar can scope its per-project
         // override to the reviewed student, not the viewer. Accept student_id (existing
         // review-mode convention) or user_id; gate via the canonical verify_viewer_access.
+        // v7.20.301: fall back to the ONE canonical resolver so `view_as` — the form the theme
+        // now emits, and which it STRIPS student_id in favour of — is honoured here too. Reading
+        // the literal param alone is the exact defect v7.20.300 fixed at the two document read
+        // sites; the CW project endpoints were not swept at the time.
         $target_id = absint($request->get_param('student_id') ?: $request->get_param('user_id') ?: 0);
+        if (!$target_id && function_exists('sophicly_review_target_id')) {
+            $target_id = sophicly_review_target_id();
+        }
         if ($target_id && $target_id !== $user_id) {
             $auth = $this->verify_viewer_access($target_id);
             if (is_wp_error($auth)) return $auth;
@@ -6519,6 +6526,20 @@ class SWML_REST_API {
      */
     public function load_cw_artifact($request) {
         $user_id = get_current_user_id();
+        // v7.20.301: review-mode target, resolved and authorised exactly as load_cw_project does.
+        // This endpoint had NO target support at all, so a reviewer opening a student's project
+        // loaded the STUDENT's project metadata but the REVIEWER's artifacts — a split read that
+        // renders as an empty document over a correctly-named project. Same gate, same resolver;
+        // never a second convention.
+        $target_id = absint($request->get_param('student_id') ?: $request->get_param('user_id') ?: 0);
+        if (!$target_id && function_exists('sophicly_review_target_id')) {
+            $target_id = sophicly_review_target_id();
+        }
+        if ($target_id && $target_id !== $user_id) {
+            $auth = $this->verify_viewer_access($target_id);
+            if (is_wp_error($auth)) return $auth;
+            $user_id = $target_id;
+        }
         $project_id = sanitize_key($request->get_param('project_id') ?? '');
         $key = sanitize_key($request->get_param('key') ?? '');
 

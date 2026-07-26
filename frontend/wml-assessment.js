@@ -20069,33 +20069,18 @@
         // instead of silently picking projects[0]. Students prep multiple CW projects per exam
         // cycle — they need a clear entry path. Other cw_step_* keep silent fallback so mid-
         // course steps work normally when entered without a prior project.
+        // v7.20.301: ONE entry path for every CW step. This branch previously forked: cw_step_1
+        // got the switcher/naming overlay, and steps 2–29 got a silent fallback that ENDED IN
+        // `create('My Story')` — the second ghost generator of that name, and the reason 6 of 16
+        // live projects carry a name no student ever typed (the naming overlay's Save is disabled
+        // until text is entered, so 'My Story' is always code-authored). v7.20.299 closed the
+        // generator in _resolveCWProjectOnEntry's catch; this one was missed because it lives in
+        // the sibling branch. Routing both to the canonical resolver deletes the fork, kills the
+        // generator, and inherits its review-mode guards rather than needing its own copy.
+        // Note this branch only runs when NOTHING resolved a project — the embedded boot path
+        // sets state.cwProjectId first — so the overlay stays rare, not per-step.
         if (state.task && state.task.startsWith('cw_') && !state.cwProjectId) {
-            if (state.task === 'cw_step_1') {
-                _resolveCWProjectOnEntry();
-            } else {
-                (async () => {
-                    try {
-                        const res = await WML.cwProject.list();
-                        const projects = res?.projects || [];
-                        if (projects.length > 0) {
-                            // v7.17.28: Sort by 'updated' descending so mid-course entries
-                            // resume the most-recent project, not whichever came back first.
-                            const sorted = [...projects].sort((a, b) =>
-                                (b.updated || b.created || '').localeCompare(a.updated || a.created || '')
-                            );
-                            state.cwProjectId = sorted[0].id;
-                            state.cwProjectName = sorted[0].name || '';
-                        } else {
-                            const createRes = await WML.cwProject.create('My Story', 'standalone');
-                            if (createRes?.success) {
-                                state.cwProjectId = createRes.project.id;
-                                state.cwProjectName = createRes.project.name || 'My Story';
-                            }
-                        }
-                        console.log('WML CW: Auto-loaded project', state.cwProjectId);
-                    } catch (e) { console.warn('WML CW: Failed to auto-load project', e); }
-                })();
-            }
+            _resolveCWProjectOnEntry();
         }
 
         // Kill WebGL shader when entering canvas — prevents flash-through on transitions (v7.12.53)
@@ -44673,7 +44658,13 @@
     // Switcher overlay. projects = array of index entries; picks most-recent
     // as default (Enter = 1-tap continue). onLoad(id, name) called when student
     // picks an existing project. "Start new" opens the naming input in-place.
-    function _showCWProjectSwitcherOverlay({ projects, onLoad, onNew, dismissable }) {
+    function _showCWProjectSwitcherOverlay({ projects, onLoad, onNew, dismissable, reviewing }) {
+        // v7.20.301: `reviewing` = a tutor/specialist/admin/parent is looking at THIS student's
+        // projects. Read-only: pick one to inspect, create nothing. Falls back to the live
+        // review state so a call site that forgets to pass the flag still cannot offer creation.
+        const _isReview = (reviewing !== undefined)
+            ? !!reviewing
+            : !!(window.WML && WML.cwProject && WML.cwProject.isReviewing());
         return new Promise((resolve) => {
             const overlay = _cwMountOverlay();
             // v7.17.29: class-driven (see wml-canvas.css). Theme-aware via .swml-canvas-light.
@@ -44703,12 +44694,16 @@
             const title = document.createElement('h2');
             title.id = 'swml-cwp-title';
             title.className = 'swml-cw-project-overlay__title';
-            title.textContent = 'Your Creative Writing projects';
+            title.textContent = _isReview
+                ? 'Their Creative Writing projects'
+                : 'Your Creative Writing projects';
             card.appendChild(title);
 
             const hint = document.createElement('p');
             hint.className = 'swml-cw-project-overlay__hint';
-            hint.textContent = 'Pick up where you left off, or start a new project.';
+            hint.textContent = _isReview
+                ? 'Choose which project to look at. Nothing can be changed while you are reviewing.'
+                : 'Pick up where you left off, or start a new project.';
             card.appendChild(hint);
 
             const list = document.createElement('div');
@@ -44761,7 +44756,7 @@
                     metaEl.textContent = bits.join(' · ');
                     btn.appendChild(metaEl);
                 }
-                if (idx === 0 && sorted.length > 1) {
+                if (idx === 0 && sorted.length > 1 && !_isReview) {
                     const tagEl = document.createElement('div');
                     tagEl.className = 'swml-cw-project-overlay__list-tag';
                     tagEl.textContent = 'Carry on with this one';
@@ -44780,23 +44775,28 @@
                 cardButtons.push(btn);
             });
 
-            const newBtn = document.createElement('button');
-            newBtn.className = 'swml-cw-project-overlay__new-btn';
-            newBtn.type = 'button';
-            newBtn.textContent = '+ Start new project';
-            newBtn.addEventListener('click', async () => {
-                overlay.remove();
-                const r = await _showCWProjectNameInputOverlay({
-                    mode: 'additional',
-                    onSave: async (name) => { await onNew(name); },
-                    onCancel: () => {
-                        // Cancel → re-show the switcher (preserve dismissability)
-                        _showCWProjectSwitcherOverlay({ projects, onLoad, onNew, dismissable }).then(resolve);
-                    },
+            // v7.20.301: creation is a student-only affordance. A reviewer's create would land in
+            // the REVIEWER's own account (writes key off get_current_user_id), so the control is
+            // not rendered at all rather than rendered-and-refused.
+            if (!_isReview && typeof onNew === 'function') {
+                const newBtn = document.createElement('button');
+                newBtn.className = 'swml-cw-project-overlay__new-btn';
+                newBtn.type = 'button';
+                newBtn.textContent = '+ Start new project';
+                newBtn.addEventListener('click', async () => {
+                    overlay.remove();
+                    const r = await _showCWProjectNameInputOverlay({
+                        mode: 'additional',
+                        onSave: async (name) => { await onNew(name); },
+                        onCancel: () => {
+                            // Cancel → re-show the switcher (preserve dismissability)
+                            _showCWProjectSwitcherOverlay({ projects, onLoad, onNew, dismissable, reviewing }).then(resolve);
+                        },
+                    });
+                    if (r && r.saved) resolve({ created: true, name: r.name });
                 });
-                if (r && r.saved) resolve({ created: true, name: r.name });
-            });
-            card.appendChild(newBtn);
+                card.appendChild(newBtn);
+            }
 
             overlay.appendChild(card);
 
@@ -44894,10 +44894,19 @@
                 // v7.17.44: mirror to sessionStorage so internal CW nav (Back to Steps →
                 // CW dashboard → click Step N) resolves back to the same project without
                 // needing the URL param on every link.
-                try { sessionStorage.setItem('swml_cw_active_project', id); } catch (_) {}
+                try { sessionStorage.setItem(WML.cwProject.pinKey(),id); } catch (_) {}
             };
 
+            // v7.20.301: while reviewing, `projects` is now the STUDENT's list (the read carries
+            // the review target). A reviewer picks one to inspect and can create nothing — an
+            // unguarded create here would mint a project into the REVIEWER's own account, since
+            // every CW write keys off get_current_user_id().
+            const _reviewing = !!(WML.cwProject && WML.cwProject.isReviewing());
             if (projects.length === 0) {
+                if (_reviewing) {
+                    console.warn('WML CW review: this student has no CW projects — nothing to open.');
+                    return;
+                }
                 // No prior projects → naming input only, no Skip (nothing to return to)
                 await _showCWProjectNameInputOverlay({
                     mode: 'first',
@@ -44912,11 +44921,12 @@
             } else {
                 await _showCWProjectSwitcherOverlay({
                     projects,
+                    reviewing: _reviewing,
                     onLoad: async (id, name) => {
                         // List entries already carry name; avoid extra round-trip unless needed.
                         setStateFromProject(id, name);
                     },
-                    onNew: async (name) => {
+                    onNew: _reviewing ? null : async (name) => {
                         const c = await WML.cwProject.create(name, 'standalone');
                         if (c?.success && c.project) {
                             setStateFromProject(c.project.id, c.project.name || name);
@@ -44943,9 +44953,12 @@
                     );
                     state.cwProjectId = sorted[0].id;
                     state.cwProjectName = sorted[0].name || '';
-                    try { sessionStorage.setItem('swml_cw_active_project', sorted[0].id); } catch (_) {}
+                    try { sessionStorage.setItem(WML.cwProject.pinKey(),sorted[0].id); } catch (_) {}
                     console.warn('WML CW: recovered on retry — resumed the most recent project "'
                         + state.cwProjectName + '" instead of creating a duplicate.');
+                } else if (WML.cwProject && WML.cwProject.isReviewing()) {
+                    // v7.20.301: never create while reviewing — see the guard above.
+                    console.warn('WML CW review: no projects for this student; creating nothing.');
                 } else {
                     // Genuinely a first-time student: creating is correct here, and cannot fork.
                     const c = await WML.cwProject.create('My Story', 'standalone');

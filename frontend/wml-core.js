@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.300';
+var WML_BUILD = '7.20.301';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2525,51 +2525,96 @@ window.WML = (function() {
         } catch (e) { /* ignore */ }
         return p;
     };
+    // ── v7.20.301: review-mode target for CW project READS ──
+    // WML's review convention is that a READ carries the target explicitly — see
+    // API.reviewCanvas / API.reviewChat, which both pass student_id=state.reviewStudentId.
+    // The v7.15.91 review-guarded fetch wrapper (above) deliberately covers non-GET only, so
+    // these four GETs were invisible to review mode and there was no review-aware CW read path
+    // at all.
+    // The bug that proved it: reviewing Adam Qureshi (1387), cwProject.list() returned
+    // ABDULLAH's projects, which then matched HIS OWN `swml_cw_active_project` sessionStorage
+    // pin, so the canvas opened "Exam Prep 2026" — a project the student has never seen. The
+    // document then keyed review-target-user + reviewer's-project = a key belonging to nobody
+    // and rendered blank, reading as "the student's work has disappeared". It had not: Adam's
+    // 8/15 Step 1 answers were safe the whole time, in `Adams project`.
+    const _cwReviewTarget = () => {
+        const t  = parseInt((config && (config.targetUserId || config.reviewStudentId)) || 0, 10);
+        const me = parseInt((config && config.userId) || 0, 10);
+        return (t && t !== me) ? t : 0;
+    };
+    const _cwRq = (url) => {
+        const t = _cwReviewTarget();
+        if (!t) return url;
+        return url + (url.indexOf('?') === -1 ? '?' : '&') + 'student_id=' + t;
+    };
+    // A reviewer READS a student's project and must never write to one. These writes all key
+    // off get_current_user_id() server-side, so an unguarded write while reviewing lands
+    // silently in the REVIEWER's own project — inventing rows in their work, not the student's.
+    // Refuse at the boundary rather than relying on every call site to remember.
+    const _cwReadOnly = (what) => {
+        if (!_cwReviewTarget()) return null;
+        console.warn('WML CW: refusing to ' + what + ' — review mode is read-only.');
+        return Promise.resolve({ success: false, review_readonly: true, message: 'Review mode is read-only.' });
+    };
     const cwProject = {
+        /** True while viewing another user's work. Callers gate creation/naming UI on this. */
+        isReviewing() { return !!_cwReviewTarget(); },
+        /**
+         * v7.20.301: the "which project am I in" sessionStorage pin, namespaced per viewed user.
+         * It used to be ONE key for every context, so the pin leaked BOTH ways: the reviewer's
+         * own pin selected a project while reviewing a student (the reported bug), and reviewing
+         * a student then overwrote the reviewer's pin so their OWN next CW lesson opened a
+         * project id that is not theirs. Namespacing makes the two contexts unable to collide;
+         * the student's own key is unchanged, so no live pin is invalidated by this ship.
+         */
+        pinKey() {
+            const t = _cwReviewTarget();
+            return 'swml_cw_active_project' + (t ? '__review_' + t : '');
+        },
         /** Create a new project. Returns { success, project }. */
         create(name, courseContext = 'standalone') {
-            return _cwBroadcast(
+            return _cwReadOnly('create a project') || _cwBroadcast(
                 apiPost(API.cwProject, { action: 'create', name, course_context: courseContext, lesson_url: _lu() }),
                 { event: 'project_create' }
             );
         },
         /** Update project metadata (name, status). */
         update(projectId, updates = {}) {
-            return _cwBroadcast(
+            return _cwReadOnly('rename or restatus a project') || _cwBroadcast(
                 apiPost(API.cwProject, { action: 'update', project_id: projectId, ...updates, lesson_url: _lu() }),
                 { event: 'project_update', project_id: projectId }
             );
         },
         /** List all projects. Returns { success, projects: [] }. */
         list() {
-            return apiGet(API.cwProject);
+            return apiGet(_cwRq(API.cwProject));
         },
         /** Load full project data. Returns { success, project }. */
         load(projectId) {
-            return apiGet(API.cwProject + '?project_id=' + encodeURIComponent(projectId));
+            return apiGet(_cwRq(API.cwProject + '?project_id=' + encodeURIComponent(projectId)));
         },
         /** Save a single artifact (e.g. 'writer_profile', 'logline'). */
         saveArtifact(projectId, key, value) {
-            return _cwBroadcast(
+            return _cwReadOnly('save an artifact') || _cwBroadcast(
                 apiPost(API.cwArtifact, { project_id: projectId, key, value, lesson_url: _lu() }),
                 { event: 'artifact_save', project_id: projectId, key }
             );
         },
         /** Load a single artifact. Returns { success, key, value }. */
         loadArtifact(projectId, key) {
-            return apiGet(API.cwArtifact + '?project_id=' + encodeURIComponent(projectId) + '&key=' + encodeURIComponent(key));
+            return apiGet(_cwRq(API.cwArtifact + '?project_id=' + encodeURIComponent(projectId) + '&key=' + encodeURIComponent(key)));
         },
         /** Save a trial assessment result. Pass trialNumber (1..6, e.g. state.cwTrial) so
          *  completion keys per-project — see load_cw_project -> trial_completion (v7.19.536). */
         saveTrial(projectId, trialData, trialNumber) {
-            return _cwBroadcast(
+            return _cwReadOnly('save a trial') || _cwBroadcast(
                 apiPost(API.cwTrial, { project_id: projectId, trial: trialData, trial_number: trialNumber || null, lesson_url: _lu() }),
                 { event: 'trial_save', project_id: projectId }
             );
         },
         /** Mark a step as complete. */
         completeStep(projectId, step, complete = true) {
-            return _cwBroadcast(
+            return _cwReadOnly('mark a step complete') || _cwBroadcast(
                 apiPost(API.cwStep, { project_id: projectId, step, complete, lesson_url: _lu() }),
                 { event: 'step_complete', project_id: projectId, step }
             );

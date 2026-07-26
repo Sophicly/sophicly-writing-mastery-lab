@@ -461,11 +461,23 @@
                     ? new URLSearchParams(window.location.search).get('cw_project_id')
                     : null;
                 const _sessionProjectId = isCwTask
-                    ? (function () { try { return sessionStorage.getItem('swml_cw_active_project') || ''; } catch (_) { return ''; } })()
+                    ? (function () { try { return sessionStorage.getItem(WML.cwProject.pinKey()) || ''; } catch (_) { return ''; } })()
                     : null;
                 const resolveCwProject = isCwTask
                     ? WML.cwProject.list().then(res => {
                         const projects = (res && res.projects) || [];
+                        // v7.20.301: while REVIEWING a student who has more than one project and
+                        // no explicit ?cw_project_id, leave cwProjectId unset so the read-only
+                        // switcher fires inside renderCanvasWorkspace and the reviewer chooses
+                        // which project to inspect. Auto-picking most-recent here would silently
+                        // hide the student's other drafts (Rifat, uid 1386, has two). The student
+                        // path is untouched — this branch is review-only.
+                        if (!_urlProjectId && projects.length > 1
+                            && WML.cwProject.isReviewing()) {
+                            console.log('WML v7.20.301: review mode —', projects.length,
+                                'projects for this student; deferring to the read-only picker.');
+                            return;
+                        }
                         if (projects.length > 0) {
                             let picked = null;
                             let source = '';
@@ -484,7 +496,7 @@
                             }
                             state.cwProjectId = picked.id;
                             state.cwProjectName = picked.name || '';
-                            try { sessionStorage.setItem('swml_cw_active_project', picked.id); } catch (_) {}
+                            try { sessionStorage.setItem(WML.cwProject.pinKey(),picked.id); } catch (_) {}
                             console.log('WML v7.17.44: embedded CW resolved project →', picked.id, picked.name, '(' + source + ')');
                         } else {
                             console.log('WML v7.17.40: embedded CW — no projects yet; switcher overlay will fire inside renderCanvasWorkspace');
@@ -611,14 +623,25 @@
             state.textName = state.textName || 'Creative Writing';
             // Load project context — URL > sessionStorage > most-recent (v7.17.44)
             const _urlProjectIdDL = new URLSearchParams(window.location.search).get('cw_project_id');
-            const _sessionProjectIdDL = (function () { try { return sessionStorage.getItem('swml_cw_active_project') || ''; } catch (_) { return ''; } })();
+            const _sessionProjectIdDL = (function () { try { return sessionStorage.getItem(WML.cwProject.pinKey()) || ''; } catch (_) { return ''; } })();
             WML.cwProject.list().then(res => {
                 const projects = res?.projects || [];
                 if (projects.length === 0) {
+                    // v7.20.301: a reviewer whose student has no projects gets told so — never
+                    // the naming screen, which would invite them to create a project (landing in
+                    // the REVIEWER's own account, since writes key off the logged-in user).
+                    if (window.WML && WML.cwProject && WML.cwProject.isReviewing()) {
+                        transitionSetup(inner => {
+                            inner.appendChild(renderLogo());
+                            inner.appendChild(el('h2', { textContent: 'No projects yet', style: { marginBottom: '8px' } }));
+                            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'This student has not started a Creative Writing project, so there is nothing to review here yet.' }));
+                        });
+                        return;
+                    }
                     // No projects — show naming screen
                     renderCwProjectNaming([], (newProject) => {
                         state.cwProjectId = newProject.id;
-                        try { sessionStorage.setItem('swml_cw_active_project', newProject.id); } catch (_) {}
+                        try { sessionStorage.setItem(WML.cwProject.pinKey(),newProject.id); } catch (_) {}
                         state.canvasTimer = 0;
                         state.step = 0;
                         WML.renderCanvasWorkspace();
@@ -633,7 +656,7 @@
                     renderCwStep1Picker(projects, (picked) => {
                         state.cwProjectId = picked.id;
                         state.cwProjectName = picked.name || '';
-                        try { sessionStorage.setItem('swml_cw_active_project', picked.id); } catch (_) {}
+                        try { sessionStorage.setItem(WML.cwProject.pinKey(),picked.id); } catch (_) {}
                         state.canvasTimer = 0;
                         state.step = 0;
                         WML.renderCanvasWorkspace();
@@ -650,7 +673,7 @@
                 }
                 state.cwProjectId = picked.id;
                 state.cwProjectName = picked.name || '';
-                try { sessionStorage.setItem('swml_cw_active_project', picked.id); } catch (_) {}
+                try { sessionStorage.setItem(WML.cwProject.pinKey(),picked.id); } catch (_) {}
                 const exerciseConfig = WML.getExerciseConfig(state.task);
                 if (['training', 'free', 'flexible', 'inline-coaching'].includes(exerciseConfig.environment)) {
                     state.canvasTimer = 0;
@@ -1470,6 +1493,18 @@
         });
     }
 
+    // v7.20.301: ONE progress label for every CW project card.
+    // These two setup-screen pickers still printed `Step ${p.current_step} of 29`, and
+    // `current_step` only ever moves on an explicit Mark Complete — which students do not do,
+    // so it reads 0 on all 16 live projects and EVERY card said "Step 0 of 29" regardless of
+    // how much work was in it. v7.20.299 fixed exactly this in the canvas overlay picker by
+    // deriving progress from the artifacts server-side (`progress_label`); these two screens
+    // were not swept at the time. Same source, one helper, so a third picker cannot drift again.
+    function _cwProgressLabel(p) {
+        if (p.status === 'completed') return 'Completed';
+        return p.progress_label || ('Step ' + (p.current_step || 0) + ' of 29');
+    }
+
     // ── Step 1 Project Picker (v7.19.179) ──
     // Fires when student enters cw_step_1 without an explicit ?cw_project_id=
     // URL param AND has at least one existing project. Writer Profile (Step 1)
@@ -1479,10 +1514,14 @@
     function renderCwStep1Picker(projects, onPicked) {
         projects.sort((a, b) => new Date(b.updated) - new Date(a.updated));
         const mostRecent = projects[0];
+        // v7.20.301: a reviewer picks WHICH of the student's projects to inspect — never starts one.
+        const _reviewing = !!(window.WML && WML.cwProject && WML.cwProject.isReviewing());
         transitionSetup(inner => {
             inner.appendChild(renderLogo());
-            inner.appendChild(el('h2', { textContent: 'Welcome back', style: { marginBottom: '8px' } }));
-            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'Step 1 sets the Writer Profile foundation for one project. Continue your current project or start a new one.' }));
+            inner.appendChild(el('h2', { textContent: _reviewing ? 'Their projects' : 'Welcome back', style: { marginBottom: '8px' } }));
+            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: _reviewing
+                ? 'Choose which project to look at. Nothing here can be changed while you are reviewing.'
+                : 'Step 1 sets the Writer Profile foundation for one project. Continue your current project or start a new one.' }));
 
             const grid = el('div', { className: 'swml-cw-project-grid' });
             projects.forEach((p, idx) => {
@@ -1490,26 +1529,28 @@
                 const pCard = el('div', { className: 'swml-cw-project-card' + (p.status === 'completed' ? ' completed' : '') + (isContinue ? ' swml-cw-project-continue' : '') });
                 const statusIcon = p.status === 'completed' ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="#1CD991"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>' : '';
                 pCard.innerHTML = statusIcon;
-                if (isContinue) {
+                if (isContinue && !_reviewing) {
                     pCard.appendChild(el('div', { className: 'swml-cw-project-badge', textContent: 'Continue here' }));
                 }
                 pCard.appendChild(el('div', { className: 'swml-cw-project-name', textContent: p.name || 'Untitled' }));
-                pCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: p.status === 'completed' ? 'Completed' : `Step ${p.current_step || 0} of 29` }));
+                pCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: _cwProgressLabel(p) }));
                 const updated = p.updated ? new Date(p.updated) : null;
                 if (updated) pCard.appendChild(el('div', { className: 'swml-cw-project-date', textContent: 'Last worked: ' + updated.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }));
                 pCard.addEventListener('click', () => onPicked(p));
                 grid.appendChild(pCard);
             });
 
-            // "New Project" card
-            const newCard = el('div', { className: 'swml-cw-project-card swml-cw-project-new' });
-            newCard.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-            newCard.appendChild(el('div', { className: 'swml-cw-project-name', textContent: 'New Project' }));
-            newCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: 'Start fresh' }));
-            newCard.addEventListener('click', () => {
-                renderCwProjectNaming(projects, (newProject) => onPicked(newProject));
-            });
-            grid.appendChild(newCard);
+            // "New Project" card — never offered to a reviewer (v7.20.301).
+            if (!_reviewing) {
+                const newCard = el('div', { className: 'swml-cw-project-card swml-cw-project-new' });
+                newCard.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+                newCard.appendChild(el('div', { className: 'swml-cw-project-name', textContent: 'New Project' }));
+                newCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: 'Start fresh' }));
+                newCard.addEventListener('click', () => {
+                    renderCwProjectNaming(projects, (newProject) => onPicked(newProject));
+                });
+                grid.appendChild(newCard);
+            }
 
             inner.appendChild(grid);
         });
@@ -1519,10 +1560,13 @@
     function renderCwProjectSelector(projects) {
         // Sort by most recently updated
         projects.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+        const _reviewing = !!(window.WML && WML.cwProject && WML.cwProject.isReviewing());  // v7.20.301
         transitionSetup(inner => {
             inner.appendChild(renderLogo());
-            inner.appendChild(el('h2', { textContent: 'Your Projects', style: { marginBottom: '8px' } }));
-            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'Continue a project or start something new' }));
+            inner.appendChild(el('h2', { textContent: _reviewing ? 'Their projects' : 'Your Projects', style: { marginBottom: '8px' } }));
+            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: _reviewing
+                ? 'Choose which project to look at. Nothing here can be changed while you are reviewing.'
+                : 'Continue a project or start something new' }));
 
             const grid = el('div', { className: 'swml-cw-project-grid' });
             projects.forEach(p => {
@@ -1530,7 +1574,7 @@
                 const statusIcon = p.status === 'completed' ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="#1CD991"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>' : '';
                 pCard.innerHTML = statusIcon;
                 pCard.appendChild(el('div', { className: 'swml-cw-project-name', textContent: p.name || 'Untitled' }));
-                pCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: p.status === 'completed' ? 'Completed' : `Step ${p.current_step || 0} of 29` }));
+                pCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: _cwProgressLabel(p) }));
                 const updated = p.updated ? new Date(p.updated) : null;
                 if (updated) pCard.appendChild(el('div', { className: 'swml-cw-project-date', textContent: 'Last worked: ' + updated.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }));
                 pCard.addEventListener('click', () => {
@@ -1539,19 +1583,21 @@
                 grid.appendChild(pCard);
             });
 
-            // "New Project" card
-            const newCard = el('div', { className: 'swml-cw-project-card swml-cw-project-new' });
-            newCard.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-            newCard.appendChild(el('div', { className: 'swml-cw-project-name', textContent: 'New Project' }));
-            if (projects.some(p => p.status !== 'completed')) {
-                newCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: 'Finish your current project first', style: { color: '#F1C40F' } }));
-            }
-            newCard.addEventListener('click', () => {
-                renderCwProjectNaming(projects, (newProject) => {
-                    renderCreativeWritingDashboard(newProject.id);
+            // "New Project" card — never offered to a reviewer (v7.20.301).
+            if (!_reviewing) {
+                const newCard = el('div', { className: 'swml-cw-project-card swml-cw-project-new' });
+                newCard.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+                newCard.appendChild(el('div', { className: 'swml-cw-project-name', textContent: 'New Project' }));
+                if (projects.some(p => p.status !== 'completed')) {
+                    newCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: 'Finish your current project first', style: { color: '#F1C40F' } }));
+                }
+                newCard.addEventListener('click', () => {
+                    renderCwProjectNaming(projects, (newProject) => {
+                        renderCreativeWritingDashboard(newProject.id);
+                    });
                 });
-            });
-            grid.appendChild(newCard);
+                grid.appendChild(newCard);
+            }
 
             inner.appendChild(grid);
 
