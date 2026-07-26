@@ -20971,6 +20971,48 @@
         // v7.13.53: Wrap outline + resources buttons in a sticky column
         const btnColumn = el('div', { className: 'swml-outline-btn-column' });
 
+        // v7.20.302: rail icon hover-reveal — give every rail button a second, coloured
+        // copy of its own icon for the clip-path wipe (styling in wml-canvas.css).
+        //
+        // OBSERVED rather than wired per button, deliberately. The rail is assembled across
+        // eight separate appendChild sites spread over ~3,500 lines (outline, collapse,
+        // resources, writer's profile, story components, story spine, prior attempts,
+        // comparison poem), several of them conditional. Calling a helper after each one is
+        // exactly the "new sibling silently misses the behaviour" class this codebase keeps
+        // hitting — a rail button added later would just quietly not have the effect, with
+        // no error. Watching the column instead means the behaviour is a property of BEING a
+        // rail button, so anything added in future inherits it for free.
+        (function installRailHueLayer(column) {
+            const addHueLayer = (btn) => {
+                if (!btn || typeof btn.querySelector !== 'function') return;
+                // Idempotent — a re-render must not stack a third and fourth copy.
+                if (btn.querySelector(':scope > svg.swml-rail-hue')) return;
+                const base = btn.querySelector(':scope > svg');
+                if (!base) return;
+                const dup = base.cloneNode(true);
+                dup.classList.add('swml-rail-hue');
+                // The icon is decorative twice over — the button already carries aria-label,
+                // and without this every rail control announces its icon a second time.
+                dup.setAttribute('aria-hidden', 'true');
+                dup.setAttribute('focusable', 'false');
+                dup.removeAttribute('style');   // e.g. the header icons' inline opacity
+                btn.appendChild(dup);
+            };
+            column.querySelectorAll('.swml-outline-btn').forEach(addHueLayer);
+            try {
+                new MutationObserver((records) => {
+                    records.forEach((rec) => {
+                        rec.addedNodes.forEach((node) => {
+                            if (!node || node.nodeType !== 1 || !node.classList) return;
+                            if (node.classList.contains('swml-outline-btn')) addHueLayer(node);
+                        });
+                    });
+                }).observe(column, { childList: true });
+            } catch (e) {
+                console.warn('WML v7.20.302: rail hue observer unavailable', e && e.message);
+            }
+        })(btnColumn);
+
         // Floating trigger on left edge of content area
         const outlineBtn = el('button', {
             className: 'swml-outline-btn',

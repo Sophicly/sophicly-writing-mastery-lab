@@ -2404,6 +2404,84 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: #42A1EC;
     background: rgba(66,161,236,0.14);
 }
+
+/* ══ v7.20.302: RAIL ICON HOVER-REVEAL ══════════════════════════════════════════
+   Ported from jhey's two-layer clip-path trick. The original stacks two <img>s;
+   ours are inline SVGs, so the second layer is a CLONE of the same <svg> (made in
+   wml-assessment.js) rather than a second image — same technique, no extra asset,
+   and the icon stays a single source of truth.
+
+   Layer 1 (the original svg) keeps the existing muted currentColor.
+   Layer 2 (.swml-rail-hue) is the same icon in that button's OWN accent colour,
+   clipped to a zero-radius circle, so it is invisible until hover grows the circle.
+
+   Why grid-area 1/1 and not position:absolute — the original trick's real cleverness.
+   Both svgs occupy the same grid cell, so the button still sizes itself to its icon
+   and nothing needs a positioning context. `position:relative` above stays purely
+   the tooltip anchor, untouched.
+
+   Palette: the rail keeps its existing muted light/dark chrome at rest and reveals a
+   per-tool colour on hover, so each control gains an identity without the toolbar ever
+   shouting. Where a button already owns an accent from its .is-active state (outline
+   blue, resources teal, prior-assessments sky) that colour is reused rather than
+   replaced. NO PURPLE anywhere, per Neil 2026-07-26 — Writer's Profile previously used
+   the brand violet in its active state, so its hover hue moves to gold instead.
+   Note for future edits: green and amber carry status meaning elsewhere in Sophicly
+   (complete / not-started). The gold and orange here sit on a toolbar icon, not a
+   status chip, so they cannot be misread as progress — do not reuse them on anything
+   that reports state. */
+.swml-outline-btn {
+    display: grid;
+    place-items: center;
+}
+.swml-outline-btn > svg { grid-area: 1 / 1; }
+.swml-outline-btn > svg.swml-rail-hue {
+    color: var(--swml-rail-hue, #42A1EC);
+    clip-path: circle(0% at 50% 58%);
+    transition: clip-path 0.38s cubic-bezier(0.22, 0.7, 0.28, 1);
+    pointer-events: none;
+}
+/* circle(150%) not circle(100%): at 100% the radius resolves off the box diagonal
+   and leaves unfilled slivers in the corners of a square icon. Overshoot instead. */
+.swml-outline-btn:hover > svg.swml-rail-hue,
+.swml-outline-btn:focus-visible > svg.swml-rail-hue {
+    clip-path: circle(150% at 50% 58%);
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-outline-btn > svg.swml-rail-hue { transition: none; }
+}
+
+/* Per-button hue. Same specificity as the default, so SOURCE ORDER decides —
+   the default must stay first (every button carries both classes). */
+.swml-outline-btn        { --swml-rail-hue: #42A1EC; }  /* Document Outline — its own blue */
+.swml-collapse-all-btn   { --swml-rail-hue: #58D5E8; }  /* Collapse / expand — cyan */
+.swml-resources-trigger  { --swml-rail-hue: #7DF9E9; }  /* Resources — its own teal */
+.swml-wp-trigger         { --swml-rail-hue: #FFC24B; }  /* Writer's Profile — gold (was violet) */
+.swml-sc-trigger         { --swml-rail-hue: #FF7EB6; }  /* Story Components — pink */
+.swml-ss-trigger         { --swml-rail-hue: #FF9057; }  /* Story Spine — orange */
+.swml-prior-attempts-btn { --swml-rail-hue: #7CC4F8; }  /* Previous Assessments — its own sky */
+.swml-cmp-poem-btn       { --swml-rail-hue: #FF6B81; }  /* Comparison Poem — rose */
+
+/* LIGHT theme — the dark-theme hues are tuned for a dark chip and go washy on white,
+   so each drops to its darker sibling (the same colour these buttons already use in
+   .swml-canvas-light .is-active). Both light mechanisms in this file are covered:
+   the [data-swml-theme] attribute AND the .swml-canvas-light class. */
+[data-swml-theme="light"] .swml-outline-btn,
+.swml-canvas-light .swml-outline-btn                { --swml-rail-hue: #1668B0; }
+[data-swml-theme="light"] .swml-collapse-all-btn,
+.swml-canvas-light .swml-collapse-all-btn           { --swml-rail-hue: #12849B; }
+[data-swml-theme="light"] .swml-resources-trigger,
+.swml-canvas-light .swml-resources-trigger          { --swml-rail-hue: #2D7A78; }
+[data-swml-theme="light"] .swml-wp-trigger,
+.swml-canvas-light .swml-wp-trigger                 { --swml-rail-hue: #A8730A; }
+[data-swml-theme="light"] .swml-sc-trigger,
+.swml-canvas-light .swml-sc-trigger                 { --swml-rail-hue: #C43D80; }
+[data-swml-theme="light"] .swml-ss-trigger,
+.swml-canvas-light .swml-ss-trigger                 { --swml-rail-hue: #C2551F; }
+[data-swml-theme="light"] .swml-prior-attempts-btn,
+.swml-canvas-light .swml-prior-attempts-btn         { --swml-rail-hue: #1668B0; }
+[data-swml-theme="light"] .swml-cmp-poem-btn,
+.swml-canvas-light .swml-cmp-poem-btn               { --swml-rail-hue: #C2334C; }
 /* ── Light mode — Outline ── */
 .swml-canvas-light .swml-outline-panel {
     background: #ffffff; /* v7.19.49: solid white — was rgba 0.92 see-through */
