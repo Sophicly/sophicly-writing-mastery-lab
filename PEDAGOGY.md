@@ -808,3 +808,52 @@ is untouched (§8): quizzes are for maxing out through repetition. This ruling g
 **Watch-it for the next build.** "Reveal at the end" is a property of the COMPONENT
 FAMILY, not of one component. Any new interactive that scores multiple items inherits
 it by default — a component shipping per-question verdicts is a defect, not a variant.
+
+---
+
+## §14. A STORY IS FINISHED TO FIRST DRAFT BEFORE A NEW ONE BEGINS — the CW project checkpoint (Neil, ruled 2026-07-25)
+
+**THE RULING.** Creative Writing is deliberately MULTI-PROJECT: a student is meant to write two or
+three different stories. But they may not start a new story on a whim. The gate is a **HARD gate
+with NO exceptions**:
+
+> **To CREATE a new story, the active story must have completed STEP 9 (Draft 1 – Prose Style)
+> AND TRIAL 1 (Story Coherence).**
+
+**Neil's reasoning, recorded because it is the load-bearing part.** The obvious objection is the
+student four steps into an idea that is genuinely dead — why force them to draft it? Neil's answer:
+*"the problem is they might think that ANY story is dead."* Left to a soft gate, "this one's dead"
+becomes the universal escape hatch and nobody finishes anything. Reaching Draft 1 is what earns them
+the thing that actually resolves the doubt — **feedback**: they get marked, they see what they could
+have done better, they learn how to improve, **and they get a chance to fix the story**. A premise
+that still looks dead after a full first draft and Trial 1 is a judgement made with evidence; one
+made at Step 4 is a guess. A proposal for "one deliberate discard before the checkpoint" was put to
+Neil and **explicitly rejected** — do not reintroduce it.
+
+**SWITCHING IS FREE — only CREATING is gated (Neil, same ruling).** A student may move between
+stories they already have, whenever they like, with no checkpoint test. Gating switching would trap
+a student in whichever story they last opened, which is a bug wearing a checkpoint's clothes. The
+behaviour being prevented is *constantly starting again*, and that is creation, not navigation.
+
+**PER-STORY IS A DISPLAY SCOPE ONLY — SCORING IS ALWAYS GLOBAL.** This is the anti-penalty law, and
+it is the half most likely to be got wrong by a later change:
+- **STORY ring** = the active story's steps. Resets to 0 for a new story. This is correct and is not
+  a penalty — it is a description of that story.
+- **COURSE ring** = every step the student has ever completed, **across all stories. It never goes
+  down.** A student who writes three stories has done MORE work, never less.
+- **Grades, process score, and course completion count ALL work across ALL stories, always.**
+- The two rings are **both shown, both labelled, and neither replaces the other.** "Course" always
+  means the course. Never overload one ring with two meanings — a returning student watching their
+  course drop from 60% to 8% on starting story 2 is the exact penalty this law exists to forbid.
+
+**PREREQUISITE — the in-order scorer must be fixed BEFORE multi-story ships.** A student working two
+stories necessarily completes course steps out of sequence. `compute_in_order()`
+(`sophicly-student-data/includes/class-wml-rest-api.php:5624`) counts completed steps only while
+CONTIGUOUS — the first gap zeroes everything after it. So multi-story students are precisely the
+population that scorer punishes, and shipping multi-story on top of it would build Neil's stated
+worry ("them getting penalized") into the product. Fix the scorer first, or ship them together.
+
+**Watch-it for the build.** The checkpoint and the per-story completion writer hang off the same
+event — "a CW step was completed on THIS story" — so they are one piece of work, not two. And the
+gate must read the *project's* `step_completion`, never LearnDash's global state: LD would report
+Step 9 complete from story one and wave story three straight through.

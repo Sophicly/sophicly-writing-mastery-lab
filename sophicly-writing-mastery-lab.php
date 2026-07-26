@@ -2,18 +2,65 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.299
+ * Version: 7.20.300
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.299');
+define('SWML_VERSION', '7.20.300');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
+
+if ( ! function_exists( 'sophicly_review_target_id' ) ) {
+    /**
+     * v7.20.300: THE ONE canonical review-target resolver. Every WML read site calls this —
+     * never a literal `$_GET['student_id']` again.
+     *
+     * Why it exists: the theme was updated to emit `view_as` and to actively STRIP `student_id`
+     * (`etch-theme-child/single-sfwd-focus.php:109`, v5.86), while WML still read `student_id`
+     * only. So every link the new "View a student" picker generates was invisible to WML: the
+     * LearnDash page entered review mode, the canvas did not, and Neil — reviewing Adam Qureshi
+     * (1387) — was shown HIS OWN document. The write-key ≠ read-key class (root CLAUDE.md §5d).
+     *
+     * Accepting both forms is not enough on its own; the reason this is a shared FUNCTION rather
+     * than a repeated ternary is so a third param form can never fork the two sides again.
+     * Mirrors the theme's own reconcile at single-sfwd-focus.php:34 (`view_as` wins, then
+     * `student_id`), so both codebases resolve identically.
+     *
+     * Identity only — this grants NOTHING. Permission is enforced separately and always by
+     * Sophicly_Writing_Mastery_Lab::resolve_viewer_mode() / verify_viewer_access().
+     *
+     * @return int Target user id, or 0 when this is not a review request.
+     */
+    function sophicly_review_target_id() {
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only identity
+        // hint, absint'd, and authorised downstream by resolve_viewer_mode().
+        $sources = array(
+            $_GET['view_as']     ?? null,
+            $_GET['student_id']  ?? null,
+            $_POST['view_as']    ?? null,
+            $_POST['student_id'] ?? null,
+        );
+        // phpcs:enable
+        foreach ( $sources as $candidate ) {
+            $id = absint( $candidate );
+            if ( $id ) { return $id; }
+        }
+        return 0;
+    }
+}
+
+/**
+ * The query params that put WML into review mode. Anything building an EXIT-review URL must strip
+ * EVERY one of them or the exit half-works (v7.20.300 — the JS builder stripped only student_id).
+ */
+if ( ! defined( 'SWML_REVIEW_PARAMS' ) ) {
+    define( 'SWML_REVIEW_PARAMS', 'view_as,student_id' );
+}
 
 /**
  * Main plugin class
@@ -102,15 +149,18 @@ class Sophicly_Writing_Mastery_Lab {
 
     /**
      * v7.15.57: Refuse LearnDash Mark Complete POSTs made while the request
-     * context includes ?student_id=X where X is not the authenticated user.
-     * LD's form fires on the current URL, so $_GET['student_id'] is set when
-     * a reviewer POSTs from the focus-mode page.
+     * context targets a user who is not the authenticated one.
+     * LD's form fires on the current URL, so the review param (?view_as= or the
+     * legacy ?student_id=) is present when a reviewer POSTs from the focus page.
+     * v7.20.300: resolved via sophicly_review_target_id(), never a literal param.
      */
     public function block_review_mark_complete() {
         // LD Mark Complete form always posts the `sfwd_mark_complete` hidden input.
         if (empty($_POST) || empty($_POST['sfwd_mark_complete'])) return;
 
-        $target = absint($_GET['student_id'] ?? ($_POST['student_id'] ?? 0));
+        // v7.20.300: was `student_id` only, so a reviewer on a `view_as` link could mark the
+        // STUDENT's lesson complete against them. Now the one canonical resolver.
+        $target = sophicly_review_target_id();
         if (!$target) return;
 
         $viewer = get_current_user_id();
@@ -478,6 +528,7 @@ class Sophicly_Writing_Mastery_Lab {
                                   || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist'
                                   || get_user_meta(get_current_user_id(), 'sophicly_role', true) === 'sss',
             'reviewMode'       => $review_mode,
+            'reviewParams'     => explode(',', SWML_REVIEW_PARAMS),  // v7.20.300: ONE source for the exit-review strip
             'reviewRole'       => $review_role,  // v7.15.40: 'tutor' | 'specialist' | 'admin' | 'parent' | ''
             'reviewStudentId'  => $review_student_id,
             'reviewStudentName' => $review_student_name,
@@ -997,7 +1048,7 @@ class Sophicly_Writing_Mastery_Lab {
         if (!wp_script_is('swml-core', 'done')) {
             // v7.15.40: review mode must work in embedded (LearnDash lesson) context
             // too, not just on the standalone /writing-mastery-lab/ page. Parent
-            // read-only access + tutor review both gate off $_GET['student_id'].
+            // read-only access + tutor review both gate off sophicly_review_target_id().
             $embed_review = $this->resolve_review_context();
 
             wp_localize_script('swml-core', 'swmlConfig', [
@@ -1015,6 +1066,7 @@ class Sophicly_Writing_Mastery_Lab {
                                     || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist'
                                     || get_user_meta(get_current_user_id(), 'sophicly_role', true) === 'sss',
                 'reviewMode'        => $embed_review['review_mode'],
+                'reviewParams'      => explode(',', SWML_REVIEW_PARAMS),  // v7.20.300
                 'reviewRole'        => $embed_review['review_role'],
                 'reviewStudentId'   => $embed_review['student_id'],
                 'reviewStudentName' => $embed_review['student_name'],
@@ -1073,7 +1125,10 @@ class Sophicly_Writing_Mastery_Lab {
     }
 
     /**
-     * v7.15.40: Resolve review-mode context from $_GET['student_id'].
+     * v7.15.40: Resolve review-mode context from the review param.
+     * v7.20.300: via sophicly_review_target_id() — accepts `view_as` (what the theme
+     * emits since v5.86) AND the legacy `student_id`. Reading only the latter is what
+     * made the canvas serve the reviewer their OWN document.
      * Used by both the standalone page handler AND the embedded shortcode
      * handler so review mode works in either context (direct /writing-mastery-lab/
      * URL OR inside a LearnDash lesson that embeds WML via shortcode).
@@ -1097,7 +1152,10 @@ class Sophicly_Writing_Mastery_Lab {
             'viewer_mode'    => 'edit',
             'target_user_id' => 0,
         ];
-        $student_id = absint($_GET['student_id'] ?? 0);
+        // v7.20.300: THE line that broke the canvas. Read `student_id` only, while the theme had
+        // moved to `view_as` and strips `student_id` — so this bailed, review_mode stayed false,
+        // and the reviewer was served their OWN document.
+        $student_id = sophicly_review_target_id();
         if (!$student_id) return $out;
 
         $current_uid = get_current_user_id();

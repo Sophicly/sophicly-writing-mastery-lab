@@ -21087,7 +21087,15 @@
                 rb.appendChild(_vas);
             }
             let _exitUrl = '#';
-            try { const _u = new URL(window.location.href); _u.searchParams.delete('student_id'); _exitUrl = _u.pathname + _u.search + _u.hash; } catch (e) {}
+            // v7.20.300: strip EVERY review param, not just student_id. The theme now links with
+            // `view_as`, so deleting student_id alone left the reviewer still in review mode —
+            // "Exit review" that does not exit. Keep this list in step with SWML_REVIEW_PARAMS.
+            try {
+                const _u = new URL(window.location.href);
+                (window.swmlConfig?.reviewParams || ['view_as', 'student_id'])
+                    .forEach((p) => _u.searchParams.delete(p));
+                _exitUrl = _u.pathname + _u.search + _u.hash;
+            } catch (e) {}
             rb.appendChild(el('a', { className: 'swml-tutor-banner-exit', href: _exitUrl, textContent: 'Exit review' }));
             rbBar.appendChild(rb);
             contentWrap.appendChild(rbBar);
