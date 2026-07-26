@@ -2471,14 +2471,20 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* The revealed icon is the SAME icon in the ink that reads on the flooded chip —
    so as the circle sweeps past, background and icon change together as one tile.
-   v7.20.306: that ink is now DERIVED from the flood colour rather than being flat black —
-   the icon is a deeper shade of the very colour behind it, so each control reads as one
-   tinted object instead of a black glyph sitting on a colour. Derived with color-mix so
-   there is no second palette to keep in sync: change a hue and its ink follows.
-   The flat value below stays first as the fallback for any engine without color-mix. */
+   v7.20.306: that ink is DERIVED from the flood colour rather than being flat black — the
+   icon is a deeper shade of the very colour behind it, so each control reads as one tinted
+   object instead of a black glyph on a colour. Derived with color-mix so there is no second
+   palette to keep in sync: change a hue and its ink follows.
+
+   v7.20.307: mixed HARDER — 62% hue against black was too close in value to the flood behind
+   it and the icon was difficult to read at 16px. At 30% the ink keeps the hue's identity (it
+   is still visibly that colour, not black) while clearing enough tonal distance from the
+   flood to be legible. Contrast at icon sizes comes from VALUE difference, not hue
+   difference; two shades of the same colour a few percent apart will always mush together.
+   The flat value stays first as the fallback for any engine without color-mix. */
 .swml-outline-btn > svg.swml-rail-hue {
     color: var(--swml-rail-ink, #16181B);
-    color: color-mix(in srgb, var(--swml-rail-hue) 62%, #000);
+    color: color-mix(in srgb, var(--swml-rail-hue) 30%, #000);
     clip-path: circle(0.1px at 50% 50%);
     opacity: 0;
     transition: clip-path 1.5s ease 0.2s, opacity 0.4s ease;
@@ -2543,7 +2549,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 [data-swml-theme="light"] .swml-outline-btn > svg.swml-rail-hue,
 .swml-canvas-light .swml-outline-btn > svg.swml-rail-hue {
     color: var(--swml-rail-ink, #FFFFFF);
-    color: color-mix(in srgb, var(--swml-rail-hue) 20%, #fff);
+    /* v7.20.307: 8%, not 20% — same reasoning as the dark theme, inverted. The light flood is
+       already deep, so the icon needs to sit near white to carry; a heavier tint dragged it
+       toward the background value and it disappeared. */
+    color: color-mix(in srgb, var(--swml-rail-hue) 8%, #fff);
 }
 
 /* The light theme already had `transform: translateY(-1px)` on hover at a higher specificity,
