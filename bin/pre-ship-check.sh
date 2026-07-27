@@ -163,6 +163,19 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw1-loop-harness.js || fail=1
 fi
 
+# v7.20.319: RAIL PANEL GATE. Neil could not resize ANY rail panel. The v7.20.317 intrinsic width
+# band (max-width:380px) beat the inline width every resize handler wrote, so the drag ran perfectly
+# and the browser discarded the result — no error, no warning, invisible to node --check and to
+# eslint alike, because a CSS-vs-JS clamp is not a code defect in either file. Separately, the .318
+# port of Previous Assessments copied the shared CSS but not the interaction, so that panel had no
+# handles and no detach button at all. This drives the REAL _wireRailPanel against a fake DOM and
+# also asserts that all four panels route through it — a fifth panel that hand-rolls its own copy,
+# or a CSS rule that hides a handle the JS accepts, fails here instead of in front of a student.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-canvas\.css|rail-panel-harness\.js'; then
+  node bin/rail-panel-harness.js || fail=1
+fi
+
 # v7.20.290: WALK STOP-RULE GATE. A code-owned walk means CODE serves every ask; if the protocol
 # does not order the model to END its reply at the verdict signal, the model invents the next ask
 # and the student sees TWO competing questions (Neil's live catch: Step 4 doubled every beat from 2

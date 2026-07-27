@@ -21408,7 +21408,7 @@
                 onClick: () => {
                     resPanel.classList.remove('swml-resources-open');
                     resTrigger.classList.remove('is-active');
-                    if (resFloating) {
+                    if (resCtl && resCtl.isFloating()) {
                         // Fade out first, then dock after transition completes
                         resPanel.style.opacity = '0';
                         resPanel.style.transform = 'translateX(-12px)';
@@ -21655,7 +21655,7 @@
                     wpTrigger.classList.remove('is-active');
                     if (scTrigger) scTrigger.classList.remove('is-active'); // v7.20.291/.292: all three triggers share this shell
                     if (ssTrigger) ssTrigger.classList.remove('is-active');
-                    if (wpFloating) { wpPanel.style.opacity = '0'; wpPanel.style.transform = 'translateX(-12px)'; setTimeout(() => { dockWp(); wpPanel.style.opacity = ''; wpPanel.style.transform = ''; }, 250); }
+                    if (wpCtl.isFloating()) { wpPanel.style.opacity = '0'; wpPanel.style.transform = 'translateX(-12px)'; setTimeout(() => { dockWp(); wpPanel.style.opacity = ''; wpPanel.style.transform = ''; }, 250); }
                 }
             });
             wpHeader.appendChild(wpClose);
@@ -21754,88 +21754,20 @@
             });
             btnColumn.appendChild(ssTrigger);
 
-            // ── float / dock / drag / resize / click-outside (mirror of the resources panel) ──
-            let wpFloating = false;
-            function toggleWpFloat() { wpFloating ? dockWp() : floatWp(); }
-            // v7.19.481: float moves the panel to document.body so position:fixed
-            // escapes the LD focus-mode wrapper's stacking context. A transformed
-            // ancestor traps the fixed panel behind the course sidebar — high z-index
-            // alone can't beat it (mirrors the outline panel's v7.19.91 fix).
-            let wpOriginalParent = null, wpOriginalNextSibling = null;
-            function floatWp() {
-                const rect = wpPanel.getBoundingClientRect();
-                wpFloating = true;
-                wpPanel.classList.add('swml-outline-detached');
-                wpPanel.style.position = 'fixed';
-                // Viewport-relative rect captured before the move (fixed is viewport-anchored).
-                wpPanel.style.left = rect.left + 'px';
-                wpPanel.style.top = (rect.top - 24) + 'px';
-                wpPanel.style.width = rect.width + 'px';
-                wpPanel.style.height = (rect.height + 24) + 'px';
-                if (wpPanel.parentNode && wpPanel.parentNode !== document.body) {
-                    wpOriginalParent = wpPanel.parentNode;
-                    wpOriginalNextSibling = wpPanel.nextSibling;
-                    document.body.appendChild(wpPanel);
-                }
-                wpDetachBtn.innerHTML = SVG_DOCK; wpDetachBtn.title = 'Dock panel';
-            }
-            function dockWp() {
-                wpFloating = false;
-                wpPanel.classList.remove('swml-outline-detached');
-                wpPanel.style.cssText = '';
-                if (wpOriginalParent) {
-                    if (wpOriginalNextSibling && wpOriginalNextSibling.parentNode === wpOriginalParent) {
-                        wpOriginalParent.insertBefore(wpPanel, wpOriginalNextSibling);
-                    } else {
-                        wpOriginalParent.appendChild(wpPanel);
-                    }
-                    wpOriginalParent = null; wpOriginalNextSibling = null;
-                }
-                wpDetachBtn.innerHTML = SVG_DETACH; wpDetachBtn.title = 'Detach panel';
-            }
-            let wpDragging = false, wpLastX = 0, wpLastY = 0;
-            wpGrip.addEventListener('mousedown', (e) => {
-                if (!wpFloating || e.button !== 0) return;
-                e.preventDefault(); e.stopPropagation();
-                wpDragging = true; wpLastX = e.clientX; wpLastY = e.clientY; wpGrip.style.cursor = 'grabbing';
+            // ── float / dock / drag / resize — v7.20.319: the ONE shared rail-panel layer ──
+            // This shell serves three rail buttons, so the dock re-anchor resolves through the
+            // same _wpTriggerFor mapping the opener uses — never a remembered second copy.
+            const wpCtl = _wireRailPanel(wpPanel, {
+                header: wpHeader,
+                grip: wpGrip,
+                detachBtn: wpDetachBtn,
+                anchorTrigger: function () { return _wpTriggerFor(wpMode); }
             });
-            document.addEventListener('mousemove', (e) => {
-                if (!wpDragging) return;
-                wpPanel.style.left = (parseFloat(wpPanel.style.left) + e.clientX - wpLastX) + 'px';
-                wpPanel.style.top = (parseFloat(wpPanel.style.top) + e.clientY - wpLastY) + 'px';
-                wpLastX = e.clientX; wpLastY = e.clientY;
-            });
-            document.addEventListener('mouseup', () => { if (wpDragging) { wpDragging = false; wpGrip.style.cursor = ''; } });
-            let _wpJustResized = false;
-            let wpR = false, wpRDir = '', wpRSX = 0, wpRSY = 0, wpRSW = 0, wpRSH = 0, wpRSL = 0, wpRST = 0;
-            wpPanel.querySelectorAll('.swml-outline-rh').forEach(h => {
-                h.addEventListener('mousedown', (e) => {
-                    if (e.button !== 0) return;
-                    const dirOnly = h.dataset.dir;
-                    const dockedOk = dirOnly === 'e' || dirOnly === 'ne' || dirOnly === 'se';
-                    if (!wpFloating && !dockedOk) return;
-                    e.preventDefault(); e.stopPropagation();
-                    wpR = true; wpRDir = dirOnly; wpRSX = e.clientX; wpRSY = e.clientY;
-                    wpRSW = parseFloat(wpPanel.style.width) || wpPanel.getBoundingClientRect().width;
-                    wpRSH = parseFloat(wpPanel.style.height) || wpPanel.getBoundingClientRect().height;
-                    wpRSL = parseFloat(wpPanel.style.left) || 0; wpRST = parseFloat(wpPanel.style.top) || 0;
-                });
-            });
-            document.addEventListener('mousemove', (e) => {
-                if (!wpR) return;
-                const dx = e.clientX - wpRSX, dy = e.clientY - wpRSY;
-                let w = wpRSW, h = wpRSH, l = wpRSL, t = wpRST;
-                if (wpRDir.includes('e')) w = Math.max(180, wpRSW + dx);
-                if (wpRDir.includes('w')) { w = Math.max(180, wpRSW - dx); l = wpRSL + (wpRSW - w); }
-                if (wpRDir.includes('s')) h = Math.max(200, wpRSH + dy);
-                if (wpRDir.includes('n')) { h = Math.max(200, wpRSH - dy); t = wpRST + (wpRSH - h); }
-                if (!wpFloating) { wpPanel.style.width = Math.min(w, _swmlDockedMaxW(wpPanel)) + 'px'; } // v7.20.293: docked width can't exceed the clipping scroll container
-                else { Object.assign(wpPanel.style, { width: w + 'px', height: h + 'px', left: l + 'px', top: t + 'px' }); }
-            });
-            document.addEventListener('mouseup', () => { if (wpR) { _wpJustResized = true; setTimeout(() => { _wpJustResized = false; }, 50); } wpR = false; });
+            function toggleWpFloat() { wpCtl.toggleFloat(); }
+            function dockWp() { wpCtl.dock(); }
             contentWrap.addEventListener('click', (e) => {
                 if (!wpPanel.classList.contains('swml-resources-open')) return;
-                if (wpFloating || _wpJustResized) return;
+                if (wpCtl.isFloating() || wpCtl.justResized()) return;
                 // v7.20.291: BOTH triggers own this shell — without .swml-sc-trigger here the
                 // Story Components click would be treated as "outside" and close the panel it
                 // had just opened.
@@ -22192,6 +22124,10 @@
         }
 
         function openIndexPanel() {
+            // v7.20.319: mutually exclusive with the rail panels — see _closeOtherRailPanels.
+            // Runs BEFORE siOpen/the classes are set, so the closer it invokes for the island
+            // itself is a no-op on a not-yet-open island rather than an instant re-close.
+            _closeOtherRailPanels(null);
             buildIndexList();
             siOpen = true;
             scrollIndex.classList.add('is-open');
@@ -22226,6 +22162,9 @@
             siBackdrop.classList.remove('is-open');
             siNav.style.maxHeight = '0px';
         }
+        // v7.20.319: hand the closer to the shared rail-panel exclusivity helper (module scope).
+        // Idempotent, so calling it on an already-closed island is free.
+        _swmlIslandCloser = closeIndexPanel;
         siHead.addEventListener('click', () => { siOpen ? closeIndexPanel() : openIndexPanel(); });
         siBackdrop.addEventListener('click', () => { if (siOpen) closeIndexPanel(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && siOpen) closeIndexPanel(); });
@@ -22270,7 +22209,7 @@
             // styles + body parentage clear and the panel can hide cleanly.
             // Otherwise the close-class toggle fires but inline position:fixed
             // + size styles keep the panel visible — looks "jammed".
-            if (!next && outlineFloating) {
+            if (!next && outlineCtl.isFloating()) {
                 dockOutline();
             }
             outlineOpen = next;
@@ -22296,25 +22235,31 @@
         // Close outline panel when clicking outside it (within canvas area)
         contentWrap.addEventListener('click', (e) => {
             if (!outlineOpen) return;
-            if (outlineFloating) return; // Don't auto-close when detached (v7.12.40)
+            if (outlineCtl.isFloating()) return; // Don't auto-close when detached (v7.12.40)
             // v7.19.92: ignore the synthetic click that fires when a resize-drag
             // ends with the cursor outside the panel (east-edge drag pulls the
             // edge inward → mouseup lands on canvas → click target = canvas).
-            if (_olJustResized) return;
+            if (outlineCtl.justResized()) return;
             if (outlinePanel.contains(e.target) || outlineBtn.contains(e.target)) return;
             // Don't close when interacting with score dropdowns (v7.12.38)
             if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return; // v7.19.951: widgets live in in-flow control rows now (+ body-portaled popovers)
             toggleOutlinePanel(false);
         });
-        // v7.19.92: short-lived flag set on resize end, cleared by next tick.
-        let _olJustResized = false;
-
         // ── Detachable Outline Panel (v7.12.40) ──
-        let outlineFloating = false;
-
-        function toggleOutlineFloat() {
-            outlineFloating ? dockOutline() : floatOutline();
-        }
+        // v7.20.319: float / dock / grip-drag / resize now come from the ONE shared rail-panel
+        // layer (_wireRailPanel, module scope). This block used to be ~140 lines, duplicated
+        // three times over with drift between the copies. `syncNegativeMargin` is outline-only —
+        // it mirrors the panel's width into a negative marginRight, a leftover of the old
+        // sticky-margin layout that the other rail panels never carried.
+        const outlineCtl = _wireRailPanel(outlinePanel, {
+            header: outlinePanelHeader,
+            grip: dragGrip,
+            detachBtn: detachBtn,
+            anchorTrigger: outlineBtn,
+            syncNegativeMargin: true
+        });
+        function toggleOutlineFloat() { outlineCtl.toggleFloat(); }
+        function dockOutline() { outlineCtl.dock(); }
 
         // v7.14.96: Detect containing-block offset for position:fixed panels.
         // If any ancestor has transform/filter/will-change, fixed positioning is relative
@@ -22329,221 +22274,28 @@
             return { x: origin.left, y: origin.top };
         }
 
-        // v7.19.91: stash the original parent + next-sibling so dockOutline()
-        // can restore the panel to its in-flow position. Floating moves DOM to
-        // document.body so position:fixed escapes ancestor CSS transforms (LD
-        // focus-mode wrapper) — high z-index alone isn't enough when an ancestor
-        // creates a stacking context via `transform`/`filter`/`will-change`.
-        let outlineOriginalParent = null;
-        let outlineOriginalNextSibling = null;
-
-        function floatOutline() {
-            const rect = outlinePanel.getBoundingClientRect();
-            outlineFloating = true;
-            outlinePanel.classList.add('swml-outline-detached');
-            outlinePanel.style.position = 'fixed';
-            // Capture viewport-relative rect BEFORE moving to body (rect math
-            // unchanged since position:fixed is viewport-anchored either way).
-            outlinePanel.style.left = rect.left + 'px';
-            outlinePanel.style.top = (rect.top - 24) + 'px'; // -24 for grip bar
-            outlinePanel.style.width = rect.width + 'px';
-            outlinePanel.style.height = (rect.height + 24) + 'px'; // +24 for grip bar
-            // Stash position in DOM tree, then move to body root.
-            if (outlinePanel.parentNode && outlinePanel.parentNode !== document.body) {
-                outlineOriginalParent = outlinePanel.parentNode;
-                outlineOriginalNextSibling = outlinePanel.nextSibling;
-                document.body.appendChild(outlinePanel);
-            }
-            detachBtn.innerHTML = SVG_DOCK;
-            detachBtn.title = 'Dock panel';
-        }
-
-        function dockOutline() {
-            outlineFloating = false;
-            outlinePanel.classList.remove('swml-outline-detached');
-            outlinePanel.style.cssText = '';
-            // Restore to original parent so docked layout (sticky margin) works.
-            if (outlineOriginalParent) {
-                if (outlineOriginalNextSibling && outlineOriginalNextSibling.parentNode === outlineOriginalParent) {
-                    outlineOriginalParent.insertBefore(outlinePanel, outlineOriginalNextSibling);
-                } else {
-                    outlineOriginalParent.appendChild(outlinePanel);
-                }
-                outlineOriginalParent = null;
-                outlineOriginalNextSibling = null;
-            }
-            detachBtn.innerHTML = SVG_DETACH;
-            detachBtn.title = 'Detach panel';
-        }
-
-        // Drag via grip bar — v7.14.96: delta-based movement (immune to containing-block offsets)
-        let olDragging = false, olLastX = 0, olLastY = 0;
-        dragGrip.addEventListener('mousedown', (e) => {
-            if (!outlineFloating || e.button !== 0) return;
-            e.preventDefault(); e.stopPropagation();
-            olDragging = true;
-            olLastX = e.clientX;
-            olLastY = e.clientY;
-            dragGrip.style.cursor = 'grabbing';
-        });
-        document.addEventListener('mousemove', (e) => {
-            if (!olDragging) return;
-            outlinePanel.style.left = (parseFloat(outlinePanel.style.left) + e.clientX - olLastX) + 'px';
-            outlinePanel.style.top = (parseFloat(outlinePanel.style.top) + e.clientY - olLastY) + 'px';
-            olLastX = e.clientX;
-            olLastY = e.clientY;
-        });
-        document.addEventListener('mouseup', () => {
-            if (olDragging) { olDragging = false; dragGrip.style.cursor = ''; }
-        });
-
-        // 8-direction resize — v7.14.96: use CSS values, not getBoundingClientRect (containing-block safe)
-        let olResizing = false, olResDir = '', olRSX = 0, olRSY = 0, olRSW = 0, olRSH = 0, olRSL = 0, olRST = 0;
-        const OL_MIN_W = 180, OL_MIN_H = 200;
-        outlinePanel.querySelectorAll('.swml-outline-rh').forEach(h => {
-            h.addEventListener('mousedown', (e) => {
-                if (e.button !== 0) return;
-                // v7.19.49: east edge works in docked + detached states (width
-                // resize). Other directions still detached-only (need free
-                // top/left, not viable inside the sticky margin layout).
-                // v7.19.91: ne + se corners also allowed when docked — they
-                // adjust width only (height ignored, sticky margin pins it).
-                const dirOnly = h.dataset.dir;
-                const dockedOk = dirOnly === 'e' || dirOnly === 'ne' || dirOnly === 'se';
-                if (!outlineFloating && !dockedOk) return;
-                e.preventDefault(); e.stopPropagation();
-                olResizing = true;
-                olResDir = dirOnly;
-                olRSX = e.clientX; olRSY = e.clientY;
-                // Docked panel has no inline width yet → fall back to actual rect.
-                const rectW = outlinePanel.getBoundingClientRect().width;
-                const rectH = outlinePanel.getBoundingClientRect().height;
-                olRSW = parseFloat(outlinePanel.style.width) || rectW;
-                olRSH = parseFloat(outlinePanel.style.height) || rectH;
-                olRSL = parseFloat(outlinePanel.style.left) || 0;
-                olRST = parseFloat(outlinePanel.style.top) || 0;
-            });
-        });
-        document.addEventListener('mousemove', (e) => {
-            if (!olResizing) return;
-            const dx = e.clientX - olRSX, dy = e.clientY - olRSY;
-            let w = olRSW, h = olRSH, l = olRSL, t = olRST;
-            if (olResDir.includes('e')) w = Math.max(OL_MIN_W, olRSW + dx);
-            if (olResDir.includes('w')) { w = Math.max(OL_MIN_W, olRSW - dx); l = olRSL + (olRSW - w); }
-            if (olResDir.includes('s')) h = Math.max(OL_MIN_H, olRSH + dy);
-            if (olResDir.includes('n')) { h = Math.max(OL_MIN_H, olRSH - dy); t = olRST + (olRSH - h); }
-            // v7.19.49: when docked, only set width — height/top/left would
-            // fight the sticky margin layout (margin: -30px -220px 0 8px).
-            // Sync the negative right margin so float-over math stays correct.
-            if (!outlineFloating) {
-                w = Math.min(w, _swmlDockedMaxW(outlinePanel)); // v7.20.293: docked width can't exceed the clipping scroll container
-                outlinePanel.style.width = w + 'px';
-                outlinePanel.style.marginRight = (-w) + 'px';
-            } else {
-                Object.assign(outlinePanel.style, { width: w+'px', height: h+'px', left: l+'px', top: t+'px' });
-            }
-        });
-        document.addEventListener('mouseup', () => {
-            if (olResizing) {
-                // v7.19.92: prime the flag so the next click event (synthesised
-                // from this mouseup) doesn't trigger close-on-click-outside.
-                _olJustResized = true;
-                setTimeout(() => { _olJustResized = false; }, 50);
-            }
-            olResizing = false;
-        });
+        /* v7.20.319 — floatOutline / dockOutline / grip-drag / 8-direction resize used to live
+           here (~120 lines) and were duplicated, with drift, on the resources and profile panels.
+           They are now the single _wireRailPanel implementation at module scope, which keeps the
+           v7.19.91 reparent-to-<body> float verbatim and adds the two things every copy lacked:
+           releasing the v7.20.317 intrinsic width band (which silently made docked resizing a
+           no-op) and allowing the south edge while docked. See `outlineCtl` above. */
 
         // ── Detachable Resources Panel (v7.13.53) ──
-        let resFloating = false;
-        function toggleResFloat() {
-            if (!resPanel) return;
-            resFloating ? dockRes() : floatRes();
-        }
-        function floatRes() {
-            const rect = resPanel.getBoundingClientRect();
-            resFloating = true;
-            resPanel.classList.add('swml-outline-detached');
-            resPanel.style.position = 'fixed';
-            const origin = getFixedOriginOffset(resPanel);
-            resPanel.style.left = (rect.left - origin.x) + 'px';
-            resPanel.style.top = (rect.top - 24 - origin.y) + 'px'; // -24 to compensate for grip bar appearing at top
-            resPanel.style.width = rect.width + 'px';
-            resPanel.style.height = (rect.height + 24) + 'px'; // +24 for grip bar
-            if (resDetachBtn) { resDetachBtn.innerHTML = SVG_DOCK; resDetachBtn.title = 'Dock panel'; }
-        }
-        function dockRes() {
-            resFloating = false;
-            if (resPanel) {
-                resPanel.classList.remove('swml-outline-detached');
-                resPanel.style.cssText = '';
-            }
-            if (resDetachBtn) { resDetachBtn.innerHTML = SVG_DETACH; resDetachBtn.title = 'Detach panel'; }
-        }
-        // Drag resources panel via grip
+        // v7.20.319: float / dock / grip-drag / resize come from the shared _wireRailPanel layer.
+        // ⚠️ ONE deliberate behaviour change this unifies away: floatRes used to leave the panel in
+        // the rail column and compensate for a transformed ancestor with getFixedOriginOffset(),
+        // while the outline + profile panels REPARENT to <body>. The reparent is the version proven
+        // to escape the LearnDash focus wrapper (v7.19.91), so it is the one that survived.
+        let resCtl = null;
+        function toggleResFloat() { if (resCtl) resCtl.toggleFloat(); }
+        function dockRes() { if (resCtl) resCtl.dock(); }
         if (resPanel) {
-            const resGrip = resPanel.querySelector('.swml-outline-grip');
-            let resDragging = false, resLastX = 0, resLastY = 0;
-            if (resGrip) {
-                resGrip.addEventListener('mousedown', (e) => {
-                    if (!resFloating || e.button !== 0) return;
-                    e.preventDefault(); e.stopPropagation();
-                    resDragging = true;
-                    resLastX = e.clientX;
-                    resLastY = e.clientY;
-                    resGrip.style.cursor = 'grabbing';
-                });
-                document.addEventListener('mousemove', (e) => {
-                    if (!resDragging) return;
-                    resPanel.style.left = (parseFloat(resPanel.style.left) + e.clientX - resLastX) + 'px';
-                    resPanel.style.top = (parseFloat(resPanel.style.top) + e.clientY - resLastY) + 'px';
-                    resLastX = e.clientX;
-                    resLastY = e.clientY;
-                });
-                document.addEventListener('mouseup', () => {
-                    if (resDragging) { resDragging = false; resGrip.style.cursor = ''; }
-                });
-            }
-            // Resize handles for resources panel — v7.14.96: CSS values, not getBoundingClientRect
-            // v7.19.453: parity with the outline panel — east edge + ne/se corners resize WIDTH
-            // while docked (height/top/left fight the sticky margin); all directions when detached.
-            let _resJustResized = false;
-            let rsResizing = false, rsDir = '', rsSX = 0, rsSY = 0, rsSW = 0, rsSH = 0, rsSL = 0, rsST = 0;
-            resPanel.querySelectorAll('.swml-outline-rh').forEach(h => {
-                h.addEventListener('mousedown', (e) => {
-                    if (e.button !== 0) return;
-                    const dirOnly = h.dataset.dir;
-                    const dockedOk = dirOnly === 'e' || dirOnly === 'ne' || dirOnly === 'se';
-                    if (!resFloating && !dockedOk) return;
-                    e.preventDefault(); e.stopPropagation();
-                    rsResizing = true;
-                    rsDir = dirOnly;
-                    rsSX = e.clientX; rsSY = e.clientY;
-                    const rectW = resPanel.getBoundingClientRect().width;
-                    const rectH = resPanel.getBoundingClientRect().height;
-                    rsSW = parseFloat(resPanel.style.width) || rectW;
-                    rsSH = parseFloat(resPanel.style.height) || rectH;
-                    rsSL = parseFloat(resPanel.style.left) || 0;
-                    rsST = parseFloat(resPanel.style.top) || 0;
-                });
-            });
-            document.addEventListener('mousemove', (e) => {
-                if (!rsResizing) return;
-                const dx = e.clientX - rsSX, dy = e.clientY - rsSY;
-                let w = rsSW, h = rsSH, l = rsSL, t = rsST;
-                if (rsDir.includes('e')) w = Math.max(180, rsSW + dx);
-                if (rsDir.includes('w')) { w = Math.max(180, rsSW - dx); l = rsSL + (rsSW - w); }
-                if (rsDir.includes('s')) h = Math.max(200, rsSH + dy);
-                if (rsDir.includes('n')) { h = Math.max(200, rsSH - dy); t = rsST + (rsSH - h); }
-                if (!resFloating) {
-                    // Docked: width only (panel is absolutely positioned in the button column).
-                    resPanel.style.width = Math.min(w, _swmlDockedMaxW(resPanel)) + 'px'; // v7.20.293: docked width can't exceed the clipping scroll container
-                } else {
-                    Object.assign(resPanel.style, { width: w+'px', height: h+'px', left: l+'px', top: t+'px' });
-                }
-            });
-            document.addEventListener('mouseup', () => {
-                if (rsResizing) { _resJustResized = true; setTimeout(() => { _resJustResized = false; }, 50); }
-                rsResizing = false;
+            // Header + grip resolve from the panel's own DOM; the detach button is passed because
+            // it was built with its own onClick (which routes back through toggleResFloat above).
+            resCtl = _wireRailPanel(resPanel, {
+                detachBtn: resDetachBtn,
+                anchorTrigger: function () { return contentWrap.querySelector('.swml-resources-trigger'); }
             });
             // v7.19.453: close the resources panel when clicking outside it (parity with the
             // outline panel). Skips detached mode + the synthetic click after a resize-drag.
@@ -22552,7 +22304,7 @@
             // never ran, which is why click-outside didn't work).
             contentWrap.addEventListener('click', (e) => {
                 if (!resPanel.classList.contains('swml-resources-open')) return;
-                if (resFloating || _resJustResized) return;
+                if (resCtl.isFloating() || resCtl.justResized()) return;
                 if (resPanel.contains(e.target) || e.target.closest('.swml-resources-trigger')) return;
                 if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return; // v7.19.951: widgets live in in-flow control rows now (+ body-portaled popovers)
                 resPanel.classList.remove('swml-resources-open');
@@ -24493,6 +24245,7 @@
             return list;
         }
         let _paBodyWrap = null;
+        let _paCtl = null;   // v7.20.319: the shared rail-panel interaction controller
         // v7.20.318 (Neil): "the Previous Assessments panel has slightly different styling to the
         // others — can we not create a default style for the panels, not just colours but how they
         // animate." It DID differ, at the root: every other rail panel is a
@@ -24533,6 +24286,23 @@
             _paNoteEl.style.display = 'none';
             panel.appendChild(_paNoteEl);
             btnColumn.appendChild(panel);
+            // v7.20.319 (Neil): "I can't resize it and there's no detach button." The .318 port
+            // matched the shared CSS but dropped the interaction layer entirely, so this panel
+            // alone had no grip, no detach and no resize handles — it did not even show a resize
+            // cursor, which is exactly how it differed from its three siblings. It now calls the
+            // same _wireRailPanel every other rail panel does, so it gets all three by
+            // construction and cannot drift again.
+            _paCtl = _wireRailPanel(panel, { header: hdr, anchorTrigger: anchorBtn });
+            // Click-outside parity with the other rail panels (this one never had it). Skips
+            // detached mode and the synthetic click that a resize-drag's mouseup produces.
+            contentWrap.addEventListener('click', function (e) {
+                if (!panel.classList.contains('swml-resources-open')) return;
+                if (_paCtl.isFloating() || _paCtl.justResized()) return;
+                if (panel.contains(e.target) || e.target.closest('.swml-prior-attempts-btn')) return;
+                if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return;
+                panel.classList.remove('swml-resources-open');
+                anchorBtn.classList.remove('is-active');
+            });
             return panel;
         }
         async function _paTogglePanel(anchorBtn) {
@@ -45232,6 +45002,221 @@
         } catch (_) { /* positioning is a nicety — never let it break opening the panel */ }
     }
 
+    // ── v7.20.319 — ONE rail-panel interaction layer: detach · dock · drag · resize ──
+    //
+    // Neil, 2026-07-27: he cannot resize the Writer's Profile / Story Components / Story Spine
+    // panels (the cursor appears, the drag does nothing), and Previous Assessments has neither a
+    // resize cursor nor a detach button. Two roots, both structural:
+    //
+    //  1. RESIZE WAS CLAMPED DEAD BY CSS. v7.20.317 gave `.swml-outline-panel` an intrinsic width
+    //     band (`width:max-content; min-width:260px; max-width:380px`). Every resize handler only
+    //     ever wrote `style.width` — and `max-width` beats `width` however it is set, inline
+    //     included. A text-heavy panel already sits at the 380px cap, so dragging east moved
+    //     nothing whatsoever. A drag is the student deliberately overriding the intrinsic default,
+    //     so the drag now RELEASES the band (min-width:0 / max-width:none / max-height:none) and
+    //     the real ceiling becomes _swmlDockedMaxW — the clipping scroll container, the only limit
+    //     that actually matters (anything wider is sliced, which is the bug .293 fixed).
+    //  2. THREE HAND-ROLLED COPIES, AND A FOURTH THAT WAS NEVER WRITTEN. Detach/dock/drag/resize
+    //     existed three times over (outline, resources, the 3-mode profile shell); the .318 port of
+    //     Previous Assessments matched the shared CSS but dropped the interaction entirely, which
+    //     is exactly why it has no handles and no detach. The three copies had already drifted —
+    //     only some reparent to <body> on float, only one syncs a negative margin. This is now ONE
+    //     implementation: a rail panel calls _wireRailPanel and is complete by construction.
+    //
+    // Float REPARENTS TO document.body (the v7.19.91 fix, proven on the outline + profile panels):
+    // a transformed ancestor — the LearnDash focus-mode wrapper — traps `position:fixed` inside its
+    // own stacking context, and no z-index escapes a transformed ancestor. The resources panel used
+    // to compensate with getFixedOriginOffset() instead; the reparent is the version that holds.
+    //
+    // ⚠️ Layout is read ONCE per interaction (on mousedown), never per mousemove and never on
+    // mutation. That is the constraint the v7.20.315 hang left behind and it is not negotiable.
+    const SWML_SVG_DETACH = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 16m0 1a1 1 0 0 1 1 -1h3a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1z"/><path d="M4 12v-6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-6"/><path d="M12 8h4v4"/><path d="M16 8l-5 5"/></svg>';
+    const SWML_SVG_DOCK   = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 3m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/><path d="M9 13h-2v2"/><path d="M7 15l4 -4"/></svg>';
+
+    // opts:
+    //   header            — the panel's `.swml-outline-header` (resolved from the DOM if omitted)
+    //   grip / detachBtn  — pass the ones the panel already builds; CREATED here when absent
+    //   anchorTrigger     — the rail button this panel belongs to (element or () => element), so
+    //                       docking can re-assert --swml-panel-anchor-top (dock wipes cssText)
+    //   syncNegativeMargin— outline panel only: it also mirrors width into a negative marginRight
+    function _wireRailPanel(panel, opts) {
+        opts = opts || {};
+        if (!panel) return null;
+        if (panel._swmlRailCtl) return panel._swmlRailCtl;   // idempotent — wiring twice would double every listener
+        const header = opts.header || panel.querySelector('.swml-outline-header');
+        const syncNegMargin = !!opts.syncNegativeMargin;
+        const MIN_W = 180, MIN_H = 200;
+        const resolveTrigger = function () {
+            const t = opts.anchorTrigger;
+            return (typeof t === 'function') ? t() : (t || null);
+        };
+
+        // ── grip (drag bar; CSS shows it only while detached) ──
+        let grip = opts.grip || panel.querySelector('.swml-outline-grip');
+        if (!grip) {
+            grip = el('div', { className: 'swml-outline-grip' });
+            grip.innerHTML = '<span class="swml-outline-grip-dots">⠷</span>';
+            panel.insertBefore(grip, panel.firstChild);
+        }
+
+        // ── detach / dock button (sits left of the ✕ in the header) ──
+        let detachBtn = opts.detachBtn || panel.querySelector('.swml-outline-detach-btn');
+        const _createdDetach = !detachBtn;
+        if (!detachBtn && header) {
+            detachBtn = el('button', {
+                className: 'swml-outline-detach-btn', title: 'Detach panel', innerHTML: SWML_SVG_DETACH
+            });
+            const closeBtn = header.querySelector('.swml-outline-close');
+            if (closeBtn) header.insertBefore(detachBtn, closeBtn); else header.appendChild(detachBtn);
+        }
+
+        // ── 8 resize handles (CSS decides which are visible per state) ──
+        if (!panel.querySelector('.swml-outline-rh')) {
+            ['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'].forEach(function (dir) {
+                const h = el('div', {
+                    className: 'swml-outline-rh swml-outline-rh-' + (dir.length > 1 ? 'corner' : 'edge') +
+                               ' swml-outline-rh-' + dir
+                });
+                h.dataset.dir = dir;
+                panel.appendChild(h);
+            });
+        }
+
+        let floating = false, origParent = null, origNext = null;
+
+        // The v7.20.317 CSS band (min-width:260 / max-width:380 / max-height) is a DEFAULT, not a
+        // constraint: an explicit drag replaces it. ⚠️ Release it ONLY in the same frame an explicit
+        // pixel size is written. Releasing it on mousedown instead would leave `width:max-content`
+        // with no upper bound for as long as the student holds the button without moving — the
+        // panel would jump to its full content width and be sliced by the overflow-x:hidden
+        // scroller. Idempotent, so calling it every mousemove costs nothing.
+        function releaseWidthBand() { panel.style.minWidth = '0px'; panel.style.maxWidth = 'none'; }
+        function releaseHeightBand() { panel.style.maxHeight = 'none'; }
+
+        function floatPanel() {
+            const rect = panel.getBoundingClientRect();
+            floating = true;
+            panel.classList.add('swml-outline-detached');
+            panel.style.position = 'fixed';
+            // Viewport-relative rect captured BEFORE the move (fixed is viewport-anchored either way).
+            panel.style.left = rect.left + 'px';
+            panel.style.top = (rect.top - 24) + 'px';          // -24: the grip bar appears at the top
+            panel.style.width = rect.width + 'px';
+            panel.style.height = (rect.height + 24) + 'px';    // +24 for that same grip bar
+            releaseWidthBand(); releaseHeightBand();           // safe here: both are pinned in px above
+            if (panel.parentNode && panel.parentNode !== document.body) {
+                origParent = panel.parentNode;
+                origNext = panel.nextSibling;
+                document.body.appendChild(panel);
+            }
+            if (detachBtn) { detachBtn.innerHTML = SWML_SVG_DOCK; detachBtn.title = 'Dock panel'; }
+        }
+
+        function dockPanel() {
+            floating = false;
+            panel.classList.remove('swml-outline-detached');
+            panel.style.cssText = '';
+            if (origParent) {
+                if (origNext && origNext.parentNode === origParent) origParent.insertBefore(panel, origNext);
+                else origParent.appendChild(panel);
+                origParent = null; origNext = null;
+            }
+            // cssText:'' also wipes --swml-panel-anchor-top, so a panel docked while still OPEN
+            // would snap to the top of the rail until the next open. Re-assert it.
+            const trg = resolveTrigger();
+            if (trg) _anchorRailPanel(panel, trg);
+            if (detachBtn) { detachBtn.innerHTML = SWML_SVG_DETACH; detachBtn.title = 'Detach panel'; }
+        }
+
+        function toggleFloat() { floating ? dockPanel() : floatPanel(); }
+        if (_createdDetach && detachBtn) {
+            detachBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleFloat(); });
+        }
+
+        // ── drag by the grip (floating only) — delta-based, immune to containing-block offsets ──
+        let dragging = false, lastX = 0, lastY = 0;
+        grip.addEventListener('mousedown', function (e) {
+            if (!floating || e.button !== 0) return;
+            e.preventDefault(); e.stopPropagation();
+            dragging = true; lastX = e.clientX; lastY = e.clientY; grip.style.cursor = 'grabbing';
+        });
+        document.addEventListener('mousemove', function (e) {
+            if (!dragging) return;
+            panel.style.left = (parseFloat(panel.style.left) + e.clientX - lastX) + 'px';
+            panel.style.top = (parseFloat(panel.style.top) + e.clientY - lastY) + 'px';
+            lastX = e.clientX; lastY = e.clientY;
+        });
+        document.addEventListener('mouseup', function () {
+            if (dragging) { dragging = false; grip.style.cursor = ''; }
+        });
+
+        // ── resize ──
+        let rz = false, rzDir = '', rzSX = 0, rzSY = 0, rzW = 0, rzH = 0, rzL = 0, rzT = 0;
+        let rzMaxW = Infinity, rzMaxH = Infinity, justResized = false;
+        panel.querySelectorAll('.swml-outline-rh').forEach(function (h) {
+            h.addEventListener('mousedown', function (e) {
+                if (e.button !== 0) return;
+                const dir = h.dataset.dir;
+                // Docked, the panel's top-left corner IS its trigger's top-left (that is the whole
+                // grow-out-of-the-button design), so only the directions that grow right/down mean
+                // anything — n/w/nw/sw move the origin and stay detached-only. `s`/`se` are NEW in
+                // .319: Neil expects the bottom edge to drag, and nothing stops it now that the
+                // height is clamped to the viewport instead of left to the CSS max-height.
+                const dockedOk = (dir === 'e' || dir === 'ne' || dir === 'se' || dir === 's');
+                if (!floating && !dockedOk) return;
+                e.preventDefault(); e.stopPropagation();
+                const r = panel.getBoundingClientRect();   // THE one layout read of this interaction
+                rz = true; rzDir = dir; rzSX = e.clientX; rzSY = e.clientY;
+                rzW = parseFloat(panel.style.width) || r.width;
+                rzH = parseFloat(panel.style.height) || r.height;
+                rzL = parseFloat(panel.style.left) || 0;
+                rzT = parseFloat(panel.style.top) || 0;
+                rzMaxW = floating ? Infinity : _swmlDockedMaxW(panel);
+                rzMaxH = floating ? Infinity : Math.max(MIN_H, window.innerHeight - r.top - 16);
+            });
+        });
+        document.addEventListener('mousemove', function (e) {
+            if (!rz) return;
+            const dx = e.clientX - rzSX, dy = e.clientY - rzSY;
+            let w = rzW, h = rzH, l = rzL, t = rzT;
+            if (rzDir.includes('e')) w = Math.max(MIN_W, rzW + dx);
+            if (rzDir.includes('w')) { w = Math.max(MIN_W, rzW - dx); l = rzL + (rzW - w); }
+            if (rzDir.includes('s')) h = Math.max(MIN_H, rzH + dy);
+            if (rzDir.includes('n')) { h = Math.max(MIN_H, rzH - dy); t = rzT + (rzH - h); }
+            if (!floating) {
+                if (rzDir.includes('e')) {
+                    w = Math.min(w, rzMaxW);
+                    releaseWidthBand();
+                    panel.style.width = w + 'px';
+                    if (syncNegMargin) panel.style.marginRight = (-w) + 'px';
+                }
+                if (rzDir.includes('s')) {
+                    releaseHeightBand();
+                    panel.style.height = Math.min(h, rzMaxH) + 'px';
+                }
+            } else {
+                Object.assign(panel.style, { width: w + 'px', height: h + 'px', left: l + 'px', top: t + 'px' });
+            }
+        });
+        document.addEventListener('mouseup', function () {
+            // Prime the flag so the click synthesised from this mouseup can't fire close-on-outside.
+            if (rz) { justResized = true; setTimeout(function () { justResized = false; }, 50); }
+            rz = false;
+        });
+
+        const ctl = {
+            toggleFloat: toggleFloat,
+            float: floatPanel,
+            dock: dockPanel,
+            isFloating: function () { return floating; },
+            justResized: function () { return justResized; },
+            grip: grip,
+            detachBtn: detachBtn
+        };
+        panel._swmlRailCtl = ctl;
+        return ctl;
+    }
+
     // v7.20.318 — rail panels are mutually exclusive, and until now every panel closed the others
     // by NAME (`if (resPanel) …; if (wpPanel) …`) from inside its own closure. That only works for
     // panels the closer happens to hold a reference to, so a panel added elsewhere — Previous
@@ -45254,8 +45239,22 @@
             document.querySelectorAll('.swml-outline-btn.is-active').forEach(function (b) {
                 b.classList.remove('is-active');
             });
+            // v7.20.319 — the scroll-index island counts as a rail surface for exclusivity. Neil
+            // asked whether the island sitting ABOVE the panels is right: the LAYER order is (it is
+            // persistent chrome, like Apple's own Dynamic Island), but co-existence is not — the
+            // island's backdrop is `inset:0; z-index:19` inside editorPane while a docked panel is
+            // z-index:10 in the same stacking context (.swml-canvas-content is position:relative
+            // with NO z-index, so it creates none), which means opening the island dimmed and
+            // blurred whatever panel was open and covered its lower rows. Two transient surfaces
+            // never overlap: the newest interaction wins and the other dismisses, so the z-order
+            // stops mattering. Registered rather than class-toggled because the island keeps JS
+            // state (siOpen + a measured maxHeight) that removing a class behind its back desyncs.
+            if (typeof _swmlIslandCloser === 'function') _swmlIslandCloser();
         } catch (_) { /* never let panel bookkeeping break opening a panel */ }
     }
+
+    // Set by the canvas when it builds the scroll-index island; null until then and after teardown.
+    let _swmlIslandCloser = null;
 
     // v7.20.311: THE STRUCTURAL HALF of the rail-anchor fix (Neil: "fix it at the root so in case we
     // add more buttons to the rail in the future, they all act the way I'm asking").
