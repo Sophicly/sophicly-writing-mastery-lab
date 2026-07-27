@@ -873,7 +873,14 @@ not abandoned.
 | course family | checkpoint |
 |---|---|
 | **Creative Writing** | **Step 9 (Draft 1 – Prose Style) + Trial 1 (Story Coherence)** — the FIRST one; the same boundary §14 already gates new-story creation on. |
-| **Exam courses** (Language / Literature papers) | **the end of the first Topic, and the end of every Topic thereafter.** |
+| **Exam courses** (Language / Literature papers) | **the end of each ESSAY — i.e. each WML "Topic" (Practice Paper 1, Practice Paper 2, …), taken all the way through its phases: diagnostic write → assessment → planning → outlining → polishing → reassessment.** The first checkpoint is the end of the first essay; there is another at the end of every essay after it. |
+
+⚠ **"Topic" is an overloaded word — never use it unqualified with Neil or with students.** It means
+three things in this codebase: a LearnDash `sfwd-topic` (which Sophicly renames "**Lesson**" for
+students), a Sophicly "**Unit**" (LearnDash `sfwd-lessons`), and the WML sense used above — **one
+whole practice paper / essay, with its diagnostic and redraft as phases inside it**. The checkpoint
+is the WML sense. In student- or Neil-facing words, say **"when you've finished an essay properly —
+written it, been marked, redrafted it, been remarked."**
 
 **WHY CW's IS TRIAL 1 AND NOT TRIAL 2 — the reasoning that settles it, because the question recurs.**
 Neil's instinct was Trial 2, on the grounds that it gives the student "a chance to fix their
@@ -916,6 +923,32 @@ inherits that refusal — the student returns to the parked course, writes in it
 shelf with its deadlines frozen and no reminders, silently. **So an auto-pause must be stamped with
 its provenance** (mirroring the array's existing `auto_added` flag), and only a system-stamped pause
 may be lifted automatically by real activity. Never add a third meaning to one status value.
+
+**⭐ FOCUS AND PAUSE ARE TWO DIFFERENT QUESTIONS — keep them on two different fields (Neil's
+back-and-forth case, 2026-07-27).** Neil: *"we've had some students who will switch back and forth
+unconsciously — what happens in that case?"* The answer is that drifting between lessons must not be
+able to rewrite what the student is *studying*:
+
+| question | field | changed by |
+|---|---|---|
+| **What am I studying?** (the card, "Studying Now", My Journey) | `sophicly_focused_course` | **a deliberate `[sophicly_next_step]` pick, and nothing else** |
+| **Should this course's deadlines be running?** | `status` active/paused | a pick, a manual Pause/Resume, or real work in an auto-paused course |
+
+Three consequences, and they are the whole answer to the drift case:
+1. **Wandering into a lesson can never park a course.** Only a chooser pick calls `promote_course()`;
+   `ensure_course_active()` (the canvas-save path) only ever *adds* or *activates*. A student cannot
+   accidentally shelve their own work, and **never has to remember to pause anything** — the pick
+   does it.
+2. **Wandering back into a parked course un-freezes its deadlines but does NOT move their focus.**
+   Deadlines should track what the student is genuinely doing; focus should track what they
+   deliberately chose. A stray save is evidence of the first and no evidence of the second.
+3. **Never flip a course's state silently in either direction.** Silent shelving and silent
+   resurrection are the same defect. An automatic resume is announced (toast//dashboard), so the
+   student's mental model and the data never diverge.
+
+**A student who switches back and forth is a signal, not a fault to engineer against.** The system's
+job is to hold ONE thing stable — the focused course — and let deadlines follow real behaviour. Do
+not add friction, confirmation walls, or switch-rate limits to "fix" the drifting student.
 
 ---
 
