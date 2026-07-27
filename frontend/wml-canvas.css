@@ -2075,11 +2075,16 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        Tracks the sticky column at every scroll position. Detach (fixed, reparented to
        body) overrides this. */
     position: absolute;
-    top: 0;
+    /* v7.20.316 (Neil): the panel opens FROM ITS OWN BUTTON. `--swml-panel-anchor-top` is the
+       trigger's offsetTop inside this sticky column, written ONCE per click by _anchorRailPanel.
+       0 is the correct fallback for the outline (its trigger is the first icon). NOTE the width
+       stays FIXED — the v7.20.314 `max-content` version measured content that updateOutline()
+       rebuilds on scroll, and that is a layout↔scroll feedback path (it hung a tab). */
+    top: var(--swml-panel-anchor-top, 0px);
     left: 0;
     float: none;
     clear: none;
-    width: 220px;
+    width: 300px;
     max-height: calc(100vh - 140px);
     margin: 0;
     border-radius: 10px;
@@ -2091,7 +2096,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     display: flex;
     flex-direction: column;
     opacity: 0;
-    transform: translateX(-12px);
+    /* v7.20.316 (Neil): GROW out of the button, don't slide in. transform-origin is the left edge —
+       which now sits at the trigger — so the panel expands rightward out of it.
+       SCALE, deliberately NOT clip-path: clip-path clips everything an element paints, including
+       the box-shadow (painted OUTSIDE the border box), which is why the shadow vanished in .311
+       and came back the moment .315 reverted it. Scale grows the shadow with the panel. */
+    transform-origin: left center;
+    transform: scale(0.9);
     /* v7.20.117: !important mirrors the v7.19.451 CLICK-STEAL FIX on .swml-resources-panel.
        Now that the panel sits ON TOP of the button column (top:0), an opacity:0 panel that
        stayed hit-testable would swallow the outline button's OWN click. pointer-events is
@@ -2102,7 +2113,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-outline-panel.swml-outline-open {
     opacity: 1;
-    transform: translateX(0);
+    transform: scale(1);
     pointer-events: auto !important;
 }
 .swml-outline-header {
@@ -2920,13 +2931,20 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        removes it from hit-testing reliably. */
     pointer-events: none !important;
     visibility: hidden;
-    transform: translateX(-12px);
+    transform-origin: left center;
+    transform: scale(0.9);
     /* v7.19.454: anchored ABSOLUTELY inside the sticky button column (resPanel is a child of
        .swml-outline-btn-column). top:100% puts it right under the resources button (tight, small
        gap); left:0 = flush with the button. No float/clear stacking below the outline panel
        (that was the big gap). Tracks the sticky column on scroll. Detach (fixed) overrides this. */
     position: absolute;
-    top: calc(100% + 4px);
+    /* v7.20.316 — THE ROOT of the recurring "panel docks at the BOTTOM of the rail" (Neil, twice).
+       This was `top: calc(100% + 4px)`: inside the sticky column `100%` is the height of the WHOLE
+       COLUMN, so the panel sat below EVERY icon rather than under its own button. It read as
+       correct only while Resources was the last icon in the rail; each icon added after it pushed
+       the panel further down. Position is now expressed against the panel's own TRIGGER, like
+       every other panel, via the shared variable. No panel declares its own `top` any more. */
+    top: var(--swml-panel-anchor-top, 0px);
     left: 0;
     margin: 0;
     clear: none;
@@ -2942,7 +2960,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     opacity: 1;
     pointer-events: auto !important;
     visibility: visible;
-    transform: translateX(0);
+    transform: scale(1);
 }
 /* Glow animation when Resources section is in view */
 @keyframes resourcesGlow {

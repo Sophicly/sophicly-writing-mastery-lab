@@ -45168,7 +45168,27 @@
     // scrolls, creates a layout→scroll→rebuild→layout feedback path. Any re-implementation must
     // read layout ONCE per open (never per mutation), must not use intrinsic sizing on a panel
     // whose content is rebuilt on scroll, and must be verified on STAGING before prod.
-    function _anchorRailPanel() { /* no-op — see above */ }
+    // v7.20.316 — REINSTATED, stripped to the one thing it needs to do.
+    //
+    // Neil wants the panel to grow out of its own button (it is the whole point of the rail), so
+    // this is back — but rebuilt so the failure class that hung his tab cannot exist, rather than
+    // guessing which line of the .311/.314 version did it. What is GONE, permanently:
+    //   · the MutationObserver — it re-measured on every class change; a panel open is a CLICK, so
+    //     the click handler is the only place that ever needs to run this (3 call sites, all
+    //     user-driven, all one-shot)
+    //   · getBoundingClientRect + the max-height clamp — a second forced layout read, per fire
+    //   · `width: max-content` — intrinsic sizing on a panel whose list updateOutline() rebuilds
+    //     on scroll is a layout→scroll→rebuild→layout feedback path
+    // What remains is ONE offsetTop read per click, written to a CSS variable. offsetTop is a
+    // cheap, already-computed layout property; nothing here can loop, and nothing re-enters.
+    function _anchorRailPanel(panel, triggerBtn) {
+        if (!panel || !triggerBtn) return;
+        // A detached (floating) panel is positioned by the drag logic — never fight it.
+        if (panel.classList.contains('swml-outline-detached')) return;
+        try {
+            panel.style.setProperty('--swml-panel-anchor-top', (triggerBtn.offsetTop || 0) + 'px');
+        } catch (_) { /* positioning is a nicety — never let it break opening the panel */ }
+    }
 
     // v7.20.311: THE STRUCTURAL HALF of the rail-anchor fix (Neil: "fix it at the root so in case we
     // add more buttons to the rail in the future, they all act the way I'm asking").
