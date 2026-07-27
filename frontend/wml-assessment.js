@@ -21377,6 +21377,10 @@
                     if (isOpen) {
                         try { toggleOutlinePanel(false); } catch (_) {}
                         if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); }
+                        // v7.20.318: and every rail panel this scope holds no reference to
+                        // (Previous Assessments). Class-based, so a future panel is covered too.
+                        _closeOtherRailPanels(resPanel);
+                        resTrigger.classList.add('is-active');   // the sweep above clears all triggers
                     }
                 }
             });
@@ -21707,6 +21711,10 @@
                 // to follow whichever trigger opened it — including when switching mode while the
                 // panel is already open (the panel should slide to the new button, not sit at the
                 // old one). _wpTriggerFor is the existing single source for that mapping.
+                // v7.20.318: close every OTHER rail panel first — including ones this scope holds
+                // no reference to (Previous Assessments). Runs before the anchor so the trigger
+                // sweep inside it cannot clear the is-active we set below.
+                _closeOtherRailPanels(wpPanel);
                 _anchorRailPanel(wpPanel, _wpTriggerFor(mode));
                 wpPanel.classList.add('swml-resources-open');
                 _wpClearTriggers();
@@ -22277,6 +22285,9 @@
                 // v7.19.476: mutually exclusive with the resources + Writer's Profile panels
                 if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
                 if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); }
+                // v7.20.318: + any rail panel this scope has no reference to (Previous Assessments).
+                _closeOtherRailPanels(outlinePanel);
+                outlineBtn.classList.add('is-active');   // the sweep above clears all triggers
                 updateOutline();
                 requestAnimationFrame(updateScrollSpy);
             }
@@ -24481,42 +24492,73 @@
             });
             return list;
         }
-        async function _paTogglePanel(anchorBtn) {
-            if (_paPanel) { _paPanel.remove(); _paPanel = null; anchorBtn.classList.remove('is-active'); return; }
-            _paPanel = el('div', { className: 'swml-extract-panel swml-prior-panel' });
-            const hdr = el('div', { className: 'swml-extract-panel-header' });
+        let _paBodyWrap = null;
+        // v7.20.318 (Neil): "the Previous Assessments panel has slightly different styling to the
+        // others — can we not create a default style for the panels, not just colours but how they
+        // animate." It DID differ, at the root: every other rail panel is a
+        // `.swml-outline-panel.swml-resources-panel` — absolutely anchored to its own trigger inside
+        // the sticky rail column, opened by a class toggle, so it inherits the shared surface,
+        // shadow, width rules, grow-out-of-the-button and shrink-back-on-close. This one was a
+        // `.swml-extract-panel`: position:fixed, portalled to <body>, its own `swml-extractIn`
+        // slide-down keyframe, JS-written top/left from a getBoundingClientRect. Restyling that
+        // second shell to match would have left TWO shells to keep in sync — the drift class. So the
+        // panel now IS a rail panel and there is ONE default: the shared CSS pair above. Any future
+        // rail panel uses those two classes + _anchorRailPanel + `swml-resources-open` and is
+        // correct by construction.
+        //
+        // Two consequences, both deliberate:
+        //  · The element PERSISTS and open/close is a class toggle. It used to be .remove()d, which
+        //    is why it could never animate out — there was nothing left to shrink.
+        //  · The bespoke drag/resize (_makePanelInteractive) is gone. It writes inline
+        //    left/top/width/height for a FIXED panel and would fight the docked anchor variable.
+        //    The other rail panels do not drag while docked either, so this is the parity Neil
+        //    asked for. The draggable thing here is the PAD a row spawns, which is untouched.
+        function _paBuildPanel(anchorBtn) {
+            const panel = el('div', { className: 'swml-outline-panel swml-resources-panel swml-prior-panel' });
+            const hdr = el('div', { className: 'swml-outline-header' });
             hdr.appendChild(el('span', { textContent: 'Previous Assessments' }));
             hdr.appendChild(el('button', {
-                className: 'swml-extract-panel-close', textContent: '✕',
-                onClick: () => { if (_paPanel) { _paPanel.remove(); _paPanel = null; anchorBtn.classList.remove('is-active'); } }
+                className: 'swml-outline-close', innerHTML: '✕',
+                onClick: () => {
+                    panel.classList.remove('swml-resources-open');
+                    anchorBtn.classList.remove('is-active');
+                }
             }));
-            _paPanel.appendChild(hdr);
-            const bodyWrap = el('div', { className: 'swml-extract-panel-body' });
-            bodyWrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Loading…' }));
-            _paPanel.appendChild(bodyWrap);
+            panel.appendChild(hdr);
+            _paBodyWrap = el('div', { className: 'swml-outline-list swml-prior-body' });
+            // Scroll isolation, same as the Writer's Profile body — no chaining to the document.
+            _paBodyWrap.addEventListener('wheel', (e) => { e.stopPropagation(); }, { passive: true });
+            panel.appendChild(_paBodyWrap);
             _paNoteEl = el('div', { className: 'swml-prior-note' });
             _paNoteEl.style.display = 'none';
-            _paPanel.appendChild(_paNoteEl);
-            _makePanelInteractive(_paPanel); // v7.20.59 (Neil): popover drags + resizes like the pads
-            // Anchor beside the outline button column (fixed → body portal, stacking law).
-            try {
-                const r = anchorBtn.getBoundingClientRect();
-                _paPanel.style.top = Math.max(12, r.top - 8) + 'px';
-                _paPanel.style.left = (r.right + 10) + 'px';
-                _paPanel.style.right = 'auto';
-            } catch (_) { /* default CSS position stands */ }
-            document.body.appendChild(_paPanel);
+            panel.appendChild(_paNoteEl);
+            btnColumn.appendChild(panel);
+            return panel;
+        }
+        async function _paTogglePanel(anchorBtn) {
+            if (!_paPanel) { _paPanel = _paBuildPanel(anchorBtn); }
+            if (_paPanel.classList.contains('swml-resources-open')) {   // same trigger again → close
+                _paPanel.classList.remove('swml-resources-open');
+                anchorBtn.classList.remove('is-active');
+                return;
+            }
+            _closeOtherRailPanels(_paPanel);
+            _anchorRailPanel(_paPanel, anchorBtn);
+            _paPanel.classList.add('swml-resources-open');
             anchorBtn.classList.add('is-active');
+            _paBodyWrap.innerHTML = '';
+            _paBodyWrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Loading…' }));
+            const isOpen = () => !!_paPanel && _paPanel.classList.contains('swml-resources-open');
             try {
                 const res = await apiGet(`${config.restUrl}student/attempts-all`);
-                if (!_paPanel) return; // closed while loading
-                bodyWrap.innerHTML = '';
-                bodyWrap.appendChild(_paBuildList((res && res.attempts) || []));
+                if (!isOpen()) return; // closed while loading
+                _paBodyWrap.innerHTML = '';
+                _paBodyWrap.appendChild(_paBuildList((res && res.attempts) || []));
                 _paRefreshNote();
             } catch (_) {
-                if (!_paPanel) return;
-                bodyWrap.innerHTML = '';
-                bodyWrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Couldn’t load your previous work — try again in a moment.' }));
+                if (!isOpen()) return;
+                _paBodyWrap.innerHTML = '';
+                _paBodyWrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Couldn’t load your previous work — try again in a moment.' }));
             }
         }
         const SVG_HISTORY = '<svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128A96,96,0,0,1,62.11,197.82a8,8,0,1,1,11-11.64A80,80,0,1,0,71.43,71.43C67.9,75,64.58,78.51,61.35,82L77.66,98.34A8,8,0,0,1,72,112H32a8,8,0,0,1-8-8V64a8,8,0,0,1,13.66-5.66L50,70.7c3.22-3.49,6.54-7,10.06-10.55A96,96,0,0,1,224,128ZM128,72a8,8,0,0,0-8,8v48a8,8,0,0,0,3.88,6.86l40,24a8,8,0,1,0,8.24-13.72L136,123.47V80A8,8,0,0,0,128,72Z"/></svg>';
@@ -45188,6 +45230,31 @@
         try {
             panel.style.setProperty('--swml-panel-anchor-top', (triggerBtn.offsetTop || 0) + 'px');
         } catch (_) { /* positioning is a nicety — never let it break opening the panel */ }
+    }
+
+    // v7.20.318 — rail panels are mutually exclusive, and until now every panel closed the others
+    // by NAME (`if (resPanel) …; if (wpPanel) …`) from inside its own closure. That only works for
+    // panels the closer happens to hold a reference to, so a panel added elsewhere — Previous
+    // Assessments, built in a different scope — was invisible to all of them and could sit open
+    // underneath another. Closing is now expressed against the CLASS, so a new rail panel is
+    // covered the day it is added, without editing every existing opener (canvas rule §2: gate on
+    // the family, never on a literal name).
+    function _closeOtherRailPanels(exceptPanel) {
+        try {
+            document.querySelectorAll('.swml-resources-panel.swml-resources-open').forEach(function (p) {
+                if (p === exceptPanel) return;
+                p.classList.remove('swml-resources-open');
+            });
+            // The document outline uses its own open class (it predates the shared one).
+            document.querySelectorAll('.swml-outline-panel.swml-outline-open').forEach(function (p) {
+                if (p === exceptPanel) return;
+                p.classList.remove('swml-outline-open');
+            });
+            // Triggers are the rail's own buttons; the panel that stays open re-asserts its own.
+            document.querySelectorAll('.swml-outline-btn.is-active').forEach(function (b) {
+                b.classList.remove('is-active');
+            });
+        } catch (_) { /* never let panel bookkeeping break opening a panel */ }
     }
 
     // v7.20.311: THE STRUCTURAL HALF of the rail-anchor fix (Neil: "fix it at the root so in case we

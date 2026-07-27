@@ -5160,7 +5160,34 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 
 /* ── v7.20.56: Previous Assessments (prior-attempt viewer) ── */
-.swml-prior-panel { width: 320px; }
+/* v7.20.318 (Neil: "I want it the same as the others"): this panel is now a RAIL panel —
+   .swml-outline-panel.swml-resources-panel — so surface, radius, shadow, anchor, the
+   grow-out-of-its-button and the shrink-back-on-close all come from the shared default and there
+   is nothing to keep in sync here. The old `width: 320px` is GONE deliberately: width is the
+   shared intrinsic rule (max-content, 260–380). Only the inner list needs padding, because the
+   rail body (.swml-outline-list) is built for edge-to-edge rows and these are cards. */
+.swml-prior-panel .swml-prior-body { padding: 14px; }
+
+/* v7.20.318 — LIGHT MODE for the list. Pre-existing defect, surfaced by the port and fixed in the
+   same change rather than left as a known-invisible screen: every row label/date/group heading is
+   an explicit rgba(255,255,255,…), and BOTH shells (old .swml-extract-panel, new rail panel) go to
+   a near-white surface in light mode — so the list read as white-on-white. The dark values are
+   untouched; these only invert the explicit whites. Both theme hooks are covered because the rail
+   shell keys on .swml-canvas-light while the older prior CSS keys on [data-swml-theme="light"]. */
+.swml-canvas-light .swml-prior-panel .swml-prior-row-label,
+[data-swml-theme="light"] .swml-prior-panel .swml-prior-row-label { color: rgba(28,29,31,0.8); }
+.swml-canvas-light .swml-prior-panel .swml-prior-row-date,
+[data-swml-theme="light"] .swml-prior-panel .swml-prior-row-date { color: rgba(28,29,31,0.4); }
+.swml-canvas-light .swml-prior-panel .swml-prior-group,
+[data-swml-theme="light"] .swml-prior-panel .swml-prior-group { color: rgba(28,29,31,0.45); }
+.swml-canvas-light .swml-prior-panel .swml-prior-group:hover,
+[data-swml-theme="light"] .swml-prior-panel .swml-prior-group:hover { color: rgba(28,29,31,0.7); }
+.swml-canvas-light .swml-prior-panel .swml-prior-group-count,
+[data-swml-theme="light"] .swml-prior-panel .swml-prior-group-count {
+    background: rgba(28,29,31,0.07); color: rgba(28,29,31,0.55);
+}
+.swml-canvas-light .swml-prior-panel .swml-prior-empty,
+[data-swml-theme="light"] .swml-prior-panel .swml-prior-empty { color: rgba(28,29,31,0.5); }
 /* v7.20.59 (Neil): active trigger goes SOLID — the rgba accent tint over the dark
    canvas read as see-through. Solid mixes of the outline accent on each surface. */
 .swml-prior-attempts-btn.is-active { color: #7cc4f8; background: #223140; }
