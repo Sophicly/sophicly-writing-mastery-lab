@@ -45155,18 +45155,20 @@
     // the LAST icon would otherwise run past the bottom of the viewport and put its own content
     // out of reach (root CLAUDE.md §CONTENT MUST SCROLL WHEN IT OVERFLOWS). The panel keeps its
     // own internal scroller, so clamping shortens it rather than cutting anything off.
-    function _anchorRailPanel(panel, triggerBtn) {
-        if (!panel || !triggerBtn) return;
-        // A detached (floating) panel is positioned by the drag logic — never fight it.
-        if (panel.classList.contains('swml-outline-detached')) return;
-        try {
-            const top = triggerBtn.offsetTop || 0;
-            panel.style.setProperty('--swml-panel-anchor-top', top + 'px');
-            const btnRect = triggerBtn.getBoundingClientRect();
-            const room = Math.max(220, window.innerHeight - btnRect.top - 24);
-            panel.style.setProperty('--swml-panel-max-h', room + 'px');
-        } catch (_) { /* positioning is a nicety — never let it break opening the panel */ }
-    }
+    // v7.20.315 — DISABLED, pending a safe re-implementation.
+    //
+    // The .311/.314 rail-panel work (anchor-to-trigger, grow-from-left, content width, shadow)
+    // shipped straight to prod and Neil's tab went "Pages Unresponsive", taking LearnDash Focus
+    // with it. I could not reproduce it locally and I am not going to keep patching a live hang on
+    // a hypothesis, so the whole presentation change is reverted to the last known-good state and
+    // this helper is inert: no getBoundingClientRect, no CSS-var writes, no observers.
+    //
+    // The suspected mechanism, for whoever picks this up: measuring/sizing a panel that lives
+    // inside a STICKY, scroll-spied column, whose list updateOutline() rebuilds as the student
+    // scrolls, creates a layout→scroll→rebuild→layout feedback path. Any re-implementation must
+    // read layout ONCE per open (never per mutation), must not use intrinsic sizing on a panel
+    // whose content is rebuilt on scroll, and must be verified on STAGING before prod.
+    function _anchorRailPanel() { /* no-op — see above */ }
 
     // v7.20.311: THE STRUCTURAL HALF of the rail-anchor fix (Neil: "fix it at the root so in case we
     // add more buttons to the rail in the future, they all act the way I'm asking").
@@ -45180,38 +45182,11 @@
     // `triggerOrFn` may be a function for a shell shared by several buttons (Writer's Profile /
     // Story Components / Story Spine are one panel behind three icons), so the anchor resolves to
     // whichever icon is currently driving it.
-    function _registerRailPanel(panel, triggerOrFn) {
-        if (!panel || panel._railAnchorBound) return;
-        panel._railAnchorBound = true;
-        panel._railTrigger = triggerOrFn;
-        const OPEN_CLASSES = ['swml-outline-open', 'swml-resources-open'];
-        const resolve = () => (typeof panel._railTrigger === 'function' ? panel._railTrigger() : panel._railTrigger);
-        try {
-            new MutationObserver(() => {
-                const isOpen = OPEN_CLASSES.some(c => panel.classList.contains(c));
-                // v7.20.314 (Neil: "there's no box shadow to the side and underneath the panels").
-                // I caused that in .311: `clip-path` clips EVERYTHING the element paints, and a
-                // box-shadow is painted OUTSIDE the border box — so the grow animation was clipping
-                // the shadow away for the whole time the panel was open. Drop the clip once the
-                // grow has finished and the shadow comes back; the growth itself is unaffected
-                // because by then it has already played. Re-armed on close so the next open still
-                // grows. Centralised here so every panel gets it and a new one cannot miss it.
-                if (!isOpen) { panel.classList.remove('swml-panel-grown'); return; }
-                setTimeout(() => {
-                    if (OPEN_CLASSES.some(c => panel.classList.contains(c))) panel.classList.add('swml-panel-grown');
-                }, 380);   // just past the 340ms grow
-                const trigger = resolve();
-                if (!trigger) {
-                    // Fail loud (root CLAUDE.md §10): a panel opening with no trigger to anchor to
-                    // is the exact silent failure that used to dock it at the bottom of the rail.
-                    console.warn('WML v7.20.311: rail panel opened with no registered trigger — it '
-                        + 'cannot anchor to a button and will sit at the top of the rail.', panel.className);
-                    return;
-                }
-                _anchorRailPanel(panel, trigger);
-            }).observe(panel, { attributes: true, attributeFilter: ['class'] });
-        } catch (_) { /* observer unavailable — the explicit call sites still anchor */ }
-    }
+    // v7.20.315 — DISABLED with _anchorRailPanel above. A MutationObserver that measured layout on
+    // every class change is exactly the wrong shape next to a scroll-driven rebuild, and it is not
+    // worth keeping alive while the hang it may have caused is unexplained. Registration is kept as
+    // a no-op so the call sites stay valid and the re-implementation has an obvious home.
+    function _registerRailPanel() { /* no-op — see _anchorRailPanel */ }
 
     function _cwReviewProjectQS() {
         const pid = (window.WML && WML.state && WML.state.cwProjectId) || '';
