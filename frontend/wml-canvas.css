@@ -2075,12 +2075,15 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        Tracks the sticky column at every scroll position. Detach (fixed, reparented to
        body) overrides this. */
     position: absolute;
-    top: 0;
+    /* v7.20.311 (Neil): the panel opens FROM ITS OWN BUTTON. `--swml-panel-anchor-top` is set by
+       _anchorRailPanel() to the trigger's offset inside this sticky column; 0 is the old behaviour
+       and the correct fallback for the outline (its trigger is the first icon). */
+    top: var(--swml-panel-anchor-top, 0px);
     left: 0;
     float: none;
     clear: none;
     width: 220px;
-    max-height: calc(100vh - 140px);
+    max-height: var(--swml-panel-max-h, calc(100vh - 140px));
     margin: 0;
     border-radius: 10px;
     background: #28292b; /* v7.14.47: match document alt colour — no backdrop-filter (Chrome flickers) */
@@ -2091,19 +2094,64 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     display: flex;
     flex-direction: column;
     opacity: 0;
-    transform: translateX(-12px);
+    /* v7.20.311 (Neil): GROW OUT FROM THE LEFT, don't fade in from it. The panel unfurls from its
+       own left edge — which now sits at its trigger button — so it reads as the button expanding
+       into the panel. clip-path does the growing (no text distortion, unlike animating scaleX,
+       which would stretch every glyph); the small scale adds the sense of depth. transform-origin
+       is the left edge so both halves grow away from the button, not toward it. */
+    transform-origin: left center;
+    transform: scale(0.97);
+    clip-path: inset(0 100% 0 0 round 10px);
     /* v7.20.117: !important mirrors the v7.19.451 CLICK-STEAL FIX on .swml-resources-panel.
        Now that the panel sits ON TOP of the button column (top:0), an opacity:0 panel that
        stayed hit-testable would swallow the outline button's OWN click. pointer-events is
        the reliable lever here — Etch force-overrides visibility/opacity on divs, but not
        this. Kept off `visibility` so the close fade-out survives. */
     pointer-events: none !important;
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    /* clip-path leads slightly and opacity trails it, so the panel reads as growing rather than
+       appearing. cubic-bezier is the house ease-out (MOTION.md) — not a new curve. */
+    transition: clip-path 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.18s ease,
+                top 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .swml-outline-panel.swml-outline-open {
     opacity: 1;
-    transform: translateX(0);
+    transform: scale(1);
+    clip-path: inset(0 0 0 0 round 10px);
     pointer-events: auto !important;
+}
+/* v7.20.311 (Neil): THE DOCUMENT OUTLINE SIZES TO ITS CONTENT — no more clipped words.
+   The panel was a hard 220px while every row is `white-space: nowrap` + `text-overflow: ellipsis`
+   (.swml-outline-item), so any heading longer than 220px was silently cut off — the outline is a
+   NAVIGATION list, and a truncated heading is the one thing it must never show.
+   `max-content` makes the panel as wide as its widest row (indent included), plus breathing room on
+   the right so the longest line is never flush to the edge. min/max keep it sane: never narrower
+   than before, never wider than a readable column — and ellipsis survives as the last-resort clamp
+   for a genuinely absurd heading.
+   Scoped with :not(.swml-resources-panel) deliberately: Resources / Writer's Profile / Story
+   Components / Story Spine share this base class but hold wrapped PROSE, where max-content would
+   blow the panel out to a single enormous line. */
+.swml-outline-panel:not(.swml-resources-panel) {
+    width: max-content;
+    min-width: 220px;
+    max-width: min(460px, 46vw);
+}
+.swml-outline-panel:not(.swml-resources-panel) .swml-outline-list {
+    padding-right: 8px;
+}
+/* A detached panel is user-resizable — its inline width must win over the intrinsic sizing. */
+.swml-outline-panel:not(.swml-resources-panel).swml-outline-detached {
+    width: auto;
+}
+/* A detached panel is dragged anywhere on screen — the growth clip and the column anchor are both
+   meaningless there, and a stale clip-path would crop the floating panel. */
+.swml-outline-panel.swml-outline-detached {
+    clip-path: none !important;
+    transform: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-outline-panel { transition-duration: 0.01ms !important; }
 }
 .swml-outline-header {
     display: flex;
@@ -2920,13 +2968,22 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        removes it from hit-testing reliably. */
     pointer-events: none !important;
     visibility: hidden;
-    transform: translateX(-12px);
-    /* v7.19.454: anchored ABSOLUTELY inside the sticky button column (resPanel is a child of
-       .swml-outline-btn-column). top:100% puts it right under the resources button (tight, small
-       gap); left:0 = flush with the button. No float/clear stacking below the outline panel
-       (that was the big gap). Tracks the sticky column on scroll. Detach (fixed) overrides this. */
+    /* v7.20.311: inherit the SAME grow-from-left as every other rail panel (this block used to
+       re-declare `transform: translateX(-12px)`, which silently opted these panels out of the
+       shared animation — the drift this consolidation removes). */
+    transform-origin: left center;
+    transform: scale(0.97);
+    clip-path: inset(0 100% 0 0 round 10px);
+    /* v7.20.311 — THE ROOT OF THE "PANEL DOCKS AT THE BOTTOM OF THE RAIL" BUG (recurring; Neil).
+       This was `top: calc(100% + 4px)`. Inside the sticky column, `100%` is the height of the WHOLE
+       COLUMN, so the panel was placed below EVERY icon — not under its own button. The v7.19.454
+       comment called it "right under the resources button", which was true only while Resources was
+       the last icon in the rail; each icon added after it pushed the panel further down.
+       The real defect is that position was expressed against the COLUMN rather than against the
+       panel's own TRIGGER, and then copy-pasted per panel — so every new panel inherited it.
+       Now: ONE var, set from the trigger's offset by _anchorRailPanel(), applied by the shared
+       base rule. Nothing here re-declares `top`. */
     position: absolute;
-    top: calc(100% + 4px);
     left: 0;
     margin: 0;
     clear: none;
@@ -2942,7 +2999,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     opacity: 1;
     pointer-events: auto !important;
     visibility: visible;
-    transform: translateX(0);
+    /* v7.20.311: same open state as the outline — grow, not slide. */
+    transform: scale(1);
+    clip-path: inset(0 0 0 0 round 10px);
 }
 /* Glow animation when Resources section is in view */
 @keyframes resourcesGlow {

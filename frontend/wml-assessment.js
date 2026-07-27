@@ -21195,6 +21195,7 @@
         // Absolute + out of flow, so it adds no flex gap to the column. Detach reparents
         // it to document.body (floatOutline) and dockOutline restores it here.
         btnColumn.appendChild(outlinePanel);
+        _registerRailPanel(outlinePanel, outlineBtn);   // v7.20.311
 
         // ── CW Resources Panel (v7.13.49) ──
         // Collapsible panel like Document Outline, for step-specific resource links
@@ -21238,6 +21239,9 @@
                 innerHTML: SVG_LINK,
                 onClick: (e) => {
                     e.stopPropagation();
+                    // v7.20.311: anchor to THIS button before revealing (the grow starts from the
+                    // right place on the very first frame — anchoring after would visibly jump).
+                    _anchorRailPanel(resPanel, resTrigger);
                     const isOpen = resPanel.classList.toggle('swml-resources-open');
                     resTrigger.classList.toggle('is-active', isOpen);
                     // v7.19.483: mutually exclusive with BOTH the outline + Writer's Profile
@@ -21331,6 +21335,7 @@
             // (small gap) and flush under the resources button, tracking it on scroll, instead
             // of clearing below the outline panel's residual height. CSS positions it absolute.
             btnColumn.appendChild(resPanel);
+            _registerRailPanel(resPanel, resTrigger);   // v7.20.311
 
             // v7.13.50: Glow the resources button when the Resources section scrolls into view
             setTimeout(() => {
@@ -21539,6 +21544,8 @@
                 wpPanel.appendChild(h);
             });
             btnColumn.appendChild(wpPanel);
+            // v7.20.311: one shell, three icons — resolve the anchor from whichever mode is live.
+            _registerRailPanel(wpPanel, () => _wpTriggerFor(wpMode));
 
             // v7.20.291: ONE shell, TWO modes. Re-points the header/note/body, then opens (or
             // closes, if the same mode's trigger is tapped again). Switching mode while open
@@ -21569,6 +21576,11 @@
                 wpMode = mode;
                 if (_wpTitle) _wpTitle.textContent = cfg.title;
                 wpNote.style.display = cfg.note ? '' : 'none';
+                // v7.20.311: this ONE shell serves three different rail buttons, so the anchor has
+                // to follow whichever trigger opened it — including when switching mode while the
+                // panel is already open (the panel should slide to the new button, not sit at the
+                // old one). _wpTriggerFor is the existing single source for that mapping.
+                _anchorRailPanel(wpPanel, _wpTriggerFor(mode));
                 wpPanel.classList.add('swml-resources-open');
                 _wpClearTriggers();
                 const t = _wpTriggerFor(mode);
@@ -22127,6 +22139,11 @@
                 dockOutline();
             }
             outlineOpen = next;
+            // v7.20.311: the outline anchors through the same helper as every other panel. It was
+            // already visually correct, but only because its trigger is the FIRST icon so `top: 0`
+            // coincided with "at my button" — that stops being true the moment an icon is added
+            // above it. Same helper, no coincidence.
+            if (outlineOpen) _anchorRailPanel(outlinePanel, outlineBtn);
             outlinePanel.classList.toggle('swml-outline-open', outlineOpen);
             outlineBtn.classList.toggle('is-active', outlineOpen);
             if (outlineOpen) {
@@ -44996,6 +45013,69 @@
     // is precisely how Adam Qureshi's work stayed invisible after his project name was already
     // resolving correctly. One builder for all three review reads (canvas + two chat sites) so a
     // fourth cannot be added without it.
+    // v7.20.311 (Neil): A RAIL PANEL OPENS FROM ITS OWN BUTTON — it takes the button's place.
+    // Before this, only the Document Outline appeared to behave, and only by accident: it is
+    // pinned `top: 0` and its trigger happens to be the FIRST icon, so "top of the column" and
+    // "at my button" coincided. Every other panel used `top: calc(100% + 4px)` — BELOW the whole
+    // icon column — which is why Neil saw Writer's Profile / Story Components / Story Spine /
+    // Resources open at the bottom of the rail, far from the button he pressed.
+    //
+    // The anchor is the trigger's own offset inside the sticky column, so it is correct for any
+    // icon at any position and cannot drift when icons are added or reordered. ONE helper for
+    // every panel (the outline included) so a fifth panel cannot reintroduce the bug.
+    //
+    // Also clamps the panel's height to the room actually left below the anchor: a panel hung off
+    // the LAST icon would otherwise run past the bottom of the viewport and put its own content
+    // out of reach (root CLAUDE.md §CONTENT MUST SCROLL WHEN IT OVERFLOWS). The panel keeps its
+    // own internal scroller, so clamping shortens it rather than cutting anything off.
+    function _anchorRailPanel(panel, triggerBtn) {
+        if (!panel || !triggerBtn) return;
+        // A detached (floating) panel is positioned by the drag logic — never fight it.
+        if (panel.classList.contains('swml-outline-detached')) return;
+        try {
+            const top = triggerBtn.offsetTop || 0;
+            panel.style.setProperty('--swml-panel-anchor-top', top + 'px');
+            const btnRect = triggerBtn.getBoundingClientRect();
+            const room = Math.max(220, window.innerHeight - btnRect.top - 24);
+            panel.style.setProperty('--swml-panel-max-h', room + 'px');
+        } catch (_) { /* positioning is a nicety — never let it break opening the panel */ }
+    }
+
+    // v7.20.311: THE STRUCTURAL HALF of the rail-anchor fix (Neil: "fix it at the root so in case we
+    // add more buttons to the rail in the future, they all act the way I'm asking").
+    //
+    // Removing the per-panel `top` from CSS kills the copy-paste vector, but it still leaves a rule
+    // a future dev has to REMEMBER (call _anchorRailPanel before opening). Rules you have to
+    // remember are what produced this bug four times. So: a panel registers its trigger ONCE at
+    // creation, and anchoring then happens automatically whenever that panel gains an open class —
+    // no matter which code path opens it, now or later. Opening IS the anchor trigger.
+    //
+    // `triggerOrFn` may be a function for a shell shared by several buttons (Writer's Profile /
+    // Story Components / Story Spine are one panel behind three icons), so the anchor resolves to
+    // whichever icon is currently driving it.
+    function _registerRailPanel(panel, triggerOrFn) {
+        if (!panel || panel._railAnchorBound) return;
+        panel._railAnchorBound = true;
+        panel._railTrigger = triggerOrFn;
+        const OPEN_CLASSES = ['swml-outline-open', 'swml-resources-open'];
+        const resolve = () => (typeof panel._railTrigger === 'function' ? panel._railTrigger() : panel._railTrigger);
+        try {
+            new MutationObserver(() => {
+                const isOpen = OPEN_CLASSES.some(c => panel.classList.contains(c));
+                if (!isOpen) return;
+                const trigger = resolve();
+                if (!trigger) {
+                    // Fail loud (root CLAUDE.md §10): a panel opening with no trigger to anchor to
+                    // is the exact silent failure that used to dock it at the bottom of the rail.
+                    console.warn('WML v7.20.311: rail panel opened with no registered trigger — it '
+                        + 'cannot anchor to a button and will sit at the top of the rail.', panel.className);
+                    return;
+                }
+                _anchorRailPanel(panel, trigger);
+            }).observe(panel, { attributes: true, attributeFilter: ['class'] });
+        } catch (_) { /* observer unavailable — the explicit call sites still anchor */ }
+    }
+
     function _cwReviewProjectQS() {
         const pid = (window.WML && WML.state && WML.state.cwProjectId) || '';
         return pid ? '&cw_project_id=' + encodeURIComponent(pid) : '';
@@ -45113,9 +45193,20 @@
         // re-render did not re-run tryCwPrePopulate on the existing editor —
         // resulting in clicks appearing to do nothing.
         if (state.cwProjectId) {
-            _loadCWProjectIntoEditor().catch(err =>
-                console.warn('WML v7.17.29: post-resolve artifact load failed', err)
-            );
+            // v7.20.311: RE-READ THE DOCUMENT. tryServerLoad() bails early for a CW task with no
+            // project resolved ("Skipping server load — CW task awaiting project resolve"), and in
+            // review mode the project is resolved HERE, after the canvas has already mounted. This
+            // block refreshed the artifact, the name badge and the chat — everything EXCEPT the
+            // canvas doc — so the reviewer got a correctly-named project beside a blank document,
+            // and picking a different project never changed what was displayed. The badge updating
+            // while the document did not is exactly the symptom Neil reported twice.
+            // Sequenced, NOT fired in parallel: _loadCWProjectIntoEditor's own gate (~L45143)
+            // documents that the canvas-doc hydrate must land FIRST and the artifact must not
+            // clobber it — racing two fetches would make which one wins a coin toss.
+            tryServerLoad()
+                .catch(err => console.warn('WML v7.20.311: post-resolve canvas re-read failed', err))
+                .then(() => _loadCWProjectIntoEditor())
+                .catch(err => console.warn('WML v7.17.29: post-resolve artifact load failed', err));
             _updateCwProjectNameBadge();
             // v7.17.38: Fresh project_id flips CHAT_SAVE_KEY. Flush the in-memory
             // chat + DOM bubbles so prior project's Q&A doesn't bleed through,

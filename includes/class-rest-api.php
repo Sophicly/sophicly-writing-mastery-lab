@@ -2972,16 +2972,12 @@ class SWML_REST_API {
         // CW projects landed. Third instance of that shape today (the cw-project endpoints in
         // .301, the two pickers' progress labels, now this), which is precisely what the
         // proposed pre-ship gate exists to catch.
-        $cw_project_id = sanitize_key($request->get_param('cw_project_id') ?? '');
+        $cw_project_id = $this->resolve_cw_project_id(
+            $student_id, $text, $request->get_param('cw_project_id'), 'canvas'
+        );
 
         $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
         $raw = get_user_meta($student_id, $meta_key, true);
-        // A CW review that resolves to nothing is almost always a missing/incorrect project id
-        // rather than an empty document — say so rather than returning a silent blank.
-        if (empty($raw) && $cw_project_id === '' && strpos($text, 'creative_writing') !== false) {
-            error_log('SWML review: CW canvas read with NO cw_project_id — key ' . $meta_key
-                . ' (student ' . $student_id . '). The reviewer will see a blank document.');
-        }
         // v7.19.138 / v7.19.140: Bidirectional topic-suffix orphan rescue for tutor
         // review reads. Mirrors the load_canvas() fallback so a tutor viewing a
         // student's orphaned canvas (pre-v7.19.138 saves where embed_config.topic
@@ -3035,7 +3031,10 @@ class SWML_REST_API {
             }
         }
         if ($requested_wc !== null && $requested_wc === 0 && $best_wc > 0 && $best_attempt !== $attempt) {
-            $alt_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $best_attempt);
+            // v7.20.311: carry the project — .310 swept the three keys above and stopped one short,
+            // so this best-attempt rescue still rebuilt a NO-project key and could hand a reviewer a
+            // different student document than the one they are looking at.
+            $alt_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $best_attempt, $cw_project_id);
             $alt_raw = get_user_meta($student_id, $alt_key, true);
             if (!empty($alt_raw)) {
                 $raw = $alt_raw;
@@ -3128,9 +3127,16 @@ class SWML_REST_API {
         // never read it, so chat_meta_key defaulted to attempt 1 and a review of a student's
         // SECOND attempt quietly served their first. Both are read now — the parameters were
         // already on the wire.
+        // v7.20.311: and the project id is now resolved SERVER-SIDE when the client omits it —
+        // see resolve_cw_review_project_id(). .310 made this handler READ the param, which was
+        // necessary but not sufficient: the client does not always have the project resolved when
+        // the review reads fire, and a bare read here returns an empty conversation, which is what
+        // Neil still saw ("Welcome to Step 1" beside a correctly-named project).
         $attempt       = absint($request->get_param('attempt') ?? 0);
         if ($attempt < 1) { $attempt = 1; }
-        $cw_project_id = sanitize_key($request->get_param('cw_project_id') ?? '');
+        $cw_project_id = $this->resolve_cw_project_id(
+            $student_id, $this->normalize_text_slug($text), $request->get_param('cw_project_id'), 'chat'
+        );
 
         $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt, $cw_project_id);
         $raw = get_user_meta($student_id, $meta_key, true);
@@ -3175,7 +3181,17 @@ class SWML_REST_API {
             $attempt = $idx['current'] ?? 1;
         }
 
-        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
+        // v7.20.311: a tutor comment must land on the SAME document the reviewer was shown. This
+        // built a NO-project key, so on Creative Writing the comment was merged into the legacy
+        // no-project row — a row the student's own canvas never loads, meaning tutor comments on a
+        // CW document were written where nobody could ever read them. Same resolver as the review
+        // READ, so write-key ≡ read-key by construction. (Audited before shipping: ZERO tutor
+        // comments exist on any CW document on either env, so nothing is orphaned by this.)
+        $cw_project_id = $this->resolve_cw_project_id(
+            $student_id, $text, $params['cw_project_id'] ?? null, 'comment-save'
+        );
+
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
         $raw = get_user_meta($student_id, $meta_key, true);
         $doc = [];
         if (!empty($raw)) {
@@ -3250,7 +3266,14 @@ class SWML_REST_API {
             $attempt = $idx['current'] ?? 1;
         }
 
-        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
+        // v7.20.311: the student's own comment save had the identical no-project key bug — on a CW
+        // document their reply to a tutor thread was merged into the legacy no-project row instead
+        // of the project document they are editing. Same resolver as every other path.
+        $cw_project_id = $this->resolve_cw_project_id(
+            $user_id, $text, $params['cw_project_id'] ?? null, 'student-comment-save'
+        );
+
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
         $raw = get_user_meta($user_id, $meta_key, true);
         $doc = [];
         if (!empty($raw)) {
@@ -5298,6 +5321,56 @@ class SWML_REST_API {
         if (is_int($raw) || is_float($raw)) return (string) max(0, min(9, (int) $raw));
         if (preg_match('/\d+/', (string) $raw, $m)) return (string) max(0, min(9, (int) $m[0]));
         return '0';
+    }
+
+    /**
+     * v7.20.311: THE CW PROJECT FOR A REVIEW READ — resolved SERVER-SIDE, never trusted to the client.
+     *
+     * .310 taught both halves of this. The server key-building was fixed to take the project id, and
+     * that fix is correct — proven on prod: the review chat read WITH the id returns Adam Qureshi's
+     * real 20-turn conversation, and WITHOUT it returns nothing. But the reviewer still saw a blank
+     * document, because the CLIENT does not always have `state.cwProjectId` populated at the moment
+     * the review reads fire (the .301 picker deliberately defers resolution for a multi-project
+     * student, and any boot path that renders the canvas before the project list resolves sends the
+     * request bare). The bare read then lands on the legacy no-project key — which for Adam is a real
+     * 12,555-byte BLANK TEMPLATE row — so it looks like a successful read of an empty document. That
+     * is why the .310 "no project id" error_log never fired: it only warned when the row was EMPTY.
+     *
+     * A review read must not depend on the client remembering something the server already knows.
+     * The student's project list is right here. Resolve it here, once, for every review read:
+     *   - an explicit id from the client always WINS (the reviewer picked that project deliberately);
+     *   - otherwise fall back to the student's most-recently-updated project, exactly as the
+     *     student's own path does (wml-app.js "URL > sessionStorage > most-recent");
+     *   - non-CW texts are untouched — they are not project-scoped.
+     * This kills the whole class: any review surface, any boot order, any UI, resolves correctly.
+     *
+     * @param int    $student_id  The student being reviewed.
+     * @param string $text        Normalised text slug.
+     * @param mixed  $requested   Raw `cw_project_id` param as sent by the client (may be null/'').
+     * @param string $context     'canvas' | 'chat' — for the log line only.
+     * @return string Project id, or '' when this text is not project-scoped / student has none.
+     */
+    private function resolve_cw_project_id($student_id, $text, $requested, $context = 'canvas') {
+        $requested = sanitize_key($requested ?? '');
+        if ($requested !== '') return $requested;                       // reviewer's explicit pick wins
+        if (strpos($text, 'creative_writing') === false) return '';      // not project-scoped
+        if (!class_exists('SWML_Session_Manager')) return '';
+
+        $projects = SWML_Session_Manager::list_projects($student_id);
+        if (!is_array($projects) || empty($projects)) return '';
+
+        usort($projects, function ($a, $b) {
+            $av = is_array($a) ? (($a['updated'] ?? $a['created'] ?? '')) : '';
+            $bv = is_array($b) ? (($b['updated'] ?? $b['created'] ?? '')) : '';
+            return strcmp((string) $bv, (string) $av);                   // most recent first
+        });
+        $picked = is_array($projects[0]) ? ($projects[0]['id'] ?? '') : '';
+        if ($picked === '') return '';
+
+        error_log('SWML review: ' . $context . ' read arrived with NO cw_project_id for student '
+            . $student_id . ' — resolved server-side to "' . $picked . '" ('
+            . count($projects) . ' project(s)). The client should still send it.');
+        return sanitize_key($picked);
     }
 
     private function canvas_meta_key($board, $text, $topic, $suffix = '', $attempt = 1, $cw_project_id = '') {
