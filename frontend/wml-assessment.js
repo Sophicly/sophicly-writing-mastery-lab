@@ -45138,12 +45138,27 @@
         // fade-out-then-dock, so a panel added later cannot be born with the bug. Panels that
         // already dock on close (the outline, via toggleOutlinePanel) simply find floating===false
         // by the time this runs, and it no-ops.
+        // v7.20.321 (Neil): the fade-out retracts TOWARD THE RAIL, not always leftward. A detached
+        // panel dragged to the LEFT of the rail should slip right, back where it lives; one sitting
+        // to the RIGHT should slip left. It is the close half of the v7.20.317 "grow out of its own
+        // button" idea — the panel leaves the way it arrived. Compared by CENTRES so a panel merely
+        // overlapping the rail still picks the honest side. Two rect reads, on a click, one-shot.
+        function closeDriftPx() {
+            try {
+                const trg = resolveTrigger();
+                const home = trg || origParent;
+                if (!home || !home.getBoundingClientRect) return -12;
+                const h = home.getBoundingClientRect(), p = panel.getBoundingClientRect();
+                if (!h.width && !h.height) return -12;          // hidden/unmeasurable → old behaviour
+                return ((h.left + h.width / 2) >= (p.left + p.width / 2)) ? 12 : -12;
+            } catch (_) { return -12; }
+        }
         const closeBtn = header && header.querySelector('.swml-outline-close');
         if (closeBtn) {
             closeBtn.addEventListener('click', function () {
                 if (!floating) return;
                 panel.style.opacity = '0';
-                panel.style.transform = 'translateX(-12px)';
+                panel.style.transform = 'translateX(' + closeDriftPx() + 'px)';
                 setTimeout(function () {
                     dockPanel();   // cssText:'' clears the fade with everything else
                     panel.style.opacity = ''; panel.style.transform = '';

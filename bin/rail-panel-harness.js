@@ -300,6 +300,39 @@ if (!SRC) {
     ok(panel.parentNode === column, 'and it is returned to the rail column');
 }
 
+// ── 6b-ii. the close fade retracts TOWARD the rail, whichever side the panel was dragged to ────
+// Neil, 2026-07-27: "if I pulled it to the left, it'd be better if it fades out to the right; if
+// it's on the right of the rail, fade to the left." The panel leaves the way it arrived.
+{
+    const cases = [
+        { name: 'panel dragged LEFT of the rail drifts RIGHT', trigger: { top: 100, left: 900, width: 40, height: 40 }, want: '12px' },
+        { name: 'panel dragged RIGHT of the rail drifts LEFT', trigger: { top: 100, left: 0, width: 40, height: 40 }, want: '-12px' }
+    ];
+    cases.forEach(c => {
+        const { panel, header } = newPanel('swml-resources-open');
+        const { wire } = buildRunner(SRC, 900);
+        const column = makeEl('swml-outline-btn-column');
+        column.appendChild(panel);
+        const trigger = makeEl('swml-outline-btn');
+        trigger._rect = c.trigger;                       // panel._rect is left:40 width:380 → centre 230
+        const ctl = wire(panel, { header, anchorTrigger: trigger });
+        ctl.toggleFloat();
+        const realSetTimeout = global.setTimeout;
+        let deferred = null;
+        global.setTimeout = (fn) => { deferred = fn; return 0; };   // hold the dock so we can read the fade
+        try {
+            header.querySelector('.swml-outline-close').fire('click', {});
+        } finally {
+            global.setTimeout = realSetTimeout;
+        }
+        ok(panel.style.transform === `translateX(${c.want})`,
+            `${c.name} (got ${panel.style.transform})`);
+        ok(panel.style.opacity === '0', 'and it fades while it drifts');
+        if (deferred) deferred();
+        ok(!ctl.isFloating(), 'the deferred step still docks it');
+    });
+}
+
 // ── 6c. a detached panel is never swept by mutual exclusion (same jam, different path) ─────────
 {
     ok(/_railPanelIsDetached\(p\)\) return;/.test(JS),
@@ -350,8 +383,10 @@ console.log('RAIL PANELS — structure');
     });
     // The fade-then-dock on close must exist exactly ONCE, in the factory. Three private copies is
     // how Previous Assessments came to be the only panel without it.
-    const fadeDock = (JS.match(/style\.transform = 'translateX\(-12px\)'/g) || []).length;
+    const fadeDock = (JS.match(/style\.transform = 'translateX\(' \+ closeDriftPx\(\)/g) || []).length;
     ok(fadeDock === 1, `the close fade-then-dock exists once, in the shared layer (found ${fadeDock})`);
+    ok(!/translateX\(-12px\)/.test(JS),
+        'no hardcoded leftward fade survives — the drift direction is computed per panel');
     // The band release must be in the same statement group as every inline width/height write.
     const fn = SRC;
     ok(/releaseWidthBand\(\);\s*\n\s*panel\.style\.width/.test(fn),
