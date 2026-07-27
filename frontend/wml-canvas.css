@@ -2150,6 +2150,21 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     clip-path: none !important;
     transform: none !important;
 }
+/* v7.20.314 (Neil): THE SHADOW COMES BACK once the panel has finished growing.
+   `clip-path` clips everything an element paints, and a box-shadow is painted OUTSIDE the border
+   box — so while the clip was applied the shadow was invisible, which is exactly what Neil saw
+   ("no box shadow to the side and underneath"). Dropping the clip after the grow restores it
+   without touching the animation, which has already played by then. Added by _registerRailPanel. */
+.swml-outline-panel.swml-panel-grown { clip-path: none; }
+/* The shadow itself: a soft ambient drop plus a tighter contact shadow, so the panel reads as
+   lifted off the document rather than pasted onto it. */
+.swml-outline-panel {
+    box-shadow: 0 10px 34px rgba(0,0,0,0.46), 0 3px 10px rgba(0,0,0,0.34);
+}
+.swml-canvas-light .swml-outline-panel,
+[data-swml-theme="light"] .swml-outline-panel {
+    box-shadow: 0 10px 30px rgba(16,18,22,0.16), 0 3px 8px rgba(16,18,22,0.10);
+}
 @media (prefers-reduced-motion: reduce) {
     .swml-outline-panel { transition-duration: 0.01ms !important; }
 }

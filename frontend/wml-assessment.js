@@ -207,9 +207,24 @@
 
         const tocToggle = el('button', { className: 'swml-guide-toc-toggle', innerHTML: SVG_LIST_DETAILS,
             'aria-label': 'Toggle contents', title: 'Contents', onClick: () => drawer.classList.toggle('toc-collapsed') });
+        // v7.20.314 (Neil): the "full version in library" link now lives HERE, inside the guide.
+        // It used to be the only reason the Resources panel existed — the panel held a single card
+        // that opened this guide, plus this link, so every student paid an extra click to reach the
+        // thing the rail button is named after. The rail button opens the guide directly now, and
+        // the link rides along where it is actually useful: while reading.
+        const libraryBtn = el('a', {
+            className: 'swml-guide-library-btn',
+            href: 'https://www.sophicly.com/library/resources/creative-writing-reference-guide/',
+            target: '_blank', rel: 'noopener',
+            title: 'Open the full version in the library (new tab)',
+            innerHTML: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+                + 'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'
+                + '<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span>Full version</span>',
+        });
         const header = el('div', { className: 'swml-guide-header' }, [
             tocToggle,
             el('span', { className: 'swml-guide-title', textContent: 'Creative Writing Reference Guide' }),
+            libraryBtn,
             el('button', { className: 'swml-guide-close', innerHTML: '&times;', 'aria-label': 'Close guide', onClick: () => closeGuidePanel() }),
         ]);
 
@@ -21333,6 +21348,24 @@
                 innerHTML: SVG_LINK,
                 onClick: (e) => {
                     e.stopPropagation();
+                    // v7.20.314 (Neil): when the ONLY resource is the Reference Guide, this button
+                    // opens the GUIDE — not a panel holding a single card that opens the guide.
+                    // The panel existed to carry the "full version in library" link, which now
+                    // lives inside the guide header, so the intermediate step buys nothing and
+                    // cost every student an extra click on a button already named after the guide.
+                    // The panel is still used when a step genuinely has MORE than one resource
+                    // (CW_PANEL_RESOURCES), so this cannot silently hide future step-specific links.
+                    if (cwPanelRes.length === 1 && cwPanelRes[0].inApp) {
+                        resPanel.classList.remove('swml-resources-open');
+                        resTrigger.classList.remove('is-active');
+                        try { toggleOutlinePanel(false); } catch (_) {}
+                        if (wpPanel) {
+                            wpPanel.classList.remove('swml-resources-open');
+                            [wpTrigger, scTrigger, ssTrigger].forEach((t) => { if (t) t.classList.remove('is-active'); });
+                        }
+                        showGuidePanel();
+                        return;
+                    }
                     // v7.20.311: anchor to THIS button before revealing (the grow starts from the
                     // right place on the very first frame — anchoring after would visibly jump).
                     _anchorRailPanel(resPanel, resTrigger);
@@ -45156,7 +45189,17 @@
         try {
             new MutationObserver(() => {
                 const isOpen = OPEN_CLASSES.some(c => panel.classList.contains(c));
-                if (!isOpen) return;
+                // v7.20.314 (Neil: "there's no box shadow to the side and underneath the panels").
+                // I caused that in .311: `clip-path` clips EVERYTHING the element paints, and a
+                // box-shadow is painted OUTSIDE the border box — so the grow animation was clipping
+                // the shadow away for the whole time the panel was open. Drop the clip once the
+                // grow has finished and the shadow comes back; the growth itself is unaffected
+                // because by then it has already played. Re-armed on close so the next open still
+                // grows. Centralised here so every panel gets it and a new one cannot miss it.
+                if (!isOpen) { panel.classList.remove('swml-panel-grown'); return; }
+                setTimeout(() => {
+                    if (OPEN_CLASSES.some(c => panel.classList.contains(c))) panel.classList.add('swml-panel-grown');
+                }, 380);   // just past the 340ms grow
                 const trigger = resolve();
                 if (!trigger) {
                     // Fail loud (root CLAUDE.md §10): a panel opening with no trigger to anchor to
