@@ -989,3 +989,47 @@ from the LearnDash parent, never by parsing the title.
 **⛔ Never list a non-graded component as gradeable.** `sophicly_deck` has no grade path, so a
 "score grade 9" row against it is permanently unachievable. Gate on the classes that reference
 `class-grade-event`, never on "is a shortcode".
+
+---
+
+## §17. A PRE-TEACHING QUIZ IS ALLOWED — IF IT IS ACHIEVABLE FROM WHAT THE STUDENT ALREADY HAS (Neil, ruled 2026-07-27)
+
+**The ruling, verbatim:** *"There's no problem with them doing a little quiz on it before they
+actually start learning about it — as long as it's achievable."* And on why it is achievable in
+this case: *"the names make it quite obvious as to what they're actually about… just structure it
+really well, make sure the wording's clear."*
+
+**What this settles.** The teach-card-precedes-the-counted-retrieval pattern (the definition
+cards, §7) is **not** a blanket ban on testing before instruction. Sophicly may place a graded
+activity ahead of the lesson that teaches its material, provided a student who has never met the
+material can still reason their way to the answer from something they already hold — a
+self-describing name, ordinary language, general reading experience, or transferable sense.
+The bar is **achievable**, not **already taught**.
+
+**What it does NOT license.** A pre-teaching quiz on material that can only be known by having
+been taught it — mark-scheme wording, a board's AO numbering, a technique's formal term, a
+protocol's own vocabulary — is still the failure this rule guards against. Asking a student to
+produce what only instruction supplies is the paste-wall in a different costume: the honest
+answer is unavailable to them, so the score measures prior exposure, not thinking.
+
+**The four obligations on any pre-teaching quiz.** All four, or it is not achievable:
+1. **The answer must be reachable from the question.** If the distinguishing cue is not IN the
+   stimulus, the student is guessing. Sharpen the wording until the right answer is inferable —
+   e.g. Voyage and Return ends *"back HOME again, with no prize won at all"*, which separates it
+   from The Quest's *"the prize won at last"* for someone meeting both cold.
+2. **Say out loud that they have not been taught it yet**, and name the clue. Do not leave the
+   student to discover that guessing is expected — that reads as a test they have failed before
+   starting. Take the pressure off explicitly.
+3. **It must TEACH on the way out**, and teach every item, not only the misses — a student who
+   guessed correctly has learned nothing yet. The review screen is the real lesson.
+4. **Distractors must be genuine conceptual boundaries**, never filler. If two options are
+   separable only by prior instruction, the pairing is unfair; if they are separable by careful
+   reading, it teaches the distinction at the moment of choosing.
+
+**Reference implementation:** `[sophicly_plot_structures]` (sophicly-components v3.48.0) — the
+eight archetypal plot structures, one question each, placed BEFORE CW STEP 5 where students
+choose their own structure. Full rationale in that plugin's `PLOT-STRUCTURES-E2E-PLAN.md`.
+
+**Why this is recorded here rather than in the component.** A ruling kept only inside its
+consumer gets re-derived wrongly by the next one — the reason this file is the rulings register
+(§0). The next person to place a quiz ahead of its teaching should find this rule, not re-ask.
