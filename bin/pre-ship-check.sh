@@ -152,6 +152,17 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw5-sim-harness.js || fail=1
 fi
 
+# v7.20.312: CW STEP-1 LOOP GATE. Rifat (uid 1386) produced 1,765 turns / 1.4 MB of chat in ONE
+# session with no student input: the walk handed off to the API, the v7.20.298 revive block treated
+# that hand-off as a dead walk needing rescue, resurrected it, and the walk then ate its own
+# hand-off as the student's answer — forever. Every gate was green because none of them drove
+# Step 1. This one does, with negative controls that prove the loop returns if either guard is
+# removed (a regression test that cannot fail is not a test).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|cw1-loop-harness\.js'; then
+  node bin/cw1-loop-harness.js || fail=1
+fi
+
 # v7.20.290: WALK STOP-RULE GATE. A code-owned walk means CODE serves every ask; if the protocol
 # does not order the model to END its reply at the verdict signal, the model invents the next ask
 # and the student sees TWO competing questions (Neil's live catch: Step 4 doubled every beat from 2
