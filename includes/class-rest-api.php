@@ -6129,6 +6129,42 @@ class SWML_REST_API {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
         }
 
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        // v7.20.313 — RUNAWAY-CHAT CEILING. The server is the ONLY thing that can stop a broken
+        // client, so it must be willing to. Applied in BOTH chat-save pipelines (WML CLAUDE.md
+        // §DUAL CHAT PIPELINE — a guard in one of them is a guard in neither).
+        //
+        // Rifat (uid 1386) hit a client-side loop in the CW Step-1 walk and this endpoint accepted
+        // every write it produced: 1,765 turns / 1.4 MB, then — after the fix was deployed but
+        // while his browser was still running the CACHED old bundle — another 2,626 turns / 2.1 MB.
+        // Nothing anywhere said "2,600 turns is not a session". The client bug was fixed twice over
+        // (v7.20.312) and a regression gate added, but BOTH of those live in the very code that was
+        // broken, and neither can reach a tab already open on the old bundle.
+        //
+        // So this guard is deliberately NOT about that loop. It is about the NEXT one, whose cause
+        // we do not yet know: any client writing a chat this size is malfunctioning, and the honest
+        // response is to refuse the write, keep the last good state, and say so loudly rather than
+        // silently persisting megabytes of garbage over a student's session.
+        // The ceiling is ~8× the largest genuine session ever recorded (65 turns / 24 KB).
+        $chat_turn_ceiling = 600;
+        $chat_byte_ceiling = 768000;   // 750 KB
+        $incoming_bytes = strlen((string) wp_json_encode($history));
+        if (count($history) > $chat_turn_ceiling || $incoming_bytes > $chat_byte_ceiling) {
+            error_log(sprintf(
+                'SWML: REFUSED a runaway chat save — user %d, %d turns, %d bytes (ceiling %d/%d), '
+                . 'board=%s text=%s suffix=%s. The client is looping; the last good chat is '
+                . 'preserved. See the v7.20.312 CW Step-1 hand-off loop.',
+                $user_id, count($history), $incoming_bytes, $chat_turn_ceiling, $chat_byte_ceiling,
+                $board, $text, $suffix
+            ));
+            return new WP_Error(
+                'chat_runaway',
+                'This conversation is far longer than a real session, so it has not been saved. '
+                . 'Please reload the page — your saved work is safe.',
+                ['status' => 413, 'turns' => count($history), 'ceiling' => $chat_turn_ceiling]
+            );
+        }
+
         // v7.15.12: Resolve attempt
         if ($attempt < 1) {
             $idx = $this->get_attempt_index($user_id, $board, $text, $topic, $suffix);
@@ -6200,6 +6236,42 @@ class SWML_REST_API {
 
         if (!$board || !$text) {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        // v7.20.313 — RUNAWAY-CHAT CEILING. The server is the ONLY thing that can stop a broken
+        // client, so it must be willing to. Applied in BOTH chat-save pipelines (WML CLAUDE.md
+        // §DUAL CHAT PIPELINE — a guard in one of them is a guard in neither).
+        //
+        // Rifat (uid 1386) hit a client-side loop in the CW Step-1 walk and this endpoint accepted
+        // every write it produced: 1,765 turns / 1.4 MB, then — after the fix was deployed but
+        // while his browser was still running the CACHED old bundle — another 2,626 turns / 2.1 MB.
+        // Nothing anywhere said "2,600 turns is not a session". The client bug was fixed twice over
+        // (v7.20.312) and a regression gate added, but BOTH of those live in the very code that was
+        // broken, and neither can reach a tab already open on the old bundle.
+        //
+        // So this guard is deliberately NOT about that loop. It is about the NEXT one, whose cause
+        // we do not yet know: any client writing a chat this size is malfunctioning, and the honest
+        // response is to refuse the write, keep the last good state, and say so loudly rather than
+        // silently persisting megabytes of garbage over a student's session.
+        // The ceiling is ~8× the largest genuine session ever recorded (65 turns / 24 KB).
+        $chat_turn_ceiling = 600;
+        $chat_byte_ceiling = 768000;   // 750 KB
+        $incoming_bytes = strlen((string) wp_json_encode($history));
+        if (count($history) > $chat_turn_ceiling || $incoming_bytes > $chat_byte_ceiling) {
+            error_log(sprintf(
+                'SWML: REFUSED a runaway chat save — user %d, %d turns, %d bytes (ceiling %d/%d), '
+                . 'board=%s text=%s suffix=%s. The client is looping; the last good chat is '
+                . 'preserved. See the v7.20.312 CW Step-1 hand-off loop.',
+                $user_id, count($history), $incoming_bytes, $chat_turn_ceiling, $chat_byte_ceiling,
+                $board, $text, $suffix
+            ));
+            return new WP_Error(
+                'chat_runaway',
+                'This conversation is far longer than a real session, so it has not been saved. '
+                . 'Please reload the page — your saved work is safe.',
+                ['status' => 413, 'turns' => count($history), 'ceiling' => $chat_turn_ceiling]
+            );
         }
 
         // v7.15.12: Resolve attempt
