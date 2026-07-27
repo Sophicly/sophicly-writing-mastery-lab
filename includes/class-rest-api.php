@@ -2961,8 +2961,27 @@ class SWML_REST_API {
             $attempt = $idx['current'] ?? 1;
         }
 
-        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
+        // v7.20.310: THE CW PROJECT. Creative Writing documents are keyed per PROJECT
+        // (`…__p<cwp_id>`), and this review reader never knew that — it built the key with five
+        // arguments while the student-facing loader (line ~2228) passes six. So reviewing Adam
+        // Qureshi looked up `swml_canvas_universal_creative_writing_cw_1` while his work sits at
+        // `…_cw_1__pcwp_74a15de6e632`: wrong key, no row, blank document. Neil read that as
+        // "I still can't see what's in Adam's document" — correctly.
+        //
+        // This is the review path being a SEPARATE COPY of the read that was never swept when
+        // CW projects landed. Third instance of that shape today (the cw-project endpoints in
+        // .301, the two pickers' progress labels, now this), which is precisely what the
+        // proposed pre-ship gate exists to catch.
+        $cw_project_id = sanitize_key($request->get_param('cw_project_id') ?? '');
+
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
         $raw = get_user_meta($student_id, $meta_key, true);
+        // A CW review that resolves to nothing is almost always a missing/incorrect project id
+        // rather than an empty document — say so rather than returning a silent blank.
+        if (empty($raw) && $cw_project_id === '' && strpos($text, 'creative_writing') !== false) {
+            error_log('SWML review: CW canvas read with NO cw_project_id — key ' . $meta_key
+                . ' (student ' . $student_id . '). The reviewer will see a blank document.');
+        }
         // v7.19.138 / v7.19.140: Bidirectional topic-suffix orphan rescue for tutor
         // review reads. Mirrors the load_canvas() fallback so a tutor viewing a
         // student's orphaned canvas (pre-v7.19.138 saves where embed_config.topic
@@ -2972,7 +2991,7 @@ class SWML_REST_API {
         // Direction A: topic_number>0 + main key empty → fall back to no-topic.
         // Direction B: topic_number=null/0 + main key empty → scan _t1.._t15.
         if (empty($raw) && $topic_number !== null && $topic_number > 0) {
-            $no_topic_key = $this->canvas_meta_key($board, $text, null, $suffix, $attempt);
+            $no_topic_key = $this->canvas_meta_key($board, $text, null, $suffix, $attempt, $cw_project_id);
             $no_topic_raw = get_user_meta($student_id, $no_topic_key, true);
             if (!empty($no_topic_raw)) {
                 $raw = $no_topic_raw;
@@ -2980,7 +2999,7 @@ class SWML_REST_API {
         }
         if (empty($raw) && ($topic_number === null || $topic_number === 0)) {
             for ($t = 1; $t <= 15; $t++) {
-                $variant_key = $this->canvas_meta_key($board, $text, $t, $suffix, $attempt);
+                $variant_key = $this->canvas_meta_key($board, $text, $t, $suffix, $attempt, $cw_project_id);
                 $variant_raw = get_user_meta($student_id, $variant_key, true);
                 if (!empty($variant_raw)) {
                     $raw = $variant_raw;
@@ -3099,7 +3118,21 @@ class SWML_REST_API {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
         }
 
-        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix);
+        // v7.20.310: the twin of the canvas fix above — CW chat is stored per PROJECT
+        // (`…__p<cwp_id>`), so without it a reviewer got a blank conversation and the chat
+        // restarted at "Welcome to Step 1", which is exactly what Neil saw beside Adam's
+        // (correctly named) project.
+        //
+        // ATTEMPT was a silent write-key ≠ read-key mismatch of its own: the client has always
+        // sent `&attempt=` on this request (wml-assessment.js:25277) and this handler simply
+        // never read it, so chat_meta_key defaulted to attempt 1 and a review of a student's
+        // SECOND attempt quietly served their first. Both are read now — the parameters were
+        // already on the wire.
+        $attempt       = absint($request->get_param('attempt') ?? 0);
+        if ($attempt < 1) { $attempt = 1; }
+        $cw_project_id = sanitize_key($request->get_param('cw_project_id') ?? '');
+
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt, $cw_project_id);
         $raw = get_user_meta($student_id, $meta_key, true);
         $data = $raw ? json_decode($raw, true) : null;
 

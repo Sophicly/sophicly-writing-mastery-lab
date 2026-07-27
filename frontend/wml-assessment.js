@@ -25326,7 +25326,7 @@
                         // Tutor review: load student's chat via review endpoint (v7.15.2)
                         const _chatAtt = _canvasAttempt(); // v7.20.78: pinned resolver (chat read = chat write key)
                         const chatUrl = state.reviewMode && state.reviewStudentId
-                            ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}`
+                            ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}${_cwReviewProjectQS()}`
                             : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}${cwScopeQuery()}${_wantSidebar ? `&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task || '')}` : ''}`;
                         const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                         if (_needChat && serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
@@ -28434,7 +28434,7 @@
                                                 const _chatAtt2 = _canvasAttempt(); // v7.20.78: pinned resolver (chat read = chat write key)
                                                 // Tutor review: load student's chat via review endpoint (v7.15.2)
                                                 const chatUrl = state.reviewMode && state.reviewStudentId
-                                                    ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}`
+                                                    ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}${_cwReviewProjectQS()}`
                                                     : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}${cwScopeQuery()}${_wantSidebar2 ? `&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task || '')}` : ''}`;
                                                 const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                                                 if (_needChat2 && serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
@@ -44142,7 +44142,7 @@
                 ? `&quiz=foundational&quiz_text=${encodeURIComponent(state.text)}&quiz_topic=${state.topicNumber || 0}`
                 : '';
             if (state.reviewMode && state.reviewStudentId) {
-                url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
+                url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${_cwReviewProjectQS()}`;
             } else {
                 url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}${_quizIdent}`;
             }
@@ -44988,6 +44988,17 @@
             console.warn('WML CW: step completion FAILED from ' + where, e && e.message);
             return false;
         }
+    }
+
+    // v7.20.310: the `cw_project_id` query fragment for a REVIEW read, or '' when there is no
+    // project in play. CW documents and chats are keyed per project (`…__p<cwp_id>`), so a review
+    // read that omits it looks up a key belonging to nobody and returns a blank document — which
+    // is precisely how Adam Qureshi's work stayed invisible after his project name was already
+    // resolving correctly. One builder for all three review reads (canvas + two chat sites) so a
+    // fourth cannot be added without it.
+    function _cwReviewProjectQS() {
+        const pid = (window.WML && WML.state && WML.state.cwProjectId) || '';
+        return pid ? '&cw_project_id=' + encodeURIComponent(pid) : '';
     }
 
     // The CW step number for the lesson currently open. Derived from the task the session is
