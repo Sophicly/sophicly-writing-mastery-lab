@@ -857,3 +857,102 @@ worry ("them getting penalized") into the product. Fix the scorer first, or ship
 event — "a CW step was completed on THIS story" — so they are one piece of work, not two. And the
 gate must read the *project's* `step_completion`, never LearnDash's global state: LD would report
 Step 9 complete from story one and wave story three straight through.
+
+---
+
+## §15. A STUDENT STUDIES ONE COURSE AT A TIME, AND SWITCHES ONLY AT A CHECKPOINT (Neil, ruled 2026-07-27)
+
+**THE RULING.** *"Generally speaking, students should only be working on one course."* The courses
+are deliberately larger than a student can finish in one run, so the design is **not** "finish the
+course, then move" — it is **"reach a checkpoint, then you may move."** Between checkpoints the
+student stays on one course; at a checkpoint they may switch, and the course they leave is parked,
+not abandoned.
+
+**WHERE THE CHECKPOINTS SIT.**
+
+| course family | checkpoint |
+|---|---|
+| **Creative Writing** | **Step 9 (Draft 1 – Prose Style) + Trial 1 (Story Coherence)** — the FIRST one; the same boundary §14 already gates new-story creation on. |
+| **Exam courses** (Language / Literature papers) | **the end of the first Topic, and the end of every Topic thereafter.** |
+
+**WHY CW's IS TRIAL 1 AND NOT TRIAL 2 — the reasoning that settles it, because the question recurs.**
+Neil's instinct was Trial 2, on the grounds that it gives the student "a chance to fix their
+writing." **That premise is false and must not be reintroduced.** The trials do not re-mark one
+another — they assess *different dimensions*: Step 9 Draft 1 → **Trial 1 story coherence**; Step 12
+Draft 2 (character arc) → **Trial 2 character depth**. Waiting for Trial 2 therefore does not buy a
+second attempt at Trial 1's criteria; it buys a whole second skill plus its own assessment. The
+"chance to fix" lives *inside* the draft chain (Steps 10–11 update plot and goals before Draft 2),
+not between trials — and §14 already records it as delivered AT Trial 1: *"they get marked, they see
+what they could have done better, they learn how to improve, and they get a chance to fix the
+story."*
+
+The second reason is consistency: §14 already makes **Step 9 + Trial 1** the boundary at which a
+story counts as finished-enough. Using the same boundary to release a *course* switch keeps ONE
+checkpoint concept in the student's head instead of two competing ones.
+
+**THE GENERAL FORM (derive from this; do not hand-place per course).** A checkpoint is the first
+point at which the student **holds a complete assessed artefact**. CW: a full first draft plus its
+assessment. Exam courses: a finished essay taken through its Topic (diagnostic → assessment →
+redraft → reassessment). A checkpoint is never a raw step count and never a percentage.
+
+**THE MECHANISM ALREADY EXISTS — this is a placement decision, not a build.**
+`[sophicly_next_step]` (`sophicly-components/includes/class-shortcode-next-step.php`) is the chooser.
+Its options come from the student's own enrolment; it is gated on LearnDash completion of the prior
+lessons in the course, and the pick calls `Sophicly_WML_Listener::promote_course()`. Placing a
+checkpoint = putting the shortcode in that lesson. Live example: the Graduation lesson of Grade 9
+Core Skills.
+
+**THE COURSE THEY LEAVE IS PAUSED, NOT LEFT RUNNING (Neil, same ruling).** A pick parks the
+previously focused course on the shelf so the student has one live course. This is a *kindness*, not
+a demotion: the deadline engine freezes a paused course (no overdue stamping, no reminders), so a
+student is never penalised for not progressing a course they were told to step away from. Anti-gaming
+already holds — items already overdue at pause **stay** overdue.
+
+**⛔ THE LAW THAT PROTECTS IT: A SYSTEM PAUSE MUST YIELD TO REAL WORK; A STUDENT'S PAUSE MUST NOT.**
+`paused` already carries two meanings (onboarding's "queued, not yet started" and the CoursesPanel
+"I deliberately parked this"), and `ensure_course_active()` deliberately refuses to un-pause on
+canvas activity so a student's own Pause survives. An auto-pause that reuses the bare status
+inherits that refusal — the student returns to the parked course, writes in it, and it stays on the
+shelf with its deadlines frozen and no reminders, silently. **So an auto-pause must be stamped with
+its provenance** (mirroring the array's existing `auto_added` flag), and only a system-stamped pause
+may be lifted automatically by real activity. Never add a third meaning to one status value.
+
+---
+
+## §16. A GRADE-9 RETAKE GETS SEVEN DAYS' GRACE, THEN JOINS THE EXISTING OVERDUE POOL (Neil, ruled 2026-07-27)
+
+**THE RULING.** A component lesson has two completion criteria: no graded component → mark complete;
+**with** a graded component → **grade 9 AND mark complete**. Marking complete below grade 9 is
+allowed — it does not block progress — but it starts a **delayed** penalty:
+
+> **7 calendar days' grace, no penalty during it. After that the shortfall accrues into the
+> EXISTING overdue pool (0.5 points/day, 10 max per item, 20 cap). Reaching grade 9 clears it
+> instantly, at any point.**
+
+**WHY SEVEN — Neil asked specifically for the evidence, so it is recorded here rather than in a
+handoff.** *"I don't actually know what the correct answer is there"* — so the number is derived,
+not chosen:
+- **Late-work grace** in secondary practice is normally 24–48h, and **longer windows measurably
+  LOWER completion because urgency drops** (Edutopia). Grace must therefore be short.
+- **Reassessment-to-mastery windows** run **3–10 school days, clustering at 5–6** (Tanglewood 3 ·
+  LCPS 6 · Puyallup 10).
+- A retake is **not** late work — it is a second attempt at mastery (Bloom), which carries real
+  motivational value, so it earns a longer window than a late submission but must stay bounded.
+- **Counter-evidence taken seriously:** soft deadlines enable procrastination and let students dig
+  "late holes". 7 calendar days ≈ 5 school days is the *shortest* window still consistent with the
+  reassessment literature — deliberately at the bottom of the range, not the middle.
+- It also matches Sophicly's own cadence: ~3 lessons/week, so one week = one teaching cycle.
+
+**WHY IT JOINS THE EXISTING POOL RATHER THAN GETTING ITS OWN.** Research does not speak to penalty
+plumbing, but the principle governing it does: **a consequence only changes behaviour when the
+student can predict it.** One pool they already understand keeps cause→effect legible; a second
+parallel penalty system obscures it and silently re-weights every other component.
+
+**WHAT THE CARD MUST SAY.** State both criteria plainly on the row — "mark complete" vs "score grade
+9 **and** mark complete" — and name the unit and lesson. ⚠ The leading number in a lesson title
+("7. Where Do Authors Get Their Ideas?") is the lesson's OWN prefix, not its unit: derive the unit
+from the LearnDash parent, never by parsing the title.
+
+**⛔ Never list a non-graded component as gradeable.** `sophicly_deck` has no grade path, so a
+"score grade 9" row against it is permanently unachievable. Gate on the classes that reference
+`class-grade-event`, never on "is a shortcode".

@@ -6686,18 +6686,37 @@ class SWML_REST_API {
         $per_step = [];   // step => ['filled' => n, 'total' => n]
         foreach ($project as $key => $value) {
             if (!is_string($value) || $value === '') { continue; }
-            if (strpos($value, 'data-field-id="cw-step-') === false) { continue; }
-            // Each row: <div ... data-field-id="cw-step-N-..." ...>ANSWER</div>
-            if (!preg_match_all(
+            if (strpos($value, 'data-field-id="cw-step-') === false
+                && strpos($value, 'data-field-id="outline-cw-') === false) { continue; }
+            // Steps 1-5 — each row: <div ... data-field-id="cw-step-N-..." ...>ANSWER</div>
+            if (preg_match_all(
                 '/<div [^>]*data-field-id="cw-step-(\d+)-[^"]*"[^>]*>(.*?)<\/div>/s',
                 $value, $matches, PREG_SET_ORDER
-            )) { continue; }
-            foreach ($matches as $m) {
-                $step = (int) $m[1];
-                if ($step < 1) { continue; }
-                if (!isset($per_step[$step])) { $per_step[$step] = ['filled' => 0, 'total' => 0]; }
-                $per_step[$step]['total']++;
-                if (trim(wp_strip_all_tags($m[2])) !== '') { $per_step[$step]['filled']++; }
+            )) {
+                foreach ($matches as $m) {
+                    $step = (int) $m[1];
+                    if ($step < 1) { continue; }
+                    if (!isset($per_step[$step])) { $per_step[$step] = ['filled' => 0, 'total' => 0]; }
+                    $per_step[$step]['total']++;
+                    if (trim(wp_strip_all_tags($m[2])) !== '') { $per_step[$step]['filled']++; }
+                }
+            }
+            // v7.20.317 — STEP 6 WAS INVISIBLE TO THIS COUNTER. The outline walk does NOT carry a
+            // step number in its field ids: they are `outline-cw-<archetype>-<section>-<criterion>`
+            // (wml-assessment.js `_cw6RowFieldId`), so the `cw-step-(\d+)` pattern above matched
+            // ZERO of them and a project with a fully-built outline still reported "Not started"
+            // (Pareshay: 98 Step-6 rows, none counted). Step 6 is the only walk with this id shape,
+            // so its rows bucket to step 6 by construction rather than by parsing a number that is
+            // not there. Canvas §2: gate on the FAMILY of ids, never on one literal name.
+            if (preg_match_all(
+                '/<div [^>]*data-field-id="outline-cw-[^"]*"[^>]*>(.*?)<\/div>/s',
+                $value, $om, PREG_SET_ORDER
+            )) {
+                if (!isset($per_step[6])) { $per_step[6] = ['filled' => 0, 'total' => 0]; }
+                foreach ($om as $m) {
+                    $per_step[6]['total']++;
+                    if (trim(wp_strip_all_tags($m[1])) !== '') { $per_step[6]['filled']++; }
+                }
             }
         }
         if (empty($per_step)) { return $empty; }

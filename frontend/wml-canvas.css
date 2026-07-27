@@ -2084,7 +2084,15 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     left: 0;
     float: none;
     clear: none;
-    width: 300px;
+    /* v7.20.317 (Neil): "slightly wider than the longest text". Intrinsic width, CSS only —
+       no JS measurement (that was the .314 hang suspect and it stays out). The max-width is
+       NOT cosmetic: a docked panel lives inside .swml-canvas-content, which is overflow-x:hidden,
+       so anything wider than the container is SLICED at its right edge (see _swmlDockedMaxW).
+       380px is the widest that survives a narrow chat split. min-width keeps a short list from
+       collapsing to a sliver. */
+    width: max-content;
+    min-width: 260px;
+    max-width: 380px;
     max-height: calc(100vh - 140px);
     margin: 0;
     border-radius: 10px;
@@ -2096,13 +2104,19 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     display: flex;
     flex-direction: column;
     opacity: 0;
-    /* v7.20.316 (Neil): GROW out of the button, don't slide in. transform-origin is the left edge —
-       which now sits at the trigger — so the panel expands rightward out of it.
+    /* v7.20.316 (Neil): GROW out of the button, don't slide in.
        SCALE, deliberately NOT clip-path: clip-path clips everything an element paints, including
        the box-shadow (painted OUTSIDE the border box), which is why the shadow vanished in .311
-       and came back the moment .315 reverted it. Scale grows the shadow with the panel. */
-    transform-origin: left center;
-    transform: scale(0.9);
+       and came back the moment .315 reverted it. Scale grows the shadow with the panel.
+       v7.20.317 (Neil: "it grows up from the bottom into the button… I want it to grow OUT of that
+       button"): origin was `left center`, so the panel expanded up AND down at once from its own
+       vertical middle — that is the "grows up from the bottom" he saw. The panel's top-left corner
+       IS the trigger's top-left corner (top = the trigger's offsetTop, left = 0 in the rail column),
+       so `top left` makes it unfold out of the button, rightward then down.
+       NOT staged (width first, then height): true staging needs a pixel width/height measured per
+       open in JS, which is the measuring code removed in .315 as the hang suspect. It stays out. */
+    transform-origin: top left;
+    transform: scale(0.8);
     /* v7.20.117: !important mirrors the v7.19.451 CLICK-STEAL FIX on .swml-resources-panel.
        Now that the panel sits ON TOP of the button column (top:0), an opacity:0 panel that
        stayed hit-testable would swallow the outline button's OWN click. pointer-events is
@@ -2931,8 +2945,16 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        removes it from hit-testing reliably. */
     pointer-events: none !important;
     visibility: hidden;
-    transform-origin: left center;
-    transform: scale(0.9);
+    /* v7.20.317 (Neil): "when you click, it sort of shrinks back in — basically reverse animation".
+       The opacity/transform transition ALREADY runs in both directions; what killed the close was
+       this `visibility: hidden` landing on frame 1, hiding the panel before it could shrink. The
+       outline panel never had the bug (its comment at the top of .swml-outline-panel says it was
+       deliberately kept off `visibility` for exactly this reason) — the three shell panels did.
+       FIX: delay ONLY the visibility flip until the transform finishes (0s change, 0.25s delay);
+       the open state below zeroes the delay so opening is still instant. */
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s;
+    transform-origin: top left;
+    transform: scale(0.8);
     /* v7.19.454: anchored ABSOLUTELY inside the sticky button column (resPanel is a child of
        .swml-outline-btn-column). top:100% puts it right under the resources button (tight, small
        gap); left:0 = flush with the button. No float/clear stacking below the outline panel
@@ -2960,6 +2982,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     opacity: 1;
     pointer-events: auto !important;
     visibility: visible;
+    /* v7.20.317: no delay on the way IN — the panel must be visible for frame 1 of the grow. */
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s;
     transform: scale(1);
 }
 /* Glow animation when Resources section is in view */
