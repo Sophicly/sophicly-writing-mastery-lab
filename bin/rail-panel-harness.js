@@ -272,6 +272,43 @@ if (!SRC) {
     ok(panel.style.position === undefined || panel.style.position === '', 'inline styles are cleared on dock');
 }
 
+// ── 6b. closing a DETACHED panel must dock it, or it parks on screen ("jammed") ────────────────
+// Neil, 2026-07-27: he detached Previous Assessments, dragged it, hit ✕ and it stayed on screen.
+// Removing the open class only changes opacity/visibility — a floating panel also carries inline
+// position:fixed + left/top/width/height, and those survive. The outline panel hit this in
+// v7.19.92 and each panel then grew its own private fade-then-dock; the fourth panel inherited
+// none of them. The close is shared now, so this asserts it for ANY panel the factory wires.
+{
+    const { panel, header } = newPanel('swml-resources-open');
+    const { wire } = buildRunner(SRC, 900);
+    const column = makeEl('swml-outline-btn-column');
+    column.appendChild(panel);
+    const ctl = wire(panel, { header });
+    ctl.toggleFloat();
+    panel.style.left = '640px'; panel.style.top = '220px';   // as if dragged
+    const realSetTimeout = global.setTimeout;
+    global.setTimeout = (fn) => { fn(); return 0; };          // run the fade-out timer immediately
+    try {
+        header.querySelector('.swml-outline-close').fire('click', {});
+    } finally {
+        global.setTimeout = realSetTimeout;
+    }
+    ok(!ctl.isFloating(), 'the close button docks a floating panel instead of leaving it fixed');
+    ok(panel.style.position === undefined || panel.style.position === '',
+        'inline position:fixed is cleared — WITHOUT this the panel stays parked on screen (the jam)');
+    ok(panel.style.left === undefined || panel.style.left === '', 'the dragged left/top are cleared too');
+    ok(panel.parentNode === column, 'and it is returned to the rail column');
+}
+
+// ── 6c. a detached panel is never swept by mutual exclusion (same jam, different path) ─────────
+{
+    ok(/_railPanelIsDetached\(p\)\) return;/.test(JS),
+        'both _closeOtherRailPanels sweeps skip detached panels — removing the open class from a ' +
+        'floating panel parks it on screen, and detaching means "keep this while I work"');
+    const sweeps = (JS.match(/if \(p === exceptPanel \|\| _railPanelIsDetached\(p\)\) return;/g) || []).length;
+    ok(sweeps === 2, `both sweeps carry the guard, not just one (found ${sweeps})`);
+}
+
 // ── 7. justResized() suppresses the synthetic click a resize mouseup produces ───────────────────
 {
     const { panel, header } = newPanel();
@@ -311,6 +348,10 @@ console.log('RAIL PANELS — structure');
     ].forEach(([name, what]) => {
         ok(!new RegExp('\\b' + name + '\\b').test(JS), `no ${what} state survives (${name}) — the copies are gone, not shadowed`);
     });
+    // The fade-then-dock on close must exist exactly ONCE, in the factory. Three private copies is
+    // how Previous Assessments came to be the only panel without it.
+    const fadeDock = (JS.match(/style\.transform = 'translateX\(-12px\)'/g) || []).length;
+    ok(fadeDock === 1, `the close fade-then-dock exists once, in the shared layer (found ${fadeDock})`);
     // The band release must be in the same statement group as every inline width/height write.
     const fn = SRC;
     ok(/releaseWidthBand\(\);\s*\n\s*panel\.style\.width/.test(fn),

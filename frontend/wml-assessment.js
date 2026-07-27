@@ -21329,7 +21329,7 @@
             ? [...CW_UNIVERSAL_RESOURCES, ...(CW_PANEL_RESOURCES[cwStepForRes] || [])]
             : null;
         let resPanel = null;
-        let resDetachBtn = null; // hoisted for floatRes/dockRes access
+        let resDetachBtn = null; // hoisted so the panel-build block can hand it to _wireRailPanel
         let wpPanel = null, wpTrigger = null, resTrigger = null; // v7.19.474: Writer's Profile panel (forward refs for mutual-exclusivity)
         let scTrigger = null, ssTrigger = null; // v7.20.291/.292: Story Components + Story Spine — extra triggers on the SAME panel shell
         if (cwPanelRes && cwPanelRes.length > 0) {
@@ -21408,12 +21408,8 @@
                 onClick: () => {
                     resPanel.classList.remove('swml-resources-open');
                     resTrigger.classList.remove('is-active');
-                    if (resCtl && resCtl.isFloating()) {
-                        // Fade out first, then dock after transition completes
-                        resPanel.style.opacity = '0';
-                        resPanel.style.transform = 'translateX(-12px)';
-                        setTimeout(() => { dockRes(); resPanel.style.opacity = ''; resPanel.style.transform = ''; }, 250);
-                    }
+                    // v7.20.319b: the fade-then-dock that used to live here is now in
+                    // _wireRailPanel, so all four rail panels close the same way.
                 }
             });
             resPanelHeader.appendChild(resClose);
@@ -21655,7 +21651,7 @@
                     wpTrigger.classList.remove('is-active');
                     if (scTrigger) scTrigger.classList.remove('is-active'); // v7.20.291/.292: all three triggers share this shell
                     if (ssTrigger) ssTrigger.classList.remove('is-active');
-                    if (wpCtl.isFloating()) { wpPanel.style.opacity = '0'; wpPanel.style.transform = 'translateX(-12px)'; setTimeout(() => { dockWp(); wpPanel.style.opacity = ''; wpPanel.style.transform = ''; }, 250); }
+                    // v7.20.319b: fade-then-dock moved into _wireRailPanel — one close for all four.
                 }
             });
             wpHeader.appendChild(wpClose);
@@ -21764,7 +21760,6 @@
                 anchorTrigger: function () { return _wpTriggerFor(wpMode); }
             });
             function toggleWpFloat() { wpCtl.toggleFloat(); }
-            function dockWp() { wpCtl.dock(); }
             contentWrap.addEventListener('click', (e) => {
                 if (!wpPanel.classList.contains('swml-resources-open')) return;
                 if (wpCtl.isFloating() || wpCtl.justResized()) return;
@@ -22289,7 +22284,6 @@
         // to escape the LearnDash focus wrapper (v7.19.91), so it is the one that survived.
         let resCtl = null;
         function toggleResFloat() { if (resCtl) resCtl.toggleFloat(); }
-        function dockRes() { if (resCtl) resCtl.dock(); }
         if (resPanel) {
             // Header + grip resolve from the panel's own DOM; the detach button is passed because
             // it was built with its own onClick (which routes back through toggleResFloat above).
@@ -45133,6 +45127,30 @@
             detachBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleFloat(); });
         }
 
+        // v7.20.319b (Neil): "I detached Previous Assessments, moved it, and closing it just got
+        // jammed." Closing a rail panel only removes its open class — which is opacity/visibility.
+        // While DETACHED the panel also carries inline position:fixed + left/top/width/height, and
+        // those survive the class removal, so the panel stays parked on screen. The outline panel
+        // documented this exact failure (v7.19.92) using the same word and fixed it by docking
+        // first; resources and Writer's Profile each grew their own fade-then-dock copy of it.
+        // Previous Assessments got a detach button in .319 without inheriting any of them.
+        // It belongs HERE, once: every rail panel's close button routes through the same
+        // fade-out-then-dock, so a panel added later cannot be born with the bug. Panels that
+        // already dock on close (the outline, via toggleOutlinePanel) simply find floating===false
+        // by the time this runs, and it no-ops.
+        const closeBtn = header && header.querySelector('.swml-outline-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                if (!floating) return;
+                panel.style.opacity = '0';
+                panel.style.transform = 'translateX(-12px)';
+                setTimeout(function () {
+                    dockPanel();   // cssText:'' clears the fade with everything else
+                    panel.style.opacity = ''; panel.style.transform = '';
+                }, 250);
+            });
+        }
+
         // ── drag by the grip (floating only) — delta-based, immune to containing-block offsets ──
         let dragging = false, lastX = 0, lastY = 0;
         grip.addEventListener('mousedown', function (e) {
@@ -45224,15 +45242,22 @@
     // underneath another. Closing is now expressed against the CLASS, so a new rail panel is
     // covered the day it is added, without editing every existing opener (canvas rule §2: gate on
     // the family, never on a literal name).
+    // v7.20.319b: a DETACHED panel is never swept. Two reasons, one of them a real bug: removing
+    // the open class from a floating panel leaves its inline position:fixed + size in place, so it
+    // does not disappear — it parks on screen ("jammed", Neil, both here and in v7.19.92). And
+    // detaching is the student saying "keep this visible while I work", which is precisely the
+    // case exclusivity should not override. Every click-outside handler already skips floating
+    // panels for the same reason; this closes the last path that did not.
+    function _railPanelIsDetached(p) { return p.classList.contains('swml-outline-detached'); }
     function _closeOtherRailPanels(exceptPanel) {
         try {
             document.querySelectorAll('.swml-resources-panel.swml-resources-open').forEach(function (p) {
-                if (p === exceptPanel) return;
+                if (p === exceptPanel || _railPanelIsDetached(p)) return;
                 p.classList.remove('swml-resources-open');
             });
             // The document outline uses its own open class (it predates the shared one).
             document.querySelectorAll('.swml-outline-panel.swml-outline-open').forEach(function (p) {
-                if (p === exceptPanel) return;
+                if (p === exceptPanel || _railPanelIsDetached(p)) return;
                 p.classList.remove('swml-outline-open');
             });
             // Triggers are the rail's own buttons; the panel that stays open re-asserts its own.
