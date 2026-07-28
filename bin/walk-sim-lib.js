@@ -45,6 +45,45 @@ function sliceController(declaration) {
 
 const settle = () => new Promise((r) => setImmediate(r));
 
+/**
+ * The REAL module-scope SELF-ASSESSMENT primitives (v7.20.333), sliced from source as ONE
+ * contiguous region — the tick list, its follow-up, the shared multi-select bar and the duplicate
+ * guard. Stubbing any of them would collapse the very mechanism the sims exist to prove, which is
+ * exactly how a suppressed `Continue →` stayed invisible at .330 (a stub that skips the mechanism
+ * under test proves nothing about it).
+ *
+ * EXPORTED because cw4/cw5/cw6-sim still carry their own inline `makeWorld` (the migration the
+ * .327 handoff prescribes and this session did not have room for). They call this, so there is
+ * still exactly ONE slice of these primitives — a second copy is how the v7.20.289 fix was made
+ * in one controller and lost in another.
+ *
+ * `deps` must already carry el · chatMessages · BUBBLE_CONTROL_KINDS · console.
+ */
+function attachSelfAssessDeps(deps) {
+    const start = SRC.indexOf('const SA_ASK = ');
+    const dupAt = SRC.indexOf('function cwDuplicateOf(');
+    if (start < 0 || dupAt < 0) {
+        throw new Error('self-assessment primitives not found in wml-assessment.js — the rig would '
+            + 'silently skip the tick list and every walk would look like it still works');
+    }
+    const region = SRC.slice(start, braceSliceFrom(SRC, dupAt, '{', '}').end);
+    const NAMES = ['chipBarMulti', 'cwServeSelfAssessment', 'cwAttachSelfAssessment',
+        'cwAttachSaFollowUp', 'onSelfAssessTicks', 'onSelfAssessFollowUp',
+        'cwSaFollowText', 'cwNormaliseAnswer', 'cwDuplicateOf'];
+    // eslint-disable-next-line no-new-func
+    const made = new Function('el', 'chatMessages', 'BUBBLE_CONTROL_KINDS', 'console',
+        region + '\nreturn {' + NAMES.join(',') + '};')(
+        deps.el, deps.chatMessages, deps.BUBBLE_CONTROL_KINDS, deps.console);
+    NAMES.forEach((n) => { deps[n] = made[n]; });
+    return deps;
+}
+
+// What a tick-list bubble reads like, and the neutral "move me on" controls. Shared so the two
+// rigs cannot disagree about which surface they are looking at.
+const TICK_LIST_RE = /Before we move on/;
+const NEUTRAL_RE = /Continue|Done|Next|Move on|fine as it is/i;
+const SA_ADD_RE = /Add to my answer|Write it again/i;
+
 // Chips the student can actually choose between. `appendStepButtons` / `appendSpineButtons`
 // attach a HELP bar to the SAME bubble; a rig that cannot tell them apart taps Guidance forever.
 const HELP_RE = /^(📖|👤|🧩|🗒|🗂|💡|🤔)/;
@@ -180,6 +219,8 @@ function makeWorld(ctl, opts) {
         }
     }
 
+    attachSelfAssessDeps(deps);
+
     // The REAL module-scope _walkSlot, so the rig exercises the shipped primitive.
     const slotIdx = SRC.indexOf('const _walkSlot = (function () {');
     if (slotIdx >= 0) {
@@ -293,15 +334,46 @@ function makeWorld(ctl, opts) {
         return !!(deps._walkSlot && deps._walkSlot.armed);
     };
 
-    // Tap through a chip menu: prefer an explicit Continue, else the first option.
+    // Tap through a chip menu WITHOUT making a content choice: prefer the explicit "move me on"
+    // control, else the first option. v7.20.333 added the self-assessment's skip chip — a tick
+    // list's neutral exit is "It's fine as it is", and without it tapMenu took the ADD branch and
+    // every caller's one-answer-per-ask assumption broke.
     world.tapMenu = function (limit) {
         for (let g = 0; g < (limit || 12) && world.chips().length; g++) {
             const bar = world.chips();
-            const cont = bar.filter((b) => /Continue|Done|Next|Move on/i.test(String(b.textContent)))[0];
+            const cont = bar.filter((b) => NEUTRAL_RE.test(String(b.textContent)))[0];
             world.tap(cont || bar[0]);
         }
+    };
+    // ── SELF-ASSESSMENT HELPERS (v7.20.333) ────────────────────────────────────────────────
+    // A tick list now stands between every filed answer and the next ask, so the sims need to
+    // drive it the way a student does. These name the three surfaces explicitly rather than
+    // letting tapMenu guess, so a test can assert WHICH one it is on.
+    world.onTickList = function () {
+        return world.bubbles.length > 0 && TICK_LIST_RE.test(String(world.bubbles[world.bubbles.length - 1]));
+    };
+    world.tickChips = function () {
+        return world.chips().filter((c) => !NEUTRAL_RE.test(String(c.textContent))
+            && !SA_ADD_RE.test(String(c.textContent)));
+    };
+    // Tick every criterion, then Continue → no follow-up should be offered.
+    world.tickAll = function () {
+        world.tickChips().forEach((c) => c.click());
+        const cont = world.chips().filter((c) => /Continue/i.test(String(c.textContent)))[0];
+        if (cont) world.tap(cont);
+    };
+    // Tick nothing, Continue, then take the ADD branch of the follow-up.
+    world.tickNoneThenAdd = function () {
+        const cont = world.chips().filter((c) => /Continue/i.test(String(c.textContent)))[0];
+        if (cont) world.tap(cont);
+        const add = world.chips().filter((c) => SA_ADD_RE.test(String(c.textContent)))[0];
+        if (add) world.tap(add);
+        return !!add;
     };
     return world;
 }
 
-module.exports = { SRC, ROOT, braceSliceFrom, sliceController, makeWorld, settle, HELP_RE };
+module.exports = {
+    SRC, ROOT, braceSliceFrom, sliceController, makeWorld, settle, HELP_RE,
+    attachSelfAssessDeps, TICK_LIST_RE, NEUTRAL_RE, SA_ADD_RE,
+};

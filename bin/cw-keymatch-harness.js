@@ -147,6 +147,15 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         // is handled separately (onSecondaryNeedsDone → NEEDS_FID), because there the category IS
         // the answer rather than a lead-in to one.
         onBeatChipPick: { kind: 'scaffold', note: 'Step-4 beat category chips (incident/goal/obstacle/stakes) — the beat text the student then writes is filed' },
+        // v7.20.333 — SELF-ASSESSMENT. Deliberately scaffold, and the reasoning is the whole
+        // decision: a student's CLAIM about their answer is not the answer. Writing "ticked:
+        // emotional shield" into their document row would pollute the artefact they are marked on.
+        // The ticks are consumed by the batched review (CW3) / the coherence check (CW4), both of
+        // which run BEFORE finish() clears the sidecar — so unlike the throughline there is no
+        // moment at which a needed value is destroyed. They survive a reload because the sidecar
+        // does. Asserted below: the claim must actually REACH the review, or banking it is theatre.
+        onSelfAssessTicks:    { kind: 'scaffold', note: 'the criteria tick list — the claim is fed to the end-of-set review, never to a document row' },
+        onSelfAssessFollowUp: { kind: 'flow', note: 'add-a-line / it is fine — steers the walk, must stay ephemeral' },
     };
     // Match CALL sites only. `function chipBar(options, onPick)` is a DEFINITION and its parameter
     // name would otherwise be scanned as though it were a handler — and Step 5's real handler
@@ -290,6 +299,119 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     // ...and ordinary prose containing an @ is untouched.
     const prose = 'Email me @ the address, or ask @JOHN_SMITH about it.';
     ok(sweep(prose) === prose, 'the sweep ate ordinary prose containing an @ — it must only strip a whole line');
+}
+
+// ── SELF-ASSESSMENT (v7.20.333) ─────────────────────────────────────────────────────────────
+// Neil, after deliberately entering the same text for his Goal and his Stakes: "maybe the students
+// could self-assess… they tick off the criteria that they've answered to the best of their
+// ability." Two things can rot silently here and both are mechanical to catch:
+//   1. an ask gains no `criteria`, so its tick list never appears and nobody notices;
+//   2. a criterion drifts away from the ask's own wording, so the student is asked to tick
+//      something the teaching never said. That is the whole reason criteria are LIFTED verbatim
+//      rather than re-authored beside the prose.
+{
+    console.log('CW SELF-ASSESSMENT — every ask has criteria, and every criterion is in its ask');
+    // Each `{ fid: 'cw-step-N-…', … }` walk-table entry, sliced by BRACE MATCHING so a step's
+    // criteria are checked against ITS OWN ask and not a neighbour's. A line-shape regex was tried
+    // first and matched 2 of 16 — the entries close at the end of the ask string, not on their own
+    // line, and a gate that silently scans almost nothing is worse than no gate at all.
+    function objectAt(s, i) {
+        let d = 0;
+        for (let k = i; k < s.length; k++) {
+            const c = s[k];
+            if (c === '{') d++;
+            else if (c === '}') { d--; if (d === 0) return s.slice(i, k + 1); }
+            else if (c === "'" || c === '"' || c === '`') {
+                const q = c; k++;
+                while (k < s.length && s[k] !== q) { if (s[k] === '\\') k++; k++; }
+            }
+        }
+        return '';
+    }
+    const HEAD_RE = /\{ fid: '(cw-step-[34]-[a-z0-9-]+)'/g;
+    const stripped = (s) => String(s).replace(/\*\*/g, '');
+    let entries = 0, withCriteria = 0;
+    let e;
+    while ((e = HEAD_RE.exec(JS))) {
+        const fid = e[1], block = objectAt(JS, e.index);
+        // Only asks — the Chosen Logline row and friends are not asks and carry no criteria.
+        if (!/\bask:/.test(block)) continue;
+        entries++;
+        const cm = /criteria:\s*\[([\s\S]*?)\]/.exec(block);
+        if (!ok(!!cm, `${fid} is an ask with NO criteria[] — its student never gets a tick list, and ` +
+            `nothing else would ever tell you (add the array, lifted from its own bullets)`)) continue;
+        withCriteria++;
+        const list = cm[1].split('\n').map((l) => {
+            const q = /'((?:[^'\\]|\\.)*)'/.exec(l);
+            return q ? q[1].replace(/\\'/g, "'") : '';
+        }).filter(Boolean);
+        ok(list.length >= 2, `${fid} has only ${list.length} criterion — a tick list of one is not a check`);
+        const askBody = stripped(block.slice(block.indexOf('ask:')));
+        list.forEach((c) => {
+            ok(askBody.indexOf(stripped(c)) !== -1,
+                `${fid}: the tick list offers "${c}" but its ask never says that — the student is being ` +
+                `asked to tick a criterion the teaching did not give them (lift it verbatim, or fix the ask)`);
+        });
+    }
+    ok(entries >= 16, `expected the 10 Step-3 asks + 6 Step-4 beats to be scanned, found ${entries}`);
+    ok(withCriteria === entries, `${entries - withCriteria} ask(s) carry no criteria`);
+
+    // The claim must actually reach the review, or banking it is theatre (the scaffold
+    // classification above is only honest if this holds).
+    ok(/saTicks\[st\.fid\]/.test(JS),
+        'the Step-3 review no longer reads the student\'s self-assessment — the tick list stops being '
+        + 'something they are accountable for and becomes clicking');
+    ok(/saTicks\[b\.fid\]/.test(JS),
+        'the Step-4 coherence check no longer reads the student\'s self-assessment');
+    // Both walks bank the ticks in the sidecar, which is what makes a reload keep them.
+    ok((JS.match(/sat: saTicks/g) || []).length === 2,
+        'a walk does not persist its self-assessment — a reload would silently drop the claim');
+
+    // LIVENESS (WML CLAUDE.md 4d): the duplicate guard REFUSES an answer, so it must say what the
+    // student sees instead. Both walks re-arm the slot and re-serve the ask in the same function.
+    console.log('CW DUPLICATE GUARD — a refusal re-serves the ask');
+    const dupCalls = (JS.match(/cwDuplicateOf\(clean,/g) || []).length;
+    ok(dupCalls === 2, `expected both walks to run the duplicate guard, found ${dupCalls}`);
+    ['cw3', 'cw4'].forEach((walk) => {
+        const at = JS.indexOf('function refuseDuplicate(', JS.indexOf(walk === 'cw3'
+            ? 'const _cwLoglineCtl = (function () {' : 'const _cwSpineCtl = (function () {'));
+        const body = JS.slice(at, at + 1400);
+        ok(/_walkSlot\.arm\('/.test(body) && /aiBubble\(/.test(body),
+            `${walk}: a refused duplicate does not re-arm the slot AND say something — a refusal with `
+            + `nothing in its place is a DEAD END (law 4d)`);
+        ok(/\.ask\)/.test(body),
+            `${walk}: the refusal does not re-serve the ASK, so the student is told "no" with no `
+            + `question on screen (staging .329: help chips and no question)`);
+    });
+    // Behavioural: tight enough not to refuse honest work, sharp enough to catch Neil's own test.
+    const norm = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const dupOf = (text, others) => {
+        const a = norm(text); const aw = a ? a.split(' ') : [];
+        if (aw.length < 3) return null;
+        const A = new Set(aw);
+        for (const o of others) {
+            const b = norm(o.text); if (!b || !o.label) continue;
+            if (b === a) return o.label;
+            const bw = b.split(' '); if (aw.length < 5 || bw.length < 5) continue;
+            const B = new Set(bw); let inter = 0;
+            B.forEach((w) => { if (A.has(w)) inter++; });
+            const uni = A.size + B.size - inter;
+            if (uni > 0 && inter / uni >= 0.9) return o.label;
+        }
+        return null;
+    };
+    const GOAL = { label: 'Goal', text: 'She wants to win the county final for her late father.' };
+    ok(dupOf('She wants to win the county final for her late father.', [GOAL]) === 'Goal',
+        'the duplicate guard does not catch a word-for-word repeat — Neil\'s own Goal/Stakes test');
+    ok(dupOf('she wants to win the county final for her late father', [GOAL]) === 'Goal',
+        'the guard is defeated by punctuation and case');
+    // NEGATIVE CONTROLS — a false refusal tells a student who did the work that they didn\'t, which
+    // costs far more than a missed duplicate. These must all pass through.
+    [['If she fails, her little sister goes into the arena alone.', 'related but different content'],
+     ['She loses the final and never plays again.', 'same subject, different sentence'],
+     ['Win.', 'too short to judge']].forEach(([t, what]) => {
+        ok(dupOf(t, [GOAL]) === null, `the guard falsely refused a legitimate answer (${what}): "${t}"`);
+    });
 }
 
 console.log(`   ${asserts.pass} assertions passed`);

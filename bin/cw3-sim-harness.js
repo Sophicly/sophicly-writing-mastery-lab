@@ -43,6 +43,18 @@ function world(opts) {
 }
 const stepWrites = (w, from) => w.writes.slice(from).filter((x) => STEP_FIDS.indexOf(x.fid) !== -1);
 
+// v7.20.333: a SELF-ASSESSMENT tick list now stands between every filed answer and the next ask,
+// and a group boundary review is fired from the tick list's Continue rather than from the answer.
+// So "get to the next ask" means: clear the menu neutrally, and resolve any API call that the
+// clearing kicked off. Every loop below goes through this — a loop that only calls say() would
+// stall at the first tick list and report a walk that "filled 7/10 rows".
+function clearMenus(w, reply) {
+    if (!w.chips().length) return false;
+    w.tapMenu();
+    if (w.armed) w.resolveApi(reply);
+    return true;
+}
+
 async function main() {
 console.log('CW STEP-3 LOGLINE WALK — behavioural sim (real _cwLoglineCtl)\n');
 
@@ -68,9 +80,9 @@ console.log('I2/I3 · ask owns the row, asks strictly in order');
 
     const answered = [], filedTo = [];
     let guard = 0;
-    while (guard++ < 40) {
+    while (guard++ < 80) {
         if (STEP_FIDS.every((f) => w.rows.get(f))) break;
-        if (w.chips().length) { w.tapMenu(); continue; }
+        if (clearMenus(w, '@ALL_OK')) continue;
         const text = 'answer<' + (answered.length + 1) + '>';
         const before = w.writes.length;
         w.say(text, '@ALL_OK');
@@ -78,7 +90,7 @@ console.log('I2/I3 · ask owns the row, asks strictly in order');
         if (!landed) break;
         answered.push(text); filedTo.push(landed.fid);
     }
-    ok(guard < 40, 'the walk never completed — the sim spun out');
+    ok(guard < 80, 'the walk never completed — the sim spun out');
     const filled = STEP_FIDS.filter((f) => w.rows.get(f)).length;
     ok(filled === STEP_FIDS.length,
         'a full run filled only ' + filled + '/' + STEP_FIDS.length + ' rows — the sim is not exercising the walk');
@@ -107,7 +119,8 @@ console.log('I2b · a doc edit between ask and answer cannot move the answer');
     w.ctl.forceStart();
     await settle();
     ok(w.toAsk(), 'the paced intro never reached a live ask — the student cannot answer anything');
-    w.say('my protagonist');                       // fills component 1, serves component 2
+    w.say('my protagonist');                       // fills component 1
+    clearMenus(w, '@ALL_OK');                      // v7.20.333: through its tick list, on to component 2
     ok(!!w.rows.get(COMPONENTS[0]), 'setup: component 1 was not filled');
 
     // The student clears component 1 by hand while looking at the component-2 ask.
@@ -140,14 +153,15 @@ console.log('I3b · clearing an earlier row mid-session cannot rewind the walk')
     await settle();
     w.toAsk();
     const seen = [];
-    for (let n = 0; n < 3; n++) {
-        if (w.chips().length) { w.tapMenu(); continue; }
+    for (let n = 0; n < 8 && seen.length < 3; n++) {
+        if (clearMenus(w, '@ALL_OK')) continue;
         const before = w.writes.length;
         w.say('ans<' + n + '>', '@ALL_OK');
         const landed = stepWrites(w, before)[0];
         if (landed) seen.push(STEP_FIDS.indexOf(landed.fid));
     }
     ok(seen.length >= 2, 'setup: fewer than two answers were filed');
+    clearMenus(w, '@ALL_OK');                      // off the last tick list, onto the next ask
 
     // The student deletes their protagonist answer in the document, mid-walk.
     w.rows.set(COMPONENTS[0], '');
@@ -159,6 +173,7 @@ console.log('I3b · clearing an earlier row mid-session cannot rewind the walk')
     w.say('the next answer', '@ALL_OK');
     const l1 = stepWrites(w, t1)[0];
     ok(!!l1, 'the next answer was not filed at all after a mid-session doc edit');
+    clearMenus(w, '@ALL_OK');
     const t2 = w.writes.length;
     w.say('and the one after that', '@ALL_OK');
     const l2 = stepWrites(w, t2)[0];
@@ -209,11 +224,11 @@ console.log('I0 · liveness — after every event the student can still act');
     await settle();
     w.assertLive(ok, 'the walk starting');
 
-    // Every ordinary turn of a full run.
+    // Every ordinary turn of a full run — including every tick list and every follow-up.
     let guard = 0;
-    while (guard++ < 40 && !STEP_FIDS.every((f) => w.rows.get(f))) {
+    while (guard++ < 80 && !STEP_FIDS.every((f) => w.rows.get(f))) {
         const bb = w.bubbles.length;
-        if (w.chips().length) { w.tapMenu(); w.assertLiveAfterInput(ok, 'a chip tap', bb); continue; }
+        if (w.chips().length) { clearMenus(w, '@ALL_OK'); w.assertLiveAfterInput(ok, 'a chip tap', bb); continue; }
         w.say('answer ' + guard, '@ALL_OK');
         w.assertLiveAfterInput(ok, 'answering ask ' + guard, bb);
     }
@@ -287,14 +302,14 @@ console.log('I9 · the chosen logline replaces; every sharpen chip names its own
     w.toAsk();
 
     // Answer all ten asks. The COMPONENT review passes clean; the LOGLINE review names two weak.
+    // The reply is chosen by WHICH review is about to fire: the components review runs while rows
+    // are still empty, the logline review only once all ten are filled.
     let guard = 0;
-    while (guard++ < 40 && !STEP_FIDS.every((f) => w.rows.get(f))) {
-        if (w.chips().length && !w.chips().some((c) => /Sharpen|Move on/i.test(String(c.textContent)))) {
-            w.tapMenu(); continue;
-        }
+    while (guard++ < 80) {
         if (w.chips().some((c) => /Sharpen|Move on/i.test(String(c.textContent)))) break;
-        const filled = STEP_FIDS.filter((f) => w.rows.get(f)).length;
-        w.say('answer ' + guard, filled >= COMPONENTS.length ? '@WEAK: logline-2, logline-3' : '@ALL_OK');
+        const reply = STEP_FIDS.every((f) => w.rows.get(f)) ? '@WEAK: logline-2, logline-3' : '@ALL_OK';
+        if (clearMenus(w, reply)) continue;
+        w.say('answer ' + guard, reply);
     }
     ok(STEP_FIDS.every((f) => w.rows.get(f)),
         'setup: the run did not reach the end of the walk — I9 would pass without testing anything');
@@ -336,8 +351,9 @@ console.log('I5 · a sharpen rewrite replaces, never stitches');
     w.ctl.forceStart();
     await settle();
     let guard = 0;
-    while (guard++ < 20 && !COMPONENTS.every((f) => w.rows.get(f))) {
-        if (w.chips().length) { w.tapMenu(); continue; }
+    while (guard++ < 60) {
+        if (w.chips().some((c) => /Sharpen|Move on/i.test(String(c.textContent)))) break;
+        if (clearMenus(w, '@WEAK: flaw')) continue;
         w.say('component answer ' + guard, '@WEAK: flaw');
     }
     ok(COMPONENTS.every((f) => w.rows.get(f)), 'setup: the seven components were not all filled');
@@ -368,6 +384,7 @@ console.log('I6 · resume repeats nothing and loses nothing');
     await settle();
     w.toAsk();
     w.say('protagonist answer');
+    clearMenus(w, '@ALL_OK');                      // v7.20.333: finish its tick list before reloading
     const carried = {};
     w.rows.forEach((v, k) => { if (v) carried[k] = v; });
 
@@ -379,6 +396,149 @@ console.log('I6 · resume repeats nothing and loses nothing');
     const before = w2.writes.length;
     w2.say('flaw answer');
     ok(stepWrites(w2, before).length > 0, 'after a resume the next answer was not filed at all');
+}
+
+// ── I10 · SELF-ASSESSMENT (v7.20.333) ─────────────────────────────────────────────────────
+// Neil, after typing the same text into his Goal and his Stakes to see whether anything would
+// stop him: "maybe the students could self-assess… they tick off the criteria that they've
+// answered to the best of their ability."
+console.log('I10 · the tick list runs after every answer, and both its exits work');
+{
+    // ── 10a · TICK EVERYTHING → no follow-up, straight on to the next ask.
+    const w = world();
+    w.ctl.forceStart();
+    await settle();
+    ok(w.toAsk(), 'setup: the paced intro never reached a live ask');
+    w.say('a real protagonist answer');
+    ok(!!w.rows.get(COMPONENTS[0]), 'the answer was not filed before the tick list — filing must not wait on it');
+    ok(w.onTickList(), 'no tick list was served after the answer was filed');
+    const criteria = w.tickChips().length;
+    ok(criteria >= 2, 'the tick list offered ' + criteria + ' criteria — a list of one is not a check');
+    w.tickAll();
+    ok(!w.onTickList(), 'ticking every criterion still produced a follow-up — there is nothing to add');
+    ok(!!w.deps._walkSlot.armed, 'after a clean tick list the next ask is not armed — the walk stalled');
+
+    // ── 10b · TICK NOTHING → the follow-up, and ADD accumulates onto the SAME row.
+    const w2 = world();
+    w2.ctl.forceStart();
+    await settle();
+    w2.toAsk();
+    w2.say('my first go at a protagonist');
+    const firstText = String(w2.rows.get(COMPONENTS[0]) || '');
+    ok(w2.tickNoneThenAdd(), 'leaving criteria unticked offered no "Add to my answer" follow-up');
+    ok(!!w2.deps._walkSlot.armed, 'the ADD branch did not re-arm the slot — the student cannot answer');
+    ok(w2.deps._walkSlot.peek('cw3').fid === COMPONENTS[0],
+        'the ADD branch armed ' + w2.deps._walkSlot.peek('cw3').fid + ' instead of the row being added to ('
+        + COMPONENTS[0] + ')');
+    const beforeAdd = w2.writes.length;
+    w2.say('and the missing piece');
+    const addWrite = stepWrites(w2, beforeAdd)[0];
+    ok(!!addWrite && addWrite.fid === COMPONENTS[0], 'the addition did not land on the same row');
+    ok(addWrite && addWrite.replace === false,
+        'the addition declared replace — an "add a line" follow-up is an ACCUMULATE cycle (§4c.6); '
+        + 'replacing throws away what the student already wrote');
+    const now = String(w2.rows.get(COMPONENTS[0]) || '');
+    ok(now.indexOf('and the missing piece') !== -1, 'the addition is not in the row');
+    ok(now.indexOf(firstText.slice(0, 20)) !== -1, 'the addition WIPED the original answer');
+    // ONE free follow-up: the addition must move the walk on, never re-open the tick list.
+    ok(!w2.onTickList(), 'the tick list ran a SECOND time on the same row — the follow-up is offered once');
+    ok(!!w2.deps._walkSlot.armed && w2.deps._walkSlot.peek('cw3').fid === COMPONENTS[1],
+        'after the addition the walk did not move on to the next ask');
+
+    // ── 10c · A REWRITE ask offers a REWRITE follow-up, not an ADD (§4c.6 both directions).
+    const pre = {};
+    COMPONENTS.forEach((f) => { pre[f] = 'filled earlier'; });
+    const w3 = world({ prefill: pre });
+    w3.ctl.tryResume();
+    await settle();
+    w3.toAsk();
+    ok(!!w3.deps._walkSlot.armed && w3.deps._walkSlot.peek('cw3').fid === FORMULAS[0],
+        'setup: the walk did not resume onto the first logline');
+    w3.say('my first logline');
+    ok(w3.onTickList(), 'a logline answer got no tick list');
+    const cont = w3.chips().filter((c) => /Continue/i.test(String(c.textContent)))[0];
+    if (cont) w3.tap(cont);
+    const addChip = w3.chips().filter((c) => /Add to my answer|Write it again/i.test(String(c.textContent)))[0];
+    ok(!!addChip, 'the logline follow-up offered no way to improve it');
+    ok(addChip && /Write it again/i.test(String(addChip.textContent)),
+        'a LOGLINE follow-up offered "Add to my answer" — a logline is ONE self-contained sentence, so '
+        + 'the ask must demand the whole thing rewritten (the .289 bug in reverse)');
+    if (addChip) {
+        w3.tap(addChip);
+        const b4 = w3.writes.length;
+        w3.say('a completely rewritten logline');
+        const wr = stepWrites(w3, b4)[0];
+        ok(!!wr && wr.replace === true,
+            'the logline rewrite did not declare replace — both drafts end up stitched in one row');
+    }
+}
+
+// ── I10d · A RELOAD DURING A TICK LIST ────────────────────────────────────────────────────
+// Chip bars are DOM-only: the bubble replays from saved history, the buttons do not. This is the
+// chips-die-on-reload landmine, and a tick list is just as exposed to it as every menu before it.
+console.log('I10d · a reload mid tick-list comes back with the tick list, not the wrong surface');
+{
+    const w = world();
+    w.ctl.forceStart();
+    await settle();
+    w.toAsk();
+    w.say('an answer that will be interrupted');
+    ok(w.onTickList(), 'setup: no tick list to be interrupted');
+
+    const carried = {};
+    w.rows.forEach((v, k) => { if (v) carried[k] = v; });
+    const w2 = world({ prefill: carried, ls: w.ls });
+    const resumed = w2.ctl.tryResume();
+    await settle();
+    ok(resumed === true, 'a reload during a tick list did not resume the walk at all');
+    ok(w2.chips().length > 0,
+        'the tick list came back with NO buttons — the student sees a question and cannot answer it '
+        + '(chips-die-on-reload). Either re-attach the bar or serve it fresh; never neither.');
+    // And it is the TICK LIST that came back, not the next ask — resuming to the wrong surface is
+    // how a walk eats a typed answer as the wrong field.
+    ok(w2.tickChips().length >= 2, 'the resumed bar is not the tick list');
+    const before = w2.writes.length;
+    w2.tickAll();
+    ok(!!w2.deps._walkSlot.armed, 'finishing the resumed tick list did not move the walk on');
+    ok(stepWrites(w2, before).length === 0, 'the resumed tick list wrote to the document — it must only claim, never file');
+}
+
+// ── I11 · THE DUPLICATE GUARD (v7.20.333) ─────────────────────────────────────────────────
+// Neil's own test, run against the machine: he entered the same text for Goal and Stakes to see
+// whether anything would stop him. Nothing did. And per law 4d, refusing is only half a change.
+console.log('I11 · a word-for-word repeat is refused — and the ask is re-served, not just refused');
+{
+    const pre = {};
+    COMPONENTS.slice(0, 4).forEach((f) => { pre[f] = 'an earlier answer for ' + f; });
+    pre[COMPONENTS[4]] = 'She wants to win the county final for her late father.';   // Goal
+    const w = world({ prefill: pre });
+    w.ctl.tryResume();
+    await settle();
+    w.toAsk();
+    ok(!!w.deps._walkSlot.armed && w.deps._walkSlot.peek('cw3').fid === COMPONENTS[5],
+        'setup: the walk did not resume onto the Obstacle ask');
+
+    const before = w.writes.length;
+    const bubblesBefore = w.bubbles.length;
+    w.say('She wants to win the county final for her late father.');
+    ok(stepWrites(w, before).length === 0,
+        'a word-for-word repeat of another block was FILED — the student can put any answer in');
+    // LIVENESS (law 4d) — the half that a refusal on its own is missing.
+    ok(w.bubbles.length > bubblesBefore, 'the refusal said nothing — the student sees no response at all');
+    ok(/word-for-word/.test(String(w.bubbles[w.bubbles.length - 1] || '')),
+        'the refusal does not tell the student WHY it was refused');
+    ok(!!w.deps._walkSlot.armed && w.deps._walkSlot.peek('cw3').fid === COMPONENTS[5],
+        'after refusing, the ask was not re-armed — the student is stuck with nothing to answer');
+    ok(/Now tell me|stands in your protagonist|Obstacle|obstacle/i.test(String(w.bubbles[w.bubbles.length - 1] || '')),
+        'the refusal did not re-serve the QUESTION — a rejection with no question on screen is the '
+        + '.329 dead end (Neil: help buttons and no question, mid-lesson)');
+
+    // NEGATIVE CONTROL — a legitimately related answer must go straight through. A false refusal
+    // tells a student who did the work that they didn't, which costs far more than a missed repeat.
+    const b2 = w.writes.length;
+    w.say('Her old coach, who benched her once and would rather she never played again.');
+    ok(stepWrites(w, b2).length === 1,
+        'the guard REFUSED a legitimate answer that merely shares subject matter with another row');
 }
 
 console.log('\n' + (fail ? '❌ CW3 SIM FAILED' : '✅ CW3 sim passed')

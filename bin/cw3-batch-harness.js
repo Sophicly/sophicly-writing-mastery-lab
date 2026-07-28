@@ -72,8 +72,18 @@ if (!CTL) { console.error('  ❌ could not slice _cwLoglineCtl'); process.exit(1
     // v7.20.327: the write target now comes from the ARMED SLOT, not from STEPS[idx] — the
     // filing is still verbatim and still inside handleTurn with no round-trip, but `step` is
     // resolved from the ask that requested the answer.
-    ok(/async function handleTurn\(msg\)[\s\S]{0,2200}?_writeOutlineRowField\(step\.fid, clean/.test(CTL),
-        'the answer is filed VERBATIM inside handleTurn, with no API call in between');
+    // v7.20.333: asserted as the INVARIANT rather than as a character window. The old form was
+    // `handleTurn[\s\S]{0,2200}?_writeOutlineRowField`, which failed the moment the duplicate guard
+    // was added ABOVE the write — a true statement about the code, reported as a defect. A gate
+    // that breaks on distance rather than on meaning trains you to widen it, which is how it stops
+    // guarding anything.
+    const htAt = CTL.indexOf('async function handleTurn(msg)');
+    const wrAt = CTL.indexOf('_writeOutlineRowField(step.fid, clean', htAt);
+    ok(htAt >= 0 && wrAt > htAt,
+        'handleTurn no longer files the student\'s answer verbatim through the ask\'s own step.fid');
+    ok(!/sendCanvasMessage\(\)|armWalkResume\(/.test(CTL.slice(htAt, wrAt < 0 ? htAt : wrAt)),
+        'an API round-trip now sits between the student answering and their words being filed — the '
+        + 'whole point of the .325 batching is that nothing they write waits on a call completing');
     ok(/const step = stepByFid\(slot\.fid\)/.test(CTL),
         'the write target is resolved from the armed slot, not from a cursor');
     ok(/_walkSlot\.consume\('cw3'\)/.test(CTL),

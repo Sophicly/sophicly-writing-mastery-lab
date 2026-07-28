@@ -17494,6 +17494,161 @@
         }
 
         // ═══════════════════════════════════════════════════════════════════════════════════
+        // SELF-ASSESSMENT — the student marks their OWN answer against the ask's criteria
+        // ───────────────────────────────────────────────────────────────────────────────────
+        // v7.20.333. Neil, 2026-07-28, after deliberately entering the SAME text for his Goal and
+        // his Stakes to see whether anything would stop him: "I feel like I can just put any answer
+        // in… maybe the students could self-assess… they tick off the criteria that they've
+        // answered to the best of their ability. And then maybe one check at the end with advice of
+        // how to make it better, with examples."
+        //
+        // ⭐ WHY A CHECKLIST AND NOT A PER-ANSWER SOPHIA CHECK (settled — do not relitigate).
+        // An AI check OUTSOURCES the judgment; a criteria checklist BUILDS it. Self-monitoring
+        // against a standard is among the highest-effect interventions in Hattie, it is the actual
+        // exam skill, and it is FREE — so it runs on EVERY ask instead of being rationed to one by
+        // cost. The batched end-of-set review then POLICES the self-assessment for nothing extra
+        // ("you ticked 'emotional shield', but what you wrote is a habit"), which is what stops
+        // ticking degenerating into clicking.
+        //
+        // ⭐ WHERE A TICK LIST BELONGS (the rule, so it is not re-derived per step). It follows a
+        // WRITTEN answer whose quality a later step depends on. NEVER a pick — there is nothing to
+        // self-assess about a tap. And never ONE ROW of many inside a larger unit: the UNIT gets
+        // the tick list. Applied: Step 1 no (factual profile) · Step 2 the chosen idea only ·
+        // Steps 3 + 4 every ask · Step 5 no (it is a pick) · Step 6 per STAGE, never per row —
+        // 801 rows × a tick list is clicking, not thinking.
+        //
+        // ⭐ CRITERIA ARE LIFTED, NEVER PARSED. Each step carries a `criteria: []` array stamped at
+        // construction; bin/cw-keymatch-harness.js FAILS if a criterion is not a verbatim substring
+        // of that step's own `ask` prose, so the tick list and the teaching cannot drift apart.
+        //
+        // ⭐ LIVENESS BY CONSTRUCTION (WML CLAUDE.md 4d). Every branch ends with a question on
+        // screen or a chip to press: all ticked → onDone (the caller serves the next ask);
+        // anything unticked → ONE free follow-up carrying two chips. There is no third outcome.
+        //
+        // ONE implementation, shared by every walk — a per-walk copy is how the v7.20.289
+        // replace-vs-append fix was made in one controller and lost in another.
+        const SA_ASK = 'Before we move on — **which of these does your answer actually do?**\n\n'
+            + 'Tick the ones you have genuinely covered, then Continue. Nothing is ticked for you, '
+            + 'and there is no penalty for leaving one blank — an honest tick list is what tells you '
+            + 'where to look next.';
+        const SA_ADD_LABEL = { accumulate: 'Add to my answer →', rewrite: 'Write it again, including that →' };
+        const SA_SKIP_LABEL = 'It’s fine as it is →';
+        function cwSaFollowText(unticked, cycle) {
+            return 'You didn’t tick:\n\n'
+                + unticked.map(function (c) { return '- **' + c + '**'; }).join('\n')
+                + '\n\nThat is usually the whole distance between a good answer and a strong one — and '
+                + 'it costs a sentence. '
+                + (cycle === 'rewrite'
+                    ? 'Do you want to write it again with that in?'
+                    : 'Do you want to add a line about it?');
+        }
+        // Multi-select chip bar: taps TOGGLE (✓ prefix), Continue commits the selection.
+        // v7.20.333: hoisted to module scope from _cwSpineCtl, which owned the only copy — the
+        // self-assessment needs the identical bar and a second copy is the drift class above.
+        // DOM-only, like every chip bar → re-attached on resume by the walk that served it.
+        function chipBarMulti(options, onDone) {
+            const bubble = chatMessages.lastElementChild;
+            const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+            if (!bc) return false;
+            // Guarded on its OWN kind — different kinds coexist on one bubble (v7.20.331).
+            if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+            const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice });
+            const sel = [];
+            options.forEach(function (opt) {
+                const btn = el('button', { className: 'swml-quick-btn', textContent: opt });
+                btn.addEventListener('click', function () {
+                    const i = sel.indexOf(opt);
+                    if (i === -1) { sel.push(opt); btn.textContent = '✓ ' + opt; }
+                    else { sel.splice(i, 1); btn.textContent = opt; }
+                });
+                bar.appendChild(btn);
+            });
+            bar.appendChild(el('button', {
+                className: 'swml-quick-btn', textContent: 'Continue →',
+                onClick: function () { bar.remove(); onDone(sel.slice()); },
+            }));
+            bc.appendChild(bar);
+            return true;
+        }
+        // `o` is the walk's wiring, built once per ask:
+        //   criteria · cycle (§4c.6 accumulate|rewrite) · emit(plain) · chipBar(options, onPick)
+        //   onTicks(ticked, unticked)  — bank the claim (the end-of-set review reads it)
+        //   onAdd()                    — the student wants another go at the SAME row
+        //   onDone()                   — finished with this ask; the caller advances
+        // onAdd and onDone are the ONLY exits and exactly one of them always fires.
+        function cwServeSelfAssessment(o) {
+            const criteria = (o.criteria || []).slice();
+            if (!criteria.length) {
+                // Fail loud, never silently skip: a step with no criteria is a defect the gate
+                // should have caught, and swallowing it would hide the hole in the next port.
+                console.warn('WML: self-assessment served for an ask with no criteria[] — skipping it. '
+                    + 'Add the array to the step (bin/cw-keymatch-harness.js enforces this).');
+                o.onDone();
+                return false;
+            }
+            o.emit(SA_ASK);
+            return cwAttachSelfAssessment(o);
+        }
+        function cwAttachSelfAssessment(o) {
+            return chipBarMulti((o.criteria || []).slice(), onSelfAssessTicks(o));
+        }
+        function onSelfAssessTicks(o) {
+            const criteria = (o.criteria || []).slice();
+            return function (ticked) {
+                const unticked = criteria.filter(function (c) { return ticked.indexOf(c) === -1; });
+                if (o.onTicks) o.onTicks(ticked, unticked);
+                if (!unticked.length) { o.onDone(); return; }
+                o.emit(cwSaFollowText(unticked, o.cycle));
+                cwAttachSaFollowUp(o, unticked);
+            };
+        }
+        function cwAttachSaFollowUp(o, unticked) {
+            const addLabel = (o.cycle === 'rewrite') ? SA_ADD_LABEL.rewrite : SA_ADD_LABEL.accumulate;
+            return o.chipBar([addLabel, SA_SKIP_LABEL], onSelfAssessFollowUp(o, addLabel));
+        }
+        function onSelfAssessFollowUp(o, addLabel) {
+            return function (pick) {
+                if (pick === addLabel) { o.onAdd(); return; }
+                o.onDone();
+            };
+        }
+
+        // ── THE DUPLICATE GUARD (v7.20.333) ────────────────────────────────────────────────
+        // Neil's own test: he typed the same sentence into his Goal and his Stakes to see whether
+        // anything would stop him. Nothing did, and it filed exactly what he gave it. This is what
+        // a rushing student does, so it is checked deterministically — no API call.
+        //
+        // TIGHT BY DESIGN. A false refusal of a legitimate answer costs far more than a missed
+        // duplicate (it tells a student who did the work that they didn't), so this fires only on
+        // text that is effectively the SAME SENTENCE: identical once punctuation and case are
+        // normalised, or a word-set overlap of 0.9+ on answers of five words or more — at most one
+        // word different. Legitimately-related answers ("find Nemo" / "he loses Nemo forever") sit
+        // nowhere near it.
+        function cwNormaliseAnswer(t) {
+            return String(t || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+        function cwDuplicateOf(text, others) {
+            const a = cwNormaliseAnswer(text);
+            const aw = a ? a.split(' ') : [];
+            if (aw.length < 3) return null;                     // too short to judge at all
+            const A = new Set(aw);
+            for (let i = 0; i < (others || []).length; i++) {
+                const other = others[i] || {};
+                const b = cwNormaliseAnswer(other.text);
+                if (!b || !other.label) continue;
+                if (b === a) return other.label;
+                const bw = b.split(' ');
+                if (aw.length < 5 || bw.length < 5) continue;
+                const B = new Set(bw);
+                let inter = 0;
+                B.forEach(function (w) { if (A.has(w)) inter++; });
+                const union = A.size + B.size - inter;
+                if (union > 0 && (inter / union) >= 0.9) return other.label;
+            }
+            return null;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════════════
         // CW STEP 2 — EXPLORE STORY IDEAS (code-owned walk, v7.20.262)
         // ───────────────────────────────────────────────────────────────────────────────────
         // Code owns the asking (inspiration menu, worked examples, resources, the invites and
@@ -17911,28 +18066,71 @@
             // (varied texts, weak-vs-strong where it teaches) → compact helper-button pointer →
             // the concrete question LAST. One bubble each; the intro carries don’t-overthink.
             const HELP_LINE = '*(More examples: **📖 Guidance** below. Real material to borrow: **👤 Your Writer’s Profile**.)*';
+            // v7.20.333: `criteria` is the SELF-ASSESSMENT tick list for each ask. Every entry is a
+            // verbatim substring of that ask's own "A strong X:" bullets (asterisks aside) — the
+            // gate in bin/cw-keymatch-harness.js fails if one drifts, so the tick list can never
+            // ask about something the teaching did not say.
             const COMPONENTS = [
-                { fid: 'cw-step-3-protagonist', label: 'Protagonist', ask:
+                { fid: 'cw-step-3-protagonist', label: 'Protagonist', criteria: [
+                    'changes more than anyone else',
+                    'has courage',
+                    'makes us care fast',
+                ], ask:
                     '**1 of 7 — Your protagonist**\n\nYour protagonist isn’t simply the main character — they’re the character who **changes the most**, and whose change reveals what your story is really about.\n\n**A strong protagonist:**\n\n- **changes more than anyone else** — the distance they travel is the story’s meaning\n- **has courage** — flawed, frightened, failing is fine; too cowardly to act is not\n- **makes us care fast** — good at something, kind to someone, or treated unfairly through no fault of their own\n\nExamples:\n\n- Scrooge begins cruel and miserly, ends generous — his change *is* the meaning of *A Christmas Carol*.\n- Woody in *Toy Story* begins jealous and possessive, ends able to share Andy’s love.\n- Macbeth begins a loyal soldier, ends a tyrant — a change towards ruin reveals meaning just as powerfully.\n\n' + HELP_LINE + '\n\n**Now tell me about yours:**\n\n- Who changes most in your story?\n- Their name, age and situation — a quick sketch is plenty\n- What are they like when the story opens?' },
-                { fid: 'cw-step-3-flaw', label: 'Flaw', ask:
+                { fid: 'cw-step-3-flaw', label: 'Flaw', criteria: [
+                    'is an emotional shield',
+                    'actually works',
+                    'is something the protagonist doesn’t yet understand about themselves',
+                ], ask:
                     '**2 of 7 — The flaw**\n\nIn the strongest stories the protagonist isn’t perfect — they carry a **flaw**: a visible, repeated behaviour that gets them into trouble.\n\n**A strong flaw:**\n\n- is an **emotional shield** — a behaviour built to protect a deeper hurt (that hurt is our next block)\n- **actually works** — in everyday life it holds the pain at bay, which is exactly why they keep using it\n- is something the protagonist **doesn’t yet understand about themselves**\n\nExamples:\n\n- Scrooge’s flaw is **greed** — money is a shield against people, because money can’t abandon him.\n- Katniss’s flaw is **cold detachment** — keeping everyone at arm’s length so their loss can’t break her.\n- Marlin’s flaw in *Finding Nemo* is **smothering overprotection** — a shield against ever losing family again.\n\nWatch out: “clumsy” or “shy” on its own is a quirk, not a flaw. If your first thought is a surface habit, ask yourself: *what is this behaviour protecting them from?*\n\n' + HELP_LINE + '\n\n**What is the emotional shield your protagonist hides behind — and what does it look like in their day-to-day behaviour?**' },
-                { fid: 'cw-step-3-wound', label: 'Wound', ask:
+                { fid: 'cw-step-3-wound', label: 'Wound', criteria: [
+                    'is one specific past hurt',
+                    'fits the flaw exactly',
+                    'stays hidden at first',
+                ], ask:
                     '**3 of 7 — The wound**\n\nYou’ve named the shield. Now name what it’s protecting. Behind a strong flaw there is almost always a **wound** — a hurt from the past the protagonist would rather not feel. The flaw is the visible armour; the wound is the soft thing underneath it.\n\n**A strong wound:**\n\n- is **one specific past hurt** — a moment, not a general sadness\n- **fits the flaw exactly** — the armour always matches the injury\n- stays **hidden at first** — we see it in behaviour long before anyone says it aloud\n\nExamples:\n\n- Scrooge’s wound is the loneliness of a loveless childhood — so his shield is wealth, which can’t reject him.\n- Katniss’s wound is losing her father — so her shield is detachment: love no one, lose no one.\n- Marlin’s wound is the barracuda attack that took his family — so his shield is never letting Nemo out of his sight.\n\nA useful trick: take the flaw you just named and ask, *what must have happened to make a person build this?*\n\n' + HELP_LINE + '\n\n**What single hurt, loss or fear from the past is your protagonist’s flaw covering up?**' },
-                { fid: 'cw-step-3-incident', label: 'Inciting Incident', ask:
+                { fid: 'cw-step-3-incident', label: 'Inciting Incident', criteria: [
+                    'is a single event, not a situation',
+                    'breaks the routine',
+                    'feels like escaping the frying pan',
+                ], ask:
                     '**4 of 7 — The inciting incident**\n\nThis is the event that shatters your protagonist’s normal life and forces them into the story — the moment their emotional shield stops working.\n\n**A strong inciting incident:**\n\n- is a **single event**, not a situation — something that happens on a particular day\n- **breaks the routine** the protagonist was comfortably hiding inside\n- feels like escaping the frying pan… straight into the fire\n\nExamples:\n\n- Marley’s ghost arrives, and Scrooge can no longer hide behind his wealth.\n- Will Byers vanishes, and the safe ordinary world of *Stranger Things* breaks open.\n- Hagrid hands over a letter — “you’re a wizard, Harry” — and life in the cupboard under the stairs is finished.\n\nWatch out: “life is hard at school” is a situation. “On the first morning of term, the new head teacher confiscates every phone in the school” is an event.\n\n' + HELP_LINE + '\n\n**What single event forces your protagonist out of their normal life?**' },
-                { fid: 'cw-step-3-goal', label: 'Goal', ask:
+                { fid: 'cw-step-3-goal', label: 'Goal', criteria: [
+                    'is one physical, picturable finish line',
+                    'stands for a deeper need',
+                ], ask:
                     '**5 of 7 — The goal**\n\nThat event hands your protagonist a **goal** — something they now desperately want.\n\n**A strong goal:**\n\n- is **one physical, picturable finish line** — we could photograph the moment they achieve it\n- **stands for a deeper need** the protagonist doesn’t fully understand yet — the visible goal drives the plot; the hidden need drives the meaning\n\nExamples:\n\n- Luke’s external goal is to rescue Princess Leia; his internal need is to discover who he’s meant to become.\n- Scrooge’s external goal is to protect his wealth; his internal need is human connection.\n- Marlin’s external goal is to find Nemo; his internal need is to learn to let go.\n\nWatch out: “be happy” or “get rich” can’t be photographed. “Win the county final” can.\n\n' + HELP_LINE + '\n\n**Two parts, then:**\n\n- What is the one visible thing your protagonist is trying to achieve?\n- What deeper need is hiding underneath it?' },
-                { fid: 'cw-step-3-obstacle', label: 'Obstacle', ask:
+                { fid: 'cw-step-3-obstacle', label: 'Obstacle', criteria: [
+                    'attacks the flaw specifically',
+                    'is often a dark mirror',
+                    'is specific',
+                ], ask:
                     '**6 of 7 — The obstacle**\n\nThe force standing in your protagonist’s way. Here is a law of storytelling worth memorising: **your protagonist is only as compelling as the obstacle that opposes them.** Weak opposition, weak story.\n\n**A strong obstacle:**\n\n- **attacks the flaw specifically** — it forces the protagonist to face the very thing they’ve been hiding behind\n- is often a **dark mirror** — it embodies the flaw the protagonist must overcome, so beating it means changing\n- is **specific** — a person, a group, a force we can point at; never “society” in the abstract\n\nExamples:\n\n- Inspector Goole forces Sheila to confront her family’s complicity — attacking the comfortable blindness she hides in.\n- President Snow attacks Katniss through the people she loves — the one place a detached girl can still be reached.\n- Lady Macbeth amplifies Macbeth’s ambition while attacking his hesitation.\n\n' + HELP_LINE + '\n\n**Who or what stands in your protagonist’s way — and how does it target their flaw in particular?**' },
-                { fid: 'cw-step-3-stakes', label: 'Stakes', ask:
+                { fid: 'cw-step-3-stakes', label: 'Stakes', criteria: [
+                    'personal and specific',
+                    'as heavy as survival',
+                    'devastating for THIS protagonist',
+                ], ask:
                     '**7 of 7 — The stakes**\n\nStakes are what make the reader care: if your protagonist fails, what is lost?\n\n**Strong stakes are:**\n\n- **personal and specific** — we can picture exactly what would be lost, and who loses it\n- **as heavy as survival** — even in a comedy, failing must cost something enormous\n- **devastating for THIS protagonist** — the loss lands exactly on their wound\n\nFeel the difference:\n\n- *“If she fails, the world ends.”* — vague; we feel nothing.\n- *“If she fails, her little sister goes into the arena alone.”* — specific; we feel it instantly.\n- If Scrooge doesn’t change, he dies alone and unmourned — the very future the ghost makes him watch.\n\n' + HELP_LINE + '\n\n**If your protagonist fails, what exactly do they lose — and why would that loss be devastating for them in particular?**' },
             ];
             const FORMULAS = [
-                { fid: 'cw-step-3-logline-1', label: 'Logline 1 (Action)', ask:
+                { fid: 'cw-step-3-logline-1', label: 'Logline 1 (Action)', criteria: [
+                    'a single clear event kicking things off',
+                    'a concrete action',
+                    'a specific antagonist',
+                ], ask:
                     '**Logline 1 of 3 — Action-oriented**\n\n> **INCITING INCIDENT + PROTAGONIST + ACTION + ANTAGONIST**\n\n- *“After being rescued by a German bounty hunter, a freed slave sets out to rescue his wife from a brutal Mississippi plantation owner.”* — **Django Unchained**\n- *“When a young boy disappears, his mother, a police chief, and his three friends must confront terrifying forces to get him back.”* — **Stranger Things**\n\n**What I’ll be looking for:** a single clear event kicking things off, a concrete action, and a specific antagonist. One sentence — and a rough first draft is fine; you’ll polish the wording in your document later.\n\n**Write your story as one sentence using this formula.**' },
-                { fid: 'cw-step-3-logline-2', label: 'Logline 2 (Goal)', ask:
+                { fid: 'cw-step-3-logline-2', label: 'Logline 2 (Goal)', criteria: [
+                    'a protagonist we glimpse in a phrase',
+                    'a picturable goal',
+                    'a stake that would genuinely hurt',
+                ], ask:
                     '**Logline 2 of 3 — Goal-oriented**\n\n> **PROTAGONIST + ACTION + ANTAGONIST + GOAL + STAKE**\n\n- *“Luke Skywalker, a spirited farm boy, joins rebel forces to fight the evil Darth Vader and rescue Princess Leia from certain death at the hands of the Empire.”* — **Star Wars**\n\nSame story, but this lens leads with who they are, what they want, and what they stand to lose.\n\n**What I’ll be looking for:** a protagonist we glimpse in a phrase (“a spirited farm boy”), a picturable goal, and a stake that would genuinely hurt.\n\n**Write your second logline.**' },
-                { fid: 'cw-step-3-logline-3', label: 'Logline 3 (Character arc)', ask:
+                { fid: 'cw-step-3-logline-3', label: 'Logline 3 (Character arc)', criteria: [
+                    'the opportunity',
+                    'the flaw they must change',
+                    'the solution changing it unlocks',
+                ], ask:
                     '**Logline 3 of 3 — Character-arc oriented**\n\n> **PROTAGONIST has an opportunity to DO SOMETHING LIFE-CHANGING but must learn to CHANGE THEIR FLAW so they can find a solution TO THE PROBLEM**\n\n- *“An old, greedy capitalist called Scrooge has an opportunity to improve the lives of those around him but he must learn to let go of his fear of human relationships so he can become more generous and find a solution to his and others’ unhappiness.”* — **A Christmas Carol**\n- *“A young daughter of a capitalist family called Sheila has an opportunity to improve the lives of those around her but she must learn to recognise the injustices that she and her family commit so she can become more selfless and help find a solution to her society’s inequalities.”* — **An Inspector Calls**\n\nThis one is about your protagonist’s inner journey — the flaw and the wound you named earlier.\n\n**What I’ll be looking for:** the opportunity, the flaw they must change, and the solution changing it unlocks — the change sits at the centre, which is exactly where the meaning lives.\n\n**Write your third logline.**' },
             ];
             // v7.20.289: a push cycle has TWO kinds, and they bank differently.
@@ -17965,7 +18163,10 @@
             // leaves the student looking at chips that no longer exist (chips-die-on-reload).
             // v7.20.327: the armed slot rides the sidecar — the token is in-memory, so without
             // this a reload leaves an ask on screen with no authority to file its answer.
-            function persist() { try { const _s = _walkSlot.peek('cw3'); localStorage.setItem(lsKey(), JSON.stringify({ idx, active, draft, rc: reviewedComponents, rl: reviewedLoglines, weak: weakFids, rev: revisingFid, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
+            // v7.20.333: `sa` (where the student is inside a tick list) and `sat` (what they
+            // claimed) ride the sidecar too — chip bars are DOM-only, so without this a reload
+            // during a self-assessment leaves the tick list on screen with no buttons.
+            function persist() { try { const _s = _walkSlot.peek('cw3'); localStorage.setItem(lsKey(), JSON.stringify({ idx, active, draft, rc: reviewedComponents, rl: reviewedLoglines, weak: weakFids, rev: revisingFid, sa: sa, sat: saTicks, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -18124,12 +18325,15 @@
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
             // DOM-only chips, re-attached on resume like every other walk (chips-die-on-reload).
+            // v7.20.333: returns whether the bar actually attached. The self-assessment resume uses
+            // it as a liveness backstop — a re-attach that silently fails would leave the student
+            // looking at a replayed question with no buttons (law 4d).
             function chipBar(options, onPick) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc) return;
+                if (!bc) return false;
                 // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
-                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
                     bar.appendChild(el('button', {
@@ -18138,6 +18342,7 @@
                     }));
                 });
                 bc.appendChild(bar);
+                return true;
             }
             function stepByFid(fid) { for (let i = 0; i < STEPS.length; i++) if (STEPS[i].fid === fid) return STEPS[i]; return null; }
             // v7.20.332: a missing label produced TWO chips both reading "Sharpen my this one →"
@@ -18150,12 +18355,112 @@
                 return String(fid).replace('cw-step-3-', '').replace(/-/g, ' ');
             }
 
+            // ── SELF-ASSESSMENT (v7.20.333) ──────────────────────────────────────────────────
+            // `sa` is the walk's position INSIDE a tick list: { fid, stage } where stage is
+            //   'ticks'  — the multi-select is on screen
+            //   'follow' — the unticked follow-up ("add a line about it?") chips are on screen
+            //   'add'    — the student accepted the follow-up and is writing into the SAME row
+            // It rides the sidecar because chip bars are DOM-only and die on reload.
+            //
+            // `saTicks` banks what the student CLAIMED, per row, and fireReview hands it to the
+            // batched review — which is what makes the tick list something they are accountable
+            // for, at no extra cost ("you ticked 'emotional shield', but that reads as a habit").
+            //
+            // CLASSIFIED SCAFFOLD, deliberately (the chip-menu law, cw-keymatch-harness): a
+            // self-assessment CLAIM is not the student's answer, so it never goes into their
+            // document row — it would pollute the artefact they are marked on. It is consumed by
+            // the review that runs before finish() clears the sidecar, and a reload keeps it
+            // because the sidecar is what it lives in.
+            let saTicks = {}, sa = null;
+            function saOpts(step) {
+                return {
+                    criteria: step.criteria, cycle: step.cycle, emit: aiBubble, chipBar: chipBar,
+                    onTicks: function (ticked, unticked) {
+                        saTicks[step.fid] = { t: ticked, u: unticked };
+                        sa = { fid: step.fid, stage: 'follow' };
+                        persist();
+                    },
+                    // ONE free follow-up, and it stays on the SAME row: the push cycle stamped on
+                    // the step decides whether that means ADD (a component) or REWRITE THE WHOLE
+                    // THING (a logline) — §4c.6, never re-derived per ask.
+                    onAdd: function () {
+                        sa = { fid: step.fid, stage: 'add' };
+                        active = true;
+                        _walkSlot.arm('cw3', step.fid, { cycle: step.cycle });
+                        aiBubble(step.cycle === 'rewrite'
+                            ? '**Write the whole logline again**, with that in — one sentence. Your new version replaces the old one in your document.'
+                            : '**Just the missing piece** — I’ll join it onto what you already wrote.');
+                        appendStepButtons(STEPS.indexOf(step));
+                        persist(); resetSend();
+                    },
+                    onDone: function () { sa = null; advanceAfter(step); },
+                };
+            }
+            function serveSelfAssess(step) {
+                sa = { fid: step.fid, stage: 'ticks' };
+                active = true;
+                persist();
+                cwServeSelfAssessment(saOpts(step));
+                resetSend();
+            }
+            // Everything that used to sit at the tail of handleTurn. Pulled out because the tick
+            // list now stands between an answer and the next ask, so the advance has two callers.
+            function advanceAfter(step) {
+                idx = nextIndexAfter(STEPS.indexOf(step));
+                persist();
+                // Group boundaries: seven components written → ONE review; three loglines → ONE.
+                if (idx >= COMP_N && !reviewedComponents) { fireReview('components'); return; }
+                if (idx >= STEPS.length) {
+                    if (!reviewedLoglines) { fireReview('loglines'); return; }
+                    finish(); return;
+                }
+                active = true;
+                serveCurrent();
+            }
+
+            // ── THE DUPLICATE GUARD (v7.20.333) ──────────────────────────────────────────────
+            // Neil typed the same sentence into his Goal and his Stakes to see whether anything
+            // would stop him. Nothing did. A refusal is only HALF a change (WML CLAUDE.md 4d), so
+            // this one re-arms the slot and re-serves the ask in the same breath — the student is
+            // never left holding a rejection with no question on screen.
+            function otherRowsThan(step) {
+                return STEPS.filter(function (s) { return s.fid !== step.fid; })
+                    .map(function (s) { return { label: labelOf(s.fid), text: rowText(s.fid) }; });
+            }
+            function refuseDuplicate(step, dupLabel) {
+                _walkSlot.arm('cw3', step.fid, { cycle: step.cycle });
+                active = true;
+                aiBubble('⚠️ Hold on — that is word-for-word what you wrote for your **' + dupLabel + '**.\n\n'
+                    + 'Each block does a different job, so one sentence cannot honestly answer two of them. '
+                    + 'Nothing has been filed. Here is the question again — give this block its own answer.\n\n---\n\n'
+                    + step.ask);
+                appendStepButtons(STEPS.indexOf(step));
+                persist(); resetSend();
+            }
+
             // ONE call. Reads all seven components together and names the weak ones.
             function fireReview(kind) {
                 const isComp = (kind === 'components');
+                // v7.20.333: the student's OWN self-assessment rides the same prompt. Policing the
+                // claim is the cheapest, sharpest feedback in the whole step and costs nothing —
+                // it is what stops the tick list becoming mindless clicking.
                 const list = (isComp ? COMPONENTS : FORMULAS)
-                    .map(function (st, n) { return (n + 1) + '. ' + (st.label || ('Logline ' + (n + 1))) + ': ' + (rowText(st.fid) || '(blank)'); })
+                    .map(function (st, n) {
+                        const t = saTicks[st.fid];
+                        let claim = '';
+                        if (t) {
+                            claim = (t.u && t.u.length)
+                                ? '\n   [they ticked: ' + ((t.t && t.t.length) ? t.t.join('; ') : 'nothing')
+                                  + ' — they did NOT tick: ' + t.u.join('; ') + ']'
+                                : '\n   [they ticked every criterion for this one]';
+                        }
+                        return (n + 1) + '. ' + (st.label || ('Logline ' + (n + 1))) + ': ' + (rowText(st.fid) || '(blank)') + claim;
+                    })
                     .join('\n');
+                const saNote = ' Each block also shows the student’s OWN self-assessment in square brackets. '
+                    + 'Where they ticked a criterion their writing does not actually meet, say so plainly and kindly '
+                    + 'and show them the difference in one line — that is the most useful thing you can tell them. '
+                    + 'Where they honestly left one unticked, credit the honesty.';
                 const ctx = isComp
                     ? '[STORY COMPONENT REVIEW — the student has written all seven building blocks. Read them TOGETHER, '
                       + 'not one at a time: the flaw must be an emotional shield over the wound, the obstacle must attack the flaw, '
@@ -18164,10 +18469,11 @@
                       + 'Be generous — only flag what a GCSE examiner would actually mark down. End your reply with the machine-read '
                       + 'marker "@WEAK:" followed by a comma-separated list of the weak component names from this exact set '
                       + '(protagonist, flaw, wound, incident, goal, obstacle, stakes), or "@ALL_OK" if the set holds together. '
-                      + 'The marker is machine-read — never explain it.]\n\n' + list
+                      + 'The marker is machine-read — never explain it.' + saNote + ']\n\n' + list
                     : '[LOGLINE REVIEW — the student has written all three loglines of the same story. Say which is strongest and why '
                       + '(2-3 sentences), then name any that is genuinely unclear in ONE sentence. Be generous. End with "@WEAK:" and a '
-                      + 'comma-separated list from this exact set (logline-1, logline-2, logline-3), or "@ALL_OK". Never explain the marker.]\n\n' + list;
+                      + 'comma-separated list from this exact set (logline-1, logline-2, logline-3), or "@ALL_OK". Never explain the marker.'
+                      + saNote + ']\n\n' + list;
                 active = false; pending = true;
                 armWalkResume('cw3-review-' + kind, function (reply, meta) {
                     pending = false;
@@ -18306,20 +18612,23 @@
 
                 const step = stepByFid(slot.fid) || STEPS[idx];
                 if (!step) { finish(); return; }
+
+                // v7.20.333: the same sentence cannot be the honest answer to two blocks. Refused
+                // BEFORE the write, and the ask is re-served in the same breath (law 4d).
+                const dup = cwDuplicateOf(clean, otherRowsThan(step));
+                if (dup) { refuseDuplicate(step, dup); return; }
+
+                // v7.20.333: was this the ONE free follow-up after an unticked criterion? If so the
+                // addition is filed and the walk advances — the tick list never runs twice on a row.
+                const wasAdding = !!(sa && sa.stage === 'add' && sa.fid === step.fid);
                 try {
                     if (_writeOutlineRowField(step.fid, clean, { replace: step.cycle === 'rewrite' }) && typeof saveCanvasContent === 'function') saveCanvasContent();
                 } catch (e) { console.warn('WML CW3: write failed (non-fatal)', e && e.message); }
                 draft = '';
-                idx = nextIndexAfter(STEPS.indexOf(step));
-                persist();
-                // Group boundaries: seven components written → ONE review; three loglines → ONE review.
-                if (idx >= COMP_N && !reviewedComponents) { fireReview('components'); return; }
-                if (idx >= STEPS.length) {
-                    if (!reviewedLoglines) { fireReview('loglines'); return; }
-                    finish(); return;
-                }
-                active = true;
-                serveCurrent();
+                if (wasAdding) { sa = null; persist(); advanceAfter(step); return; }
+                // The answer is filed. Now the student marks it against this ask's own criteria,
+                // and only then does the walk move on.
+                serveSelfAssess(step);
             }
 
             function startWalk() {
@@ -18338,7 +18647,7 @@
                 startWalk();
             }
 
-            function reset() { active = false; pending = false; idx = 0; draft = ''; clearPersist(); }
+            function reset() { active = false; pending = false; idx = 0; draft = ''; sa = null; saTicks = {}; clearPersist(); }
             function tryResume() {
                 try {
                     // v7.20.298: a MISSING sidecar is no longer fatal — firstEmptyIndex() already
@@ -18363,6 +18672,8 @@
                     reviewedComponents = !!d.rc; reviewedLoglines = !!d.rl;
                     weakFids = Array.isArray(d.weak) ? d.weak : [];
                     revisingFid = (typeof d.rev === 'string') ? d.rev : '';
+                    saTicks = (d.sat && typeof d.sat === 'object') ? d.sat : {};
+                    sa = (d.sa && d.sa.fid && stepByFid(d.sa.fid)) ? d.sa : null;
                     idx = firstEmptyIndex();
                     // v7.20.325: a reload mid-review. Re-attach what they were actually looking at,
                     // rather than the next ask — resuming to the wrong surface is how a walk eats a
@@ -18373,6 +18684,35 @@
                         console.log('WML CW3: resumed mid-revision of ' + revisingFid);
                         const _st = stepByFid(revisingFid);
                         if (_st) setTimeout(function () { try { appendStepButtons(STEPS.indexOf(_st)); } catch (e) {} }, 400);
+                        return true;
+                    }
+                    // v7.20.333: a reload DURING a self-assessment. The tick-list bubble replays
+                    // from saved history but its chip bar is DOM-only, so re-attach the bar the
+                    // student was actually looking at — resuming to the wrong surface is how a walk
+                    // eats a typed answer as the wrong field.
+                    if (sa && sa.fid) {
+                        const _sst = stepByFid(sa.fid);
+                        active = true;
+                        if (sa.stage === 'add') {
+                            _walkSlot.arm('cw3', _sst.fid, { cycle: _sst.cycle });
+                            console.log('WML CW3: resumed mid self-assessment follow-up on ' + sa.fid);
+                            setTimeout(function () { try { appendStepButtons(STEPS.indexOf(_sst)); } catch (e) {} }, 400);
+                            return true;
+                        }
+                        console.log('WML CW3: resumed on the self-assessment for ' + sa.fid + ' (' + sa.stage + ')');
+                        setTimeout(function () {
+                            let attached = false;
+                            const _u = (saTicks[sa.fid] && saTicks[sa.fid].u) || [];
+                            try {
+                                attached = (sa.stage === 'follow' && _u.length)
+                                    ? cwAttachSaFollowUp(saOpts(_sst), _u)
+                                    : cwAttachSelfAssessment(saOpts(_sst));
+                            } catch (e) {}
+                            // LIVENESS BACKSTOP (law 4d). If the bar could not attach — the replayed
+                            // bubble already carries a choice bar, the DOM moved — the student would
+                            // be left with a question and nothing to press. Serve it fresh instead.
+                            if (!attached) { try { cwServeSelfAssessment(saOpts(_sst)); } catch (e) {} }
+                        }, 400);
                         return true;
                     }
                     if (weakFids.length) {
@@ -18407,7 +18747,18 @@
             // v7.20.330: re-serve the current ask (no filing, no API call). Used when a stale
             // generic chip tap arrives — the tap means "let's continue", so show them where we are.
             function nudge() {
-                if (!active || pending || idx >= STEPS.length) return false;
+                if (!active || pending) return false;
+                // v7.20.333: mid self-assessment, "let's carry on" means the surface they are
+                // actually on — the tick list or the add-a-line ask, not the question again.
+                if (sa && sa.fid) {
+                    const _sst = stepByFid(sa.fid);
+                    if (_sst) {
+                        if (sa.stage === 'add') saOpts(_sst).onAdd();
+                        else cwServeSelfAssessment(saOpts(_sst));
+                        return true;
+                    }
+                }
+                if (idx >= STEPS.length) return false;
                 serveCurrent();
                 return true;
             }
@@ -18458,22 +18809,44 @@
             // in parallel with theirs. Beat 1's chipQ carries the walk orientation (single
             // bubble — pacing-law safe and resume-safe by construction).
             const BEATS = [
-                { fid: 'cw-step-4-beat1', lead: 'At first', chips: NEEDS, chipQ:
+                { fid: 'cw-step-4-beat1', lead: 'At first', chips: NEEDS, criteria: [
+                    'one sentence, present tense',
+                    'introduces your protagonist in their everyday life',
+                    'shows the PRESSURE, not just the reaction',
+                ], chipQ:
                     '**Beat 1 of 6 — “At first…”**\n\nYour logline is set. Now the story needs a skeleton: the **Story Spine** — six beats where each event *causes* the next. Same rhythm as Step 3: for each beat I’ll tell you what makes it strong, give you an example, and you write **one sentence** of your own. **📖 Guidance** and **👤 Your Writer’s Profile** sit under every question, and the same rule applies — **don’t overthink it**: rough sentences now, polish later.\n\nThis first beat is your protagonist’s ordinary world, before the story starts. Every interesting character has an **unmet need** — something missing that stops them being truly happy. Complex characters usually carry several, but **one leads**. Scrooge’s main unmet need is *Love & Belonging* — with *Safety* and *Esteem* sitting underneath it.\n\n**Which is your protagonist’s MAIN unmet need?**',
                   ask: 'Now write Beat 1.\n\n**A strong “At first…” beat:**\n\n- one sentence, **present tense**, picking up straight after “At first,”\n- introduces your protagonist in their everyday life\n- **shows the PRESSURE, not just the reaction.** The unmet need has to be visible as something acting *on* them — a rule, a person, a system, an absence. A character who simply “rebels” tells us how they behave; we need to see what they are up against.\n\nWeak → strong:\n\n- ✗ *“At first, a boy is angry all the time and argues with everyone.”* — that is his reaction. What is pressing on him?\n- ✓ *“At first, a boy sits through every mealtime in a house where nobody has said his brother’s name since the funeral.”* — now we feel the pressure, and his anger has somewhere to come from.\n\nExample: *“At first, a miserly old money-lender counts his coins alone while carol-singers hurry past his door.”* — Scrooge’s spine, which we’ll build alongside yours.\n\n**Write your Beat 1.**' },
-                { fid: 'cw-step-4-beat2', lead: 'And then', ask:
+                { fid: 'cw-step-4-beat2', lead: 'And then', criteria: [
+                    'one sentence, present tense',
+                    'ONE action a camera could film',
+                    'repeated — this is what they do every single day',
+                ], ask:
                     '**Beat 2 of 6 — “And then…”**\n\nThis is the repeated routine that *proves* the stuck state — the physical evidence of the problem.\n\n**A strong “And then…” beat:**\n\n- one sentence, **present tense**, after “And then,”\n- **ONE action a camera could film** — a single thing you could point a lens at\n- **repeated** — this is what they do every single day\n\n**The trap:** naming behaviours instead of showing one. *Rebels · disobeys · breaks the rules · struggles · acts out* are **labels**, and a camera cannot film a label. If you could not draw it, it is not this beat yet.\n\nWeak → strong:\n\n- ✗ *“And then, every day he breaks the rules at school, ignores his mother and gets into trouble.”* — three labels, no picture.\n- ✓ *“And then, every morning he takes the long way to school past the empty house on the corner, and never once looks at it.”* — one filmable action, and it says more than all three labels did.\n\nExample: *“And then, every evening Scrooge eats thin gruel alone by a mean little fire, checking the day’s ledgers twice.”*\n\n**Write your Beat 2 — one thing they do, that a camera could film.**' },
-                { fid: 'cw-step-4-beat3', lead: 'Until', chips: INCIDENTS, echo: 'cw-step-3-incident', chipQ:
+                { fid: 'cw-step-4-beat3', lead: 'Until', chips: INCIDENTS, echo: 'cw-step-3-incident', criteria: [
+                    'one sentence, present tense',
+                    'a single event on a particular day',
+                ], chipQ:
                     '**Beat 3 of 6 — “Until…”**\n\nThis is the inciting incident — the event that shatters the ordinary world. You already named yours in Step 3:',
                   ask: 'Now develop it into Beat 3.\n\n**A strong “Until…” beat:**\n\n- one sentence, **present tense**, after “Until,”\n- a **single event on a particular day** — the moment everything changes\n\nExample: *“Until, on Christmas Eve, the ghost of his dead business partner walks through his door dragging chains of cash-boxes.”*\n\n**Write your Beat 3.**',
                   irony: 'One more thought before we move on — and this is the one that separates a good story from a memorable one.\n\n**Irony** is when a thing turns out to be the opposite of what it appeared. The strongest inciting incidents are ironic: the disaster *is* the opportunity, hidden inside a catastrophe.\n\n- Scrooge is visited by the dead — and it is the visit that finally gives him a life.\n- Macbeth is handed a prophecy that promises him everything — and obeying it costs him everything.\n- The Inspector destroys the Birlings’ comfortable evening — and offers them the only chance they get to become better people.\n\nNotice the shape: the event takes something away, and in taking it away it hands the character the one thing they could not get otherwise.\n\n**How is this event secretly a chance for your protagonist to face the unmet need from Beat 1?**' },
-                { fid: 'cw-step-4-beat4', lead: 'And because of this', chips: GOALS, echo: 'cw-step-3-goal', chipQ:
+                { fid: 'cw-step-4-beat4', lead: 'And because of this', chips: GOALS, echo: 'cw-step-3-goal', criteria: [
+                    'one sentence, present tense',
+                    'a decision and an action',
+                    'it must be caused by Beat 3',
+                ], chipQ:
                     '**Beat 4 of 6 — “And because of this…”**\n\nThe event gives your protagonist a goal. In Step 3 you said it was:',
                   ask: 'Now write Beat 4 — what they *decide to do* in response to the inciting incident.\n\n**A strong Beat 4:**\n\n- one sentence, **present tense**, after “And because of this,”\n- a **decision and an action** that follows directly from the inciting incident — cause and effect, not a new random event\n- it must be **caused by Beat 3.** Say it aloud with “…and *because of that*…” between them. If it still works after a shrug, the chain is broken.\n\nWeak → strong:\n\n- ✗ *“And because of this, she decides to be braver and starts standing up for herself.”* — a feeling, not a decision; nothing has actually happened.\n- ✓ *“And because of this, she walks into the recruiting hall and signs her name under a false classification.”* — a decision you can watch her make, straight out of Beat 3.\n\nExample: *“And because of this, Scrooge agrees to follow three spirits through his past, his present and his future.”*\n\n**Write your Beat 4.**' },
-                { fid: 'cw-step-4-beat5', lead: 'And because of this', chips: OBSTACLES, echo: 'cw-step-3-obstacle', chipQ:
+                { fid: 'cw-step-4-beat5', lead: 'And because of this', chips: OBSTACLES, echo: 'cw-step-3-obstacle', criteria: [
+                    'one sentence, present tense',
+                    'the obstacle attacks the flaw',
+                    'Beat 5 does NOT resolve anything',
+                ], chipQ:
                     '**Beat 5 of 6 — “And because of this…”**\n\nThe Road of Trials — where your protagonist meets the force standing in their way. From Step 3:',
                   ask: 'Now write Beat 5 — the major challenge that follows *directly* from their decision in Beat 4.\n\n**A strong Beat 5:**\n\n- one sentence, **present tense**, after “And because of this,”\n- the obstacle **attacks the flaw** — the trial lands exactly where your protagonist is weakest\n\n⚠ **Beat 5 does NOT resolve anything.** Your protagonist does not change here, does not let go of the wound, does not win. That is Beat 6’s job, and if you spend it now the ending has nothing left to do. If your sentence contains *finally · learns · realises · lets go · saves*, it belongs in Beat 6 — and Beat 5 is still empty.\n\nWeak → strong:\n\n- ✗ *“And because of this, she finally lets go of her old resentment so that she can save everyone.”* — that is the resolution. It is Beat 6.\n- ✓ *“And because of this, the people she is trying to save vote to hand her over, and she cannot make herself trust them enough to explain why.”* — the trial, landing straight on the flaw, still unresolved.\n\nExample: *“And because of this, Scrooge must stand unseen at the Cratchits’ Christmas table and watch what his greed has cost the people around him.”*\n\n**Write your Beat 5 — the worst pressure, not the answer to it.**' },
-                { fid: 'cw-step-4-beat6', lead: 'Until finally', chips: STAKES, echo: 'cw-step-3-stakes', chipQ:
+                { fid: 'cw-step-4-beat6', lead: 'Until finally', chips: STAKES, echo: 'cw-step-3-stakes', criteria: [
+                    'one sentence, present tense',
+                    'carries the self-revelation',
+                ], chipQ:
                     '**Beat 6 of 6 — “Until finally…”**\n\nThe climax. This is where your protagonist has a **self-revelation** — they overcome their flaw and prove they’ve changed (or, in a tragedy, fail to). In Step 3 you said the stakes were:',
                   ask: 'Now write Beat 6 — how the conflict resolves and what your protagonist learns.\n\n**A strong “Until finally…” beat:**\n\n- one sentence, **present tense**, after “Until finally,”\n- carries the **self-revelation** — they face the flaw and change, or (in a tragedy) refuse and fall\n\nExample: *“Until finally, faced with his own neglected grave, Scrooge chooses people over money and wakes on Christmas morning a changed man.”*\n\n**Write your Beat 6.**',
                   irony: 'Last one — and this is where **duality** does its work.\n\nA character wants one thing on the surface (the **want**) and needs a different, truer thing underneath (the **need**). They are usually opposites, and the ending is where the two finally collide. What the character *gets* should answer the need, not the want — that gap is what makes an ending land instead of just stopping.\n\n- Scrooge wants his money left alone; what he needs, and finally gets, is people.\n- Macbeth wants the crown; what he gets is the crown, and it is worthless — the want granted *is* the punishment.\n- Jane Eyre wants Rochester; what she needs first is to belong to herself, which is why she has to leave before she can return.\n\n**How does what your protagonist actually gets at the end contrast with what they thought they wanted?**' },
@@ -18484,9 +18857,16 @@
                 'Tidy up any spelling or punctuation while you’re in there — they’re your sentences, so they’re yours to polish.';
 
             let active = false, pending = false, idx = 0;
-            let phase = 'chip';    // 'chip' → 'beat' → 'irony' → … → 'coherence' → 'coh-choice' → 'coh-fix'
+            // v7.20.333 added 'sa' → 'sa-follow' → 'sa-add': the self-assessment sits between a
+            // finished beat and the next one.
+            let phase = 'chip';    // 'chip' → 'beat' → 'irony' → 'sa' → … → 'coherence' → 'coh-choice' → 'coh-fix'
             let throughline = '';
             let cohBeat = -1;      // v7.20.294: the beat the coherence check flagged, if any
+            // v7.20.333: which beat is being self-assessed, and what the student claimed. `saTicks`
+            // is banked per fid and handed to the COHERENCE CHECK, which polices the claim for free.
+            // Scaffold, not content: a claim about an answer is not the answer, so it never reaches
+            // a document row (see the CW3 note for the full reasoning).
+            let saBeat = -1, saTicks = {};
             // v7.20.283: same push-cycle accumulation as CW3 — a pushed beat banks EVERYTHING
             // the student said for it, not the final fragment. Persisted across reloads.
             let draft = '';
@@ -18497,7 +18877,7 @@
             // this a reload leaves an ask on screen with no authority to file its answer — and
             // re-deriving the slot from firstEmptyBeat() would reinstate the very cursor this
             // change exists to remove.
-            function persist() { try { const _s = _walkSlot.peek('cw4'); localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft, need: mainNeed, cohBeat, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
+            function persist() { try { const _s = _walkSlot.peek('cw4'); localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft, need: mainNeed, cohBeat, sab: saBeat, sat: saTicks, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -18539,12 +18919,14 @@
             // Generic chip bar on the NEWEST bubble. A pick is a TAP — zero API, zero tokens.
             // This is the single biggest programmatic win in the CW arc: six turns that the old
             // protocol generated as prose are now menus.
+            // v7.20.333: returns whether the bar attached (the self-assessment resume uses it as a
+            // liveness backstop — see the CW3 twin).
             function chipBar(options, onPick) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc) return;
+                if (!bc) return false;
                 // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
-                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
                     bar.appendChild(el('button', {
@@ -18553,6 +18935,7 @@
                     }));
                 });
                 bc.appendChild(bar);
+                return true;
             }
 
             function serveChip() {
@@ -18619,31 +19002,10 @@
                 persist();
                 resetSend();
             }
-            // Multi-select chip bar: taps TOGGLE (✓ prefix), Continue commits the selection.
-            // DOM-only like chipBar → re-attached on resume by reattachChips.
-            function chipBarMulti(options, onDone) {
-                const bubble = chatMessages.lastElementChild;
-                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc) return;
-                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
-                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
-                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
-                const sel = [];
-                options.forEach(function (opt) {
-                    const btn = el('button', { className: 'swml-quick-btn', textContent: opt });
-                    btn.addEventListener('click', function () {
-                        const i = sel.indexOf(opt);
-                        if (i === -1) { sel.push(opt); btn.textContent = '✓ ' + opt; }
-                        else { sel.splice(i, 1); btn.textContent = opt; }
-                    });
-                    bar.appendChild(btn);
-                });
-                bar.appendChild(el('button', {
-                    className: 'swml-quick-btn', textContent: 'Continue →',
-                    onClick: function () { bar.remove(); onDone(sel.slice()); },
-                }));
-                bc.appendChild(bar);
-            }
+            // v7.20.333: the multi-select bar this walk used to own privately now lives at module
+            // scope (next to serveCwChunks), because the self-assessment needs the identical bar and
+            // a second copy is exactly how the v7.20.289 fix was made in one controller and lost in
+            // another. Calls here are unchanged — the name resolves outward.
 
             // v7.20.265: chip bars are DOM-only. On resume the QUESTION bubble replays from
             // saved history but the bar does not — leaving the student with a menu and no
@@ -18651,6 +19013,22 @@
             // Re-attach the right bar for the phase we resumed into. (Same defect class as
             // the poetry-CN picker re-render at the boot resume gate.)
             function reattachChips() {
+                // v7.20.333: a reload during a self-assessment. The bubble replays from history but
+                // the bar is DOM-only — re-attach the one they were looking at, with a liveness
+                // backstop if it cannot attach (law 4d: never a question with nothing to press).
+                if ((phase === 'sa' || phase === 'sa-follow') && saBeat >= 0 && BEATS[saBeat]) {
+                    const _sb = BEATS[saBeat];
+                    const _u = (saTicks[_sb.fid] && saTicks[_sb.fid].u) || [];
+                    let attached = false;
+                    try {
+                        attached = (phase === 'sa-follow' && _u.length)
+                            ? cwAttachSaFollowUp(saOpts(_sb), _u)
+                            : cwAttachSelfAssessment(saOpts(_sb));
+                    } catch (e) {}
+                    if (!attached) { try { cwServeSelfAssessment(saOpts(_sb)); } catch (e) {} }
+                    return;
+                }
+                if (phase === 'sa-add') { setTimeout(function () { try { appendSpineButtons(); } catch (e) {} }, 400); return; }
                 if (phase === 'throughline') { chipBar(THROUGHLINES, onThroughlinePick); return; }
                 // v7.20.294: resumed on the coherence revision offer — re-attach its two chips.
                 if (phase === 'coh-choice' && cohBeat >= 0) { chipBar(['Rewrite Beat ' + (cohBeat + 1) + ' →', 'Leave it as it is →'], onCohChoice); return; }
@@ -18738,6 +19116,65 @@
                 resetSend();
             }
 
+            // ── SELF-ASSESSMENT (v7.20.333) — the twin of the CW3 wiring ─────────────────────
+            // A beat is complete once its ask (and, on beats 3 and 6, its irony follow-up) is in.
+            // The student then marks it against the beat's OWN criteria before the walk moves on.
+            function saOpts(b) {
+                return {
+                    criteria: b.criteria, cycle: 'accumulate', emit: aiBubble, chipBar: chipBar,
+                    onTicks: function (ticked, unticked) {
+                        saTicks[b.fid] = { t: ticked, u: unticked };
+                        phase = 'sa-follow'; persist();
+                    },
+                    onAdd: function () {
+                        phase = 'sa-add'; active = true;
+                        _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });
+                        aiBubble('**Just the missing piece** — one more line, and I’ll join it onto your beat.');
+                        appendSpineButtons();
+                        persist(); resetSend();
+                    },
+                    onDone: function () { saBeat = -1; advanceAfter(b); },
+                };
+            }
+            function serveSelfAssess(b) {
+                saBeat = BEATS.indexOf(b);
+                phase = 'sa'; active = true;
+                persist();
+                cwServeSelfAssessment(saOpts(b));
+                resetSend();
+            }
+            // Everything that used to sit at the tail of the verdict callback — the tick list now
+            // stands between a finished beat and the next one, so the advance has two callers.
+            function advanceAfter(b) {
+                idx = nextBeatAfter(BEATS.indexOf(b));
+                phase = 'chip';
+                persist();
+                if (idx >= BEATS.length) { serveThroughline(); return; }
+                serveCurrent();
+            }
+
+            // ── THE DUPLICATE GUARD (v7.20.333) ──────────────────────────────────────────────
+            // Compared against the OTHER BEATS only. A beat legitimately DEVELOPS its Step-3 echo
+            // ("develop it into Beat 3"), so comparing across steps would refuse honest work — and
+            // a false refusal costs far more than a missed duplicate. It runs BEFORE the verdict
+            // call, so a duplicate never spends an API round-trip either, and the refusal re-serves
+            // the ask in the same breath (WML CLAUDE.md 4d — a refusal is only half a change).
+            function otherBeatsThan(b) {
+                return BEATS.filter(function (x) { return x.fid !== b.fid; })
+                    .map(function (x) { return { label: 'Beat ' + (BEATS.indexOf(x) + 1) + ' (“' + x.lead + '…”)', text: rowText(x.fid) }; });
+            }
+            function refuseDuplicate(b, dupLabel, clean) {
+                canvasChatHistory.push({ role: 'user', content: clean });
+                addChatMessage(clean, 'user');
+                _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });
+                active = true; pending = false;
+                aiBubble('⚠️ Hold on — that is word-for-word your **' + dupLabel + '**.\n\n'
+                    + 'Every beat has to CAUSE the next one, so the same sentence cannot be two of them. '
+                    + 'Nothing has been filed. Here is the beat again.\n\n---\n\n' + b.ask);
+                appendSpineButtons();
+                persist(); resetSend();
+            }
+
             // After beat 6: the throughline pick, then the coherence check — the one call that
             // reads ALL SIX beats together. Never strip it: it is what makes this a spine.
             function onThroughlinePick(pick) {
@@ -18785,8 +19222,24 @@
             // owns the rewrite, we just file it.
             const COH_MARK = /@COHERENCE_BEAT[:\s]*([1-6])/;
             function fireCoherenceCheck() {
-                const beats = BEATS.map(function (b, i) { return (i + 1) + '. ' + b.lead + ', ' + (rowText(b.fid) || '(blank)'); }).join('\n');
+                // v7.20.333: each beat carries the student's OWN self-assessment. Policing the claim
+                // is the sharpest feedback in the step and costs nothing — it is what stops the tick
+                // list becoming clicking.
+                const beats = BEATS.map(function (b, i) {
+                    const t = saTicks[b.fid];
+                    let claim = '';
+                    if (t) {
+                        claim = (t.u && t.u.length)
+                            ? '\n   [they ticked: ' + ((t.t && t.t.length) ? t.t.join('; ') : 'nothing')
+                              + ' — they did NOT tick: ' + t.u.join('; ') + ']'
+                            : '\n   [they ticked every criterion for this beat]';
+                    }
+                    return (i + 1) + '. ' + b.lead + ', ' + (rowText(b.fid) || '(blank)') + claim;
+                }).join('\n');
                 const ctx = '[STORY SPINE COHERENCE CHECK — the student’s six beats and chosen throughline. '
+                    + 'Square brackets under a beat are the student’s OWN self-assessment against that beat’s '
+                    + 'criteria. Where they ticked something their sentence does not actually do, that is worth '
+                    + 'more to them than anything else you could say — name it kindly, in one line. '
                     + 'Check that each beat CAUSES the next, that the ending matches the throughline, that the '
                     + 'obstacle tests the protagonist’s flaw, and that the resolution addresses the Beat 1 unmet '
                     + 'need. Name any causal gap with ONE Socratic question. Do not rewrite their beats and do '
@@ -18872,6 +19325,26 @@
                 // v7.20.265: bubble + history are the send's job — see the CW2 note. (Double-write.)
                 const b = BEATS.filter(function (x) { return x.fid === slot.fid; })[0] || BEATS[idx];
                 if (!b) { serveThroughline(); return; }
+
+                // v7.20.333: the same sentence cannot be two beats. Checked BEFORE the verdict
+                // call, so a duplicate costs nothing, and the ask is re-served in the same breath.
+                const dup = cwDuplicateOf(clean, otherBeatsThan(b));
+                if (dup) { refuseDuplicate(b, dup, clean); return; }
+
+                // v7.20.333: the ONE free follow-up after an unticked criterion. Filed straight onto
+                // the same row with NO verdict call — the beat already passed one, and the student is
+                // adding what their own tick list told them was missing.
+                if (phase === 'sa-add' && saBeat >= 0) {
+                    canvasChatHistory.push({ role: 'user', content: clean });
+                    addChatMessage(clean, 'user');
+                    try {
+                        if (_writeOutlineRowField(b.fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    } catch (e) { console.warn('WML CW4: self-assessment addition failed (non-fatal)', e && e.message); }
+                    saBeat = -1;
+                    advanceAfter(b);
+                    return;
+                }
+
                 const wasIrony = (phase === 'irony');
                 active = false; pending = true;
                 armWalkResume('cw4-' + b.fid + '-' + phase, function (reply, meta) {
@@ -18899,10 +19372,9 @@
                         _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });   // v7.20.327: same row
                         aiBubble(b.irony); persist(); resetSend(); return;
                     }
-                    idx = nextBeatAfter(BEATS.indexOf(b));
-                    phase = 'chip';
-                    if (idx >= BEATS.length) { serveThroughline(); return; }
-                    serveCurrent();
+                    // v7.20.333: the beat is complete (ask + any irony follow-up). The student now
+                    // marks it against this beat's own criteria; advanceAfter runs when they finish.
+                    serveSelfAssess(b);
                 });
                 canvasSilentSend = false;
                 chatTextarea.value = clean;
@@ -18929,7 +19401,7 @@
                 startWalk();
             }
 
-            function reset() { active = false; pending = false; idx = 0; phase = 'chip'; throughline = ''; draft = ''; cohBeat = -1; clearPersist(); }
+            function reset() { active = false; pending = false; idx = 0; phase = 'chip'; throughline = ''; draft = ''; cohBeat = -1; saBeat = -1; saTicks = {}; clearPersist(); }
             function tryResume() {
                 try {
                     // v7.20.298: a MISSING sidecar is no longer fatal — firstEmptyBeat() already
@@ -18949,6 +19421,8 @@
                     draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
                     mainNeed = (typeof d.need === 'string') ? d.need : '';  // v7.20.285: chip2 resume needs the main pick
                     cohBeat = (typeof d.cohBeat === 'number') ? d.cohBeat : -1;  // v7.20.294
+                    saBeat = (typeof d.sab === 'number') ? d.sab : -1;           // v7.20.333
+                    saTicks = (d.sat && typeof d.sat === 'object') ? d.sat : {}; // v7.20.333
                     idx = firstEmptyBeat();
                     phase = d.phase || 'chip';
                     throughline = d.throughline || '';
@@ -18970,6 +19444,23 @@
                         console.warn('WML CW4: resumed into a coherence revision with no beat recorded — serving the wrap');
                         setTimeout(serveWrap, 500);
                         return false;
+                    }
+                    // v7.20.333: a reload DURING a self-assessment. Every beat up to this one is
+                    // already filled, so the `idx >= BEATS.length` branch below would read a beat-6
+                    // tick list as "parked on the throughline" and staple the wrong chips on — the
+                    // same shape as the v7.20.294 coherence resume, so it is answered FIRST.
+                    if (phase === 'sa' || phase === 'sa-follow' || phase === 'sa-add') {
+                        if (saBeat >= 0 && saBeat < BEATS.length) {
+                            active = true; pending = false;
+                            if (phase === 'sa-add') _walkSlot.arm('cw4', BEATS[saBeat].fid, { cycle: 'accumulate' });
+                            console.log('WML CW4: resumed on the self-assessment for beat ' + (saBeat + 1) + ' (' + phase + ')');
+                            setTimeout(reattachChips, 400);
+                            return true;
+                        }
+                        // The beat it belonged to is not in the sidecar. Carry on with the walk
+                        // rather than strand them on a tick list that cannot be rebuilt.
+                        phase = 'chip'; saBeat = -1;
+                        console.warn('WML CW4: resumed into a self-assessment with no beat recorded — continuing the walk');
                     }
                     // v7.20.265: with all six beats written the walk was parked on the
                     // throughline pick or inside the coherence check — the old
@@ -19019,7 +19510,16 @@
 
             // v7.20.330 (twin): re-serve the current ask on a stale chip tap.
             function nudge() {
-                if (!active || pending || idx >= BEATS.length) return false;
+                if (!active || pending) return false;
+                // v7.20.333: mid self-assessment, "let's carry on" means the surface they are
+                // actually on. Checked BEFORE the idx bail — on beat 6 every row is filled, so the
+                // bail would return false and leave a swallowed tap with nothing on screen (4d).
+                if (saBeat >= 0 && BEATS[saBeat] && (phase === 'sa' || phase === 'sa-follow' || phase === 'sa-add')) {
+                    if (phase === 'sa-add') saOpts(BEATS[saBeat]).onAdd();
+                    else cwServeSelfAssessment(saOpts(BEATS[saBeat]));
+                    return true;
+                }
+                if (idx >= BEATS.length) return false;
                 serveCurrent();
                 return true;
             }

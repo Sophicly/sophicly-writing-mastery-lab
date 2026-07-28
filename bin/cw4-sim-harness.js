@@ -35,6 +35,10 @@
 
 const fs = require('fs');
 const path = require('path');
+// v7.20.333: this file still carries its own inline makeWorld (the migration to walk-sim-lib the
+// .327 handoff prescribes). It borrows the lib's SELF-ASSESSMENT slice rather than making a second
+// one — a per-rig copy of a primitive is the same drift class as a per-walk copy of a fix.
+const { attachSelfAssessDeps, NEUTRAL_RE, SA_ADD_RE, TICK_LIST_RE } = require('./walk-sim-lib');
 
 const ROOT = path.resolve(__dirname, '..');
 const src = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-assessment.js'), 'utf8');
@@ -199,6 +203,10 @@ function makeWorld(opts) {
         _walkSlot: null,   // replaced below when the shipped code has one
     };
 
+    // v7.20.333: the REAL tick list, follow-up, multi-select bar and duplicate guard — the same
+    // slice walk-sim-lib gives cw3-sim, not a second copy of it.
+    attachSelfAssessDeps(deps);
+
     // Give the real module-scope _walkSlot to the controller if this build has it, so the
     // harness exercises the shipped primitive rather than a stand-in.
     const slotIdx = src.indexOf('const _walkSlot = (function () {');
@@ -281,6 +289,32 @@ function makeWorld(opts) {
     return world;
 }
 
+// v7.20.333: a SELF-ASSESSMENT tick list now stands between a finished beat and the next one, so
+// "get to the next ask" means clearing whatever menu is up — NEUTRALLY. Taking the follow-up's ADD
+// branch would file a second answer into the same beat row, and every ORDER assertion below would
+// quietly stop meaning anything (a test that passes by doing less).
+function clearMenus(w) {
+    if (!w.chips().length) return false;
+    for (let g = 0; g < 14 && w.chips().length; g++) {
+        const bar = w.chips();
+        const neutral = bar.filter(function (b) { return NEUTRAL_RE.test(String(b.textContent)); })[0];
+        // Surface 2 — the unticked follow-up. Decline it.
+        if (bar.some(function (b) { return SA_ADD_RE.test(String(b.textContent)); })) {
+            w.tapLive(neutral || bar[bar.length - 1]); continue;
+        }
+        // Surface 1 — the tick list itself. Tick nothing, Continue.
+        if (TICK_LIST_RE.test(String(w.bubbles[w.bubbles.length - 1] || ''))) {
+            w.tapLive(neutral || bar[bar.length - 1]); continue;
+        }
+        // An ordinary content menu (unmet need, incident type, …): pick one, then Continue if it
+        // turns out to be a multi-select.
+        w.tapLive(bar[0]);
+        const cont = w.chips().filter(function (b) { return NEUTRAL_RE.test(String(b.textContent)); })[0];
+        if (cont) w.tapLive(cont);
+    }
+    return true;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 async function main() {
 console.log('CW STEP-4 SPINE WALK — behavioural sim (real _cwSpineCtl)\n');
@@ -318,13 +352,7 @@ console.log('I2/I3 · ask owns the row, asks in order');
             console.log('  · t' + guard + ' chips[' + w.chips().map(function (c) { return String(c.textContent).slice(0, 22); }).join(' | ')
                 + '] bub=' + w.bubbles.length + ' last=' + String(w.bubbles[w.bubbles.length - 1] || '').slice(0, 55).replace(/\n/g, ' '));
         }
-        if (w.chips().length) {
-            const bar = w.chips();
-            const cont = bar.filter(function (b) { return /Continue|Done|Next|That’s|Thats/i.test(String(b.textContent)); })[0];
-            bar[0].click();
-            if (cont && cont !== bar[0]) cont.click();   // multi-select: pick one, then Continue
-            continue;
-        }
+        if (clearMenus(w)) continue;
         const text = 'answer ' + (answered.length + 1) + ' — ' + Math.random().toString(36).slice(2, 8);
         const before = w.writes.length;
         w.say(text);
@@ -372,12 +400,9 @@ console.log('I2b · a doc edit between ask and answer cannot move the answer');
     const w = makeWorld();
     await w.start();
     // Through the beat-1 need menu (main pick, then the optional "any others?" multi-select).
-    for (let g = 0; g < 12 && w.chips().length; g++) {
-        const bar = w.chips();
-        const cont = bar.filter(function (b) { return /Continue|Done|Next/i.test(String(b.textContent)); })[0];
-        w.tapLive(cont || bar[0]);
-    }
-    w.say('my beat one');                                // fills beat1, walk serves beat 2's ask
+    clearMenus(w);
+    w.say('my beat one');                                // fills beat1
+    clearMenus(w);                                       // v7.20.333: and its tick list
     ok(!!w.rows.get(BEAT_FIDS[0]), 'setup: beat 1 was not filled');
 
     // Reload with beat 1 CLEARED by the student — the cursor now points at beat 1, the ask on
@@ -405,13 +430,8 @@ console.log('I3b · clearing an earlier row mid-session cannot rewind the walk')
     const w = makeWorld();
     await w.start();
     const seen = [];
-    for (let n = 0; n < 6 && seen.length < 2; n++) {
-        if (w.chips().length) {
-            const bar = w.chips();
-            const cont = bar.filter(function (b) { return /Continue|Done|Next/i.test(String(b.textContent)); })[0];
-            w.tapLive(cont || bar[0]);
-            continue;
-        }
+    for (let n = 0; n < 12 && seen.length < 2; n++) {
+        if (clearMenus(w)) continue;
         const before = w.writes.length;
         w.say('ans<' + n + '>');
         const landed = w.writes.slice(before).filter(function (x) { return BEAT_FIDS.indexOf(x.fid) !== -1; })[0];
@@ -424,13 +444,8 @@ console.log('I3b · clearing an earlier row mid-session cannot rewind the walk')
     // later (beat 3's irony follow-up writes to the same row twice), so a two-sample test passes
     // against the broken code — it did, until this was widened.
     const seq = [];
-    for (let n = 0; n < 8; n++) {
-        if (w.chips().length) {
-            const bar = w.chips();
-            const cont = bar.filter(function (c) { return /Continue|Done|Next/i.test(String(c.textContent)); })[0];
-            w.tapLive(cont || bar[0]);
-            continue;
-        }
+    for (let n = 0; n < 16; n++) {
+        if (clearMenus(w)) continue;
         const before = w.writes.length;
         w.say('turn ' + n);
         const l = w.writes.slice(before).filter(function (x) { return BEAT_FIDS.indexOf(x.fid) !== -1; })[0];
@@ -493,6 +508,62 @@ console.log('I6 · resume repeats nothing and skips nothing');
     ok(resumed !== undefined, 'tryResume() returned undefined — resume is not wired');
     const reAsked = w2.bubbles.filter(function (b) { return /beat one answer/.test(String(b)); });
     ok(reAsked.length === 0, 'resume replayed an answer the student had already given');
+}
+
+// ── I7 · SELF-ASSESSMENT (v7.20.333) ───────────────────────────────────────────────────────
+// The Step-4 twin of cw3-sim I10/I11. Same mechanism, different walk — and the reason it is
+// tested in BOTH is that a per-walk copy of a fix is how .289 was lost once already.
+console.log('I7 · the tick list runs after every beat, and the duplicate guard costs no API call');
+{
+    const w = makeWorld();
+    await w.start();
+    clearMenus(w);                                    // through the beat-1 unmet-need menus
+    w.say('At first, a boy eats every meal in a silent kitchen.');
+    ok(!!w.rows.get(BEAT_FIDS[0]), 'setup: beat 1 was not filed');
+    const onTicks = TICK_LIST_RE.test(String(w.bubbles[w.bubbles.length - 1] || ''));
+    ok(onTicks, 'no tick list was served after the beat was filed');
+
+    // ADD accumulates onto the SAME beat row, and costs NO further verdict call.
+    const cont = w.chips().filter(function (c) { return /Continue/i.test(String(c.textContent)); })[0];
+    ok(!!cont, 'the tick list has no Continue — the student cannot commit their ticks');
+    w.tapLive(cont);
+    const add = w.chips().filter(function (c) { return SA_ADD_RE.test(String(c.textContent)); })[0];
+    ok(!!add, 'leaving criteria unticked offered no follow-up');
+    w.tapLive(add);
+    const sendsBefore = w.sends.length;
+    const before = w.writes.length;
+    w.say('And nobody has said his brother’s name since the funeral.');
+    const wr = w.writes.slice(before).filter(function (x) { return x.fid === BEAT_FIDS[0]; })[0];
+    ok(!!wr, 'the addition did not land on the beat row');
+    ok(wr && wr.replace === false,
+        'the addition declared replace — an "add a line" follow-up ACCUMULATES (§4c.6), or the '
+        + 'student loses the sentence they already wrote');
+    ok(w.sends.length === sendsBefore,
+        'the self-assessment addition spent an API call — the beat already passed its verdict, and '
+        + 'the student is adding what their own tick list told them was missing');
+    ok(String(w.rows.get(BEAT_FIDS[0]) || '').indexOf('silent kitchen') !== -1,
+        'the addition WIPED the original beat');
+
+    // The duplicate guard: refused, no call spent, and the ask re-served (law 4d).
+    const w2 = makeWorld();
+    await w2.start();
+    clearMenus(w2);
+    w2.say('At first, a boy eats every meal in a silent kitchen.');
+    clearMenus(w2);                                   // past beat 1's tick list, on to beat 2
+    const s2 = w2.sends.length;
+    const b2 = w2.writes.length;
+    const bub2 = w2.bubbles.length;
+    w2.say('At first, a boy eats every meal in a silent kitchen.');
+    const beatWrites = w2.writes.slice(b2).filter(function (x) { return BEAT_FIDS.indexOf(x.fid) !== -1; });
+    ok(beatWrites.length === 0, 'a word-for-word repeat of another beat was FILED');
+    ok(w2.sends.length === s2,
+        'the duplicate spent an API round-trip — it is caught deterministically, BEFORE the verdict call');
+    ok(w2.bubbles.length > bub2, 'the refusal said nothing at all — the screen did not respond');
+    ok(/word-for-word/.test(String(w2.bubbles[w2.bubbles.length - 1] || '')),
+        'the refusal does not tell the student why');
+    ok(!!w2.deps._walkSlot.armed,
+        'after refusing, no ask is armed — the student is left with a rejection and nothing to answer '
+        + '(law 4d: a refusal is only half a change)');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
