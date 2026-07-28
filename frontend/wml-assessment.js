@@ -4295,6 +4295,11 @@
     // without reaching into that closure. Fails CLOSED (false) so a probe error can never
     // silently strip a student's only click path.
     let _cwActiveWalkProbe = null;
+    // v7.20.330: re-serve the ask the active walk is parked on. Set from inside the canvas closure.
+    let _cwNudgeActiveWalkImpl = null;
+    function _cwNudgeActiveWalk() {
+        try { return !!(_cwNudgeActiveWalkImpl && _cwNudgeActiveWalkImpl()); } catch (e) { return false; }
+    }
     function _cwWalkActive() {
         try { return !!(_cwActiveWalkProbe && _cwActiveWalkProbe()); } catch (e) { return false; }
     }
@@ -14657,6 +14662,15 @@
         // v7.20.327: expose "is a code-owned walk active?" to module scope. The controllers live
         // in this closure; the quick-action suppressor does not. Registered once at closure init
         // (NOT inside sendCanvasMessage — that would leave it null until the first send).
+        _cwNudgeActiveWalkImpl = function () {
+            const m = {
+                cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
+                cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
+            };
+            const c = m[(state && state.task) || ''];
+            if (!c || typeof c.nudge !== 'function') return false;
+            try { return !!c.nudge(); } catch (e) { console.warn('WML CW: nudge threw', e && e.message); return false; }
+        };
         _cwActiveWalkProbe = function () {
             const m = {
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
@@ -14790,8 +14804,12 @@
             // staging at .328). Swallow it: filing it corrupts a row, and forwarding it to the model
             // spends a call answering a question nobody asked.
             if (_genericChip && _cwWalkActive()) {
-                console.warn('WML CW: ignored a stale quick-action tap ("' + msg.slice(0, 40)
-                    + '") — a code-owned walk owns this turn; neither filed nor sent.');
+                // v7.20.330: swallowing alone left the student staring at help chips and no
+                // question (Neil, staging .329). The tap MEANS "let's continue", so honour it —
+                // re-serve the ask the walk is parked on. Still no filing and still no API call.
+                const _nudged = _cwNudgeActiveWalk();
+                console.warn('WML CW: quick-action tap ("' + msg.slice(0, 40) + '") is not an answer — '
+                    + (_nudged ? 're-served the current ask.' : 'nothing to re-serve; not filed, not sent.'));
                 chatTextarea.value = '';
                 return;
             }
@@ -18273,6 +18291,18 @@
                     // `active = idx < STEPS.length` below is the honest finished-or-not test.
                     const raw = localStorage.getItem(lsKey());
                     const d = (raw ? JSON.parse(raw) : null) || {};
+                    // v7.20.330: NOTHING to resume. v7.20.298 made a missing sidecar revive from
+                    // the document (right, for a PART-finished walk), but with a pristine document
+                    // that logic claimed "resumed at step 1/10" and went active — so the greeting's
+                    // start button had nothing to hand the turn to and the student sat looking at
+                    // help chips and no question (Neil, staging .329). An empty doc + no sidecar is
+                    // a FRESH START: fall through, let the model open, and let @CW3_START begin the
+                    // walk properly with its intro.
+                    if (!raw && !STEPS.some(function (st) { return rowText(st.fid); })) {
+                        active = false; pending = false;
+                        console.log('WML CW3: pristine document and no sidecar — fresh start, not a resume.');
+                        return false;
+                    }
                     if (!raw) console.warn('WML CW3: sidecar missing — resuming from the document.');
                     draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
                     reviewedComponents = !!d.rc; reviewedLoglines = !!d.rl;
@@ -18319,8 +18349,15 @@
                 } catch (e) { return false; }
             }
 
+            // v7.20.330: re-serve the current ask (no filing, no API call). Used when a stale
+            // generic chip tap arrives — the tap means "let's continue", so show them where we are.
+            function nudge() {
+                if (!active || pending || idx >= STEPS.length) return false;
+                serveCurrent();
+                return true;
+            }
             return {
-                handleTurn, onReply, reset, tryResume,
+                handleTurn, onReply, reset, tryResume, nudge,
                 forceStart: startWalk,
                 atStart: function () { return firstEmptyIndex() < STEPS.length; },   // v7.20.270: room left, not pristine
                 get active() { return active; },
@@ -18838,6 +18875,13 @@
                     // reads the position out of the document (see _cwProfileCtl.tryResume).
                     const raw = localStorage.getItem(lsKey());
                     const d = (raw ? JSON.parse(raw) : null) || {};
+                    // v7.20.330 (twin of _cwLoglineCtl): an empty doc + no sidecar is a fresh start.
+                    if (!raw && !BEATS.some(function (b) { return rowText(b.fid); })
+                        && !rowText(THROUGHLINE_FID) && !rowText(NEEDS_FID)) {
+                        active = false; pending = false;
+                        console.log('WML CW4: pristine document and no sidecar — fresh start, not a resume.');
+                        return false;
+                    }
                     if (!raw) console.warn('WML CW4: sidecar missing — resuming from the document.');
                     // v7.20.291: warm the Step-3 components for the re-served beat's echo.
                     _cwLoadStep3Values(state.cwProjectId);
@@ -18912,8 +18956,14 @@
                 } catch (e) { return false; }
             }
 
+            // v7.20.330 (twin): re-serve the current ask on a stale chip tap.
+            function nudge() {
+                if (!active || pending || idx >= BEATS.length) return false;
+                serveCurrent();
+                return true;
+            }
             return {
-                handleTurn, onReply, reset, tryResume,
+                handleTurn, onReply, reset, tryResume, nudge,
                 forceStart: startWalk,
                 atStart: function () { return firstEmptyBeat() < BEATS.length; },    // v7.20.270: room left, not pristine
                 get active() { return active; },

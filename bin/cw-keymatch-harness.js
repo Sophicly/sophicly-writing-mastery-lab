@@ -203,9 +203,17 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         'the dispatcher never consumes the generic-chip flag');
     ok(/const _inboundIsAnswer = !canvasSilentSend && !_genericChip;/.test(JS),
         'a chip tap or a silent send can still be treated as a student answer');
-    ok(/if \(_genericChip && _cwWalkActive\(\)\)[\s\S]{0,400}?return;/.test(JS),
+    ok(/if \(_genericChip && _cwWalkActive\(\)\)[\s\S]{0,900}?return;/.test(JS),
         'a stale chip tap during a code-owned walk is not swallowed — it would be forwarded to the '
         + 'model, spending a call to answer a question nobody asked');
+    // v7.20.330 — LIVENESS (WML CLAUDE.md 4d). Swallowing alone is only half the change: on .329
+    // it left the student on a greeting with help chips and no question, mid-lesson. The swallow
+    // MUST re-serve the ask, and both walks must expose the nudge that does it.
+    ok(/if \(_genericChip && _cwWalkActive\(\)\)[\s\S]{0,400}?_cwNudgeActiveWalk\(\)/.test(JS),
+        'the swallow does not re-serve the current ask — a refused input with nothing in its place '
+        + 'is a DEAD END (Neil, staging .329)');
+    ok((JS.match(/handleTurn, onReply, reset, tryResume, nudge,/g) || []).length >= 2,
+        'fewer than two walks expose nudge() — a walk that cannot re-serve its ask can strand a student');
     // All six CW arms gate on it. The quiz arms deliberately do NOT: an MSQ/FQ answer chip IS the
     // student's answer, so the flag must not reach them.
     const armed = (JS.match(/state\.task === 'cw_step_\d' && _cw\w+Ctl\.active && _inboundIsAnswer/g) || []).length;

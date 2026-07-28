@@ -248,10 +248,26 @@ function makeWorld(opts) {
     };
     // startWalk() awaits the Step-3 echo load before its first serve — let it settle.
     world.start = async function () { world.ctl.forceStart(); await settle(); };
+    // v7.20.330: AUTOMATIC liveness on every simulated input — see bin/walk-sim-lib.js. Not a
+    // test an author has to remember: forgetting it is how a guard that silently swallowed a tap
+    // reached a live lesson.
+    function autoLive(label, bubblesBefore) {
+        if (!world.ctl.active) return;
+        ok(world.bubbles.length > bubblesBefore || world.chips().length > 0,
+            'DEAD END after ' + label + ': the walk is active but said NOTHING and left no chip — '
+            + 'the student has no question to answer and nothing to press.');
+    }
     // One student turn: type `text`, then let the API answer with `reply` if the walk asked.
     world.say = function (text, reply) {
+        const bb = world.bubbles.length;
         world.ctl.handleTurn(text);
         if (armed) world.resolveApi(reply === undefined ? '@BEAT_OK' : reply);
+        autoLive('typing "' + String(text).slice(0, 30) + '"', bb);
+    };
+    world.tapLive = function (btn) {
+        const bb = world.bubbles.length;
+        btn.click();
+        autoLive('tapping "' + String(btn.textContent).slice(0, 30) + '"', bb);
     };
     return world;
 }
@@ -350,7 +366,7 @@ console.log('I2b · a doc edit between ask and answer cannot move the answer');
     for (let g = 0; g < 12 && w.chips().length; g++) {
         const bar = w.chips();
         const cont = bar.filter(function (b) { return /Continue|Done|Next/i.test(String(b.textContent)); })[0];
-        if (cont) { cont.click(); } else { bar[0].click(); }
+        w.tapLive(cont || bar[0]);
     }
     w.say('my beat one');                                // fills beat1, walk serves beat 2's ask
     ok(!!w.rows.get(BEAT_FIDS[0]), 'setup: beat 1 was not filled');
@@ -384,7 +400,7 @@ console.log('I3b · clearing an earlier row mid-session cannot rewind the walk')
         if (w.chips().length) {
             const bar = w.chips();
             const cont = bar.filter(function (b) { return /Continue|Done|Next/i.test(String(b.textContent)); })[0];
-            if (cont) cont.click(); else bar[0].click();
+            w.tapLive(cont || bar[0]);
             continue;
         }
         const before = w.writes.length;
@@ -403,7 +419,7 @@ console.log('I3b · clearing an earlier row mid-session cannot rewind the walk')
         if (w.chips().length) {
             const bar = w.chips();
             const cont = bar.filter(function (c) { return /Continue|Done|Next/i.test(String(c.textContent)); })[0];
-            if (cont) cont.click(); else bar[0].click();
+            w.tapLive(cont || bar[0]);
             continue;
         }
         const before = w.writes.length;
@@ -428,7 +444,7 @@ console.log('I4 · chip picks file to their own field');
     const w = makeWorld();
     await w.start();
     const before = w.writes.length;
-    if (w.chips().length) w.chips()[0].click();
+    if (w.chips().length) w.tapLive(w.chips()[0]);
     const stray = w.writes.slice(before).filter(function (x) { return BEAT_FIDS.indexOf(x.fid) !== -1; });
     ok(stray.length === 0, 'the beat-1 need pick wrote into ' + stray.map(function (x) { return x.fid; }).join(', '));
 }
@@ -440,7 +456,7 @@ console.log('I5 · a rewrite replaces, never stitches');
     // Every _writeOutlineRowField call that targets an already-filled row must declare replace,
     // or it appends — the v7.20.289 double-draft bug.
     await w.start();
-    if (w.chips().length) w.chips()[0].click();
+    if (w.chips().length) w.tapLive(w.chips()[0]);
     w.say('first beat');
     const appends = w.writes.filter(function (x) {
         return BEAT_FIDS.indexOf(x.fid) !== -1 && !x.replace;
@@ -457,7 +473,7 @@ console.log('I6 · resume repeats nothing and skips nothing');
 {
     const w = makeWorld();
     await w.start();
-    if (w.chips().length) w.chips()[0].click();
+    if (w.chips().length) w.tapLive(w.chips()[0]);
     w.say('beat one answer');
     const filled = {};
     w.rows.forEach(function (v, k) { if (v) filled[k] = v; });

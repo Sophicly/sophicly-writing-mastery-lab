@@ -125,6 +125,31 @@
       A turn that READS the student's free text is still judgment (4b watch-it) and is never
       stripped to save a call.
 
+4d. **⭐⭐ A REFUSAL IS HALF A CHANGE — LIVENESS IS THE OTHER HALF (Neil, 2026-07-28, emphatic).**
+   Verbatim: *"how is it that we make a fundamental mistake that fundamentally destroys the user
+   experience?"* — after a guard I added to stop a stray chip being filed left a student on a
+   greeting with help buttons and **no question**, mid-lesson, in front of a class.
+   **THE LAW:** any change that BLOCKS, GUARDS, REFUSES, SWALLOWS, GATES or gives up on an input
+   MUST state, in the SAME change, what the student sees instead. "Not filed, not sent" is a
+   complete sentence in a commit message and a broken page to a 14-year-old. A guard has three
+   possible outcomes — *allowed* · *refused, with a way forward* · *refused, with nothing* — and
+   the third must be **unreachable by construction**, not merely unlikely.
+   **THE INVARIANT (mechanical, not remembered):** after ANY inbound event — an answer, a chip tap,
+   a stale tap, a resume, a reload — the student must have **either a question on screen or a chip
+   to press**. Never zero. Note what does NOT count: "the input box would accept text" is not
+   liveness. On staging v7.20.329 the slot WAS armed, so typing would have been filed — but with no
+   question on screen the student had no idea what to type. **What a person recognises as working
+   is that the SCREEN RESPONDED.**
+   **ENFORCED:** `bin/walk-sim-lib.js` checks liveness AUTOMATICALLY inside `say()` and `tap()`, so
+   a walk sim cannot be written that ignores it — opt-out is impossible by design. Any new walk
+   registers in the rig and inherits the check.
+   **WHY IT WAS MISSED, so the next model doesn't repeat it:** every invariant in the harnesses was
+   a NEGATIVE — *nothing is written unless an ask was served · no answer leaks · no rewind · a
+   rewrite doesn't stitch*. **A suite made entirely of "X must not happen" passes perfectly on a
+   screen that does nothing at all.** The instruments inspected rows and writes, so the reasoning
+   followed the data and never looked at the screen. When you add a guard, the first question is
+   not "does this stop the bad write?" — it is **"what is on the screen one second later?"**
+
 5. **⭐ CODE-SERVED SOURCE TEXT MUST NEVER SIT IN A MANIFEST-LOADED MODULE (Neil, 2026-07-22 — the
    retained-source law).** When a deterministic turn is converted from LLM-narrated to CODE-served
    (a `@PLAY_SEQ` scripted-sequence beat, a chip menu, any canned text), its teaching/source text must

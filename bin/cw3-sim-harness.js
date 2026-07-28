@@ -39,7 +39,7 @@ const STEP_FIDS = COMPONENTS.concat(FORMULAS);
 const ALL_FIDS = STEP_FIDS.concat(['cw-step-3-chosen', 'cw-step-3-chosen-idea']);
 
 function world(opts) {
-    return makeWorld(CTL, Object.assign({ task: 'cw_step_3', fids: ALL_FIDS }, opts || {}));
+    return makeWorld(CTL, Object.assign({ task: 'cw_step_3', fids: ALL_FIDS, ok: ok }, opts || {}));
 }
 const stepWrites = (w, from) => w.writes.slice(from).filter((x) => STEP_FIDS.indexOf(x.fid) !== -1);
 
@@ -168,6 +168,67 @@ console.log('I3b · clearing an earlier row mid-session cannot rewind the walk')
             'the walk REWOUND to ' + l2.fid + ' after the student cleared an earlier row — '
             + 'asks must only ever move forward');
     }
+}
+
+// ── I7 · A PRISTINE DOCUMENT IS A FRESH START, NOT A RESUME ───────────────────────────────
+// Neil, staging .329: an empty doc with no sidecar and no chat history reported
+// "resumed at step 1/10" and went ACTIVE, so the greeting's start button had nothing to hand
+// the turn to — help chips, no question, no way forward. The corruption was gone and the step
+// was unusable, which is not a trade worth making.
+console.log('I7 · a pristine document starts fresh (and a stale tap re-serves the ask)');
+{
+    const w = world();                       // empty rows, empty localStorage
+    const resumed = w.ctl.tryResume();
+    ok(resumed === false,
+        'a pristine document with no sidecar claimed a RESUME — the walk goes active with nothing '
+        + 'served and the student is stranded on the greeting');
+    ok(w.ctl.active === false, 'the walk went active on a pristine document');
+
+    // A PART-finished document must still revive from the document (the v7.20.298 Fatou fix).
+    const w2 = world({ prefill: { 'cw-step-3-protagonist': 'a real earlier answer' } });
+    ok(w2.ctl.tryResume() === true,
+        'a part-finished document no longer revives from the document — that is the v7.20.298 fix lost');
+
+    // And nudge() re-serves the ask rather than leaving them looking at nothing.
+    const bubblesBefore = w2.bubbles.length;
+    ok(w2.ctl.nudge() === true, 'nudge() did not re-serve the ask on an active walk');
+    ok(w2.bubbles.length > bubblesBefore, 'nudge() served no bubble — the student still sees no question');
+    const wroteAnything = w2.writes.filter((x) => STEP_FIDS.indexOf(x.fid) !== -1).length;
+    ok(wroteAnything === 0, 'nudge() wrote to the document — it must only re-serve, never file');
+}
+
+// ── I0 · LIVENESS — the student can ALWAYS act ────────────────────────────────────────────
+// Deliberately numbered before the rest: this is the invariant every other one is a negative of.
+// A suite of "X must not happen" passes perfectly on a screen that does nothing.
+console.log('I0 · liveness — after every event the student can still act');
+{
+    const w = world();
+    w.ctl.forceStart();
+    await settle();
+    w.assertLive(ok, 'the walk starting');
+
+    // Every ordinary turn of a full run.
+    let guard = 0;
+    while (guard++ < 40 && !STEP_FIDS.every((f) => w.rows.get(f))) {
+        const bb = w.bubbles.length;
+        if (w.chips().length) { w.tapMenu(); w.assertLiveAfterInput(ok, 'a chip tap', bb); continue; }
+        w.say('answer ' + guard, '@ALL_OK');
+        w.assertLiveAfterInput(ok, 'answering ask ' + guard, bb);
+    }
+
+    // A reload mid-walk.
+    const carried = {};
+    w.rows.forEach((v, k) => { if (v) carried[k] = v; });
+    const w2 = world({ prefill: { 'cw-step-3-protagonist': carried['cw-step-3-protagonist'] || 'x' }, ls: w.ls });
+    w2.ctl.tryResume();
+    await settle();
+    w2.assertLive(ok, 'a reload mid-walk');
+
+    // And a stale chip tap — the case that produced the dead end on staging. nudge() is what the
+    // dispatcher calls when it swallows one; it must leave the student able to act.
+    const bb2 = w2.bubbles.length;
+    w2.ctl.nudge();
+    w2.assertLiveAfterInput(ok, 'a stale quick-action tap being swallowed', bb2);
 }
 
 // ── I5 · THE SHARPEN REWRITE REPLACES ─────────────────────────────────────────────────────

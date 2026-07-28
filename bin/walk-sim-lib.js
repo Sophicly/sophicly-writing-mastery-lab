@@ -202,16 +202,67 @@ function makeWorld(ctl, opts) {
         fn(reply, {});
         return true;
     };
+    // v7.20.330: liveness is checked AUTOMATICALLY on every simulated input. It is not a test a
+    // harness author has to remember to write — forgetting it is exactly how a guard that silently
+    // swallowed a tap reached a live lesson. Pass `ok` via opts.ok to enable (every sim does).
+    function autoLive(label, bubblesBefore) {
+        if (!opts.ok || !world.ctl.active) return;
+        opts.ok(world.bubbles.length > bubblesBefore || world.chips().length > 0,
+            'DEAD END after ' + label + ': the walk is active but said NOTHING and left no chip — '
+            + 'the student has no question to answer and nothing to press. Refusing an input is only '
+            + 'half a change; the other half is what they see instead.');
+    }
     world.say = function (text, reply) {
+        const bb = world.bubbles.length;
         world.ctl.handleTurn(text);
         if (armed) world.resolveApi(reply);
+        autoLive('typing "' + String(text).slice(0, 30) + '"', bb);
     };
+    world.tap = function (btn) {
+        const bb = world.bubbles.length;
+        btn.click();
+        autoLive('tapping "' + String(btn.textContent).slice(0, 30) + '"', bb);
+    };
+    // ── LIVENESS (v7.20.330) ────────────────────────────────────────────────────────────────
+    // THE invariant every other one in this rig is a negative of. Neil, 2026-07-28, after a guard
+    // I added left a student on a greeting with help chips and no question:
+    //   "how is it that we make a fundamental mistake that fundamentally destroys the user
+    //    experience?"
+    // Because every assertion here was of the form "X must not happen", and a screen that does
+    // NOTHING satisfies all of them. A refusal is only half a design; the other half is what the
+    // student can do instead, and nothing was checking that half.
+    //
+    // The student can act iff EITHER the slot is armed (typing will be accepted and filed) OR a
+    // chip is on screen (tapping does something). Anything else is a dead end, whatever the
+    // document looks like. `finished` is the one legitimate way to have neither.
+    world.live = function () {
+        const armed = !!(deps._walkSlot && deps._walkSlot.armed);
+        return armed || world.chips().length > 0;
+    };
+    world.assertLive = function (okFn, whenLabel) {
+        okFn(world.live() || !world.ctl.active,
+            'DEAD END after ' + whenLabel + ': the walk is active but the student has no question '
+            + 'to answer and no chip to press.');
+    };
+    // THE STRONGER FORM, and the one that matters. "The slot is armed" is NOT liveness: on staging
+    // .329 the slot WAS armed, so typing would have been accepted — but no question was on screen,
+    // so the student had no idea what to type. What a person recognises as working is that the
+    // SCREEN RESPONDED: after any input the walk either says something new or leaves a chip.
+    // Pass the bubble count from immediately BEFORE the input.
+    world.assertLiveAfterInput = function (okFn, whenLabel, bubblesBefore) {
+        if (!world.ctl.active) return;   // a finished walk legitimately has neither
+        okFn(world.bubbles.length > bubblesBefore || world.chips().length > 0,
+            'DEAD END after ' + whenLabel + ': the walk swallowed the input and said NOTHING — no new '
+            + 'message, no chip. Refusing an input is only half a change; the other half is what the '
+            + 'student sees instead. (Neil, staging .329: help chips and no question.)');
+    };
+
     // Tap through a chip menu: prefer an explicit Continue, else the first option.
     world.tapMenu = function (limit) {
         for (let g = 0; g < (limit || 12) && world.chips().length; g++) {
             const bar = world.chips();
             const cont = bar.filter((b) => /Continue|Done|Next|Move on/i.test(String(b.textContent)))[0];
-            if (cont) cont.click(); else bar[0].click();
+            world.tap(cont || bar[0]);
         }
     };
     return world;
