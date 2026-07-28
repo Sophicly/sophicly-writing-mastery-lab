@@ -195,6 +195,18 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw3-batch-harness.js || fail=1
 fi
 
+# v7.20.327: CW STEP-4 WALK-INVARIANT GATE. Step 3 reached a live lesson with the `▶ Let's go`
+# launch chip filed into a student's Protagonist row and asks served in "first empty row" order.
+# Nothing caught it because every CW harness asserted the walk's SHAPE and none DROVE it turn by
+# turn. This drives the real _cwSpineCtl and asserts the invariants that hold for EVERY code-owned
+# walk: nothing is written unless an ask was served; an answer lands in the field of the ask that
+# requested it (even when the student edits the document in between); asks come in declared order;
+# a chip pick files to its own field; a rewrite replaces; a reload never loses a turn.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|cw4-sim-harness\.js'; then
+  node bin/cw4-sim-harness.js || fail=1
+fi
+
 # v7.20.290: WALK STOP-RULE GATE. A code-owned walk means CODE serves every ask; if the protocol
 # does not order the model to END its reply at the verdict signal, the model invents the next ask
 # and the student sees TWO competing questions (Neil's live catch: Step 4 doubled every beat from 2

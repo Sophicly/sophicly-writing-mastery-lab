@@ -1033,3 +1033,58 @@ choose their own structure. Full rationale in that plugin's `PLOT-STRUCTURES-E2E
 **Why this is recorded here rather than in the component.** A ruling kept only inside its
 consumer gets re-derived wrongly by the next one — the reason this file is the rulings register
 (§0). The next person to place a quiz ahead of its teaching should find this rule, not re-ask.
+
+---
+
+## §18. ⭐⭐ UNCERTAINTY IS NEVER PAID FOR BY THE STUDENT — the scoring invariant (2026-07-28)
+
+**THE LAW.**
+
+> **A scoring component DROPS OUT when its input is unreliable. It never scores zero.**
+> A student is never charged for a gap in OUR data, OUR timing, or OUR admin.
+
+**Why this exists.** On 2026-07-28 nine separate defects were found and fixed across the process
+score. They looked like nine bugs. They were one disease — **every single one resolved uncertainty
+against the student**, and not one ever erred the other way:
+
+| the gap | what the system did |
+|---|---|
+| reflection saved with no `session_id` | guessed by calendar date → 36 of 50 records credited to nothing |
+| a lesson the student was still sitting in | counted as a reflection already owed |
+| a session a tutor backfilled after the fact | counted as owed, already overdue on arrival |
+| a session the tracker dated wrongly | no reflection could ever match it |
+| six lessons completed in ONE live class | ticking them minutes out of order scored as out-of-sequence |
+| sessions from a different programme | counted against this course's score |
+
+Each was individually defensible and collectively indefensible: Yusra Kazi read **82** for five days
+while doing everything asked, and would have been shown that number in front of her class.
+
+**How to apply — the gate for any new scoring input.**
+1. **Ask what the number does when the input is MISSING, LATE, or WRONG.** If the answer is "the
+   student scores lower", it is a defect, not a default. The correct answer is "the component does
+   not apply" (`applied: false`) — the discipline already half-exists in `compute_process_score_for`;
+   the failure was never applying it consistently.
+2. **A student can only owe what they had a fair OPPORTUNITY to do.** Two corollaries, both now
+   in code: nothing is owed before the activity has finished (v2.31.157), and nothing is owed if
+   the record of it was created after its own deadline (v2.31.158).
+3. **Measure at the granularity where the signal is real.** Comparing completion timestamps to the
+   minute measured click noise inside a single lesson and charged for it (v2.31.155). If the
+   behaviour is a day-level behaviour, compare days.
+4. **Never derive identity from what the transport happened to carry.** A reflection knows its
+   session; if the client failed to send it, the SERVER resolves it rather than guessing from a
+   date (v2.31.156). Guessing IS charging the student for our gap.
+5. **Errors that flatter are still errors — but fix them in that direction.** Word counts currently
+   over-credit students (Sophia's generated prose counted as theirs). That is wrong and must be
+   fixed, but shipping a correction that would zero a student's real draft is worse. When only a
+   wrong answer is available, take the one that does not punish.
+
+**⛔ THE SECOND-ORDER RULE — NEIL IS NOT THE DETECTION MECHANISM.** Every one of the nine was found
+by Neil looking at a number and saying "that's not right". Yusra's 82 stood for five days; 36
+unlinked reflections were invisible to everyone. **Any scoring change ships with a runnable gate
+that asserts the impossible states** (root CLAUDE.md §5e; reference impl
+`sophicly-celebration/bin/verify-keys.php`) — a session created after its own date, two sessions on
+one group+date, a reflection with no session, a denominator drawn from another course. A rule that
+depends on a human noticing a wrong number in a child's face is not shipped.
+
+Related: [[feedback_key_granularity_not_just_key_agreement]] (a key can agree and still name the
+wrong thing), root CLAUDE.md §0 (root cause, not symptom) and §15 (done = works end to end).

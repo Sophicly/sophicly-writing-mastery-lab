@@ -4211,6 +4211,80 @@
         return true;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // v7.20.327 — THE ANSWER SLOT: a filed answer is bound to the ASK THAT ASKED FOR IT.
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // ROOT of the wrong-row class (Neil, live lesson, prod, 2026-07-28). Every code-owned walk
+    // decided WHERE to file by re-reading a CURSOR at the moment the answer arrived
+    // (`STEPS[idx]`, with `idx` recomputed from the document in between). Nothing travelled
+    // WITH the question, so two things were possible and both happened on prod:
+    //   · anything that moved the cursor between the ask and the answer — a student editing a
+    //     row, a reload, the review path — sent the answer to a DIFFERENT row;
+    //   · a write could happen when NO ask had been served at all. The `▶ Let's go` launch chip
+    //     (wml-app.js launch-prompt detector) was filed verbatim into uid 1334's Protagonist
+    //     row, and every later answer was displaced behind it.
+    //
+    // The slot is the fix, and it is the shape Neil specified: serving an ask ARMS a token
+    // naming its field; filing CONSUMES that token. No token → no write, loudly. Ask ORDER
+    // becomes a UX bug, never a data-corruption bug.
+    //
+    // This is the standard the MARKER path already meets — `@FIELD_COMMIT` names its field
+    // explicitly, so a planning answer arrives already bound to its slot. The code-owned walks
+    // regressed away from that when they adopted a cursor; this brings them back to it.
+    //
+    // Shared on purpose: one slot, one filing authority, all seven walks (`_quizCtl`,
+    // `_cwProfileCtl`, `_cwIdeasCtl`, `_cwLoglineCtl`, `_cwSpineCtl`, `_cwStructureCtl`,
+    // `_cwOutlineCtl`). A per-walk copy is how the v7.20.289 replace-vs-append fix was made in
+    // one controller and lost in another.
+    const _walkSlot = (function () {
+        let tok = null;   // { walk, fid, askId, cycle, servedAt }
+        let seq = 0;
+        return {
+            // Called when an ask is DELIVERED (not when it is queued behind a Continue chip).
+            arm(walk, fid, opts) {
+                if (!walk || !fid) { console.warn('WML slot: refusing to arm without walk+fid'); return null; }
+                tok = { walk, fid, askId: ++seq, cycle: (opts && opts.cycle) || 'accumulate', servedAt: Date.now() };
+                return tok.askId;
+            },
+            peek(walk) { return (tok && tok.walk === walk) ? tok : null; },
+            // The ONLY authority for a walk write. One-shot; returns the token or null.
+            consume(walk) {
+                if (!tok) {
+                    console.warn('WML slot: ' + walk + ' tried to file an answer but NO ask was served — '
+                        + 'refusing to write. Nothing was asked, so this is not an answer.');
+                    return null;
+                }
+                if (tok.walk !== walk) {
+                    console.warn('WML slot: ' + walk + ' tried to file against ' + tok.walk + '’s ask — refusing.');
+                    return null;
+                }
+                const t = tok; tok = null; return t;
+            },
+            clear(walk) { if (!walk || (tok && tok.walk === walk)) tok = null; },
+            get armed() { return !!tok; },
+        };
+    })();
+
+    // v7.20.327 — ONE live-dictation stopper, registered while a mic session is running.
+    // The recogniser lives inside a chat-shell closure; leaving the canvas happens outside it,
+    // so nothing could stop a running mic on exit and it survived navigation (Neil, 2026-07-28).
+    let _micStopActive = null;
+    function _stopAnyDictation(why) {
+        if (!_micStopActive) return;
+        try { _micStopActive(); } catch (e) {}
+        console.log('WML Mic: stopped —', why);
+    }
+    const MIC_IDLE_MS = 15000;   // auto-stop after this much silence (standard dictation UX)
+
+    // Is a code-owned CW walk currently active? Set from inside the canvas closure (where the
+    // controllers live) so module-scope consumers — the quick-action suppressor below — can ask
+    // without reaching into that closure. Fails CLOSED (false) so a probe error can never
+    // silently strip a student's only click path.
+    let _cwActiveWalkProbe = null;
+    function _cwWalkActive() {
+        try { return !!(_cwActiveWalkProbe && _cwActiveWalkProbe()); } catch (e) { return false; }
+    }
+
     // v7.20.293 — DOCKED RAIL-PANEL WIDTH CLAMP (Neil's live catch: the Story Components panel
     // "sitting underneath the chat panel").
     //
@@ -12894,6 +12968,7 @@
     }
 
     function closeCanvasOverlay() {
+        _stopAnyDictation('canvas closed');   // v7.20.327
         if (canvasEditor) {
             saveCanvasContent();
             canvasEditor.destroy();
@@ -13429,7 +13504,14 @@
                 const detectText = rawText || text.replace(/<[^>]+>/g, '');
                 const canvasAssessDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;
                 const isHattieQuestion = /(?:Where\s+am\s+I\s+going|How\s+am\s+I\s+going|Where\s+to\s+next|transfer.*skills|how\s+will\s+you.*apply|Session\s+Complete)/i.test(detectText);
-                let actions = (canvasAssessDone || isHattieQuestion || _reflectData || (opts && opts.suppressActions)) ? [] : detectQuickActions(detectText);
+                // v7.20.327: a code-owned walk SERVES ITS OWN CHIPS. Generic detection running on
+                // the same bubble is a second, competing chip system whose values are canned
+                // phrases ("Let's go", "Yes", "Explain more") — and the walk files whatever the
+                // student sends. That collision put "Let's go" in uid 1334's Protagonist row.
+                // Suppressed only while the walk is ACTIVE, so the greeting's start button (served
+                // BEFORE any walk arms, and the student's only way in) still renders.
+                const _walkOwnsChips = _cwWalkActive();
+                let actions = (canvasAssessDone || isHattieQuestion || _reflectData || _walkOwnsChips || (opts && opts.suppressActions)) ? [] : detectQuickActions(detectText);
                 // v7.19.829: Hattie / post-completion turns suppress GENERIC detection
                 // (free-text reflection wanted), but when the message itself lists lettered
                 // options ("Where am I going? A) … F)") those are explicit choices the
@@ -14036,8 +14118,21 @@
 
         // Mic button
         let canvasRecognition = null, canvasListening = false;
+        let _micSubmitOnEnd = false, _micIdleTimer = null;   // v7.20.327
+
+        // v7.20.327: restart the silence clock. `continuous: true` never ends a session on
+        // its own, so without this the mic runs until the tab closes.
+        function _micIdleKick() {
+            if (_micIdleTimer) clearTimeout(_micIdleTimer);
+            _micIdleTimer = setTimeout(() => {
+                if (canvasListening && canvasRecognition) {
+                    console.log('WML Mic: idle auto-stop after ' + (MIC_IDLE_MS / 1000) + 's of silence');
+                    try { canvasRecognition.stop(); } catch (e) {}
+                }
+            }, MIC_IDLE_MS);
+        }
         let _micNoSpeechRetries = 0;
-        const MIC_MAX_RETRIES = 3;
+        const MIC_MAX_RETRIES = 1;   // v7.20.327 — a pause must not silently re-arm 3x
         const chatMicBtn = el('button', { className: 'swml-mic-btn', innerHTML: SVG_MIC, title: 'Voice input',
             onClick: () => {
                 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -14063,6 +14158,7 @@
                     canvasRecognition.onresult = (e) => {
                         if (canvasChatLoading) { console.warn('WML Mic: onresult BLOCKED — canvasChatLoading is true'); return; }
                         _micNoSpeechRetries = 0; // speech detected, reset retry counter
+                        _micIdleKick();          // v7.20.327
                         // The box changed outside dictation (send cleared it, or the student
                         // edited/cleared it by hand). Re-anchor to what is there NOW and drop the
                         // stale transcript, so nothing the student removed can come back.
@@ -14088,6 +14184,8 @@
                         micBase = _cur ? _cur.replace(/\s+$/, '') + ' ' : '';
                         finalTranscript = ''; micLastWritten = null;
                         canvasListening = true;
+                        _micStopActive = () => { try { canvasRecognition.stop(); } catch (e) {} };   // v7.20.327
+                        _micIdleKick();
                         console.log('WML Mic: onstart — canvasChatLoading:', canvasChatLoading, 'retries:', _micNoSpeechRetries);
                         /* v7.20.57: no icon swap — CSS morphs SVG_MIC into the record dot via .swml-mic-active */
                         chatMicBtn.classList.add('swml-mic-active'); try { localStorage.setItem(MIC_TIP_KEY, '1'); } catch (_) {} // v7.19.834: mic users never see the tip
@@ -14106,9 +14204,15 @@
                     canvasRecognition.onend = () => {
                         console.log('WML Mic: onend — finalTranscript length:', finalTranscript.length);
                         canvasListening = false;
+                        if (_micIdleTimer) { clearTimeout(_micIdleTimer); _micIdleTimer = null; }
+                        _micStopActive = null;
                         /* v7.20.57: morph reverts as .swml-mic-active is removed */
                         chatMicBtn.classList.remove('swml-mic-active');
                         chatTextarea.focus();
+                        if (_micSubmitOnEnd) {
+                            _micSubmitOnEnd = false;
+                            if (chatTextarea.value.trim()) sendCanvasMessage();
+                        }
                     };
                     canvasRecognition.onerror = (e) => {
                         console.warn('WML Mic: onerror —', e.error, '| retries:', _micNoSpeechRetries);
@@ -14535,6 +14639,17 @@
         };
         // v7.20.50: history getter for the granular planning sidebar (chain-stage rows).
         window.__swmlCanvasChatHistory = () => canvasChatHistory;
+        // v7.20.327: expose "is a code-owned walk active?" to module scope. The controllers live
+        // in this closure; the quick-action suppressor does not. Registered once at closure init
+        // (NOT inside sendCanvasMessage — that would leave it null until the first send).
+        _cwActiveWalkProbe = function () {
+            const m = {
+                cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
+                cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
+            };
+            const c = m[(state && state.task) || ''];
+            return !!(c && c.active);
+        };
         // v7.20.52: resume hook for the restore blocks (they live outside this closure).
         window.__swmlPlanChainResume = _resumePlanChainActions;
         // Piece 2 (v7.20.250): poetry teaching-sequence resume hook. Chips are DOM-only
@@ -14554,6 +14669,23 @@
             // identity (self-guarding no-op everywhere else — see _poetryCnEnsurePoemMarker).
             const msg = _poetryCnEnsurePoemMarker(chatTextarea.value.trim(), canvasChatHistory);
             if (!msg || canvasChatLoading) return;
+
+            // v7.20.327 — STOP DICTATION HERE, at the top, on EVERY send path.
+            // This used to live further down (just before the AI round-trip), which is BELOW the
+            // six code-owned walk gates — and those gates `return`. So for the whole of a CW
+            // lesson, a send that a walk owned never reached the stop and the mic stayed LIVE.
+            // Pressing Enter hid it (the keydown handler stops the mic itself before sending);
+            // clicking the SEND BUTTON did not, and students click. The mic then kept
+            // transcribing into a box the send had emptied, the v7.20.298 re-anchor refilled it,
+            // and the student could not work out why their words kept coming back — exactly the
+            // confusion Neil's student hit in the live lesson (2026-07-28).
+            // Same class as the filing bug in this build: a CROSS-CUTTING concern parked below a
+            // task gate silently skips every task that returns early (WML CLAUDE.md canvas
+            // task-scoping rule #1 — cross-cutting consumers run UNCONDITIONALLY).
+            if (canvasListening && canvasRecognition) {
+                try { canvasRecognition.stop(); } catch (e) {}
+                console.log('WML Mic: stopped on send (all paths, incl. code-owned walks)');
+            }
 
             // v7.19.575: UNIVERSAL — if a clear (any task) marked a fresh conversation,
             // send an empty chatId so the AI Engine starts brand-new (it won't resume the
@@ -14623,10 +14755,20 @@
                         : 'WML CW: ' + state.task + ' walk is inactive and could not be revived — this turn goes to the AI and will NOT be filed into the document.');
                 }
             }
+            // ══════════════════════════════════════════════════════════════════════════════
+            // v7.20.327 — PROVENANCE GATE. Until now the ONLY test these six arms applied was
+            // `Ctl.active`: every inbound message — a student typing, a chip tap, a synthetic
+            // hand-off, a hidden `[CONTEXT FROM PREVIOUS STEP]` injection carrying a raw HTML
+            // blob — was indistinguishable, and `handleTurn` files whatever arrives VERBATIM
+            // into a document row. `canvasSilentSend` already marks machine-generated sends and
+            // not one of these gates consulted it.
+            // A silent send is never a student answer: it falls through to the AI path, which is
+            // exactly where those sends are addressed anyway.
+            const _inboundIsAnswer = !canvasSilentSend;
             // v7.19.660: CW Step 1 (Writer's Profile) — deterministic walk owns the turn
             // (code-driven 12 questions, no AI per answer). Falls through only once the
             // controller deactivates at Q12 → the single synthesis send hits the AI path.
-            if (state.task === 'cw_step_1' && _cwProfileCtl.active) {
+            if (state.task === 'cw_step_1' && _cwProfileCtl.active && _inboundIsAnswer) {
                 await _cwProfileCtl.handleTurn(msg);
                 return;
             }
@@ -14634,25 +14776,25 @@
             // while active. Unlike Step 1 it hands each idea to the API for ONE judgment turn
             // and resumes itself (armWalkResume), so `active` goes false for that round-trip
             // and this gate correctly falls through to the AI path for exactly that turn.
-            if (state.task === 'cw_step_2' && _cwIdeasCtl.active) {
+            if (state.task === 'cw_step_2' && _cwIdeasCtl.active && _inboundIsAnswer) {
                 await _cwIdeasCtl.handleTurn(msg);
                 return;
             }
             // v7.20.263: CW Step 3 (Logline) — same walk shape: 7 component asks then 3 logline
             // formulas, each handing ONE turn to the API for a verdict before advancing.
-            if (state.task === 'cw_step_3' && _cwLoglineCtl.active) {
+            if (state.task === 'cw_step_3' && _cwLoglineCtl.active && _inboundIsAnswer) {
                 await _cwLoglineCtl.handleTurn(msg);
                 return;
             }
             // v7.20.264: CW Step 4 (Story Spine) — chip menus + student-written beats.
-            if (state.task === 'cw_step_4' && _cwSpineCtl.active) {
+            if (state.task === 'cw_step_4' && _cwSpineCtl.active && _inboundIsAnswer) {
                 await _cwSpineCtl.handleTurn(msg);
                 return;
             }
             // v7.20.297: CW Step 5 (Choose Plot Structure) — nine code-served asks, all auto-filing.
             // `active` goes false only for the ONE reflection call, so this gate correctly falls
             // through for exactly that turn.
-            if (state.task === 'cw_step_5' && _cwStructureCtl.active) {
+            if (state.task === 'cw_step_5' && _cwStructureCtl.active && _inboundIsAnswer) {
                 await _cwStructureCtl.handleTurn(msg);
                 return;
             }
@@ -14660,7 +14802,7 @@
             // The controller owns every beat turn with NO round-trip; `active` goes false only for
             // the seven judgment calls (six stage micro-checks + the sampled finish check) and an
             // on-demand Ask-Sophia, and this gate correctly falls through for exactly those.
-            if (state.task === 'cw_step_6' && _cwOutlineCtl.active) {
+            if (state.task === 'cw_step_6' && _cwOutlineCtl.active && _inboundIsAnswer) {
                 await _cwOutlineCtl.handleTurn(msg);
                 return;
             }
@@ -15697,7 +15839,24 @@
         }
 
         // Send handlers
-        chatSendBtn.addEventListener('click', sendCanvasMessage);
+        // v7.20.327 — THE one submit path (Enter and the Send button both use it).
+        // Dictation live? arm submit-on-end and stop; `onend` sends once the final
+        // transcript has landed. ONE Enter, ONE click — never two.
+        function _micThenSend() {
+            if (canvasListening && canvasRecognition) {
+                _micSubmitOnEnd = true;
+                try { canvasRecognition.stop(); } catch (e) {}
+                setTimeout(() => {          // fallback ONLY: a browser that never fires onend
+                    if (!_micSubmitOnEnd) return;
+                    _micSubmitOnEnd = false;
+                    console.warn('WML Mic: onend never fired — submitting via fallback');
+                    if (chatTextarea.value.trim()) sendCanvasMessage();
+                }, 1200);
+                return;
+            }
+            sendCanvasMessage();
+        }
+        chatSendBtn.addEventListener('click', _micThenSend);
         // v7.19.854: register this shell's live refs for module-scope helpers
         // (silent-SYSTEM repairs + the engine-owned closing chain).
         _registerChatShell({ textarea: chatTextarea, send: sendCanvasMessage,
@@ -15708,14 +15867,7 @@
                 e.preventDefault();
                 const multiSubmit = document.querySelector('.swml-quick-submit:not([disabled])');
                 if (multiSubmit && !chatTextarea.value?.trim()) { multiSubmit.click(); return; }
-                if (canvasListening && canvasRecognition) {
-                    canvasRecognition.stop();
-                    setTimeout(() => {
-                        if (chatTextarea.value.trim()) sendCanvasMessage();
-                    }, 350);
-                    return;
-                }
-                sendCanvasMessage();
+                _micThenSend();   // v7.20.327: stops dictation AND submits, in one press
             }
         });
 
@@ -18172,7 +18324,11 @@
             const acc = (clean) => (draft ? draft + '\n' + clean : clean);
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw4') + '_cw4'; } catch (e) { return 'swml_cw4'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft, need: mainNeed, cohBeat })); } catch (e) {} }
+            // v7.20.327: the armed slot rides the sidecar. The token is in-memory, so without
+            // this a reload leaves an ask on screen with no authority to file its answer — and
+            // re-deriving the slot from firstEmptyBeat() would reinstate the very cursor this
+            // change exists to remove.
+            function persist() { try { const _s = _walkSlot.peek('cw4'); localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft, need: mainNeed, cohBeat, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -18256,6 +18412,7 @@
                         return;
                     }
                     phase = 'beat';
+                    _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });   // v7.20.327
                     aiBubble(b.ask);
                     appendSpineButtons();
                     persist();
@@ -18277,6 +18434,7 @@
                     if (_writeOutlineRowField(NEEDS_FID, full) && typeof saveCanvasContent === 'function') saveCanvasContent();
                 } catch (e) { console.warn('WML CW4: unmet-need write failed (non-fatal)', e && e.message); }
                 phase = 'beat';
+                _walkSlot.arm('cw4', BEATS[0].fid, { cycle: 'accumulate' });   // v7.20.327
                 aiBubble(BEATS[0].ask);
                 appendSpineButtons();
                 persist();
@@ -18387,6 +18545,10 @@
                 const b = BEATS[idx];
                 if (b.chips && phase === 'chip') { serveChip(); return; }
                 phase = 'beat';
+                // v7.20.327: the ask OWNS the row. Arming here is what makes the answer land in
+                // b.fid regardless of what has happened to `idx` in the meantime — and what makes
+                // a message arriving with NO ask served (a stray chip, a paste) file nothing.
+                _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });
                 aiBubble(b.ask);
                 appendSpineButtons();
                 persist();
@@ -18486,7 +18648,9 @@
                     active = false; clearPersist(); serveWrap(); return;
                 }
                 const b = BEATS[cohBeat];
-                phase = 'coh-fix'; active = true; persist();
+                phase = 'coh-fix'; active = true;
+                _walkSlot.arm('cw4', b.fid, { cycle: 'rewrite' });   // v7.20.327
+                persist();
                 aiBubble('**Rewriting Beat ' + (cohBeat + 1) + ' — “' + b.lead + '…”**\n\nWrite the **whole beat again**, not just the part you are changing — one sentence, present tense, after “' + b.lead + ',”. Your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> ' + (rowText(b.fid) || '*(blank)*'));
                 appendSpineButtons();
                 resetSend();
@@ -18500,12 +18664,22 @@
                 // judgment call and NO API round-trip — file it and wrap. `replace:true` because a
                 // beat is one self-contained sentence (4c.6 `rewrite` cycle): appending would stitch
                 // the old and new beats into one row, which is the .289 logline bug.
+                // v7.20.327: WHERE this answer goes comes from the ask that requested it, never
+                // from a cursor re-read now. No ask served → nothing is written (the defect that
+                // filed "Let’s go" into a Step-3 Protagonist row on prod).
+                const slot = _walkSlot.consume('cw4');
+                if (!slot) {
+                    console.warn('WML CW4: message arrived with no ask served — filing nothing.');
+                    aiBubble('Tap one of the buttons above to carry on — I haven’t asked you to write anything yet.');
+                    resetSend();
+                    return;
+                }
                 if (phase === 'coh-fix' && cohBeat >= 0) {
                     const cb = BEATS[cohBeat];
                     canvasChatHistory.push({ role: 'user', content: clean });
                     addChatMessage(clean, 'user');
                     try {
-                        if (_writeOutlineRowField(cb.fid, clean, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                        if (_writeOutlineRowField(slot.fid, clean, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
                     } catch (e) { console.warn('WML CW4: coherence rewrite failed (non-fatal)', e && e.message); }
                     aiBubble('Updated — Beat ' + (cohBeat + 1) + ' now reads your new version in the document.');
                     active = false; cohBeat = -1; clearPersist();
@@ -18513,7 +18687,7 @@
                     return;
                 }
                 // v7.20.265: bubble + history are the send's job — see the CW2 note. (Double-write.)
-                const b = BEATS[idx];
+                const b = BEATS.filter(function (x) { return x.fid === slot.fid; })[0] || BEATS[idx];
                 if (!b) { serveThroughline(); return; }
                 const wasIrony = (phase === 'irony');
                 active = false; pending = true;
@@ -18523,7 +18697,11 @@
                         ? true
                         : /@BEAT_OK/.test(String(reply).replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'));
                     // v7.20.283: a PUSH retains the answer — bank the whole cycle on accept.
-                    if (!ok) { draft = acc(clean); active = true; persist(); resetSend(); return; }
+                    if (!ok) {
+                        draft = acc(clean); active = true;
+                        _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });   // v7.20.327: push stays on this row
+                        persist(); resetSend(); return;
+                    }
                     const full = acc(clean);
                     draft = '';
                     // Both the beat and its irony answer land in the SAME row — the irony
@@ -18533,7 +18711,11 @@
                         if (_writeOutlineRowField(b.fid, full) && typeof saveCanvasContent === 'function') saveCanvasContent();
                     } catch (e) { console.warn('WML CW4: write failed (non-fatal)', e && e.message); }
                     active = true;
-                    if (!wasIrony && b.irony) { phase = 'irony'; aiBubble(b.irony); persist(); resetSend(); return; }
+                    if (!wasIrony && b.irony) {
+                        phase = 'irony';
+                        _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });   // v7.20.327: same row
+                        aiBubble(b.irony); persist(); resetSend(); return;
+                    }
                     idx = firstEmptyBeat();
                     phase = 'chip';
                     if (idx >= BEATS.length) { serveThroughline(); return; }
@@ -18586,6 +18768,9 @@
                     // the wrap rather than stranding the student on an offer it cannot honour.
                     if ((phase === 'coh-choice' || phase === 'coh-fix') && cohBeat >= 0 && cohBeat < BEATS.length) {
                         active = true; pending = false;
+                        // v7.20.327: re-arm the slot the student was mid-answer on — the token is
+                        // in-memory, so without this a reload would refuse their next answer.
+                        if (phase === 'coh-fix') _walkSlot.arm('cw4', (d.slot && d.slot.fid) || BEATS[cohBeat].fid, { cycle: 'rewrite' });
                         console.log('WML CW4: resumed at the coherence revision for beat ' + (cohBeat + 1) + ' (' + phase + ')');
                         setTimeout(reattachChips, 400);
                         return true;
@@ -18629,6 +18814,13 @@
                         return true;
                     }
                     active = true; pending = false;
+                    // v7.20.327: re-arm the ask the student is looking at. The sidecar's slot is
+                    // authoritative — it names the ask that was SERVED; BEATS[idx] is only the
+                    // fallback for a sidecar written before this version.
+                    if (phase === 'beat' || phase === 'irony') {
+                        const _rs = (d.slot && d.slot.fid) ? d.slot : (BEATS[idx] ? { fid: BEATS[idx].fid, cycle: 'accumulate' } : null);
+                        if (_rs) _walkSlot.arm('cw4', _rs.fid, { cycle: _rs.cycle || 'accumulate' });
+                    }
                     console.log('WML CW4: resumed at beat ' + (idx + 1) + '/' + BEATS.length + ' (' + phase + ')');
                     if (phase === 'chip') setTimeout(reattachChips, 400);
                     return true;
@@ -27382,6 +27574,19 @@
 
                         // Mic button with voice input for canvas chat
                         let canvasRecognition = null, canvasListening = false;
+                        let _micSubmitOnEnd = false, _micIdleTimer = null;   // v7.20.327
+
+                        // v7.20.327: restart the silence clock. `continuous: true` never ends a session on
+                        // its own, so without this the mic runs until the tab closes.
+                        function _micIdleKick() {
+                            if (_micIdleTimer) clearTimeout(_micIdleTimer);
+                            _micIdleTimer = setTimeout(() => {
+                                if (canvasListening && canvasRecognition) {
+                                    console.log('WML Mic: idle auto-stop after ' + (MIC_IDLE_MS / 1000) + 's of silence');
+                                    try { canvasRecognition.stop(); } catch (e) {}
+                                }
+                            }, MIC_IDLE_MS);
+                        }
                         const chatMicBtn = el('button', { className: 'swml-mic-btn', innerHTML: SVG_MIC, title: 'Voice input',
                             onClick: () => {
                                 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -27394,6 +27599,7 @@
                                     canvasRecognition.lang = 'en-GB';
                                     let finalTranscript = '';
                                     canvasRecognition.onresult = (e) => {
+                                        _micIdleKick();   // v7.20.327
                                         if (canvasChatLoading) return; // Don't repopulate after send
                                         let interim = '';
                                         for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -27405,15 +27611,22 @@
                                     };
                                     canvasRecognition.onstart = () => {
                                         canvasListening = true; finalTranscript = chatTextarea.value || '';
+                                        _micStopActive = () => { try { canvasRecognition.stop(); } catch (e) {} };   // v7.20.327
+                                        _micIdleKick();
                                         /* v7.20.57: no icon swap — CSS morphs SVG_MIC into the record dot via .swml-mic-active */
                                         chatMicBtn.classList.add('swml-mic-active'); try { localStorage.setItem(MIC_TIP_KEY, '1'); } catch (_) {} // v7.19.834: mic users never see the tip
                                     };
                                     canvasRecognition.onend = () => {
                                         canvasListening = false;
+                                        if (_micIdleTimer) { clearTimeout(_micIdleTimer); _micIdleTimer = null; }
+                                        _micStopActive = null;
                                         /* v7.20.57: morph reverts as .swml-mic-active is removed */
                                         chatMicBtn.classList.remove('swml-mic-active');
-                                        // Focus textarea so user can press Enter to submit
                                         chatTextarea.focus();
+                                        if (_micSubmitOnEnd) {
+                                            _micSubmitOnEnd = false;
+                                            if (chatTextarea.value.trim()) sendCanvasMessage();
+                                        }
                                     };
                                     canvasRecognition.onerror = (e) => {
                                         console.warn('Canvas voice error:', e.error);
@@ -27500,7 +27713,11 @@
                                 const canvasAssessDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;
                                 // Suppress quick actions on Hattie reflective questions (v7.12.34)
                                 const isHattieQuestion = /(?:Where\s+am\s+I\s+going|How\s+am\s+I\s+going|Where\s+to\s+next|transfer.*skills|how\s+will\s+you.*apply|Session\s+Complete)/i.test(detectText);
-                                let actions = (canvasAssessDone || isHattieQuestion || _reflectData2 || (opts && opts.suppressActions)) ? [] : detectQuickActions(detectText);
+                                // v7.20.327: same suppression as the sibling pipeline — a code-owned
+                                // walk owns its own chips while active (dual chat pipeline: a guard
+                                // added to one copy only is how these two drift).
+                                const _walkOwnsChips2 = _cwWalkActive();
+                                let actions = (canvasAssessDone || isHattieQuestion || _reflectData2 || _walkOwnsChips2 || (opts && opts.suppressActions)) ? [] : detectQuickActions(detectText);
                                 // v7.19.829: explicit lettered clusters override the Hattie/post-completion
                                 // suppression (dual-pipeline twin of the main branch — see ~L5090).
                                 if (!actions.length && (canvasAssessDone || isHattieQuestion) && !_reflectData2 && !(opts && opts.suppressActions)) {
@@ -28027,6 +28244,15 @@
                             const msg = _poetryCnEnsurePoemMarker(chatTextarea.value.trim(), canvasChatHistory);
                             if (!msg || canvasChatLoading) return;
 
+                            // v7.20.327 (twin of the primary pipeline): stop dictation at the TOP, on every send
+                            // path. The stop below sits under the code-owned walk gates, which return early — so a
+                            // walk-owned turn left the mic live. DUAL CHAT PIPELINE: a guard added to one copy only
+                            // is exactly how these two drift.
+                            if (canvasListening && canvasRecognition) {
+                                try { canvasRecognition.stop(); } catch (e) {}
+                                console.log('WML Mic: stopped on send (all paths, incl. code-owned walks)');
+                            }
+
                             // v7.19.575: UNIVERSAL — if a clear marked a fresh conversation, send
                             // an empty chatId so the AI Engine begins brand-new (won't resume the
                             // stale conversation it still holds under the old chatId).
@@ -28490,7 +28716,24 @@
                         }
 
                         // Send handler
-                        chatSendBtn.addEventListener('click', sendCanvasMessage);
+                        // v7.20.327 — THE one submit path (Enter and the Send button both use it).
+                        // Dictation live? arm submit-on-end and stop; `onend` sends once the final
+                        // transcript has landed. ONE Enter, ONE click — never two.
+                        function _micThenSend() {
+                            if (canvasListening && canvasRecognition) {
+                                _micSubmitOnEnd = true;
+                                try { canvasRecognition.stop(); } catch (e) {}
+                                setTimeout(() => {          // fallback ONLY: a browser that never fires onend
+                                    if (!_micSubmitOnEnd) return;
+                                    _micSubmitOnEnd = false;
+                                    console.warn('WML Mic: onend never fired — submitting via fallback');
+                                    if (chatTextarea.value.trim()) sendCanvasMessage();
+                                }, 1200);
+                                return;
+                            }
+                            sendCanvasMessage();
+                        }
+                        chatSendBtn.addEventListener('click', _micThenSend);
                         // v7.19.854: register this shell's live refs (module-scope silent-SYSTEM
                         // repairs + engine-owned closing chain) — mirrors the training-panels shell.
                         _registerChatShell({ textarea: chatTextarea, send: sendCanvasMessage,
@@ -28503,15 +28746,7 @@
                                 const multiSubmit = document.querySelector('.swml-quick-submit:not([disabled])');
                                 if (multiSubmit && !chatTextarea.value?.trim()) { multiSubmit.click(); return; }
                                 // If mic is recording, stop it and submit after final transcript (v7.12.70, simplified v7.12.99)
-                                if (canvasListening && canvasRecognition) {
-                                    canvasRecognition.stop();
-                                    // Wait 350ms for final transcript to land, then submit whatever is there
-                                    setTimeout(() => {
-                                        if (chatTextarea.value.trim()) sendCanvasMessage();
-                                    }, 350);
-                                    return;
-                                }
-                                sendCanvasMessage();
+                                _micThenSend();   // v7.20.327: stops dictation AND submits, in one press
                             }
                         });
 
