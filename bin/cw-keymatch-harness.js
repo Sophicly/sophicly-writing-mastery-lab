@@ -184,6 +184,39 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     console.log(`   ${found.size} chip menus, all classified`);
 }
 
+// ── THE DISPATCHER LAYER (v7.20.329) ────────────────────────────────────────────────────────
+// The sim harnesses slice a CONTROLLER and drive it, so by construction they cannot see a defect
+// that lives in sendCanvasMessage's routing. One did: at .328 the transcript replayed BEFORE
+// tryResume ran, the detector attached its `▶ Let's go` chip to the replayed greeting, and the tap
+// arrived as an ordinary message that the freshly resumed walk filed into the Protagonist row.
+// Gating on walk state was a guess about ORDER; provenance set at the click is not. These assert
+// the routing contract at the layer the sims cannot reach.
+{
+    console.log('CW DISPATCHER — a chip tap is not a student answer');
+    // Every generic (detector-built) quick-action sender declares itself. There are TWO — the dual
+    // chat pipeline — and marking only one is exactly how these two have drifted before.
+    const marks = (JS.match(/markGenericChipSend\(\);/g) || []).length;
+    ok(marks === 2,
+        `expected 2 generic quick-action senders to call markGenericChipSend(), found ${marks} ` +
+        `— an unmarked sender routes a chip tap in as a student answer (dual chat pipeline)`);
+    ok(/const _genericChip = consumeGenericChipSend\(\);/.test(JS),
+        'the dispatcher never consumes the generic-chip flag');
+    ok(/const _inboundIsAnswer = !canvasSilentSend && !_genericChip;/.test(JS),
+        'a chip tap or a silent send can still be treated as a student answer');
+    ok(/if \(_genericChip && _cwWalkActive\(\)\)[\s\S]{0,400}?return;/.test(JS),
+        'a stale chip tap during a code-owned walk is not swallowed — it would be forwarded to the '
+        + 'model, spending a call to answer a question nobody asked');
+    // All six CW arms gate on it. The quiz arms deliberately do NOT: an MSQ/FQ answer chip IS the
+    // student's answer, so the flag must not reach them.
+    const armed = (JS.match(/state\.task === 'cw_step_\d' && _cw\w+Ctl\.active && _inboundIsAnswer/g) || []).length;
+    ok(armed === 6, `expected all 6 CW walk arms to require _inboundIsAnswer, found ${armed}`);
+    ok(/if \(_inboundIsAnswer && _cwWalkActive\(\)\) \{[\s\S]{0,160}?chatTextarea\.value = '';/.test(JS),
+        'a walk turn does not clear the chat input — the six arms return before the shared clear, so '
+        + 'the text stays in the box and the next dictation appends to it (v7.20.329)');
+    ok(!/_quizCtl\.active && _inboundIsAnswer/.test(JS),
+        'a quiz arm requires _inboundIsAnswer — that would swallow MSQ/FQ answer chips, which ARE answers');
+}
+
 console.log(`   ${asserts.pass} assertions passed`);
 if (fail) {
     console.error(`❌ cw-keymatch-harness FAILED (${asserts.fail} assertion(s)).`);

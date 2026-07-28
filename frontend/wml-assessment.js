@@ -4276,6 +4276,20 @@
     }
     const MIC_IDLE_MS = 15000;   // auto-stop after this much silence (standard dictation UX)
 
+    // v7.20.329 — A GENERIC CHIP TAP IS NOT AN ANSWER.
+    // The .327/.328 attempt gated on "is the walk active", and that lost on prod (Neil, staging
+    // run, uid RunCloudRescue): the chat transcript REPLAYS before tryResume() runs, so at the
+    // moment the greeting bubble was drawn the walk was not yet active, the detector attached its
+    // `▶ Let's go` chip anyway, and the tap arrived as an ordinary message — which the freshly
+    // resumed walk filed into the Protagonist row. Eight characters, exactly as before.
+    //
+    // Gating on walk state was always a guess about ORDER. The click path already KNOWS what it
+    // is — the console literally logs "WML Quick Action click" — so it carries provenance instead.
+    // Walk-owned chips never come through here: they invoke their own handlers directly.
+    let _genericChipSend = false;
+    function markGenericChipSend() { _genericChipSend = true; }
+    function consumeGenericChipSend() { const v = _genericChipSend; _genericChipSend = false; return v; }
+
     // Is a code-owned CW walk currently active? Set from inside the canvas closure (where the
     // controllers live) so module-scope consumers — the quick-action suppressor below — can ask
     // without reaching into that closure. Fails CLOSED (false) so a probe error can never
@@ -13639,6 +13653,7 @@
                                     // "Paragraph 2 it is". With the semantic text in the turn it can't mismap.
                                     chatTextarea.value = (/^[A-E]\)\s+\S/.test(action.label || '') && String(action.value || '').length <= 2)
                                         ? action.label : action.value;
+                                    markGenericChipSend();   // v7.20.329: provenance — a chip tap is not a student answer
                                     sendCanvasMessageQueued();
                                 }
                             });
@@ -14764,7 +14779,32 @@
             // not one of these gates consulted it.
             // A silent send is never a student answer: it falls through to the AI path, which is
             // exactly where those sends are addressed anyway.
-            const _inboundIsAnswer = !canvasSilentSend;
+            // v7.20.329: ...and a generic (detector-built) chip tap is not one either. Consumed
+            // once per send. Deliberately BELOW the quiz arms above — MSQ/FQ answer chips ARE the
+            // student's answer and must keep reaching _quizCtl.
+            const _genericChip = consumeGenericChipSend();
+            const _inboundIsAnswer = !canvasSilentSend && !_genericChip;
+            // A generic chip tapped while a code-owned walk owns the turn is a stale control from a
+            // REPLAYED bubble (the transcript replays before tryResume, so suppressing the chip at
+            // render time loses that race — that is how "Let's go" reached the Protagonist row on
+            // staging at .328). Swallow it: filing it corrupts a row, and forwarding it to the model
+            // spends a call answering a question nobody asked.
+            if (_genericChip && _cwWalkActive()) {
+                console.warn('WML CW: ignored a stale quick-action tap ("' + msg.slice(0, 40)
+                    + '") — a code-owned walk owns this turn; neither filed nor sent.');
+                chatTextarea.value = '';
+                return;
+            }
+            // v7.20.329: CLEAR THE INPUT for a walk turn. The six arms below RETURN, so the shared
+            // `chatTextarea.value = ''` further down never runs for them — the student's text stayed
+            // in the box, and the next dictation APPENDED to it. Neil's staging run shows the result:
+            // "Let's go" left in the box, then the dictated flaw added to it, and 82 characters of
+            // both went into one row. Third instance this build of a cross-cutting step parked below
+            // an early-returning task gate (canvas task-scoping rule #1).
+            if (_inboundIsAnswer && _cwWalkActive()) {
+                chatTextarea.value = '';
+                chatTextarea.style.height = '40px';
+            }
             // v7.19.660: CW Step 1 (Writer's Profile) — deterministic walk owns the turn
             // (code-driven 12 questions, no AI per answer). Falls through only once the
             // controller deactivates at Q12 → the single synthesis send hits the AI path.
@@ -27878,6 +27918,7 @@
                                                     // training-panels sender — dual-pipeline rule).
                                                     chatTextarea.value = (/^[A-E]\)\s+\S/.test(action.label || '') && String(action.value || '').length <= 2)
                                                         ? action.label : action.value;
+                                                    markGenericChipSend();   // v7.20.329: provenance — a chip tap is not a student answer
                                                     sendCanvasMessageQueued();
                                                 }
                                             });
