@@ -110,6 +110,73 @@ console.log('CW STEP 4 — the dramatic throughline is durable');
         'the throughline rides CW_STEP4_SPINE, so later steps and the Story Spine panel see it');
 }
 
+// ── v7.20.323: EVERY CHIP MENU IS CLASSIFIED — content (filed) or flow-control (ephemeral) ────
+//
+// Neil, 2026-07-28, on the throughline fix: "how are we going to make sure that the issue we found
+// in step four is fixed universally?" This is the answer. The defect was never really "the
+// throughline is missing a row" — it was that a student's CHOICE could be neither filed nor
+// deliberately discarded, and nothing anywhere noticed. Auditing carefully once does not survive
+// the next session; a gate does.
+//
+// So every chipBar/chipBarMulti call site must be declared below:
+//   'content' — the pick IS an answer. It MUST reach a document row, or it dies when finish()
+//               clears the sidecar (the throughline, v7.20.322; the unmet need, v7.20.323).
+//   'flow'    — the pick steers the walk ("Rewrite Beat 3 →", "Leave it as it is →"). It must
+//               NOT be persisted: a stored gate replays forever once its condition clears
+//               (the v7.20.284 fossil-gate bug). Ephemeral is the correct answer here.
+// A NEW menu belongs to neither until someone says so, and this gate refuses to pass until they
+// do — which is exactly the decision that was skipped twice.
+console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
+{
+    const MENUS = {
+        // content — must be filed
+        onSecondaryNeedsDone:  { kind: 'content', fid: 'NEEDS_FID', note: 'the "any others?" multi-select' },
+        onThroughlinePick:     { kind: 'content', fid: 'THROUGHLINE_FID', note: 'the dramatic throughline' },
+        onPick:                { kind: 'content', note: 'Step 5 plot archetype → _setOutlineDropdown' },
+        // flow-control — must NOT be filed
+        onCohChoice:    { kind: 'flow', note: 'rewrite / keep the beat the coherence check flagged' },
+        onAnchorChoice: { kind: 'flow', note: 'Step 6 story bookend: still right / sharpen' },
+        onStageChoice:  { kind: 'flow', note: 'Step 6 stage arc: sharpen / leave' },
+        onFinishChoice: { kind: 'flow', note: 'Step 6 final image: rewrite / leave' },
+        onPushChoice:   { kind: 'flow', note: 'Step 5 archetype push: switch / keep' },
+        onMultiDone:    { kind: 'flow', note: 'Step 5 alternates considered (multi-select)' },
+        // scaffold — the pick SHAPES the next ask, and the written answer that follows is what
+        // gets filed. Not lost, because the beat sentence carries it. Beat 1 is the exception and
+        // is handled separately (onSecondaryNeedsDone → NEEDS_FID), because there the category IS
+        // the answer rather than a lead-in to one.
+        onBeatChipPick: { kind: 'scaffold', note: 'Step-4 beat category chips (incident/goal/obstacle/stakes) — the beat text the student then writes is filed' },
+    };
+    // Match CALL sites only. `function chipBar(options, onPick)` is a DEFINITION and its parameter
+    // name would otherwise be scanned as though it were a handler — and Step 5's real handler
+    // happens to be called onPick too, so the two are indistinguishable without this guard.
+    // The handler may be passed bare (`onThroughlinePick`) or as a factory call
+    // (`onBeatChipPick(b)`), so the trailing argument list is optional.
+    const CALL_RE = /(?<!function\s)\bchipBar(?:Multi)?\(\s*[\s\S]{0,240}?,\s*([A-Za-z_$][\w$]*)\s*(?:\([^()]*\))?\s*\)/g;
+    const found = new Set();
+    let c;
+    while ((c = CALL_RE.exec(JS))) found.add(c[1]);
+    found.forEach(fn => {
+        ok(Object.prototype.hasOwnProperty.call(MENUS, fn),
+            `chip menu "${fn}" is not classified — declare it 'content' (and file the pick to a ` +
+            `document row) or 'flow' (steers the walk, must stay ephemeral). An unclassified menu ` +
+            `is how the throughline and the unmet need both got lost.`);
+    });
+    Object.keys(MENUS).forEach(fn => {
+        ok(found.has(fn), `declared chip menu "${fn}" no longer exists — remove it from this list`);
+    });
+    // Content menus that name a fid constant must actually write through it.
+    Object.entries(MENUS).forEach(([fn, cfg]) => {
+        if (cfg.kind !== 'content' || !cfg.fid) return;
+        ok(new RegExp(`_writeOutlineRowField\\(${cfg.fid}`).test(JS),
+            `${fn} is content (${cfg.note}) but never writes through ${cfg.fid} — the pick would ` +
+            `live only in the sidecar that finish() clears`);
+    });
+    // Flow-control picks must not be smuggled into the document.
+    ok(!/_writeOutlineRowField\([^)]*(?:Rewrite|Leave it|still right|sharpen)/i.test(JS),
+        'no flow-control pick is written to the document (a persisted gate replays forever — v7.20.284)');
+    console.log(`   ${found.size} chip menus, all classified`);
+}
+
 console.log(`   ${asserts.pass} assertions passed`);
 if (fail) {
     console.error(`❌ cw-keymatch-harness FAILED (${asserts.fail} assertion(s)).`);

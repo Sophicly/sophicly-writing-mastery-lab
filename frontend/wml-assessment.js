@@ -4301,6 +4301,8 @@
     // v7.20.292: the Story Spine is needed in later steps for exactly the same reason as the
     // components (Neil: "I think I need to see that as well in the subsequent steps").
     const CW_STEP4_SPINE = [
+        // v7.20.323: the unmet need drives Beat 1, so it leads the spine wherever the spine shows.
+        { fid: 'cw-step-4-unmet-needs', label: 'Unmet Need' },
         { fid: 'cw-step-4-beat1', label: 'Beat 1 — At first…' },
         { fid: 'cw-step-4-beat2', label: 'Beat 2 — And then…' },
         { fid: 'cw-step-4-beat3', label: 'Beat 3 — Until…' },
@@ -17954,6 +17956,7 @@
             const STAKES = ['Personal stakes', 'Public stakes'];
             const THROUGHLINES = ['The protagonist succeeds', 'The protagonist is defeated', 'The protagonist abandons the goal'];
             const THROUGHLINE_FID = 'cw-step-4-throughline';   // v7.20.322: ONE builder, both sides
+            const NEEDS_FID       = 'cw-step-4-unmet-needs';   // v7.20.323: same, for the Beat-1 need pick
 
             // echo = the Step-3 row whose answer is shown back instead of being re-asked.
             // v7.20.282 INTERACTION REDESIGN (Neil): every ask = criteria upfront → worked
@@ -18091,6 +18094,16 @@
                 const msg = picks.length ? 'Also: ' + picks.join(', ') : 'Just the one — that’s the main need.';
                 canvasChatHistory.push({ role: 'user', content: msg });
                 addChatMessage(msg, 'user');
+                // v7.20.323: file the unmet needs in the DOCUMENT — same defect as the throughline
+                // (v7.20.322), found by auditing every chip menu for the same shape. Main + any
+                // secondaries lived in the localStorage sidecar only, which finish() clears, so the
+                // student's categorisation of their own protagonist was discarded the moment they
+                // completed Step 4 and no later step could read it. Written HERE, at the end of the
+                // two-stage pick, because that is the first moment the whole answer exists.
+                try {
+                    const full = mainNeed + (picks.length ? ' (also: ' + picks.join(', ') + ')' : '');
+                    if (_writeOutlineRowField(NEEDS_FID, full) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                } catch (e) { console.warn('WML CW4: unmet-need write failed (non-fatal)', e && e.message); }
                 phase = 'beat';
                 aiBubble(BEATS[0].ask);
                 appendSpineButtons();
@@ -33742,25 +33755,42 @@
         const tryHealCwStep4Throughline = () => {
             if (!isCwTask || !canvasEditor || cwStepDef?.step !== 4) return;
             try {
-                let hasRow = false, beat6End = null;
+                // v7.20.323: TWO rows now — the throughline (after Beat 6) and the unmet need
+                // (before Beat 1). Both were added after projects were already in flight. One walk
+                // collects both positions, and they are inserted BACK TO FRONT (later position
+                // first) so the first insertion cannot shift the second's position out from under
+                // it — the classic two-splice-one-pass bug.
+                let hasThrough = false, hasNeeds = false, beat6End = null, beat1Start = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
                     if (node.type.name !== 'outlineRow' || !node.attrs) return true;
                     const fid = node.attrs.fieldId || '';
-                    if (fid === 'cw-step-4-throughline') { hasRow = true; return false; }
+                    if (fid === 'cw-step-4-throughline') hasThrough = true;
+                    if (fid === 'cw-step-4-unmet-needs') hasNeeds = true;
                     if (fid === 'cw-step-4-beat6') beat6End = pos + node.nodeSize;
+                    if (fid === 'cw-step-4-beat1' && beat1Start === null) beat1Start = pos;
                     return true;
                 });
-                if (hasRow || beat6End === null) return;
+                const wantThrough = !hasThrough && beat6End !== null;
+                const wantNeeds = !hasNeeds && beat1Start !== null;
+                if (!wantThrough && !wantNeeds) return;
                 _migrationActive = true;
                 try {
-                    canvasEditor.commands.insertContentAt(beat6End, outlineRowHTML({
-                        id: 'throughline', label: 'Dramatic Throughline',
-                        prompt: 'What happens to your protagonist’s goal in the end — do they succeed, are they defeated, or do they abandon it?'
-                    }, 'cw-step-4-throughline'));
+                    if (wantThrough) {
+                        canvasEditor.commands.insertContentAt(beat6End, outlineRowHTML({
+                            id: 'throughline', label: 'Dramatic Throughline',
+                            prompt: 'What happens to your protagonist’s goal in the end — do they succeed, are they defeated, or do they abandon it?'
+                        }, 'cw-step-4-throughline'));
+                    }
+                    if (wantNeeds) {
+                        canvasEditor.commands.insertContentAt(beat1Start, outlineRowHTML({
+                            id: 'unmet-needs', label: 'Unmet Need',
+                            prompt: 'The need your protagonist is missing at the start — the main one, plus any others they also carry.'
+                        }, 'cw-step-4-unmet-needs'));
+                    }
                 } finally { _migrationActive = false; }
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
-                console.log('WML CW: Step 4 throughline row healed in');
-            } catch (e) { console.log('WML CW: step4 throughline heal skipped —', e && e.message); }
+                console.log('WML CW: Step 4 rows healed in — throughline=' + wantThrough + ' unmetNeeds=' + wantNeeds);
+            } catch (e) { console.log('WML CW: step4 row heal skipped —', e && e.message); }
         };
 
         // v7.19.682: CW Step 5 — fill the read-only "Your Outline (from Step 4)" beats from
@@ -37019,6 +37049,7 @@
             html += dividerHTML('STORY SPINE');
             html += sectionHTML('plan', 'Story Spine', true, null,
                 '<h3>Your Story Spine</h3>' +
+                outlineRowHTML({ id: 'unmet-needs', label: 'Unmet Need', prompt: 'The need your protagonist is missing at the start \u2014 the main one, plus any others they also carry.' }, 'cw-step-4-unmet-needs') +
                 outlineRowHTML({ id: 'beat1', label: 'Beat 1: At First\u2026', prompt: 'Your protagonist\u2019s ordinary world. What is their unmet need, their flaw, and their hidden strength?' }, 'cw-step-4-beat1') +
                 outlineRowHTML({ id: 'beat2', label: 'Beat 2: And Then\u2026', prompt: 'Their repeated daily routine that proves their flawed state.' }, 'cw-step-4-beat2') +
                 outlineRowHTML({ id: 'beat3', label: 'Beat 3: Until\u2026', prompt: 'The inciting incident that disrupts everything. How is this event secretly an opportunity?' }, 'cw-step-4-beat3') +
