@@ -1,0 +1,67 @@
+name: pre-ship gate
+
+# WML has run bin/pre-ship-check.sh as a pre-commit hook since v7.19.899, and it has
+# caught real defects for months. This is its BACKSTOP, not a replacement: a local hook
+# dies quietly — `git commit --no-verify`, a fresh clone where nobody wired the hook, or
+# Google Drive mangling .git/hooks (the reason install steps write a regular file, never
+# a symlink). CI cannot be skipped, so this is what actually enforces the gate.
+#
+# Runs the SAME script the hook runs, with --all, so there is one definition of
+# "passing" and the two can never drift.
+#
+# The gate needs no npm install: the 16 harnesses use node builtins only (the sole
+# non-builtin require in bin/ is `vm`). eslint is fetched on demand by npx.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP (for php -l)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Set up Node (for node --check, eslint, and the harnesses)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run the pre-ship gate over the whole repo
+        run: bash bin/pre-ship-check.sh --all
+
+  # Security review is not required on every change. It IS required when the diff touches
+  # the surfaces where a mistake exposes student work or lets the wrong person write to a
+  # record — REST routes, permission callbacks, nonces, the review-target resolver. This
+  # job does not judge the code; it makes the requirement mechanical instead of remembered.
+  security-review-required:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Flag security-sensitive paths
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          CHANGED=$(git diff --name-only "$BASE" "$HEAD" || true)
+          HITS=$(printf '%s\n' "$CHANGED" | grep -E \
+            'class-rest-api|rest_api|permission|capabilit|current_user_can|nonce|review_target|view_as|auth' || true)
+          if [ -n "$HITS" ]; then
+            echo "::warning::Security-sensitive paths changed — run /security-review before deploying."
+            printf '%s\n' "$HITS"
+          else
+            echo "No security-sensitive paths in this diff."
+          fi
