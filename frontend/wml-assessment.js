@@ -13815,8 +13815,7 @@
                             const _emitBack = function (extra) {
                                 const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**${extra}\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
                                 addChatMessage(formatAI(gt), 'ai', gt);
-                                canvasChatHistory.push({ role: 'assistant', content: gt });
-                                saveCanvasChat(canvasChatHistory, canvasChatId);
+                                // v7.20.324: DOM-only — a derived greeting must never be persisted (see the twin site).
                             };
                             if (stepNum === 6) {
                                 _cwPlotStructureName(state.cwProjectId).then(function (n) {
@@ -27095,11 +27094,16 @@
                                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
                                             // v7.20.292: the RESUME greeting must echo the chosen structure too. .286 patched only
                                             // the FRESH-entry greeting, so the one Neil actually saw stayed anonymous.
+                                            // v7.20.324 (Neil's live catch): the greeting is DERIVED state and must be
+                                            // DOM-only. It used to be pushed into canvasChatHistory AND saved, so
+                                            // "You chose **Rags to Riches** in Step 5" became permanent — Neil went back
+                                            // to Step 5, re-chose Rebirth/Redemption, the document correctly rebuilt, and
+                                            // the chat still announced the OLD structure forever. Same fossil-state class
+                                            // as the v7.20.284 gate: anything derived re-derives on every entry, and
+                                            // persisting it freezes a fact that has since changed (WML CLAUDE.md §4c.7).
                                             const _emitBack = function (extra) {
                                                 const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**${extra}\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
                                                 addChatMessage(formatAI(gt), 'ai', gt);
-                                                canvasChatHistory.push({ role: 'assistant', content: gt });
-                                                saveCanvasChat(canvasChatHistory, canvasChatId);
                                             };
                                             if (stepNum === 6) {
                                                 _cwPlotStructureName(state.cwProjectId).then(function (n) {
@@ -39709,7 +39713,7 @@
     'heros-journey': {
         label: "Hero\'s Journey",
         sections: [
-            { id: 'setup', label: 'Stage I: Setup - The Ordinary World', criteria: [
+            { id: 'setup', label: 'STAGE I: SETUP - THE ORDINARY WORLD: False Identity', criteria: [
                 { id: 'beat_1', label: 'The ordinary world', beatType: 'negative', type: 'checkbox', prompt: 'The ordinary world' },
                 { id: 'beat_2', label: 'May have a false sense of balance or complete imbalance', beatType: 'negative', type: 'checkbox', prompt: 'May have a false sense of balance or complete imbalance.' },
                 { id: 'beat_3', label: 'Snapshot of the main character\'s problem', beatType: 'negative', type: 'checkbox', prompt: 'We get a snapshot of the main character\'s problem, before the adventure begins.' },
@@ -39731,7 +39735,7 @@
                 { id: 'beat_19', label: 'Given supernatural or visionary direction; ONLY HE/SHE can solve it', beatType: 'positive', type: 'checkbox', prompt: 'He/she is given supernatural or visionary direction, or a secret message as to the goal; ONLY HE/SHE can solve it' },
                 { id: 'beat_20', label: 'State of the world deteriorates; increased awareness', beatType: 'negative', type: 'checkbox', prompt: 'The state of the world deteriorates; the protagonist now has increased awareness that something has to change' },
             ]},
-            { id: 'dream', label: 'Stage II: Dream Stage - Glimpse of True Self', criteria: [
+            { id: 'dream', label: 'STAGE II: DREAM STAGE - GLIMPSE OF TRUE SELF - Initial Success', criteria: [
                 { id: 'beat_1', label: 'Opening balance deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'Opening balance deteriorates' },
                 { id: 'beat_2', label: 'Tension begins to rise', beatType: 'negative', type: 'checkbox', prompt: 'tension begins to rise' },
                 { id: 'beat_3', label: 'B Story: discussion about the Theme', beatType: 'negative', type: 'checkbox', prompt: 'B Story: discussion about the Theme \u2013 the nugget of truth. This discussion often takes place between the main character and an ally' },
@@ -39760,7 +39764,7 @@
                 { id: 'beat_26', label: 'Protagonist crosses the threshold into the special world', beatType: 'positive', type: 'checkbox', prompt: 'protagonist finally answers the call and crosses the threshold into the special world and begins committing to change - the \'new/special world\' can be anything from a totally new universe to just a completely different place on earth' },
                 { id: 'beat_27', label: 'Small group of allies welcomes the Hero', beatType: 'positive', type: 'checkbox', prompt: 'a small group of allies welcomes the \'Hero\' into the special world' },
             ]},
-            { id: 'fascination', label: 'Stage III: Initial Fascination', criteria: [
+            { id: 'fascination', label: 'STAGE III: INITIAL FASCINATION: Protagonist Vacillates Between False Identity and True Self', criteria: [
                 { id: 'beat_1', label: 'Goal becomes much more specific', beatType: 'positive', type: 'checkbox', prompt: 'goal becomes much more specific' },
                 { id: 'beat_2', label: 'Hero is excited or fascinated by the new world', beatType: 'positive', type: 'checkbox', prompt: 'At first the hero is excited or fascinated because the new world is puzzling or unfamiliar, but not a place where they feel at home' },
                 { id: 'beat_3', label: 'A storm is coming; onset of evil felt in the air', beatType: 'negative', type: 'checkbox', prompt: 'A storm is coming; the onset of evil can be felt in the air' },
@@ -39786,7 +39790,7 @@
                 { id: 'beat_23', label: 'Greater obstacles before getting the prize', beatType: 'negative', type: 'checkbox', prompt: 'greater obstacles and complications; the obstacles must be overcome before he/she can get his/her prize which still seems far' },
                 { id: 'beat_24', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
-            { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
+            { id: 'nightmare', label: 'STAGE IV: NIGHTMARE STAGE - COMPLICATIONS - Protagonist gradually accepts true self', criteria: [
                 { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
                 { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
@@ -39802,7 +39806,7 @@
                 { id: 'beat_13', label: 'This is his/her lowest point', beatType: 'negative', type: 'checkbox', prompt: 'this is his/her lowest point' },
                 { id: 'beat_14', label: 'Villain appears to have cornered the protagonist', beatType: 'negative', type: 'checkbox', prompt: 'the villain appears to have cornered the protagonist' },
             ]},
-            { id: 'final-push', label: 'Stage V: Final Push - Final Ordeal', criteria: [
+            { id: 'final-push', label: 'STAGE V: FINAL PUSH: FINAL ORDEAL - Retreat to identity then returns fully to true self; the thrilling escape from death', criteria: [
                 { id: 'beat_1', label: 'Reversal: Mentor or ally brings protagonist back to life', beatType: 'positive', type: 'checkbox', prompt: 'But just when all seems lost comes the "reversal" - the Mentor or some other ally brings the protagonist back to life' },
                 { id: 'beat_2', label: 'Villain demonstrates his power again', beatType: 'negative', type: 'checkbox', prompt: 'The villain demonstrates his power again.' },
                 { id: 'beat_3', label: 'Protagonist receives crucial wisdom and/or gifts', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist receives some crucial wisdom and/or gifts at the right time.' },
@@ -39822,7 +39826,7 @@
                 { id: 'beat_17', label: 'Steps beyond false identity forever; transformed', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist steps beyond false identity forever; his/her existence is transformed forever' },
                 { id: 'beat_18', label: 'Protagonist discovers his/her own true power', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist discovers his/her own true power' },
             ]},
-            { id: 'aftermath', label: 'Stage VI: The Goal and the Aftermath', criteria: [
+            { id: 'aftermath', label: 'STAGE VI: THE GOAL AND THE AFTERMATH: Final Union, Transformation Complete and Fulfillment', criteria: [
                 { id: 'beat_1', label: 'Community is liberated; balance is restored', beatType: 'positive', type: 'checkbox', prompt: 'The community is liberated; balance is restored' },
                 { id: 'beat_2', label: 'Protagonist returns with the elixir; newfound wisdom', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist returns to his/her community with the elixir; it appears as though he/she has newfound wisdom, maturity, has mastered himself/herself' },
                 { id: 'beat_3', label: 'How much has the protagonist learnt?', beatType: 'neutral', type: 'checkbox', prompt: 'The question is how much the protagonist has learnt from his/her experiences\u2026' },
@@ -39835,7 +39839,7 @@
     'coming-of-age': {
         label: 'Coming of Age',
         sections: [
-            { id: 'setup', label: 'Stage I: Setup - The Ordinary World', criteria: [
+            { id: 'setup', label: 'STAGE I: SETUP - THE ORDINARY WORLD: False Identity', criteria: [
                 { id: 'beat_1', label: 'The ordinary world', beatType: 'negative', type: 'checkbox', prompt: 'The ordinary world' },
                 { id: 'beat_2', label: 'May have a false sense of balance or complete imbalance', beatType: 'negative', type: 'checkbox', prompt: 'May have a false sense of balance or complete imbalance.' },
                 { id: 'beat_3', label: 'Snapshot of the main character\'s problem', beatType: 'negative', type: 'checkbox', prompt: 'We get a snapshot of the main character\'s problem, before the adventure begins.' },
@@ -39858,7 +39862,7 @@
                 { id: 'beat_20', label: 'Given supernatural or visionary direction; ONLY HE/SHE can solve it', beatType: 'positive', type: 'checkbox', prompt: 'He/she is given supernatural or visionary direction, or a secret message as to the goal; ONLY HE/SHE can solve it' },
                 { id: 'beat_21', label: 'State of the world deteriorates; increased awareness', beatType: 'negative', type: 'checkbox', prompt: 'The state of the world deteriorates; the protagonist now has increased awareness that something has to change' },
             ]},
-            { id: 'dream', label: 'Stage II: Dream Stage - Glimpse of True Self', criteria: [
+            { id: 'dream', label: 'STAGE II: DREAM STAGE - GLIMPSE OF TRUE SELF - Initial Success', criteria: [
                 { id: 'beat_1', label: 'Opening balance deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'Opening balance deteriorates' },
                 { id: 'beat_2', label: 'Tension begins to rise', beatType: 'negative', type: 'checkbox', prompt: 'tension begins to rise' },
                 { id: 'beat_3', label: 'B Story: discussion about the Theme', beatType: 'negative', type: 'checkbox', prompt: 'B Story: discussion about the Theme \u2013 the nugget of truth. This discussion often takes place between the main character and an ally' },
@@ -39887,7 +39891,7 @@
                 { id: 'beat_26', label: 'Protagonist crosses the threshold into the special world', beatType: 'positive', type: 'checkbox', prompt: 'protagonist finally answers the call and crosses the threshold into the special world and begins committing to change - the \'new/special world\' can be anything from a totally new universe to just a completely different place on earth' },
                 { id: 'beat_27', label: 'Small group of allies welcomes the Hero', beatType: 'positive', type: 'checkbox', prompt: 'a small group of allies welcomes the \'Hero\' into the special world' },
             ]},
-            { id: 'fascination', label: 'Stage III: Initial Fascination', criteria: [
+            { id: 'fascination', label: 'STAGE III: INITIAL FASCINATION: Protagonist Vacillates Between False Identity and True Self', criteria: [
                 { id: 'beat_1', label: 'Goal becomes much more specific', beatType: 'positive', type: 'checkbox', prompt: 'goal becomes much more specific' },
                 { id: 'beat_2', label: 'Hero is excited or fascinated by the new world', beatType: 'positive', type: 'checkbox', prompt: 'At first the hero is excited or fascinated because the new world is puzzling or unfamiliar, but not a place where they feel at home' },
                 { id: 'beat_3', label: 'A storm is coming; onset of evil felt in the air', beatType: 'negative', type: 'checkbox', prompt: 'A storm is coming; the onset of evil can be felt in the air' },
@@ -39913,7 +39917,7 @@
                 { id: 'beat_23', label: 'Greater obstacles before getting the prize', beatType: 'negative', type: 'checkbox', prompt: 'greater obstacles and complications; the obstacles must be overcome before he/she can get his/her prize which still seems far' },
                 { id: 'beat_24', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
-            { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
+            { id: 'nightmare', label: 'STAGE IV: NIGHTMARE STAGE - COMPLICATIONS - Protagonist gradually accepts true self', criteria: [
                 { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
                 { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
@@ -39929,7 +39933,7 @@
                 { id: 'beat_13', label: 'This is his/her lowest point', beatType: 'negative', type: 'checkbox', prompt: 'this is his/her lowest point' },
                 { id: 'beat_14', label: 'Villain appears to have cornered the protagonist', beatType: 'negative', type: 'checkbox', prompt: 'the villain appears to have cornered the protagonist' },
             ]},
-            { id: 'final-push', label: 'Stage V: Final Push - Final Ordeal', criteria: [
+            { id: 'final-push', label: 'STAGE V: FINAL PUSH: FINAL ORDEAL - Retreat to identity then returns fully to true self; the thrilling escape from death', criteria: [
                 { id: 'beat_1', label: 'Reversal: Mentor or ally brings protagonist back to life', beatType: 'positive', type: 'checkbox', prompt: 'But just when all seems lost comes the "reversal" - the Mentor or some other ally brings the protagonist back to life' },
                 { id: 'beat_2', label: 'Villain demonstrates his power again', beatType: 'negative', type: 'checkbox', prompt: 'The villain demonstrates his power again.' },
                 { id: 'beat_3', label: 'Protagonist receives crucial wisdom and/or gifts', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist receives some crucial wisdom and/or gifts at the right time.' },
@@ -39949,7 +39953,7 @@
                 { id: 'beat_17', label: 'Steps beyond false identity forever; transformed', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist steps beyond false identity forever; his/her existence is transformed forever' },
                 { id: 'beat_18', label: 'Protagonist discovers his/her own true power', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist discovers his/her own true power' },
             ]},
-            { id: 'aftermath', label: 'Stage VI: The Goal and the Aftermath', criteria: [
+            { id: 'aftermath', label: 'STAGE VI: THE GOAL AND THE AFTERMATH: Final Union, Transformation Complete and Fulfillment', criteria: [
                 { id: 'beat_1', label: 'Protagonist returns with elixir; newfound wisdom and maturity', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist returns to his/her community with the elixir; it appears as though he/she has newfound wisdom, maturity, has mastered himself/herself' },
                 { id: 'beat_2', label: 'How much has the protagonist learnt?', beatType: 'neutral', type: 'checkbox', prompt: 'The question is how much the protagonist has learnt from his/her experiences\u2026' },
                 { id: 'beat_3', label: 'Has he/she grown or was it all just a dream?', beatType: 'neutral', type: 'checkbox', prompt: 'Has he/she grown or was it all \'just a dream\'?' },
@@ -39961,7 +39965,7 @@
     'overcoming-the-monster': {
         label: 'Overcoming the Monster',
         sections: [
-            { id: 'setup', label: 'Stage I: Setup - The Ordinary World', criteria: [
+            { id: 'setup', label: 'STAGE I: SETUP - THE ORDINARY WORLD: False Identity', criteria: [
                 { id: 'beat_1', label: 'The ordinary world', beatType: 'negative', type: 'checkbox', prompt: 'The ordinary world' },
                 { id: 'beat_2', label: 'May have a false sense of balance or complete imbalance', beatType: 'negative', type: 'checkbox', prompt: 'May have a false sense of balance or complete imbalance.' },
                 { id: 'beat_3', label: 'Snapshot of the main character\'s problem', beatType: 'negative', type: 'checkbox', prompt: 'We get a snapshot of the main character\'s problem, before the adventure begins.' },
@@ -39984,7 +39988,7 @@
                 { id: 'beat_20', label: 'State of the world deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'The state of the world deteriorates.' },
                 { id: 'beat_21', label: 'Protagonist has increased awareness of the monster', beatType: 'negative', type: 'checkbox', prompt: 'The protagonist now has increased awareness of the monster' },
             ]},
-            { id: 'dream', label: 'Stage II: Dream Stage - Glimpse of True Self', criteria: [
+            { id: 'dream', label: 'STAGE II: DREAM STAGE - GLIMPSE OF TRUE SELF - Initial Success', criteria: [
                 { id: 'beat_1', label: 'Opening balance deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'Opening balance deteriorates' },
                 { id: 'beat_2', label: 'Tension begins to rise', beatType: 'negative', type: 'checkbox', prompt: 'tension begins to rise' },
                 { id: 'beat_3', label: 'B Story: discussion about the Theme', beatType: 'negative', type: 'checkbox', prompt: 'B Story: discussion about the Theme \u2013 the nugget of truth. This discussion often takes place between the main character and an ally' },
@@ -40014,7 +40018,7 @@
                 { id: 'beat_27', label: 'Small group of allies welcomes the Hero', beatType: 'positive', type: 'checkbox', prompt: 'a small group of allies welcomes the \'Hero\' into the special world' },
                 { id: 'beat_28', label: 'Hero and companions set out across hostile terrain', beatType: 'positive', type: 'checkbox', prompt: 'The hero (and companions) set out across hostile terrain' },
             ]},
-            { id: 'fascination', label: 'Stage III: Initial Fascination', criteria: [
+            { id: 'fascination', label: 'STAGE III: INITIAL FASCINATION: Protagonist Vacillates Between False Identity and True Self', criteria: [
                 { id: 'beat_1', label: 'Goal becomes much more specific', beatType: 'positive', type: 'checkbox', prompt: 'goal becomes much more specific' },
                 { id: 'beat_2', label: 'Hero is excited or fascinated by the new world', beatType: 'positive', type: 'checkbox', prompt: 'At first the hero is excited or fascinated because the new world is puzzling or unfamiliar, but not a place where they feel at home' },
                 { id: 'beat_3', label: 'A storm is coming; onset of evil felt in the air', beatType: 'negative', type: 'checkbox', prompt: 'A storm is coming; the onset of evil can be felt in the air' },
@@ -40040,7 +40044,7 @@
                 { id: 'beat_23', label: 'Greater obstacles before getting the prize', beatType: 'negative', type: 'checkbox', prompt: 'greater obstacles and complications; the obstacles must be overcome before he/she can get his/her prize which still seems far' },
                 { id: 'beat_24', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
-            { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
+            { id: 'nightmare', label: 'STAGE IV: NIGHTMARE STAGE - COMPLICATIONS - Protagonist gradually accepts true self', criteria: [
                 { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
                 { id: 'beat_3', label: 'Face to face with the Monster and its awesome power', beatType: 'negative', type: 'checkbox', prompt: 'We come face to face with the Monster and its awesome power' },
@@ -40057,7 +40061,7 @@
                 { id: 'beat_14', label: 'This is his/her lowest point', beatType: 'negative', type: 'checkbox', prompt: 'this is his/her lowest point' },
                 { id: 'beat_15', label: 'Monster appears to have cornered the protagonist', beatType: 'negative', type: 'checkbox', prompt: 'the monster appears to have cornered the protagonist' },
             ]},
-            { id: 'final-push', label: 'Stage V: Final Push - Final Ordeal', criteria: [
+            { id: 'final-push', label: 'STAGE V: FINAL PUSH: FINAL ORDEAL - Retreat to identity then returns fully to true self; the thrilling escape from death', criteria: [
                 { id: 'beat_1', label: 'Reversal: Mentor or ally brings protagonist back to life', beatType: 'positive', type: 'checkbox', prompt: 'But just when all seems lost comes the "reversal" - the Mentor or some other ally brings the protagonist back to life' },
                 { id: 'beat_2', label: 'Monster demonstrates his power again', beatType: 'negative', type: 'checkbox', prompt: 'The monster demonstrates his power again.' },
                 { id: 'beat_3', label: 'Protagonist receives crucial wisdom and/or gifts', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist receives some crucial wisdom and/or gifts at the right time.' },
@@ -40078,7 +40082,7 @@
                 { id: 'beat_18', label: 'Protagonist discovers his/her own true power', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist discovers his/her own true power' },
                 { id: 'beat_19', label: 'Monster is dealt a fatal blow', beatType: 'positive', type: 'checkbox', prompt: 'In the nick of time, the monster is dealt a fatal blow.' },
             ]},
-            { id: 'aftermath', label: 'Stage VI: The Goal and the Aftermath', criteria: [
+            { id: 'aftermath', label: 'STAGE VI: THE GOAL AND THE AFTERMATH: Final Union, Transformation Complete and Fulfillment', criteria: [
                 { id: 'beat_1', label: 'Community is liberated; balance is restored', beatType: 'positive', type: 'checkbox', prompt: 'The community is liberated; balance is restored' },
                 { id: 'beat_2', label: 'Protagonist returns with elixir; newfound wisdom', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist returns to his/her community with the elixir; it appears as though he/she has newfound wisdom, maturity, has mastered himself/herself' },
                 { id: 'beat_3', label: 'Hero emerges to win the prize', beatType: 'positive', type: 'checkbox', prompt: 'The hero emerges to \'win the prize\'' },
@@ -40093,7 +40097,7 @@
     'rags-to-riches': {
         label: 'Rags to Riches',
         sections: [
-            { id: 'setup', label: 'Stage I: Setup - The Ordinary World', criteria: [
+            { id: 'setup', label: 'STAGE I: SETUP - THE ORDINARY WORLD: False Identity', criteria: [
                 { id: 'beat_1', label: 'The ordinary world', beatType: 'negative', type: 'checkbox', prompt: 'The ordinary world' },
                 { id: 'beat_2', label: 'May have a false sense of balance or complete imbalance', beatType: 'negative', type: 'checkbox', prompt: 'May have a false sense of balance or complete imbalance.' },
                 { id: 'beat_3', label: 'Opening Image represents the central struggle & tone', beatType: 'negative', type: 'checkbox', prompt: 'The opening Image represents the central struggle & tone of the story. Often mirrors the Closing Image.' },
@@ -40118,7 +40122,7 @@
                 { id: 'beat_22', label: 'State of the world deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'The state of the world deteriorates' },
                 { id: 'beat_23', label: 'Hero has increased awareness of need to change', beatType: 'negative', type: 'checkbox', prompt: 'The hero now has increased awareness of the need to change his world.' },
             ]},
-            { id: 'dream', label: 'Stage II: Dream Stage - Glimpse of True Self', criteria: [
+            { id: 'dream', label: 'STAGE II: DREAM STAGE - GLIMPSE OF TRUE SELF - Initial Success', criteria: [
                 { id: 'beat_1', label: 'Opening balance deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'Opening balance deteriorates' },
                 { id: 'beat_2', label: 'Tension begins to rise', beatType: 'negative', type: 'checkbox', prompt: 'tension begins to rise' },
                 { id: 'beat_3', label: 'B Story: discussion about the Theme', beatType: 'negative', type: 'checkbox', prompt: 'B Story: discussion about the Theme \u2013 the nugget of truth. This discussion often takes place between the main character and an ally' },
@@ -40147,7 +40151,7 @@
                 { id: 'beat_26', label: 'Protagonist crosses the threshold into the special world', beatType: 'positive', type: 'checkbox', prompt: 'protagonist finally answers the call and crosses the threshold into the special world and begins committing to change - the \'new/special world\' can be anything from a totally new universe to just a completely different place on earth' },
                 { id: 'beat_27', label: 'Small group of allies welcomes the Hero', beatType: 'positive', type: 'checkbox', prompt: 'a small group of allies welcomes the \'Hero\' into the special world' },
             ]},
-            { id: 'fascination', label: 'Stage III: Initial Fascination', criteria: [
+            { id: 'fascination', label: 'STAGE III: INITIAL FASCINATION: Protagonist Vacillates Between False Identity and True Self', criteria: [
                 { id: 'beat_1', label: 'Goal becomes much more specific', beatType: 'positive', type: 'checkbox', prompt: 'goal becomes much more specific' },
                 { id: 'beat_2', label: 'Hero is excited or fascinated by the new world', beatType: 'positive', type: 'checkbox', prompt: 'At first the hero is excited or fascinated because the new world is puzzling or unfamiliar, but not a place where they feel at home' },
                 { id: 'beat_3', label: 'A storm is coming; onset of evil felt in the air', beatType: 'negative', type: 'checkbox', prompt: 'A storm is coming; the onset of evil can be felt in the air' },
@@ -40174,7 +40178,7 @@
                 { id: 'beat_24', label: 'Greater obstacles before getting the prize', beatType: 'negative', type: 'checkbox', prompt: 'greater obstacles and complications; the obstacles must be overcome before he/she can get his/her prize which still seems far' },
                 { id: 'beat_25', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
-            { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
+            { id: 'nightmare', label: 'STAGE IV: NIGHTMARE STAGE - COMPLICATIONS - Protagonist gradually accepts true self', criteria: [
                 { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
                 { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
@@ -40191,7 +40195,7 @@
                 { id: 'beat_14', label: 'This is his/her lowest point', beatType: 'negative', type: 'checkbox', prompt: 'this is his/her lowest point' },
                 { id: 'beat_15', label: 'Dark forces appear to have cornered the protagonist', beatType: 'negative', type: 'checkbox', prompt: 'the \'dark forces\' appears to have cornered the protagonist' },
             ]},
-            { id: 'final-push', label: 'Stage V: Final Push - Final Ordeal', criteria: [
+            { id: 'final-push', label: 'STAGE V: FINAL PUSH: FINAL ORDEAL - Retreat to identity then returns fully to true self; the thrilling escape from death', criteria: [
                 { id: 'beat_1', label: 'Reversal: Mentor or ally brings protagonist back to life', beatType: 'positive', type: 'checkbox', prompt: 'But just when all seems lost comes the "reversal" - the Mentor or some other ally brings the protagonist back to life' },
                 { id: 'beat_2', label: 'Dark forces demonstrate their power again', beatType: 'negative', type: 'checkbox', prompt: 'The \'dark forces\' demonstrate their power again.' },
                 { id: 'beat_3', label: 'Protagonist receives crucial wisdom and/or gifts', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist receives some crucial wisdom and/or gifts at the right time.' },
@@ -40211,7 +40215,7 @@
                 { id: 'beat_17', label: 'Dark forces are dealt a fatal blow', beatType: 'positive', type: 'checkbox', prompt: 'In the nick of time, the \'dark forces\' are dealt a fatal blow' },
                 { id: 'beat_18', label: 'Steps beyond false identity forever; transformed', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist steps beyond false identity forever; his/her existence is transformed forever' },
             ]},
-            { id: 'aftermath', label: 'Stage VI: The Goal and the Aftermath', criteria: [
+            { id: 'aftermath', label: 'STAGE VI: THE GOAL AND THE AFTERMATH: Final Union, Transformation Complete and Fulfillment', criteria: [
                 { id: 'beat_1', label: 'Community is liberated; balance is restored', beatType: 'positive', type: 'checkbox', prompt: 'The community is liberated; balance is restored' },
                 { id: 'beat_2', label: 'Protagonist returns with elixir; newfound wisdom', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist returns to his/her community with the elixir; it appears as though he/she has newfound wisdom, maturity, has mastered himself/herself' },
                 { id: 'beat_3', label: 'Hero emerges to win the prize; role in the Kingdom', beatType: 'positive', type: 'checkbox', prompt: 'The hero emerges to \'win the prize\', usually a rise to some sort of role in the "Kingdom"' },
@@ -40225,7 +40229,7 @@
     'rebirth-redemption': {
         label: 'Rebirth / Redemption',
         sections: [
-            { id: 'setup', label: 'Stage I: Setup - The Ordinary World', criteria: [
+            { id: 'setup', label: 'STAGE I: SETUP - THE ORDINARY WORLD: False Identity', criteria: [
                 { id: 'beat_1', label: 'The ordinary world', beatType: 'negative', type: 'checkbox', prompt: 'The ordinary world' },
                 { id: 'beat_2', label: 'May have a false sense of balance or complete imbalance', beatType: 'negative', type: 'checkbox', prompt: 'May have a false sense of balance or complete imbalance.' },
                 { id: 'beat_3', label: 'Snapshot of the main character\'s problem', beatType: 'negative', type: 'checkbox', prompt: 'We get a snapshot of the main character\'s problem, before the adventure begins.' },
@@ -40249,7 +40253,7 @@
                 { id: 'beat_21', label: 'Hero ignores this warning', beatType: 'negative', type: 'checkbox', prompt: 'The hero ignores this warning' },
                 { id: 'beat_22', label: 'State of the world deteriorates; increased awareness', beatType: 'negative', type: 'checkbox', prompt: 'The state of the world deteriorates; the protagonist now has increased awareness that something has to change' },
             ]},
-            { id: 'dream', label: 'Stage II: Dream Stage - Glimpse of True Self', criteria: [
+            { id: 'dream', label: 'STAGE II: DREAM STAGE - GLIMPSE OF TRUE SELF - Initial Success', criteria: [
                 { id: 'beat_1', label: 'Opening balance deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'Opening balance deteriorates' },
                 { id: 'beat_2', label: 'Tension begins to rise', beatType: 'negative', type: 'checkbox', prompt: 'tension begins to rise' },
                 { id: 'beat_3', label: 'B Story: discussion about the Theme', beatType: 'negative', type: 'checkbox', prompt: 'B Story: discussion about the Theme \u2013 the nugget of truth. This discussion often takes place between the main character and an ally' },
@@ -40279,7 +40283,7 @@
                 { id: 'beat_27', label: 'Protagonist crosses the threshold into the special world', beatType: 'positive', type: 'checkbox', prompt: 'protagonist finally answers the call and crosses the threshold into the special world and begins committing to change - the \'new/special world\' can be anything from a totally new universe to just a completely different place on earth' },
                 { id: 'beat_28', label: 'Small group of allies may welcome the protagonist', beatType: 'positive', type: 'checkbox', prompt: 'a small group of allies may welcome the protagonist into the special world' },
             ]},
-            { id: 'fascination', label: 'Stage III: Initial Fascination', criteria: [
+            { id: 'fascination', label: 'STAGE III: INITIAL FASCINATION: Protagonist Vacillates Between False Identity and True Self', criteria: [
                 { id: 'beat_1', label: 'Protagonist starts to become more open to change', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist starts to become more open to the possibility of change' },
                 { id: 'beat_2', label: 'Protagonist excited or fascinated by the new world', beatType: 'positive', type: 'checkbox', prompt: 'At first the protagonist is excited or fascinated because the new world is puzzling or unfamiliar, but not a place where they feel at home' },
                 { id: 'beat_3', label: 'The hero seems powerless', beatType: 'negative', type: 'checkbox', prompt: 'The hero seems powerless.' },
@@ -40303,7 +40307,7 @@
                 { id: 'beat_21', label: 'Hero feels terrible and disgusted with false identity', beatType: 'negative', type: 'checkbox', prompt: 'The Hero begins to feel terrible and disgusted with his false identity; he is in a state of living death' },
                 { id: 'beat_22', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
-            { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
+            { id: 'nightmare', label: 'STAGE IV: NIGHTMARE STAGE - COMPLICATIONS - Protagonist gradually accepts true self', criteria: [
                 { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
                 { id: 'beat_3', label: 'Suddenly realises things will never be the same', beatType: 'negative', type: 'checkbox', prompt: 'He suddenly realises that things will never be the same for him again' },
@@ -40319,7 +40323,7 @@
                 { id: 'beat_13', label: 'This is his/her lowest point', beatType: 'negative', type: 'checkbox', prompt: 'this is his/her lowest point' },
                 { id: 'beat_14', label: 'Villain appears to have cornered the protagonist', beatType: 'negative', type: 'checkbox', prompt: 'the villain appears to have cornered the protagonist' },
             ]},
-            { id: 'final-push', label: 'Stage V: Final Push - Final Ordeal', criteria: [
+            { id: 'final-push', label: 'STAGE V: FINAL PUSH: FINAL ORDEAL - Retreat to identity then returns fully to true self; the thrilling escape from death', criteria: [
                 { id: 'beat_1', label: 'Reversal: Mentor or ally brings protagonist back to life', beatType: 'positive', type: 'checkbox', prompt: 'But just when all seems lost comes the "reversal" - the Mentor or some other ally brings the protagonist back to life' },
                 { id: 'beat_2', label: 'Dark power demonstrates its power again', beatType: 'negative', type: 'checkbox', prompt: 'The \'dark power\' demonstrates its power again.' },
                 { id: 'beat_3', label: 'New Information: second Catalyst, choice to continue', beatType: 'positive', type: 'checkbox', prompt: '"New Information": This information (perhaps about the elixir) functions as a second Catalyst that gives the main character the choice again, to pack up and go home, or give it one more try to complete the journey' },
@@ -40338,7 +40342,7 @@
                 { id: 'beat_16', label: 'Steps beyond false identity forever; transformed', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist steps beyond false identity forever; his/her existence is transformed forever' },
                 { id: 'beat_17', label: 'Protagonist discovers his/her own true power', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist discovers his/her own true power' },
             ]},
-            { id: 'aftermath', label: 'Stage VI: The Goal and the Aftermath', criteria: [
+            { id: 'aftermath', label: 'STAGE VI: THE GOAL AND THE AFTERMATH: Final Union, Transformation Complete and Fulfillment', criteria: [
                 { id: 'beat_1', label: 'Community is liberated; balance is restored', beatType: 'positive', type: 'checkbox', prompt: 'The community is liberated; balance is restored' },
                 { id: 'beat_2', label: 'Protagonist returns with elixir; mastered himself', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist returns to his/her community with the elixir; it appears as though he/she has mastered himself/herself' },
                 { id: 'beat_3', label: 'How much has the protagonist learnt?', beatType: 'neutral', type: 'checkbox', prompt: 'The question is how much the protagonist has learnt from his/her experiences\u2026' },
@@ -40352,7 +40356,7 @@
     'the-quest': {
         label: 'The Quest',
         sections: [
-            { id: 'setup', label: 'Stage I: Setup - The Ordinary World', criteria: [
+            { id: 'setup', label: 'STAGE I: SETUP - THE ORDINARY WORLD: False Identity', criteria: [
                 { id: 'beat_1', label: 'The ordinary world', beatType: 'negative', type: 'checkbox', prompt: 'The ordinary world' },
                 { id: 'beat_2', label: 'May have a false sense of balance or complete imbalance', beatType: 'negative', type: 'checkbox', prompt: 'May have a false sense of balance or complete imbalance.' },
                 { id: 'beat_3', label: 'Snapshot of the main character\'s problem', beatType: 'negative', type: 'checkbox', prompt: 'We get a snapshot of the main character\'s problem, before the adventure begins.' },
@@ -40375,7 +40379,7 @@
                 { id: 'beat_20', label: 'State of the world deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'The state of the world deteriorates.' },
                 { id: 'beat_21', label: 'Protagonist has increased awareness of dangers ahead', beatType: 'negative', type: 'checkbox', prompt: 'The protagonist now has increased awareness of the dangers that lie ahead' },
             ]},
-            { id: 'dream', label: 'Stage II: Dream Stage - Glimpse of True Self', criteria: [
+            { id: 'dream', label: 'STAGE II: DREAM STAGE - GLIMPSE OF TRUE SELF - Initial Success', criteria: [
                 { id: 'beat_1', label: 'Opening balance deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'Opening balance deteriorates' },
                 { id: 'beat_2', label: 'Tension begins to rise', beatType: 'negative', type: 'checkbox', prompt: 'tension begins to rise' },
                 { id: 'beat_3', label: 'B Story: discussion about the Theme', beatType: 'negative', type: 'checkbox', prompt: 'B Story: discussion about the Theme \u2013 the nugget of truth. This discussion often takes place between the main character and an ally' },
@@ -40405,7 +40409,7 @@
                 { id: 'beat_27', label: 'Small group of allies welcomes the Hero', beatType: 'positive', type: 'checkbox', prompt: 'a small group of allies welcomes the \'Hero\' into the special world' },
                 { id: 'beat_28', label: 'Hero and companions set out across hostile terrain', beatType: 'positive', type: 'checkbox', prompt: 'The hero (and companions) set out across hostile terrain' },
             ]},
-            { id: 'fascination', label: 'Stage III: Initial Fascination', criteria: [
+            { id: 'fascination', label: 'STAGE III: INITIAL FASCINATION: Protagonist Vacillates Between False Identity and True Self', criteria: [
                 { id: 'beat_1', label: 'Goal becomes much more specific', beatType: 'positive', type: 'checkbox', prompt: 'goal becomes much more specific' },
                 { id: 'beat_2', label: 'Hero is excited or fascinated by the new world', beatType: 'positive', type: 'checkbox', prompt: 'At first the hero is excited or fascinated because the new world is puzzling or unfamiliar, but not a place where they feel at home' },
                 { id: 'beat_3', label: 'A storm is coming; onset of evil felt in the air', beatType: 'negative', type: 'checkbox', prompt: 'A storm is coming; the onset of evil can be felt in the air' },
@@ -40431,7 +40435,7 @@
                 { id: 'beat_23', label: 'Greater obstacles before getting the prize', beatType: 'negative', type: 'checkbox', prompt: 'greater obstacles and complications; the obstacles must be overcome before he/she can get his/her prize which still seems far' },
                 { id: 'beat_24', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
-            { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
+            { id: 'nightmare', label: 'STAGE IV: NIGHTMARE STAGE - COMPLICATIONS - Protagonist gradually accepts true self', criteria: [
                 { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
                 { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
@@ -40448,7 +40452,7 @@
                 { id: 'beat_14', label: 'This is his/her lowest point', beatType: 'negative', type: 'checkbox', prompt: 'this is his/her lowest point' },
                 { id: 'beat_15', label: 'Villain appears to have cornered the protagonist', beatType: 'negative', type: 'checkbox', prompt: 'the villain appears to have cornered the protagonist' },
             ]},
-            { id: 'final-push', label: 'Stage V: Final Push - Final Ordeal', criteria: [
+            { id: 'final-push', label: 'STAGE V: FINAL PUSH: FINAL ORDEAL - Retreat to identity then returns fully to true self; the thrilling escape from death', criteria: [
                 { id: 'beat_1', label: 'Reversal: Mentor or ally brings protagonist back to life', beatType: 'positive', type: 'checkbox', prompt: 'But just when all seems lost comes the "reversal" - the Mentor or some other ally brings the protagonist back to life' },
                 { id: 'beat_2', label: 'Villain demonstrates his power again', beatType: 'negative', type: 'checkbox', prompt: 'The villain demonstrates his power again.' },
                 { id: 'beat_3', label: 'Protagonist receives crucial wisdom and/or gifts', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist receives some crucial wisdom and/or gifts at the right time.' },
@@ -40469,7 +40473,7 @@
                 { id: 'beat_18', label: 'Protagonist discovers his/her own true power', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist discovers his/her own true power' },
                 { id: 'beat_19', label: 'Dark forces dealt a fatal blow; goal is won', beatType: 'positive', type: 'checkbox', prompt: 'In the nick of time, the \'dark forces\' are dealt a fatal blow and the goal (treasure, kingdom etc) is won' },
             ]},
-            { id: 'aftermath', label: 'Stage VI: The Goal and the Aftermath', criteria: [
+            { id: 'aftermath', label: 'STAGE VI: THE GOAL AND THE AFTERMATH: Final Union, Transformation Complete and Fulfillment', criteria: [
                 { id: 'beat_1', label: 'Hero emerges to win the prize', beatType: 'positive', type: 'checkbox', prompt: 'The hero emerges to \'win the prize\', such as treasure or a kingdom' },
                 { id: 'beat_2', label: 'Hero and companions establish a community', beatType: 'positive', type: 'checkbox', prompt: 'The hero and his/her companions establish a community' },
                 { id: 'beat_3', label: 'How much has the protagonist learnt?', beatType: 'neutral', type: 'checkbox', prompt: 'The question is how much the protagonist has learnt from his/her experiences\u2026' },
@@ -40483,7 +40487,7 @@
     'tragedy': {
         label: 'Tragedy',
         sections: [
-            { id: 'setup', label: 'Stage I: Setup - The Ordinary World', criteria: [
+            { id: 'setup', label: 'STAGE I: SETUP - THE ORDINARY WORLD', criteria: [
                 { id: 'beat_1', label: 'The ordinary world', beatType: 'negative', type: 'checkbox', prompt: 'The ordinary world' },
                 { id: 'beat_2', label: 'May have a false sense of balance or complete imbalance', beatType: 'negative', type: 'checkbox', prompt: 'May have a false sense of balance or complete imbalance.' },
                 { id: 'beat_3', label: 'Snapshot of the main character\'s problem', beatType: 'negative', type: 'checkbox', prompt: 'We get a snapshot of the main character\'s problem, before the adventure begins.' },
@@ -40505,7 +40509,7 @@
                 { id: 'beat_19', label: 'Some object of desire presents itself', beatType: 'negative', type: 'checkbox', prompt: 'Some object of desire presents itself' },
                 { id: 'beat_20', label: 'Hero becomes focused on this object', beatType: 'negative', type: 'checkbox', prompt: 'The hero becomes focused on this object' },
             ]},
-            { id: 'dream', label: 'Stage II: Dream Stage - Glimpse of True Self', criteria: [
+            { id: 'dream', label: 'STAGE II: DREAM STAGE - GLIMPSE OF TRUE SELF - INITIAL SUCCESS', criteria: [
                 { id: 'beat_1', label: 'Opening balance deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'Opening balance deteriorates' },
                 { id: 'beat_2', label: 'Tension begins to rise', beatType: 'negative', type: 'checkbox', prompt: 'tension begins to rise' },
                 { id: 'beat_3', label: 'B Story: discussion about the Theme', beatType: 'negative', type: 'checkbox', prompt: 'B Story: discussion about the Theme \u2013 the nugget of truth. This discussion often takes place between the main character and an ally' },
@@ -40533,7 +40537,7 @@
                 { id: 'beat_25', label: 'Protagonist crosses the threshold into the special world', beatType: 'positive', type: 'checkbox', prompt: 'protagonist finally answers the call and crosses the threshold into the special world and begins committing to change - the \'new/special world\' can be anything from a totally new universe to just a completely different place on earth' },
                 { id: 'beat_26', label: 'Small group of allies welcomes the Hero', beatType: 'positive', type: 'checkbox', prompt: 'a small group of allies welcomes the \'Hero\' into the special world' },
             ]},
-            { id: 'fascination', label: 'Stage III: Initial Fascination', criteria: [
+            { id: 'fascination', label: 'STAGE III: INITIAL FASCINATION; Protagonist vacillates between false identity and true self', criteria: [
                 { id: 'beat_1', label: 'Goal becomes much more specific', beatType: 'negative', type: 'checkbox', prompt: 'goal becomes much more specific' },
                 { id: 'beat_2', label: 'Hero becomes committed to his course of action', beatType: 'negative', type: 'checkbox', prompt: 'The hero becomes committed to his course of action' },
                 { id: 'beat_3', label: 'Hero excited or fascinated by the new world', beatType: 'negative', type: 'checkbox', prompt: 'At first the hero is excited or fascinated because the new world is puzzling or unfamiliar, but not a place where they feel at home' },
@@ -40557,7 +40561,7 @@
                 { id: 'beat_21', label: 'Hero begins to feel frustrated', beatType: 'positive', type: 'checkbox', prompt: 'The Hero begins to feel frustrated' },
                 { id: 'beat_22', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
-            { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
+            { id: 'nightmare', label: 'STAGE IV: NIGHTMARE STAGE - COMPLICATIONS - Protagonist gradually accepts true self', criteria: [
                 { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
                 { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
@@ -40573,7 +40577,7 @@
                 { id: 'beat_13', label: 'Allies disagree on what to do next', beatType: 'negative', type: 'checkbox', prompt: 'the allies disagree on what to do next' },
                 { id: 'beat_14', label: 'Lowest point; mounting sense of threat and despair', beatType: 'negative', type: 'checkbox', prompt: 'this is his lowest point;  he has a mounting sense of threat and despair' },
             ]},
-            { id: 'final-push', label: 'Stage V: Final Push - Final Ordeal', criteria: [
+            { id: 'final-push', label: 'STAGE V: FINAL PUSH: FINAL ORDEAL - Retreat to identity then returns fully to true self; the thrilling escape from death', criteria: [
                 { id: 'beat_1', label: 'Forces of opposition and fate closing in', beatType: 'negative', type: 'checkbox', prompt: 'Forces of opposition and fate are closing in on him' },
                 { id: 'beat_2', label: 'Reversal: Mentor or ally brings protagonist back to life', beatType: 'positive', type: 'checkbox', prompt: 'But just when all seems lost comes the "reversal" - the Mentor or some other ally brings the protagonist back to life' },
                 { id: 'beat_3', label: 'Opposition demonstrates his power again', beatType: 'negative', type: 'checkbox', prompt: 'The opposition demonstrates his power again.' },
@@ -40595,7 +40599,7 @@
                 { id: 'beat_19', label: 'Protagonist accepts his/her fate forever', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist accepts his/her fate forever' },
                 { id: 'beat_20', label: 'Protagonist discovers his/her own true power', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist discovers his/her own true power' },
             ]},
-            { id: 'aftermath', label: 'Stage VI: Destruction or Death Wish Stage', criteria: [
+            { id: 'aftermath', label: 'STAGE VI: DESTRUCTION OR DEATH WISH STAGE AND THE AFTERMATH - Final Union, Completion', criteria: [
                 { id: 'beat_1', label: 'Protagonist is killed by forces or final act of violence', beatType: 'negative', type: 'checkbox', prompt: 'But either by the forces or by some final act of violence the protagonist is killed (or by suicide)' },
                 { id: 'beat_2', label: 'Community may rejoice in or mourn the death', beatType: 'negative', type: 'checkbox', prompt: 'The community may rejoice in his death or may mourn it' },
                 { id: 'beat_3', label: 'If they mourn, they may realise the problem in society', beatType: 'negative', type: 'checkbox', prompt: 'If they mourn it, they may realise the problem in society and learn from it' },
@@ -40608,7 +40612,7 @@
     'voyage-and-return': {
         label: 'Voyage and Return',
         sections: [
-            { id: 'setup', label: 'Stage I: Setup - The Ordinary World', criteria: [
+            { id: 'setup', label: 'STAGE I: SETUP - THE ORDINARY WORLD', criteria: [
                 { id: 'beat_1', label: 'The ordinary world', beatType: 'negative', type: 'checkbox', prompt: 'The ordinary world' },
                 { id: 'beat_2', label: 'May have a false sense of balance or complete imbalance', beatType: 'negative', type: 'checkbox', prompt: 'May have a false sense of balance or complete imbalance.' },
                 { id: 'beat_3', label: 'Snapshot of the main character\'s problem', beatType: 'negative', type: 'checkbox', prompt: 'We get a snapshot of the main character\'s problem, before the adventure begins.' },
@@ -40630,7 +40634,7 @@
                 { id: 'beat_19', label: 'Given supernatural or visionary direction; ONLY HE/SHE can solve it', beatType: 'positive', type: 'checkbox', prompt: 'He/she is given supernatural or visionary direction, or a secret message as to the goal; ONLY HE/SHE can solve it' },
                 { id: 'beat_20', label: 'State of the world deteriorates; increased awareness', beatType: 'negative', type: 'checkbox', prompt: 'The state of the world deteriorates; the protagonist now has increased awareness that something has to change' },
             ]},
-            { id: 'dream', label: 'Stage II: Dream Stage - Glimpse of True Self', criteria: [
+            { id: 'dream', label: 'STAGE II: DREAM STAGE - GLIMPSE OF TRUE SELF - INITIAL SUCCESS', criteria: [
                 { id: 'beat_1', label: 'Opening balance deteriorates', beatType: 'negative', type: 'checkbox', prompt: 'Opening balance deteriorates' },
                 { id: 'beat_2', label: 'Tension begins to rise', beatType: 'negative', type: 'checkbox', prompt: 'tension begins to rise' },
                 { id: 'beat_3', label: 'B Story: discussion about the Theme', beatType: 'negative', type: 'checkbox', prompt: 'B Story: discussion about the Theme \u2013 the nugget of truth. This discussion often takes place between the main character and an ally' },
@@ -40659,7 +40663,7 @@
                 { id: 'beat_26', label: 'Protagonist crosses the threshold into the special world', beatType: 'positive', type: 'checkbox', prompt: 'protagonist finally answers the call and crosses the threshold into the special world and begins committing to change - the \'new/special world\' can be anything from a totally new universe to just a completely different place on earth' },
                 { id: 'beat_27', label: 'Small group of allies welcomes the Hero', beatType: 'positive', type: 'checkbox', prompt: 'a small group of allies welcomes the \'Hero\' into the special world' },
             ]},
-            { id: 'fascination', label: 'Stage III: Initial Fascination', criteria: [
+            { id: 'fascination', label: 'STAGE III: INITIAL FASCINATION; Protagonist vacillates between false identity and true self', criteria: [
                 { id: 'beat_1', label: 'Goal becomes much more specific', beatType: 'positive', type: 'checkbox', prompt: 'goal becomes much more specific' },
                 { id: 'beat_2', label: 'Hero is excited or fascinated by the new world', beatType: 'positive', type: 'checkbox', prompt: 'At first the hero is excited or fascinated because the new world is puzzling or unfamiliar, but not a place where they feel at home' },
                 { id: 'beat_3', label: 'A storm is coming; onset of evil felt in the air', beatType: 'negative', type: 'checkbox', prompt: 'A storm is coming; the onset of evil can be felt in the air' },
@@ -40685,7 +40689,7 @@
                 { id: 'beat_23', label: 'Greater obstacles before getting the prize', beatType: 'negative', type: 'checkbox', prompt: 'greater obstacles and complications; the obstacles must be overcome before he/she can get his/her prize which still seems far' },
                 { id: 'beat_24', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
-            { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
+            { id: 'nightmare', label: 'STAGE IV: NIGHTMARE STAGE - COMPLICATIONS - Protagonist gradually accepts true self', criteria: [
                 { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
                 { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
@@ -40701,7 +40705,7 @@
                 { id: 'beat_13', label: 'This is his/her lowest point', beatType: 'negative', type: 'checkbox', prompt: 'this is his/her lowest point' },
                 { id: 'beat_14', label: 'Villain appears to have cornered the protagonist', beatType: 'negative', type: 'checkbox', prompt: 'the villain appears to have cornered the protagonist' },
             ]},
-            { id: 'final-push', label: 'Stage V: Final Push - Final Ordeal', criteria: [
+            { id: 'final-push', label: 'STAGE V: FINAL PUSH: FINAL ORDEAL - Retreat to identity then returns fully to true self; the thrilling escape from death', criteria: [
                 { id: 'beat_1', label: 'Reversal: Mentor or ally brings protagonist back to life', beatType: 'positive', type: 'checkbox', prompt: 'But just when all seems lost comes the "reversal" - the Mentor or some other ally brings the protagonist back to life' },
                 { id: 'beat_2', label: 'Villain demonstrates his power again', beatType: 'negative', type: 'checkbox', prompt: 'The villain demonstrates his power again.' },
                 { id: 'beat_3', label: 'Protagonist receives crucial wisdom and/or gifts', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist receives some crucial wisdom and/or gifts at the right time.' },
@@ -40721,7 +40725,7 @@
                 { id: 'beat_17', label: 'Steps beyond false identity forever; transformed', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist steps beyond false identity forever; his/her existence is transformed forever' },
                 { id: 'beat_18', label: 'Protagonist discovers his/her own true power', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist discovers his/her own true power' },
             ]},
-            { id: 'aftermath', label: 'Stage VI: The Goal and the Aftermath', criteria: [
+            { id: 'aftermath', label: 'STAGE VI: THE GOAL AND THE AFTERMATH - Final Union, Completion and Fulfillment', criteria: [
                 { id: 'beat_1', label: 'Community is liberated; balance is restored', beatType: 'positive', type: 'checkbox', prompt: 'The community is liberated; balance is restored' },
                 { id: 'beat_2', label: 'Protagonist returns with elixir; newfound wisdom', beatType: 'positive', type: 'checkbox', prompt: 'The protagonist returns to his/her community with the elixir; it appears as though he/she has newfound wisdom, maturity, has mastered himself/herself' },
                 { id: 'beat_3', label: 'How much has the protagonist learnt?', beatType: 'neutral', type: 'checkbox', prompt: 'The question is how much the protagonist has learnt from his/her experiences\u2026' },
