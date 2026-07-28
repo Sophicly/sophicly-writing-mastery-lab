@@ -187,6 +187,15 @@ function makeWorld(opts) {
             warn: function (m) { world.warns = (world.warns || []).concat([String(m)]); },
             error: function (m) { world.warns = (world.warns || []).concat([String(m)]); },
         },
+        // v7.20.331: the REAL bubble-control kinds, sliced from source. Bars declare a kind so
+        // different kinds coexist on one bubble; a stub with the wrong shape would hide exactly
+        // the collision this exists to prevent.
+        BUBBLE_CONTROL_KINDS: (function () {
+            const i = src.indexOf('const BUBBLE_CONTROL_KINDS =');
+            if (i < 0) throw new Error('BUBBLE_CONTROL_KINDS not found — the one-owner primitive is gone');
+            // eslint-disable-next-line no-eval
+            return eval('(' + braceSliceFrom(src, i, '{', '}').text + ')');
+        })(),
         _walkSlot: null,   // replaced below when the shipped code has one
     };
 

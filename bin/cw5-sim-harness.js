@@ -144,6 +144,14 @@ function makeWorld(opts) {
                 closest: function () { return null; },
             };
         },
+        // v7.20.331: the REAL bubble-control kinds, sliced from source. Bars declare a kind so
+        // that different kinds coexist on one bubble instead of silently blocking each other.
+        BUBBLE_CONTROL_KINDS: (function () {
+            const i = src.indexOf('const BUBBLE_CONTROL_KINDS =');
+            if (i < 0) throw new Error('BUBBLE_CONTROL_KINDS not found — the one-owner primitive is gone');
+            // eslint-disable-next-line no-eval
+            return eval('(' + braceSliceFrom(src, i, '{', '}').text + ')');
+        })(),
         state: { task: 'cw_step_5', cwProjectId: 'cwp_sim' },
         canvasEditor: { state: { doc: { descendants: function (fn) {
             for (const [f, t] of rows) {

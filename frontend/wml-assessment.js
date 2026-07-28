@@ -4295,6 +4295,44 @@
     // without reaching into that closure. Fails CLOSED (false) so a probe error can never
     // silently strip a student's only click path.
     let _cwActiveWalkProbe = null;
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // v7.20.331 — BUBBLE CONTROLS: ONE owner of "attach controls to a chat bubble".
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // ROOT of a whole class, not one bug (Neil, 2026-07-28: "find the root of this issue and
+    // solve it at the root so it never occurs anywhere ever again").
+    //
+    // Sixteen places hand-rolled this: find the last bubble → find .swml-bubble-content → check
+    // a guard → build a div → append. Each re-decided the GUARD and the CLASS, and three
+    // semantically different bars all guarded on the shared `.swml-quick-actions`:
+    //     help    — Guidance / Writer's Profile / Table of Techniques (never gates anything)
+    //     nav     — the `Continue →` that paces a code-served run (law 4b)
+    //     choice  — chips the student picks from (the answer itself)
+    // So whichever attached FIRST silently blocked the others. On staging .330 the help bar won
+    // and the `Continue →` bailed: Neil's intro chunk had no question and nothing to press.
+    //
+    // THE FIX IS STRUCTURAL. A bar declares its KIND. Different kinds COEXIST on one bubble;
+    // the same kind is idempotent (re-attaching is a no-op, which is what every old guard was
+    // actually trying to express). A cross-kind collision is now impossible by construction
+    // rather than unlikely — there is exactly one place that decides.
+    const BUBBLE_CONTROL_KINDS = { help: 'swml-bc-help', nav: 'swml-bc-nav', choice: 'swml-bc-choice' };
+    function attachBubbleControls(bc, kind, buttons, opts) {
+        if (!bc) return null;
+        const own = BUBBLE_CONTROL_KINDS[kind];
+        if (!own) { console.warn('WML bubble-controls: unknown kind "' + kind + '" — refusing'); return null; }
+        if (bc.querySelector('.' + own)) return null;              // same kind already here
+        const extra = (opts && opts.extraClass) ? ' ' + opts.extraClass : '';
+        const bar = el('div', { className: 'swml-quick-actions ' + own + extra });
+        (buttons || []).forEach(function (b) { if (b) bar.appendChild(b); });
+        bc.appendChild(bar);
+        return bar;
+    }
+    // Does this bubble give the student anything to DO? (liveness, law 4d)
+    function bubbleHasActionable(bc) {
+        if (!bc) return false;
+        return !!(bc.querySelector('.' + BUBBLE_CONTROL_KINDS.nav)
+            || bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice));
+    }
+
     // v7.20.330: re-serve the ask the active walk is parked on. Set from inside the canvas closure.
     let _cwNudgeActiveWalkImpl = null;
     function _cwNudgeActiveWalk() {
@@ -17407,8 +17445,10 @@
             function attach() {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions swml-cw-chunk-nav' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.nav)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.nav + ' swml-cw-chunk-nav' });
                 // v7.20.275: RESOURCE GATE. `opts.gates[k]` = a gate on the chunk at index k
                 // (the chunk just shown = i-1 here). A gated chunk shows a resource button that
                 // OPENS the resource, THEN reveals Continue — the student can't advance without
@@ -18007,8 +18047,10 @@
             function appendStepButtons(i) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions swml-cw-help' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
                 const anchor = guideAnchorForStep(i);
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: '📖 Guidance',
@@ -18085,8 +18127,10 @@
             function chipBar(options, onPick) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
                     bar.appendChild(el('button', {
                         className: 'swml-quick-btn', textContent: opt,
@@ -18487,8 +18531,10 @@
             function chipBar(options, onPick) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
                     bar.appendChild(el('button', {
                         className: 'swml-quick-btn', textContent: opt,
@@ -18567,8 +18613,10 @@
             function chipBarMulti(options, onDone) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 const sel = [];
                 options.forEach(function (opt) {
                     const btn = el('button', { className: 'swml-quick-btn', textContent: opt });
@@ -18628,8 +18676,10 @@
             function appendSpineButtons() {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions swml-cw-help' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: '📖 Guidance',
                     onClick: function () { try { if (typeof showGuidePanel === 'function') showGuidePanel('Story Spine'); } catch (e) {} },
@@ -19140,8 +19190,10 @@
             function chipBar(options, onPick) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
                     bar.appendChild(el('button', {
                         className: 'swml-quick-btn', textContent: opt,
@@ -19158,8 +19210,10 @@
             function helpBar(a) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions swml-cw-help' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
                 // Rung 1 — more worked examples, code-served. Zero API.
                 const more = (a.concept && a.concept.more) || [];
                 if (more.length) {
@@ -19936,8 +19990,10 @@
             function chipBar(options, onPick) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
                     bar.appendChild(el('button', {
                         className: 'swml-quick-btn', textContent: opt,
@@ -19949,8 +20005,10 @@
             function chipBarMulti(options, onDone) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 const sel = [];
                 options.forEach(function (opt) {
                     const btn = el('button', { className: 'swml-quick-btn', textContent: opt });
@@ -19972,8 +20030,10 @@
             function helpBar(s) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions swml-cw-help' });
+                if (!bc) return;
+                // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
                 if ((s.more || []).length) {
                     bar.appendChild(el('button', {
                         className: 'swml-quick-btn', textContent: '💡 More examples',

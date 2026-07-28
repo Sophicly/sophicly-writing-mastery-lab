@@ -225,6 +225,44 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         'a quiz arm requires _inboundIsAnswer — that would swallow MSQ/FQ answer chips, which ARE answers');
 }
 
+// ── BUBBLE CONTROLS (v7.20.331) ─────────────────────────────────────────────────────────────
+// ROOT gate, at Neil's instruction: "find the root of this issue and solve it at the root so it
+// never occurs anywhere ever again."
+//
+// Sixteen places hand-rolled "attach controls to a chat bubble", each re-deciding its own guard
+// and class — so three semantically different bars (help · Continue-nav · choice chips) all
+// guarded on the shared `.swml-quick-actions` and whichever attached first silently blocked the
+// rest. A bar now declares its KIND; different kinds coexist, the same kind is idempotent.
+//
+// This gate BASELINES the legacy sites that have not been migrated: it fails on any NEW raw
+// guard, so the count can only go down. (Same shape as the sophicly-plugins baseline the CI
+// handoff describes — never suppress, subtract a known baseline.)
+{
+    console.log('CW BUBBLE CONTROLS — one owner, kinds cannot collide');
+    ok(/const BUBBLE_CONTROL_KINDS = \{ help: '[^']+', nav: '[^']+', choice: '[^']+' \};/.test(JS),
+        'BUBBLE_CONTROL_KINDS is gone — there is no single owner of bubble controls again');
+    ok(/function attachBubbleControls\(bc, kind, buttons, opts\)/.test(JS),
+        'the attachBubbleControls primitive is gone');
+
+    // Every CW bar declares a kind.
+    ['nav', 'help', 'choice'].forEach((k) => {
+        const n = (JS.match(new RegExp("BUBBLE_CONTROL_KINDS\\." + k, 'g')) || []).length;
+        ok(n >= 2, `no bar declares kind '${k}' any more (found ${n} references) — a bar without a ` +
+            `kind falls back to the shared guard and can suppress another bar silently`);
+    });
+
+    // The legacy, not-yet-migrated sites. BASELINE — this number may only DECREASE.
+    const RAW_GUARD_BASELINE = 4;
+    const raw = (JS.match(/if \(!bc \|\| bc\.querySelector\('\.swml-quick-actions'\)\) return;/g) || []).length;
+    ok(raw <= RAW_GUARD_BASELINE,
+        `${raw} control bars still guard on the shared '.swml-quick-actions' (baseline ` +
+        `${RAW_GUARD_BASELINE}). A NEW one has been added: give it a kind via BUBBLE_CONTROL_KINDS, ` +
+        `or it will silently suppress whichever bar reaches the bubble second`);
+    if (raw < RAW_GUARD_BASELINE) {
+        console.log(`   note: raw guards down to ${raw} (baseline ${RAW_GUARD_BASELINE}) — lower the baseline`);
+    }
+}
+
 console.log(`   ${asserts.pass} assertions passed`);
 if (fail) {
     console.error(`❌ cw-keymatch-harness FAILED (${asserts.fail} assertion(s)).`);

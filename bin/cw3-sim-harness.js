@@ -106,6 +106,7 @@ console.log('I2b · a doc edit between ask and answer cannot move the answer');
     const w = world();
     w.ctl.forceStart();
     await settle();
+    ok(w.toAsk(), 'the paced intro never reached a live ask — the student cannot answer anything');
     w.say('my protagonist');                       // fills component 1, serves component 2
     ok(!!w.rows.get(COMPONENTS[0]), 'setup: component 1 was not filled');
 
@@ -137,6 +138,7 @@ console.log('I3b · clearing an earlier row mid-session cannot rewind the walk')
     const w = world();
     w.ctl.forceStart();
     await settle();
+    w.toAsk();
     const seen = [];
     for (let n = 0; n < 3; n++) {
         if (w.chips().length) { w.tapMenu(); continue; }
@@ -231,6 +233,46 @@ console.log('I0 · liveness — after every event the student can still act');
     w2.assertLiveAfterInput(ok, 'a stale quick-action tap being swallowed', bb2);
 }
 
+// ── I8 · BUBBLE CONTROLS COEXIST, IN EITHER ORDER ─────────────────────────────────────────
+// The defect Neil photographed at .330: three DIFFERENT bars — help buttons, the `Continue →`
+// nav, and choice chips — all guarded on the shared `.swml-quick-actions`, so whichever attached
+// FIRST silently blocked the others. The help bar won and the Continue vanished, leaving an
+// intro chunk with no question and nothing to press.
+//
+// Tested DIRECTLY rather than inferred from a run: whichever order they arrive in, both must end
+// up on the bubble. That makes the outcome order-independent, so the underlying timing race stops
+// being something we have to win.
+console.log('I8 · a help bar and a Continue nav coexist on one bubble, in either order');
+{
+    const w = world();
+    const K = w.deps.BUBBLE_CONTROL_KINDS;
+    ok(!!K && K.help && K.nav && K.choice, 'BUBBLE_CONTROL_KINDS is missing — there is no single owner of bubble controls');
+
+    const barsOn = (content) => ({
+        help: !!content.children.filter((c) => String(c.className).indexOf(K.help) !== -1).length,
+        nav: !!content.children.filter((c) => String(c.className).indexOf(K.nav) !== -1).length,
+    });
+
+    // HELP FIRST, then the paced run attaches its nav — the order that broke on staging.
+    w.deps.addChatMessage('a teaching chunk', 'ai', 'a teaching chunk');
+    const content = w._lastBubbleEl.children[0];
+    content.appendChild(w.deps.el('div', { className: 'swml-quick-actions ' + K.help }));
+    w.deps.serveCwChunks(['chunk one', 'chunk two'], { emit: () => {}, onDone: () => {} });
+    const after = barsOn(content);
+    ok(after.help, 'the help bar was lost');
+    ok(after.nav,
+        'the `Continue →` was SUPPRESSED because a help bar was already on the bubble — this is the '
+        + 'exact screen Neil photographed: teaching text, help buttons, no question, nothing to press');
+
+    // NAV FIRST, then help — the mirror. Same requirement.
+    w.deps.addChatMessage('another chunk', 'ai', 'another chunk');
+    const c2 = w._lastBubbleEl.children[0];
+    c2.appendChild(w.deps.el('div', { className: 'swml-quick-actions ' + K.nav }));
+    c2.appendChild(w.deps.el('div', { className: 'swml-quick-actions ' + K.help }));
+    const m2 = barsOn(c2);
+    ok(m2.nav && m2.help, 'the two kinds cannot coexist in the reverse order either');
+}
+
 // ── I5 · THE SHARPEN REWRITE REPLACES ─────────────────────────────────────────────────────
 // The .289 bug, reintroduced by .325: the review's "Sharpen my X" chip tells the student their
 // new version REPLACES the old one, then appended, leaving both drafts stitched in one row.
@@ -270,6 +312,7 @@ console.log('I6 · resume repeats nothing and loses nothing');
     const w = world();
     w.ctl.forceStart();
     await settle();
+    w.toAsk();
     w.say('protagonist answer');
     const carried = {};
     w.rows.forEach((v, k) => { if (v) carried[k] = v; });

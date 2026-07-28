@@ -129,11 +129,13 @@ function makeWorld(ctl, opts) {
         _cwLoadStep3Values: function () { return Promise.resolve({}); },
         _cwDocValue: function () { return ''; },
         _cwStep3Value: function (fid) { return 'step-3 value for ' + fid; },
-        serveCwChunks: function (chunks, o) {
-            chunks.forEach(function (c) { o.emit(c); });
-            if (o.onDone) o.onDone();
-            return { reattach: function () {}, index: chunks.length };
-        },
+        // v7.20.331: the REAL serveCwChunks, sliced from source — not a stub.
+        // The old stub emitted every chunk at once and fired onDone immediately, which
+        // COLLAPSED THE PACING. That is why the sim could not see a missing `Continue →`:
+        // the paced path it was meant to test was never executed. A stub that skips the
+        // mechanism under test proves nothing about it (Neil, staging .330 — the intro chunk
+        // landed with help buttons and no way forward, and every gate was green).
+        serveCwChunks: null,   // replaced below, once `el` and the kinds exist
         armWalkResume: function (id, fn) { armed = { id: id, fn: fn }; },
         sendCanvasMessage: function () { sends.push({ id: armed ? armed.id : '(none)' }); deps.canvasSilentSend = false; },
         canvasSilentSend: false,
@@ -156,6 +158,27 @@ function makeWorld(ctl, opts) {
             error: function (m) { world.warns = (world.warns || []).concat([String(m)]); },
         },
     };
+
+    // The REAL serveCwChunks + the bubble-control kinds, sliced from source.
+    {
+        const kindsIdx = SRC.indexOf('const BUBBLE_CONTROL_KINDS =');
+        const kinds = kindsIdx >= 0
+            // eslint-disable-next-line no-eval
+            ? eval('(' + braceSliceFrom(SRC, kindsIdx, '{', '}').text + ')')
+            : { help: 'swml-bc-help', nav: 'swml-bc-nav', choice: 'swml-bc-choice' };
+        deps.BUBBLE_CONTROL_KINDS = kinds;
+        const i = SRC.indexOf('function serveCwChunks(chunks, opts) {');
+        if (i >= 0) {
+            const body = braceSliceFrom(SRC, i, '{', '}');
+            const fnSrc = SRC.slice(i, body.end);
+            // eslint-disable-next-line no-new-func
+            deps.serveCwChunks = new Function('el', 'chatMessages', 'BUBBLE_CONTROL_KINDS', 'console',
+                'return ' + fnSrc.replace(/^function\s+\w+/, 'function') + ';')(
+                deps.el, deps.chatMessages, kinds, deps.console);
+        } else {
+            throw new Error('serveCwChunks not found — the rig would silently skip pacing');
+        }
+    }
 
     // The REAL module-scope _walkSlot, so the rig exercises the shipped primitive.
     const slotIdx = SRC.indexOf('const _walkSlot = (function () {');
@@ -255,6 +278,19 @@ function makeWorld(ctl, opts) {
             'DEAD END after ' + whenLabel + ': the walk swallowed the input and said NOTHING — no new '
             + 'message, no chip. Refusing an input is only half a change; the other half is what the '
             + 'student sees instead. (Neil, staging .329: help chips and no question.)');
+    };
+
+    // Tap `Continue →` until the ASK is live (the slot is armed). The paced run delivers the
+    // teaching chunks first (law 4b), so a student reaches the question by tapping — and so must
+    // the sim. Returns false if it never got there, which is itself a dead end.
+    world.toAsk = function (limit) {
+        for (let g = 0; g < (limit || 10); g++) {
+            if (deps._walkSlot && deps._walkSlot.armed) return true;
+            const nav = world.chips().filter((c) => /Continue|Next/i.test(String(c.textContent)))[0];
+            if (!nav) break;
+            world.tap(nav);
+        }
+        return !!(deps._walkSlot && deps._walkSlot.armed);
     };
 
     // Tap through a chip menu: prefer an explicit Continue, else the first option.
