@@ -133,6 +133,7 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onSecondaryNeedsDone:  { kind: 'content', fid: 'NEEDS_FID', note: 'the "any others?" multi-select' },
         onThroughlinePick:     { kind: 'content', fid: 'THROUGHLINE_FID', note: 'the dramatic throughline' },
         onPick:                { kind: 'content', note: 'Step 5 plot archetype → _setOutlineDropdown' },
+        onLoglinePick:         { kind: 'content', note: 'Step 3 chosen logline → cw-step-3-chosen (v7.20.325)' },
         // flow-control — must NOT be filed
         onCohChoice:    { kind: 'flow', note: 'rewrite / keep the beat the coherence check flagged' },
         onAnchorChoice: { kind: 'flow', note: 'Step 6 story bookend: still right / sharpen' },
@@ -140,6 +141,7 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onFinishChoice: { kind: 'flow', note: 'Step 6 final image: rewrite / leave' },
         onPushChoice:   { kind: 'flow', note: 'Step 5 archetype push: switch / keep' },
         onMultiDone:    { kind: 'flow', note: 'Step 5 alternates considered (multi-select)' },
+        onReviewChipPick: { kind: 'flow', note: 'Step 3 review: sharpen component X / move on — steers the walk' },
         // scaffold — the pick SHAPES the next ask, and the written answer that follows is what
         // gets filed. Not lost, because the beat sentence carries it. Beat 1 is the exception and
         // is handled separately (onSecondaryNeedsDone → NEEDS_FID), because there the category IS

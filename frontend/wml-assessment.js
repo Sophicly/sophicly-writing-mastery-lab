@@ -17653,8 +17653,7 @@
                     'You write them; I’ll tell you where the concept is strong and where it’s still fuzzy.',
                 wrap:
                     'That’s all three — the same story told through action, through stakes, and through your protagonist’s inner change.\n\n' +
-                    '**Tick the checkbox beside the one you most want to develop.** It drops into your *Chosen Logline* box, where you can fine-tune the wording. Pick the one that pulls at you most: strongest personal meaning, clearest conflict.\n\n' +
-                    'While you’re in there, tidy up any spelling or punctuation — they’re your sentences, so they’re yours to polish.',
+                    '**Which one do you most want to develop?** Tap it below and I’ll file it into your *Chosen Logline* box. Pick the one that pulls at you most: strongest personal meaning, clearest conflict.',
             };
             // Asked in DOCUMENT-ROW ORDER so the field-granular fill-scroll walks down the page
             // instead of jumping around (v7.20.260 law).
@@ -17699,12 +17698,10 @@
                 .concat(FORMULAS.map(s => Object.assign({ cycle: 'rewrite' }, s)));   // 7 + 3, walked in order
 
             let active = false, pending = false, idx = 0;
-            // v7.20.283 ROOT FIX (Neil's live catch): when Sophia PUSHES (no @COMPONENT_OK), the
-            // student's answer used to be DISCARDED — only the message in flight when the OK
-            // finally arrived was banked, so a push cycle filed the last FRAGMENT ("she's afraid
-            // of being controlled") as the whole component. `draft` accumulates EVERY answer in
-            // the push cycle; the eventual bank writes all of it, verbatim, newline-joined.
-            // Persisted, so a reload mid-push can't lose the earlier answers.
+            // v7.20.325: the push cycle is GONE from this walk. There is no per-answer verdict any
+            // more, so there is nothing to accumulate across a push and no accumulate/rewrite
+            // ambiguity (§4c.6) to get wrong here: each ask owns one row and files once, verbatim.
+            // `draft` survives only so an older sidecar still parses.
             let draft = '';
             // v7.20.289: 'rewrite' steps keep only the LATEST complete answer; 'accumulate'
             // steps join the whole cycle. See the STEPS construction above for why.
@@ -17714,7 +17711,9 @@
             };
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw3') + '_cw3'; } catch (e) { return 'swml_cw3'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, active, draft })); } catch (e) {} }
+            // v7.20.325: the review state rides the sidecar too, or a reload during the review
+            // leaves the student looking at chips that no longer exist (chips-die-on-reload).
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, active, draft, rc: reviewedComponents, rl: reviewedLoglines, weak: weakFids, rev: revisingFid })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -17833,49 +17832,198 @@
                 resetSend();
             }
 
+            // ═══ v7.20.325 — TWO API calls for the whole step (was TEN) ═══
+            // Neil, 2026-07-28: "I didn't realise step three used so many API calls… it was useful
+            // having the API calls, it's just too expensive." Every one of the ten asks handed a
+            // turn to the model purely to decide "is this good enough yet". That judgment now
+            // happens ONCE per group, over all seven components together and all three loglines
+            // together — which is also better teaching: flaw, wound and obstacle only mean anything
+            // against each other, and reading them as a set is what made the Step-4 coherence check
+            // land. The student's answer is filed VERBATIM the moment they write it, so nothing
+            // depends on a round-trip completing.
+            //
+            // HOW THE STUDENT FIXES SOMETHING (Neil's question — "is it gonna be a manual fix?").
+            // No. The review returns machine-read markers naming the weak components; code then
+            // offers a chip per component. Tapping one re-opens that ask with the feedback above it,
+            // the student rewrites, and code files it verbatim — the rewrite costs NO further call.
+            // This is the v7.20.294 coherence-revision pattern, which is already proven in Step 4.
+            const COMP_N = COMPONENTS.length;                     // 7 components, then 3 loglines
+            let reviewedComponents = false, reviewedLoglines = false;
+            let weakFids = [], revisingFid = '';
+
+            function userTurn(text) {
+                canvasChatHistory.push({ role: 'user', content: text });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            // DOM-only chips, re-attached on resume like every other walk (chips-die-on-reload).
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.swml-quick-actions')) return;
+                const bar = el('div', { className: 'swml-quick-actions' });
+                options.forEach(function (opt) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: function () { bar.remove(); onPick(opt); },
+                    }));
+                });
+                bc.appendChild(bar);
+            }
+            function stepByFid(fid) { for (let i = 0; i < STEPS.length; i++) if (STEPS[i].fid === fid) return STEPS[i]; return null; }
+            function labelOf(fid) { const st = stepByFid(fid); return (st && st.label) || 'this one'; }
+
+            // ONE call. Reads all seven components together and names the weak ones.
+            function fireReview(kind) {
+                const isComp = (kind === 'components');
+                const list = (isComp ? COMPONENTS : FORMULAS)
+                    .map(function (st, n) { return (n + 1) + '. ' + (st.label || ('Logline ' + (n + 1))) + ': ' + (rowText(st.fid) || '(blank)'); })
+                    .join('\n');
+                const ctx = isComp
+                    ? '[STORY COMPONENT REVIEW — the student has written all seven building blocks. Read them TOGETHER, '
+                      + 'not one at a time: the flaw must be an emotional shield over the wound, the obstacle must attack the flaw, '
+                      + 'and the stakes must land on the wound. Give warm, specific praise for what is working (2-3 sentences), then, '
+                      + 'for any component that is genuinely weak or contradicts another, ONE sentence saying what is missing. '
+                      + 'Be generous — only flag what a GCSE examiner would actually mark down. End your reply with the machine-read '
+                      + 'marker "@WEAK:" followed by a comma-separated list of the weak component names from this exact set '
+                      + '(protagonist, flaw, wound, incident, goal, obstacle, stakes), or "@ALL_OK" if the set holds together. '
+                      + 'The marker is machine-read — never explain it.]\n\n' + list
+                    : '[LOGLINE REVIEW — the student has written all three loglines of the same story. Say which is strongest and why '
+                      + '(2-3 sentences), then name any that is genuinely unclear in ONE sentence. Be generous. End with "@WEAK:" and a '
+                      + 'comma-separated list from this exact set (logline-1, logline-2, logline-3), or "@ALL_OK". Never explain the marker.]\n\n' + list;
+                active = false; pending = true;
+                armWalkResume('cw3-review-' + kind, function (reply, meta) {
+                    pending = false;
+                    if (isComp) reviewedComponents = true; else reviewedLoglines = true;
+                    const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                    const m = (!reply || (meta && meta.timedOut)) ? null : /@WEAK:\s*([a-z0-9,\s-]+)/i.exec(norm);
+                    weakFids = [];
+                    if (m) {
+                        const names = m[1].split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean);
+                        (isComp ? COMPONENTS : FORMULAS).forEach(function (st) {
+                            const tail = st.fid.replace('cw-step-3-', '');
+                            if (names.indexOf(tail) !== -1) weakFids.push(st.fid);
+                        });
+                    }
+                    // FAIL-OPEN: a dropped marker or a failed call must never strand the student.
+                    if (!weakFids.length) { active = false; persist(); afterReview(kind); return; }
+                    active = true; persist();
+                    serveReviewChips(kind);
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = isComp
+                    ? 'That\u2019s all seven building blocks \u2014 please read them together and tell me where my story is strong and where it is still fuzzy.'
+                    : 'That\u2019s all three loglines \u2014 which is strongest, and is any of them unclear?';
+                sendCanvasMessage();
+            }
+            // v7.20.325 (Neil): ONE message at a time. The chips ride the review reply itself
+            // rather than arriving as a second bubble underneath it — the chip labels already say
+            // what the choice is, so a bubble introducing them is a wall for no teaching gain.
+            function serveReviewChips(kind) {
+                const opts = weakFids.map(function (f) { return 'Sharpen my ' + labelOf(f) + ' \u2192'; });
+                opts.push('Move on \u2192');
+                chipBar(opts, onReviewChipPick(kind));
+                resetSend();
+            }
+            function onReviewChipPick(kind) { return function (pick) { onReviewPick(kind, pick); }; }
+            function onReviewPick(kind, pick) {
+                userTurn(pick);
+                if (pick.indexOf('Move on') === 0) { weakFids = []; active = false; persist(); afterReview(kind); return; }
+                const hit = weakFids.filter(function (f) { return pick.indexOf(labelOf(f)) !== -1; })[0];
+                if (!hit) { weakFids = []; active = false; persist(); afterReview(kind); return; }
+                revisingFid = hit; active = true; persist();
+                const st = stepByFid(hit);
+                aiBubble('**Rewriting your ' + labelOf(hit) + '**\n\nWrite the **whole thing again**, not just the part you are changing \u2014 your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> ' + (rowText(hit) || '*(blank)*'));
+                if (st) appendStepButtons(STEPS.indexOf(st));
+                resetSend();
+            }
+            function afterReview(kind) {
+                if (kind === 'components') { idx = firstEmptyIndex(); active = true; persist(); serveCurrent(); return; }
+                finish();
+            }
+
+            // v7.20.325 (Neil): "why can't the chat read what the loglines actually are, pull them
+            // into the chat, and ask the student to choose via a click-action button, and then tick
+            // it in the document for them." Exactly that — code reads the three rows it just filed,
+            // offers them verbatim as chips, and files the pick into the Chosen Logline row. No API
+            // call: the student's own three sentences are already in the document.
+            const CHOSEN_FID = 'cw-step-3-chosen';
+            function serveLoglinePicker() {
+                const opts = [], map = {};
+                FORMULAS.forEach(function (st, n) {
+                    const txt = rowText(st.fid);
+                    if (!txt) return;
+                    const short = txt.length > 90 ? txt.slice(0, 88).replace(/\s+\S*$/, '') + '\u2026' : txt;
+                    const label = (n + 1) + '. ' + short;
+                    opts.push(label); map[label] = txt;
+                });
+                if (!opts.length) { resetSend(); return; }   // nothing written — never a dead menu
+                chipBar(opts, onLoglinePick(map));
+                resetSend();
+            }
+            function onLoglinePick(map) {
+                return function (pick) {
+                    userTurn(pick);
+                    const full = map[pick] || '';
+                    try {
+                        if (_writeOutlineRowField(CHOSEN_FID, full) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    } catch (e) { console.warn('WML CW3: chosen-logline write failed (non-fatal)', e && e.message); }
+                    aiBubble('Filed into your **Chosen Logline** box \u2014 that is the sentence Step 4 will build from.\n\nFine-tune the wording there whenever you like; it is your sentence.');
+                    resetSend();
+                };
+            }
+
             function finish() {
                 active = false; pending = false;
                 clearPersist();
                 aiBubble(SEG.wrap);
+                serveLoglinePicker();   // chips ride the wrap bubble — still one message
                 try { applyCwSubstepProgress({ stepNum: 3, substepNum: 4, name: 'Review and Save' }); } catch (e) {}
                 resetSend();
             }
 
-            // The student answered. Hand ONE turn to the API for judgment; resume here.
+            // v7.20.325: the student's answer is filed VERBATIM, immediately, with NO API call.
+            // Judgment happens once per group (see fireReview above), so nothing the student writes
+            // depends on a round-trip completing — which also removes the whole push-cycle
+            // accumulate/rewrite ambiguity (§4c.6) from this walk: each ask owns one row, filed once.
+            // Mirrors _cwStructureCtl.handleTurn, the proven code-only shape.
             async function handleTurn(msg) {
                 if (pending) return;
                 const clean = (msg || '').trim();
                 if (!clean) { resetSend(); return; }
-                // v7.20.265: bubble + history are the send's job — see the CW2 note. (Double-write.)
+                userTurn(clean);
+
+                // A revision from the review chips replaces ONE row and returns to the chips.
+                if (revisingFid) {
+                    const fid = revisingFid;
+                    revisingFid = '';
+                    try {
+                        if (_writeOutlineRowField(fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    } catch (e) { console.warn('WML CW3: revision write failed (non-fatal)', e && e.message); }
+                    weakFids = weakFids.filter(function (f) { return f !== fid; });
+                    persist();
+                    if (weakFids.length) { serveReviewChips(reviewedLoglines ? 'loglines' : 'components'); return; }
+                    active = false; persist();
+                    afterReview(reviewedLoglines ? 'loglines' : 'components');
+                    return;
+                }
+
                 const step = STEPS[idx];
                 if (!step) { finish(); return; }
-                active = false; pending = true;
-                armWalkResume('cw3-' + step.fid, function (reply, meta) {
-                    pending = false;
-                    // @COMPONENT_OK = solid, bank it and move on. Absent = the API pushed for
-                    // more, so the student answers the SAME question again (no advance).
-                    // On the watchdog path bank it rather than lose their words.
-                    const ok = !reply || (meta && meta.timedOut)
-                        ? true
-                        : /@COMPONENT_OK/.test(String(reply).replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'));
-                    // v7.20.283: a PUSH retains the answer — on an 'accumulate' step the follow-up
-                    // ADDS to it and the bank writes the WHOLE cycle, never just the final fragment.
-                    // v7.20.289: on a 'rewrite' step (the loglines) the follow-up REPLACES it —
-                    // the student re-writes the whole sentence, so accumulating filed both drafts.
-                    if (!ok) { draft = acc(clean, step); active = true; persist(); resetSend(); return; }
-                    const full = acc(clean, step);
-                    draft = '';
-                    try {
-                        if (_writeOutlineRowField(step.fid, full) && typeof saveCanvasContent === 'function') saveCanvasContent();
-                    } catch (e) { console.warn('WML CW3: write failed (non-fatal)', e && e.message); }
-                    idx = firstEmptyIndex();
-                    if (idx >= STEPS.length) { finish(); return; }
-                    active = true;
-                    serveCurrent();
-                });
-                canvasSilentSend = false;
-                chatTextarea.value = clean;
-                sendCanvasMessage();
+                try {
+                    if (_writeOutlineRowField(step.fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                } catch (e) { console.warn('WML CW3: write failed (non-fatal)', e && e.message); }
+                draft = '';
+                idx = firstEmptyIndex();
+                persist();
+                // Group boundaries: seven components written → ONE review; three loglines → ONE review.
+                if (idx >= COMP_N && !reviewedComponents) { fireReview('components'); return; }
+                if (idx >= STEPS.length) {
+                    if (!reviewedLoglines) { fireReview('loglines'); return; }
+                    finish(); return;
+                }
+                active = true;
+                serveCurrent();
             }
 
             function startWalk() {
@@ -17904,7 +18052,32 @@
                     const d = (raw ? JSON.parse(raw) : null) || {};
                     if (!raw) console.warn('WML CW3: sidecar missing — resuming from the document.');
                     draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
+                    reviewedComponents = !!d.rc; reviewedLoglines = !!d.rl;
+                    weakFids = Array.isArray(d.weak) ? d.weak : [];
+                    revisingFid = (typeof d.rev === 'string') ? d.rev : '';
                     idx = firstEmptyIndex();
+                    // v7.20.325: a reload mid-review. Re-attach what they were actually looking at,
+                    // rather than the next ask — resuming to the wrong surface is how a walk eats a
+                    // typed answer as the wrong field.
+                    if (revisingFid) {
+                        active = true;
+                        console.log('WML CW3: resumed mid-revision of ' + revisingFid);
+                        const _st = stepByFid(revisingFid);
+                        if (_st) setTimeout(function () { try { appendStepButtons(STEPS.indexOf(_st)); } catch (e) {} }, 400);
+                        return true;
+                    }
+                    if (weakFids.length) {
+                        active = true;
+                        console.log('WML CW3: resumed on the review chips (' + weakFids.length + ' to sharpen)');
+                        setTimeout(function () { try { serveReviewChips(reviewedLoglines ? 'loglines' : 'components'); } catch (e) {} }, 400);
+                        return true;
+                    }
+                    if (idx >= STEPS.length && reviewedLoglines && !rowText('cw-step-3-chosen')) {
+                        active = false;
+                        console.log('WML CW3: resumed after the review — re-serving the logline picker');
+                        setTimeout(function () { try { serveLoglinePicker(); } catch (e) {} }, 500);
+                        return false;
+                    }
                     active = idx < STEPS.length;
                     if (active) {
                         console.log('WML CW3: resumed at step ' + (idx + 1) + '/' + STEPS.length);
