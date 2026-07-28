@@ -195,6 +195,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw3-batch-harness.js || fail=1
 fi
 
+# v7.20.327: CW STEP-3 WALK-INVARIANT GATE. The behavioural twin of cw3-batch-harness (which is
+# static). Drives the real _cwLoglineCtl and asserts the same invariants as the Step-4 sim, from
+# the same rig (bin/walk-sim-lib.js) so the two cannot drift.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|cw3-sim-harness\.js|walk-sim-lib\.js'; then
+  node bin/cw3-sim-harness.js || fail=1
+fi
+
 # v7.20.327: CW STEP-4 WALK-INVARIANT GATE. Step 3 reached a live lesson with the `▶ Let's go`
 # launch chip filed into a student's Protagonist row and asks served in "first empty row" order.
 # Nothing caught it because every CW harness asserted the walk's SHAPE and none DROVE it turn by
@@ -203,7 +211,7 @@ fi
 # requested it (even when the student edits the document in between); asks come in declared order;
 # a chip pick files to its own field; a rewrite replaces; a reload never loses a turn.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
-     | grep -qE 'wml-assessment\.js|cw4-sim-harness\.js'; then
+     | grep -qE 'wml-assessment\.js|cw4-sim-harness\.js|walk-sim-lib\.js'; then
   node bin/cw4-sim-harness.js || fail=1
 fi
 

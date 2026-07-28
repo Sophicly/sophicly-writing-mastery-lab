@@ -174,7 +174,12 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
             `live only in the sidecar that finish() clears`);
     });
     // Flow-control picks must not be smuggled into the document.
-    ok(!/_writeOutlineRowField\([^)]*(?:Rewrite|Leave it|still right|sharpen)/i.test(JS),
+    // QUOTE-ANCHORED and case-SENSITIVE (v7.20.328). Chip LABELS are capitalised and quoted
+    // ("Rewrite it", "Leave it as it is", "Sharpen my Flaw"); the v7.20.327 push-cycle KIND is the
+    // lowercase literal 'rewrite', and `{ replace: step.cycle === 'rewrite' }` is a legitimate
+    // argument, not a pick being filed. The old case-insensitive bare-word match could not tell
+    // them apart and failed the gate on a correct change.
+    ok(!/_writeOutlineRowField\([^)]*['"`](?:Rewrite|Leave it|Sharpen|Still right)/.test(JS),
         'no flow-control pick is written to the document (a persisted gate replays forever — v7.20.284)');
     console.log(`   ${found.size} chip menus, all classified`);
 }

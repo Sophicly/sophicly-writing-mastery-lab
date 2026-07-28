@@ -17865,7 +17865,9 @@
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw3') + '_cw3'; } catch (e) { return 'swml_cw3'; } };
             // v7.20.325: the review state rides the sidecar too, or a reload during the review
             // leaves the student looking at chips that no longer exist (chips-die-on-reload).
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, active, draft, rc: reviewedComponents, rl: reviewedLoglines, weak: weakFids, rev: revisingFid })); } catch (e) {} }
+            // v7.20.327: the armed slot rides the sidecar — the token is in-memory, so without
+            // this a reload leaves an ask on screen with no authority to file its answer.
+            function persist() { try { const _s = _walkSlot.peek('cw3'); localStorage.setItem(lsKey(), JSON.stringify({ idx, active, draft, rc: reviewedComponents, rl: reviewedLoglines, weak: weakFids, rev: revisingFid, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -17888,8 +17890,17 @@
                 return out;
             }
             // Resume from the DOCUMENT, not a counter — the doc survives reload and chat-clear.
+            // ENTRY ONLY. Mid-session, use nextIndexAfter() — see below.
             function firstEmptyIndex() {
                 for (let i = 0; i < STEPS.length; i++) if (!rowText(STEPS[i].fid)) return i;
+                return STEPS.length;
+            }
+            // v7.20.327: mid-session the walk advances FORWARD, never by re-scanning for the
+            // first empty row. The document is editable and sits open beside the chat, so a
+            // student typing into a later box made the walk SKIP that ask, and clearing a box
+            // made it jump BACKWARDS — the out-of-order asks Neil watched in the lesson.
+            function nextIndexAfter(i) {
+                for (let j = i + 1; j < STEPS.length; j++) if (!rowText(STEPS[j].fid)) return j;
                 return STEPS.length;
             }
 
@@ -17978,8 +17989,12 @@
                 if (idx >= STEPS.length) { finish(); return; }
                 const stepIdx = idx;
                 const chunks = chunksFor(idx, withIntro);
-                if (chunks.length === 1) { aiBubble(chunks[0]); appendStepButtons(stepIdx); persist(); resetSend(); return; }
-                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { appendStepButtons(stepIdx); persist(); resetSend(); } });
+                // v7.20.327: the ask OWNS the row. Armed only once the ASK itself has been
+                // delivered — it is the last chunk, so a student typing during the paced intro
+                // has not been asked anything yet and files nothing.
+                const armAsk = function () { _walkSlot.arm('cw3', STEPS[stepIdx].fid, { cycle: STEPS[stepIdx].cycle }); };
+                if (chunks.length === 1) { aiBubble(chunks[0]); armAsk(); appendStepButtons(stepIdx); persist(); resetSend(); return; }
+                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { armAsk(); appendStepButtons(stepIdx); persist(); resetSend(); } });
                 persist();
                 resetSend();
             }
@@ -18083,7 +18098,9 @@
                 if (pick.indexOf('Move on') === 0) { weakFids = []; active = false; persist(); afterReview(kind); return; }
                 const hit = weakFids.filter(function (f) { return pick.indexOf(labelOf(f)) !== -1; })[0];
                 if (!hit) { weakFids = []; active = false; persist(); afterReview(kind); return; }
-                revisingFid = hit; active = true; persist();
+                revisingFid = hit; active = true;
+                _walkSlot.arm('cw3', hit, { cycle: 'rewrite' });   // v7.20.327
+                persist();
                 const st = stepByFid(hit);
                 aiBubble('**Rewriting your ' + labelOf(hit) + '**\n\nWrite the **whole thing again**, not just the part you are changing \u2014 your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> ' + (rowText(hit) || '*(blank)*'));
                 if (st) appendStepButtons(STEPS.indexOf(st));
@@ -18145,12 +18162,26 @@
                 if (!clean) { resetSend(); return; }
                 userTurn(clean);
 
+                // v7.20.327: WHERE this answer goes comes from the ask that requested it. No ask
+                // served → nothing is written (the defect that filed "Let’s go" into a Protagonist
+                // row on prod, uid 1334).
+                const slot = _walkSlot.consume('cw3');
+                if (!slot) {
+                    console.warn('WML CW3: message arrived with no ask served — filing nothing.');
+                    aiBubble('Tap one of the buttons above to carry on — I haven’t asked you to write anything yet.');
+                    resetSend();
+                    return;
+                }
+
                 // A revision from the review chips replaces ONE row and returns to the chips.
                 if (revisingFid) {
-                    const fid = revisingFid;
+                    const fid = slot.fid;
                     revisingFid = '';
                     try {
-                        if (_writeOutlineRowField(fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                        // `replace: true` — the ask demanded the WHOLE thing rewritten (a
+                        // `rewrite` cycle, §4c.6). Appending stitched both drafts into one row:
+                        // the v7.20.289 bug, reintroduced by the .325 review path.
+                        if (_writeOutlineRowField(fid, clean, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
                     } catch (e) { console.warn('WML CW3: revision write failed (non-fatal)', e && e.message); }
                     weakFids = weakFids.filter(function (f) { return f !== fid; });
                     persist();
@@ -18160,13 +18191,13 @@
                     return;
                 }
 
-                const step = STEPS[idx];
+                const step = stepByFid(slot.fid) || STEPS[idx];
                 if (!step) { finish(); return; }
                 try {
-                    if (_writeOutlineRowField(step.fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    if (_writeOutlineRowField(step.fid, clean, { replace: step.cycle === 'rewrite' }) && typeof saveCanvasContent === 'function') saveCanvasContent();
                 } catch (e) { console.warn('WML CW3: write failed (non-fatal)', e && e.message); }
                 draft = '';
-                idx = firstEmptyIndex();
+                idx = nextIndexAfter(STEPS.indexOf(step));
                 persist();
                 // Group boundaries: seven components written → ONE review; three loglines → ONE review.
                 if (idx >= COMP_N && !reviewedComponents) { fireReview('components'); return; }
@@ -18213,6 +18244,7 @@
                     // typed answer as the wrong field.
                     if (revisingFid) {
                         active = true;
+                        _walkSlot.arm('cw3', (d.slot && d.slot.fid) || revisingFid, { cycle: 'rewrite' });   // v7.20.327
                         console.log('WML CW3: resumed mid-revision of ' + revisingFid);
                         const _st = stepByFid(revisingFid);
                         if (_st) setTimeout(function () { try { appendStepButtons(STEPS.indexOf(_st)); } catch (e) {} }, 400);
@@ -18232,6 +18264,11 @@
                     }
                     active = idx < STEPS.length;
                     if (active) {
+                        // v7.20.327: re-arm the ask the student is looking at. The sidecar's slot
+                        // names the ask that was SERVED; STEPS[idx] is the pre-.327 fallback.
+                        const _rs = (d.slot && d.slot.fid) ? d.slot
+                            : (STEPS[idx] ? { fid: STEPS[idx].fid, cycle: STEPS[idx].cycle } : null);
+                        if (_rs) _walkSlot.arm('cw3', _rs.fid, { cycle: _rs.cycle || 'accumulate' });
                         console.log('WML CW3: resumed at step ' + (idx + 1) + '/' + STEPS.length);
                         // v7.20.280: the ask replays from history but its DOM-only helper buttons
                         // don't — re-attach them to the replayed ask (chips-die-on-reload landmine).
@@ -18354,8 +18391,16 @@
                 if (!out && fid.indexOf('cw-step-3-') === 0) out = _cwStep3Value(fid);
                 return out;
             }
+            // ENTRY ONLY (start + resume). Mid-session use nextBeatAfter() — see below.
             function firstEmptyBeat() {
                 for (let i = 0; i < BEATS.length; i++) if (!rowText(BEATS[i].fid)) return i;
+                return BEATS.length;
+            }
+            // v7.20.327 (twin of _cwLoglineCtl.nextIndexAfter): mid-session the walk advances
+            // FORWARD. Re-scanning for the first empty row meant a student editing the open
+            // document could send the walk BACKWARDS to re-ask a beat out of sequence.
+            function nextBeatAfter(i) {
+                for (let j = i + 1; j < BEATS.length; j++) if (!rowText(BEATS[j].fid)) return j;
                 return BEATS.length;
             }
 
@@ -18716,7 +18761,7 @@
                         _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });   // v7.20.327: same row
                         aiBubble(b.irony); persist(); resetSend(); return;
                     }
-                    idx = firstEmptyBeat();
+                    idx = nextBeatAfter(BEATS.indexOf(b));
                     phase = 'chip';
                     if (idx >= BEATS.length) { serveThroughline(); return; }
                     serveCurrent();

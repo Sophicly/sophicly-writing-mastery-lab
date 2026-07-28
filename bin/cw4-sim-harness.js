@@ -374,6 +374,52 @@ console.log('I2b · a doc edit between ask and answer cannot move the answer');
     }
 }
 
+// ── I3b · THE WALK NEVER GOES BACKWARDS ───────────────────────────────────────────────────
+console.log('I3b · clearing an earlier row mid-session cannot rewind the walk');
+{
+    const w = makeWorld();
+    await w.start();
+    const seen = [];
+    for (let n = 0; n < 6 && seen.length < 2; n++) {
+        if (w.chips().length) {
+            const bar = w.chips();
+            const cont = bar.filter(function (b) { return /Continue|Done|Next/i.test(String(b.textContent)); })[0];
+            if (cont) cont.click(); else bar[0].click();
+            continue;
+        }
+        const before = w.writes.length;
+        w.say('ans<' + n + '>');
+        const landed = w.writes.slice(before).filter(function (x) { return BEAT_FIDS.indexOf(x.fid) !== -1; })[0];
+        if (landed) seen.push(BEAT_FIDS.indexOf(landed.fid));
+    }
+    ok(seen.length >= 2, 'setup: fewer than two beats were filled');
+    w.rows.set(BEAT_FIDS[0], '');            // the student deletes Beat 1 in the document
+
+    // Watch the WHOLE remaining sequence, not two samples. A rewind can surface several turns
+    // later (beat 3's irony follow-up writes to the same row twice), so a two-sample test passes
+    // against the broken code — it did, until this was widened.
+    const seq = [];
+    for (let n = 0; n < 8; n++) {
+        if (w.chips().length) {
+            const bar = w.chips();
+            const cont = bar.filter(function (c) { return /Continue|Done|Next/i.test(String(c.textContent)); })[0];
+            if (cont) cont.click(); else bar[0].click();
+            continue;
+        }
+        const before = w.writes.length;
+        w.say('turn ' + n);
+        const l = w.writes.slice(before).filter(function (x) { return BEAT_FIDS.indexOf(x.fid) !== -1; })[0];
+        if (l) seq.push(BEAT_FIDS.indexOf(l.fid));
+    }
+    ok(seq.length >= 2, 'setup: the walk stopped filing after the doc edit');
+    // NON-decreasing, not strictly increasing: the irony follow-up deepens the SAME row, so two
+    // consecutive writes to one beat are correct. A REWIND is a decrease.
+    const rewind = seq.findIndex(function (v, i) { return i > 0 && v < seq[i - 1]; });
+    ok(rewind === -1,
+        'the walk REWOUND after the student cleared an earlier row: '
+        + seq.map(function (i) { return 'beat' + (i + 1); }).join(' → '));
+}
+
 // ── I4 · CHIP SCOPE ────────────────────────────────────────────────────────────────────────
 // A chip pick belongs to its own declared field. The .322/.323 bugs were picks that lived only
 // in the localStorage sidecar; the failure mode here is the opposite — a pick landing in a beat.

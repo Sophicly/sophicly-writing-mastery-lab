@@ -69,8 +69,15 @@ if (!CTL) { console.error('  ❌ could not slice _cwLoglineCtl'); process.exit(1
 
 // ── 2. nothing the student writes depends on a round-trip ─────────────────────────────────────
 {
-    ok(/async function handleTurn\(msg\)[\s\S]{0,1200}?_writeOutlineRowField\(step\.fid, clean\)/.test(CTL),
+    // v7.20.327: the write target now comes from the ARMED SLOT, not from STEPS[idx] — the
+    // filing is still verbatim and still inside handleTurn with no round-trip, but `step` is
+    // resolved from the ask that requested the answer.
+    ok(/async function handleTurn\(msg\)[\s\S]{0,2200}?_writeOutlineRowField\(step\.fid, clean/.test(CTL),
         'the answer is filed VERBATIM inside handleTurn, with no API call in between');
+    ok(/const step = stepByFid\(slot\.fid\)/.test(CTL),
+        'the write target is resolved from the armed slot, not from a cursor');
+    ok(/_walkSlot\.consume\('cw3'\)/.test(CTL),
+        'handleTurn consumes the slot — no ask served means nothing is written');
     ok(/userTurn\(clean\);/.test(CTL),
         'the student turn is echoed by code — sendCanvasMessage used to do this, and dropping it ' +
         'silently would erase their words from the transcript');
@@ -83,8 +90,9 @@ if (!CTL) { console.error('  ❌ could not slice _cwLoglineCtl'); process.exit(1
     ok(/@ALL_OK/.test(CTL), 'and an all-clear marker');
     ok(/if \(!weakFids\.length\) \{[\s\S]{0,120}afterReview\(kind\)/.test(CTL),
         'FAIL-OPEN: a dropped marker or a failed call moves the walk on rather than stranding it');
-    ok(/revisingFid/.test(CTL) && /_writeOutlineRowField\(fid, clean\)/.test(CTL),
-        'a revision re-files that ONE row — and costs no further API call');
+    ok(/revisingFid/.test(CTL) && /_writeOutlineRowField\(fid, clean, \{ replace: true \}\)/.test(CTL),
+        'a revision REPLACES that ONE row — and costs no further API call. Appending here stitched '
+        + 'both drafts into the box (the v7.20.289 bug, reintroduced by .325 and fixed at .327)');
     ok(/weakFids = weakFids\.filter/.test(CTL),
         'a sharpened component leaves the weak list, so the chips cannot loop forever');
 }
