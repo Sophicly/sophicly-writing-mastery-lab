@@ -176,6 +176,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/rail-panel-harness.js || fail=1
 fi
 
+# v7.20.322: CW KEY-SHAPE GATE (first half of the ghost-call/key-shape harness Neil approved).
+# Root CLAUDE.md §5d: a write-key that does not match a read-key is the number-one recurring
+# Sophicly defect, and it is SILENT — "it saved fine but nothing appears". This asserts that every
+# CW document field id a walk writes, reads, or declares in its step table has a row that actually
+# creates it, in BOTH the baked template (new projects) and an on-load heal (existing ones).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|cw-keymatch-harness\.js'; then
+  node bin/cw-keymatch-harness.js || fail=1
+fi
+
 # v7.20.290: WALK STOP-RULE GATE. A code-owned walk means CODE serves every ask; if the protocol
 # does not order the model to END its reply at the verdict signal, the model invents the next ask
 # and the student sees TWO competing questions (Neil's live catch: Step 4 doubled every beat from 2

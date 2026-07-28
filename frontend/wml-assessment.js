@@ -4307,6 +4307,10 @@
         { fid: 'cw-step-4-beat4', label: 'Beat 4 — And because of this…' },
         { fid: 'cw-step-4-beat5', label: 'Beat 5 — And because of this…' },
         { fid: 'cw-step-4-beat6', label: 'Beat 6 — Until finally…' },
+        // v7.20.322: the throughline rides the spine everywhere the spine is shown or sent. It is
+        // the SHAPE of the ending the six beats build to, so a later step reading the spine without
+        // it is reading an incomplete plan — and the Story Spine rail panel now shows it too.
+        { fid: 'cw-step-4-throughline', label: 'Dramatic Throughline' },
     ];
     // One cache per source artifact: { artifactKey: { id: projectId, map: {fid: text} } }.
     const _cwDocCache = {};
@@ -17949,6 +17953,7 @@
             const OBSTACLES = ['A single person', 'A group or society', 'A force of nature'];
             const STAKES = ['Personal stakes', 'Public stakes'];
             const THROUGHLINES = ['The protagonist succeeds', 'The protagonist is defeated', 'The protagonist abandons the goal'];
+            const THROUGHLINE_FID = 'cw-step-4-throughline';   // v7.20.322: ONE builder, both sides
 
             // echo = the Step-3 row whose answer is shown back instead of being re-asked.
             // v7.20.282 INTERACTION REDESIGN (Neil): every ask = criteria upfront → worked
@@ -18208,6 +18213,14 @@
             function onThroughlinePick(pick) {
                 throughline = pick;
                 persist();                       // v7.20.265: bank the pick BEFORE the send
+                // v7.20.322: file it in the DOCUMENT too. It lived only in the localStorage
+                // sidecar, which finish() clears — so the student's choice was destroyed by
+                // completing the step, and neither Step 6 nor a returning session could read it.
+                // The document is the durable record of every other answer in this walk; this is
+                // no different. It is also what makes the resume below honest (see tryResume).
+                try {
+                    if (_writeOutlineRowField(THROUGHLINE_FID, pick) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                } catch (e) { console.warn('WML CW4: throughline write failed (non-fatal)', e && e.message); }
                 canvasChatHistory.push({ role: 'user', content: pick });
                 addChatMessage(pick, 'user');
                 fireCoherenceCheck();
@@ -18403,6 +18416,22 @@
                     // `active = idx < BEATS.length` made BOTH resolve to inert, so the student
                     // came back to a dead step with no wrap and no sub-step progress.
                     if (idx >= BEATS.length) {
+                        // v7.20.322 (Neil's live catch: the three throughline chips stapled onto
+                        // the finished wrap-up). THE DOCUMENT DECIDES, and it is asked FIRST —
+                        // the same ruling as the v7.20.312 Step-1 loop fix.
+                        //
+                        // ROOT: finish() calls clearPersist(), so re-entering a COMPLETED Step 4
+                        // read an empty sidecar → `phase = d.phase || 'chip'` → fell past the
+                        // 'coherence' branch below → FORCED phase='throughline' and re-attached the
+                        // chips to whatever the newest bubble was. A finished walk and a walk
+                        // parked on the throughline were indistinguishable, because the only
+                        // evidence the pick had happened lived in the sidecar that finishing wipes.
+                        // Now the pick is a document row, so "already chosen" is a durable fact.
+                        if (rowText(THROUGHLINE_FID)) {
+                            clearPersist(); active = false; pending = false;
+                            console.log('WML CW4: throughline already chosen — walk is finished, no chips');
+                            return false;
+                        }
                         if (phase === 'coherence') {
                             clearPersist(); active = false; pending = false;
                             console.warn('WML CW4: resumed after an unfinished coherence check — serving the wrap');
@@ -33706,6 +33735,34 @@
                 console.log('WML CW: Step 4 chosen-logline carry section healed in');
             } catch (e) { console.log('WML CW: step4 carry heal skipped —', e && e.message); }
         };
+        // v7.20.322: HEAL existing Step-4 docs that predate the Dramatic Throughline row. The doc
+        // shape is BAKED at creation (reference_wml_outline_scaffold_baked_needs_onload_heal), so
+        // every project created before this build has six beats and nowhere to file the pick.
+        // Inserted directly after Beat 6, which is where it belongs and where the walk asks for it.
+        const tryHealCwStep4Throughline = () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 4) return;
+            try {
+                let hasRow = false, beat6End = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (node.type.name !== 'outlineRow' || !node.attrs) return true;
+                    const fid = node.attrs.fieldId || '';
+                    if (fid === 'cw-step-4-throughline') { hasRow = true; return false; }
+                    if (fid === 'cw-step-4-beat6') beat6End = pos + node.nodeSize;
+                    return true;
+                });
+                if (hasRow || beat6End === null) return;
+                _migrationActive = true;
+                try {
+                    canvasEditor.commands.insertContentAt(beat6End, outlineRowHTML({
+                        id: 'throughline', label: 'Dramatic Throughline',
+                        prompt: 'What happens to your protagonist’s goal in the end — do they succeed, are they defeated, or do they abandon it?'
+                    }, 'cw-step-4-throughline'));
+                } finally { _migrationActive = false; }
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 4 throughline row healed in');
+            } catch (e) { console.log('WML CW: step4 throughline heal skipped —', e && e.message); }
+        };
+
         // v7.19.682: CW Step 5 — fill the read-only "Your Outline (from Step 4)" beats from
         // the `brief_outline` artifact (the saved Step-4 doc). Parses the six cw-step-4-beat
         // rows out of that HTML and writes them into the locked cw-step-5-s4-beat rows.
@@ -33967,7 +34024,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -36967,7 +37024,13 @@
                 outlineRowHTML({ id: 'beat3', label: 'Beat 3: Until\u2026', prompt: 'The inciting incident that disrupts everything. How is this event secretly an opportunity?' }, 'cw-step-4-beat3') +
                 outlineRowHTML({ id: 'beat4', label: 'Beat 4: Because of This\u2026', prompt: 'The protagonist\u2019s goal is born \u2014 a physical quest representing their deeper need.' }, 'cw-step-4-beat4') +
                 outlineRowHTML({ id: 'beat5', label: 'Beat 5: Because of This\u2026', prompt: 'The main obstacle and the Road of Trials.' }, 'cw-step-4-beat5') +
-                outlineRowHTML({ id: 'beat6', label: 'Beat 6: Until Finally\u2026', prompt: 'The climax, resolution, and self-revelation. How does what they get contrast with what they thought they wanted?' }, 'cw-step-4-beat6')
+                outlineRowHTML({ id: 'beat6', label: 'Beat 6: Until Finally\u2026', prompt: 'The climax, resolution, and self-revelation. How does what they get contrast with what they thought they wanted?' }, 'cw-step-4-beat6') +
+                // v7.20.322: the dramatic throughline is a REAL authored decision \u2014 the one the
+                // coherence check judges the ending against \u2014 and until now it existed only in a
+                // localStorage sidecar that the walk CLEARS on finish. It was therefore lost the
+                // moment the student completed the step, invisible to Step 6, and unrecoverable.
+                // It is a document row now, like every other answer in this step.
+                outlineRowHTML({ id: 'throughline', label: 'Dramatic Throughline', prompt: 'What happens to your protagonist\u2019s goal in the end \u2014 do they succeed, are they defeated, or do they abandon it?' }, 'cw-step-4-throughline')
             );
             return html;
         }
