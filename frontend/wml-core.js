@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.331';
+var WML_BUILD = '7.20.332';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2952,6 +2952,23 @@ window.WML = (function() {
         text = text.replace(/@CW6\\?_START/g, '').trim();
         text = text.replace(/@STAGE\\?_(OK|GAP)/g, '').trim();
         text = text.replace(/@OUTLINE\\?_(OK|GAP)/g, '').trim();
+        // ═══════════════════════════════════════════════════════════════════════════════════
+        // v7.20.332 — GENERIC MARKER SWEEP. Neil, staging .331: "@WEAK: goal, stakes" rendered
+        // in the chat, in front of students.
+        //
+        // ROOT: this stripper is a hand-maintained ENUMERATION. Every new marker has to be
+        // remembered here as well as where it is parsed, and @WEAK/@ALL_OK (added at v7.20.325)
+        // never were. Adding two more lines would leave the NEXT marker free to leak, so instead
+        // strip by the SHAPE the protocol law already mandates: "put the marker on its own line
+        // as the FINAL line". Anything matching that shape is a machine signal by definition and
+        // can never be prose the student is meant to read.
+        //
+        // Deliberately conservative: the marker must occupy a WHOLE line on its own. An @NAME
+        // mid-sentence is left alone, so ordinary prose cannot be eaten.
+        text = text.replace(/^[ \t]*@[A-Z][A-Z0-9_]{2,}(?:[ \t]*:[^\n]*)?[ \t]*$/gm, '').trim();
+        // Collapse the blank line the sweep leaves behind.
+        text = text.replace(/\n{3,}/g, '\n\n').trim();
+
         // v7.19.434: Strip @SECTION_BEGIN{...}...@SECTION_END synthesis blocks (Phase 2 — the
         // wrapped profile/loglines are written into the canvas section, not echoed in the bubble).
         text = text.replace(/@SECTION_BEGIN\s*\{[^}]*\}[\s\S]*?@SECTION_END/g, '').trim();

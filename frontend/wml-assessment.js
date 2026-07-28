@@ -17928,11 +17928,11 @@
                     '**7 of 7 — The stakes**\n\nStakes are what make the reader care: if your protagonist fails, what is lost?\n\n**Strong stakes are:**\n\n- **personal and specific** — we can picture exactly what would be lost, and who loses it\n- **as heavy as survival** — even in a comedy, failing must cost something enormous\n- **devastating for THIS protagonist** — the loss lands exactly on their wound\n\nFeel the difference:\n\n- *“If she fails, the world ends.”* — vague; we feel nothing.\n- *“If she fails, her little sister goes into the arena alone.”* — specific; we feel it instantly.\n- If Scrooge doesn’t change, he dies alone and unmourned — the very future the ghost makes him watch.\n\n' + HELP_LINE + '\n\n**If your protagonist fails, what exactly do they lose — and why would that loss be devastating for them in particular?**' },
             ];
             const FORMULAS = [
-                { fid: 'cw-step-3-logline-1', ask:
+                { fid: 'cw-step-3-logline-1', label: 'Logline 1 (Action)', ask:
                     '**Logline 1 of 3 — Action-oriented**\n\n> **INCITING INCIDENT + PROTAGONIST + ACTION + ANTAGONIST**\n\n- *“After being rescued by a German bounty hunter, a freed slave sets out to rescue his wife from a brutal Mississippi plantation owner.”* — **Django Unchained**\n- *“When a young boy disappears, his mother, a police chief, and his three friends must confront terrifying forces to get him back.”* — **Stranger Things**\n\n**What I’ll be looking for:** a single clear event kicking things off, a concrete action, and a specific antagonist. One sentence — and a rough first draft is fine; you’ll polish the wording in your document later.\n\n**Write your story as one sentence using this formula.**' },
-                { fid: 'cw-step-3-logline-2', ask:
+                { fid: 'cw-step-3-logline-2', label: 'Logline 2 (Goal)', ask:
                     '**Logline 2 of 3 — Goal-oriented**\n\n> **PROTAGONIST + ACTION + ANTAGONIST + GOAL + STAKE**\n\n- *“Luke Skywalker, a spirited farm boy, joins rebel forces to fight the evil Darth Vader and rescue Princess Leia from certain death at the hands of the Empire.”* — **Star Wars**\n\nSame story, but this lens leads with who they are, what they want, and what they stand to lose.\n\n**What I’ll be looking for:** a protagonist we glimpse in a phrase (“a spirited farm boy”), a picturable goal, and a stake that would genuinely hurt.\n\n**Write your second logline.**' },
-                { fid: 'cw-step-3-logline-3', ask:
+                { fid: 'cw-step-3-logline-3', label: 'Logline 3 (Character arc)', ask:
                     '**Logline 3 of 3 — Character-arc oriented**\n\n> **PROTAGONIST has an opportunity to DO SOMETHING LIFE-CHANGING but must learn to CHANGE THEIR FLAW so they can find a solution TO THE PROBLEM**\n\n- *“An old, greedy capitalist called Scrooge has an opportunity to improve the lives of those around him but he must learn to let go of his fear of human relationships so he can become more generous and find a solution to his and others’ unhappiness.”* — **A Christmas Carol**\n- *“A young daughter of a capitalist family called Sheila has an opportunity to improve the lives of those around her but she must learn to recognise the injustices that she and her family commit so she can become more selfless and help find a solution to her society’s inequalities.”* — **An Inspector Calls**\n\nThis one is about your protagonist’s inner journey — the flaw and the wound you named earlier.\n\n**What I’ll be looking for:** the opportunity, the flaw they must change, and the solution changing it unlocks — the change sits at the centre, which is exactly where the meaning lives.\n\n**Write your third logline.**' },
             ];
             // v7.20.289: a push cycle has TWO kinds, and they bank differently.
@@ -18140,7 +18140,15 @@
                 bc.appendChild(bar);
             }
             function stepByFid(fid) { for (let i = 0; i < STEPS.length; i++) if (STEPS[i].fid === fid) return STEPS[i]; return null; }
-            function labelOf(fid) { const st = stepByFid(fid); return (st && st.label) || 'this one'; }
+            // v7.20.332: a missing label produced TWO chips both reading "Sharpen my this one →"
+            // (Neil's staging run) — indistinguishable, so the student cannot tell which is which.
+            // Fall back to the fid tail rather than a word that collides, and say so in the console.
+            function labelOf(fid) {
+                const st = stepByFid(fid);
+                if (st && st.label) return st.label;
+                console.warn('WML CW3: step ' + fid + ' has no label — chip text will be derived from its id');
+                return String(fid).replace('cw-step-3-', '').replace(/-/g, ' ');
+            }
 
             // ONE call. Reads all seven components together and names the weak ones.
             function fireReview(kind) {
@@ -18237,7 +18245,10 @@
                     userTurn(pick);
                     const full = map[pick] || '';
                     try {
-                        if (_writeOutlineRowField(CHOSEN_FID, full) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                        // v7.20.332: REPLACE. The box holds ONE sentence; appending glued the pick
+                        // onto whatever was there from an earlier run — Neil's staging run filed
+                        // "Logline Test 2after dying in a car accident…" as his chosen logline.
+                        if (_writeOutlineRowField(CHOSEN_FID, full, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
                     } catch (e) { console.warn('WML CW3: chosen-logline write failed (non-fatal)', e && e.message); }
                     aiBubble('Filed into your **Chosen Logline** box \u2014 that is the sentence Step 4 will build from.\n\nFine-tune the wording there whenever you like; it is your sentence.');
                     resetSend();

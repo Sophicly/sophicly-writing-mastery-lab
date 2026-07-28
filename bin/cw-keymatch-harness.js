@@ -263,6 +263,35 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     }
 }
 
+// ── MARKERS NEVER REACH THE STUDENT (v7.20.332) ─────────────────────────────────────────────
+// Neil, staging .331: "@WEAK: goal, stakes" rendered in the chat in front of students. The
+// stripper in wml-core.js was a hand-maintained ENUMERATION, and @WEAK/@ALL_OK (v7.20.325) were
+// never added to it. Two more lines would have left the NEXT marker free to leak, so the sweep
+// now strips by SHAPE — any @UPPER_SNAKE alone on its own line, which is exactly the form the
+// protocol law mandates ("put the marker on its own line as the FINAL line").
+{
+    console.log('CW MARKERS — a machine signal can never render to a student');
+    const core = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
+    const SWEEP = /text = text\.replace\(\/\^\[ \\t\]\*@\[A-Z\]\[A-Z0-9_\]\{2,\}/;
+    ok(SWEEP.test(core),
+        'the generic marker sweep is gone from formatAI — every new marker would have to be '
+        + 'remembered by hand again, which is how @WEAK reached a live lesson');
+
+    // Functional: the shape must strip what the walks emit, and leave prose alone.
+    const sweep = (t) => t.replace(/^[ \t]*@[A-Z][A-Z0-9_]{2,}(?:[ \t]*:[^\n]*)?[ \t]*$/gm, '')
+        .replace(/\n{3,}/g, '\n\n').trim();
+    [['@WEAK: goal, stakes', 'the Step-3 component review'],
+     ['@ALL_OK', 'the Step-3 all-clear'],
+     ['@WEAK: logline-2, logline-3', 'the Step-3 logline review'],
+     ['@A_MARKER_ADDED_TOMORROW: x', 'a marker nobody has written yet']].forEach(([m, what]) => {
+        ok(sweep('Some real feedback for the student.\n\n' + m).indexOf('@') === -1,
+            `${what} (${m}) still renders to the student`);
+    });
+    // ...and ordinary prose containing an @ is untouched.
+    const prose = 'Email me @ the address, or ask @JOHN_SMITH about it.';
+    ok(sweep(prose) === prose, 'the sweep ate ordinary prose containing an @ — it must only strip a whole line');
+}
+
 console.log(`   ${asserts.pass} assertions passed`);
 if (fail) {
     console.error(`❌ cw-keymatch-harness FAILED (${asserts.fail} assertion(s)).`);

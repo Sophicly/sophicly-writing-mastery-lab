@@ -273,6 +273,60 @@ console.log('I8 · a help bar and a Continue nav coexist on one bubble, in eithe
     ok(m2.nav && m2.help, 'the two kinds cannot coexist in the reverse order either');
 }
 
+// ── I9 · THE CHOSEN LOGLINE REPLACES, AND EVERY SHARPEN CHIP IS DISTINGUISHABLE ───────────
+// Both from Neil's staging run of .331:
+//   · the pick was APPENDED onto whatever the box already held, filing
+//     "Logline Test 2after dying in a car accident…" as his chosen logline;
+//   · the logline review offered two chips BOTH reading "Sharpen my this one →", because the
+//     three formulas carry no label and labelOf() fell back to a colliding word.
+console.log('I9 · the chosen logline replaces; every sharpen chip names its own field');
+{
+    const w = world({ prefill: { 'cw-step-3-chosen': 'LEFTOVER-FROM-AN-EARLIER-RUN' } });
+    w.ctl.forceStart();
+    await settle();
+    w.toAsk();
+
+    // Answer all ten asks. The COMPONENT review passes clean; the LOGLINE review names two weak.
+    let guard = 0;
+    while (guard++ < 40 && !STEP_FIDS.every((f) => w.rows.get(f))) {
+        if (w.chips().length && !w.chips().some((c) => /Sharpen|Move on/i.test(String(c.textContent)))) {
+            w.tapMenu(); continue;
+        }
+        if (w.chips().some((c) => /Sharpen|Move on/i.test(String(c.textContent)))) break;
+        const filled = STEP_FIDS.filter((f) => w.rows.get(f)).length;
+        w.say('answer ' + guard, filled >= COMPONENTS.length ? '@WEAK: logline-2, logline-3' : '@ALL_OK');
+    }
+    ok(STEP_FIDS.every((f) => w.rows.get(f)),
+        'setup: the run did not reach the end of the walk — I9 would pass without testing anything');
+
+    // STAGE 1 — the logline review's Sharpen chips must be distinguishable.
+    const sharpen = w.chips().filter((c) => /Sharpen/i.test(String(c.textContent))).map((c) => String(c.textContent));
+    ok(sharpen.length >= 2,
+        'setup: the logline review offered ' + sharpen.length + ' Sharpen chips, expected 2 — '
+        + 'this assertion block is not being exercised');
+    ok(new Set(sharpen).size === sharpen.length,
+        'two Sharpen chips carry the SAME label (' + sharpen.join(' / ') + ') — the student cannot '
+        + 'tell which one they are about to rewrite (Neil, staging .331)');
+    ok(!sharpen.some((t) => /this one/i.test(t)),
+        'a Sharpen chip reads "this one" — labelOf() fell back to a colliding word: ' + sharpen.join(' / '));
+
+    // STAGE 2 — Move on, then the picker files the chosen logline.
+    const moveOn = w.chips().filter((c) => /Move on/i.test(String(c.textContent)))[0];
+    ok(!!moveOn, 'setup: no "Move on" chip on the logline review');
+    if (moveOn) w.tap(moveOn);
+    const picks = w.chips();
+    ok(picks.length > 0, 'setup: the logline picker offered no choices — the pick path is untested');
+    if (picks.length) {
+        w.tap(picks[0]);
+        const chosen = String(w.rows.get('cw-step-3-chosen') || '');
+        ok(chosen.length > 0, 'the pick filed nothing into the Chosen Logline box');
+        ok(chosen.indexOf('LEFTOVER-FROM-AN-EARLIER-RUN') === -1,
+            'the chosen logline was APPENDED to what the box already held — it must REPLACE, or the '
+            + 'student files two sentences glued together (Neil, staging .331: '
+            + '"Logline Test 2after dying in a car accident…")');
+    }
+}
+
 // ── I5 · THE SHARPEN REWRITE REPLACES ─────────────────────────────────────────────────────
 // The .289 bug, reintroduced by .325: the review's "Sharpen my X" chip tells the student their
 // new version REPLACES the old one, then appended, leaving both drafts stitched in one row.

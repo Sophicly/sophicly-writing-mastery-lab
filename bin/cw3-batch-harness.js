@@ -104,8 +104,11 @@ if (!CTL) { console.error('  ❌ could not slice _cwLoglineCtl'); process.exit(1
     ok(!/aiBubble\(/.test(chipsBlock),
         'the review chips ride the review reply — no second bubble underneath it (one message at a time)');
     ok(/function serveLoglinePicker/.test(CTL), 'the chosen-logline picker exists');
-    ok(/_writeOutlineRowField\(CHOSEN_FID, full\)/.test(CTL),
-        'picking a logline files it into the Chosen Logline row for the student');
+    // v7.20.332: and it REPLACES. The box holds ONE sentence; appending glued the pick onto
+    // whatever an earlier run left behind (Neil, staging .331: "Logline Test 2after dying in a
+    // car accident…").
+    ok(/_writeOutlineRowField\(CHOSEN_FID, full, \{ replace: true \}\)/.test(CTL),
+        'picking a logline files it into the Chosen Logline row, REPLACING what was there');
     ok(/const CHOSEN_FID = 'cw-step-3-chosen'/.test(CTL),
         'and it writes the id the rest of the app reads (cw-step-3-chosen)');
     ok(/if \(!opts\.length\) \{ resetSend\(\); return; \}/.test(CTL),
