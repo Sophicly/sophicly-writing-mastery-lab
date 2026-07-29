@@ -625,6 +625,51 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         + 'helper, which only says it when the button actually exists.');
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+// SIM RIG PARITY — four fake worlds must not drift apart (v7.20.338)
+// ───────────────────────────────────────────────────────────────────────────────────────────
+// There should be ONE fake world for the walk sims. There are FOUR: the shared
+// bin/walk-sim-lib.js (used by cw2 + cw3) plus private `makeWorld` copies inside the cw4, cw5
+// and cw6 harnesses that were never migrated.
+//
+// THE COST IS NOT THE EDITS — IT IS DRIFT. On 2026-07-29 two new module-scope helpers
+// (`_tickRowLikeAStudent`, `cwEndpointLine`) each had to be added to four places. Both times
+// the three inline rigs blew up with ReferenceError, which is the LOUD outcome. The quiet
+// outcome is worse: a rig that silently lacks a dependency the others have will test a
+// slightly different product, so a bug cw2 would catch walks straight past cw5.
+//
+// Until the three are migrated (a fresh-context job — see the handoff), this gate makes the
+// divergence impossible to introduce silently: every dependency the SHARED lib provides must
+// also exist in each inline rig. Adding a helper to the lib and forgetting cw6 now fails the
+// build, naming the file and the missing key.
+{
+    console.log('SIM RIG PARITY — one product, four fake worlds, no silent divergence');
+    const depKeys = (file) => {
+        const src = fs.readFileSync(path.join(ROOT, 'bin', file), 'utf8');
+        const keys = new Set();
+        // Dependency entries are `name: value,` at the indentation the rigs use for their maps.
+        (src.match(/^\s{4,8}([A-Za-z_][A-Za-z0-9_]*)\s*:/gm) || [])
+            .forEach((m) => keys.add(m.trim().replace(/:$/, '')));
+        return keys;
+    };
+    const shared = depKeys('walk-sim-lib.js');
+    ok(shared.size > 20, `walk-sim-lib.js exposed only ${shared.size} dependencies — the parity scan has gone blind`);
+
+    // Keys that are genuinely lib-internal plumbing, not part of the product surface a rig
+    // must reproduce. Named, so the exemption is a decision rather than a silent hole.
+    const NOT_PRODUCT = new Set(['console', 'document', 'window', 'localStorage', 'setTimeout', 'clearTimeout']);
+
+    ['cw4-sim-harness.js', 'cw5-sim-harness.js', 'cw6-sim-harness.js'].forEach((rig) => {
+        const mine = depKeys(rig);
+        const missing = [...shared].filter((k) => !NOT_PRODUCT.has(k) && !mine.has(k));
+        ok(missing.length === 0,
+            `${rig} carries its own makeWorld and is missing ${missing.length} dependency(ies) that `
+            + `walk-sim-lib.js provides: ${missing.join(', ')}. Either add them, or migrate this rig `
+            + 'onto the shared world. A rig missing a dependency tests a different product from its '
+            + 'siblings, and the difference is invisible until a bug slips through it.');
+    });
+}
+
 console.log(`   ${asserts.pass} assertions passed`);
 if (fail) {
     console.error(`❌ cw-keymatch-harness FAILED (${asserts.fail} assertion(s)).`);

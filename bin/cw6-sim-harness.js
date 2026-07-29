@@ -164,6 +164,15 @@ function makeWorld(archKey, opts) {
             return true;
         },
         _tickOutlineRow: function (fid) { if (!rows.has(fid)) { world.lostTick = fid; return false; } ticks.add(fid); return true; },
+        _tickRowLikeAStudent: function (fid) { if (!fid) return false; world.ticked = world.ticked || new Set();
+            if (world.ticked.has(fid)) return true;
+            var pre = fid.indexOf('cw-step-2-idea') === 0 ? 'cw-step-2-idea' : (fid.indexOf('cw-step-3-logline-') === 0 ? 'cw-step-3-logline-' : null);
+            if (pre) Array.from(world.ticked).forEach(function (t) { if (t.indexOf(pre) === 0 && t !== fid) world.ticked.delete(t); });
+            world.ticked.add(fid); return true; },
+        _cwLoadStep3Values: function () { return Promise.resolve({}); },
+        _cwStep3Value: function () { return ''; },
+        armCwWalkHandoff: function () { return true; },
+        consumeCwWalkHandoff: function () { return null; },
         cwEndpointLine: function () { return '\n\n---\n\n**That\u2019s this step done.** (sim endpoint)'; },
         saveCanvasContent: function () {},
         CANVAS_SAVE_KEY: function () { return 'sim'; },
