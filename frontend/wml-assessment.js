@@ -17514,7 +17514,7 @@
             function renderQ() {
                 if (idx >= TOTAL) { finish(); return; }
                 const q = QS[idx];
-                let body = '';
+                let body = cwProgressBar(idx, TOTAL);   // v7.20.344
                 if (q.secIntro) body += q.secIntro + '\n\n';
                 body += `**Question ${q.seq} of ${TOTAL} · ${q.secName}**\n\n${q.q}`;
                 aiBubble(body);
@@ -19025,6 +19025,10 @@
                 if (idx >= STEPS.length) { finish(); return; }
                 const stepIdx = idx;
                 const chunks = chunksFor(idx, withIntro);
+                // v7.20.344: the in-chat progress bar rides the ASK — the LAST chunk — not the
+                // paced intro chunks before it, so it marks the moment the student is being asked
+                // rather than appearing on every teaching bubble.
+                if (chunks.length) chunks[chunks.length - 1] = cwProgressBar(idx, STEPS.length) + chunks[chunks.length - 1];
                 // v7.20.327: the ask OWNS the row. Armed only once the ASK itself has been
                 // delivered — it is the last chunk, so a student typing during the paced intro
                 // has not been asked anything yet and files nothing.
