@@ -31,6 +31,8 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const src = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-assessment.js'), 'utf8');
+// v7.20.340: the shipped answer slot + no-ask guard + last-assistant probe, not stand-ins.
+const { attachLiveChipsDeps, attachSlotDeps } = require('./walk-sim-lib');
 
 let fail = 0;
 const asserts = { pass: 0, fail: 0 };
@@ -220,6 +222,8 @@ function makeWorld(opts) {
         setTimeout: function (fn) { fn(); return 0; },
         console: { log: function () {}, warn: function (m) { world.warns = (world.warns || []).concat([String(m)]); } },
     };
+    attachLiveChipsDeps(deps);   // must precede the slot lift (both are module-scope primitives)
+    attachSlotDeps(deps);
     deps.addChatMessage = function (html, who, plain) {
         if (who === 'user') { users.push(html); return; }
         bubbles.push(plain || html);
@@ -343,9 +347,14 @@ Object.keys(ITEMS).forEach(function (k) {
 }
 
 // ── 3. FAIL-OPEN — a dropped or unknown marker leaves their pick standing. ────────────────
-[null, 'no marker at all', '@STRUCTURE_SWAP:not-an-archetype'].forEach(function (reply, n) {
+// v7.20.340: these three drove handleTurn() WITHOUT awaiting startWalk's doc-load promise, so the
+// answers arrived before any ask had been served. That used to "work" because filing was
+// cursor-driven — which is the whole defect the answer slot exists to stop. Await the start.
+const FAIL_OPEN_REPLIES = [null, 'no marker at all', '@STRUCTURE_SWAP:not-an-archetype'];
+for (let n = 0; n < FAIL_OPEN_REPLIES.length; n++) {
+    const reply = FAIL_OPEN_REPLIES[n];
     const w = makeWorld();
-    w.ctl.forceStart();
+    w.ctl.forceStart(); await tick();
     for (let x = 0; x < 3; x++) w.ctl.handleTurn('a');
     w.tap('Tragedy');
     w.resolveApi(reply);
@@ -353,7 +362,7 @@ Object.keys(ITEMS).forEach(function (k) {
     ok((w.check.get('cw-step-5-primary-archetype') || {}).selected === ITEMS['tragedy'],
         'fail-open[' + n + ']: their pick was lost');
     ok(!w.tap('Switch to'), 'fail-open[' + n + ']: a switch chip was offered with nothing valid to switch to');
-});
+}
 
 // ── 4. RESUME — and the call is NEVER re-spent. ───────────────────────────────────────────
 {
@@ -410,6 +419,50 @@ Object.keys(ITEMS).forEach(function (k) {
         const empty = ROW_IDS.filter((f) => f !== 'cw-step-5-primary-archetype' && !w.rows.get(f));
         ok(empty.length === 0, 'no-sidecar@' + n + ': finished with empty rows — ' + empty.join(', '));
     });
+}
+
+// ── 5. ⭐ THE REAL ENTRY PATH (v7.20.340) — the ordering NOTHING tested. ───────────────────
+// Every test above starts the walk with forceStart(), which serves the ask as its first act. The
+// path a STUDENT takes does not: an AI greeting lands first ("Welcome to Step 5…"), then the walk
+// revives from the document. The resume path re-attached only the HELP BAR, and helpBar() binds to
+// the newest bubble — the greeting. So the student got a greeting carrying the whole help ladder
+// and NO QUESTION, while the walk sat live at ask 1 and filed the next thing typed. That is how
+// `let's go` became the answer to ask 1 on staging and put the walk one row behind.
+//
+// THE INVARIANT, and it is the one that would have caught it on day one:
+//   IF THE WALK IS LIVE, THE STUDENT CAN SEE THE QUESTION IT IS WAITING ON.
+// Armed-with-no-question must be unreachable by construction, not merely unlikely.
+{
+    const GREETING = 'Welcome to Step 5: **Choose Your Plot Structure**\n\nLet’s begin.';
+    const w = makeWorld();
+    // The greeting arrives BEFORE the walk exists — exactly as the entry serves it.
+    w.deps.canvasChatHistory.push({ role: 'assistant', content: GREETING });
+    w.deps.addChatMessage(GREETING, 'ai', GREETING);
+    ok(w.deps.localStorage.getItem('sim_cw5') === null, 'real-entry: this path has no sidecar yet');
+
+    ok(w.ctl.tryResume(), 'real-entry: the walk did not revive on a first entry');
+    ok(w.ctl.active, 'real-entry: revived but inactive');
+
+    // ⭐ live ⇒ the question is on screen. Before .340 the newest bubble was still the greeting.
+    const newest = w.bubbles[w.bubbles.length - 1] || '';
+    ok(newest !== GREETING,
+        'real-entry: the newest bubble is still the GREETING — the student has help buttons and no question');
+    ok(/1 of 9|Your Context|Your Inspiration/i.test(newest) || newest.length > GREETING.length,
+        'real-entry: the newest bubble is not the ask — served "' + newest.slice(0, 60) + '…"');
+    ok(!!w.deps._walkSlot.armed, 'real-entry: an ask is on screen but no slot is armed — a typed answer would file nowhere');
+
+    // And the launch words, typed while NO ask has been served, must file NOTHING.
+    const w2 = makeWorld();
+    w2.deps.canvasChatHistory.push({ role: 'assistant', content: GREETING });
+    w2.deps.addChatMessage(GREETING, 'ai', GREETING);
+    w2.ctl.tryResume();
+    w2.deps._walkSlot.clear('cw5');          // the pre-.340 state: live walk, no ask armed
+    const bubblesBefore = w2.bubbles.length;
+    w2.ctl.handleTurn("let's go");
+    ok(!w2.rows.get('cw-step-5-context'),
+        'real-entry: "let\'s go" was FILED as the answer to ask 1 — the whole walk now runs one behind');
+    ok(w2.bubbles.length > bubblesBefore,
+        'real-entry: the message was refused and the student was shown NOTHING (law 4d’s forbidden third outcome)');
 }
 
 console.log('   ' + asserts.pass + ' behavioural assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));

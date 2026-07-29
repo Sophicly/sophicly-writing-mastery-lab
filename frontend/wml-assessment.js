@@ -4361,6 +4361,115 @@
         };
     })();
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // v7.20.339 — THE LIVE-CHIPS REGISTRY: a refusal RE-SERVES, it never POINTS.
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // ROOT of a dead end Neil hit live on staging (2026-07-29). A chip-only ask — the §19
+    // self-assessment tick list — does NOT arm `_walkSlot` (there is no field to file into).
+    // So when he typed instead of tapping, `_walkSlot.consume()` correctly returned null, and
+    // the three walk guards printed:
+    //     "Tap one of the buttons above to carry on — I haven’t asked you to write anything yet."
+    // The chips were attached to an earlier bubble and were gone. Every further message hit the
+    // same branch and reprinted the same sentence: "WHAT BUTTONS?" → same line → "GIVE ME THE
+    // BUTTONS" → same line. No escape existed, by construction.
+    //
+    // That is law 4d's forbidden third outcome (refused, with NOTHING) shipped three times over
+    // by the very guard written to honour law 4d. The lesson, stated so the next port cannot
+    // miss it: A MESSAGE THAT NAMES A CONTROL MUST RENDER THAT CONTROL IN THE SAME TURN.
+    //
+    // The fix is not new text — `cwAttachSelfAssessment(o)` already re-attaches chips without
+    // re-emitting the teaching. What was missing was MEMORY of the ask in flight. This registry
+    // is that memory, and it is also the hook the durable-ask work persists so that a RELOAD
+    // brings the chips back (Neil's explicit ask, same session).
+    let _liveChips = null;   // { walk, reserve(), servedAt }
+    function _armLiveChips(walk, reserve) {
+        if (!walk || typeof reserve !== 'function') {
+            console.warn('WML chips: refusing to arm the live-chip registry without walk+reserve');
+            return;
+        }
+        _liveChips = { walk: walk, reserve: reserve, servedAt: Date.now() };
+    }
+    function _clearLiveChips(walk) {
+        if (!walk || (_liveChips && _liveChips.walk === walk)) _liveChips = null;
+    }
+    function _reserveLiveChips(walk) {
+        if (!_liveChips) return false;
+        if (walk && _liveChips.walk !== walk) return false;
+        try {
+            if (_liveChips.reserve() === false) return false;
+            console.log('WML chips: re-served ' + _liveChips.walk + '’s ask after a stray message');
+            return true;
+        } catch (e) {
+            console.warn('WML chips: re-serve threw —', e && e.message);
+            return false;
+        }
+    }
+    // THE one no-ask guard. Every walk routes its "a message arrived but no ask was served"
+    // branch through here, so no walk can hand a student a sentence and no control.
+    // `fallbackReserve` is the walk's own "serve my current ask again" — required, not optional:
+    // it is what makes the empty outcome unreachable rather than merely unlikely.
+    function _cwNoAskGuard(walk, fallbackReserve, bubble) {
+        console.warn('WML ' + walk + ': message arrived with no ask served — filing nothing.');
+        // ⚠️ ORDER IS LOAD-BEARING. Chips ride the NEWEST bubble
+        // (reference_wml_chip_ui_walk_every_branch_chips_on_newest_bubble), so emitting ANY
+        // bubble after a re-serve orphans the controls we just drew — which is precisely the
+        // dead end this guard exists to end. Explanation first, controls last, always.
+        bubble('I haven’t asked you to write anything yet — here are your options again.');
+        let served = _reserveLiveChips(walk);
+        if (!served && typeof fallbackReserve === 'function') {
+            try { served = fallbackReserve() !== false; }
+            catch (e) { console.warn('WML ' + walk + ': fallback re-serve threw —', e && e.message); }
+        }
+        if (!served) {
+            // Should be unreachable. If it ever fires, say something TRUE and ACTIONABLE rather
+            // than naming buttons that are not there — reload restores the ask from the document.
+            console.warn('WML ' + walk + ': nothing could be re-served — this is a defect, not a state.');
+            bubble('Something went wrong showing your options just then. Reload the page and they will come back — '
+                + 'nothing you have written is lost.');
+        }
+        return served;
+    }
+
+    // v7.20.340 — IS THE ASK ACTUALLY ON SCREEN?
+    // The resume path re-attaches a walk's help/chips to `chatMessages.lastElementChild` on the
+    // assumption that the replayed transcript ends on the ask. It does not when the ask was never
+    // served: on a first entry the last bubble is the "Welcome to Step N" greeting, so the student
+    // got a greeting carrying the whole help ladder and NO QUESTION, while the walk sat armed and
+    // filed the next thing typed into row 1 (Neil, staging: `let's go` in cw-step-5-context).
+    // Cheap, exact test — compare the newest assistant turn against the ask we are about to
+    // re-attach to. Equal → the question is on screen, attach controls only. Not equal → re-serve
+    // the whole ask, which is what makes law 4d's "refused with nothing" unreachable on resume.
+    function _cwLastAssistantIs(history, want) {
+        if (!Array.isArray(history)) return false;
+        for (let n = history.length - 1; n >= 0; n--) {
+            const m = history[n];
+            if (!m || m.role !== 'assistant') continue;
+            return String(m.content || '').trim() === String(want || '').trim();
+        }
+        return false;
+    }
+
+    // v7.20.340 — THE IN-CHAT PROGRESS BAR, for CODE-SERVED walks (Neil, 2026-07-29:
+    // "I thought that was universal and dynamic so that it always appears… hasn't appeared on a
+    // single message in any of the creative writing protocols").
+    //
+    // It WAS universal — but it is not a component the chat renders. It is a placeholder the MODEL
+    // types: formatAI() (wml-core.js) rewrites `[SWML_PROGRESS_<pct>]` into the bar, and the task
+    // gate is a deny-list, so every AI-narrated walk got it for free. Convert a walk to code-served
+    // and no model writes the token, so the bar silently disappears — the exact twin of
+    // "programmatic-first deletes pacing" (WML CLAUDE.md §4b): going programmatic deletes whatever
+    // the model used to emit as a by-product. Anything the narration gave for free has to be
+    // re-emitted deliberately.
+    //
+    // Each walk already knows its position (Step 5 literally prints "2 of 9" beside where the bar
+    // belongs), so the token is DERIVED, never hand-stamped.
+    function cwProgressBar(done, total) {
+        const t = Number(total) || 0;
+        if (t <= 0) return '';
+        const n = Math.max(0, Math.min(t, Number(done) || 0));
+        return '[SWML_PROGRESS_' + Math.round((n / t) * 100) + ']\n\n';
+    }
+
     // v7.20.327 — ONE live-dictation stopper, registered while a mic session is running.
     // The recogniser lives inside a chat-shell closure; leaving the canvas happens outside it,
     // so nothing could stop a running mic on exit and it survived navigation (Neil, 2026-07-28).
@@ -4543,6 +4652,33 @@
     ];
     // One cache per source artifact: { artifactKey: { id: projectId, map: {fid: text} } }.
     const _cwDocCache = {};
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // v7.20.340 — READING A ROW MUST NOT WELD ITS ANSWERS.
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // A push cycle banks two answers into one row separated by a LINE BREAK — `<br><br>` in the
+    // saved HTML, a `hardBreak` node in ProseMirror. Both readers used `textContent`, which
+    // concatenates TEXT nodes and silently drops the break, so the row read back welded:
+    //     "…she is involved in a car accident and diesbut in the world that they're living in…"
+    // The document was never wrong (verified byte-for-byte on staging — the `<br><br>` is there
+    // and it renders correctly). EVERY READER was wrong. That is not cosmetic: the Step-4
+    // coherence check reads the row, saw two beats fused into one sentence, and spent an API call
+    // telling Neil to rewrite a beat that was fine (Neil worked this out himself, live).
+    // Fix the read, never the write — adding a separator at write time would double the ones the
+    // document already has.
+    function _cwNodeText(n) {
+        if (!n) return '';
+        try {
+            // hardBreak is a LEAF: `leafText` is the only way it contributes anything.
+            // Guarded on a NUMERIC content size — anything that only quacks like a PM node (a test
+            // double, a detached fragment) falls through to textContent rather than reading '' and
+            // making a filled row look empty, which would rewind the walk.
+            if (typeof n.textBetween === 'function' && n.content && typeof n.content.size === 'number') {
+                const t = n.textBetween(0, n.content.size, '\n', '\n');
+                if (t) return t;
+            }
+        } catch (e) {}
+        return n.textContent || '';
+    }
     function _cwParseFieldMap(html) {
         const map = {};
         try {
@@ -4550,7 +4686,14 @@
             tmp.innerHTML = String(html || '');
             tmp.querySelectorAll('[data-field-id]').forEach(function (n) {
                 const fid = n.getAttribute('data-field-id');
-                const txt = (n.textContent || '').trim();
+                // Same weld, HTML side: swap every <br> for a real newline before reading.
+                const clone = n.cloneNode(true);
+                try {
+                    clone.querySelectorAll('br').forEach(function (b) {
+                        if (b.parentNode) b.parentNode.replaceChild(document.createTextNode('\n'), b);
+                    });
+                } catch (e) {}
+                const txt = (clone.textContent || '').trim();
                 if (fid && txt && !map[fid]) map[fid] = txt;
             });
         } catch (e) {}
@@ -17776,8 +17919,15 @@
             o.emit(SA_ASK);
             return cwAttachSelfAssessment(o);
         }
+        // v7.20.339: attaching a chip-only ask REGISTERS how to draw it again. A tick list arms no
+        // `_walkSlot` (there is no field to file into), so a stray message reaches the walk guard
+        // with nothing armed — and before this, the guard could only name buttons that had already
+        // scrolled out of reach. Registering the re-draw here is what turns that refusal into a
+        // recovery. Re-arms itself on every re-serve, so it survives repeated stray messages.
         function cwAttachSelfAssessment(o) {
-            return chipBarMulti((o.criteria || []).slice(), onSelfAssessTicks(o));
+            const attached = chipBarMulti((o.criteria || []).slice(), onSelfAssessTicks(o));
+            if (attached && o.walk) _armLiveChips(o.walk, function () { return cwAttachSelfAssessment(o); });
+            return attached;
         }
         function onSelfAssessTicks(o) {
             const criteria = (o.criteria || []).slice();
@@ -17791,6 +17941,9 @@
         }
         function cwAttachSaFollowUp(o, unticked) {
             const addLabel = (o.cycle === 'rewrite') ? SA_ADD_LABEL.rewrite : SA_ADD_LABEL.accumulate;
+            // Same contract as the tick list above — the follow-up is chip-only too, so it must
+            // register its own re-draw or a stray message here lands on the identical dead end.
+            if (o.walk) _armLiveChips(o.walk, function () { return cwAttachSaFollowUp(o, unticked); });
             return o.chipBar([addLabel, SA_SKIP_LABEL], onSelfAssessFollowUp(o, addLabel));
         }
         function onSelfAssessFollowUp(o, addLabel) {
@@ -18025,6 +18178,18 @@
                 const slot = Math.min(countFilledRows(), MAX - 1);
                 _walkSlot.arm('cw2', ROWS[slot], { cycle: 'rewrite' });
             }
+            // v7.20.339 — the RENDER-level twin of armIdeaAsk, and the walk's `fallbackReserve`.
+            // armIdeaAsk only ARMS: it draws nothing. Handing it to _cwNoAskGuard as the recovery
+            // path would have "recovered" by arming an invisible slot and leaving the screen as
+            // dead as before — the same defect with a passing check in front of it. This is the
+            // walk's own ask idiom (bubble → arm → buttons), lifted verbatim from its call sites.
+            function reserveIdeaAsk() {
+                aiBubble(SEG.ask_again);
+                armIdeaAsk();
+                appendIdeaButtons();
+                persist();
+                return true;
+            }
             // The paid rung. Their next turn is a QUESTION: it goes to the model, nothing is filed,
             // and the ask is re-armed the moment the answer lands.
             function startAsking() {
@@ -18097,7 +18262,7 @@
                         canvasEditor.state.doc.descendants((n) => {
                             if (out) return false;
                             if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
-                                && n.attrs && n.attrs.fieldId === fid) { out = (n.textContent || '').trim(); return false; }
+                                && n.attrs && n.attrs.fieldId === fid) { out = _cwNodeText(n).trim(); return false; }   // v7.20.340: never weld banked answers
                             return true;
                         });
                     }
@@ -18414,8 +18579,9 @@
                 // a non-answer; the slot is what catches it now, and it catches more.
                 const slot = _walkSlot.consume('cw2');
                 if (!slot) {
-                    console.warn('WML CW2: message arrived with no ask served — filing nothing.');
-                    aiBubble('Tap one of the buttons above to carry on — I haven’t asked you to write anything yet.');
+                    // v7.20.339: RE-SERVE, never point. Was a sentence naming buttons that were
+                    // already gone — see the registry note beside _walkSlot.
+                    _cwNoAskGuard('cw2', reserveIdeaAsk, aiBubble);
                     active = true; resetSend();
                     return;
                 }
@@ -18710,7 +18876,7 @@
                         canvasEditor.state.doc.descendants((n) => {
                             if (out) return false;
                             if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
-                                && n.attrs && n.attrs.fieldId === fid) { out = (n.textContent || '').trim(); return false; }
+                                && n.attrs && n.attrs.fieldId === fid) { out = _cwNodeText(n).trim(); return false; }   // v7.20.340: never weld banked answers
                             return true;
                         });
                     }
@@ -18764,7 +18930,14 @@
             const TECH = {
                 'cw-step-3-protagonist': [{ s: 'Pr', l: 'Protagonist' }, { s: 'Ey', l: 'Empathy — making us care' }],
                 'cw-step-3-flaw':     [{ s: 'Fw', l: 'The Flaw' }],
-                'cw-step-3-wound':    [{ s: 'Wu', l: 'The Wound & Shield' }],
+                // v7.20.339: was 'Wu' — a symbol that does NOT exist in the notes data (measured:
+                // 0 occurrences; 'Gh' has 4). The card is "The Ghost / Wound"; "The Wound & Shield"
+                // is only an alias, and the resolver matches symbol-or-exact-name, so this chip
+                // opened nothing — silently, on the very block whose help Neil flagged as thin.
+                // The comment above claimed the symbols were verified; two of eight actually were.
+                // A gate now asserts every symbol here resolves, so a claim like that cannot stand
+                // in for a check again.
+                'cw-step-3-wound':    [{ s: 'Gh', l: 'The Ghost / Wound' }],
                 'cw-step-3-incident': [{ s: 'Ii', l: 'Inciting Incident' }],
                 'cw-step-3-goal':     [{ s: 'Wa', l: 'Want vs Need' }],
                 'cw-step-3-obstacle': [{ s: 'Ax', l: 'The Antagonist' }],
@@ -18903,6 +19076,7 @@
             let saTicks = {}, sa = null;
             function saOpts(step) {
                 return {
+                    walk: 'cw3',   // v7.20.339: lets the live-chips registry re-serve THIS tick list
                     criteria: step.criteria, cycle: step.cycle, emit: aiBubble, chipBar: chipBar,
                     onTicks: function (ticked, unticked) {
                         saTicks[step.fid] = { t: ticked, u: unticked };
@@ -19126,8 +19300,9 @@
                 // row on prod, uid 1334).
                 const slot = _walkSlot.consume('cw3');
                 if (!slot) {
-                    console.warn('WML CW3: message arrived with no ask served — filing nothing.');
-                    aiBubble('Tap one of the buttons above to carry on — I haven’t asked you to write anything yet.');
+                    // v7.20.339: RE-SERVE, never point. `serveCurrent(false)` redraws THIS step's
+                    // ask (no intro re-narration) — see the registry note beside _walkSlot.
+                    _cwNoAskGuard('cw3', function () { serveCurrent(false); }, aiBubble);
                     resetSend();
                     return;
                 }
@@ -19432,7 +19607,7 @@
                         canvasEditor.state.doc.descendants((n) => {
                             if (out) return false;
                             if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
-                                && n.attrs && n.attrs.fieldId === fid) { out = (n.textContent || '').trim(); return false; }
+                                && n.attrs && n.attrs.fieldId === fid) { out = _cwNodeText(n).trim(); return false; }   // v7.20.340: never weld banked answers
                             return true;
                         });
                     }
@@ -19515,7 +19690,7 @@
                     }
                     phase = 'beat';
                     _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });   // v7.20.327
-                    aiBubble(b.ask);
+                    aiBubble(cwProgressBar(BEATS.indexOf(b), BEATS.length) + b.ask);   // v7.20.340
                     appendSpineButtons();
                     persist();
                     resetSend();
@@ -19537,7 +19712,7 @@
                 } catch (e) { console.warn('WML CW4: unmet-need write failed (non-fatal)', e && e.message); }
                 phase = 'beat';
                 _walkSlot.arm('cw4', BEATS[0].fid, { cycle: 'accumulate' });   // v7.20.327
-                aiBubble(BEATS[0].ask);
+                aiBubble(cwProgressBar(0, BEATS.length) + BEATS[0].ask);   // v7.20.340
                 appendSpineButtons();
                 persist();
                 resetSend();
@@ -19650,7 +19825,7 @@
                 // b.fid regardless of what has happened to `idx` in the meantime — and what makes
                 // a message arriving with NO ask served (a stray chip, a paste) file nothing.
                 _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });
-                aiBubble(b.ask);
+                aiBubble(cwProgressBar(BEATS.indexOf(b), BEATS.length) + b.ask);   // v7.20.340
                 appendSpineButtons();
                 persist();
                 resetSend();
@@ -19661,6 +19836,7 @@
             // The student then marks it against the beat's OWN criteria before the walk moves on.
             function saOpts(b) {
                 return {
+                    walk: 'cw4',   // v7.20.339: lets the live-chips registry re-serve THIS tick list
                     criteria: b.criteria, cycle: 'accumulate', emit: aiBubble, chipBar: chipBar,
                     onTicks: function (ticked, unticked) {
                         saTicks[b.fid] = { t: ticked, u: unticked };
@@ -19845,8 +20021,8 @@
                 // filed "Let’s go" into a Step-3 Protagonist row on prod).
                 const slot = _walkSlot.consume('cw4');
                 if (!slot) {
-                    console.warn('WML CW4: message arrived with no ask served — filing nothing.');
-                    aiBubble('Tap one of the buttons above to carry on — I haven’t asked you to write anything yet.');
+                    // v7.20.339: RE-SERVE, never point — see the registry note beside _walkSlot.
+                    _cwNoAskGuard('cw4', function () { serveCurrent(); }, aiBubble);
                     resetSend();
                     return;
                 }
@@ -20207,7 +20383,7 @@
                         canvasEditor.state.doc.descendants(function (n) {
                             if (out) return false;
                             if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
-                                && n.attrs && n.attrs.fieldId === fid) { out = (n.textContent || '').trim(); return false; }
+                                && n.attrs && n.attrs.fieldId === fid) { out = _cwNodeText(n).trim(); return false; }   // v7.20.340: never weld banked answers
                             return true;
                         });
                     }
@@ -20244,6 +20420,7 @@
                 if (!bc) return;
                 // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
                 if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
+                _walkSlot.clear('cw6');   // v7.20.340: a choice is a TAP — nothing typed may file here
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
                     bar.appendChild(el('button', {
@@ -20323,7 +20500,9 @@
             function askBody(a) {
                 const s = stages[a.stage];
                 const c = a.concept;
-                let out = '**' + s.name + ' · ' + a.nInStage + ' of ' + a.stageTotal + '**\n\n';
+                // v7.20.340: the in-chat progress bar, derived from where the walk actually is.
+                let out = cwProgressBar(ASKS.indexOf(a), ASKS.length)
+                    + '**' + s.name + ' · ' + a.nInStage + ' of ' + a.stageTotal + '**\n\n';
                 if (a.kind === 'arc') {
                     out += 'Before the beats, fix the two ends of this stage. ' + s.name + ' is where '
                         + s.job + '.\n\n'
@@ -20356,6 +20535,7 @@
                 phase = 'ask';
                 aiBubble(askBody(a));
                 helpBar(a);
+                _walkSlot.arm('cw6', a.fid, { cycle: 'accumulate' });   // v7.20.340 — see CW5's note
                 persist();
                 resetSend();
             }
@@ -20374,6 +20554,7 @@
                         ? '**Your story’s opening**\n\nIn Step 4 you sketched where your story begins, but I cannot find it — so tell me here in one sentence: **where does your story open?** Present tense, one moment, your protagonist in their ordinary life.'
                         : '**Your story’s ending**\n\nIn Step 4 you sketched how your story ends, but I cannot find it — so tell me here in one sentence: **how does your story end?** What has changed for your protagonist by the last page?');
                     helpBar(a);
+                    _walkSlot.arm('cw6', a.fid, { cycle: 'rewrite' });   // v7.20.340
                     persist();
                     resetSend();
                     return;
@@ -20397,6 +20578,7 @@
                     aiBubble('Write the **whole thing again**, sharpened — one sentence, present tense. Your new version is what goes into this outline.\n\n'
                         + '*(Your Step-4 spine stays exactly as it was — Step 4 is the record of what you did in Step 4. This only changes your Step-6 outline.)*');
                     helpBar(a);
+                    _walkSlot.arm('cw6', a.fid, { cycle: 'rewrite' });   // v7.20.340
                     persist();
                     resetSend();
                     return;
@@ -20503,7 +20685,7 @@
                 const arcAsk = ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)];
                 phase = 'stage-fix'; active = true; persist();
                 aiBubble('**Rewriting the arc of ' + s.name + '**\n\nWrite the **whole arc again** — both ends, not just the part you are changing. Your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> ' + (arcAsk ? (rowText(arcAsk.fid) || '*(blank)*') : '*(blank)*'));
-                if (arcAsk) helpBar(arcAsk);
+                if (arcAsk) { helpBar(arcAsk); _walkSlot.arm('cw6', arcAsk.fid, { cycle: 'rewrite' }); }   // v7.20.340
                 resetSend();
             }
 
@@ -20576,6 +20758,7 @@
                 phase = 'finish-fix'; active = true; persist();
                 aiBubble('**Rewriting your final image**\n\nWrite the **whole image again** — one picture, not a summary. Mirror your opening image, and let the contrast do the telling.\n\nHere is what you have now:\n\n> ' + (rowText(_finishFixAsk.fid) || '*(blank)*'));
                 helpBar(_finishFixAsk);
+                _walkSlot.arm('cw6', _finishFixAsk.fid, { cycle: 'rewrite' });   // v7.20.340
                 resetSend();
             }
             function serveWrap() {
@@ -20623,9 +20806,19 @@
                 if (pending) return;
                 const clean = (msg || '').trim();
                 if (!clean) { resetSend(); return; }
+                // v7.20.340: THE ANSWER SLOT (see CW5's note — CW5 and CW6 were the two walks the
+                // .327 note claimed to cover and never did). No ask served → nothing is written,
+                // and the ask is re-served in the same breath (law 4d).
+                const slot = _walkSlot.consume('cw6');
+                if (!slot) {
+                    _cwNoAskGuard('cw6', function () { serveCurrent(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
+                const slotAsk = ASKS.filter(function (x) { return x.fid === slot.fid; })[0] || null;
                 if (phase === 'stage-fix') {
                     const s = stages[checkStage];
-                    const arcAsk = s ? ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)] : null;
+                    const arcAsk = slotAsk || (s ? ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)] : null);
                     userTurn(clean);
                     if (arcAsk) fileAnswer(arcAsk, clean, true);      // rewrite cycle → replace
                     aiBubble('Updated — that stage’s arc now reads your new version in the document.');
@@ -20636,13 +20829,13 @@
                 }
                 if (phase === 'finish-fix') {
                     userTurn(clean);
-                    if (_finishFixAsk) fileAnswer(_finishFixAsk, clean, true);
+                    if (slotAsk || _finishFixAsk) fileAnswer(slotAsk || _finishFixAsk, clean, true);
                     aiBubble('Updated — your final image now reads your new version in the document.');
                     active = false; clearPersist();
                     serveWrap();
                     return;
                 }
-                const a = ASKS[i];
+                const a = slotAsk || ASKS[i];
                 if (!a) { fireFinishCheck(); return; }
                 userTurn(clean);
                 // `anchor-fix` is a REWRITE (one self-contained sentence → replace); a beat or an
@@ -20719,6 +20912,7 @@
                         phase = 'anchor'; persist();
                     } else {
                         helpBar(ASKS[i]);
+                        _walkSlot.arm('cw6', ASKS[i].fid, { cycle: 'rewrite' });   // v7.20.340
                     }
                     return;
                 }
@@ -20727,11 +20921,23 @@
                 if (phase === 'stage-fix' && checkStage >= 0) {
                     const s = stages[checkStage];
                     const arcAsk = s ? ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)] : null;
-                    if (arcAsk) helpBar(arcAsk);
+                    if (arcAsk) { helpBar(arcAsk); _walkSlot.arm('cw6', arcAsk.fid, { cycle: 'rewrite' }); }   // v7.20.340
                     return;
                 }
-                if (phase === 'finish-fix' && _finishFixAsk) { helpBar(_finishFixAsk); return; }
-                if (ASKS[i]) helpBar(ASKS[i]);
+                if (phase === 'finish-fix' && _finishFixAsk) {
+                    helpBar(_finishFixAsk);
+                    _walkSlot.arm('cw6', _finishFixAsk.fid, { cycle: 'rewrite' });
+                    return;
+                }
+                // v7.20.340: RE-SERVE THE ASK when the replayed transcript does not end on it —
+                // see CW5's twin. A bare helpBar() on a greeting is a help ladder with no question.
+                if (!ASKS[i]) return;
+                if (_cwLastAssistantIs(canvasChatHistory, askBody(ASKS[i]))) {
+                    helpBar(ASKS[i]);
+                    _walkSlot.arm('cw6', ASKS[i].fid, { cycle: 'accumulate' });
+                    return;
+                }
+                serveAsk();
             }
 
             function onReply(reply) {
@@ -21001,7 +21207,7 @@
                         canvasEditor.state.doc.descendants(function (n) {
                             if (out) return false;
                             if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
-                                && n.attrs && n.attrs.fieldId === fid) { out = (n.textContent || '').trim(); return false; }
+                                && n.attrs && n.attrs.fieldId === fid) { out = _cwNodeText(n).trim(); return false; }   // v7.20.340: never weld banked answers
                             return true;
                         });
                     }
@@ -21128,11 +21334,21 @@
             }
 
             // ── the ask ──
+            // v7.20.340: ONE builder for the ask's text, so the bar the resume path compares
+            // against is byte-identical to the bar it served (see _cwLastAssistantIs).
+            function askText(s) { return cwProgressBar(i, STEPS.length) + s.title + '\n\n' + s.body; }
             function serveAsk() {
                 const s = STEPS[i];
                 phase = 'ask';
-                aiBubble(s.title + '\n\n' + s.body);
+                aiBubble(askText(s));
                 helpBar(s);
+                // v7.20.340: ARM THE SLOT. CW5 and CW6 were the two walks the .327 answer-slot note
+                // CLAIMED to cover and never did (0 references each), so filing here was still
+                // cursor-driven: anything typed while the walk was active landed in STEPS[i]'s row
+                // whether or not an ask had been served. That is how `let's go` — typed, lower-case,
+                // straight apostrophe, so NOT the launch chip — became the answer to ask 1 and put
+                // the whole walk one row behind (Neil, staging, measured in cw-step-5-context).
+                _walkSlot.arm('cw5', s.fid, { cycle: 'rewrite' });
                 persist();
                 resetSend();
             }
@@ -21157,6 +21373,7 @@
             const PICK_PROMPT = 'Take this one seriously: your Step-6 outline, your scenes and every draft build on it. You can change it later, but only by coming back here — which rebuilds the work that follows.\n\n**Which of these is the SPINE of your story?**';
             function servePickPrompt() {
                 phase = 'pick'; persist();
+                _walkSlot.clear('cw5');   // v7.20.340: a pick is a TAP — nothing typed may file here
                 aiBubble(PICK_PROMPT);
                 chipBar(ORDER.map(function (k) { return _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[k]); }), onPick);
                 resetSend();
@@ -21220,6 +21437,7 @@
                 sendCanvasMessage();
             }
             function servePushChoice() {
+                _walkSlot.clear('cw5');   // v7.20.340: a choice is a TAP
                 const cur = pickValue();
                 aiBubble('It is your call, and either answer is a real one — a structure you have thought about and kept is stronger than one you changed because you were asked to.');
                 chipBar(['Switch to ' + _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[swapKey]) + ' →', 'Keep ' + _cw5ChipLabel(cur || '') + ' →'], onPushChoice);
@@ -21240,6 +21458,7 @@
             function serveMulti() {
                 const cur = pickValue();
                 phase = 'multi'; persist();
+                _walkSlot.clear('cw5');   // v7.20.340: multi-select is a TAP
                 aiBubble('**9 of 9 — Secondary elements**\n\nThe most interesting stories do not follow one shape rigidly — they BLEND. *The Hunger Games* is primarily Overcoming the Monster with strong Coming of Age (Katniss grows up fast) and The Quest (she is fighting towards a goal). *A Christmas Carol* is Rebirth/Redemption with Voyage and Return inside it (the ghost journeys).\n\n'
                     + 'You have chosen **' + (_cw5ChipLabel(cur || '') || 'your primary shape') + '** as your spine. **Tap any other shapes whose elements you want woven in**, then Continue. (None at all is a perfectly good answer — just press Continue.)');
                 chipBarMulti(ORDER.filter(function (k) { return CW5_ARCHETYPE_ITEMS[k] !== cur; })
@@ -21303,10 +21522,20 @@
                 if (!clean) { resetSend(); return; }
                 const s = STEPS[i];
                 if (!s || s.kind === 'pick' || s.kind === 'multi') { resetSend(); return; }   // those are taps
+                // v7.20.340: WHERE this answer goes comes from the ask that requested it. No ask
+                // served → nothing is written, and the ask is re-served in the same breath (law 4d:
+                // a refusal must leave a question on screen).
+                const slot = _walkSlot.consume('cw5');
+                if (!slot) {
+                    _cwNoAskGuard('cw5', function () { serveCurrent(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
                 userTurn(clean);
                 // No per-answer judgment ⇒ no push cycle, so there is no accumulate/rewrite
                 // ambiguity here (§4c.6): each ask owns one row and files once.
-                fileAnswer(s, clean, false);
+                const target = STEPS.filter(function (x) { return x.fid === slot.fid; })[0] || s;
+                fileAnswer(target, clean, false);
                 advance();
             }
 
@@ -21345,7 +21574,21 @@
                 const s = STEPS[i];
                 if (s && s.kind === 'pick') { serveMenu(true); return; }
                 if (s && s.kind === 'multi') { serveMulti(); return; }
-                if (s) helpBar(s);
+                // v7.20.340: RE-SERVE THE ASK, not just its help bar. `helpBar()` binds to
+                // `chatMessages.lastElementChild`, which on the resume path is the "Welcome to
+                // Step N" greeting — so the student got a greeting carrying 💡📖👤🧩🗒 and NO
+                // QUESTION (Neil's screenshot), while the walk sat armed on ask 1 and filed the
+                // next thing typed. One defect, two symptoms: the orphaned help ladder and the
+                // one-behind sequence. serveAsk() re-emits the question, re-attaches its help to
+                // ITS OWN bubble, and re-arms the slot. When the replayed transcript DOES end on
+                // the ask, attach the help to it and just re-arm — no duplicate question.
+                if (!s) return;
+                if (_cwLastAssistantIs(canvasChatHistory, askText(s))) {
+                    helpBar(s);
+                    _walkSlot.arm('cw5', s.fid, { cycle: 'rewrite' });
+                    return;
+                }
+                serveAsk();
             }
 
             function onReply(reply) {

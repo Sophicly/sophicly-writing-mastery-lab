@@ -59,18 +59,39 @@ best-evidenced part of it.** It is strong enough to carry its own article.
 
 ---
 
-## ⚠ THE DOUG LEMOV QUOTE — Neil's memory needs correcting
-Neil recalled Lemov saying "the only acceptable level of performance is 100%". Two different Lemov
-techniques are being blended, and using the wrong one would misattribute him:
-- **"Right is Right"** — *this is the one Neil means.* "Set and defend a high standard of
-  correctness. Don't 'round up' an almost-correct answer." That is exactly the mastery standard
-  Sophicly teaches: an answer that is nearly right is not right.
-- **"100 Percent"** — a *behavioural* technique (Technique 36 in the original *Teach Like a
-  Champion*), about 100% of students following directions. It is about compliance, not work quality.
-- ✅ **Safe to write:** Lemov's "Right is Right" — do not round up an almost-correct answer.
-- ⛔ **Do not write:** "Lemov says the only acceptable level of performance is 100%" as a quotation.
-- ⚠ Verify the exact wording against the book before printing it in quotation marks — the phrasing
-  above is from secondary sources, not from a copy of the text.
+## ⭐ THE DOUG LEMOV QUESTION — RESOLVED FROM PRIMARY SOURCES (29 Jul 2026)
+Neil recalled Lemov setting "a 100% standard as the only acceptable level of effort", and thought it
+was in *Practice Perfect*. **Checked against Neil's own copies of both books.** Three separate
+things were being blended, and one of them contradicts the claim outright.
+
+### ✅ USE THIS — "Right is Right", *Teach Like a Champion* Technique 2
+Verbatim from the text: **"Set and defend a high standard of correctness in your classroom… Do not
+accept partially or almost right answers; hold out for all the way… Believes they are capable of
+getting answers as right as students anywhere else."**
+This IS the mastery standard Sophicly teaches: an answer that is nearly right is not right. It is
+the correct citation for the point Neil wants to make.
+
+### ⚠ NOT THIS — "100%", *Teach Like a Champion* Technique 36
+"There is one acceptable percentage of students **following a direction** given in your classroom:
+100%." (Confirmed by Neil's own funnel image `100% Doug Lemov.png`.) This is about **behavioural
+compliance**, not work quality. Citing it as a standard of effort or attainment misreads it.
+
+### ⛔ AND *PRACTICE PERFECT* SAYS THE OPPOSITE — this is the important one
+Verbatim from Neil's copy of *Practice Perfect*: **"While we want participants to experience
+primarily success during practice, the ideal success rate still isn't 100 percent — if that's the
+case, then the activity isn't hard enough."**
+**Do not attribute a "100% standard" to Practice Perfect.** The book explicitly rejects it as a
+target for practice design. Printing that claim would be refutable from the book itself.
+
+### The reconciliation — and it is genuinely useful pedagogy
+The two ideas are not in conflict; they apply at different moments:
+- **When JUDGING an answer:** hold the full standard. Nearly right is not right. (*Right is Right*)
+- **When DESIGNING practice:** it should be hard enough that the student does NOT succeed every
+  time. A 100% success rate means the practice is too easy. (*Practice Perfect*, and this converges
+  exactly with Bjork's **desirable difficulties** — see the mastery research doc.)
+
+**Article-ready line for a parent:** *if your child gets everything right in practice, the practice
+is too easy — but when the work is finally marked, "nearly right" should never be called right.*
 
 ---
 

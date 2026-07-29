@@ -38,7 +38,7 @@ const path = require('path');
 // v7.20.333: this file still carries its own inline makeWorld (the migration to walk-sim-lib the
 // .327 handoff prescribes). It borrows the lib's SELF-ASSESSMENT slice rather than making a second
 // one — a per-rig copy of a primitive is the same drift class as a per-walk copy of a fix.
-const { attachSelfAssessDeps, NEUTRAL_RE, SA_ADD_RE, TICK_LIST_RE } = require('./walk-sim-lib');
+const { attachLiveChipsDeps, attachSlotDeps, attachSelfAssessDeps, NEUTRAL_RE, SA_ADD_RE, TICK_LIST_RE } = require('./walk-sim-lib');
 
 const ROOT = path.resolve(__dirname, '..');
 const src = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-assessment.js'), 'utf8');
@@ -211,16 +211,13 @@ function makeWorld(opts) {
 
     // v7.20.333: the REAL tick list, follow-up, multi-select bar and duplicate guard — the same
     // slice walk-sim-lib gives cw3-sim, not a second copy of it.
+    attachLiveChipsDeps(deps);   // v7.20.339 — must precede the SA lift (it calls _armLiveChips)
     attachSelfAssessDeps(deps);
 
-    // Give the real module-scope _walkSlot to the controller if this build has it, so the
-    // harness exercises the shipped primitive rather than a stand-in.
-    const slotIdx = src.indexOf('const _walkSlot = (function () {');
-    if (slotIdx >= 0) {
-        const SLOT_SRC = braceSliceFrom(src, slotIdx, '(', ')').text + '()';
-        // eslint-disable-next-line no-new-func
-        deps._walkSlot = new Function('console', 'return ' + SLOT_SRC + ';')(deps.console);
-    }
+    // v7.20.340: the shipped _walkSlot + _cwLastAssistantIs + cwProgressBar, from the ONE lifter in
+    // walk-sim-lib. This rig used to lift _walkSlot privately, which is why cw5/cw6 — the two rigs
+    // that never grew a copy — could drive controllers with no answer slot at all and pass.
+    attachSlotDeps(deps);
 
     const origAdd = function (html, who) { if (who === 'user') users.push(html); };
     deps.addChatMessage = function (html, who, plain) {

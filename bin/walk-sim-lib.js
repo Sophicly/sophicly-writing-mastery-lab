@@ -59,6 +59,62 @@ const settle = () => new Promise((r) => setImmediate(r));
  *
  * `deps` must already carry el · chatMessages · BUBBLE_CONTROL_KINDS · console.
  */
+// v7.20.339 — the REAL live-chips registry + no-ask guard, lifted as ONE block because the four
+// functions share the module-scope `_liveChips`. Lifting them individually would give each its own
+// copy, and the rig would then prove a mechanism the product does not have. Throws rather than
+// stubs: a rig that quietly substitutes a fake for the thing under test is exactly how "a refusal
+// re-serves the ask" would pass on code that still hands the student a dead screen.
+// MUST run BEFORE attachSelfAssessDeps — the tick-list attachers call _armLiveChips.
+function attachLiveChipsDeps(deps) {
+    const chipsIdx = SRC.indexOf('let _liveChips = null;');
+    const guardIdx = chipsIdx >= 0 ? SRC.indexOf('function _cwNoAskGuard', chipsIdx) : -1;
+    const guardSlice = guardIdx >= 0 ? braceSliceFrom(SRC, guardIdx, '{', '}') : null;
+    if (chipsIdx < 0 || !guardSlice) {
+        throw new Error('live-chips registry / _cwNoAskGuard not found in wml-assessment.js — the rig '
+            + 'would silently skip the no-ask guard and every dead-end test would pass vacuously');
+    }
+    // eslint-disable-next-line no-new-func
+    const made = new Function('console', 'Date', SRC.slice(chipsIdx, guardSlice.end)
+        + '\nreturn { _armLiveChips: _armLiveChips, _clearLiveChips: _clearLiveChips,'
+        + ' _reserveLiveChips: _reserveLiveChips, _cwNoAskGuard: _cwNoAskGuard };')(deps.console, Date);
+    Object.keys(made).forEach((n) => { deps[n] = made[n]; });
+    return deps;
+}
+
+// v7.20.340 — the REAL module-scope answer slot + last-assistant probe, lifted for ANY rig.
+// cw4-sim grew its own private copy of the _walkSlot lift; cw5-sim and cw6-sim had none at all,
+// which is why CW5/CW6 could ship with ZERO slot references while the .327 comment claimed all
+// seven walks were covered. One lifter, shared, so a rig cannot exercise a stand-in.
+// Throws rather than stubs — a missing primitive must fail the build, not pass vacuously.
+function attachSlotDeps(deps) {
+    const slotIdx = SRC.indexOf('const _walkSlot = (function () {');
+    if (slotIdx < 0) throw new Error('_walkSlot not found in wml-assessment.js — the answer-slot gate would pass vacuously');
+    // eslint-disable-next-line no-new-func
+    deps._walkSlot = new Function('console', 'return ' + braceSliceFrom(SRC, slotIdx, '(', ')').text + '();')(deps.console || console);
+
+    const laIdx = SRC.indexOf('function _cwLastAssistantIs');
+    if (laIdx < 0) throw new Error('_cwLastAssistantIs not found in wml-assessment.js — the resume re-serve gate would pass vacuously');
+    const laEnd = braceSliceFrom(SRC, laIdx, '{', '}').end;
+    // eslint-disable-next-line no-new-func
+    deps._cwLastAssistantIs = new Function('return (' + SRC.slice(laIdx, laEnd) + ');')();
+
+    // v7.20.340: the in-chat progress-bar token emitter. Lifted, not stubbed — a stub would let a
+    // walk ship with no bar and the rig would still say the bar was there.
+    const pbIdx = SRC.indexOf('function cwProgressBar');
+    if (pbIdx < 0) throw new Error('cwProgressBar not found in wml-assessment.js — the in-chat progress bar gate would pass vacuously');
+    const pbEnd = braceSliceFrom(SRC, pbIdx, '{', '}').end;
+    // eslint-disable-next-line no-new-func
+    deps.cwProgressBar = new Function('return (' + SRC.slice(pbIdx, pbEnd) + ');')();
+
+    // v7.20.340: the non-welding row reader. Lifted so a rig proves the shipped read.
+    const ntIdx = SRC.indexOf('function _cwNodeText');
+    if (ntIdx < 0) throw new Error('_cwNodeText not found in wml-assessment.js — the weld gate would pass vacuously');
+    const ntEnd = braceSliceFrom(SRC, ntIdx, '{', '}').end;
+    // eslint-disable-next-line no-new-func
+    deps._cwNodeText = new Function('return (' + SRC.slice(ntIdx, ntEnd) + ');')();
+    return deps;
+}
+
 function attachSelfAssessDeps(deps) {
     const start = SRC.indexOf('const SA_ASK = ');
     const dupAt = SRC.indexOf('function cwDuplicateOf(');
@@ -71,9 +127,9 @@ function attachSelfAssessDeps(deps) {
         'cwAttachSaFollowUp', 'onSelfAssessTicks', 'onSelfAssessFollowUp',
         'cwSaFollowText', 'cwNormaliseAnswer', 'cwDuplicateOf'];
     // eslint-disable-next-line no-new-func
-    const made = new Function('el', 'chatMessages', 'BUBBLE_CONTROL_KINDS', 'console',
+    const made = new Function('el', 'chatMessages', 'BUBBLE_CONTROL_KINDS', 'console', '_armLiveChips',
         region + '\nreturn {' + NAMES.join(',') + '};')(
-        deps.el, deps.chatMessages, deps.BUBBLE_CONTROL_KINDS, deps.console);
+        deps.el, deps.chatMessages, deps.BUBBLE_CONTROL_KINDS, deps.console, deps._armLiveChips);
     NAMES.forEach((n) => { deps[n] = made[n]; });
     return deps;
 }
@@ -244,6 +300,8 @@ function makeWorld(ctl, opts) {
         }
     }
 
+    attachLiveChipsDeps(deps);   // v7.20.339 — must precede the SA lift (it calls _armLiveChips)
+    attachSlotDeps(deps);        // v7.20.340 — _walkSlot · _cwLastAssistantIs · cwProgressBar · _cwNodeText
     attachSelfAssessDeps(deps);
 
     // The REAL module-scope _walkSlot, so the rig exercises the shipped primitive.
@@ -253,6 +311,7 @@ function makeWorld(ctl, opts) {
         // eslint-disable-next-line no-new-func
         deps._walkSlot = new Function('console', 'return ' + SLOT_SRC + ';')(deps.console);
     }
+
     Object.keys(opts.extraDeps || {}).forEach((k) => { deps[k] = opts.extraDeps[k]; });
 
     deps.addChatMessage = function (html, who, plain) {
@@ -414,6 +473,7 @@ function makeWorld(ctl, opts) {
 }
 
 module.exports = {
+    attachLiveChipsDeps, attachSlotDeps,
     SRC, ROOT, braceSliceFrom, sliceController, makeWorld, settle, HELP_RE,
     attachSelfAssessDeps, TICK_LIST_RE, NEUTRAL_RE, SA_ADD_RE,
 };

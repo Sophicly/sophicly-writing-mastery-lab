@@ -33,6 +33,8 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const ASSESS = path.join(ROOT, 'frontend', 'wml-assessment.js');
 const src = fs.readFileSync(ASSESS, 'utf8');
+// v7.20.340: the shipped answer slot + no-ask guard + last-assistant probe, not stand-ins.
+const { attachLiveChipsDeps, attachSlotDeps } = require('./walk-sim-lib');
 
 let fail = 0;
 const asserts = { pass: 0, fail: 0 };
@@ -237,6 +239,8 @@ function makeWorld(archKey, opts) {
     // Every aiBubble() appends to chatMessages.lastElementChild, so hand it a fresh bubble whose
     // .swml-bubble-content collects the chip bar the controller attaches.
     const origAdd = deps.addChatMessage;
+    attachLiveChipsDeps(deps);   // must precede the slot lift (both are module-scope primitives)
+    attachSlotDeps(deps);
     deps.addChatMessage = function (html, who, plain) {
         if (who !== 'user') {
             bubbles.push(plain || html);
