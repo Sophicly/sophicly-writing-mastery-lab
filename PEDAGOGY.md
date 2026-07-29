@@ -1159,3 +1159,101 @@ to what cannot.** The Step-4 spine does it too (the filmable action before the m
 
 Not a preference — a sequencing rule. If a future protocol asks for an inferred interior state
 before its observable expression, that protocol has the order wrong.
+
+---
+
+## §21. ⭐⭐ HAMARTIA IS AN ERROR IN ACTION, NOT A "FATAL FLAW" — and it is NOT the creative-writing Flaw (Neil, ruled 2026-07-29)
+
+**What happened.** Reviewing the CW Step-3 Flaw block, Neil rejected the framing two separate research
+passes had arrived at. Verbatim: *"the fatal flaw in my understanding is actually a misunderstanding
+or misinterpretation of what Aristotle actually meant in ancient Greek… the word he used was hamartia
+and this word didn't actually mean fatal flaw, but it meant a fatal error in action. So it's a choice
+that the protagonist makes that causes their downfall… what tragedy is, at least in part, is actually
+about how these protagonists are forced into this error by the society surrounding them. In the end,
+they make the error, so we have to hold them accountable, but the tragedy is actually a criticism of
+the society and its values and pressures."*
+
+**This was never open.** It is already our teaching, in the protocol, and has been:
+`protocols/shared/literature/modules/conceptual-notes/cn-section-4-genre.md:187` —
+> They make a **hamartia** (critical mistake/error in action)—NOT a 'fatal flaw' (this is a mistranslation)
+
+and `:183` — *"often due to a critical mistake (hamartia), not necessarily a character flaw… Crucially,
+tragedy also critiques the SOCIETY that enables or rewards such errors."*
+
+**THE RULING — two concepts, two cards, never merged.**
+
+| | HAMARTIA (`Hm`, Literature) | THE FLAW (`Fw`, Creative Writing) |
+|---|---|---|
+| what it is | a critical **mistake / error in ACTION** — a choice | a present protective **behaviour** |
+| where it points | forward, to the consequence | back, to the wound it is built over |
+| who is indicted | substantially the **SOCIETY** that pressed them into it; the protagonist is still accountable | nobody — it is character mechanics |
+| source | Aristotle, correctly translated | Edson's shield (`Story Solution`) |
+
+1. **NEVER teach "fatal flaw".** It is a mistranslation. Where a student meets the phrase, name it as
+   one. Hamartia is an error in action, not a defect of personality.
+2. **NEVER illustrate the CW Flaw with tragic-hero examples.** The live defect: the `Fw` technique card
+   teaches *"its richest form is the flip-side of a genuine strength"* and cites **Macbeth's valour**
+   and **Othello's openness** — that is the fatal-flaw reading, imported into a creative-writing card,
+   contradicting our own genre module. Fix the card, do not propagate it into the ask.
+3. **Tragedy's societal critique is not optional garnish.** A tragedy answer that names the error and
+   omits what the society did to produce it has missed half the genre.
+4. **Craft authority does NOT override the protocol.** Truby's "flip-side of a strength" is a real
+   technique in a real book, and it is still wrong here, because Sophicly already teaches otherwise
+   (root CLAUDE.md §5c: student-facing method derives from the protocols, never from general craft
+   knowledge). Two research passes reached for the book and had to be corrected by the protocol.
+5. **The two cards must cross-link as "not the same thing"**, in both directions, so a student who
+   taps one from the other is told they are distinct rather than left to blend them.
+
+Not a preference — a correctness rule. If a card, ask, guide or protocol says a flaw is what destroys
+a tragic hero, that content is wrong.
+
+---
+
+## §22. ⭐⭐ THE INCITING INCIDENT AND THE STUNNING SURPRISE ARE TWO DISTINCT BEATS — teach both (Neil, ruled 2026-07-29)
+
+**The ruling.** The course teaches Eric Edson's Inciting Incident and his Stunning Surprise as **two
+separate beats**, not one. Neil ruled this after getting the logline blocks wrong twice himself:
+*"Inciting incident and life-changing event — they're so similar to me that I can't tell the
+difference… If I'm gonna get it wrong, definitely the students are gonna get it wrong."*
+
+**The distinction, from the source** — `Model Answers/Model Answer Resources/Story Solution – 23
+Actions All Great Heroes Must Take_nodrm.md` (Eric Edson, *The Story Solution*). These are separate,
+numbered actions in Edson's own scheme, and the difference is WHEN they land and WHAT they do to the
+goal:
+
+| | Edson # | When | Effect on the goal |
+|---|---|---|---|
+| **Inciting Incident** | 4 | near the START of Act One (commonly 1–7 min) | introduces a **general, visible** goal |
+| **Stunning Surprise #1** | 5 | the **END** of Act One (~25–35 pages) | *"suddenly transforms this general goal into a highly specific one"* |
+| **Stunning Surprise #2** | 8 | the END of Act Two | destroys the hero's plan → Act Three |
+
+**Why this is a correctness rule, not a preference.** Our content had them collapsed: the logline
+bank's Inciting Incident card carried Edson's *Stunning Surprise* wording ("the stunning surprise —
+the external event that shatters the protagonist's normal life"), so two blocks competed for one
+beat while Edson's actual inciting incident — the event that introduces the **general** goal — was
+not represented at all. The item was unanswerable by inspection. That is the same failure class as
+§21: two genuinely different concepts taught with one definition.
+
+**What must be true everywhere:**
+1. **A beat is named for what it DOES to the goal**, not for being dramatic. "A shocking event that
+   changes everything" describes both and therefore teaches neither.
+2. **The Inciting Incident happens near the START and yields a GENERAL goal.** It is not the Act One
+   curtain.
+3. **The Stunning Surprise is the ACT-ENDING reversal** that makes the goal specific (#1) or destroys
+   the plan (#2). It is not the opening disturbance.
+4. **"Life-Changing Event" is not an Edson term.** It appears only in the CW walk's logline template 3
+   ("an opportunity to do something LIFE-CHANGING"). Where it stays, it must be taught as *the
+   opportunity the protagonist chooses to chase* — which is a different thing again from both beats
+   above — or be replaced by the Stunning Surprise.
+5. **The beats must cross-link as "not the same thing"**, both directions, wherever a student can
+   meet one from the other.
+
+**Where this lands** (all four carried the conflation; each is its own lane's work):
+the CW walk in `wml-assessment.js` ("inciting incident" ×26, taught with Stunning Surprise wording) ·
+the eight plot templates' beat rows · the Table of Techniques (`Ii` = Inciting Incident, `Tw` covers
+the Stunning Surprise) · the logline matching bank in `sophicly-components`.
+
+**Root note.** That bank was authored inside the components plugin rather than derived from the walk,
+which is how two overlapping definitions shipped (root CLAUDE.md §5c). Where the walk itself derives
+from a named source like Edson, the source is on the system and must be **quoted, not paraphrased
+from memory**.
