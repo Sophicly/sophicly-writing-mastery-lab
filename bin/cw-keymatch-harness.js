@@ -652,6 +652,43 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
 }
 
 // ───────────────────────────────────────────────────────────────────────────────────────────
+// CW PROGRESS BAR — the first ask is never 0% (v7.20.346)
+// ───────────────────────────────────────────────────────────────────────────────────────────
+// Neil, on .344: "I don't see any progress." The token WAS emitted and nothing stripped it —
+// the arithmetic was the bug. Every call site passed a 0-based index, so the first of nine asks
+// rendered 0%: an empty grey track with a "0%" label, which to a student is no bar at all.
+//
+// Two things are gated, because either alone is weak. The helper must clamp (a 0 can never
+// render 0%), AND no call site may pass a bare 0-based index — a new walk written from the
+// nearest example is exactly how this comes back.
+{
+    console.log('CW PROGRESS BAR — the ask in hand is 1-based, and 0% is unreachable');
+
+    const defAt = JS.indexOf('function cwProgressBar(');
+    ok(defAt !== -1, 'cwProgressBar is gone — the code-served walks have no bar and nothing would say so');
+    if (defAt !== -1) {
+        const def = JS.slice(defAt, JS.indexOf('\n    }', defAt));
+        ok(/Math\.max\(1,/.test(def),
+            'cwProgressBar no longer clamps to 1 — a caller passing 0 renders a 0% bar, which is '
+            + 'indistinguishable from no bar (the .344 symptom Neil reported)');
+    }
+
+    // Every call site's FIRST argument must be 1-based: `x + 1`, or a literal >= 1.
+    const callRe = /cwProgressBar\(([^,]+),/g;
+    let m, sites = 0;
+    while ((m = callRe.exec(JS))) {
+        const arg = m[1].trim();
+        if (arg === 'nth') continue;                          // the definition itself
+        sites++;
+        const oneBased = /\+\s*1\s*$/.test(arg) || (/^\d+$/.test(arg) && Number(arg) >= 1);
+        ok(oneBased,
+            'cwProgressBar is called with `' + arg + '` — that is a 0-based index, so the first ask '
+            + 'of that walk renders 0%. Pass the ask IN HAND (index + 1).');
+    }
+    ok(sites >= 7, 'only ' + sites + ' progress-bar call site(s) found — a walk has lost its bar');
+}
+
+// ───────────────────────────────────────────────────────────────────────────────────────────
 // CW WALK ENDPOINT — every walk stops on a stopping point (v7.20.337)
 // ───────────────────────────────────────────────────────────────────────────────────────────
 // Neil, 2026-07-29: "make sure that all the chats have a clear stopping point and a clear

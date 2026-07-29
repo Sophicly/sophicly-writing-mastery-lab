@@ -454,6 +454,13 @@ for (let n = 0; n < FAIL_OPEN_REPLIES.length; n++) {
         'real-entry: the newest bubble is not the ask — served "' + newest.slice(0, 60) + '…"');
     ok(!!w.deps._walkSlot.armed, 'real-entry: an ask is on screen but no slot is armed — a typed answer would file nowhere');
 
+    // v7.20.346: and the bar on it is VISIBLE. The token reached the bubble in .344 too — at 0%,
+    // which renders as an empty grey track and reads as no bar at all ("I don't see any progress").
+    const pct = (String(newest).match(/\[SWML_PROGRESS_(\d+)\]/) || [])[1];
+    ok(pct !== undefined && Number(pct) > 0,
+        'real-entry: the first ask shows ' + (pct === undefined ? 'NO progress token' : pct + '% — an empty bar')
+        + '. The bar rides the ask in hand, so ask 1 of 9 is 11%, not 0%.');
+
     // And the launch words, typed while NO ask has been served, must file NOTHING.
     const w2 = makeWorld();
     w2.deps.canvasChatHistory.push({ role: 'assistant', content: GREETING });

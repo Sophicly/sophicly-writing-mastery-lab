@@ -4500,10 +4500,17 @@
     //
     // Each walk already knows its position (Step 5 literally prints "2 of 9" beside where the bar
     // belongs), so the token is DERIVED, never hand-stamped.
-    function cwProgressBar(done, total) {
+    // ⭐ v7.20.346 — `nth` is the 1-BASED POSITION OF THE ASK IN HAND, not a completed count.
+    // Neil, on .344: "I don't see any progress." The token was emitted and nothing stripped it —
+    // the arithmetic was mine. Every call site passes a 0-based index, so ask 1 of 9 rendered
+    // 0%: a bare grey track with a "0%" label, indistinguishable from no bar at all.
+    // The house convention is 1-based and predates the code-served walks — the AI-narrated
+    // quizzes have always printed Q1 as 10% of 10 (protocols/shared/mark-scheme/modern_text.md:73).
+    // The bar rides the ask, so it reads "you are ON this one", never "you have finished none".
+    function cwProgressBar(nth, total) {
         const t = Number(total) || 0;
         if (t <= 0) return '';
-        const n = Math.max(0, Math.min(t, Number(done) || 0));
+        const n = Math.max(1, Math.min(t, Number(nth) || 0));
         return '[SWML_PROGRESS_' + Math.round((n / t) * 100) + ']\n\n';
     }
 
@@ -17552,7 +17559,7 @@
             function renderQ() {
                 if (idx >= TOTAL) { finish(); return; }
                 const q = QS[idx];
-                let body = cwProgressBar(idx, TOTAL);   // v7.20.344
+                let body = cwProgressBar(idx + 1, TOTAL);   // v7.20.346: the ask IN HAND, 1-based
                 if (q.secIntro) body += q.secIntro + '\n\n';
                 body += `**Question ${q.seq} of ${TOTAL} · ${q.secName}**\n\n${q.q}`;
                 aiBubble(body);
@@ -19070,7 +19077,7 @@
                 // v7.20.344: the in-chat progress bar rides the ASK — the LAST chunk — not the
                 // paced intro chunks before it, so it marks the moment the student is being asked
                 // rather than appearing on every teaching bubble.
-                if (chunks.length) chunks[chunks.length - 1] = cwProgressBar(idx, STEPS.length) + chunks[chunks.length - 1];
+                if (chunks.length) chunks[chunks.length - 1] = cwProgressBar(idx + 1, STEPS.length) + chunks[chunks.length - 1];
                 // v7.20.327: the ask OWNS the row. Armed only once the ASK itself has been
                 // delivered — it is the last chunk, so a student typing during the paced intro
                 // has not been asked anything yet and files nothing.
@@ -19773,7 +19780,7 @@
                     }
                     phase = 'beat';
                     _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });   // v7.20.327
-                    aiBubble(cwProgressBar(BEATS.indexOf(b), BEATS.length) + b.ask);   // v7.20.340
+                    aiBubble(cwProgressBar(BEATS.indexOf(b) + 1, BEATS.length) + b.ask);   // v7.20.340
                     appendSpineButtons();
                     persist();
                     resetSend();
@@ -19795,7 +19802,7 @@
                 } catch (e) { console.warn('WML CW4: unmet-need write failed (non-fatal)', e && e.message); }
                 phase = 'beat';
                 _walkSlot.arm('cw4', BEATS[0].fid, { cycle: 'accumulate' });   // v7.20.327
-                aiBubble(cwProgressBar(0, BEATS.length) + BEATS[0].ask);   // v7.20.340
+                aiBubble(cwProgressBar(1, BEATS.length) + BEATS[0].ask);   // v7.20.340
                 appendSpineButtons();
                 persist();
                 resetSend();
@@ -19940,7 +19947,7 @@
                 // b.fid regardless of what has happened to `idx` in the meantime — and what makes
                 // a message arriving with NO ask served (a stray chip, a paste) file nothing.
                 _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });
-                aiBubble(cwProgressBar(BEATS.indexOf(b), BEATS.length) + b.ask);   // v7.20.340
+                aiBubble(cwProgressBar(BEATS.indexOf(b) + 1, BEATS.length) + b.ask);   // v7.20.340
                 appendSpineButtons();
                 persist();
                 resetSend();
@@ -20697,7 +20704,7 @@
                 const s = stages[a.stage];
                 const c = a.concept;
                 // v7.20.340: the in-chat progress bar, derived from where the walk actually is.
-                let out = cwProgressBar(ASKS.indexOf(a), ASKS.length)
+                let out = cwProgressBar(ASKS.indexOf(a) + 1, ASKS.length)
                     + '**' + s.name + ' · ' + a.nInStage + ' of ' + a.stageTotal + '**\n\n';
                 if (a.kind === 'arc') {
                     out += 'Before the beats, fix the two ends of this stage. ' + s.name + ' is where '
@@ -21535,7 +21542,7 @@
             // ── the ask ──
             // v7.20.340: ONE builder for the ask's text, so the bar the resume path compares
             // against is byte-identical to the bar it served (see _cwLastAssistantIs).
-            function askText(s) { return cwProgressBar(i, STEPS.length) + s.title + '\n\n' + s.body; }
+            function askText(s) { return cwProgressBar(i + 1, STEPS.length) + s.title + '\n\n' + s.body; }
             function serveAsk() {
                 const s = STEPS[i];
                 phase = 'ask';
