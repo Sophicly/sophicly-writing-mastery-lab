@@ -153,6 +153,7 @@ function makeWorld(opts) {
             return true;
         },
         _tickOutlineRow: function () { return true; },
+        cwEndpointLine: function () { return '\n\n---\n\n**That\u2019s this step done.** (sim endpoint)'; },
         saveCanvasContent: function () {},
         CANVAS_SAVE_KEY: function () { return 'sim'; },
         _cwDocValue: function (artifact, fid) {

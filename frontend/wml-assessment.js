@@ -3553,6 +3553,35 @@
     //
     // Returns true if it ticked, false if it could not find the row (caller decides what the
     // student sees — never leave them with nothing, law 4d).
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // THE END OF A WALK (v7.20.337)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Neil, 2026-07-29: "make sure that all the chats have a clear stopping point and a clear
+    // endpoint, a final message… maybe to mark the lesson complete."
+    //
+    // ⚠ WML DOES NOT OWN COMPLETION — LearnDash does, and our footer control is a PROXY that
+    // mirrors LD's own button. A COMPLETED lesson legitimately has NO button
+    // (`learndash_mark_complete()` returns an empty string), and unit pages and review mode
+    // never get one. So this NEVER promises a button unconditionally: it looks for the real
+    // one and words itself accordingly. Telling a student to press something that is not on
+    // their screen is the same defect class as a dead end (law 4d) — it just fails politely.
+    //
+    // Returns a trailing paragraph to append to a walk's wrap message. One helper, six walks,
+    // so the closing beat cannot drift per step.
+    function cwEndpointLine() {
+        let hasBtn = false;
+        try {
+            hasBtn = !!document.querySelector('.spl-footer .learndash_mark_complete_button, .learndash_mark_complete_button, .swml-ld-complete');
+        } catch (_) { hasBtn = false; }
+        return hasBtn
+            ? '\n\n---\n\n**That’s this step done.** Everything above is saved in your document. '
+              + 'When you’re happy with it, press **Mark Complete** at the bottom of the lesson to finish and move on.'
+            // No button on screen: already complete, a unit page, or review mode. Say what is
+            // true instead of naming a control they cannot see.
+            : '\n\n---\n\n**That’s this step done.** Everything above is saved in your document — '
+              + 'you can keep editing it here whenever you like.';
+    }
+
     function _tickRowLikeAStudent(fid) {
         if (!fid) return false;
         try {
@@ -15861,6 +15890,21 @@
                             if (state.task === 'cw_step_1') {
                                 const _r = res.reply;
                                 setTimeout(() => _maybeRepairCwStep1Loglines(_r), 1000);
+                                // v7.20.337 (Neil, 2026-07-29) — SEED PICKER IN THE CHAT.
+                                // Step 1's three seed loglines land in the document from the
+                                // synthesis turn, and the student is expected to go and tick the
+                                // ones they like. They don't: "a lot of students are not actually
+                                // ticking things off properly, ESPECIALLY IN STEP ONE." Those ticks
+                                // are what `_syncCwStep1LikedSeeds` turns into the `liked_seeds`
+                                // artifact, so an unticked set is not cosmetic — it is empty input
+                                // for what follows. Offered here, one chip per logline, in the
+                                // logline's OWN words.
+                                //
+                                // MULTI-select (toggle + Continue), unlike Steps 2/3: liking more
+                                // than one seed is the honest answer here, and `liked_seeds` keeps
+                                // three positional slots. Runs a beat after the repair check so a
+                                // doc whose rows were re-emitted still gets a picker.
+                                setTimeout(() => _serveCwStep1SeedPicker(_r), 1600);
                             }
                         }
 
@@ -17637,6 +17681,82 @@
             bc.appendChild(bar);
             return true;
         }
+        // ═══════════════════════════════════════════════════════════════════════════════════
+        // CW STEP 1 — SEED-LOGLINE PICKER (v7.20.337)
+        // ───────────────────────────────────────────────────────────────────────────────────
+        // Neil, 2026-07-29, on why this is the most important one: "especially in step one —
+        // they just don't tick it off. They don't even notice that their document doesn't say
+        // a hundred percent." Real staging data agrees — CW docs on uid 1355 show sets of
+        // ideas written with zero rows ticked.
+        //
+        // Ticks here are NOT cosmetic: `_syncCwStep1LikedSeeds` reads them into the
+        // `liked_seeds` artifact, so no tick means no liked seeds carried forward.
+        //
+        // Fires once per doc (guarded), only when the rows actually hold text, and only after
+        // the approval turn — the same trigger the seed self-heal uses.
+        let _cwStep1PickerServed = false;
+        function _serveCwStep1SeedPicker(reply) {
+            try {
+                if (_cwStep1PickerServed) return;
+                if (state.task !== 'cw_step_1' || !canvasEditor) return;
+                // Same gate as the self-heal: only on the approval turn.
+                if (!/\[SUBSTEP_COMPLETE:\s*step_1,\s*substep_5/.test(reply || '')) return;
+
+                const ids = ['cw-step-1-logline-1', 'cw-step-1-logline-2', 'cw-step-1-logline-3'];
+                const text = {}, already = [];
+                canvasEditor.state.doc.descendants((node) => {
+                    if (node.type.name === 'outlineRow' && node.attrs && ids.indexOf(node.attrs.fieldId) !== -1) {
+                        const t = (node.textContent || '').trim();
+                        if (t) text[node.attrs.fieldId] = t;
+                        let cs = _outlineCheckState.has(node.attrs.fieldId) ? _outlineCheckState.get(node.attrs.fieldId) : null;
+                        if (!cs) { try { cs = JSON.parse(node.attrs.checkState || '{}'); } catch (_) { cs = {}; } }
+                        if (cs && Array.isArray(cs.checked) && cs.checked.indexOf(0) !== -1) already.push(node.attrs.fieldId);
+                    }
+                    return true;
+                });
+                const have = ids.filter((id) => text[id]);
+                if (!have.length) return;          // seeds never landed — the self-heal owns that
+                if (already.length) {              // they already chose; do not nag or re-tick
+                    _cwStep1PickerServed = true;
+                    return;
+                }
+
+                const label = {}, opts = [];
+                have.forEach((id, n) => {
+                    const t = text[id];
+                    const short = t.length > 88 ? t.slice(0, 86).replace(/\s+\S*$/, '') + '…' : t;
+                    const l = (n + 1) + '. ' + short;
+                    opts.push(l); label[l] = id;
+                });
+
+                addChatMessage('**Which of these do you actually like?**\n\nTap every one that appeals — you can pick '
+                    + 'more than one — then press Continue and I’ll tick them in your document. '
+                    + '(You can tick or untick them there yourself at any time.)', 'assistant');
+                function onSeedsDone(picked) {
+                    // "Refused with nothing" must be unreachable (law 4d): an empty Continue
+                    // re-serves the ask in the same breath rather than leaving a dead screen.
+                    if (!picked || !picked.length) {
+                        addChatMessage('Pick at least one before you continue — which of those seeds do you like?', 'assistant');
+                        chipBarMulti(opts, onSeedsDone);
+                        return;
+                    }
+                    const done = [];
+                    picked.forEach(function (p) { if (_tickRowLikeAStudent(label[p])) done.push(p); });
+                    _cwStep1PickerServed = true;
+                    addChatMessage((done.length
+                        ? 'Ticked ' + done.length + (done.length === 1 ? ' seed' : ' seeds') + ' in your document — those are what carry forward.'
+                        : 'I could not tick those for you — please tick the checkbox beside the ones you like in your document, and they will carry forward.')
+                        + cwEndpointLine(),   // v7.20.337: endpoint after the choice
+                        'assistant');
+                }
+                const attached = chipBarMulti(opts, onSeedsDone);
+                if (attached) {
+                    _cwStep1PickerServed = true;
+                    console.log('WML CW1: seed picker served for', have.length, 'logline(s)');
+                }
+            } catch (e) { console.warn('WML CW1: seed picker skipped —', e && e.message); }
+        }
+
         // `o` is the walk's wiring, built once per ask:
         //   criteria · cycle (§4c.6 accumulate|rewrite) · emit(plain) · chipBar(options, onPick)
         //   onTicks(ticked, unticked)  — bank the claim (the end-of-set review reads it)
@@ -18089,13 +18209,16 @@
                     userTurn(pick);
                     const fid = fidByLabel[pick];
                     const ticked = _tickRowLikeAStudent(fid);
-                    aiBubble(ticked
+                    aiBubble((ticked
                         ? 'Ticked **' + IDEA_LABEL(fid) + '** in your document — that is your chosen idea, and it '
                           + 'carries straight into Step 3.\n\nYou can change which one is ticked in the document '
                           + 'yourself at any time before you move on.'
                         // Refused, but never with nothing (law 4d): say what to do instead.
                         : 'I could not tick that one for you — please tick the checkbox beside **'
-                          + IDEA_LABEL(fid) + '** in your document, and it will carry into Step 3.');
+                          + IDEA_LABEL(fid) + '** in your document, and it will carry into Step 3.')
+                        // v7.20.337: the endpoint lands AFTER the choice, so the last thing on
+                        // screen is "you're done", not an unanswered question.
+                        + cwEndpointLine());
                     resetSend();
                 });
             }
@@ -18972,7 +19095,8 @@
                     aiBubble((ticked ? 'Ticked it in your document and filed it' : 'Filed it')
                         + ' into your **Chosen Logline** box \u2014 that is the sentence Step 4 will build from.'
                         + '\n\nFine-tune the wording there whenever you like; it is your sentence \u2014 and you can '
-                        + 'still change which one is ticked in the document yourself at any time.');
+                        + 'still change which one is ticked in the document yourself at any time.'
+                        + cwEndpointLine());   // v7.20.337: endpoint after the choice
                     resetSend();
                 };
             }
@@ -19609,7 +19733,7 @@
                 fireCoherenceCheck();
             }
             function serveWrap() {
-                aiBubble(WRAP);
+                aiBubble(WRAP + cwEndpointLine());   // v7.20.337: every walk ends on a clear endpoint
                 try { applyCwSubstepProgress({ stepNum: 4, substepNum: 5, name: 'Review and Save' }); } catch (e) {}
                 resetSend();
             }
@@ -20457,7 +20581,8 @@
             function serveWrap() {
                 aiBubble('**That is your complete plot outline — all six stages, every beat.**\n\n'
                     + 'Read it back in your document from the top. That is the shape of your whole story, and you wrote every line of it.\n\n'
-                    + 'Tidy up any spelling or punctuation while you are in there — they are your sentences, so they are yours to polish. Nothing here is locked: you will come back and deepen this outline in every update lesson from here on.');
+                    + 'Tidy up any spelling or punctuation while you are in there — they are your sentences, so they are yours to polish. Nothing here is locked: you will come back and deepen this outline in every update lesson from here on.'
+                    + cwEndpointLine());   // v7.20.337
                 try { applyCwSubstepProgress({ stepNum: 6, substepNum: 7, name: 'Review and Save' }); } catch (e) {}
                 phase = 'done';
                 resetSend();
@@ -21165,7 +21290,8 @@
                 aiBubble('**That is your plot structure decided, and all of it is in your document.**\n\n'
                     + 'Your spine: **' + (_cw5ChipLabel(cur || '') || '(not set)') + '**'
                     + (secPicks.length ? ', with elements of ' + secPicks.join(', ') : '')
-                    + '.\n\nRead your Pre-Work Reflection and Primary Choice sections back — those are your words, so tidy any spelling while you are in there. Step 6 builds your full stage-by-stage outline on exactly this shape.');
+                    + '.\n\nRead your Pre-Work Reflection and Primary Choice sections back — those are your words, so tidy any spelling while you are in there. Step 6 builds your full stage-by-stage outline on exactly this shape.'
+                    + cwEndpointLine());   // v7.20.337
                 try { applyCwSubstepProgress({ stepNum: 5, substepNum: 3, name: 'Confirm Choice' }); } catch (e) {}
                 phase = 'done';
                 resetSend();

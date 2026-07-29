@@ -166,6 +166,7 @@ function makeWorld(opts) {
             return true;
         },
         _tickOutlineRow: function (fid) { if (!rows.has(fid)) { world.lostTick = fid; return false; } ticks.add(fid); return true; },
+        cwEndpointLine: function () { return '\n\n---\n\n**That\u2019s this step done.** (sim endpoint)'; },
         _setOutlineDropdown: function (fid, label) {
             if (!rows.has(fid)) { world.lostWrite = fid; return false; }
             check.set(fid, { selected: label });

@@ -162,6 +162,9 @@ function makeWorld(ctl, opts) {
             return true;
         },
         _tickOutlineRow: function () { return true; },
+        // v7.20.337: the shared walk endpoint. Returned verbatim so a sim can assert that a
+        // walk actually ENDS on one — a walk that just stops is the thing Neil asked to fix.
+        cwEndpointLine: function () { return '\n\n---\n\n**That’s this step done.** (sim endpoint)'; },
         // v7.20.336 — the tick-in-chat primitive, MODELLED not stubbed. A bare `return true`
         // would let a chip that ticks the new choice while leaving the previous one ticked pass
         // every test (§2b: a rig that skips the mechanism proves nothing). So this reproduces the

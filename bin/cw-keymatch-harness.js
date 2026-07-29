@@ -134,6 +134,11 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onThroughlinePick:     { kind: 'content', fid: 'THROUGHLINE_FID', note: 'the dramatic throughline' },
         onPick:                { kind: 'content', note: 'Step 5 plot archetype → _setOutlineDropdown' },
         onLoglinePick:         { kind: 'content', note: 'Step 3 chosen logline → cw-step-3-chosen (v7.20.325)' },
+        // v7.20.337 — Step 1 seed picker. CONTENT: each pick ticks a real cw-step-1-logline-N
+        // row via _tickRowLikeAStudent, and _syncCwStep1LikedSeeds derives the `liked_seeds`
+        // artifact from those ticks. No fid here because it ticks EXISTING rows rather than
+        // writing a new one — the rows are created by the synthesis turn's @FIELD_SETs.
+        onSeedsDone:           { kind: 'content', note: 'Step 1 liked seeds → ticks cw-step-1-logline-1/2/3' },
         // flow-control — must NOT be filed
         onCohChoice:    { kind: 'flow', note: 'rewrite / keep the beat the coherence check flagged' },
         onAnchorChoice: { kind: 'flow', note: 'Step 6 story bookend: still right / sharpen' },
@@ -575,6 +580,49 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
             + 'host makes the lookup miss, and a silent return means nobody can tell the difference '
             + 'between "scrolled" and "did nothing" (§10 fail loud).');
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+// CW WALK ENDPOINT — every walk stops on a stopping point (v7.20.337)
+// ───────────────────────────────────────────────────────────────────────────────────────────
+// Neil, 2026-07-29: "make sure that all the chats have a clear stopping point and a clear
+// endpoint, a final message… maybe to mark the lesson complete." A walk that simply stops
+// talking leaves the student unsure whether it broke or finished.
+//
+// ⚠ The endpoint must NEVER hard-code a Mark Complete button. WML does not own completion —
+// the footer control is a LearnDash proxy, and a lesson that is ALREADY complete has no button
+// at all (`learndash_mark_complete()` returns empty), as do unit pages and review mode.
+// `cwEndpointLine()` looks for the real control and words itself accordingly; a walk that
+// writes its own "press Mark Complete" text would promise a button that isn't there.
+{
+    console.log('CW WALK ENDPOINT — six walks, one ending, and it never invents a button');
+    const src = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-assessment.js'), 'utf8');
+
+    ok(/function cwEndpointLine\(\)/.test(src),
+        'cwEndpointLine() is gone — each walk will drift to its own ending again');
+
+    const calls = (src.match(/cwEndpointLine\(\)/g) || []).length - 1;   // minus the definition
+    ok(calls >= 6,
+        `only ${calls} walk ending(s) call cwEndpointLine() — there are six CW walks and each must `
+        + 'end on one. A walk that just stops reads as a crash to a 14-year-old.');
+
+    // The button promise may live ONLY inside the helper, where it is conditional on the
+    // control actually being present.
+    const helperAt = src.indexOf('function cwEndpointLine()');
+    const helperEnd = src.indexOf('\n    function ', helperAt + 10);
+    const helper = src.slice(helperAt, helperEnd === -1 ? helperAt + 2500 : helperEnd);
+    ok(/querySelector\([^)]*learndash_mark_complete_button/.test(helper),
+        'cwEndpointLine() no longer CHECKS for the real Mark Complete button before naming it — '
+        + 'it will tell students to press a control that is not on screen whenever the lesson is '
+        + 'already complete, is a unit page, or is being reviewed.');
+
+    const strayPromise = src.split('\n').some((line, i) => {
+        if (!/press \*\*Mark Complete\*\*|press Mark Complete/i.test(line)) return false;
+        return i < src.slice(0, helperAt).split('\n').length || i > src.slice(0, helperEnd).split('\n').length;
+    });
+    ok(!strayPromise,
+        'a walk names "Mark Complete" outside cwEndpointLine() — that text must stay inside the '
+        + 'helper, which only says it when the button actually exists.');
 }
 
 console.log(`   ${asserts.pass} assertions passed`);
