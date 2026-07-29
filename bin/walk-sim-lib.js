@@ -252,7 +252,22 @@ function makeWorld(ctl, opts) {
         content.children
             .filter((c) => String(c.className).indexOf('swml-quick-actions') !== -1
                 && String(c.className).indexOf('-help') === -1 && !c._removed)
-            .forEach((bar) => bar.children.forEach((b) => { if (!HELP_RE.test(String(b.textContent))) out.push(b); }));
+            .forEach((bar) => {
+                // A RESOURCE GATE lives in the nav bar and is labelled with an emoji
+                // ("📖 See how writers turn moments into ideas" — CW2's opener). The emoji filter
+                // exists to keep the HELP bar's buttons out, and the bar's own kind already does
+                // that job properly — so inside a nav bar every button is tappable. Without this
+                // the sim cannot open a gated resource, and therefore never reaches the ask behind
+                // it: the walk would look dead to the rig while working fine for a student.
+                const isNav = String(bar.className).indexOf('swml-bc-nav') !== -1;
+                bar.children.forEach((b) => {
+                    // A BUTTON can be removed while its bar lives on: the resource gate replaces
+                    // itself with `Continue →` in place. Without this the rig keeps tapping the
+                    // dead gate button and the paced run never advances.
+                    if (b._removed) return;
+                    if (isNav || !HELP_RE.test(String(b.textContent))) out.push(b);
+                });
+            });
         return out;
     };
     world.resolveApi = function (reply) {

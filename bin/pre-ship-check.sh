@@ -195,6 +195,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw3-batch-harness.js || fail=1
 fi
 
+# v7.20.334: CW STEP-2 WALK-INVARIANT GATE. Step 2 lost its per-idea API call when it moved to the
+# batched check, and that call was quietly doing THREE jobs: judging the idea, rejecting a
+# non-answer, and answering a student who asked a question instead. Only the first was replaced
+# by design; the answer slot and the [🤔 Ask Sophia] rung cover the other two, and this asserts
+# all three — plus that the resource-GATED opener actually reaches its ask.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|cw2-sim-harness\.js|walk-sim-lib\.js'; then
+  node bin/cw2-sim-harness.js || fail=1
+fi
+
 # v7.20.327: CW STEP-3 WALK-INVARIANT GATE. The behavioural twin of cw3-batch-harness (which is
 # static). Drives the real _cwLoglineCtl and asserts the same invariants as the Step-4 sim, from
 # the same rig (bin/walk-sim-lib.js) so the two cannot drift.

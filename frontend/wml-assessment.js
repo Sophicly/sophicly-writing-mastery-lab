@@ -17718,9 +17718,13 @@
                 wrap_single:
                     'That’s your story idea, saved in your document — and it’s already ticked as the one you’re developing.\n\n' +
                     'Take a moment to fix any spelling or punctuation while you’re there — they’re your words, so they’re yours to tidy.',
+                // v7.20.334: the batched review replaces the per-idea judgment call.
+                ask_again: 'Go on then — what’s your next idea? A single line is fine.',
+                asking: 'Ask away — type your question and I’ll answer it, then we’ll pick straight back up where we left off.',
             };
             const ROWS = ['cw-step-2-idea1', 'cw-step-2-idea2', 'cw-step-2-idea3'];
             const MAX = ROWS.length;
+            const IDEA_LABEL = (fid) => 'Idea ' + (ROWS.indexOf(fid) + 1);
 
             let active = false;      // controller owns the student's next turn
             let pending = false;     // an idea is out with the API for judgment
@@ -17735,9 +17739,21 @@
             // v7.20.268: how many opener chunks have been delivered. Persisted so a reload
             // mid-teaching-run resumes at the right chunk with its Continue chip re-attached.
             let chunkIdx = 0;
+            // ── v7.20.334 — THE BATCHED CHECK (Neil's ruling: "Step 2 should become the batched
+            // check that Step 3 uses"). Each idea is filed VERBATIM the moment it is written; ONE
+            // call then reads the whole set at the end. Up to 4 calls per run becomes 2, and — as
+            // in Step 3 — nothing the student writes waits on a round-trip completing.
+            let reviewed = false;          // the batched review has run
+            let weakFids = [];             // ideas it named, offered back as Sharpen chips
+            let revisingFid = '';          // the idea being rewritten right now
+            // The student tapped [🤔 Ask Sophia a question]. Their NEXT turn is a question, not an
+            // idea — it goes to the model and NOTHING is filed. The per-idea judge used to absorb
+            // this case; removing it without replacing it would have silently deleted the ability
+            // to ask anything (a capability lost by omission is still a regression).
+            let asking = false;
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw2') + '_cw2'; } catch (e) { return 'swml_cw2'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ filled, declined, active, awaitingChoice, chunkIdx })); } catch (e) {} }
+            function persist() { try { const _s = _walkSlot.peek('cw2'); localStorage.setItem(lsKey(), JSON.stringify({ filled, declined, active, awaitingChoice, chunkIdx, rv: reviewed, weak: weakFids, rev: revisingFid, ask: asking, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { busyOff(); }
             function busyOff() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
@@ -17781,16 +17797,82 @@
                 return null;
             }
 
+            // ── v7.20.334 — THE HELP LADDER ON THE IDEA ASK (WML CLAUDE.md §4c.9) ─────────────
+            // Step 2's ask was the ONLY ask in the CW arc with no help on it at all: Steps 3 and 4
+            // attach Guidance / Writer's Profile to every question, Step 2 attached nothing. That
+            // gap was survivable while a per-idea API call absorbed anything the student said —
+            // including a question instead of an idea. Batching removes that absorber, so the
+            // ladder has to be real here, cheapest rung first:
+            //   📖 Guidance          (free) — the guide at Story Sparks, where the worked examples are
+            //   👤 Writer's Profile  (free) — their own values, fears and experiences to borrow from
+            //   🤔 Ask Sophia        (the ONLY rung that costs a call; last and quieter)
+            //
+            // The label is "Ask Sophia a question", not "Still stuck". At this ask the likely need
+            // is permission ("can I write about my grandad?"), not stuckness — and a rung nobody
+            // recognises as theirs is a rung nobody climbs.
+            function appendIdeaButtons() {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '📖 Guidance',
+                    onClick: function () { openGuide(); },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '👤 Your Writer’s Profile',
+                    onClick: function () { try { var t = document.querySelector('.swml-wp-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '🤔 Ask Sophia a question',
+                    onClick: function () { startAsking(); },
+                }));
+                bc.appendChild(bar);
+                return true;
+            }
+            // Serving an ask ARMS the answer slot (v7.20.327 pattern, rolled out here because the
+            // batched design removed the judge that used to reject a non-answer). No ask served →
+            // nothing is written, whatever arrives.
+            function armIdeaAsk() {
+                const slot = Math.min(countFilledRows(), MAX - 1);
+                _walkSlot.arm('cw2', ROWS[slot], { cycle: 'rewrite' });
+            }
+            // The paid rung. Their next turn is a QUESTION: it goes to the model, nothing is filed,
+            // and the ask is re-armed the moment the answer lands.
+            function startAsking() {
+                asking = true; active = true;
+                _walkSlot.clear('cw2');          // a question is not an answer — nothing may file
+                aiBubble(SEG.asking);
+                persist(); resetSend();
+            }
+
             // Append the ladder chips to the newest bubble. Chips ride the NEWEST bubble, never
             // the bubble that first asked (reference_wml_chip_ui_walk_every_branch...).
+            // v7.20.334: migrated to the .331 kind-scoped guard. It was one of the last bars still
+            // guarding on the shared `.swml-quick-actions`, which means the HELP bar now attached to
+            // the same bubble would have silently suppressed it — the exact collision .331 exists to
+            // make impossible, and it would have shown up as "the ladder chips vanished".
+            // Returns whether it attached, so callers can back off (law 4d).
             function appendLadderChips() {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc || bc.querySelector('.swml-quick-actions')) return;
-                const bar = el('div', { className: 'swml-quick-actions' });
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice });
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'Try one more',
-                    onClick: function () { bar.remove(); awaitingChoice = false; active = true; pending = false; persist(); resetSend(); },
+                    // v7.20.334: SAY something and ARM the slot. Removing the chips used to be the
+                    // only response to this tap — the invite text stayed on screen and the student
+                    // was expected to infer that it was now their turn. A tap must produce a
+                    // question, not just a quieter screen (law 4d).
+                    onClick: function () {
+                        bar.remove(); awaitingChoice = false; active = true; pending = false;
+                        aiBubble(SEG.ask_again);
+                        armIdeaAsk();
+                        appendIdeaButtons();
+                        persist(); resetSend();
+                    },
                 }));
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'I’m set on what I have',
@@ -17799,6 +17881,132 @@
                 bc.appendChild(bar);
                 awaitingChoice = true;
                 persist();
+                return true;
+            }
+            // The ladder, with a liveness backstop: if the bar cannot attach to whatever bubble is
+            // current (a resume before the transcript replayed, a bubble that already carries a
+            // choice bar), say something and hang the chips on THAT. An invite the student cannot
+            // answer is the .329 dead end wearing a different hat.
+            function serveLadder(inviteText) {
+                if (inviteText) aiBubble(inviteText);
+                if (!appendLadderChips()) {
+                    aiBubble('Another idea, or happy with what you have?');
+                    appendLadderChips();
+                }
+                resetSend();
+            }
+
+            // ── v7.20.334 — THE BATCHED REVIEW. ONE call, at the end, over the whole set ───────
+            // Mirrors _cwLoglineCtl.fireReview, which Neil ran end-to-end and called good. Reading
+            // the ideas TOGETHER is also better teaching than judging each in isolation: what makes
+            // one idea worth keeping is usually visible only next to the others.
+            //
+            // FAIL-OPEN throughout: a dropped marker or a failed call wraps the step normally. The
+            // student's ideas are already in the document, so nothing depends on this completing.
+            function rowTextOf(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants((n) => {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
+                                && n.attrs && n.attrs.fieldId === fid) { out = (n.textContent || '').trim(); return false; }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            function filledFids() { return ROWS.filter(function (f) { return rowTextOf(f); }); }
+            function fireIdeasReview() {
+                const list = filledFids()
+                    .map(function (f) { return IDEA_LABEL(f) + ': ' + rowTextOf(f); })
+                    .join('\n');
+                const ctx = '[STORY IDEA REVIEW — the student has finished sketching their story ideas. Read them '
+                    + 'TOGETHER, not one at a time: which has the most room to grow, which carries the strongest '
+                    + 'personal stake, which is a situation rather than a story yet. Give warm, specific praise for '
+                    + 'what is working (2-3 sentences), then, for any idea that is genuinely thin, ONE sentence '
+                    + 'saying what would give it a story. Be generous — these are deliberately rough seeds and the '
+                    + 'student develops only ONE of them in Step 3. Do NOT tell them which to choose; that is their '
+                    + 'call. End your reply with the machine-read marker "@WEAK:" followed by a comma-separated list '
+                    + 'from this exact set (idea-1, idea-2, idea-3), or "@ALL_OK" if they all hold. The marker is '
+                    + 'machine-read — never explain it.]\n\n' + list;
+                active = false; pending = true; persist();
+                armWalkResume('cw2-ideas-review', function (reply, meta) {
+                    pending = false; reviewed = true;
+                    const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                    const m = (!reply || (meta && meta.timedOut)) ? null : /@WEAK:\s*([a-z0-9,\s-]+)/i.exec(norm);
+                    weakFids = [];
+                    if (m) {
+                        const names = m[1].split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean);
+                        ROWS.forEach(function (f, n) { if (names.indexOf('idea-' + (n + 1)) !== -1 && rowTextOf(f)) weakFids.push(f); });
+                    }
+                    if (!weakFids.length) { active = false; persist(); wrapUp(); return; }
+                    active = true; persist();
+                    serveReviewChips();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = ctx;
+                sendCanvasMessage();
+            }
+            // Chips ride the review reply itself — one message, not a second bubble introducing it.
+            function serveReviewChips() {
+                const opts = weakFids.map(function (f) { return 'Sharpen my ' + IDEA_LABEL(f) + ' →'; });
+                opts.push('Move on →');
+                // LIVENESS BACKSTOP (law 4d). On a resume the chips are re-attached to the replayed
+                // review bubble — but if there is nothing to attach to (the transcript has not
+                // replayed yet, the DOM moved), the student is looking at feedback that names a weak
+                // idea with no way to act on it. Say something and hang them on that instead.
+                if (!chipBar(opts, onIdeaReviewPick)) {
+                    aiBubble('Which would you like to sharpen?');
+                    chipBar(opts, onIdeaReviewPick);
+                }
+                resetSend();
+            }
+            function onIdeaReviewPick(pick) {
+                canvasChatHistory.push({ role: 'user', content: pick });
+                addChatMessage(pick, 'user');
+                if (pick.indexOf('Move on') === 0) { weakFids = []; active = false; persist(); wrapUp(); return; }
+                const hit = weakFids.filter(function (f) { return pick.indexOf(IDEA_LABEL(f)) !== -1; })[0];
+                if (!hit) { weakFids = []; active = false; persist(); wrapUp(); return; }
+                revisingFid = hit; active = true;
+                // A story idea is ONE self-contained thing, so a rewrite REPLACES (§4c.6).
+                _walkSlot.arm('cw2', hit, { cycle: 'rewrite' });
+                persist();
+                aiBubble('**Rewriting your ' + IDEA_LABEL(hit) + '**\n\nWrite the **whole idea again**, not just the part you are '
+                    + 'changing — your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> '
+                    + (rowTextOf(hit) || '*(blank)*'));
+                appendIdeaButtons();
+                resetSend();
+            }
+            // DOM-only chips, re-attached on resume (chips-die-on-reload).
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice });
+                options.forEach(function (opt) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: function () { bar.remove(); onPick(opt); },
+                    }));
+                });
+                bc.appendChild(bar);
+                return true;
+            }
+            // The wrap, after the review. Split out because three paths reach it.
+            function wrapUp() {
+                const n = countFilledRows();
+                aiBubble(n > 1 ? SEG.wrap_choose : SEG.wrap_single);
+                if (n <= 1) tickSoleIdea();
+                finishStep();
+            }
+            // Every completion path goes through here: review ONCE, then wrap.
+            function endStep() {
+                active = false; awaitingChoice = false;
+                if (!reviewed && filledFids().length) { fireIdeasReview(); return; }
+                wrapUp();
             }
 
             // The decline. Accepted PERMANENTLY — no re-ask, ever. This is the whole point of
@@ -17809,9 +18017,8 @@
                 pending = false;
                 awaitingChoice = false;
                 console.log('WML CW2: student settled at ' + countFilledRows() + ' idea(s) — no further invites');
-                aiBubble(SEG.settled + '\n\n' + (countFilledRows() > 1 ? SEG.wrap_choose : SEG.wrap_single));
-                if (countFilledRows() <= 1) tickSoleIdea();
-                finishStep();
+                aiBubble(SEG.settled);
+                endStep();
             }
 
             // With exactly one idea there is nothing to choose between — tick it for them rather
@@ -17882,7 +18089,16 @@
                     deferFirst: !!deferFirst,
                     gates: OPENER_GATES,
                     onIndex: function (i) { chunkIdx = i; persist(); },
-                    onDone: function () { chunkIdx = OPENER.length; persist(); resetSend(); },
+                    // v7.20.334: the ASK is the last chunk, so the slot is armed only once it has
+                    // actually been delivered — a student typing during the paced opener has not
+                    // been asked anything yet and files nothing. Help bar rides the same moment.
+                    onDone: function () {
+                        chunkIdx = OPENER.length;
+                        active = true;
+                        armIdeaAsk();
+                        appendIdeaButtons();
+                        persist(); resetSend();
+                    },
                 });
                 resetSend();
             }
@@ -17927,46 +18143,79 @@
                 persist();
             }
 
-            // The student typed an idea. Hand ONE turn to the API for judgment (is this a genuine
-            // story idea? + one deepening question), then resume here to commit + invite.
+            // The student typed an idea. v7.20.334: filed VERBATIM here with no API call — the
+            // judgment is batched to the end of the set (fireIdeasReview).
+            function userTurn(text) {
+                canvasChatHistory.push({ role: 'user', content: text });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
             async function handleTurn(msg) {
                 if (pending) return;
                 const clean = (msg || '').trim();
                 if (!clean) { resetSend(); return; }
-                // v7.20.265: the user bubble AND the history entry are written by
-                // sendCanvasMessage (it is NOT a silent send). Writing them here as well —
-                // copied from _cwProfileCtl, which never sends — rendered every student turn
-                // TWICE and doubled it in canvasChatHistory (so Sophia saw it twice and
-                // userMsgCount was inflated). ONE writer only: the send.
-                active = false; pending = true;
-                const seen = countFilledRows();
-                armWalkResume('cw2-idea-' + (seen + 1), function (reply, meta) {
-                    pending = false;
-                    // The API judges. @IDEA_LANDED = "that was a genuine story idea". No slot in
-                    // the marker — CODE assigns the row. On the watchdog path (no reply at all)
-                    // commit anyway rather than lose the student's words.
-                    const isIdea = !reply || (meta && meta.timedOut)
-                        ? true
-                        : /@IDEA_LANDED/.test(String(reply).replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'));
-                    if (!isIdea) {           // a question or chit-chat — API already answered it
-                        active = true; persist(); resetSend(); return;
-                    }
-                    commitIdea(clean);
-                    const n = countFilledRows();
-                    if (declined || n >= MAX) {
-                        aiBubble(n > 1 ? SEG.wrap_choose : SEG.wrap_single);
-                        if (n <= 1) tickSoleIdea();
-                        finishStep();
-                        return;
-                    }
-                    aiBubble(n === 1 ? SEG.invite_2 : SEG.invite_3);
-                    appendLadderChips();     // decline is a chip → structurally un-re-askable
+                // ⭐ EXACTLY ONE WRITER OF THE STUDENT'S BUBBLE, and which one depends on the path.
+                // v7.20.265 established the rule: when the walk SENDS, sendCanvasMessage writes the
+                // bubble and the history entry, and writing them here too doubled every turn (so
+                // Sophia saw it twice and userMsgCount was inflated). v7.20.334 splits the paths —
+                // the ordinary idea path no longer sends at all, so if this file did not write the
+                // turn NOTHING would and the student's own words would vanish from the transcript
+                // while appearing in their document. The `asking` path below still sends, so it
+                // must NOT call userTurn(); every path after it must.
+                // ── THE PAID RUNG. They tapped [🤔 Ask Sophia a question], so this turn is a
+                // QUESTION: hand it to the model and file NOTHING. The ask is re-armed the moment
+                // the answer lands, so they never have to find their way back.
+                if (asking) {
+                    asking = false; active = false; pending = true; persist();
+                    armWalkResume('cw2-question', function () {
+                        pending = false; active = true;
+                        armIdeaAsk();
+                        appendIdeaButtons();
+                        persist(); resetSend();
+                    });
+                    canvasSilentSend = false;
+                    chatTextarea.value = clean;
+                    sendCanvasMessage();
+                    return;
+                }
+
+                userTurn(clean);   // every path from here on files rather than sends
+
+                // v7.20.334: WHERE this answer goes comes from the ask that requested it. No ask
+                // served → nothing is written. The per-idea judge used to be the thing that caught
+                // a non-answer; the slot is what catches it now, and it catches more.
+                const slot = _walkSlot.consume('cw2');
+                if (!slot) {
+                    console.warn('WML CW2: message arrived with no ask served — filing nothing.');
+                    aiBubble('Tap one of the buttons above to carry on — I haven’t asked you to write anything yet.');
+                    active = true; resetSend();
+                    return;
+                }
+
+                // A rewrite from the review chips replaces ONE row and returns to the chips.
+                if (revisingFid) {
+                    const fid = slot.fid;
+                    revisingFid = '';
+                    try {
+                        if (_writeOutlineRowField(fid, clean, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    } catch (e) { console.warn('WML CW2: revision write failed (non-fatal)', e && e.message); }
+                    weakFids = weakFids.filter(function (f) { return f !== fid; });
                     persist();
-                    resetSend();
-                });
-                canvasSilentSend = false;
-                chatTextarea.value = clean;
-                sendCanvasMessage();
+                    if (weakFids.length) { serveReviewChips(); return; }
+                    active = false; persist();
+                    wrapUp();
+                    return;
+                }
+
+                // ── THE ORDINARY PATH. Filed VERBATIM, immediately, with NO API call. Judgment
+                // happens ONCE at the end over the whole set (fireIdeasReview), so nothing the
+                // student writes depends on a round-trip completing.
+                commitIdea(clean);
+                const n = countFilledRows();
+                if (declined || n >= MAX) { endStep(); return; }
+                active = true;
+                serveLadder(n === 1 ? SEG.invite_2 : SEG.invite_3);   // decline is a chip → structurally un-re-askable
+                persist();
             }
 
             // @CW2_MENU on a landed reply = the recap is done, code takes over.
@@ -17976,7 +18225,7 @@
                 if (/@CW2_MENU/.test(norm)) serveOpener();
             }
 
-            function reset() { active = false; pending = false; filled = 0; declined = false; awaitingChoice = false; chunkIdx = 0; clearPersist(); }
+            function reset() { active = false; pending = false; filled = 0; declined = false; awaitingChoice = false; chunkIdx = 0; reviewed = false; weakFids = []; revisingFid = ''; asking = false; clearPersist(); }
             function tryResume() {
                 try {
                     // v7.20.298: a MISSING sidecar is no longer fatal. countFilledRows() already
@@ -17986,7 +18235,37 @@
                     const d = (raw ? JSON.parse(raw) : null) || {};
                     if (!raw) console.warn('WML CW2: sidecar missing — resuming from the document.');
                     filled = countFilledRows(); declined = !!d.declined;
+                    // v7.20.334
+                    reviewed = !!d.rv;
+                    weakFids = Array.isArray(d.weak) ? d.weak : [];
+                    revisingFid = (typeof d.rev === 'string') ? d.rev : '';
+                    asking = !!d.ask;
                     active = (raw ? !!d.active : true) && !declined && filled < MAX;
+                    // A reload mid-revision: re-arm the row they were rewriting and put the help
+                    // bar back. Resuming to the wrong surface is how a walk eats a typed answer as
+                    // the wrong field.
+                    if (revisingFid && ROWS.indexOf(revisingFid) !== -1) {
+                        active = true; pending = false;
+                        _walkSlot.arm('cw2', revisingFid, { cycle: 'rewrite' });
+                        console.log('WML CW2: resumed mid-revision of ' + revisingFid);
+                        setTimeout(function () { try { appendIdeaButtons(); } catch (e) {} }, 400);
+                        return true;
+                    }
+                    if (weakFids.length) {
+                        active = true; pending = false;
+                        console.log('WML CW2: resumed on the review chips (' + weakFids.length + ' to sharpen)');
+                        setTimeout(function () { try { serveReviewChips(); } catch (e) {} }, 400);
+                        return true;
+                    }
+                    // A reload after tapping [Ask Sophia] but before typing the question. The slot
+                    // is deliberately empty, so re-serve the prompt rather than leaving them on a
+                    // dead turn (law 4d).
+                    if (asking) {
+                        active = true; pending = false;
+                        console.log('WML CW2: resumed waiting on a question for Sophia');
+                        setTimeout(function () { try { aiBubble(SEG.asking); resetSend(); } catch (e) {} }, 400);
+                        return true;
+                    }
                     // v7.20.265: a reload mid-invite resumes into the CHOICE, not into a typed
                     // turn. The invite bubble is already replayed from saved history; only the
                     // (DOM-only) chip bar needs re-attaching to it.
@@ -18005,17 +18284,39 @@
                         setTimeout(function () {
                             if (!awaitingChoice) return;
                             console.log('WML CW2: resumed awaiting the ladder choice — chips re-attached');
-                            appendLadderChips();
+                            serveLadder();   // backstop: says something if it cannot re-attach
                         }, 400);
                         return true;
                     }
-                    if (active) console.log('WML CW2: resumed with ' + filled + '/' + MAX + ' ideas');
+                    if (active) {
+                        // v7.20.334: re-arm the ask the student is looking at. The token is
+                        // in-memory, so without this a reload leaves the idea question on screen
+                        // with no authority to file its answer — and their next idea is refused.
+                        const _rs = (d.slot && d.slot.fid && ROWS.indexOf(d.slot.fid) !== -1) ? d.slot.fid : null;
+                        if (_rs) _walkSlot.arm('cw2', _rs, { cycle: 'rewrite' }); else armIdeaAsk();
+                        console.log('WML CW2: resumed with ' + filled + '/' + MAX + ' ideas');
+                        setTimeout(function () { try { appendIdeaButtons(); } catch (e) {} }, 400);
+                    }
                     return active;
                 } catch (e) { return false; }
             }
 
+            // v7.20.334: re-serve whatever surface the student is on (no filing, no API call).
+            // The dispatcher calls this when it swallows a stale generic chip tap — the tap means
+            // "let's carry on", so show them where we are rather than leaving a dead screen (4d).
+            function nudge() {
+                if (!active || pending) return false;
+                if (weakFids.length && !revisingFid) { serveReviewChips(); return true; }
+                if (asking) { aiBubble(SEG.asking); resetSend(); return true; }
+                if (countFilledRows() >= MAX) return false;
+                aiBubble(SEG.ask_again);
+                armIdeaAsk();
+                appendIdeaButtons();
+                persist(); resetSend();
+                return true;
+            }
             return {
-                serveOpener, handleTurn, onReply, reset, tryResume, settle,
+                serveOpener, handleTurn, onReply, reset, tryResume, settle, nudge,
                 forceStart: serveOpener,
                 // v7.20.270: "hasn't started" is ROOM LEFT, not a pristine doc. Keying on ===0 meant a
                 // returning student with ideas already banked could never trigger the fallback —

@@ -142,6 +142,10 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onPushChoice:   { kind: 'flow', note: 'Step 5 archetype push: switch / keep' },
         onMultiDone:    { kind: 'flow', note: 'Step 5 alternates considered (multi-select)' },
         onReviewChipPick: { kind: 'flow', note: 'Step 3 review: sharpen component X / move on — steers the walk' },
+        // v7.20.334 — the Step-2 batched review's chips. Flow, on the same reasoning as the Step-3
+        // twin: the pick chooses WHICH idea to rewrite; the rewritten idea itself is what gets
+        // filed (verbatim, to its own row), so nothing is lost when the sidecar is cleared.
+        onIdeaReviewPick: { kind: 'flow', note: 'Step 2 review: sharpen idea N / move on — the rewrite that follows is what is filed' },
         // scaffold — the pick SHAPES the next ask, and the written answer that follows is what
         // gets filed. Not lost, because the beat sentence carries it. Beat 1 is the exception and
         // is handled separately (onSecondaryNeedsDone → NEEDS_FID), because there the category IS
@@ -261,7 +265,7 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     });
 
     // The legacy, not-yet-migrated sites. BASELINE — this number may only DECREASE.
-    const RAW_GUARD_BASELINE = 4;
+    const RAW_GUARD_BASELINE = 3;   // v7.20.334: CW2's ladder bar migrated to a kind
     const raw = (JS.match(/if \(!bc \|\| bc\.querySelector\('\.swml-quick-actions'\)\) return;/g) || []).length;
     ok(raw <= RAW_GUARD_BASELINE,
         `${raw} control bars still guard on the shared '.swml-quick-actions' (baseline ` +
