@@ -109,7 +109,7 @@ function makeWorld(ctl, opts) {
     (opts.fids || []).forEach((f) => rows.set(f, ''));
     Object.keys(opts.prefill || {}).forEach((f) => rows.set(f, opts.prefill[f]));
 
-    const world = { rows, bubbles, users, writes, sends, ls, get armed() { return armed; } };
+    const world = { rows, bubbles, users, writes, sends, ls, ticked: new Set(), get armed() { return armed; } };
 
     function findIn(node, sel) {
         if (!node || !node.children) return null;
@@ -162,6 +162,28 @@ function makeWorld(ctl, opts) {
             return true;
         },
         _tickOutlineRow: function () { return true; },
+        // v7.20.336 — the tick-in-chat primitive, MODELLED not stubbed. A bare `return true`
+        // would let a chip that ticks the new choice while leaving the previous one ticked pass
+        // every test (§2b: a rig that skips the mechanism proves nothing). So this reproduces the
+        // two behaviours that actually matter from the real checkbox click handler:
+        //   • radio groups — ticking one row in a `cw-step-2-idea*` / `cw-step-3-logline-*` group
+        //     clears its siblings, so `ticked` can never hold two members of one group
+        //   • already-ticked is a NO-OP, never a toggle (a real .click() would untick it)
+        // Assert against `world.ticked`.
+        _tickRowLikeAStudent: function (fid) {
+            if (!fid) return false;
+            if (!rows.has(fid)) { world.lostTick = fid; return false; }
+            if (world.ticked.has(fid)) return true;                     // no-op, never a toggle
+            const prefix = fid.indexOf('cw-step-2-idea') === 0 ? 'cw-step-2-idea'
+                : fid.indexOf('cw-step-3-logline-') === 0 ? 'cw-step-3-logline-' : null;
+            if (prefix) {
+                Array.from(world.ticked).forEach(function (t) {
+                    if (t.indexOf(prefix) === 0 && t !== fid) world.ticked.delete(t);
+                });
+            }
+            world.ticked.add(fid);
+            return true;
+        },
         saveCanvasContent: function () {},
         CANVAS_SAVE_KEY: function () { return 'sim'; },
         _cwLoadDocValues: function () { return Promise.resolve({}); },

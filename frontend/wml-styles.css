@@ -618,7 +618,8 @@ body.swml-page {
     opacity: 0.6; cursor: default;
 }
 .swml-save-to-bank-done {
-    background: rgba(28,217,145,0.15) !important; color: var(--swml-green) !important;
+    /* v7.20.336: elevation + the green border it already had, instead of a 15% wash. */
+    background: var(--swml-surface-done-strong) !important; color: var(--swml-green) !important;
     border-color: rgba(28,217,145,0.4) !important;
 }
 .swml-save-to-bank-dismiss {
@@ -749,7 +750,8 @@ body.swml-page {
     box-shadow: 0 0 12px rgba(28,217,145,0.35);
 }
 .swml-stepper-step.is-complete .swml-stepper-line {
-    background: linear-gradient(to bottom, #1CD991, rgba(28,217,145,0.3));
+    /* v7.20.336: fade to nothing rather than to a low-alpha green (which browns on dark). */
+    background: linear-gradient(to bottom, #1CD991, rgba(28,217,145,0));
 }
 /* Active step — gradient glow circle */
 .swml-stepper-step.is-active .swml-stepper-circle {
@@ -908,7 +910,8 @@ body.swml-page {
     100% { background-position: 0% 50%; }
 }
 .swml-status-tag.complete {
-    color: #1CD991; background: rgba(28,217,145,0.1);
+    /* v7.20.336: saturate — a status tag is small and green IS the object. */
+    color: #12261d; background: #1CD991;
     border: 1px solid rgba(28,217,145,0.2);
 }
 /* Light mode overrides */
@@ -2958,9 +2961,13 @@ body.swml-page {
 .swml-cw-step-card:hover::before { opacity: 1; }
 
 /* Complete state */
+/* v7.20.336 (Neil: "step one is green, step two is purple, and both of them have got that
+   terrible brown wash"). THIS rule was the one he photographed: a gradient running low-alpha
+   GREEN → PURPLE composites to mud over the dark shell. Done = elevation + a green edge. */
 .swml-cw-step-card.complete {
     border-color: rgba(28,217,145,0.3);
-    background: linear-gradient(135deg, rgba(28,217,145,0.15), rgba(44,0,62,0.3));
+    background: var(--swml-surface-done-strong);
+    box-shadow: inset 2px 0 0 var(--swml-edge-done);
 }
 .swml-cw-step-card.complete:hover {
     border-color: rgba(28,217,145,0.6);
@@ -3002,9 +3009,12 @@ body.swml-page {
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
 }
+/* v7.20.336: green IS the object on this little number badge, so it KEEPS its green — but
+   saturated, with dark text, so nothing composites through it. (Green text on a 25% green
+   wash was both muddy and low-contrast.) */
 .swml-cw-step-card.complete .swml-cw-step-num {
-    background: rgba(28,217,145,0.25);
-    color: #1CD991;
+    background: #1CD991;
+    color: #12261d;
 }
 .swml-cw-step-num.trial-badge {
     background: rgba(77,118,253,0.25);
@@ -3083,9 +3093,11 @@ body.swml-page {
     box-shadow: 0 8px 24px rgba(83,51,237,0.2);
 }
 .swml-cw-project-card:hover::before { opacity: 1; }
+/* v7.20.336: same green→purple gradient defect as .swml-cw-step-card.complete. */
 .swml-cw-project-card.completed {
     border-color: rgba(28,217,145,0.3);
-    background: linear-gradient(135deg, rgba(28,217,145,0.08), rgba(44,0,62,0.2));
+    background: var(--swml-surface-done);
+    box-shadow: inset 2px 0 0 var(--swml-edge-done);
 }
 .swml-cw-project-card.swml-cw-project-new {
     border-style: dashed;
@@ -3099,19 +3111,22 @@ body.swml-page {
 /* v7.19.179: Step 1 picker — "Continue here" highlight on most-recent project. */
 .swml-cw-project-card.swml-cw-project-continue {
     border-color: rgba(28,217,145,0.55);
-    background: rgba(28,217,145,0.06);
+    /* v7.20.336: elevation, not a 6% green wash. The green ring and glow below are EDGES —
+       they sit on their own and stay. */
+    background: var(--swml-surface-done);
     box-shadow: 0 0 0 1px rgba(28,217,145,0.25) inset, 0 8px 24px -12px rgba(28,217,145,0.4);
 }
 .swml-cw-project-card.swml-cw-project-continue:hover {
     border-color: rgba(28,217,145,0.8);
-    background: rgba(28,217,145,0.1);
+    background: var(--swml-surface-done-strong);
 }
 .swml-cw-project-badge {
     display: inline-block;
     padding: 3px 10px;
     border-radius: 999px;
-    background: rgba(28,217,145,0.18);
-    color: #1CD991;
+    /* v7.20.336: a badge is a "green IS the object" case — saturate it, don't wash it. */
+    background: #1CD991;
+    color: #12261d;
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;

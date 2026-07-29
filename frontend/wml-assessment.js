@@ -3422,8 +3422,19 @@
                 const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
                 let f = null;
                 host.querySelectorAll('[data-field-id]').forEach(n => { if (!f && n.getAttribute('data-field-id') === fid) f = n; });
+                // v7.20.336 (Neil asked for the MECHANISM to be checked, not tested-and-reported).
+                // `canvasEditor` can be a stale closure-captured editor whose `options.element` is a
+                // DETACHED node — the known blinds-the-readers landmine. When that happens this
+                // lookup finds nothing and the old code returned SILENTLY: the text filed, the
+                // document never moved, and there was no console trace to tell anyone why. Retry
+                // against the live document before giving up, and if it is still missing, say so
+                // out loud rather than failing invisibly (§10 fail loud).
+                if (!f && host !== document) {
+                    document.querySelectorAll('[data-field-id]').forEach(n => { if (!f && n.getAttribute('data-field-id') === fid) f = n; });
+                    if (f) console.warn('WML FillScroll: field', fid, 'was not in the editor host (stale editor?) — found it on document and scrolled anyway');
+                }
                 const sec = f && (f.closest('.swml-section-block') || f);
-                if (!sec) return;
+                if (!sec) { console.warn('WML FillScroll: no element for field', fid, '— the text filed but the document did not scroll'); return; }
                 // v7.20.260 (Neil — CW Step 1 q6/q8/q9 "autofilled but didn't scroll"): scroll to
                 // the FIELD when its section holds more than one. A section-level scroll only
                 // MOVES for the first field in a group; every later fill re-scrolls the same
@@ -3516,6 +3527,58 @@
     // handler uses (dom._checkRowComplete, exposed by the NodeView, and checkSectionComplete), so
     // the tick, the row class and the header can't disagree (the v7.20.98 stale-header class).
     // Loop-based attribute lookup — never CSS.escape (WML rule).
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // TICK A ROW **THE WAY THE STUDENT WOULD** (v7.20.336)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Neil, 2026-07-29: chat chips that tick the document box for you, because "a lot of students
+    // are not actually ticking things off properly… they don't even notice their document doesn't
+    // say a hundred percent." With the standing constraint: **the box stays hand-tickable, and a
+    // hand tick must behave identically.**
+    //
+    // ⚠ WHY THIS DISPATCHES A REAL CLICK, and does NOT reuse either existing tick path.
+    // The behaviour that makes a tick MEAN something lives in the checkbox's own `click`
+    // listener (~L32154): radio-clearing the sibling rows, persistControl, checkRowComplete,
+    // syncSection, and — for Step 3 — `_transferChosenLogline`. Neither existing path fires it:
+    //   • `_tickOutlineRow` sets `cb.checked` as a property (no event fires)
+    //   • `tickSoleIdea` dispatches a PM setNodeMarkup transaction (no DOM event at all)
+    // `tickSoleIdea` is safe only because a SOLE idea has no siblings to clear. Copy either one
+    // into a multi-option picker and you get a chip that ticks the new choice while leaving the
+    // previous one ticked, and a Chosen Logline that never transfers — a write-path ≠ read-path
+    // failure with no error and no symptom until Step 4 builds from the wrong sentence (§5d).
+    //
+    // Routing through `.click()` means the chip and the hand tick are the SAME code path by
+    // construction, so they cannot drift. PM-safe for the same reason `_tickOutlineRow` is:
+    // `.click()` toggles the `checked` PROPERTY, which produces no MutationRecord, so PM's
+    // DOMObserver never sees it and cannot flush (the v7.19.866 freeze class).
+    //
+    // Returns true if it ticked, false if it could not find the row (caller decides what the
+    // student sees — never leave them with nothing, law 4d).
+    function _tickRowLikeAStudent(fid) {
+        if (!fid) return false;
+        try {
+            let rowEl = null;
+            document.querySelectorAll('[data-outline-row]').forEach((r) => {
+                if (!rowEl && r.getAttribute('data-field-id') === fid) rowEl = r;
+            });
+            if (!rowEl) { console.warn('WML tick-in-chat: no outline row for', fid); return false; }
+            const cb = rowEl.querySelector('input[type="checkbox"]');
+            if (!cb) { console.warn('WML tick-in-chat: row', fid, 'has no checkbox'); return false; }
+            // Already ticked → do NOT click; .click() is a TOGGLE and would untick their choice.
+            if (cb.checked) { console.log('WML tick-in-chat:', fid, 'already ticked — left alone'); return true; }
+            cb.click();
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            // Show it happening. A chip can tick a box that is far up the document, and a tick the
+            // student never sees is the same as no tick — which is the whole problem this feature
+            // exists to solve. Same helper every text fill uses, so the behaviour is identical.
+            _scrollToFilledField(fid);
+            console.log('WML tick-in-chat: ticked', fid, 'via the student\'s own click path');
+            return true;
+        } catch (e) {
+            console.warn('WML tick-in-chat: failed for', fid, '—', e && e.message);
+            return false;
+        }
+    }
+
     function _tickOutlineRow(fid) {
         if (!fid) return false;
         try {
@@ -3587,6 +3650,10 @@
                         '— Step 6 would fall back to the default. Check the dropdown items against resolvePlotStructureSlug.');
                 }
             }
+            // v7.20.336: show the selection land. Step 5's archetype is chosen from a CHAT chip,
+            // so without this the dropdown changes somewhere off-screen and the student has no
+            // evidence anything happened — the same complaint as an unscrolled text fill.
+            _scrollToFilledField(fid);
             return true;
         } catch (e) {
             console.warn('WML: dropdown set failed for', fid, '—', e && e.message);
@@ -17713,7 +17780,7 @@
                     'Good — that’s your call to make, and being certain about your story is worth more than a longer list.',
                 wrap_choose:
                     'Those are your story ideas, saved in your document.\n\n' +
-                    'Before we move on: **tick the checkbox beside the idea you want to develop** in Step 3. That becomes your chosen idea and carries straight through. You can come back and change it any time before you move on.\n\n' +
+                    'Before we move on: **which one do you want to develop?** Tap it below and I’ll tick it for you — or tick the checkbox beside it in your document yourself, whichever you prefer. That becomes your chosen idea and carries straight into Step 3, and you can change it any time before you move on.\n\n' +
                     'Take a moment to fix any spelling or punctuation in your ideas while you’re there — they’re your words, so they’re yours to tidy.',
                 wrap_single:
                     'That’s your story idea, saved in your document — and it’s already ticked as the one you’re developing.\n\n' +
@@ -17995,11 +18062,49 @@
                 bc.appendChild(bar);
                 return true;
             }
+            // v7.20.336 (Neil, 2026-07-29) — CHOOSE YOUR IDEA FROM THE CHAT.
+            // Verbatim: "a lot of students are not actually ticking things off properly… they
+            // don't even notice that their document doesn't say a hundred percent." Telling them
+            // to go and tick a box in the document is the step they skip, and the unticked box is
+            // what Step 3 reads. So the choice is offered where they already are — one chip per
+            // idea, labelled with the IDEA'S OWN WORDS (root CLAUDE.md #14: never make a person
+            // read "Idea 2" when the system can show them what Idea 2 says).
+            //
+            // The chip ticks the REAL checkbox through the student's own click path, so the
+            // document stays the single source of truth, the sibling ideas radio-clear, and
+            // `chosen_idea` is derived by the existing save path. Hand-ticking is untouched and
+            // behaves identically — this is an additional route to the same box, never a
+            // replacement for it.
+            function serveIdeaPicker() {
+                const opts = [], fidByLabel = {};
+                ROWS.forEach(function (fid, n) {
+                    const txt = (rowTextOf(fid) || '').trim();
+                    if (!txt) return;
+                    const short = txt.length > 90 ? txt.slice(0, 88).replace(/\s+\S*$/, '') + '…' : txt;
+                    const label = (n + 1) + '. ' + short;
+                    opts.push(label); fidByLabel[label] = fid;
+                });
+                if (opts.length < 2) return false;   // nothing to choose between — never a dead menu
+                return chipBar(opts, function (pick) {
+                    userTurn(pick);
+                    const fid = fidByLabel[pick];
+                    const ticked = _tickRowLikeAStudent(fid);
+                    aiBubble(ticked
+                        ? 'Ticked **' + IDEA_LABEL(fid) + '** in your document — that is your chosen idea, and it '
+                          + 'carries straight into Step 3.\n\nYou can change which one is ticked in the document '
+                          + 'yourself at any time before you move on.'
+                        // Refused, but never with nothing (law 4d): say what to do instead.
+                        : 'I could not tick that one for you — please tick the checkbox beside **'
+                          + IDEA_LABEL(fid) + '** in your document, and it will carry into Step 3.');
+                    resetSend();
+                });
+            }
             // The wrap, after the review. Split out because three paths reach it.
             function wrapUp() {
                 const n = countFilledRows();
                 aiBubble(n > 1 ? SEG.wrap_choose : SEG.wrap_single);
                 if (n <= 1) tickSoleIdea();
+                else serveIdeaPicker();   // v7.20.336: chips ride the wrap bubble — still one message
                 finishStep();
             }
             // Every completion path goes through here: review ONCE, then wrap.
@@ -18835,29 +18940,39 @@
             // call: the student's own three sentences are already in the document.
             const CHOSEN_FID = 'cw-step-3-chosen';
             function serveLoglinePicker() {
-                const opts = [], map = {};
+                const opts = [], map = {}, fidByLabel = {};
                 FORMULAS.forEach(function (st, n) {
                     const txt = rowText(st.fid);
                     if (!txt) return;
                     const short = txt.length > 90 ? txt.slice(0, 88).replace(/\s+\S*$/, '') + '\u2026' : txt;
                     const label = (n + 1) + '. ' + short;
-                    opts.push(label); map[label] = txt;
+                    opts.push(label); map[label] = txt; fidByLabel[label] = st.fid;
                 });
                 if (!opts.length) { resetSend(); return; }   // nothing written — never a dead menu
-                chipBar(opts, onLoglinePick(map));
+                chipBar(opts, onLoglinePick(map, fidByLabel));
                 resetSend();
             }
-            function onLoglinePick(map) {
+            function onLoglinePick(map, fidByLabel) {
                 return function (pick) {
                     userTurn(pick);
                     const full = map[pick] || '';
+                    // v7.20.336 (Neil, 2026-07-29): TICK THE REAL BOX TOO. The picker filed the
+                    // text but left the logline row unticked, so Document Progress never reached
+                    // 100% and, in his words, students "don't even notice". Going through the
+                    // student's own click path also radio-clears the sibling drafts, so the doc
+                    // can never show two chosen loglines. Ticked immediately and said out loud —
+                    // his ruling: no confirm step, it is reversible and the doc is open beside them.
+                    const ticked = _tickRowLikeAStudent(fidByLabel && fidByLabel[pick]);
                     try {
                         // v7.20.332: REPLACE. The box holds ONE sentence; appending glued the pick
                         // onto whatever was there from an earlier run — Neil's staging run filed
                         // "Logline Test 2after dying in a car accident…" as his chosen logline.
                         if (_writeOutlineRowField(CHOSEN_FID, full, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
                     } catch (e) { console.warn('WML CW3: chosen-logline write failed (non-fatal)', e && e.message); }
-                    aiBubble('Filed into your **Chosen Logline** box \u2014 that is the sentence Step 4 will build from.\n\nFine-tune the wording there whenever you like; it is your sentence.');
+                    aiBubble((ticked ? 'Ticked it in your document and filed it' : 'Filed it')
+                        + ' into your **Chosen Logline** box \u2014 that is the sentence Step 4 will build from.'
+                        + '\n\nFine-tune the wording there whenever you like; it is your sentence \u2014 and you can '
+                        + 'still change which one is ticked in the document yourself at any time.');
                     resetSend();
                 };
             }

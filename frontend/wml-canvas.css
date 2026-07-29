@@ -33,7 +33,14 @@
    declares :root vars clobbers the host page).
    ═══════════════════════════════════════════════════════════════════════════════════════ */
 .swml-canvas-content,
-.swml-codex-doc {
+.swml-codex-doc,
+/* v7.20.336: the app shell too. The CW step cards and project cards live in wml-styles.css,
+   OUTSIDE the canvas, and they made this same mistake — so they need these tokens to exist.
+   Declared here rather than duplicated there because two declaration sites is how the values
+   drift; wml-canvas.css is enqueued with `swml-styles` as a dependency, so whenever the shell
+   renders, this block has already loaded. Still NOT :root (root CLAUDE.md — a plugin that
+   declares generic vars on :root clobbers the host page). */
+.swml-page {
     /* One elevation step above the canvas surface. Neutral white at low alpha keeps the
        purple underneath reading as purple — it lifts the surface without tinting it. */
     --swml-surface-done: rgba(255, 255, 255, 0.055);
@@ -3712,8 +3719,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.01em;
-    color: #1CD991;
-    background: rgba(28,217,145,0.12);
+    /* v7.20.336: saturate — a tag is small and green IS the object. */
+    color: #12261d;
+    background: #1CD991;
 }
 .swml-canvas-light .swml-cw-project-overlay__list-tag {
     color: #0f7a52;
@@ -5896,9 +5904,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     transform: translateY(0) scale(0.92);
 }
 .swml-transfer-btn.swml-transfer-success {
-    background: rgba(28,217,145,0.5);
+    /* v7.20.336: a success state is green ITSELF — saturate so nothing composites through. */
+    background: #1CD991;
     border-color: #1CD991;
-    color: #fff;
+    color: #12261d;
 }
 .swml-transfer-btn.swml-transfer-empty {
     background: rgba(255,107,107,0.3);
@@ -6039,9 +6048,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     transform: translateY(0) scale(0.97);
 }
 .swml-transfer-all-btn.swml-transfer-success {
-    background: rgba(28,217,145,0.5);
+    background: #1CD991;
     border-color: #1CD991;
-    color: #fff;
+    color: #12261d;
 }
 .swml-transfer-all-btn.swml-transfer-empty {
     background: rgba(255,107,107,0.3);
@@ -6431,7 +6440,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     height: 22px;
     border-radius: 6px;
     border: 1px solid rgba(125,249,233,0.35);
-    background: linear-gradient(180deg, rgba(28,217,145,0.85), rgba(28,217,145,0.55));
+    /* v7.20.336: keep the gradient, but both stops opaque enough to read as green. */
+    background: linear-gradient(180deg, #1CD991, #17b57a);
     color: rgba(255,255,255,0.95);
     cursor: pointer;
     display: inline-flex;
@@ -6958,7 +6968,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: var(--swml-surface-done);
 }
 .swml-section-response::before {
-    background: rgba(28, 217, 145, 0.35);
+    /* v7.20.336: elevation + green label text, not a green wash. */
+    background: var(--swml-surface-done-strong);
     color: #4ee6ab;
 }
 
@@ -7074,7 +7085,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
    type badges carry an explicit colour, sign-off had none so it inherited an unreadable one).
    Green accent to match the section; light text in dark, dark-green text in light. */
 .swml-section-signoff::before {
-    background: rgba(28, 217, 145, 0.18);
+    background: var(--swml-surface-done-strong);
     color: rgba(255, 255, 255, 0.9);
 }
 [data-swml-theme="light"] .swml-section-signoff::before {
@@ -7173,7 +7184,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-ana-chip.swml-tier-9 { background: rgba(44, 0, 62, 0.42); }
 .swml-ana-chip.swml-tier-8 { background: rgba(83, 51, 237, 0.34); }
 .swml-ana-chip.swml-tier-7 { background: rgba(77, 118, 253, 0.32); }
-.swml-ana-chip.swml-tier-6 { background: rgba(28, 217, 145, 0.34); }
+.swml-ana-chip.swml-tier-6 { background: #1CD991; color: #12261d; }
 .swml-ana-chip.swml-tier-5 { background: rgba(241, 196, 15, 0.36); color: rgba(20, 20, 20, 0.92); }
 .swml-ana-chip.swml-tier-4 { background: rgba(255, 152, 0, 0.38); color: rgba(20, 20, 20, 0.92); }
 .swml-ana-chip.swml-tier-3,
@@ -7728,9 +7739,10 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(28, 217, 145, 0.18);
+    /* v7.20.336: saturate — a paired badge is small and green IS the object. */
+    background: #1CD991;
     border: 1px solid rgba(28, 217, 145, 0.5);
-    color: #fff;
+    color: #12261d;
     padding: 4px 8px;
     border-radius: 999px;
     font-size: 12px;
@@ -7994,16 +8006,20 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     position: relative;
     transition: border-color 0.15s, background 0.15s;
 }
+/* v7.20.336 — THE TICKABLE AREA Neil reported ("the area that's tickable… that terrible brown
+   wash"). A 14px control at 20% green let the purple composite straight through, and the tick
+   itself was green-on-green. This is a "green IS the object" case: saturate the face and put a
+   DARK tick on it, so it reads as an unmistakable green tick at a glance. */
 .swml-outline-check input[type="checkbox"]:checked {
-    background: rgba(28, 217, 145, 0.2);
-    border-color: rgba(28, 217, 145, 0.5);
+    background: #1CD991;
+    border-color: #1CD991;
 }
 .swml-outline-check input[type="checkbox"]:checked::after {
     content: '';
     position: absolute;
     left: 3px; top: 0px;
     width: 5px; height: 8px;
-    border: solid #1CD991;
+    border: solid #12261d;
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
@@ -8226,11 +8242,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     transition: background 160ms cubic-bezier(0.22,1,0.36,1), color 160ms cubic-bezier(0.22,1,0.36,1);
 }
 .swml-tech-pick:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.92); }
+/* v7.20.336: a selected pick is a SURFACE — elevation + a green edge, never a hue wash. */
 .swml-tech-pick.is-on {
-    background: rgba(28, 217, 145, 0.2);
+    background: var(--swml-surface-done-strong);
+    box-shadow: inset 2px 0 0 var(--swml-edge-done);
     color: rgba(255,255,255,0.95);
 }
-.swml-tech-pick.is-on:hover { background: rgba(28, 217, 145, 0.28); }
+.swml-tech-pick.is-on:hover { background: var(--swml-surface-hi, rgba(255,255,255,0.10)); }
 .swml-tech-pick:focus-visible { outline: 2px solid rgba(83, 51, 237, 0.9); outline-offset: 2px; }
 .swml-tech-hint { font-size: 10.5px; color: inherit; opacity: 0.55; }
 /* Chosen chips in the running list remove on click — say so on hover. */
@@ -8362,7 +8380,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
        suffocates)") wraps to two lines inside a comfortable pill rather than hugging the edges. */
     padding: 3px 20px 3px 11px;
     border-radius: 12px;
-    background: rgba(28, 217, 145, 0.16);
+    /* v7.20.336: elevation, not a green wash (this pill carries neutral text). */
+    background: var(--swml-surface-done-strong);
     color: rgba(255,255,255,0.85);
     cursor: pointer;
     transition: background 150ms cubic-bezier(0.22,1,0.36,1), color 150ms cubic-bezier(0.22,1,0.36,1);
@@ -9121,7 +9140,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-pill.swml-tier-9:hover:not(.is-active) { background-color: rgba(44, 0, 62, 0.22); color: rgba(255,255,255,0.85); }
 .swml-pill.swml-tier-8:hover:not(.is-active) { background-color: rgba(83, 51, 237, 0.20); color: rgba(255,255,255,0.85); }
 .swml-pill.swml-tier-7:hover:not(.is-active) { background-color: rgba(77, 118, 253, 0.20); color: rgba(255,255,255,0.85); }
-.swml-pill.swml-tier-6:hover:not(.is-active) { background-color: rgba(28, 217, 145, 0.22); color: rgba(255,255,255,0.85); }
+.swml-pill.swml-tier-6:hover:not(.is-active) { background-color: var(--swml-surface-done-strong); color: rgba(255,255,255,0.85); }
 .swml-pill.swml-tier-5:hover:not(.is-active) { background-color: rgba(255, 193, 7, 0.22); color: rgba(255,255,255,0.85); }
 .swml-pill.swml-tier-4:hover:not(.is-active) { background-color: rgba(255, 152, 0, 0.22); color: rgba(255,255,255,0.85); }
 .swml-pill.swml-tier-3:hover:not(.is-active),
@@ -9136,7 +9155,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-pill-row-grade .swml-pill.swml-tier-9:not(.is-active) { background-color: rgba(44, 0, 62, 0.32); color: rgba(255,255,255,0.85); }
 .swml-pill-row-grade .swml-pill.swml-tier-8:not(.is-active) { background-color: rgba(83, 51, 237, 0.26); color: rgba(255,255,255,0.85); }
 .swml-pill-row-grade .swml-pill.swml-tier-7:not(.is-active) { background-color: rgba(77, 118, 253, 0.26); color: rgba(255,255,255,0.85); }
-.swml-pill-row-grade .swml-pill.swml-tier-6:not(.is-active) { background-color: rgba(28, 217, 145, 0.28); color: rgba(255,255,255,0.85); }
+.swml-pill-row-grade .swml-pill.swml-tier-6:not(.is-active) { background-color: var(--swml-surface-done-strong); color: rgba(255,255,255,0.85); }
 .swml-pill-row-grade .swml-pill.swml-tier-5:not(.is-active) { background-color: rgba(241, 196, 15, 0.28); color: rgba(255,255,255,0.85); }
 .swml-pill-row-grade .swml-pill.swml-tier-4:not(.is-active) { background-color: rgba(255, 152, 0, 0.28); color: rgba(255,255,255,0.85); }
 .swml-pill-row-grade .swml-pill.swml-tier-3:not(.is-active),
@@ -9174,7 +9193,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-popover-option.swml-tier-9:hover { background: rgba(44, 0, 62, 0.45); }
 .swml-popover-option.swml-tier-8:hover { background: rgba(83, 51, 237, 0.35); }
 .swml-popover-option.swml-tier-7:hover { background: rgba(77, 118, 253, 0.35); }
-.swml-popover-option.swml-tier-6:hover { background: rgba(28, 217, 145, 0.30); }
+.swml-popover-option.swml-tier-6:hover { background: var(--swml-surface-done-strong); }
 .swml-popover-option.swml-tier-5:hover { background: rgba(255, 193, 7, 0.30); }
 .swml-popover-option.swml-tier-4:hover { background: rgba(255, 152, 0, 0.30); }
 .swml-popover-option.swml-tier-3:hover,
@@ -9425,7 +9444,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-progress-chip:active { transform: scale(0.96); }
 /* completed unit pill (Codex) — green tint + house check (v7.19.505) */
 .swml-progress-chip.is-done {
-    color: #1CD991; background: rgba(28,217,145,0.16);
+    color: #12261d; background: #1CD991;
     position: relative; padding-left: 31px;
 }
 /* house badge — green rounded circle + white check (matches the section tick) */
@@ -9435,7 +9454,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 11px 11px no-repeat;
     box-shadow: 0 1px 3px rgba(28,217,145,0.4);
 }
-.swml-progress-chip.is-done:hover { background: rgba(28,217,145,0.28); color: #1CD991; }
+.swml-progress-chip.is-done:hover { background: #17b57a; color: #12261d; }
 
 /* Light mode */
 [data-swml-theme="light"] .swml-progress-card {
@@ -10151,7 +10170,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     margin: 16px 12px;
     padding: 24px;
     border-radius: 16px;
-    background: linear-gradient(135deg, rgba(28,217,145,0.08), rgba(83,51,237,0.08));
+    /* v7.20.336: elevation; the green border below is the EDGE that says complete. */
+    background: var(--swml-surface-done);
     border: 1px solid rgba(28,217,145,0.25);
     text-align: center;
     animation: swmlPhaseCardIn 0.5s cubic-bezier(0.16,1,0.3,1);
@@ -10215,7 +10235,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-phase-complete-done {
     border-color: rgba(28,217,145,0.4);
-    background: linear-gradient(135deg, rgba(28,217,145,0.12), rgba(83,51,237,0.06));
+    background: var(--swml-surface-done-strong);
 }
 /* Light mode */
 .swml-canvas-light .swml-phase-complete-title { color: #14121e; }

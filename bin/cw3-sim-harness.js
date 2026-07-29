@@ -339,6 +339,30 @@ console.log('I9 · the chosen logline replaces; every sharpen chip names its own
             'the chosen logline was APPENDED to what the box already held — it must REPLACE, or the '
             + 'student files two sentences glued together (Neil, staging .331: '
             + '"Logline Test 2after dying in a car accident…")');
+
+        // STAGE 3 — v7.20.336: the pick must also TICK the row in the document.
+        // Neil, 2026-07-29: "a lot of students are not actually ticking things off properly…
+        // they don't even notice that their document doesn't say a hundred percent." Filing the
+        // text without ticking the box is exactly that failure, and it is SILENT — the walk
+        // completes, the text is there, and only Document Progress betrays it.
+        const tickedLoglines = Array.from(w.ticked).filter((f) => f.indexOf('cw-step-3-logline-') === 0);
+        ok(tickedLoglines.length === 1,
+            'picking a logline left ' + tickedLoglines.length + ' logline rows ticked, expected exactly 1 '
+            + '(' + (tickedLoglines.join(', ') || 'none') + '). Either the chip files without ticking — the '
+            + 'defect Neil reported — or it ticked without radio-clearing the siblings, which shows the '
+            + 'student two chosen loglines.');
+
+        // ...and a SECOND pick must move the tick, not add one. This is what breaks if a future
+        // edit routes the chip around the student's own click path.
+        const picks2 = w.chips();
+        if (picks2.length > 1) {
+            w.tap(picks2[1]);
+            const after = Array.from(w.ticked).filter((f) => f.indexOf('cw-step-3-logline-') === 0);
+            ok(after.length === 1,
+                'changing the pick left ' + after.length + ' logline rows ticked — the tick must MOVE, '
+                + 'never accumulate (radio behaviour lives in the checkbox click handler; a chip that '
+                + 'bypasses it silently stacks ticks)');
+        }
     }
 }
 

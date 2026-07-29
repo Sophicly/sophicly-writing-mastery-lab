@@ -435,36 +435,146 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         'the done-surface tokens are gone — every completed surface will drift back to hand-rolled '
         + 'green tints, which is exactly how this became eight separate bugs');
 
-    // Every low-alpha green BACKGROUND, minus the light-theme rules (correct there) and minus the
-    // small saturated elements where green IS the object.
+    // ── WHY THIS SCANNER IS SHAPED THIS WAY (v7.20.336) ────────────────────────────────────
+    // The first version of this gate matched ONE literal: `background: rgba(28, 217, 145, 0.NN)`
+    // in wml-canvas.css, alpha <= 0.15. It covered 2 of the 83 green fills in the codebase and
+    // reported success — and it MISSED THE RULE NEIL PHOTOGRAPHED, because that rule is a
+    // GRADIENT: `.swml-cw-step-card.complete` fills with
+    // `linear-gradient(135deg, rgba(28,217,145,0.15), rgba(44,0,62,0.3))` — low-alpha green at
+    // one end, purple at the other. That is literally his report: "step one is green, step two
+    // is purple, and both have that terrible brown wash." A single-notation regex could never
+    // see it. So: scan BOTH stylesheets, ALL notations (rgb/rgba/#hex/#hex-alpha), and read
+    // INSIDE gradients.
+    //
+    // THE TEST IS OPACITY, NOT SIZE. The old allow-list exempted anything whose selector said
+    // chip/pill/badge — but a 0.16-alpha chip browns over dark purple exactly like a 0.15-alpha
+    // card does, and the thing Neil pointed at is the tickable CHECKBOX FACE, a 14px control.
+    // Green only reads as green on the dark canvas when it is opaque enough that the purple
+    // does not composite through it. That is one mechanical rule with no judgment call in it.
+    const OPAQUE_ENOUGH = 0.6;   // below this, dark purple composites through and it reads brown
+    const FILES = ['wml-canvas.css', 'wml-styles.css'];
+
+    const isGreen = (r, g, b) => g > 110 && g > r + 40 && g > b + 25;
+    const hexRGBA = (h) => {
+        if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+        return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16),
+            h.length === 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1];
+    };
+
     const OFFENDERS = [];
-    css.split('\n').forEach((line, i) => {
-        const m = /background(?:-color)?\s*:\s*rgba\(\s*28,\s*217,\s*145,\s*(0\.\d+)\s*\)/.exec(line);
-        if (!m) return;
-        if (parseFloat(m[1]) > 0.15) return;              // saturated = a badge/chip, reads as green
-        // Walk back to the selector this declaration belongs to.
-        let sel = '';
-        for (let k = i; k >= 0 && k > i - 12; k--) {
-            const s = css.split('\n')[k];
-            if (/^\s*[.\[#:@]/.test(s) && s.indexOf('{') !== -1) { sel = s.trim(); break; }
-        }
-        if (/data-swml-theme="light"|swml-canvas-light/.test(sel)) return;   // correct on white
-        // Small standalone elements where green IS the object. They carry their own text colour
-        // and nothing shows through them, so they read as green rather than compositing to brown.
-        // Named, not guessed: the allow-list is the element's own class name.
-        if (/tag|chip|pill|badge|dot|thumb|marker|swatch/i.test(sel)) return;
-        OFFENDERS.push((i + 1) + ': ' + sel);
+    let scanned = 0;
+    FILES.forEach((file) => {
+        const lines = fs.readFileSync(path.join(ROOT, 'frontend', file), 'utf8').split('\n');
+        lines.forEach((line, i) => {
+            if (!/background/.test(line)) return;
+            // Read ONLY the background declaration's value. A line can carry a green box-shadow
+            // next to an opaque background (.swml-pill.is-active.swml-tier-6 does exactly that),
+            // and scanning the whole line reports the glow as if it were the fill.
+            const decls = [];
+            const declRe = /background(?:-color|-image)?\s*:\s*([^;}]*)/g;
+            let d;
+            while ((d = declRe.exec(line))) decls.push(d[1]);
+            if (!decls.length) return;
+            const value = decls.join(' ');
+            // A SHIMMER overlay (the `background-size: 300%` brand sheen) sits at opacity:0 until
+            // hover, animates, and is multi-hue — it never composites as a flat green wash.
+            // Matched on its own mechanical signature so the exemption can't quietly widen.
+            if (/background-size:\s*300%/.test(lines.slice(i, i + 3).join(' '))) return;
+            // Collect every colour in the value — including the stops inside a gradient.
+            const found = [];
+            let m;
+            const rgbRe = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/g;
+            while ((m = rgbRe.exec(value))) {
+                if (isGreen(+m[1], +m[2], +m[3])) found.push({ form: m[0], alpha: m[4] === undefined ? 1 : parseFloat(m[4]) });
+            }
+            const hexRe = /#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
+            while ((m = hexRe.exec(value))) {
+                const [r, g, b, a] = hexRGBA(m[1]);
+                if (isGreen(r, g, b)) found.push({ form: m[0], alpha: a });
+            }
+            if (!found.length) return;
+            scanned++;
+            // alpha 0 is a fade-to-nothing stop (a connector line tapering out). Nothing
+            // composites at zero alpha, so it cannot read brown.
+            const washes = found.filter((c) => c.alpha < OPAQUE_ENOUGH && c.alpha > 0);
+            if (!washes.length) return;                    // saturated green — green IS the object
+            let sel = '';
+            for (let k = i; k >= 0 && k > i - 15; k--) {
+                if (/^\s*[.\[#:@]/.test(lines[k]) && lines[k].indexOf('{') !== -1) {
+                    sel = lines[k].trim().replace(/\{.*$/, '').trim();
+                    break;
+                }
+            }
+            if (/data-swml-theme="light"|swml-canvas-light/.test(sel)) return;   // correct on white
+            // A shimmer overlay sits at opacity:0 until hover and is a multi-hue BRAND gradient,
+            // not a "done" signal — it never composites as a flat green wash. Named explicitly so
+            // the exemption is a decision on the record, not a silent hole.
+            if (/swml-shimmer/.test(lines.slice(i, i + 4).join(' '))) return;
+            if (/\bmark\[data-color/.test(sel)) return;     // a text highlight, deliberately translucent
+            OFFENDERS.push(`${file}:${i + 1}  a=${washes[0].alpha}  ${sel}\n           ${washes[0].form}`);
+        });
     });
+
+    // A scanner that silently matches almost nothing is worse than no scanner (the lesson that
+    // cost this gate its credibility the first time). Assert it actually saw the corpus.
+    ok(scanned >= 60,
+        `the SURFACES scanner only looked at ${scanned} green background declarations — it used to `
+        + 'see 83. Something changed the notation or the file list and the gate has gone blind; '
+        + 'fix the scanner before trusting a pass.');
+
     ok(OFFENDERS.length === 0,
-        'a low-alpha green wash is back as a SURFACE fill on the dark canvas — it will composite to '
-        + 'brown over the purple, which is the defect Neil reported. Use var(--swml-surface-done) '
-        + '(elevation) plus var(--swml-edge-done) (the green edge) instead:\n      '
+        'a green wash is being used as a SURFACE fill on the dark canvas — under 0.6 alpha the '
+        + 'purple composites through and it reads BROWN, which is the defect Neil reported. Either '
+        + 'use var(--swml-surface-done) + var(--swml-edge-done) (elevation and a green edge), or, '
+        + 'if green IS the object here, make it opaque so nothing shows through:\n      '
         + OFFENDERS.join('\n      '));
 
     // ...and the green SIGNAL must not have been thrown out with the wash. Green still says "done".
     ok(/border-left-color: #1CD991/.test(css),
         'the green completion border is gone — "done" now has no colour signal at all, which is the '
         + 'opposite overcorrection');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+// FILL SCROLL — every way the chat changes the document must SHOW it happening (v7.20.336)
+// ───────────────────────────────────────────────────────────────────────────────────────────
+// Neil, 2026-07-29: "check that the mechanism works correctly for all those sections… I don't
+// wanna have to test it, then find out it's not working, then come back to you."
+//
+// The failure this locks is silent by construction: a new primitive that changes the document
+// (a tick, a dropdown, a fill) but never scrolls. Nothing errors, the data is correct, and the
+// only symptom is a student who cannot see that anything happened. It had already happened
+// THREE times — `_tickOutlineRow`, `_setOutlineDropdown` and the new tick-in-chat primitive all
+// wrote to the document without moving it.
+//
+// `_tickOutlineRow` is the deliberate exception: it is always paired with the text write that
+// created the row, and that write already scrolls — adding a second would double-scroll.
+{
+    console.log('CW FILL SCROLL — a change the student cannot see is a change that did not happen');
+    const src = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-assessment.js'), 'utf8');
+    const MUST_SCROLL = ['_writeOutlineRowField', '_setOutlineDropdown', '_tickRowLikeAStudent'];
+    MUST_SCROLL.forEach((fn) => {
+        const at = src.indexOf('function ' + fn + '(');
+        ok(at !== -1, `${fn} is gone — the fill-scroll gate is checking a function that no longer exists`);
+        if (at === -1) return;
+        // Body = from the signature to the start of the next top-level function declaration.
+        const next = src.indexOf('\n    function ', at + 10);
+        const body = src.slice(at, next === -1 ? at + 6000 : next);
+        ok(body.indexOf('_scrollToFilledField') !== -1,
+            `${fn} changes the document but never calls _scrollToFilledField — the write lands and the `
+            + 'document does not move, so the student has no evidence it happened. This is the exact '
+            + 'complaint Neil raised, and it is invisible in every test that only inspects rows.');
+    });
+    // ...and the helper must not fail silently when it cannot find the field.
+    const sIdx = src.indexOf('function _scrollToFilledField(');
+    ok(sIdx !== -1, '_scrollToFilledField is gone');
+    if (sIdx !== -1) {
+        const sBody = src.slice(sIdx, sIdx + 3000);
+        ok(/console\.warn\([^)]*FillScroll/.test(sBody),
+            '_scrollToFilledField can return without scrolling and without warning. A stale editor '
+            + 'host makes the lookup miss, and a silent return means nobody can tell the difference '
+            + 'between "scrolled" and "did nothing" (§10 fail loud).');
+    }
 }
 
 console.log(`   ${asserts.pass} assertions passed`);
