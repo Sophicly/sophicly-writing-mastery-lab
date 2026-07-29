@@ -418,6 +418,55 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     });
 }
 
+// ── THE DONE-SURFACE RULE (v7.20.335) ───────────────────────────────────────────────────────
+// Neil: "that's happened multiple times on different surfaces in the WML… we gotta just find a
+// fix for that, just like a universal fix, because it's quite ugly."
+//
+// The defect: a LOW-ALPHA GREEN WASH as the FILL of a large surface, over the dark purple canvas,
+// composites to a muddy BROWN. Eight rules made it independently. Fixing eight rules fixes today;
+// this is what stops the ninth — because the ninth is written by someone who has never seen this
+// conversation, reaching for the obvious "tint it green to say it's done".
+//
+// LIGHT THEME IS EXEMPT ON PURPOSE: the same tint over white reads as pale mint and is correct.
+{
+    console.log('WML SURFACES — "done" is elevation + a green edge, never a green wash');
+    const css = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-canvas.css'), 'utf8');
+    ok(/--swml-surface-done:/.test(css) && /--swml-edge-done:/.test(css),
+        'the done-surface tokens are gone — every completed surface will drift back to hand-rolled '
+        + 'green tints, which is exactly how this became eight separate bugs');
+
+    // Every low-alpha green BACKGROUND, minus the light-theme rules (correct there) and minus the
+    // small saturated elements where green IS the object.
+    const OFFENDERS = [];
+    css.split('\n').forEach((line, i) => {
+        const m = /background(?:-color)?\s*:\s*rgba\(\s*28,\s*217,\s*145,\s*(0\.\d+)\s*\)/.exec(line);
+        if (!m) return;
+        if (parseFloat(m[1]) > 0.15) return;              // saturated = a badge/chip, reads as green
+        // Walk back to the selector this declaration belongs to.
+        let sel = '';
+        for (let k = i; k >= 0 && k > i - 12; k--) {
+            const s = css.split('\n')[k];
+            if (/^\s*[.\[#:@]/.test(s) && s.indexOf('{') !== -1) { sel = s.trim(); break; }
+        }
+        if (/data-swml-theme="light"|swml-canvas-light/.test(sel)) return;   // correct on white
+        // Small standalone elements where green IS the object. They carry their own text colour
+        // and nothing shows through them, so they read as green rather than compositing to brown.
+        // Named, not guessed: the allow-list is the element's own class name.
+        if (/tag|chip|pill|badge|dot|thumb|marker|swatch/i.test(sel)) return;
+        OFFENDERS.push((i + 1) + ': ' + sel);
+    });
+    ok(OFFENDERS.length === 0,
+        'a low-alpha green wash is back as a SURFACE fill on the dark canvas — it will composite to '
+        + 'brown over the purple, which is the defect Neil reported. Use var(--swml-surface-done) '
+        + '(elevation) plus var(--swml-edge-done) (the green edge) instead:\n      '
+        + OFFENDERS.join('\n      '));
+
+    // ...and the green SIGNAL must not have been thrown out with the wash. Green still says "done".
+    ok(/border-left-color: #1CD991/.test(css),
+        'the green completion border is gone — "done" now has no colour signal at all, which is the '
+        + 'opposite overcorrection');
+}
+
 console.log(`   ${asserts.pass} assertions passed`);
 if (fail) {
     console.error(`❌ cw-keymatch-harness FAILED (${asserts.fail} assertion(s)).`);

@@ -3,6 +3,45 @@
    Phase 1 Foundation · v1.0.0
    ═══════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   ⭐ THE DONE-SURFACE TOKEN (v7.20.335) — a universal fix, at Neil's instruction:
+   "that's happened multiple times on different surfaces in the WML… we gotta just find a
+   fix for that, just like a universal fix, because it's quite ugly."
+
+   THE DEFECT, stated once so it is not rediscovered a ninth time. A LOW-ALPHA GREEN WASH
+   (rgba(28,217,145,0.05–0.14)) used as the FILL of a large surface, over the dark purple
+   canvas, does not read as green — it composites to a muddy BROWN. Eight rules made the
+   same mistake independently: filled outline inputs and selects, filled input fields,
+   checked checklist items, the prior-pad rows, a signed sign-off, a correct select field,
+   a paired match item. Neil hit it on his Step-2 story ideas: "the colour is beautiful…
+   but when I click idea one, the colour changes… that brownish colour looks really ugly."
+
+   THE RULE. A completed SURFACE is signalled by ELEVATION and a green EDGE — never by a
+   hue wash over its fill. That is not a new idea; it is the canvas's own dark-surface
+   ladder (reference_wml_canvas_dark_theme_surface_ladder: borderless = elevation), which
+   these rules simply predate.
+
+   WHAT KEEPS ITS GREEN. Everything where green IS the object and sits on its own: badges,
+   tick circles, is-done chips, tier pills, progress bars, scrollbar thumbs, the green left
+   border, the completion badge. Those are saturated, small, and carry their own text
+   colour — they read as green because nothing is showing through them.
+
+   LIGHT THEME IS UNTOUCHED, deliberately: the same 5–12% green over a WHITE surface reads
+   as pale mint and is correct. The bug is green-over-dark-purple, and only that.
+
+   Tokens live on the component root, never :root (root CLAUDE.md — a site-wide plugin that
+   declares :root vars clobbers the host page).
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+.swml-canvas-content,
+.swml-codex-doc {
+    /* One elevation step above the canvas surface. Neutral white at low alpha keeps the
+       purple underneath reading as purple — it lifts the surface without tinting it. */
+    --swml-surface-done: rgba(255, 255, 255, 0.055);
+    --swml-surface-done-strong: rgba(255, 255, 255, 0.08);
+    /* The EDGE is what says "complete". Green, and legible, because nothing is behind it. */
+    --swml-edge-done: rgba(28, 217, 145, 0.45);
+}
+
 /* v7.15.88 — Conceptual Notes two-column rows.
    TipTap strips wrapper divs, so layout is driven by the section
    block itself via :has(). When a swml-section-plan contains a
@@ -6912,10 +6951,11 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* v7.14.70: Outline uses OutlineRow nodes — each criterion is its own row (flex: criteria | input).
    The old 2-column grid from v7.14.60 has been removed. OutlineRow nodes stack vertically. */
 
-/* Response — green */
+/* Response — green. v7.20.335: the EDGE carries the colour; the fill is elevation. A whole
+   section washed 10% green over the purple canvas is the largest instance of the brown. */
 .swml-section-response {
     border-left-color: #1CD991;
-    background: rgba(28, 217, 145, 0.1);
+    background: var(--swml-surface-done);
 }
 .swml-section-response::before {
     background: rgba(28, 217, 145, 0.35);
@@ -7456,7 +7496,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 /* v7.19.509: result shown by a brand-colour fill + a house badge, no border */
 .swml-select-field.swml-select-correct {
-    background: rgba(28, 217, 145, 0.12);
+    /* v7.20.335 */
+    background: var(--swml-surface-done-strong);
+    box-shadow: inset 2px 0 0 var(--swml-edge-done);
 }
 .swml-select-field.swml-select-wrong {
     background: rgba(255, 84, 112, 0.12);
@@ -7666,7 +7708,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     transform: scale(1.02);
 }
 .swml-match-item.paired {
-    background: rgba(28, 217, 145, 0.12);
+    /* v7.20.335 */
+    background: var(--swml-surface-done-strong);
     border-color: rgba(28, 217, 145, 0.5);
     color: rgba(255,255,255,0.6);
     cursor: default;
@@ -8387,7 +8430,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* v7.20.97 (Neil): "answered" = the same soft green FILL the inputs use — the old
    green stroke re-boxed the control (house rule: no strokes). Chevron + text stay. */
 .swml-outline-select.swml-select-filled {
-    background-color: rgba(28, 217, 145, 0.14);
+    /* v7.20.335: elevation, not a green wash (see THE DONE-SURFACE TOKEN at the top). */
+    background-color: var(--swml-surface-done-strong);
+    box-shadow: inset 2px 0 0 var(--swml-edge-done);
     color: rgba(255,255,255,0.85);
 }
 [data-swml-theme="light"] .swml-outline-select.swml-select-filled {
@@ -8397,7 +8442,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* Input area has text — v7.19.436: signal "answered" with a soft fill tint, not a
    resting border (a border here would re-introduce the boxed-form look once filled). */
 .swml-outline-input.swml-input-filled {
-    background: rgba(28, 217, 145, 0.07);
+    /* v7.20.335: the exact rule Neil photographed going brown on Step 2. */
+    background: var(--swml-surface-done);
+    box-shadow: inset 2px 0 0 var(--swml-edge-done);
 }
 [data-swml-theme="light"] .swml-outline-input.swml-input-filled {
     background: rgba(28, 217, 145, 0.08);
@@ -8412,7 +8459,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 /* Plan/response InputField has text — v7.19.436: fill tint, not a resting border */
 .swml-input-field.swml-input-filled {
-    background: rgba(28, 217, 145, 0.07);
+    /* v7.20.335 */
+    background: var(--swml-surface-done);
+    box-shadow: inset 2px 0 0 var(--swml-edge-done);
 }
 [data-swml-theme="light"] .swml-input-field.swml-input-filled {
     background: rgba(28, 217, 145, 0.08);
@@ -8537,7 +8586,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-checklist-item:hover { background: rgba(255,255,255,0.035); }
 .swml-checklist-item[data-checked="true"] {
-    background: rgba(28,217,145,0.07);
+    /* v7.20.335 */
+    background: var(--swml-surface-done);
 }
 /* v7.20.58 (Neil): LIQUID check — the two pure-CSS moves from Aaron Iker's Liquid
    UI checkbox, minus the GSAP + goo-filter machinery (a dependency + blur cost a
@@ -8609,7 +8659,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     border-radius: 5px;
 }
 .swml-prior-pad [data-checklist-item][data-checked="true"] {
-    background: rgba(28,217,145,0.07);
+    /* v7.20.335 */
+    background: var(--swml-surface-done);
 }
 .swml-prior-pad [data-checklist-item][data-checked="true"]::before {
     background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpolyline points='216 72 104 184 48 128' fill='none' stroke='%230b3b26' stroke-linecap='round' stroke-linejoin='round' stroke-width='36'/%3E%3C/svg%3E") 50% 50% / 10px no-repeat;
@@ -9245,7 +9296,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
    v7.19.527: borderless (no AI stroke) — teal fill + soft lift instead. */
 .swml-signoff-signed {
     display: flex; align-items: center; gap: 11px;
-    background: rgba(28, 217, 145, 0.12);
+    /* v7.20.335 */
+    background: var(--swml-surface-done-strong);
+    box-shadow: inset 2px 0 0 var(--swml-edge-done);
     border: none;
     border-radius: 12px; padding: 11px 16px;
     box-shadow: 0 3px 12px rgba(0,0,0,0.18);
