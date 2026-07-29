@@ -585,6 +585,71 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
+// GUIDE DEEP-LINKS — every 📖 Guidance link lands on the exact section (v7.20.340)
+// ───────────────────────────────────────────────────────────────────────────────────────────
+// Neil, live on Step 4: "when it opens up the creative writing reference guide, I think it
+// should go to that exact beat because I'm having to scroll to it every single time… and in
+// general, when we're providing those links, especially to the reference guide, it should go to
+// that exact thing in the document."
+//
+// showGuidePanel() matches a heading by case-insensitive SUBSTRING, so a typo, a renamed heading,
+// or an em-dash swapped for a hyphen does not error — it silently dumps the student at the TOP of
+// the guide, which is exactly the scrolling Neil is complaining about. Only a gate catches that.
+{
+    console.log('CW GUIDE DEEP-LINKS — every anchor lands on a real heading');
+    const guidePath = path.join(ROOT, 'resources', 'creative-writing-reference-guide.md');
+    if (!fs.existsSync(guidePath)) {
+        ok(false, 'resources/creative-writing-reference-guide.md is missing — no 📖 Guidance link can be verified');
+    } else {
+        const headings = fs.readFileSync(guidePath, 'utf8').split('\n')
+            .filter((l) => /^#{1,4}\s/.test(l))
+            .map((l) => l.replace(/^#+\s*/, '').replace(/[*_`]/g, '').toLowerCase());
+        // Literal anchors passed straight to showGuidePanel(...), plus every `guide:` /
+        // `anchor:` string a walk's step table carries.
+        const anchors = new Set();
+        let m;
+        const callRe = /showGuidePanel\(\s*'([^']+)'/g;
+        while ((m = callRe.exec(JS))) anchors.add(m[1]);
+        const tableRe = /(?:guide|anchor):\s*'([^']+)'/g;
+        while ((m = tableRe.exec(JS))) anchors.add(m[1]);
+        // CW4 builds its anchors at CLICK time, so they never appear as a showGuidePanel literal.
+        // Parse them out of guideAnchor()'s OWN body — hardcoding the expected list here would
+        // make this gate check itself rather than the code, and a renamed heading would sail past.
+        const gaIdx = JS.indexOf('function guideAnchor()');
+        ok(gaIdx >= 0, 'guideAnchor() is gone — CW4’s per-beat deep-links cannot be verified');
+        if (gaIdx >= 0) {
+            const gaBody = JS.slice(gaIdx, JS.indexOf('\n            }', gaIdx));
+            let r;
+            const retRe = /return\s+((?:'[^']*'|\s*\+\s*|\([^)]*\))+)\s*;/g;
+            let found = 0;
+            while ((r = retRe.exec(gaBody))) {
+                found++;
+                const parts = (r[1].match(/'([^']*)'/g) || []).map((s) => s.slice(1, -1));
+                const joined = parts.join('').trim();
+                if (!joined) continue;
+                // `'Beat ' + (n + 1) + ' —'` → the six real beat headings.
+                if (/^Beat\s*—?$|^Beat\s/.test(joined) && r[1].indexOf('+') !== -1) {
+                    for (let n = 1; n <= 6; n++) anchors.add('Beat ' + n + ' ' + parts[parts.length - 1].trim());
+                } else {
+                    anchors.add(joined);
+                }
+            }
+            ok(found >= 4, 'guideAnchor() returned only ' + found + ' anchor(s) — the parse is not seeing its branches');
+        }
+        ok(anchors.size >= 10, 'only ' + anchors.size + ' guide anchors found — the scan is not seeing the walks');
+        const dead = [...anchors].filter((a) => !headings.some((h) => h.indexOf(a.toLowerCase()) !== -1));
+        ok(dead.length === 0,
+            'guide anchor(s) match NO heading — the Guidance rung silently dumps the student at the top of the '
+            + 'guide, which is the scrolling this rule exists to stop:\n     ' + dead.join('\n     '));
+        // Beats 4 and 5 share a lead ("And because of this"), so an anchor on the LEAD is ambiguous
+        // by construction — it would always land the student on Beat 4.
+        ok(!/showGuidePanel\(\s*'(At first|And then|Until|And because of this|Until finally)'/.test(JS),
+            'a guide anchor uses a beat LEAD — Beats 4 and 5 share one, so it can only ever land on Beat 4. Anchor on the beat NUMBER.');
+        if (!dead.length) console.log('   ' + anchors.size + ' guide anchors, all resolve to a real heading');
+    }
+}
+
+// ───────────────────────────────────────────────────────────────────────────────────────────
 // CW WALK ENDPOINT — every walk stops on a stopping point (v7.20.337)
 // ───────────────────────────────────────────────────────────────────────────────────────────
 // Neil, 2026-07-29: "make sure that all the chats have a clear stopping point and a clear

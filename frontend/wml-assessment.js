@@ -19780,6 +19780,20 @@
                 'cw-step-4-beat5': [{ s: 'Ax', l: 'The Antagonist' }],
                 'cw-step-4-beat6': [{ s: 'Sk', l: 'Stakes' }, { s: 'Dj', l: 'Duality' }],
             };
+            // v7.20.340: which heading of the reference guide this moment is about. The guide's
+            // per-beat headings are literally `Beat N — "…"`, and showGuidePanel matches a heading
+            // by case-insensitive substring, so `Beat 3 —` is exact enough to be unambiguous
+            // (Beats 4 and 5 share the same lead, "And because of this", so the NUMBER is what
+            // separates them — never anchor on the lead).
+            // Gated by cw-keymatch: every literal anchor must resolve to a real heading.
+            function guideAnchor() {
+                if (phase === 'coh-fix' && cohBeat >= 0 && cohBeat < BEATS.length) return 'Beat ' + (cohBeat + 1) + ' —';
+                if (phase === 'chip' || phase === 'chip2') return 'The main unmet need';
+                if (phase === 'throughline') return 'The throughline';
+                const n = ((phase === 'sa' || phase === 'sa-follow' || phase === 'sa-add') && saBeat >= 0) ? saBeat : idx;
+                if (n >= 0 && n < BEATS.length) return 'Beat ' + (n + 1) + ' —';
+                return 'Step 4 — Your Brief Outline';
+            }
             function appendSpineButtons() {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
@@ -19789,7 +19803,12 @@
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: '📖 Guidance',
-                    onClick: function () { try { if (typeof showGuidePanel === 'function') showGuidePanel('Story Spine'); } catch (e) {} },
+                    // v7.20.340: DEEP-LINK to the exact beat, not the top of Step 4. Neil, live:
+                    // "it should go to that exact beat because I'm having to scroll to it every
+                    // single time… and in general, when we're providing those links, especially to
+                    // the reference guide, it should go to that exact thing in the document."
+                    // Evaluated at CLICK time, so it always names where the walk actually is.
+                    onClick: function () { try { if (typeof showGuidePanel === 'function') showGuidePanel(guideAnchor()); } catch (e) {} },
                 }));
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: '👤 Your Writer’s Profile',
