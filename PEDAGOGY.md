@@ -1088,3 +1088,74 @@ depends on a human noticing a wrong number in a child's face is not shipped.
 
 Related: [[feedback_key_granularity_not_just_key_agreement]] (a key can agree and still name the
 wrong thing), root CLAUDE.md §0 (root cause, not symptom) and §15 (done = works end to end).
+
+---
+
+## §19. ⭐⭐ THE STUDENT MARKS THEIR OWN WORK AGAINST STATED CRITERIA — self-assessment, not an AI check (Neil, ruled 2026-07-28)
+
+**What happened.** Neil deliberately typed the *same sentence* into his Goal box and his Stakes box
+to see whether anything would stop him. Nothing did; it filed exactly what he gave it. His response
+was not "add a check" — it was: *"I feel like I can just put any answer in… maybe the students could
+self-assess… they tick off the criteria that they've answered to the best of their ability. That
+might be better, actually. And then maybe one check at the end with advice of how to make it better,
+with examples."*
+
+**THE RULING.** After a student's answer is filed, serve a **tick list built from the criteria the
+ask already stated**, and let them mark their own work. Anything they leave unticked buys **ONE**
+free follow-up. The end-of-set batched review then reads their claim alongside their writing and
+polices it ("you ticked *emotional shield*, but what you wrote is a habit").
+
+**WHY THIS AND NOT A PER-ANSWER SOPHIA CHECK — the pedagogy, which is the whole point:**
+1. **An AI check OUTSOURCES the judgment; a checklist BUILDS it.** The goal is a student who can
+   tell whether their own paragraph meets a criterion — in an exam hall, with no Sophia.
+   Self-monitoring against a standard is among the highest-effect interventions Hattie measures.
+2. **It IS the exam skill.** Reading your own answer against the mark scheme is the thing we are
+   training. Outsourcing it trains dependence, which is the failure mode of every AI tutor.
+3. **It is FREE**, so it runs on EVERY ask instead of being rationed to one by cost. A judgment the
+   student makes sixteen times beats one an API makes once.
+4. **Honesty is credited, not punished.** Nothing is pre-ticked, an unticked box costs nothing, and
+   the follow-up is an offer. A tick list that gates progress becomes a lying game.
+
+**THE ROLLOUT RULE — where a tick list belongs (derive from this; do not ask per step):**
+> A tick list follows a **WRITTEN answer whose quality a later step depends on.**
+> **Never a pick** — there is nothing to self-assess about a tap.
+> **Never one row of many inside a larger unit** — the **UNIT** gets the tick list.
+
+Applied: Step 1 no (factual profile) · Step 2 the chosen idea only · **Steps 3 + 4 every ask** ·
+Step 5 no, it is a pick (it gets a *diagnostic* checklist instead — see below) · **Step 6 per STAGE,
+never per row.** Neil on Step 6: *"there are so many beats… it can be very demanding on them to go
+through all those beats and tick those criteria off for each one."* 801 rows × a tick list is
+clicking, not thinking — and mindless clicking is the exact failure the mechanism exists to prevent.
+
+**CRITERIA ARE LIFTED, NEVER AUTHORED BESIDE THE ASK.** Each tickable criterion must be a verbatim
+substring of that ask's own "A strong X:" bullets, enforced mechanically (`bin/cw-keymatch-harness.js`).
+A student must never be asked to tick a criterion the teaching did not give them.
+
+**THE DIAGNOSTIC CHECKLIST IS A DIFFERENT INSTRUMENT (Step 5, Neil 2026-07-28).** Ticking traits to
+find out *which archetype fits* is not self-assessment. It runs **AFTER** the student's instinctive
+choice, never before: run first it PICKS FOR THEM (outsourcing again); run second it either confirms
+their instinct — earned confidence — or disagrees, and **the disagreement is the teaching moment**
+(*"you chose Rags to Riches but ticked mostly Overcoming the Monster — which is it?"*). You only get
+that moment if they commit first.
+
+Related: root CLAUDE.md §0 (root, not symptom), WML CLAUDE.md §4c (the ask template supplies the
+criteria this rule ticks), §4c.9 (the help ladder — Sophia is the last rung, for the same reason).
+
+---
+
+## §20. FLAW BEFORE WOUND — observable before inferred (Neil, ruled 2026-07-28)
+
+Neil asked whether the **wound** should come before the **flaw**, since *"the flaw actually grows out
+of the wound"*. He is right about the causality and it still stays **flaw-first**.
+
+**THE RULING: flaw first, wound second.** The flaw is **OBSERVABLE** — a behaviour you can watch a
+character perform. The wound is **INFERRED** — a buried hurt you reason back to. Asking a 14-year-old
+to name a character's deepest wound before they have a character asks them to invent psychology from
+nothing; asking for a visible habit first, then *"what must have happened to make someone build
+this?"*, is a step they can actually take.
+
+This is the same principle as every other ordering in the arc: **name what can be seen, then reason
+to what cannot.** The Step-4 spine does it too (the filmable action before the meaning).
+
+Not a preference — a sequencing rule. If a future protocol asks for an inferred interior state
+before its observable expression, that protocol has the order wrong.
