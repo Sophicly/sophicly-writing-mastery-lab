@@ -465,6 +465,37 @@ for (let n = 0; n < FAIL_OPEN_REPLIES.length; n++) {
         'real-entry: the message was refused and the student was shown NOTHING (law 4d’s forbidden third outcome)');
 }
 
+// ── 6. THE WAY BACK IN (v7.20.340) — a finished walk is not a dead one. ───────────────────
+// Neil, on tapping past an offer by mistake: "I'm just wondering if there's any way that we can
+// recall things like that, just in case." Universal rule — every walk's wrap offers a route back
+// into any answered row, and it must cost NO API call.
+{
+    const w = makeWorld({ prefillRows: ROW_IDS.filter((f) => f !== 'cw-step-5-primary-archetype'), prefillPick: ITEMS['tragedy'] });
+    w.deps.localStorage.setItem('sim_cw5', JSON.stringify({ phase: 'done', pushed: true, swapKey: '', active: false }));
+    w.ctl.tryResume();
+    const recall = w.chips().filter((c) => /Change an answer/i.test(String(c.textContent)))[0];
+    ok(!!recall, 'recall: a finished Step 5 offers NO way back into an answered row');
+    if (recall) {
+        const sendsBefore = w.sends.length;
+        w.tap('Change an answer');
+        const first = w.chips().filter((c) => !/Nothing/.test(String(c.textContent)))[0];
+        ok(!!first, 'recall: the picker offered no answers to change');
+        if (first) {
+            const label = String(first.textContent);
+            w.tap(label);
+            ok(!!w.deps._walkSlot.armed, 'recall: the rewrite ask armed no slot — the answer would file nowhere');
+            w.ctl.handleTurn('A completely new version of this answer.');
+            const fid = ROW_IDS.filter((f) => f !== 'cw-step-5-primary-archetype')
+                .filter((f) => String(w.rows.get(f) || '').indexOf('A completely new version') !== -1)[0];
+            ok(!!fid, 'recall: the rewrite did not land in any row');
+            ok(!fid || String(w.rows.get(fid)).indexOf('pre-existing') === -1,
+                'recall: the rewrite was APPENDED to the old answer — a §4c.6 `rewrite` cycle REPLACES');
+            ok(w.sends.length === sendsBefore,
+                'recall spent ' + (w.sends.length - sendsBefore) + ' API call(s) — the student owns the rewrite, we only file it');
+        }
+    }
+}
+
 console.log('   ' + asserts.pass + ' behavioural assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
 if (fail) { console.error('\ncw5-sim-harness FAILED'); process.exit(1); }
 console.log('✅ cw5-sim-harness passed (9 asks all filed + ticked, ONE API call, Step-6 carry intact).');

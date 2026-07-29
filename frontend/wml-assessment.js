@@ -19744,6 +19744,9 @@
                     return;
                 }
                 if (phase === 'sa-add') { setTimeout(function () { try { appendSpineButtons(); } catch (e) {} }, 400); return; }
+                // v7.20.340: the wrap's way back in survives a reload.
+                if (phase === 'wrap') { serveWrapRecall(); return; }
+                if (phase === 'recall') { serveRecallPicker(); return; }
                 if (phase === 'throughline') { chipBar(THROUGHLINES, onThroughlinePick); return; }
                 // v7.20.294: resumed on the coherence revision offer — re-attach its two chips.
                 if (phase === 'coh-choice' && cohBeat >= 0) { chipBar(['Rewrite Beat ' + (cohBeat + 1) + ' →', 'Leave it as it is →'], onCohChoice); return; }
@@ -19908,10 +19911,59 @@
                 addChatMessage(pick, 'user');
                 fireCoherenceCheck();
             }
+            // ⭐ v7.20.340 — THE WAY BACK IN (Neil, live: he tapped past the coherence check's
+            // "rewrite Beat 4" offer by mistake — "I'm just wondering if there's any way that we can
+            // recall things like that, just in case").
+            // There genuinely was none: `Leave it` → clearPersist() → serveWrap(), and re-entry ran
+            // firstEmptyBeat(), which returns BEATS.length once every row is filled, so startWalk
+            // did nothing at all. A skipped offer was gone forever.
+            // The wrap now carries the route back, it costs ZERO API calls (the student owns the
+            // rewrite — we only file it), and it survives a reload because the wrap phase is
+            // persisted instead of wiped.
             function serveWrap() {
                 aiBubble(WRAP + cwEndpointLine());   // v7.20.337: every walk ends on a clear endpoint
                 try { applyCwSubstepProgress({ stepNum: 4, substepNum: 5, name: 'Review and Save' }); } catch (e) {}
+                phase = 'wrap'; persist();
+                serveWrapRecall();
                 resetSend();
+            }
+            function serveWrapRecall() { chipBar(['✏️ Rewrite a beat →'], onWrapRecall); }
+            function onWrapRecall(pick) {
+                canvasChatHistory.push({ role: 'user', content: pick });
+                addChatMessage(pick, 'user');
+                phase = 'recall'; persist();
+                aiBubble('**Which beat do you want to rewrite?**\n\nYour spine as it stands:\n\n'
+                    + BEATS.map(function (b, n) {
+                        return '**' + (n + 1) + '. ' + b.lead + '…** ' + (rowText(b.fid) || '*(blank)*');
+                    }).join('\n\n')
+                    + '\n\nPick one — your new version replaces that row, and nothing else moves.');
+                serveRecallPicker();
+                resetSend();
+            }
+            function recallLabel(n) { return 'Beat ' + (n + 1) + ' — ' + BEATS[n].lead; }
+            function serveRecallPicker() {
+                // Built into a variable first: the keymatch harness reads the chipBar CALL to
+                // classify the menu, and an inline `.map(function (_, n)` makes `n` look like the
+                // handler. Keep the call site a plain (options, handler) pair.
+                const opts = BEATS.map(function (_, n) { return recallLabel(n); });
+                opts.push('Nothing — I’m done →');
+                chipBar(opts, onRecallPick);
+            }
+            function onRecallPick(pick) {
+                canvasChatHistory.push({ role: 'user', content: pick });
+                addChatMessage(pick, 'user');
+                if (pick.indexOf('Nothing') === 0) { active = false; phase = 'wrap'; persist(); serveWrap(); return; }
+                let n = -1;
+                for (let k = 0; k < BEATS.length; k++) if (recallLabel(k) === pick) { n = k; break; }
+                if (n < 0) {
+                    // Never leave them on a refusal with nothing (law 4d) — re-offer the picker.
+                    console.warn('WML CW4: recall chip did not resolve to a beat —', pick);
+                    aiBubble('I did not catch which beat that was — pick one below.');
+                    serveRecallPicker();
+                    return;
+                }
+                cohBeat = n; active = true;
+                serveBeatRewrite(n);
             }
             function serveThroughline() {
                 // v7.20.265: stamp the phase so a reload here re-attaches THESE chips rather
@@ -19999,11 +20051,20 @@
                 if (pick.indexOf('Leave it') === 0) {
                     active = false; clearPersist(); serveWrap(); return;
                 }
-                const b = BEATS[cohBeat];
+                serveBeatRewrite(cohBeat);
+            }
+            // v7.20.340: ONE rewrite server, shared by the coherence offer and the wrap's recall —
+            // a second copy is how the .289 replace-vs-append fix was made in one place and lost in
+            // another. `rewrite` cycle (4c.6): a beat is one self-contained sentence, so the new
+            // answer REPLACES the row.
+            function serveBeatRewrite(n) {
+                const b = BEATS[n];
+                if (!b) { serveWrap(); return; }
+                cohBeat = n;
                 phase = 'coh-fix'; active = true;
                 _walkSlot.arm('cw4', b.fid, { cycle: 'rewrite' });   // v7.20.327
                 persist();
-                aiBubble('**Rewriting Beat ' + (cohBeat + 1) + ' — “' + b.lead + '…”**\n\nWrite the **whole beat again**, not just the part you are changing — one sentence, present tense, after “' + b.lead + ',”. Your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> ' + (rowText(b.fid) || '*(blank)*'));
+                aiBubble('**Rewriting Beat ' + (n + 1) + ' — “' + b.lead + '…”**\n\nWrite the **whole beat again**, not just the part you are changing — one sentence, present tense, after “' + b.lead + ',”. Your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> ' + (rowText(b.fid) || '*(blank)*'));
                 appendSpineButtons();
                 resetSend();
             }
@@ -20182,6 +20243,14 @@
                     // throughline pick or inside the coherence check — the old
                     // `active = idx < BEATS.length` made BOTH resolve to inert, so the student
                     // came back to a dead step with no wrap and no sub-step progress.
+                    // v7.20.340: reloaded while looking at the wrap's recall picker — bring the
+                    // picker back rather than making them re-open it from the wrap.
+                    if (phase === 'recall') {
+                        active = false; pending = false;
+                        console.log('WML CW4: resumed on the rewrite picker');
+                        setTimeout(reattachChips, 400);
+                        return false;
+                    }
                     if (idx >= BEATS.length) {
                         // v7.20.322 (Neil's live catch: the three throughline chips stapled onto
                         // the finished wrap-up). THE DOCUMENT DECIDES, and it is asked FIRST —
@@ -20195,8 +20264,14 @@
                         // evidence the pick had happened lived in the sidecar that finishing wipes.
                         // Now the pick is a document row, so "already chosen" is a durable fact.
                         if (rowText(THROUGHLINE_FID)) {
-                            clearPersist(); active = false; pending = false;
-                            console.log('WML CW4: throughline already chosen — walk is finished, no chips');
+                            // v7.20.340: a FINISHED walk is not a DEAD one. It stays inactive (it is
+                            // taking no turns), but the wrap's "Rewrite a beat" chip is re-served so
+                            // there is a route back into any answered row — tapping it is what makes
+                            // the walk active again. Before this, re-entering a completed Step 4 gave
+                            // the student nothing at all and a mis-tapped offer was unrecoverable.
+                            active = false; pending = false; phase = 'wrap';
+                            console.log('WML CW4: walk finished — re-serving the wrap’s rewrite route');
+                            setTimeout(function () { try { serveWrap(); } catch (e) {} }, 500);
                             return false;
                         }
                         if (phase === 'coherence') {
@@ -21513,6 +21588,46 @@
                     + cwEndpointLine());   // v7.20.337
                 try { applyCwSubstepProgress({ stepNum: 5, substepNum: 3, name: 'Confirm Choice' }); } catch (e) {}
                 phase = 'done';
+                serveWrapRecall();   // v7.20.340 — the twin of CW4's: every walk's wrap offers a way back in
+                resetSend();
+            }
+            // ⭐ v7.20.340 — THE WAY BACK IN (universal; CW4 carries the reference implementation).
+            // A finished walk is not a dead one: the wrap keeps a route into any answered row, so a
+            // mis-tapped or rushed answer is recoverable. Costs zero API calls — the student owns
+            // the rewrite and code only files it.
+            function serveWrapRecall() { chipBar(['✏️ Change an answer →'], onWrapRecall); }
+            function recallable() { return STEPS.filter(function (s) { return s.kind !== 'pick' && s.kind !== 'multi'; }); }
+            function onWrapRecall(pick) {
+                userTurn(pick);
+                phase = 'recall'; persist();
+                aiBubble('**Which answer do you want to change?**\n\n'
+                    + recallable().map(function (s) { return '**' + s.label + '** — ' + (rowText(s.fid) || '*(blank)*'); }).join('\n\n')
+                    + '\n\nPick one — your new version replaces that row, and nothing else moves.');
+                serveRecallPicker();
+                resetSend();
+            }
+            function serveRecallPicker() {
+                // Options built into a variable first — an inline .map() makes the keymatch
+                // harness read the callback's parameter as the handler.
+                const opts = recallable().map(function (s) { return s.label; });
+                opts.push('Nothing — I’m done →');
+                chipBar(opts, onRecallPick);
+            }
+            function onRecallPick(pick) {
+                userTurn(pick);
+                if (pick.indexOf('Nothing') === 0) { phase = 'done'; persist(); serveWrapRecall(); resetSend(); return; }
+                const hit = recallable().filter(function (s) { return s.label === pick; })[0];
+                if (!hit) {
+                    console.warn('WML CW5: recall chip did not resolve to a step —', pick);
+                    aiBubble('I did not catch which one that was — pick one below.');
+                    serveRecallPicker();
+                    return;
+                }
+                i = STEPS.indexOf(hit);
+                active = true; phase = 'ask'; persist();
+                aiBubble('**Changing “' + hit.label + '”**\n\nWrite the **whole answer again** — your new version replaces what is there now.\n\nHere is what you have:\n\n> ' + (rowText(hit.fid) || '*(blank)*'));
+                helpBar(hit);
+                _walkSlot.arm('cw5', hit.fid, { cycle: 'rewrite' });
                 resetSend();
             }
 
@@ -21535,7 +21650,11 @@
                 // No per-answer judgment ⇒ no push cycle, so there is no accumulate/rewrite
                 // ambiguity here (§4c.6): each ask owns one row and files once.
                 const target = STEPS.filter(function (x) { return x.fid === slot.fid; })[0] || s;
-                fileAnswer(target, clean, false);
+                // v7.20.340: honour the slot's cycle. Every CW5 ask owns ONE self-contained answer
+                // (§4c.6 `rewrite`), so a re-answer REPLACES — which is what makes the wrap's
+                // "change an answer" route file a clean rewrite instead of stitching it onto the
+                // old one. On a first fill the row is empty, so replace and append are the same.
+                fileAnswer(target, clean, slot.cycle === 'rewrite');
                 advance();
             }
 
@@ -21571,6 +21690,9 @@
             // being asked for; the phase only refines it.
             function reattachChips() {
                 if (phase === 'push-choice' && swapKey) { servePushChoice(); return; }
+                // v7.20.340: the wrap's way back in survives a reload.
+                if (phase === 'done') { serveWrapRecall(); return; }
+                if (phase === 'recall') { serveRecallPicker(); return; }
                 const s = STEPS[i];
                 if (s && s.kind === 'pick') { serveMenu(true); return; }
                 if (s && s.kind === 'multi') { serveMulti(); return; }
@@ -21620,7 +21742,20 @@
                         setTimeout(advance, 500);
                         return true;
                     }
-                    if (phase === 'done' || i >= STEPS.length) { clearPersist(); active = false; pending = false; return false; }
+                    // v7.20.340: a FINISHED walk is not a DEAD one — re-serve the wrap so the route
+                    // back into any answered row exists on re-entry (CW4 carries the reference note).
+                    if (phase === 'recall') {
+                        active = false; pending = false;
+                        console.log('WML CW5: resumed on the change-an-answer picker');
+                        setTimeout(reattachChips, 400);
+                        return false;
+                    }
+                    if (phase === 'done' || i >= STEPS.length) {
+                        active = false; pending = false; phase = 'done';
+                        console.log('WML CW5: walk finished — re-serving the wrap’s change route');
+                        setTimeout(function () { try { serveWrap(); } catch (e) {} }, 500);
+                        return false;
+                    }
                     if (phase === 'push-choice' && !swapKey) phase = 'ask';   // nothing to switch to
                     active = true; pending = false;
                     console.log('WML CW5: resumed at step ' + (i + 1) + '/' + STEPS.length + ' (phase ' + phase + ')');

@@ -569,6 +569,49 @@ console.log('I7 · the tick list runs after every beat, and the duplicate guard 
         + '(law 4d: a refusal is only half a change)');
 }
 
+// ── I8 · A SKIPPED OFFER CAN BE RECALLED (v7.20.340) ───────────────────────────────────────
+// Neil, live: he tapped past the coherence check's "rewrite Beat 4" offer by mistake —
+// "I'm just wondering if there's any way that we can recall things like that, just in case."
+// There was none: `Leave it` → clearPersist() → serveWrap(), and re-entry ran firstEmptyBeat(),
+// which returns BEATS.length once every row is filled, so startWalk did nothing. The offer was
+// gone forever. The wrap now carries the route back — and it must cost NO API call.
+console.log('\nI8 · a skipped offer can be recalled from the wrap');
+{
+    const w = makeWorld();
+    await w.start();
+    // Drive the whole spine to the wrap.
+    let guard = 0;
+    while (guard++ < 80) {
+        // The throughline pick fires the coherence check; clear it so the walk reaches the wrap.
+        if (w.armed) { w.resolveApi('@COHERENCE_OK'); continue; }
+        if (w.chips().some(function (c) { return /Rewrite a beat/i.test(String(c.textContent)); })) break;
+        if (clearMenus(w)) continue;
+        if (!w.ctl.active) break;
+        w.say('Beat text number ' + guard + ', distinct from every other one.');
+    }
+    const recall = w.chips().filter(function (c) { return /Rewrite a beat/i.test(String(c.textContent)); })[0];
+    ok(!!recall, 'the wrap offers NO way back into an answered row — a mis-tapped offer is unrecoverable');
+
+    if (recall) {
+        const sendsBefore = w.sends.length;
+        w.tapLive(recall);
+        const beatChip = w.chips().filter(function (c) { return /^Beat 4/.test(String(c.textContent)); })[0];
+        ok(!!beatChip, 'the recall picker did not offer Beat 4');
+        if (beatChip) {
+            const before = w.writes.length;
+            w.tapLive(beatChip);
+            ok(!!w.deps._walkSlot.armed, 'recall: the rewrite ask armed no slot — the answer would file nowhere');
+            w.say('Because of this, he finally says his brother’s name out loud.');
+            const wr = w.writes.slice(before).filter(function (x) { return x.fid === BEAT_FIDS[3]; })[0];
+            ok(!!wr, 'recall: the rewrite did not land on Beat 4');
+            ok(wr && wr.replace === true,
+                'recall: the rewrite ACCUMULATED — a beat is one self-contained sentence, so it REPLACES (§4c.6)');
+            ok(w.sends.length === sendsBefore,
+                'recall spent ' + (w.sends.length - sendsBefore) + ' API call(s) — the student owns the rewrite, we only file it');
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 console.log('\n' + (fail ? '❌ CW4 SIM FAILED' : '✅ CW4 sim passed')
     + '  — ' + asserts.pass + ' passed, ' + asserts.fail + ' failed');
