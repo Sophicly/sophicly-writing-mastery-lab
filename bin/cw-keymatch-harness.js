@@ -141,6 +141,7 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onSeedsDone:           { kind: 'content', note: 'Step 1 liked seeds → ticks cw-step-1-logline-1/2/3' },
         // flow-control — must NOT be filed
         onCohChoice:    { kind: 'flow', note: 'rewrite / keep the beat the coherence check flagged' },
+        onPushOption:   { kind: 'flow', note: 'a CLOSED push question answered by tap — routed through handleTurn, so the slot files it exactly as typed text (v7.20.343)' },
         onWrapRecall:   { kind: 'flow', note: 'Step 4 wrap: open the rewrite picker — the way back into an answered row (v7.20.340)' },
         onRecallPick:   { kind: 'flow', note: 'Step 4 wrap: which beat to rewrite — the REWRITE that follows is what is filed' },
         onAnchorChoice: { kind: 'flow', note: 'Step 6 story bookend: still right / sharpen' },
@@ -303,6 +304,7 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     [['@WEAK: goal, stakes', 'the Step-3 component review'],
      ['@ALL_OK', 'the Step-3 all-clear'],
      ['@WEAK: logline-2, logline-3', 'the Step-3 logline review'],
+     ['@ANSWER_OPTIONS: She succeeds | She commits to trying', 'the v7.20.343 closed-question options'],
      ['@A_MARKER_ADDED_TOMORROW: x', 'a marker nobody has written yet']].forEach(([m, what]) => {
         ok(sweep('Some real feedback for the student.\n\n' + m).indexOf('@') === -1,
             `${what} (${m}) still renders to the student`);

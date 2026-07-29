@@ -112,6 +112,13 @@ function attachSlotDeps(deps) {
     const ntEnd = braceSliceFrom(SRC, ntIdx, '{', '}').end;
     // eslint-disable-next-line no-new-func
     deps._cwNodeText = new Function('return (' + SRC.slice(ntIdx, ntEnd) + ');')();
+
+    // v7.20.343: the closed-question option parser.
+    const aoIdx = SRC.indexOf('function cwAnswerOptions');
+    if (aoIdx < 0) throw new Error('cwAnswerOptions not found in wml-assessment.js — the closed-question chip gate would pass vacuously');
+    const aoEnd = braceSliceFrom(SRC, aoIdx, '{', '}').end;
+    // eslint-disable-next-line no-new-func
+    deps.cwAnswerOptions = new Function('console', 'return (' + SRC.slice(aoIdx, aoEnd) + ');')(deps.console || console);
     return deps;
 }
 

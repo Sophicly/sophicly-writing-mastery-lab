@@ -4470,6 +4470,39 @@
         return '[SWML_PROGRESS_' + Math.round((n / t) * 100) + ']\n\n';
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // v7.20.343 — A CLOSED QUESTION FROM SOPHIA GETS BUTTONS, NOT A TYPING BOX.
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Neil, live at CW4 Beat 6. The push asked "Does she succeed here, or is this the moment she
+    // commits to trying? …is this a victory, or the beginning of the final battle?" — a closed
+    // question with two answers — and he had to TYPE `she succeeds`. Every code-served ask in the
+    // walks already offers chips where the answer set is knowable; the model-authored pushes were
+    // the one surface that could not, because code cannot know in advance what the options are.
+    //
+    // So the MODEL names them: it ends a closed follow-up with `@ANSWER_OPTIONS: a | b`, and code
+    // renders the chips. The marker never reaches the student — formatAI's generic marker sweep
+    // strips any whole line of the form `@MARKER: …` (gated by cw-keymatch "CW MARKERS").
+    //
+    // Deliberately strict: 2–4 options, each short. One option is not a choice; five is a wall;
+    // a long option is a sentence the student should be writing themselves, not tapping.
+    // Anything outside that shape is ignored and the student simply types, as before — a
+    // malformed marker must never cost them the ability to answer (law 4d).
+    function cwAnswerOptions(reply) {
+        const m = /^[ \t]*@ANSWER_OPTIONS[ \t]*:[ \t]*(.+?)[ \t]*$/m.exec(String(reply || ''));
+        if (!m) return [];
+        const opts = m[1].split('|')
+            // \u escapes, NOT literal quote characters: the sim rigs slice this function out of the
+            // source with a brace scanner that treats a quote as the start of a string, so a literal
+            // ' or " inside a REGEX desynchronises its brace counting and the slice ends mid-function.
+            .map(function (s) { return s.trim().replace(/^[\u0022\u0027\u201c\u2018]|[\u0022\u0027\u201d\u2019]$/g, '').trim(); })
+            .filter(function (s) { return s && s.length <= 60; });
+        if (opts.length < 2 || opts.length > 4) {
+            if (opts.length) console.warn('WML CW: @ANSWER_OPTIONS ignored — ' + opts.length + ' option(s); the shape is 2–4 short ones.');
+            return [];
+        }
+        return opts;
+    }
+
     // v7.20.327 — ONE live-dictation stopper, registered while a mic session is running.
     // The recogniser lives inside a chat-shell closure; leaving the canvas happens outside it,
     // so nothing could stop a running mic on exit and it survived navigation (Neil, 2026-07-28).
@@ -19582,6 +19615,7 @@
             // Scaffold, not content: a claim about an answer is not the answer, so it never reaches
             // a document row (see the CW3 note for the full reasoning).
             let saBeat = -1, saTicks = {};
+            let pushOpts = [];     // v7.20.343: the model's @ANSWER_OPTIONS for the live push, if any
             // v7.20.283: same push-cycle accumulation as CW3 — a pushed beat banks EVERYTHING
             // the student said for it, not the final fragment. Persisted across reloads.
             let draft = '';
@@ -19592,7 +19626,7 @@
             // this a reload leaves an ask on screen with no authority to file its answer — and
             // re-deriving the slot from firstEmptyBeat() would reinstate the very cursor this
             // change exists to remove.
-            function persist() { try { const _s = _walkSlot.peek('cw4'); localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft, need: mainNeed, cohBeat, sab: saBeat, sat: saTicks, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
+            function persist() { try { const _s = _walkSlot.peek('cw4'); localStorage.setItem(lsKey(), JSON.stringify({ idx, phase, throughline, active, draft, need: mainNeed, cohBeat, sab: saBeat, sat: saTicks, popts: pushOpts, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -19756,7 +19790,11 @@
                 const b = BEATS[idx];
                 if (b && b.chips && phase === 'chip') { chipBar(b.chips, onBeatChipPick(b)); return; }
                 // v7.20.281: on a beat/irony phase the ask replays but its helper buttons don't.
-                if (phase === 'beat' || phase === 'irony') setTimeout(function () { try { appendSpineButtons(); } catch (e) {} }, 400);
+                // v7.20.343: ...and neither do a closed push's option chips, which are DOM-only.
+                if (phase === 'beat' || phase === 'irony') setTimeout(function () {
+                    try { appendSpineButtons(); } catch (e) {}
+                    try { if (pushOpts && pushOpts.length) chipBar(pushOpts, onPushOption); } catch (e) {}
+                }, 400);
             }
 
             // v7.20.281: helper buttons on each beat ask — [📖 Guidance] opens the guide at the
@@ -19786,6 +19824,9 @@
             // (Beats 4 and 5 share the same lead, "And because of this", so the NUMBER is what
             // separates them — never anchor on the lead).
             // Gated by cw-keymatch: every literal anchor must resolve to a real heading.
+            // v7.20.343: tapping a closed-question option IS the student's answer — route it
+            // exactly as typed text, so the slot consumes it and the push cycle banks normally.
+            function onPushOption(pick) { pushOpts = []; handleTurn(pick); }
             function guideAnchor() {
                 if (phase === 'coh-fix' && cohBeat >= 0 && cohBeat < BEATS.length) return 'Beat ' + (cohBeat + 1) + ' —';
                 if (phase === 'chip' || phase === 'chip2') return 'The main unmet need';
@@ -20152,8 +20193,13 @@
                     if (!ok) {
                         draft = acc(clean); active = true;
                         _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });   // v7.20.327: push stays on this row
-                        persist(); resetSend(); return;
+                        // v7.20.343: if the push is a CLOSED question, tap it instead of typing it.
+                        pushOpts = cwAnswerOptions(reply);
+                        persist(); resetSend();
+                        if (pushOpts.length) chipBar(pushOpts, onPushOption);
+                        return;
                     }
+                    pushOpts = [];
                     const full = acc(clean);
                     draft = '';
                     // Both the beat and its irony answer land in the SAME row — the irony
@@ -20219,6 +20265,7 @@
                     cohBeat = (typeof d.cohBeat === 'number') ? d.cohBeat : -1;  // v7.20.294
                     saBeat = (typeof d.sab === 'number') ? d.sab : -1;           // v7.20.333
                     saTicks = (d.sat && typeof d.sat === 'object') ? d.sat : {}; // v7.20.333
+                    pushOpts = Array.isArray(d.popts) ? d.popts : [];            // v7.20.343
                     idx = firstEmptyBeat();
                     phase = d.phase || 'chip';
                     throughline = d.throughline || '';

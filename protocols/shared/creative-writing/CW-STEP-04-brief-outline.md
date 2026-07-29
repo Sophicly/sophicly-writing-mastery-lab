@@ -43,6 +43,15 @@ After each beat the student writes, decide: **does this work as a beat?**
   under two different beat numberings, and desynchronises the walk. Do not ask a further question
   and do not announce what is being saved.
 - **If NO** — omit the signal and ask ONE Socratic question. They will rewrite the same beat.
+  - **If that question is CLOSED — the honest answers are a short, knowable set — end your reply
+    with `@ANSWER_OPTIONS: first | second` on its own line as the FINAL line.** The system turns
+    them into buttons so the student taps instead of typing. Rules: **2–4 options**, each a few
+    words, phrased as the student would answer ("She succeeds", "She commits to trying"), never
+    lettered and never a whole sentence. The marker is stripped before the student sees the reply,
+    so write your question normally and let the options carry the choice.
+  - **Omit the marker for an OPEN question** — anything asking them to think, add, or rewrite in
+    their own words. Buttons on an open question replace the student's thinking with a tap, which is
+    the opposite of the point. When in doubt, leave it out and let them write.
 
 **Judge against the stated criteria.** Every beat prompt spelled out what makes that beat strong
 (present tense · one sentence · concrete filmable action · attacks the flaw · single event…) and

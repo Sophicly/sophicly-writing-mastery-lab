@@ -263,6 +263,16 @@ function makeWorld(opts) {
     world.resolveApi = function (reply) {
         if (!armed) return false;
         const fn = armed.fn; armed = null;
+        // v7.20.343 FIDELITY FIX: in production the model's reply is RENDERED as a bubble by the
+        // chat pipeline, and only then does the walk's resume callback run. This rig used to invoke
+        // the callback with the reply never appearing on screen — so a PUSH (the model asking a
+        // follow-up) looked, to the automatic liveness check, like a walk that said nothing at all.
+        // Markers are swept exactly as formatAI sweeps them, so a reply that is ONLY a marker
+        // correctly renders nothing.
+        const shown = String(reply || '')
+            .replace(/^[ \t]*@[A-Z][A-Z0-9_]{2,}(?:[ \t]*:[^\n]*)?[ \t]*$/gm, '')
+            .replace(/\n{3,}/g, '\n\n').trim();
+        if (shown) bubbles.push(shown);
         fn(reply, {});
         return true;
     };
@@ -567,6 +577,51 @@ console.log('I7 · the tick list runs after every beat, and the duplicate guard 
     ok(!!w2.deps._walkSlot.armed,
         'after refusing, no ask is armed — the student is left with a rejection and nothing to answer '
         + '(law 4d: a refusal is only half a change)');
+}
+
+// ── I9 · A CLOSED PUSH QUESTION IS TAPPED, NOT TYPED (v7.20.343) ───────────────────────────
+// Neil, live at Beat 6: the push asked "Does she succeed here, or is this the moment she commits
+// to trying?" — two possible answers — and he had to type `she succeeds`. The model now names the
+// options with @ANSWER_OPTIONS and code renders the chips. Three things must hold: the chips
+// appear, the marker NEVER reaches the student, and the tap files exactly as typed text would.
+console.log('\nI9 · a closed push question is tapped, not typed');
+{
+    const w = makeWorld();
+    await w.start();
+    clearMenus(w);
+    const before = w.writes.length;
+    // A push (no @BEAT_OK) whose follow-up is closed.
+    w.say('At first, a boy eats every meal in a silent kitchen.',
+        'Is this the moment she succeeds, or the moment she commits to trying?\n\n@ANSWER_OPTIONS: She succeeds | She commits to trying');
+    ok(w.writes.slice(before).filter((x) => BEAT_FIDS.indexOf(x.fid) !== -1).length === 0,
+        'a pushed beat was filed anyway — a push means "not yet", the row waits for the accepted cycle');
+    // (That the marker never RENDERS is asserted in cw-keymatch's "CW MARKERS" block, against
+    // formatAI's real sweep — this rig records the raw reply, so testing it here would test the
+    // rig rather than the product.)
+    const opts = w.chips().map((c) => String(c.textContent));
+    ok(opts.some((t) => /She succeeds/.test(t)) && opts.some((t) => /commits to trying/.test(t)),
+        'the closed push offered no option chips — the student is back to typing "she succeeds" (chips: ' + opts.join(' | ') + ')');
+
+    // Tapping one files it exactly as typed text does: through the slot, onto the beat's own row.
+    const chip = w.chips().filter((c) => /She succeeds/.test(String(c.textContent)))[0];
+    if (chip) {
+        const b2 = w.writes.length;
+        w.tapLive(chip);
+        if (w.armed) w.resolveApi('@BEAT_OK');
+        const wr = w.writes.slice(b2).filter((x) => x.fid === BEAT_FIDS[0])[0];
+        ok(!!wr, 'tapping an option filed nothing — the tap must route through handleTurn like typed text');
+        ok(!wr || String(w.rows.get(BEAT_FIDS[0]) || '').indexOf('She succeeds') !== -1,
+            'the tapped option did not reach the beat row');
+    }
+
+    // A MALFORMED marker must never cost the student the ability to answer (law 4d).
+    const w2 = makeWorld();
+    await w2.start();
+    clearMenus(w2);
+    w2.say('At first, a boy eats every meal in a silent kitchen.',
+        'Say more about what he wants.\n\n@ANSWER_OPTIONS: only one option');
+    ok(!!w2.deps._walkSlot.armed,
+        'a malformed marker left no armed ask — the student can neither tap nor type (law 4d)');
 }
 
 // ── I8 · A SKIPPED OFFER CAN BE RECALLED (v7.20.340) ───────────────────────────────────────
