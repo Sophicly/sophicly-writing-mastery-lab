@@ -113,6 +113,19 @@ function attachSlotDeps(deps) {
     // eslint-disable-next-line no-new-func
     deps._cwNodeText = new Function('return (' + SRC.slice(ntIdx, ntEnd) + ');')();
 
+    // v7.20.345: the resume-replay depth. `_cwReplay` and `_cwIsReplay` SHARE `_cwReplayDepth`,
+    // so they are lifted as one closure — lifting them separately would give each its own counter
+    // and the fossil gate would pass while the shipped code still saved every re-serve.
+    const rpIdx = SRC.indexOf('let _cwReplayDepth = 0;');
+    const rpFnIdx = SRC.indexOf('function _cwIsReplay');
+    if (rpIdx < 0 || rpFnIdx < 0) throw new Error('_cwReplay/_cwIsReplay not found in wml-assessment.js — the resume-fossil gate would pass vacuously');
+    const rpEnd = braceSliceFrom(SRC, rpFnIdx, '{', '}').end;
+    // eslint-disable-next-line no-new-func
+    const _rp = new Function('console', SRC.slice(rpIdx, rpEnd)
+        + '\nreturn { _cwReplay: _cwReplay, _cwIsReplay: _cwIsReplay };')(deps.console || console);
+    deps._cwReplay = _rp._cwReplay;
+    deps._cwIsReplay = _rp._cwIsReplay;
+
     // v7.20.343: the closed-question option parser.
     const aoIdx = SRC.indexOf('function cwAnswerOptions');
     if (aoIdx < 0) throw new Error('cwAnswerOptions not found in wml-assessment.js — the closed-question chip gate would pass vacuously');

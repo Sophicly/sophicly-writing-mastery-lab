@@ -4430,6 +4430,43 @@
         return served;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // v7.20.345 — A RE-SERVE ON RESUME IS DERIVED STATE: DRAW IT, NEVER SAVE IT.
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Neil, on .344: "the questions are in the wrong order" — Step 5's transcript read
+    // "2 of 9 — Your Concept" ABOVE "1 of 9 — Your Context". Measured on staging: the saved
+    // history held exactly two turns, BOTH written by .344, at 11% and 0%. The percentages are
+    // the proof — 11% means the walk was on ask 2 when that entry re-served, 0% means the row
+    // had been cleared by the next one.
+    //
+    // ROOT, and it is mine: v7.20.340 made the resume path RE-SERVE the ask (rightly — a help
+    // ladder on a greeting with no question is law 4d's dead screen). But it re-served through
+    // the walk's own `aiBubble`, which PUSHES to `canvasChatHistory`. So every entry appended
+    // another copy of whatever the document said at that moment, and the transcript accumulated
+    // asks in the order the walk happened to be re-entered. That is WML CLAUDE.md §4c.7 exactly:
+    // derived state is rendered DOM-only or it replays forever.
+    //
+    // Fixed at the ONE place it can be fixed once. A resume path runs inside `_cwReplay(fn)`;
+    // every walk's `aiBubble` draws the bubble and skips the history push while that depth is
+    // non-zero. Per-function `{replay:true}` flags would have fixed `serveAsk` and left the same
+    // fossil in serveMenu / serveMulti / servePushChoice / the finished-walk wrap re-serve —
+    // SIX sites across four walks, all of which re-emit on entry (CW4's wrap accumulated a
+    // bubble per re-entry too; nobody had reported it yet).
+    //
+    // Depth, not a boolean: `reattachChips` → `serveMenu(true)` → `servePickPrompt` nests.
+    // SYNCHRONOUS only, deliberately — a paced run's later chunks arrive on a TAP, which is a
+    // real turn and must persist. Never wrap a forward-motion call (`advance`, a stage opener,
+    // a first-time wrap after an unfinished check): those turns have never been served and must
+    // be saved.
+    let _cwReplayDepth = 0;
+    function _cwReplay(fn) {
+        _cwReplayDepth++;
+        try { return fn(); }
+        catch (e) { console.warn('WML: replay re-serve threw —', e && e.message); }
+        finally { _cwReplayDepth--; }
+    }
+    function _cwIsReplay() { return _cwReplayDepth > 0; }
+
     // v7.20.340 — IS THE ASK ACTUALLY ON SCREEN?
     // The resume path re-attaches a walk's help/chips to `chatMessages.lastElementChild` on the
     // assumption that the replayed transcript ends on the ask. It does not when the ask was never
@@ -17507,6 +17544,7 @@
             function resetSend() { busy = false; chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain, opts) {
                 addChatMessage(formatAI(plain), 'ai', plain, opts);
+                if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
                 canvasChatHistory.push({ role: 'assistant', content: plain });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
@@ -18132,6 +18170,7 @@
             function busyOff() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
                 canvasChatHistory.push({ role: 'assistant', content: plain });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
@@ -18690,7 +18729,9 @@
                     if (asking) {
                         active = true; pending = false;
                         console.log('WML CW2: resumed waiting on a question for Sophia');
-                        setTimeout(function () { try { aiBubble(SEG.asking); resetSend(); } catch (e) {} }, 400);
+                        // v7.20.345: the prompt is already in the transcript from when they tapped
+                        // [Ask Sophia] — re-serving it is derived, so draw it and do not save it.
+                        setTimeout(function () { _cwReplay(function () { aiBubble(SEG.asking); resetSend(); }); }, 400);
                         return true;
                     }
                     // v7.20.265: a reload mid-invite resumes into the CHOICE, not into a typed
@@ -18711,7 +18752,7 @@
                         setTimeout(function () {
                             if (!awaitingChoice) return;
                             console.log('WML CW2: resumed awaiting the ladder choice — chips re-attached');
-                            serveLadder();   // backstop: says something if it cannot re-attach
+                            _cwReplay(serveLadder);   // backstop: says something if it cannot re-attach (v7.20.345: drawn, not saved)
                         }, 400);
                         return true;
                     }
@@ -18899,6 +18940,7 @@
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
                 canvasChatHistory.push({ role: 'assistant', content: plain });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
@@ -19463,7 +19505,9 @@
                             // LIVENESS BACKSTOP (law 4d). If the bar could not attach — the replayed
                             // bubble already carries a choice bar, the DOM moved — the student would
                             // be left with a question and nothing to press. Serve it fresh instead.
-                            if (!attached) { try { cwServeSelfAssessment(saOpts(_sst)); } catch (e) {} }
+                            // v7.20.345: the tick list is already in the transcript — DRAW the
+                            // replacement, never push a second copy of it.
+                            if (!attached) _cwReplay(function () { cwServeSelfAssessment(saOpts(_sst)); });
                         }, 400);
                         return true;
                     }
@@ -19635,6 +19679,7 @@
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
                 canvasChatHistory.push({ role: 'assistant', content: plain });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
@@ -19765,7 +19810,10 @@
             // buttons, and `active` true, so a typed reply was mis-committed as the BEAT.
             // Re-attach the right bar for the phase we resumed into. (Same defect class as
             // the poetry-CN picker re-render at the boot resume gate.)
-            function reattachChips() {
+            // v7.20.345: the WHOLE re-attach is derived state — anything it re-serves is drawn,
+            // never pushed into the transcript (§4c.7; see _cwReplay).
+            function reattachChips() { _cwReplay(_reattachChipsBody); }
+            function _reattachChipsBody() {
                 // v7.20.333: a reload during a self-assessment. The bubble replays from history but
                 // the bar is DOM-only — re-attach the one they were looking at, with a liveness
                 // backstop if it cannot attach (law 4d: never a question with nothing to press).
@@ -20341,7 +20389,9 @@
                             // the student nothing at all and a mis-tapped offer was unrecoverable.
                             active = false; pending = false; phase = 'wrap';
                             console.log('WML CW4: walk finished — re-serving the wrap’s rewrite route');
-                            setTimeout(function () { try { serveWrap(); } catch (e) {} }, 500);
+                            // v7.20.345: DRAWN, not saved. This fires on EVERY re-entry of a
+                            // finished Step 4, so pushing it stacked a wrap bubble per visit.
+                            setTimeout(function () { _cwReplay(serveWrap); }, 500);
                             return false;
                         }
                         if (phase === 'coherence') {
@@ -20474,6 +20524,7 @@
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
                 canvasChatHistory.push({ role: 'assistant', content: plain });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
@@ -21046,7 +21097,9 @@
             // Chip bars are DOM-only: the QUESTION bubble replays from saved history on reload but
             // the buttons do not, which leaves the student with a menu and no way to use it (the
             // .265 defect class). Re-attach the right bar for the phase we resumed into.
-            function reattachChips() {
+            // v7.20.345: derived — drawn, never pushed into the transcript (§4c.7; see _cwReplay).
+            function reattachChips() { _cwReplay(_reattachChipsBody); }
+            function _reattachChipsBody() {
                 // KIND-AWARE (same fix as CW5's reattach, same reason): the STEP tells us what the
                 // student is being asked for. Keyed on phase alone, an anchor step resumed while the
                 // persisted phase said 'ask' lost its confirm chips, and the student had to retype an
@@ -21340,6 +21393,7 @@
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
                 canvasChatHistory.push({ role: 'assistant', content: plain });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
@@ -21758,7 +21812,9 @@
             // re-attached, a typed reply is refused (a pick is a tap), and the student sits on a menu
             // with no buttons and no way forward. The STEP KIND is the truth about what the student is
             // being asked for; the phase only refines it.
-            function reattachChips() {
+            // v7.20.345: derived — drawn, never pushed into the transcript (§4c.7; see _cwReplay).
+            function reattachChips() { _cwReplay(_reattachChipsBody); }
+            function _reattachChipsBody() {
                 if (phase === 'push-choice' && swapKey) { servePushChoice(); return; }
                 // v7.20.340: the wrap's way back in survives a reload.
                 if (phase === 'done') { serveWrapRecall(); return; }
@@ -21823,7 +21879,8 @@
                     if (phase === 'done' || i >= STEPS.length) {
                         active = false; pending = false; phase = 'done';
                         console.log('WML CW5: walk finished — re-serving the wrap’s change route');
-                        setTimeout(function () { try { serveWrap(); } catch (e) {} }, 500);
+                        // v7.20.345: DRAWN, not saved — fires on every re-entry of a finished Step 5.
+                        setTimeout(function () { _cwReplay(serveWrap); }, 500);
                         return false;
                     }
                     if (phase === 'push-choice' && !swapKey) phase = 'ask';   // nothing to switch to

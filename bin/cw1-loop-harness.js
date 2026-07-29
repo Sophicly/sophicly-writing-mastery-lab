@@ -27,6 +27,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { attachSlotDeps } = require('./walk-sim-lib');
 
 const ROOT = path.resolve(__dirname, '..');
 const src = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-assessment.js'), 'utf8');
@@ -185,6 +186,12 @@ function makeWorld(opts, CTL_SRC) {
             if (world.ctl.active) world.ctl.handleTurn(deps.chatTextarea.value);
         },
     };
+
+    // v7.20.345: the shared lifter for the module-scope primitives the walks call (_walkSlot,
+    // _cwLastAssistantIs, cwProgressBar, _cwNodeText, cwAnswerOptions, _cwReplay/_cwIsReplay).
+    // Lifted from the real source, never stubbed — a stub here would let a walk ship with a dead
+    // primitive and this rig would still go green.
+    attachSlotDeps(deps);
 
     const names = Object.keys(deps);
     // eslint-disable-next-line no-new-func

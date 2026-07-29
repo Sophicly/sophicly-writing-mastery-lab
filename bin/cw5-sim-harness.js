@@ -233,7 +233,10 @@ function makeWorld(opts) {
 
     const names = Object.keys(deps);
     // eslint-disable-next-line no-new-func
-    world.ctl = new Function(names.join(','), 'return ' + CTL_SRC + ';').apply(null, names.map((n) => deps[n]));
+    // v7.20.345: `opts.ctlSrc` lets a test drive a DELIBERATELY BROKEN copy of the real controller
+    // (the negative control). Two of this session's gates were vacuous until the defect was
+    // injected and watched to fail — a gate that cannot fail proves nothing.
+    world.ctl = new Function(names.join(','), 'return ' + (opts.ctlSrc || CTL_SRC) + ';').apply(null, names.map((n) => deps[n]));
     world.deps = deps;
     world.chips = function () {
         const bc = world._lastBubbleEl && world._lastBubbleEl.children[0];
@@ -493,6 +496,48 @@ for (let n = 0; n < FAIL_OPEN_REPLIES.length; n++) {
             ok(w.sends.length === sendsBefore,
                 'recall spent ' + (w.sends.length - sendsBefore) + ' API call(s) — the student owns the rewrite, we only file it');
         }
+    }
+}
+
+// ── 7. ⭐ THE RESUME RE-SERVE IS DRAWN, NEVER SAVED (v7.20.345) ────────────────────────────
+// Neil, on .344: "the questions are in the wrong order" — the transcript read "2 of 9 — Your
+// Concept" ABOVE "1 of 9 — Your Context". Both turns were written by .344, at 11% and 0%: the
+// .340 resume re-serve went through aiBubble, which PUSHES to canvasChatHistory, so every entry
+// appended another ask ordered by whatever the document said at that moment (§4c.7 — derived
+// state is drawn or it replays forever).
+//
+// THE INVARIANT: N entries draw the ask N times and save it ZERO times.
+{
+    const GREETING = 'Welcome to Step 5: **Choose Your Plot Structure**\n\nLet’s begin.';
+    const entries = (world) => {
+        world.deps.canvasChatHistory.push({ role: 'assistant', content: GREETING });
+        world.deps.addChatMessage(GREETING, 'ai', GREETING);
+        const base = world.deps.canvasChatHistory.length;
+        world.ctl.tryResume();                       // entry 1
+        const drawn1 = world.bubbles.length;
+        world.ctl.tryResume();                       // entry 2 — the reload that made the fossil visible
+        return { base, drawn1, drawn2: world.bubbles.length, saved: world.deps.canvasChatHistory.length };
+    };
+
+    const w = makeWorld();
+    const r = entries(w);
+    ok(r.drawn1 > 1, 'fossil: the first entry drew no ask at all');
+    ok(r.drawn2 > r.drawn1, 'fossil: the second entry drew nothing — the student came back to a screen with no question (law 4d)');
+    ok(r.saved === r.base,
+        'fossil: a resume re-serve was SAVED — ' + (r.saved - r.base) + ' turn(s) pushed into the transcript, which is exactly how "2 of 9" ended up above "1 of 9"');
+    const askInHistory = w.deps.canvasChatHistory.filter((m) => m.role === 'assistant' && /of 9/.test(String(m.content || ''))).length;
+    ok(askInHistory === 0, 'fossil: ' + askInHistory + ' re-served ask(s) are in saved history — they replay forever');
+
+    // NEGATIVE CONTROL. Strip the guard from a copy of the REAL controller and prove the fossil
+    // comes straight back; without this the three assertions above could be passing vacuously.
+    const GUARD = 'if (_cwIsReplay()) return;';
+    if (CTL_SRC.indexOf(GUARD) === -1) {
+        ok(false, 'fossil: the guard `' + GUARD + '` is not in _cwStructureCtl — this gate is vacuous');
+    } else {
+        const broken = makeWorld({ ctlSrc: CTL_SRC.split(GUARD).join('') });
+        const rb = entries(broken);
+        ok(rb.saved > rb.base,
+            'fossil NEGATIVE CONTROL: with the guard stripped the transcript must grow — it did not, so this gate proves nothing');
     }
 }
 
