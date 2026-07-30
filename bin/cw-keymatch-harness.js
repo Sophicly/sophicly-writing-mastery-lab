@@ -144,6 +144,7 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onPushOption:   { kind: 'flow', note: 'a CLOSED push question answered by tap — routed through handleTurn, so the slot files it exactly as typed text (v7.20.343)' },
         onWrapRecall:   { kind: 'flow', note: 'Step 4 wrap: open the rewrite picker — the way back into an answered row (v7.20.340)' },
         onRecallPick:   { kind: 'flow', note: 'Step 4 wrap: which beat to rewrite — the REWRITE that follows is what is filed' },
+        onPickConfirm:  { kind: 'flow', note: 'Step 5 (#74, v7.20.354): keep the existing plot structure or re-pick. FLOW, not content — the archetype already lives in its document row; this tap only decides whether the walk re-opens the pick. Exists because advance() started at firstEmpty(), so an already-chosen structure meant the ONE decision every later step is built on was walked straight past (Neil, live: "it should just ask again even if it\'s chosen. It should just confirm it.")' },
         onAnchorChoice: { kind: 'flow', note: 'Step 6 story bookend: still right / sharpen' },
         onStageChoice:  { kind: 'flow', note: 'Step 6 stage arc: sharpen / leave' },
         onFinishChoice: { kind: 'flow', note: 'Step 6 final image: rewrite / leave' },

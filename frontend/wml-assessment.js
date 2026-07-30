@@ -21563,9 +21563,18 @@
             let pushed = false;            // the ONE API call has been spent — never spend it twice
             let swapKey = '';              // the archetype the reflection suggested instead, if any
             let secPicks = [];
+            // ⭐ v7.20.354 (#74, Neil 2026-07-30) — the pick is CONFIRMED, never silently skipped.
+            // `advance()` starts at firstEmpty(), so a structure already in the document meant the
+            // whole pick station was walked straight past: Neil, live — "because my plot structure
+            // was already chosen, I think it actually skipped that… I think it should just ask again
+            // even if it's chosen. It should just confirm it. It's a bit confusing."
+            // He is right, and it is stronger than a preference: this is the ONE decision every
+            // downstream step is built on, and skipping it also means the `plot_structure_key`
+            // artifact is never rewritten — which is what let the stale value in #75 survive.
+            let confirmed = false;         // the student has confirmed the existing pick THIS run
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw5') + '_cw5'; } catch (e) { return 'swml_cw5'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, pushed, swapKey, active })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, pushed, swapKey, active, confirmed })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -21899,9 +21908,51 @@
                 return wrote;
             }
 
+            // #74 — the pick station is never walked past while unconfirmed. Kept as ONE predicate
+            // called from BOTH entry points (startWalk and advance), because a second copy is how
+            // the .289 replace-vs-append fix was made in one place and lost in another.
+            // Scoped to a RUNNING walk. A FINISHED Step 5 is deliberately excluded: its wrap already
+            // states "Your spine: **X**" and carries the ✏️ change route, so a confirm there would be
+            // friction on every re-entry with nothing added. Caught by cw5-sim's recall test, which
+            // failed when this was unscoped — the confirm pre-empted the way back into an answered row.
+            function needsPickConfirm() {
+                if (phase === 'done' || phase === 'recall') return false;
+                return !confirmed && !!pickValue() && firstEmpty() > PICK_I;
+            }
+
+            function servePickConfirm() {
+                phase = 'confirm'; active = true; pending = false; persist();
+                _walkSlot.clear('cw5');   // a confirm is a TAP — nothing typed may file here
+                const cur = _cw5ChipLabel(pickValue() || '') || '(not set)';
+                // ⭐ DERIVED — DRAWN, NEVER SAVED (§4c.7, and the .351/.352 fossil law). This turn
+                // both (a) exists only while a pick is unconfirmed and (b) NAMES the pick, which is
+                // mutable — so persisting it would fossilise on BOTH counts at once, and would be
+                // the exact defect the same student hits in Step 6. Re-derived on every entry, so
+                // it is always true; `confirmed` in the sidecar is what stops it repeating.
+                _cwReplay(function () {
+                    aiBubble(cwProgressBar(PICK_I + 1, STEPS.length)
+                        + '**Your plot structure is already set to ' + cur + '.**\n\n'
+                        + 'Everything after this is built on it — your Step 6 outline, your scenes and every '
+                        + 'draft. So before we go on, one check: is that still the shape of your story?');
+                });
+                chipBar(['Keep ' + cur + ' →', 'Choose a different one'], onPickConfirm);
+                resetSend();
+            }
+            function onPickConfirm(pick) {
+                userTurn(pick);
+                confirmed = true; persist();   // set BEFORE advance(), or needsPickConfirm loops
+                if (/different/i.test(pick)) {
+                    i = PICK_I; phase = 'menu'; persist();
+                    serveMenu(true);   // skipTeaching — they have seen the eight shapes already
+                    return;
+                }
+                advance();
+            }
+
             function advance() {
                 i = firstEmpty();
                 active = true;
+                if (needsPickConfirm()) { servePickConfirm(); return; }
                 // The sidebar has three sub-steps for Step 5 (CW_SIDEBAR_STEPS[5]) — derived from
                 // where the walk actually is, never a hand-stamped count the protocol invents.
                 try {
@@ -22004,6 +22055,10 @@
                     _cwLoadDocValues(state.cwProjectId, 'logline'),
                 ]).then(function () {
                     i = firstEmpty();
+                    // #74: BEFORE the nothing-to-walk exit. A fully-filled Step 5 is exactly the
+                    // case Neil hit — the walk had nothing to do and said nothing, so the decision
+                    // every later step rests on was never even shown to him.
+                    if (needsPickConfirm()) { active = true; pending = false; servePickConfirm(); return; }
                     if (i >= STEPS.length) { active = false; console.log('WML CW5: every row already filled — nothing to walk.'); return; }
                     active = true; pending = false; phase = 'ask';
                     console.log('WML CW5: code-served structure walk start at step ' + (i + 1) + '/' + STEPS.length);
@@ -22030,6 +22085,11 @@
             // v7.20.345: derived — drawn, never pushed into the transcript (§4c.7; see _cwReplay).
             function reattachChips() { _cwReplay(_reattachChipsBody); }
             function _reattachChipsBody() {
+                // v7.20.354 (#74) — FIRST, and before the `done` branch. The confirm is chip-only,
+                // and chips are DOM-only, so without this a reload while it is on screen leaves a
+                // question with no buttons and a slot that refuses typing — a dead screen (§4d).
+                // It re-derives, so it is safe to serve again: `confirmed` is what stops it.
+                if (needsPickConfirm()) { servePickConfirm(); return; }
                 if (phase === 'push-choice' && swapKey) { servePushChoice(); return; }
                 // v7.20.340: the wrap's way back in survives a reload.
                 if (phase === 'done') { serveWrapRecall(); return; }
@@ -22073,7 +22133,16 @@
                     pushed = !!d.pushed;
                     swapKey = ORDER.indexOf(d.swapKey) !== -1 ? d.swapKey : '';
                     phase = d.phase || 'ask';
+                    confirmed = !!d.confirmed;   // v7.20.354 (#74)
                     i = firstEmpty();
+                    // #74: BEFORE the finished-walk branch below, or a fully-filled Step 5 re-serves
+                    // the wrap and the confirm never appears — which is the very case Neil hit.
+                    if (needsPickConfirm()) {
+                        active = true; pending = false;
+                        console.log('WML CW5: resuming on the plot-structure CONFIRM (a pick already exists)');
+                        setTimeout(servePickConfirm, 500);   // servePickConfirm is already draw-only
+                        return true;
+                    }
                     // A reload while the reflection call was in flight. The call is gone and it has
                     // already been PAID FOR — never re-spend it. Fall forward to the next ask.
                     if (phase === 'push') {
