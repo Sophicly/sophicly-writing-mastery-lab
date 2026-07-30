@@ -463,7 +463,7 @@ for (let n = 0; n < FAIL_OPEN_REPLIES.length; n++) {
 
     // v7.20.346: and the bar on it is VISIBLE. The token reached the bubble in .344 too — at 0%,
     // which renders as an empty grey track and reads as no bar at all ("I don't see any progress").
-    const pct = (String(newest).match(/\[SWML_PROGRESS_(\d+)\]/) || [])[1];
+    const pct = (String(newest).match(/\[SWML_PROGRESS_(?:CODE_)?(\d+)\]/) || [])[1];
     ok(pct !== undefined && Number(pct) > 0,
         'real-entry: the first ask shows ' + (pct === undefined ? 'NO progress token' : pct + '% — an empty bar')
         + '. The bar rides the ask in hand, so ask 1 of 9 is 11%, not 0%.');

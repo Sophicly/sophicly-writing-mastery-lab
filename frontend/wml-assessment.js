@@ -4507,11 +4507,23 @@
     // The house convention is 1-based and predates the code-served walks — the AI-narrated
     // quizzes have always printed Q1 as 10% of 10 (protocols/shared/mark-scheme/modern_text.md:73).
     // The bar rides the ask, so it reads "you are ON this one", never "you have finished none".
+    // ⭐ v7.20.348 — WHY THE TOKEN IS `_CODE_`, and why .346 did not fix this.
+    // Neil, on .347, with the numbers finally right: "the progress bar is not rendering on the
+    // messages. I would really like that to be there… we worked quite a bit on the styling."
+    // At .346 I checked the CSS, found it unconditional, and concluded the 0-based arithmetic was
+    // the whole cause. It was not. `formatAI` renders the bar correctly — and then the CANVAS chat
+    // pipeline DELETES it: `WML.withProgressChip()` strips `<div class="swml-chat-progress-bar">`
+    // wholesale (wml-core.js, v7.19.906/.987) so the MODEL's improvised bars could be replaced by
+    // one beat-chip. FQ and MSQ keep their bars because they run through the MAIN chat, which
+    // never calls that function; every CW walk runs through the canvas chat, which does.
+    // So a CODE-SERVED bar needs to be distinguishable from a model-improvised one at render
+    // time. `_CODE_` is that distinction: formatAI gives it its own class and withProgressChip
+    // is explicitly forbidden from touching it.
     function cwProgressBar(nth, total) {
         const t = Number(total) || 0;
         if (t <= 0) return '';
         const n = Math.max(1, Math.min(t, Number(nth) || 0));
-        return '[SWML_PROGRESS_' + Math.round((n / t) * 100) + ']\n\n';
+        return '[SWML_PROGRESS_CODE_' + Math.round((n / t) * 100) + ']\n\n';
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════════
@@ -21257,7 +21269,7 @@
             const STEPS = [
                 {
                     fid: 'cw-step-5-context', label: 'Context',
-                    title: '**1 of 9 — Your Context**',
+                    title: 'Your Context',
                     body: 'Every real writing choice starts with something true. **Context** is what put this story in your head in the first place — an experience, something you noticed, a question you cannot let go of.\n\n'
                         + '**A strong answer:**\n\n'
                         + '- names something REAL and specific to you — not "I like sci-fi", but what in sci-fi keeps pulling you back\n'
@@ -21274,7 +21286,7 @@
                 },
                 {
                     fid: 'cw-step-5-concept', label: 'Concept',
-                    title: '**2 of 9 — Your Concept**',
+                    title: 'Your Concept',
                     body: 'Your **concept** is what your story is about UNDERNEATH the plot. Not the events — the idea about life the events are there to prove.\n\n'
                         + '**A strong answer:**\n\n'
                         + '- a statement about PEOPLE or LIFE, not a summary of what happens\n'
@@ -21294,7 +21306,7 @@
                 },
                 {
                     fid: 'cw-step-5-technique', label: 'Technique Thinking',
-                    title: '**3 of 9 — Your Technique Thinking**',
+                    title: 'Your Technique Thinking',
                     body: 'Now the third link in the chain: **technique**. Context shapes the concept; the concept decides the technique. The biggest technique choice you make is the SHAPE of the story.\n\n'
                         + 'Before I show you the eight shapes in detail, I want your instinct first — because your own thinking matters more than my menu.\n\n'
                         + '**A strong answer:**\n\n'
@@ -21313,7 +21325,7 @@
                 { kind: 'pick', fid: 'cw-step-5-primary-archetype', label: 'Your Primary Archetype' },
                 {
                     fid: 'cw-step-5-why-fits', label: 'Why This Structure Fits',
-                    title: '**5 of 9 — Why this structure fits your themes**',
+                    title: 'Why this structure fits your themes',
                     body: 'Now justify it properly — this is the part that turns a preference into a craft decision.\n\n'
                         + '**A strong answer:**\n\n'
                         + '- connects the SHAPE to your CONCEPT — the structure should be doing the same job as your idea\n'
@@ -21330,9 +21342,15 @@
                     tech: [{ s: 'Th', l: 'Theme' }, { s: 'Cy', l: 'Cyclical Structure' }],
                     guide: 'Choosing well — and combining',
                 },
+                // v7.20.348 (Neil, live): the walk must follow the DOCUMENT. Secondary Elements
+                // is the section directly under Primary Choice on the page, but the walk asked it
+                // LAST — so a student reading down the document went straight from "why this
+                // structure fits" into Authorial Intent and was never offered it. Its heading and
+                // its bar are derived from this position, so moving it renumbers both correctly.
+                { kind: 'multi', fid: 'cw-step-5-secondary', label: 'Secondary Archetypes' },
                 {
                     fid: 'cw-step-5-emotion', label: 'Desired Reader Emotion',
-                    title: '**6 of 9 — The effect on your reader**',
+                    title: 'The effect on your reader',
                     body: 'Different shapes leave readers in different places. A Tragedy leaves catharsis and warning. Overcoming the Monster leaves triumph and relief. Rebirth/Redemption leaves hope — usually with something bruised in it.\n\n'
                         + '**A strong answer:**\n\n'
                         + '- name the FEELING you want on the last page, in ordinary words\n'
@@ -21350,7 +21368,7 @@
                 },
                 {
                     fid: 'cw-step-5-theme', label: 'Thematic Message / Moral',
-                    title: '**7 of 9 — The meaning your structure adds**',
+                    title: 'The meaning your structure adds',
                     body: 'Tell the same events in a different shape and the MEANING changes. So what does your shape make your story SAY?\n\n'
                         + '**A strong answer:**\n\n'
                         + '- one sentence a reader could take away and repeat\n'
@@ -21369,7 +21387,7 @@
                 },
                 {
                     fid: 'cw-step-5-connection', label: 'Connection to Protagonist',
-                    title: '**8 of 9 — How the structure tests your protagonist**',
+                    title: 'How the structure tests your protagonist',
                     body: 'A shape is not decoration — it is a machine for putting pressure on ONE person. This is the question that makes the next step (your full outline) write itself.\n\n'
                         + '**A strong answer:**\n\n'
                         + '- names your protagonist\'s FLAW (from Step 3) and says where this shape attacks it\n'
@@ -21383,9 +21401,9 @@
                     tech: [{ s: 'Fw', l: 'The Flaw' }, { s: 'Pr', l: 'Protagonist' }],
                     guide: 'Choosing well — and combining',
                 },
-                { kind: 'multi', fid: 'cw-step-5-secondary', label: 'Secondary Archetypes' },
             ];
             const PICK_I = STEPS.findIndex(function (s) { return s.kind === 'pick'; });
+            const MULTI_I = STEPS.findIndex(function (s) { return s.kind === 'multi'; });   // v7.20.348
 
             let active = false, pending = false, i = 0;
             // 'orient' → 'ask' → 'menu' → 'pick' → 'push' → 'push-choice' → 'multi' → done
@@ -21542,7 +21560,12 @@
             // ── the ask ──
             // v7.20.340: ONE builder for the ask's text, so the bar the resume path compares
             // against is byte-identical to the bar it served (see _cwLastAssistantIs).
-            function askText(s) { return cwProgressBar(i + 1, STEPS.length) + s.title + '\n\n' + s.body; }
+            // v7.20.348: the "N of M" heading is DERIVED from the step's position, never stored.
+            // Seven titles carried a hardcoded "**5 of 9 — …**", which meant reordering the walk
+            // (Neil: secondary elements must come where the DOCUMENT puts it) silently desynced
+            // every label from the bar beside it. Same drift class as the menu's "4 of 9".
+            function askHeading(n) { return '**' + (n + 1) + ' of ' + STEPS.length + ' — '; }
+            function askText(s) { return cwProgressBar(i + 1, STEPS.length) + askHeading(i) + s.title + '**\n\n' + s.body; }
             function serveAsk() {
                 const s = STEPS[i];
                 phase = 'ask';
@@ -21688,20 +21711,29 @@
                 const cur = pickValue();
                 phase = 'multi'; persist();
                 _walkSlot.clear('cw5');   // v7.20.340: multi-select is a TAP
-                aiBubble(cwProgressBar(STEPS.length, STEPS.length)   // v7.20.347: the last ask = 100%
-                    + '**' + STEPS.length + ' of ' + STEPS.length + ' — Secondary elements**\n\nThe most interesting stories do not follow one shape rigidly — they BLEND. *The Hunger Games* is primarily Overcoming the Monster with strong Coming of Age (Katniss grows up fast) and The Quest (she is fighting towards a goal). *A Christmas Carol* is Rebirth/Redemption with Voyage and Return inside it (the ghost journeys).\n\n'
+                // v7.20.348: derived from ITS OWN position — secondary elements is no longer
+                // last (it now sits where the document puts it), so a hardcoded 9-of-9 would lie.
+                aiBubble(cwProgressBar(MULTI_I + 1, STEPS.length)
+                    + '**' + (MULTI_I + 1) + ' of ' + STEPS.length + ' — Secondary elements**\n\nThe most interesting stories do not follow one shape rigidly — they BLEND. *The Hunger Games* is primarily Overcoming the Monster with strong Coming of Age (Katniss grows up fast) and The Quest (she is fighting towards a goal). *A Christmas Carol* is Rebirth/Redemption with Voyage and Return inside it (the ghost journeys).\n\n'
                     + 'You have chosen **' + (_cw5ChipLabel(cur || '') || 'your primary shape') + '** as your spine. **Tap any other shapes whose elements you want woven in**, then Continue. (None at all is a perfectly good answer — just press Continue.)');
                 chipBarMulti(ORDER.filter(function (k) { return CW5_ARCHETYPE_ITEMS[k] !== cur; })
                     .map(function (k) { return _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[k]); }), onMultiDone);
                 resetSend();
             }
+            // v7.20.348: TWO end-of-walk assumptions lived here, and both were invisible until
+            // secondary elements stopped being the last step.
+            //   1. It filed into `STEPS[STEPS.length - 1]` — the LAST step, which was the multi
+            //      only by coincidence of ordering. After the reorder that is `connection`, so the
+            //      answer landed in the wrong row and `cw-step-5-secondary` stayed empty. Exactly
+            //      the write-key ≠ read-key class (§5d): file into the step's OWN fid.
+            //   2. It ended the walk outright (`active = false` + wrap), because the multi used to
+            //      BE the end. Mid-walk it must simply advance, or every step after it is skipped.
             function onMultiDone(picks) {
                 secPicks = picks;
                 const text = picks.length ? picks.join(', ') : 'None — one shape, kept clean.';
                 userTurn(picks.length ? 'Also weaving in: ' + text : text);
-                fileAnswer(STEPS[STEPS.length - 1], text, false);
-                active = false; clearPersist();
-                serveWrap();
+                fileAnswer(STEPS[MULTI_I], text, false);
+                advance();
             }
 
             function fileAnswer(s, text, replace) {
@@ -32995,6 +33027,15 @@
                     // WML.outlineRow.complete — an EMPTY optional row is satisfied, a started one
                     // is not. Row-level ✓ stays honest (empty = no tick), same as locked.
                     if (crit.optional) contentDOM.classList.add('swml-outline-optional');
+                    // v7.20.348: CONTROL-ONLY rows (the Step-5 archetype dropdown). The controls
+                    // ARE the answer, so the text column is hidden and cannot take focus — it stays
+                    // in the DOM because ProseMirror requires a contentDOM, and because any text a
+                    // student typed there before this shipped must not be destroyed, only hidden.
+                    if (CTL && CTL.controlOnly(crit)) {
+                        contentDOM.setAttribute('contenteditable', 'false');
+                        contentDOM.classList.add('swml-outline-controlonly');
+                        dom.classList.add('swml-outline-row-controlonly');
+                    }
                     dom.appendChild(contentDOM);
 
                     // ── v7.15.0: Row completion — criteria check only (text check via global onUpdate) ──
@@ -33022,7 +33063,11 @@
                         // .complete deliberately does for the SECTION count. v7.19.679.)
                         stampGroups();
                         const criteriaOk = CTL ? rendered.every(e => CTL.controlOk(e.ctl, liveState(e))) : true;
-                        const complete = hasText && criteriaOk;
+                        // v7.20.348: a control-only row has no text to have — its controls are the
+                        // whole answer, so requiring text here would leave it permanently unticked
+                        // (the defect Neil hit: the archetype row could never complete once the
+                        // pick was made by chip, and Document Progress stalled at 2 of 5 sections).
+                        const complete = (CTL && CTL.controlOnly(crit)) ? criteriaOk : (hasText && criteriaOk);
                         dom.classList.toggle('swml-row-complete', complete);
                         contentDOM.classList.toggle('swml-input-filled', hasText);
                     }
@@ -36359,6 +36404,39 @@
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 console.log('WML CW: Step 5 emphasis note backfilled (migration)');
             });
+            // ⭐ v7.20.348: the Step-5 archetype row becomes DROPDOWN-ONLY in EXISTING projects.
+            // The outline row's shape is BAKED into the saved doc, so the template change alone
+            // reaches new projects only — Neil's own document (and every student's) would keep the
+            // redundant text box and the section would still never tick. Stamps `controlOnly` into
+            // the row's criteria JSON and drops the prompt, idempotently.
+            // Deliberately does NOT touch the row's TEXT: a student who typed there before this
+            // shipped keeps their words in the document (hidden, not destroyed) and their word
+            // count is unchanged — hiding is reversible, deleting is not.
+            _migrateStep('migrateStep5ArchetypeControlOnly', () => {
+                if (!canvasEditor || state.task !== 'cw_step_5') return;
+                const html = canvasEditor.getHTML();
+                const tmp = document.createElement('div');
+                tmp.innerHTML = html;
+                let changed = false;
+                tmp.querySelectorAll('[data-outline-row]').forEach(r => {
+                    if (r.getAttribute('data-field-id') !== 'cw-step-5-primary-archetype') return;
+                    let crit = {};
+                    try { crit = JSON.parse(r.getAttribute('data-criteria') || '{}'); } catch (_) { return; }
+                    if (crit.controlOnly === true && !crit.prompt) return;   // already healed
+                    crit.controlOnly = true;
+                    delete crit.prompt;
+                    r.setAttribute('data-criteria', JSON.stringify(crit));
+                    r.setAttribute('data-prompt', crit.label || 'Your Primary Archetype');
+                    changed = true;
+                });
+                if (!changed) return;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 5 archetype row healed to dropdown-only (migration)');
+            });
             // v7.19.459: Heal-on-load for CW Step 1 question rows — re-sync a saved doc to
             // the current question template without losing the student's typed answers, so
             // prompt/label edits (and the 15→12 restructure) reach existing projects without
@@ -39350,7 +39428,12 @@
             html += sectionHTML('plan', 'Primary Choice', true, null,
                 '<h3>Your Primary Archetype</h3>' +
                 '<p><em>Take this decision seriously. The plot structure you choose here shapes everything downstream \u2014 your Step 6 outline, your scenes, your draft and your redrafts all build on it. You can change it later, but only by returning to this step and re-choosing, which rebuilds the work that follows. So choose the shape that genuinely carries your concept, your theme and your protagonist\u2019s transformation.</em></p>' +
-                outlineRowHTML({ id: 'archetype', label: 'Your Primary Archetype', type: 'dropdown', items: CW5_ARCHETYPE_ITEM_LIST, prompt: 'Which plot structure best fits your story?' }, 'cw-step-5-primary-archetype') +
+                // v7.20.348 (Neil, live): DROPDOWN ONLY. The row used to carry a text box asking
+                // "Which plot structure best fits your story?" beside a dropdown that answers the
+                // same question — so the student either typed the name they had just selected, or
+                // left it blank and the section never ticked. The dropdown stays fully usable BY
+                // HAND (his explicit requirement); the chat's chip just sets it for them.
+                outlineRowHTML({ id: 'archetype', label: 'Your Primary Archetype', type: 'dropdown', items: CW5_ARCHETYPE_ITEM_LIST, controlOnly: true }, 'cw-step-5-primary-archetype') +
                 outlineRowHTML({ id: 'why-fits', label: 'Why This Structure Fits', prompt: 'Explain why this archetype best suits your story concept' }, 'cw-step-5-why-fits')
             );
             html += dividerHTML('SECONDARY ELEMENTS');

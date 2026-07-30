@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.347';
+var WML_BUILD = '7.20.348';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3297,7 +3297,14 @@ window.WML = (function() {
         html = html.replace(/^##\s+(.+?)(?=<br>|$)/g, '<strong class="swml-chat-h4">$1</strong>');
 
         // Render progress bar placeholders as CSS bars (v7.14.51)
-        const hasProgressBar = /\[SWML_PROGRESS_\d+\]/.test(html);
+        const hasProgressBar = /\[SWML_PROGRESS_(?:CODE_)?\d+\]/.test(html);
+        // v7.20.348: the CODE-SERVED bar (cwProgressBar, the CW walks) carries an extra class so
+        // withProgressChip can tell it apart from a bar the MODEL improvised. Both render
+        // identically; only the model's is strippable. Replaced FIRST — `CODE_` is not digits, so
+        // the generic rule below could never match it anyway, but order makes the intent plain.
+        html = html.replace(/\[SWML_PROGRESS_CODE_(\d+)\]/g, (_, pct) =>
+            `<div class="swml-chat-progress-bar swml-chat-progress-bar--code"><div class="swml-chat-progress-fill" style="width:${pct}%"></div><span class="swml-chat-progress-label">${pct}%</span></div>`
+        );
         html = html.replace(/\[SWML_PROGRESS_(\d+)\]/g, (_, pct) =>
             `<div class="swml-chat-progress-bar"><div class="swml-chat-progress-fill" style="width:${pct}%"></div><span class="swml-chat-progress-label">${pct}%</span></div>`
         );
@@ -3757,6 +3764,12 @@ window.WML = (function() {
         return html
             .replace(/<div class="swml-step-header">[\s\S]*?<\/div>/gi, '')
             .replace(/<span class="swml-step-blocks">[\s\S]*?swml-step-blocks-label">[^<]*<\/span>\s*<\/span>/gi, '')
+            // v7.20.348: strips the MODEL's improvised bar only. A CODE-SERVED bar
+            // (`swml-chat-progress-bar--code`, from cwProgressBar) is deliberate and must
+            // survive — the CW walks are the only progress a code-served walk has, and this
+            // line was silently eating every one of them in the canvas chat since v7.19.906.
+            // The class check is explicit, not incidental: do not relax it to a bare
+            // `class="swml-chat-progress-bar` prefix match.
             .replace(/<div class="swml-chat-progress-bar">[\s\S]*?swml-chat-progress-label">[^<]*<\/span>\s*<\/div>/gi, '')
             // v7.19.987: also strip the RAW model breadcrumb + ANY improvised bar the task-gated
             // stylers missed. Conceptual Notes (and any protocol using "Element N of 8" + box-char
@@ -3880,8 +3893,23 @@ window.WML = (function() {
         // by a third baked row. `optional: true` ⇒ an EMPTY row is satisfied. Started ⇒ finish
         // it: the moment it has text, its controls are required exactly like any other row.
         // Distinct from `locked` (read-only, satisfied even with text the STUDENT never wrote).
+        // v7.20.348 — CONTROL-ONLY rows. Neil, live on Step 5: "there's an empty space there where
+        // it says which plot structure best fits your story. So that space is empty, which means my
+        // section doesn't get ticked off… you can get rid of the text input area because we've
+        // chosen it already." The archetype row carries a DROPDOWN and a text box that asks for the
+        // same answer — and because `!hasText` means incomplete, the row could never complete once
+        // the pick was made by chip. Document Progress sat at 2-of-5 sections with nothing left to
+        // type. `controlOnly: true` ⇒ the CONTROLS are the whole answer: text is neither required
+        // nor offered (the nodeView hides the input). Distinct from `optional` (empty is fine, but
+        // text is still invited) and from `locked` (read-only carryover, satisfied regardless).
+        controlOnly(crit) {
+            return !!(crit && (crit.controlOnly === true || crit.controlOnly === 'true'));
+        },
         complete(crit, state, hasText) {
             if (crit && (crit.locked === true || crit.locked === 'true')) return true;
+            if (this.controlOnly(crit)) {
+                return this.controlsOf(crit).every(ctl => this.controlOk(ctl, this.stateOf(crit, state, ctl)));
+            }
             if (!hasText) return !!(crit && (crit.optional === true || crit.optional === 'true'));
             return this.controlsOf(crit).every(ctl => this.controlOk(ctl, this.stateOf(crit, state, ctl)));
         },

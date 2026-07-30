@@ -233,6 +233,30 @@ t('optional:"true" (string form) also completes when empty',
   RULE.complete({ id: 'x', optional: 'true' }, {}, false), true);
 t('NON-optional row, empty ⇒ incomplete (the flag is what changes it, nothing else)',
   RULE.complete({ id: 'x', controls: opt.controls }, {}, false), false);
+// ══ TEST 4c — CONTROL-ONLY rows (v7.20.348) ══
+// Neil, live on Step 5: the archetype row carried a dropdown AND a text box asking the same
+// question. `!hasText ⇒ incomplete` meant that once the pick was made by chip, the row could
+// never complete and Document Progress stalled at 2-of-5 sections with nothing left to type.
+// A control-only row is answered by its CONTROLS; text is neither required nor offered.
+const conly = {
+  id: 'archetype', controlOnly: true,
+  controls: [{ id: 'archetype', label: 'Your Primary Archetype', type: 'dropdown', items: ['Tragedy', 'Rebirth / Redemption'] }],
+};
+t('control-only, dropdown SET, no text ⇒ complete (the whole point)',
+  RULE.complete(conly, { c: { archetype: { selected: 'Tragedy' } } }, false), true);
+t('control-only, dropdown UNSET ⇒ incomplete (it is still a real requirement)',
+  RULE.complete(conly, {}, false), false);
+t('control-only ignores text entirely — set control + stray text is still complete',
+  RULE.complete(conly, { c: { archetype: { selected: 'Tragedy' } } }, true), true);
+t('control-only with UNSET control is not rescued by text',
+  RULE.complete(conly, {}, true), false);
+t('controlOnly:"true" (string form) behaves identically',
+  RULE.complete({ id: 'x', controlOnly: 'true', controls: conly.controls }, { c: { archetype: { selected: 'Tragedy' } } }, false), true);
+t('WITHOUT the flag the same row is incomplete when empty (the flag is what changes it)',
+  RULE.complete({ id: 'x', controls: conly.controls }, { c: { archetype: { selected: 'Tragedy' } } }, false), false);
+t('locked still BEATS control-only (a carryover is satisfied either way)',
+  RULE.complete({ id: 'x', locked: true, controlOnly: true, controls: conly.controls }, {}, false), true);
+
 t('locked BEATS optional-with-text (a carryover is satisfied either way)',
   RULE.complete({ id: 'x', locked: true, optional: true, type: 'checkbox' }, {}, true), true);
 

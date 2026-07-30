@@ -689,6 +689,40 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
             + 'of that walk renders 0%. Pass the ask IN HAND (index + 1).');
     }
     ok(sites >= 7, 'only ' + sites + ' progress-bar call site(s) found — a walk has lost its bar');
+
+    // ⭐ THE BAR MUST SURVIVE THE CANVAS CHAT PIPELINE (v7.20.348).
+    // .346 fixed the arithmetic and Neil STILL saw no bar, because `WML.withProgressChip()`
+    // deletes `<div class="swml-chat-progress-bar">` wholesale — it was written to replace the
+    // MODEL's improvised bars with one beat-chip (v7.19.906/.987), and every CW walk runs
+    // through the canvas chat, which calls it. FQ/MSQ kept their bars only because the MAIN
+    // chat never does. Run the real function over both bars and prove which one survives.
+    const CORE = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
+    ok(/SWML_PROGRESS_CODE_/.test(JS),
+        'cwProgressBar no longer emits the CODE token — its bar is strippable again');
+    // The rule must EXIST *and* must emit the exempt class — checking only that the token is
+    // mentioned lets someone drop the class and leave the bar strippable again (caught by
+    // injecting exactly that: the token rule survived, the class did not).
+    const codeRuleAt = CORE.indexOf('SWML_PROGRESS_CODE_(\\d+)');
+    ok(codeRuleAt !== -1, 'formatAI has no rule for the CODE token — the walks would render a literal placeholder');
+    if (codeRuleAt !== -1) {
+        const rule = CORE.slice(codeRuleAt, CORE.indexOf('\n        );', codeRuleAt));
+        ok(rule.indexOf('swml-chat-progress-bar--code') !== -1,
+            'formatAI renders the CODE token WITHOUT the `--code` class, so withProgressChip will '
+            + 'strip it exactly as before — the bar disappears again and nothing says so');
+    }
+    const wpcAt = CORE.indexOf('function withProgressChip');
+    ok(wpcAt !== -1, 'withProgressChip is gone — the bar-stripping contract cannot be verified');
+    if (wpcAt !== -1) {
+        const end = CORE.indexOf('\n    }', wpcAt);
+        // eslint-disable-next-line no-new-func
+        const wpc = new Function('return (' + CORE.slice(wpcAt, end + 6) + ');')();
+        const bar = (cls) => '<div class="' + cls + '"><div class="swml-chat-progress-fill" style="width:44%"></div><span class="swml-chat-progress-label">44%</span></div>';
+        ok(wpc(bar('swml-chat-progress-bar'), '').indexOf('swml-chat-progress') === -1,
+            'withProgressChip no longer strips the MODEL\'s improvised bar — the beat-chip and a raw bar will both render');
+        ok(wpc(bar('swml-chat-progress-bar swml-chat-progress-bar--code'), '').indexOf('swml-chat-progress-bar--code') !== -1,
+            'withProgressChip EATS the code-served bar — this is the exact defect Neil reported twice: '
+            + 'the token is emitted, formatAI renders it, and the canvas pipeline deletes it before he sees it');
+    }
 }
 
 // ───────────────────────────────────────────────────────────────────────────────────────────
