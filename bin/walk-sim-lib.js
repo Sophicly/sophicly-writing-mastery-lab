@@ -81,12 +81,83 @@ function attachLiveChipsDeps(deps) {
     return deps;
 }
 
+// ⭐ v7.20.352 — the WML shim every walk now needs, because recordTurn is the ONLY writer
+// into chat history and every walk's aiBubble/userTurn goes through it.
+//
+// SLICED FROM wml-core.js, never stubbed. A stub would accept anything, so a walk that
+// dropped `durable` or `why` would sail through the sims and only fail the lint — and the
+// sims are what prove BEHAVIOUR (a stubbed contract is exactly how cw5/cw6 once ran with no
+// answer slot at all and passed). Slicing means the rigs exercise the shipped contract,
+// including the loud-error paths.
+//
+// Throws rather than stubs: if recordTurn is renamed or removed, the rigs must fail the
+// build, not quietly persist everything and pass.
+function attachWmlDeps(deps) {
+    const CORE = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
+
+    const rtIdx = CORE.indexOf('function recordTurn(history, entry, opts)');
+    if (rtIdx < 0) throw new Error('recordTurn not found in wml-core.js — the turn-durability contract would pass vacuously');
+    const rtEnd = braceSliceFrom(CORE, rtIdx, '{', '}').end;
+
+    const rhIdx = CORE.indexOf('function rehydrateTurn(history, entry)');
+    if (rhIdx < 0) throw new Error('rehydrateTurn not found in wml-core.js — replay restore would pass vacuously');
+    const rhEnd = braceSliceFrom(CORE, rhIdx, '{', '}').end;
+
+    const psIdx = CORE.indexOf('const PRESENT_STATE_RE =');
+    if (psIdx < 0) throw new Error('PRESENT_STATE_RE not found in wml-core.js');
+    const psEnd = CORE.indexOf('\n', psIdx);
+
+    // eslint-disable-next-line no-new-func
+    const mk = new Function('console', [
+        'const _turnWarned = Object.create(null);',
+        CORE.slice(psIdx, psEnd),
+        CORE.slice(rtIdx, rtEnd),
+        CORE.slice(rhIdx, rhEnd),
+        'return { recordTurn: recordTurn, rehydrateTurn: rehydrateTurn };',
+    ].join('\n'));
+
+    const real = mk(deps.console || console);
+
+    // ⭐ IN A RIG, A CONTRACT VIOLATION IS FATAL — in production it is not.
+    //
+    // recordTurn deliberately PERSISTS-AND-SCREAMS when `durable` is missing, because losing a
+    // student's real turn mid-lesson is worse than a fossil. That is right for a live lesson and
+    // useless as a test: a console.error nobody reads is a silent pass, which is precisely the
+    // "negative-only tests pass on a dead screen" failure this codebase has already paid for.
+    //
+    // So the rigs throw. Every sim of every walk is now automatically a durable-contract test,
+    // with no per-rig assertion to remember and no way to opt out — the same design as the
+    // liveness check inside say()/tap().
+    const guarded = function (history, entry, opts) {
+        const o = opts || {};
+        if (typeof o.durable !== 'boolean') {
+            throw new Error('recordTurn called without an explicit `durable` (role=' + ((entry && entry.role) || '?')
+                + '). Every turn must declare whether it survives a reload — there is no default. '
+                + 'Test: "if this fact changes tomorrow, should this sentence still be on the screen?"');
+        }
+        if (typeof o.why !== 'string' || !o.why) {
+            throw new Error('recordTurn called without `why` (role=' + ((entry && entry.role) || '?')
+                + '). The reason string is the review artefact for the whole set.');
+        }
+        return real.recordTurn(history, entry, opts);
+    };
+
+    deps.WML = Object.assign({}, deps.WML || {}, real, { recordTurn: guarded });
+    return deps.WML;
+}
+
 // v7.20.340 — the REAL module-scope answer slot + last-assistant probe, lifted for ANY rig.
 // cw4-sim grew its own private copy of the _walkSlot lift; cw5-sim and cw6-sim had none at all,
 // which is why CW5/CW6 could ship with ZERO slot references while the .327 comment claimed all
 // seven walks were covered. One lifter, shared, so a rig cannot exercise a stand-in.
 // Throws rather than stubs — a missing primitive must fail the build, not pass vacuously.
 function attachSlotDeps(deps) {
+    // v7.20.352: every walk's aiBubble/userTurn now goes through WML.recordTurn, so the shim
+    // must exist before a controller is built. Attached here rather than left to each rig,
+    // because "remember to call it in all six rigs" is the same class of failure this whole
+    // session is about.
+    attachWmlDeps(deps);
+
     const slotIdx = SRC.indexOf('const _walkSlot = (function () {');
     if (slotIdx < 0) throw new Error('_walkSlot not found in wml-assessment.js — the answer-slot gate would pass vacuously');
     // eslint-disable-next-line no-new-func
@@ -493,7 +564,7 @@ function makeWorld(ctl, opts) {
 }
 
 module.exports = {
-    attachLiveChipsDeps, attachSlotDeps,
+    attachLiveChipsDeps, attachSlotDeps, attachWmlDeps,
     SRC, ROOT, braceSliceFrom, sliceController, makeWorld, settle, HELP_RE,
     attachSelfAssessDeps, TICK_LIST_RE, NEUTRAL_RE, SA_ADD_RE,
 };

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.351';
+var WML_BUILD = '7.20.352';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3281,6 +3281,122 @@ window.WML = (function() {
         });
     }
 
+    // ══════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ recordTurn — THE SINGLE WRITER INTO CHAT HISTORY (v7.20.352)
+    //
+    // The twin of LIVE VALUES above, and the half that closes the bug class.
+    // LIVE VALUES fixed the VALUE fossil (a durable turn carrying a mutable value).
+    // This fixes the TURN fossil (a whole turn that is only true while some condition
+    // holds) — the .284 prereq gate, the .324 greeting, the .345 resume re-serve, the
+    // .350 anchor chips, and the empty-response redirect found by the .351 audit.
+    //
+    // WHY A FUNNEL AND NOT A DETECTOR. A value fossil has a traceable ORIGIN (a live
+    // resolver), so a lint can follow the taint — that is how fossil-lint works. A turn
+    // fossil has no such marker: its defect is SEMANTIC ("this sentence is only true
+    // while the response is empty"). You cannot grep for that, and a lint that guesses
+    // would drown the build in false positives and get switched off. So the fix is
+    // STRUCTURAL, not detective.
+    //
+    // THE ACTUAL ROOT. `history.push(…)` was the thing that came to hand, and it
+    // silently means "persist for ever". Persisting was THE DEFAULT YOU GOT BY NOT
+    // THINKING — and every fossil we have ever shipped is somebody not thinking about
+    // it, including several models who had read the rule. A rule in prose cannot beat a
+    // default in code.
+    //
+    // So: there is exactly ONE way to write a turn, and it will not let you skip the
+    // question. `durable` has NO default. Omitting it fails the build (fossil-lint
+    // Check C), and every call must also say WHY in one short phrase — that string is
+    // the review artefact, greppable for ever after.
+    //
+    // THE TEST, and it decides every case correctly:
+    //     "If this fact changes tomorrow, should this sentence still be on the screen?"
+    //         no  → durable: false   (derived — re-draw it on entry, never store it)
+    //         yes → durable: true    (a real turn — it happened, it stays)
+    //   "You chose Rags to Riches"                  → no.  Not durable.
+    //   "Head back and draft your response"         → no.  Not durable.
+    //   "I've received your essay (873 words)"      → YES. A report of what happened.
+    //   the student's own message                   → YES. They said it.
+    //
+    // durable:false is NOT a loss — WML CLAUDE.md §4c.7 already requires derived turns to
+    // re-derive on entry, and §4d requires the screen to stay live either way. Nothing
+    // disappears; it simply stops being frozen.
+    //
+    // WHAT THIS STILL CANNOT DO, stated plainly rather than left to be discovered: the
+    // funnel forces the QUESTION, it cannot verify the ANSWER. Someone can still pass
+    // durable:true wrongly. Three things blunt that, none of which rely on memory:
+    //   1. fossil-lint's taint trace catches the VALUE subclass whatever the flag says;
+    //   2. the present-state warn below fires at the moment of writing, with `why` in hand;
+    //   3. the `why` strings make the whole set reviewable in one grep.
+    const _turnWarned = Object.create(null);
+    // Second-person PRESENT-STATE assertions — the linguistic signature of a turn fossil.
+    // Advisory only: some are legitimately durable ("you chose" inside a past-tense recap
+    // of a decision the student cannot revisit), which is exactly why this warns and never
+    // blocks. A blocking rule here would be wrong often enough to get disabled.
+    const PRESENT_STATE_RE = /\byou\s+(?:haven[’']?t|have\s+not|hasn[’']?t|still\s+(?:need|have)|are\s+(?:currently|now|still))\b|\bgo\s+back\s+to\s+Step\b|\bnot\s+yet\s+(?:written|completed|done|chosen)\b/i;
+
+    /**
+     * The ONLY way to write a turn into a chat history array.
+     *
+     * @param {Array}  history  the history array (canvasChatHistory / chatHistory / …)
+     * @param {Object} entry    the turn: { role, content, ...extras (hidden, beat, preChain) }
+     * @param {Object} opts     { durable: boolean (REQUIRED), why: string (REQUIRED) }
+     * @returns {Object|null}   the entry when stored, null when deliberately not stored
+     */
+    function recordTurn(history, entry, opts) {
+        const o = opts || {};
+        const label = (entry && entry.role) || 'turn';
+
+        // Contract violation. Unreachable if the gate ran — so if we are here, the gate was
+        // bypassed. PERSIST and scream: losing a student's real turn is worse than a fossil,
+        // so the failure mode is the recoverable one.
+        if (typeof o.durable !== 'boolean') {
+            console.error('WML recordTurn: `durable` is REQUIRED and must be a boolean (' + label + '). '
+                + 'Persisting to avoid data loss, but this is a defect — decide it explicitly: '
+                + '"if this fact changes tomorrow, should this sentence still be on the screen?"');
+            if (Array.isArray(history) && entry) history.push(entry);
+            return entry || null;
+        }
+        if (typeof o.why !== 'string' || !o.why) {
+            console.error('WML recordTurn: `why` is REQUIRED (' + label + ') — one short phrase saying '
+                + 'why this turn is' + (o.durable ? '' : ' NOT') + ' durable. It is the review artefact.');
+        }
+
+        if (!o.durable) return null;   // drawn elsewhere; deliberately not stored (§4c.7)
+
+        if (Array.isArray(history) && entry) {
+            const c = typeof entry.content === 'string' ? entry.content : '';
+            if (entry.role === 'assistant' && c && PRESENT_STATE_RE.test(c)) {
+                const key = c.slice(0, 60);
+                if (!_turnWarned[key]) {
+                    _turnWarned[key] = 1;
+                    console.warn('WML recordTurn: a DURABLE assistant turn asserts present state — '
+                        + 'check it is not a fossil.\n  why: ' + (o.why || '(none given)')
+                        + '\n  text: ' + c.slice(0, 140).replace(/\n/g, ' ')
+                        + '\n  Test: if this fact changes tomorrow, should this sentence still be on screen?');
+                }
+            }
+            history.push(entry);
+        }
+        return entry || null;
+    }
+
+    /**
+     * REHYDRATE — put an ALREADY-STORED turn back into the in-memory array on replay.
+     *
+     * This is NOT a persistence decision and must never be confused with one: the turn was
+     * already judged when it was first written, and re-asking `durable` here would be
+     * meaningless (the answer is "it is already stored"). It exists as its own named
+     * function so that the gate can allow it while still banning raw `.push`, and so that
+     * a reader can tell restoring from recording at a glance.
+     *
+     * If you find yourself wanting to DECIDE something here, you are in the wrong function —
+     * the decision belongs at the site that first wrote the turn.
+     */
+    function rehydrateTurn(history, entry) {
+        if (Array.isArray(history) && entry) history.push(entry);
+        return entry || null;
+    }
+
     function formatAI(text) {
         // ⭐ v7.20.351: resolve LIVE VALUES first, before any transform, so a resolved
         // value sits inside the surrounding markdown (**[SWML_LIVE:…]** → **Tragedy**)
@@ -4110,6 +4226,7 @@ window.WML = (function() {
         // Text processing
         stripAIInternals, detectAssessmentStep, formatAI, svgifyStatusGlyphs, countWords,
         registerLiveValue, resolveLiveValues,   // v7.20.351 — the fossil cure (see formatAI)
+        recordTurn, rehydrateTurn,              // v7.20.352 — the ONLY writers into chat history
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
         parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG,
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)

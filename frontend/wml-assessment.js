@@ -14527,7 +14527,7 @@
                         const infoNote = _assessGreetingInfoNote();
                         const gtHTML = `${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${tn}</strong> ${(state.mode === 'exam_prep') ? workNoun : (state.phase === 'redraft') ? `redraft ${workNoun}` : `diagnostic ${workNoun}`} (<strong>${wc} words</strong>). Let's review your writing together.</p></div>${_capN ? _capN.html : ''}${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
                         addChatMessage(gtHTML, 'ai', gt);
-                        canvasChatHistory.push({ role: 'assistant', content: gt });
+                        WML.recordTurn(canvasChatHistory, { role: 'assistant', content: gt }, { durable: true, why: 'a real opening turn; its mutable value is a [SWML_LIVE:] token, not a snapshot' });
                         saveCanvasChat(canvasChatHistory, canvasChatId);
                         const gradeBarCC = el('div', { className: 'swml-quick-actions' });
                         ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => {
@@ -14955,7 +14955,7 @@
             // for the AI's context, which auto-detection would ALSO turn into buttons
             // (duplicate truncated set observed live). Our own goalBar renders them.
             addChatMessage(html, 'ai', plain, { suppressActions: true });
-            canvasChatHistory.push({ role: 'assistant', content: plain, beat: _suBeat });
+            WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain, beat: _suBeat }, { durable: true, why: 'a real turn Sophia took' });
             saveCanvasChat(canvasChatHistory, canvasChatId);
             if (stage === 'headline') {
                 const goalBar = el('div', { className: 'swml-quick-actions' });
@@ -14991,7 +14991,7 @@
             const _beat = _planChainBeat(stage);
             if (_beat && typeof WML !== 'undefined' && WML.progressChipHTML) html = WML.progressChipHTML(_beat) + html;
             addChatMessage(html, 'ai', plain, { suppressActions: true });
-            canvasChatHistory.push({ role: 'assistant', content: plain, beat: _beat });
+            WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain, beat: _beat }, { durable: true, why: 'a real turn Sophia took' });
             saveCanvasChat(canvasChatHistory, canvasChatId);
             const bubble = chatMessages.lastElementChild;
             const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
@@ -15343,7 +15343,7 @@
                 const _pcSilent = canvasSilentSend;
                 canvasSilentSend = false;
                 if (!_pcSilent) addChatMessage(msg, 'user');
-                canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _pcSilent });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: msg, preChain: true, hidden: _pcSilent }, { durable: true, why: 'the student sent it — it happened, it stays' });
                 chatTextarea.value = '';
                 chatTextarea.style.height = '40px';
                 _renderPreChainQuestion(_pcStage);
@@ -15382,7 +15382,7 @@
                     const _pSilent = canvasSilentSend;
                     canvasSilentSend = false;
                     if (!_pSilent) addChatMessage(msg, 'user');
-                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _pSilent });
+                    WML.recordTurn(canvasChatHistory, { role: 'user', content: msg, preChain: true, hidden: _pSilent }, { durable: true, why: 'the student sent it — it happened, it stays' });
                     chatTextarea.value = '';
                     chatTextarea.style.height = '40px';
                     _renderPoetryPlanQuestion(_ppStage, {
@@ -15407,7 +15407,7 @@
                     const _ppcSilent = canvasSilentSend;
                     canvasSilentSend = false;
                     if (!_ppcSilent) addChatMessage(msg, 'user');
-                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _ppcSilent });
+                    WML.recordTurn(canvasChatHistory, { role: 'user', content: msg, preChain: true, hidden: _ppcSilent }, { durable: true, why: 'the student sent it — it happened, it stays' });
                     if (_ppcStage !== 'greeting') _planChainFilePrediction(canvasChatHistory, msg);
                     chatTextarea.value = '';
                     chatTextarea.style.height = '40px';
@@ -15426,7 +15426,7 @@
                     const _tdSilent = canvasSilentSend;
                     canvasSilentSend = false;
                     if (!_tdSilent) addChatMessage(msg, 'user');
-                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _tdSilent });
+                    WML.recordTurn(canvasChatHistory, { role: 'user', content: msg, preChain: true, hidden: _tdSilent }, { durable: true, why: 'the student sent it — it happened, it stays' });
                     chatTextarea.value = '';
                     chatTextarea.style.height = '40px';
                     _renderPlanChainQuestion('tidy');
@@ -15494,7 +15494,7 @@
             // must stay in history for the AI's context but NEVER render — tag it hidden so the
             // resume loop (L11572) skips it. Without this the verbose "@REFLECT_GATE" directive
             // re-appeared as a user bubble on reload (Neil flagged it as leaked "code").
-            canvasChatHistory.push({ role: 'user', content: msg, hidden: isSilent });
+            WML.recordTurn(canvasChatHistory, { role: 'user', content: msg, hidden: isSilent }, { durable: true, why: 'the student sent it — it happened, it stays' });
             chatTextarea.value = '';
             chatTextarea.style.height = '40px';
             chatSendBtn.style.opacity = '0.4';
@@ -15770,7 +15770,7 @@
                         _seqPlay = '';
                     }
                     if (_seqPlay) {
-                        canvasChatHistory.push({ role: 'assistant', content: res.reply, hidden: true });
+                        WML.recordTurn(canvasChatHistory, { role: 'assistant', content: res.reply, hidden: true }, { durable: true, why: 'the model actually said it' });
                         _playSequence(_seqPlay, {
                             addChatMessage: addChatMessage, chatMessages: chatMessages,
                             history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
@@ -15780,7 +15780,7 @@
                     } else {
                         // v7.20.252 (Fable F4): a marker-only reply strips to empty — never a blank bubble.
                         if (cleanReply && cleanReply.trim()) addChatMessage(formatted, 'ai', cleanReply);
-                        canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
+                        WML.recordTurn(canvasChatHistory, _walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply }, { durable: true, why: 'the model actually said it' });
                         if (_poetryPlanActive()) _poetryPostReplyCodeTurn(res.reply, {
                             addChatMessage: addChatMessage, chatMessages: chatMessages,
                             history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
@@ -16053,10 +16053,10 @@
                                     rowBar.remove();
                                     const _uMsg = 'Nothing to revisit — let’s finish.';
                                     addChatMessage(_uMsg, 'user');
-                                    canvasChatHistory.push({ role: 'user', content: _uMsg });
+                                    WML.recordTurn(canvasChatHistory, { role: 'user', content: _uMsg }, { durable: true, why: 'the student sent it — it happened, it stays' });
                                     const _done = 'Perfect — that wraps your assessment. When you’re ready, click <strong>Mark Complete</strong> to save it.';
                                     addChatMessage(_done, 'ai', _done, { suppressActions: true });
-                                    canvasChatHistory.push({ role: 'assistant', content: _done });
+                                    WML.recordTurn(canvasChatHistory, { role: 'assistant', content: _done }, { durable: true, why: 'a real turn that closed the session' });
                                     try { saveCanvasChat(canvasChatHistory, canvasChatId); } catch (_) {}
                                 }
                             }));
@@ -16283,7 +16283,7 @@
                                     if (_stateOk && !_replyHasClose && !_alreadyClosed) {
                                         const _closeMsg = "That wraps your assessment — well done for working through every section and reflecting on your predicted marks along the way. Your full feedback and grade are saved in the document above; take a moment to review them when you're ready.";
                                         addChatMessage(_closeMsg, 'ai', _closeMsg);
-                                        canvasChatHistory.push({ role: 'assistant', content: _closeMsg });
+                                        WML.recordTurn(canvasChatHistory, { role: 'assistant', content: _closeMsg }, { durable: true, why: 'a real turn that closed the session' });
                                         saveCanvasChat(canvasChatHistory, canvasChatId);
                                         console.log('WML: appended deterministic closing message (model dropped the closing line)');
                                     }
@@ -16610,7 +16610,7 @@
                 // v7.20.87: transient notices (load failures) are DISPLAY-ONLY — a saved
                 // error replays forever and reads as a broken lesson (Neil's MSA strand).
                 if (opts && opts.ephemeral) return;
-                canvasChatHistory.push({ role: 'assistant', content: plain });
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
             function appendQuickBar(label, onClick) {
@@ -17026,7 +17026,7 @@
             async function handleTurn(msg) {
                 if (busy) { return; }
                 addChatMessage(msg, 'user');
-                canvasChatHistory.push({ role: 'user', content: msg });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: msg }, { durable: true, why: 'the student sent it — it happened, it stays' });
                 chatTextarea.value = '';
                 chatTextarea.style.height = '40px';
                 chatSendBtn.style.opacity = '0.4';
@@ -17439,7 +17439,7 @@
                     if (res && res.success && res.reply) {
                         const clean = stripAIInternals(res.reply);
                         addChatMessage(formatAI(clean), 'ai', clean);
-                        canvasChatHistory.push({ role: 'assistant', content: res.reply });
+                        WML.recordTurn(canvasChatHistory, { role: 'assistant', content: res.reply }, { durable: true, why: 'the model actually said it' });
                         if (res.chatId) canvasChatId = res.chatId;
                         saveCanvasChat(canvasChatHistory, canvasChatId);
                     } else {
@@ -17660,7 +17660,7 @@
             function aiBubble(plain, opts) {
                 addChatMessage(formatAI(plain), 'ai', plain, opts);
                 if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
-                canvasChatHistory.push({ role: 'assistant', content: plain });
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
 
@@ -17682,7 +17682,7 @@
                 if (busy) return;
                 const clean = (msg || '').trim();
                 addChatMessage(clean, 'user');
-                canvasChatHistory.push({ role: 'user', content: clean });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: clean }, { durable: true, why: 'the student sent it — it happened, it stays' });
                 chatTextarea.value = '';
                 chatTextarea.style.height = '40px';
                 if (!clean) { resetSend(); return; }
@@ -17750,7 +17750,7 @@
                         + 'I’ll pick up from here.');
                     return;
                 }
-                canvasChatHistory.push({ role: 'user', content: buildSynthContext(), hidden: true });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: buildSynthContext(), hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 canvasSilentSend = true;
                 chatTextarea.value = 'I’ve answered all twelve — please pull them together into my Writer’s Profile and three seed story ideas.';
                 sendCanvasMessage();
@@ -18286,7 +18286,7 @@
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
-                canvasChatHistory.push({ role: 'assistant', content: plain });
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
 
@@ -18503,7 +18503,7 @@
                 resetSend();
             }
             function onIdeaReviewPick(pick) {
-                canvasChatHistory.push({ role: 'user', content: pick });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: pick }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
                 addChatMessage(pick, 'user');
                 if (pick.indexOf('Move on') === 0) { weakFids = []; active = false; persist(); wrapUp(); return; }
                 const hit = weakFids.filter(function (f) { return pick.indexOf(IDEA_LABEL(f)) !== -1; })[0];
@@ -18726,7 +18726,7 @@
             // The student typed an idea. v7.20.334: filed VERBATIM here with no API call — the
             // judgment is batched to the end of the set (fireIdeasReview).
             function userTurn(text) {
-                canvasChatHistory.push({ role: 'user', content: text });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
                 addChatMessage(text, 'user');
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
@@ -19056,7 +19056,7 @@
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
-                canvasChatHistory.push({ role: 'assistant', content: plain });
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
             function rowText(fid) {
@@ -19216,7 +19216,7 @@
             let weakFids = [], revisingFid = '';
 
             function userTurn(text) {
-                canvasChatHistory.push({ role: 'user', content: text });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
                 addChatMessage(text, 'user');
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
@@ -19795,7 +19795,7 @@
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
-                canvasChatHistory.push({ role: 'assistant', content: plain });
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
             function rowText(fid) {
@@ -19875,7 +19875,7 @@
             let mainNeed = '';
             function onBeatChipPick(b) {
                 return function (pick) {
-                    canvasChatHistory.push({ role: 'user', content: pick });
+                    WML.recordTurn(canvasChatHistory, { role: 'user', content: pick }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
                     addChatMessage(pick, 'user');
                     if (b.fid === 'cw-step-4-beat1') {
                         mainNeed = pick;
@@ -19896,7 +19896,7 @@
             }
             function onSecondaryNeedsDone(picks) {
                 const msg = picks.length ? 'Also: ' + picks.join(', ') : 'Just the one — that’s the main need.';
-                canvasChatHistory.push({ role: 'user', content: msg });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: msg }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
                 addChatMessage(msg, 'user');
                 // v7.20.323: file the unmet needs in the DOCUMENT — same defect as the throughline
                 // (v7.20.322), found by auditing every chip menu for the same shape. Main + any
@@ -20110,7 +20110,7 @@
                     .map(function (x) { return { label: 'Beat ' + (BEATS.indexOf(x) + 1) + ' (“' + x.lead + '…”)', text: rowText(x.fid) }; });
             }
             function refuseDuplicate(b, dupLabel, clean) {
-                canvasChatHistory.push({ role: 'user', content: clean });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: clean }, { durable: true, why: 'the student sent it — it happened, it stays' });
                 addChatMessage(clean, 'user');
                 _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });
                 active = true; pending = false;
@@ -20134,7 +20134,7 @@
                 try {
                     if (_writeOutlineRowField(THROUGHLINE_FID, pick) && typeof saveCanvasContent === 'function') saveCanvasContent();
                 } catch (e) { console.warn('WML CW4: throughline write failed (non-fatal)', e && e.message); }
-                canvasChatHistory.push({ role: 'user', content: pick });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: pick }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
                 addChatMessage(pick, 'user');
                 fireCoherenceCheck();
             }
@@ -20156,7 +20156,7 @@
             }
             function serveWrapRecall() { chipBar(['✏️ Rewrite a beat →'], onWrapRecall); }
             function onWrapRecall(pick) {
-                canvasChatHistory.push({ role: 'user', content: pick });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: pick }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
                 addChatMessage(pick, 'user');
                 phase = 'recall'; persist();
                 aiBubble('**Which beat do you want to rewrite?**\n\nYour spine as it stands:\n\n'
@@ -20177,7 +20177,7 @@
                 chipBar(opts, onRecallPick);
             }
             function onRecallPick(pick) {
-                canvasChatHistory.push({ role: 'user', content: pick });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: pick }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
                 addChatMessage(pick, 'user');
                 if (pick.indexOf('Nothing') === 0) { active = false; phase = 'wrap'; persist(); serveWrap(); return; }
                 let n = -1;
@@ -20244,7 +20244,7 @@
                     + 'if the spine holds and you have no question, "@COHERENCE_OK". The marker is machine-read '
                     + 'and never shown — do not mention it, and do not ask the student to act on it.]'
                     + '\n\nTHROUGHLINE: ' + throughline + '\n\n' + beats;
-                canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 active = false; pending = true;
                 phase = 'coherence'; persist();
                 armWalkResume('cw4-coherence', function (reply, meta) {
@@ -20273,7 +20273,7 @@
                 resetSend();
             }
             function onCohChoice(pick) {
-                canvasChatHistory.push({ role: 'user', content: pick });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: pick }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
                 addChatMessage(pick, 'user');
                 if (pick.indexOf('Leave it') === 0) {
                     active = false; clearPersist(); serveWrap(); return;
@@ -20316,7 +20316,7 @@
                 }
                 if (phase === 'coh-fix' && cohBeat >= 0) {
                     const cb = BEATS[cohBeat];
-                    canvasChatHistory.push({ role: 'user', content: clean });
+                    WML.recordTurn(canvasChatHistory, { role: 'user', content: clean }, { durable: true, why: 'the student sent it — it happened, it stays' });
                     addChatMessage(clean, 'user');
                     try {
                         if (_writeOutlineRowField(slot.fid, clean, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
@@ -20339,7 +20339,7 @@
                 // the same row with NO verdict call — the beat already passed one, and the student is
                 // adding what their own tick list told them was missing.
                 if (phase === 'sa-add' && saBeat >= 0) {
-                    canvasChatHistory.push({ role: 'user', content: clean });
+                    WML.recordTurn(canvasChatHistory, { role: 'user', content: clean }, { durable: true, why: 'the student sent it — it happened, it stays' });
                     addChatMessage(clean, 'user');
                     try {
                         if (_writeOutlineRowField(b.fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent();
@@ -20640,11 +20640,11 @@
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
-                canvasChatHistory.push({ role: 'assistant', content: plain });
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
             function userTurn(text) {
-                canvasChatHistory.push({ role: 'user', content: text });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
                 addChatMessage(text, 'user');
             }
 
@@ -20963,7 +20963,7 @@
                     + '\n\nSTAGE ARC (entry → exit): ' + (arcAsk ? (rowText(arcAsk.fid) || '(blank)') : '(no arc row)')
                     + '\nFIRST EVENT — "' + (firstBeat ? firstBeat.label : '?') + '": ' + (firstBeat ? (rowText(firstBeat.fid) || '(blank)') : '')
                     + '\nFINAL EVENT — "' + (lastBeat ? lastBeat.label : '?') + '": ' + (lastBeat ? (rowText(lastBeat.fid) || '(blank)') : '');
-                canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 active = false; pending = true; checkStage = si; phase = 'stagecheck'; persist();
                 armWalkResume('cw6-stage-' + si, function (reply, meta) {
                     pending = false;
@@ -21041,7 +21041,7 @@
                     + '\nOPENING — "' + (openImg ? openImg.label : '?') + '": ' + (openImg ? (rowText(openImg.fid) || '(blank)') : '')
                     + '\nCLIMAX — "' + (climax ? climax.label : '?') + '": ' + (climax ? (rowText(climax.fid) || '(blank)') : '')
                     + '\nFINAL IMAGE — "' + (finalImg ? finalImg.label : '?') + '": ' + (finalImg ? (rowText(finalImg.fid) || '(blank)') : '');
-                canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 active = false; pending = true; phase = 'finish';
                 _finishFixAsk = finalImg || null;
                 persist();
@@ -21097,7 +21097,7 @@
                     + '\n\nTHEIR LOGLINE: ' + (logline || '(not recorded)')
                     + '\nTHEIR STORY SPINE:\n' + spine
                     + '\n\nTHE BEAT THEY ARE STUCK ON — "' + a.label + '": ' + (a.prompt || '');
-                canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 const wasPhase = phase;
                 active = false; pending = true;
                 armWalkResume('cw6-help-' + a.fid, function () {
@@ -21522,10 +21522,10 @@
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
-                canvasChatHistory.push({ role: 'assistant', content: plain });
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
-            function userTurn(text) { canvasChatHistory.push({ role: 'user', content: text }); addChatMessage(text, 'user'); }
+            function userTurn(text) { WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' }); addChatMessage(text, 'user'); }
 
             function rowText(fid) {
                 let out = '';
@@ -21775,7 +21775,7 @@
                     + '\nTHEIR OWN TECHNIQUE THINKING: ' + (rowText('cw-step-5-technique') || '(blank)')
                     + '\nTHEIR LOGLINE: ' + (_cwDocValue('logline', 'cw-step-3-chosen') || '(not recorded)')
                     + '\nTHEIR STORY SPINE:\n' + spine;
-                canvasChatHistory.push({ role: 'user', content: ctx, hidden: true });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 active = false; pending = true; pushed = true; phase = 'push'; persist();
                 armWalkResume('cw5-push', function (reply, meta) {
                     pending = false;
@@ -27154,7 +27154,7 @@
                 epChatTextarea.value = '';
                 epChatTextarea.style.height = 'auto';
                 epAddMessage('user', msg);
-                epChatHistory.push({ role: 'user', content: msg });
+                WML.recordTurn(epChatHistory, { role: 'user', content: msg }, { durable: true, why: 'the student sent it — it happened, it stays' });
                 epSendBtn.disabled = true;
 
                 // Typing indicator
@@ -27179,7 +27179,7 @@
                     });
                     typing.remove();
                     if (res.reply) {
-                        epChatHistory.push({ role: 'assistant', content: res.reply });
+                        WML.recordTurn(epChatHistory, { role: 'assistant', content: res.reply }, { durable: true, why: 'the model actually said it' });
                         epAddMessage('assistant', res.reply);
                         saveCanvasChat(epChatHistory, epChatId);
                     }
@@ -27206,7 +27206,7 @@
             (() => {
                 const saved = loadCanvasChat();
                 if (saved?.history?.length) {
-                    saved.history.forEach(m => { epChatHistory.push(m); epAddMessage(m.role, m.content); });
+                    saved.history.forEach(m => { WML.rehydrateTurn(epChatHistory, m); epAddMessage(m.role, m.content); });
                     if (saved.chatId) epChatId = saved.chatId;
                     console.log('WML Exam Prep: Resumed chat with', saved.history.length, 'messages');
                 } else if (!state.reviewMode) {
@@ -27967,7 +27967,7 @@
                     savedChat.history.forEach((msg, _i) => {
                         // v7.15.5: Skip rendering hidden context messages
                         if (msg.hidden) {
-                            tp.canvasChatHistory.push(msg);
+                            WML.rehydrateTurn(tp.canvasChatHistory, msg);
                             return;
                         }
                         if (msg.role === 'assistant') {
@@ -27980,7 +27980,7 @@
                         } else if (msg.role === 'user') {
                             tp.addChatMessage(msg.content, 'user');
                         }
-                        tp.canvasChatHistory.push(msg);
+                        WML.rehydrateTurn(tp.canvasChatHistory, msg);
                     });
                     if (tp.chatMessages) {
                         tp.chatMessages._suppressScroll = false;
@@ -28250,7 +28250,7 @@
                     // "go back to Step N" beyond the point the step was completed. Real
                     // greetings persist; the gate re-derives on every entry.
                     if (!(missingPrereq && stepNum > 1)) {
-                        tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
+                        WML.recordTurn(tp.canvasChatHistory, { role: 'assistant', content: greetingText }, { durable: true, why: 'a real opening turn; its mutable value is a [SWML_LIVE:] token, not a snapshot' });
                         saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
                     }
 
@@ -28371,7 +28371,7 @@
                     const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${_capN3 ? '\n\n' + _capN3.plain : ''}${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                     const infoNote = _assessGreetingInfoNote();
                     tp.addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel : (state.phase === 'redraft') ? `redraft ${_workLabel}` : `diagnostic ${_workLabel}`} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${_capN3 ? _capN3.html : ''}${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
-                    tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
+                    WML.recordTurn(tp.canvasChatHistory, { role: 'assistant', content: greetingText }, { durable: true, why: 'a real opening turn; its mutable value is a [SWML_LIVE:] token, not a snapshot' });
                     saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
 
                     setTimeout(() => {
@@ -29429,7 +29429,7 @@
                                         const _capN4 = _essayCapGreetingNote(wc); // v7.19.944: cap in the opening, before the grade goal
                                         const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${_capN4 ? '\n\n' + _capN4.plain : ''}${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
                                         addChatMessage(formatAI(gt), 'ai', gt);
-                                        canvasChatHistory.push({ role: 'assistant', content: gt });
+                                        WML.recordTurn(canvasChatHistory, { role: 'assistant', content: gt }, { durable: true, why: 'a real opening turn; its mutable value is a [SWML_LIVE:] token, not a snapshot' });
                                         saveCanvasChat(canvasChatHistory, canvasChatId);
                                         // Grade target buttons (v7.12.23)
                                         const gradeBarCC = el('div', { className: 'swml-quick-actions' });
@@ -29929,7 +29929,7 @@
                             const saved = loadCanvasChat();
                             if (saved && Array.isArray(saved.history)) {
                                 saved.history.forEach((m) => {
-                                    canvasChatHistory.push(m);
+                                    WML.rehydrateTurn(canvasChatHistory, m);
                                     const role = m.role === 'user' ? 'user' : 'ai';
                                     addChatMessage(m.content, role, m.content);
                                 });
@@ -30015,7 +30015,7 @@
                                 }
                             }
                             addChatMessage(html, 'ai', plain);
-                            canvasChatHistory.push({ role: 'assistant', content: plain });
+                            WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
                             saveCanvasChat(canvasChatHistory, canvasChatId);
                             if (stage === 'headline') {
                                 const goalBar = el('div', { className: 'swml-quick-actions' });
@@ -30049,7 +30049,7 @@
                             const _beat = _planChainBeat(stage);
                             if (_beat && typeof WML !== 'undefined' && WML.progressChipHTML) html = WML.progressChipHTML(_beat) + html;
                             addChatMessage(html, 'ai', plain, { suppressActions: true });
-                            canvasChatHistory.push({ role: 'assistant', content: plain, beat: _beat });
+                            WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain, beat: _beat }, { durable: true, why: 'a real turn Sophia took' });
                             saveCanvasChat(canvasChatHistory, canvasChatId);
                             const bubble = chatMessages.lastElementChild;
                             const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
@@ -30205,7 +30205,7 @@
                                 const _pcSilent = canvasSilentSend;
                                 canvasSilentSend = false;
                                 if (!_pcSilent) addChatMessage(msg, 'user');
-                                canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _pcSilent });
+                                WML.recordTurn(canvasChatHistory, { role: 'user', content: msg, preChain: true, hidden: _pcSilent }, { durable: true, why: 'the student sent it — it happened, it stays' });
                                 chatTextarea.value = '';
                                 chatTextarea.style.height = '40px';
                                 _renderPreChainQuestion(_pcStage);
@@ -30242,7 +30242,7 @@
                                     const _pSilent = canvasSilentSend;
                                     canvasSilentSend = false;
                                     if (!_pSilent) addChatMessage(msg, 'user');
-                                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _pSilent });
+                                    WML.recordTurn(canvasChatHistory, { role: 'user', content: msg, preChain: true, hidden: _pSilent }, { durable: true, why: 'the student sent it — it happened, it stays' });
                                     chatTextarea.value = '';
                                     chatTextarea.style.height = '40px';
                                     _renderPoetryPlanQuestion(_ppStage, {
@@ -30267,7 +30267,7 @@
                                     const _ppcSilent = canvasSilentSend;
                                     canvasSilentSend = false;
                                     if (!_ppcSilent) addChatMessage(msg, 'user');
-                                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _ppcSilent });
+                                    WML.recordTurn(canvasChatHistory, { role: 'user', content: msg, preChain: true, hidden: _ppcSilent }, { durable: true, why: 'the student sent it — it happened, it stays' });
                                     if (_ppcStage !== 'greeting') _planChainFilePrediction(canvasChatHistory, msg);
                                     chatTextarea.value = '';
                                     chatTextarea.style.height = '40px';
@@ -30284,7 +30284,7 @@
                                     const _tdSilent2 = canvasSilentSend;
                                     canvasSilentSend = false;
                                     if (!_tdSilent2) addChatMessage(msg, 'user');
-                                    canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _tdSilent2 });
+                                    WML.recordTurn(canvasChatHistory, { role: 'user', content: msg, preChain: true, hidden: _tdSilent2 }, { durable: true, why: 'the student sent it — it happened, it stays' });
                                     chatTextarea.value = '';
                                     chatTextarea.style.height = '40px';
                                     _renderPlanChainQuestion('tidy');
@@ -30317,7 +30317,7 @@
                             // v7.19.760: tag silent sends hidden so the resume loop skips them
                             // (kept in history for AI context) — stops the verbose advance directive
                             // re-rendering as a user bubble on reload. Mirrors the primary pipeline.
-                            canvasChatHistory.push({ role: 'user', content: msg, hidden: isSilent });
+                            WML.recordTurn(canvasChatHistory, { role: 'user', content: msg, hidden: isSilent }, { durable: true, why: 'the student sent it — it happened, it stays' });
                             chatTextarea.value = '';
                             chatTextarea.style.height = '40px';
                             chatSendBtn.style.opacity = '0.4';
@@ -30506,7 +30506,7 @@
                                         _seqPlay = '';
                                     }
                                     if (_seqPlay) {
-                                        canvasChatHistory.push({ role: 'assistant', content: res.reply, hidden: true });
+                                        WML.recordTurn(canvasChatHistory, { role: 'assistant', content: res.reply, hidden: true }, { durable: true, why: 'the model actually said it' });
                                         _playSequence(_seqPlay, {
                                             addChatMessage: addChatMessage, chatMessages: chatMessages,
                                             history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
@@ -30516,7 +30516,7 @@
                                     } else {
                                         // v7.20.252 (Fable F4): marker-only reply strips to empty — never a blank bubble.
                                         if (cleanReply && cleanReply.trim()) addChatMessage(formatted, 'ai', cleanReply);
-                                        canvasChatHistory.push(_walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply });
+                                        WML.recordTurn(canvasChatHistory, _walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply }, { durable: true, why: 'the model actually said it' });
                                         if (_poetryPlanActive()) _poetryPostReplyCodeTurn(res.reply, {
                                             addChatMessage: addChatMessage, chatMessages: chatMessages,
                                             history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
@@ -30904,7 +30904,7 @@
                                             savedChat.history.forEach((msg, _i) => {
                                                 // v7.15.5: Skip rendering hidden context messages (still kept in history for AI)
                                                 if (msg.hidden) {
-                                                    canvasChatHistory.push(msg);
+                                                    WML.rehydrateTurn(canvasChatHistory, msg);
                                                     return;
                                                 }
                                                 if (msg.role === 'assistant') {
@@ -30917,7 +30917,7 @@
                                                 } else if (msg.role === 'user') {
                                                     addChatMessage(msg.content, 'user');
                                                 }
-                                                canvasChatHistory.push(msg);
+                                                WML.rehydrateTurn(canvasChatHistory, msg);
                                             });
                                             if (savedChat.chatId) canvasChatId = savedChat.chatId;
 
@@ -31016,7 +31016,7 @@
                                                 setTimeout(() => {
                                                     const greetHTML = `<p><strong>Choose your ${taskLabel} mode:</strong></p>`;
                                                     addChatMessage(formatAI(greetHTML), 'ai', greetHTML);
-                                                    canvasChatHistory.push({ role: 'assistant', content: greetHTML });
+                                                    WML.recordTurn(canvasChatHistory, { role: 'assistant', content: greetHTML }, { durable: true, why: 'a real turn Sophia took' });
                                                     // Render mode cards as quick actions
                                                     const bar = el('div', { className: 'swml-quick-actions swml-mode-select' });
                                                     modes.forEach(mode => {
@@ -31151,7 +31151,7 @@
                                             // v7.20.284: gate greetings are EPHEMERAL — see the
                                             // twin greet block in the main pipeline.
                                             if (!(missingPrereq && stepNum > 1)) {
-                                                canvasChatHistory.push({ role: 'assistant', content: greetingText });
+                                                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: greetingText }, { durable: true, why: 'a real opening turn; its mutable value is a [SWML_LIVE:] token, not a snapshot' });
                                                 saveCanvasChat(canvasChatHistory, canvasChatId);
                                             }
 
@@ -31198,7 +31198,7 @@
                                             const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${_capN5 ? '\n\n' + _capN5.plain : ''}${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                                             const infoNote = _assessGreetingInfoNote();
                                             addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel4 : (state.phase === 'redraft') ? `redraft ${_workLabel4}` : `diagnostic ${_workLabel4}`} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${_capN5 ? _capN5.html : ''}${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
-                                            canvasChatHistory.push({ role: 'assistant', content: greetingText });
+                                            WML.recordTurn(canvasChatHistory, { role: 'assistant', content: greetingText }, { durable: true, why: 'a real opening turn; its mutable value is a [SWML_LIVE:] token, not a snapshot' });
                                             saveCanvasChat(canvasChatHistory, canvasChatId);
 
                                             // Grade target buttons — append after DOM settles (v7.12.35)
@@ -52828,7 +52828,7 @@ ${html}
             chatTextarea.value = '';
             chatTextarea.style.height = 'auto';
             addMsg('user', msg);
-            chatHistory.push({ role: 'user', content: msg });
+            WML.recordTurn(chatHistory, { role: 'user', content: msg }, { durable: true, why: 'the student sent it — it happened, it stays' });
             sendBtn.disabled = true;
             sendBtn.style.opacity = '0.5';
 
@@ -52867,7 +52867,7 @@ ${html}
                 typing.remove();
 
                 if (data.reply) {
-                    chatHistory.push({ role: 'assistant', content: data.reply });
+                    WML.recordTurn(chatHistory, { role: 'assistant', content: data.reply }, { durable: true, why: 'the model actually said it' });
                     addMsg('assistant', data.reply);
                     saveCanvasChat(chatHistory, chatId);
                     // Step progression
@@ -53101,7 +53101,7 @@ ${html}
         if (savedChat?.history?.length) {
             // v7.14.61: Suppress per-message scroll during restore
             chatMessages._suppressScroll = true;
-            savedChat.history.forEach(m => { chatHistory.push(m); addMsg(m.role, m.content); });
+            savedChat.history.forEach(m => { WML.rehydrateTurn(chatHistory, m); addMsg(m.role, m.content); });
             chatMessages._suppressScroll = false;
             chatMessages.scrollTop = chatMessages.scrollHeight;
             if (savedChat.chatId) chatId = savedChat.chatId;

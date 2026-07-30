@@ -86,10 +86,47 @@
       judge against the STATED criteria only and keep the push on the CURRENT component; and
       on a `rewrite` ask, the push MUST demand the COMPLETE artefact rewritten — asking to
       "rewrite the middle section" banks a fragment, which is the .283 bug in reverse.
-   7. **⭐ GATES ARE EPHEMERAL (the v7.20.284 fossil-gate bug).** A prerequisite / "go back
-      to Step N" message is DERIVED state — render it DOM-only, NEVER persist it into chat
-      history, or it replays forever after the prerequisite is satisfied. Persist real
-      teaching turns only; anything derived re-derives on every entry.
+   7. **⭐⭐ THE FOSSIL LAW — now MECHANICAL, v7.20.351/.352. Do not re-derive it from prose.**
+      **THE ROOT.** `canvasChatHistory` does two jobs with opposite requirements: it is a
+      TRANSCRIPT (immutable record, fed to the API) and it is the SCREEN (replayed VERBATIM
+      on re-entry). So a persisted turn asserting a CURRENT FACT becomes a lie the moment
+      that fact changes. This rule lived in prose from .284 to .350 and was re-broken five
+      times by models that had read it — because `history.push()` meant "persist for ever"
+      and persisting was **the default you got by not thinking**. A rule in prose cannot
+      beat a default in code, so the default is gone.
+      **TWO SUB-CLASSES — the second went unnamed for months and is the one that bit:**
+      - **TURN fossil** — a whole turn true only under a condition (prereq gate .284,
+        greeting .324, resume re-serve .345, anchor chips .350, and the empty-response
+        redirect the .351 audit found still live).
+      - **VALUE fossil** — a turn that SHOULD persist but bakes a MUTABLE value into its
+        text. Proof: the Step 6 greeting stored 2026-07-25 read "You chose **Rags to
+        Riches**" while the artifact said `tragedy` and the document had rebuilt correctly.
+      **THE DISCRIMINATOR IS TENSE, NOT INTERPOLATION.** "I've received your essay (873
+      words)" is a PAST-EVENT report — correct to freeze. "You chose X" is a PRESENT-STATE
+      assertion — must stay live. A naive "no interpolation in stored turns" rule fires on
+      ~10 sites, 4 of them correct, and gets switched off.
+      **HOW YOU WRITE A TURN NOW — there is exactly one way, and it will not let you skip
+      the question:**
+      ```js
+      WML.recordTurn(history, { role, content }, { durable: true|false, why: '…' })
+      WML.rehydrateTurn(history, entry)   // replay only — restoring, not deciding
+      ```
+      `durable` has NO default; omitting it fails the build. `why` is mandatory and is the
+      review artefact. **THE TEST, which decides every case:** *"if this fact changes
+      tomorrow, should this sentence still be on the screen?"* — no → `durable:false`
+      (draw it, never store it; it re-derives on entry, and §4d liveness still applies).
+      For a durable turn that must NAME something mutable, store a token and register a
+      **sync** resolver with a mandatory fallback:
+      `'You chose **[SWML_LIVE:cw.plotStructure]**'` + `WML.registerLiveValue(name, get, fallback)`.
+      **ENFORCED, so you do not have to remember any of the above:** `bin/fossil-lint.js`
+      (in `pre-ship-check.sh`) fails on a raw `.push` into chat history, on a missing
+      `durable`/`why`, and on a mutable value traced into a durable turn; `walk-sim-lib`'s
+      shim THROWS on a contract breach, so every walk sim is automatically a durability
+      test with no opt-out. Every check was proven by injecting the real defect — the first
+      two cuts of the lint PASSED it, and the `why` prose itself once blinded the value
+      check. **A stored fossil does not heal itself:** stopping new ones is only half, so
+      `_healFossilTurns` rewrites already-stored ones on load. If you fix a fossil-shaped
+      bug, ask what is ALREADY in the database.
    8. **PICKS: single-tap for one-of-N; MULTI-SELECT (toggle + Continue) when the honest
       answer is "several"** — a main pick may stage into an optional "any others?" multi
       (the CW4 unmet-needs pattern, v7.20.285). A pick is a transcript-visible user turn,

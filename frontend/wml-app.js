@@ -4656,7 +4656,7 @@
         }
 
         // Only add to history for live messages, not replays
-        if (!silent) state.chatHistory.push({ role: from === 'user' ? 'user' : 'assistant', content: text });
+        if (!silent) WML.recordTurn(state.chatHistory, { role: from === 'user' ? 'user' : 'assistant', content: text }, { durable: true, why: 'a real turn Sophia took' });
     }
 
     /**
