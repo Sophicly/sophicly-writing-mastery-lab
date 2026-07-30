@@ -829,6 +829,104 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+// THE NUMBERING NEVER LIES — a counted heading rides the WRITE-ask only (v7.20.355, #73)
+// ───────────────────────────────────────────────────────────────────────────────────────────
+// Neil watched students write straight into the document because of this: a beat's STATION is
+// 1–3 bubbles (recall/teach → pick → write) and the heading "Beat 1 of 6" was stamped on the
+// FIRST of them, so it sat above "Which is your protagonist's MAIN unmet need?" — a question
+// that is not the beat. "Now write Beat 1" only arrived two bubbles later. The bar, meanwhile,
+// rode the write-ask alone, so the bar and the heading contradicted each other.
+//
+// THE RULE, and it is the whole fix: `N of M` is a COUNT, so it may appear only on the bubble
+// that actually asks for the counted thing. Preparation bubbles say "Beat N — <what this one
+// asks>" with no count. And every bubble in the station carries the bar, so position is stated
+// once, consistently, wherever the student happens to be looking.
+//
+// This is a naming-layer gate, not a text-review: it fails on the SHAPE, so a beat added or
+// reworded later cannot quietly reintroduce the lie.
+{
+    console.log('CW4 NUMBERING — a counted heading rides the write-ask only, and the bar rides the station');
+    const src = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-assessment.js'), 'utf8');
+
+    const beatsAt = src.indexOf('const BEATS = [');
+    ok(beatsAt !== -1, 'the CW4 BEATS array is gone — this gate has gone blind');
+    const beatsEnd = src.indexOf('const WRAP =', beatsAt);
+    ok(beatsEnd > beatsAt, 'could not find the end of the CW4 BEATS array — this gate has gone blind');
+    const beats = src.slice(beatsAt, beatsEnd);
+
+    // A counted heading: bolded, line-leading, "<Label> N of M —". Same shape the duplicate-ask
+    // guard watches for in the MODEL's replies, so the two stay in step by construction.
+    const COUNTED = /\*\*[A-Z][A-Za-z'’ ]{1,24}\s+\d+\s+of\s+\d+\s*[—–-]/;
+
+    // Pull each `key: '...'` string field out of the array. The bodies are single-quoted
+    // one-liners with escaped newlines, which is what makes this parseable at all.
+    const fields = [];
+    const FIELD_RE = /(chipQ|ask|irony)\s*:\s*\n?\s*'((?:[^'\\]|\\.)*)'/g;
+    let m;
+    while ((m = FIELD_RE.exec(beats)) !== null) fields.push({ kind: m[1], body: m[2] });
+    ok(fields.length >= 12,
+        `only ${fields.length} CW4 beat strings were parsed — expected at least 12 (6 asks + 5 chipQs + 2 ironies). `
+        + 'The gate cannot see the headings it is meant to police, which means it passes everything.');
+
+    const asks = fields.filter((f) => f.kind === 'ask');
+    const preps = fields.filter((f) => f.kind !== 'ask');
+    ok(asks.length === 6, `expected 6 CW4 write-asks, parsed ${asks.length}`);
+    ok(preps.length >= 6, `expected at least 6 CW4 preparation bubbles, parsed ${preps.length}`);
+
+    asks.forEach((f, i) => {
+        ok(COUNTED.test(f.body.slice(0, 60)),
+            `CW4 write-ask #${i + 1} does not OPEN with a counted heading ("**Beat N of 6 — …**"). `
+            + 'The write-ask is the one bubble that asks for the counted thing, so it is the one '
+            + 'bubble that must carry the count — otherwise the student never learns which beat '
+            + 'they are actually writing.');
+    });
+
+    preps.forEach((f) => {
+        ok(!COUNTED.test(f.body),
+            `a CW4 ${f.kind} bubble carries a counted heading ("${(f.body.match(COUNTED) || [''])[0].trim()}"). `
+            + 'A preparation bubble asks for something that is NOT the beat (the unmet need, the '
+            + 'Step-3 recall, the irony follow-up), so a count on it is a lie — this is exactly #73, '
+            + 'which Neil saw send students writing straight into the document. Use "Beat N — <what '
+            + 'this bubble actually asks>" with no count.');
+    });
+
+    // ── the bar rides every bubble in the station ──────────────────────────────────────────
+    // Scanned by the CW4 beat FIELD NAMES rather than by slicing the controller: the first cut
+    // of this gate sliced to `function serveThroughline`, whose DEFINITION sits above the irony
+    // serve site, so the one bubble most likely to lose its bar fell outside the window and the
+    // scan reported four sites instead of six. A name-driven scan cannot be truncated that way.
+    const stationEmits = src.split('\n')
+        .map((l) => l.trim())
+        .filter((l) => /^aiBubble\(/.test(l))
+        // Matched on ARGUMENT NAMES that are unique to this walk, never on the `+ cwProgressBar(…)`
+        // shape around them — otherwise deleting a bar turns `aiBubble(cwProgressBar(…) + b.ask)`
+        // into `aiBubble(b.ask)`, the site drops OUT of the scan, and the gate passes the very edit
+        // it exists to catch. (`body` is deliberately NOT in this list: it is a generic local name
+        // used by other walks, so matching it produced three false positives. serveChip, which uses
+        // it, is asserted explicitly below instead.)
+        .filter((l) => /\b(b\.ask|b\.chipQ|b\.irony|SEC_ASK)\b|BEATS\[0\]\.ask/.test(l));
+    ok(stationEmits.length >= 5,
+        `only ${stationEmits.length} CW4 station bubbles were found — expected at least 5 `
+        + '(secondary-needs, two ask paths, serveCurrent, irony). The bar scan has gone blind.');
+
+    // serveChip serves the beat's FIRST bubble — the one that carried the lying heading — and it
+    // emits a local `body`, so it is asserted by name rather than by argument.
+    const chipAt = src.indexOf('function serveChip()');
+    ok(chipAt !== -1, 'CW4 serveChip() is gone — the first bubble of every beat station is unpoliced');
+    const chipBody = src.slice(chipAt, src.indexOf('\n            }', chipAt));
+    ok(/aiBubble\(cwProgressBar\([^)]*\)\s*\+/.test(chipBody),
+        'CW4 serveChip() serves the first bubble of a beat station with no progress bar. That is the '
+        + 'bubble students read as "Beat N" — without a bar it is the only thing on screen telling '
+        + 'them where they are, and the heading has to carry a position it must not carry (#73).');
+    stationEmits.forEach((call) => {
+        ok(/cwProgressBar\(/.test(call),
+            `a CW4 station bubble is served with no progress bar: ${call.trim().slice(0, 90)}… `
+            + 'Every bubble in a beat\'s station must state the same position, or the bar and the '
+            + 'heading disagree again (#73).');
+    });
+}
+
 console.log(`   ${asserts.pass} assertions passed`);
 if (fail) {
     console.error(`❌ cw-keymatch-harness FAILED (${asserts.fail} assertion(s)).`);
