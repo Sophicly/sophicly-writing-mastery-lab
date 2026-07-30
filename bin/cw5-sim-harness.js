@@ -391,6 +391,12 @@ for (let n = 0; n < FAIL_OPEN_REPLIES.length; n++) {
             // just toggles a checkbox forever.
             if (w2.tapMulti(['Tragedy'])) continue;
             if (w2.tap('Rags to Riches')) continue;
+            // v7.20.347: a walk that is inactive because a CALL IS IN FLIGHT is not a finished
+            // walk. Re-check the arm before giving up — without this the loop broke in the same
+            // iteration that `onPick` armed the reflection, and only survived because no bubble
+            // followed the pick, so the pick chips stayed newest and the NEXT tap re-picked a
+            // second archetype. That accidental double-pick was carrying the whole resume sweep.
+            if (w2.armed) { w2.resolveApi('@STRUCTURE_OK'); continue; }
             if (!w2.ctl.active) break;
             w2.ctl.handleTurn('resumed');
         }
@@ -416,6 +422,7 @@ for (let n = 0; n < FAIL_OPEN_REPLIES.length; n++) {
             if (w.armed) { w.resolveApi('@STRUCTURE_OK'); continue; }
             if (w.tapMulti(['Tragedy'])) continue;
             if (w.tap('Rags to Riches')) continue;
+            if (w.armed) { w.resolveApi('@STRUCTURE_OK'); continue; }   // v7.20.347 — see §4's twin
             if (!w.ctl.active) break;
             w.ctl.handleTurn('resumed');
         }

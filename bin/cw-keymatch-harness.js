@@ -673,14 +673,17 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
             + 'indistinguishable from no bar (the .344 symptom Neil reported)');
     }
 
-    // Every call site's FIRST argument must be 1-based: `x + 1`, or a literal >= 1.
-    const callRe = /cwProgressBar\(([^,]+),/g;
+    // Every call site's FIRST argument must be 1-based: `x + 1`, a literal >= 1, or the TOTAL
+    // itself — `cwProgressBar(STEPS.length, STEPS.length)` is the last ask, which reads 100%.
+    const callRe = /cwProgressBar\(([^,]+),\s*([^)]+)\)/g;
     let m, sites = 0;
     while ((m = callRe.exec(JS))) {
-        const arg = m[1].trim();
+        const arg = m[1].trim(), total = m[2].trim();
         if (arg === 'nth') continue;                          // the definition itself
         sites++;
-        const oneBased = /\+\s*1\s*$/.test(arg) || (/^\d+$/.test(arg) && Number(arg) >= 1);
+        const oneBased = /\+\s*1\s*$/.test(arg)
+            || (/^\d+$/.test(arg) && Number(arg) >= 1)
+            || arg === total;                                 // the final ask = 100%
         ok(oneBased,
             'cwProgressBar is called with `' + arg + '` — that is a 0-based index, so the first ask '
             + 'of that walk renders 0%. Pass the ask IN HAND (index + 1).');

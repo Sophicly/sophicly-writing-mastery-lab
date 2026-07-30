@@ -21572,7 +21572,11 @@
                     half[n < 4 ? 0 : 1] = (half[n < 4 ? 0 : 1] ? half[n < 4 ? 0 : 1] + '\n\n' + line : line);
                 });
                 return [
-                    '**4 of 9 — The eight shapes**\n\nAll eight are versions of the Hero\'s Journey underneath. What changes is the KIND of transformation and, above all, how the story ENDS. Here are the first four.\n\n' + half[0],
+                    // v7.20.347: this chunk STATES its own position ("4 of 9"), so it carries the
+                    // bar. A bubble that claims a position and shows no bar is the worst of both.
+                    // The second chunk does not — it is the same position, continued.
+                    cwProgressBar(PICK_I + 1, STEPS.length)
+                        + '**' + (PICK_I + 1) + ' of ' + STEPS.length + ' — The eight shapes**\n\nAll eight are versions of the Hero\'s Journey underneath. What changes is the KIND of transformation and, above all, how the story ENDS. Here are the first four.\n\n' + half[0],
                     'And the other four.\n\n' + half[1],
                 ];
             }
@@ -21580,7 +21584,11 @@
             function servePickPrompt() {
                 phase = 'pick'; persist();
                 _walkSlot.clear('cw5');   // v7.20.340: a pick is a TAP — nothing typed may file here
-                aiBubble(PICK_PROMPT);
+                // v7.20.347: the bar rides the ASK, and a PICK is an ask (Neil: "there's no progress
+                // strip on the messages in the chat"). .340/.346 wired the bar into askText(), which
+                // only covers the TYPED steps — the pick and the multi-select were serving their own
+                // bubbles and never got one. Derived from PICK_I, never the "4 of 9" string.
+                aiBubble(cwProgressBar(PICK_I + 1, STEPS.length) + PICK_PROMPT);
                 chipBar(ORDER.map(function (k) { return _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[k]); }), onPick);
                 resetSend();
             }
@@ -21599,6 +21607,21 @@
                 // _setOutlineDropdown — the in-session carry is what stops Step 6 building stale).
                 _setOutlineDropdown(STEPS[PICK_I].fid, CW5_ARCHETYPE_ITEMS[key]);
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                // ⭐ v7.20.347 — SAY WHAT THE TAP JUST DID (Neil, live: "then maybe even confirm it
+                // afterwards. And then it selects it for me in the document").
+                // The tap writes a dropdown in a document he may not be looking at, so the decision
+                // that rebuilds every downstream step was committed with nothing said. Worse on a
+                // RE-pick: `pushed` is true, so it skips the reflection and there was no confirming
+                // turn AT ALL. This states the choice in his own document's words, every time.
+                //
+                // Deliberately a CONFIRMATION, not a second are-you-sure gate: the reflection push
+                // below already ends in a real Switch/Keep choice on the first pick, and two gates
+                // for one decision is friction on the step's only judgment turn (§5b — his sketch is
+                // the intent, "don't let a mis-tap commit silently"; this serves it on BOTH paths).
+                aiBubble('Chosen — your document now reads **' + _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[key]) + '**'
+                    + (pushed
+                        ? '. That is your spine, and Step 6 will build this structure.'
+                        : '. Let me read it against the story you have actually planned.'));
                 if (pushed) { advance(); return; }
                 firePush(key);
             }
@@ -21665,7 +21688,8 @@
                 const cur = pickValue();
                 phase = 'multi'; persist();
                 _walkSlot.clear('cw5');   // v7.20.340: multi-select is a TAP
-                aiBubble('**9 of 9 — Secondary elements**\n\nThe most interesting stories do not follow one shape rigidly — they BLEND. *The Hunger Games* is primarily Overcoming the Monster with strong Coming of Age (Katniss grows up fast) and The Quest (she is fighting towards a goal). *A Christmas Carol* is Rebirth/Redemption with Voyage and Return inside it (the ghost journeys).\n\n'
+                aiBubble(cwProgressBar(STEPS.length, STEPS.length)   // v7.20.347: the last ask = 100%
+                    + '**' + STEPS.length + ' of ' + STEPS.length + ' — Secondary elements**\n\nThe most interesting stories do not follow one shape rigidly — they BLEND. *The Hunger Games* is primarily Overcoming the Monster with strong Coming of Age (Katniss grows up fast) and The Quest (she is fighting towards a goal). *A Christmas Carol* is Rebirth/Redemption with Voyage and Return inside it (the ghost journeys).\n\n'
                     + 'You have chosen **' + (_cw5ChipLabel(cur || '') || 'your primary shape') + '** as your spine. **Tap any other shapes whose elements you want woven in**, then Continue. (None at all is a perfectly good answer — just press Continue.)');
                 chipBarMulti(ORDER.filter(function (k) { return CW5_ARCHETYPE_ITEMS[k] !== cur; })
                     .map(function (k) { return _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[k]); }), onMultiDone);
