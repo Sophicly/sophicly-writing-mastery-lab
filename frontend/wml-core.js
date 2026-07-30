@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.350';
+var WML_BUILD = '7.20.351';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3176,7 +3176,116 @@ window.WML = (function() {
         return inNumberedTopic || inGuidedPhase;
     }
 
+    // ══════════════════════════════════════════════════════════════════════════════
+    // ⭐ LIVE VALUES — the cure for the FOSSIL class (v7.20.351, Neil 2026-07-30:
+    // "why are we still getting fossils… can we just get rid of it at its root?")
+    //
+    // THE ROOT. `canvasChatHistory` does two jobs with opposite requirements: it is a
+    // TRANSCRIPT (immutable record, feeds the API) and it is the SCREEN (replayed
+    // VERBATIM on every re-entry). Because replay is byte-for-byte, a turn that asserts
+    // a CURRENT FACT becomes a lie the moment that fact changes — and the structure
+    // offered only two states, saved-and-frozen or not-saved-and-lost. With no way to
+    // say "this turn is real but part of it is live", authors baked the value in,
+    // because that was the only thing the structure supported.
+    //
+    // TWO SUB-CLASSES, and only one of them had a rule:
+    //   • TURN fossils  — a whole turn true only under a condition (the prereq gate
+    //     .284, the resume re-serve .345, the anchor chips .350). Covered by WML
+    //     CLAUDE.md §4c.7 "gates are ephemeral", and fixed site-by-site, each time
+    //     after Neil hit it in a live lesson.
+    //   • VALUE fossils — a turn that SHOULD persist but carries a MUTABLE value in its
+    //     text. Never named, never fixed, no rule covered it. Proof: the Step 6 greeting
+    //     saved 2026-07-25 read "You chose **Rags to Riches**" while the artifact said
+    //     `tragedy` and the document had rebuilt correctly (uid 1, cwp_07aa2df334f4).
+    //
+    // THE DISCRIMINATOR IS TENSE, not interpolation. Of the 10 pushes built with
+    // interpolation, the ones reporting a PAST EVENT ("I've received your essay (873
+    // words)") are CORRECT to freeze — that is what happened. The ones asserting
+    // PRESENT STATE ("you chose X") must stay live.
+    //
+    // THE FIX. Persist a TOKEN, resolve at render — the third state the structure was
+    // missing: durable in shape, live in value. Deliberately the SAME `[SWML_*]` marker
+    // idiom formatAI already resolves for progress bars and beat chips, so this is the
+    // house pattern extended, not a new mechanism to learn.
+    //
+    //   store:  'You chose **[SWML_LIVE:cw.plotStructure]** in Step 5.'
+    //   render: 'You chose **Tragedy** in Step 5.'
+    //
+    // ONE resolve point covers live AND all 8 replay sites, because every rendered turn
+    // passes through formatAI. `resolveLiveValues` is also exported for the API-payload
+    // path, so the model sees the value and never the token.
+    //
+    // RESOLVERS ARE SYNC BY CONTRACT. formatAI is sync and replay is a tight loop, so a
+    // getter must read an already-warmed in-session cache (e.g.
+    // `window._wmlCwPlotStructure[projectId]`, which the Step 5 pick sets synchronously)
+    // and NEVER return a Promise. A getter that cannot answer returns '' and the
+    // registered fallback renders instead.
+    //
+    // §4d LIVENESS: an unresolved token must NEVER reach a student as raw `[SWML_LIVE:…]`.
+    // It degrades to the fallback — a sentence that is always true if less specific
+    // ("your chosen plot structure") — and warns once per token so the gap is loud in
+    // console without spamming a replay of 60 turns.
+    const _liveValues = Object.create(null);
+    const _liveWarned = Object.create(null);
+
+    // name: dotted token id, e.g. 'cw.plotStructure'
+    // get:  () => string   SYNC. '' (or throw) means "cannot answer right now".
+    // fallback: the always-true, less-specific wording rendered when get() cannot answer.
+    function registerLiveValue(name, get, fallback) {
+        if (!name || typeof get !== 'function') {
+            console.warn('WML LiveValue: refusing to register', name, '— needs a name and a sync getter');
+            return;
+        }
+        if (typeof fallback !== 'string' || !fallback) {
+            console.warn('WML LiveValue: refusing to register', name, '— a fallback string is mandatory (§4d: an unresolved token must never reach a student)');
+            return;
+        }
+        _liveValues[name] = { get: get, fallback: fallback };
+    }
+
+    // Resolve every [SWML_LIVE:name] in `text`. Safe to call on any string, any number
+    // of times — a text with no tokens is returned untouched and costs one regex test.
+    function resolveLiveValues(text) {
+        const s = String(text == null ? '' : text);
+        if (s.indexOf('[SWML_LIVE:') === -1) return s;
+        return s.replace(/\[SWML_LIVE:([A-Za-z0-9_.]+)\]/g, function (whole, name) {
+            const entry = _liveValues[name];
+            if (!entry) {
+                if (!_liveWarned[name]) {
+                    _liveWarned[name] = 1;
+                    console.warn('WML LiveValue: no resolver registered for "' + name + '" — rendering nothing. A stored turn references a token this build does not know.');
+                }
+                return '';
+            }
+            let v = '';
+            try { v = entry.get(); } catch (e) {
+                if (!_liveWarned[name]) {
+                    _liveWarned[name] = 1;
+                    console.warn('WML LiveValue: resolver for "' + name + '" threw —', e && e.message, '— falling back.');
+                }
+            }
+            if (v && typeof v.then === 'function') {
+                if (!_liveWarned[name]) {
+                    _liveWarned[name] = 1;
+                    console.warn('WML LiveValue: resolver for "' + name + '" returned a Promise. Getters MUST be sync (they run inside formatAI and the replay loop) — read a warmed cache instead.');
+                }
+                v = '';
+            }
+            v = (typeof v === 'string') ? v.trim() : '';
+            if (v) return v;
+            if (!_liveWarned[name]) {
+                _liveWarned[name] = 1;
+                console.warn('WML LiveValue: "' + name + '" could not resolve — rendering the fallback ("' + entry.fallback + '").');
+            }
+            return entry.fallback;
+        });
+    }
+
     function formatAI(text) {
+        // ⭐ v7.20.351: resolve LIVE VALUES first, before any transform, so a resolved
+        // value sits inside the surrounding markdown (**[SWML_LIVE:…]** → **Tragedy**)
+        // and is escaped by the same rules as the rest of the turn. See the block above.
+        text = resolveLiveValues(text);
         // v7.19.922 (Neil): tag marking-penalty lines with "Learn →" chip tokens BEFORE any
         // transform — detection reuses the ledger's raw-text codeRe shape. Tokens are added to
         // this local copy only; raw chatHistory and every raw-text consumer stay untouched.
@@ -4000,6 +4109,7 @@ window.WML = (function() {
         SVG_GUIDE_ARM, SVG_GUIDE_WRITING, SVG_GUIDE_GRAPH, SVG_GUIDE_BRAIN,
         // Text processing
         stripAIInternals, detectAssessmentStep, formatAI, svgifyStatusGlyphs, countWords,
+        registerLiveValue, resolveLiveValues,   // v7.20.351 — the fossil cure (see formatAI)
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
         parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG,
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)

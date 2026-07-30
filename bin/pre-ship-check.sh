@@ -254,6 +254,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/known-context-lint.js || fail=1
 fi
 
+# FOSSIL LINT (v7.20.351 — Neil: "why are we still getting fossils… get rid of it at its root").
+# A turn PUSHED into chat history must never bake a MUTABLE value into its text: replay is
+# verbatim, so the stored sentence keeps asserting the old value for ever (the Step 6 greeting
+# announced "Rags to Riches" for five days after the student re-picked). Whole-repo by nature —
+# the frontend is three files and the trace is cheap, so it runs on every invocation.
+node bin/fossil-lint.js || fail=1
+
 if [ "$fail" -ne 0 ]; then
   echo ""
   echo "pre-ship gate FAILED — fix before shipping (do NOT --no-verify past it)."

@@ -4830,20 +4830,56 @@
         'overcoming-the-monster': 'Overcoming the Monster', 'voyage-and-return': 'Voyage and Return',
         'coming-of-age': 'Coming of Age',
     };
+    // v7.20.351: the sync side of the resolver. `_cwPlotStructureName` is async (the
+    // artifacts are a fetch), but the LIVE VALUE getter that feeds formatAI must answer
+    // synchronously inside the replay loop — so every async resolve WARMS this cache and
+    // the getter reads it. In-session memory still wins, because the Step 5 pick sets it
+    // synchronously and is therefore fresher than any cached fetch.
+    const _cwStructNameCache = Object.create(null);
+    function _cwPlotStructureNameSync(projectId) {
+        if (!projectId) return '';
+        const mem = (window._wmlCwPlotStructure && window._wmlCwPlotStructure[projectId]) || null;
+        const fromMem = mem ? resolvePlotStructureSlug(mem) : null;
+        if (fromMem && CW_STRUCT_NAMES[fromMem]) return CW_STRUCT_NAMES[fromMem];
+        return _cwStructNameCache[projectId] || '';
+    }
     // Same read order tryLoadPlotTemplate uses: in-session memory → key artifact → choice doc.
     function _cwPlotStructureName(projectId) {
         if (!projectId) return Promise.resolve('');
+        const _warm = function (n) { if (n) _cwStructNameCache[projectId] = n; return n; };
         const mem = (window._wmlCwPlotStructure && window._wmlCwPlotStructure[projectId]) || null;
         const fromMem = mem ? resolvePlotStructureSlug(mem) : null;
-        if (fromMem) return Promise.resolve(CW_STRUCT_NAMES[fromMem] || '');
+        if (fromMem) return Promise.resolve(_warm(CW_STRUCT_NAMES[fromMem] || ''));
         return WML.cwProject.loadArtifact(projectId, 'plot_structure_key').then(function (ka) {
             const s = (ka && ka.success && ka.value) ? resolvePlotStructureSlug(ka.value) : null;
-            if (s) return CW_STRUCT_NAMES[s] || '';
+            if (s) return _warm(CW_STRUCT_NAMES[s] || '');
             return WML.cwProject.loadArtifact(projectId, 'plot_structure_choice').then(function (ca) {
                 const s2 = (ca && ca.success && ca.value) ? resolvePlotStructureSlug(ca.value) : null;
-                return s2 ? (CW_STRUCT_NAMES[s2] || '') : '';
+                return _warm(s2 ? (CW_STRUCT_NAMES[s2] || '') : '');
             });
         }).catch(function () { return ''; });
+    }
+    // ⭐ v7.20.351 — the token the stored transcript carries instead of a baked name.
+    // Fallback is deliberately a true-but-vaguer noun phrase, so a turn reading
+    // "You chose **your chosen plot structure** in Step 5" is clumsy but never WRONG,
+    // and never a raw token on a 14-year-old's screen (§4d).
+    try {
+        WML.registerLiveValue('cw.plotStructure',
+            function () { return _cwPlotStructureNameSync(state && state.cwProjectId); },
+            'your chosen plot structure');
+    } catch (e) { console.warn('WML LiveValue: cw.plotStructure not registered —', e && e.message); }
+
+    // v7.20.351: the API-payload half of the live-value contract. The MODEL must never see
+    // a raw [SWML_LIVE:…] token — it sees the CURRENT value, which is also the only thing
+    // that keeps its context honest when a student re-picks mid-course. Applied at the
+    // LLM-facing slices only; the stored history keeps the token, which is the whole point.
+    // Returns a shallow-copied array — never mutates canvasChatHistory.
+    function _liveHistory(h) {
+        if (!Array.isArray(h)) return h;
+        return h.map(function (m) {
+            if (!m || typeof m.content !== 'string' || m.content.indexOf('[SWML_LIVE:') === -1) return m;
+            return Object.assign({}, m, { content: WML.resolveLiveValues(m.content) });
+        });
     }
 
     // Fire the armed hook, if any. `reply` is the AI text that just landed (null on timeout).
@@ -13329,10 +13365,61 @@
         }, 8000);
     }
 
+    // ⭐ v7.20.351 — HEAL FOSSILS THAT ARE ALREADY IN THE DATABASE.
+    //
+    // Stopping new fossils does NOT fix the ones already saved, and this is the half that
+    // keeps getting missed. v7.20.324 correctly made the "Welcome back… You chose **X** in
+    // Step 5" greeting DOM-only, so no NEW copy is written — but every turn written BEFORE
+    // that fix is still sitting in `swml_chat_*` and replays verbatim on every entry. That
+    // is what Neil saw on .350: his Step 6 transcript is ONE turn, saved 2026-07-25, naming
+    // "Rags to Riches" while the artifact said `tragedy`. Every student who reached Step 6
+    // before .324 carries the same frozen sentence.
+    //
+    // The heal rewrites the baked NAME into the live token, so the stored turn joins the
+    // new mechanism instead of being deleted — the student keeps their transcript, and the
+    // sentence starts telling the truth.
+    //
+    // DELIBERATELY NARROW (it edits a student's saved record, so it must never guess):
+    //   • only the two code-authored sentence shapes, anchored on "Step 5";
+    //   • only when the bolded value is one of the eight KNOWN structure names — a student's
+    //     own words can never match, so their writing is untouchable by construction;
+    //   • idempotent: a turn already holding the token has no name left to match.
+    function _healFossilTurns(history) {
+        if (!Array.isArray(history)) return { history: history, healed: 0 };
+        const names = Object.keys(CW_STRUCT_NAMES).map(function (k) { return CW_STRUCT_NAMES[k]; })
+            .map(function (n) { return n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|');
+        // "You chose **X** in Step 5"  ·  "In Step 5, you chose **X**"
+        const reA = new RegExp('(You chose\\s+\\*\\*)(' + names + ')(\\*\\*\\s+in Step 5)', 'g');
+        const reB = new RegExp('(In Step 5, you chose\\s+\\*\\*)(' + names + ')(\\*\\*)', 'g');
+        const TOKEN = '[SWML_LIVE:cw.plotStructure]';
+        let healed = 0;
+        const out = history.map(function (m) {
+            if (!m || m.role !== 'assistant' || typeof m.content !== 'string') return m;
+            if (m.content.indexOf('Step 5') === -1) return m;
+            const next = m.content.replace(reA, '$1' + TOKEN + '$3').replace(reB, '$1' + TOKEN + '$3');
+            if (next === m.content) return m;
+            healed++;
+            return Object.assign({}, m, { content: next });
+        });
+        return { history: out, healed: healed };
+    }
+
+    // Heal a loaded chat object in place-ish (returns the same shape) and report loudly.
+    // Callers that hold a durable copy re-save, so the heal is paid once per project.
+    function _healLoadedChat(chat, where) {
+        if (!chat || !Array.isArray(chat.history)) return chat;
+        const r = _healFossilTurns(chat.history);
+        if (!r.healed) return chat;
+        chat.history = r.history;
+        console.warn('WML Fossil heal: rewrote ' + r.healed + ' frozen plot-structure turn(s) to the live token (' + (where || '?') + '). '
+            + 'These were saved before v7.20.324 and would otherwise announce a structure the student has since changed.');
+        return chat;
+    }
+
     function loadCanvasChat() {
         try {
             const raw = localStorage.getItem(CHAT_SAVE_KEY());
-            if (raw) return JSON.parse(raw);
+            if (raw) return _healLoadedChat(JSON.parse(raw), 'localStorage');
         } catch (e) { /* parse error */ }
         return null;
     }
@@ -15583,9 +15670,9 @@
                 // cause 2B). Bounded marking flows are safe unbounded; non-marking canvas
                 // chats keep the window to cap cost.
                 const _wmlMarkingFlow = WML.isMarkingFlow(state.task); // v7.19.655: caps-driven (was literal dup)
-                const historyToSend = _wmlMarkingFlow
+                const historyToSend = _liveHistory(_wmlMarkingFlow
                     ? canvasChatHistory.slice(0, -1)
-                    : canvasChatHistory.slice(0, -1).slice(-24);
+                    : canvasChatHistory.slice(0, -1).slice(-24));   // v7.20.351: resolve live values for the model
 
                 // v7.20.205 C-LADDER (pipeline 1). Derive from the FULL history (prior turns'
                 // stamps) — NOT historyToSend (the -24 slice the LLM sees). Dormant off AQA P2
@@ -17344,7 +17431,7 @@
                     }
                     const res = await apiPost(API.chat, {
                         prompt, botId: 'wml-claude', chatId: canvasChatId,
-                        history: canvasChatHistory.slice(0, -1).slice(-12),
+                        history: _liveHistory(canvasChatHistory.slice(0, -1).slice(-12)),   // v7.20.351
                         board: state.board, subject: state.subject, text: state.text || '',
                         task: hTask, question: q ? q.question : '',
                     });
@@ -27078,7 +27165,7 @@
 
                 try {
                     const docContent = canvasEditor ? canvasEditor.getHTML() : '';
-                    const historyToSend = epChatHistory.slice(0, -1).slice(-24);
+                    const historyToSend = _liveHistory(epChatHistory.slice(0, -1).slice(-24));   // v7.20.351
                     const res = await WML.apiPost(WML.API.chat, {
                         message: msg,
                         history: historyToSend,
@@ -27518,7 +27605,7 @@
                             : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}${cwScopeQuery()}${_wantSidebar ? `&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task || '')}` : ''}`;
                         const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                         if (_needChat && serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
-                            savedChat = serverChat.chat;
+                            savedChat = _healLoadedChat(serverChat.chat, 'server');   // v7.20.351: heal pre-.324 fossils on the authoritative copy
                             console.log(state.reviewMode ? 'WML Review: Student chat loaded from server' : 'WML Training: Chat loaded from server (localStorage empty)');
                         }
                         if (serverChat.sidebar) {
@@ -28136,9 +28223,15 @@
                         9: 'You\u2019ve chosen your scene(s). Now write your first draft.',
                     };
                     // v7.20.292: name the chosen structure (shared resolver — see _cwPlotStructureName).
+                    // \u2b50 v7.20.351: the await is a PRESENCE check only \u2014 "has a structure been
+                    // chosen at all?" decides whether this sentence appears. The VALUE is a
+                    // [SWML_LIVE:\u2026] token resolved at RENDER, because this greeting is PERSISTED
+                    // and a baked name fossilises the instant the student re-picks (Neil's
+                    // 25-July greeting still read "Rags to Riches" while the artifact said
+                    // `tragedy` and the document had already rebuilt correctly).
                     if (stepNum === 6) {
                         const _sn = await _cwPlotStructureName(state.cwProjectId);
-                        if (_sn) cwPrevContext[6] = `In Step 5, you chose **${_sn}**. Now we\u2019ll build a detailed plot outline.`;
+                        if (_sn) cwPrevContext[6] = `In Step 5, you chose **[SWML_LIVE:cw.plotStructure]**. Now we\u2019ll build a detailed plot outline.`;
                     }
                     const prevCtx = cwPrevContext[stepNum] || `Let\u2019s continue with **${stepLabel}**.`;
                     const introLine = `Welcome to Step ${stepNum}: **${stepLabel}**\n\n${prevCtx}`;
@@ -28234,9 +28327,16 @@
                     if (assessWc === 0) {
                         const redirectPlain = `Hi ${firstName} — I can see you haven't written your response yet. Before I can give you feedback, head back to the Writing exercise and draft your response. Once you've written something, come back here and I'll walk you through it.`;
                         const redirectHTML = `<div style="margin-bottom:14px;padding:10px 14px;background:rgba(241,196,15,0.08);border-left:3px solid rgba(241,196,15,0.4);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.7)"><strong style="color:rgba(255,255,255,0.9)">Nothing to assess yet</strong> — your response is currently blank.</div><div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong> — I can see you haven't written your response yet.</p></div><div style="margin-bottom:12px"><p>Before I can give you feedback, head back to the <strong>Writing</strong> exercise and draft your response. Once you've written something, come back here and I'll walk you through it.</p></div>`;
+                        // ⭐ v7.20.351: DOM-ONLY. This is a GATE, not a turn — it is true only
+                        // while `assessWc === 0`. Persisting it froze "head back and draft your
+                        // response" into the transcript, so a student who then WROTE their
+                        // response was told to go and write it on every entry, for ever. Exactly
+                        // the v7.20.284 prereq-gate fossil, found by the .351 audit rather than by
+                        // Neil hitting it. Derived state re-derives on entry (WML CLAUDE.md §4c.7);
+                        // the branch redraws whenever the response is still empty, so nothing is
+                        // lost — and §4d liveness holds, because the "Go to Writing Exercise →"
+                        // chip below is emitted on the same path.
                         tp.addChatMessage(redirectHTML, 'ai', redirectPlain);
-                        tp.canvasChatHistory.push({ role: 'assistant', content: redirectPlain });
-                        saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
 
                         setTimeout(() => {
                             const actions = el('div', { className: 'swml-quick-actions' });
@@ -30334,9 +30434,9 @@
                                 // the confirmed loop (audit root cause 2B). Non-marking canvas
                                 // chats keep the window to cap cost.
                                 const _wmlMarkingFlow = WML.isMarkingFlow(state.task); // v7.19.655: caps-driven (was literal dup)
-                                const historyToSend = _wmlMarkingFlow
+                                const historyToSend = _liveHistory(_wmlMarkingFlow
                                     ? canvasChatHistory.slice(0, -1)
-                                    : canvasChatHistory.slice(0, -1).slice(-24);
+                                    : canvasChatHistory.slice(0, -1).slice(-24));   // v7.20.351
 
                                 // v7.20.205 C-LADDER (pipeline 2 / twin). Same derive as pipeline 1 —
                                 // FULL history, dormant off AQA P2 planning.
@@ -30675,7 +30775,7 @@
                                                     : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}${cwScopeQuery()}${_wantSidebar2 ? `&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task || '')}` : ''}`;
                                                 const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                                                 if (_needChat2 && serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
-                                                    savedChat = serverChat.chat;
+                                                    savedChat = _healLoadedChat(serverChat.chat, 'server');   // v7.20.351: heal pre-.324 fossils on the authoritative copy
                                                     console.log(state.reviewMode ? 'WML Review: Student chat loaded from server' : 'WML Canvas: Chat loaded from server (localStorage empty)');
                                                 }
                                                 if (serverChat.sidebar) {
@@ -31025,7 +31125,10 @@
                                             // v7.20.292: name the chosen structure (shared resolver — see _cwPlotStructureName).
                                             if (stepNum === 6) {
                                                 const _sn = await _cwPlotStructureName(state.cwProjectId);
-                                                if (_sn) cwPrevContext[6] = `In Step 5, you chose **${_sn}**. Now we\u2019ll build a detailed, stage-by-stage plot outline \u2014 your master document for the rest of the course.`;
+                                                // v7.20.351: token, not the baked value \u2014 this is the
+                                                // "Welcome back" resume greeting, the exact turn that
+                                                // fossilised on Neil's project. See wml-core.js LIVE VALUES.
+                                                if (_sn) cwPrevContext[6] = `In Step 5, you chose **[SWML_LIVE:cw.plotStructure]**. Now we\u2019ll build a detailed, stage-by-stage plot outline \u2014 your master document for the rest of the course.`;
                                             }
                                             const prevCtx = cwPrevContext[stepNum] || `You\u2019ve been building your story step by step. Let\u2019s continue with **${stepLabel}**.`;
                                             const introLine = stepNum === 1
