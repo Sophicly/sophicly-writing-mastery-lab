@@ -719,6 +719,21 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         const bar = (cls) => '<div class="' + cls + '"><div class="swml-chat-progress-fill" style="width:44%"></div><span class="swml-chat-progress-label">44%</span></div>';
         ok(wpc(bar('swml-chat-progress-bar'), '').indexOf('swml-chat-progress') === -1,
             'withProgressChip no longer strips the MODEL\'s improvised bar — the beat-chip and a raw bar will both render');
+        // v7.20.349: the BEAT CHIP is the FQ/MSQ gold standard Neil asked to match exactly —
+        // top-liner + gradient track + bold heading underneath. It must survive the same pipeline.
+        const chipAt = CORE.indexOf('function progressChipHTML');
+        ok(chipAt !== -1, 'progressChipHTML is gone — the CW walks have no chip to reuse');
+        if (chipAt !== -1) {
+            const cEnd = CORE.indexOf('\n    }', chipAt);
+            // eslint-disable-next-line no-new-func
+            const chip = new Function('return (' + CORE.slice(chipAt, cEnd + 6) + ');')();
+            const html = chip({ section: 'Choose Your Plot Structure', unit: 'Step', step: 4, total: 9 });
+            ok(/swml-beat-section/.test(html) && /swml-beat-step/.test(html) && /swml-beat-fill/.test(html),
+                'the beat chip lost its top-liner or its track — that IS the style Neil asked to match');
+            ok(wpc(html, '').indexOf('swml-beat') !== -1,
+                'withProgressChip strips the BEAT CHIP — the CW walks would lose the very component '
+                + 'the quizzes use, which is the whole point of reusing it');
+        }
         ok(wpc(bar('swml-chat-progress-bar swml-chat-progress-bar--code'), '').indexOf('swml-chat-progress-bar--code') !== -1,
             'withProgressChip EATS the code-served bar — this is the exact defect Neil reported twice: '
             + 'the token is emitted, formatAI renders it, and the canvas pipeline deletes it before he sees it');

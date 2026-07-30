@@ -4519,10 +4519,19 @@
     // So a CODE-SERVED bar needs to be distinguishable from a model-improvised one at render
     // time. `_CODE_` is that distinction: formatAI gives it its own class and withProgressChip
     // is explicitly forbidden from touching it.
-    function cwProgressBar(nth, total) {
+    // v7.20.349: `section` + `heading` turn the bare bar into the FQ/MSQ BEAT CHIP — the top-liner
+    // and the bold heading Neil asked for ("exactly the same style… text above and text below").
+    // Both optional: with neither, this still emits the plain bar, so nothing that already calls
+    // it with two arguments changes shape.
+    function cwProgressBar(nth, total, section, heading) {
         const t = Number(total) || 0;
         if (t <= 0) return '';
         const n = Math.max(1, Math.min(t, Number(nth) || 0));
+        if (section || heading) {
+            return '[SWML_BEAT:' + JSON.stringify({
+                section: section || '', unit: 'Step', step: n, total: t, heading: heading || '',
+            }) + ']\n\n';
+        }
         return '[SWML_PROGRESS_CODE_' + Math.round((n / t) * 100) + ']\n\n';
     }
 
@@ -21598,8 +21607,8 @@
                     // v7.20.347: this chunk STATES its own position ("4 of 9"), so it carries the
                     // bar. A bubble that claims a position and shows no bar is the worst of both.
                     // The second chunk does not — it is the same position, continued.
-                    cwProgressBar(PICK_I + 1, STEPS.length)
-                        + '**' + (PICK_I + 1) + ' of ' + STEPS.length + ' — The eight shapes**\n\nAll eight are versions of the Hero\'s Journey underneath. What changes is the KIND of transformation and, above all, how the story ENDS. Here are the first four.\n\n' + half[0],
+                    cwProgressBar(PICK_I + 1, STEPS.length, 'Choose Your Plot Structure', 'The eight shapes')
+                        + 'All eight are versions of the Hero\'s Journey underneath. What changes is the KIND of transformation and, above all, how the story ENDS. Here are the first four.\n\n' + half[0],
                     'And the other four.\n\n' + half[1],
                 ];
             }
@@ -21713,8 +21722,8 @@
                 _walkSlot.clear('cw5');   // v7.20.340: multi-select is a TAP
                 // v7.20.348: derived from ITS OWN position — secondary elements is no longer
                 // last (it now sits where the document puts it), so a hardcoded 9-of-9 would lie.
-                aiBubble(cwProgressBar(MULTI_I + 1, STEPS.length)
-                    + '**' + (MULTI_I + 1) + ' of ' + STEPS.length + ' — Secondary elements**\n\nThe most interesting stories do not follow one shape rigidly — they BLEND. *The Hunger Games* is primarily Overcoming the Monster with strong Coming of Age (Katniss grows up fast) and The Quest (she is fighting towards a goal). *A Christmas Carol* is Rebirth/Redemption with Voyage and Return inside it (the ghost journeys).\n\n'
+                aiBubble(cwProgressBar(MULTI_I + 1, STEPS.length, 'Choose Your Plot Structure', 'Secondary elements')
+                    + 'The most interesting stories do not follow one shape rigidly — they BLEND. *The Hunger Games* is primarily Overcoming the Monster with strong Coming of Age (Katniss grows up fast) and The Quest (she is fighting towards a goal). *A Christmas Carol* is Rebirth/Redemption with Voyage and Return inside it (the ghost journeys).\n\n'
                     + 'You have chosen **' + (_cw5ChipLabel(cur || '') || 'your primary shape') + '** as your spine. **Tap any other shapes whose elements you want woven in**, then Continue. (None at all is a perfectly good answer — just press Continue.)');
                 chipBarMulti(ORDER.filter(function (k) { return CW5_ARCHETYPE_ITEMS[k] !== cur; })
                     .map(function (k) { return _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[k]); }), onMultiDone);
@@ -36419,6 +36428,20 @@
                 tmp.innerHTML = html;
                 let changed = false;
                 tmp.querySelectorAll('[data-outline-row]').forEach(r => {
+                    // v7.20.349 (Neil): name the SET. "Which 1-2 archetypes" left the student
+                    // guessing which archetypes were meant; this row is where the justification
+                    // for the secondary picks already lives, so it has to say PLOT archetypes.
+                    if (r.getAttribute('data-field-id') === 'cw-step-5-technique') {
+                        let tc = {};
+                        try { tc = JSON.parse(r.getAttribute('data-criteria') || '{}'); } catch (_) { return; }
+                        const want = 'Which 1\u20132 PLOT archetypes might best convey your concept? Why?';
+                        if (tc.prompt === want) return;
+                        tc.prompt = want;
+                        r.setAttribute('data-criteria', JSON.stringify(tc));
+                        r.setAttribute('data-prompt', want);
+                        changed = true;
+                        return;
+                    }
                     if (r.getAttribute('data-field-id') !== 'cw-step-5-primary-archetype') return;
                     let crit = {};
                     try { crit = JSON.parse(r.getAttribute('data-criteria') || '{}'); } catch (_) { return; }
@@ -39421,7 +39444,7 @@
                 '<h3>Pre-Work Reflection</h3>' +
                 outlineRowHTML({ id: 'context', label: 'Context', prompt: 'What inspired your story? (personal experience, observation, question)' }, 'cw-step-5-context') +
                 outlineRowHTML({ id: 'concept', label: 'Concept', prompt: 'What is your story ABOUT beneath the plot? What idea or truth about life?' }, 'cw-step-5-concept') +
-                outlineRowHTML({ id: 'technique', label: 'Technique Thinking', prompt: 'Which 1\u20132 archetypes might best convey your concept? Why?' }, 'cw-step-5-technique')
+                outlineRowHTML({ id: 'technique', label: 'Technique Thinking', prompt: 'Which 1\u20132 PLOT archetypes might best convey your concept? Why?' }, 'cw-step-5-technique')
             );
             html += dividerHTML('YOUR PRIMARY CHOICE');
             // v7.15.5: Dropdown for archetype selection + outline row layout
