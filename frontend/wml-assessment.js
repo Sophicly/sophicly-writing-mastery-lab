@@ -21134,8 +21134,15 @@
                 // answer the system already held — the paste-wall law failing on the resume path only.
                 if (ASKS[i] && ASKS[i].kind === 'anchor' && phase !== 'anchor-fix') {
                     if (_cwDocValue('brief_outline', ANCHOR_SRC[ASKS[i].anchorKind])) {
-                        chipBar(['That’s still right →', 'I’d sharpen it'], onAnchorChoice);
-                        phase = 'anchor'; persist();
+                        // ⭐ v7.20.350: SERVE THE ANCHOR, don't staple its chips to whatever is
+                        // newest. Neil, live on Step 6: "it's got three buttons. Two of them are
+                        // obviously completely out of context" — `▶ Let's go` on the greeting, with
+                        // `That's still right →` and `I'd sharpen it` stuck on beside it, because
+                        // `chipBar` binds to `chatMessages.lastElementChild` and on a first entry
+                        // that IS the greeting. Identical to the .340 CW5 defect (a help ladder on a
+                        // bubble that asked nothing); the anchor branch was the one path .340 left
+                        // attaching controls without a question of their own.
+                        serveAnchor();
                     } else {
                         helpBar(ASKS[i]);
                         _walkSlot.arm('cw6', ASKS[i].fid, { cycle: 'rewrite' });   // v7.20.340

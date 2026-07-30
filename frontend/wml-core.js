@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.349';
+var WML_BUILD = '7.20.350';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3298,14 +3298,14 @@ window.WML = (function() {
 
         // Render progress bar placeholders as CSS bars (v7.14.51)
         const hasProgressBar = /\[SWML_PROGRESS_(?:CODE_)?\d+\]/.test(html);
-        // v7.20.349: the CODE-SERVED bar (cwProgressBar, the CW walks) carries an extra class so
+        // v7.20.350: the CODE-SERVED bar (cwProgressBar, the CW walks) carries an extra class so
         // withProgressChip can tell it apart from a bar the MODEL improvised. Both render
         // identically; only the model's is strippable. Replaced FIRST — `CODE_` is not digits, so
         // the generic rule below could never match it anyway, but order makes the intent plain.
         html = html.replace(/\[SWML_PROGRESS_CODE_(\d+)\]/g, (_, pct) =>
             `<div class="swml-chat-progress-bar swml-chat-progress-bar--code"><div class="swml-chat-progress-fill" style="width:${pct}%"></div><span class="swml-chat-progress-label">${pct}%</span></div>`
         );
-        // ⭐ v7.20.349 — THE BEAT CHIP, for code-served walks. Neil: "I wanted exactly the same
+        // ⭐ v7.20.350 — THE BEAT CHIP, for code-served walks. Neil: "I wanted exactly the same
         // style, not just the progress bar… I think there's some text above that, and text below."
         // He is describing the FQ/MSQ gold standard, which is a real component and not a bare bar:
         // progressChipHTML() renders a top-liner (section · Step N of M) over a gradient track,
@@ -3781,7 +3781,7 @@ window.WML = (function() {
         return html
             .replace(/<div class="swml-step-header">[\s\S]*?<\/div>/gi, '')
             .replace(/<span class="swml-step-blocks">[\s\S]*?swml-step-blocks-label">[^<]*<\/span>\s*<\/span>/gi, '')
-            // v7.20.349: strips the MODEL's improvised bar only. A CODE-SERVED bar
+            // v7.20.350: strips the MODEL's improvised bar only. A CODE-SERVED bar
             // (`swml-chat-progress-bar--code`, from cwProgressBar) is deliberate and must
             // survive — the CW walks are the only progress a code-served walk has, and this
             // line was silently eating every one of them in the canvas chat since v7.19.906.
@@ -3910,7 +3910,7 @@ window.WML = (function() {
         // by a third baked row. `optional: true` ⇒ an EMPTY row is satisfied. Started ⇒ finish
         // it: the moment it has text, its controls are required exactly like any other row.
         // Distinct from `locked` (read-only, satisfied even with text the STUDENT never wrote).
-        // v7.20.349 — CONTROL-ONLY rows. Neil, live on Step 5: "there's an empty space there where
+        // v7.20.350 — CONTROL-ONLY rows. Neil, live on Step 5: "there's an empty space there where
         // it says which plot structure best fits your story. So that space is empty, which means my
         // section doesn't get ticked off… you can get rid of the text input area because we've
         // chosen it already." The archetype row carries a DROPDOWN and a text box that asks for the
