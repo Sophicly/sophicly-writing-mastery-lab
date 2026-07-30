@@ -4523,16 +4523,43 @@
     // and the bold heading Neil asked for ("exactly the same style… text above and text below").
     // Both optional: with neither, this still emits the plain bar, so nothing that already calls
     // it with two arguments changes shape.
-    function cwProgressBar(nth, total, section, heading) {
+    // ⭐⭐ v7.20.356 — THE BEAT CHIP IS NOW THE ONLY OUTPUT. Neil, 2026-07-30, comparing the CW
+    // bar with AQA Lang P2's: "there you can see how nice the progress bar is… it's a bit thinner,
+    // it clearly says what we're working on, Question 3, and what step. And that's what I want…
+    // I want it like that UNIVERSALLY."
+    //
+    // THE ROOT, and it is the third instance of this shape in one week. The chip already existed
+    // (.349) and was already the shared component — but `section` was OPTIONAL, so a call site that
+    // passed two arguments fell through to the crude `[SWML_PROGRESS_CODE_…]` bar: 10px, flat, a
+    // bare "50%", no idea what you are working on. MEASURED before changing anything: 14 call
+    // sites, **2** passed a section. The other 12 rendered the crude bar — which is what Neil
+    // photographed. So the ugly bar was not a decision anyone made; it was THE DEFAULT YOU GOT BY
+    // NOT THINKING. Exactly the fossil root (`history.push()` meant persist-for-ever) and exactly
+    // the authorship root (`response` is the schema default). A rule in prose loses to a default
+    // in code, every time.
+    //
+    // So the fallback is DELETED rather than discouraged. There is now no argument list that can
+    // produce the crude bar. A caller who omits `section` still gets the REFERENCE component —
+    // `progressChipHTML` renders the count and the 6px gradient track with no top-liner — never a
+    // different, worse widget. `unit` follows the walk's own vocabulary (CW4 counts BEATS, not
+    // steps), the same reason parseProgressBeat learned Element/Part/Question in .987.
+    function cwProgressBar(nth, total, section, heading, unit) {
         const t = Number(total) || 0;
         if (t <= 0) return '';
         const n = Math.max(1, Math.min(t, Number(nth) || 0));
-        if (section || heading) {
-            return '[SWML_BEAT:' + JSON.stringify({
-                section: section || '', unit: 'Step', step: n, total: t, heading: heading || '',
-            }) + ']\n\n';
-        }
-        return '[SWML_PROGRESS_CODE_' + Math.round((n / t) * 100) + ']\n\n';
+        // formatAI matches `[SWML_BEAT:({[^}]*})]`, so a `}` inside a value would truncate the
+        // JSON, JSON.parse would throw, and the replacement returns '' — the chip would VANISH
+        // silently, which is the failure mode this whole change exists to end (§11: engineer out
+        // the failure you can name). Values are labels; stripping the two characters costs nothing.
+        // ⚠ The class is written with UNICODE ESCAPES, not the literal characters. The walk sims
+        // lift this function out of the source by BRACE-COUNTING (walk-sim-lib.js `braceSliceFrom`),
+        // and a literal `}` inside a regex reads to that counter as the end of the function — the
+        // slice truncates mid-body and every CW sim dies with "Invalid regular expression". Cost me
+        // a gate run to find; leave the escapes alone.
+        const safe = (s) => String(s == null ? '' : s).replace(/[\u007D\u005D]/g, '');
+        return '[SWML_BEAT:' + JSON.stringify({
+            section: safe(section), unit: safe(unit) || 'Step', step: n, total: t, heading: safe(heading),
+        }) + ']\n\n';
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════════
@@ -17667,9 +17694,10 @@
             function renderQ() {
                 if (idx >= TOTAL) { finish(); return; }
                 const q = QS[idx];
-                let body = cwProgressBar(idx + 1, TOTAL);   // v7.20.346: the ask IN HAND, 1-based
+                // v7.20.356: section + count ride the CHIP; the bold duplicate below it is gone.
+                let body = cwProgressBar(q.seq, TOTAL, q.secName, '', 'Question');
                 if (q.secIntro) body += q.secIntro + '\n\n';
-                body += `**Question ${q.seq} of ${TOTAL} · ${q.secName}**\n\n${q.q}`;
+                body += q.q;
                 aiBubble(body);
                 persist();
                 resetSend();
@@ -18102,7 +18130,10 @@
                 o.onDone();
                 return false;
             }
-            o.emit(SA_ASK);
+            // v7.20.356: the tick list is part of the ask's STATION, so it carries the same chip.
+            // Neil's screenshot of Step 4 showed it as the one bubble in the run with no position
+            // at all. Optional, so a walk that has not been converted is unchanged.
+            o.emit((o.progress || '') + SA_ASK);
             return cwAttachSelfAssessment(o);
         }
         // v7.20.339: attaching a chip-only ask REGISTERS how to draw it again. A tick list arms no
@@ -19198,7 +19229,7 @@
                 // v7.20.344: the in-chat progress bar rides the ASK — the LAST chunk — not the
                 // paced intro chunks before it, so it marks the moment the student is being asked
                 // rather than appearing on every teaching bubble.
-                if (chunks.length) chunks[chunks.length - 1] = cwProgressBar(idx + 1, STEPS.length) + chunks[chunks.length - 1];
+                if (chunks.length) chunks[chunks.length - 1] = cwProgressBar(idx + 1, STEPS.length, 'Your Logline') + chunks[chunks.length - 1];
                 // v7.20.327: the ask OWNS the row. Armed only once the ASK itself has been
                 // delivered — it is the last chunk, so a student typing during the paced intro
                 // has not been asked anything yet and files nothing.
@@ -19738,42 +19769,42 @@
                     'introduces your protagonist in their everyday life',
                     'shows the PRESSURE, not just the reaction',
                 ], chipQ:
-                    '**Beat 1 — first, your protagonist’s unmet need**\n\nYour logline is set. Now the story needs a skeleton: the **Story Spine** — six beats where each event *causes* the next. Same rhythm as Step 3: for each beat I’ll tell you what makes it strong, give you an example, and you write **one sentence** of your own. **📖 Guidance** and **👤 Your Writer’s Profile** sit under every question, and the same rule applies — **don’t overthink it**: rough sentences now, polish later.\n\nThis first beat is your protagonist’s ordinary world, before the story starts. Every interesting character has an **unmet need** — something missing that stops them being truly happy. Complex characters usually carry several, but **one leads**. Scrooge’s main unmet need is *Love & Belonging* — with *Safety* and *Esteem* sitting underneath it.\n\n**Which is your protagonist’s MAIN unmet need?**',
-                  ask: '**Beat 1 of 6 — “At first…”**\n\nNow write Beat 1.\n\n**A strong “At first…” beat:**\n\n- one sentence, **present tense**, picking up straight after “At first,”\n- introduces your protagonist in their everyday life\n- **shows the PRESSURE, not just the reaction.** The unmet need has to be visible as something acting *on* them — a rule, a person, a system, an absence. A character who simply “rebels” tells us how they behave; we need to see what they are up against.\n\nWeak → strong:\n\n- ✗ *“At first, a boy is angry all the time and argues with everyone.”* — that is his reaction. What is pressing on him?\n- ✓ *“At first, a boy sits through every mealtime in a house where nobody has said his brother’s name since the funeral.”* — now we feel the pressure, and his anger has somewhere to come from.\n\nExample: *“At first, a miserly old money-lender counts his coins alone while carol-singers hurry past his door.”* — Scrooge’s spine, which we’ll build alongside yours.\n\n**Write your Beat 1.**' },
+                    '**First — your protagonist’s unmet need**\n\nYour logline is set. Now the story needs a skeleton: the **Story Spine** — six beats where each event *causes* the next. Same rhythm as Step 3: for each beat I’ll tell you what makes it strong, give you an example, and you write **one sentence** of your own. **📖 Guidance** and **👤 Your Writer’s Profile** sit under every question, and the same rule applies — **don’t overthink it**: rough sentences now, polish later.\n\nThis first beat is your protagonist’s ordinary world, before the story starts. Every interesting character has an **unmet need** — something missing that stops them being truly happy. Complex characters usually carry several, but **one leads**. Scrooge’s main unmet need is *Love & Belonging* — with *Safety* and *Esteem* sitting underneath it.\n\n**Which is your protagonist’s MAIN unmet need?**',
+                  ask: '**Write it — “At first…”**\n\n**A strong “At first…” beat:**\n\n- one sentence, **present tense**, picking up straight after “At first,”\n- introduces your protagonist in their everyday life\n- **shows the PRESSURE, not just the reaction.** The unmet need has to be visible as something acting *on* them — a rule, a person, a system, an absence. A character who simply “rebels” tells us how they behave; we need to see what they are up against.\n\nWeak → strong:\n\n- ✗ *“At first, a boy is angry all the time and argues with everyone.”* — that is his reaction. What is pressing on him?\n- ✓ *“At first, a boy sits through every mealtime in a house where nobody has said his brother’s name since the funeral.”* — now we feel the pressure, and his anger has somewhere to come from.\n\nExample: *“At first, a miserly old money-lender counts his coins alone while carol-singers hurry past his door.”* — Scrooge’s spine, which we’ll build alongside yours.\n\n**Write your Beat 1.**' },
                 { fid: 'cw-step-4-beat2', lead: 'And then', criteria: [
                     'one sentence, present tense',
                     'ONE action a camera could film',
                     'repeated — this is what they do every single day',
                 ], ask:
-                    '**Beat 2 of 6 — “And then…”**\n\nThis is the repeated routine that *proves* the stuck state — the physical evidence of the problem.\n\n**A strong “And then…” beat:**\n\n- one sentence, **present tense**, after “And then,”\n- **ONE action a camera could film** — a single thing you could point a lens at\n- **repeated** — this is what they do every single day\n\n**The trap:** naming behaviours instead of showing one. *Rebels · disobeys · breaks the rules · struggles · acts out* are **labels**, and a camera cannot film a label. If you could not draw it, it is not this beat yet.\n\nWeak → strong:\n\n- ✗ *“And then, every day he breaks the rules at school, ignores his mother and gets into trouble.”* — three labels, no picture.\n- ✓ *“And then, every morning he takes the long way to school past the empty house on the corner, and never once looks at it.”* — one filmable action, and it says more than all three labels did.\n\nExample: *“And then, every evening Scrooge eats thin gruel alone by a mean little fire, checking the day’s ledgers twice.”*\n\n**Write your Beat 2 — one thing they do, that a camera could film.**' },
+                    '**Write it — “And then…”**\n\nThis is the repeated routine that *proves* the stuck state — the physical evidence of the problem.\n\n**A strong “And then…” beat:**\n\n- one sentence, **present tense**, after “And then,”\n- **ONE action a camera could film** — a single thing you could point a lens at\n- **repeated** — this is what they do every single day\n\n**The trap:** naming behaviours instead of showing one. *Rebels · disobeys · breaks the rules · struggles · acts out* are **labels**, and a camera cannot film a label. If you could not draw it, it is not this beat yet.\n\nWeak → strong:\n\n- ✗ *“And then, every day he breaks the rules at school, ignores his mother and gets into trouble.”* — three labels, no picture.\n- ✓ *“And then, every morning he takes the long way to school past the empty house on the corner, and never once looks at it.”* — one filmable action, and it says more than all three labels did.\n\nExample: *“And then, every evening Scrooge eats thin gruel alone by a mean little fire, checking the day’s ledgers twice.”*\n\n**Write your Beat 2 — one thing they do, that a camera could film.**' },
                 { fid: 'cw-step-4-beat3', lead: 'Until', chips: INCIDENTS, echo: 'cw-step-3-incident', criteria: [
                     'one sentence, present tense',
                     'a single event on a particular day',
                 ], chipQ:
-                    '**Beat 3 — first, the inciting incident you named in Step 3**\n\nThis is the inciting incident — the event that shatters the ordinary world. You already named yours in Step 3:',
-                  ask: '**Beat 3 of 6 — “Until…”**\n\nNow develop it into Beat 3.\n\n**A strong “Until…” beat:**\n\n- one sentence, **present tense**, after “Until,”\n- a **single event on a particular day** — the moment everything changes\n\nExample: *“Until, on Christmas Eve, the ghost of his dead business partner walks through his door dragging chains of cash-boxes.”*\n\n**Write your Beat 3.**',
-                  irony: '**Beat 3 — one more thought before we move on**\n\nThis is the one that separates a good story from a memorable one.\n\n**Irony** is when a thing turns out to be the opposite of what it appeared. The strongest inciting incidents are ironic: the disaster *is* the opportunity, hidden inside a catastrophe.\n\n- Scrooge is visited by the dead — and it is the visit that finally gives him a life.\n- Macbeth is handed a prophecy that promises him everything — and obeying it costs him everything.\n- The Inspector destroys the Birlings’ comfortable evening — and offers them the only chance they get to become better people.\n\nNotice the shape: the event takes something away, and in taking it away it hands the character the one thing they could not get otherwise.\n\n**How is this event secretly a chance for your protagonist to face the unmet need from Beat 1?**' },
+                    '**First — the inciting incident you named in Step 3**\n\nThis is the inciting incident — the event that shatters the ordinary world. You already named yours in Step 3:',
+                  ask: '**Write it — “Until…”**\n\nNow develop that into this beat.\n\n**A strong “Until…” beat:**\n\n- one sentence, **present tense**, after “Until,”\n- a **single event on a particular day** — the moment everything changes\n\nExample: *“Until, on Christmas Eve, the ghost of his dead business partner walks through his door dragging chains of cash-boxes.”*\n\n**Write your Beat 3.**',
+                  irony: '**One more thought before we move on**\n\nThis is the one that separates a good story from a memorable one.\n\n**Irony** is when a thing turns out to be the opposite of what it appeared. The strongest inciting incidents are ironic: the disaster *is* the opportunity, hidden inside a catastrophe.\n\n- Scrooge is visited by the dead — and it is the visit that finally gives him a life.\n- Macbeth is handed a prophecy that promises him everything — and obeying it costs him everything.\n- The Inspector destroys the Birlings’ comfortable evening — and offers them the only chance they get to become better people.\n\nNotice the shape: the event takes something away, and in taking it away it hands the character the one thing they could not get otherwise.\n\n**How is this event secretly a chance for your protagonist to face the unmet need from Beat 1?**' },
                 { fid: 'cw-step-4-beat4', lead: 'And because of this', chips: GOALS, echo: 'cw-step-3-goal', criteria: [
                     'one sentence, present tense',
                     'a decision and an action',
                     'it must be caused by Beat 3',
                 ], chipQ:
-                    '**Beat 4 — first, the goal you named in Step 3**\n\nThe event gives your protagonist a goal. In Step 3 you said it was:',
-                  ask: '**Beat 4 of 6 — “And because of this…”**\n\nNow write Beat 4 — what they *decide to do* in response to the inciting incident.\n\n**A strong Beat 4:**\n\n- one sentence, **present tense**, after “And because of this,”\n- a **decision and an action** that follows directly from the inciting incident — cause and effect, not a new random event\n- it must be **caused by Beat 3.** Say it aloud with “…and *because of that*…” between them. If it still works after a shrug, the chain is broken.\n\nWeak → strong:\n\n- ✗ *“And because of this, she decides to be braver and starts standing up for herself.”* — a feeling, not a decision; nothing has actually happened.\n- ✓ *“And because of this, she walks into the recruiting hall and signs her name under a false classification.”* — a decision you can watch her make, straight out of Beat 3.\n\nExample: *“And because of this, Scrooge agrees to follow three spirits through his past, his present and his future.”*\n\n**Write your Beat 4.**' },
+                    '**First — the goal you named in Step 3**\n\nThe event gives your protagonist a goal. In Step 3 you said it was:',
+                  ask: '**Write it — “And because of this…”**\n\nWhat they *decide to do* in response to the inciting incident.\n\n**A strong Beat 4:**\n\n- one sentence, **present tense**, after “And because of this,”\n- a **decision and an action** that follows directly from the inciting incident — cause and effect, not a new random event\n- it must be **caused by Beat 3.** Say it aloud with “…and *because of that*…” between them. If it still works after a shrug, the chain is broken.\n\nWeak → strong:\n\n- ✗ *“And because of this, she decides to be braver and starts standing up for herself.”* — a feeling, not a decision; nothing has actually happened.\n- ✓ *“And because of this, she walks into the recruiting hall and signs her name under a false classification.”* — a decision you can watch her make, straight out of Beat 3.\n\nExample: *“And because of this, Scrooge agrees to follow three spirits through his past, his present and his future.”*\n\n**Write your Beat 4.**' },
                 { fid: 'cw-step-4-beat5', lead: 'And because of this', chips: OBSTACLES, echo: 'cw-step-3-obstacle', criteria: [
                     'one sentence, present tense',
                     'the obstacle attacks the flaw',
                     'Beat 5 does NOT resolve anything',
                 ], chipQ:
-                    '**Beat 5 — first, the obstacle you named in Step 3**\n\nThe Road of Trials — where your protagonist meets the force standing in their way. From Step 3:',
-                  ask: '**Beat 5 of 6 — “And because of this…”**\n\nNow write Beat 5 — the major challenge that follows *directly* from their decision in Beat 4.\n\n**A strong Beat 5:**\n\n- one sentence, **present tense**, after “And because of this,”\n- the obstacle **attacks the flaw** — the trial lands exactly where your protagonist is weakest\n\n⚠ **Beat 5 does NOT resolve anything.** Your protagonist does not change here, does not let go of the wound, does not win. That is Beat 6’s job, and if you spend it now the ending has nothing left to do. If your sentence contains *finally · learns · realises · lets go · saves*, it belongs in Beat 6 — and Beat 5 is still empty.\n\nWeak → strong:\n\n- ✗ *“And because of this, she finally lets go of her old resentment so that she can save everyone.”* — that is the resolution. It is Beat 6.\n- ✓ *“And because of this, the people she is trying to save vote to hand her over, and she cannot make herself trust them enough to explain why.”* — the trial, landing straight on the flaw, still unresolved.\n\nExample: *“And because of this, Scrooge must stand unseen at the Cratchits’ Christmas table and watch what his greed has cost the people around him.”*\n\n**Write your Beat 5 — the worst pressure, not the answer to it.**' },
+                    '**First — the obstacle you named in Step 3**\n\nThe Road of Trials — where your protagonist meets the force standing in their way. From Step 3:',
+                  ask: '**Write it — “And because of this…”**\n\nThe major challenge that follows *directly* from their decision in Beat 4.\n\n**A strong Beat 5:**\n\n- one sentence, **present tense**, after “And because of this,”\n- the obstacle **attacks the flaw** — the trial lands exactly where your protagonist is weakest\n\n⚠ **Beat 5 does NOT resolve anything.** Your protagonist does not change here, does not let go of the wound, does not win. That is Beat 6’s job, and if you spend it now the ending has nothing left to do. If your sentence contains *finally · learns · realises · lets go · saves*, it belongs in Beat 6 — and Beat 5 is still empty.\n\nWeak → strong:\n\n- ✗ *“And because of this, she finally lets go of her old resentment so that she can save everyone.”* — that is the resolution. It is Beat 6.\n- ✓ *“And because of this, the people she is trying to save vote to hand her over, and she cannot make herself trust them enough to explain why.”* — the trial, landing straight on the flaw, still unresolved.\n\nExample: *“And because of this, Scrooge must stand unseen at the Cratchits’ Christmas table and watch what his greed has cost the people around him.”*\n\n**Write your Beat 5 — the worst pressure, not the answer to it.**' },
                 { fid: 'cw-step-4-beat6', lead: 'Until finally', chips: STAKES, echo: 'cw-step-3-stakes', criteria: [
                     'one sentence, present tense',
                     'carries the self-revelation',
                 ], chipQ:
-                    '**Beat 6 — first, the stakes you named in Step 3**\n\nThe climax. This is where your protagonist has a **self-revelation** — they overcome their flaw and prove they’ve changed (or, in a tragedy, fail to). In Step 3 you said the stakes were:',
-                  ask: '**Beat 6 of 6 — “Until finally…”**\n\nNow write Beat 6 — how the conflict resolves and what your protagonist learns.\n\n**A strong “Until finally…” beat:**\n\n- one sentence, **present tense**, after “Until finally,”\n- carries the **self-revelation** — they face the flaw and change, or (in a tragedy) refuse and fall\n\nExample: *“Until finally, faced with his own neglected grave, Scrooge chooses people over money and wakes on Christmas morning a changed man.”*\n\n**Write your Beat 6.**',
-                  irony: '**Beat 6 — one more thought before we move on**\n\nLast one — and this is where **duality** does its work.\n\nA character wants one thing on the surface (the **want**) and needs a different, truer thing underneath (the **need**). They are usually opposites, and the ending is where the two finally collide. What the character *gets* should answer the need, not the want — that gap is what makes an ending land instead of just stopping.\n\n- Scrooge wants his money left alone; what he needs, and finally gets, is people.\n- Macbeth wants the crown; what he gets is the crown, and it is worthless — the want granted *is* the punishment.\n- Jane Eyre wants Rochester; what she needs first is to belong to herself, which is why she has to leave before she can return.\n\n**How does what your protagonist actually gets at the end contrast with what they thought they wanted?**' },
+                    '**First — the stakes you named in Step 3**\n\nThe climax. This is where your protagonist has a **self-revelation** — they overcome their flaw and prove they’ve changed (or, in a tragedy, fail to). In Step 3 you said the stakes were:',
+                  ask: '**Write it — “Until finally…”**\n\nHow the conflict resolves and what your protagonist learns.\n\n**A strong “Until finally…” beat:**\n\n- one sentence, **present tense**, after “Until finally,”\n- carries the **self-revelation** — they face the flaw and change, or (in a tragedy) refuse and fall\n\nExample: *“Until finally, faced with his own neglected grave, Scrooge chooses people over money and wakes on Christmas morning a changed man.”*\n\n**Write your Beat 6.**',
+                  irony: '**One more thought before we move on**\n\nLast one — and this is where **duality** does its work.\n\nA character wants one thing on the surface (the **want**) and needs a different, truer thing underneath (the **need**). They are usually opposites, and the ending is where the two finally collide. What the character *gets* should answer the need, not the want — that gap is what makes an ending land instead of just stopping.\n\n- Scrooge wants his money left alone; what he needs, and finally gets, is people.\n- Macbeth wants the crown; what he gets is the crown, and it is worthless — the want granted *is* the punishment.\n- Jane Eyre wants Rochester; what she needs first is to belong to herself, which is why she has to leave before she can return.\n\n**How does what your protagonist actually gets at the end contrast with what they thought they wanted?**' },
             ];
             const WRAP =
                 'That’s your complete Story Spine — six beats, each one causing the next.\n\n' +
@@ -19914,7 +19945,7 @@
                 // — which is half of why students read "Beat 1 of 6" above a question that was not
                 // the beat. Same beat ⇒ same percentage: the bar names WHERE YOU ARE, not what is
                 // finished (the house 1-based convention, v7.20.346).
-                aiBubble(cwProgressBar(idx + 1, BEATS.length) + body);
+                aiBubble(cwProgressBar(idx + 1, BEATS.length, 'Story Spine', '', 'Beat') + body);
                 chipBar(b.chips, onBeatChipPick(b));
                 persist();
                 resetSend();
@@ -19926,7 +19957,7 @@
             // v7.20.285 (Neil): complex characters carry SEVERAL unmet needs — one leads.
             // Beat 1 is now two stages: MAIN need (single tap) → "any others?" MULTI-select
             // (optional, Continue commits). Both picks land in the transcript as user turns.
-            const SEC_ASK = '**Beat 1 — any other unmet needs?**\n\nGood. Most complex characters carry more than one unmet need — the main one leads, the others deepen them. **Tap any OTHER unmet needs your protagonist also carries**, then Continue. (Just the one? Continue straight away.)';
+            const SEC_ASK = '**Any other unmet needs?**\n\nGood. Most complex characters carry more than one unmet need — the main one leads, the others deepen them. **Tap any OTHER unmet needs your protagonist also carries**, then Continue. (Just the one? Continue straight away.)';
             let mainNeed = '';
             function onBeatChipPick(b) {
                 return function (pick) {
@@ -19935,7 +19966,7 @@
                     if (b.fid === 'cw-step-4-beat1') {
                         mainNeed = pick;
                         phase = 'chip2';
-                        aiBubble(cwProgressBar(1, BEATS.length) + SEC_ASK);   // v7.20.355 (#73): still Beat 1's station
+                        aiBubble(cwProgressBar(1, BEATS.length, 'Story Spine', '', 'Beat') + SEC_ASK);   // v7.20.355 (#73): still Beat 1's station
                         chipBarMulti(NEEDS.filter(function (n) { return n !== pick; }), onSecondaryNeedsDone);
                         persist();
                         resetSend();
@@ -19943,7 +19974,7 @@
                     }
                     phase = 'beat';
                     _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });   // v7.20.327
-                    aiBubble(cwProgressBar(BEATS.indexOf(b) + 1, BEATS.length) + b.ask);   // v7.20.340
+                    aiBubble(cwProgressBar(BEATS.indexOf(b) + 1, BEATS.length, 'Story Spine', '', 'Beat') + b.ask);   // v7.20.340
                     appendSpineButtons();
                     persist();
                     resetSend();
@@ -19965,7 +19996,7 @@
                 } catch (e) { console.warn('WML CW4: unmet-need write failed (non-fatal)', e && e.message); }
                 phase = 'beat';
                 _walkSlot.arm('cw4', BEATS[0].fid, { cycle: 'accumulate' });   // v7.20.327
-                aiBubble(cwProgressBar(1, BEATS.length) + BEATS[0].ask);   // v7.20.340
+                aiBubble(cwProgressBar(1, BEATS.length, 'Story Spine', '', 'Beat') + BEATS[0].ask);   // v7.20.340
                 appendSpineButtons();
                 persist();
                 resetSend();
@@ -20110,7 +20141,7 @@
                 // b.fid regardless of what has happened to `idx` in the meantime — and what makes
                 // a message arriving with NO ask served (a stray chip, a paste) file nothing.
                 _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });
-                aiBubble(cwProgressBar(BEATS.indexOf(b) + 1, BEATS.length) + b.ask);   // v7.20.340
+                aiBubble(cwProgressBar(BEATS.indexOf(b) + 1, BEATS.length, 'Story Spine', '', 'Beat') + b.ask);   // v7.20.340
                 appendSpineButtons();
                 persist();
                 resetSend();
@@ -20123,6 +20154,9 @@
                 return {
                     walk: 'cw4',   // v7.20.339: lets the live-chips registry re-serve THIS tick list
                     criteria: b.criteria, cycle: 'accumulate', emit: aiBubble, chipBar: chipBar,
+                    // v7.20.356: the tick list sits inside this beat's station, so it shows the
+                    // beat's own position. Resolved at serve time, so it follows the walk.
+                    progress: cwProgressBar(BEATS.indexOf(b) + 1, BEATS.length, 'Story Spine', '', 'Beat'),
                     onTicks: function (ticked, unticked) {
                         saTicks[b.fid] = { t: ticked, u: unticked };
                         phase = 'sa-follow'; persist();
@@ -20434,7 +20468,7 @@
                     if (!wasIrony && b.irony) {
                         phase = 'irony';
                         _walkSlot.arm('cw4', b.fid, { cycle: 'accumulate' });   // v7.20.327: same row
-                        aiBubble(cwProgressBar(BEATS.indexOf(b) + 1, BEATS.length) + b.irony);   // v7.20.355 (#73): same station
+                        aiBubble(cwProgressBar(BEATS.indexOf(b) + 1, BEATS.length, 'Story Spine', '', 'Beat') + b.irony);   // v7.20.355 (#73): same station
                         persist(); resetSend(); return;
                     }
                     // v7.20.333: the beat is complete (ask + any irony follow-up). The student now
@@ -20868,8 +20902,10 @@
                 const s = stages[a.stage];
                 const c = a.concept;
                 // v7.20.340: the in-chat progress bar, derived from where the walk actually is.
-                let out = cwProgressBar(ASKS.indexOf(a) + 1, ASKS.length)
-                    + '**' + s.name + ' · ' + a.nInStage + ' of ' + a.stageTotal + '**\n\n';
+                // v7.20.356: the STAGE name is the chip's top-liner; the chip's own count is the
+                // whole-walk position, so the stage-relative one stays as the heading beneath it.
+                let out = cwProgressBar(ASKS.indexOf(a) + 1, ASKS.length, s.name,
+                    a.nInStage + ' of ' + a.stageTotal + ' in this stage');
                 if (a.kind === 'arc') {
                     out += 'Before the beats, fix the two ends of this stage. ' + s.name + ' is where '
                         + s.job + '.\n\n'
@@ -21733,7 +21769,9 @@
             // (Neil: secondary elements must come where the DOCUMENT puts it) silently desynced
             // every label from the bar beside it. Same drift class as the menu's "4 of 9".
             function askHeading(n) { return '**' + (n + 1) + ' of ' + STEPS.length + ' — '; }
-            function askText(s) { return cwProgressBar(i + 1, STEPS.length) + askHeading(i) + s.title + '**\n\n' + s.body; }
+            // v7.20.356: the count lives in the CHIP now, so askHeading's "N of 9 —" prose is gone —
+            // one count, one place, derived from position (askHeading is kept for the recall path).
+            function askText(s) { return cwProgressBar(i + 1, STEPS.length, 'Plot Structure', s.title) + s.body; }
             function serveAsk() {
                 const s = STEPS[i];
                 phase = 'ask';
@@ -21766,7 +21804,7 @@
                     // v7.20.347: this chunk STATES its own position ("4 of 9"), so it carries the
                     // bar. A bubble that claims a position and shows no bar is the worst of both.
                     // The second chunk does not — it is the same position, continued.
-                    cwProgressBar(PICK_I + 1, STEPS.length, 'Choose Your Plot Structure', 'The eight shapes')
+                    cwProgressBar(PICK_I + 1, STEPS.length, 'Plot Structure', 'The eight shapes')
                         + 'All eight are versions of the Hero\'s Journey underneath. What changes is the KIND of transformation and, above all, how the story ENDS. Here are the first four.\n\n' + half[0],
                     'And the other four.\n\n' + half[1],
                 ];
@@ -21779,7 +21817,7 @@
                 // strip on the messages in the chat"). .340/.346 wired the bar into askText(), which
                 // only covers the TYPED steps — the pick and the multi-select were serving their own
                 // bubbles and never got one. Derived from PICK_I, never the "4 of 9" string.
-                aiBubble(cwProgressBar(PICK_I + 1, STEPS.length) + PICK_PROMPT);
+                aiBubble(cwProgressBar(PICK_I + 1, STEPS.length, 'Plot Structure', 'Your primary archetype') + PICK_PROMPT);
                 chipBar(ORDER.map(function (k) { return _cw5ChipLabel(CW5_ARCHETYPE_ITEMS[k]); }), onPick);
                 resetSend();
             }
@@ -21881,7 +21919,7 @@
                 _walkSlot.clear('cw5');   // v7.20.340: multi-select is a TAP
                 // v7.20.348: derived from ITS OWN position — secondary elements is no longer
                 // last (it now sits where the document puts it), so a hardcoded 9-of-9 would lie.
-                aiBubble(cwProgressBar(MULTI_I + 1, STEPS.length, 'Choose Your Plot Structure', 'Secondary elements')
+                aiBubble(cwProgressBar(MULTI_I + 1, STEPS.length, 'Plot Structure', 'Secondary elements')
                     + 'The most interesting stories do not follow one shape rigidly — they BLEND. *The Hunger Games* is primarily Overcoming the Monster with strong Coming of Age (Katniss grows up fast) and The Quest (she is fighting towards a goal). *A Christmas Carol* is Rebirth/Redemption with Voyage and Return inside it (the ghost journeys).\n\n'
                     + 'You have chosen **' + (_cw5ChipLabel(cur || '') || 'your primary shape') + '** as your spine. **Tap any other shapes whose elements you want woven in**, then Continue. (None at all is a perfectly good answer — just press Continue.)');
                 chipBarMulti(ORDER.filter(function (k) { return CW5_ARCHETYPE_ITEMS[k] !== cur; })
@@ -21937,7 +21975,10 @@
                 // the exact defect the same student hits in Step 6. Re-derived on every entry, so
                 // it is always true; `confirmed` in the sidecar is what stops it repeating.
                 _cwReplay(function () {
-                    aiBubble(cwProgressBar(PICK_I + 1, STEPS.length)
+                    // v7.20.356: the chip's heading stays STATIC — the mutable name lives in the
+                    // body below it, where this turn already keeps it. Same reason as above: the
+                    // turn is drawn-not-saved, but a mutable value belongs in one place, not two.
+                    aiBubble(cwProgressBar(PICK_I + 1, STEPS.length, 'Plot Structure', 'Confirm your structure')
                         + '**Your plot structure is already set to ' + cur + '.**\n\n'
                         + 'Everything after this is built on it — your Step 6 outline, your scenes and every '
                         + 'draft. So before we go on, one check: is that still the shape of your story?');

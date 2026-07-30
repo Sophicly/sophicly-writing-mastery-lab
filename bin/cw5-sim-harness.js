@@ -463,10 +463,20 @@ for (let n = 0; n < FAIL_OPEN_REPLIES.length; n++) {
 
     // v7.20.346: and the bar on it is VISIBLE. The token reached the bubble in .344 too — at 0%,
     // which renders as an empty grey track and reads as no bar at all ("I don't see any progress").
-    const pct = (String(newest).match(/\[SWML_PROGRESS_(?:CODE_)?(\d+)\]/) || [])[1];
-    ok(pct !== undefined && Number(pct) > 0,
-        'real-entry: the first ask shows ' + (pct === undefined ? 'NO progress token' : pct + '% — an empty bar')
-        + '. The bar rides the ask in hand, so ask 1 of 9 is 11%, not 0%.');
+    // v7.20.356: the token is now `[SWML_BEAT:{…}]` — the same beat chip the quizzes use, carrying
+    // section + step + total instead of a bare percentage (the crude bar has no producer left).
+    // The assertion is unchanged in substance: the first ask must state a REAL position, because a
+    // 0% render is an empty grey track and reads as no bar at all ("I don't see any progress").
+    const beatM = String(newest).match(/\[SWML_BEAT:(\{[^}]*\})\]/);
+    let beat = null;
+    try { beat = beatM ? JSON.parse(beatM[1]) : null; } catch (e) { beat = null; }
+    ok(beat && beat.step > 0 && beat.total > 0,
+        'real-entry: the first ask carries ' + (beatM ? 'an unparseable beat token' : 'NO beat token')
+        + '. The chip rides the ask in hand, so ask 1 of 9 must be step 1 of 9 — never 0.');
+    ok(beat && beat.section,
+        'real-entry: the first ask\'s chip has no SECTION, so it renders a bare track with no idea '
+        + 'what the student is working on — the exact thing Neil compared unfavourably with the '
+        + 'AQA Lang P2 chip ("it clearly says what we\'re working on, Question 3, and what step").');
 
     // And the launch words, typed while NO ask has been served, must file NOTHING.
     const w2 = makeWorld();

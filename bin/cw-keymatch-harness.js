@@ -684,7 +684,11 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         sites++;
         const oneBased = /\+\s*1\s*$/.test(arg)
             || (/^\d+$/.test(arg) && Number(arg) >= 1)
-            || arg === total;                                 // the final ask = 100%
+            || arg === total                                  // the final ask = 100%
+            // v7.20.356: CW1 passes `q.seq`, which is stamped `seq: QS.length + 1` as the array is
+            // built — 1-based by construction and always equal to `idx + 1`. Exempted BY NAME with
+            // the reason, not by loosening the pattern, and the stamp itself is asserted below.
+            || arg === 'q.seq';
         ok(oneBased,
             'cwProgressBar is called with `' + arg + '` — that is a 0-based index, so the first ask '
             + 'of that walk renders 0%. Pass the ask IN HAND (index + 1).');
@@ -698,19 +702,27 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     // through the canvas chat, which calls it. FQ/MSQ kept their bars only because the MAIN
     // chat never does. Run the real function over both bars and prove which one survives.
     const CORE = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
-    ok(/SWML_PROGRESS_CODE_/.test(JS),
-        'cwProgressBar no longer emits the CODE token — its bar is strippable again');
-    // The rule must EXIST *and* must emit the exempt class — checking only that the token is
-    // mentioned lets someone drop the class and leave the bar strippable again (caught by
-    // injecting exactly that: the token rule survived, the class did not).
-    const codeRuleAt = CORE.indexOf('SWML_PROGRESS_CODE_(\\d+)');
-    ok(codeRuleAt !== -1, 'formatAI has no rule for the CODE token — the walks would render a literal placeholder');
-    if (codeRuleAt !== -1) {
-        const rule = CORE.slice(codeRuleAt, CORE.indexOf('\n        );', codeRuleAt));
-        ok(rule.indexOf('swml-chat-progress-bar--code') !== -1,
-            'formatAI renders the CODE token WITHOUT the `--code` class, so withProgressChip will '
-            + 'strip it exactly as before — the bar disappears again and nothing says so');
-    }
+
+    // ⭐ v7.20.356 — ONE PROGRESS COMPONENT, AND THE CRUDE BAR IS UNREACHABLE.
+    // Neil: "I want it like that UNIVERSALLY. It's not just creative writing." The chip existed
+    // from .349 but `section` was optional, so 12 of 14 call sites fell through to the crude
+    // 10px bar. The fallback is now DELETED, so this asserts the SHAPE of the emitter rather
+    // than the presence of a class: there must be no argument list that yields the old widget.
+    const cwpAt = JS.indexOf('function cwProgressBar(');
+    ok(cwpAt !== -1, 'cwProgressBar is gone — the code-served walks have no progress at all');
+    const cwpBody = JS.slice(cwpAt, JS.indexOf('\n    }', cwpAt));
+    ok(cwpBody.indexOf('[SWML_BEAT:') !== -1,
+        'cwProgressBar no longer emits the BEAT token — the walks lose the component the quizzes use');
+    ok(!/return\s*'\[SWML_PROGRESS_CODE_/.test(cwpBody),
+        'cwProgressBar has a fallback branch emitting the CRUDE bar again. That branch is exactly '
+        + 'how 12 of 14 call sites silently rendered a 10px "50%" widget: passing a section was '
+        + 'OPTIONAL, so the ugly bar was the default you got by NOT thinking. There must be no '
+        + 'argument list that can produce it.');
+
+    // The stamp behind the `q.seq` exemption above — asserted, not assumed.
+    ok(/seq:\s*QS\.length\s*\+\s*1/.test(JS),
+        'CW1 no longer stamps `seq: QS.length + 1`, so `q.seq` may not be 1-based any more and the '
+        + 'exemption in the loop above has gone stale — the first ask could render 0% again.');
     const wpcAt = CORE.indexOf('function withProgressChip');
     ok(wpcAt !== -1, 'withProgressChip is gone — the bar-stripping contract cannot be verified');
     if (wpcAt !== -1) {
@@ -735,9 +747,51 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
                 'withProgressChip strips the BEAT CHIP — the CW walks would lose the very component '
                 + 'the quizzes use, which is the whole point of reusing it');
         }
-        ok(wpc(bar('swml-chat-progress-bar swml-chat-progress-bar--code'), '').indexOf('swml-chat-progress-bar--code') !== -1,
-            'withProgressChip EATS the code-served bar — this is the exact defect Neil reported twice: '
-            + 'the token is emitted, formatAI renders it, and the canvas pipeline deletes it before he sees it');
+        // ⭐ v7.20.356 — THE MODEL'S BAR IS NOW THE SAME CHIP, SO THE STRIP MUST FOLLOW IT.
+        // 72 protocol modules emit "[Progress bar: ███ 50%]". In the MAIN chat that used to render
+        // the crude widget (the inconsistency Neil could not see from the assessment screens he was
+        // comparing against). It is now the chip — but in the CANVAS chat parseProgressBeat adds
+        // the AUTHORITATIVE chip, so if the model's copy also survived the student would get TWO
+        // chips on one bubble. `swml-beat--model` is what keeps them separable.
+        if (chipAt !== -1) {
+            const cEnd2 = CORE.indexOf('\n    }', chipAt);
+            // eslint-disable-next-line no-new-func
+            const chip2 = new Function('return (' + CORE.slice(chipAt, cEnd2 + 6) + ');')();
+
+            // ⚠ THIS ASSERTION EXISTS BECAUSE THE FIRST CUT OF THIS GATE WAS VACUOUS, and it was
+            // caught by injecting the real defect. The strip test below builds the model chip by
+            // applying the marker class ITSELF — so deleting the marker from formatAI left the
+            // test passing perfectly while the product shipped two stacked chips. A gate that
+            // constructs its own input is testing the test. Read the marker out of formatAI's
+            // ACTUAL rule first; only then is the behavioural test below about the product.
+            const modelRuleAt = CORE.indexOf('SWML_PROGRESS_(\\d+)');
+            ok(modelRuleAt !== -1, 'formatAI has no rule for the model progress token — 72 protocol modules render a literal placeholder');
+            const modelRule = CORE.slice(modelRuleAt, CORE.indexOf('\n        );', modelRuleAt));
+            ok(modelRule.indexOf('progressChipHTML') !== -1,
+                'formatAI renders the MODEL bar as something other than the shared chip — that is the '
+                + 'crude 10px widget returning, and it is what Neil asked to remove UNIVERSALLY.');
+            ok(modelRule.indexOf('swml-beat--model') !== -1,
+                'formatAI renders the MODEL chip WITHOUT the `swml-beat--model` marker, so '
+                + 'withProgressChip cannot tell it from a code-served one. In the canvas chat the '
+                + 'student then gets TWO progress chips stacked on the same bubble.');
+
+            const modelChip = chip2({ pct: 44 }).replace('class="swml-beat"', 'class="swml-beat swml-beat--model"');
+            const stripped = wpc(modelChip, '');
+            ok(stripped.indexOf('swml-beat') === -1,
+                'withProgressChip does not strip the MODEL chip (`swml-beat--model`). In the canvas '
+                + 'chat parseProgressBeat adds its own chip, so the student sees TWO progress chips '
+                + 'stacked on one bubble.');
+            // …and it must not leave the inner divs behind. A lazy `[\\s\\S]*?</div>` stops at the
+            // FIRST closing tag, deleting the header and orphaning two closers — which renders as a
+            // broken box rather than a missing one, so it would not read as "the strip failed".
+            ok(!/<\/div>/.test(stripped) && stripped.indexOf('swml-beat-track') === -1,
+                'withProgressChip strips only PART of the model chip, orphaning its closing tags');
+            // The code-served chip carries NO marker class and must survive untouched.
+            ok(wpc(chip2({ section: 'Story Spine', unit: 'Beat', step: 2, total: 6 }), '').indexOf('swml-beat') !== -1,
+                'withProgressChip EATS the code-served chip — this is the exact defect Neil reported '
+                + 'twice: the token is emitted, formatAI renders it, and the canvas pipeline deletes '
+                + 'it before he sees it');
+        }
     }
 }
 
@@ -874,21 +928,19 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     ok(asks.length === 6, `expected 6 CW4 write-asks, parsed ${asks.length}`);
     ok(preps.length >= 6, `expected at least 6 CW4 preparation bubbles, parsed ${preps.length}`);
 
-    asks.forEach((f, i) => {
-        ok(COUNTED.test(f.body.slice(0, 60)),
-            `CW4 write-ask #${i + 1} does not OPEN with a counted heading ("**Beat N of 6 — …**"). `
-            + 'The write-ask is the one bubble that asks for the counted thing, so it is the one '
-            + 'bubble that must carry the count — otherwise the student never learns which beat '
-            + 'they are actually writing.');
-    });
-
-    preps.forEach((f) => {
+    // ⭐ v7.20.356 SUPERSEDES the .355 form of this rule. At .355 the count lived in the PROSE and
+    // was required on the write-ask; now the CHIP carries "Story Spine · Beat N of 6" on every
+    // bubble of the station, so a count in the prose is a SECOND copy of the same number — the
+    // "two counts side by side" Neil objected to in .991. The rule is therefore now absolute:
+    // NO CW4 beat string may carry a count. The position is stated once, by the component, and
+    // is derived from the walk rather than typed by hand.
+    [...asks, ...preps].forEach((f) => {
         ok(!COUNTED.test(f.body),
-            `a CW4 ${f.kind} bubble carries a counted heading ("${(f.body.match(COUNTED) || [''])[0].trim()}"). `
-            + 'A preparation bubble asks for something that is NOT the beat (the unmet need, the '
-            + 'Step-3 recall, the irony follow-up), so a count on it is a lie — this is exactly #73, '
-            + 'which Neil saw send students writing straight into the document. Use "Beat N — <what '
-            + 'this bubble actually asks>" with no count.');
+            `a CW4 ${f.kind} bubble hard-codes a count ("${(f.body.match(COUNTED) || [''])[0].trim()}"). `
+            + 'The beat chip already states "Beat N of 6" above every bubble in the station, so this '
+            + 'is a duplicate the walk must keep in sync by hand — the drift that made #73 possible. '
+            + 'Say what THIS bubble asks ("First — your protagonist\'s unmet need", "Write it — '
+            + '“At first…”") and let the chip carry the number.');
     });
 
     // ── the bar rides every bubble in the station ──────────────────────────────────────────

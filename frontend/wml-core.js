@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.355';
+var WML_BUILD = '7.20.356';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3527,8 +3527,13 @@ window.WML = (function() {
         // withProgressChip can tell it apart from a bar the MODEL improvised. Both render
         // identically; only the model's is strippable. Replaced FIRST — `CODE_` is not digits, so
         // the generic rule below could never match it anyway, but order makes the intent plain.
+        // v7.20.356: the `_CODE_` bar HAS NO PRODUCER ANY MORE — cwProgressBar always emits
+        // `[SWML_BEAT:…]` now, so every code-served walk renders the real chip. The rule is kept
+        // ONLY so a message stored by .350–.355 still renders something on replay, and it now
+        // renders the CHIP rather than the crude bar it was written as. Delete it once no stored
+        // transcript can contain the token.
         html = html.replace(/\[SWML_PROGRESS_CODE_(\d+)\]/g, (_, pct) =>
-            `<div class="swml-chat-progress-bar swml-chat-progress-bar--code"><div class="swml-chat-progress-fill" style="width:${pct}%"></div><span class="swml-chat-progress-label">${pct}%</span></div>`
+            progressChipHTML({ pct: parseInt(pct, 10) })
         );
         // ⭐ v7.20.350 — THE BEAT CHIP, for code-served walks. Neil: "I wanted exactly the same
         // style, not just the progress bar… I think there's some text above that, and text below."
@@ -3547,8 +3552,21 @@ window.WML = (function() {
                 : '';
             return progressChipHTML(beat) + head;
         });
+        // ⭐ v7.20.356 — THE MODEL'S BAR RENDERS AS THE SAME CHIP. Neil: "I want it like that
+        // UNIVERSALLY… not just creative writing." 72 protocol modules emit the ASCII
+        // "[Progress bar: ███░ 50%]" line, which became this crude 10px widget in the MAIN chat
+        // (planning). The CANVAS chat never showed it — withProgressChip strips it — so the
+        // inconsistency was invisible from the assessment screens he was comparing against.
+        // Now every progress render in the product is the one component.
+        //
+        // ⚠ THE MARKER CLASS IS LOAD-BEARING. withProgressChip must still be able to delete a
+        // MODEL bar in the canvas chat, because parseProgressBeat adds the authoritative chip
+        // there — without a way to tell them apart the student would get TWO chips on one bubble.
+        // The old strip keyed on `class="swml-chat-progress-bar"`, which this markup no longer
+        // has, so the distinction moves to `swml-beat--model`. Code-served chips carry no marker
+        // and are never stripped, which is the same contract `--code` expressed before.
         html = html.replace(/\[SWML_PROGRESS_(\d+)\]/g, (_, pct) =>
-            `<div class="swml-chat-progress-bar"><div class="swml-chat-progress-fill" style="width:${pct}%"></div><span class="swml-chat-progress-label">${pct}%</span></div>`
+            progressChipHTML({ pct: parseInt(pct, 10) }).replace('class="swml-beat"', 'class="swml-beat swml-beat--model"')
         );
 
         // Render blank placeholders as inline inputs (v7.14.51)
@@ -4013,6 +4031,11 @@ window.WML = (function() {
             // The class check is explicit, not incidental: do not relax it to a bare
             // `class="swml-chat-progress-bar` prefix match.
             .replace(/<div class="swml-chat-progress-bar">[\s\S]*?swml-chat-progress-label">[^<]*<\/span>\s*<\/div>/gi, '')
+            // v7.20.356: the model's bar now renders as a beat chip (see formatAI), so the strip
+            // follows it. Anchored on the FILL div's own closing sequence — a lazy `[\s\S]*?</div>`
+            // would stop at the first inner `</div>` and leave two orphan closers on the page.
+            // Only `--model` is stripped; a code-served chip has no marker class and survives.
+            .replace(/<div class="swml-beat swml-beat--model"[\s\S]*?swml-beat-fill[^>]*><\/div><\/div><\/div>/gi, '')
             // v7.19.987: also strip the RAW model breadcrumb + ANY improvised bar the task-gated
             // stylers missed. Conceptual Notes (and any protocol using "Element N of 8" + box-char
             // bars instead of "Step N of M" + "[Progress bar:]") slipped past the Planning/
