@@ -780,8 +780,10 @@ next question automatically** — there is no per-question CHECK step.
    makes restarting attractive **at source** — there is nothing to peek at mid-run. This
    is the same logic as `feedback_writing_cycles_once_and_move_on` and
    `feedback_diagnostic_tests_redraft_trains`: the measurement must be allowed to
-   measure. (It also protects the grade-aggregation model — every attempt counts toward
-   the average, so an attempt abandoned at Q2 is a real cost, not a free retry.)
+   measure. (⚠️ This paragraph used to end "an attempt abandoned at Q2 is a real cost,
+   not a free retry" — **superseded 2026-07-30, see §23**. Withholding verdicts still
+   removes the reason to restart; what changed is that an INTERRUPTED attempt is now
+   resumed rather than graded where it stopped.)
 2. **Choose → CHECK → read verdict → NEXT is three actions where one will do.** Neil,
    driving it live: *"I'm choosing my answer, and then I have to check it, and then it
    tells me it's right, and then I have to press the next button."* Selecting IS the
@@ -1257,3 +1259,46 @@ the Stunning Surprise) · the logline matching bank in `sophicly-components`.
 which is how two overlapping definitions shipped (root CLAUDE.md §5c). Where the walk itself derives
 from a named source like Edson, the source is on the system and must be **quoted, not paraphrased
 from memory**.
+
+
+---
+
+## §23. ⭐⭐ AN INTERRUPTED ATTEMPT IS RESUMED, NEVER BANKED (Neil, ruled 2026-07-30)
+
+**The ruling.** Leaving a graded activity part-way through must **never** record a grade. Only an
+explicit finish does. When the student comes back, they land in the **same attempt**, with their
+earlier answers intact, at the first question they had not reached.
+
+**What this replaces.** Components used to finalise an abandoned attempt on the student's next page
+load — scoring it out of the full set, with everything unreached marked wrong. It was built to close
+a real hole (start, see it going badly, close the tab, retry clean) and §13 above endorsed it.
+
+**Why it changed — the case that broke it.** Neil, 2026-07-30: *"Shouldn't we make it so that the
+only time it submits is when the student actually submits it? Just because they left the page and
+came back — surely that shouldn't auto-submit, because sometimes I might be telling them to do stuff
+in a live class where they have to transition to another page."*
+
+A real student had already paid for it. Uid 1386 finished The Eight Plot Structures at **7/8, grade
+8**, replayed it, answered 5 of 8, and left. Returning to the page banked **5/8, grade 5** — three
+questions he never saw, marked wrong — and pulled his course average down. He did nothing wrong; the
+rule charged him for an interruption.
+
+**The farming hole stays shut — by a different mechanism.** Leaving buys no fresh start. The
+in-flight answers are KEPT, so returning resumes the attempt in progress rather than offering a clean
+one. There is nothing to escape into: you finish the run you began. A student who abandons forever
+records no grade, but also gains nothing — the lesson stays unfinished.
+
+**What must be true (all nine components with in-flight saving, no exceptions):**
+1. **A page load NEVER commits an attempt.** Only an explicit finish writes a grade.
+2. **Returning resumes** — answers restored, landing on the first unanswered item. If every item was
+   answered but never submitted, land on the LAST one so the next action submits.
+3. **No verdicts on resume.** Nothing was submitted, so nothing is marked right or wrong yet.
+4. **Residue is discarded, not resumed.** A trailing progress-save can echo the attempt just
+   committed; resuming that would drop the student back into a run they already finished.
+5. **Server state beats the local draft** — the ruling exists for the student who returns on a
+   different device or a cleared browser.
+
+**Enforced mechanically:** `sophicly-components/bin/verify-inflight.js` fails if any component banks
+on load, stops returning `resume`, ignores it client-side, or still carries the retired "your
+previous unfinished attempt was graded" copy. The policy itself lives in ONE class
+(`Sophicly_Components_Inflight`) so a component cannot drift from this ruling.
