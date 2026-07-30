@@ -505,6 +505,46 @@ console.log('I5 · a rewrite replaces, never stitches');
     void appends;
 }
 
+// ── I5b · A RESTATEMENT IS NEVER STITCHED (#72, v7.20.353) ─────────────────────────────────
+console.log('I5b · an accumulate push that gets RESTATED banks one copy, not two');
+{
+    // Neil's live PROD document held the same paragraph FOUR times in cw-step-4-beat6 (~600 words
+    // in a one-sentence row). The cycle flag was right — `accumulate` is deliberate, the irony
+    // follow-up is meant to DEEPEN the beat. What went wrong is the reverse of the .283 fragment
+    // bug: a REWRITE-SHAPED push inside an ACCUMULATE cycle ("now put that into the beat itself,
+    // write it as one sentence"), so the student resent everything and acc() stitched a copy.
+    //
+    // The protocol now forbids that push shape — but wording is a known-fragile fix (the model
+    // drifted despite the existing rule, and repeated a push verbatim), so acc() drops a
+    // restatement instead. This gate proves the CODE holds regardless of what Sophia says.
+    const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+    // The guard must exist in the shipped controller, not just in this rig's imagination.
+    ok(/RESTATED the banked draft/.test(CTL_TEXT),
+        'the restatement guard is gone from _cwSpineCtl — a rewrite-shaped push would stitch drafts again (#72)');
+
+    const first = 'until finally she strengthens the rebel army and saves her mother she succeeds';
+    const restated = first + ' but she has to sacrifice herself so she is not there to enjoy it';
+
+    const w = makeWorld({ verdict: () => '' });   // never accept → every answer is a push cycle
+    await w.start();
+    if (w.chips().length) w.tapLive(w.chips()[0]);
+    w.say(first);
+    await settle();
+    w.say(restated);          // the student resends everything, plus the new piece
+    await settle();
+
+    const banked = [];
+    w.rows.forEach(function (v, k) { if (BEAT_FIDS.indexOf(k) !== -1 && v) banked.push(v); });
+    const all = banked.join('\n') + '\n' + (w.deps && w.deps.__draft ? w.deps.__draft : '');
+    const hay = norm(all);
+    const needle = norm(first);
+    let count = 0, at = hay.indexOf(needle);
+    while (at !== -1) { count++; at = hay.indexOf(needle, at + 1); }
+    ok(count <= 1, 'the restated answer was banked TWICE (found ' + count + ' copies) — acc() stitched '
+        + 'a rewrite instead of replacing it (#72)');
+}
+
 // ── I6 · RESUME ────────────────────────────────────────────────────────────────────────────
 console.log('I6 · resume repeats nothing and skips nothing');
 {

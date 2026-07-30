@@ -19037,9 +19037,22 @@
             let draft = '';
             // v7.20.289: 'rewrite' steps keep only the LATEST complete answer; 'accumulate'
             // steps join the whole cycle. See the STEPS construction above for why.
+            // v7.20.353: the same restatement guard CW4 needed for #72 — applied here in the same
+            // change rather than left for the next live lesson to find. CW3's `rewrite` steps were
+            // already safe (they return `clean`), but its ACCUMULATE steps carry exactly the CW4
+            // exposure: a rewrite-shaped push makes the student resend what they already wrote and
+            // the draft ends up holding it twice. Narrow by design — contiguous containment only,
+            // so a genuine addition still accumulates. See the CW4 twin for the full story.
             const acc = (clean, st) => {
                 if (st && st.cycle === 'rewrite') return clean;
-                return draft ? draft + '\n' + clean : clean;
+                if (!draft) return clean;
+                const _n = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+                const a = _n(draft), b = _n(clean);
+                if (a && b && b.indexOf(a) !== -1) {
+                    console.warn('WML CW3: answer RESTATED the banked draft — replacing, not appending (#72).');
+                    return clean;
+                }
+                return draft + '\n' + clean;
             };
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw3') + '_cw3'; } catch (e) { return 'swml_cw3'; } };
@@ -19782,7 +19795,43 @@
             // v7.20.283: same push-cycle accumulation as CW3 — a pushed beat banks EVERYTHING
             // the student said for it, not the final fragment. Persisted across reloads.
             let draft = '';
-            const acc = (clean) => (draft ? draft + '\n' + clean : clean);
+            // ⭐ v7.20.353 — ACCUMULATE, BUT NEVER STITCH A RESTATEMENT (#72).
+            //
+            // Found in Neil's LIVE PROD document: `cw-step-4-beat6` held the same paragraph FOUR
+            // times (~600 words for a one-sentence beat row), and beat3 carried a fifth copy.
+            //
+            // The cycle flag is NOT the bug — `accumulate` is deliberate here and the protocol says
+            // so (CW-STEP-04 §"Judge the WHOLE answer"): the irony follow-up ADDS a facet and is
+            // meant to deepen the beat. What actually happened is subtler and is the reverse of the
+            // .283 fragment bug: Sophia issued a REWRITE-SHAPED push inside an ACCUMULATE cycle
+            // ("Now put that into the beat itself — write it as one present-tense sentence"), the
+            // student loyally resent everything he had already said, and acc() stitched a second
+            // copy. Then the model repeated the identical push and it happened again. Twice more.
+            //
+            // The protocol is being corrected to forbid that push shape — but wording alone is a
+            // known-fragile fix (§11): the model drifted here despite the rule to push only on what
+            // is MISSING, and it even repeated a push verbatim. So the failure is engineered out
+            // here instead, where no phrasing can reach it.
+            //
+            // RULE: if the new message already CONTAINS everything banked so far, the student has
+            // restated rather than added — take the new message whole and drop the old copy. Kept
+            // deliberately narrow (contiguous containment after normalising case, punctuation and
+            // whitespace) so a genuine addition is never silently swallowed: a follow-up that adds
+            // a new facet does not contain the earlier text, so it still accumulates exactly as the
+            // protocol intends.
+            const _accNorm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+            const acc = (clean) => {
+                if (!draft) return clean;
+                const a = _accNorm(draft), b = _accNorm(clean);
+                if (a && b && b.indexOf(a) !== -1) {
+                    // The new answer restates the banked one. Stitching would duplicate it.
+                    console.warn('WML CW4: answer RESTATED the banked draft — replacing, not appending '
+                        + '(#72). A push in an accumulate cycle asked for a rewrite; it should ask only '
+                        + 'for what is missing.');
+                    return clean;
+                }
+                return draft + '\n' + clean;
+            };
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw4') + '_cw4'; } catch (e) { return 'swml_cw4'; } };
             // v7.20.327: the armed slot rides the sidecar. The token is in-memory, so without

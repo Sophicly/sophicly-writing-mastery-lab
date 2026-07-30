@@ -64,6 +64,24 @@ retained by code and their follow-up ADDS to it — everything they said for thi
 together on your accept. Judge the accumulated beat, not the latest fragment alone. **And your push
 stays on the CURRENT beat** — never reach ahead into a later beat's territory.
 
+**⛔ NEVER ASK THEM TO RESTATE, REWRITE OR "PUT IT INTO ONE SENTENCE".** Because the follow-up is
+APPENDED, a push that asks for the whole beat again makes the student resend what they already
+wrote, and the row ends up holding it twice. **Ask ONLY for the piece that is missing**, in one
+question they can answer in a line — never for a tidier version of what is already there.
+
+- ✗ *"Now put that into the beat itself — write it as one present-tense sentence starting 'Until
+  finally…'"* ← this is what happened live, and Beat 6 ended up holding the same paragraph **four
+  times** (~600 words in a one-sentence row).
+- ✓ *"What does that success actually cost her?"* ← adds the missing piece; nothing is repeated.
+
+The student never has to tidy the beat mid-walk: code offers a proper rewrite route at the wrap
+(**✏️ Rewrite a beat**), and THAT one replaces the row instead of appending to it. If the beat truly
+needs restating rather than extending, accept what they have and let the wrap handle it.
+
+**And never repeat a push you have already made.** If your previous push did not land, ask a
+DIFFERENT question or accept — repeating the same words tells the student their answer was invisible,
+and the repeat is what turned two copies into four.
+
 Push again when: Beat 2 is an abstract state rather than **a concrete visible action** we could film;
 Beat 5's obstacle doesn't **attack the protagonist's specific flaw**; a beat doesn't follow causally
 from the one before it. **Be generous otherwise** — accept on the second attempt. A student pushed on
