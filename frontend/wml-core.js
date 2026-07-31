@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.363';
+var WML_BUILD = '7.20.364';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3680,6 +3680,9 @@ window.WML = (function() {
     const ICON_WRAP = {
         filled: 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"',
         line: 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"',
+        // Neil's Story Components puzzle is drawn at 1.91 with SQUARE caps and a mitre join.
+        // Kept as drawn rather than normalised to the tabler weight — the geometry is his.
+        lineSquare: 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.91" stroke-linecap="square" stroke-miterlimit="10"',
     };
     const ICONS = {
         approval: { kind: 'filled', src: 'tabler-shield-check.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M11.998 2l.118 .007l.059 .008l.061 .013l.111 .034a.993 .993 0 0 1 .217 .112l.104 .082l.255 .218a11 11 0 0 0 7.189 2.537l.342 -.01a1 1 0 0 1 1.005 .717a13 13 0 0 1 -9.208 16.25a1 1 0 0 1 -.502 0a13 13 0 0 1 -9.209 -16.25a1 1 0 0 1 1.005 -.717a11 11 0 0 0 7.531 -2.527l.263 -.225l.096 -.075a.993 .993 0 0 1 .217 -.112l.112 -.034a.97 .97 0 0 1 .119 -.021l.115 -.007zm3.71 7.293a1 1 0 0 0 -1.415 0l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.32 1.497l2 2l.094 .083a1 1 0 0 0 1.32 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" />' },
@@ -3687,6 +3690,14 @@ window.WML = (function() {
         spine: { kind: 'line', src: 'feather-layers.svg', body: '<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline>' },
         outline: { kind: 'line', src: 'tabler-list-details-outline.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13 5h8" /><path d="M13 9h5" /><path d="M13 15h8" /><path d="M13 19h5" /><path d="M3 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path d="M3 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />' },
         resources: { kind: 'line', src: 'tabler-book-2.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z" /><path d="M19 16h-12a2 2 0 0 0 -2 2" /><path d="M9 8h6" />' },
+        // ⚠️ TWO FORCED CHANGES to this one, both stated (CLAUDE.md #13): his file paints via
+        // a <defs><style> rule '.cls-1{stroke:#020202}'. (a) A HARDCODED colour cannot inherit,
+        // so it would render near-black and vanish on the dark rail and the purple chips —
+        // stroke is now currentColor, carried on the wrapper. (b) An inlined <style> puts
+        // '.cls-1' into the GLOBAL stylesheet, where it collides with every other Illustrator
+        // export using the same default class name — so the rule is dropped and its values ride
+        // the svg element instead. The path geometry is untouched.
+        components: { kind: 'lineSquare', src: 'puzzle-story-components.svg', body: '<path d="M9.7,5.88a1.87,1.87,0,0,0-.56,1.35,1.92,1.92,0,0,0,1.91,1.91H12V12H9.14V13a1.91,1.91,0,0,1-3.82,0V12H1.5V1.5H12V5.32h-.95A1.87,1.87,0,0,0,9.7,5.88Z"/><path d="M22.5,1.5V12H18.68v-.95a1.91,1.91,0,0,0-1.91-1.91,1.92,1.92,0,0,0-1.91,1.91V12H12V9.14h-.95A1.92,1.92,0,0,1,9.14,7.23a1.91,1.91,0,0,1,1.91-1.91H12V1.5Z"/><path d="M14.86,16.77A1.92,1.92,0,0,1,13,18.68H12V22.5H1.5V12H5.32V13a1.91,1.91,0,0,0,3.82,0V12H12v2.86H13A1.92,1.92,0,0,1,14.86,16.77Z"/><path d="M22.5,12V22.5H12V18.68H13a1.91,1.91,0,0,0,0-3.82H12V12h2.86v-.95a1.92,1.92,0,0,1,1.91-1.91,1.91,1.91,0,0,1,1.91,1.91V12Z"/>' },
         profile: { kind: 'line', src: 'tabler-user-circle.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" />' },
     };
 

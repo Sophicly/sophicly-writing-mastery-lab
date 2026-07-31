@@ -19250,7 +19250,7 @@
                 }));
                 // v7.20.291: the Step-3 components, on tap, from inside the walk.
                 bar.appendChild(el('button', {
-                    className: 'swml-quick-btn', textContent: '🧩 Story Components',
+                    className: 'swml-quick-btn', textContent: 'Story Components', icon: WML.icon('components', 15),
                     onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
                 }));
                 // v7.20.292: Step-4 spine, on tap. Only useful once Step 4 exists — Step 3's own
@@ -20161,7 +20161,7 @@
                 }));
                 // v7.20.291: the Step-3 components, on tap, from inside the walk.
                 bar.appendChild(el('button', {
-                    className: 'swml-quick-btn', textContent: '🧩 Story Components',
+                    className: 'swml-quick-btn', textContent: 'Story Components', icon: WML.icon('components', 15),
                     onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
                 }));
                 // v7.20.292: Step-4 spine, on tap. Only useful once Step 4 exists — Step 3's own
@@ -21788,7 +21788,7 @@
                     }));
                 }
                 bar.appendChild(el('button', {
-                    className: 'swml-quick-btn', textContent: '🧩 Story Components',
+                    className: 'swml-quick-btn', textContent: 'Story Components', icon: WML.icon('components', 15),
                     onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
                 }));
                 bar.appendChild(el('button', {
@@ -24034,7 +24034,7 @@
             const SVG_PROFILE = WML.icon('profile', 16);   // v7.20.363: from the ONE icon registry (WML.ICONS) — Neil supplied the glyph.
             // v7.20.291: Story Components — puzzle piece, distinct from the profile's person icon.
             const SVG_SPINE = WML.icon('spine', 16);   // v7.20.363: from the ONE icon registry (WML.ICONS) — Neil supplied the glyph.
-            const SVG_COMPONENTS = '<svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M165.78,224H208a16,16,0,0,0,16-16V170.35A8,8,0,0,0,212.94,163a23.37,23.37,0,0,1-8.94,1.77c-13.23,0-24-11.1-24-24.73s10.77-24.73,24-24.73a23.37,23.37,0,0,1,8.94,1.77A8,8,0,0,0,224,109.65V72a16,16,0,0,0-16-16H171.78a35.36,35.36,0,0,0,.22-4,36,36,0,0,0-72,0,35.36,35.36,0,0,0,.22,4H64A16,16,0,0,0,48,72v32.22a35.36,35.36,0,0,0-4-.22,36,36,0,0,0,0,72,35.36,35.36,0,0,0,4-.22V208a16,16,0,0,0,16,16h42.22"/></svg>';
+            const SVG_COMPONENTS = WML.icon('components', 16);   // v7.20.364: Neil's puzzle glyph, from the ONE icon registry
             // Swap content with a short opacity fade-in so async loads + refreshes settle
             // smoothly rather than popping in.
             const _setWpBody = (bodyEl, html) => {
