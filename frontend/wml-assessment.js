@@ -36230,7 +36230,18 @@
                     { sec: 'setup', fr: 'story_open', pick: (beats) => beats[0] },
                     { sec: 'aftermath', fr: 'story_close', pick: (beats) => beats[beats.length - 1] },
                 ];
+                // ⚠️ v7.20.370 — MUST run under _migrationActive. Neil's console showed the heal
+                // working and being UNDONE in the same breath:
+                //     WML: Section deletion blocked — reverting (118 → 117)   ×2
+                //     WML CW6: dropped 2 retired anchor row(s)
+                // `onTransaction` reverts ANY node-count drop it did not authorise — correct
+                // behaviour, and exactly what it is there for. The sibling insert-heal already sets
+                // this flag; this one did not, so every delete was reverted a millisecond later and
+                // the heal still reported success, because it counted deletes ISSUED, not deletes
+                // that SURVIVED. A heal must verify its own work — see the re-scan below.
                 let dropped = 0;
+                const _wasMigrating = _migrationActive;
+                try { _migrationActive = true; } catch (_) {}
                 for (const r of RETIRED) {
                     const sec = arch.sections.filter((x) => x.id === r.sec)[0];
                     if (!sec) continue;
@@ -36266,9 +36277,24 @@
                         dropped++;
                     } catch (e) { console.warn('WML CW6: could not drop ' + deadFid + ' —', e && e.message); }
                 }
+                try { _migrationActive = _wasMigrating; } catch (_) {}
                 if (!dropped) return;
+                // VERIFY, do not assume: re-scan the doc and confirm the rows are actually gone.
+                // The whole reason .369 failed silently is that it trusted its own counter.
+                let survivors = 0;
+                canvasEditor.state.doc.descendants((node) => {
+                    if (node.type?.name !== 'outlineRow') return;
+                    const fid = node.attrs?.fieldId || '';
+                    if (/-story_open$|-story_close$/.test(fid)) survivors++;
+                });
+                if (survivors) {
+                    console.warn('WML CW6: anchor drop-heal issued ' + dropped + ' delete(s) but '
+                        + survivors + ' row(s) SURVIVED — something reverted the transaction. The doc '
+                        + 'is unchanged; not saving.');
+                    return;
+                }
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
-                console.log('WML CW6: dropped ' + dropped + ' retired anchor row(s) from the existing doc (' + key + ')');
+                console.log('WML CW6: dropped ' + dropped + ' retired anchor row(s) from the existing doc (' + key + ') — verified gone');
             } catch (e) { console.warn('WML CW6: anchor drop-heal skipped —', e && e.message); }
         };
 
