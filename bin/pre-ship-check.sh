@@ -25,7 +25,20 @@ else
     < <(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|php)$' | grep -v -E 'wml-tiptap.min.js|\.min\.js')
 fi
 
-[ ${#FILES[@]} -eq 0 ] && { echo "pre-ship: no JS/PHP staged — nothing to check."; exit 0; }
+# ⚠️ v7.20.372 — A CSS-ONLY CHANGE USED TO SKIP THIS ENTIRE GATE. The collection above is JS/PHP
+# only, so a stylesheet edit staged on its own hit the early exit and NOTHING ran. That is half of
+# how .371 shipped a stylesheet whose comment closed early, leaving six lines of English prose as
+# raw CSS tokens — the parser resyncs by discarding, so it ate the rules after it and Neil opened
+# Step 6 to an unstyled dynamic island. CSS now owes an answer whether or not any JS is staged.
+CSS_STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -cE '\.css$' || true)
+if [ ${#FILES[@]} -eq 0 ]; then
+  if [ "${CSS_STAGED:-0}" -eq 0 ]; then
+    echo "pre-ship: no JS/PHP/CSS staged — nothing to check."; exit 0
+  fi
+  node bin/css-lint.js || { echo ""; echo "pre-ship gate FAILED — fix before shipping."; exit 1; }
+  echo "pre-ship gate passed (CSS only)."
+  exit 0
+fi
 
 fail=0
 for f in "${FILES[@]}"; do
@@ -260,6 +273,12 @@ fi
 # announced "Rags to Riches" for five days after the student re-picked). Whole-repo by nature —
 # the frontend is three files and the trace is cheap, so it runs on every invocation.
 node bin/fossil-lint.js || fail=1
+
+# CSS has NO fatal errors — a parse failure is recovered by discarding tokens until something looks
+# like a rule again, so a broken stylesheet renders as a subtly (or wildly) wrong page rather than
+# an error anyone sees. `node --check`/`php -l` were the only syntax gates here and both are blind
+# to 6,000+ lines of the UI. Whole-repo and instant, like fossil-lint. (v7.20.372)
+node bin/css-lint.js || fail=1
 
 if [ "$fail" -ne 0 ]; then
   echo ""

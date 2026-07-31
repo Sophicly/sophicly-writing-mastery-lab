@@ -7941,7 +7941,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
    NO TINTED PANEL — Neil has ruled the faint tinted background box out as a recurring pattern.
    The distinction is an accent EDGE plus a quieter, wider label: elevation and structure, not wash.
    Teal (the frame/structure colour), never green — green means COMPLETE in this product, and a
-   low-alpha green over the dark purple canvas composites to brown. */
+   low-alpha green over the dark purple canvas composites to brown.
+
    ⚠️ v7.20.371 (Neil, FIXLIST #111: "the size of the actual input area is different to the rest.
    It needs to be the same."). The accent edge was a `border-left: 2px` plus `padding-left: 202px`,
    and BOTH consumed layout: the border shifts the padding box (so the absolutely-positioned
