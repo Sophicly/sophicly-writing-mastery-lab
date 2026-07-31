@@ -260,18 +260,18 @@
         // that opened this guide, plus this link, so every student paid an extra click to reach the
         // thing the rail button is named after. The rail button opens the guide directly now, and
         // the link rides along where it is actually useful: while reading.
-        // v7.20.359 (Neil, FIXLIST #82): house button — the label is stacked TWICE inside
-        // .swml-roll because the roll animates two copies past each other (BRAND.md §8).
+        // v7.20.359 (Neil, FIXLIST #82): house button. v7.20.360: label written by the ONE
+        // producer, WML.setHaloLabel — nothing hand-writes the roll's two copies.
         const libraryBtn = el('a', {
             className: 'swml-guide-library-btn swml-halo-btn',
             href: 'https://www.sophicly.com/library/resources/creative-writing-reference-guide/',
             target: '_blank', rel: 'noopener',
             title: 'Open the full version in the library (new tab)',
-            innerHTML: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-                + 'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'
-                + '<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
-                + '<span class="swml-roll"><span>Full version</span><span aria-hidden="true">Full version</span></span>',
         });
+        WML.setHaloLabel(libraryBtn, 'Full version',
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+            + 'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'
+            + '<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>');
         const header = el('div', { className: 'swml-guide-header' }, [
             tocToggle,
             el('span', { className: 'swml-guide-title', textContent: 'Creative Writing Reference Guide' }),
@@ -38382,8 +38382,13 @@
                 ui.appendChild(marksHint);
 
                 const signBtn = document.createElement('button');
-                signBtn.className = 'swml-signoff-btn';
-                signBtn.innerHTML = WML.lockIconSVG(11) + ' Sign Off'; // v7.19.952: 🔒 → tabler lock (Neil)
+                // v7.20.360 (Neil): the house button in GREEN — same halo + roll as Add comment,
+                // green because green is the MEANING here (completion), not decoration. The lift
+                // is gone (BRAND.md §8, retired site-wide 2026-07-26 — his actual complaint).
+                // ⚠️ Every label write below goes through WML.setHaloLabel — a raw textContent
+                // write would destroy the roll's two copies and this button rewrites its label six times.
+                signBtn.className = 'swml-signoff-btn swml-halo-btn';
+                WML.setHaloLabel(signBtn, 'Sign Off', WML.lockIconSVG(11)); // v7.19.952: 🔒 → tabler lock (Neil)
                 signBtn.disabled = true;
                 signBtn.style.opacity = '0.5';
                 signBtn.style.cursor = 'not-allowed';
@@ -38394,7 +38399,7 @@
                     signBtn.disabled = !ready;
                     signBtn.style.opacity = ready ? '' : '0.5';
                     signBtn.style.cursor = ready ? '' : 'not-allowed';
-                    signBtn.innerHTML = ready ? '✍ Sign Off' : (WML.lockIconSVG(11) + ' Sign Off'); // v7.19.952: 🔒 → tabler lock
+                    WML.setHaloLabel(signBtn, ready ? '✍ Sign Off' : 'Sign Off', ready ? '' : WML.lockIconSVG(11)); // v7.19.952: 🔒 → tabler lock
                     marksHint.style.display = (checkbox.checked && !marksReady) ? '' : 'none';
                     if (!ready) signBtn.dataset.confirming = 'false';
                 };
@@ -38408,7 +38413,7 @@
                     console.log('WML: Sign-off button clicked, canSignOff:', config.canSignOff);
                     // Two-step confirmation: first click shows "Confirm?", second click signs off
                     if (signBtn.dataset.confirming === 'true') {
-                        signBtn.textContent = '⏳ Signing…';
+                        WML.setHaloLabel(signBtn, '⏳ Signing…');
                         signBtn.disabled = true;
                         signBtn.classList.remove('swml-signoff-btn-armed');
                         // v7.15.84: when tutor reviews a student, send targetUserId (the student),
@@ -38434,14 +38439,14 @@
                                 showToast('✓ Document signed off', 4000, true);
                                 if (typeof recalculateScoreSummary === 'function') recalculateScoreSummary();
                             } else {
-                                signBtn.textContent = '✍ Sign Off';
+                                WML.setHaloLabel(signBtn, '✍ Sign Off');
                                 signBtn.disabled = false;
                                 signBtn.dataset.confirming = 'false';
                                 showToast('Sign-off failed: ' + (res.message || 'unknown error'), 5000, true);
                             }
                         }).catch(err => {
                             console.warn('WML: Sign-off error:', err);
-                            signBtn.textContent = '✍ Sign Off';
+                            WML.setHaloLabel(signBtn, '✍ Sign Off');
                             signBtn.disabled = false;
                             signBtn.dataset.confirming = 'false';
                             showToast('Sign-off failed — please try again', 5000, true);
@@ -38457,7 +38462,7 @@
                                 _confirmLabel = `Click again to confirm (${_p.done}/${_p.total}) →`;
                             }
                         }
-                        signBtn.textContent = _confirmLabel;
+                        WML.setHaloLabel(signBtn, _confirmLabel);
                         // v7.19.527: distinct "armed" state (brighter + pulse + ring) so the
                         // confirm reads as a second, clickable action — it used to be the same
                         // green as the resting button, which is why it didn't look clickable.
@@ -38466,7 +38471,7 @@
                         setTimeout(() => {
                             if (signBtn.dataset.confirming === 'true') {
                                 signBtn.dataset.confirming = 'false';
-                                signBtn.textContent = '✍ Sign Off';
+                                WML.setHaloLabel(signBtn, '✍ Sign Off');
                                 signBtn.classList.remove('swml-signoff-btn-armed');
                             }
                         }, 4000);
@@ -38618,12 +38623,10 @@
                     addBtn.type = 'button';
                     addBtn.className = 'swml-tutorcomment-add swml-halo-btn';
                     addBtn.setAttribute('contenteditable', 'false');
-                    // v7.20.359 (Neil, FIXLIST #81): house button — label stacked TWICE for the
-                    // .swml-roll hover roll (BRAND.md §8). ⚠️ addBtn.textContent now reads
-                    // "Add commentAdd comment"; never read it back, and keep transient state on
-                    // `status` (which is where it already lives).
-                    addBtn.innerHTML = '<span class="swml-roll"><span>Add comment</span>'
-                        + '<span aria-hidden="true">Add comment</span></span>';
+                    // v7.20.359 (Neil, FIXLIST #81): house button. v7.20.360: label via the ONE
+                    // producer. ⚠️ addBtn.textContent now reads "Add commentAdd comment" — never
+                    // read it back, and keep transient state on `status` (where it already lives).
+                    WML.setHaloLabel(addBtn, 'Add comment');
                     const _add = () => {
                         const val = ta.value.trim();
                         if (!val) return;

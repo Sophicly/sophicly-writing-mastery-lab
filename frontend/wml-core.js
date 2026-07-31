@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.359';
+var WML_BUILD = '7.20.360';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3647,6 +3647,30 @@ window.WML = (function() {
         return '<svg class="swml-lock-ico" xmlns="http://www.w3.org/2000/svg" width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"/><path d="M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z"/><path d="M10 11v-2a2 2 0 1 1 4 0v2"/></svg>';
     }
 
+    // v7.20.360: THE ONLY WAY to write a label onto a house button (.swml-halo-btn, BRAND.md §8).
+    // The hover roll needs the label present TWICE — so every `btn.textContent = '…'` or
+    // `btn.innerHTML = '…'` on one of these silently DESTROYS the roll, and the button looks
+    // perfect until the first state change. The Sign Off button rewrites its own label in SIX
+    // places (lock/✍ refresh · "Click again to confirm →" · the CW count variant · "⏳ Signing…" ·
+    // two error resets), so hand-written spans were never going to survive it.
+    // One producer, and `bin/cw-keymatch-harness.js` fails the build on a hand-written .swml-roll
+    // or on a raw textContent/innerHTML write to a button carrying .swml-halo-btn.
+    // Builds by textContent, never string concat — labels carry →, ✍ and (3/5) counts.
+    function setHaloLabel(btn, label, iconHTML) {
+        if (!btn) return;
+        btn.innerHTML = iconHTML || '';
+        const roll = document.createElement('span');
+        roll.className = 'swml-roll';
+        const first = document.createElement('span');
+        first.textContent = label;
+        const second = document.createElement('span');
+        second.setAttribute('aria-hidden', 'true');
+        second.textContent = label;
+        roll.appendChild(first);
+        roll.appendChild(second);
+        btn.appendChild(roll);
+    }
+
     // v7.19.916 (Neil dislikes emojis, pt2): decorative emojis → brand illustrative SVG icons
     // (frontend/icons/emoji/, hand-picked from Neil's "SVG Icons for Sophicly" pack; 📊 chart is
     // the icon Neil attached). DISPLAY layer only — runs on rendered chat HTML; raw chatHistory
@@ -4251,7 +4275,7 @@ window.WML = (function() {
         registerLiveValue, resolveLiveValues,   // v7.20.351 — the fossil cure (see formatAI)
         recordTurn, rehydrateTurn,              // v7.20.352 — the ONLY writers into chat history
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
-        parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG,
+        parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG, setHaloLabel,
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
         learnChipsForLine,  // v7.19.949/950: ungated line→chips resolver for the in-doc healer
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)

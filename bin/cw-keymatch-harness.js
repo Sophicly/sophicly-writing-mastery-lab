@@ -979,6 +979,96 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     });
 }
 
+// ── HOUSE BUTTON — the label has ONE producer, and a raw write kills the roll silently ────────
+//
+// v7.20.360. The house button (BRAND.md §8) rolls TWO stacked copies of its label past each
+// other on hover, so the label must be present twice. That makes `btn.textContent = 'x'` and
+// `btn.innerHTML = 'x'` DESTRUCTIVE on one of these buttons: the roll's two spans are replaced by
+// a single text node and the hover effect dies — with no error, and only AFTER a state change, so
+// the button looks perfect in every screenshot taken before the first click.
+//
+// The Sign Off button is the proof this needs a gate rather than a comment: it rewrites its own
+// label in SIX places (lock/✍ refresh · "Click again to confirm →" · the CW count variant ·
+// "⏳ Signing…" · two error resets). Five of them are in error and timeout paths nobody drives by
+// hand. A rule in prose loses to a default in code — and `textContent =` IS the default you get
+// by not thinking (the same shape as `history.push()` in the fossil class).
+//
+// So: WML.setHaloLabel is the only producer, and this fails the build on either escape route.
+{
+    console.log('HOUSE BUTTON — one label producer, and a raw write cannot kill the roll');
+    const src = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-assessment.js'), 'utf8');
+    const core = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
+    const css = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-styles.css'), 'utf8');
+
+    ok(/function setHaloLabel\(/.test(core) && /\bsetHaloLabel,/.test(core),
+        'WML.setHaloLabel is gone or unexported — every house button label falls back to hand-written '
+        + 'spans, which is the state this gate exists to prevent');
+    ok(/\.swml-halo-btn\b/.test(css) && /\.swml-roll\b/.test(css),
+        'the house-button factory (.swml-halo-btn / .swml-roll) is gone from wml-styles.css');
+
+    // (a) NOBODY hand-writes the roll markup. One producer means one place to change it.
+    const handRolled = src.split('\n')
+        .map((line, i) => ({ line, n: i + 1 }))
+        .filter(({ line }) => /class="swml-roll"|className:\s*'swml-roll'|className = 'swml-roll'/.test(line));
+    ok(handRolled.length === 0,
+        `hand-written .swml-roll markup at wml-assessment.js:${handRolled.map(h => h.n).join(', ')} — `
+        + 'build it with WML.setHaloLabel so the two copies can never drift apart or be written once');
+
+    // (b) No raw label write to anything carrying .swml-halo-btn. Collect the variable names that
+    //     get the class (both `x.className = '… swml-halo-btn'` and `className: '… swml-halo-btn'`
+    //     on an el() whose const is on a nearby line), then look for a destructive write to them.
+    const haloVars = new Set();
+    src.split('\n').forEach((line, i) => {
+        const direct = line.match(/(\w+)\.className\s*=\s*['"][^'"]*swml-halo-btn/);
+        if (direct) haloVars.add(direct[1]);
+        if (/className:\s*['"][^'"]*swml-halo-btn/.test(line)) {
+            // the el() form — the const is declared at or just above this line
+            for (let back = 0; back < 4; back++) {
+                const decl = (src.split('\n')[i - back] || '').match(/(?:const|let|var)\s+(\w+)\s*=\s*el\(/);
+                if (decl) { haloVars.add(decl[1]); break; }
+            }
+        }
+    });
+    ok(haloVars.size >= 3,
+        `only ${haloVars.size} house button(s) found — expected at least 3 (Add comment, Full version, `
+        + 'Sign Off). Either a button lost the class or this scanner has gone blind, and a blind '
+        + 'scanner passes on every defect it exists to catch');
+
+    haloVars.forEach((v) => {
+        const bad = src.split('\n')
+            .map((line, i) => ({ line, n: i + 1 }))
+            .filter(({ line }) => new RegExp('\\b' + v + '\\.(textContent|innerHTML)\\s*=').test(line));
+        ok(bad.length === 0,
+            `${v} carries .swml-halo-btn but its label is written raw at wml-assessment.js:`
+            + `${bad.map(b => b.n).join(', ')}. That replaces the roll's two copies with one text node `
+            + 'and the hover roll dies silently, after the first state change. Use WML.setHaloLabel.');
+    });
+
+    // (c) THE LIFT IS RETIRED (BRAND.md §8, Neil 2026-07-26 — and his 2026-07-31 complaint about
+    //     this very button). A translateY on a house button's hover/active is a regression.
+    //     ⚠️ The roll ITSELF is a translateY — on `.swml-roll span`, which is the effect, not a
+    //     lift. The first cut of this check flagged all four of those and would have been switched
+    //     off as noise. The lift is a translateY on the BUTTON's own selector, so any selector
+    //     reaching into `.swml-roll` is excluded by construction.
+    const canvasCss = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-canvas.css'), 'utf8');
+    const HOUSE_SEL = /\.swml-halo-btn|\.swml-signoff-btn|\.swml-guide-library-btn|\.swml-tutorcomment-add/;
+    [['wml-styles.css', css], ['wml-canvas.css', canvasCss]].forEach(([name, sheet]) => {
+        const lifts = sheet.split('}')
+            .map(block => {
+                const at = block.lastIndexOf('{');
+                return at === -1 ? null : { sel: block.slice(0, at), body: block.slice(at + 1) };
+            })
+            .filter(r => r && HOUSE_SEL.test(r.sel) && !/\.swml-roll/.test(r.sel)
+                && /:(hover|active)/.test(r.sel) && /translateY/.test(r.body))
+            .map(r => r.sel.trim().split('\n').pop().trim());
+        ok(lifts.length === 0,
+            `${name} reintroduces a hover/active translateY on a house button (${lifts.join(' · ')}). `
+            + 'BRAND.md §8 retired the lift site-wide on 2026-07-26 — the hover state is halo + roll '
+            + '+ shadow, nothing more. It is also the exact thing Neil asked to be removed on '
+            + '2026-07-31: "the main thing I don\'t like is that lifting up that it does".');
+    });
+}
+
 console.log(`   ${asserts.pass} assertions passed`);
 if (fail) {
     console.error(`❌ cw-keymatch-harness FAILED (${asserts.fail} assertion(s)).`);
