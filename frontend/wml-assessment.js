@@ -19274,7 +19274,12 @@
                 if (tech.length && window.SophiclyTable && window.SophiclyTable.open) {
                     tech.forEach(function (t) {
                         bar.appendChild(el('button', {
-                            className: 'swml-quick-btn', textContent: '🗂 ' + t.l,
+                            // v7.20.371 (Neil): a technique with its OWN glyph drops the generic 🗂 prefix and
+                            // carries the icon instead; every other technique is untouched (techIcon
+                            // returns '' on a miss). A DISPLAY layer only — the label string `t.l` and the
+                            // deep-link symbol `t.s` are both unchanged, so tap handlers and the harnesses
+                            // that match chip labels cannot see this (#89's landmine).
+                            className: 'swml-quick-btn', textContent: (WML.techIcon(t.s) ? '' : '🗂 ') + t.l, icon: WML.techIcon(t.s, 15),
                             onClick: function () { try { window.SophiclyTable.open(t.s); } catch (e) {} },
                         }));
                     });
@@ -20200,7 +20205,12 @@
                 if (tech.length && window.SophiclyTable && window.SophiclyTable.open) {
                     tech.forEach(function (t) {
                         bar.appendChild(el('button', {
-                            className: 'swml-quick-btn', textContent: '🗂 ' + t.l,
+                            // v7.20.371 (Neil): a technique with its OWN glyph drops the generic 🗂 prefix and
+                            // carries the icon instead; every other technique is untouched (techIcon
+                            // returns '' on a miss). A DISPLAY layer only — the label string `t.l` and the
+                            // deep-link symbol `t.s` are both unchanged, so tap handlers and the harnesses
+                            // that match chip labels cannot see this (#89's landmine).
+                            className: 'swml-quick-btn', textContent: (WML.techIcon(t.s) ? '' : '🗂 ') + t.l, icon: WML.techIcon(t.s, 15),
                             onClick: function () { try { window.SophiclyTable.open(t.s); } catch (e) {} },
                         }));
                     });
@@ -20793,14 +20803,15 @@
             let ASKS = [];         // the ordered ask list, derived from that archetype's template
             let stages = [];       // [{ id, label, name, job, ex, from, to }] — `to` exclusive
             let active = false, pending = false, i = 0;
-            // 'orient' → 'anchor' → 'anchor-fix' → 'ask' → 'stagecheck' → 'stage-choice'
-            //          → 'stage-fix' → 'finish' → 'finish-choice' → 'finish-fix' → done
+            // 'orient' → 'frame' → 'frame-fix' → 'anchor' → 'anchor-fix' → 'ask' → 'stagecheck'
+            //          → 'stage-choice' → 'stage-fix' → 'finish' → 'finish-choice' → 'finish-fix' → done
             let phase = 'ask';
             let checkStage = -1;   // the stage a micro-check / its revision belongs to
             let oriented = {};     // v7.20.368: stages already explained (persisted; see serveStageOpener)
-            
+            let frameFix = '';     // v7.20.371: 'open' | 'close' — which end the student is rewriting
+
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw6') + '_cw6'; } catch (e) { return 'swml_cw6'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, checkStage, active, key, oriented })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, checkStage, active, key, oriented, frameFix })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -20953,7 +20964,12 @@
                 if (tech.length && window.SophiclyTable && window.SophiclyTable.open) {
                     tech.forEach(function (t) {
                         bar.appendChild(el('button', {
-                            className: 'swml-quick-btn', textContent: '🗂 ' + t.l,
+                            // v7.20.371 (Neil): a technique with its OWN glyph drops the generic 🗂 prefix and
+                            // carries the icon instead; every other technique is untouched (techIcon
+                            // returns '' on a miss). A DISPLAY layer only — the label string `t.l` and the
+                            // deep-link symbol `t.s` are both unchanged, so tap handlers and the harnesses
+                            // that match chip labels cannot see this (#89's landmine).
+                            className: 'swml-quick-btn', textContent: (WML.techIcon(t.s) ? '' : '🗂 ') + t.l, icon: WML.techIcon(t.s, 15),
                             onClick: function () { try { window.SophiclyTable.open(t.s); } catch (e) {} },
                         }));
                     });
@@ -20986,6 +21002,32 @@
                 'something a camera could film: a place, a person, an action',
                 'rough is fine. You will deepen every beat across the later drafts',
             ];
+            // v7.20.371 — the beats a stage RUNS BETWEEN, for the arc ask (#110).
+            // Found by KIND, never by offset (the .368 lesson: a position is not an identity).
+            function stageBeats(si) {
+                const s = stages[si];
+                if (!s) return [];
+                const out = [];
+                for (let n = s.from; n < s.to; n++) if (ASKS[n] && ASKS[n].kind === 'beat') out.push(ASKS[n]);
+                return out;
+            }
+            // One end of the stage, SHOWN: their sentence if they have written it, otherwise the
+            // beat's own prompt so the row is still concrete rather than an empty promise.
+            function stageEndLine(a) {
+                if (!a) return '';
+                const written = rowText(a.fid);
+                if (written) return '> **' + a.label + '** — ' + written + '\n\n';
+                const p = (a.prompt || '').trim();
+                return '> **' + a.label + '** — *not written yet' + (p ? '. This beat asks: ' + p : '') + '*\n\n';
+            }
+            function stageEndsBlock(si) {
+                const beats = stageBeats(si);
+                if (beats.length < 2) return '';
+                const first = beats[0], last = beats[beats.length - 1];
+                return '**This stage runs from…**\n\n' + stageEndLine(first)
+                    + '**…to:**\n\n' + stageEndLine(last)
+                    + 'Your arc is the journey between those two moments.\n\n';
+            }
             function askBody(a) {
                 const s = stages[a.stage];
                 const c = a.concept;
@@ -21005,6 +21047,15 @@
                         + 'This one is not a beat. It is the *shape* of the stage: fix the two ends '
                         + 'now, and every beat you write afterwards has somewhere to sit between '
                         + 'them. It takes one or two sentences.\n\n'
+                        // ⭐ v7.20.371 (Neil, FIXLIST #110 — the sharpest point of the session):
+                        // "why doesn't it present beat one and the final beat in the stage so I can
+                        // at least SEE? These teenagers are not gonna read it unless you SHOW it to
+                        // them." The ask used to name two ends the student had to hold in their head
+                        // or go hunting for in the document. Now the stage's first and last beats are
+                        // rendered inline — their OWN words where they have written them, the beat's
+                        // own prompt where they have not — so the arc is visibly a bridge between two
+                        // things on the screen.
+                        + stageEndsBlock(a.stage)
                         + '**Tell me both:**\n\n'
                         + '1. How does your protagonist **BEGIN** this stage?\n'
                         + '2. How are they **DIFFERENT** when they **LEAVE** it?\n\n'
@@ -21235,6 +21286,108 @@
                 return (target && target.fid === a.fid) ? src : null;
             }
 
+            // ═══════════════════════════════════════════════════════════════════════════════
+            // ⭐⭐ v7.20.371 — THE STORY'S TWO ENDS, SETTLED TOGETHER, BEFORE ANY STAGE WORK.
+            // ───────────────────────────────────────────────────────────────────────────────
+            // Neil, FIXLIST #96 and again #109, after it was deferred twice: *"we probably need to
+            // start off with the student first figuring out where the first and last beats go,
+            // whether they're still happy with those… 'these are your first and last beats. Are you
+            // happy with them?' They just confirm, and then those get auto-filed into the first and
+            // last beats of the actual story."* And, live on .369: *"There's still nothing about the
+            // first and last beats of the story. I still don't understand why that's not happening."*
+            //
+            // It was not happening because the confirm EXISTS but fires per-beat: `serveCarry` asks
+            // about the opening inside Stage I and about the ending inside Stage VI — an hour apart,
+            // so the frame is never seen AS a frame. This is a RE-SEQUENCE of a working part, not a
+            // new mechanism: same targets (`carrySrcFor`), same filing (`fileAnswer`), same
+            // ownership law (nothing is filed until they tap).
+            //
+            // `serveCarry` STAYS as the fallback — it still fires for either end the frame could not
+            // settle (no Step-4 value for that beat), so no path loses its confirm.
+            const FRAME_SRC = { open: 'cw-step-4-beat1', close: 'cw-step-4-beat6' };
+            function frameRefs() {
+                if (!stages.length) return null;
+                const si0 = 0, siN = stages.length - 1;
+                if (stages[si0].id !== 'setup' || stages[siN].id !== 'aftermath') return null;
+                const openBeats = stageBeats(si0), closeBeats = stageBeats(siN);
+                const open = openBeats[0], close = closeBeats[closeBeats.length - 1];
+                if (!open || !close) return null;
+                const openPrior = _cwDocValue('brief_outline', FRAME_SRC.open);
+                const closePrior = _cwDocValue('brief_outline', FRAME_SRC.close);
+                // Both halves or nothing: a "your two ends" frame showing one end is a worse ask
+                // than the per-beat carry, which handles a lone missing value properly.
+                if (!openPrior || !closePrior) return null;
+                // What to SHOW is the row where they have already rewritten it, the spine otherwise —
+                // re-serving the frame after a rewrite must not quote the sentence they just replaced.
+                return { open: open, close: close, openPrior: openPrior, closePrior: closePrior,
+                    openShow: rowText(open.fid) || openPrior, closeShow: rowText(close.fid) || closePrior };
+            }
+            function frameNeeded() {
+                const f = frameRefs();
+                if (!f) return false;
+                return !rowText(f.open.fid) || !rowText(f.close.fid);
+            }
+            // The single entry point into the stages, so the frame cannot be stepped over by a new
+            // call site (the .368 lesson: `startWalk` ended in a bare `serveCurrent()` and the stage
+            // opener became unreachable on the stage a student STARTS in).
+            // `lead`, when given, becomes the FIRST paced chunk of the stage opener rather than a
+            // bubble of its own — §4b: a code-served run delivers ONE bubble per tap, and a
+            // free-standing confirmation next to the opener is two in one frame.
+            function enterStages(lead) {
+                if (frameNeeded()) { serveFrame(); return; }
+                i = firstEmptyAsk();
+                if (i >= ASKS.length) { fireFinishCheck(); return; }
+                serveStageOpener(ASKS[i].stage, lead);
+            }
+            function serveFrame() {
+                const f = frameRefs();
+                if (!f) { phase = 'ask'; persist(); enterStages(); return; }   // liveness: never a dead end
+                phase = 'frame'; frameFix = ''; persist();
+                aiBubble('**Before we start — your story’s two ends**\n\n'
+                    + 'You already decided where your story opens and how it finishes, back on your Story Spine. '
+                    + 'Everything you plan from here sits **between** these two moments, so let’s settle them first.\n\n'
+                    + '**Where your story opens** — ' + f.open.label + '\n\n> ' + f.openShow + '\n\n'
+                    + '**How your story ends** — ' + f.close.label + '\n\n> ' + f.closeShow + '\n\n'
+                    + '**Are you still happy with both?** If you are, I file them straight into your outline as '
+                    + 'your first and last beats, and we build the middle from there.');
+                chipBar([{ label: 'Both still right →', icon: WML.icon('approval', 15) },
+                    { label: 'Change my opening', icon: WML.icon('rewrite', 15) },
+                    { label: 'Change my ending', icon: WML.icon('rewrite', 15) }], onFrameChoice);
+                resetSend();
+            }
+            function onFrameChoice(pick) {
+                const f = frameRefs();
+                userTurn(pick);
+                if (!f) { phase = 'ask'; persist(); enterStages(); return; }
+                if (pick.indexOf('Change') === 0) {
+                    const which = pick.indexOf('opening') !== -1 ? 'open' : 'close';
+                    const a = f[which];
+                    phase = 'frame-fix'; frameFix = which; persist();
+                    // §4c.6 REWRITE cycle: one self-contained sentence, so the new version REPLACES
+                    // the old. Asking for "the bit you're changing" would file a fragment.
+                    aiBubble('**Rewriting ' + (which === 'open' ? 'your opening' : 'your ending') + '**\n\n'
+                        + 'Write the **whole thing again**, in one sentence — '
+                        + (which === 'open'
+                            ? 'one moment, your protagonist in their ordinary life, something a camera could film.'
+                            : 'the last image of your story: what has changed for your protagonist by the final page.')
+                        + '\n\nHere is what you have now:\n\n> ' + (which === 'open' ? f.openShow : f.closeShow)
+                        + '\n\n*(Your Step-4 Story Spine stays exactly as it was — Step 4 is the record of what you did in Step 4. This only changes your Step-6 outline.)*');
+                    helpBar(a);
+                    _walkSlot.arm('cw6', a.fid, { cycle: 'rewrite' });
+                    resetSend();
+                    return;
+                }
+                // Keep both: carry the Step-4 sentences into the REAL beats. They are THEIR
+                // sentences and the confirming tap is the ownership checkpoint (the same rule
+                // `serveCarry` and `onAnchorChoice` already run on).
+                if (!rowText(f.open.fid)) fileAnswer(f.open, f.openPrior);
+                if (!rowText(f.close.fid)) fileAnswer(f.close, f.closePrior);
+                phase = 'ask'; frameFix = ''; persist();
+                enterStages('Filed. Your opening is now the first beat of **' + stages[0].name
+                    + '**, and your ending is the last beat of **' + stages[stages.length - 1].name + '**.\n\n'
+                    + 'Everything we do from here fills in the middle.');
+            }
+
             // v7.20.368 — THE ARC ASK IS FOUND BY KIND, NEVER BY OFFSET.
             // Four sites used to read `ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)]`,
             // i.e. "the arc is the 2nd ask in Stage I / VI and the 1st everywhere else". That is only
@@ -21249,7 +21402,7 @@
             }
 
             // ── the paced stage orientation (WML CLAUDE.md §4b: one bubble per tap) ──
-            function serveStageOpener(si) {
+            function serveStageOpener(si, lead) {
                 if (si >= stages.length) { i = firstEmptyAsk(); if (i >= ASKS.length) { fireFinishCheck(); return; } serveCurrent(); return; }
                 const s = stages[si];
                 i = firstEmptyAsk();
@@ -21259,8 +21412,9 @@
                 // Different questions: an auto-filled position-1 row makes a BRAND-NEW project
                 // start at position 2, so the explanation was skipped for everyone, every time, on
                 // the stage where it matters most. Never infer state that can be recorded.
-                if (ASKS[i].stage !== si) { serveCurrent(); return; }
-                if (oriented[si]) { serveCurrent(); return; }
+                // v7.20.371: a `lead` must never be swallowed by a bail — the student tapped for it.
+                if (ASKS[i].stage !== si) { if (lead) aiBubble(lead); serveCurrent(); return; }
+                if (oriented[si]) { if (lead) aiBubble(lead); serveCurrent(); return; }
                 oriented[si] = 1;
                 phase = 'ask'; persist();
                 // v7.20.367 (Neil, FIXLIST #101, said twice in one breath): "they need to know the
@@ -21271,7 +21425,9 @@
                 // (already-approved, cites Truby and Edson), never authored here (§5c).
                 // PACED, one bubble per tap (§4b) — three chunks in one frame is the wall.
                 const cc = s.concepts;
-                const chunks = ['**' + s.name + '** — ' + s.job + '.'];
+                const chunks = [];
+                if (lead) chunks.push(lead);
+                chunks.push('**' + s.name + '** — ' + s.job + '.');
                 if (cc) {
                     chunks.push('**What this stage is for**\n\n' + cc.forWhat
                         + '\n\n**What a reader should be seeing**\n\n' + cc.seeing);
@@ -21396,6 +21552,19 @@
                     return;
                 }
                 const slotAsk = ASKS.filter(function (x) { return x.fid === slot.fid; })[0] || null;
+                // v7.20.371 — the story frame's rewrite (#109). REPLACE, not append: one
+                // self-contained sentence (§4c.6 rewrite cycle). Then the frame is re-served so the
+                // student sees BOTH ends together again and confirms the pair — which is the whole
+                // point of settling them together rather than an hour apart.
+                if (phase === 'frame-fix') {
+                    const f = frameRefs();
+                    const target = slotAsk || (f ? f[frameFix === 'close' ? 'close' : 'open'] : null);
+                    userTurn(clean);
+                    if (target) fileAnswer(target, clean, true);
+                    frameFix = ''; persist();
+                    serveFrame();
+                    return;
+                }
                 if (phase === 'stage-fix') {
                     const s = stages[checkStage];
                     const arcAsk = slotAsk || arcAskFor(s);
@@ -21465,7 +21634,9 @@
                     // which is why the stage explanation NEVER appeared on the stage a student
                     // starts in — serveStageOpener was only reachable when advancing to the NEXT
                     // stage. Neil's transcript opened on "Step 2 of 107" with no explanation at all.
-                    serveStageOpener(ASKS[i].stage);
+                    // v7.20.371: and THROUGH the story frame before that (#109) — one entry point,
+                    // so neither can be stepped over by a future call site.
+                    enterStages();
                 });
             }
             // Orientation (§4c.5): how the walk works, where the help lives, and "don't overthink
@@ -21479,7 +21650,7 @@
                     'Under every question there are buttons: **💡 More examples** for two or three more, **📖 Guidance** for the reference guide at the right section, **🗂** cards for the technique itself, and your **🗒 Story Spine**. Those cost you nothing, so use them first. **🤔 Still stuck — ask Sophia** is there as a last resort if none of them get you moving.',
                     'One rule above all: **don’t overthink it.** Rough sentences now. You will come back and deepen every single beat in the update lessons and across seven drafts — nothing you write here is final, and a blank outline is the only wrong one.',
                 ];
-                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { phase = 'ask'; persist(); serveStageOpener(ASKS[i] ? ASKS[i].stage : 0); } });
+                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { phase = 'ask'; persist(); enterStages(); } });
             }
 
             // Chip bars are DOM-only: the QUESTION bubble replays from saved history on reload but
@@ -21488,6 +21659,18 @@
             // v7.20.345: derived — drawn, never pushed into the transcript (§4c.7; see _cwReplay).
             function reattachChips() { _cwReplay(_reattachChipsBody); }
             function _reattachChipsBody() {
+                // v7.20.371 — the story frame (#109). SERVE it, never staple its chips to whatever
+                // bubble happens to be newest (the .350 rule): on a first entry that bubble is the
+                // greeting, and three out-of-context buttons is exactly what Neil hit.
+                if (phase === 'frame') { serveFrame(); return; }
+                if (phase === 'frame-fix') {
+                    const f = frameRefs();
+                    const target = f ? f[frameFix === 'close' ? 'close' : 'open'] : null;
+                    if (!target) { serveFrame(); return; }        // liveness: never a bare help bar
+                    helpBar(target);
+                    _walkSlot.arm('cw6', target.fid, { cycle: 'rewrite' });
+                    return;
+                }
                 // KIND-AWARE (same fix as CW5's reattach, same reason): the STEP tells us what the
                 // student is being asked for. Keyed on phase alone, an anchor step resumed while the
                 // persisted phase said 'ask' lost its confirm chips, and the student had to retype an
@@ -21539,7 +21722,7 @@
                 if (!/@CW6_START/.test(norm)) return;
                 startWalk();
             }
-            function reset() { active = false; pending = false; i = 0; phase = 'ask'; checkStage = -1; _finishFixAsk = null; clearPersist(); }
+            function reset() { active = false; pending = false; i = 0; phase = 'ask'; checkStage = -1; frameFix = ''; _finishFixAsk = null; clearPersist(); }
             function tryResume() {
                 try {
                     // v7.20.298: a MISSING sidecar is no longer fatal — firstEmptyAsk() already
@@ -21554,6 +21737,7 @@
                     _cwLoadDocValues(state.cwProjectId, 'logline');
                     checkStage = (typeof d.checkStage === 'number') ? d.checkStage : -1;
                     oriented = (d.oriented && typeof d.oriented === 'object') ? d.oriented : {};
+                    frameFix = (typeof d.frameFix === 'string') ? d.frameFix : '';
                     phase = d.phase || 'ask';
                     i = firstEmptyAsk();
                     // A reload during a check-in-flight: the call is gone, so fall FORWARD rather
@@ -21937,7 +22121,12 @@
                 ((s.tech) || []).forEach(function (t) {
                     if (!(window.SophiclyTable && window.SophiclyTable.open)) return;
                     bar.appendChild(el('button', {
-                        className: 'swml-quick-btn', textContent: '🗂 ' + t.l,
+                        // v7.20.371 (Neil): a technique with its OWN glyph drops the generic 🗂 prefix and
+                            // carries the icon instead; every other technique is untouched (techIcon
+                            // returns '' on a miss). A DISPLAY layer only — the label string `t.l` and the
+                            // deep-link symbol `t.s` are both unchanged, so tap handlers and the harnesses
+                            // that match chip labels cannot see this (#89's landmine).
+                            className: 'swml-quick-btn', textContent: (WML.techIcon(t.s) ? '' : '🗂 ') + t.l, icon: WML.techIcon(t.s, 15),
                         onClick: function () { try { window.SophiclyTable.open(t.s); } catch (e) {} },
                     }));
                 });

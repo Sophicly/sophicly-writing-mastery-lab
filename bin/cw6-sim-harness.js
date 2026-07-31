@@ -350,6 +350,41 @@ for (const k of KEYS) {
         k + ': the stage explanation must be served exactly ONCE per stage, got '
         + w.bubbles.filter(function (b) { return /What this stage is for/.test(b); }).length);
 
+    // ⭐⭐ v7.20.371 — #109 AND #110, BOTH ASSERTED ON THE SCREEN, for the same reason as the
+    // stage-explanation check above: Neil asked for the story's two ends four times and each
+    // time the row-and-write assertions stayed green while nothing changed on his screen.
+    //
+    // #109 — the two ends are settled TOGETHER, up front, before any stage work.
+    const frameAt = w.bubbles.findIndex(function (b) { return /your story’s two ends/i.test(b); });
+    const firstStageAt = w.bubbles.findIndex(function (b) { return /What this stage is for/.test(b); });
+    ok(frameAt !== -1, k + ': the story frame never reached the student (#109 — asked for four times)');
+    ok(firstStageAt !== -1 && frameAt < firstStageAt,
+        k + ': the story frame must come BEFORE the first stage explanation — that is the whole point of '
+        + 'settling both ends together rather than an hour apart (frame at ' + frameAt + ', stage I at ' + firstStageAt + ')');
+    ok(/counts the days/.test(w.bubbles[frameAt]) && /opens the door/.test(w.bubbles[frameAt]),
+        k + ': the frame did not SHOW both Step-4 sentences — it asked the student to confirm something invisible');
+    ok(w.bubbles.filter(function (b) { return /your story’s two ends/i.test(b); }).length === 1,
+        k + ': the story frame was served more than once in one run');
+
+    // #110 — the arc ask RENDERS the two beats it asks the student to bridge.
+    // Neil: "these teenagers are not gonna read it unless you show it to them."
+    const arcAsks = w.bubbles.filter(function (b) { return /This stage runs from/.test(b); });
+    ok(arcAsks.length === ARCH[k].sections.length,
+        k + ': the arc ask must show the stage\'s two ends on every stage, got ' + arcAsks.length
+        + ' of ' + ARCH[k].sections.length);
+    ok(!arcAsks.some(function (b) { return /\*\*This stage runs from…\*\*\n\n\*\*…to/.test(b); }),
+        k + ': an arc ask printed the "runs from / to" frame with no beat inside it');
+    // The FIRST stage's arc ask must show their OWN carried words, not a placeholder — the frame
+    // has already filled that beat by the time this ask is served, so anything else means the ask
+    // is reading the template rather than the document.
+    ok(/counts the days/.test(arcAsks[0] || ''),
+        k + ': the Stage I arc ask did not show the student\'s own opening beat');
+    ok(/opens the door/.test(arcAsks[arcAsks.length - 1] || ''),
+        k + ': the final stage\'s arc ask did not show the student\'s own closing beat');
+    // A beat they have NOT written yet still shows something concrete (its prompt), never a blank.
+    ok(arcAsks.every(function (b) { return !/—\s*$/m.test(b); }),
+        k + ': an arc ask rendered a beat label with nothing after it');
+
     // Frame rows lead their stage, and no divider was ever asked.
     const secIds = ARCH[k].sections.map(function (s) { return s.id; });
     secIds.forEach(function (sid) {

@@ -146,6 +146,7 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onRecallPick:   { kind: 'flow', note: 'Step 4 wrap: which beat to rewrite — the REWRITE that follows is what is filed' },
         onPickConfirm:  { kind: 'flow', note: 'Step 5 (#74, v7.20.354): keep the existing plot structure or re-pick. FLOW, not content — the archetype already lives in its document row; this tap only decides whether the walk re-opens the pick. Exists because advance() started at firstEmpty(), so an already-chosen structure meant the ONE decision every later step is built on was walked straight past (Neil, live: "it should just ask again even if it\'s chosen. It should just confirm it.")' },
         onAnchorChoice: { kind: 'flow', note: 'Step 6 story bookend: still right / sharpen' },
+        onFrameChoice:  { kind: 'flow', note: 'Step 6 story FRAME (#109, v7.20.371): both still right / change my opening / change my ending. FLOW on the same reasoning as onAnchorChoice — the tap only decides whether the walk carries the Step-4 sentence or re-opens it for a rewrite. What is filed is the SENTENCE (the spine value on keep, the student\'s rewrite otherwise), never the pick.' },
         onStageChoice:  { kind: 'flow', note: 'Step 6 stage arc: sharpen / leave' },
         onFinishChoice: { kind: 'flow', note: 'Step 6 final image: rewrite / leave' },
         onPushChoice:   { kind: 'flow', note: 'Step 5 archetype push: switch / keep' },
