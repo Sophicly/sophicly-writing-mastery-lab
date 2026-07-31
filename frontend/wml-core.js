@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.360';
+var WML_BUILD = '7.20.361';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3647,6 +3647,20 @@ window.WML = (function() {
         return '<svg class="swml-lock-ico" xmlns="http://www.w3.org/2000/svg" width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"/><path d="M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z"/><path d="M10 11v-2a2 2 0 1 1 4 0v2"/></svg>';
     }
 
+    // v7.20.361 (Neil supplied the file): the APPROVAL / VERIFIED SHIELD glyph, for the tutor
+    // Sign Off button — replacing the ✍ emoji he asked to be removed. Paths are VERBATIM from
+    // his `Approval, Verified Shield.svg` (kept at frontend/icons/approval-verified-shield.svg
+    // for provenance, the same way the tabler lock is); they were EXTRACTED from the file, never
+    // retyped. The only change is his instruction to "dial it appropriately in terms of the
+    // colours": the source paths carry no fill, so fill="currentColor" makes the glyph take the
+    // button’s own ink — #04140d on the green Sign Off, and correct on any future host.
+    // ⚠️ MUST be inlined, never an <img>: an <img> cannot inherit currentColor, which is exactly
+    // why the illustrative emoji pack is <img> and full-colour and is NOT usable on a button.
+    function approvalIconSVG(size) {
+        const s = size || 16;
+        return '<svg class="swml-approval-ico" xmlns="http://www.w3.org/2000/svg" width="' + s + '" height="' + s + '" viewBox="0 0 64 64" fill="currentColor" aria-hidden="true"><path d="M40.38184,20h-16.76367l1.27637,2.55273c.14062.28174.14062.61279,0,.89453l-1.27637,2.55273h16.76367l-1.27637-2.55273c-.14062-.28174-.14062-.61279,0-.89453l1.27637-2.55273ZM36,24h-8c-.55273,0-1-.44775-1-1s.44727-1,1-1h8c.55273,0,1,.44775,1,1s-.44727,1-1,1Z"/><path d="M44.01465,15.37842l-12.01465-2.28857-12.01465,2.28857c-.16797,2.24463-1.82617,4.08105-3.98535,4.521v8.26025c0,10.18066,6.41504,19.21777,16,22.59473,9.58496-3.37695,16-12.41406,16-22.59473v-8.26025c-2.15918-.43994-3.81738-2.27637-3.98535-4.521ZM41.95703,34.94971l-9.87891,9.87842c-.75488.75586-1.75977,1.17188-2.82812,1.17188s-2.07324-.41602-2.82812-1.17188l-4.37891-4.37891c-.56641-.56641-.87891-1.31934-.87891-2.12109,0-.80127.3125-1.55469.87891-2.12109,1.1709-1.16943,3.07324-1.16797,4.24219-.00049l2.96484,2.96484,8.46484-8.46436c1.17087-1.16941,3.07315-1.16797,4.24211-.00057,1.15179,1.15026,1.14618,3.09616.00008,4.24324ZM42.89453,26.55273c.15527.31006.13867.67822-.04395.97314-.18262.29443-.50391.47412-.85059.47412h-20c-.34668,0-.66797-.17969-.85059-.47412-.18262-.29492-.19922-.66309-.04395-.97314l1.77637-3.55273-1.77637-3.55273c-.15527-.31006-.13867-.67822.04395-.97314.18262-.29443.50391-.47412.85059-.47412h20c.34668,0,.66797.17969.85059.47412.18262.29492.19922.66309.04395.97314l-1.77637,3.55273,1.77637,3.55273Z"/><path d="M39.12891,32.12158l-9.17188,9.1709c-.39062.39062-1.02344.39062-1.41406,0l-3.67187-3.67138c-.37022-.37017-1.02113-.39119-1.41382.00024-.3796.37838-.37769,1.03782-.00024,1.41333l4.37891,4.37939c.75586.75586,2.07227.75586,2.82812,0l9.87879-9.87879c.38501-.38501.38265-1.03065.00011-1.41418-.39062-.38965-1.02344-.39014-1.41406.00049Z"/><path d="M53.18749,11.01758l-21-4c-.125-.02344-.25-.02344-.375,0l-21,4c-.47167.08984-.81249.50244-.81249.98242v16.15967c0,13.30322,8.93359,25.14697,21.72559,28.80176.08984.02588.18164.03857.27441.03857s.18457-.0127.27441-.03857c12.79199-3.65479,21.72559-15.49854,21.72559-28.80176V12c0-.47998-.34082-.89258-.81251-.98242ZM15,14c.55231,0,1,.44769,1,1,0,.55225-.44769,1-1,1s-1-.44775-1-1c0-.55231.44769-1,1-1ZM50,28.15967c0,11.15283-7.10547,21.03857-17.68066,24.6001-.10352.03467-.21191.05225-.31934.05225s-.21582-.01758-.31934-.05225c-10.5752-3.56152-17.68066-13.44727-17.68066-24.6001v-9.15967c0-.55225.44727-1,1-1,1.6543,0,3-1.3457,3-3,0-.11103-.02685-.22141-.03906-.33154-.05762-.51953.29395-.99609.80664-1.09424l13.04491-2.48486c.125-.02344.25-.02344.375,0l13.04493,2.48486c.5127.09814.86426.57471.80664,1.09424-.01387.10856-.03906.22198-.03906.33154,0,1.6543,1.3457,3,3,3,.55273,0,1,.44775,1,1v9.15967ZM49,16c-.55231,0-1-.44775-1-1,0-.55231.44769-1,1-1s1,.44769,1,1c0,.55225-.44769,1-1,1Z"/></svg>';
+    }
+
     // v7.20.360: THE ONLY WAY to write a label onto a house button (.swml-halo-btn, BRAND.md §8).
     // The hover roll needs the label present TWICE — so every `btn.textContent = '…'` or
     // `btn.innerHTML = '…'` on one of these silently DESTROYS the roll, and the button looks
@@ -4275,7 +4289,7 @@ window.WML = (function() {
         registerLiveValue, resolveLiveValues,   // v7.20.351 — the fossil cure (see formatAI)
         recordTurn, rehydrateTurn,              // v7.20.352 — the ONLY writers into chat history
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
-        parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG, setHaloLabel,
+        parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG, setHaloLabel, approvalIconSVG,
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
         learnChipsForLine,  // v7.19.949/950: ungated line→chips resolver for the in-doc healer
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)

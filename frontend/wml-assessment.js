@@ -38388,7 +38388,13 @@
                 // ⚠️ Every label write below goes through WML.setHaloLabel — a raw textContent
                 // write would destroy the roll's two copies and this button rewrites its label six times.
                 signBtn.className = 'swml-signoff-btn swml-halo-btn';
-                WML.setHaloLabel(signBtn, 'Sign Off', WML.lockIconSVG(11)); // v7.19.952: 🔒 → tabler lock (Neil)
+                // v7.20.361 (Neil): the ✍ emoji is gone — he does not want emojis. Locked keeps the
+                // tabler lock (v7.19.952); READY carries the approval/verified shield he supplied.
+                // The two states now say different things with a glyph instead of decorating with one.
+                // ONE label writer, so the ready label cannot drift between the five places that set it.
+                const _setSignLabel = (ready) => WML.setHaloLabel(
+                    signBtn, 'Sign Off', ready ? WML.approvalIconSVG(17) : WML.lockIconSVG(15));
+                _setSignLabel(false);
                 signBtn.disabled = true;
                 signBtn.style.opacity = '0.5';
                 signBtn.style.cursor = 'not-allowed';
@@ -38399,7 +38405,7 @@
                     signBtn.disabled = !ready;
                     signBtn.style.opacity = ready ? '' : '0.5';
                     signBtn.style.cursor = ready ? '' : 'not-allowed';
-                    WML.setHaloLabel(signBtn, ready ? '✍ Sign Off' : 'Sign Off', ready ? '' : WML.lockIconSVG(11)); // v7.19.952: 🔒 → tabler lock
+                    _setSignLabel(ready); // v7.19.952: 🔒 → tabler lock; v7.20.361: ✍ → approval shield
                     marksHint.style.display = (checkbox.checked && !marksReady) ? '' : 'none';
                     if (!ready) signBtn.dataset.confirming = 'false';
                 };
@@ -38413,7 +38419,7 @@
                     console.log('WML: Sign-off button clicked, canSignOff:', config.canSignOff);
                     // Two-step confirmation: first click shows "Confirm?", second click signs off
                     if (signBtn.dataset.confirming === 'true') {
-                        WML.setHaloLabel(signBtn, '⏳ Signing…');
+                        WML.setHaloLabel(signBtn, 'Signing…');
                         signBtn.disabled = true;
                         signBtn.classList.remove('swml-signoff-btn-armed');
                         // v7.15.84: when tutor reviews a student, send targetUserId (the student),
@@ -38439,14 +38445,14 @@
                                 showToast('✓ Document signed off', 4000, true);
                                 if (typeof recalculateScoreSummary === 'function') recalculateScoreSummary();
                             } else {
-                                WML.setHaloLabel(signBtn, '✍ Sign Off');
+                                _setSignLabel(true);
                                 signBtn.disabled = false;
                                 signBtn.dataset.confirming = 'false';
                                 showToast('Sign-off failed: ' + (res.message || 'unknown error'), 5000, true);
                             }
                         }).catch(err => {
                             console.warn('WML: Sign-off error:', err);
-                            WML.setHaloLabel(signBtn, '✍ Sign Off');
+                            _setSignLabel(true);
                             signBtn.disabled = false;
                             signBtn.dataset.confirming = 'false';
                             showToast('Sign-off failed — please try again', 5000, true);
@@ -38471,7 +38477,7 @@
                         setTimeout(() => {
                             if (signBtn.dataset.confirming === 'true') {
                                 signBtn.dataset.confirming = 'false';
-                                WML.setHaloLabel(signBtn, '✍ Sign Off');
+                                _setSignLabel(true);
                                 signBtn.classList.remove('swml-signoff-btn-armed');
                             }
                         }, 4000);
