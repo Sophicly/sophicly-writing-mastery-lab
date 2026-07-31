@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.362';
+var WML_BUILD = '7.20.363';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2437,16 +2437,24 @@ window.WML = (function() {
     const SVG_WRITING = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19c3.333-2 5-4 5-6c0-3-1-3-2-3s-2.032 1.085-2 3c.034 2.048 1.658 2.877 2.5 4c1.5 2 2.5 2.5 3.5 1c.667-1 1.167-1.833 1.5-2.5c1 2.333 2.333 3.5 4 3.5h2.5"/><path d="M20 17v-12c0-1.121-.879-2-2-2s-2 .879-2 2v12l2 2l2-2z"/><path d="M16 7h4"/></svg>';
     const SVG_REDRAFT = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.91"><path stroke-miterlimit="10" d="M12 1.5A10.52 10.52 0 1 1 3.39 18.07"/><line stroke-linecap="round" stroke-linejoin="round" x1="1.48" y1="12.02" x2="1.48" y2="12.02"/><path stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="0 4.13" d="M2.28 8A10.51 10.51 0 0 1 10 1.7"/><line stroke-linecap="round" stroke-linejoin="round" x1="12" y1="1.5" x2="12" y2="1.5"/><polyline stroke-miterlimit="10" points="3.39 23.5 3.39 17.76 9.13 17.76"/></svg>';
 
+    // v7.20.363: `icon` prepends a glyph WITHOUT disturbing the label. This exists so a chip can
+    // gain an icon while `textContent` still returns exactly the label — which matters because
+    // chip labels are read as data in several places (tap handlers, quick-action detection, the
+    // walk sims and four harnesses). Writing the glyph into innerHTML instead would empty
+    // textContent and silently change what all of those see. An <svg> contributes no text, so
+    // `btn.textContent` is unchanged by construction.
     function el(tag, attrs = {}, children = []) {
         const e = document.createElement(tag);
         for (const [k, v] of Object.entries(attrs)) {
             if (k === 'className') e.className = v;
             else if (k === 'innerHTML') e.innerHTML = v;
             else if (k === 'textContent') e.textContent = v;
+            else if (k === 'icon') continue;   // applied after the loop, so it survives textContent
             else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2).toLowerCase(), v);
             else if (k === 'style' && typeof v === 'object') Object.assign(e.style, v);
             else e.setAttribute(k, v);
         }
+        if (attrs.icon) e.insertAdjacentHTML('afterbegin', attrs.icon);
         for (const c of [].concat(children)) {
             if (typeof c === 'string') e.appendChild(document.createTextNode(c));
             else if (c) e.appendChild(c);
@@ -3647,41 +3655,62 @@ window.WML = (function() {
         return '<svg class="swml-lock-ico" xmlns="http://www.w3.org/2000/svg" width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"/><path d="M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z"/><path d="M10 11v-2a2 2 0 1 1 4 0v2"/></svg>';
     }
 
-    // ── ICONS NEIL SUPPLIED (v7.20.361/.362) ─────────────────────────────────────────────────
-    // Every glyph below is VERBATIM from a file he sent, extracted programmatically rather than
-    // retyped, and each file is kept under frontend/icons/ for provenance (the tabler-lock
-    // pattern). His first shield was replaced on his own call — v7.20.362: "that shield icon,
-    // unfortunately, is a bit too detailed. We probably just need a more simple one like the one
-    // below" → tabler-shield-check.
+    // ══ THE ICON REGISTRY ═══════════════════════════════════════════════════════════════════
+    // v7.20.363. ONE table, one glyph per CONCEPT, every consumer looks it up. Neil, approving
+    // the build: "just bear in mind that we might need to update that at some point" — so this
+    // is built to be edited: to change an icon, drop the new file in frontend/icons/, paste its
+    // inner markup into the row below, done. The rail button, that panel's header and any chip
+    // using the same concept all change together, because they read the SAME row. They used to
+    // share a const by luck; now they share it by construction.
     //
-    // ⚠️ WHY THESE ARE INLINE AND THE PHOENIX IS NOT — the rule for any future icon:
-    //   MONOCHROME icon → INLINE. It must inherit currentColor to sit on a green button, a purple
-    //     chip and both themes, and an <img> cannot inherit colour at all.
-    //   FULL-COLOUR BRAND MARK → <img> (see phoenixIconHTML). It must NOT inherit colour, and
-    //     inlining it would paste 31KB per instance AND duplicate its <defs> gradient ids into the
-    //     document, where ids are global — every copy of url(#radial-gradient) then resolves to
-    //     whichever landed first.
+    // Every glyph is VERBATIM from a file Neil supplied, extracted programmatically rather than
+    // retyped, and `src` names the file it came from so provenance survives (frontend/icons/).
+    //
+    // ⚠️ INLINE vs <img> — the rule, because getting it wrong is invisible until it ships:
+    //   MONOCHROME icon → INLINE (this table). It must inherit currentColor to sit on a green
+    //     button, a purple chip and both themes; an <img> cannot inherit colour at all.
+    //   FULL-COLOUR BRAND MARK → <img> (phoenixIconHTML below). It must NOT inherit colour, and
+    //     inlining would paste 31KB per instance AND duplicate its <defs> gradient ids into the
+    //     document, where ids are global — every url(#radial-gradient) would resolve to whichever
+    //     copy landed first.
     // This is also why frontend/icons/emoji/ (512x512, gradients, <img>) can never dress a button.
-    const _TABLER_FILLED = 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"';
-    const _FEATHER_LINE  = 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+    //
+    // `kind` picks the wrapper: tabler FILLED glyphs paint with fill, feather/tabler OUTLINE
+    // glyphs paint with stroke. Mixing them up yields a solid blob or an invisible icon.
+    const ICON_WRAP = {
+        filled: 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"',
+        line: 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"',
+    };
+    const ICONS = {
+        approval: { kind: 'filled', src: 'tabler-shield-check.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M11.998 2l.118 .007l.059 .008l.061 .013l.111 .034a.993 .993 0 0 1 .217 .112l.104 .082l.255 .218a11 11 0 0 0 7.189 2.537l.342 -.01a1 1 0 0 1 1.005 .717a13 13 0 0 1 -9.208 16.25a1 1 0 0 1 -.502 0a13 13 0 0 1 -9.209 -16.25a1 1 0 0 1 1.005 -.717a11 11 0 0 0 7.531 -2.527l.263 -.225l.096 -.075a.993 .993 0 0 1 .217 -.112l.112 -.034a.97 .97 0 0 1 .119 -.021l.115 -.007zm3.71 7.293a1 1 0 0 0 -1.415 0l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.32 1.497l2 2l.094 .083a1 1 0 0 0 1.32 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" />' },
+        guide: { kind: 'filled', src: 'tabler-help-triangle.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 1.67c.955 0 1.845 .467 2.39 1.247l.105 .16l8.114 13.548a2.914 2.914 0 0 1 -2.307 4.363l-.195 .008h-16.225a2.914 2.914 0 0 1 -2.582 -4.2l.099 -.185l8.11 -13.538a2.914 2.914 0 0 1 2.491 -1.403zm0 13.33a1 1 0 0 0 -.993 .883l-.007 .117l.007 .127a1 1 0 0 0 1.986 0l.007 -.117l-.007 -.127a1 1 0 0 0 -.993 -.883zm1.368 -6.673a2.98 2.98 0 0 0 -3.631 .728a1 1 0 0 0 1.44 1.383l.171 -.18a.98 .98 0 0 1 1.11 -.15a1 1 0 0 1 -.34 1.886l-.232 .012a1 1 0 0 0 .111 1.994a3 3 0 0 0 1.371 -5.673z" />' },
+        spine: { kind: 'line', src: 'feather-layers.svg', body: '<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline>' },
+        outline: { kind: 'line', src: 'tabler-list-details-outline.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13 5h8" /><path d="M13 9h5" /><path d="M13 15h8" /><path d="M13 19h5" /><path d="M3 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path d="M3 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />' },
+        resources: { kind: 'line', src: 'tabler-book-2.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z" /><path d="M19 16h-12a2 2 0 0 0 -2 2" /><path d="M9 8h6" />' },
+        profile: { kind: 'line', src: 'tabler-user-circle.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" />' },
+    };
 
-    // tabler-shield-check — the tutor Sign Off button (approval).
-    function approvalIconSVG(size) {
+    // icon('spine', 16) → inline SVG at that size, inheriting the host's colour.
+    // Unknown key returns '' and warns ONCE — never a broken glyph, never a silent blank.
+    const _iconWarned = {};
+    function icon(name, size) {
+        const def = ICONS[name];
+        if (!def) {
+            if (!_iconWarned[name]) { _iconWarned[name] = 1; try { console.warn('WML: no icon registered for "' + name + '" — add a row to WML.ICONS'); } catch (_) {} }
+            return '';
+        }
         const s = size || 16;
-        return '<svg class="swml-ico swml-ico-approval" ' + _TABLER_FILLED + ' width="' + s + '" height="' + s + '" aria-hidden="true"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M11.998 2l.118 .007l.059 .008l.061 .013l.111 .034a.993 .993 0 0 1 .217 .112l.104 .082l.255 .218a11 11 0 0 0 7.189 2.537l.342 -.01a1 1 0 0 1 1.005 .717a13 13 0 0 1 -9.208 16.25a1 1 0 0 1 -.502 0a13 13 0 0 1 -9.209 -16.25a1 1 0 0 1 1.005 -.717a11 11 0 0 0 7.531 -2.527l.263 -.225l.096 -.075a.993 .993 0 0 1 .217 -.112l.112 -.034a.97 .97 0 0 1 .119 -.021l.115 -.007zm3.71 7.293a1 1 0 0 0 -1.415 0l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.32 1.497l2 2l.094 .083a1 1 0 0 0 1.32 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" /></svg>';
+        return '<svg class="swml-ico swml-ico-' + name + '" ' + ICON_WRAP[def.kind]
+            + ' width="' + s + '" height="' + s + '" aria-hidden="true">' + def.body + '</svg>';
     }
-    // tabler-help-triangle — the [Guidance] help rung.
-    function guideIconSVG(size) {
-        const s = size || 15;
-        return '<svg class="swml-ico swml-ico-guide" ' + _TABLER_FILLED + ' width="' + s + '" height="' + s + '" aria-hidden="true"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 1.67c.955 0 1.845 .467 2.39 1.247l.105 .16l8.114 13.548a2.914 2.914 0 0 1 -2.307 4.363l-.195 .008h-16.225a2.914 2.914 0 0 1 -2.582 -4.2l.099 -.185l8.11 -13.538a2.914 2.914 0 0 1 2.491 -1.403zm0 13.33a1 1 0 0 0 -.993 .883l-.007 .117l.007 .127a1 1 0 0 0 1.986 0l.007 -.117l-.007 -.127a1 1 0 0 0 -.993 -.883zm1.368 -6.673a2.98 2.98 0 0 0 -3.631 .728a1 1 0 0 0 1.44 1.383l.171 -.18a.98 .98 0 0 1 1.11 -.15a1 1 0 0 1 -.34 1.886l-.232 .012a1 1 0 0 0 .111 1.994a3 3 0 0 0 1.371 -5.673z" /></svg>';
-    }
-    // feather-layers — the [Story Spine] rung (the stacked beats of the spine).
-    function spineIconSVG(size) {
-        const s = size || 15;
-        return '<svg class="swml-ico swml-ico-spine" ' + _FEATHER_LINE + ' width="' + s + '" height="' + s + '" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>';
-    }
+    // Kept as named wrappers so existing call sites read plainly.
+    function approvalIconSVG(size) { return icon('approval', size || 16); }
+    function guideIconSVG(size) { return icon('guide', size || 15); }
+    function spineIconSVG(size) { return icon('spine', size || 15); }
+
     // The Writing Mastery Lab phoenix — Sophia's own mark, for [Still stuck — ask Sophia].
-    // Full-colour by design: this is the one chip where the glyph is an IDENTITY, not an icon.
+    // Full-colour BY DESIGN: this is the one chip where the glyph is an IDENTITY, not an icon,
+    // so it is deliberately the one thing in a row of monochrome glyphs that is not monochrome.
     function phoenixIconHTML(size) {
         const s = size || 16;
         const base = (typeof swmlConfig !== 'undefined' && swmlConfig.iconBaseUrl) || '';
@@ -4317,7 +4346,7 @@ window.WML = (function() {
         registerLiveValue, resolveLiveValues,   // v7.20.351 — the fossil cure (see formatAI)
         recordTurn, rehydrateTurn,              // v7.20.352 — the ONLY writers into chat history
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
-        parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG, setHaloLabel, approvalIconSVG, guideIconSVG, spineIconSVG, phoenixIconHTML,
+        parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG, setHaloLabel, approvalIconSVG, guideIconSVG, spineIconSVG, phoenixIconHTML, icon, ICONS,
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
         learnChipsForLine,  // v7.19.949/950: ungated line→chips resolver for the in-doc healer
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)

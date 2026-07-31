@@ -107,13 +107,28 @@ function attachWmlDeps(deps) {
     if (psIdx < 0) throw new Error('PRESENT_STATE_RE not found in wml-core.js');
     const psEnd = CORE.indexOf('\n', psIdx);
 
+    // v7.20.363 — the ICON REGISTRY, sliced for the same reason as recordTurn: never stubbed.
+    // A stub returning '' would make every walk pass while `WML.icon('spine')` resolved to
+    // nothing, so a chip could ship with a missing or misspelled icon key and no rig would
+    // notice — the registry's own "unknown key warns once" path would never be exercised.
+    // Sliced, a bad key in a shipped chip surfaces here instead of on Neil's screen.
+    const icoIdx = CORE.indexOf('const ICON_WRAP = {');
+    if (icoIdx < 0) throw new Error('the icon registry (ICON_WRAP/ICONS) was not found in wml-core.js — chip and rail glyphs would resolve to nothing and every walk would still pass');
+    const icoFnIdx = CORE.indexOf('function icon(name, size)', icoIdx);
+    if (icoFnIdx < 0) throw new Error('WML.icon() not found in wml-core.js');
+    const icoEnd = braceSliceFrom(CORE, icoFnIdx, '{', '}').end;
+
     // eslint-disable-next-line no-new-func
     const mk = new Function('console', [
         'const _turnWarned = Object.create(null);',
         CORE.slice(psIdx, psEnd),
         CORE.slice(rtIdx, rtEnd),
         CORE.slice(rhIdx, rhEnd),
-        'return { recordTurn: recordTurn, rehydrateTurn: rehydrateTurn };',
+        CORE.slice(icoIdx, icoEnd),
+        // the phoenix is an <img> off swmlConfig, which does not exist in a rig — the glyph is
+        // irrelevant to behaviour, but the CALL must not throw, so it resolves to empty here.
+        'function phoenixIconHTML() { return \'\'; }',
+        'return { recordTurn: recordTurn, rehydrateTurn: rehydrateTurn, icon: icon, ICONS: ICONS, phoenixIconHTML: phoenixIconHTML };',
     ].join('\n'));
 
     const real = mk(deps.console || console);
@@ -233,7 +248,18 @@ const SA_ADD_RE = /Add to my answer|Write it again/i;
 
 // Chips the student can actually choose between. `appendStepButtons` / `appendSpineButtons`
 // attach a HELP bar to the SAME bubble; a rig that cannot tell them apart taps Guidance forever.
-const HELP_RE = /^(📖|👤|🧩|🗒|🗂|💡|🤔)/;
+//
+// ⚠️ v7.20.363 — THIS USED TO CLASSIFY BY EMOJI: /^(📖|👤|🧩|🗒|🗂|💡|🤔)/. That made a decoration
+// load-bearing: the moment Neil asked for the emojis to become SVG icons, every help chip would
+// have been reclassified as an ANSWER chip in four walks, and the failure would have read as a
+// walk bug rather than an icon change. A glyph is decoration; it must never be the thing a
+// machine reads. Classification is now by the bar's DECLARED kind (the same `swml-bc-help` /
+// `swml-cw-help` marker the product itself uses to stop two kinds colliding on one bubble) —
+// which is what this file's own comment below already suspected was the proper job.
+// The label net is the safety belt for a help rung appended OUTSIDE a help bar; it names rungs,
+// never glyphs, so an icon change can never move it again.
+const HELP_BAR_RE = /swml-bc-help|swml-cw-help/;
+const HELP_LABEL_RE = /^(Guidance|Story Spine|Story Components|Table of Techniques|Mastery Toolkit|More examples|Ask Sophia|Still stuck|Your Writer|Writer’s Profile|Writer's Profile)/;
 
 /**
  * Build a simulated world around a sliced controller.
@@ -435,12 +461,13 @@ function makeWorld(ctl, opts) {
                 // the sim cannot open a gated resource, and therefore never reaches the ask behind
                 // it: the walk would look dead to the rig while working fine for a student.
                 const isNav = String(bar.className).indexOf('swml-bc-nav') !== -1;
+                const isHelpBar = HELP_BAR_RE.test(String(bar.className));
                 bar.children.forEach((b) => {
                     // A BUTTON can be removed while its bar lives on: the resource gate replaces
                     // itself with `Continue →` in place. Without this the rig keeps tapping the
                     // dead gate button and the paced run never advances.
                     if (b._removed) return;
-                    if (isNav || !HELP_RE.test(String(b.textContent))) out.push(b);
+                    if (isNav || (!isHelpBar && !HELP_LABEL_RE.test(String(b.textContent)))) out.push(b);
                 });
             });
         return out;
@@ -565,6 +592,6 @@ function makeWorld(ctl, opts) {
 
 module.exports = {
     attachLiveChipsDeps, attachSlotDeps, attachWmlDeps,
-    SRC, ROOT, braceSliceFrom, sliceController, makeWorld, settle, HELP_RE,
+    SRC, ROOT, braceSliceFrom, sliceController, makeWorld, settle, HELP_LABEL_RE, HELP_BAR_RE,
     attachSelfAssessDeps, TICK_LIST_RE, NEUTRAL_RE, SA_ADD_RE,
 };

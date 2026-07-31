@@ -241,7 +241,10 @@ function makeWorld(opts) {
     // CHOICE chips only. `appendSpineButtons` attaches a HELP bar (.swml-cw-help — Guidance,
     // Writer's Profile, Story Components) to the very same bubble, and a sim that cannot tell the
     // two apart taps Guidance forever and never answers anything.
-    const HELP_RE = /^(📖|👤|🧩|🗒|🗂)/;
+    // v7.20.363: names RUNGS, not glyphs. The bar filter above already excludes .swml-cw-help;
+    // this is the belt for a help rung appended outside one. It used to test the leading emoji,
+    // which made a decoration load-bearing — see the note in walk-sim-lib.js.
+    const HELP_RE = /^(Guidance|Story Spine|Story Components|Table of Techniques|More examples|Ask Sophia|Still stuck|Your Writer|Writer’s Profile)/;
     world.chips = function () {
         const content = world._lastBubbleEl && world._lastBubbleEl.children[0];
         if (!content) return [];
