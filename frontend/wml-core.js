@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.365';
+var WML_BUILD = '7.20.366';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3678,11 +3678,11 @@ window.WML = (function() {
     // `kind` picks the wrapper: tabler FILLED glyphs paint with fill, feather/tabler OUTLINE
     // glyphs paint with stroke. Mixing them up yields a solid blob or an invisible icon.
     const ICON_WRAP = {
-        filled: 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"',
-        line: 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"',
+        filled: 'xmlns="http://www.w3.org/2000/svg" fill="currentColor"',
+        line: 'xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"',
         // Neil's Story Components puzzle is drawn at 1.91 with SQUARE caps and a mitre join.
         // Kept as drawn rather than normalised to the tabler weight — the geometry is his.
-        lineSquare: 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.91" stroke-linecap="square" stroke-miterlimit="10"',
+        lineSquare: 'xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.91" stroke-linecap="square" stroke-miterlimit="10"',
     };
     const ICONS = {
         approval: { kind: 'filled', src: 'tabler-shield-check.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M11.998 2l.118 .007l.059 .008l.061 .013l.111 .034a.993 .993 0 0 1 .217 .112l.104 .082l.255 .218a11 11 0 0 0 7.189 2.537l.342 -.01a1 1 0 0 1 1.005 .717a13 13 0 0 1 -9.208 16.25a1 1 0 0 1 -.502 0a13 13 0 0 1 -9.209 -16.25a1 1 0 0 1 1.005 -.717a11 11 0 0 0 7.531 -2.527l.263 -.225l.096 -.075a.993 .993 0 0 1 .217 -.112l.112 -.034a.97 .97 0 0 1 .119 -.021l.115 -.007zm3.71 7.293a1 1 0 0 0 -1.415 0l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.32 1.497l2 2l.094 .083a1 1 0 0 0 1.32 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" />' },
@@ -3692,7 +3692,8 @@ window.WML = (function() {
         resources: { kind: 'line', src: 'tabler-book-2.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z" /><path d="M19 16h-12a2 2 0 0 0 -2 2" /><path d="M9 8h6" />' },
         // Already in the repo before this pass; both are currentColor-ready as shipped.
         examples: { kind: 'filled', src: 'tabler-bulb.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" /><path d="M12 2a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1z" /><path d="M21 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" /><path d="M4.893 4.893a1 1 0 0 1 1.32 -.083l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 0 -1.414z" /><path d="M17.693 4.893a1 1 0 0 1 1.497 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7z" /><path d="M14 18a1 1 0 0 1 1 1a3 3 0 0 1 -6 0a1 1 0 0 1 .883 -.993l.117 -.007h4z" /><path d="M12 6a6 6 0 0 1 3.6 10.8a1 1 0 0 1 -.471 .192l-.129 .008h-6a1 1 0 0 1 -.6 -.2a6 6 0 0 1 3.6 -10.8z" />' },
-        rewrite:  { kind: 'line',   src: 'tabler-writing-line.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M20 17v-12c0 -1.121 -.879 -2 -2 -2s-2 .879 -2 2v12l2 2l2 -2z" /><path d="M16 7h4" /><path d="M18 19h-13a2 2 0 1 1 0 -4h4a2 2 0 1 0 0 -4h-3" />' },
+        // Neil's own file (2026-07-31). Drawn on a 512 grid, hence `vb` — see icon().
+        rewrite: { kind: 'filled', vb: '0 0 512 512', src: 'rewrite-a-beat.svg', body: '<g><path d="m163.428 412.101v32.212c0 11.049 8.989 20.039 20.039 20.039h99.035c11.05 0 20.039-8.99 20.039-20.039v-32.212c0-11.049-8.989-20.039-20.039-20.039h-99.035c-11.05 0-20.039 8.989-20.039 20.039zm119.087 32.211s-.004 0-.013 0h-99.035v-32.212h99.035z"/><path d="m378.253 190.415c27.291-53.419 34.518-114.958 20.348-173.283-1.546-6.361-5.765-11.712-11.576-14.681-5.811-2.97-12.619-3.253-18.678-.779-55.573 22.687-101.209 64.604-128.504 118.028-27.684 54.185-34.656 115.601-20.067 174.353h-69.866c-11.304 0-20.501 9.197-20.501 20.501v29.86h-2.595c-11.304 0-20.501 9.197-20.501 20.501v126.585c0 11.304 9.197 20.501 20.501 20.501h212.343c11.304 0 20.501-9.197 20.501-20.501v-126.585c0-11.304-9.197-20.501-20.501-20.501h-2.595v-29.86c0-11.304-9.197-20.501-20.501-20.501h-36.68c42.12-23.99 76.417-59.688 98.872-103.638zm3.579-155.798c5.173 28.138 5.046 56.85-.221 84.674l-54.4 22.236zm-17.852-9.104-66.747 130.645c-.083.149-.158.303-.233.456l-13.564 26.549-16.977-69.955c23.305-38.001 57.191-68.5 97.521-87.695zm-111.634 114.51 17.11 70.504-33.21 65.003c-8.488-45.79-2.953-92.764 16.1-135.507zm64.176 174.53v29.86h-38.476c-5.533 0-10.02 4.486-10.02 10.02s4.486 10.02 10.02 10.02h61.11c.254 0 .462.207.462.462v126.585c0 .254-.207.461-.462.461h-212.343c-.254 0-.462-.207-.462-.461v-126.585c0-.254.207-.462.462-.462h60.853c5.533 0 10.02-4.486 10.02-10.02s-4.486-10.02-10.02-10.02h-38.219v-29.86c0-.254.207-.462.462-.462h166.151c.255 0 .462.208.462.462zm-62.436-29.895 34.878-68.266c.057-.109.115-.217.168-.329l24.102-47.174 62.478-25.538c-3.944 13.005-9.051 25.707-15.304 37.946-23.326 45.654-60.534 81.641-106.322 103.361z"/><circle cx="232.921" cy="354.433" r="10.02"/></g>' },
         // ⚠️ TWO FORCED CHANGES to this one, both stated (CLAUDE.md #13): his file paints via
         // a <defs><style> rule '.cls-1{stroke:#020202}'. (a) A HARDCODED colour cannot inherit,
         // so it would render near-black and vanish on the dark rail and the purple chips —
@@ -3714,7 +3715,13 @@ window.WML = (function() {
             return '';
         }
         const s = size || 16;
-        return '<svg class="swml-ico swml-ico-' + name + '" ' + ICON_WRAP[def.kind]
+        // viewBox is per-ROW, not per-kind: most of the set is drawn on a 24 grid, but Neil's
+        // "Rewrite a beat" is a 512 export. Emitting it here (and NOT in the wrappers) means a
+        // future icon on any grid just declares `vb` — and it cannot produce two viewBox
+        // attributes on one <svg>, where the second is silently ignored and the glyph renders
+        // at the wrong scale or not at all.
+        const vb = def.vb || '0 0 24 24';
+        return '<svg class="swml-ico swml-ico-' + name + '" viewBox="' + vb + '" ' + ICON_WRAP[def.kind]
             + ' width="' + s + '" height="' + s + '" aria-hidden="true">' + def.body + '</svg>';
     }
     // Kept as named wrappers so existing call sites read plainly.

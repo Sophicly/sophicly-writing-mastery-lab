@@ -18608,10 +18608,18 @@
                 if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice });
                 options.forEach(function (opt) {
-                    bar.appendChild(el('button', {
-                        className: 'swml-quick-btn', textContent: opt,
-                        onClick: function () { bar.remove(); onPick(opt); },
-                    }));
+                    // v7.20.366: an option may be a plain string, or { label, icon } so a chip can
+                    // carry a registry glyph. ⚠️ onPick ALWAYS receives the LABEL, never the object
+                    // and never any markup — the label is recorded verbatim as a durable user turn
+                    // (onWrapRecall), so an icon leaking into it would write markup into the
+                    // student's transcript for ever.
+                    const label = (opt && typeof opt === 'object') ? opt.label : opt;
+                    const attrs = {
+                        className: 'swml-quick-btn', textContent: label,
+                        onClick: function () { bar.remove(); onPick(label); },
+                    };
+                    if (opt && typeof opt === 'object' && opt.icon) attrs.icon = opt.icon;
+                    bar.appendChild(el('button', attrs));
                 });
                 bc.appendChild(bar);
                 return true;
@@ -19327,10 +19335,18 @@
                 if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
-                    bar.appendChild(el('button', {
-                        className: 'swml-quick-btn', textContent: opt,
-                        onClick: function () { bar.remove(); onPick(opt); },
-                    }));
+                    // v7.20.366: an option may be a plain string, or { label, icon } so a chip can
+                    // carry a registry glyph. ⚠️ onPick ALWAYS receives the LABEL, never the object
+                    // and never any markup — the label is recorded verbatim as a durable user turn
+                    // (onWrapRecall), so an icon leaking into it would write markup into the
+                    // student's transcript for ever.
+                    const label = (opt && typeof opt === 'object') ? opt.label : opt;
+                    const attrs = {
+                        className: 'swml-quick-btn', textContent: label,
+                        onClick: function () { bar.remove(); onPick(label); },
+                    };
+                    if (opt && typeof opt === 'object' && opt.icon) attrs.icon = opt.icon;
+                    bar.appendChild(el('button', attrs));
                 });
                 bc.appendChild(bar);
                 return true;
@@ -19973,10 +19989,18 @@
                 if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
-                    bar.appendChild(el('button', {
-                        className: 'swml-quick-btn', textContent: opt,
-                        onClick: function () { bar.remove(); onPick(opt); },
-                    }));
+                    // v7.20.366: an option may be a plain string, or { label, icon } so a chip can
+                    // carry a registry glyph. ⚠️ onPick ALWAYS receives the LABEL, never the object
+                    // and never any markup — the label is recorded verbatim as a durable user turn
+                    // (onWrapRecall), so an icon leaking into it would write markup into the
+                    // student's transcript for ever.
+                    const label = (opt && typeof opt === 'object') ? opt.label : opt;
+                    const attrs = {
+                        className: 'swml-quick-btn', textContent: label,
+                        onClick: function () { bar.remove(); onPick(label); },
+                    };
+                    if (opt && typeof opt === 'object' && opt.icon) attrs.icon = opt.icon;
+                    bar.appendChild(el('button', attrs));
                 });
                 bc.appendChild(bar);
                 return true;
@@ -20294,7 +20318,7 @@
                 serveWrapRecall();
                 resetSend();
             }
-            function serveWrapRecall() { chipBar(['✏️ Rewrite a beat →'], onWrapRecall); }
+            function serveWrapRecall() { chipBar([{ label: 'Rewrite a beat →', icon: WML.icon('rewrite', 15) }], onWrapRecall); }
             function onWrapRecall(pick) {
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: pick }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
                 addChatMessage(pick, 'user');
@@ -20875,10 +20899,18 @@
                 _walkSlot.clear('cw6');   // v7.20.340: a choice is a TAP — nothing typed may file here
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
-                    bar.appendChild(el('button', {
-                        className: 'swml-quick-btn', textContent: opt,
-                        onClick: function () { bar.remove(); onPick(opt); },
-                    }));
+                    // v7.20.366: an option may be a plain string, or { label, icon } so a chip can
+                    // carry a registry glyph. ⚠️ onPick ALWAYS receives the LABEL, never the object
+                    // and never any markup — the label is recorded verbatim as a durable user turn
+                    // (onWrapRecall), so an icon leaking into it would write markup into the
+                    // student's transcript for ever.
+                    const label = (opt && typeof opt === 'object') ? opt.label : opt;
+                    const attrs = {
+                        className: 'swml-quick-btn', textContent: label,
+                        onClick: function () { bar.remove(); onPick(label); },
+                    };
+                    if (opt && typeof opt === 'object' && opt.icon) attrs.icon = opt.icon;
+                    bar.appendChild(el('button', attrs));
                 });
                 bc.appendChild(bar);
             }
@@ -21732,10 +21764,18 @@
                 if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
                 options.forEach(function (opt) {
-                    bar.appendChild(el('button', {
-                        className: 'swml-quick-btn', textContent: opt,
-                        onClick: function () { bar.remove(); onPick(opt); },
-                    }));
+                    // v7.20.366: an option may be a plain string, or { label, icon } so a chip can
+                    // carry a registry glyph. ⚠️ onPick ALWAYS receives the LABEL, never the object
+                    // and never any markup — the label is recorded verbatim as a durable user turn
+                    // (onWrapRecall), so an icon leaking into it would write markup into the
+                    // student's transcript for ever.
+                    const label = (opt && typeof opt === 'object') ? opt.label : opt;
+                    const attrs = {
+                        className: 'swml-quick-btn', textContent: label,
+                        onClick: function () { bar.remove(); onPick(label); },
+                    };
+                    if (opt && typeof opt === 'object' && opt.icon) attrs.icon = opt.icon;
+                    bar.appendChild(el('button', attrs));
                 });
                 bc.appendChild(bar);
             }
