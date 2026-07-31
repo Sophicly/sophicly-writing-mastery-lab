@@ -137,7 +137,11 @@ ok(dividers + ' turning-point/marker criteria correctly excluded (they render as
 
 // The walk must ask the stage-arc + the two story-anchor rows too. Assert the doc builder
 // emits them — a walk asking for a row the builder never made writes nowhere.
-['stage_arc', 'story_open', 'story_close'].forEach((extra) => {
+// v7.20.368: story_open / story_close removed at Neil's instruction (the template already opens
+// Stage I with a real "The ordinary world" beat, so they were duplicates). Only the arc remains.
+// NOTE this check greps SOURCE, so it would have passed vacuously on their leftover definitions —
+// the real proof that they are gone is the absence assertion in cw6-sim-harness.
+['stage_arc'].forEach((extra) => {
     const re = new RegExp("'" + extra + "'");
     if (!re.test(assessSrc)) bad("the doc builder does not emit a '" + extra + "' row — Altitude 1/2 has nowhere to file (add it to buildCWPlotOutlineSection AND the on-load heal).");
 });

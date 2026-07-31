@@ -307,6 +307,8 @@ for (const k of KEYS) {
         }
         // An anchor confirm is a chip, not a typed turn.
         if (w.tap('still right')) { answered++; continue; }
+        // v7.20.368: so is the Step-4 CARRY confirm on the real first/last beat.
+        if (w.tap('Use this')) { answered++; continue; }
         if (!w.ctl.active) break;
         w.ctl.handleTurn('answer ' + answered);
         answered++;
@@ -326,17 +328,33 @@ for (const k of KEYS) {
         + ' asks — expected ' + (stageChecks + finishChecks) + '. Every beat must be answered with NO round-trip.');
 
     // The anchors carry the Step-4 spine, verbatim, without a re-ask (the paste-wall law).
-    const openFid = _cw6RowFieldId(k, 'setup', 'story_open');
-    const closeFid = _cw6RowFieldId(k, 'aftermath', 'story_close');
-    ok(/counts the days/.test(w.rows.get(openFid) || ''), k + ': Step-4 Beat 1 was not echoed into story_open');
-    ok(/opens the door/.test(w.rows.get(closeFid) || ''), k + ': Step-4 Beat 6 was not echoed into story_close');
+    // v7.20.368 — the phantom story_open / story_close rows are GONE (Neil asked five times).
+    // The Step-4 spine now carries into the REAL beats: Stage I's first, Stage VI's last. These
+    // assertions moved with it, so the gate still proves the carry happens — and additionally
+    // proves the old duplicate rows never come back.
+    ok(!w.rows.has(_cw6RowFieldId(k, 'setup', 'story_open')), k + ': the story_open duplicate row is back');
+    ok(!w.rows.has(_cw6RowFieldId(k, 'aftermath', 'story_close')), k + ': the story_close duplicate row is back');
+    const firstBeat = w.order.filter(function (f) { return f.indexOf(_cw6RowFieldId(k, 'setup', '')) === 0 && !/-stage_arc$/.test(f); })[0];
+    const lastBeat = w.order.filter(function (f) { return f.indexOf(_cw6RowFieldId(k, 'aftermath', '')) === 0 && !/-stage_arc$/.test(f); }).pop();
+    ok(/counts the days/.test(w.rows.get(firstBeat) || ''), k + ': Step-4 Beat 1 did not carry into the REAL first beat (' + firstBeat + ')');
+    ok(/opens the door/.test(w.rows.get(lastBeat) || ''), k + ': Step-4 Beat 6 did not carry into the REAL last beat (' + lastBeat + ')');
     ok(!w.bubbles.some(function (b) { return /paste|copy out|type out your Beat/i.test(b); }), k + ': an ask demanded content the session already holds');
+
+    // ⭐ v7.20.368 — READ THE SCREEN, not the database. Every other assertion in this file passed
+    // while the stage explanation never once reached a student, because they all inspect ROWS and
+    // WRITES. Neil hard-refreshed, cleared the document AND the chat, and still opened on "Step 2
+    // of 107" with no explanation at all. This is the only check that could see that.
+    ok(w.bubbles.some(function (b) { return /What this stage is for/.test(b); }),
+        k + ': the stage explanation never reached the student');
+    ok(w.bubbles.filter(function (b) { return /What this stage is for/.test(b); }).length === ARCH[k].sections.length,
+        k + ': the stage explanation must be served exactly ONCE per stage, got '
+        + w.bubbles.filter(function (b) { return /What this stage is for/.test(b); }).length);
 
     // Frame rows lead their stage, and no divider was ever asked.
     const secIds = ARCH[k].sections.map(function (s) { return s.id; });
     secIds.forEach(function (sid) {
         const first = w.order.filter(function (f) { return f.indexOf(_cw6RowFieldId(k, sid, '')) === 0; })[0];
-        ok(/-stage_arc$|-story_open$|-story_close$/.test(first), k + '/' + sid + ': the stage does not lead with a frame row (' + first + ')');
+        ok(/-stage_arc$/.test(first), k + '/' + sid + ': the stage does not lead with its arc row (' + first + ')');
     });
     const dividerAsked = ARCH[k].sections.some(function (sec) {
         return sec.criteria.some(function (c) {
@@ -372,6 +390,7 @@ for (const k of KEYS) {
         while (guard++ < total * 4) {
             if (w.armed) { w.resolveApi(/^cw6-stage-/.test(w.armed.id) ? '@STAGE_OK' : '@OUTLINE_OK'); continue; }
             if (w.tap('still right')) continue;
+            if (w.tap('Use this')) continue;   // v7.20.368: the Step-4 carry confirm
             if (!w.ctl.active) break;
             w.ctl.handleTurn('resumed answer');
         }
@@ -400,6 +419,7 @@ for (const k of KEYS) {
         while (guard++ < total * 4) {
             if (w.armed) { w.resolveApi(/^cw6-stage-/.test(w.armed.id) ? '@STAGE_OK' : '@OUTLINE_OK'); continue; }
             if (w.tap('still right')) continue;
+            if (w.tap('Use this')) continue;   // v7.20.368: the Step-4 carry confirm
             if (!w.ctl.active) break;
             w.ctl.handleTurn('resumed answer');
         }
@@ -457,15 +477,28 @@ for (const k of KEYS) {
     ok(/holding the door handle/.test(after), 'gap path: the document does not hold the student’s new arc');
 })();
 
-// ── No Step-4 spine: ask for the anchor, never a dead confirm chip. ───────────────────────
+// ── No Step-4 spine. v7.20.368: this used to drive the story_open ANCHOR fallback ("I cannot
+// find your opening — tell me here"). Those rows are gone and the carry now lands on the REAL
+// first beat, so with no spine there is simply nothing to offer and the normal ask must run.
+// The scenario is KEPT and repointed, because what it really covers is "a project with no Step-4
+// spine still reaches a LIVE ask and files what the student types" — deleting it would remove the
+// only cover for a spineless project opening onto a dead screen.
 await (async function noSpine() {
     const w = makeWorld('the-quest', { noSpine: true });
     w.ctl.forceStart();
     await tick();
     ok(!w.tap('still right'), 'no-spine: a confirm chip was offered with nothing to confirm');
-    ok(/where does your story open/i.test(w.bubbles[w.bubbles.length - 1] || ''), 'no-spine: the walk did not fall back to asking for the opening directly');
+    ok(!w.tap('Use this'), 'no-spine: a Step-4 carry was offered with no Step-4 spine to carry');
+    ok((w.bubbles[w.bubbles.length - 1] || '').length > 0, 'no-spine: the walk said nothing at all');
+    const firstBeat = w.order.filter(function (f) {
+        return f.indexOf(_cw6RowFieldId('the-quest', 'setup', '')) === 0 && !/-stage_arc$/.test(f);
+    })[0];
+    w.ctl.handleTurn('He starts in a rebellious state.');   // the arc ask comes first
     w.ctl.handleTurn('A boy counts the days on his wall.');
-    ok(/counts the days/.test(w.rows.get(_cw6RowFieldId('the-quest', 'setup', 'story_open')) || ''), 'no-spine: the typed anchor was not filed');
+    ok(/counts the days/.test(w.rows.get(firstBeat) || ''),
+        'no-spine: the typed first beat was not filed into ' + firstBeat);
+    ok(!w.rows.has(_cw6RowFieldId('the-quest', 'setup', 'story_open')),
+        'no-spine: a story_open row was built');
 })();
 
 console.log('   ' + asserts.pass + ' behavioural assertions passed'

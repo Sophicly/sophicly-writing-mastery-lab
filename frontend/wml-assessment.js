@@ -20797,9 +20797,10 @@
             //          → 'stage-fix' → 'finish' → 'finish-choice' → 'finish-fix' → done
             let phase = 'ask';
             let checkStage = -1;   // the stage a micro-check / its revision belongs to
+            let oriented = {};     // v7.20.368: stages already explained (persisted; see serveStageOpener)
             
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw6') + '_cw6'; } catch (e) { return 'swml_cw6'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, checkStage, active, key })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, checkStage, active, key, oriented })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -20842,7 +20843,11 @@
                             label: c.label || '', prompt: c.prompt || '', concept: conceptFor(c.label, c.prompt),
                         });
                     });
-                    stages.push({ id: sec.id, label: sec.label, name: meta.name, job: meta.job, ex: meta.ex, from: from, to: ASKS.length });
+                    // v7.20.368: `concepts` MUST be carried through. It was not, so `s.concepts` was always
+                    // undefined and the stage explanation silently emitted nothing — the block is
+                    // guarded by `if (cc)`, so a missing field is invisible rather than loud.
+                    stages.push({ id: sec.id, label: sec.label, name: meta.name, job: meta.job, ex: meta.ex,
+                        concepts: meta.concepts, from: from, to: ASKS.length });
                 });
                 // Per-stage counts for the ask headers + the sidebar ("Setup — 9 of 15").
                 ASKS.forEach(function (a) {
@@ -21115,7 +21120,39 @@
                 const a = ASKS[i];
                 // Entering a new stage on a beat/arc ask: pace the stage orientation first.
                 if (a.kind === 'anchor') { serveAnchor(); return; }
+                // v7.20.368 — THE STEP-4 CARRY IS OFFERED, NEVER PASTED.
+                // Neil: *"in a previous version of the chat, it actually first confirmed with me
+                // if I wanted to go there."* That confirm did not get removed — it got STEPPED
+                // OVER, because the old story_open row was auto-filled, so the walk's first EMPTY
+                // ask was already past it. The carry now lands on the REAL beat and asks first.
+                if (carrySrcFor(a) && !rowText(a.fid)) { serveCarry(a); return; }
                 serveAsk();
+            }
+
+            // The carry confirm: show them what they wrote in Step 4, and let them take it or
+            // write fresh. Filing happens ONLY on their tap — an answer they never agreed to is
+            // not their work (the ownership law).
+            function serveCarry(a) {
+                const prior = _cwDocValue('brief_outline', carrySrcFor(a));
+                if (!prior) { serveAsk(); return; }          // nothing to offer → the normal ask
+                phase = 'carry'; persist();
+                const s = stages[a.stage];
+                aiBubble('**' + (a.label || 'This beat') + '**\n\n'
+                    + 'You already sketched this in Step 4, on your Story Spine:\n\n> ' + prior
+                    + '\n\nThat is your ' + (s && s.id === 'setup' ? 'opening' : 'ending')
+                    + ' — so it belongs here, as this beat.\n\n**Use it as it stands, or write it fresh?**');
+                chipBar([{ label: 'Use this →', icon: WML.icon('approval', 15) },
+                    { label: 'I\'ll write it fresh', icon: WML.icon('rewrite', 15) }], function (pick) {
+                    userTurn(pick);
+                    if (pick.indexOf('Use this') === 0) {
+                        fileAnswer(a, prior);
+                        advance();
+                        return;
+                    }
+                    phase = 'ask'; persist();
+                    serveAsk();
+                });
+                resetSend();
             }
 
             // ── COHERENCE LAYER 2 — the per-stage micro-check. Reads ONLY that stage's two
@@ -21127,7 +21164,7 @@
             function fireStageCheck(si) {
                 const s = stages[si];
                 const next = stages[si + 1];
-                const arcAsk = ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)];
+                const arcAsk = arcAskFor(s);
                 const firstBeat = ASKS.slice(s.from, s.to).filter(function (a) { return a.kind === 'beat'; })[0];
                 const beats = ASKS.slice(s.from, s.to).filter(function (a) { return a.kind === 'beat'; });
                 const lastBeat = beats[beats.length - 1];
@@ -21175,11 +21212,40 @@
                     return;
                 }
                 const s = stages[si];
-                const arcAsk = ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)];
+                const arcAsk = arcAskFor(s);
                 phase = 'stage-fix'; active = true; persist();
                 aiBubble('**Rewriting the arc of ' + s.name + '**\n\nWrite the **whole arc again** — both ends, not just the part you are changing. Your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> ' + (arcAsk ? (rowText(arcAsk.fid) || '*(blank)*') : '*(blank)*'));
                 if (arcAsk) { helpBar(arcAsk); _walkSlot.arm('cw6', arcAsk.fid, { cycle: 'rewrite' }); }   // v7.20.340
                 resetSend();
+            }
+
+            // v7.20.368 — where the Step-4 spine lands in Step 6. It goes into the REAL beat
+            // (Stage I's first beat = "The ordinary world"; Stage VI's last = the ending), never
+            // into a row of its own, and it is OFFERED as a confirm rather than pasted silently.
+            const CARRY_SRC = { setup: 'cw-step-4-beat1', aftermath: 'cw-step-4-beat6' };
+            function carrySrcFor(a) {
+                if (!a || a.kind !== 'beat') return null;
+                const s = stages[a.stage];
+                if (!s) return null;
+                const src = CARRY_SRC[s.id];
+                if (!src) return null;
+                const beats = [];
+                for (let n = s.from; n < s.to; n++) if (ASKS[n] && ASKS[n].kind === 'beat') beats.push(ASKS[n]);
+                const target = (s.id === 'setup') ? beats[0] : beats[beats.length - 1];
+                return (target && target.fid === a.fid) ? src : null;
+            }
+
+            // v7.20.368 — THE ARC ASK IS FOUND BY KIND, NEVER BY OFFSET.
+            // Four sites used to read `ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)]`,
+            // i.e. "the arc is the 2nd ask in Stage I / VI and the 1st everywhere else". That is only
+            // true while the story_open / story_close rows exist — delete them and all four silently
+            // point at the WRONG ask (the first real beat), which is exactly what turned the
+            // gap-path rewrite red: "the rewritten arc never reached the document". A position is
+            // not an identity.
+            function arcAskFor(s) {
+                if (!s) return null;
+                for (let n = s.from; n < s.to; n++) if (ASKS[n] && ASKS[n].kind === 'arc') return ASKS[n];
+                return null;
             }
 
             // ── the paced stage orientation (WML CLAUDE.md §4b: one bubble per tap) ──
@@ -21188,9 +21254,14 @@
                 const s = stages[si];
                 i = firstEmptyAsk();
                 if (i >= ASKS.length) { fireFinishCheck(); return; }
-                // Only orient if we are actually at the top of that stage (a resume mid-stage must
-                // not replay the orientation).
-                if (ASKS[i].stage !== si || ASKS[i].nInStage !== 1) { serveCurrent(); return; }
+                // ⚠️ v7.20.368 — THIS GUARD READ `ASKS[i].nInStage !== 1` AND IT WAS WRONG.
+                // It inferred "am I resuming mid-stage?" from "is the first EMPTY ask position 1?".
+                // Different questions: an auto-filled position-1 row makes a BRAND-NEW project
+                // start at position 2, so the explanation was skipped for everyone, every time, on
+                // the stage where it matters most. Never infer state that can be recorded.
+                if (ASKS[i].stage !== si) { serveCurrent(); return; }
+                if (oriented[si]) { serveCurrent(); return; }
+                oriented[si] = 1;
                 phase = 'ask'; persist();
                 // v7.20.367 (Neil, FIXLIST #101, said twice in one breath): "they need to know the
                 // MAIN CONCEPTS of each stage. I think that's gonna be really important." A stage
@@ -21327,7 +21398,7 @@
                 const slotAsk = ASKS.filter(function (x) { return x.fid === slot.fid; })[0] || null;
                 if (phase === 'stage-fix') {
                     const s = stages[checkStage];
-                    const arcAsk = slotAsk || (s ? ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)] : null);
+                    const arcAsk = slotAsk || arcAskFor(s);
                     userTurn(clean);
                     if (arcAsk) fileAnswer(arcAsk, clean, true);      // rewrite cycle → replace
                     aiBubble('Updated — that stage’s arc now reads your new version in the document.');
@@ -21390,7 +21461,11 @@
                     console.log('WML CW6: code-served outline walk start at ' + (i + 1) + '/' + ASKS.length
                         + ' (' + key + ', stage ' + (ASKS[i].stage + 1) + ')');
                     if (i === 0) { serveOrientation(); return; }
-                    serveCurrent();
+                    // v7.20.368: enter the stage THROUGH its opener. This was a bare serveCurrent(),
+                    // which is why the stage explanation NEVER appeared on the stage a student
+                    // starts in — serveStageOpener was only reachable when advancing to the NEXT
+                    // stage. Neil's transcript opened on "Step 2 of 107" with no explanation at all.
+                    serveStageOpener(ASKS[i].stage);
                 });
             }
             // Orientation (§4c.5): how the walk works, where the help lives, and "don't overthink
@@ -21404,7 +21479,7 @@
                     'Under every question there are buttons: **💡 More examples** for two or three more, **📖 Guidance** for the reference guide at the right section, **🗂** cards for the technique itself, and your **🗒 Story Spine**. Those cost you nothing, so use them first. **🤔 Still stuck — ask Sophia** is there as a last resort if none of them get you moving.',
                     'One rule above all: **don’t overthink it.** Rough sentences now. You will come back and deepen every single beat in the update lessons and across seven drafts — nothing you write here is final, and a blank outline is the only wrong one.',
                 ];
-                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { phase = 'ask'; persist(); serveCurrent(); } });
+                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { phase = 'ask'; persist(); serveStageOpener(ASKS[i] ? ASKS[i].stage : 0); } });
             }
 
             // Chip bars are DOM-only: the QUESTION bubble replays from saved history on reload but
@@ -21438,7 +21513,7 @@
                 if (phase === 'finish-choice') { chipBar(['Rewrite my final image →', 'Leave it as it is →'], onFinishChoice); return; }
                 if (phase === 'stage-fix' && checkStage >= 0) {
                     const s = stages[checkStage];
-                    const arcAsk = s ? ASKS[s.from + (s.id === 'setup' || s.id === 'aftermath' ? 1 : 0)] : null;
+                    const arcAsk = arcAskFor(s);
                     if (arcAsk) { helpBar(arcAsk); _walkSlot.arm('cw6', arcAsk.fid, { cycle: 'rewrite' }); }   // v7.20.340
                     return;
                 }
@@ -21478,6 +21553,7 @@
                     _cwLoadDocValues(state.cwProjectId, 'brief_outline');
                     _cwLoadDocValues(state.cwProjectId, 'logline');
                     checkStage = (typeof d.checkStage === 'number') ? d.checkStage : -1;
+                    oriented = (d.oriented && typeof d.oriented === 'object') ? d.oriented : {};
                     phase = d.phase || 'ask';
                     i = firstEmptyAsk();
                     // A reload during a check-in-flight: the call is gone, so fall FORWARD rather
@@ -44043,8 +44119,15 @@
     };
     // Which frame rows lead a given stage, in order. Read by the builder AND the on-load heal.
     function _cw6FrameRowsFor(sectionId) {
-        if (sectionId === 'setup') return ['story_open', 'stage_arc'];
-        if (sectionId === 'aftermath') return ['story_close', 'stage_arc'];
+        // v7.20.368 — story_open / story_close REMOVED (Neil, asked five times):
+        // *"that beat which says 'your story opens' — that's got nothing to do with our story…
+        // I feel like it was just made up… what does that even mean?"*
+        // The reason it read as random is STRUCTURAL: the template ALREADY opens Stage I with a
+        // real beat called "The ordinary world", so this was a SECOND box for the same idea, and
+        // Step-4 Beat 1 was being pasted into the duplicate instead of the real one.
+        // It also broke three other things by existing: being auto-filled it made the walk's first
+        // EMPTY ask position 2, which skipped the confirm AND skipped the stage explanation.
+        // The Step-4 carry now lands in the real beat, as a confirm — see carrySrcFor().
         return ['stage_arc'];
     }
 
