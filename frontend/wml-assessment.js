@@ -57,6 +57,54 @@
     // Memory: reference_wml_scroll_convention_no_zoom_division.
     const SWML_SCROLL_TOP_PAD = 24;
 
+    // ⭐ v7.20.358 — SCROLL LANDING PROBE (#84). A student on a small/minimised window clicked a
+    // scroll-to control and "it scrolled way past it" (Neil, 2026-07-31, watching a real session).
+    //
+    // WHY A PROBE AND NOT A FIX: all three scroll implementations are currently CLEAN — the
+    // prescribed grep gate above returns only comments — so I cannot name the mechanism, and this
+    // area has already regressed four times from confident fixes (`/ zoom` twice, `/ 3` twice).
+    // Guessing here re-breaks scrolling for everyone. The verified suspect is structural rather
+    // than arithmetic: at `max-width: 768px` the shell becomes `.swml-canvas { height: auto }`
+    // (wml-canvas.css:5469), so `.swml-canvas-content` is no longer bounded and stops being the
+    // scroller — the PAGE scrolls instead. A `scrollIntoView` moves every ancestor, so a target
+    // can be moved twice and land far past. Unconfirmed; that is what this measures.
+    //
+    // IT IS A BEHAVIOUR CHECK, NOT A PRESENCE CHECK. It does not report that a scroll ran — it
+    // waits for the smooth scroll to settle and measures WHERE THE TARGET ACTUALLY LANDED against
+    // where we asked it to land. A presence check would pass perfectly on the wrong mechanism
+    // (the lesson from the anchor gate, which resolves 13 anchors and still opens the wrong one).
+    //
+    // SELF-LIMITING, so it is not the verbose logging of FIXLIST #27: silent when the target lands
+    // within 200px of the pad AND the scroller genuinely scrolls. It speaks only when the landing
+    // is wrong or the "scroller" cannot scroll at all.
+    function _scrollLandingProbe(where, scroller, target) {
+        if (!scroller || !target) return;
+        try {
+            const before = scroller.scrollTop;
+            const winW = window.innerWidth;
+            setTimeout(function () {
+                try {
+                    const noOp = scroller.scrollHeight <= scroller.clientHeight + 4;
+                    const landed = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+                    const miss = Math.abs(landed - SWML_SCROLL_TOP_PAD);
+                    if (miss <= 200 && !noOp) return;   // landed where we meant — say nothing
+                    console.warn('[WML scroll #84] ' + where + ' — target landed ' + Math.round(miss)
+                        + 'px from where it was asked to' + (noOp ? ' AND this element cannot scroll' : ''), {
+                        viewportWidth: winW,
+                        belowBreakpoint: winW <= 768,
+                        scroller: scroller.className || scroller.tagName,
+                        scrollerCanScroll: !noOp,
+                        scrollTopBefore: Math.round(before),
+                        scrollTopAfter: Math.round(scroller.scrollTop),
+                        documentScrollTop: Math.round((document.scrollingElement || document.documentElement).scrollTop),
+                        targetTopRelativeToScroller: Math.round(landed),
+                        intended: SWML_SCROLL_TOP_PAD,
+                    });
+                } catch (_) {}
+            }, 700);   // smooth scroll settles well inside this
+        } catch (_) {}
+    }
+
     // ── Destructure core exports as local variables ──
     const { config, API, headers, state } = WML;
     const { TEXT_CATALOGUE, POETRY_ANTHOLOGY_BY_BOARD, PROSE_ANTHOLOGY_BY_BOARD,
@@ -24823,6 +24871,7 @@
             const visualOffset = targetRect.top - containerRect.top;
             const scrollTarget = contentWrap.scrollTop + visualOffset - SWML_SCROLL_TOP_PAD;
             contentWrap.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
+            _scrollLandingProbe('outline-panel/island (scrollContentTo)', contentWrap, target);   // #84
         }
 
         function scrollToPos(pos) {
@@ -51712,6 +51761,7 @@
                 // scrollContentTo — this page has its own scroll, so the fix never reached it.
                 // ONE convention now, shared constant: top of section, minus the standard pad.
                 scroller.scrollTo({ top: scroller.scrollTop + (tRect.top - sRect.top) - SWML_SCROLL_TOP_PAD, behavior: 'smooth' });
+                _scrollLandingProbe('in-doc TOC (scrollToLabel)', scroller, target);   // #84
             } else {
                 console.warn('WML TOC: no section in document matches label', label);
             }
