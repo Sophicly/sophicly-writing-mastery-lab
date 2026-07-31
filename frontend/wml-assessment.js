@@ -20898,7 +20898,7 @@
                 const more = (a.concept && a.concept.more) || [];
                 if (more.length) {
                     bar.appendChild(el('button', {
-                        className: 'swml-quick-btn', textContent: '💡 More examples',
+                        className: 'swml-quick-btn', textContent: 'More examples', icon: WML.icon('examples', 15),
                         onClick: function () { serveMoreExamples(a); },
                     }));
                 }
@@ -21773,7 +21773,7 @@
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
                 if ((s.more || []).length) {
                     bar.appendChild(el('button', {
-                        className: 'swml-quick-btn', textContent: '💡 More examples',
+                        className: 'swml-quick-btn', textContent: 'More examples', icon: WML.icon('examples', 15),
                         onClick: function () { serveMore(s); },
                     }));
                 }
