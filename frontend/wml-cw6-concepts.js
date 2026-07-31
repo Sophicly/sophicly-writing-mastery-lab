@@ -49,36 +49,66 @@
             name: 'Stage I — Setup',
             job: 'the ordinary world, and the mask your protagonist hides behind, ending in the event that breaks it open',
             ex: '*The Lion King:* Simba is the cocky cub prince of the Pride Lands — until Mufasa is killed and Scar convinces him it was his fault.',
+            concepts: {
+                forWhat: "We meet your protagonist in their ordinary world and learn what is missing — so that when it breaks, the reader already cares.",
+                seeing: "A life that looks stable but is not. The **mask** (the false self) doing its job. And an early sign that something must change — which your protagonist ignores.",
+                pattern: "ordinary world → the mask holds → a warning is ignored → **the turning point that ends the ordinary world for good**",
+            },
             guide: 'The six stages',
         },
         'dream': {
             name: 'Stage II — The Dream Stage',
             job: 'the adventure begins and it feels GOOD — early success, a first glimpse of the true self, a mentor, the threshold crossed',
             ex: '*Cinderella:* with help she reaches the ball and, for one night, is seen for who she truly is.',
+            concepts: {
+                forWhat: "The adventure starts, and it feels GOOD. This is where the reader gets the story they were promised.",
+                seeing: "Early wins. The first real glimpse of who your protagonist could become. Often a mentor. And the moment they cross into the new world.",
+                pattern: "crossing the threshold → early success → the true self flickers into view",
+            },
             guide: 'The six stages',
         },
         'fascination': {
             name: 'Stage III — Initial Fascination',
             job: 'your protagonist wavers between the old self and the new as complications gather — tested, and not yet winning cleanly',
             ex: '*Stranger Things:* the danger widens, the adults disbelieve them, and it creeps closer to home.',
+            concepts: {
+                forWhat: "Your protagonist wavers between the old self and the new while the pressure gathers.",
+                seeing: "Tests they do not cleanly win. Old habits creeping back under stress. Complications widening beyond the first problem.",
+                pattern: "vacillation → rising complications → the midpoint, where they stop reacting and start pursuing",
+            },
             guide: 'The six stages',
         },
         'nightmare': {
             name: 'Stage IV — The Nightmare Stage',
             job: 'everything goes wrong; the stakes climb and your protagonist hits their lowest point',
             ex: '*Macbeth:* the nobles turn against him, Lady Macbeth dies, and he faces the end alone.',
+            concepts: {
+                forWhat: "Everything goes wrong. This is the lowest point — and it is what makes the change cost something.",
+                seeing: "The plan fail. The shield go back up. The goal look genuinely lost.",
+                pattern: "setback → collapse → **the Dark Moment**. Truby and Edson agree: only from here can real change be earned.",
+            },
             guide: 'The six stages',
         },
         'final-push': {
             name: 'Stage V — The Final Push',
             job: 'your protagonist drops the mask for good and drives to the climax — this is where the change is won',
             ex: '*A Christmas Carol:* faced with his own neglected grave, Scrooge chooses people over money.',
+            concepts: {
+                forWhat: "Your protagonist returns to the true self, drops the mask for good, and drives to the climax.",
+                seeing: "A decisive confrontation. A thrilling escape from destruction. The change finally won rather than given.",
+                pattern: "the choice → the confrontation → the change won",
+            },
             guide: 'The six stages',
         },
         'aftermath': {
             name: 'Stage VI — Goal and Aftermath',
             job: 'the transformation completes, the world is set right, and the final image mirrors the opening',
             ex: '*The Lion King:* a new cub raised on Pride Rock mirrors Simba’s own beginning — the circle complete.',
+            concepts: {
+                forWhat: "Show that the change was real.",
+                seeing: "The world set right, and a final image that **mirrors your opening** — so the distance travelled is visible on the page.",
+                pattern: "resolution → the mirrored final image, proving the transformation",
+            },
             guide: 'The six stages',
         },
     };

@@ -20990,13 +20990,20 @@
                 let out = cwProgressBar(ASKS.indexOf(a) + 1, ASKS.length, s.name,
                     a.nInStage + ' of ' + a.stageTotal + ' in this stage');
                 if (a.kind === 'arc') {
-                    out += 'Before the beats, fix the two ends of this stage. ' + s.name + ' is where '
-                        + s.job + '.\n\n'
+                    // v7.20.367 (Neil, FIXLIST #95): this is NOT a beat, and it used to read like
+                    // one — "you'd need to ask the questions in a way where the student knows what
+                    // they're doing… give a quick preview." His own "I don't know why they're
+                    // there" was never about the row; it was an ask that never said what it was
+                    // for. So: name the job, say WHY it comes first, then ask (§4c.4 — the
+                    // concrete action LAST).
+                    out += '**First — where this stage takes your protagonist**\n\n'
+                        + 'This one is not a beat. It is the *shape* of the stage: fix the two ends '
+                        + 'now, and every beat you write afterwards has somewhere to sit between '
+                        + 'them. It takes one or two sentences.\n\n'
                         + '**Tell me both:**\n\n'
                         + '1. How does your protagonist **BEGIN** this stage?\n'
                         + '2. How are they **DIFFERENT** when they **LEAVE** it?\n\n'
-                        + 'Example: ' + s.ex + '\n\n'
-                        + 'One or two sentences covering both. Every beat below then gets written between those two points.';
+                        + 'Example: ' + s.ex;
                     return out;
                 }
                 out += '**' + a.label + '**\n\n';
@@ -21185,10 +21192,26 @@
                 // not replay the orientation).
                 if (ASKS[i].stage !== si || ASKS[i].nInStage !== 1) { serveCurrent(); return; }
                 phase = 'ask'; persist();
-                serveCwChunks([
-                    '**' + s.name + '** — ' + s.job + '.\n\nThat is the job of this stage. There are **' + (s.to - s.from)
-                        + '** things to fill in here, and I will take you through them one at a time.',
-                ], { emit: aiBubble, onDone: function () { serveCurrent(); } });
+                // v7.20.367 (Neil, FIXLIST #101, said twice in one breath): "they need to know the
+                // MAIN CONCEPTS of each stage. I think that's gonna be really important." A stage
+                // used to open on one line — its job and a count — so a student began inventing
+                // beats without knowing what the stage was FOR. Now the concepts come first.
+                // Content is DERIVED from the reference guide's own "The six stages" section
+                // (already-approved, cites Truby and Edson), never authored here (§5c).
+                // PACED, one bubble per tap (§4b) — three chunks in one frame is the wall.
+                const cc = s.concepts;
+                const chunks = ['**' + s.name + '** — ' + s.job + '.'];
+                if (cc) {
+                    chunks.push('**What this stage is for**\n\n' + cc.forWhat
+                        + '\n\n**What a reader should be seeing**\n\n' + cc.seeing);
+                    chunks.push('**The pattern it follows**\n\n' + cc.pattern
+                        + '\n\nYours will not match that exactly — it is a shape, not a rule.');
+                }
+                chunks.push('There are **' + (s.to - s.from) + '** things to fill in here, and I will '
+                    + 'take you through them one at a time.\n\n*Nothing here is set in stone — your '
+                    + 'Story Spine sits in the rail beside you the whole time, and you can change any '
+                    + 'of this later.*');
+                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { serveCurrent(); } });
             }
 
             // ── COHERENCE LAYER 3 — the sampled finish check. ONE call reading the three
@@ -44005,12 +44028,17 @@
     //                              different when they LEAVE it (the per-stage bookends)
     // A spine beat ANCHORS a stage, it never FILLS one (Neil, 2026-07-25) — Stage I alone holds
     // ~15 beats, so these sit ABOVE the beats as the frame the student writes between.
+    // v7.20.367 LABELS (Neil): a row must name its JOB, not the artefact — "this stage's arc"
+    // told a 14-year-old nothing, which is the whole reason he asked "why are they there?".
+    // "Your story opens" is his own instruction: "that should actually just be 'the ordinary
+    // world'". ⚠️ These labels are BAKED into a saved document, so they change for NEW
+    // documents only; an existing outline keeps the labels it was built with until a heal runs.
     const CW6_FRAME_ROWS = {
-        stage_arc: { id: 'stage_arc', label: 'This stage’s arc', beatType: 'neutral', type: 'checkbox',
+        stage_arc: { id: 'stage_arc', label: 'Where this stage takes your protagonist', beatType: 'neutral', type: 'checkbox',
             prompt: 'How your protagonist ENTERS this stage — and how they are different when they LEAVE it' },
-        story_open: { id: 'story_open', label: 'Your story opens (Step 4)', beatType: 'neutral', type: 'checkbox',
+        story_open: { id: 'story_open', label: 'The Ordinary World', beatType: 'neutral', type: 'checkbox',
             prompt: 'The opening of your story, carried from your Story Spine Beat 1 — the anchor Stage I builds out from' },
-        story_close: { id: 'story_close', label: 'Your story ends (Step 4)', beatType: 'neutral', type: 'checkbox',
+        story_close: { id: 'story_close', label: 'How Your Story Ends', beatType: 'neutral', type: 'checkbox',
             prompt: 'The ending you planned in your Story Spine Beat 6 — the anchor Stage VI builds toward' },
     };
     // Which frame rows lead a given stage, in order. Read by the builder AND the on-load heal.

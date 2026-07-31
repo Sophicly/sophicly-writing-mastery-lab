@@ -7926,6 +7926,50 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     break-inside: avoid;      /* v7.14.73: keep row+criteria together across page breaks */
     page-break-inside: avoid;
 }
+/* ── v7.20.367: THE FRAME ROWS ARE NOT BEATS, AND MUST NOT LOOK LIKE THEM ────────────────────
+   Neil, 2026-07-31: "at the moment the stage arc, it looks like a normal beat. So I think that
+   actually needs to have its own style and its own colour." He is right, and it is why he could
+   not tell what they were for: `story_open` · `story_close` · `stage_arc` render through the SAME
+   outlineRowHTML() as every invented beat.
+
+   ⚠️ KEYED ON THE FIELD-ID SUFFIX, DELIBERATELY — NOT on new markup. The outline scaffold is
+   BAKED into the saved document, so changing the row's HTML would style only NEW documents and
+   leave every existing one (Neil's included) looking exactly as it does now, needing an on-load
+   heal to fix. An attribute selector restyles documents that already exist, tonight, with zero
+   doc-shape change and nothing to migrate. Same pattern as the `[data-criteria*="shocking"]` rule.
+
+   NO TINTED PANEL — Neil has ruled the faint tinted background box out as a recurring pattern.
+   The distinction is an accent EDGE plus a quieter, wider label: elevation and structure, not wash.
+   Teal (the frame/structure colour), never green — green means COMPLETE in this product, and a
+   low-alpha green over the dark purple canvas composites to brown. */
+.swml-outline-row[data-field-id$="-stage_arc"],
+.swml-outline-row[data-field-id$="-story_open"],
+.swml-outline-row[data-field-id$="-story_close"] {
+    border-left: 2px solid rgba(81, 218, 207, 0.55);
+    padding-left: 202px;         /* base 192 + the 2px edge + 8px breathing room */
+    margin-top: 14px;
+}
+.swml-outline-row[data-field-id$="-stage_arc"] .swml-outline-criteria,
+.swml-outline-row[data-field-id$="-story_open"] .swml-outline-criteria,
+.swml-outline-row[data-field-id$="-story_close"] .swml-outline-criteria {
+    color: var(--swml-teal, #51dacf);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 10.5px;
+    font-weight: 700;
+    opacity: 0.9;
+}
+[data-swml-theme="light"] .swml-outline-row[data-field-id$="-stage_arc"],
+[data-swml-theme="light"] .swml-outline-row[data-field-id$="-story_open"],
+[data-swml-theme="light"] .swml-outline-row[data-field-id$="-story_close"] {
+    border-left-color: rgba(77, 118, 253, 0.5);
+}
+[data-swml-theme="light"] .swml-outline-row[data-field-id$="-stage_arc"] .swml-outline-criteria,
+[data-swml-theme="light"] .swml-outline-row[data-field-id$="-story_open"] .swml-outline-criteria,
+[data-swml-theme="light"] .swml-outline-row[data-field-id$="-story_close"] .swml-outline-criteria {
+    color: #4D76FD;
+}
+
 /* The contentDOM — plain block, splittable across pages */
 .swml-outline-input {
     background: rgba(255,255,255,0.03);
