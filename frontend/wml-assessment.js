@@ -36206,6 +36206,72 @@
         // (feedback_wml_doc_mutations_on_load_are_dangerous). Runs under _migrationActive so the
         // section-count guard leaves the inserts alone. Never rebuilds and never deletes: it only
         // INSERTS missing rows at the top of each stage, so student text cannot be clobbered.
+        // ⭐ v7.20.368 — DELETE the retired story_open / story_close rows from documents that
+        // already have them. Neil, plainly: *"when is that gonna disappear?"* — the answer has to be
+        // "by itself, on load", not "re-pick your structure to force a rebuild".
+        //
+        // Outline SHAPE is baked into the saved doc, so removing the rows from the BUILDER only
+        // helps new documents; every existing outline keeps them, and since the walk no longer asks
+        // for them they would sit unfillable for ever and hold Document Progress below 100%.
+        //
+        // NOTHING IS LOST: if the row holds text and the REAL beat it was duplicating is empty, the
+        // text is moved there first (which is where Neil said it belonged all along). If the real
+        // beat already has text, the duplicate is simply dropped — its content was only ever a copy
+        // of Step-4 Beat 1/6, which still lives in the Step-4 document.
+        // Runs BEFORE tryHealCwStep6StageArcs so the arc heal sees the final shape.
+        const tryHealCwStep6DropAnchors = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 6) return;
+            try {
+                const key = detectBuiltPlotSlug(canvasEditor);
+                if (!key) return;
+                const arch = OUTLINE_CRITERIA.cwPlotArchetypes[key];
+                if (!arch || !Array.isArray(arch.sections)) return;
+                const RETIRED = [
+                    { sec: 'setup', fr: 'story_open', pick: (beats) => beats[0] },
+                    { sec: 'aftermath', fr: 'story_close', pick: (beats) => beats[beats.length - 1] },
+                ];
+                let dropped = 0;
+                for (const r of RETIRED) {
+                    const sec = arch.sections.filter((x) => x.id === r.sec)[0];
+                    if (!sec) continue;
+                    const deadFid = _cw6RowFieldId(key, r.sec, r.fr);
+                    // the REAL beat this row was duplicating
+                    const beats = (sec.criteria || []).filter((c) => c.beatType !== 'turning-point' && c.beatType !== 'marker');
+                    const target = r.pick(beats);
+                    const targetFid = target ? _cw6RowFieldId(key, r.sec, target.id) : null;
+
+                    let deadPos = null, deadNode = null, targetHasText = false;
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (node.type?.name !== 'outlineRow') return;
+                        const fid = node.attrs?.fieldId;
+                        if (fid === deadFid) { deadPos = pos; deadNode = node; }
+                        if (fid === targetFid && (node.textContent || '').trim()) targetHasText = true;
+                    });
+                    if (deadPos === null) continue;                     // already clean
+
+                    const carried = (deadNode.textContent || '').trim();
+                    if (carried && targetFid && !targetHasText) {
+                        try { _writeOutlineRowField(targetFid, carried); } catch (e) {}
+                    }
+                    // delete AFTER the move, and re-find the position: the write above can shift it.
+                    let freshPos = null, freshNode = null;
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (node.type?.name === 'outlineRow' && node.attrs?.fieldId === deadFid) { freshPos = pos; freshNode = node; }
+                    });
+                    if (freshPos === null) continue;
+                    try {
+                        canvasEditor.view.dispatch(
+                            canvasEditor.state.tr.delete(freshPos, freshPos + freshNode.nodeSize)
+                        );
+                        dropped++;
+                    } catch (e) { console.warn('WML CW6: could not drop ' + deadFid + ' —', e && e.message); }
+                }
+                if (!dropped) return;
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW6: dropped ' + dropped + ' retired anchor row(s) from the existing doc (' + key + ')');
+            } catch (e) { console.warn('WML CW6: anchor drop-heal skipped —', e && e.message); }
+        };
+
         const tryHealCwStep6StageArcs = async () => {
             if (!isCwTask || !canvasEditor || cwStepDef?.step !== 6) return;
             try {
@@ -36772,7 +36838,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
