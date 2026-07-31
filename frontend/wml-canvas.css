@@ -5734,13 +5734,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     gap: 12px; margin-top: 7px;
 }
 .swml-tutorcomment-status { font-size: 12px; opacity: 0.55; min-height: 14px; }
-.swml-tutorcomment-add {
-    flex: 0 0 auto; padding: 7px 15px; border: none; border-radius: 9px; cursor: pointer;
-    background: rgba(83,51,237,0.9); color: #fff; font: inherit; font-size: 13px; font-weight: 600;
-    transition: background 0.15s ease, opacity 0.15s ease;
-}
-.swml-tutorcomment-add:hover { background: rgba(83,51,237,1); }
-.swml-tutorcomment-add:disabled { opacity: 0.5; cursor: default; }
+/* v7.20.359 (Neil, FIXLIST #81 — "the add comment button, it's very plain"): now the house
+   button (.swml-halo-btn, wml-styles.css — halo + text roll, no lift). Size is the one
+   deviation: it sits in a compose row under a textarea, so it takes the compact 10px/18px
+   footprint rather than the 12px/22px default. Everything else — fills, radius, type, halo,
+   roll, both theme pairs — comes from the factory and must NOT be re-declared here. */
+.swml-tutorcomment-add { flex: 0 0 auto; padding: 10px 18px; letter-spacing: 1.6px; }
 [data-swml-theme="light"] .swml-tutorcomment-entry,
 [data-swml-theme="light"] .swml-tutorcomment-input { background: rgba(0,0,0,0.035); }
 [data-swml-theme="light"] .swml-tutorcomment-input:hover { background: rgba(0,0,0,0.05); }

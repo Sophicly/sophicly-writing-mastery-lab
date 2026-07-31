@@ -3304,33 +3304,107 @@ html[data-theme="light"] .swml-tooltip[data-placement="right"]::after {
 .swml-guide-close:hover { background: rgba(255, 255, 255, 0.28); }
 .swml-guide-toc-toggle svg { width: 18px; height: 18px; }
 .swml-guide-close { font-size: 22px; line-height: 1; }
-/* v7.20.314 (Neil): "Full version" — the library link, moved out of the Resources panel and into
-   the guide itself, where a student is actually reading. Sits beside the close button, quieter
-   than it (secondary action), and matches the header's existing translucent-on-gradient chrome
-   rather than introducing a new button style. */
-.swml-guide-library-btn {
-    flex: 0 0 auto;
+/* ─── HOUSE BUTTON — the BRAND.md §8 "halo button". ONE factory, every consumer. ───────────────
+   v7.20.359 (Neil, 2026-07-31, FIXLIST #81/#82): he asked for an opinion on the Incredibles
+   reference and then ruled — apply the house button, do not port it. Ported from the canonical
+   impl `sophicly-blog-chrome.css` `.sb-related__return` (+ `.sb-roll`), verbatim mechanics:
+   radius 14 · padding 12px 22px · Proxima Soft Complete 12px/700/letter-spacing 2px/uppercase ·
+   a radiating same-colour `::after` that scales scaleX(1.35) scaleY(1.55) and fades to 0 ·
+   a two-copy text roll · shadow on hover · all .5s cubic-bezier(.22,1,.36,1).
+
+   TWO STATED DEVIATIONS, both forced (CLAUDE.md #13):
+   1. NO LIFT. The canonical file still carries :hover{translateY(-3px)} / :active{translateY(-1px)},
+      but BRAND.md §8 retired the lift site-wide on 2026-07-26 ("the halo effect and the rollover is
+      enough… that's how I want it across the whole website") and instructs stripping it on any
+      button you touch. Halo + roll + shadow, nothing more.
+   2. `z-index: 0` on the button. The canonical relies on the halo (`z-index:-1`) escaping into the
+      nearest ancestor stacking context — fine on the blog's flat page, NOT here: the Add-comment
+      button sits inside a card that paints its own background, which would swallow the halo
+      entirely. Making the button its own stacking context keeps the halo painted after the
+      button's background and before its text, so it renders identically in ANY container.
+
+   POLARITY (BRAND §8: "flip which pair is the base"): the WML canvas defaults DARK and overrides
+   with [data-swml-theme="light"], so the teal pair is the BASE and light-blue rides the override.
+
+   Markup: <button class="swml-halo-btn"><span class="swml-roll"><span>Label</span>
+                   <span aria-hidden="true">Label</span></span></button>
+   ⚠️ Two label copies means `textContent` reads the label TWICE. Never read a label back off one of
+   these buttons, and never write transient state into it — put status on a sibling element. */
+.swml-halo-btn {
+    position: relative;
+    z-index: 0;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    height: 34px;
-    padding: 0 12px;
-    border-radius: 9px;
-    background: rgba(255, 255, 255, 0.14);
-    color: #fff;
-    text-decoration: none;
+    gap: 10px;
+    font-family: 'Proxima Soft Complete', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 12px;
-    font-weight: 600;
-    letter-spacing: .01em;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
     white-space: nowrap;
-    transition: background .15s ease;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 22px;
+    cursor: pointer;
+    background: #51dacf;
+    color: #0e1214;
+    transition: box-shadow .5s ease, opacity .15s ease;
 }
-.swml-guide-library-btn:hover { background: rgba(255, 255, 255, 0.28); color: #fff; }
-.swml-guide-library-btn svg { flex: 0 0 auto; opacity: .85; }
+.swml-halo-btn::after {                      /* the radiating halo (scales + fades on hover) */
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    z-index: -1;
+    background: #51dacf;
+    transition: transform .5s ease, opacity .5s ease;
+}
+.swml-halo-btn svg { flex: 0 0 auto; width: 15px; height: 15px; }
+.swml-halo-btn:hover { box-shadow: 0 12px 24px rgba(81, 218, 207, .42); }
+.swml-halo-btn:hover::after { transform: scaleX(1.35) scaleY(1.55); opacity: 0; }
+.swml-halo-btn:focus-visible { outline: 2px solid #51dacf; outline-offset: 3px; }
+/* Disabled is inert: no halo, no roll, no shadow — a dead button must not animate. */
+.swml-halo-btn:disabled { opacity: .5; cursor: default; }
+.swml-halo-btn:disabled:hover { box-shadow: none; }
+.swml-halo-btn:disabled:hover::after { transform: none; opacity: 1; }
+.swml-halo-btn:disabled:hover .swml-roll span:first-child { transform: translateY(0); }
+.swml-halo-btn:disabled:hover .swml-roll span:last-child { transform: translateY(100%); }
+/* the two stacked copies roll up together on hover */
+.swml-roll { position: relative; display: inline-block; overflow: hidden; height: 1.25em; line-height: 1.25; vertical-align: bottom; }
+.swml-roll span { display: block; transition: transform .5s cubic-bezier(.22, 1, .36, 1); }
+.swml-roll span:last-child { position: absolute; top: 0; left: 0; width: 100%; transform: translateY(100%); }
+.swml-halo-btn:hover .swml-roll span:first-child { transform: translateY(-100%); }
+.swml-halo-btn:hover .swml-roll span:last-child { transform: translateY(0); }
+[data-swml-theme="light"] .swml-halo-btn { background: #ECF3FF; color: #4D76FD; }
+[data-swml-theme="light"] .swml-halo-btn::after { background: #ECF3FF; }
+[data-swml-theme="light"] .swml-halo-btn:hover { box-shadow: 0 12px 24px rgba(77, 118, 253, .28); }
+[data-swml-theme="light"] .swml-halo-btn:focus-visible { outline-color: #4D76FD; }
+
+/* v7.20.314 (Neil): "Full version" — the library link, moved out of the Resources panel and into
+   the guide itself, where a student is actually reading. Sits beside the close button, quieter
+   than it (secondary action).
+   v7.20.359 (FIXLIST #82): now the house button above. Size is the one deviation — it shares a
+   fixed 34px header row with the close button, so height/padding/tracking come down; every other
+   property is the house button verbatim. Colour is PINNED to the dark-surface pair in BOTH themes
+   because the guide header is always the purple --swml-gradient, so the light-theme pair would be
+   wrong on it. */
+.swml-guide-library-btn {
+    flex: 0 0 auto;
+    gap: 8px;
+    height: 34px;
+    padding: 0 14px;
+    font-size: 11px;
+    letter-spacing: 1.4px;
+}
+[data-swml-theme="light"] .swml-guide-library-btn { background: #51dacf; color: #0e1214; }
+[data-swml-theme="light"] .swml-guide-library-btn::after { background: #51dacf; }
+[data-swml-theme="light"] .swml-guide-library-btn:hover { box-shadow: 0 12px 24px rgba(81, 218, 207, .42); }
+[data-swml-theme="light"] .swml-guide-library-btn:focus-visible { outline-color: #51dacf; }
 /* On a narrow drawer the title already competes for room — keep the icon, drop the word. */
 @media (max-width: 620px) {
-    .swml-guide-library-btn { padding: 0 9px; }
-    .swml-guide-library-btn span { display: none; }
+    .swml-guide-library-btn { padding: 0 10px; }
+    .swml-guide-library-btn .swml-roll { display: none; }
 }
 .swml-guide-title {
     flex: 1 1 auto;

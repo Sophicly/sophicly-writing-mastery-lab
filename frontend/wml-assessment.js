@@ -260,14 +260,17 @@
         // that opened this guide, plus this link, so every student paid an extra click to reach the
         // thing the rail button is named after. The rail button opens the guide directly now, and
         // the link rides along where it is actually useful: while reading.
+        // v7.20.359 (Neil, FIXLIST #82): house button — the label is stacked TWICE inside
+        // .swml-roll because the roll animates two copies past each other (BRAND.md §8).
         const libraryBtn = el('a', {
-            className: 'swml-guide-library-btn',
+            className: 'swml-guide-library-btn swml-halo-btn',
             href: 'https://www.sophicly.com/library/resources/creative-writing-reference-guide/',
             target: '_blank', rel: 'noopener',
             title: 'Open the full version in the library (new tab)',
             innerHTML: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
                 + 'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'
-                + '<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span>Full version</span>',
+                + '<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
+                + '<span class="swml-roll"><span>Full version</span><span aria-hidden="true">Full version</span></span>',
         });
         const header = el('div', { className: 'swml-guide-header' }, [
             tocToggle,
@@ -38613,9 +38616,14 @@
                     status.className = 'swml-tutorcomment-status';
                     const addBtn = document.createElement('button');
                     addBtn.type = 'button';
-                    addBtn.className = 'swml-tutorcomment-add';
+                    addBtn.className = 'swml-tutorcomment-add swml-halo-btn';
                     addBtn.setAttribute('contenteditable', 'false');
-                    addBtn.textContent = 'Add comment';
+                    // v7.20.359 (Neil, FIXLIST #81): house button — label stacked TWICE for the
+                    // .swml-roll hover roll (BRAND.md §8). ⚠️ addBtn.textContent now reads
+                    // "Add commentAdd comment"; never read it back, and keep transient state on
+                    // `status` (which is where it already lives).
+                    addBtn.innerHTML = '<span class="swml-roll"><span>Add comment</span>'
+                        + '<span aria-hidden="true">Add comment</span></span>';
                     const _add = () => {
                         const val = ta.value.trim();
                         if (!val) return;
