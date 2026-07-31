@@ -5976,6 +5976,16 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    SIDE of the first section the student works this phase, with a pointer arrow aimed at it. One-time,
    dismissible (✕ or "Got it"), remembered per doc+task. Absolute in .swml-canvas-content (rides with
    the content); JS sets top/left. Non-blocking — only the card takes pointer events. */
+/* v7.20.356 — BRAND PASS (Neil, 2026-07-30: "use our brand colours, especially #1c1d1f
+   for dark theme"). What was off-brand and why each value moved:
+     · #202128 was a FOURTH ad-hoc dark. The canvas ladder is base #1c1d1f / chrome
+       #212225 / sheet #28292b, and its own rule is "don't invent a 4th colour"
+       (reference_wml_canvas_dark_theme_surface_ladder). This card floats above
+       everything, so it takes the darkest tier — base — and its shadow does the
+       separating, which is the borderless-by-elevation principle.
+     · Shadows were pure black; BRAND.md §6 tints them with brand deep purple.
+     · The icon tile used #b9a6ff — an invented purple, and purple is reserved for
+       ATTAINMENT (grade 9). A coachmark is informational, so it takes teal. */
 .swml-phase-coach {
     position: fixed;
     z-index: 10000;
@@ -5983,8 +5993,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     max-width: calc(100vw - 24px);
     padding: 16px 16px 14px;
     border-radius: 14px;
-    background: #202128;
-    box-shadow: 0 18px 44px -12px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.35);
+    background: #1c1d1f;
+    box-shadow: 0 18px 44px -12px rgba(44,0,62,0.55), 0 2px 8px rgba(44,0,62,0.32);
     color: #e9e9ee;
     animation: swmlCoachIn 0.45s cubic-bezier(0.22,1,0.36,1);
 }
@@ -5997,7 +6007,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     top: 22px;
     left: -6px;
     width: 12px; height: 12px;
-    background: #202128;
+    background: #1c1d1f;   /* must track the card background */
     transform: rotate(45deg);
 }
 .swml-phase-coach-head { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
@@ -6006,8 +6016,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     width: 26px; height: 26px;
     display: inline-flex; align-items: center; justify-content: center;
     border-radius: 8px;
-    background: rgba(83,51,237,0.18);
-    color: #b9a6ff;
+    /* Teal, not purple: purple carries ATTAINMENT (grade 9) and this card is
+       informational. Brand Teal #51dacf, tinted for the tile. */
+    background: rgba(81,218,207,0.16);
+    color: #51dacf;
 }
 .swml-phase-coach-icon svg { width: 15px; height: 15px; }
 .swml-phase-coach-title { flex: 1; font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: #fbfbfd; }
@@ -6018,25 +6030,47 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-phase-coach-close:hover { color: #fff; }
 .swml-phase-coach-text { font-size: 12.5px; line-height: 1.55; color: rgba(233,233,238,0.72); margin-bottom: 12px; }
+/* HOUSE STANDARD button (BRAND.md §8). Was a purple gradient — superseded as a default
+   by Neil, 2026-07-23: "instead of making them purple gradient, because purple signifies
+   grade 9". Dark pair = teal fill #51dacf on ink #0e1214. The translateY hover LIFT was
+   retired site-wide 2026-07-26 ("the halo effect and the rollover is enough… that's how I
+   want it across the whole website"), so the hover state is halo + shadow only.
+   NOTE: the full house button also carries a two-span text ROLL, which needs a markup
+   change in wml-assessment.js — not done here, so this is the colour + geometry + halo. */
 .swml-phase-coach-cta {
+    position: relative;
     display: inline-flex; align-items: center;
-    background: linear-gradient(180deg, rgba(83,51,237,0.95), rgba(67,40,205,0.95));
-    border: 0; border-radius: 8px;
-    color: #fff; font: 700 12px 'Proxima Soft Complete', sans-serif;
-    padding: 7px 16px; cursor: pointer;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
-    transition: transform 0.12s ease, box-shadow 0.15s ease;
+    background: #51dacf;
+    border: 0; border-radius: 14px;
+    color: #0e1214;
+    font: 700 12px 'Proxima Soft Complete', sans-serif;
+    letter-spacing: 2px; text-transform: uppercase;
+    padding: 10px 20px; cursor: pointer;
+    transition: box-shadow 0.5s ease;
 }
-.swml-phase-coach-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(83,51,237,0.4), inset 0 1px 0 rgba(255,255,255,0.22); }
-.swml-phase-coach-cta:active { transform: translateY(0) scale(0.97); }
+.swml-phase-coach-cta::after {
+    content: ''; position: absolute; inset: 0; z-index: -1;
+    border-radius: 14px; background: #51dacf;
+    transition: transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease;
+}
+.swml-phase-coach-cta:hover { box-shadow: 0 12px 24px rgba(81,218,207,0.42); }
+.swml-phase-coach-cta:hover::after { transform: scaleX(1.35) scaleY(1.55); opacity: 0; }
+.swml-phase-coach-cta:focus-visible { outline: 2px solid #51dacf; outline-offset: 3px; }
 /* Light theme — self-carried class (body-mounted card is outside .swml-canvas-light). */
-.swml-phase-coach--light { background: #fff; color: #2c003e; box-shadow: 0 18px 44px -12px rgba(20,20,40,0.22), 0 2px 8px rgba(0,0,0,0.08); }
+.swml-phase-coach--light { background: #fff; color: #2c003e; box-shadow: 0 18px 44px -12px rgba(44,0,62,0.20), 0 2px 8px rgba(44,0,62,0.08); }
 .swml-phase-coach--light .swml-phase-coach-arrow { background: #fff; }
 .swml-phase-coach--light .swml-phase-coach-title { color: #1a0b2e; }
 .swml-phase-coach--light .swml-phase-coach-text { color: rgba(44,0,62,0.7); }
 .swml-phase-coach--light .swml-phase-coach-close { color: rgba(44,0,62,0.45); }
 .swml-phase-coach--light .swml-phase-coach-close:hover { color: #2c003e; }
-.swml-phase-coach--light .swml-phase-coach-icon { background: rgba(83,51,237,0.12); color: #5333ed; }
+/* Teal reads as a pale wash on white, so the light tile uses the house LIGHT pair
+   (pale blue #ECF3FF / blue #4D76FD) — same pairing the house button uses. */
+.swml-phase-coach--light .swml-phase-coach-icon { background: #ECF3FF; color: #4D76FD; }
+.swml-phase-coach--light .swml-phase-coach-cta,
+.swml-phase-coach--light .swml-phase-coach-cta::after { background: #ECF3FF; }
+.swml-phase-coach--light .swml-phase-coach-cta { color: #4D76FD; }
+.swml-phase-coach--light .swml-phase-coach-cta:hover { box-shadow: 0 12px 24px rgba(77,118,253,0.28); }
+.swml-phase-coach--light .swml-phase-coach-cta:focus-visible { outline-color: #4D76FD; }
 .swml-transfer-all-btn svg { flex-shrink: 0; width: 11px; height: 11px; }
 .swml-transfer-all-btn:hover {
     background: linear-gradient(180deg, #5333ed, rgba(74,44,222,0.97));
