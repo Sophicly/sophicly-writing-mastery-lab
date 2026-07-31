@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.361
+ * Version: 7.20.362
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.361');
+define('SWML_VERSION', '7.20.362');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -551,6 +551,7 @@ class Sophicly_Writing_Mastery_Lab {
             'libraryUrl'       => home_url('/library/'),
             'pageUrl'          => home_url('/writing-mastery-lab/'),
             'iconsUrl'         => plugin_dir_url(__FILE__) . 'frontend/icons/emoji/', // v7.19.916: svgifyEmojis base
+            'iconBaseUrl'      => plugin_dir_url(__FILE__) . 'frontend/icons/', // v7.20.362: brand marks (phoenix) — NOT the emoji pack
             'techniqueNames'   => $this->get_technique_names(), // v7.19.922: Fix→Learn chips — N1 technique resolution
             'courseResumeUrl'   => $course_resume_url,
             // v7.17.36: LD topic permalink the WML shortcode is embedded in. Stamped
@@ -1079,6 +1080,7 @@ class Sophicly_Writing_Mastery_Lab {
                 'libraryUrl'     => home_url('/library/'),
                 'pageUrl'        => home_url('/writing-mastery-lab/'),
                 'iconsUrl'       => plugin_dir_url(__FILE__) . 'frontend/icons/emoji/', // v7.19.916: svgifyEmojis base
+                'iconBaseUrl'    => plugin_dir_url(__FILE__) . 'frontend/icons/', // v7.20.362: brand marks (phoenix) — NOT the emoji pack
                 'techniqueNames' => $this->get_technique_names(), // v7.19.922: Fix→Learn chips — N1 technique resolution
                 'courseResumeUrl' => '',
                 // v7.17.36: LD topic permalink for student-data lesson_url stamping.
