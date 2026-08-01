@@ -15095,14 +15095,14 @@
                 // swml-quick-btn and skewed the row's alignment; Neil.)
                 const res = el('div', { className: 'swml-quick-actions' });
                 if (window.SophiclyToolkit && window.SophiclyToolkit.open) {
-                    res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📖 Mastery Toolkit',
+                    res.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Mastery Toolkit', icon: WML.icon('guide', 15),
                         onClick: () => window.SophiclyToolkit.open('') }));
                 }
                 if (window.SophiclyTable && window.SophiclyTable.open) {
                     res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '🗂 Table of Techniques',
                         onClick: () => window.SophiclyTable.open('') }));
                 }
-                res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📚 Library',
+                res.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Library', icon: WML.icon('resources', 15),
                     onClick: () => window.open((typeof swmlConfig !== 'undefined' && swmlConfig.libraryUrl) || '/library/', '_blank') }));
                 bc.appendChild(res);
                 ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => bar.appendChild(el('button', {
@@ -22451,7 +22451,7 @@
             // A finished walk is not a dead one: the wrap keeps a route into any answered row, so a
             // mis-tapped or rushed answer is recoverable. Costs zero API calls — the student owns
             // the rewrite and code only files it.
-            function serveWrapRecall() { chipBar(['✏️ Change an answer →'], onWrapRecall); }
+            function serveWrapRecall() { chipBar(['Change an answer →'], onWrapRecall); }
             function recallable() { return STEPS.filter(function (s) { return s.kind !== 'pick' && s.kind !== 'multi'; }); }
             function onWrapRecall(pick) {
                 userTurn(pick);
@@ -30654,14 +30654,14 @@
                                 // v7.20.51: direct open handlers, no learn-chip class (alignment).
                                 const res = el('div', { className: 'swml-quick-actions' });
                                 if (window.SophiclyToolkit && window.SophiclyToolkit.open) {
-                                    res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📖 Mastery Toolkit',
+                                    res.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Mastery Toolkit', icon: WML.icon('guide', 15),
                                         onClick: () => window.SophiclyToolkit.open('') }));
                                 }
                                 if (window.SophiclyTable && window.SophiclyTable.open) {
                                     res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '🗂 Table of Techniques',
                                         onClick: () => window.SophiclyTable.open('') }));
                                 }
-                                res.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📚 Library',
+                                res.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Library', icon: WML.icon('resources', 15),
                                     onClick: () => window.open((typeof swmlConfig !== 'undefined' && swmlConfig.libraryUrl) || '/library/', '_blank') }));
                                 bc.appendChild(res);
                                 ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => bar.appendChild(el('button', {

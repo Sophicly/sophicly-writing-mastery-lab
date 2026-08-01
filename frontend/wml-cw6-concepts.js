@@ -651,7 +651,7 @@
             more: [
                 '*Alice in Wonderland:* the fall down the rabbit hole, which is a threshold you cannot climb back up.',
                 '*The Hunger Games:* the tube rising into the arena, and the countdown starting.',
-                '*The Lion King:* Simba turns and walks back across the desert towards Pride Rock — the crossing he had refused for years.',
+                '*Jane Eyre:* Jane climbs onto the coach that takes her away from Lowood and is set down at Thornfield after dark — the only world she knows is now behind her.',
             ],
         },
         {
@@ -667,7 +667,7 @@
             more: [
                 '*Lennie in Of Mice and Men:* offering to leave and live in a cave so George does not have to put up with him.',
                 '*Macbeth:* "I dare do all that may become a man; who dares do more is none" — for one line he knows exactly where the limit is.',
-                '*Great Expectations:* before any of it, Pip steals a file and a pie for a starving man in a churchyard and tells no one.',
+                '*Great Expectations:* Pip secretly pays to set Herbert up in business and makes sure Herbert never learns who did it — the one thing he hides because it is generous.',
             ],
         },
         {
@@ -681,7 +681,7 @@
             ],
             ex: '*Great Expectations:* Magwitch walks in out of the rain, and Pip’s entire idea of where his money came from collapses.',
             more: [
-                '*An Inspector Calls:* the final phone call — a girl has just died, and an inspector is on his way.',
+                '*An Inspector Calls:* Eric walks in just after his mother has demanded that the father of the child be punished — she has condemned her own son.',
                 '*Romeo and Juliet:* Tybalt kills Mercutio in the street, and the play stops being a comedy in one stroke.',
                 '*The Hunger Games:* the rule changes mid-Games — two tributes from one district may win — and Katniss immediately goes looking for Peeta.',
             ],
@@ -908,7 +908,7 @@
             ex: '*The Hunger Games:* the announcement that two tributes from one district may win, and Katniss going to find Peeta.',
             more: [
                 '*Harry Potter:* the three of them agreeing to go through the trapdoor tonight, because tomorrow is too late.',
-                '*Macbeth:* Macbeth arms himself inside Dunsinane and refuses to take the armour off again.',
+                '*Macbeth:* the bell rings, and Macbeth walks up the stairs to the chamber where Duncan is sleeping — the last moment he could still turn round.',
                 '*Great Expectations:* the boat is hired and the tide is checked — everything ready to take Magwitch down the river.',
             ],
         },
@@ -1088,7 +1088,7 @@
             ],
             ex: '*The Lion King:* Simba climbs Pride Rock and roars — taking the name he had spent the film refusing.',
             more: [
-                '*Jane Eyre:* "I am no bird; and no net ensnares me" — she names herself, and leaves.',
+                '*Jane Eyre:* she walks back into Ferndean with her own fortune and tells the blinded Rochester she is an independent woman now — she comes back as an equal, not a governess.',
                 '*Cinderella:* she produces the second slipper, having been the same person the whole time.',
                 '*A Christmas Carol:* Scrooge throws the window open on Christmas morning and shouts down to a boy in the street.',
             ],

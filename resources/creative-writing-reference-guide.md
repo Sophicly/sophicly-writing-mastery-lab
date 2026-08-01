@@ -767,6 +767,576 @@ By the end of Step 6 you have a complete, stage-by-stage plot — every beat cho
 
 ---
 
+### Beat by beat — what each beat is asking for
+
+Every beat in your outline is asking for one specific thing. This section says what that is, in plain terms, for each kind of beat you will meet. Use it when a question makes sense as words but you cannot see what to write. It does not explain the techniques themselves — the Table of Techniques does that, and it does it better.
+
+#### Stage I and Stage II — Setup and the Dream Stage
+
+#### Opening Image
+
+This is the first thing your reader sees, and it is a picture rather than an explanation. Choose one moment a camera could film: a place, an object, or a person doing a single action. It does two jobs at once — it sets the tone, whether that is cold, crowded, warm or still, and it hints at what is wrong in this life before any plot has started. Choose it with your ending in mind, because you will come back to this same image at the close and show it changed.
+
+**The common mistake:** writing a summary of the situation, or a mood with nothing solid in it, so there is nothing for the reader to actually see.
+
+**You've got it when:** you can name the one thing in shot, and say in a single word how the picture feels.
+
+#### The Opening Image, Expanded
+
+You are not moving on yet. Stay in the exact moment you have just described and widen the lens, the way a camera pulls back from a face to show the whole room. What surrounds your protagonist? What is in this world, and — just as important — what is missing from it? The absence is what makes a reader lean in: no money, no company, no way out, no one who asks how they are. Nothing has happened yet; you are simply letting the reader see the whole frame.
+
+**The common mistake:** jumping forward in time and starting the plot, so the widened shot becomes a second scene instead of the same one.
+
+**You've got it when:** your sentence adds surroundings to the opening image without moving the clock forward by even a minute.
+
+#### The Ordinary World
+
+This is your protagonist's normal — the life that was already running before your story turned up to disturb it. Readers need to see what is at risk of changing before you change it, and the way to show that is through routine. Pick one specific place they are usually in and one thing they usually do there: the walk they take every morning, the job they clock into, the table they always sit at. Ordinary does not mean dull; it means recognisable, and it means yours rather than anybody's.
+
+**The common mistake:** describing the character's personality instead of their routine, so we are told they are lonely rather than shown the empty seat beside them.
+
+**You've got it when:** your sentence names one real place and one thing that happens there regularly.
+
+#### False Balance
+
+Every story begins with a life that is about to stop working. Your job here is to decide which kind you are writing. Either the life looks steady from the outside — a job, a family, a normal week — or it is visibly coming apart already. If you choose steady, you must show the crack: one small detail that tells the reader this cannot hold much longer. A polite silence, an unopened envelope, a habit that has been growing. The reader should sense the wobble before the character does.
+
+**The common mistake:** describing a life that is simply fine, with no crack in it, so there is no tension and nothing for the story to break.
+
+**You've got it when:** a reader could point at one detail in your sentence and say: that is the thing that will give way.
+
+#### The Cost of Staying
+
+Stories need a reason to happen now. This beat names what your protagonist loses if nothing changes — not their life, but the death of something inside them. The chance that runs out. The person who stops waiting. The version of themselves they could still have become. Make it concrete enough to picture, because a vague cost creates vague stakes. If a reader can imagine the sad, quiet future where your protagonist simply carries on as they are, you have given the story its urgency.
+
+**The common mistake:** writing something abstract like "he would be unhappy", which no reader can see and no plot can threaten.
+
+**You've got it when:** you can finish this sentence with something specific: if nothing changes, they lose ______.
+
+#### A Snapshot of the Problem
+
+You have worked out what is wrong with your protagonist's life. Now prove it in one small scene rather than announcing it. Choose a brief, ordinary exchange — a conversation, a refusal, a moment of getting something wrong — that lets the problem happen in front of the reader. Keep the camera outside the character: no feelings named, no explanation of what it all means. A reader who watches somebody behave badly, or struggle, or avoid something, understands far more than a reader who is told about it.
+
+**The common mistake:** naming the emotion — "she felt overwhelmed" — instead of showing the moment that would make a reader think it.
+
+**You've got it when:** every word in your sentence could be filmed, and the word "felt" does not appear.
+
+#### The Flaw
+
+The flaw is not a fault you have decided to dislike about your character. It is a shield. At some point it protected them from something, and it worked, which is exactly why they still carry it — and why it now stands between them and what they need. Write it as behaviour rather than as a label. "Cannot ask anyone for help" is a flaw; "insecure" is a word. Behaviour can be shown, tested and broken across the story. A label just sits there.
+
+**The common mistake:** giving the character an adjective — stubborn, arrogant, shy — instead of the thing they actually do that a reader could watch.
+
+**You've got it when:** your flaw is a sentence starting with a verb: they refuse, they hide, they lie about, they always ______.
+
+#### Theme Stated
+
+Somewhere early on, someone says the truth of your story out loud — and your protagonist walks straight past it. That is the whole trick. It should be a line of dialogue, short and ordinary, the kind of thing a person really says: an aside, a warning, a throwaway remark. It must not read as a moral or a lesson, because a reader who spots the message will not feel it later. Your protagonist will only understand that line at the end, and their understanding is what makes the ending land.
+
+**The common mistake:** writing a grand, wise-sounding statement that no real person would say, which tells the reader the message rather than planting it.
+
+**You've got it when:** the line sounds so ordinary that a reader could miss it, yet it would mean everything on a second reading.
+
+#### False Identity
+
+This is the mask: who your protagonist pretends to be, or who they have been told they are for so long that they believe it. It is often a costume built over the wound, and it is the thing the story will eventually strip away. Show it in something external rather than in their thoughts. A uniform they never take off, a name they let people use, a job title they mention too often, a room kept in a particular way. The reader should be able to see the mask before understanding why it is worn.
+
+**The common mistake:** explaining the character's self-image in narration, so the mask exists only inside their head where nobody can watch it slip.
+
+**You've got it when:** you can point at one object, name or role in your sentence and say: that is the mask.
+
+#### Foreshadowing
+
+Here you plant something the story will come back for. It can be an object, a phrase, a person, a small warning — anything you can return to later so that the ending feels inevitable rather than convenient. The rule is balance. Plant it too heavily and the reader guesses; hide it too well and the payoff means nothing. Aim for something that looks completely ordinary the first time and completely obvious the second. Remember that you are making a promise here, and the story has to keep it.
+
+**The common mistake:** planting something so loud it announces the twist, or planting something you never actually use later on.
+
+**You've got it when:** you can say exactly where in the story this thing comes back — and it still looks unremarkable where you have put it.
+
+#### Limited Awareness
+
+Your protagonist does not yet know what the story is going to teach them. This beat shows that gap — something they misunderstand about the world, or about themselves, at the very start. It sits before anything has happened to change them, so keep it early-story: an assumption they make, a confident prediction, a mistake they do not notice making. The reader should see over their shoulder. That gap between what we know and what the character knows is what makes us want to keep reading.
+
+**The common mistake:** telling us the character is naive or immature, rather than showing one assumption that a reader can already tell is wrong.
+
+**You've got it when:** a reader would finish your sentence thinking: they have no idea.
+
+#### Oppression Over the Community
+
+The pressure in your story does not fall on your protagonist alone. This beat widens it to everybody around them, because a problem shared by a whole street, school, village or family feels far heavier than a private one. Do not attempt to describe the entire community; choose one small detail that stands in for all of it. What have people stopped doing? What have they learned not to say? Which door is now always shut? One habit of fear tells a reader more than a paragraph of explanation.
+
+**The common mistake:** describing the oppression in general terms — everyone was afraid — so it stays an idea rather than something happening to real people.
+
+**You've got it when:** your sentence names one thing people no longer do, and a reader can work out why without being told.
+
+#### The Threat at a Distance
+
+The danger arrives as reputation before it arrives in person. Readers frighten themselves far more effectively than any description can frighten them, so this beat is about withholding. Let us hear about the threat instead of seeing it: a rumour, a warning, damage left behind, a story someone tells and then refuses to finish. The gap you leave is where the fear lives. Keep the thing itself off the page for now; the longer you withhold it, the larger it grows in the reader's mind.
+
+**The common mistake:** describing the monster, villain or danger fully at first mention, which spends the tension before the story has begun.
+
+**You've got it when:** your sentence tells us the threat exists without letting the reader see it.
+
+#### Harmful Gratification
+
+This is the thing your protagonist reaches for that feels like relief and is quietly part of the problem. It might be a habit, an indulgence, an escape, a person they keep going back to. Two rules make it work. Make it specific and visible — one concrete thing, shown once, not a general tendency. And do not judge it in the narration. If you tell the reader it is bad for them, you have finished the thought for them; if you simply show it, the reader draws the conclusion and it stays with them.
+
+**The common mistake:** narrating disapproval — "he knew it was wrong, but he did it anyway" — which turns the moment into a lecture.
+
+**You've got it when:** your sentence shows a moment of relief that a reader can see is costing something, without you saying so.
+
+#### The Object of Desire
+
+Wanting something abstract, like happiness or respect, gives a reader nothing to hold. So this beat asks you to find the one thing your protagonist fixes on — small is fine, but it must be specific and visible. A place, a possession, a prize, a person's approval made solid in something you can point at. Then check what it stands for. The best objects of desire tell us something about the person wanting them, so choose the one whose meaning matches the need underneath it.
+
+**The common mistake:** writing an abstract want — freedom, love, success — which cannot be pursued, won or lost in any scene.
+
+**You've got it when:** your object is a noun you could photograph, and you can say in one line what wanting it reveals.
+
+#### The Warning Ignored
+
+Somebody, or something, tells your protagonist the truth — and they wave it off. This beat does two jobs. It makes the trouble that follows their own doing rather than bad luck, and it puts the reader ahead of the character, which is uncomfortable in exactly the right way. The warning must be clear enough that the reader takes it seriously, and the dismissal must be believable: people rarely ignore warnings out of stupidity, they ignore them because accepting them would mean changing.
+
+**The common mistake:** making the warning so vague or so mystical that ignoring it seems reasonable, which costs you the reader's frustration.
+
+**You've got it when:** the reader would say "listen to her" — and the character's reason for not listening still makes sense.
+
+#### The Call
+
+This is the event that ends the old life. It happens on one particular day, and after it your protagonist cannot simply carry on as before. Two things matter. It should be a single, dateable event rather than a gradual realisation. And it must arrive from outside: someone brings news, something happens to them, a letter comes, a body is found, a stranger appears. Your protagonist does not choose this moment — that comes later. Here, the world chooses for them.
+
+**The common mistake:** writing a decision — "she decided to change" — instead of an event, so nothing outside the character actually forces the story to start.
+
+**You've got it when:** you can say which day it happened, and who or what brought it.
+
+#### A Way to Fix It
+
+Your protagonist now has a plan, and it should be the wrong one. This is their first idea, formed before they understand what they are really facing, so it will be too simple to work — that is the point, because its failure is what drives the rest of the story. Write it as a decision plus an action, not as a hope. "She would go and get it back" is a plan; "she wanted things to be right again" is a wish, and a wish cannot fail in an interesting way.
+
+**The common mistake:** writing the plan that eventually succeeds, which leaves the middle of the story with nothing to go wrong.
+
+**You've got it when:** your sentence contains something the character will actually do — and you can already see why it is not going to be enough.
+
+#### The Everyday Goal
+
+Before the story arrived, your protagonist was already trying to get through their day. This beat captures that: the small, unglamorous thing they wanted this week. Finish a shift, pass a test, avoid a particular person, keep something quiet, pay for something. It is deliberately mundane, and it is valuable for two reasons — it makes the character a real person with a life of their own, and it gives the reader a measure of how completely the story is about to overturn that life.
+
+**The common mistake:** writing the big story goal here, which repeats a later beat and loses the ordinariness this one exists to capture.
+
+**You've got it when:** your goal is something that could be achieved by Friday and would interest nobody but the character.
+
+#### The World Deteriorates
+
+Things get worse, and the reader can measure it. This beat is about visible decline rather than a feeling of unease, so give us a change that can be compared against your opening: colder, emptier, dirtier, quieter, more crowded. Your protagonist watches it happen, which matters — the slide is going on around them while they have not yet acted. Each step can be small. It is the direction that the reader should find unmistakable.
+
+**The common mistake:** writing that the situation grew worse without showing what changed, so the reader is told about the decline instead of witnessing it.
+
+**You've got it when:** you could place your sentence beside your opening image and point at the difference.
+
+#### The Balance Tips
+
+The steady life stops being steady. Something in the routine you established no longer works the way it did, and this is the first crack widening. Keep it small and physical rather than large and abstract: a chair that is empty at dinner, a door that is now locked, a phone that stops being answered, money that runs out three days early. A reader feels a change in the ordinary far more sharply than a statement that everything was different now, because they had learned the ordinary from you first.
+
+**The common mistake:** leaping to a dramatic event, when this beat only wants the first small thing that stopped working.
+
+**You've got it when:** your sentence names one specific part of the routine you wrote earlier, and shows it failing.
+
+#### The B Story
+
+Alongside your main plot runs a second, quieter one: a relationship, usually with an ally, where the story's real subject gets talked about openly. It matters because your protagonist cannot discuss the theme with the plot — they can only discuss it with a person. So give them someone to talk to, and let the conversation be about something else on the surface. Two people arguing about whether it is worth keeping a garden alive are rarely arguing about the garden.
+
+**The common mistake:** writing a second relationship that only serves the plot, so it becomes a side-quest rather than the place the theme is examined.
+
+**You've got it when:** you can say who the relationship is with, and what the conversation is really about underneath its subject.
+
+#### Refusing the Call
+
+Your protagonist says no. What makes this beat work is the reason: they refuse because of their flaw, not because the task looks difficult. Anyone would hesitate at something hard, so a refusal built on difficulty tells the reader nothing about this particular person. A refusal built on the shield tells them everything. Then give it a body — refusals are far stronger as actions than as thoughts. Let them put something down, walk out, go back to work, close the door.
+
+**The common mistake:** having the character worry internally and then agree anyway, which is not a refusal, only a pause.
+
+**You've got it when:** your sentence contains a physical action, and the reason for it is the flaw you named in Stage I.
+
+#### The Mentor
+
+A mentor is someone who has been where your protagonist is going. That is the whole qualification, and it is why they are believed. The important restraint is that they guide rather than rescue — the moment a mentor solves the problem, your protagonist stops being the story. Make them specific and give them a flaw of their own. A mentor who is simply wise and kind is furniture; a mentor who is impatient, or frightened, or wrong about one thing, is a character the reader remembers.
+
+**The common mistake:** writing a mentor who hands over the answer, which removes the protagonist's need to work anything out.
+
+**You've got it when:** your mentor makes the protagonist see something, and does not do anything for them.
+
+#### The Prophecy
+
+This is a promise about the future that your protagonist believes. Its power comes from being incomplete or double-edged: it says something true, but not the whole truth, and your protagonist hears the half that suits them. That mishearing is what makes the ending satisfying rather than arbitrary, because the reader can look back and see that the words were accurate all along. Keep the wording precise. A prophecy that could mean anything cannot come true in a way that surprises anyone.
+
+**The common mistake:** writing a prophecy that simply states what will happen, which removes every surprise and leaves the plot ticking off a list.
+
+**You've got it when:** your wording is true in two ways at once, and your protagonist has taken the comfortable one.
+
+#### The Gift (the "Sword")
+
+Your protagonist is given a thing. It might be a tool, a token, a piece of knowledge, a set of clothes, a key — but it should be physical enough to carry, because this object marks the point where they begin to become someone new. Choose it for meaning, not for usefulness. The gift stands for the change, so a person crossing into a world where they finally belong should receive something that says belonging, and a person about to be tested should receive something that says responsibility.
+
+**The common mistake:** picking an object that is simply handy for the plot, so the moment carries no meaning beyond equipment.
+
+**You've got it when:** you can finish this sentence: this object means they are now ______.
+
+#### The Façade Goal
+
+What does your protagonist say they want at this stage? Not what they need — they do not know that yet — but the practical, stated aim they would give you if you asked them. Money, escape, revenge, a job, not being laughed at again. It should be almost embarrassingly small and concrete, because the gap between this and what they actually need is the space your story grows in. A protagonist who already knows what they need has nothing left to learn.
+
+**The common mistake:** writing the emotional need — to be loved, to forgive himself — which belongs at the end of the story, not here.
+
+**You've got it when:** your protagonist could say this goal aloud in one plain sentence without any self-knowledge at all.
+
+#### The Wound
+
+Underneath the flaw is the event that made it necessary. The shield was built for a reason, and this beat names it. Keep it to one event rather than a general unhappiness: a day, a loss, a betrayal, a moment they were humiliated or left behind. Specificity is what makes a reader forgive the flaw. You do not have to dramatise the whole thing — a line, a brief memory, or something the character will not discuss can be enough. The reader mainly needs to know it exists.
+
+**The common mistake:** writing a mood or a whole difficult childhood instead of a single event, which leaves the flaw floating with nothing beneath it.
+
+**You've got it when:** you can state the wound as something that happened once, with a time and a place.
+
+#### The Herald
+
+Someone has to bring the news. The herald is that person or thing — the arrival that pushes your protagonist out of the old life. They need not matter afterwards, and it is a mistake to think they must: their job is to deliver, and delivering is enough. Give them one vivid detail so they are memorable in the moment they appear — how they arrive, what they are carrying, what they say first — and then let them get on with it.
+
+**The common mistake:** building the herald into a major character out of a sense of fairness, which slows the story exactly where it should be accelerating.
+
+**You've got it when:** you can name who arrives, what they bring, and one detail a reader would picture.
+
+#### Epiphany
+
+Something clicks. Your protagonist suddenly understands one thing they have been blind to, and the reader feels the floor shift. Two rules keep it honest. Trigger it with something external and small — an object, an overheard line, a face across a room — because realisations that arrive out of nowhere feel unearned. And keep it partial. They do not need to understand everything yet; this is a step towards the change, not the change itself. Save the full understanding for the end, where it belongs.
+
+**The common mistake:** writing the whole transformation here, which leaves the rest of the story with nothing to earn.
+
+**You've got it when:** you can name the small thing that caused it, and the one thing they now see.
+
+#### Crossing the Threshold
+
+This is the moment the new world begins, and it should be something the reader can watch happen. Make the crossing physical: a door, a gate, a platform, a border, a first step onto ground they have never stood on. Then make the return difficult — the threshold matters because it is one-way, or at least costly to recross. Show that in the crossing itself: the ticket used, the boat pushed off, the bag left behind, the wall that closes behind them.
+
+**The common mistake:** writing an internal decision to commit, so the reader never sees the character actually go anywhere.
+
+**You've got it when:** your sentence contains a place they physically move into, and something that makes going back hard.
+
+#### A Glimpse of the True Self
+
+For one moment, the mask slips and we see who your protagonist could be. This is a promise to the reader — it tells them the change ahead is possible, so it must come early enough to be believed and be small enough to be deniable. An unexpected kindness, an unguarded laugh, one honest sentence, a skill they do not normally admit to. Then let the mask return. If they change here, your story is finished; if they merely flicker, the reader will wait the whole book for it.
+
+**The common mistake:** making the glimpse too large, so the transformation seems already done and the remaining struggle stops mattering.
+
+**You've got it when:** the moment lasts a sentence or two, and afterwards the character behaves as they did before.
+
+#### The Stunning Surprise
+
+One event out of the blue makes the current plan impossible. It must land hard, and it must be fair — those two demands are what make this beat difficult. Fair means the reader, looking back, can find the ground it grew from: a detail you planted, a person you established, a possibility you left open. A surprise that comes from nothing feels like cheating and readers do not forgive it. A surprise that was there all along and simply unnoticed is the most satisfying thing in fiction.
+
+**The common mistake:** inventing something entirely new at this point, which shocks the reader once and then annoys them for the rest of the story.
+
+**You've got it when:** you can point to something earlier in your own plan that made this possible.
+
+#### The Allies
+
+Who joins your protagonist, and why does it matter that it is them? The useful rule is contrast: each ally should be good at something your protagonist is not. That gives them a job in the plot, a reason to speak, and something to disagree about. Two or three sharply different people are far stronger than a crowd, because a reader can hold them apart. If an ally could be removed and nothing in the story would change, they are not an ally — they are a spare character.
+
+**The common mistake:** giving the protagonist friends who agree with them, which produces conversations with nothing at stake in them.
+
+**You've got it when:** you can name what each ally can do that your protagonist cannot.
+
+#### The First Attack
+
+The opposition touches your protagonist for the first time, and your protagonist loses. The loss is the point. It proves that the goal has a price, it shows the reader what the enemy is capable of, and it stops the story feeling easy. Keep the defeat concrete — something is taken, damaged, discovered or escaped from by luck rather than skill. A near-miss that they handle comfortably teaches the reader that the danger is manageable, which is the opposite of what this beat is for.
+
+**The common mistake:** letting the protagonist win, or win with only a scratch, which quietly tells the reader that nothing here is dangerous.
+
+**You've got it when:** your sentence ends with the protagonist worse off than it began.
+
+#### The Dark Force Rising
+
+While your protagonist hesitates, the opposition grows. Show that growth as reach rather than as menace — an enemy who is described as more frightening has not actually gained anything, but an enemy who has taken a place, turned a person, or changed a rule has. Choose one concrete gain and let the reader work out the scale from it. This beat also creates pressure on time, because every step the opposition takes while your protagonist stands still makes their eventual decision more urgent.
+
+**The common mistake:** describing the villain becoming more powerful in general terms, without showing a single thing they now have that they did not have before.
+
+**You've got it when:** you can name one thing the opposition gained, and say who lost it.
+
+#### Stage III and Stage IV — Fascination and the Nightmare
+
+#### The Special World
+
+This beat asks you to show the new world as your protagonist sees it on arrival. Wonder comes first — they are impressed, slightly overwhelmed — but something underneath should not quite sit right. The way to do it is selection, not description: pick two or three specific things that are ordinary to everyone who lives there and strange to the person who has just walked in. One detail the locals do not even notice is worth more than a paragraph about how beautiful the place is, because it shows the gap between your protagonist and where they stand.
+
+**The common mistake:** describing the setting from the outside, listing what it looks like, rather than showing what startles the one person seeing it for the first time.
+
+**You've got it when:** your sentence names something the locals find unremarkable and your protagonist does not.
+
+#### The Betrayal
+
+Someone your protagonist trusts turns against them. Two things make it land. First, the person who turns needs a reason that makes sense from where they are standing — fear, ambition, loyalty to somebody else — because a betrayal with no motive is only a plot move, and the reader forgets it. Second, it has to cost something you can name: a plan, a place to sleep, a belief your protagonist held about themselves. Write the moment of the turn rather than the moment of discovery afterwards; the turn is where the reader feels it.
+
+**The common mistake:** making the traitor simply wicked, so the betrayal surprises the reader without troubling them.
+
+**You've got it when:** you can state the traitor's reason in one clause and the exact thing your protagonist loses.
+
+#### Into the Underworld
+
+Your protagonist goes down into a dark place. It can be entirely literal — a cellar, a tunnel, a ward at night, a wood — and it should also look like whatever they are most afraid of, so the setting carries the psychology and you never have to explain the fear. Choose the place before you choose the events. Ask what this particular character has been avoiding all story, then build a location whose cold, smell, narrowness or silence is a physical version of it.
+
+**The common mistake:** picking a dark place because it feels atmospheric, with no connection to this protagonist's particular fear.
+
+**You've got it when:** giving the beat to a different character, with a different fear, would force you to change the location.
+
+#### The Elixir
+
+Here you plant the thing that will save your protagonist much later, at a point where neither they nor the reader can see any use for it. It may be an object, a piece of advice, a skill, or somebody's loyalty. The rule is that it must be plantable now and payable later: introduce it lightly, in passing, attached to something else that is going on, and do not draw attention to it. If your protagonist recognises its importance today, the payoff has already been spent.
+
+**The common mistake:** making the object obviously significant, so the reader files it away and the eventual rescue feels arranged in advance.
+
+**You've got it when:** you can name the later moment this pays off in, and your protagonist currently has no idea it matters.
+
+#### The False Dawn
+
+A stretch where things genuinely go well. The success must be real and earned, not a trick, because the reader has to be allowed to relax before the drop. Your job is to let them enjoy it while leaving one wrong detail in the corner of the picture: something unexplained, someone absent, a promise quietly broken while everybody else celebrates. The reader may well walk past it now. They should remember it later, and that is the whole effect.
+
+**The common mistake:** writing the success as obviously hollow, which warns the reader not to trust it and wastes the fall.
+
+**You've got it when:** your sentence holds a real gain and one small detail a reader could reasonably overlook.
+
+#### A Storm is Coming
+
+Atmosphere, not event. Nothing happens in this beat, and that is precisely the point. You are making the reader uneasy about a page on which nothing has yet gone wrong, using weather, light, sound, temperature, an animal behaving oddly, a room that has gone too quiet. Keep it small and physical. The moment you introduce an actual threat you have moved into a different beat and thrown away the dread you were building.
+
+**The common mistake:** putting the danger itself into the sentence, which leaves the reader nothing to anticipate.
+
+**You've got it when:** nothing in your sentence has actually happened, and you would still rather not turn the page.
+
+#### The Mood Turns
+
+The feel of the story shifts from excitement to grind. Show it in the texture of ordinary life: what a day now involves, what people have stopped bothering to say, what used to be looked forward to and is now endured. Comparison is what makes this register — set it against a scene the reader has already had, so they measure the drop themselves rather than being told that morale has fallen. The shift belongs in the routine, not in the adjectives.
+
+**The common mistake:** announcing the change of feeling — everyone was miserable now — instead of showing a routine that has soured.
+
+**You've got it when:** your sentence describes something that also happened earlier in the story, and is visibly worse.
+
+#### Rising Obstacles
+
+This stage exists to escalate, so each difficulty must cost more than the one before it — more time, more risk, more of whatever your protagonist cannot spare. Give one named obstacle rather than a summary of many: a specific locked door beats "endless problems", because a list flattens into background noise and the reader stops counting. A useful check is that if your protagonist could have handled this obstacle in Stage I, it belongs earlier in the story, not here.
+
+**The common mistake:** writing several equally hard problems in a row, which reads as busy rather than as worsening.
+
+**You've got it when:** you can say what this obstacle costs your protagonist that the previous one did not.
+
+#### The Opposition Advances
+
+Show your antagonist actually winning something — taking ground, not threatening to take it. Threats are cheap, and a reader only fears an enemy they have seen succeed. Whatever is taken should matter to your protagonist, and it should stay taken, at least for now. This beat is also doing quiet work for your ending: the more capable the opposition looks here, the more your protagonist's eventual victory is worth. Competence, not cruelty, is what makes an antagonist frightening.
+
+**The common mistake:** giving the antagonist a speech about their power instead of a moment of using it.
+
+**You've got it when:** something your protagonist held at the start of the sentence belongs to the opposition by the end.
+
+#### Rest and Guidance
+
+A deliberately quiet beat. The reader needs to breathe after the escalation, and your protagonist needs a conversation rather than an event. The guidance should arrive as a question, an example, or a plain observation — never as instructions, because a character who is told what to do stops choosing, and their choices are what we are reading for. Keep it short and unhurried. Much of the value is in the pause itself, not only in what gets said.
+
+**The common mistake:** using the mentor to explain the plot or hand over the answer, which quietly removes your protagonist's decision.
+
+**You've got it when:** your protagonist leaves the scene with something to think about and still has to decide alone.
+
+#### Within Sight of the Goal
+
+The goal stops being general and becomes a specific thing, in a specific place, at a specific time. Then show the preparation: what your protagonist gathers, decides, abandons or admits before going in. Preparation is where commitment becomes visible, and the moment they give something up in order to go is worth far more than any announcement that they are ready. Expect the last stretch to be the worst of the approach, and let it be.
+
+**The common mistake:** skipping straight to arriving, so the reader never sees the choice to go through with it.
+
+**You've got it when:** your sentence names the goal precisely and one thing surrendered in order to reach it.
+
+#### Losing Hold of the Old Self
+
+The mask your protagonist has worn since the opening is now costing more than it protects, and they are caught between the two selves. Write this as an action rather than a reflection: something they can no longer make themselves do, or something they do and immediately cannot justify. Interior monologue about feeling torn is far weaker than one small behaviour that would have been effortless in Stage I and has become impossible here.
+
+**The common mistake:** writing thoughts about being conflicted, rather than a moment where the conflict shows in what they do.
+
+**You've got it when:** a reader could see the change on film, with no access at all to your protagonist's thoughts.
+
+#### The Ticking Clock
+
+Set a deadline the reader can count down: a sunrise, a tide, a train, a hearing, a battery. It has to be specific enough to be checked, and known to your characters, or it applies no pressure. Having set it, keep spending it — let later scenes register how much is left, so time becomes something the reader feels rather than a fact stated once and forgotten. A clock nobody refers to again is not a clock.
+
+**The common mistake:** offering a vague urgency — they had to hurry — instead of a fixed point after which it is too late.
+
+**You've got it when:** you can say what happens if the deadline passes, and roughly how much time is left.
+
+#### The Lowest Point (Dark Night)
+
+This is the bottom, not another setback. The goal looks lost, and the mask goes back on: your protagonist retreats into the old, false version of themselves because it is the only shelter they know. Take away the ally, the object or the belief they have leaned on all story. Nothing is solved here, and no lesson is learned — the change has to be earned out of this later, and if it arrives now your ending has nothing left to do.
+
+**The common mistake:** letting the protagonist realise something hopeful in the same breath, which softens the bottom into a bump.
+
+**You've got it when:** your sentence contains a real loss and no comfort of any kind.
+
+#### The Nightmare Battle
+
+The decisive confrontation, and it must be two fights at once: the enemy in front of them, and the old self they have been running from since Stage I. The way to manage that is not to alternate between the two but to let the external danger force the internal choice — the only route through is to do the very thing the false identity has always refused. If the fight could be won without your protagonist changing, it is a set piece rather than this beat.
+
+**The common mistake:** writing the action and the inner change as two separate moments, one after the other.
+
+**You've got it when:** the act that defeats the enemy is the same act that abandons the mask.
+
+#### The Allies Break
+
+The group splits, and your protagonist ends up more alone than they were. The test of this beat is that both sides should be arguably right: give the people leaving a reason a reader could sympathise with — fear, exhaustion, a different idea of what matters most — so the split reads as a real disagreement rather than a convenient desertion. Write the moment it happens, in the room, rather than the aftermath described later.
+
+**The common mistake:** making the departing ally suddenly weak or disloyal, so the reader dismisses them instead of feeling the loss.
+
+**You've got it when:** you could argue the other side's case in one honest sentence.
+
+#### Cornered
+
+Close every exit. Before writing, list the ways out your protagonist has used so far and remove each one, so the reader cannot see an escape either. Then name the cost of losing as one specific thing that will not come back: a person, a chance, a place. Suspense does not come from danger in general. It comes from a reader who can see exactly what is about to be lost and no route by which it might be saved.
+
+**The common mistake:** describing how frightened the protagonist is instead of shutting down the options the reader is still quietly counting on.
+
+**You've got it when:** you have tried to think of a way out and cannot find one you have not already blocked.
+
+#### The Shadow Dominates
+
+The opposition is now the strongest force in your story, and this beat shows its reach rather than its intentions. Do not write what it wants; write what the world looks like underneath it. A single image of ordinary life altered will do more than any amount of menace — something shut, emptied, renamed or replaced, and people carrying on as though this were normal. Silence and consent are more frightening on the page than cruelty is.
+
+**The common mistake:** returning to the antagonist's plans or motives when the beat is asking about the state of the world.
+
+**You've got it when:** your sentence describes a place or a routine, and the opposition is not physically present in it.
+
+#### Greater Crises
+
+Failures stack. The plan collapses, and each collapse makes the next one worse rather than merely following it: a message that never arrives means the wrong information, which means the wrong decision. Shorten everything — fewer words per event, less time between them, no pauses for reflection. This is the fastest passage in your story, and the pace comes from removing the gaps, never from telling the reader that things were happening quickly.
+
+**The common mistake:** listing several unrelated disasters, which reads as bad luck rather than as a chain closing in.
+
+**You've got it when:** you can join each failure to the one before it with the words "which meant".
+
+#### Stage V and Stage VI — the Final Push and the Aftermath
+
+#### The Reversal
+
+After the lowest point, your protagonist gets back up. This beat asks what lifts them — and the answer must be something your reader has already met: an ally from earlier, an object they were given, a lesson somebody taught them. A rescue that arrives from nowhere costs your reader nothing, because they had no way to feel it coming. When the thing was planted, they recognise it, and the recovery feels earned. Before inventing anything new, read back through your own outline; the material is almost always already there.
+
+**The common mistake:** producing a brand-new helper, power or coincidence at the exact moment it is needed, so the recovery reads as luck rather than story.
+
+**You've got it when:** you can point to the earlier beat where the thing that saves them first appeared.
+
+#### New Information
+
+Something your protagonist did not know arrives, and it changes what is possible. The key word is *fact*: not a mood lifting or courage returning, but one concrete piece of knowledge landing — who someone really is, where the weakness lies. A fact alone is not enough. The beat finishes only when your protagonist acts on it, knowing what acting will cost, and that cost is what stops it feeling like convenience. The information reopens the door; the choice to walk through it is the writing.
+
+**The common mistake:** writing a feeling instead of a fact — "she suddenly felt she could go on" — so nothing has changed except the weather inside your protagonist.
+
+**You've got it when:** you can state the new fact in one clause and the decision it forces in the next.
+
+#### Seizing the Sword
+
+This is where the mask comes off for good. All the way through, your protagonist has hidden behind something — a role, a name they refuse, a version of themselves built to keep the wound covered. Here they stop. What matters is that the moment is *visible*. A reader cannot watch somebody decide internally to accept who they are, so give them something to see: an object picked up, a name claimed aloud, a place walked back into. Reach for something already loaded with meaning from earlier rather than a new prop.
+
+**The common mistake:** writing the change as private thought — "at last he accepted himself" — which tells your reader the result and shows them nothing.
+
+**You've got it when:** your sentence contains an action a camera could film, using something the reader has seen before.
+
+#### Surpassing the Mentor
+
+For the final test to prove anything, the guide has to be out of the way. This beat removes them — killed, defeated, absent, refusing to help, or simply wrong about something important. Your protagonist then does the thing the mentor could not do or would not have thought of. That second half is what makes it a beat rather than a plot convenience: if the mentor is merely offstage while your protagonist repeats the lesson exactly as taught, nothing has been surpassed. The win has to belong to the student alone.
+
+**The common mistake:** keeping the mentor beside your protagonist through the climax, which quietly hands them the credit for the victory.
+
+**You've got it when:** you can say why your protagonist could not simply have asked the mentor what to do.
+
+#### Willing to Sacrifice
+
+Your protagonist gives up the thing they wanted most. Look back at your logline: whatever the goal was, whatever the flaw was protecting, this is where they let it go on purpose. Two things make the beat work. It must be a choice made on the page, not a loss that happens to them — losing something is not sacrificing it. And what they surrender has to be the thing that genuinely mattered, because that is the proof the change is real. A protagonist who gives up something they never valued has given up nothing.
+
+**The common mistake:** letting events take the thing away, or sacrificing something convenient that the story never established as precious.
+
+**You've got it when:** the thing surrendered here is recognisably the thing your protagonist wanted at the start.
+
+#### The Antagonist’s Weakness
+
+Your protagonist works out how the opposition can be beaten. Two conditions keep this honest. The weakness must come from something already shown — a habit, a need, a pattern your reader has watched — so the discovery is a reading of evidence rather than an announcement. And the strongest version is not a random gap in the armour but the antagonist's own strength taken too far: the certainty that stops them checking, the control that cannot bear being watched, the pride that makes them explain themselves. Write the working-out, not just the knowing.
+
+**The common mistake:** inventing a convenient flaw at the last minute, or having the weakness told to your protagonist rather than noticed by them.
+
+**You've got it when:** you can name the earlier scene your protagonist is drawing on to reach this conclusion.
+
+#### "You Are the Same as Me"
+
+The antagonist turns and says your protagonist is no better than they are. This only bites if the accusation is partly true — if there is real evidence for it in your story, and your protagonist knows there is. A charge that is obviously false is just noise. Then comes the half students leave out: your protagonist answers, and the answer is an action. They do the thing the antagonist would never do, and the difference between them becomes visible instead of argued. One decision settles this far better than a speech.
+
+**The common mistake:** letting your protagonist win the exchange with a clever reply, which leaves the accusation untested.
+
+**You've got it when:** the reply is something your protagonist does, and the antagonist could not have done it.
+
+#### In the Nick of Time
+
+The escape or the win lands with nothing to spare. Here you cash in a deadline set earlier — the hour, the tide, the trial, the thing that was always going to happen at a certain point. If no clock exists in your story yet, go back and start one; the tension comes from your reader knowing the limit, not from you saying time is short. Write it tight: short sentences, one action each, no explaining. This is the beat where the shape of the prose does as much work as the events.
+
+**The common mistake:** announcing urgency in adjectives — desperate, frantic, heart-pounding — while the sentences stay long and unhurried.
+
+**You've got it when:** your reader could say exactly what was about to happen and how close it came.
+
+#### The Fatal Blow
+
+This is the decisive act the whole story has promised, and it has to happen on the page. Your reader has waited for this confrontation since the goal was set, so summarising it — "after a long fight, he won" — breaks a promise. Give it the space it has earned. The other requirement is that your protagonist performs it. Allies can be present, wounded, useful, but the deciding action belongs to the character whose change the story is about. It need not be violent: refusing, telling the truth or letting something fall can be equally decisive.
+
+**The common mistake:** resolving the climax through someone else's action, an accident, or a paragraph of summary that skips the scene.
+
+**You've got it when:** the last beat of the confrontation is something your protagonist chooses and does.
+
+#### Accepting the Fate
+
+This is the tragic alternative to seizing the sword. Your protagonist understands, finally and completely, what they have done and what it cost — and it is too late for the knowledge to save them. They go on anyway. The recognition *is* the ending: that clear sight, arriving after everything has been spent, is what lets your reader feel the whole shape of the story at once. Do not soften it. A rescue, a forgiveness or a hopeful turn in the last line removes the only thing this beat has to give.
+
+**The common mistake:** relenting at the last moment — a survival, a reprieve, a comforting thought — which trades the meaning for a happier finish.
+
+**You've got it when:** your protagonist can state plainly what they got wrong, and it makes no difference to what happens next.
+
+#### The Final Image
+
+Your last picture mirrors your first. Return to the same place, object or action you opened on and show it changed — the same room, the same walk to work, the same door, the same chair. The contrast is the whole technique, and it only works if you let it speak. Do not follow the image with a line explaining what has changed or what it meant; the mirror has already told your reader, and the explanation takes the discovery away from them. Keep it to one picture, not a survey of everyone's future.
+
+**The common mistake:** ending on a summary or a tacked-on moral — "and he was never lonely again" — instead of a picture.
+
+**You've got it when:** you can hold your last sentence beside your first and see the same thing, different.
+
+#### How Much Have They Learnt?
+
+The question is real, and you answer it with a choice rather than a statement. Show your protagonist doing something the person from your opening could not have done: making an offer, staying put, telling a truth, handing something over. That action is the evidence, and it is worth far more than a sentence reporting that they had grown. The honest answer is often *partly*. Someone can learn one thing and stay blind to another, and a story that admits this is usually stronger than one where everything is mended.
+
+**The common mistake:** announcing the lesson in the closing lines — "he had learnt that family matters most" — which reads as a moral bolted on.
+
+**You've got it when:** you can delete every sentence of commentary and the action still shows what changed.
+
+#### Balance Restored
+
+Widen the lens. This beat shows the world after, not just your protagonist, and it answers whatever you put out of joint at the beginning. If you opened on a community suffering — a family not speaking, a town afraid — close on that same community, differently. The trick is scale: one small ordinary detail carries this far better than a grand statement. Something dull resuming is exactly right — a meal eaten together, a shop reopening — because ordinary life restarting is what restored actually looks like.
+
+**The common mistake:** reaching for abstraction — "peace returned and everyone was happy at last" — which names the outcome without showing anything your reader can picture.
+
+**You've got it when:** you can point to one everyday detail in your sentence that could not have happened in your opening.
+
+#### Returning with the Elixir
+
+Your protagonist comes back carrying something the ordinary world needed: a truth, a person, an object, or a changed way of behaving. Whatever you choose, make it visible. This is the beat where students reach for abstract nouns — hope, wisdom, forgiveness, understanding. Those are real, and they are also invisible, so give each one a body. Wisdom becomes advice given to someone who needed it; forgiveness becomes a visit made, a name spoken again. The test is whether your reader could point at the elixir if they were in the room.
+
+**The common mistake:** ending on an abstract noun and nothing else, so the story claims a gain the reader never sees delivered to anybody.
+
+**You've got it when:** your sentence contains a thing, a person or an action — not only a quality your protagonist now possesses.
+
+#### The Death, and the Response
+
+In a tragedy the ending is a loss, and the meaning lives in what the survivors do with it. So the beat has two halves, and the second is the one students leave off. Write the loss, then show somebody responding: mourning, arguing, refusing to see it, quietly changing. That response is your verdict on the whole story, so decide it deliberately. If they learn, the price bought something. If they do not, the problem stays loaded for the next person and the danger has not gone anywhere. Both endings are legitimate; drifting is not.
+
+**The common mistake:** stopping at the death, or adding a consoling line about lessons learnt that nobody in the story has actually learnt.
+
+**You've got it when:** your final sentence shows a survivor acting, and you can say whether they understood or missed it.
+
 ## Why Authors Write — Reading Like a Writer
 
 This section is the bridge between your creative writing and your analysis. Once you understand *why* writers write, you read every text more powerfully — because you stop reading only the words and start reading what the writer is *doing*.
