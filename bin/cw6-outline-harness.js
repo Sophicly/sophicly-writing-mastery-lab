@@ -302,29 +302,51 @@ if (thinPool.length || dupPool.length) {
 // ⚠️ Stage index is derived from the REAL templates (which section the beat sits in), not from
 // where the concept happens to appear in the source file — a check that read the map's own layout
 // would be asserting about itself rather than about what a student is offered.
+// v7.20.378 (#131) — GENERALISED TO BOTH ENDS. Neil found the mirror case on beat 7 of Stage I:
+// `Ir` In Medias Res was offered on "limited awareness", but In Medias Res describes how a story
+// STARTS, so seven beats in there is nothing left to decide. An ending device offered at the
+// start and an opening device offered past the start are ONE defect with two signs, so the rule
+// is now positional in both directions rather than a list of ending devices.
 const ENDING_DEVICES = { Cy: 'Cyclical Structure', Zi: 'Zoom-In / Zoom-Out Ending', Rn: 'Resolved Ending', De: 'Denouement' };
+const OPENING_DEVICES = { Ir: 'In Medias Res' };
+// DERIVED, not hardcoded: whichever concept wins the FIRST askable row of Stage I, in each of the
+// eight templates. If a template ever opens on a different beat, this follows it automatically.
+const openingConceptIds = new Set();
+Object.values(ARCH).forEach((a) => {
+    const first = (a.sections[0].criteria || []).filter(isAskable)[0];
+    const k = first && matchConcept(first);
+    if (k) openingConceptIds.add(k.id);
+});
 const EARLIEST_ENDING_STAGE = 4;   // 0-based: Stage V. Anything earlier has no ending to pay off.
 const misplaced = [];
 MAP.CONCEPTS.forEach((c) => {
     const stages = conceptStageIdx.get(c.id);
     if (!stages || !stages.size) return;            // unreachable concepts are 5b's job, not this one
     const earliest = Math.min(...stages);
-    if (earliest >= EARLIEST_ENDING_STAGE) return;
     (c.tech || []).forEach((t) => {
-        if (ENDING_DEVICES[t.s]) {
+        if (ENDING_DEVICES[t.s] && earliest < EARLIEST_ENDING_STAGE) {
             misplaced.push("'" + c.id + "' (asked in stage " + (earliest + 1) + ') offers '
-                + t.s + ' ' + ENDING_DEVICES[t.s]);
+                + t.s + ' ' + ENDING_DEVICES[t.s] + ' — an ENDING device, with no ending to pay off yet');
+        }
+        // An opening device is only actionable on the story's OPENING beat. `openIdx` is the
+        // first askable row of Stage I across the templates, so this is derived, not hardcoded.
+        if (OPENING_DEVICES[t.s] && !openingConceptIds.has(c.id)) {
+            misplaced.push("'" + c.id + "' offers " + t.s + ' ' + OPENING_DEVICES[t.s]
+                + " — an OPENING device, but this is not the story's opening beat ("
+                + [...openingConceptIds].join('/') + ' is)');
         }
     });
 });
 if (misplaced.length) {
-    bad(misplaced.length + ' ending-payoff technique(s) offered on a beat before stage '
-        + (EARLIEST_ENDING_STAGE + 1) + ' — the card would teach the END of the device to a student '
-        + 'writing its beginning (#124):\n     ' + misplaced.join('\n     ')
-        + '\n     Fix: move the chip to the beat where the device PAYS OFF, and offer this beat a '
-        + 'technique it can act on now. Do not widen ENDING_DEVICES to make this pass.');
+    bad(misplaced.length + ' technique(s) offered at a point in the arc where the student cannot act '
+        + 'on them — the card would teach the wrong end of the device (#124/#131):\n     '
+        + misplaced.join('\n     ')
+        + '\n     Fix: move the chip to the beat where the device is a LIVE decision, and offer this '
+        + 'beat a technique it can act on now. Do not widen these lists to make it pass.');
 } else {
-    ok('no ending-payoff technique (' + Object.keys(ENDING_DEVICES).join(', ') + ') is offered before stage ' + (EARLIEST_ENDING_STAGE + 1));
+    ok('no ending device (' + Object.keys(ENDING_DEVICES).join(', ') + ') before stage '
+        + (EARLIEST_ENDING_STAGE + 1) + ', and no opening device (' + Object.keys(OPENING_DEVICES).join(', ')
+        + ') off the opening beat');
 }
 
 // Every stage id the templates use must have a fallback entry, or an unmatched row in that

@@ -587,6 +587,79 @@ await (async function moreExamples() {
         'more-examples: more than 3 examples were served in one bubble (Neil capped it at three)');
 })();
 
+// ── v7.20.378 — NEIL'S QUESTION, MADE MECHANICAL (#133). ──────────────────────────────────
+// Part-way through his own 105-beat run he asked the right question: "how can we be guaranteed
+// that the students are gonna get the right question in the right sequence, and that their
+// answers are going to auto fill into the right slots… and let's say the student uses the
+// buttons, still stuck, ask Sophia — how do we know that once they've answered it, it's gonna go
+// to the right slot?"
+//
+// Sequence and slots were already proven (unique fieldIds, one canonical producer, ask-before-
+// file, resume from 10 positions). **The HELP-BUTTON detour was not.** Every existing assertion
+// walked the happy path: answer, answer, answer. Nobody had ever asserted that a student who taps
+// a rung and THEN types still lands in the beat they were on — which is exactly the case Neil
+// asked about, and the one a student actually hits.
+//
+// Each rung is driven on a FRESH world, per archetype, because tapping a rung emits a new bubble
+// and the chip bar moves with it — testing them in sequence on one world silently degrades into
+// testing whichever rung still had a bar.
+for (const k of KEYS) {
+    for (const rung of ['More examples', 'Guidance', 'Story Spine', 'Still stuck']) {
+        const w = makeWorld(k);
+        w.ctl.forceStart();
+        await tick();
+
+        // Walk forward to the first ask carrying THE RUNG UNDER TEST. Waiting on the ladder in
+        // general is not enough: a stage-ARC ask carries Guidance/Spine/Still-stuck but has no
+        // concept, so no [More examples] — and stopping there tested nothing while looking green.
+        const has = function () { return w.chips().some(function (b) { return String(b.textContent).indexOf(rung) !== -1; }); };
+        let guard = 0;
+        while (guard++ < 60 && !has()) {
+            if (w.tap('still right') || w.tap('Use this')) continue;
+            if (w.armed) { w.resolveApi('@STAGE_OK'); continue; }
+            if (!w.ctl.active) break;
+            w.ctl.handleTurn('answer ' + guard);
+        }
+        const reached = has();
+        ok(reached, k + '/' + rung + ': never reached an ask carrying this rung');
+        if (!reached) continue;
+
+        // THE SLOT THE ASK IN HAND OWNS = the first still-empty row in document order.
+        const slot = w.order.filter(function (f) { return !w.rows.get(f); })[0];
+        const filledBefore = [...w.rows.values()].filter(Boolean).length;
+
+        const tapped = w.tap(rung);
+        ok(tapped, k + '/' + rung + ': the rung was on the bar but did not fire');
+        if (!tapped) continue;
+
+        // A HELP TAP IS NOT AN ANSWER — it may never write to the document.
+        ok([...w.rows.values()].filter(Boolean).length === filledBefore,
+            k + '/' + rung + ': tapping a help rung FILED something into the document');
+
+        if (rung === 'Still stuck') {
+            ok(!!w.armed && /^cw6-help-/.test(w.armed.id),
+                k + '/' + rung + ': rung 3 did not open a help call (armed as "' + (w.armed && w.armed.id) + '")');
+            w.resolveApi('One way this could go — she could leave the door open.');
+            await tick();
+            ok([...w.rows.values()].filter(Boolean).length === filledBefore,
+                k + '/' + rung + ": Sophia's suggestion was filed as if it were the student's answer");
+        }
+
+        // NOW the student writes their own. It must land in the beat they were on — not the next
+        // one, not the previous one, and not nowhere.
+        w.ctl.handleTurn('MY OWN SENTENCE FOR THIS BEAT');
+        const newlyFilled = [...w.rows.keys()].filter(function (f) { return /MY OWN SENTENCE FOR THIS BEAT/.test(w.rows.get(f) || ''); });
+        ok(newlyFilled.length === 1,
+            k + '/' + rung + ': the answer after a help tap landed in ' + newlyFilled.length + ' rows, not exactly 1');
+        ok(newlyFilled[0] === slot,
+            k + '/' + rung + ': the answer went to "' + newlyFilled[0] + '" but the ask in hand owned "' + slot + '"');
+        ok([...w.rows.values()].filter(Boolean).length === filledBefore + 1,
+            k + '/' + rung + ': the walk did not advance by exactly one row after the help detour');
+    }
+}
+
+console.log('   ✓ help rungs (all 4) never file, and the answer after one still lands in the beat in hand — every archetype');
+
 console.log('   ' + asserts.pass + ' behavioural assertions passed'
     + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : '') + ' across ' + KEYS.length + ' archetype(s)');
 if (fail) { console.error('\ncw6-sim-harness FAILED'); process.exit(1); }

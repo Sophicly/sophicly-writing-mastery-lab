@@ -164,7 +164,13 @@
             id: 'ordinary-world', name: 'The Ordinary World', nudge: false,
             val: 'neg', valBy: { tragedy: 'pos' },
             m: /ordinary world|world as it is|lowly state|youthful naivety|meet the protagonist/i,
-            tech: [{ s: 'Xp', l: 'Exposition' }, { s: 'Se', l: 'Setting' }],
+            // v7.20.378 (#131): In Medias Res lands HERE — beat 1, the story's actual first
+            // askable row, and the one place the choice is live. It is the direct ALTERNATIVE to
+            // Exposition (drop the reader into the action instead of setting the scene), so the
+            // two chips sitting side by side is the lesson. ⚠️ I first put it on `opening-image`
+            // and the §5d gate rejected it: the templates open on "The ordinary world" (beat 1)
+            // and Opening Image is beat 4. The gate reads the templates; I had guessed.
+            tech: [{ s: 'Xp', l: 'Exposition' }, { s: 'Se', l: 'Setting' }, { s: 'Ir', l: 'In Medias Res' }],
             crit: [
                 'their NORMAL — the life that was running before your story started',
                 'one specific place and one specific routine, not a summary of their personality',
@@ -293,7 +299,15 @@
             id: 'limited-awareness', name: 'Limited Awareness', nudge: false,
             val: 'neg',
             m: /limited awareness|naive|ignorant|disconnected|immaturity|lacking responsibility/i,
-            tech: [{ s: 'Pr', l: 'Protagonist' }, { s: 'Ir', l: 'In Medias Res' }],
+            // v7.20.378 (Neil, #131): was [Pr Protagonist, Ir In Medias Res]. In Medias Res is an
+            // OPENING-ONLY device — it describes how a story STARTS, so on beat ~7 the student has
+            // already opened and there is nothing left to decide (Neil, live: "in medias res is
+            // really for when the story is right at the opening"). It moves to `opening-image`,
+            // the one beat where that choice is actually live. This beat takes DRAMATIC IRONY
+            // instead, which is precisely what "show what your protagonist does NOT know yet"
+            // means: the reader sees it, the character does not. Symbol verified against
+            // bin/cw6-prod-technique-symbols.txt; `Di` is already the chip on two other concepts.
+            tech: [{ s: 'Pr', l: 'Protagonist' }, { s: 'Di', l: 'Dramatic Irony' }],
             crit: [
                 'show what your protagonist does NOT know yet — about the world, or about themselves',
                 'show it through a mistake or an assumption, never by telling us they are naive',
