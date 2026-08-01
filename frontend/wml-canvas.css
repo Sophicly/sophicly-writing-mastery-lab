@@ -4091,6 +4091,17 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 [data-swml-theme="light"] .swml-canvas-chat,
 .swml-canvas-light .swml-canvas-chat { background: var(--swml-bg); }
+/* v7.20.384 (Neil: "I think there's too many shades now… a little bit more minimalistic").
+   His values, verbatim. ⚠️ ONE DISCLOSED ADDITION: his rule covers the header and the messages,
+   but NOT `.swml-canvas-chat` itself — and the input strip at the bottom has no background of its
+   own, so it would have shown the #212225 root as a visible band under the messages. That is one
+   more shade, the opposite of the ask, and he would have seen it the moment he opened it. The root
+   takes the same value so the whole column reads as ONE surface. Dark only; light untouched. */
+.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat,
+.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-header,
+.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-messages {
+    background-color: #22282A;
+}
 .swml-canvas-chat-header {
     padding: 8px 12px;
     height: 50px;
