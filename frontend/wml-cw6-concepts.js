@@ -211,7 +211,8 @@
             more: [
                 '*Great Expectations:* if Pip stays at the forge believing he is common, he never finds out what he could have been.',
                 '*An Inspector Calls:* if Sheila stays the girl who had a shop assistant sacked for smiling, she becomes her mother.',
-                '*The Lion King:* if Simba stays in the jungle eating grubs, Pride Rock stays a wasteland and he stays the boy who ran away.',
+                // v7.20.379 (#134): was Simba in the jungle — a Stage III/IV state on a Stage I beat.
+                '*The Hunger Games:* if Katniss keeps her head down and trades quietly, Prim’s name goes back in the bowl every year for the rest of her childhood.',
             ],
         },
         {
@@ -275,7 +276,8 @@
             ex: '*Great Expectations:* Pip accepts the label "common labouring boy" and is ashamed of his own hands — the mask is put on him before he chooses it.',
             more: [
                 '*Jekyll and Hyde:* Jekyll’s respectable public face is the mask, and the locked laboratory door is where he keeps it.',
-                '*The Lion King:* Simba lives as a carefree nobody in the jungle, because being Mufasa’s son would mean facing what happened.',
+                // v7.20.379 (#134): was Simba in the jungle — Stage III, not the Setup.
+                '*Harry Potter:* Harry is "the boy in the cupboard", a label the Dursleys handed him so early he has never thought to question it.',
                 '*An Inspector Calls:* Birling wears the self-made public man — the port, the cigars, the knighthood he expects is coming.',
             ],
         },
@@ -312,11 +314,18 @@
                 'show what your protagonist does NOT know yet — about the world, or about themselves',
                 'show it through a mistake or an assumption, never by telling us they are naive',
             ],
-            ex: '*The Hunger Games:* Katniss assumes surviving the arena is the whole problem, and has no idea the Capitol is the real one.',
+            // v7.20.379 (Neil, #134) — ALL FOUR examples replaced, including the original. Every
+            // one of them was a LATE-story moment (Romeo believing Juliet dead is Act 5; Simba
+            // fleeing is after the inciting incident; Pip's benefactor assumption forms in London;
+            // Katniss on the Capitol is the whole trilogy). Each was a true instance of limited
+            // awareness and all of them modelled the wrong point in the story for a Stage I beat
+            // that sits BEFORE the inciting incident. Neil, live: "that would be true later on,
+            // but not now." These four are all first-act moments.
+            ex: '*The Lion King:* Simba thinks being king means nobody can tell him what to do — he has no idea the job is mostly responsibility.',
             more: [
-                '*Great Expectations:* Pip is certain Miss Havisham is his benefactor, and builds his whole future on it.',
-                '*Romeo and Juliet:* Romeo is certain Juliet is dead because the Friar’s letter never reached him — and acts on it within minutes.',
-                '*The Lion King:* Simba runs because he believes he killed his father — an assumption Scar handed him, and he never questions it.',
+                '*Romeo and Juliet:* Romeo is certain he is heartbroken over Rosaline, and just as certain no one has ever felt this before.',
+                '*Great Expectations:* Pip believes "common" is simply a fact about him, and that Satis House is where better people live.',
+                '*The Hunger Games:* Katniss assumes the reaping is something that happens TO her district, and that keeping her head down is a survival plan.',
             ],
         },
         {
@@ -363,8 +372,10 @@
             ex: '*Jekyll and Hyde:* Jekyll drinks the draught because being Hyde is a holiday from being respectable.',
             more: [
                 '*A Christmas Carol:* Scrooge counts his money at night, alone, and it warms him more than the fire.',
-                '*Great Expectations:* Pip spends money he has not got on clothes and clubs, because looking like a gentleman is quicker than becoming one.',
-                '*Macbeth:* Macbeth goes back to the witches for another prophecy, because being told he is safe is easier than being careful.',
+                // v7.20.379 (#134): was Pip in London and Macbeth's second visit to the witches —
+                // both well past the Setup. These two are first-act.
+                '*Romeo and Juliet:* Romeo shuts himself in a dark room over Rosaline, because nursing the heartbreak is more comfortable than getting over it.',
+                '*Lord of the Flies:* the boys spend the first afternoon swimming and rolling rocks off the mountain, rather than building the shelters.',
             ],
         },
         {
@@ -396,7 +407,8 @@
             more: [
                 '*Macbeth:* Banquo warns that the witches may "win us with honest trifles, to betray’s in deepest consequence".',
                 '*Romeo and Juliet:* Friar Laurence warns that "these violent delights have violent ends", and Romeo hears only the wedding.',
-                '*Frankenstein:* Victor tells Walton the entire story as a warning, and Walton still has to be forced to turn the ship back.',
+                // v7.20.379 (#134): was the Walton frame — the whole novel. This one is chapter two.
+                '*Frankenstein:* Victor’s father glances at the Agrippa and calls it "sad trash" without explaining why — and Victor says later that a real explanation would have stopped him.',
             ],
         },
         {
