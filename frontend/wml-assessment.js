@@ -20809,9 +20809,12 @@
             let checkStage = -1;   // the stage a micro-check / its revision belongs to
             let oriented = {};     // v7.20.368: stages already explained (persisted; see serveStageOpener)
             let frameFix = '';     // v7.20.371: 'open' | 'close' — which end the student is rewriting
+            // v7.20.373: asks whose extra examples have been spent (persisted; see serveMoreExamples).
+            // Keyed on fid, so every ask keeps its own pool.
+            let moreSpent = {};
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw6') + '_cw6'; } catch (e) { return 'swml_cw6'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, checkStage, active, key, oriented, frameFix })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, checkStage, active, key, oriented, frameFix, moreSpent })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -20943,7 +20946,12 @@
                 if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
                 // Rung 1 — more worked examples, code-served. Zero API.
-                const more = (a.concept && a.concept.more) || [];
+                // v7.20.373 (Neil, live on Step 6): the chip is drawn ONLY while this ask still has
+                // examples the student has not been shown. It used to be drawn unconditionally, so
+                // every tap re-emitted the SAME bubble — his transcript carried three byte-identical
+                // "More examples — False Balance" turns, permanently, because aiBubble() is durable.
+                // Neil: "once the three are done, that quick action button just disappears."
+                const more = moreFor(a);
                 if (more.length) {
                     bar.appendChild(el('button', {
                         className: 'swml-quick-btn', textContent: 'More examples', icon: WML.icon('examples', 15),
@@ -20986,13 +20994,32 @@
                 }));
                 bc.appendChild(bar);
             }
+            // v7.20.373 — the extra examples an ask has NOT yet spent. Capped at 3 (Neil: "it would
+            // be nice if More examples has up to three"), so the ceiling holds even if the concept
+            // data later grows past it.
+            const MORE_CAP = 3;
+            function moreFor(a) {
+                if (!a || !a.concept || moreSpent[a.fid]) return [];
+                return ((a.concept && a.concept.more) || []).slice(0, MORE_CAP);
+            }
             function serveMoreExamples(a) {
-                const more = (a.concept && a.concept.more) || [];
-                if (!more.length) return;
+                const more = moreFor(a);
+                // Spent (or never had any): say so rather than no-op. helpBar no longer draws the
+                // chip once it is spent, so this is a belt-and-braces path — but a tap that does
+                // NOTHING is the §4d failure, and "the button did not respond" is how a 14-year-old
+                // decides the page is broken.
+                if (!more.length) {
+                    aiBubble('That is every example I have for this one. Have a look at **Guidance** or '
+                        + 'the technique cards if you are still stuck — otherwise write yours rough and move on.');
+                    helpBar(a);
+                    resetSend();
+                    return;
+                }
+                moreSpent[a.fid] = 1; persist();
                 aiBubble('**More examples — ' + (a.concept.name || a.label) + '**\n\n'
                     + more.map(function (m) { return '- ' + m; }).join('\n')
                     + '\n\nNow write yours. Rough is fine — you will deepen it in later drafts.');
-                helpBar(a);          // the ladder stays available on the new bubble
+                helpBar(a);          // the ladder stays available on the new bubble — minus this rung
                 resetSend();
             }
 
@@ -21722,7 +21749,7 @@
                 if (!/@CW6_START/.test(norm)) return;
                 startWalk();
             }
-            function reset() { active = false; pending = false; i = 0; phase = 'ask'; checkStage = -1; frameFix = ''; _finishFixAsk = null; clearPersist(); }
+            function reset() { active = false; pending = false; i = 0; phase = 'ask'; checkStage = -1; frameFix = ''; moreSpent = {}; _finishFixAsk = null; clearPersist(); }
             function tryResume() {
                 try {
                     // v7.20.298: a MISSING sidecar is no longer fatal — firstEmptyAsk() already
@@ -21738,6 +21765,7 @@
                     checkStage = (typeof d.checkStage === 'number') ? d.checkStage : -1;
                     oriented = (d.oriented && typeof d.oriented === 'object') ? d.oriented : {};
                     frameFix = (typeof d.frameFix === 'string') ? d.frameFix : '';
+                    moreSpent = (d.moreSpent && typeof d.moreSpent === 'object') ? d.moreSpent : {};
                     phase = d.phase || 'ask';
                     i = firstEmptyAsk();
                     // A reload during a check-in-flight: the call is gone, so fall FORWARD rather

@@ -536,6 +536,57 @@ await (async function noSpine() {
         'no-spine: a story_open row was built');
 })();
 
+// ── v7.20.373 — THE HELP LADDER IS NOT A REPEAT BUTTON. Neil, live on Step 6, tapped
+// [More examples] three times and got three BYTE-IDENTICAL bubbles, each carrying the single
+// example "False Balance" happens to hold — permanently, because aiBubble() is durable, so his
+// transcript now contains the same turn three times. The chip was drawn unconditionally, so it
+// re-offered a pool that was already empty. Neil: "once the three are done, that quick action
+// button just disappears or becomes nonactive."
+//
+// ⚠️ THIS IS A SCREEN TEST, deliberately. Every row/write assertion in this file stayed green
+// through the whole defect — nothing was mis-filed, the walk never moved, no key drifted. The
+// only thing wrong was what a student SAW. (Same lesson as .368 and .372.)
+await (async function moreExamples() {
+    const w = makeWorld('heros-journey');
+    w.ctl.forceStart();
+    await tick();
+    // Walk forward until an ask offers the rung at all.
+    let guard = 0;
+    while (guard++ < 40 && !w.chips().some(function (b) { return /More examples/.test(String(b.textContent)); })) {
+        if (w.tap('still right') || w.tap('Use this')) continue;
+        if (!w.ctl.active) break;
+        w.ctl.handleTurn('answer ' + guard);
+    }
+    ok(w.chips().some(function (b) { return /More examples/.test(String(b.textContent)); }),
+        'more-examples: no ask in the first 40 offered the rung at all — the ladder is not reachable');
+
+    const before = w.bubbles.length;
+    ok(w.tap('More examples'), 'more-examples: the chip did not fire');
+    const served = w.bubbles[w.bubbles.length - 1];
+    ok(w.bubbles.length === before + 1, 'more-examples: the tap did not put exactly one bubble on screen');
+    ok(/More examples —/.test(served), 'more-examples: the tap served something other than the examples');
+
+    // THE DEFECT: the rung must be gone once its pool is spent.
+    ok(!w.chips().some(function (b) { return /More examples/.test(String(b.textContent)); }),
+        'more-examples: the chip is STILL offered after its pool was spent — this is exactly the '
+        + 'three-identical-bubbles defect Neil hit');
+
+    // And the other rungs must survive — killing the whole ladder would be a worse bug than the one fixed.
+    ['Guidance', 'Story Spine', 'Still stuck'].forEach(function (label) {
+        ok(w.chips().some(function (b) { return String(b.textContent).indexOf(label) !== -1; }),
+            'more-examples: the "' + label + '" rung was lost when the examples rung retired');
+    });
+
+    // No two bubbles in the whole run may be byte-identical — the shape of what he saw.
+    const seen = {}, dupes = [];
+    w.bubbles.forEach(function (b) { if (seen[b]) dupes.push(b.slice(0, 40)); seen[b] = 1; });
+    ok(!dupes.length, 'more-examples: ' + dupes.length + ' byte-identical bubble(s) were served — "' + dupes[0] + '…"');
+
+    // The cap holds even if the concept data grows past three.
+    ok((served.match(/\n- /g) || []).length <= 3,
+        'more-examples: more than 3 examples were served in one bubble (Neil capped it at three)');
+})();
+
 console.log('   ' + asserts.pass + ' behavioural assertions passed'
     + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : '') + ' across ' + KEYS.length + ' archetype(s)');
 if (fail) { console.error('\ncw6-sim-harness FAILED'); process.exit(1); }
