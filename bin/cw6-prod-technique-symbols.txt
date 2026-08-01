@@ -8,7 +8,10 @@
 #   ssh -i ~/.ssh/sophicly_staging runcloud@18.133.5.229 \
 #     "grep -o \"{s:'[A-Za-z][A-Za-z0-9]*'\" /home/runcloud/webapps/SophiclyMain/wp-content/plugins/sophicly-notes/assets/js/sophicly-techniques.js" \
 #     | sed "s/{s:'//;s/'//" | sort -u
-# NOT on prod as of 2026-07-25 (do NOT wire): Wa (Want vs Need), Ey (Empathy), Gh (The Ghost / Wound).
+# NOT on prod as of 2026-08-01 (do NOT wire): Ey (Empathy), Gh (The Ghost / Wound).
+# REFRESHED 2026-08-01 from sophicly-notes 2.6.142 on PRODUCTION — 240 cards (was 231 @ 2.6.116).
+#   Added since: Cn Db Dr Eh Fu In Lo Rg Wa. Removed: none. 'catalog' is a COMMENT in the
+#   source ({s: catalog-cell symbol...}), not a card — the extraction grep catches it; keep it out.
 Aa
 Ab
 Ac
@@ -40,6 +43,7 @@ Ch
 Ck
 Cl
 Cm
+Cn
 Co
 Cp
 Ct
@@ -48,6 +52,7 @@ Cv
 Cx
 Cy
 Da
+Db
 Dc
 De
 Dg
@@ -57,6 +62,7 @@ Dj
 Dk
 Dm
 Do
+Dr
 Ds
 Du
 Dv
@@ -64,6 +70,7 @@ Dx
 Dy
 Ec
 Eg
+Eh
 El
 Em
 En
@@ -82,6 +89,7 @@ Fo
 Fp
 Fr
 Ft
+Fu
 Fv
 Fw
 Gd
@@ -101,6 +109,7 @@ Id
 Ie
 Ii
 Im
+In
 Io
 Ip
 Ir
@@ -108,6 +117,7 @@ Iu
 Jx
 Ka
 La
+Lo
 Lq
 Ls
 Ly
@@ -173,6 +183,7 @@ Rb
 Rc
 Rd
 Re
+Rg
 Ri
 Rk
 Rl
@@ -229,6 +240,7 @@ Vi
 Vo
 Vr
 Vs
+Wa
 Wb
 Wc
 Wd

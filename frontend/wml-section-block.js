@@ -128,7 +128,16 @@
                                     || (cs.c && Object.keys(cs.c).some(k => Array.isArray(cs.c[k].checked) && cs.c[k].checked.length > 0));
                                 if (anyOn) anyChecked = true;
                                 const isPick = /^cw-step-\d+-(logline|idea)/.test(String((child.attrs && child.attrs.fieldId) || ''));
-                                if (isPick) pickGroup = true;
+                                if (isPick) {
+                                    pickGroup = true;
+                                    // ⭐ v7.20.383: the pick branch skips rule.complete entirely, so it
+                                    // never saw `optional` — an empty Idea 2/3 kept the section red no
+                                    // matter what the criteria said. Stamping the flag on the template
+                                    // alone would NOT have fixed it, because this reader never asks.
+                                    // An empty OPTIONAL pick row is satisfied; a started one still needs
+                                    // its text, and the section still needs its one tick (anyChecked).
+                                    if (!hasText && (crit.optional === true || crit.optional === 'true')) rowOk = true;
+                                }
                                 else rowOk = rule.complete(crit, cs, hasText);
                             }
                         } catch (_) { /* default rowOk = hasText */ }

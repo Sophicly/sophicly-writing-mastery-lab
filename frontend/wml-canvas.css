@@ -2436,6 +2436,28 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     margin: 0 -30px 0 12px;
     width: 30px;
 }
+/* ⭐ v7.20.383 (Neil: "the contextual toolbar was sitting above the outline panel… the panel
+   should sit above pretty much everything else"). ROOT: this column is `position:sticky` with a
+   numeric z-index, which CREATES A STACKING CONTEXT — so every panel inside it is capped at the
+   COLUMN's 8 against its siblings, no matter what the panel declares. `.swml-outline-panel`'s own
+   `z-index:10` is therefore inert, and two siblings legitimately outrank it: `.swml-canvas-header`
+   (z:10, carries the ctx badges + carousel toolbar) and `.swml-selection-toolbar` (z:100, mounted
+   into .swml-canvas-content). Raising the PANEL can never work — this is the same trap the extract
+   panel hit at v7.19.772, where the fix was to escape the context entirely.
+   FIX: raise the COLUMN, but ONLY while a panel is open. Closed, it stays at 8, so the triggers
+   still sit under the header badges (the v7.14.43 fix survives untouched). Open, the panel clears
+   the header and the selection toolbar — and it already covers its own triggers by the v7.20.117
+   ruling, so nothing is hidden that shouldn't be. 120 deliberately sits ABOVE chrome/toolbars and
+   BELOW the 99990–99999 high-overlay band + the detached extract panel (100010).
+   ⚠️ Keyed on the four open-classes rather than a panel list, so a new rail panel that reuses an
+   existing open-class inherits this for free. Detached panels reparent to <body> and are governed
+   by their own fixed z-index, which is why `>` (direct child) is correct here. */
+.swml-outline-btn-column:has(> .swml-outline-open),
+.swml-outline-btn-column:has(> .swml-resources-open),
+.swml-outline-btn-column:has(> .swml-cn-open),
+.swml-outline-btn-column:has(> .swml-poem-open) {
+    z-index: 120;
+}
 /* Outline trigger — inside btn-column (v7.14.43: solid background, not see-through)
    v7.19.448: no outline border (brand: no thin outline borders on default buttons).
    Raised filled shade off Dark Base #1c1d1f + soft shadow so it reads as a button. */
@@ -4048,27 +4070,47 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-panel-entering > *:nth-child(n+6) { transition-delay: 300ms !important; }
 
 /* ── Assessment Mode: Right Chat Panel ── */
+/* ⭐ v7.20.383 (Neil: "it's sort of the last thing that has strokes"). The chat panel was the ONLY
+   flanking surface left behind by the v7.20.181 surface ladder: the sidebar, footer and header all
+   moved to the CHROME tier and dropped their borders, while this stayed on `--swml-bg` = #1c1d1f —
+   the BASE, i.e. the same colour as the canvas around it — with a 1px stroke doing the job
+   elevation should be doing. That is exactly why deleting the stroke made it dissolve into the
+   body; the fix is to finish the migration, not keep the line.
+   Now: chrome │ sheet │ chrome, symmetrical with .swml-canvas-plan, writing paper still the one
+   bright focal plane. ⚠️ DARK ONLY — light theme is untouched by Neil's ruling ("I'm happy with it
+   as it is"): it stays #ffffff on the #f5f5f7 base, which already separates by elevation. */
 .swml-canvas-chat {
     width: 380px;
     flex-shrink: 0;
-    border-left: 1px solid var(--swml-border);
-    background: var(--swml-bg);
+    border-left: none;
+    background: #212225; /* chrome tier — matches .swml-canvas-plan / -header / -status */
     display: flex;
     flex-direction: column;
     overflow: hidden;
     will-change: opacity, transform;
 }
+[data-swml-theme="light"] .swml-canvas-chat,
+.swml-canvas-light .swml-canvas-chat { background: var(--swml-bg); }
 .swml-canvas-chat-header {
     padding: 8px 12px;
     height: 50px;
     font-size: 13px;
     font-weight: 600;
     color: var(--swml-text);
-    border-bottom: 1px solid var(--swml-border);
+    /* v7.20.383 (Neil): "just add a little nice, subtle box shadow under the header" — the stroke
+       is replaced by a downward shadow, so the header reads as a plane sitting over the messages
+       rather than a box drawn with a line. Both themes get one, tuned to their own ground: the
+       dark ladder needs a deeper, softer fall; light needs barely a breath or it reads as dirt. */
+    border-bottom: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.28);
+    position: relative;
+    z-index: 1;              /* paint the shadow OVER the messages beneath, not under them */
     flex-shrink: 0;
     display: flex;
     align-items: center;
 }
+[data-swml-theme="light"] .swml-canvas-chat-header,
+.swml-canvas-light .swml-canvas-chat-header { box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
 .swml-clear-chat-btn {
     background: none;
     border: none;
@@ -4110,6 +4152,17 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-chat-messages .swml-bubble-content {
     max-width: 95%;
     overflow-x: hidden;
+}
+/* v7.20.383 (Neil chose Option B from the comparison artifact). Moving the panel to the chrome tier
+   above would have cut the AI bubble's step from 12 points (#28292b on the old #1c1d1f base) to 7
+   (#28292b on #212225), flattening them. Lifting the bubble one step restores the original 12 and
+   makes it the brightest plane in the chat column — which is right: the bubble IS the content.
+   ⚠️ SCOPED to the canvas chat, and DARK ONLY, on purpose. `--swml-bubble-ai-bg` is shared with the
+   main planning chat (the dual-pipeline rule) whose panel did NOT move, so re-pointing the token
+   would have shifted a surface nobody asked about. Light is untouched per Neil's ruling. */
+[data-swml-theme="dark"] .swml-canvas-chat-messages .swml-bubble.ai .swml-bubble-content,
+.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-messages .swml-bubble.ai .swml-bubble-content {
+    background: #2e2f32;
 }
 .swml-canvas-chat-messages .swml-bubble-body {
     overflow-x: auto;

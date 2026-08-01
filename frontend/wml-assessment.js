@@ -12443,7 +12443,19 @@
             // check below, which would otherwise clear allFilled on an empty optional row.
             const _optional = input.classList && input.classList.contains('swml-outline-optional');
             if (_optional && (input.textContent || '').trim().length === 0) return;
-            if ((input.textContent || '').trim().length === 0) allFilled = false;
+            // ⭐ v7.20.383 (Neil: uid 1352 chose her plot in Step 5 and the section never went green).
+            // CONTROL-ONLY rows have NO text BY DESIGN — the controls are the whole answer — so the
+            // text check below would keep the section false for ever. v7.20.348 taught the ROW
+            // predicate (checkRowComplete) and the shared rule (WML.outlineRow.complete) about this
+            // flag, and the section nodeView delegates to that rule, so it learned too — but THIS
+            // reader hand-rolls its own scrape and was missed. It then runs on every criteria toggle
+            // via syncSection(), i.e. at the exact moment the student picks, OVERWRITING the
+            // nodeView's correct `true` with `false`. Verified on her real prod document: archetype
+            // row `{"checked":[],"selected":"Tragedy + Hero's Journey"}`, controlOnly, len 0.
+            // Skip only the TEXT requirement — the control groups below must still be satisfied, or
+            // an untouched dropdown would tick the section.
+            const _controlOnly = input.classList && input.classList.contains('swml-outline-controlonly');
+            if (!_controlOnly && (input.textContent || '').trim().length === 0) allFilled = false;
             const cbs = r.querySelectorAll('input[type="checkbox"]');
             if (Array.from(cbs).some(c => c.checked)) anyChecked = true;
             const isPick = /^cw-step-\d+-(logline|idea)/.test(r.getAttribute('data-field-id') || '');
@@ -37062,8 +37074,8 @@
                         '<h3 data-locked="true">Your Story Ideas</h3>' +
                         '<p data-locked="true">Note down 3 story ideas you might explore. Then, when you’re ready, <strong>tick the box beside the one</strong> you most want to develop — that becomes your chosen idea, and it carries into Step 3 where you’ll shape it into a logline. You can change your choice any time before you move on.</p>' +
                         outlineRowHTML({ id: 'idea1', label: 'Idea 1', prompt: 'Your first story idea', type: 'checkbox' }, 'cw-step-2-idea1') +
-                        outlineRowHTML({ id: 'idea2', label: 'Idea 2 (optional)', prompt: 'A second idea, if you want one', type: 'checkbox' }, 'cw-step-2-idea2') +
-                        outlineRowHTML({ id: 'idea3', label: 'Idea 3 (optional)', prompt: 'A third idea, if you want one', type: 'checkbox' }, 'cw-step-2-idea3'));
+                        outlineRowHTML({ id: 'idea2', label: 'Idea 2 (optional)', prompt: 'A second idea, if you want one', type: 'checkbox', optional: true }, 'cw-step-2-idea2') +
+                        outlineRowHTML({ id: 'idea3', label: 'Idea 3 (optional)', prompt: 'A third idea, if you want one', type: 'checkbox', optional: true }, 'cw-step-2-idea3'));
                 _migrationActive = true;
                 try { canvasEditor.commands.insertContentAt(canvasEditor.state.doc.content.size, ideasHTML); }
                 finally { _migrationActive = false; }
@@ -37262,6 +37274,36 @@
                 try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 console.log('WML CW: Step 5 archetype row healed to dropdown-only (migration)');
+            });
+            // ⭐ v7.20.383: Step-2 ideas 2 and 3 become GENUINELY optional in EXISTING projects.
+            // The outline row's shape is BAKED into the saved doc (the same law as the .348 heal
+            // above), so stamping `optional` on the template reaches new projects only — every
+            // student already mid-Step-2 would keep a document that demands all three ideas while
+            // labelling two of them "(optional)". Idempotent, and it touches ONLY the criteria flag:
+            // no text, no check-state, no label. A student who wrote all three loses nothing.
+            _migrateStep('migrateCwStep2OptionalIdeas', () => {
+                if (!canvasEditor || state.task !== 'cw_step_2') return;
+                const html = canvasEditor.getHTML();
+                const tmp = document.createElement('div');
+                tmp.innerHTML = html;
+                let changed = false;
+                tmp.querySelectorAll('[data-outline-row]').forEach(r => {
+                    const fid = r.getAttribute('data-field-id') || '';
+                    if (fid !== 'cw-step-2-idea2' && fid !== 'cw-step-2-idea3') return;
+                    let crit = {};
+                    try { crit = JSON.parse(r.getAttribute('data-criteria') || '{}'); } catch (_) { return; }
+                    if (crit.optional === true) return;            // already healed
+                    crit.optional = true;
+                    r.setAttribute('data-criteria', JSON.stringify(crit));
+                    changed = true;
+                });
+                if (!changed) return;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 2 ideas 2/3 healed to optional (migration)');
             });
             // v7.19.459: Heal-on-load for CW Step 1 question rows — re-sync a saved doc to
             // the current question template without losing the student's typed answers, so
@@ -40065,8 +40107,14 @@
                 outlineRowHTML({ id: 'idea1', label: 'Idea 1', prompt: 'Your first story idea', type: 'checkbox' }, 'cw-step-2-idea1') +
                 // v7.20.262: ideas 2 and 3 are OPTIONAL (Neil's idea-ladder ruling). One committed
                 // idea is a complete outcome for this step — the labels must not imply otherwise.
-                outlineRowHTML({ id: 'idea2', label: 'Idea 2 (optional)', prompt: 'A second idea, if you want one', type: 'checkbox' }, 'cw-step-2-idea2') +
-                outlineRowHTML({ id: 'idea3', label: 'Idea 3 (optional)', prompt: 'A third idea, if you want one', type: 'checkbox' }, 'cw-step-2-idea3')
+                // ⭐ v7.20.383: .262 shipped the LABEL and not the FLAG, so every completion reader
+                // still demanded text in all three — the student was told the rows were optional and
+                // then blocked by them (Shounok, prod uid 1358: one idea written and ticked, Document
+                // Progress stuck at 50%). Neil re-confirmed 2026-08-01: "as long as they've written
+                // one idea and chosen one idea, that should be enough. If it's optional, it's
+                // optional." `optional: true` is the flag WML.outlineRow.complete actually reads.
+                outlineRowHTML({ id: 'idea2', label: 'Idea 2 (optional)', prompt: 'A second idea, if you want one', type: 'checkbox', optional: true }, 'cw-step-2-idea2') +
+                outlineRowHTML({ id: 'idea3', label: 'Idea 3 (optional)', prompt: 'A third idea, if you want one', type: 'checkbox', optional: true }, 'cw-step-2-idea3')
             );
             return html;
         }

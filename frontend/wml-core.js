@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.382';
+var WML_BUILD = '7.20.383';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3727,6 +3727,11 @@ window.WML = (function() {
         // Hamartia is a tabler-shaped stroke drawing on the same 24 grid the `line` wrapper is
         // built for, right down to the transparent 24×24 guard rect — so it needs nothing at all.
         tech_Hm: { kind: 'line', vb: '0 0 24 24', src: 'technique-hamartia.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 8v-2a2 2 0 0 1 2 -2h2" /><path d="M4 16v2a2 2 0 0 0 2 2h2" /><path d="M16 4h2a2 2 0 0 1 2 2v2" /><path d="M16 20h2a2 2 0 0 0 2 -2v-2" /><path d="M9 10h.01" /><path d="M15 10h.01" /><path d="M9.5 15.05a3.5 3.5 0 0 1 5 0" />' },
+        // v7.20.383 (Neil, Ghost.svg). ZERO forced changes: exported as tabler-FILLED on the 24 grid
+        // with fill="currentColor" and no per-path colour, so it takes the `filled` wrapper exactly
+        // as drawn, transparent guard rect included. Keyed on the TABLE SYMBOL (Gh), so retitling
+        // the card can never orphan it. One of the 12 symbols that were falling back to 🗂.
+        tech_Gh: { kind: 'filled', vb: '0 0 24 24', src: 'technique-ghost.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 1.999l.041 .002l.208 .003a8 8 0 0 1 7.747 7.747l.003 .248l.177 .006a3 3 0 0 1 2.819 2.819l.005 .176a3 3 0 0 1 -3 3l-.001 1.696l1.833 2.75a1 1 0 0 1 -.72 1.548l-.112 .006h-10c-3.445 .002 -6.327 -2.49 -6.901 -5.824l-.028 -.178l-.071 .001a3 3 0 0 1 -2.995 -2.824l-.005 -.175a3 3 0 0 1 3 -3l.004 -.25a8 8 0 0 1 7.996 -7.75zm0 10.001a2 2 0 0 0 -2 2a1 1 0 0 0 1 1h2a1 1 0 0 0 1 -1a2 2 0 0 0 -2 -2zm-1.99 -4l-.127 .007a1 1 0 0 0 .117 1.993l.127 -.007a1 1 0 0 0 -.117 -1.993zm4 0l-.127 .007a1 1 0 0 0 .117 1.993l.127 -.007a1 1 0 0 0 -.117 -1.993z" />' },
         // v7.20.380 (Neil, #137). ⚠️ ONE FORCED CHANGE, STATED (CLAUDE.md #13): the export paints
         // every path with GRADIENT fills (`fill="url(#…)"`, blue→purple stops). A gradient cannot
         // inherit `currentColor` at all — worse than the #88 flat-colour landmine — so the four
