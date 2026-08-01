@@ -39,14 +39,14 @@
 /* Dark theme overrides — deep cool grey palette (v7.14.40) */
 [data-swml-theme="dark"] {
     --swml-bg: #1c1d1f;
-    --swml-bg-alt: #242628;
+    --swml-bg-alt: #151617;
     --swml-bg-card: #1c1d1f;
     --swml-text: #e0e0ee;
     --swml-text-muted: #9da5b4;
     --swml-border: #333438;
-    --swml-input-bg: #242628;
+    --swml-input-bg: #151617;
     --swml-input-border: #444549;
-    --swml-bubble-ai-bg: #242628;
+    --swml-bubble-ai-bg: #151617;
     --swml-bubble-ai-text: #e0e0ee;
     --swml-plan-element-bg: transparent;
     --swml-plan-complete-bg: rgba(28,217,145,0.08);
@@ -65,7 +65,7 @@
     --swml-text-muted: #9da5b4;
     --swml-bg-card: #1c1d1f;
     --swml-border: #333438;
-    --swml-input-bg: #242628;
+    --swml-input-bg: #151617;
     --swml-input-border: #444549;
 }
 
