@@ -1687,6 +1687,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     justify-content: space-between;
     gap: 6px;
     padding: 8px 12px;
+    /* v7.20.390: the toolbar's end-fades MUST dissolve into this exact colour. They hardcoded it and
+       drifted every single time the header moved (#212225 → #1c1d1f → #242628), leaving a visible
+       dark block at each end of the carousel — which is what Neil spotted. Publishing the value as
+       a variable pair here makes the fades follow the header by construction. Change the header and
+       they change with it; there is nothing left to remember. */
+    --swml-tb-fade: #242628;
+    --swml-tb-fade-0: rgba(36,38,40,0);
     background: #242628; /* v7.20.388 (Neil: "give the WML header a different shade… maybe lighter"):
                             RAISED-ON-BASE, the BRAND.md ladder's own lighter rung. The toolbar is the
                             one piece of chrome that should read as sitting ON TOP of everything. */
@@ -1963,12 +1970,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-tb-gradient-left {
     left: 0;
     width: 32px;
-    background: linear-gradient(to right, #1c1d1f 10%, oklch(0.17 0.01 270 / 0) 100%);
+    background: linear-gradient(to right, var(--swml-tb-fade) 10%, var(--swml-tb-fade-0) 100%);
 }
 .swml-tb-gradient-right {
     right: 54px;
     width: 40px;
-    background: linear-gradient(to left, #1c1d1f 10%, oklch(0.17 0.01 270 / 0) 100%);
+    background: linear-gradient(to left, var(--swml-tb-fade) 10%, var(--swml-tb-fade-0) 100%);
 }
 /* ── Arrow buttons (plain neumorphic, no roll effect) ── */
 .swml-tb-arrows {
@@ -2095,11 +2102,11 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-light .swml-tb-sep {
     background: rgba(77,118,253,0.12);
 }
-.swml-canvas-light .swml-tb-gradient-left {
-    background: linear-gradient(to right, #f8f8fa 10%, rgba(248,248,250,0) 100%);
-}
-.swml-canvas-light .swml-tb-gradient-right {
-    background: linear-gradient(to left, #f8f8fa 10%, rgba(248,248,250,0) 100%);
+/* v7.20.390: same mechanism, light's own values — one place per theme, not four literals. */
+.swml-canvas-light .swml-canvas-header,
+[data-swml-theme="light"] .swml-canvas-header {
+    --swml-tb-fade: #f8f8fa;
+    --swml-tb-fade-0: rgba(248,248,250,0);
 }
 .swml-canvas-light .swml-tb-arrow {
     --btn-inner: hsla(226deg 60% 96% / 100%);
