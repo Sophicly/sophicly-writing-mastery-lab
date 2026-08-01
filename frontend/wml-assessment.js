@@ -21537,7 +21537,13 @@
             // ── RUNG 3 — Ask Sophia. The only rung that spends a call, and only on a tap. ──
             function askSophia(a) {
                 if (pending) return;
-                userTurn('🤔 Still stuck — can you give me an example for MY story?');
+                // v7.20.376 (Neil, #125): no emoji in the RECORDED TURN. The chip carries the
+                // phoenix SVG (20992) and an SVG cannot live inside a text turn, so the emoji was
+                // the only glyph left — and it read as a stray decoration in his transcript.
+                // Nothing machine-reads this string (walk-sim-lib classifies by the help bar's
+                // declared kind, never by glyph — the v7.20.363 lesson); the three harness label
+                // nets match the CHIP label 'Still stuck — ask Sophia', not this.
+                userTurn('Still stuck — can you give me an example for MY story?');
                 const logline = _cwDocValue('logline', 'cw-step-3-chosen') || _cwDocValue('brief_outline', 'cw-step-4-chosen-logline');
                 const spine = CW_STEP4_SPINE.map(function (b) { return b.label + ': ' + (_cwDocValue('brief_outline', b.fid) || '(blank)'); }).join('\n');
                 const ctx = '[THE STUDENT IS STUCK ON ONE BEAT of their plot outline and asked for an example'
@@ -21674,7 +21680,12 @@
                 const chunks = [
                     'Your plot structure is set: **' + (arch.label || 'your chosen structure') + '**. Now we build the whole story out, stage by stage — this is the longest step in the course, and by the end of it you will have a complete plot.',
                     'Here is how it works. Each of the **six stages** starts with two quick questions about where your protagonist enters it and how they leave it. Then I take you through that stage’s beats **one at a time**. For every one you get what makes it strong, a worked example, and then you write **one sentence** of your own. I file your words into your document exactly as you write them and tick the box for you.',
-                    'Under every question there are buttons: **💡 More examples** for two or three more, **📖 Guidance** for the reference guide at the right section, **🗂** cards for the technique itself, and your **🗒 Story Spine**. Those cost you nothing, so use them first. **🤔 Still stuck — ask Sophia** is there as a last resort if none of them get you moving.',
+                    // v7.20.376 (#125): named by LABEL, not by glyph. Every rung now renders an SVG
+                    // icon (More examples/Guidance/Story Spine via WML.icon, techniques via
+                    // WML.techIcon, Ask Sophia the phoenix), so the old 💡📖🗒🤔 described buttons
+                    // that no longer show them — orientation that points at the wrong thing is worse
+                    // than none. Labels match what is on screen and survive the next icon change.
+                    'Under every question there are buttons: **More examples** for two or three more, **Guidance** for the reference guide at the right section, the **technique cards** themselves, and your **Story Spine**. Those cost you nothing, so use them first. **Still stuck — ask Sophia** is there as a last resort if none of them get you moving.',
                     'One rule above all: **don’t overthink it.** Rough sentences now. You will come back and deepen every single beat in the update lessons and across seven drafts — nothing you write here is final, and a blank outline is the only wrong one.',
                 ];
                 serveCwChunks(chunks, { emit: aiBubble, onDone: function () { phase = 'ask'; persist(); enterStages(); } });

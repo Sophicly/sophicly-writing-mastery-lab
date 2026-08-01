@@ -182,15 +182,20 @@ function matchConcept(c) {
 let matched = 0, nudged = 0;
 const conceptWins = new Map();
 const unmatchedLabels = new Map();
+const conceptStageIdx = new Map();
 const stageIds = new Set();
 Object.entries(ARCH).forEach(([key, a]) => {
     let m = 0, t = 0;
-    a.sections.forEach((sec) => {
+    a.sections.forEach((sec, secIdx) => {
         stageIds.add(sec.id);
         sec.criteria.filter(isAskable).forEach((c) => {
             t++;
             const k = matchConcept(c);
-            if (k) { m++; matched++; if (k.nudge) nudged++; conceptWins.set(k.id, (conceptWins.get(k.id) || 0) + 1); }
+            if (k) { m++; matched++; if (k.nudge) nudged++; conceptWins.set(k.id, (conceptWins.get(k.id) || 0) + 1);
+                // v7.20.376 (#124): remember WHERE in the arc each concept is actually asked,
+                // derived from the real templates rather than the source layout of the map.
+                const seen = conceptStageIdx.get(k.id) || new Set();
+                seen.add(secIdx); conceptStageIdx.set(k.id, seen); }
             else unmatchedLabels.set(c.label, (unmatchedLabels.get(c.label) || 0) + 1);
         });
     });
@@ -259,6 +264,68 @@ MAP.CONCEPTS.forEach((c) => {
             + c.valBy[k] + "', not one of " + VALID_VAL.join('/') + '.');
     });
 });
+
+// ── 5e. RUNG 1 MUST HAVE THREE EXAMPLES TO GIVE (v7.20.376, #118) ────────────────────────────
+// Help-ladder rung 1 (WML CLAUDE.md §4c.9) promises "2–3 further worked examples". Since
+// v7.20.373 the [More examples] chip retires once its pool is spent, so a concept carrying ONE
+// spare fires once and disappears — the rung technically works and pedagogically does not.
+// Neil authored to three across all 70 concepts; this stops the pool being quietly thinned again.
+// Duplicates count as a defect, not as depth: the #117 bug was three byte-identical bubbles.
+const thinPool = MAP.CONCEPTS.filter(c => (c.more || []).length < 3);
+const dupPool = MAP.CONCEPTS.filter(c => new Set(c.more || []).size !== (c.more || []).length);
+if (thinPool.length || dupPool.length) {
+    if (thinPool.length) {
+        bad(thinPool.length + ' concept(s) carry fewer than 3 extra examples, so [More examples] '
+            + 'retires early on their beats (#118):\n     '
+            + thinPool.map(c => c.id + ' has ' + (c.more || []).length).join('\n     '));
+    }
+    if (dupPool.length) {
+        bad(dupPool.length + ' concept(s) repeat an example — a repeat is the #117 defect, not a third example: '
+            + dupPool.map(c => c.id).join(', '));
+    }
+} else {
+    ok('all ' + MAP.CONCEPTS.length + ' concepts carry 3 distinct extra examples for rung 1');
+}
+
+// ── 5d. AN ENDING DEVICE MAY NOT BE OFFERED BEFORE THE FINAL STAGES (v7.20.376, #124) ────────
+// Neil, live on staging: "I'm literally on the fifth beat and it's recommending Cyclical
+// Structure… when I click on it, it gives examples from the END of a text." The mapping was
+// DEFENSIBLE ON CONCEPT (the opening image really is mirrored by the final one) and WRONG ON
+// MOMENT: the card teaches the END of a device to a student writing its BEGINNING.
+//
+// This is a POSITION rule, not a remap. Some techniques only exist as a PAYOFF — they cannot be
+// demonstrated until the story has somewhere to close back to — so offering them in Stage I is
+// help the student cannot act on. Note what this deliberately does NOT flag: a technique that
+// merely spans early and late (Symbolism I→VI, Theme I→VI, Hamartia I→V) is correct — those are
+// established early and paid off later, which is the point of them.
+//
+// ⚠️ Stage index is derived from the REAL templates (which section the beat sits in), not from
+// where the concept happens to appear in the source file — a check that read the map's own layout
+// would be asserting about itself rather than about what a student is offered.
+const ENDING_DEVICES = { Cy: 'Cyclical Structure', Zi: 'Zoom-In / Zoom-Out Ending', Rn: 'Resolved Ending', De: 'Denouement' };
+const EARLIEST_ENDING_STAGE = 4;   // 0-based: Stage V. Anything earlier has no ending to pay off.
+const misplaced = [];
+MAP.CONCEPTS.forEach((c) => {
+    const stages = conceptStageIdx.get(c.id);
+    if (!stages || !stages.size) return;            // unreachable concepts are 5b's job, not this one
+    const earliest = Math.min(...stages);
+    if (earliest >= EARLIEST_ENDING_STAGE) return;
+    (c.tech || []).forEach((t) => {
+        if (ENDING_DEVICES[t.s]) {
+            misplaced.push("'" + c.id + "' (asked in stage " + (earliest + 1) + ') offers '
+                + t.s + ' ' + ENDING_DEVICES[t.s]);
+        }
+    });
+});
+if (misplaced.length) {
+    bad(misplaced.length + ' ending-payoff technique(s) offered on a beat before stage '
+        + (EARLIEST_ENDING_STAGE + 1) + ' — the card would teach the END of the device to a student '
+        + 'writing its beginning (#124):\n     ' + misplaced.join('\n     ')
+        + '\n     Fix: move the chip to the beat where the device PAYS OFF, and offer this beat a '
+        + 'technique it can act on now. Do not widen ENDING_DEVICES to make this pass.');
+} else {
+    ok('no ending-payoff technique (' + Object.keys(ENDING_DEVICES).join(', ') + ') is offered before stage ' + (EARLIEST_ENDING_STAGE + 1));
+}
 
 // Every stage id the templates use must have a fallback entry, or an unmatched row in that
 // stage gets an ask with no example at all.
