@@ -21679,13 +21679,23 @@
                 const arch = OUTLINE_CRITERIA.cwPlotArchetypes[key] || {};
                 const chunks = [
                     'Your plot structure is set: **' + (arch.label || 'your chosen structure') + '**. Now we build the whole story out, stage by stage — this is the longest step in the course, and by the end of it you will have a complete plot.',
+                    // v7.20.382 (Neil, #139): PATTERNS, NOT RULES — said before the first beat, so a
+                    // student never reads the template as a form to complete. His words, live:
+                    // "they're powerful because they've been shown to work for years and years, but
+                    // that doesn't mean it's a rule… your ideas will evolve, and that's normal."
+                    'One thing before we start: these structures are **patterns, not rules**. They are powerful because storytellers have been using them for centuries and they keep working — not because anyone is obliged to follow them. Stick to the pattern as closely as you can, because that is how you learn what it does. But if your story starts pulling away from your Story Spine as you write, **let it**. Ideas changing as you work is not a mistake; it is what writing actually looks like.',
                     'Here is how it works. Each of the **six stages** starts with two quick questions about where your protagonist enters it and how they leave it. Then I take you through that stage’s beats **one at a time**. For every one you get what makes it strong, a worked example, and then you write **one sentence** of your own. I file your words into your document exactly as you write them and tick the box for you.',
                     // v7.20.376 (#125): named by LABEL, not by glyph. Every rung now renders an SVG
                     // icon (More examples/Guidance/Story Spine via WML.icon, techniques via
                     // WML.techIcon, Ask Sophia the phoenix), so the old 💡📖🗒🤔 described buttons
                     // that no longer show them — orientation that points at the wrong thing is worse
                     // than none. Labels match what is on screen and survive the next icon change.
-                    'Under every question there are buttons: **More examples** for two or three more, **Guidance** for the reference guide at the right section, the **technique cards** themselves, and your **Story Spine**. Those cost you nothing, so use them first. **Still stuck — ask Sophia** is there as a last resort if none of them get you moving.',
+                    // v7.20.382 (Neil, #139): the ladder ORDER stated explicitly, not implied. He
+                    // tells them live that Sophia is the last port of call; it belongs in writing
+                    // too, so the student who joins late or re-reads still gets it (PEDAGOGY §7 —
+                    // the rung stays UNGATED; this is instruction, not a lock).
+                    'Under every question there is a row of buttons, and they are in the order I want you to use them. **More examples** first — two or three more worked ones for that beat. Then **Guidance**, which opens the reference guide at this exact section. Then the **technique cards** for the craft it is asking for, and your own **Story Spine** to check what you already decided. Work down that row before you do anything else: they are instant, and they are how you learn to get yourself unstuck.',
+                    '**Still stuck — ask Sophia** sits at the bottom of that row on purpose. It is the last port of call, not the first — try the other four before it. It is always there if you genuinely need it.',
                     'One rule above all: **don’t overthink it.** Rough sentences now. You will come back and deepen every single beat in the update lessons and across seven drafts — nothing you write here is final, and a blank outline is the only wrong one.',
                 ];
                 serveCwChunks(chunks, { emit: aiBubble, onDone: function () { phase = 'ask'; persist(); enterStages(); } });
@@ -22536,6 +22546,10 @@
                 phase = 'orient'; persist();
                 serveCwChunks([
                     'You have a logline and a six-beat spine. Now we choose the **shape** of the story — and this is the decision everything after it is built on.',
+                    // v7.20.382 (Neil, #139): the same patterns-not-rules framing that opens Step 6,
+                    // said HERE too — this is where the student first meets the eight archetypes, so
+                    // it is the first place they could mistake a pattern for a rule.
+                    'Before you see them: these eight are **patterns, not rules**. They carry weight because storytellers have used them for centuries and they keep working — not because you are required to obey one. Choose the closest fit and hold to it, since that is how you learn what the shape does. If your story pulls away from it as you write, that is your idea developing, and it is completely normal.',
                     'Here is the idea that makes this a craft choice rather than a guess. **Context → Concept → Technique.** What inspired you shapes what your story is ABOUT; what it is about decides the shape that best carries it. Dickens saw child poverty (context), wanted to show that greed destroys people and generosity redeems them (concept), and chose **Rebirth/Redemption** because that shape IS a person coming back (technique). The structure was arguing his point before a single ghost appeared.',
                     'So: three short questions of your own thinking first, then I show you all eight shapes and you pick, then five questions that turn the pick into a real decision. **I file every answer into your document as you go** — those are your words, in your own sections.\n\nUnder each question you get **💡 More examples**, **📖 Guidance**, your **👤 Writer\'s Profile**, **🧩 Story Components** and **🗒 Story Spine**. All free — use them before you ask me.',
                     '**Don\'t overthink any of it.** Rough answers now; you will sharpen all of this across seven drafts. A blank box is the only wrong answer.',
