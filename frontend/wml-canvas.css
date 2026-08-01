@@ -4317,7 +4317,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 
 /* ── Chat Panel Resize Handle ── */
 .swml-canvas-chat-resize {
-    width: 12px;
+    /* v7.20.385 (Neil), his value. ⚠️ NOTE FOR THE NEXT READER: this handle is `background:
+       transparent` and its only visible mark is the hover `⋮`, so `width` is NOT a visual — it is
+       purely the POINTER TARGET, and the layout gap it opens between the document and the chat
+       panel. 12 → 5 therefore does two things: it closes that seam by 7px (5 minus the -6 of
+       margin), and it shrinks the grab target to 5px. If the seam was the goal, a 12px target at
+       zero layout width (`margin: 0 -6px`) gets the same look without the harder grab. */
+    width: 5px;
     margin: 0 -3px;
     cursor: col-resize;
     background: transparent;
