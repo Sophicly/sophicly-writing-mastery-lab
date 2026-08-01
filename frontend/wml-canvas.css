@@ -2493,7 +2493,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    v7.19.448: no outline border (brand: no thin outline borders on default buttons).
    Raised filled shade off Dark Base #1c1d1f + soft shadow so it reads as a button. */
 .swml-outline-btn {
-    background: #26272a;
+    background: #242628; /* v7.20.389 (Neil): RAISED-ON-BASE, same as the toolbar header, the
+                            Dynamic Island and the AI bubbles — every raised control is one colour.
+                            Was #26272a, a one-off 2 points away: invisible as a difference, pure
+                            inconsistency as a value. */
     border: none;
     color: rgba(255,255,255,0.55);
     cursor: pointer;
@@ -10016,9 +10019,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     flex-direction: column;
     width: 264px;
     max-width: calc(100% - 48px);
-    background: rgba(28,29,31,0.86);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    /* v7.20.389 (Neil): SOLID raised-on-base, matching the toolbar header, the rail buttons and
+       the AI bubbles. It was translucent Dark Base, so its apparent colour CHANGED with whatever it
+       floated over — one shade above the sheet, another above the gutter. That is the "which shade
+       is this?" problem by construction. Solid also lets the backdrop-filter go, which removes a
+       known landmine: backdrop-filter + border-radius renders SQUARE when an ancestor carries a
+       transform, and this element has its own translateX(-50%) (reference_sitewide_takeover_modal_css_landmines §1). */
+    background: #242628;
     /* CONSTANT radius — never morphed. Morphing radius is what made the open look
        like "a rectangle that then snaps its corners". Jhey/Nextbricks hold one
        rounded-rect radius and animate only width + height. */
