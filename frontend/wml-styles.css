@@ -46,7 +46,10 @@
     --swml-border: #333438;
     --swml-input-bg: #151617;
     --swml-input-border: #444549;
-    --swml-bubble-ai-bg: #151617;
+    --swml-bubble-ai-bg: #242628;   /* v7.20.388 (Neil: "I prefer the previous shade"). The pure
+                                       light-inversion put the bubble DARKER than its panel — true to
+                                       light (#f5f5f7 on #ffffff) but wrong on dark, where a recessed
+                                       bubble reads as a hole rather than a message. Raised instead. */
     --swml-bubble-ai-text: #e0e0ee;
     --swml-plan-element-bg: transparent;
     --swml-plan-complete-bg: rgba(28,217,145,0.08);

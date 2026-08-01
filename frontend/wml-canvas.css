@@ -1687,7 +1687,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     justify-content: space-between;
     gap: 6px;
     padding: 8px 12px;
-    background: #1c1d1f; /* v7.20.181 (Neil): shared chrome tier — one step above the #1c1d1f canvas base, below the #151617 sheet. Was #1c1d1f. */
+    background: #242628; /* v7.20.388 (Neil: "give the WML header a different shade… maybe lighter"):
+                            RAISED-ON-BASE, the BRAND.md ladder's own lighter rung. The toolbar is the
+                            one piece of chrome that should read as sitting ON TOP of everything. */
     /* v7.20.181 (Neil): canvas-header bottom border removed — cleaner edge. */
     flex-shrink: 0;
     height: 50px;
@@ -4621,7 +4623,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     gap: 4px;
     flex-wrap: wrap;
     width: 120px;
-    background: #151617;
+    background: #1c1d1f; /* v7.20.388: floats OVER the sheet — Dark Base + shadow, like .swml-outline-panel. */
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5);
@@ -6847,7 +6849,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-toc {
     padding: 60px 56px 48px;
     margin: 0;
-    background: #151617; /* #343440 */
+    background: #1c1d1f; /* v7.20.388: the TOC IS A PAGE of the document — it takes the SHEET colour,
+                             not the recessed one. The v7.20.387 sweep moved it with the alt-surface
+                             family because it happened to share their old hex; it is a sheet. */
     height: 1020px; /* match pagination page height */
     box-sizing: border-box;
     display: flex;
