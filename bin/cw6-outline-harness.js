@@ -167,12 +167,20 @@ if (missing.length) {
 }
 
 // ── 5. CONCEPT COVERAGE ──────────────────────────────────────────────────────────────────
+// ⚠️ v7.20.374 — CALL THE PRODUCTION RESOLVER, never a copy of it. This used to be a local
+// re-implementation of first-match-wins, which meant the gate and the runtime could disagree
+// silently — a registry asserting things about a source it does not actually read
+// (feedback_a_registry_is_a_claim_about_a_source_not_the_source). It now uses the exported
+// `conceptFor`, so a change to matching semantics is tested rather than mirrored.
+if (typeof MAP.conceptFor !== 'function') {
+    bad('wml-cw6-concepts.js no longer exports conceptFor() — this gate would silently fall back to '
+        + 'testing its own copy of the matcher instead of the one the walk actually uses.');
+}
 function matchConcept(c) {
-    const hay = (c.label || '') + ' — ' + (c.prompt || '');
-    for (const k of MAP.CONCEPTS) { if (k.m.test(hay)) return k; }
-    return null;
+    return (typeof MAP.conceptFor === 'function') ? MAP.conceptFor(c.label, c.prompt) : null;
 }
 let matched = 0, nudged = 0;
+const conceptWins = new Map();
 const unmatchedLabels = new Map();
 const stageIds = new Set();
 Object.entries(ARCH).forEach(([key, a]) => {
@@ -182,7 +190,7 @@ Object.entries(ARCH).forEach(([key, a]) => {
         sec.criteria.filter(isAskable).forEach((c) => {
             t++;
             const k = matchConcept(c);
-            if (k) { m++; matched++; if (k.nudge) nudged++; }
+            if (k) { m++; matched++; if (k.nudge) nudged++; conceptWins.set(k.id, (conceptWins.get(k.id) || 0) + 1); }
             else unmatchedLabels.set(c.label, (unmatchedLabels.get(c.label) || 0) + 1);
         });
     });
@@ -194,6 +202,63 @@ Object.entries(ARCH).forEach(([key, a]) => {
 const cov = matched / askable;
 console.log('   COVERAGE ' + matched + '/' + askable + ' = ' + (100 * cov).toFixed(1) + '%'
     + ' · symbolic nudge on ' + nudged + ' rows (' + (100 * nudged / askable).toFixed(0) + '% — Neil ruling: image/symbol/turning-point beats only)');
+
+// ── 5b. NO CONCEPT MAY BE UNREACHABLE (v7.20.374) ────────────────────────────────────────────
+// `conceptFor` picks a winner among matching concepts, so a concept whose pattern is a SUBSET of
+// an earlier, broader one never wins a single row — and its criteria, worked example and technique
+// chips have never reached a student. Six were in exactly that state and nothing said so: coverage
+// read 100%, because every ROW matched something. Coverage measures rows; this measures CONCEPTS.
+// Proof it matters: 24 rows of "Hero surpasses the Mentor" served the `mentor` card ("someone who
+// has BEEN where your protagonist is going") because `/mentor/i` sits earlier than
+// `/surpasses the mentor/i`. Fix is `pri: 1` on the specific concept, not a reworded regex.
+const unreachable = MAP.CONCEPTS.filter(c => !conceptWins.get(c.id));
+if (unreachable.length) {
+    bad(unreachable.length + ' concept(s) are UNREACHABLE — authored, but no beat row resolves to '
+        + 'them, so their criteria/examples/technique chips never reach a student.');
+    unreachable.forEach((c) => {
+        // Name the thief, so the fix is one line rather than an investigation.
+        let thief = null;
+        outer:
+        for (const a of Object.values(ARCH)) {
+            for (const sec of a.sections) {
+                for (const cr of sec.criteria.filter(isAskable)) {
+                    const hay = (cr.label || '') + ' — ' + (cr.prompt || '');
+                    if (!c.m.test(hay)) continue;
+                    const w = matchConcept(cr);
+                    if (w && w.id !== c.id) { thief = { id: w.id, label: cr.label }; break outer; }
+                }
+            }
+        }
+        console.error("     '" + c.id + "' loses to '" + (thief ? thief.id : '?') + "'"
+            + (thief ? '  e.g. "' + thief.label + '"' : '') + "  — give it `pri: 1`.");
+    });
+} else {
+    ok('every one of the ' + MAP.CONCEPTS.length + ' concepts wins at least one beat row');
+}
+
+// ── 5c. EVERY CONCEPT CARRIES A VALENCE (v7.20.374) ──────────────────────────────────────────
+// The dot is derived at render from `val`, so a concept without one renders no dot at all — an
+// invisible hole in the very rhythm the feature exists to show (Neil: "that's part of how you
+// create tension"). A new concept must declare its direction, and cannot inherit a default.
+const VALID_VAL = ['pos', 'neg', 'neu'];
+const noVal = MAP.CONCEPTS.filter(c => !VALID_VAL.includes(c.val));
+if (noVal.length) {
+    bad(noVal.length + " concept(s) have no valid `val` (one of " + VALID_VAL.join('/') + "): "
+        + noVal.map(c => c.id).join(', ') + ' — each would render no dot, leaving a gap in the rhythm.');
+} else {
+    const tally = VALID_VAL.map(v => MAP.CONCEPTS.filter(c => c.val === v).length);
+    ok('all ' + MAP.CONCEPTS.length + ' concepts carry a valence (' + tally[1] + ' negative · '
+        + tally[0] + ' positive · ' + tally[2] + ' neutral)');
+}
+// A `valBy` override keyed on an archetype that does not exist is a silent no-op.
+MAP.CONCEPTS.forEach((c) => {
+    Object.keys(c.valBy || {}).forEach((k) => {
+        if (!ARCH[k]) bad("concept '" + c.id + "' has a valBy override for '" + k + "', which is not "
+            + 'one of the eight plot structures — it would never apply.');
+        if (!VALID_VAL.includes(c.valBy[k])) bad("concept '" + c.id + "' valBy." + k + " is '"
+            + c.valBy[k] + "', not one of " + VALID_VAL.join('/') + '.');
+    });
+});
 
 // Every stage id the templates use must have a fallback entry, or an unmatched row in that
 // stage gets an ask with no example at all.

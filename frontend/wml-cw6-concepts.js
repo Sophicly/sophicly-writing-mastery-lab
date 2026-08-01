@@ -120,6 +120,7 @@
         // ───────────────────────── STAGE I — SETUP ─────────────────────────
         {
             id: 'opening-image', name: 'Opening Image', nudge: true,
+            val: 'neg', valBy: { tragedy: 'pos' },
             m: /opening image/i,
             tech: [{ s: 'Cy', l: 'Cyclical Structure' }, { s: 'Sy', l: 'Symbolism' }],
             crit: [
@@ -135,6 +136,7 @@
         },
         {
             id: 'final-image-setup', name: 'The Opening Image, Expanded', nudge: true,
+            val: 'neg', pri: 1,
             m: /expand on the opening image/i,
             tech: [{ s: 'Im', l: 'Imagery' }, { s: 'Se', l: 'Setting' }],
             crit: [
@@ -148,6 +150,7 @@
         },
         {
             id: 'ordinary-world', name: 'The Ordinary World', nudge: false,
+            val: 'neg', valBy: { tragedy: 'pos' },
             m: /ordinary world|world as it is|lowly state|youthful naivety|meet the protagonist/i,
             tech: [{ s: 'Xp', l: 'Exposition' }, { s: 'Se', l: 'Setting' }],
             crit: [
@@ -162,6 +165,7 @@
         },
         {
             id: 'false-balance', name: 'False Balance', nudge: false,
+            val: 'neg', valBy: { tragedy: 'neu' },
             m: /false sense of balance|complete imbalance/i,
             tech: [{ s: 'Tn', l: 'Tension' }, { s: 'Dj', l: 'Duality' }],
             crit: [
@@ -175,6 +179,7 @@
         },
         {
             id: 'figurative-death', name: 'The Cost of Staying', nudge: false,
+            val: 'neg',
             m: /figurative death|stays the same|life is oppressive|sees life as oppressive/i,
             tech: [{ s: 'Sk', l: 'Stakes' }],
             crit: [
@@ -188,6 +193,7 @@
         },
         {
             id: 'problem-snapshot', name: 'A Snapshot of the Problem', nudge: false,
+            val: 'neg',
             m: /snapshot of the main character|character’s problem|character's problem/i,
             tech: [{ s: 'Cf', l: 'Conflict' }, { s: 'Do', l: 'Show, Don’t Tell' }],
             crit: [
@@ -201,6 +207,7 @@
         },
         {
             id: 'the-flaw', name: 'The Flaw', nudge: false,
+            val: 'neg',
             m: /flaw/i,
             tech: [{ s: 'Fw', l: 'The Flaw' }, { s: 'Hm', l: 'Hamartia' }],
             crit: [
@@ -215,6 +222,7 @@
         },
         {
             id: 'theme-stated', name: 'Theme Stated', nudge: true,
+            val: 'neu',
             m: /theme stated/i,
             tech: [{ s: 'Tz', l: 'Theme Stated' }, { s: 'Th', l: 'Theme' }],
             crit: [
@@ -230,6 +238,7 @@
         },
         {
             id: 'false-identity', name: 'False Identity', nudge: true,
+            val: 'neg',
             m: /false identity|anonymous|believes not worthy|unlikeable, inhumane|admirable, desirable/i,
             tech: [{ s: 'Dj', l: 'Duality' }, { s: 'Sy', l: 'Symbolism' }],
             crit: [
@@ -244,6 +253,7 @@
         },
         {
             id: 'foreshadow', name: 'Foreshadowing', nudge: true,
+            val: 'neg',
             m: /foreshadow/i,
             tech: [{ s: 'Fo', l: 'Foreshadowing' }, { s: 'Ck', l: 'Setup & Payoff' }],
             crit: [
@@ -258,6 +268,7 @@
         },
         {
             id: 'limited-awareness', name: 'Limited Awareness', nudge: false,
+            val: 'neg',
             m: /limited awareness|naive|ignorant|disconnected|immaturity|lacking responsibility/i,
             tech: [{ s: 'Pr', l: 'Protagonist' }, { s: 'Ir', l: 'In Medias Res' }],
             crit: [
@@ -271,6 +282,7 @@
         },
         {
             id: 'oppression', name: 'Oppression Over the Community', nudge: true,
+            val: 'neg',
             m: /oppressive|casts shadow over|mistreat|dark figures|community suffers|shadow over the community/i,
             tech: [{ s: 'Sd', l: 'The Shadow' }, { s: 'Mc', l: 'Microcosm' }],
             crit: [
@@ -285,6 +297,7 @@
         },
         {
             id: 'monster-distant', name: 'The Threat at a Distance', nudge: false,
+            val: 'neg',
             m: /monster from a distance|its reputation|aware of the monster|dangers ahead|threat becomes visible/i,
             tech: [{ s: 'Sd', l: 'The Shadow' }, { s: 'Sz', l: 'Suspense' }],
             crit: [
@@ -298,6 +311,7 @@
         },
         {
             id: 'gratification', name: 'Harmful Gratification', nudge: false,
+            val: 'neg',
             m: /gratification/i,
             tech: [{ s: 'Fw', l: 'The Flaw' }, { s: 'Az', l: 'Antihero' }],
             crit: [
@@ -311,6 +325,7 @@
         },
         {
             id: 'object-of-desire', name: 'The Object of Desire', nudge: true,
+            val: 'neu',
             m: /object of desire|focused on this object/i,
             tech: [{ s: 'Mk', l: 'MacGuffin' }, { s: 'Sy', l: 'Symbolism' }],
             crit: [
@@ -324,6 +339,7 @@
         },
         {
             id: 'warning-ignored', name: 'The Warning Ignored', nudge: false,
+            val: 'neg',
             m: /sign or warning|ignores this warning|receives sign|urging him to change/i,
             tech: [{ s: 'Fo', l: 'Foreshadowing' }, { s: 'Di', l: 'Dramatic Irony' }],
             crit: [
@@ -337,6 +353,7 @@
         },
         {
             id: 'call-to-adventure', name: 'The Call', nudge: false,
+            val: 'pos',
             m: /call to adventure|experiences a call|given supernatural|visionary direction|only he\/she can solve|calls or sends protagonist|inciting incident/i,
             tech: [{ s: 'Ii', l: 'Inciting Incident' }, { s: 'Hr', l: 'Herald' }],
             crit: [
@@ -351,6 +368,7 @@
         },
         {
             id: 'sees-way-to-fix', name: 'A Way to Fix It', nudge: false,
+            val: 'neu',
             m: /sees a way to fix|sees a way|way to fix it/i,
             tech: [{ s: 'Tu', l: 'Turning Point' }],
             crit: [
@@ -364,6 +382,7 @@
         },
         {
             id: 'general-goal', name: 'The Everyday Goal', nudge: false,
+            val: 'neu',
             m: /goal here is general|something normal/i,
             tech: [{ s: 'Pr', l: 'Protagonist' }],
             crit: [
@@ -377,6 +396,7 @@
         },
         {
             id: 'world-deteriorates', name: 'The World Deteriorates', nudge: false,
+            val: 'neg',
             m: /world deteriorates|increased awareness|need to change|increased awareness of need|sees more signs/i,
             tech: [{ s: 'Ra', l: 'Rising Action' }, { s: 'Tn', l: 'Tension' }],
             crit: [
@@ -392,6 +412,7 @@
         // ───────────────────────── STAGE II — DREAM ─────────────────────────
         {
             id: 'balance-deteriorates', name: 'The Balance Tips', nudge: false,
+            val: 'neg',
             m: /opening balance deteriorates|tension begins to rise/i,
             tech: [{ s: 'Tn', l: 'Tension' }, { s: 'Pc', l: 'Pacing' }],
             crit: [
@@ -405,6 +426,7 @@
         },
         {
             id: 'b-story', name: 'The B Story', nudge: false,
+            val: 'neu',
             m: /b story/i,
             tech: [{ s: 'Sl', l: 'Subplot' }, { s: 'Th', l: 'Theme' }],
             crit: [
@@ -418,6 +440,7 @@
         },
         {
             id: 'refusal', name: 'Refusing the Call', nudge: false,
+            val: 'neg', pri: 1,
             m: /refuses the call|refuses again|weakness revealed|stuck in ordinary world/i,
             tech: [{ s: 'Fw', l: 'The Flaw' }, { s: 'Ie', l: 'Internal vs External Conflict' }],
             crit: [
@@ -431,6 +454,7 @@
         },
         {
             id: 'mentor', name: 'The Mentor', nudge: false,
+            val: 'pos',
             m: /mentor/i,
             tech: [{ s: 'Mr', l: 'The Mentor' }, { s: 'Aa', l: 'Ally' }],
             crit: [
@@ -445,6 +469,7 @@
         },
         {
             id: 'prophecy', name: 'The Prophecy', nudge: true,
+            val: 'neg',
             m: /prophecy/i,
             tech: [{ s: 'Fo', l: 'Foreshadowing' }, { s: 'Wh', l: 'Withholding Information' }],
             crit: [
@@ -458,6 +483,7 @@
         },
         {
             id: 'the-sword', name: 'The Gift (the "Sword")', nudge: true,
+            val: 'pos',
             m: /presented with a sword|new clothes|receives crucial wisdom|apparent wisdom|ambiguous gifts/i,
             tech: [{ s: 'Mk', l: 'MacGuffin' }, { s: 'Sy', l: 'Symbolism' }],
             crit: [
@@ -472,6 +498,7 @@
         },
         {
             id: 'facade-goal', name: 'The Façade Goal', nudge: false,
+            val: 'neg',
             m: /façade|facade|very simple problem/i,
             tech: [{ s: 'Dj', l: 'Duality' }, { s: 'Su', l: 'Subtext' }],
             crit: [
@@ -485,6 +512,7 @@
         },
         {
             id: 'the-wound', name: 'The Wound', nudge: false,
+            val: 'neg',
             m: /painful past experience|emotional wound|repressed emotional/i,
             tech: [{ s: 'Fb', l: 'Flashback' }, { s: 'Fw', l: 'The Flaw' }],
             crit: [
@@ -499,6 +527,7 @@
         },
         {
             id: 'herald', name: 'The Herald', nudge: false,
+            val: 'pos',
             m: /herald/i,
             tech: [{ s: 'Hr', l: 'Herald' }],
             crit: [
@@ -512,6 +541,7 @@
         },
         {
             id: 'epiphany', name: 'Epiphany', nudge: true,
+            val: 'pos',
             m: /epiphany|enlightened|genuine insight|deeper realisation/i,
             tech: [{ s: 'Ng', l: 'Anagnorisis' }, { s: 'Tu', l: 'Turning Point' }],
             crit: [
@@ -527,6 +557,7 @@
         },
         {
             id: 'threshold', name: 'Crossing the Threshold', nudge: true,
+            val: 'pos',
             m: /crosses the threshold|threshold|into the special world|set out across/i,
             tech: [{ s: 'Gd', l: 'Threshold Guardian' }, { s: 'Tu', l: 'Turning Point' }],
             crit: [
@@ -541,6 +572,7 @@
         },
         {
             id: 'glimpse-true-self', name: 'A Glimpse of the True Self', nudge: false,
+            val: 'pos',
             m: /glimpse of (his\/her )?true self|glimpse of true self|warmer humanity|potential to change/i,
             tech: [{ s: 'Hn', l: 'Moment of Humanity' }, { s: 'Dj', l: 'Duality' }],
             crit: [
@@ -554,6 +586,7 @@
         },
         {
             id: 'stunning-surprise', name: 'The Stunning Surprise', nudge: false,
+            val: 'neg',
             m: /stunning surprise|something shocking|another shock|destroys the plan/i,
             tech: [{ s: 'Tw', l: 'Surprise' }, { s: 'Pt', l: 'Plot Twist' }, { s: 'Ux', l: 'Subverted Expectation' }],
             crit: [
@@ -567,6 +600,7 @@
         },
         {
             id: 'allies', name: 'The Allies', nudge: false,
+            val: 'pos',
             m: /allies|companions|ally appears|small group/i,
             tech: [{ s: 'Aa', l: 'Ally' }, { s: 'Fl', l: 'Foil' }],
             crit: [
@@ -580,6 +614,7 @@
         },
         {
             id: 'physical-attack', name: 'The First Attack', nudge: false,
+            val: 'neg',
             m: /physical attack|receives a warning|suffers a|attacked again|resistance does not work/i,
             tech: [{ s: 'Cf', l: 'Conflict' }, { s: 'Sk', l: 'Stakes' }],
             crit: [
@@ -593,6 +628,7 @@
         },
         {
             id: 'dark-force-rising', name: 'The Dark Force Rising', nudge: false,
+            val: 'neg',
             m: /dark force|rise to power|consequences if they do not change|reminds protagonist of need/i,
             tech: [{ s: 'Sd', l: 'The Shadow' }, { s: 'Ra', l: 'Rising Action' }],
             crit: [
@@ -608,6 +644,7 @@
         // ───────────────────── STAGE III — FASCINATION ─────────────────────
         {
             id: 'special-world', name: 'The Special World', nudge: false,
+            val: 'pos',
             m: /excited or fascinated by the new world/i,
             tech: [{ s: 'Wb', l: 'Secondary World' }, { s: 'Se', l: 'Setting' }],
             crit: [
@@ -622,6 +659,7 @@
         },
         {
             id: 'betrayal', name: 'The Betrayal', nudge: false,
+            val: 'neg',
             m: /betray/i,
             tech: [{ s: 'Sw', l: 'Shapeshifter' }, { s: 'Pt', l: 'Plot Twist' }],
             crit: [
@@ -635,6 +673,7 @@
         },
         {
             id: 'underworld', name: 'Into the Underworld', nudge: true,
+            val: 'neg',
             m: /underworld|inmost cave|deepest fears|inner demons/i,
             tech: [{ s: 'Ml', l: 'Mental Landscape' }, { s: 'Sy', l: 'Symbolism' }],
             crit: [
@@ -649,6 +688,7 @@
         },
         {
             id: 'elixir', name: 'The Elixir', nudge: true,
+            val: 'pos',
             m: /elixir/i,
             tech: [{ s: 'Mk', l: 'MacGuffin' }, { s: 'Sy', l: 'Symbolism' }],
             crit: [
@@ -662,6 +702,7 @@
         },
         {
             id: 'false-dawn', name: 'The False Dawn', nudge: false,
+            val: 'pos',
             m: /all seems to be going well|all may seem to go well|immune from danger|getting away with it|seems to be winning|threat recedes|comfortable and immune/i,
             tech: [{ s: 'Ux', l: 'Subverted Expectation' }, { s: 'Di', l: 'Dramatic Irony' }],
             crit: [
@@ -675,6 +716,7 @@
         },
         {
             id: 'storm-coming', name: 'A Storm is Coming', nudge: true,
+            val: 'neg',
             m: /a storm is coming|onset of evil|something threatening|shadow begins to intrude/i,
             tech: [{ s: 'Pf', l: 'Pathetic Fallacy' }, { s: 'Md', l: 'Mood' }],
             crit: [
@@ -689,6 +731,7 @@
         },
         {
             id: 'mood-turns', name: 'The Mood Turns', nudge: false,
+            val: 'neg',
             m: /mood changes|things (begin to |continue to )?go wrong|going downhill|frustrat|begins to feel/i,
             tech: [{ s: 'Md', l: 'Mood' }, { s: 'Ta', l: 'Tone' }],
             crit: [
@@ -702,6 +745,7 @@
         },
         {
             id: 'obstacles', name: 'Rising Obstacles', nudge: false,
+            val: 'neg',
             m: /obstacles|crises|temptations|monsters|tests|experimenting and learning/i,
             tech: [{ s: 'Ra', l: 'Rising Action' }, { s: 'Cf', l: 'Conflict' }],
             crit: [
@@ -715,6 +759,7 @@
         },
         {
             id: 'villain-advances', name: 'The Opposition Advances', nudge: false,
+            val: 'neg',
             m: /advances like a bulldozer|villain advances|monster advances|opposition advances|demonstrates his power|demonstrate their power|demonstrates its power/i,
             tech: [{ s: 'Ax', l: 'Antagonist' }, { s: 'Nm', l: 'Nemesis' }],
             crit: [
@@ -728,6 +773,7 @@
         },
         {
             id: 'guidance', name: 'Rest and Guidance', nudge: false,
+            val: 'pos',
             m: /periods of rest|advice from mentors|gives guidance|shows him the consequences|contact spirits|has faith/i,
             tech: [{ s: 'Mr', l: 'The Mentor' }, { s: 'Pc', l: 'Pacing' }],
             crit: [
@@ -741,6 +787,7 @@
         },
         {
             id: 'approach', name: 'Within Sight of the Goal', nudge: false,
+            val: 'neu',
             m: /within sight of goal|arrives within|approach to|preparations|becomes committed|goal becomes much more specific/i,
             tech: [{ s: 'Ra', l: 'Rising Action' }, { s: 'Tn', l: 'Tension' }],
             crit: [
@@ -754,6 +801,7 @@
         },
         {
             id: 'powerless', name: 'Losing Hold of the Old Self', nudge: false,
+            val: 'neg',
             m: /seems powerless|terrible and disgusted|letting go of old self|more open to change|seems tiny and alone/i,
             tech: [{ s: 'Dj', l: 'Duality' }, { s: 'Ie', l: 'Internal vs External Conflict' }],
             crit: [
@@ -767,6 +815,7 @@
         },
         {
             id: 'ticking-clock', name: 'The Ticking Clock', nudge: false,
+            val: 'neg',
             m: /time is running out|closing in/i,
             tech: [{ s: 'Tc', l: 'Ticking Clock' }, { s: 'Pc', l: 'Pacing' }],
             crit: [
@@ -782,6 +831,7 @@
         // ───────────────────── STAGE IV — NIGHTMARE ─────────────────────
         {
             id: 'lowest-point', name: 'The Lowest Point (Dark Night)', nudge: true,
+            val: 'neg',
             m: /lowest point|despair|retreats to false identity|out of control|compelled to run away|compelled to commit dark acts|things will never be the same/i,
             tech: [{ s: 'Dk', l: 'Dark Night' }, { s: 'Ml', l: 'Mental Landscape' }],
             crit: [
@@ -797,6 +847,7 @@
         },
         {
             id: 'nightmare-battle', name: 'The Nightmare Battle', nudge: true,
+            val: 'neg',
             m: /nightmare battle|supreme ordeal|final .*(battle|ordeal) approaches|battle to defeat the old self|face to face with the monster|awesome power/i,
             tech: [{ s: 'Cl', l: 'Climax' }, { s: 'Ie', l: 'Internal vs External Conflict' }],
             crit: [
@@ -810,6 +861,7 @@
         },
         {
             id: 'allies-disagree', name: 'The Allies Break', nudge: false,
+            val: 'neg',
             m: /allies disagree|separated from what|allies abandon|obstacles, crises with those once close/i,
             tech: [{ s: 'Cf', l: 'Conflict' }, { s: 'Fl', l: 'Foil' }],
             crit: [
@@ -823,6 +875,7 @@
         },
         {
             id: 'cornered', name: 'Cornered', nudge: false,
+            val: 'neg',
             m: /cornered the protagonist|only one outcome|serious threat to hero|threat to hero's survival|shadow's clutches|monster's clutches|may fall into/i,
             tech: [{ s: 'Sk', l: 'Stakes' }, { s: 'Sz', l: 'Suspense' }],
             crit: [
@@ -836,6 +889,7 @@
         },
         {
             id: 'shadow-dominates', name: 'The Shadow Dominates', nudge: false,
+            val: 'neg',
             m: /begins to dominate|powerful forces unleashed|shadowy figure|dark power/i,
             tech: [{ s: 'Sd', l: 'The Shadow' }, { s: 'Md', l: 'Mood' }],
             crit: [
@@ -849,6 +903,7 @@
         },
         {
             id: 'greater-crises', name: 'Greater Crises', nudge: false,
+            val: 'neg', pri: 1,
             m: /greater crises|everything suddenly goes wrong|suddenly realises/i,
             tech: [{ s: 'Ra', l: 'Rising Action' }, { s: 'Pc', l: 'Pacing' }],
             crit: [
@@ -864,6 +919,7 @@
         // ───────────────────── STAGE V — FINAL PUSH ─────────────────────
         {
             id: 'reversal', name: 'The Reversal', nudge: true,
+            val: 'pos',
             m: /reversal|brings protagonist back to life|comes back from (the )?dead|comes back from dead/i,
             tech: [{ s: 'Rv', l: 'Peripeteia' }, { s: 'Dx', l: 'Deus Ex Machina' }],
             crit: [
@@ -878,6 +934,7 @@
         },
         {
             id: 'new-information', name: 'New Information', nudge: false,
+            val: 'pos',
             m: /new information|second catalyst|choice to continue/i,
             tech: [{ s: 'Nw', l: 'Fresh News' }, { s: 'Tu', l: 'Turning Point' }],
             crit: [
@@ -891,6 +948,7 @@
         },
         {
             id: 'seizes-sword', name: 'Seizing the Sword', nudge: true,
+            val: 'pos',
             m: /seizes the sword|accepts new identity|steps beyond false identity|discovers his\/her own true power|discovers his|true power/i,
             tech: [{ s: 'Sy', l: 'Symbolism' }, { s: 'Dj', l: 'Duality' }],
             crit: [
@@ -905,6 +963,7 @@
         },
         {
             id: 'surpasses-mentor', name: 'Surpassing the Mentor', nudge: false,
+            val: 'neu', pri: 1,
             m: /surpasses the mentor|surpasses the dark mentor|mentor sacrifices|mentor fights|mentor dies/i,
             tech: [{ s: 'Mr', l: 'The Mentor' }, { s: 'Ck', l: 'Setup & Payoff' }],
             crit: [
@@ -918,6 +977,7 @@
         },
         {
             id: 'self-sacrifice', name: 'Willing to Sacrifice', nudge: true,
+            val: 'pos',
             m: /willing to sacrifice|sacrifice for others|decides to die with honour/i,
             tech: [{ s: 'Hn', l: 'Moment of Humanity' }, { s: 'Ct', l: 'Catharsis' }],
             crit: [
@@ -932,6 +992,7 @@
         },
         {
             id: 'villain-weakness', name: 'The Antagonist’s Weakness', nudge: false,
+            val: 'pos',
             m: /understands the .*weakness|weakness/i,
             tech: [{ s: 'Ax', l: 'Antagonist' }, { s: 'Nm', l: 'Nemesis' }],
             crit: [
@@ -945,6 +1006,7 @@
         },
         {
             id: 'villain-accuses', name: '"You Are the Same as Me"', nudge: true,
+            val: 'neg',
             m: /accuses protagonist of being the same|not fooled|accuses opponents|opponent does not listen/i,
             tech: [{ s: 'Fl', l: 'Foil' }, { s: 'Dj', l: 'Duality' }],
             crit: [
@@ -958,6 +1020,7 @@
         },
         {
             id: 'nick-of-time', name: 'In the Nick of Time', nudge: false,
+            val: 'pos',
             m: /nick of time|struggles to escape|thrilling escape/i,
             tech: [{ s: 'Tc', l: 'Ticking Clock' }, { s: 'Pc', l: 'Pacing' }],
             crit: [
@@ -971,6 +1034,7 @@
         },
         {
             id: 'fatal-blow', name: 'The Fatal Blow', nudge: false,
+            val: 'pos',
             m: /fatal blow|final attempt|goal is won|allies pull out|emerges to win/i,
             tech: [{ s: 'Cl', l: 'Climax' }, { s: 'Og', l: 'Obligatory Scene' }],
             crit: [
@@ -984,6 +1048,7 @@
         },
         {
             id: 'tragic-acceptance', name: 'Accepting the Fate', nudge: false,
+            val: 'neg',
             m: /accepts his\/her fate|reflects on past mistakes|expresses regret|forces of opposition and fate/i,
             tech: [{ s: 'Ct', l: 'Catharsis' }, { s: 'Hm', l: 'Hamartia' }],
             crit: [
@@ -999,6 +1064,7 @@
         // ───────────────────── STAGE VI — AFTERMATH ─────────────────────
         {
             id: 'final-image', name: 'The Final Image', nudge: true,
+            val: 'pos', pri: 1,
             m: /final image/i,
             tech: [{ s: 'Cy', l: 'Cyclical Structure' }, { s: 'Zi', l: 'Zoom-In / Zoom-Out Ending' }],
             crit: [
@@ -1014,6 +1080,7 @@
         },
         {
             id: 'how-much-learnt', name: 'How Much Have They Learnt?', nudge: false,
+            val: 'pos',
             m: /how much has the protagonist learnt|grown or was it all just a dream|changed or was it all just a dream/i,
             tech: [{ s: 'Th', l: 'Theme' }, { s: 'Rn', l: 'Resolved Ending' }],
             crit: [
@@ -1027,6 +1094,7 @@
         },
         {
             id: 'balance-restored', name: 'Balance Restored', nudge: false,
+            val: 'pos',
             m: /community is liberated|balance is restored|establish a community|reconnecting with humanity|appears whole|role in the kingdom/i,
             tech: [{ s: 'De', l: 'Denouement' }, { s: 'Mc', l: 'Microcosm' }],
             crit: [
@@ -1040,6 +1108,7 @@
         },
         {
             id: 'return-with-elixir', name: 'Returning with the Elixir', nudge: true,
+            val: 'pos', pri: 1,
             m: /returns with (the )?elixir|newfound wisdom|mastered himself|finds fulfillment/i,
             tech: [{ s: 'Mk', l: 'MacGuffin' }, { s: 'Sy', l: 'Symbolism' }],
             crit: [
@@ -1053,6 +1122,7 @@
         },
         {
             id: 'tragic-death', name: 'The Death, and the Response', nudge: true,
+            val: 'neg',
             m: /is killed by forces|final act of violence|rejoice in or mourn|if they mourn|if they don’t learn|if they don't learn|same problem likely/i,
             tech: [{ s: 'Ct', l: 'Catharsis' }, { s: 'Th', l: 'Theme' }],
             crit: [
@@ -1067,5 +1137,53 @@
         },
     ];
 
-    window.WML_CW6_CONCEPTS = { STAGES: STAGES, CONCEPTS: CONCEPTS };
+    // ── VALENCE (Neil, 2026-08-01) ────────────────────────────────────────────────────────────
+    // Every beat carries a direction: does this moment take the story DOWN, UP, or neither? Neil's
+    // own coloured plot documents did this on paper, and the reason is the teaching: tension is not
+    // a run of bad events, it is the OSCILLATION between them. A student who can see
+    // `- - - - o - +` down the margin can see the shape they are meant to be building.
+    //
+    // ⭐ SET ON THE CONCEPT, NEVER THE ROW. The 8 templates hold 801 beat rows and they resolve to
+    // these 70 concepts, so this is 70 judgements rather than 800 (WML CLAUDE.md §4c.9,
+    // "map to concepts, never author per row").
+    //
+    // `valBy` overrides per archetype. Tragedy is the only real consumer: it starts at the height
+    // and ends in ruin, where the other seven are hero's-journey variants that start down and end
+    // up. Neil: "tragedy starts in a positive state with a question mark, but ends negative...
+    // whereas all the others are the opposite."
+    const VALENCES = { pos: 'positive', neg: 'negative', neu: 'neutral' };
+
+    // ⚠️ PRIORITY, and why it exists. `conceptFor()` takes the FIRST regex match over this array,
+    // and the order was never checked for specificity — so six concepts were UNREACHABLE: 63 rows
+    // across the 8 templates resolved to a more general concept that appears earlier, and served
+    // its criteria, its worked example and its technique chips instead. The worst was 24 rows of
+    // "Hero surpasses the Mentor" being told a mentor is "someone who has BEEN where your
+    // protagonist is going" — the opposite of what that beat asks for. `pri: 1` lifts a specific
+    // concept above the general one that was eating it. Enforced by bin/cw6-outline-harness.js,
+    // which now FAILS if any concept wins zero rows.
+    function conceptFor(label, prompt) {
+        const hay = (label || '') + ' — ' + (prompt || '');
+        let best = null;
+        for (let k = 0; k < CONCEPTS.length; k++) {
+            const c = CONCEPTS[k];
+            if (!c.m.test(hay)) continue;
+            if (!best || (c.pri || 0) > (best.pri || 0)) best = c;
+        }
+        return best;
+    }
+    // The whole point of deriving this at RENDER time rather than baking it into the saved
+    // document: the outline scaffold is baked, so a stamped attribute would style only NEW
+    // documents and leave every existing one needing a migration
+    // (reference_wml_outline_scaffold_baked_needs_onload_heal). Resolved from the criterion the
+    // NodeView already holds, every valence edit reaches every existing document on next load,
+    // and nothing is written to a ProseMirror node at all.
+    function valenceFor(label, prompt, archetypeKey) {
+        const c = conceptFor(label, prompt);
+        if (!c || !c.val) return '';
+        const over = c.valBy && archetypeKey && c.valBy[archetypeKey];
+        return over || c.val;
+    }
+
+    window.WML_CW6_CONCEPTS = { STAGES: STAGES, CONCEPTS: CONCEPTS, VALENCES: VALENCES,
+        conceptFor: conceptFor, valenceFor: valenceFor };
 })();

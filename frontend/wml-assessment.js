@@ -33405,6 +33405,8 @@
                         criteriaEl.appendChild(aoTag);
                     }
 
+                    _appendBeatValence(criteriaEl, crit);
+
                     if (crit.label) {
                         const labelEl = document.createElement('span');
                         labelEl.className = 'swml-outline-criterion-label';
@@ -43941,6 +43943,45 @@
      * @param {string} fieldId - unique TipTap field ID
      * @returns {string} HTML for the row
      */
+    // ── v7.20.374 — BEAT VALENCE (Neil, 2026-08-01) ──────────────────────────────────────────────
+    // "We actually coloured the beats according to whether they were positive, negative, or
+    // neutral… that's part of how you create tension, because you have these negative things, and
+    // it switches to positive." A dot in the criteria margin, so a student can scan a stage and SEE
+    // the oscillation they are meant to be building. Brand status ramp (BRAND.md §517): red for
+    // negative, green for positive, grey for neutral — Neil's ruling, and it is the documented ramp.
+    //
+    // ⭐ DERIVED AT RENDER, NEVER BAKED INTO THE DOCUMENT. The outline scaffold IS baked
+    // (reference_wml_outline_scaffold_baked_needs_onload_heal), so stamping an attribute at build
+    // time would style only NEW documents and leave every existing one needing a migration.
+    // Resolving it from the criterion the renderer already holds means every existing document picks
+    // it up on the next load, one valence edit reaches all of them at once, and NOTHING is written
+    // to a ProseMirror node — so it cannot trip the foreign-mutation redraw loop (v7.19.866).
+    //
+    // ⭐ ONE HELPER, BOTH RENDERERS. The criteria column is built in TWO places — the NodeView and
+    // `injectOutlineCriteria()` — and they are near-identical. Adding the dot to one would have
+    // shipped a mark that the other silently never draws: the canvas dual-pipeline failure class
+    // (WML CLAUDE.md, "both pipelines must call it"). Self-guarding rather than task-gated: it asks
+    // the concept map and does nothing when there is no valence, so every non-CW6 outline family
+    // (literature, para-AO, IUMVCC) renders byte-identically to before.
+    function _appendBeatValence(criteriaEl, crit) {
+        try {
+            const CM6 = window.WML_CW6_CONCEPTS;
+            if (!CM6 || typeof CM6.valenceFor !== 'function' || !crit || !crit.label) return;
+            const arch = (typeof detectBuiltPlotSlug === 'function' && canvasEditor)
+                ? detectBuiltPlotSlug(canvasEditor) : null;
+            const val = CM6.valenceFor(crit.label, crit.prompt, arch);
+            if (!val) return;
+            criteriaEl.setAttribute('data-valence', val);
+            const dot = document.createElement('i');
+            dot.className = 'swml-beat-valence';
+            dot.setAttribute('aria-hidden', 'true');
+            // The WORD, not the colour. A mark that only means something if you can distinguish hue
+            // is no use to a colour-blind student, and this one carries real teaching.
+            dot.title = (CM6.VALENCES && CM6.VALENCES[val]) || val;
+            criteriaEl.appendChild(dot);
+        } catch (e) { /* a missing concept map must never cost the row its label */ }
+    }
+
     function outlineRowHTML(criterion, fieldId) {
         // v7.14.70: Emit a registered OutlineRow node — nodeView renders the two-column layout.
         // Criteria stored as JSON attribute, parsed by the nodeView to build the read-only column.
@@ -51864,6 +51905,8 @@
                 aoTag.textContent = crit.ao;
                 criteriaEl.appendChild(aoTag);
             }
+
+            _appendBeatValence(criteriaEl, crit);
 
             if (crit.label) {
                 const labelEl = document.createElement('span');
