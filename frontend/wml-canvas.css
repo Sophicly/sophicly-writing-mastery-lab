@@ -118,7 +118,7 @@
     height: 100vh;
     z-index: 9985;
     overflow: hidden;
-    background: #1c1d1f; /* #16181d — Opaque backdrop prevents shader flash on transition */
+    background: #151617; /* v7.20.386: PAGE BEHIND (BRAND.md ladder), not Dark Base. Opaque backdrop prevents shader flash on transition. */
 }
 /* v7.13.78: Force LearnDash content area to fill viewport when WML is embedded */
 body.swml-embedded-active .spl-content {
@@ -239,19 +239,35 @@ body.swml-fullscreen-active #swml-canvas-overlay.swml-canvas-embedded {
 }
 body.swml-fullscreen-active { overflow: hidden !important; }
 
-/* ⭐ CANVAS DARK-THEME SURFACE LADDER (v7.20.181, Neil) — borderless; separation by ELEVATION, not lines.
-   Three intentional tiers of ONE cool-neutral hue (never a hue-contrast accent):
-     • base   #1c1d1f — .swml-canvas container / gutter (+ chat-header, chat-messages)
-     • chrome #212225 — .swml-canvas-header, .swml-canvas-plan (sidebar), .swml-canvas-status (footer)
-     • sheet  #28292b — .swml-canvas-doc (writing paper) + .swml-outline-panel popover  ← lightest = focal
-   Chrome sits BETWEEN base and sheet so the writing sheet stays the brightest focal plane.
-   Light theme has its own overrides (rgba white washes) — do NOT fold these hex values into it. */
+/* ⭐⭐ CANVAS DARK-THEME SURFACE LADDER — v7.20.386 (Neil). Borderless; separation by ELEVATION.
+   ⚠️ THESE ARE NOT WML'S COLOURS. They are the SITE's, ruled in sophicly-plugins/BRAND.md line 53
+   (Neil, 2026-06-10) — do not invent a new one here, and do not re-tune these by eye:
+     • #101112 — sidebar, darkest        (LearnDash focus sidebar)
+     • #151617 — PAGE BEHIND             .swml-canvas container / gutter / editor / overlay backdrop
+     • #1c1d1f — DARK BASE, cards/panels .swml-canvas-header · -plan (sidebar) · -status (footer) ·
+                                          -chat (+ its header/messages) · the LD header + content bg
+     • #242628 — RAISED ON BASE          .swml-canvas-doc (writing paper) · .swml-outline-panel ·
+                                          AI bubbles · inputs  ← lightest = focal
+   Neutral, NOT purple-tinted. Pure #000 is forbidden (BRAND.md line 105) — the page behind is #151617.
+
+   WHY THIS REPLACED THE v7.20.181 THREE-TIER VERSION. That ladder invented `#212225` (chrome) and
+   `#28292b` (sheet) — values used nowhere else on the site — and put Dark Base in the PAGE-BEHIND
+   role, which BRAND.md assigns to #151617. Meanwhile the LearnDash focus theme this canvas is
+   EMBEDDED IN ran a third family of its own (`#22282A` / `#2E3436` / `#383E40`, labelled "warm
+   charcoal" in its CSS): cool-cast greys at nearly the same lightness as WML's neutral ones.
+   Two families meeting on a hard edge — the LD header against the canvas header, the LD sidebar
+   against the gutter — at ~5 units of lightness apart. Too close to read as two deliberate layers,
+   too different in cast to read as one surface, so the eye files the join as inconsistency.
+   That is the "too many shades" Neil could see but not name (2026-08-01). The fix was not a new
+   grey: it was putting every surface, on BOTH sides of the embed, onto the ladder that already
+   existed. The LD side is set in etch-theme-child/assets/css/sophicly-focus-mode.css (--spl-*).
+   Light theme has its own overrides (white + rgba washes) — do NOT fold these hex values into it. */
 .swml-canvas {
     display: flex;
     gap: 0;
     width: 100%;
     height: 100%;
-    background: #1c1d1f; /* #16181d */
+    background: #151617; /* v7.20.386: PAGE BEHIND — the plane every panel sits ON. */
     overflow: hidden;
 }
 /* Dark/light theme for canvas */
@@ -308,8 +324,8 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 /* Dark mode only: explicit backgrounds for chat area (v7.12.72) */
 .swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-header,
 .swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-messages { background-color: #1c1d1f; }
-/* v7.20.181 (Neil): status footer joins the shared chrome tier (#212225) — matches header + plan panel. */
-.swml-canvas:not(.swml-canvas-light) .swml-canvas-status { background-color: #212225; }
+/* v7.20.181 (Neil): status footer joins the shared chrome tier (#1c1d1f) — matches header + plan panel. */
+.swml-canvas:not(.swml-canvas-light) .swml-canvas-status { background-color: #1c1d1f; }
 
 /* ── Editor Pane ── */
 .swml-canvas-editor {
@@ -318,7 +334,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     flex-direction: column;
     min-width: 0;
     position: relative;
-    background: #1c1d1f; /* #16181d */
+    background: #151617; /* v7.20.386: PAGE BEHIND — the gutter the writing sheet floats on. */
     transition: flex 0.6s cubic-bezier(0.16,1,0.3,1), margin 0.6s cubic-bezier(0.16,1,0.3,1);
 }
 .swml-canvas-light .swml-canvas-editor {
@@ -348,7 +364,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     width: 720px;
     flex-shrink: 0; /* Never CSS-shrink — auto-fit uses transform: scale() */
     margin: 0 auto 40px;
-    background: #28292b; /* #343440 */
+    background: #242628; /* #343440 */
     /* v7.20.180 (Neil): removed the left/right page borders — the doc reads cleaner as a
        floating sheet on the shader bg (the box-shadow already defines the edge). */
     padding: 48px 56px;
@@ -395,9 +411,9 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 .swml-canvas-doc .rm-pagination-gap {
     border: none !important;
-    background: #1c1d1f;
-    border-left: 1px solid #1c1d1f !important;
-    border-right: 1px solid #1c1d1f !important;
+    background: #151617;
+    border-left: 1px solid #151617 !important;
+    border-right: 1px solid #151617 !important;
     position: relative;
     left: -1px;
     background-color: #1c1d1f;
@@ -926,7 +942,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 .swml-comment-reply input {
     flex: 1;
-    background: #28292b;
+    background: #242628;
     border: 1px solid oklch(0.38 0.01 270);
     border-radius: 8px;
     padding: 6px 10px;
@@ -1658,7 +1674,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     justify-content: space-between;
     gap: 6px;
     padding: 8px 12px;
-    background: #212225; /* v7.20.181 (Neil): shared chrome tier — one step above the #1c1d1f canvas base, below the #28292b sheet. Was #1c1d1f. */
+    background: #1c1d1f; /* v7.20.181 (Neil): shared chrome tier — one step above the #1c1d1f canvas base, below the #242628 sheet. Was #1c1d1f. */
     /* v7.20.181 (Neil): canvas-header bottom border removed — cleaner edge. */
     flex-shrink: 0;
     height: 50px;
@@ -2142,7 +2158,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     max-height: calc(100vh - 140px);
     margin: 0;
     border-radius: 10px;
-    background: #28292b; /* v7.14.47: match document alt colour — no backdrop-filter (Chrome flickers) */
+    background: #242628; /* v7.14.47: match document alt colour — no backdrop-filter (Chrome flickers) */
     /* v7.20.181 (Neil): outline-panel border removed — cleaner edge (borderless chrome). */
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     z-index: 10;
@@ -4083,7 +4099,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     width: 380px;
     flex-shrink: 0;
     border-left: none;
-    background: #212225; /* chrome tier — matches .swml-canvas-plan / -header / -status */
+    background: #1c1d1f; /* chrome tier — matches .swml-canvas-plan / -header / -status */
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -4091,16 +4107,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 [data-swml-theme="light"] .swml-canvas-chat,
 .swml-canvas-light .swml-canvas-chat { background: var(--swml-bg); }
-/* v7.20.384 (Neil: "I think there's too many shades now… a little bit more minimalistic").
-   His values, verbatim. ⚠️ ONE DISCLOSED ADDITION: his rule covers the header and the messages,
-   but NOT `.swml-canvas-chat` itself — and the input strip at the bottom has no background of its
-   own, so it would have shown the #212225 root as a visible band under the messages. That is one
-   more shade, the opposite of the ask, and he would have seen it the moment he opened it. The root
-   takes the same value so the whole column reads as ONE surface. Dark only; light untouched. */
-.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat,
-.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-header,
-.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-messages {
-    background-color: #22282A;
+/* v7.20.386: the .384 `#22282A` block is GONE. It was the LearnDash focus theme's own
+   "warm charcoal" ground, reached for by eye to fix bubble contrast — a third colour family on a
+   screen that already had two. The canvas now runs on the BRAND.md ladder instead (see the block
+   at the top of this file), so the chat column is Dark Base like every other panel. */
+.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat {
+    background-color: #1c1d1f;
 }
 .swml-canvas-chat-header {
     padding: 8px 12px;
@@ -4164,17 +4176,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     max-width: 95%;
     overflow-x: hidden;
 }
-/* v7.20.383 (Neil chose Option B from the comparison artifact). Moving the panel to the chrome tier
-   above would have cut the AI bubble's step from 12 points (#28292b on the old #1c1d1f base) to 7
-   (#28292b on #212225), flattening them. Lifting the bubble one step restores the original 12 and
-   makes it the brightest plane in the chat column — which is right: the bubble IS the content.
-   ⚠️ SCOPED to the canvas chat, and DARK ONLY, on purpose. `--swml-bubble-ai-bg` is shared with the
-   main planning chat (the dual-pipeline rule) whose panel did NOT move, so re-pointing the token
-   would have shifted a surface nobody asked about. Light is untouched per Neil's ruling. */
-[data-swml-theme="dark"] .swml-canvas-chat-messages .swml-bubble.ai .swml-bubble-content,
-.swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-messages .swml-bubble.ai .swml-bubble-content {
-    background: #2e2f32;
-}
+/* v7.20.386: the .383 `#2e2f32` bubble lift is GONE. It only ever existed to claw back contrast the
+   `#1c1d1f` chrome tier had taken away — a hand-tuned fifth grey compensating for a fourth. On the
+   BRAND.md ladder the bubble is simply RAISED-ON-BASE (`--swml-bubble-ai-bg` = #242628) sitting on
+   Dark Base (#1c1d1f): an 8-point step that comes from the ruled ladder, not from an eyedropper. */
 .swml-canvas-chat-messages .swml-bubble-body {
     overflow-x: auto;
     max-width: 100%;
@@ -4476,7 +4481,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-input-wrapper:focus-within::after { opacity: 0.35; }
 .swml-canvas-input-inner {
     display: flex; gap: 8px;
-    background: #28292b; /* #343440 — dark mode default */
+    background: #242628; /* #343440 — dark mode default */
     border-radius: 12px;
     padding: 8px 12px;
     align-items: flex-end;
@@ -4603,7 +4608,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     gap: 4px;
     flex-wrap: wrap;
     width: 120px;
-    background: #28292b;
+    background: #242628;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5);
@@ -4872,7 +4877,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     width: 300px;
     flex-shrink: 0;
     /* v7.20.181 (Neil): plan-panel left border removed — cleaner edge. */
-    background: #212225; /* v7.20.181 (Neil): shared chrome tier — matches the header; distinct from the #1c1d1f base + #28292b sheet. Was rgba(0,0,0,0.2). */
+    background: #1c1d1f; /* v7.20.181 (Neil): shared chrome tier — matches the header; distinct from the #1c1d1f base + #242628 sheet. Was rgba(0,0,0,0.2). */
     overflow-y: auto;
     padding: 20px 16px;
 }
@@ -6048,7 +6053,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 /* v7.20.356 — BRAND PASS (Neil, 2026-07-30: "use our brand colours, especially #1c1d1f
    for dark theme"). What was off-brand and why each value moved:
      · #202128 was a FOURTH ad-hoc dark. The canvas ladder is base #1c1d1f / chrome
-       #212225 / sheet #28292b, and its own rule is "don't invent a 4th colour"
+       #1c1d1f / sheet #242628, and its own rule is "don't invent a 4th colour"
        (reference_wml_canvas_dark_theme_surface_ladder). This card floats above
        everything, so it takes the darkest tier — base — and its shadow does the
        separating, which is the borderless-by-elevation principle.
@@ -6829,7 +6834,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-toc {
     padding: 60px 56px 48px;
     margin: 0;
-    background: #28292b; /* #343440 */
+    background: #242628; /* #343440 */
     height: 1020px; /* match pagination page height */
     box-sizing: border-box;
     display: flex;
@@ -9039,7 +9044,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     box-shadow: 0 0 0 2px rgba(255, 180, 50, 0.3);
 }
 .swml-dropdown-select option {
-    background: #28292b;
+    background: #242628;
     color: #fff;
     font-weight: 600;
 }
@@ -10401,7 +10406,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 
 /* ── Light mode tooltip ── */
 .swml-canvas-light .swml-copy-assess::after {
-    background-color: #28292b !important;
+    background-color: #242628 !important;
     background-image: none !important;
     color: #fff !important;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
