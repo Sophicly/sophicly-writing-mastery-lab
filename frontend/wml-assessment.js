@@ -4964,6 +4964,61 @@
             });
         }).catch(function () { return ''; });
     }
+    // ⭐ v7.20.403 (FIXLIST #165, the half .400 could not reach) — A DERIVED ENTRY LINE ON EVERY
+    // STEP-6 ENTRY.
+    //
+    // .400 fixed the greeting's RESOLVER. It did not fix the fact that a student with history never
+    // sees a greeting at all: the "Welcome back" line is DOM-only by design (v7.20.324, correct —
+    // it names a mutable value) and is DRAWN only on the no-saved-chat branch. Measured on Neil's
+    // own staging project `cwp_455a486fcfa6`: 41 stored turns, turn 1 is his OWN answer — no
+    // greeting turn exists, so nothing has named his plot structure since the day he started.
+    // A stored-turn fix cannot reach those projects; a derived one reaches every project with no
+    // migration, which is why this is the shape.
+    //
+    // LAWS IT OBEYS:
+    //  • §4c.7 fossil law — DRAWN, never recorded. It asserts a PRESENT STATE ("we're building X"),
+    //    so it must re-derive on entry; a stored copy would lie the moment they re-pick in Step 5.
+    //  • §4d liveness — it is never the last thing on screen: the caller awaits it BEFORE
+    //    `tryResume()`, so the walk's own ask (or its chips) always lands underneath.
+    //  • #14 never show a raw machine value — no name resolves, no line. It is an orientation
+    //    sentence, not a load-bearing one, and a vague version teaches nothing.
+    // Reads the doc FIRST (sync, authoritative — same agreement .400 established), then falls back
+    // to the async artifact ladder, so a cold entry whose doc has not painted yet still resolves.
+    function _cwStep6EntryLine(tp) {
+        if (state.task !== 'cw_step_6' || !tp || typeof tp.addChatMessage !== 'function') return Promise.resolve(false);
+        const pid = state.cwProjectId;
+        if (!pid) return Promise.resolve(false);
+        const draw = function (name) {
+            if (!name) {
+                console.warn('WML CW6 entry line: no plot structure resolved from the doc or the artifacts — line withheld (a vague one names nothing).');
+                return false;
+            }
+            // Already said, immediately above? Don't say it twice. This is the fresh-entry-then-reload
+            // case: the stored greeting carries the [SWML_LIVE:…] token and replays as the last turn.
+            // `tp` carries the history — this helper is MODULE-scope, so the pipeline's own
+            // closure-local `canvasChatHistory` is not reachable here (the eslint no-undef gate
+            // caught exactly that on the first cut).
+            const hist = tp.canvasChatHistory;
+            let lastAi = '';
+            if (Array.isArray(hist)) {
+                for (let k = hist.length - 1; k >= 0; k--) {
+                    const m = hist[k];
+                    if (m && m.role === 'assistant' && !m.hidden && typeof m.content === 'string') { lastAi = m.content; break; }
+                }
+            }
+            if (lastAi && (lastAi.indexOf('[SWML_LIVE:cw.plotStructure]') !== -1 || lastAi.indexOf(name) !== -1)) return false;
+            const line = 'Welcome back — we’re picking up your **' + name + '** plot outline.';
+            tp.addChatMessage(formatAI(line), 'ai', line);
+            return true;
+        };
+        const sync = _cwPlotStructureNameSync(pid);
+        if (sync) return Promise.resolve(draw(sync));
+        return _cwPlotStructureName(pid).then(draw).catch(function (e) {
+            console.warn('WML CW6 entry line: resolver threw —', e && e.message);
+            return false;
+        });
+    }
+
     // ⭐ v7.20.351 — the token the stored transcript carries instead of a baked name.
     // Fallback is deliberately a true-but-vaguer noun phrase, so a turn reading
     // "You chose **your chosen plot structure** in Step 5" is clumsy but never WRONG,
@@ -28869,7 +28924,12 @@
                     if (state.task === 'cw_step_3' && tp.cwLoglineCtl) tp.cwLoglineCtl.tryResume();
                     if (state.task === 'cw_step_4' && tp.cwSpineCtl) tp.cwSpineCtl.tryResume();
                     if (state.task === 'cw_step_5' && tp.cwStructureCtl) tp.cwStructureCtl.tryResume();
-                    if (state.task === 'cw_step_6' && tp.cwOutlineCtl) tp.cwOutlineCtl.tryResume();
+                    if (state.task === 'cw_step_6' && tp.cwOutlineCtl) {
+                        // v7.20.403 (#165): AWAITED, and BEFORE the resume — the walk re-serves the
+                        // ask right after, so the question is never left above this line (§4d).
+                        await _cwStep6EntryLine(tp);
+                        tp.cwOutlineCtl.tryResume();
+                    }
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
                     // (student types on); only re-surface the programmatic picker when NO poem is
                     // active (last poem finished, or none picked yet). The picker bubble is DOM-only
