@@ -1645,8 +1645,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     transform: translate(-50%, -50%);
     padding: 10px 20px;
     border-radius: 10px;
-    background: rgba(20,20,40,0.85);
-    backdrop-filter: blur(8px);
+    /* v7.20.395 (Neil: "it's just a random colour"). It was rgba(20,20,40,0.85) — a blue-black on
+       no ladder at all, translucent so it took on whatever it floated over, which is the "which
+       shade is this?" defect the Dynamic Island had at .389. Now the RAISED tier, solid.
+       ⭐ Dropping backdrop-filter also removes a live landmine: backdrop-filter + border-radius
+       renders SQUARE when an ancestor carries a transform, and this element has its own
+       translate(-50%,-50%) (reference_sitewide_takeover_modal_css_landmines §1). */
+    background: #2b2c2f;
     color: #fff;
     font-size: 16px;
     font-weight: 700;
@@ -9965,7 +9970,10 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     width: 36px;
     height: 36px;
     border-radius: 9999px;
-    background: rgba(20,18,30,0.8);
+    /* v7.20.395 (Neil): was rgba(20,18,30,0.8) — a purple-black on no ladder, and translucent so
+       it changed colour depending on what scrolled under it. RAISED tier, solid, like every other
+       floating control (toolbar, rail buttons, Dynamic Island, AI bubbles). */
+    background: #2b2c2f;
     color: rgba(255,255,255,0.85);
     display: flex;
     align-items: center;
@@ -9982,7 +9990,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-scroll-down-btn:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    background: rgba(20,18,30,0.95);
+    background: #333437;   /* v7.20.395: raised-2 on hover — one more rung, not a new colour */
 }
 .swml-canvas-light .swml-scroll-down-btn {
     background: hsla(0,0%,100%,0.8);
@@ -10004,7 +10012,12 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     width: 36px;
     height: 36px;
     border-radius: 9999px;
-    background: rgba(20,18,30,0.8);
+    /* v7.20.395 (Neil, on the scroll-to-top arrow): was rgba(20,18,30,0.8) — a purple-black on no
+       ladder, and translucent, so it changed colour depending on what scrolled underneath it.
+       RAISED tier, solid, like every other floating control. Its twin `.swml-scroll-down-btn` had
+       the identical value and was fixed in the same change — they sit side by side, so a fix to
+       one alone would have been visible as a mismatched pair. */
+    background: #2b2c2f;
     color: rgba(255,255,255,0.85);
     display: flex;
     align-items: center;
@@ -10013,15 +10026,16 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     z-index: 10;
     border: 0.5px solid rgba(255,255,255,0.12);
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -2px rgba(0,0,0,0.15);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    /* backdrop-filter dropped with the translucency — it was only there to soften a see-through
+       surface, and it is a landmine on a border-radius:9999px element (renders SQUARE under a
+       transformed ancestor). */
     transition: opacity 0.2s ease, box-shadow 0.2s ease;
     user-select: none;
     padding: 4px;
 }
 .swml-scroll-up-btn:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    background: rgba(20,18,30,0.95);
+    background: #333437;   /* raised-2 — one more rung, not a new colour */
 }
 .swml-canvas-light .swml-scroll-up-btn {
     background: hsla(0,0%,100%,0.8);
