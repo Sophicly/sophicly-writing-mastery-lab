@@ -646,7 +646,10 @@ body.swml-page {
 .swml-selection-toolbar {
     position: absolute; z-index: 100;
     display: flex; gap: 2px; padding: 3px;
-    background: rgba(20,20,40,0.95); border-radius: 10px;
+    /* v7.20.397 (Neil): was rgba(20,20,40,0.95) — the same off-ladder blue-black as the zoom pill and
+       the scroll buttons, and translucent, so it changed colour depending on the text under it.
+       RECESSED tier, solid: Neil asked for the contextual toolbar to read predominantly dark. */
+    background: #1b1c1f; border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(81,218,207,0.25);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     animation: swml-reply-pop 0.15s ease-out;
