@@ -24124,34 +24124,43 @@
         // changes in fullscreen where LD's own toggle is hidden. In
         // standalone (non-embedded) mode there is no LD observer, so retain
         // the direct toggleTheme path.
+        // ⭐⭐ v7.20.404 (FIXLIST #183, Neil: "in full screen the theme toggle doesn't work… it's
+        // kind of frozen" — and "we've actually solved that problem several times before, so we
+        // need to find out why it's returned, and solve it once and for all").
+        //
+        // ⭐ WHY IT KEPT COMING BACK — this is the write-key ≠ read-key class (root CLAUDE.md §5d),
+        // and the two halves were fixed in different versions, months apart:
+        //   • v7.19.228/.229 built THIS handler to persist the user's choice in the PRIVATE key
+        //     `swml-theme-manual`, because that is what `getTheme()` read at the time.
+        //   • v7.20.13 then RETIRED that key on the READ side (wml-core `getTheme`): the shared
+        //     store `theme-preference` (sessionStorage → cookie) became the source of truth, and
+        //     `swml-theme-manual` was demoted to "last-resort legacy fallback". `toggleTheme()`
+        //     now even DELETES it, precisely so a stale copy cannot fight the site toggle.
+        //   • Nobody changed this WRITE. So the canvas toggle became the one writer in the whole
+        //     app that never writes the store the app reads.
+        //
+        // ⭐ WHY IT LOOKS "FROZEN" RATHER THAN MERELY WRONG — the revert is a LOOP, not a no-op:
+        //   1. click → html flips to the new theme, and only `swml-theme-manual` records it;
+        //   2. `themeObserver` (wml-core ~2295) fires on the very next DOM mutation — and the
+        //      canvas mutates constantly — calling `getTheme()`, which reads `theme-preference`
+        //      and therefore still returns the OLD theme;
+        //   3. `applyTheme(old)` runs, and its tail (wml-core ~2277) sees html disagreeing, so it
+        //      calls `window.themeToggle.setTheme(old)` and pushes the WHOLE SITE back.
+        //   The flip and the snap-back are one frame apart, so the control reads as dead.
+        //   Full screen is where Neil meets it because that is the ONLY place this toggle is
+        //   visible — it is hidden whenever LD's own header toggle is on screen (see below).
+        //
+        // ⭐ THE FIX IS ONE WRITER, not a third key. `toggleTheme()` already does every part of
+        // this correctly: it writes the shared `theme-preference` (session + the durable cookie),
+        // clears the retired private key, and its `applyTheme` tail drives `window.themeToggle`
+        // so LD's own variables flip too — which is the entire reason the embedded branch existed.
+        // So both branches now call it, and the embedded/standalone split collapses.
+        // Gate: `bin/theme-writer-harness.js` fails the build if any theme WRITE bypasses it.
         const canvasThemeToggle = createThemeToggleBtn('swml-canvas-theme-toggle', () => {
-            if (WML.isEmbedded) {
-                const cur = document.documentElement.getAttribute('data-theme') || getTheme();
-                const next = cur === 'light' ? 'dark' : 'light';
-                // v7.19.228: write localStorage swml-theme-manual SYNCHRONOUSLY so
-                // the click handler's post-onToggle getTheme() (used to set
-                // aria-pressed on the Jhey toggle visual) reads the new value.
-                try { localStorage.setItem('swml-theme-manual', next); } catch(e) {}
-                // v7.19.229: defer to LD's canonical theme API when available — that
-                // flips EVERY flag LD considers complete (html[data-theme] +
-                // html.dark + body.dark-mode + CSS variables). Without this, html.dark
-                // class persisted while html[data-theme] was the only thing we
-                // changed, so wml-theme-toggle.css:69 (`html.dark .theme-toggle__face-plate`)
-                // kept rendering the Jhey toggle dark in light mode. Fallback writes
-                // both html[data-theme] AND html.classList.dark for environments
-                // where the LD API isn't exposed.
-                if (window.themeToggle && typeof window.themeToggle.setTheme === 'function') {
-                    window.themeToggle.setTheme(next);
-                } else {
-                    document.documentElement.setAttribute('data-theme', next);
-                    document.documentElement.classList.toggle('dark', next === 'dark');
-                }
-            } else {
-                toggleTheme();
-                const t = getTheme();
-                canvas.classList.toggle('swml-canvas-light', t === 'light');
-                overlay.dataset.swmlTheme = t;
-            }
+            toggleTheme();
+            const t = getTheme();
+            canvas.classList.toggle('swml-canvas-light', t === 'light');
+            overlay.dataset.swmlTheme = t;
         });
         if (WML.isEmbedded) canvasThemeToggle.style.display = 'none';
         headerRight.appendChild(canvasThemeToggle);
@@ -24166,7 +24175,10 @@
                 document.body.setAttribute('data-swml-theme', theme);
                 const root = document.getElementById('swml-root');
                 if (root) root.setAttribute('data-swml-theme', theme);
-                try { localStorage.setItem('swml-theme-manual', theme); } catch(e) {}
+                // v7.20.404: a SYNC FROM the site persists NOTHING — LD already stored the choice.
+                // Re-writing the retired `swml-theme-manual` here is how a stale value came back
+                // after v7.20.13 deleted it: the exact fighter that deletion exists to prevent.
+                // Paint only. The shared `theme-preference` store stays the single writer.
                 // Update Jhey toggle if it exists
                 const toggle = document.getElementById('swml-theme-toggle');
                 if (toggle) {
@@ -53281,7 +53293,10 @@ ${html}
                 document.body.setAttribute('data-swml-theme', theme);
                 const root = document.getElementById('swml-root');
                 if (root) root.setAttribute('data-swml-theme', theme);
-                try { localStorage.setItem('swml-theme-manual', theme); } catch(e) {}
+                // v7.20.404: a SYNC FROM the site persists NOTHING — LD already stored the choice.
+                // Re-writing the retired `swml-theme-manual` here is how a stale value came back
+                // after v7.20.13 deleted it: the exact fighter that deletion exists to prevent.
+                // Paint only. The shared `theme-preference` store stays the single writer.
                 const toggle = document.getElementById('swml-theme-toggle');
                 if (toggle) toggle.setAttribute('aria-pressed', theme === 'dark' ? 'false' : 'true');
             };

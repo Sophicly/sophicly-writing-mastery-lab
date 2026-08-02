@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.403';
+var WML_BUILD = '7.20.404';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2459,7 +2459,46 @@ window.WML = (function() {
             if (typeof c === 'string') e.appendChild(document.createTextNode(c));
             else if (c) e.appendChild(c);
         }
+        // ⭐ v7.20.404 (#177): the trailing "→" on a chip becomes Neil's arrow — HERE, because
+        // `el()` is the ONE seam every chip in the plugin passes through. There are five separate
+        // `chipBar` implementations (the SINGLETONS problem, FIXLIST #38); doing it at the builders
+        // would mean five edits and a sixth walk shipping without it.
+        if (tag === 'button') arrowizeEl(e);
         return e;
+    }
+    // Swap arrow CHARACTERS for the glyph, in place, without changing what the element READS AS.
+    // ⚠️ THE LITERAL SURVIVES, and that is the whole design (#89): chip labels like "Continue →" are
+    // matched as STRINGS by tap handlers, walk-sim-lib and four harnesses, and several call sites
+    // compare `btn.textContent`. So the character is kept in a visually-hidden span and only the
+    // VISIBLE mark is the SVG — `textContent` still returns "Continue →" exactly as before.
+    // Idempotent: an element already carrying .swml-arrow-glyph is skipped, so a re-render or a
+    // second pass cannot stack two arrows.
+    function arrowizeEl(root) {
+        if (!root || root.querySelector && root.querySelector('.swml-arrow-glyph')) return;
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        const hits = [];
+        let n;
+        while ((n = walker.nextNode())) { if (/[→←➜]/.test(n.nodeValue)) hits.push(n); }
+        hits.forEach(function (node) {
+            const frag = document.createDocumentFragment();
+            const parts = node.nodeValue.split(/([→←➜])/);
+            parts.forEach(function (p) {
+                if (p === '→' || p === '←' || p === '➜') {
+                    const keep = document.createElement('span');
+                    keep.className = 'swml-arrow-lit';          // visually hidden; keeps textContent honest
+                    keep.textContent = p;
+                    frag.appendChild(keep);
+                    const g = document.createElement('span');
+                    g.className = 'swml-arrow-glyph';
+                    g.setAttribute('aria-hidden', 'true');
+                    g.innerHTML = arrowIcon(p === '←' ? 'left' : 'right', 14);
+                    frag.appendChild(g);
+                } else if (p) {
+                    frag.appendChild(document.createTextNode(p));
+                }
+            });
+            node.parentNode.replaceChild(frag, node);
+        });
     }
 
     // ── v7.20.85 NONCE SELF-HEAL (root cause of the "couldn't load the round" /
@@ -3641,6 +3680,11 @@ window.WML = (function() {
         html = html.replace(/⟦SWML_DEVMENU⟧/g,
             '<button type="button" class="swml-device-menu-chip" title="Open the device construction templates">🛠 Device templates →</button>');
 
+        // ⭐ v7.20.404 (Neil, #177): the "→" separators in chat prose become HIS arrow. LAST, so it
+        // runs on finished HTML and every earlier transform still sees the plain glyph it expects
+        // (the device chip a line above emits one of its own, which is why order matters here).
+        html = arrowize(html);
+
         return html;
     }
 
@@ -3773,7 +3817,61 @@ window.WML = (function() {
         tech_Cy: { kind: 'filled', vb: '0 0 26 26', src: 'technique-cyclical-structure.svg', body: '<path d="M 13.15625 0.03125 C 12.058594 0.0195313 10.925781 0.167969 9.84375 0.4375 C 9.308594 0.574219 8.988281 1.121094 9.125 1.65625 C 9.261719 2.191406 9.808594 2.511719 10.34375 2.375 C 13.773438 1.519531 17.394531 2.371094 20.1875 4.8125 L 18 7 L 24 7 L 24 1 L 21.625 3.375 C 19.207031 1.226563 16.203125 0.0664063 13.15625 0.03125 Z M 1 2 L 3.3125 4.3125 C 0.339844 7.632813 -0.589844 12.148438 0.4375 16.25 C 0.574219 16.785156 1.121094 17.105469 1.65625 16.96875 C 2.191406 16.832031 2.511719 16.285156 2.375 15.75 C 1.511719 12.300781 2.28125 8.546875 4.71875 5.75 L 7 8 L 7 2 Z M 24.4375 8.875 C 24.148438 8.917969 23.894531 9.082031 23.738281 9.328125 C 23.582031 9.574219 23.539063 9.878906 23.625 10.15625 C 24.496094 13.632813 23.707031 17.417969 21.21875 20.21875 L 19 18 L 19 24 L 25 24 L 22.625 21.625 C 25.644531 18.300781 26.59375 13.785156 25.5625 9.65625 C 25.457031 9.179688 25.019531 8.847656 24.53125 8.875 C 24.5 8.875 24.46875 8.875 24.4375 8.875 Z M 2 19 L 2 25 L 4.3125 22.6875 C 7.632813 25.660156 12.148438 26.589844 16.25 25.5625 C 16.785156 25.425781 17.105469 24.878906 16.96875 24.34375 C 16.832031 23.808594 16.285156 23.488281 15.75 23.625 C 12.300781 24.488281 8.546875 23.71875 5.75 21.28125 L 8 19 Z"/>' },
         tech_Sy: { kind: 'filled', vb: '0 0 32 32', src: 'technique-symbolism.svg', body: '<g id="swan"><path d="M30,10a6.16,6.16,0,0,0-4.8-6,6.09,6.09,0,0,0-6,2.38,1,1,0,0,0,1.6,1.2A3.94,3.94,0,0,1,28,9.49l-1.57,1-.5-1a1,1,0,0,0-1.34-.44l-.86.43a2.46,2.46,0,0,0-1.23,3c.2.58.39,1.18.59,1.78.49,1.55,1,3.14,1.39,4.72a6.3,6.3,0,0,1-.75,3.84,1,1,0,0,0,.4,1.36,1,1,0,0,0,1.36-.41,8,8,0,0,0,.92-5.32c-.44-1.6-.91-3.22-1.42-4.79-.19-.62-.39-1.22-.59-1.82a.46.46,0,0,1,.19-.54l.51,1,1,3.89a1,1,0,0,0,.55.67,1,1,0,0,0,.87,0l.67-.33a3.39,3.39,0,0,0,1.88-3V10h0Zm-2.36,4.47-.5-2,.86-.57v1.64A1.38,1.38,0,0,1,27.64,14.45Z"/><path d="M26,26H13.87a10.75,10.75,0,0,1-6.3-1.82,10.61,10.61,0,0,1-3.37-4l.67-.66a10.48,10.48,0,0,0,2.49,2.29A10,10,0,0,0,9.69,23a10.19,10.19,0,0,0,3.15.51,11.15,11.15,0,0,0,5.69-1.61,1,1,0,0,0-1.06-1.7,8.76,8.76,0,0,1-7.16.9,8.38,8.38,0,0,1-1.86-.89,9.15,9.15,0,0,1-3.22-3.78c.21-.13.41-.26.62-.37A14.81,14.81,0,0,1,7.3,15.3,16.47,16.47,0,0,1,10,14.7a16.22,16.22,0,0,1,7.13.58,15.69,15.69,0,0,1,3.38,1.57,1,1,0,0,0,1.3-.21,1,1,0,0,0,0-1.3A6.93,6.93,0,0,1,20,11,1,1,0,0,0,18,11a8.67,8.67,0,0,0,.48,2.62l-.78-.27a18.17,18.17,0,0,0-8-.67,19.42,19.42,0,0,0-3,.71,16.76,16.76,0,0,0-1.76.84,16.15,16.15,0,0,0-1.45.93,1,1,0,0,0-.37,1.13,10.65,10.65,0,0,0,.69,1.53L2.29,19.29a1,1,0,0,0-.21,1.1,12.57,12.57,0,0,0,4.35,5.43,2.82,2.82,0,0,0,.29.18H4a1,1,0,0,0,0,2H26a1,1,0,0,0,0-2Z"/></g>' },
         profile: { kind: 'line', src: 'tabler-user-circle.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" />' },
+        // v7.20.404 (Neil, #177 — Imagery.svg). ZERO forced changes: the export is a STROKE drawing
+        // on the 24 grid with `stroke="currentColor"`, width 2, round caps and joins — i.e. exactly
+        // what the `line` wrapper already emits, so it inherits as drawn. Keyed on the TABLE SYMBOL
+        // (Im), like every other per-technique glyph, so retitling the card cannot orphan it.
+        // This is one of the symbols that was falling back to the generic 🗂 — which is the emoji
+        // Neil saw on the Imagery quick-action.
+        tech_Im: { kind: 'line', vb: '0 0 24 24', src: 'neil-imagery.svg', body: '<path d="M3 16C4.40293 15.7662 6.63687 15.7073 8.94504 16.2427M8.94504 16.2427C11.5726 16.8522 14.2965 18.2317 16 21M8.94504 16.2427C10.8946 13.9852 14.5577 12 21 12H22M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM8.5 7C8 7 7 7.3 7 8.5C7 9.7 8 10 8.5 10C9 10 10 9.7 10 8.5C10 7.3 9 7 8.5 7Z" />' },
+        // ── NEIL'S ARROWS (#177, his own files, 2026-08-02). FOUR rows, because he asked to see the
+        // decision rather than have it made for him: *"whether we want the square borders around the
+        // outside or if we wanna minimize it… what do you think?"*
+        //   `arrowRight`     — his file VERBATIM: the rounded-square frame + the chevron.
+        //   `arrowRightBare` — the SAME chevron path, byte-identical, with the frame path dropped.
+        // Nothing is redrawn or re-derived either way; the bare variant is a subset of his own file,
+        // which is the only honest way to offer a "minimised" version of someone else's drawing.
+        // ⚠️ ONE FORCED CHANGE, STATED (CLAUDE.md #13), and it applies to all four: his export paints
+        // through `<defs><style>.cls-1{fill:#212121}</style></defs>`. Two problems, both the #88/#114
+        // landmine: (a) a hardcoded near-black cannot inherit, so it would sit invisible on the dark
+        // rail and on the purple chips; (b) an inlined `<style>` puts `.cls-1` into the GLOBAL
+        // stylesheet, where it collides with every other Illustrator export using that default class
+        // name. So the rule is dropped and the paths take the wrapper's currentColor. Path data,
+        // the 30-unit grid and the geometry are untouched.
+        arrowRight:     { kind: 'filled', vb: '0 0 30 30', src: 'neil-arrow-right.svg', body: '<path d="M24,30H6a6,6,0,0,1-6-6V6A6,6,0,0,1,6,0H24a6,6,0,0,1,6,6V24A6,6,0,0,1,24,30ZM6,2A4,4,0,0,0,2,6V24a4,4,0,0,0,4,4H24a4,4,0,0,0,4-4V6a4,4,0,0,0-4-4Z"/><path d="M12,23a1,1,0,0,1-.71-1.71L17.62,15,11.33,8.71a1,1,0,0,1,0-1.42,1,1,0,0,1,1.41,0l7,7a1,1,0,0,1,0,1.42l-7,7A1,1,0,0,1,12,23Z"/>' },
+        arrowLeft:      { kind: 'filled', vb: '0 0 30 30', src: 'neil-arrow-left.svg',  body: '<path d="M24,30H6a6,6,0,0,1-6-6V6A6,6,0,0,1,6,0H24a6,6,0,0,1,6,6V24A6,6,0,0,1,24,30ZM6,2A4,4,0,0,0,2,6V24a4,4,0,0,0,4,4H24a4,4,0,0,0,4-4V6a4,4,0,0,0-4-4Z"/><path d="M18,23a1,1,0,0,1-.7-.29l-7-7a1,1,0,0,1,0-1.42l7-7a1,1,0,0,1,1.41,0,1,1,0,0,1,0,1.42L12.38,15l6.29,6.29A1,1,0,0,1,18,23Z"/>' },
+        arrowRightBare: { kind: 'filled', vb: '0 0 30 30', src: 'neil-arrow-right.svg (chevron only)', body: '<path d="M12,23a1,1,0,0,1-.71-1.71L17.62,15,11.33,8.71a1,1,0,0,1,0-1.42,1,1,0,0,1,1.41,0l7,7a1,1,0,0,1,0,1.42l-7,7A1,1,0,0,1,12,23Z"/>' },
+        arrowLeftBare:  { kind: 'filled', vb: '0 0 30 30', src: 'neil-arrow-left.svg (chevron only)',  body: '<path d="M18,23a1,1,0,0,1-.7-.29l-7-7a1,1,0,0,1,0-1.42l7-7a1,1,0,0,1,1.41,0,1,1,0,0,1,0,1.42L12.38,15l6.29,6.29A1,1,0,0,1,18,23Z"/>' },
     };
+    // ⭐ v7.20.404 (#177) — WHICH ARROW SHIPS. One switch, so the answer lives in ONE place and
+    // Neil can be shown both without a code hunt. `bare` = chevron only; `boxed` = his frame too.
+    // Recommendation on file: BARE. In prose the arrow sits between words at ~14px, where a frame
+    // reads as a tappable control and competes with the real buttons under it; on a chip it is
+    // already inside a button, so the frame is a box inside a box. The frame earns its place where
+    // the arrow IS the control on its own — which is neither of these two sites.
+    let ARROW_STYLE = 'bare';
+    function setArrowStyle(s) { ARROW_STYLE = (s === 'boxed') ? 'boxed' : 'bare'; }
+    function arrowIcon(dir, size) {
+        const suffix = (ARROW_STYLE === 'boxed') ? '' : 'Bare';
+        return icon('arrow' + (dir === 'left' ? 'Left' : 'Right') + suffix, size || 14);
+    }
+    // ⭐ THE DISPLAY SWAP, and it is a DISPLAY swap by law (#89).
+    // The trailing glyph on a chip label ("Continue →", "Use this →", "Both still right →") is
+    // matched as a STRING by tap handlers, walk-sim-lib and four harnesses. Editing the literal
+    // would break every one of them silently — the walk would stop recognising its own controls.
+    // So the literal keeps its "→" for ever and only the RENDERED HTML carries the glyph.
+    // Applied to already-escaped HTML, so the guard below never has to parse markup: it skips any
+    // arrow sitting inside a tag or an attribute by splitting on '<' … '>' boundaries first.
+    function arrowize(html) {
+        if (!html || typeof html !== 'string') return html;
+        if (html.indexOf('→') === -1 && html.indexOf('←') === -1 && html.indexOf('➜') === -1) return html;
+        return html.split(/(<[^>]*>)/).map(function (part) {
+            if (part.charAt(0) === '<') return part;                    // a tag — never touch it
+            return part
+                .replace(/[→➜]/g, arrowIcon('right', 14))
+                .replace(/←/g, arrowIcon('left', 14));
+        }).join('');
+    }
 
     // icon('spine', 16) → inline SVG at that size, inheriting the host's colour.
     // Unknown key returns '' and warns ONCE — never a broken glyph, never a silent blank.
@@ -4446,6 +4544,7 @@ window.WML = (function() {
         recordTurn, rehydrateTurn,              // v7.20.352 — the ONLY writers into chat history
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
         parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG, setHaloLabel, approvalIconSVG, guideIconSVG, spineIconSVG, phoenixIconHTML, icon, techIcon, ICONS,
+        arrowIcon, arrowize, arrowizeEl, setArrowStyle,   // v7.20.404 (#177) — Neil's arrows; setArrowStyle('boxed'|'bare') switches the whole app
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
         learnChipsForLine,  // v7.19.949/950: ungated line→chips resolver for the in-doc healer
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)

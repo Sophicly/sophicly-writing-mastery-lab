@@ -168,6 +168,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw6-livevalue-harness.js || fail=1
 fi
 
+# v7.20.404 — THE THEME TOGGLE, ONE STORE AND ONE WRITER (FIXLIST #183). Neil: "we've actually
+# solved that problem several times before… solve it once and for all." It kept returning because
+# the two halves were fixed months apart: v7.19.228/.229 taught the canvas toggle to persist into
+# the private `swml-theme-manual` key, and v7.20.13 then retired that key on the READ side without
+# touching the write. The canvas toggle became the only writer that never wrote the store the app
+# reads, so a click flipped the theme and the next DOM mutation reverted it — one frame later,
+# with no error. Runs on EVERY change, not just CW ones: the regression was a cross-file drift and
+# either side can reintroduce it.
+node bin/theme-writer-harness.js || fail=1
+
 # v7.20.297: CW STEP-5 STRUCTURE WALK GATE. Step 5 shipped to prod filing NOTHING — the protocol had
 # no filing marker, so nine document rows stayed empty through a whole session while the model told
 # the student it had saved. Nothing errored, so nothing caught it. The gate that would have: drive the
