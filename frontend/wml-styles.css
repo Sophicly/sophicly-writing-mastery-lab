@@ -38,15 +38,15 @@
 
 /* Dark theme overrides — deep cool grey palette (v7.14.40) */
 [data-swml-theme="dark"] {
-    --swml-bg: #25272b;
-    --swml-bg-alt: #151617;
-    --swml-bg-card: #25272b;
+    --swml-bg: #232427;
+    --swml-bg-alt: #1b1c1f;
+    --swml-bg-card: #232427;
     --swml-text: #e0e0ee;
     --swml-text-muted: #9da5b4;
     --swml-border: #333438;
-    --swml-input-bg: #151617;
+    --swml-input-bg: #1b1c1f;
     --swml-input-border: #444549;
-    --swml-bubble-ai-bg: #2d3034;   /* v7.20.388 (Neil: "I prefer the previous shade"). The pure
+    --swml-bubble-ai-bg: #2b2c2f;   /* v7.20.388 (Neil: "I prefer the previous shade"). The pure
                                        light-inversion put the bubble DARKER than its panel — true to
                                        light (#f5f5f7 on #ffffff) but wrong on dark, where a recessed
                                        bubble reads as a hole rather than a message. Raised instead. */
@@ -66,9 +66,9 @@
 .swml-setup-inner {
     --swml-text: #e0e0ee;
     --swml-text-muted: #9da5b4;
-    --swml-bg-card: #25272b;
+    --swml-bg-card: #232427;
     --swml-border: #333438;
-    --swml-input-bg: #151617;
+    --swml-input-bg: #1b1c1f;
     --swml-input-border: #444549;
 }
 
@@ -81,7 +81,7 @@ body.swml-page {
     height: 100vh;
 }
 
-#swml-root { height: 100vh; display: flex; flex-direction: column; position: relative; overflow: hidden; background: #25272b; /* v7.14.40 — deep cool grey, shader covers this */ }
+#swml-root { height: 100vh; display: flex; flex-direction: column; position: relative; overflow: hidden; background: #232427; /* v7.14.40 — deep cool grey, shader covers this */ }
 
 /* ── Animations ── */
 @keyframes swml-fadeUp {
@@ -2540,7 +2540,7 @@ body.swml-page {
 /* ── Video Button Tooltip ── */
 .swml-video-tooltip {
     position: fixed;
-    width: 220px; background: #25272b;
+    width: 220px; background: #232427;
     border: 1px solid rgba(81,218,207,0.25); border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(81,218,207,0.08);
     z-index: 10000; cursor: pointer; overflow: hidden;
@@ -2581,7 +2581,7 @@ body.swml-page {
 
 /* ── Video Section Picker ── */
 .swml-video-picker {
-    position: fixed; width: 240px; background: #25272b;
+    position: fixed; width: 240px; background: #232427;
     border: 1px solid rgba(81,218,207,0.2); border-radius: 10px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     z-index: 10000; overflow: hidden;
@@ -3577,7 +3577,7 @@ html[data-theme="light"] .swml-tooltip[data-placement="right"]::after {
     border: none;
     border-radius: 9px;
     cursor: pointer;
-    background: #25272b;
+    background: #232427;
     color: var(--swml-teal-light);
     font-family: 'Proxima Soft Complete', sans-serif;
     font-size: .82rem;
