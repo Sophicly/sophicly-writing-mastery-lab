@@ -4175,9 +4175,38 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     flex-direction: column;
     overflow: hidden;
     will-change: opacity, transform;
+    /* ⭐ v7.20.396 (Neil): the chat column and the document are now THE SAME COLOUR, so where they
+       meet there was nothing at all — the panel simply dissolved into the sheet. He asked for a
+       subtle shadow rather than the stroke we removed at .383: "I don't need the stroke. If you can
+       do a subtle box shadow, that'll be great."
+       `position: relative` + a z-index is REQUIRED, not decoration: the doc is a flex SIBLING, so
+       without it the shadow paints underneath the document and is invisible — the separation would
+       silently not happen. 2 sits under the canvas header (10) and far under the rail column when a
+       panel is open (120, #140), so nothing that used to win still loses. */
+    position: relative;
+    z-index: 2;
+    /* Neil supplied Stripe's card shadow as the reference. ⚠️ ONE DISCLOSED DEVIATION (#13): theirs
+       is a DOWNWARD elevation shadow for a floating card (`0 50px 100px -20px`) — on a full-height
+       side panel that pools all the weight at the bottom and shows nothing along the edge that
+       actually needs separating. Same character — layered, soft, with the inset catch-light — but
+       aimed LEFT along the seam. The inset highlight moves to the left edge for the same reason. */
+    box-shadow:
+        inset 1px 0 0 rgba(255, 255, 255, 0.055),
+        -12px 0 24px -12px rgba(0, 0, 0, 0.40),
+        -32px 0 48px -32px rgba(0, 0, 0, 0.28);
 }
 [data-swml-theme="light"] .swml-canvas-chat,
-.swml-canvas-light .swml-canvas-chat { background: var(--swml-bg); }
+.swml-canvas-light .swml-canvas-chat {
+    background: var(--swml-bg);
+    /* Light has the SAME problem and it is easy to miss: the doc is #ffffff and the chat is
+       #ffffff too, so the seam is just as invisible there. Much softer, and using Stripe's own
+       blue-grey shadow tint (50,50,93) rather than neutral black, which is what stops a light-theme
+       shadow reading as grey dirt. */
+    box-shadow:
+        inset 1px 0 0 rgba(255, 255, 255, 0.9),
+        -10px 0 20px -12px rgba(50, 50, 93, 0.10),
+        -24px 0 36px -28px rgba(0, 0, 0, 0.06);
+}
 /* v7.20.386: the .384 `#22282A` block is GONE. It was the LearnDash focus theme's own
    "warm charcoal" ground, reached for by eye to fix bubble contrast — a third colour family on a
    screen that already had two. The canvas now runs on the BRAND.md ladder instead (see the block
