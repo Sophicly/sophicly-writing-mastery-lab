@@ -20841,10 +20841,30 @@
             }
 
             // ── the ask list, DERIVED from the template (never hand-authored) ──
+            // ⭐ v7.20.391 — THE MOST SPECIFIC MATCH WINS, never the first one in the array.
+            // This was `return` on the first regex that tested true, so a concept became
+            // UNREACHABLE the moment an earlier, broader regex contained its phrase:
+            // `/opening image/i` (index 0) swallows "expand on the opening image" (index 1),
+            // so a student on the EXPANDED beat was served the plain Opening Image criteria,
+            // examples, technique chips and guidance anchor. Silent by construction — a wrong
+            // concept looks exactly like a right one.
+            // PROVEN LIVE in Neil's 2026-08-01 transcript (two byte-identical "More examples —
+            // Opening Image" bubbles on two DIFFERENT beats, steps 5 and 8), then swept
+            // mechanically: 2 of 70 concepts fully unreachable, 7 more losing trigger phrases.
+            // This is the §5d "branch nothing can ever take" class that `key-lint.js` exists for;
+            // `bin/cw6-concept-lint.js` now fails the build on it (added the same change).
+            // Score = the length of the substring actually matched, so a longer, more specific
+            // phrase beats a short generic one. Ties keep array order, so nothing else moves.
             function conceptFor(label, prompt) {
                 const hay = (label || '') + ' — ' + (prompt || '');
-                for (let k = 0; k < CM.CONCEPTS.length; k++) { if (CM.CONCEPTS[k].m.test(hay)) return CM.CONCEPTS[k]; }
-                return null;
+                let best = null, bestLen = -1;
+                for (let k = 0; k < CM.CONCEPTS.length; k++) {
+                    const m = hay.match(CM.CONCEPTS[k].m);
+                    if (!m) continue;
+                    const len = (m[0] || '').length;
+                    if (len > bestLen) { best = CM.CONCEPTS[k]; bestLen = len; }
+                }
+                return best;
             }
             function buildAsks(k) {
                 const arch = OUTLINE_CRITERIA.cwPlotArchetypes[k];
@@ -21382,11 +21402,30 @@
                 const f = frameRefs();
                 if (!f) { phase = 'ask'; persist(); enterStages(); return; }   // liveness: never a dead end
                 phase = 'frame'; frameFix = ''; persist();
-                aiBubble('**Before we start — your story’s two ends**\n\n'
-                    + 'You already decided where your story opens and how it finishes, back on your Story Spine. '
-                    + 'Everything you plan from here sits **between** these two moments, so let’s settle them first.\n\n'
+                // ⚠️ v7.20.391 — THE OPENING LINE MUST AGREE WITH WHAT IS ON THEIR PAGE.
+                // Until .391 the frame was only reachable on a fresh start, so "Before we start"
+                // was always true. Now that a RESUME routes here too (see `tryResume`), a student
+                // three beats in would be told "before we start" while their own written beats sit
+                // in the document beside the chat — which reads as *your work is gone*. Yusra Kazi
+                // (prod 1389) is exactly that student, so this is a real path, not a hypothetical.
+                const back = ASKS.some(function (x) { return !!rowText(x.fid); });
+                aiBubble('**' + (back ? 'Before you carry on' : 'Before we start') + ' — your story’s two ends**\n\n'
+                    + (back
+                        ? 'Everything you have written so far is safe — this changes none of it. Before you go further, let’s check that the two ends of your story are still the ones you want, because every beat you write sits between them.\n\n'
+                        : 'You already decided where your story opens and how it finishes, back on your Story Spine. '
+                            + 'Everything you plan from here sits **between** these two moments, so let’s settle them first.\n\n')
                     + '**Where your story opens** — ' + f.open.label + '\n\n> ' + f.openShow + '\n\n'
                     + '**How your story ends** — ' + f.close.label + '\n\n> ' + f.closeShow + '\n\n'
+                    // ⭐ v7.20.391 (Neil, FIXLIST #160): "beat one and the final beat. And then,
+                    // you know, HOW THEY CONNECT." The frame showed both ends and only ever said
+                    // they sit "between these two moments" — it stated the relationship instead of
+                    // making the student see it. Named plainly here, as the journey between two
+                    // versions of one person, so the whole 105-beat walk has a spine the student
+                    // can actually hold in their head.
+                    + '**Now read those two together.** The distance between them *is* your story. Your '
+                    + 'protagonist begins as the person in the first one and ends as the person in the '
+                    + 'second — and every beat you write from here is one step of that journey. If a beat '
+                    + 'does not move them along it, it does not belong in your story.\n\n'
                     + '**Are you still happy with both?** If you are, I file them straight into your outline as '
                     + 'your first and last beats, and we build the middle from there.');
                 chipBar([{ label: 'Both still right →', icon: WML.icon('approval', 15) },
@@ -21832,6 +21871,33 @@
                     }
                     active = true; pending = false;
                     console.log('WML CW6: resumed at ' + (i + 1) + '/' + ASKS.length + ' (' + key + ', phase ' + phase + ')');
+                    // ⭐⭐ v7.20.391 — A RESUME MUST ENTER THROUGH `enterStages()`, LIKE A FRESH START.
+                    // This path ended at `reattachChips` and NEVER called `enterStages()`, so the
+                    // two-ends story frame (#109) and the stage explanation (#101) were unreachable
+                    // to anyone who came BACK to Step 6 — which, across a 105-beat walk, is very
+                    // nearly everyone. The teaching existed and had no route to the screen.
+                    // This is the v7.20.368 defect at the resume path: the comment on `enterStages`
+                    // calls it "the single entry point into the stages, so the frame cannot be
+                    // stepped over by a new call site" — and this call site stepped over it.
+                    // MEASURED on prod 2026-08-01: of 7 students with a Step-6 document, 6 had
+                    // written nothing (so they take the fresh-start path and were never affected)
+                    // and 1 — Yusra Kazi, 3 beats in — had a filled opening and a blank ending,
+                    // i.e. `frameNeeded()` TRUE, i.e. the frame owed and never served.
+                    // ⚠️ ONLY a plain 'ask' re-enters. Every other phase ('carry', 'frame',
+                    // 'frame-fix', 'anchor', 'anchor-fix', 'stage-choice', 'finish-*') is a LIVE
+                    // interaction whose chips must be re-attached, not replaced — re-serving those
+                    // would strand the student mid-decision (§4d liveness).
+                    // ⚠️ AND ONLY WHEN THE FRAME IS OWED. The first cut of this fix also re-entered
+                    // when `!oriented[stage]`, which made every resume replay the stage opener — four
+                    // PACED chunks, so a student returning to beat 40 had to tap "Continue" four
+                    // times before reaching their own question. It failed 9 harness assertions and it
+                    // was the wrong behaviour regardless of the test. A stage a student is already
+                    // mid-way through does not want re-explaining; every LATER stage still gets its
+                    // opener the normal way, through `advance()` -> `fireStageCheck()`.
+                    if (phase === 'ask' && ASKS[i] && frameNeeded()) {
+                        setTimeout(function () { enterStages(); }, 400);
+                        return true;
+                    }
                     setTimeout(reattachChips, 400);
                     return true;
                 } catch (e) { return false; }

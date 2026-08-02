@@ -153,6 +153,12 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   # run of all eight archetypes, every resume position, both fail-open paths and the GAP revision —
   # and holds the API budget at 6 round-trips. Neil cannot hand-test 800 taps; the machine can.
   node bin/cw6-sim-harness.js || fail=1
+  # v7.20.391 — CONCEPT REACHABILITY. `conceptFor()` picks the beat's concept by regex, and a
+  # concept becomes UNREACHABLE the moment a broader one contains its phrase (/opening image/
+  # swallowed "expand on the opening image"). The student is then served the WRONG beat's
+  # criteria, examples, technique chips and guidance anchor — silently, because a wrong concept
+  # renders exactly like a right one. Two of 70 were dead before this gate existed. CLAUDE.md §5d.
+  node bin/cw6-concept-lint.js || fail=1
 fi
 
 # v7.20.297: CW STEP-5 STRUCTURE WALK GATE. Step 5 shipped to prod filing NOTHING — the protocol had

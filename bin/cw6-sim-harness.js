@@ -465,6 +465,51 @@ for (const k of KEYS) {
     if (!bad) console.log('   ✓ wiped sidecar: resumed from the document at 4 positions and completed the run');
 })();
 
+// ── ⭐ v7.20.391 — THE FRAME MUST BE REACHABLE ON A RESUME, NOT ONLY ON A FRESH START. ─────
+// Neil, 2026-08-01, after teaching: "it didn't explicitly say, getting me to think about beat
+// one and the final beat. And then how they connect." The frame HAD been built (#109) and was
+// unreachable to anyone who came back: `tryResume()` ended at `reattachChips` and never called
+// `enterStages()`, which is the only thing that serves it. On a 105-beat walk spanning many
+// sessions, that is nearly every student — measured on prod, the one student with Step-6 work
+// (uid 1389, 3 beats in) had a filled opening, a blank ending, and had never once been asked.
+//
+// ⚠️ THIS TEST EXISTS BECAUSE THE REST OF THE SUITE PASSED THROUGHOUT THE ENTIRE BUG.
+// Every resume assertion was a NEGATIVE — "repeats nothing", "loses nothing", "skips nothing" —
+// and a suite made only of "X must not happen" passes perfectly on a screen that teaches nothing
+// (`feedback_negative_only_tests_pass_on_a_dead_screen`). So this asserts a POSITIVE: the frame
+// is ON THE SCREEN. Revert the `tryResume` routing and this fails; nothing else in the file does.
+(function frameReachableOnResume() {
+    const k = 'rags-to-riches';
+    const probe = makeWorld(k);
+    const total = probe.order.length;
+    let bad = 0;
+    // Mid-walk positions: the opening is written, the ending is not — the real student's state.
+    [3, 20, 60].forEach(function (n) {
+        const w = makeWorld(k, { prefill: probe.order.slice(0, n) });
+        w.deps.localStorage.setItem('sim_cw6', JSON.stringify({ phase: 'ask', checkStage: -1, active: true, key: k }));
+        w.ctl.tryResume();
+        const seen = w.bubbles.some(function (b) { return /your story’s two ends/i.test(b); });
+        if (!ok(seen, 'resume@' + n + ': the two-ends frame was never served on resume (#159 — the walk taught nothing to anyone coming back)')) { bad++; return; }
+        // And it must speak to a returning student, not tell someone 60 beats in that we are
+        // "before we start" — which reads as *your work is gone* (#159's named failure).
+        const frame = w.bubbles.filter(function (b) { return /your story’s two ends/i.test(b); }).pop() || '';
+        if (!ok(/Before you carry on/i.test(frame) && !/Before we start/i.test(frame),
+            'resume@' + n + ': the frame greeted a returning student with "Before we start"')) bad++;
+        // #160 — the CONNECTION between the two ends must be stated, not just the two ends shown.
+        if (!ok(/distance between them/i.test(frame),
+            'resume@' + n + ': the frame showed both ends but never said how they connect (#160)')) bad++;
+        // Settling it must leave the student with something to do — never a dead screen (§4d).
+        if (!ok(w.tap('still right'), 'resume@' + n + ': the frame offered no way forward')) bad++;
+    });
+    // A student who HAS settled both ends must not be asked again on every reload.
+    const done = makeWorld(k, { prefill: probe.order.slice(0, 20).concat([probe.order[total - 1]]) });
+    done.deps.localStorage.setItem('sim_cw6', JSON.stringify({ phase: 'ask', checkStage: -1, active: true, key: k }));
+    done.ctl.tryResume();
+    if (!ok(!done.bubbles.some(function (b) { return /your story’s two ends/i.test(b); }),
+        'resume: the frame was re-served to a student whose two ends are already settled')) bad++;
+    if (!bad) console.log('   ✓ the two-ends frame is reachable on resume, speaks to a returning student, and asks only once');
+})();
+
 // ── FAIL-OPEN: a dropped marker must never strand the student. ────────────────────────────
 (function failOpen() {
     const k = 'tragedy';
@@ -473,6 +518,11 @@ for (const k of KEYS) {
     const w = makeWorld(k, { prefill: probe.order.slice(0, probe.order.length - 1) });
     w.deps.localStorage.setItem('sim_cw6', JSON.stringify({ phase: 'ask', checkStage: -1, active: true, key: k }));
     w.ctl.tryResume();
+    // v7.20.391: a RESUME now enters through `enterStages()` like a fresh start, so the two-ends
+    // story frame is served first whenever it is still owed (either end blank). Settle it, then
+    // carry on with what this scenario is actually about. The resume sweeps above already did
+    // this incidentally — their drive loops tap 'still right' — these three did not.
+    w.tap('still right');
     w.ctl.handleTurn('the last beat');
     ok(!!w.armed && w.armed.id === 'cw6-finish', 'fail-open: the finish check did not fire on the last row');
     w.resolveApi(null);                                     // the call failed / timed out
@@ -485,6 +535,7 @@ for (const k of KEYS) {
     const w2 = makeWorld(k, { prefill: stage0.slice(0, stage0.length - 1) });
     w2.deps.localStorage.setItem('sim_cw6', JSON.stringify({ phase: 'ask', checkStage: -1, active: true, key: k }));
     w2.ctl.tryResume();
+    w2.tap('still right');                                  // v7.20.391 — settle the two-ends frame first
     w2.ctl.handleTurn('last beat of stage I');
     ok(!!w2.armed && /^cw6-stage-0$/.test(w2.armed.id), 'fail-open: the stage-I micro-check did not fire when the stage completed');
     w2.resolveApi(null);
@@ -500,6 +551,7 @@ for (const k of KEYS) {
     const w = makeWorld(k, { prefill: stage0.slice(0, stage0.length - 1) });
     w.deps.localStorage.setItem('sim_cw6', JSON.stringify({ phase: 'ask', checkStage: -1, active: true, key: k }));
     w.ctl.tryResume();
+    w.tap('still right');                                   // v7.20.391 — settle the two-ends frame first
     w.ctl.handleTurn('last beat of stage I');
     w.resolveApi('Does he actually change here?\n\n@STAGE_GAP');
     ok(w.tap('Sharpen'), 'gap path: no "Sharpen this stage’s arc" chip was offered');
