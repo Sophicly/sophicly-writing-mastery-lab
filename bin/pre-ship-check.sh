@@ -286,6 +286,13 @@ node bin/fossil-lint.js || fail=1
 # to 6,000+ lines of the UI. Whole-repo and instant, like fossil-lint. (v7.20.372)
 node bin/css-lint.js || fail=1
 
+# v7.20.394 — a RETIRED surface colour written as rgba() is invisible to the hex sweep that
+# retires it. That has now bitten three times on one palette (.swml-extract-panel, the rail shell,
+# and --swml-tb-fade-0 — the last of which was missed by the person writing the warning about it).
+# On its first run it also found .swml-comment-modal still painting #28292b, retired four moves ago.
+node bin/palette-lint.js || fail=1
+
+
 if [ "$fail" -ne 0 ]; then
   echo ""
   echo "pre-ship gate FAILED — fix before shipping (do NOT --no-verify past it)."

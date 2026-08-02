@@ -1074,7 +1074,11 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 @keyframes swmlFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .swml-comment-modal {
-    background: rgba(40, 41, 43, 0.97);
+    /* v7.20.394: was rgba(40, 41, 43, 0.97) — i.e. #28292b, the sheet tier RETIRED AT .386. It sat
+       on a dead colour through four palette moves because it is spelled rgba, so every hex sweep
+       missed it. Found by bin/palette-lint.js on its first run. A modal floats over the document,
+       so it takes the RAISED tier, like every other floating surface. */
+    background: rgba(43, 44, 47, 0.97);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 16px;
     padding: 20px 24px;
@@ -1723,7 +1727,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        a variable pair here makes the fades follow the header by construction. Change the header and
        they change with it; there is nothing left to remember. */
     --swml-tb-fade: #2b2c2f;
-    --swml-tb-fade-0: rgba(45,48,52,0);
+    /* ⚠️ v7.20.394 — THIS LINE PROVES THE rgba TRAP IS REAL, because it caught the person who
+       had just written the warning about it. The .393 palette move swept every HEX occurrence of
+       the retired raised value and this one survived, because it is the SAME COLOUR written as
+       rgba() — so it sat one generation behind (#2d3034, the .392 value) while everything around
+       it moved. Zero-alpha hides it from casual inspection; it is not invisible, because gradient
+       interpolation passes THROUGH this colour on its way out.
+       Keep this byte-identical to --swml-tb-fade above: #2b2c2f = rgb(43,44,47). */
+    --swml-tb-fade-0: rgba(43,44,47,0);
     background: #2b2c2f; /* v7.20.388 (Neil: "give the WML header a different shade… maybe lighter"):
                             RAISED-ON-BASE, the BRAND.md ladder's own lighter rung. The toolbar is the
                             one piece of chrome that should read as sitting ON TOP of everything. */
