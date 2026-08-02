@@ -24950,7 +24950,43 @@
         siJumpDown.innerHTML = _SI_DOWN;
         siJumpDown.addEventListener('click', (e) => {
             e.stopPropagation();
-            contentWrap.scrollTo({ top: contentWrap.scrollHeight, behavior: 'smooth' });
+            // ⭐ v7.20.401 (FIXLIST #174 — the repro #84/#90 waited three days for). Neil, on a
+            // NARROWED window: "I clicked the button to scroll to the bottom of the document…
+            // What it's done instead is it scrolled right to the bottom of the entire canvas.
+            // So you can see the document's completely disappeared." Students hit it too.
+            //
+            // ⭐ ROOT, and it is BY CONSTRUCTION rather than a stale measurement — which is why
+            // four previous confident fixes in this area (`/ zoom` ×2, `/ 3` ×2) all missed it:
+            // `contentWrap.scrollHeight` is the end of the SCROLLER, and the student asked for the
+            // end of the DOCUMENT. Those are the same number only at zoom 100%. `docWrap` is
+            // `transform: scale(canvasZoom)` with origin top INSIDE the unscaled scroller, and a
+            // CSS transform does NOT change layout size — so the scroller keeps reserving the
+            // sheet's UNSCALED height while the sheet only PAINTS at the scaled height. Scrolling
+            // to scrollHeight therefore lands (unscaled − scaled) px past the last line, on blank
+            // gutter. Narrow the window → zoom drops → the gap grows. Exactly "over-exaggerated",
+            // and exactly why it only shows on a small or resized screen.
+            //
+            // THE FIX IS NEIL'S OWN WORDS: "detect where the end of the document is and scroll to
+            // the end of THAT, no matter what the size is." getBoundingClientRect returns the
+            // VISUAL (post-scale) box — the same property v7.19.768 established for scrollContentTo,
+            // so this uses the house idiom and cannot reintroduce the `/ zoom` double-compensation.
+            // Align the sheet's visual bottom with the bottom of the viewport, then clamp into the
+            // scroller's own range: a short document clamps to 0, and the value can never exceed
+            // max, so this can only ever scroll LESS than before, never more.
+            const max = Math.max(0, contentWrap.scrollHeight - contentWrap.clientHeight);
+            let top = max;
+            try {
+                const cRect = contentWrap.getBoundingClientRect();
+                const dRect = docWrap.getBoundingClientRect();
+                const docBottomInScroller = contentWrap.scrollTop + (dRect.bottom - cRect.top);
+                top = Math.min(max, Math.max(0, docBottomInScroller + SWML_SCROLL_TOP_PAD - contentWrap.clientHeight));
+            } catch (_) { /* geometry unavailable — the scroller end is still a safe answer */ }
+            contentWrap.scrollTo({ top, behavior: 'smooth' });
+            // ⚠️ NOT instrumented with `_scrollLandingProbe`, deliberately: that probe asserts the
+            // target's TOP lands at SWML_SCROLL_TOP_PAD, which is the wrong question for a
+            // jump-to-BOTTOM — docWrap's top is far above the fold by definition, so it would warn
+            // on every single click. A gate that cries wolf gets switched off (the palette-lint
+            // lesson: 16 findings, 14 false). The clamp above is the guarantee instead.
         });
         siHead.appendChild(siJumpUp);
         siHead.appendChild(siJumpDown);
