@@ -212,6 +212,38 @@ console.log('\n  → ' + covered + ' of the ' + STAGE_ORDER.length + ' stages ha
 console.log('  → Stage III (fascination) is the notable hole: the spine skips the midpoint entirely,');
 console.log('    so its bookends are the ones that most need the Socratic ask Neil described.\n');
 
+// ── PART 4 ⭐ THE BOOKENDS THEMSELVES — added after Neil pushed back on the spine mapping
+//    (2026-08-02: *"I don't know if it's gonna work in every single plot structure… you'd have to
+//    actually check all of the plot templates"*). He was right, and checking them killed the
+//    question rather than answering it:
+//      • the INCITING INCIDENT is a DIVIDER roughly 80% through Stage I in ALL EIGHT, with 2–5
+//        rows after it — so spine b3 is an INTERIOR beat, not a bookend at either end;
+//      • therefore a stage's real bookends are simply its FIRST and LAST askable rows, which are
+//        per-archetype correct BY CONSTRUCTION and need no spine mapping at all.
+//    This prints them so the copy can be written against what the templates actually say.
+console.log('═'.repeat(100));
+console.log('PART 4 — THE REAL BOOKENDS: each stage’s first and last ASKABLE row, per archetype.');
+console.log('A count below 8/8 is not necessarily a divergence — most are the SAME beat reworded');
+console.log('for that archetype ("Villain / Monster / Dark forces appear to have cornered them").\n');
+{
+    const askable = (r) => r.beatType !== 'marker' && r.beatType !== 'turning-point';
+    STAGE_ORDER.forEach((sid, si) => {
+        const opens = {}, closes = {};
+        keys.forEach((k) => {
+            const rows = ARCH[k].sections[si].criteria.filter(askable);
+            const first = rows[0].label, last = rows[rows.length - 1].label;
+            (opens[first] = opens[first] || []).push(k);
+            (closes[last] = closes[last] || []).push(k);
+        });
+        console.log('  ' + sid.toUpperCase());
+        Object.entries(opens).forEach(([l, ks]) => console.log('    opens  ' + ks.length + '/8  "' + l + '"' + (ks.length < 8 ? '   [' + ks.join(', ') + ']' : '')));
+        Object.entries(closes).forEach(([l, ks]) => console.log('    closes ' + ks.length + '/8  "' + l + '"' + (ks.length < 8 ? '   [' + ks.join(', ') + ']' : '')));
+        console.log('');
+    });
+    console.log('  ⚠️ TRAGEDY is the one genuine structural outlier — it diverges at four boundaries');
+    console.log('     (no rescue, no liberation). That is the archetype being itself, not a defect.\n');
+}
+
 console.log('═'.repeat(100));
 console.log('READ THIS BEFORE BUILDING ANYTHING:');
 console.log('  • A STRONG cell licenses SHOW-AND-CONFIRM, never a silent pre-fill. A seeded row is not');
