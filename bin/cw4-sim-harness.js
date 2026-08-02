@@ -548,6 +548,34 @@ console.log('I5b · an accumulate push that gets RESTATED banks one copy, not tw
         + 'a rewrite instead of replacing it (#72)');
 }
 
+// ── I5c · THE BEAT-6 REFLECTION LIVES IN THE THROUGHLINE ROW (v7.20.405; FIXLIST #188) ─────
+console.log('I5c · the beat-6 irony answer files into the throughline row, never welded into beat 6');
+{
+    // The want-vs-need reflection IS the dramatic throughline (Fable audit ruling D2). Welding it
+    // into `cw-step-4-beat6` is what made Step 6's ending carry two paragraphs of thinking-aloud
+    // into the Final Image on Neil's prod run. Three texts, three homes.
+    const w = makeWorld();
+    await w.start();
+    // Drive the whole walk until every beat row is filled — the next ask is beat 6's irony.
+    let guard = 0;
+    while (guard++ < 60 && BEAT_FIDS.some(function (f) { return !w.rows.get(f); })) {
+        if (clearMenus(w)) continue;
+        w.say('drive answer ' + guard);
+        await settle();
+    }
+    ok(BEAT_FIDS.every(function (f) { return w.rows.get(f); }), 'setup: the drive never filled all six beats');
+    const beat6Before = String(w.rows.get('cw-step-4-beat6') || '');
+    clearMenus(w);
+    w.say('THE WANT VS NEED REFLECTION MARKER');
+    await settle();
+    const thr = String(w.rows.get(THROUGHLINE_FID) || '');
+    const beat6After = String(w.rows.get('cw-step-4-beat6') || '');
+    ok(/REFLECTION MARKER/.test(thr),
+        'the beat-6 irony answer did not reach the throughline row (landed nowhere or elsewhere)');
+    ok(!/REFLECTION MARKER/.test(beat6After) && beat6After === beat6Before,
+        'the beat-6 irony answer was welded into cw-step-4-beat6 — the #188 defect is back');
+}
+
 // ── I6 · RESUME ────────────────────────────────────────────────────────────────────────────
 console.log('I6 · resume repeats nothing and skips nothing');
 {

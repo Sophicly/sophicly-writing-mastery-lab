@@ -307,6 +307,8 @@ for (const k of KEYS) {
         }
         // An anchor confirm is a chip, not a typed turn.
         if (w.tap('still right')) { answered++; continue; }
+        // v7.20.405: the stage-I/VI opening recap (three-turn opening, audit ruling A3 turn 1).
+        if (w.tap('That’s it')) { continue; }
         // v7.20.368: so is the Step-4 CARRY confirm on the real first/last beat.
         if (w.tap('Use this')) { answered++; continue; }
         if (!w.ctl.active) break;
@@ -366,24 +368,49 @@ for (const k of KEYS) {
     ok(w.bubbles.filter(function (b) { return /your story’s two ends/i.test(b); }).length === 1,
         k + ': the story frame was served more than once in one run');
 
-    // #110 — the arc ask RENDERS the two beats it asks the student to bridge.
-    // Neil: "these teenagers are not gonna read it unless you show it to them."
-    const arcAsks = w.bubbles.filter(function (b) { return /This stage runs from/.test(b); });
+    // ⭐⭐ v7.20.405 (#193; audit ruling A) — THE THREE-TURN STAGE OPENING. One ask = one row:
+    // the compound "Tell me both" arc ask is GONE; each stage settles bookend-then-arc, and the
+    // arc is a COMPRESSION of two things already on screen, served only after the close files.
+    ok(!w.bubbles.some(function (b) { return /Tell me both/.test(b); }),
+        k + ': the compound two-in-one arc ask is back — one ask must own exactly one row (#193)');
+    const arcAsks = w.bubbles.filter(function (b) { return /The shape of /.test(b); });
     ok(arcAsks.length === ARCH[k].sections.length,
-        k + ': the arc ask must show the stage\'s two ends on every stage, got ' + arcAsks.length
-        + ' of ' + ARCH[k].sections.length);
-    ok(!arcAsks.some(function (b) { return /\*\*This stage runs from…\*\*\n\n\*\*…to/.test(b); }),
-        k + ': an arc ask printed the "runs from / to" frame with no beat inside it');
-    // The FIRST stage's arc ask must show their OWN carried words, not a placeholder — the frame
-    // has already filled that beat by the time this ask is served, so anything else means the ask
-    // is reading the template rather than the document.
+        k + ': every stage gets its arc turn, got ' + arcAsks.length + ' of ' + ARCH[k].sections.length);
+    // The arc quotes BOTH settled ends — never a "not written yet" placeholder (#187).
+    ok(!w.bubbles.some(function (b) { return /not written yet/.test(b); }),
+        k + ': a served turn told the student something was "not written yet" — machine tell, and the ordering law says ends are settled first');
+    ok(arcAsks.every(function (b) { return /runs from .+ to /.test(b.replace(/\n/g, ' ')); }),
+        k + ': an arc turn did not quote the stage\'s two settled ends');
+    // The FIRST stage's arc must quote their OWN carried opening; the last, their own ending.
     ok(/counts the days/.test(arcAsks[0] || ''),
         k + ': the Stage I arc ask did not show the student\'s own opening beat');
     ok(/opens the door/.test(arcAsks[arcAsks.length - 1] || ''),
         k + ': the final stage\'s arc ask did not show the student\'s own closing beat');
-    // A beat they have NOT written yet still shows something concrete (its prompt), never a blank.
-    ok(arcAsks.every(function (b) { return !/—\s*$/m.test(b); }),
-        k + ': an arc ask rendered a beat label with nothing after it');
+    // Per stage: the bookend ask ("Where X ends" — or "opens", Stage VI inverts) precedes the arc.
+    ARCH[k].sections.forEach(function (sec, si) {
+        const sName = (conceptsSandbox.window.WML_CW6_CONCEPTS.STAGES[sec.id] || {}).name || sec.label;
+        const arcAt = w.bubbles.findIndex(function (b) { return b.indexOf('The shape of ' + sName) !== -1; });
+        const bkAt = w.bubbles.findIndex(function (b) {
+            return b.indexOf('**Where ' + sName + ' ends**') !== -1 || b.indexOf('**Where ' + sName + ' opens**') !== -1;
+        });
+        ok(arcAt !== -1, k + '/' + sec.id + ': no arc turn for ' + sName);
+        ok(bkAt !== -1, k + '/' + sec.id + ': no bookend turn for ' + sName);
+        ok(bkAt !== -1 && arcAt !== -1 && bkAt < arcAt,
+            k + '/' + sec.id + ': the arc served BEFORE the bookend (bookend at ' + bkAt + ', arc at ' + arcAt + ') — the arc is a compression of settled ends');
+    });
+    // v7.20.405 (#191; audit ruling C1): the whole-walk total NEVER appears in the chat.
+    const total = w.order.length;
+    ok(!w.bubbles.some(function (b) { return b.indexOf('of ' + total) !== -1 && !/in this stage/.test(b); }),
+        k + ': a served turn stated the whole-walk total (' + total + ') — stage-relative counts only');
+    // ⭐ v7.20.405 (FIXLIST #194; audit ruling C5) — A SKIP IS ANNOUNCED WITH A ✓, NEVER SILENT.
+    // The frame carry fills beat 1, so `firstEmptyAsk()` legitimately passes its ask and the
+    // numbering used to jump 1 → 3 with no comment. The tick is real state: they did that work.
+    const tickLine = w.bubbles.filter(function (b) { return /^✓ Beat 1 —/.test(b); });
+    ok(tickLine.length === 1,
+        k + ': the carried opening was skipped ' + (tickLine.length ? 'and announced ' + tickLine.length + ' times' : 'SILENTLY')
+        + ' — a numbering jump the student cannot explain is a grounding failure (#194)');
+    ok(/it’s your opening/.test(tickLine[0] || ''),
+        k + ': the skip announcement did not say WHY beat 1 was already done');
 
     // Frame rows lead their stage, and no divider was ever asked.
     const secIds = ARCH[k].sections.map(function (s) { return s.id; });
@@ -425,6 +452,7 @@ for (const k of KEYS) {
         while (guard++ < total * 4) {
             if (w.armed) { w.resolveApi(/^cw6-stage-/.test(w.armed.id) ? '@STAGE_OK' : '@OUTLINE_OK'); continue; }
             if (w.tap('still right')) continue;
+            if (w.tap('That’s it')) continue;   // v7.20.405: the stage-I/VI opening recap
             if (w.tap('Use this')) continue;   // v7.20.368: the Step-4 carry confirm
             if (!w.ctl.active) break;
             w.ctl.handleTurn('resumed answer');
@@ -454,6 +482,7 @@ for (const k of KEYS) {
         while (guard++ < total * 4) {
             if (w.armed) { w.resolveApi(/^cw6-stage-/.test(w.armed.id) ? '@STAGE_OK' : '@OUTLINE_OK'); continue; }
             if (w.tap('still right')) continue;
+            if (w.tap('That’s it')) continue;   // v7.20.405: the stage-I/VI opening recap
             if (w.tap('Use this')) continue;   // v7.20.368: the Step-4 carry confirm
             if (!w.ctl.active) break;
             w.ctl.handleTurn('resumed answer');
@@ -490,14 +519,16 @@ for (const k of KEYS) {
         w.ctl.tryResume();
         const seen = w.bubbles.some(function (b) { return /your story’s two ends/i.test(b); });
         if (!ok(seen, 'resume@' + n + ': the two-ends frame was never served on resume (#159 — the walk taught nothing to anyone coming back)')) { bad++; return; }
-        // And it must speak to a returning student, not tell someone 60 beats in that we are
-        // "before we start" — which reads as *your work is gone* (#159's named failure).
+        // ⭐ v7.20.405 (FIXLIST #186; audit ruling B1) — a RETURNING student with written rows gets
+        // the SHORT frame: two first-clause quotes and the chips, never the ~200-word full serving
+        // (Neil read it four times in one session) and never "Before we start" (#159).
         const frame = w.bubbles.filter(function (b) { return /your story’s two ends/i.test(b); }).pop() || '';
-        if (!ok(/Before you carry on/i.test(frame) && !/Before we start/i.test(frame),
+        if (!ok(!/Before we start/i.test(frame),
             'resume@' + n + ': the frame greeted a returning student with "Before we start"')) bad++;
-        // #160 — the CONNECTION between the two ends must be stated, not just the two ends shown.
-        if (!ok(/distance between them/i.test(frame),
-            'resume@' + n + ': the frame showed both ends but never said how they connect (#160)')) bad++;
+        if (!ok(!/distance between them/i.test(frame),
+            'resume@' + n + ': the FULL frame was re-served on resume — the full frame serves once, ever (#186)')) bad++;
+        if (!ok(/Opening:/.test(frame) && /Ending:/.test(frame),
+            'resume@' + n + ': the short frame did not show both ends as one-liners')) bad++;
         // Settling it must leave the student with something to do — never a dead screen (§4d).
         if (!ok(w.tap('still right'), 'resume@' + n + ': the frame offered no way forward')) bad++;
     });
@@ -508,6 +539,43 @@ for (const k of KEYS) {
     if (!ok(!done.bubbles.some(function (b) { return /your story’s two ends/i.test(b); }),
         'resume: the frame was re-served to a student whose two ends are already settled')) bad++;
     if (!bad) console.log('   ✓ the two-ends frame is reachable on resume, speaks to a returning student, and asks only once');
+})();
+
+// ── ⭐⭐ v7.20.405 (FIXLIST #187) — THE ORDERING LAW: NOTHING DOWNSTREAM SERVES WHILE THE ────
+// FRAME IS OWED. On Neil's prod run the stage opener and the arc ask were served while the
+// system still said his opening was "not written yet", and only THEN did the frame come back
+// asking him to confirm the two ends — so he answered the same question twice, the second time
+// about a span whose start the machine had just told him did not exist.
+// `tryResume` has its own frame check, so the resume path alone does NOT prove this: the gap is
+// `advance()` → `serveCurrent()`, reachable whenever an end goes empty MID-SESSION (the student
+// deletes their ending row in the document — the same edit cw4-sim's I3b drives). Without the
+// guard in serveCurrent the walk sails past the unsettled frame into the next beat.
+(function orderingLaw() {
+    const k = 'rags-to-riches';
+    const probe = makeWorld(k);
+    const total = probe.order.length;
+    const w = makeWorld(k, { prefill: probe.order.slice(0, 8) });
+    w.deps.localStorage.setItem('sim_cw6', JSON.stringify({ phase: 'ask', checkStage: -1, active: true, key: k, frameShown: 1 }));
+    w.ctl.tryResume();
+    w.tap('still right');            // settle the frame
+    w.tap('That’s it');              // clear the opening recap if it is up
+    // The student now deletes their ENDING in the document — the frame is owed again.
+    const closeFid = probe.order[total - 1];
+    w.rows.set(closeFid, '');
+    const before = w.bubbles.length;
+    w.ctl.handleTurn('an answer to the beat in hand');
+    const after = w.bubbles.slice(before);
+    const frameAt = after.findIndex(function (b) { return /two ends/i.test(b); });
+    const askAt = after.findIndex(function (b) { return /A strong version of this beat|The shape of /.test(b); });
+    ok(frameAt !== -1,
+        'ordering law: an end went empty mid-session and the walk carried on downstream instead of '
+        + 'settling the frame — this is #187, where the arc ask was served before the ends existed');
+    ok(askAt === -1 || (frameAt !== -1 && frameAt < askAt),
+        'ordering law: a downstream ask was served BEFORE the owed frame (frame at ' + frameAt + ', ask at ' + askAt + ')');
+    // And it must never tell the student a bookend is "not written yet" (audit ruling E1/E2).
+    ok(!after.some(function (b) { return /not written yet/.test(b); }),
+        'ordering law: a served turn said "not written yet" — the ends are settled before anything references them');
+    console.log('   ✓ ordering law: an end emptied mid-session re-settles the frame before any downstream ask');
 })();
 
 // ── FAIL-OPEN: a dropped marker must never strand the student. ────────────────────────────
@@ -523,6 +591,7 @@ for (const k of KEYS) {
     // carry on with what this scenario is actually about. The resume sweeps above already did
     // this incidentally — their drive loops tap 'still right' — these three did not.
     w.tap('still right');
+    w.tap('That’s it');                                     // v7.20.405: the opening recap turn
     w.ctl.handleTurn('the last beat');
     ok(!!w.armed && w.armed.id === 'cw6-finish', 'fail-open: the finish check did not fire on the last row');
     w.resolveApi(null);                                     // the call failed / timed out
@@ -536,6 +605,7 @@ for (const k of KEYS) {
     w2.deps.localStorage.setItem('sim_cw6', JSON.stringify({ phase: 'ask', checkStage: -1, active: true, key: k }));
     w2.ctl.tryResume();
     w2.tap('still right');                                  // v7.20.391 — settle the two-ends frame first
+    w2.tap('That’s it');                                    // v7.20.405: the opening recap turn
     w2.ctl.handleTurn('last beat of stage I');
     ok(!!w2.armed && /^cw6-stage-0$/.test(w2.armed.id), 'fail-open: the stage-I micro-check did not fire when the stage completed');
     w2.resolveApi(null);
@@ -552,6 +622,7 @@ for (const k of KEYS) {
     w.deps.localStorage.setItem('sim_cw6', JSON.stringify({ phase: 'ask', checkStage: -1, active: true, key: k }));
     w.ctl.tryResume();
     w.tap('still right');                                   // v7.20.391 — settle the two-ends frame first
+    w.tap('That’s it');                                     // v7.20.405: the opening recap turn
     w.ctl.handleTurn('last beat of stage I');
     w.resolveApi('Does he actually change here?\n\n@STAGE_GAP');
     ok(w.tap('Sharpen'), 'gap path: no "Sharpen this stage’s arc" chip was offered');
@@ -580,7 +651,8 @@ await (async function noSpine() {
     const firstBeat = w.order.filter(function (f) {
         return f.indexOf(_cw6RowFieldId('the-quest', 'setup', '')) === 0 && !/-stage_arc$/.test(f);
     })[0];
-    w.ctl.handleTurn('He starts in a rebellious state.');   // the arc ask comes first
+    // v7.20.405: the three-turn order serves the OPENING bookend first on Stage I — with no spine
+    // to carry, it is a plain ask, and the first typed answer files into the real first beat.
     w.ctl.handleTurn('A boy counts the days on his wall.');
     ok(/counts the days/.test(w.rows.get(firstBeat) || ''),
         'no-spine: the typed first beat was not filed into ' + firstBeat);
@@ -667,7 +739,7 @@ for (const k of KEYS) {
         const has = function () { return w.chips().some(function (b) { return String(b.textContent).indexOf(rung) !== -1; }); };
         let guard = 0;
         while (guard++ < 60 && !has()) {
-            if (w.tap('still right') || w.tap('Use this')) continue;
+            if (w.tap('still right') || w.tap('That’s it') || w.tap('Use this')) continue;
             if (w.armed) { w.resolveApi('@STAGE_OK'); continue; }
             if (!w.ctl.active) break;
             w.ctl.handleTurn('answer ' + guard);
@@ -676,8 +748,13 @@ for (const k of KEYS) {
         ok(reached, k + '/' + rung + ': never reached an ask carrying this rung');
         if (!reached) continue;
 
-        // THE SLOT THE ASK IN HAND OWNS = the first still-empty row in document order.
-        const slot = w.order.filter(function (f) { return !w.rows.get(f); })[0];
+        // THE SLOT THE ASK IN HAND OWNS — read from the REAL armed answer slot, the controller's
+        // own filing authority. (v7.20.405: serve order is no longer document order — the
+        // three-turn opening asks the closing bookend before the middle beats — so "first empty
+        // row in doc order" would assert the OLD sequence, not the contract.)
+        const slotTok = w.deps._walkSlot.peek('cw6');
+        ok(!!slotTok, k + '/' + rung + ': the ask in hand armed no answer slot');
+        const slot = slotTok && slotTok.fid;
         const filledBefore = [...w.rows.values()].filter(Boolean).length;
 
         const tapped = w.tap(rung);
@@ -711,6 +788,72 @@ for (const k of KEYS) {
 }
 
 console.log('   ✓ help rungs (all 4) never file, and the answer after one still lands in the beat in hand — every archetype');
+
+// ── ⭐⭐ v7.20.405 — THE ZERO-API PASS (the degraded-mode contract, research doc 2026-08-02,
+// Neil's commission #197: "what if in a worst case scenario we've got no AI?"). EVERY armed API
+// call fails; the walk must still start, teach, file, tick, announce honestly, and FINISH.
+// Contract §1 completion · §2 liveness (the drive loop itself stalls on a dead screen) ·
+// §5 rung 3 fails honestly · §8 honest to the student · §10 no re-demand after completion.
+await (async function zeroApiPass() {
+    const k = 'rebirth-redemption';
+    const w = makeWorld(k);
+    const expect = w.order.length;
+    w.ctl.forceStart();
+    await tick();
+    let guard = 0, apiFailures = 0;
+    while (guard++ < expect * 4) {
+        if (w.armed) { apiFailures++; w.resolveApi(null); continue; }   // every call fails
+        if (w.tap('still right') || w.tap('That’s it') || w.tap('Use this')) continue;
+        if (!w.ctl.active) break;
+        w.ctl.handleTurn('degraded answer ' + guard);
+    }
+    const filled = [...w.rows.values()].filter(Boolean).length;
+    ok(filled === expect, 'zero-api: only ' + filled + '/' + expect + ' rows filled — an API failure gated completion (contract §1)');
+    ok(w.ticks.size === expect, 'zero-api: only ' + w.ticks.size + '/' + expect + ' rows ticked at zero API');
+    ok(apiFailures >= 6, 'zero-api: expected the walk to attempt its ~6 judgment calls, saw ' + apiFailures);
+    ok(!w.ctl.active, 'zero-api: the walk never finished with every call failing');
+    ok(/complete plot outline/i.test(w.bubbles[w.bubbles.length - 1] || ''), 'zero-api: the run did not end on the wrap');
+    // §8 honest to the student: a failed check SAYS so, in student language, zero machine tells.
+    ok(w.bubbles.some(function (b) { return /couldn’t give this stage a proper look/.test(b); }),
+        'zero-api: a failed stage check passed in silence — the student asked for a check and was ignored');
+    // ("failure"/"fails" appear legitimately in teaching copy — Tragedy's beats are about
+    // failing. The machine tells are the mechanical forms.)
+    ok(!w.bubbles.some(function (b) { return /timed out|\bAPI\b|status code|request failed/i.test(b); }),
+        'zero-api: a served bubble leaked machine vocabulary about the failure');
+    // §10 no double-charging: a degraded-complete walk is complete — never re-demanded.
+    ok(w.ctl.tryResume() === false, 'zero-api: a walk completed at zero API was re-demanded on resume (contract §10)');
+
+    // §5 — rung 3 fails HONESTLY: plain sentence, free rungs re-offered, answer still files.
+    const w2 = makeWorld(k);
+    w2.ctl.forceStart();
+    await tick();
+    let g2 = 0;
+    const hasStuck = function () { return w2.chips().some(function (b) { return /Still stuck/.test(String(b.textContent)); }); };
+    while (g2++ < 60 && !hasStuck()) {
+        if (w2.tap('still right') || w2.tap('That’s it') || w2.tap('Use this')) continue;
+        if (w2.armed) { w2.resolveApi(null); continue; }
+        if (!w2.ctl.active) break;
+        w2.ctl.handleTurn('answer ' + g2);
+    }
+    ok(hasStuck(), 'zero-api/rung3: never reached an ask offering Ask Sophia');
+    const slotBefore = w2.deps._walkSlot.peek('cw6');
+    w2.tap('Still stuck');
+    ok(!!w2.armed, 'zero-api/rung3: the tap did not open a help call');
+    w2.resolveApi(null);                                    // Sophia is unreachable
+    await tick();
+    const honest = w2.bubbles[w2.bubbles.length - 1] || '';
+    ok(/can’t think this through with you right now/.test(honest),
+        'zero-api/rung3: no honest message — a dead rung is a silent no-op (contract §5)');
+    ok(/More examples|Guidance/.test(honest), 'zero-api/rung3: the free rungs were not re-offered');
+    ok(/tutor/.test(honest), 'zero-api/rung3: the stuck-point capture for the tutor was not named');
+    ok(w2.chips().length > 0, 'zero-api/rung3: no chips on screen after the honest message — dead end (§4d)');
+    // And the student's own answer still lands in the beat they were on.
+    w2.ctl.handleTurn('MY OWN DEGRADED SENTENCE');
+    const landed = [...w2.rows.keys()].filter(function (f) { return /MY OWN DEGRADED SENTENCE/.test(w2.rows.get(f) || ''); });
+    ok(landed.length === 1 && (!slotBefore || landed[0] === slotBefore.fid),
+        'zero-api/rung3: the answer after a failed help call did not land in the beat in hand');
+    console.log('   ✓ zero-API pass: full run completes, checks fail honestly, rung 3 degrades to the honest triple, nothing re-demanded');
+})();
 
 console.log('   ' + asserts.pass + ' behavioural assertions passed'
     + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : '') + ' across ' + KEYS.length + ' archetype(s)');

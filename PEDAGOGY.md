@@ -1349,3 +1349,50 @@ AO criteria are not a shape to depart from.
 point was always that the archetypes are not a form to fill in — never that they will not fit.
 Whoever wrote the shipped line read §139 and landed one step too far, which is why this section
 exists: the same sentence has now been authored twice, and the second time it needed a rule.
+
+## §25. ⭐⭐ RETELLING IS A LEGITIMATE CREATIVE ACT — imitation is not the enemy; the enemy is an ask that teaches nothing (Neil, ruled 2026-08-02)
+
+Neil, pushing back on the zero-AI research's rule 5 ("more examples is the wrong lever — volume
+increases copying"): *"I don't think it's a problem with students because they can never really
+fully copy. Even with Shakespeare, Romeo and Juliet is not an original Shakespeare story — that's
+Shakespeare taking a story that was popular during the time and he retold it in his own way. So I
+don't see any problem with students doing the same thing. As long as what they end up with is a
+story that is uniquely theirs… I don't think that it's strictly true, especially when it comes to
+creative writing."*
+
+**THE RULING.** Story-level imitation — taking a known story's shape, situation or premise and
+retelling it — is a legitimate, even canonical, creative method, and no walk, protocol or feedback
+surface may treat it as a fault. A student whose story is recognisably "Rebirth, but with an AI
+empire" or "Christmas Carol, but a teenage girl" is doing what Shakespeare did, and is told so if
+it ever comes up.
+
+**WHAT SURVIVES OF THE RESEARCH FINDING, reconciled rather than averaged (root CLAUDE.md #7).**
+The conformity-effect literature (Smith, Ward & Schumacher 1993) is about a NARROWER thing than
+Neil is defending: when a single example sits directly beside a generate-ask, novices reproduce
+that example's SURFACE FEATURES in that answer — the phrasing, the props, the specific move — which
+displaces their own generation *on that beat*. That is not retelling; it is the ask short-circuiting
+itself. So the design consequences stand ON DIFFERENT GROUNDS than "copying is bad":
+- **Two contrasting examples + "what do they share?" beats one example** — not because imitation
+  must be prevented, but because the comparison teaches the UNDERLYING MOVE, which is exactly what
+  a student needs in order to retell WELL rather than transcribe.
+- **Never model on the student's own story** — their material stays theirs to shape (the ownership
+  law), not because borrowing is wrong.
+- **"Add a constraint, not a fourth example"** stays as the fix for a weak ask — on teaching
+  grounds, not anti-copying grounds.
+Any copy, criteria line or feedback rule that penalises "derivative" story choices, or praises
+"originality" as a virtue in itself, contradicts this section and is a defect.
+
+## §26. ⭐ MOMENTUM OUTRANKS ENRICHMENT IN THE LONG WALKS (Neil, ruled 2026-08-02)
+
+On the proposal to add error-spotting and richer per-beat exercises to Step 6: *"Part of what I
+want them to do is actually just get through it — I want them to get through it well, but I don't
+want them to get bogged down, because it is a lot of work for them to do. I have a feeling it's
+gonna take us several sessions to get it finished."*
+
+**THE RULING.** In a long walk (Step 6 is ~100 beats over several sessions), the default ask is
+LEAN: criteria → example(s) → question → self-check. Enrichment moves (error-spotting, contrast-
+before-telling, extra practice) are reserved for FIRST EXPOSURE to a beat type or served through
+the help ladder on demand — never appended to every beat of a type the student has already met.
+Sharpens §12 (forward motion) for the ~100-beat scale: the walk's job is a COMPLETED outline the
+student owns, not maximal exercise per beat. Rough-now-polish-later (the drafts exist for depth)
+is the standing frame; a beat that took three interactions when one would do is a pacing defect.

@@ -20640,8 +20640,15 @@
                     // Both the beat and its irony answer land in the SAME row — the irony
                     // deepens the beat rather than being a separate box. _writeOutlineRowField
                     // appends when the row already holds text.
+                    // ⭐ v7.20.405 (FIXLIST #188; Fable audit ruling D2) — EXCEPT BEAT 6. The beat-6
+                    // irony answer is the want-vs-need reflection: it IS the dramatic throughline,
+                    // and welding it into `cw-step-4-beat6` is what made Step 6's ending carry two
+                    // paragraphs of thinking-aloud into the Final Image. Three texts, three homes:
+                    // the beat row keeps the one-sentence climax; the reflection lives in the
+                    // throughline row (its real home, which already rides the Story Spine rail).
                     try {
-                        if (_writeOutlineRowField(b.fid, full) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                        const target = (wasIrony && b.fid === 'cw-step-4-beat6') ? THROUGHLINE_FID : b.fid;
+                        if (_writeOutlineRowField(target, full) && typeof saveCanvasContent === 'function') saveCanvasContent();
                     } catch (e) { console.warn('WML CW4: write failed (non-fatal)', e && e.message); }
                     active = true;
                     if (!wasIrony && b.irony) {
@@ -20906,9 +20913,17 @@
             // v7.20.373: asks whose extra examples have been spent (persisted; see serveMoreExamples).
             // Keyed on fid, so every ask keeps its own pool.
             let moreSpent = {};
+            // v7.20.405 (FIXLIST #186; audit ruling B1): the FULL two-ends frame serves exactly
+            // once per project — this flag records that it has. A frame still unsettled after that
+            // re-serves as the SHORT form only (two one-line quotes + the same chips).
+            let frameShown = 0;
+            // v7.20.405: stages whose turn-1 opening recap has been served (audit ruling A2).
+            let recapped = {};
+            // v7.20.405 (FIXLIST #194): carried rows whose skip has been announced with a ✓.
+            let announced = {};
 
             const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw6') + '_cw6'; } catch (e) { return 'swml_cw6'; } };
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, checkStage, active, key, oriented, frameFix, moreSpent })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ phase, checkStage, active, key, oriented, frameFix, moreSpent, frameShown, recapped, announced })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -20948,42 +20963,78 @@
                 }
                 return best;
             }
+            // ⭐⭐ v7.20.405 — THE THREE-TURN STAGE OPENING (FIXLIST #193; Fable audit ruling A).
+            // ONE ASK = ONE ROW is law: the old compound arc ask ("tell me both…") filed both
+            // halves into `stage_arc` while the closing-bookend row stayed empty — Neil predicted
+            // the failure before submitting, and the measure of his prod doc proved him right.
+            // The SERVE ORDER per stage is now bookends-first (study §5c: a stage's bookends are
+            // its own first and last askable rows — per-archetype correct by construction):
+            //   setup:      [opening beat (frame/carry) · closing beat ASKED · arc · middles]
+            //   II–V:       [closing beat ASKED · arc · beats in template order]
+            //               (their opening bookend is the PREVIOUS stage's close — the same moment
+            //               viewed twice; it is SHOWN in the opener, never re-asked or re-filed)
+            //   aftermath:  [Final Image (frame/carry) · opening beat ASKED · arc · middles]
+            //               (Stage VI inverts: its close is settled at the frame, so the ask
+            //               moves to its opening — liberation/return; Tragedy's own row text
+            //               rides in automatically because everything derives from the template)
+            // The DOCUMENT is untouched — rows keep their template order, so nothing needs the
+            // baked-scaffold heal. Only the ASK order changes, and `firstEmptyAsk()` walks the
+            // ASKS array, so resume follows the same sequence by construction.
+            // ⚠ Bookends are FLAGS, never positions (`a.bookend`, `a.bookendAsk`) — the .368
+            // lesson: a position is not an identity, and this reorder is exactly the change that
+            // would have silently broken every positional read.
             function buildAsks(k) {
                 const arch = OUTLINE_CRITERIA.cwPlotArchetypes[k];
                 ASKS = []; stages = [];
                 if (!arch || !Array.isArray(arch.sections)) return;
+                const lastSi = arch.sections.length - 1;
                 arch.sections.forEach(function (sec, si) {
                     const meta = CM.STAGES[sec.id] || { name: sec.label, job: '', ex: '' };
                     const from = ASKS.length;
+                    const frameAsks = [];
                     _cw6FrameRowsFor(sec.id).forEach(function (fr) {
-                        ASKS.push({
+                        frameAsks.push({
                             kind: fr === 'stage_arc' ? 'arc' : 'anchor', anchorKind: fr, stage: si,
                             fid: _cw6RowFieldId(k, sec.id, fr),
                             label: CW6_FRAME_ROWS[fr].label, prompt: CW6_FRAME_ROWS[fr].prompt, concept: null,
                         });
                     });
+                    const beatAsks = [];
                     sec.criteria.forEach(function (c) {
                         // turning-point / marker render as divider HEADINGS and carry NO fieldId —
                         // they are signposts, so the walk skips them (same rule as the builder).
                         if (c.beatType === 'turning-point' || c.beatType === 'marker') return;
-                        ASKS.push({
+                        beatAsks.push({
                             kind: 'beat', stage: si, fid: _cw6RowFieldId(k, sec.id, c.id),
                             label: c.label || '', prompt: c.prompt || '', concept: conceptFor(c.label, c.prompt),
                         });
                     });
+                    // Beat numbers follow the TEMPLATE (document) order, whatever the serve order,
+                    // so "beat 3 of 20" always matches what the student sees in their outline.
+                    beatAsks.forEach(function (b, n) { b.beatNum = n + 1; b.beatTotal = beatAsks.length; });
+                    const openB = beatAsks[0] || null, closeB = beatAsks[beatAsks.length - 1] || null;
+                    if (openB) openB.bookend = 'open';
+                    if (closeB && closeB !== openB) closeB.bookend = 'close';
+                    let ordered;
+                    if (beatAsks.length < 2) {
+                        ordered = beatAsks.concat(frameAsks);
+                    } else if (sec.id === 'setup') {
+                        openB.bookendCarried = true; closeB.bookendAsk = true;
+                        ordered = [openB, closeB].concat(frameAsks, beatAsks.slice(1, -1));
+                    } else if (si === lastSi || sec.id === 'aftermath') {
+                        closeB.bookendCarried = true; openB.bookendAsk = true;
+                        ordered = [closeB, openB].concat(frameAsks, beatAsks.slice(1, -1));
+                    } else {
+                        closeB.bookendAsk = true;
+                        ordered = [closeB].concat(frameAsks, beatAsks.slice(0, -1));
+                    }
+                    ordered.forEach(function (a) { ASKS.push(a); });
                     // v7.20.368: `concepts` MUST be carried through. It was not, so `s.concepts` was always
                     // undefined and the stage explanation silently emitted nothing — the block is
                     // guarded by `if (cc)`, so a missing field is invisible rather than loud.
                     stages.push({ id: sec.id, label: sec.label, name: meta.name, job: meta.job, ex: meta.ex,
-                        concepts: meta.concepts, from: from, to: ASKS.length });
+                        concepts: meta.concepts, from: from, to: ASKS.length, beatTotal: beatAsks.length });
                 });
-                // Per-stage counts for the ask headers + the sidebar ("Setup — 9 of 15").
-                ASKS.forEach(function (a) {
-                    const s = stages[a.stage];
-                    a.nInStage = (a.kind === 'anchor' ? 0 : 0);   // filled below
-                    a.stageTotal = s.to - s.from;
-                });
-                stages.forEach(function (s) { for (let n = s.from; n < s.to; n++) ASKS[n].nInStage = n - s.from + 1; });
             }
             function rowText(fid) {
                 let out = '';
@@ -21143,8 +21194,9 @@
                 'something a camera could film: a place, a person, an action',
                 'rough is fine. You will deepen every beat across the later drafts',
             ];
-            // v7.20.371 — the beats a stage RUNS BETWEEN, for the arc ask (#110).
-            // Found by KIND, never by offset (the .368 lesson: a position is not an identity).
+            // v7.20.371 — the beats a stage RUNS BETWEEN. v7.20.405: found by FLAG, set once at
+            // build (the .368 lesson: a position is not an identity — and the three-turn reorder
+            // is exactly the change that would have broken a positional read).
             function stageBeats(si) {
                 const s = stages[si];
                 if (!s) return [];
@@ -21152,58 +21204,111 @@
                 for (let n = s.from; n < s.to; n++) if (ASKS[n] && ASKS[n].kind === 'beat') out.push(ASKS[n]);
                 return out;
             }
-            // One end of the stage, SHOWN: their sentence if they have written it, otherwise the
-            // beat's own prompt so the row is still concrete rather than an empty promise.
-            function stageEndLine(a) {
-                if (!a) return '';
-                const written = rowText(a.fid);
-                if (written) return '> **' + a.label + '** — ' + written + '\n\n';
-                const p = (a.prompt || '').trim();
-                return '> **' + a.label + '** — *not written yet' + (p ? '. This beat asks: ' + p : '') + '*\n\n';
+            function stageBookend(si, which) {
+                const s = stages[si];
+                if (!s) return null;
+                for (let n = s.from; n < s.to; n++) if (ASKS[n] && ASKS[n].bookend === which) return ASKS[n];
+                return null;
             }
-            function stageEndsBlock(si) {
-                const beats = stageBeats(si);
-                if (beats.length < 2) return '';
-                const first = beats[0], last = beats[beats.length - 1];
-                return '**This stage runs from…**\n\n' + stageEndLine(first)
-                    + '**…to:**\n\n' + stageEndLine(last)
-                    + 'Your arc is the journey between those two moments.\n\n';
+            // The QUOTE BUDGET (audit ruling B2): anything the student wrote that runs past ~30
+            // words is referenced by its first clause — the chat POINTS at the document, it never
+            // mirrors it. The one place the full text ever prints is the first-ever frame.
+            function firstClause(text, words) {
+                const t = String(text || '').trim().replace(/\s+/g, ' ');
+                if (!t) return '';
+                const parts = t.split(' ');
+                const cap = words || 14;
+                if (parts.length <= cap) return t;
+                return parts.slice(0, cap).join(' ') + '…';
+            }
+            // ⭐ v7.20.405 (FIXLIST #194; audit ruling C5) — A SKIP IS ANNOUNCED, NEVER SILENT.
+            // A row the frame carry filled makes `firstEmptyAsk()` legitimately pass its ask, and
+            // the numbering used to jump 1 → 3 with no comment — a grounding failure the student
+            // reads as "did I miss one?". One short line before the next ask, and the tick is
+            // REAL state: they did do that work.
+            // ⚠ Emitted at SERVE time, never inside askBody — askBody is also used as a pure
+            // comparison (`_cwLastAssistantIs`), and a render with side effects would mark the
+            // announcement made without it ever reaching the screen.
+            function emitSkips(a) {
+                if (!a || a.kind !== 'beat') return;
+                let out = '';
+                stageBeats(a.stage).forEach(function (b) {
+                    if (b === a || !b.beatNum || (a.beatNum && b.beatNum >= a.beatNum)) return;
+                    // ⚠ ONLY a row something ELSE filled — the frame carry. A beat the student
+                    // answered a moment ago is not a skip, and announcing it would tick their own
+                    // work back at them every single turn. (The gate caught exactly that: six
+                    // announcements per run instead of one.)
+                    if (!b.bookendCarried) return;
+                    if (!rowText(b.fid) || announced[b.fid]) return;
+                    announced[b.fid] = 1;
+                    out += (out ? '\n' : '') + '✓ Beat ' + b.beatNum + ' — **' + b.label + '** — is already in place'
+                        + (b.bookend === 'open' ? ': it’s your opening.' : (b.bookend === 'close' ? ': it’s your ending.' : '.'));
+                });
+                if (out) { persist(); aiBubble(out); }
             }
             function askBody(a) {
                 const s = stages[a.stage];
                 const c = a.concept;
-                // v7.20.340: the in-chat progress bar, derived from where the walk actually is.
-                // v7.20.356: the STAGE name is the chip's top-liner; the chip's own count is the
-                // whole-walk position, so the stage-relative one stays as the heading beneath it.
-                let out = cwProgressBar(ASKS.indexOf(a) + 1, ASKS.length, s.name,
-                    a.nInStage + ' of ' + a.stageTotal + ' in this stage');
+                // ⭐ v7.20.405 (FIXLIST #191; audit ruling C) — ONE count, STAGE-scoped. "Step 1 of
+                // 105" is never shown anywhere in the chat: whole-walk progress lives in the
+                // sidebar, where six stages with per-stage fill show shape rather than a number a
+                // 14-year-old reads as "104 to go". Near the stage's end the framing flips to
+                // to-go ("2 left in this stage") — the Koo & Fishbach small-area crossover.
+                // Bookend and arc turns are UNNUMBERED (they are the stage's frame, not beats),
+                // so the beat numbers mean exactly what they say.
+                let out = '';
+                if (a.kind === 'beat' && !a.bookendAsk && a.beatNum) {
+                    const beats = stageBeats(a.stage);
+                    const left = beats.filter(function (b) { return !rowText(b.fid); }).length;
+                    const heading = (left > 0 && left <= 2)
+                        ? (left === 1 ? 'last one in this stage' : left + ' left in this stage')
+                        : 'beat ' + a.beatNum + ' of ' + a.beatTotal + ' in this stage';
+                    out = cwProgressBar(a.beatNum, a.beatTotal, s.name, heading, 'Beat');
+                } else {
+                    out = '**' + s.name + '**\n\n';
+                }
                 if (a.kind === 'arc') {
-                    // v7.20.367 (Neil, FIXLIST #95): this is NOT a beat, and it used to read like
-                    // one — "you'd need to ask the questions in a way where the student knows what
-                    // they're doing… give a quick preview." His own "I don't know why they're
-                    // there" was never about the row; it was an ask that never said what it was
-                    // for. So: name the job, say WHY it comes first, then ask (§4c.4 — the
-                    // concrete action LAST).
-                    out += '**First — where this stage takes your protagonist**\n\n'
-                        + 'This one is not a beat. It is the *shape* of the stage: fix the two ends '
-                        + 'now, and every beat you write afterwards has somewhere to sit between '
-                        + 'them. It takes one or two sentences.\n\n'
-                        // ⭐ v7.20.371 (Neil, FIXLIST #110 — the sharpest point of the session):
-                        // "why doesn't it present beat one and the final beat in the stage so I can
-                        // at least SEE? These teenagers are not gonna read it unless you SHOW it to
-                        // them." The ask used to name two ends the student had to hold in their head
-                        // or go hunting for in the document. Now the stage's first and last beats are
-                        // rendered inline — their OWN words where they have written them, the beat's
-                        // own prompt where they have not — so the arc is visibly a bridge between two
-                        // things on the screen.
-                        + stageEndsBlock(a.stage)
-                        + '**Tell me both:**\n\n'
-                        + '1. How does your protagonist **BEGIN** this stage?\n'
-                        + '2. How are they **DIFFERENT** when they **LEAVE** it?\n\n'
-                        + 'Example: ' + s.ex;
+                    // ⭐ v7.20.405 (audit ruling A3, turn 3) — the arc is a COMPRESSION of two
+                    // things already settled and on screen, served only after the closing bookend
+                    // files. The student never describes a span whose ends are missing (#187),
+                    // and the compound "tell me both" ask is gone (#193).
+                    const ob = stageBookend(a.stage, 'open'), cb = stageBookend(a.stage, 'close');
+                    // Stages II–V open exactly where the previous stage closed (the same moment
+                    // viewed twice — audit A2): their own first row is a later beat, so the arc's
+                    // "from" end is the previous stage's settled close.
+                    let openTxt = firstClause(ob && rowText(ob.fid));
+                    if (!openTxt && a.stage > 0) {
+                        const prev = stageBookend(a.stage - 1, 'close');
+                        openTxt = firstClause(prev && rowText(prev.fid));
+                    }
+                    const closeTxt = firstClause(cb && rowText(cb.fid));
+                    out += '**The shape of ' + s.name + ' — one sentence**\n\n';
+                    if (openTxt && closeTxt) {
+                        out += 'Your stage now runs from *“' + openTxt + '”* to *“' + closeTxt + '”* — both are in your outline, on the left.\n\n';
+                    }
+                    out += 'Example: ' + s.ex + '\n\n'
+                        + '**In one sentence: how is your protagonist different at the end of this stage from the person we met at its start?**';
                     return out;
                 }
-                out += '**' + a.label + '**\n\n';
+                if (a.bookendAsk) {
+                    // ⭐ v7.20.405 (audit ruling A3, turn 2) — the stage's own bookend, asked as ONE
+                    // Socratic question. For Stages I–V this is where the stage ENDS; Stage VI
+                    // inverts (its ending is settled at the frame) and asks where it OPENS.
+                    const isOpen = a.bookend === 'open';
+                    out += '**Where ' + s.name + ' ' + (isOpen ? 'opens' : 'ends') + '**\n\n';
+                    const p = (a.prompt || '').trim();
+                    if (p && p.replace(/[.…]$/, '').toLowerCase() !== (a.label || '').replace(/[.…]$/, '').toLowerCase()) out += p + '\n\n';
+                    out += '**A strong version of this beat:**\n\n'
+                        + ((c && c.crit) || GENERIC_CRIT).map(function (b) { return '- ' + b; }).join('\n') + '\n\n'
+                        + 'Example: ' + ((c && c.ex) || s.ex) + '\n\n'
+                        + '**What happens in YOUR story that ' + (isOpen ? 'opens this stage' : 'brings your protagonist to that point') + '? One or two sentences.**';
+                    return out;
+                }
+                // ⭐ v7.20.405 (audit ruling E10) — the raw template label never HEADLINES an ask:
+                // it is the machine's name for a row, written in author-note register ("May have a
+                // false sense of balance…"). The concept's own name headlines where one matched;
+                // the label stays visible in the document row the answer files into.
+                out += '**' + ((c && c.name) || a.label) + '**\n\n';
                 // The template's own prompt, when it says more than the label already did.
                 const p = (a.prompt || '').trim();
                 if (p && p.replace(/[.…]$/, '').toLowerCase() !== (a.label || '').replace(/[.…]$/, '').toLowerCase()) out += p + '\n\n';
@@ -21223,9 +21328,12 @@
             function serveAsk() {
                 const a = ASKS[i];
                 phase = 'ask';
+                emitSkips(a);   // v7.20.405 (#194): announce carried rows before the ask, once
                 aiBubble(askBody(a));
                 helpBar(a);
-                _walkSlot.arm('cw6', a.fid, { cycle: 'accumulate' });   // v7.20.340 — see CW5's note
+                // v7.20.405: every CW6 row is a single self-contained artefact — filing always
+                // REPLACES (see fileAnswer), so the slot's cycle is stamped to match.
+                _walkSlot.arm('cw6', a.fid, { cycle: 'rewrite' });   // v7.20.340 — see CW5's note
                 persist();
                 resetSend();
             }
@@ -21301,12 +21409,19 @@
             }
 
             // ── filing: verbatim text + AUTO-TICK, one write, no API ──
-            function fileAnswer(a, text, replace) {
+            // ⭐ v7.20.405 (FIXLIST #189, the splice class) — EVERY CW6 WRITE REPLACES. Each row
+            // here is ONE self-contained artefact (a beat sentence, a bookend, an arc), and CW6
+            // has no push cycle, so there is no legitimate append. The append branch of
+            // `_writeOutlineRowField` is exactly the mechanism that welded Neil's rewritten
+            // ending back onto the old text (`old + \n\n + new`) — whichever transient phase or
+            // slot state a resume happened to lose. Making replacement a property of the WALK,
+            // not of the phase in hand, closes the whole class: no path can append here again.
+            function fileAnswer(a, text) {
                 const clean = String(text || '').trim();
                 if (!clean) return false;
                 let wrote = false;
                 try {
-                    wrote = _writeOutlineRowField(a.fid, clean, replace ? { replace: true } : undefined);
+                    wrote = _writeOutlineRowField(a.fid, clean, { replace: true });
                 } catch (e) { console.warn('WML CW6: write failed (non-fatal) for ' + a.fid + ' —', e && e.message); }
                 // Auto-tick regardless of whether the write was a no-op (a re-fire of the same
                 // text returns false but the row IS answered).
@@ -21330,6 +21445,13 @@
             }
             function serveCurrent() {
                 if (i >= ASKS.length) { fireFinishCheck(); return; }
+                // ⭐ v7.20.405 (FIXLIST #187) — THE ORDERING LAW, AT THE ONE SERVING CHOKEPOINT:
+                // nothing downstream of the frame serves while the frame is unsettled. Neil was
+                // asked to describe a stage "from X to Y" while the system said X was not written
+                // yet, then asked the same question twice. Frame phases pass through — they ARE
+                // the frame being settled.
+                if (frameNeeded() && phase !== 'frame' && phase !== 'frame-fix'
+                    && phase !== 'frame-confirm' && phase !== 'frame-add') { serveFrame(); return; }
                 const a = ASKS[i];
                 // Entering a new stage on a beat/arc ask: pace the stage orientation first.
                 if (a.kind === 'anchor') { serveAnchor(); return; }
@@ -21378,9 +21500,10 @@
                 const s = stages[si];
                 const next = stages[si + 1];
                 const arcAsk = arcAskFor(s);
-                const firstBeat = ASKS.slice(s.from, s.to).filter(function (a) { return a.kind === 'beat'; })[0];
-                const beats = ASKS.slice(s.from, s.to).filter(function (a) { return a.kind === 'beat'; });
-                const lastBeat = beats[beats.length - 1];
+                // v7.20.405: the stage's entry/exit by FLAG — after the three-turn reorder the
+                // ASK-order first beat is the CLOSING bookend on most stages.
+                const firstBeat = stageBookend(si, 'open') || stageBeats(si)[0];
+                const lastBeat = stageBookend(si, 'close') || stageBeats(si).slice(-1)[0];
                 const ctx = '[STAGE COHERENCE MICRO-CHECK — ' + s.name + ' of the student’s ' + (OUTLINE_CRITERIA.cwPlotArchetypes[key] || {}).label
                     + ' outline. Check TWO things only: (1) does this stage actually TRAVEL from the'
                     + ' entry state to the exit state the student described, or is the arc claimed'
@@ -21400,9 +21523,18 @@
                 armWalkResume('cw6-stage-' + si, function (reply, meta) {
                     pending = false;
                     const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
-                    const gap = !(!reply || (meta && meta.timedOut)) && /@STAGE_GAP/.test(norm);
+                    const failed = !reply || (meta && meta.timedOut);
+                    const gap = !failed && /@STAGE_GAP/.test(norm);
                     // FAIL-OPEN by design: a dropped marker or a failed call must never strand the
                     // student on a revision prompt with nothing to revise.
+                    // v7.20.405 (degraded-mode contract §§3/8): a FAILED call says so in one honest
+                    // line before moving on — the student asked for a check and silence reads as
+                    // being ignored. A clean @STAGE_OK still passes wordlessly, as before.
+                    if (failed) {
+                        console.warn('WML CW6: stage check ' + si + ' failed/timed out — continuing (fail-open).');
+                        aiBubble('I couldn’t give this stage a proper look just now — everything you wrote is '
+                            + 'saved, and we’ll keep moving. Your tutor sees the whole outline anyway.');
+                    }
                     if (!gap) { active = true; checkStage = -1; phase = 'ask'; persist(); serveStageOpener(si + 1); return; }
                     phase = 'stage-choice'; active = true; persist();
                     serveStageChoice();
@@ -21442,9 +21574,9 @@
                 if (!s) return null;
                 const src = CARRY_SRC[s.id];
                 if (!src) return null;
-                const beats = [];
-                for (let n = s.from; n < s.to; n++) if (ASKS[n] && ASKS[n].kind === 'beat') beats.push(ASKS[n]);
-                const target = (s.id === 'setup') ? beats[0] : beats[beats.length - 1];
+                // v7.20.405: the carry target is the flagged bookend, never a position (the
+                // three-turn reorder moved the closing beat to the front of its stage).
+                const target = stageBookend(a.stage, s.id === 'setup' ? 'open' : 'close');
                 return (target && target.fid === a.fid) ? src : null;
             }
 
@@ -21471,8 +21603,9 @@
                 if (!stages.length) return null;
                 const si0 = 0, siN = stages.length - 1;
                 if (stages[si0].id !== 'setup' || stages[siN].id !== 'aftermath') return null;
-                const openBeats = stageBeats(si0), closeBeats = stageBeats(siN);
-                const open = openBeats[0], close = closeBeats[closeBeats.length - 1];
+                // v7.20.405: bookends by FLAG, never by position — the three-turn reorder moved
+                // the closing beat to the front of its stage's ask list.
+                const open = stageBookend(si0, 'open'), close = stageBookend(siN, 'close');
                 if (!open || !close) return null;
                 const openPrior = _cwDocValue('brief_outline', FRAME_SRC.open);
                 const closePrior = _cwDocValue('brief_outline', FRAME_SRC.close);
@@ -21504,33 +21637,43 @@
             function serveFrame() {
                 const f = frameRefs();
                 if (!f) { phase = 'ask'; persist(); enterStages(); return; }   // liveness: never a dead end
-                phase = 'frame'; frameFix = ''; persist();
-                // ⚠️ v7.20.391 — THE OPENING LINE MUST AGREE WITH WHAT IS ON THEIR PAGE.
-                // Until .391 the frame was only reachable on a fresh start, so "Before we start"
-                // was always true. Now that a RESUME routes here too (see `tryResume`), a student
-                // three beats in would be told "before we start" while their own written beats sit
-                // in the document beside the chat — which reads as *your work is gone*. Yusra Kazi
-                // (prod 1389) is exactly that student, so this is a real path, not a hypothetical.
+                phase = 'frame'; frameFix = '';
+                // ⭐⭐ v7.20.405 (FIXLIST #186; audit ruling B1) — THE FULL FRAME SERVES ONCE, EVER.
+                // Neil read the same ~200 words four times in one session because `frameNeeded()`
+                // only knows "are the rows filled", and nothing files until the confirm chip — so
+                // every re-entry re-served the whole thing. `frameShown` records the serving
+                // itself; a frame still unsettled after that gets the SHORT form: two first-clause
+                // quotes and the same chips. The chat points at the document, it never mirrors it
+                // (ruling B2) — and `back` (any written row) catches a lost sidecar too.
                 const back = ASKS.some(function (x) { return !!rowText(x.fid); });
-                aiBubble('**' + (back ? 'Before you carry on' : 'Before we start') + ' — your story’s two ends**\n\n'
-                    + (back
-                        ? 'Everything you have written so far is safe — this changes none of it. Before you go further, let’s check that the two ends of your story are still the ones you want, because every beat you write sits between them.\n\n'
-                        : 'You already decided where your story opens and how it finishes, back on your Story Spine. '
-                            + 'Everything you plan from here sits **between** these two moments, so let’s settle them first.\n\n')
+                if (frameShown || back) {
+                    persist();
+                    aiBubble('**Your story’s two ends — let’s settle them before you go on.**\n\n'
+                        + '**Opening:** *“' + firstClause(f.openShow) + '”* · **Ending:** *“' + firstClause(f.closeShow) + '”* — both are in your outline, on the left.\n\n'
+                        + '**Happy with both?**');
+                    chipBar([{ label: 'Both still right →', icon: WML.icon('approval', 15) },
+                        { label: 'Change my opening', icon: WML.icon('rewrite', 15) },
+                        { label: 'Change my ending', icon: WML.icon('rewrite', 15) }], onFrameChoice);
+                    resetSend();
+                    return;
+                }
+                frameShown = 1; persist();
+                aiBubble('**Before we start — your story’s two ends**\n\n'
+                    + 'You already decided where your story opens and how it finishes, back on your Story Spine. '
+                    + 'Everything you plan from here sits **between** these two moments, so let’s settle them first.\n\n'
                     + '**Where your story opens** — ' + f.open.label + '\n\n> ' + f.openShow + '\n\n'
                     + '**How your story ends** — ' + f.close.label + '\n\n> ' + f.closeShow + '\n\n'
                     // ⭐ v7.20.391 (Neil, FIXLIST #160): "beat one and the final beat. And then,
-                    // you know, HOW THEY CONNECT." The frame showed both ends and only ever said
-                    // they sit "between these two moments" — it stated the relationship instead of
-                    // making the student see it. Named plainly here, as the journey between two
-                    // versions of one person, so the whole 105-beat walk has a spine the student
-                    // can actually hold in their head.
+                    // you know, HOW THEY CONNECT." Named plainly, as the journey between two
+                    // versions of one person, so the whole walk has a spine the student can hold.
                     + '**Now read those two together.** The distance between them *is* your story. Your '
                     + 'protagonist begins as the person in the first one and ends as the person in the '
                     + 'second — and every beat you write from here is one step of that journey. If a beat '
                     + 'does not move them along it, it does not belong in your story.\n\n'
-                    + '**Are you still happy with both?** If you are, I file them straight into your outline as '
-                    + 'your first and last beats, and we build the middle from there.');
+                    // v7.20.405 (audit ruling E7): "I file them straight into your outline" was
+                    // cabinet-register — Sophia talks about the story, never about her filing.
+                    + '**Happy with both?** Then they become the first and last beats of your outline, '
+                    + 'and everything we do from here builds the middle.');
                 chipBar([{ label: 'Both still right →', icon: WML.icon('approval', 15) },
                     { label: 'Change my opening', icon: WML.icon('rewrite', 15) },
                     { label: 'Change my ending', icon: WML.icon('rewrite', 15) }], onFrameChoice);
@@ -21542,31 +21685,86 @@
                 if (!f) { phase = 'ask'; persist(); enterStages(); return; }
                 if (pick.indexOf('Change') === 0) {
                     const which = pick.indexOf('opening') !== -1 ? 'open' : 'close';
-                    const a = f[which];
-                    phase = 'frame-fix'; frameFix = which; persist();
-                    // §4c.6 REWRITE cycle: one self-contained sentence, so the new version REPLACES
-                    // the old. Asking for "the bit you're changing" would file a fragment.
-                    aiBubble('**Rewriting ' + (which === 'open' ? 'your opening' : 'your ending') + '**\n\n'
-                        + REWRITE_IN_FULL + '\n\nOne sentence — '
-                        + (which === 'open'
-                            ? 'one moment, your protagonist in their ordinary life, something a camera could film.'
-                            : 'the last image of your story: what has changed for your protagonist by the final page.')
-                        + '\n\nHere is what you have now:\n\n> ' + (which === 'open' ? f.openShow : f.closeShow)
-                        + '\n\n*(Your Step-4 Story Spine stays exactly as it was — Step 4 is the record of what you did in Step 4. This only changes your Step-6 outline.)*');
-                    helpBar(a);
-                    _walkSlot.arm('cw6', a.fid, { cycle: 'rewrite' });
-                    resetSend();
+                    serveFrameFix(which, f);
                     return;
                 }
                 // Keep both: carry the Step-4 sentences into the REAL beats. They are THEIR
                 // sentences and the confirming tap is the ownership checkpoint (the same rule
-                // `serveCarry` and `onAnchorChoice` already run on).
+                // `serveCarry` already runs on).
                 if (!rowText(f.open.fid)) fileAnswer(f.open, f.openPrior);
                 if (!rowText(f.close.fid)) fileAnswer(f.close, f.closePrior);
                 phase = 'ask'; frameFix = ''; persist();
-                enterStages('Filed. Your opening is now the first beat of **' + stages[0].name
-                    + '**, and your ending is the last beat of **' + stages[stages.length - 1].name + '**.\n\n'
-                    + 'Everything we do from here fills in the middle.');
+                // v7.20.405 (audit ruling E8): "Filed." was cabinet-register.
+                enterStages('Done — your opening now stands as the first beat of **' + stages[0].name
+                    + '**, and your ending as the last beat of your story.\n\n'
+                    + 'Everything between them is ours to build.');
+            }
+            // v7.20.405 — ONE rewrite entry for either end, reused by the frame AND the stage-I/VI
+            // opening recap (audit ruling A3 turn 1's "Change my opening").
+            function serveFrameFix(which, f) {
+                f = f || frameRefs();
+                if (!f) { phase = 'ask'; persist(); enterStages(); return; }
+                const a = f[which === 'close' ? 'close' : 'open'];
+                phase = 'frame-fix'; frameFix = which; persist();
+                // §4c.6 REWRITE cycle: one self-contained sentence, so the new version REPLACES
+                // the old. Asking for "the bit you're changing" would file a fragment.
+                // ⭐ v7.20.405 (FIXLIST #188; audit ruling D3): the ENDING rewrite asks for a
+                // PICTURE, not a message — Neil's one-clause theme statement was exactly what the
+                // old ask ("write the whole thing again") invited. The old text is quoted as ONE
+                // clause only (ruling B4: never print the full old ending inside the rewrite ask).
+                const oldClause = firstClause(which === 'open' ? f.openShow : f.closeShow);
+                aiBubble(which === 'open'
+                    ? ('**Rewriting your opening**\n\n' + REWRITE_IN_FULL + '\n\nOne sentence — '
+                        + 'one moment, your protagonist in their ordinary life, something a camera could film.'
+                        + '\n\nHere’s what it says now: *“' + oldClause + '”* — you’re replacing all of it.'
+                        + '\n\n*(Your Step-4 Story Spine stays exactly as it was — this only changes your Step-6 outline.)*')
+                    : ('**Rewriting your ending**\n\n'
+                        + 'Your Final Image is the last picture of your story — one sentence a reader could *see*. '
+                        + 'It should answer your opening image: what do we see instead, on the final page?\n\n'
+                        + '**A strong Final Image:**\n\n'
+                        + '- one concrete picture — a place, an action, a face — not a feeling or a message\n'
+                        + '- it stands completely on its own: this sentence **replaces** everything that’s there now\n\n'
+                        + '*A Christmas Carol* ends on a picture, not a moral: Scrooge at the Cratchits’ table, a '
+                        + 'second father to Tiny Tim — the man who once sat alone.\n\n'
+                        + 'Here’s what it says now: *“' + oldClause + '”* — you’re replacing all of it.\n\n'
+                        + '**Write the new one — the single picture that ends your story.**'));
+                helpBar(a);
+                _walkSlot.arm('cw6', a.fid, { cycle: 'rewrite' });
+                resetSend();
+            }
+            // ⭐ v7.20.405 (FIXLIST #189; audit ruling B4) — the REPLACEMENT CONFIRM. The one
+            // allowed echo of a rewrite, because what is being confirmed is the replacement
+            // semantics: the live run showed replace-then-splice-back, and a student who saw both
+            // states would reasonably conclude the tool cannot be trusted with their story.
+            function serveFrameConfirm(which) {
+                const f = frameRefs();
+                if (!f) { phase = 'ask'; persist(); enterStages(); return; }
+                const a = f[which === 'close' ? 'close' : 'open'];
+                phase = 'frame-confirm'; frameFix = which; persist();
+                aiBubble('That’s your ' + (which === 'open' ? 'opening' : 'ending') + ' now — it **replaces** what was there. '
+                    + 'One sentence on the ' + (which === 'open' ? 'first' : 'last') + ' page:\n\n> ' + rowText(a.fid));
+                chipBar([{ label: 'Keep it →', icon: WML.icon('approval', 15) },
+                    { label: 'Let me add to it', icon: WML.icon('rewrite', 15) }], onFrameConfirmChoice);
+                resetSend();
+            }
+            function onFrameConfirmChoice(pick) {
+                userTurn(pick);
+                const which = frameFix === 'close' ? 'close' : 'open';
+                if (pick.indexOf('add') !== -1) {
+                    const f = frameRefs();
+                    const a = f && f[which];
+                    if (!a) { phase = 'ask'; frameFix = ''; persist(); enterStages(); return; }
+                    phase = 'frame-add'; persist();
+                    aiBubble('Go ahead — write what you want to add, and I’ll put it after what you have.');
+                    helpBar(a);
+                    _walkSlot.arm('cw6', a.fid, { cycle: 'accumulate' });
+                    resetSend();
+                    return;
+                }
+                phase = 'ask'; frameFix = ''; persist();
+                // The other end may still be unsettled — enterStages routes back through the
+                // (short) frame when it is, and on into the walk when it is not.
+                enterStages();
             }
 
             // v7.20.368 — THE ARC ASK IS FOUND BY KIND, NEVER BY OFFSET.
@@ -21631,11 +21829,54 @@
                         + 'something, know WHY you changed it and make sure your version still holds '
                         + 'together.');
                 }
-                chunks.push('There are **' + (s.to - s.from) + '** things to fill in here, and I will '
-                    + 'take you through them one at a time.\n\n*Nothing here is set in stone — your '
-                    + 'Story Spine sits in the rail beside you the whole time, and you can change any '
-                    + 'of this later.*');
-                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { serveCurrent(); } });
+                // ⭐ v7.20.405 (audit ruling A2, turn 1, Stages II–V) — the stage OPENS exactly
+                // where the previous one closed: the same moment viewed twice, shown as one line.
+                // Continuity is taught here, never re-asked and never re-filed.
+                if (si > 0 && si < stages.length - 1) {
+                    const prevClose = stageBookend(si - 1, 'close');
+                    const prevTxt = firstClause(prevClose && rowText(prevClose.fid));
+                    if (prevTxt) {
+                        chunks.push('**Where ' + s.name + ' opens** — exactly where ' + stages[si - 1].name
+                            + ' left your protagonist: *“' + prevTxt + '”*\n\nThis stage picks up from that moment.');
+                    }
+                }
+                // v7.20.405 (FIXLIST #191; audit ruling C3): price the unit, not just the count —
+                // "20 things to fill in" was form-register and frightening; "a sentence each" makes
+                // it arithmetic. The count is BEATS, stage-scoped.
+                chunks.push('**' + (s.beatTotal || (s.to - s.from)) + ' short beats** make up this stage — most take a '
+                    + 'single sentence. We’ll take them one at a time, and your Story Spine stays in the rail beside you.'
+                    + '\n\n*Nothing here is set in stone — you can change any of it later.*');
+                serveCwChunks(chunks, { emit: aiBubble, onDone: function () { serveRecap(si); } });
+            }
+            // ⭐ v7.20.405 (audit ruling A3, turn 1) — the opening recap for the two stages whose
+            // bookend the FRAME settled: Stage I's opening and Stage VI's ending. One bubble,
+            // chip-gated: recap-with-tick, not a re-confirm — but the change route stays open.
+            function serveRecap(si) {
+                const s = stages[si];
+                const isFirst = si === 0, isLast = si === stages.length - 1;
+                if (!s || recapped[si] || (!isFirst && !isLast)) { serveCurrent(); return; }
+                const which = isFirst ? 'open' : 'close';
+                const b = stageBookend(si, which);
+                const txt = b && rowText(b.fid);
+                if (!txt) { serveCurrent(); return; }   // nothing settled to recap (spineless project)
+                recapped[si] = 1;
+                phase = 'recap'; frameFix = which; persist();
+                aiBubble(isFirst
+                    ? ('**Where ' + s.name + ' opens — already in place ✓**\n\nYour opening is the first beat of '
+                        + 'this stage, and you have already written it: *“' + firstClause(txt) + '”* It is in your '
+                        + 'outline, on the left.')
+                    : ('**Where your story ends — already in place ✓**\n\nYou settled your ending at the start: '
+                        + '*“' + firstClause(txt) + '”* It is the last beat of your outline — so this stage works '
+                        + 'toward a point you have already fixed.'));
+                chipBar([{ label: 'That’s it →', icon: WML.icon('approval', 15) },
+                    { label: isFirst ? 'Change my opening' : 'Change my ending', icon: WML.icon('rewrite', 15) }], onRecapChoice);
+                resetSend();
+            }
+            function onRecapChoice(pick) {
+                userTurn(pick);
+                if (pick.indexOf('Change') === 0) { serveFrameFix(frameFix === 'close' ? 'close' : 'open'); return; }
+                phase = 'ask'; frameFix = ''; persist();
+                serveCurrent();
             }
 
             // ── COHERENCE LAYER 3 — the sampled finish check. ONE call reading the three
@@ -21644,10 +21885,11 @@
             // state. Not a Step-4 redo: Step 4 checked the PLAN. Never reads the document.
             function fireFinishCheck() {
                 const lastStage = stages.length - 1;
-                const openImg = findRow(0, /opening image/i) || ASKS[stages[0].from];
+                // v7.20.405: fallbacks by FLAG, not position (the three-turn reorder).
+                const openImg = findRow(0, /opening image/i) || stageBookend(0, 'open') || ASKS[stages[0].from];
                 const climax = findRow(lastStage - 1, /fatal blow|nick of time|seizes the sword|true power|win the prize|battle/i)
-                    || (function () { const b = ASKS.slice(stages[lastStage - 1].from, stages[lastStage - 1].to).filter(function (a) { return a.kind === 'beat'; }); return b[b.length - 1]; })();
-                const finalImg = findRow(lastStage, /final image/i) || ASKS[stages[lastStage].to - 1];
+                    || stageBookend(lastStage - 1, 'close') || stageBeats(lastStage - 1).slice(-1)[0];
+                const finalImg = findRow(lastStage, /final image/i) || stageBookend(lastStage, 'close');
                 const logline = _cwDocValue('logline', 'cw-step-3-chosen') || _cwDocValue('brief_outline', 'cw-step-4-chosen-logline');
                 const ctx = '[WHOLE-STORY SAMPLED CHECK — the student has just finished a full stage-by-stage plot'
                     + ' outline. You are reading THREE load-bearing points of it, not the whole thing.'
@@ -21670,7 +21912,15 @@
                 armWalkResume('cw6-finish', function (reply, meta) {
                     pending = false;
                     const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
-                    const gap = !(!reply || (meta && meta.timedOut)) && /@OUTLINE_GAP/.test(norm);
+                    const failed = !reply || (meta && meta.timedOut);
+                    const gap = !failed && /@OUTLINE_GAP/.test(norm);
+                    // v7.20.405 (degraded-mode contract §§3/8): honest one-liner on a failed call,
+                    // then the wrap as normal — completion is never gated by the API.
+                    if (failed) {
+                        console.warn('WML CW6: finish check failed/timed out — serving the wrap (fail-open).');
+                        aiBubble('I couldn’t give your ending a final look just now — nothing is lost, and your '
+                            + 'tutor reads the whole outline anyway.');
+                    }
                     if (!gap || !_finishFixAsk) { active = false; clearPersist(); serveWrap(); return; }
                     phase = 'finish-choice'; active = true; persist();
                     serveFinishChoice();
@@ -21728,10 +21978,22 @@
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 const wasPhase = phase;
                 active = false; pending = true;
-                armWalkResume('cw6-help-' + a.fid, function () {
+                armWalkResume('cw6-help-' + a.fid, function (reply, meta) {
                     // The help turn must NOT consume the beat: we come back to the same ask, with
                     // the ladder still attached, and the student writes their own version.
                     pending = false; active = true; phase = wasPhase; persist();
+                    // ⭐ v7.20.405 (degraded-mode contract §5) — rung 3 fails HONESTLY, never
+                    // silently. A failed call used to reattach the ladder and say nothing: a tap
+                    // that does nothing is how a 14-year-old decides the page is broken (§4d).
+                    // Three parts: say it plainly · re-offer the free rungs · the stuck-point is
+                    // already captured (their message is a durable turn the tutor can read).
+                    if (!reply || (meta && meta.timedOut)) {
+                        console.warn('WML CW6: ask-Sophia call failed/timed out for ' + a.fid + ' — degraded honest message served.');
+                        aiBubble('I can’t think this through with you right now — I couldn’t reach my own thinking. '
+                            + 'Try **More examples** or **Guidance** below; they’re instant. Your question is saved '
+                            + 'in this chat, so your tutor can see exactly where you got stuck — and writing it '
+                            + 'rough and moving on is always allowed.');
+                    }
                     setTimeout(function () { try { helpBar(a); } catch (e) {} }, 400);
                     resetSend();
                 }, { timeoutMs: 60000 });
@@ -21763,9 +22025,20 @@
                     const f = frameRefs();
                     const target = slotAsk || (f ? f[frameFix === 'close' ? 'close' : 'open'] : null);
                     userTurn(clean);
-                    if (target) fileAnswer(target, clean, true);
-                    frameFix = ''; persist();
-                    serveFrame();
+                    if (target) fileAnswer(target, clean);
+                    // v7.20.405 (audit ruling B4): the rewrite resolves into the REPLACEMENT
+                    // CONFIRM, never a full frame re-serve — that re-serve was #186's serving 3.
+                    serveFrameConfirm(frameFix === 'close' ? 'close' : 'open');
+                    return;
+                }
+                // v7.20.405 — "Let me add to it": the one deliberate append, done as a REPLACE of
+                // the combined text so the row write stays on the no-append rule (#189).
+                if (phase === 'frame-add') {
+                    const f = frameRefs();
+                    const target = slotAsk || (f ? f[frameFix === 'close' ? 'close' : 'open'] : null);
+                    userTurn(clean);
+                    if (target) fileAnswer(target, (rowText(target.fid) + ' ' + clean).trim());
+                    serveFrameConfirm(frameFix === 'close' ? 'close' : 'open');
                     return;
                 }
                 if (phase === 'stage-fix') {
@@ -21790,9 +22063,7 @@
                 const a = slotAsk || ASKS[i];
                 if (!a) { fireFinishCheck(); return; }
                 userTurn(clean);
-                // `anchor-fix` is a REWRITE (one self-contained sentence → replace); a beat or an
-                // arc is its first fill, where append and write are the same thing.
-                fileAnswer(a, clean, phase === 'anchor-fix');
+                fileAnswer(a, clean);   // v7.20.405: every CW6 write replaces (see fileAnswer)
                 advance();
             }
 
@@ -21889,6 +22160,24 @@
                     _walkSlot.arm('cw6', target.fid, { cycle: 'rewrite' });
                     return;
                 }
+                // v7.20.405 — the three new frame/recap phases resume into their own serve, drawn
+                // not saved (we are inside _cwReplay here), so the student is never left mid-
+                // decision with no chips (§4d).
+                if (phase === 'frame-confirm') { serveFrameConfirm(frameFix === 'close' ? 'close' : 'open'); return; }
+                if (phase === 'frame-add') {
+                    const f = frameRefs();
+                    const target = f ? f[frameFix === 'close' ? 'close' : 'open'] : null;
+                    if (!target) { serveFrame(); return; }
+                    helpBar(target);
+                    _walkSlot.arm('cw6', target.fid, { cycle: 'accumulate' });
+                    return;
+                }
+                if (phase === 'recap') {
+                    const si = frameFix === 'close' ? stages.length - 1 : 0;
+                    recapped[si] = 0;
+                    serveRecap(si);
+                    return;
+                }
                 // KIND-AWARE (same fix as CW5's reattach, same reason): the STEP tells us what the
                 // student is being asked for. Keyed on phase alone, an anchor step resumed while the
                 // persisted phase said 'ask' lost its confirm chips, and the student had to retype an
@@ -21940,7 +22229,7 @@
                 if (!/@CW6_START/.test(norm)) return;
                 startWalk();
             }
-            function reset() { active = false; pending = false; i = 0; phase = 'ask'; checkStage = -1; frameFix = ''; moreSpent = {}; _finishFixAsk = null; clearPersist(); }
+            function reset() { active = false; pending = false; i = 0; phase = 'ask'; checkStage = -1; frameFix = ''; moreSpent = {}; frameShown = 0; recapped = {}; announced = {}; _finishFixAsk = null; clearPersist(); }
             function tryResume() {
                 try {
                     // v7.20.298: a MISSING sidecar is no longer fatal — firstEmptyAsk() already
@@ -21977,6 +22266,9 @@
                     oriented = (d.oriented && typeof d.oriented === 'object') ? d.oriented : {};
                     frameFix = (typeof d.frameFix === 'string') ? d.frameFix : '';
                     moreSpent = (d.moreSpent && typeof d.moreSpent === 'object') ? d.moreSpent : {};
+                    frameShown = d.frameShown ? 1 : 0;             // v7.20.405: full frame once, ever
+                    recapped = (d.recapped && typeof d.recapped === 'object') ? d.recapped : {};
+                    announced = (d.announced && typeof d.announced === 'object') ? d.announced : {};
                     phase = d.phase || 'ask';
                     i = firstEmptyAsk();
                     // A reload during a check-in-flight: the call is gone, so fall FORWARD rather

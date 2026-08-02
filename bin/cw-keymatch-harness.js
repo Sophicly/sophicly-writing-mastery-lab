@@ -147,6 +147,17 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onPickConfirm:  { kind: 'flow', note: 'Step 5 (#74, v7.20.354): keep the existing plot structure or re-pick. FLOW, not content — the archetype already lives in its document row; this tap only decides whether the walk re-opens the pick. Exists because advance() started at firstEmpty(), so an already-chosen structure meant the ONE decision every later step is built on was walked straight past (Neil, live: "it should just ask again even if it\'s chosen. It should just confirm it.")' },
         onAnchorChoice: { kind: 'flow', note: 'Step 6 story bookend: still right / sharpen' },
         onFrameChoice:  { kind: 'flow', note: 'Step 6 story FRAME (#109, v7.20.371): both still right / change my opening / change my ending. FLOW on the same reasoning as onAnchorChoice — the tap only decides whether the walk carries the Step-4 sentence or re-opens it for a rewrite. What is filed is the SENTENCE (the spine value on keep, the student\'s rewrite otherwise), never the pick.' },
+        // v7.20.405 (#193, the three-turn stage opening; audit ruling A3 turn 1) — the stage-I /
+        // stage-VI opening RECAP. FLOW on the same reasoning as onFrameChoice: the bookend
+        // sentence is already in its document row (the frame filed it); this tap only decides
+        // whether the walk moves on or re-opens that row for a rewrite. What is filed is the
+        // SENTENCE, never the pick.
+        onRecapChoice:  { kind: 'flow', note: 'Step 6 stage recap (v7.20.405): that\'s it / change my opening — the rewrite that follows is what is filed' },
+        // v7.20.405 (#189; audit ruling B4) — the REPLACEMENT CONFIRM after a bookend rewrite.
+        // FLOW: the new sentence was filed by the rewrite turn itself; this tap only chooses
+        // between carrying on and adding to it. It exists because the live run showed
+        // replace-then-splice-back, and a student who saw both states stops trusting the page.
+        onFrameConfirmChoice: { kind: 'flow', note: 'Step 6 rewrite confirm (v7.20.405): keep it / let me add to it — states the replacement semantics; the sentence is already filed' },
         onStageChoice:  { kind: 'flow', note: 'Step 6 stage arc: sharpen / leave' },
         onFinishChoice: { kind: 'flow', note: 'Step 6 final image: rewrite / leave' },
         onPushChoice:   { kind: 'flow', note: 'Step 5 archetype push: switch / keep' },
@@ -202,7 +213,9 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     // lowercase literal 'rewrite', and `{ replace: step.cycle === 'rewrite' }` is a legitimate
     // argument, not a pick being filed. The old case-insensitive bare-word match could not tell
     // them apart and failed the gate on a correct change.
-    ok(!/_writeOutlineRowField\([^)]*['"`](?:Rewrite|Leave it|Sharpen|Still right)/.test(JS),
+    // v7.20.405: the three-turn opening's own flow labels join the net (#89 — a new chip label
+    // that no harness knows about is a label nothing can catch being mis-filed).
+    ok(!/_writeOutlineRowField\([^)]*['"`](?:Rewrite|Leave it|Sharpen|Still right|That’s it|Keep it|Let me add)/.test(JS),
         'no flow-control pick is written to the document (a persisted gate replays forever — v7.20.284)');
     console.log(`   ${found.size} chip menus, all classified`);
 }
@@ -689,7 +702,11 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
             // v7.20.356: CW1 passes `q.seq`, which is stamped `seq: QS.length + 1` as the array is
             // built — 1-based by construction and always equal to `idx + 1`. Exempted BY NAME with
             // the reason, not by loosening the pattern, and the stamp itself is asserted below.
-            || arg === 'q.seq';
+            || arg === 'q.seq'
+            // v7.20.405: CW6 stamps `b.beatNum = n + 1` in buildAsks as the beat list is built —
+            // 1-based by construction, same shape as q.seq. Exempted BY NAME, and the stamp is
+            // asserted below so a future edit to 0-based cannot slip through this exemption.
+            || arg === 'a.beatNum';
         ok(oneBased,
             'cwProgressBar is called with `' + arg + '` — that is a 0-based index, so the first ask '
             + 'of that walk renders 0%. Pass the ask IN HAND (index + 1).');
@@ -724,6 +741,10 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     ok(/seq:\s*QS\.length\s*\+\s*1/.test(JS),
         'CW1 no longer stamps `seq: QS.length + 1`, so `q.seq` may not be 1-based any more and the '
         + 'exemption in the loop above has gone stale — the first ask could render 0% again.');
+    // v7.20.405 — the same, for `a.beatNum`. An exemption nobody proves is a hole in the gate.
+    ok(/beatNum\s*=\s*n\s*\+\s*1/.test(JS),
+        'CW6 no longer stamps `b.beatNum = n + 1`, so `a.beatNum` may not be 1-based any more and '
+        + 'the exemption in the loop above has gone stale — the first beat could render 0% again.');
     const wpcAt = CORE.indexOf('function withProgressChip');
     ok(wpcAt !== -1, 'withProgressChip is gone — the bar-stripping contract cannot be verified');
     if (wpcAt !== -1) {
