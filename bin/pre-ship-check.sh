@@ -159,6 +159,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   # criteria, examples, technique chips and guidance anchor — silently, because a wrong concept
   # renders exactly like a right one. Two of 70 were dead before this gate existed. CLAUDE.md §5d.
   node bin/cw6-concept-lint.js || fail=1
+  # v7.20.400 — THE GREETING'S LIVE VALUE. `[SWML_LIVE:cw.plotStructure]` is resolved by a SYNC
+  # getter; both of its sources were WARM-ONLY, so on a cold entry (the normal case) it could only
+  # ever miss and the student read "your chosen plot structure". Worse, when the Step-5 pick and the
+  # BUILT doc disagreed it named the pick — i.e. a structure the outline is not built from. Nothing
+  # errors either way: a live value degrades to a true-but-vaguer phrase, which is correct §4d
+  # behaviour and therefore invisible. Slices the real getter, so it cannot drift from it.
+  node bin/cw6-livevalue-harness.js || fail=1
 fi
 
 # v7.20.297: CW STEP-5 STRUCTURE WALK GATE. Step 5 shipped to prod filing NOTHING — the protocol had

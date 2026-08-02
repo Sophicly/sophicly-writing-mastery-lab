@@ -4914,8 +4914,35 @@
     // the getter reads it. In-session memory still wins, because the Step 5 pick sets it
     // synchronously and is therefore fresher than any cached fetch.
     const _cwStructNameCache = Object.create(null);
+    // v7.20.400 (FIXLIST #165 — Neil, prod .398: "it's saying welcome to Step 6… it seems as
+    // though it's gone", console `"cw.plotStructure" could not resolve — rendering the fallback`).
+    // ⭐ ROOT: both reads below are WARM-ONLY. In-session memory is written by the Step-5 PICK, so
+    // a fresh page load has none; `_cwStructNameCache` is warmed only by the ASYNC resolver. The
+    // greeting is a durable stored turn replayed SYNCHRONOUSLY on entry — i.e. before the artifact
+    // fetch lands (Neil's own console proves the ordering: the fallback warning printed, and
+    // `Step 6 plot structure resolved → rebirth-redemption` printed AFTER it). So on every cold
+    // entry the getter could only ever miss. Same shape as the .399 resume race: a synchronous
+    // decision taken before its async data arrived.
+    // ⭐ THE FIX IS AGREEMENT, NOT A NEW CACHE. The CW6 walk already answers this exact question
+    // synchronously and correctly via `resolveKey()` (~21683) — "The DOC is authoritative" — because
+    // the doc is loaded with the canvas and its row fieldIds carry the archetype
+    // (`outline-cw-<archetype>-<stage>-<criterion>`, `_cw6RowFieldId`). The greeting was the only
+    // consumer NOT reading it, so the walk knew the structure while the sentence above it did not.
+    // Reading the doc FIRST (not just as a fallback) also keeps the two honest about the same
+    // thing: the walk writes into the rows that EXIST, so the name shown is the outline the student
+    // is actually working — which is precisely what Neil wanted it for ("just to make sure that
+    // it's actually reading my plot structure").
+    // Still degrades to '' → the registered fallback (§4d) when there is no CW doc on screen
+    // (any non-Step-6 surface), so nothing regresses for them.
     function _cwPlotStructureNameSync(projectId) {
         if (!projectId) return '';
+        try {
+            const fromDoc = detectBuiltPlotSlug(canvasEditor);
+            if (fromDoc && CW_STRUCT_NAMES[fromDoc]) {
+                _cwStructNameCache[projectId] = CW_STRUCT_NAMES[fromDoc];
+                return CW_STRUCT_NAMES[fromDoc];
+            }
+        } catch (e) { /* no editor yet / not a CW doc — fall through to the warm reads */ }
         const mem = (window._wmlCwPlotStructure && window._wmlCwPlotStructure[projectId]) || null;
         const fromMem = mem ? resolvePlotStructureSlug(mem) : null;
         if (fromMem && CW_STRUCT_NAMES[fromMem]) return CW_STRUCT_NAMES[fromMem];
@@ -21175,6 +21202,27 @@
                 persist();
                 resetSend();
             }
+            // ⭐ v7.20.400 (FIXLIST #170 — Neil, prod .399, changing his ending: "it says write the
+            // whole thing again. I didn't see that… It would be nice if we could just edit the part
+            // that we wanted.").
+            // TWO fixes in one line, and the ORDER of them is the point.
+            //   (a) The instruction leads the bubble instead of trailing it. It was there; it was
+            //       just not where a 14-year-old reading the first line would meet it.
+            //   (b) It names the route that DOES give partial editing — the document row itself.
+            //       §4c.6 forbids loosening the chat cycle (an ask that owns one self-contained
+            //       artefact must demand the whole artefact; "rewrite the middle bit" banks a
+            //       FRAGMENT — the .283 bug), so the answer to his ask is not a looser ask, it is
+            //       pointing at the surface that already supports it. Neil found it himself the same
+            //       session, via the contextual toolbar's Insert into doc.
+            // ⚠️ DELIBERATELY "answer here FIRST, then fine-tune". Sending a student to the document
+            // MID-ASK would leave an armed slot and a question with nobody answering it — a dead
+            // screen by construction (§4d). The ask always resolves first.
+            // ONE definition, used by both rewrite asks below — two copies of a rule is how the .289
+            // fix was made in one place and lost in another.
+            const REWRITE_IN_FULL = '**Write the whole thing again**, not just the part you are changing — '
+                + 'your new version replaces the old one.\n\n'
+                + '*(Want to change only a few words? Answer here first, then fine-tune that row straight '
+                + 'in your document — click into it and type.)*';
             function onAnchorChoice(pick) {
                 const a = ASKS[i];
                 userTurn(pick);
@@ -21183,7 +21231,7 @@
                     // §4c.6 REWRITE cycle: an anchor is ONE self-contained sentence, so the new
                     // version REPLACES the old. Asking for "the bit you're changing" would file a
                     // fragment as the whole answer — the .283 bug in reverse.
-                    aiBubble('Write the **whole thing again**, sharpened — one sentence, present tense. Your new version is what goes into this outline.\n\n'
+                    aiBubble(REWRITE_IN_FULL + '\n\nSharpen it — one sentence, present tense. Your new version is what goes into this outline.\n\n'
                         + '*(Your Step-4 spine stays exactly as it was — Step 4 is the record of what you did in Step 4. This only changes your Step-6 outline.)*');
                     helpBar(a);
                     _walkSlot.arm('cw6', a.fid, { cycle: 'rewrite' });   // v7.20.340
@@ -21444,7 +21492,7 @@
                     // §4c.6 REWRITE cycle: one self-contained sentence, so the new version REPLACES
                     // the old. Asking for "the bit you're changing" would file a fragment.
                     aiBubble('**Rewriting ' + (which === 'open' ? 'your opening' : 'your ending') + '**\n\n'
-                        + 'Write the **whole thing again**, in one sentence — '
+                        + REWRITE_IN_FULL + '\n\nOne sentence — '
                         + (which === 'open'
                             ? 'one moment, your protagonist in their ordinary life, something a camera could film.'
                             : 'the last image of your story: what has changed for your protagonist by the final page.')
@@ -23113,6 +23161,44 @@
             });
             return hasField && !hasFreeProse;
         } catch (_) { return false; }
+    }
+    // ⭐ v7.20.400 (FIXLIST #169 — Neil, prod .399: "I can type in, but I tried to paste in the rest
+    // of the final beat, but it wouldn't allow me to paste it in. So something's not working there
+    // with the pasting.").
+    // §4d, A REFUSAL IS HALF A CHANGE: every paste guard below `return true` — correct, and until
+    // now completely SILENT. Cmd+V simply did nothing, which to a student is indistinguishable from
+    // a broken page, and gives them nothing to do next. FIXLIST #4 is the same defect on the typing
+    // path; this helper is deliberately shaped so that path can adopt it (it needs a throttle before
+    // it can, because handleTextInput fires per KEYSTROKE — hence the window below rather than a
+    // bare toast call).
+    // Each message names a WAY FORWARD, not just the refusal, because "you can't do that" on its own
+    // is the dead screen §4d exists to stop.
+    const _SWML_PASTE_REFUSALS = {
+        locked: 'That box is part of the lesson, so it can’t be changed. Paste into one of your own answer boxes instead.',
+        gap: 'You can only write inside the boxes. Click into an answer box first, then paste.',
+        scaffold: 'That space isn’t editable — the answer box for this row is the one control on it. Click into the box, then paste.',
+        empty: 'Nothing came through from the clipboard. Try copying again, then paste.',
+    };
+    // Plain clipboard text → inline HTML a field (content:'inline*') can hold: escaped, newlines
+    // as hardBreaks. ONE definition, because it is now used by the normal plain-text path AND the
+    // recovery path below — two copies is how the .289 fix was made in one place and lost in
+    // another.
+    function _swmlPlainToInline(t) {
+        return String(t == null ? '' : t)
+            .split('\n')
+            .map(function (l) { return l.replace(/</g, '&lt;').replace(/>/g, '&gt;'); })
+            .join('<br>');
+    }
+    let _swmlPasteToldAt = 0;
+    function _swmlRefusePaste(reason, detail) {
+        console.warn('[WML paste #169] refused — ' + reason + (detail ? ' — ' + detail : ''));
+        const now = new Date().getTime();
+        // One message per ATTEMPT. A student mashing Cmd+V should not stack five toasts.
+        if (now - _swmlPasteToldAt > 1500) {
+            _swmlPasteToldAt = now;
+            try { showToast(_SWML_PASTE_REFUSALS[reason] || _SWML_PASTE_REFUSALS.gap, 6000, true); } catch (_) {}
+        }
+        return true;
     }
     // v7.20.139 (Neil: clicking a non-editable spot still blinked a caret, reading as editable).
     // Caret VISIBILITY tracks the SAME rule as typing-permission — a caret shows only where the
@@ -35681,11 +35767,12 @@
                 // InputField uses content:'inline*' so block paste escapes. Convert blocks to inline.
                 handlePaste(view, event) {
                     // v7.19.471: never paste into locked scaffold (titles/instructions)
-                    if (_swmlRangeLocked(view.state, view.state.selection.from, view.state.selection.to)) return true;
+                    // v7.20.400 (#169): each refusal now SAYS SO and names a way forward (§4d).
+                    if (_swmlRangeLocked(view.state, view.state.selection.from, view.state.selection.to)) return _swmlRefusePaste('locked');
                     // v7.19.649: never paste into a doc-root gap (outside every section)
-                    if (!_swmlInSection(view.state, view.state.selection.from)) return true;
+                    if (!_swmlInSection(view.state, view.state.selection.from)) return _swmlRefusePaste('gap');
                     // v7.20.138: never paste into a field-only section's body (outside its field)
-                    if (_swmlSectionFieldOnly(view.state, view.state.selection.from)) return true;
+                    if (_swmlSectionFieldOnly(view.state, view.state.selection.from)) return _swmlRefusePaste('scaffold');
                     const { $from } = view.state.selection;
                     let insideInputField = false;
                     for (let d = $from.depth; d >= 0; d--) {
@@ -35727,13 +35814,51 @@
                             inlineHtml = _tmp.innerHTML;
                         } catch (_) { /* if DOM unwrap fails, fall through with regex-only result */ }
                     } else if (text) {
-                        inlineHtml = text.split('\n').map(l => l.replace(/</g, '&lt;').replace(/>/g, '&gt;')).join('<br>');
+                        inlineHtml = _swmlPlainToInline(text);
                     } else {
-                        return false;
+                        // Neither flavour on the clipboard — say so rather than swallowing the key.
+                        return _swmlRefusePaste('empty', 'clipboardData carried no text/html and no text/plain');
                     }
 
+                    // ⭐ v7.20.400 (FIXLIST #169). Neil copied a Sophia chat bubble and pasted into a
+                    // Step-6 outline row; nothing arrived and nothing said why. The three guards above
+                    // are ruled out by his own report — he could TYPE at that caret, and
+                    // handleTextInput uses the identical three predicates — so the failure is in this
+                    // branch, and the branch had no way to report it: `insertContent` returns nothing
+                    // useful, and we returned true regardless, so a no-op paste and a successful paste
+                    // were byte-identical from the outside.
+                    // MEASURE THE OUTCOME, don't assume it: doc size before/after is the only honest
+                    // check that the paste actually landed (a presence check on the handler proves
+                    // plumbing, never behaviour — CLAUDE.md §14b.3).
+                    // AND RECOVER: chat-bubble HTML now carries inline SVG icons, progress-bar divs
+                    // and nested wrappers, and this hand-rolled rewrite predates all of them. If the
+                    // HTML path inserts NOTHING, retry with the clipboard's PLAIN TEXT — which is what
+                    // a student pasting a sentence into a plan row wanted anyway. The retry can only
+                    // run when the first attempt changed nothing, so it cannot double-paste.
+                    const _sizeBefore = canvasEditor ? canvasEditor.state.doc.content.size : -1;
                     if (inlineHtml) {
                         canvasEditor.chain().focus().insertContent(inlineHtml).run();
+                    }
+                    const _sizeAfterHtml = canvasEditor ? canvasEditor.state.doc.content.size : -1;
+                    if (_sizeAfterHtml === _sizeBefore) {
+                        const plain = (text || '').trim();
+                        if (plain) {
+                            canvasEditor.chain().focus().insertContent(_swmlPlainToInline(text)).run();
+                            const _sizeAfterPlain = canvasEditor.state.doc.content.size;
+                            if (_sizeAfterPlain === _sizeBefore) {
+                                return _swmlRefusePaste('empty',
+                                    'BOTH paths inserted nothing. html=' + (html ? html.length : 0) + 'ch, '
+                                    + 'text=' + plain.length + 'ch, rewritten=' + (inlineHtml || '').length + 'ch. '
+                                    + 'Neither the HTML rewrite nor plain text could be placed at this position.');
+                            }
+                            console.warn('[WML paste #169] the HTML path inserted NOTHING and plain text recovered it — '
+                                + 'html=' + (html ? html.length : 0) + 'ch, rewritten=' + (inlineHtml || '').length + 'ch, '
+                                + 'plain=' + plain.length + 'ch. THIS IS THE #169 ROOT: the hand-rolled HTML→inline '
+                                + 'rewrite at this call site cannot handle that clipboard payload. Sample: '
+                                + JSON.stringify((inlineHtml || '').slice(0, 160)));
+                        } else {
+                            return _swmlRefusePaste('empty', 'the HTML rewrite produced nothing insertable and there was no plain text to fall back on');
+                        }
                     }
                     return true; // prevent default paste
                 },
