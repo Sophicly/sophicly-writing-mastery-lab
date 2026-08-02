@@ -1302,3 +1302,50 @@ records no grade, but also gains nothing — the lesson stays unfinished.
 on load, stops returning `resume`, ignores it client-side, or still carries the retired "your
 previous unfinished attempt was graded" copy. The policy itself lives in ONE class
 (`Sophicly_Components_Inflight`) so a component cannot drift from this ruling.
+
+---
+
+## §24. ⭐⭐ AN ARCHETYPAL PATTERN IS FOLLOWED BY DEFAULT AND DEPARTED FROM WITH A REASON (Neil, ruled 2026-08-02)
+
+**The ruling, verbatim.** Reading the Step-6 Stage I bubble *"Yours will not match that exactly — it
+is a shape, not a rule"*: *"I don't think it's right to say yours will not match that exactly. It IS
+a shape, and it may or may not match that exactly. But we want them to TRY and follow the shape…
+We don't want them to think it's a rule that they have to follow exactly as it is, but they need to
+try. Right? And if they need to make edits, then there must be a reason, they must be able to
+justify the edit, and it must be coherent and make sense."*
+
+**THE POSITION IS A THIRD THING, not a midpoint.** There are three stances a student can take to an
+archetypal pattern, and only the third is ours:
+
+| stance | what it tells the student | why it is wrong / right |
+|---|---|---|
+| **RULE** — "your story must go: A → B → C" | a form to complete | Produces mechanical, joyless plotting; it is what §139's *"patterns, not rules"* was written to stop. |
+| **SUGGESTION** — "yours will not match this" | the pattern is decorative | ⛔ **The over-correction, and the one that actually shipped.** It licenses ignoring the shape before the student has understood it, so the teaching is wasted and the plot loses its spine. |
+| ⭐ **DEFAULT + JUSTIFIED DEPARTURE** | "aim to follow it; if you change it, know why, and keep it coherent" | **Ours.** The pattern carries real authority — these are the shapes stories keep landing on — AND the student stays the author. |
+
+**WHY THIS IS THE PEDAGOGICALLY CORRECT ONE, and not just a tone preference.** A 13–16-year-old
+cannot yet tell a *principled* departure from *not having thought about it*, and both look identical
+on the page. Telling them up front that the shape will not fit removes the only reference they had
+for judging their own choice. Requiring a REASON is what converts a deviation from an accident into
+an authorial decision — which is the thing being taught. It is also exactly the standard the mark
+scheme rewards (deliberate, controlled structural choices), so the demand is not arbitrary.
+
+**HOW IT MUST READ, wherever a pattern is presented** (the shipped wording, v7.20.402):
+
+> Aim to follow that shape — it is the one these stories keep landing on, and it works. Yours may
+> not match it exactly, and that is fine: if you change something, know WHY you changed it and make
+> sure your version still holds together.
+
+Three moves, all required: **(1) endorse the shape** (it works, and here is why it has authority);
+**(2) permit departure** without embarrassment; **(3) price the departure** — a reason, and
+coherence. Dropping (1) gives the shipped defect; dropping (3) gives a rule with no teeth and the
+student defaults to whatever they had already imagined.
+
+**SCOPE.** Every archetypal pattern shown to a student: the six-stage skeletons, the eight plot
+archetypes (Step 5), TTECEA and IUMVCC, the story spine, the 7-step scene. Not the mark scheme —
+AO criteria are not a shape to depart from.
+
+**Relationship to §139 (patterns, not rules).** This SHARPENS it, it does not contradict it. §139's
+point was always that the archetypes are not a form to fill in — never that they will not fit.
+Whoever wrote the shipped line read §139 and landed one step too far, which is why this section
+exists: the same sentence has now been authored twice, and the second time it needed a rule.

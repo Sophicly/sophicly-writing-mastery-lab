@@ -21557,8 +21557,24 @@
                 if (cc) {
                     chunks.push('**What this stage is for**\n\n' + cc.forWhat
                         + '\n\n**What a reader should be seeing**\n\n' + cc.seeing);
+                    // ⭐ v7.20.402 (FIXLIST #176 — Neil): the old line read "Yours will not match
+                    // that exactly — it is a shape, not a rule", and that OVER-CORRECTED. It told
+                    // the student the pattern would not fit them, which licenses ignoring it. His
+                    // ruling: *"It IS a shape, and it may or may not match exactly. But we want
+                    // them to TRY and follow the shape… if they need to make edits, there must be
+                    // a reason, they must be able to justify the edit, and it must be coherent and
+                    // make sense."* So the honest position is a THIRD one, not a midpoint between
+                    // "rule" and "suggestion": FOLLOW IT BY DEFAULT, DEPART ONLY WITH A REASON.
+                    // Recorded in PEDAGOGY.md §24 in the same change, because a ruling that lives
+                    // only inside its consumer gets re-derived wrongly by the next model — this
+                    // line is the second attempt at the same sentence for exactly that reason.
+                    // Sharpens #139 ("patterns, not rules") rather than contradicting it: the point
+                    // was always that it is not a FORM to complete, never that it will not fit.
                     chunks.push('**The pattern it follows**\n\n' + cc.pattern
-                        + '\n\nYours will not match that exactly — it is a shape, not a rule.');
+                        + '\n\nAim to follow that shape — it is the one these stories keep landing on, '
+                        + 'and it works. Yours may not match it exactly, and that is fine: if you change '
+                        + 'something, know WHY you changed it and make sure your version still holds '
+                        + 'together.');
                 }
                 chunks.push('There are **' + (s.to - s.from) + '** things to fill in here, and I will '
                     + 'take you through them one at a time.\n\n*Nothing here is set in stone — your '
