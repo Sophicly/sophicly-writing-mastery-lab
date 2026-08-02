@@ -21832,8 +21832,28 @@
                     key = resolveKey();
                     buildAsks(key);
                     if (!ASKS.length) return false;
-                    _cwLoadDocValues(state.cwProjectId, 'brief_outline');
-                    _cwLoadDocValues(state.cwProjectId, 'logline');
+                    // ⭐⭐ v7.20.399 — AWAIT THESE. THEY WERE FIRE-AND-FORGET AND IT SILENTLY ATE
+                    // THE STUDENT'S TWO-ENDS CONFIRMATION.
+                    // `startWalk` has always awaited this pair before serving anything
+                    // (`Promise.all([...]).then(...)`). `tryResume` called the same two loads and
+                    // dropped the promises on the floor, so on EVERY resume the walk decided what to
+                    // serve against an EMPTY `brief_outline`.
+                    // What that costs, in order: `frameRefs()` bails the moment either Step-4 prior
+                    // is missing (both halves or nothing) → `frameNeeded()` is false → `serveFrame()`
+                    // takes its "liveness: never a dead end" escape hatch, `phase='ask';
+                    // enterStages()` → the stage opener and the first ask serve, and the frame is
+                    // skipped FOR GOOD, because the next resume loses the same race identically.
+                    // Neil hit exactly this on prod v7.20.398: the frame bubble replayed out of
+                    // history, four stage-opener bubbles arrived underneath it, the confirm chips
+                    // never came back — so his opening and closing beats were never filed, and the
+                    // arc ask below still read "not written yet".
+                    // ⚠️ The escape hatch is NOT the bug and must stay: a genuinely spineless project
+                    // still has to reach a live ask (§4d). The bug was asking it to judge before the
+                    // data it judges on had landed.
+                    const artifactsReady = Promise.all([
+                        _cwLoadDocValues(state.cwProjectId, 'brief_outline'),
+                        _cwLoadDocValues(state.cwProjectId, 'logline'),
+                    ]).catch(function () { /* a failed load still resumes, just without the carry */ });
                     checkStage = (typeof d.checkStage === 'number') ? d.checkStage : -1;
                     oriented = (d.oriented && typeof d.oriented === 'object') ? d.oriented : {};
                     frameFix = (typeof d.frameFix === 'string') ? d.frameFix : '';
@@ -21846,7 +21866,10 @@
                         phase = 'ask'; const si = checkStage; checkStage = -1; persist();
                         console.warn('WML CW6: resumed after an unfinished stage check — continuing the walk.');
                         active = true; pending = false;
-                        setTimeout(function () { serveStageOpener(si + 1); }, 500);
+                        // v7.20.399: same race — the opener runs into serveCurrent(), which reads
+                        // `brief_outline` for the carry. Warm resume serves now; cold one waits.
+                        if (_cwDocValue('brief_outline', FRAME_SRC.open)) setTimeout(function () { serveStageOpener(si + 1); }, 500);
+                        else artifactsReady.then(function () { serveStageOpener(si + 1); });
                         return true;
                     }
                     if (phase === 'finish') {
@@ -21894,11 +21917,24 @@
                     // was the wrong behaviour regardless of the test. A stage a student is already
                     // mid-way through does not want re-explaining; every LATER stage still gets its
                     // opener the normal way, through `advance()` -> `fireStageCheck()`.
-                    if (phase === 'ask' && ASKS[i] && frameNeeded()) {
-                        setTimeout(function () { enterStages(); }, 400);
-                        return true;
-                    }
-                    setTimeout(reattachChips, 400);
+                    // ⚠️ v7.20.399: the serve waits on the ARTIFACTS, not on a 400ms guess. The old
+                    // timeout was a bet that two network loads would finish first; on Neil's prod
+                    // session they did not, so `frameNeeded()` was asked a question it could not yet
+                    // answer, answered "no", and the frame was gone for good.
+                    // ⭐ FAST PATH WHEN THE DATA IS ALREADY IN HAND. `_cwLoadDocValues` caches, so a
+                    // warm resume can decide immediately — and SHOULD, because deferring a serve you
+                    // could make now is a visible pause for no reason. Only a COLD resume waits.
+                    // (It also keeps this synchronous for the walk sims, which drive the controller
+                    // straight through without a browser's event loop.)
+                    const serveResume = function () {
+                        i = firstEmptyAsk();   // re-derive: the carry may resolve rows it could not before
+                        if (phase === 'ask' && ASKS[i] && frameNeeded()) { enterStages(); return; }
+                        reattachChips();
+                    };
+                    const spineWarm = !!_cwDocValue('brief_outline', FRAME_SRC.open)
+                                   && !!_cwDocValue('brief_outline', FRAME_SRC.close);
+                    if (spineWarm) setTimeout(serveResume, 400);
+                    else artifactsReady.then(serveResume);
                     return true;
                 } catch (e) { return false; }
             }
