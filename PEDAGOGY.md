@@ -978,6 +978,38 @@ not chosen:
   reassessment literature — deliberately at the bottom of the range, not the middle.
 - It also matches Sophicly's own cadence: ~3 lessons/week, so one week = one teaching cycle.
 
+**✅ RE-EXAMINED 2026-08-03 AT NEIL'S INSTRUCTION — "base this decision on educational research" —
+AND SEVEN STANDS. No code change.** He asked whether 7 is the number he wants; the answer is that it
+was already derived, not chosen, and a second independent pass corroborates it from a different
+literature:
+- **Kulik & Kulik's meta-analysis via Shute (2008)** puts immediate feedback at **ES 0.80** against
+  **0.35** for delayed, for procedural skills — component exercises are procedural practice, so the
+  effect decays with delay. **This forbids lengthening the window.**
+- **Nicol & Macfarlane-Dick (2006) and Boud & Molloy (2013)** hold that feedback is not complete
+  until the learner acts, and that the loop must close **within the instructional cycle** so the
+  next task can build on it. **This forbids shortening it to 2–3 days**, which in term time would
+  fall inside a single week where a student may only sit down twice.
+- **Cepeda et al. (2006)** contribute the shape rather than the number: optimal gaps are
+  **proportional to the cycle, never a fixed calendar constant**. Noted below as the live caveat.
+
+**⚠️ THE ONE PREMISE THAT DOES NOT HOLD RIGHT NOW, recorded so it is not rediscovered as a bug.**
+The derivation above rests on *"one week = one teaching cycle"*. That is true in term time. It is
+**false during the summer Creative Writing masterclass**, which runs **15 sessions between 2026-07-23
+and 2026-08-22 — roughly one every other day**. Seven days there spans about **three sessions**, so a
+student can attend three lessons carrying an unfixed grade-9 shortfall and the tutor cannot build on
+it. The rule is not wrong, its premise is simply seasonal.
+**Deliberately NOT changed without Neil's ruling**, because tightening grace mid-course would
+penalise students who are already inside a live window — and because the honest fix is a shape
+change (derive grace from the gap to the student's next scheduled session, floored so nobody is
+penalised overnight and capped at 7 so a holiday cannot grant open-ended grace), not a different
+constant. **That is a product call, not a research one.**
+
+⛔ **NEIL RULED 2026-08-03: SEVEN DAYS STAYS. Do not re-open this, and do not build the
+next-session derivation.** He was shown the summer arithmetic above (a student can attend ~3
+sessions inside one grace window) and the self-adjusting alternative, and chose the flat 7. So the
+seasonal slack is a KNOWN, ACCEPTED cost, not an outstanding defect — a later chat rediscovering
+the "one week = one teaching cycle" mismatch is rediscovering something already decided.
+
 **WHY IT JOINS THE EXISTING POOL RATHER THAN GETTING ITS OWN.** Research does not speak to penalty
 plumbing, but the principle governing it does: **a consequence only changes behaviour when the
 student can predict it.** One pool they already understand keeps cause→effect legible; a second

@@ -20955,7 +20955,9 @@
             // v7.20.406: ONE matcher, at module scope — the document's per-beat Examples button
             // (#201) resolves a row's concept the SAME way the walk does, so a beat can never show
             // one concept in the chat and a different one in the panel (CLAUDE.md #7).
-            function conceptFor(label, prompt) { return _cw6ConceptFor(label, prompt); }
+            // v7.20.408: takes the archetype key, so a beat that exists in only one plot structure
+            // can be scoped to it (`arch:` on the concept) instead of a shared concept claiming it.
+            function conceptFor(label, prompt, archetypeKey) { return _cw6ConceptFor(label, prompt, archetypeKey); }
             // ⭐⭐ v7.20.405 — THE THREE-TURN STAGE OPENING (FIXLIST #193; Fable audit ruling A).
             // ONE ASK = ONE ROW is law: the old compound arc ask ("tell me both…") filed both
             // halves into `stage_arc` while the closing-bookend row stayed empty — Neil predicted
@@ -20999,7 +21001,7 @@
                         if (c.beatType === 'turning-point' || c.beatType === 'marker') return;
                         beatAsks.push({
                             kind: 'beat', stage: si, fid: _cw6RowFieldId(k, sec.id, c.id),
-                            label: c.label || '', prompt: c.prompt || '', concept: conceptFor(c.label, c.prompt),
+                            label: c.label || '', prompt: c.prompt || '', concept: conceptFor(c.label, c.prompt, k),
                         });
                     });
                     // Beat numbers follow the TEMPLATE (document) order, whatever the serve order,
@@ -34134,7 +34136,9 @@
                     // Drawn ONLY where a concept actually resolves (CW6 beat rows). Every other
                     // outline family — literature, language, para-AO — renders byte-identically to
                     // before, because `_cw6ConceptFor` returns null for them.
-                    const _beatConcept = _cw6ConceptFor(crit.label, node.attrs.prompt);
+                    // v7.20.408: archetype-aware — same source as the valence dot two lines above,
+                    // so the dot and the panel can never describe two different concepts again.
+                    const _beatConcept = _cw6ConceptFor(crit.label, node.attrs.prompt, _cw6ArchKey());
                     if (_beatConcept) {
                         const egBtn = document.createElement('button');
                         egBtn.type = 'button';
@@ -45289,23 +45293,33 @@
     // to the chat at all — they open in the RAIL PANEL beside the document, which has no
     // transcript by construction. Nothing here can reorder anything.
     //
-    // ⭐ ONE MATCHER. The walk resolved a beat's concept with its own closure-local `conceptFor`;
-    // a second copy here is exactly the drift CLAUDE.md #7 forbids, so that one now calls this.
-    // Score = the length of the substring actually matched, so a longer, more specific phrase
-    // beats a short generic one (the v7.20.391 fix — `/opening image/i` swallowing "expand on the
-    // opening image"). Ties keep array order.
-    function _cw6ConceptFor(label, prompt) {
+    // ⭐ ONE MATCHER — and as of v7.20.408 that is finally TRUE, in one place.
+    //
+    // The .391 note here said "one matcher" because the walk's closure-local `conceptFor` was made
+    // to call this. It was half the story: `wml-cw6-concepts.js` kept its OWN `conceptFor`
+    // (first-match, ranked by `pri`) and that one fed the beat VALENCE DOT. Two live resolvers,
+    // two rules — measured on the real templates they picked a DIFFERENT concept on **41 of the
+    // 232 askable beats**, so a row's dot and its [Examples] panel could describe different beats.
+    //
+    // The implementation now lives ONCE, in wml-cw6-concepts.js (`CM.conceptFor`), which also
+    // carries the `arch` archetype-scoping the 2026-08-03 audit added. This is a delegate and
+    // must stay one: re-inlining the loop here is how the two copies drifted the first time.
+    //
+    // `archetypeKey` is optional but should be passed wherever it is known — the walk has it as
+    // the template key, and the NodeView gets it from `detectBuiltPlotSlug(canvasEditor)`, the
+    // same source `_appendBeatValence` already uses.
+    function _cw6ConceptFor(label, prompt, archetypeKey) {
         const CM = window.WML_CW6_CONCEPTS;
-        if (!CM || !Array.isArray(CM.CONCEPTS)) return null;
-        const hay = (label || '') + ' — ' + (prompt || '');
-        let best = null, bestLen = -1;
-        for (let k = 0; k < CM.CONCEPTS.length; k++) {
-            const m = hay.match(CM.CONCEPTS[k].m);
-            if (!m) continue;
-            const len = (m[0] || '').length;
-            if (len > bestLen) { best = CM.CONCEPTS[k]; bestLen = len; }
-        }
-        return best;
+        if (!CM || typeof CM.conceptFor !== 'function') return null;
+        return CM.conceptFor(label, prompt, archetypeKey) || null;
+    }
+    // The archetype for a row rendered inside the document. Same source as the valence dot, so the
+    // dot and the examples can never again disagree about which plot structure the student picked.
+    function _cw6ArchKey() {
+        try {
+            return (typeof detectBuiltPlotSlug === 'function' && canvasEditor)
+                ? detectBuiltPlotSlug(canvasEditor) : null;
+        } catch (e) { return null; }
     }
     // The panel body for one beat: what makes it strong, EVERY example it has (the one the ask
     // showed inline + the rung-1 pool — #200: he ruled that more examples on demand is better),
@@ -45319,7 +45333,42 @@
         // emphasis, nothing else, and only AFTER escaping.
         const md = (s) => esc(s).replace(/\*([^*]+)\*/g, '<em>$1</em>');
         let html = '<div class="swml-wp-item"><div class="swml-wp-item-label">' + esc(c.name || 'This beat') + '</div>';
-        const crit = (c.crit || []);
+        // ⭐⭐ v7.20.408 — WHY THIS BEAT EXISTS, and it is deliberately FIRST: motivation before
+        // criteria. Neil: *"I think we need to have a why with each beat."*
+        //
+        // ⚠️ IT IS RENDERED AS AUTHORIAL PURPOSE, NEVER AS BEAT CONTENT — his own catch, before it
+        // shipped: *"The student cannot write 'so the redemption lands'. It needs to be shown and
+        // not told in the actual writing."* A 14-year-old reading a bare "so the redemption lands"
+        // above an empty box types it in, or writes "this shows he will be redeemed". So the label
+        // says who it is for, the show-don't-tell line rides with it every time, and it sits in its
+        // own block OUTSIDE the criteria list the student is working to. Do not merge it into
+        // `crit` to save a line — the separation IS the safety.
+        // Archetype-aware: `_cw6ArchKey()` because the same beat does a different job in tragedy.
+        const _why = (function () {
+            try {
+                const CM6 = window.WML_CW6_CONCEPTS;
+                if (CM6 && typeof CM6.whyFor === 'function') {
+                    const over = c.whyBy && CM6 && _cw6ArchKey() && c.whyBy[_cw6ArchKey()];
+                    return over || c.why || '';
+                }
+            } catch (e) {}
+            return c.why || '';
+        })();
+        if (_why) {
+            html += '<div class="swml-wp-item-text swml-beat-why">'
+                + '<span class="swml-beat-why-label">Why this beat exists — for you, not for the page</span>'
+                + '<em>' + md(_why) + '</em>'
+                + '<span class="swml-beat-why-note">Show this. Never state it — the reader should feel it without being told.</span>'
+                + '</div>';
+        }
+        // v7.20.408 — `critBy` APPENDS archetype-specific criteria (it never replaces the shared
+        // ones, which stay true). Five concepts carry one, and four of those five are tragedy:
+        // its rise beats exist to set up a FALL, so "the change is won" becomes "the ruin is
+        // chosen". Without this the same card told a tragedy student to write the opposite beat —
+        // `lowest-point` promised a bottom "the change has to be EARNED out of, later", which a
+        // tragic protagonist never climbs back from. Same shape as `valBy` / `whyBy`.
+        const _arch = _cw6ArchKey();
+        const crit = (c.crit || []).concat((c.critBy && _arch && c.critBy[_arch]) || []);
         if (crit.length) {
             html += '<div class="swml-wp-item-text"><strong>A strong version of this beat:</strong><ul class="swml-beat-crit">'
                 + crit.map(function (b) { return '<li>' + md(b) + '</li>'; }).join('') + '</ul></div>';

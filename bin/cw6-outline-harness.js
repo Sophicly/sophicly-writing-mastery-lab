@@ -176,8 +176,13 @@ if (typeof MAP.conceptFor !== 'function') {
     bad('wml-cw6-concepts.js no longer exports conceptFor() — this gate would silently fall back to '
         + 'testing its own copy of the matcher instead of the one the walk actually uses.');
 }
-function matchConcept(c) {
-    return (typeof MAP.conceptFor === 'function') ? MAP.conceptFor(c.label, c.prompt) : null;
+// ⚠️ v7.20.408 — MUST PASS THE ARCHETYPE KEY. Until now this called conceptFor(label, prompt) with
+// no third argument, so the gate tested archetype-BLIND resolution while the shipped walk and the
+// document's [Examples] button both pass the key. A concept scoped with `arch:` would have resolved
+// differently here than in the product, and the harness would have reported green either way —
+// the same "testing a path that no longer ships" trap as the copied resolver above.
+function matchConcept(c, archetypeKey) {
+    return (typeof MAP.conceptFor === 'function') ? MAP.conceptFor(c.label, c.prompt, archetypeKey) : null;
 }
 let matched = 0, nudged = 0;
 const conceptWins = new Map();
@@ -190,7 +195,7 @@ Object.entries(ARCH).forEach(([key, a]) => {
         stageIds.add(sec.id);
         sec.criteria.filter(isAskable).forEach((c) => {
             t++;
-            const k = matchConcept(c);
+            const k = matchConcept(c, key);
             if (k) { m++; matched++; if (k.nudge) nudged++; conceptWins.set(k.id, (conceptWins.get(k.id) || 0) + 1);
                 // v7.20.376 (#124): remember WHERE in the arc each concept is actually asked,
                 // derived from the real templates rather than the source layout of the map.
@@ -207,6 +212,74 @@ Object.entries(ARCH).forEach(([key, a]) => {
 const cov = matched / askable;
 console.log('   COVERAGE ' + matched + '/' + askable + ' = ' + (100 * cov).toFixed(1) + '%'
     + ' · symbolic nudge on ' + nudged + ' rows (' + (100 * nudged / askable).toFixed(0) + '% — Neil ruling: image/symbol/turning-point beats only)');
+
+
+// ── 5c. ARCHETYPE SCOPING + ROWMAP INTEGRITY (v7.20.408) ─────────────────────────────────────
+// The 2026-08-03 audit found 82 of 232 askable (label → concept) pairs wrong or weak, because the
+// resolver was archetype-BLIND: a shared concept could claim a beat that exists in one structure
+// only. `arch:` scopes a concept; ROWMAP records the 75 human-audited exceptions. Both are only
+// worth having if they are enforced, so:
+//   A. a scoped concept must never win a row outside its scope (would be silent wrong teaching);
+//   B. every ROWMAP label must exist in a real template (a typo'd label is a correction that
+//      never applies, and NOTHING would say so — the row keeps its wrong concept);
+//   C. every ROWMAP entry must actually be REACHED (an entry shadowed by an earlier duplicate,
+//      or scoped to an archetype the label never appears in, is dead weight pretending to be a fix).
+{
+    const scopeViolations = [];
+    const templateLabels = new Set();
+    const reachedRowmap = new Set();
+    const ROWMAP = MAP.ROWMAP || [];
+    const rowmapIndex = new Map();
+    ROWMAP.forEach((e, i) => { if (e && e.l) rowmapIndex.set(e.l + '|' + i, e); });
+
+    Object.entries(ARCH).forEach(([key, a]) => {
+        a.sections.forEach((sec) => {
+            sec.criteria.forEach((c) => {
+                if (c.label) templateLabels.add(c.label);
+                if (!isAskable(c)) return;
+                const k = matchConcept(c, key);
+                if (k && k.arch && k.arch.indexOf(key) === -1) {
+                    scopeViolations.push('[' + key + '] "' + c.label + '" → `' + k.id
+                        + '` (scoped to ' + k.arch.join('/') + ')');
+                }
+                // which ROWMAP entry, if any, produced this answer
+                for (let i = 0; i < ROWMAP.length; i++) {
+                    const e = ROWMAP[i];
+                    if (!e || e.l !== c.label) continue;
+                    if (e.arch && e.arch.indexOf(key) === -1) continue;
+                    reachedRowmap.add(i);
+                    break;
+                }
+            });
+        });
+    });
+
+    if (scopeViolations.length) {
+        bad('ARCH SCOPE VIOLATION — ' + scopeViolations.length + ' row(s) resolve to a concept scoped to a '
+            + 'DIFFERENT plot structure, so the student is taught a beat their story does not have:\n     '
+            + scopeViolations.slice(0, 10).join('\n     '));
+    } else {
+        ok('no archetype-scoped concept wins a row outside its scope');
+    }
+
+    const deadLabels = ROWMAP.filter(e => e && e.l && !templateLabels.has(e.l));
+    if (deadLabels.length) {
+        bad('ROWMAP has ' + deadLabels.length + ' entr(y/ies) whose beat label is in NO template — the audited '
+            + 'correction never applies and the row silently keeps its wrong concept:\n     '
+            + deadLabels.map(e => '"' + e.l + '" → `' + e.id + '`').join('\n     '));
+    } else {
+        ok('every ROWMAP label exists in a real template');
+    }
+
+    const unreachedRowmap = ROWMAP.map((e, i) => i).filter(i => !reachedRowmap.has(i));
+    if (unreachedRowmap.length) {
+        bad('ROWMAP has ' + unreachedRowmap.length + ' entr(y/ies) that no askable row ever reaches '
+            + '(shadowed by an earlier duplicate, or scoped to an archetype the label never appears in):\n     '
+            + unreachedRowmap.slice(0, 10).map(i => '[' + i + '] "' + ROWMAP[i].l + '" → `' + ROWMAP[i].id + '`').join('\n     '));
+    } else {
+        ok('all ' + ROWMAP.length + ' ROWMAP corrections are reached by a real beat row');
+    }
+}
 
 // ── 5b. NO CONCEPT MAY BE UNREACHABLE (v7.20.374) ────────────────────────────────────────────
 // `conceptFor` picks a winner among matching concepts, so a concept whose pattern is a SUBSET of

@@ -1,0 +1,2536 @@
+[
+ {
+  "batch": 1,
+  "label": "Opening balance deteriorates",
+  "concept_id": "balance-deteriorates",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader feels the settled life can no longer hold",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Tension begins to rise",
+  "concept_id": "balance-deteriorates",
+  "verdict": "weak",
+  "better_concept": "storm-coming",
+  "reason": "the previous beat already uses this concept; rising tension is atmosphere, not the one thing that broke",
+  "why": "so the reader senses trouble before anything has actually happened",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Mentor informs of consequences if they do not change",
+  "concept_id": "dark-force-rising",
+  "verdict": "wrong",
+  "better_concept": "figurative-death",
+  "reason": "the beat is the mentor naming what he loses by staying the same, not the opposition widening its reach",
+  "why": "so he knows exactly what staying the same will cost him",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Mentor informs of the dark force's rise to power",
+  "concept_id": "dark-force-rising",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the threat feels real and growing before he ever faces it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Something reminds protagonist of need to change",
+  "concept_id": "dark-force-rising",
+  "verdict": "wrong",
+  "better_concept": "epiphany",
+  "reason": "the beat is an inner click triggered by something he sees; the concept teaches the opposition growing",
+  "why": "so his change starts with something he notices, not something he is told",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "For a while all may seem to go well; threat recedes",
+  "concept_id": "false-dawn",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader relaxes, and the collapse that follows hurts more",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "For a while all seems to be going well",
+  "concept_id": "false-dawn",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader believes it might work before it stops working",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "For a while protagonist seems to be getting away with it",
+  "concept_id": "false-dawn",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so his ruin looks chosen, not unlucky — he could still have stopped",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "We feel comfortable and immune from danger",
+  "concept_id": "false-dawn",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader is lulled and the reversal lands like a shock",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Foreshadows: hints of potential and impending change",
+  "concept_id": "foreshadow",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the change later feels earned, not sprung on the reader",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Foreshadows: plant elements of anticipation",
+  "concept_id": "foreshadow",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the ending pays off something the reader already half remembers",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Alternating periods of rest, and advice from mentors",
+  "concept_id": "guidance",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader can breathe and a conversation can change him",
+  "why_by_archetype": {
+   "heros-journey": "so the reader can breathe and a conversation can change him",
+   "coming-of-age": "so the reader can breathe and a conversation can change him",
+   "overcoming-the-monster": "so the reader can breathe and a conversation can change him",
+   "rags-to-riches": "so the reader can breathe and a conversation can change him",
+   "the-quest": "so the reader can breathe and a conversation can change him",
+   "tragedy": "so the advice he will later defy is on the page first",
+   "voyage-and-return": "so the reader can breathe and a conversation can change him"
+  }
+ },
+ {
+  "batch": 1,
+  "label": "Dark Mentor has faith protagonist will overcome",
+  "concept_id": "guidance",
+  "verdict": "weak",
+  "better_concept": "NEW:dark-mentor-faith",
+  "reason": "in tragedy this encouragement pushes him toward ruin; the concept teaches a warm, helpful conversation and misses that inversion",
+  "why": "so the push toward ruin comes from someone he trusts and likes",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "May contact spirits who give strange or mistaken guidance",
+  "concept_id": "guidance",
+  "verdict": "wrong",
+  "better_concept": "prophecy",
+  "reason": "misleading supernatural promises are prophecy's subject, and its criteria teach the double edge this beat needs",
+  "why": "so his downfall grows from believing a truth he heard the wrong way",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Mentor has faith protagonist will be able to change",
+  "concept_id": "guidance",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so someone believes he can change before he believes it himself",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Mentor has faith protagonist will overcome challenges",
+  "concept_id": "guidance",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so he risks the next step because someone who knows has backed him",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Someone appears who gives guidance",
+  "concept_id": "guidance",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so help arrives as a question, and the choice stays his",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Someone shows him the consequences of his actions",
+  "concept_id": "guidance",
+  "verdict": "weak",
+  "better_concept": "figurative-death",
+  "reason": "the beat needs the consequence shown concretely; the concept teaches a quiet conversation and models nothing shown",
+  "why": "so he cannot deny the harm any more — he has seen it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Dark Herald guides protagonist to meet the Dark Mentor",
+  "concept_id": "mentor",
+  "verdict": "weak",
+  "better_concept": "herald",
+  "reason": "three consecutive tragedy beats all resolve to mentor; this one belongs to the Herald, and herald exists",
+  "why": "so he is led to the meeting that sets his ruin going",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Herald guides protagonist to meet the Mentor",
+  "concept_id": "mentor",
+  "verdict": "weak",
+  "better_concept": "herald",
+  "reason": "the beat's subject is the messenger who brings him, not the mentor he meets two beats later",
+  "why": "so someone outside his life brings him to the person who can help",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Mentor warns about going against their advice",
+  "concept_id": "mentor",
+  "verdict": "weak",
+  "better_concept": "warning-ignored",
+  "reason": "the beat is the warning itself; the concept re-teaches who the mentor is, which the student has already written",
+  "why": "so ignoring the advice later reads as his own choice",
+  "why_by_archetype": {
+   "heros-journey": "so ignoring the advice later reads as his own choice",
+   "coming-of-age": "so ignoring the advice later reads as his own choice",
+   "overcoming-the-monster": "so ignoring the advice later reads as his own choice",
+   "rags-to-riches": "so ignoring the advice later reads as his own choice",
+   "rebirth-redemption": "so ignoring the advice later reads as his own choice",
+   "the-quest": "so ignoring the advice later reads as his own choice",
+   "tragedy": "so the reader watches him step past the warning that could have saved him",
+   "voyage-and-return": "so ignoring the advice later reads as his own choice"
+  }
+ },
+ {
+  "batch": 1,
+  "label": "Protagonist meets the Dark Mentor; overcoming fear",
+  "concept_id": "mentor",
+  "verdict": "weak",
+  "better_concept": "NEW:dark-mentor",
+  "reason": "a Dark Mentor grants permission to do wrong; the concept's criteria and example teach the opposite kind of guide",
+  "why": "so someone he trusts gives him permission to do the wrong thing",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Protagonist meets the Mentor; overcoming fear of change",
+  "concept_id": "mentor",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so someone who has been there makes the change feel possible",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "The Dark Mentor awaits",
+  "concept_id": "mentor",
+  "verdict": "weak",
+  "better_concept": "NEW:dark-mentor",
+  "reason": "duplicates the meeting beat under the same card, and a dark mentor's job inverts the concept's criteria",
+  "why": "so we know the person who will ruin him is already waiting",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "The Mentor awaits",
+  "concept_id": "mentor",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the story has someone who already knows what he must learn",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Face to face with the Monster and its awesome power",
+  "concept_id": "nightmare-battle",
+  "verdict": "weak",
+  "better_concept": "shadow-dominates",
+  "reason": "this beat reveals the monster's scale; the fight where the old self dies is a later beat already using this concept",
+  "why": "so the reader sees what he is up against before he fights it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Final nightmare battle approaches",
+  "concept_id": "nightmare-battle",
+  "verdict": "weak",
+  "better_concept": "approach",
+  "reason": "the beat is the run-up and preparation; the fight itself is a separate beat already using this concept",
+  "why": "so the reader feels it coming and he has to get ready",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Final supreme battle approaches",
+  "concept_id": "nightmare-battle",
+  "verdict": "weak",
+  "better_concept": "approach",
+  "reason": "the beat is the run-up and preparation; the fight itself is a separate beat already using this concept",
+  "why": "so the last stretch feels like the hardest part of the journey",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Final supreme ordeal approaches",
+  "concept_id": "nightmare-battle",
+  "verdict": "weak",
+  "better_concept": "approach",
+  "reason": "the beat is the run-up and preparation; the fight itself is a separate beat already using this concept",
+  "why": "so the reader knows everything now rests on what happens next",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Nightmare battle; battle to defeat the old self",
+  "concept_id": "nightmare-battle",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so beating the enemy and beating his old self are one act",
+  "why_by_archetype": {
+   "heros-journey": "so beating the enemy and beating his old self are one act",
+   "coming-of-age": "so beating the enemy and beating his old self are one act",
+   "overcoming-the-monster": "so beating the enemy and beating his old self are one act",
+   "rags-to-riches": "so beating the enemy and beating his old self are one act",
+   "rebirth-redemption": "so beating the enemy and beating his old self are one act",
+   "the-quest": "so beating the enemy and beating his old self are one act",
+   "tragedy": "so we watch the old self win, and the fall is complete",
+   "voyage-and-return": "so beating the enemy and beating his old self are one act"
+  }
+ },
+ {
+  "batch": 1,
+  "label": "Dark figures also cast shadow over community",
+  "concept_id": "oppression",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader sees a whole world that needs putting right",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Dark figures mistreat the protagonist",
+  "concept_id": "oppression",
+  "verdict": "wrong",
+  "better_concept": "problem-snapshot",
+  "reason": "the concept teaches pressure on everyone AROUND the protagonist; this beat is his own mistreatment",
+  "why": "so the reader wants him to rise before he even tries",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Hero seeks harmful gratification; community suffers",
+  "concept_id": "oppression",
+  "verdict": "wrong",
+  "better_concept": "gratification",
+  "reason": "here the protagonist IS the cause of the suffering; the concept teaches an outside force pressing on the community",
+  "why": "so his redemption costs something — the reader saw who he hurt",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Monster casts shadow over community",
+  "concept_id": "oppression",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so beating the monster matters to more people than just him",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Oppressive life casts shadow over the community",
+  "concept_id": "oppression",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the change the story wants is bigger than one person",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Protagonist overshadowed by dark figures",
+  "concept_id": "oppression",
+  "verdict": "weak",
+  "better_concept": "figurative-death",
+  "reason": "the beat is what living in their shadow costs HIM; the concept points the student at everyone else",
+  "why": "so the reader can measure how far he has risen by the end",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Protagonist overshadowed by oppressive life",
+  "concept_id": "oppression",
+  "verdict": "weak",
+  "better_concept": "figurative-death",
+  "reason": "the beat is what the oppressive life costs HIM; the concept points the student at everyone else",
+  "why": "so the reader knows what he is trapped in before anything happens",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Mentor shares a prophecy",
+  "concept_id": "prophecy",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so he acts on a promise he only half understands",
+  "why_by_archetype": {
+   "heros-journey": "so he acts on a promise he only half understands",
+   "coming-of-age": "so he acts on a promise he only half understands",
+   "overcoming-the-monster": "so he acts on a promise he only half understands",
+   "rags-to-riches": "so he acts on a promise he only half understands",
+   "rebirth-redemption": "so he acts on a promise he only half understands",
+   "the-quest": "so he acts on a promise he only half understands",
+   "tragedy": "so the promise he trusts is the thing that destroys him",
+   "voyage-and-return": "so he acts on a promise he only half understands"
+  }
+ },
+ {
+  "batch": 1,
+  "label": "The prophecy is incomplete",
+  "concept_id": "prophecy",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the ending can surprise him without cheating the reader",
+  "why_by_archetype": {
+   "heros-journey": "so the ending can surprise him without cheating the reader",
+   "coming-of-age": "so the ending can surprise him without cheating the reader",
+   "overcoming-the-monster": "so the ending can surprise him without cheating the reader",
+   "rags-to-riches": "so the ending can surprise him without cheating the reader",
+   "rebirth-redemption": "so the ending can surprise him without cheating the reader",
+   "the-quest": "so the ending can surprise him without cheating the reader",
+   "tragedy": "so the words that felt like safety turn out to be the trap",
+   "voyage-and-return": "so the ending can surprise him without cheating the reader"
+  }
+ },
+ {
+  "batch": 1,
+  "label": "Protagonist discovers his/her own true power",
+  "concept_id": "seizes-sword",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the change shows in what he does, not what he feels",
+  "why_by_archetype": {
+   "heros-journey": "so the change shows in what he does, not what he feels",
+   "coming-of-age": "so the change shows in what he does, not what he feels",
+   "overcoming-the-monster": "so the change shows in what he does, not what he feels",
+   "rags-to-riches": "so the change shows in what he does, not what he feels",
+   "rebirth-redemption": "so the change shows in what he does, not what he feels",
+   "the-quest": "so the change shows in what he does, not what he feels",
+   "tragedy": "so the power he finds is the power to destroy himself",
+   "voyage-and-return": "so the change shows in what he does, not what he feels"
+  }
+ },
+ {
+  "batch": 1,
+  "label": "Protagonist seizes the sword; accepts new identity",
+  "concept_id": "seizes-sword",
+  "verdict": "weak",
+  "better_concept": null,
+  "reason": "in tragedy these same words mean committing to ruin, and the concept's liberation example teaches the opposite",
+  "why": "so he takes the new self knowing exactly what it will cost",
+  "why_by_archetype": {
+   "heros-journey": "so he takes the new self knowing exactly what it will cost",
+   "coming-of-age": "so he takes the new self knowing exactly what it will cost",
+   "overcoming-the-monster": "so he takes the new self knowing exactly what it will cost",
+   "rags-to-riches": "so he takes the new self knowing exactly what it will cost",
+   "rebirth-redemption": "so he takes the new self knowing exactly what it will cost",
+   "the-quest": "so he takes the new self knowing exactly what it will cost",
+   "tragedy": "so his ruin is something he chooses with both eyes open",
+   "voyage-and-return": "so he takes the new self knowing exactly what it will cost"
+  }
+ },
+ {
+  "batch": 1,
+  "label": "Steps beyond false identity forever; transformed",
+  "concept_id": "seizes-sword",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the old self cannot come back — the reader sees it end",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "STUNNING SURPRISE #1: something shocking changes everything",
+  "concept_id": "stunning-surprise",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so his old plan dies and he is forced to change course",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "STUNNING SURPRISE #1: Something shocking changes everything",
+  "concept_id": "stunning-surprise",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so his old plan dies and he is forced to change course",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "STUNNING SURPRISE #2: another shock destroys the plan",
+  "concept_id": "stunning-surprise",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the safe route to victory closes and he must improvise",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Theme Stated during the Set-up",
+  "concept_id": "theme-stated",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the ending feels true — the reader was told it at the start",
+  "why_by_archetype": {
+   "heros-journey": "so the ending feels true — the reader was told it at the start",
+   "overcoming-the-monster": "so the ending feels true — the reader was told it at the start",
+   "rags-to-riches": "so the ending feels true — the reader was told it at the start",
+   "rebirth-redemption": "so the ending feels true — the reader was told it at the start",
+   "the-quest": "so the ending feels true — the reader was told it at the start",
+   "tragedy": "so we hear the truth he never learns, and the loss stings",
+   "voyage-and-return": "so the ending feels true — the reader was told it at the start"
+  }
+ },
+ {
+  "batch": 1,
+  "label": "Theme Stated: growth, maturity, or self-discovery",
+  "concept_id": "theme-stated",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the lesson he grows into was said before he could hear it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Approach to the inmost cave",
+  "concept_id": "underworld",
+  "verdict": "weak",
+  "better_concept": "approach",
+  "reason": "this beat is the preparation to go down; the journey itself is a separate beat already using this concept",
+  "why": "so the reader dreads the place before he goes into it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "He encounters inner demons and temptations",
+  "concept_id": "underworld",
+  "verdict": "wrong",
+  "better_concept": "powerless",
+  "reason": "the beat is inner vacillation between two selves; the concept teaches a physical dark setting",
+  "why": "so his change is a struggle, not a switch he simply flips",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Journey into the underworld; confronting deepest fears",
+  "concept_id": "underworld",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so he faces the fear in a place that looks like it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Hero has increased awareness of need to change",
+  "concept_id": "world-deteriorates",
+  "verdict": "wrong",
+  "better_concept": "epiphany",
+  "reason": "the beat is his growing recognition, not the world visibly worsening",
+  "why": "so he starts wanting to act instead of just enduring",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Protagonist has increased awareness of dangers ahead",
+  "concept_id": "world-deteriorates",
+  "verdict": "wrong",
+  "better_concept": "monster-distant",
+  "reason": "the beat is what he learns about the threat ahead, not a world getting worse",
+  "why": "so setting out is a real choice — he knows the risk",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Protagonist has increased awareness of the monster",
+  "concept_id": "world-deteriorates",
+  "verdict": "wrong",
+  "better_concept": "monster-distant",
+  "reason": "the beat is the threat becoming known before it is ever seen, not the world worsening",
+  "why": "so the monster frightens the reader long before it appears",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "Protagonist sees more signs why he needs to change",
+  "concept_id": "world-deteriorates",
+  "verdict": "wrong",
+  "better_concept": "warning-ignored",
+  "reason": "at this stage he sees the signs and still does nothing; the concept says nothing about ignoring them",
+  "why": "so his refusal to change reads as a choice, not ignorance",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "State of the world deteriorates",
+  "concept_id": "world-deteriorates",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader can measure how much worse things have got",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 1,
+  "label": "State of the world deteriorates; increased awareness",
+  "concept_id": "world-deteriorates",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so pressure builds until doing nothing stops being possible",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "A random ally appears; will return later",
+  "concept_id": "allies",
+  "verdict": "weak",
+  "better_concept": "foreshadow",
+  "reason": "Concept teaches team design (each ally good at something you are not); the beat's whole point is that this ally LEAVES and returns at the worst moment — a plant-and-payoff the concept never mentions.",
+  "why": "so the later rescue is a payoff you planted, not lucky timing",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Community is liberated; balance is restored",
+  "concept_id": "balance-restored",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader sees the victory changed everyone, not just the hero",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Hero and companions establish a community",
+  "concept_id": "balance-restored",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the quest ends in a new life built, not just a prize won",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Hero appears whole for all the future",
+  "concept_id": "balance-restored",
+  "verdict": "wrong",
+  "better_concept": "how-much-learnt",
+  "reason": "Beat is the protagonist made permanently whole; the concept explicitly teaches the WORLD after, 'not just your protagonist' — the opposite emphasis.",
+  "why": "so the change reads as permanent, not a mood that will wear off",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Hero emerges to win the prize; role in the Kingdom",
+  "concept_id": "balance-restored",
+  "verdict": "weak",
+  "better_concept": "NEW:the-reward",
+  "reason": "Beat is the protagonist's ELEVATION (station, recognition, prize); concept teaches community-after and says nothing about making the reward specific or unholdable by the old self. Proposed: the-reward — 'The Reward (Rise in Station)'.",
+  "why": "so the ending repays everything the lowly opening made us want for them",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Hero finds fulfillment in reconnecting with humanity",
+  "concept_id": "balance-restored",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the redemption is proved by people letting him back in",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist is given the elixir",
+  "concept_id": "elixir",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the later rescue was planted early and never feels like cheating",
+  "why_by_archetype": {
+   "tragedy": "so the thing that could have saved him is planted, then wasted"
+  }
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist in false identity; believes not worthy",
+  "concept_id": "false-identity",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so we see the armour before we see the wound it hides",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist is living in a false identity",
+  "concept_id": "false-identity",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the fall comes from the lie he refuses to drop",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist is living in a false identity or anonymous",
+  "concept_id": "false-identity",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so we can watch the mask crack and the real self appear",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist overwhelmed with despair; retreats to false identity",
+  "concept_id": "false-identity",
+  "verdict": "weak",
+  "better_concept": "lowest-point",
+  "reason": "Concept teaches ESTABLISHING the mask in Act 1; this is the despair-driven RELAPSE. lowest-point literally names it — 'the goal looks lost and the mask goes back on'.",
+  "why": "so the mask going back on shows how much the change costs",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist presented with admirable, desirable qualities",
+  "concept_id": "false-identity",
+  "verdict": "wrong",
+  "better_concept": "NEW:admirable-first",
+  "reason": "No mask here at all — the beat makes the audience love him SO THE FALL HURTS. Bolted onto the false-identity regex to force a match (mirror of the proven rebirth-redemption defect). Proposed: admirable-first — 'Admirable First (Set Up the Fall)'.",
+  "why": "so the audience loves him first and the fall actually hurts",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist presented with unlikeable, inhumane qualities",
+  "concept_id": "false-identity",
+  "verdict": "wrong",
+  "better_concept": "NEW:unlikeable-first",
+  "reason": "The known live defect: no mask, no pretence — he is made repellent so the later change is worth something. Proposed: unlikeable-first — 'Unlikeable First (Set Up the Redemption)'.",
+  "why": "so the redemption lands — we must dislike him before he changes",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Things out of control; retreats to false identity",
+  "concept_id": "false-identity",
+  "verdict": "weak",
+  "better_concept": "NEW:doubling-down",
+  "reason": "In tragedy this retreat is not a temporary low but a refusal to change — he clings harder to the lie as things collapse. Concept teaches Act 1 mask-building only. Proposed: doubling-down — 'Doubling Down'.",
+  "why": "so his refusal to drop the lie is what destroys him",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist's goal here is general; something normal",
+  "concept_id": "general-goal",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so we know their ordinary life before the story wrecks it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Herald gives special piece of information",
+  "concept_id": "herald",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the news that changes everything arrives from outside, not from their head",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist receives a warning; threat becomes visible",
+  "concept_id": "monster-distant",
+  "verdict": "wrong",
+  "better_concept": "warning-ignored",
+  "reason": "Concept teaches WITHHOLDING the threat ('the less you show, the larger it feels') — the exact opposite of a beat where the threat becomes visible and a warning is delivered.",
+  "why": "so the danger stops being rumour and the reader starts to worry",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "We become aware of the monster from a distance",
+  "concept_id": "monster-distant",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the monster feels huge before we ever see it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "We gradually learn of its reputation",
+  "concept_id": "monster-distant",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so what people say about it does the frightening for you",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "DREAM STAGE - THE SPECIAL WORLD - THE JOURNEY",
+  "concept_id": null,
+  "verdict": "wrong",
+  "better_concept": "special-world",
+  "reason": "This is a stage BANNER, not a beat — it currently offers no examples and no chips. Either drop it from the beat rows or map it to special-world.",
+  "why": "so the new world feels wondrous first and uneasy underneath",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "HIGHER STAKES",
+  "concept_id": null,
+  "verdict": "wrong",
+  "better_concept": "obstacles",
+  "reason": "Matches nothing, so no help at all on a row whose job is escalation; obstacles teaches exactly that ('each obstacle harder than the last').",
+  "why": "so every failure now costs more and the reader cannot relax",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "TURNING POINT #1: Opportunity",
+  "concept_id": null,
+  "verdict": "wrong",
+  "better_concept": "call-to-adventure",
+  "reason": "Unmatched. This is the inciting event that arrives from outside — call-to-adventure is written for it.",
+  "why": "so something from outside forces the story to start",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "TURNING POINT #2: Change of Plans",
+  "concept_id": null,
+  "verdict": "wrong",
+  "better_concept": "sees-way-to-fix",
+  "reason": "Unmatched. The student must write the new plan — sees-way-to-fix teaches 'a decision plus an action, too simple to work'.",
+  "why": "so the protagonist now has a clear goal we can watch them chase",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "TURNING POINT #3: Point of No Return",
+  "concept_id": null,
+  "verdict": "wrong",
+  "better_concept": "threshold",
+  "reason": "Unmatched. threshold is the point-of-no-return concept ('once across, going back is not simple').",
+  "why": "so going back becomes impossible and they must see it through",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "TURNING POINT #4: Major Setback",
+  "concept_id": null,
+  "verdict": "wrong",
+  "better_concept": "lowest-point",
+  "reason": "Unmatched. 'Major setback' is the all-is-lost beat lowest-point describes.",
+  "why": "so everything they built collapses and the change has to be earned back",
+  "why_by_archetype": {
+   "tragedy": "so the collapse begins that he will never recover from"
+  }
+ },
+ {
+  "batch": 2,
+  "label": "TURNING POINT #5: Climax",
+  "concept_id": null,
+  "verdict": "wrong",
+  "better_concept": "fatal-blow",
+  "reason": "Unmatched. fatal-blow is the climax concept — but note it insists the protagonist must be the one who acts, which is false in tragedy, where the decisive act is usually done TO them.",
+  "why": "so the story delivers the showdown it promised, done by them",
+  "why_by_archetype": {
+   "tragedy": "so the promised showdown happens on the page, and he loses it"
+  }
+ },
+ {
+  "batch": 2,
+  "label": "TURNING POINT: Anticipation",
+  "concept_id": null,
+  "verdict": "wrong",
+  "better_concept": "storm-coming",
+  "reason": "Unmatched. Sits in Stage I; the job is unease before any event, which is exactly storm-coming ('atmosphere, not event').",
+  "why": "so the reader feels something coming before anything actually happens",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist in state of youthful naivety, lacking responsibility",
+  "concept_id": "ordinary-world",
+  "verdict": "wrong",
+  "better_concept": "limited-awareness",
+  "reason": "The prompt opens with the words 'has limited awareness'. limited-awareness teaches it AND fixes the row's own failing — 'show it through a mistake or an assumption, never by telling us they are naive'. ordinary-world is a separate beat this archetype already has.",
+  "why": "so we can measure how far they grow up by the end",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist refuses again; stuck in ordinary world",
+  "concept_id": "ordinary-world",
+  "verdict": "wrong",
+  "better_concept": "refusal",
+  "reason": "The beat is a SECOND refusal; ordinary-world teaches establishing normal life in Act 1. refusal teaches the move, including the action ('they go back, put it down, close the door').",
+  "why": "so we see the flaw actively holding them back, not bad luck",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "The ordinary world",
+  "concept_id": "ordinary-world",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader knows the life this story is about to break",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "We meet the protagonist in their lowly state",
+  "concept_id": "ordinary-world",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the rise can be measured against exactly how low they started",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Refuses the call; weakness revealed",
+  "concept_id": "refusal",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so their weakness is on the page before they have to beat it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist decides to die with honour and glory",
+  "concept_id": "self-sacrifice",
+  "verdict": "wrong",
+  "better_concept": "tragic-acceptance",
+  "reason": "self-sacrifice teaches surrender as 'the proof of the change' — but in tragedy dying for honour is the FLAW carried to the end, not growth. The concept would have a student write a redemptive scene into a tragedy.",
+  "why": "so he goes down knowing the truth, choosing pride over survival",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist willing to sacrifice for others",
+  "concept_id": "self-sacrifice",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the change is proved by what they are willing to lose",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Dark Mentor dies",
+  "concept_id": "surpasses-mentor",
+  "verdict": "weak",
+  "better_concept": "NEW:dark-mentor-falls",
+  "reason": "Criterion 1 (mentor out of the way) fits, but criterion 2 — 'your protagonist then does the thing the mentor could not' — frames removal as triumph. A DARK mentor's death removes the last restraint and isolates him. Proposed: dark-mentor-falls — 'The Dark Mentor Falls'.",
+  "why": "so he is left alone with the ruin his corrupter started",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Dark Mentor fights the opposition and loses",
+  "concept_id": "surpasses-mentor",
+  "verdict": "weak",
+  "better_concept": "NEW:dark-mentor-falls",
+  "reason": "Same as above — the concept's heroic framing does not fit a corrupter being defeated in a tragedy.",
+  "why": "so his last support is stripped before the end",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Hero surpasses the Dark Mentor",
+  "concept_id": "surpasses-mentor",
+  "verdict": "weak",
+  "better_concept": null,
+  "reason": "Shape fits, but the concept assumes a benign mentor and a heroic surpassing; in tragedy 'surpassing' means outdoing the corrupter in ruthlessness. Missing: a tragedy-side criterion.",
+  "why": "so we see he has gone further into darkness than his corrupter did",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Hero surpasses the Mentor",
+  "concept_id": "surpasses-mentor",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the final win is theirs alone, not the mentor's",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Mentor fights dark forces and loses",
+  "concept_id": "surpasses-mentor",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so nobody else can save them — the fight has to be theirs",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Mentor fights monster and loses",
+  "concept_id": "surpasses-mentor",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the monster is proved unbeatable by anyone but them",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Mentor fights villain and loses",
+  "concept_id": "surpasses-mentor",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the last helper is removed and they must finish it alone",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Mentor sacrifices himself to save the protagonist",
+  "concept_id": "surpasses-mentor",
+  "verdict": "weak",
+  "better_concept": null,
+  "reason": "Removal is covered, but a sacrifice's distinct job — leaving the hero a debt and grief to carry into the final fight — is not taught anywhere in the concept.",
+  "why": "so the hero carries a debt into the final fight",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Hero and companions set out across hostile terrain",
+  "concept_id": "threshold",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the journey physically begins and turning back stops being easy",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist crosses the threshold into the special world",
+  "concept_id": "threshold",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the commitment is a physical act the reader can see",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Small group of allies may welcome the protagonist",
+  "concept_id": "threshold",
+  "verdict": "wrong",
+  "better_concept": "allies",
+  "reason": "Matched on the words 'into the special world' only. The beat is about WHO welcomes him; threshold teaches the physical crossing and gives no help designing the group.",
+  "why": "so he is not alone when the change starts — someone lets him in",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Small group of allies welcomes the Hero",
+  "concept_id": "threshold",
+  "verdict": "wrong",
+  "better_concept": "allies",
+  "reason": "Same false match on 'into the special world'. Also note the archetype split: in tragedy this welcoming group flatters and enables rather than supports — a divergence that argues for a tragedy-specific row.",
+  "why": "so the team we will follow is introduced as the new world opens",
+  "why_by_archetype": {
+   "tragedy": "so the crowd that flatters him into the special world seals his fall"
+  }
+ },
+ {
+  "batch": 2,
+  "label": "Dark force accuses protagonist of being the same; not fooled",
+  "concept_id": "villain-accuses",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so he proves by acting that he is no longer what he was",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Protagonist accuses opponents; opponent does not listen",
+  "concept_id": "villain-accuses",
+  "verdict": "wrong",
+  "better_concept": "NEW:accusation-unheard",
+  "reason": "The roles are INVERTED: the protagonist accuses and is ignored, and it fails. The concept teaches the antagonist accusing and the hero answering with an action — a student would write the wrong scene entirely. Proposed: accusation-unheard — 'The Accusation Nobody Hears'.",
+  "why": "so his last chance to be understood fails and the fall completes",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 2,
+  "label": "Villain accuses protagonist of being the same; not fooled",
+  "concept_id": "villain-accuses",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so they must prove the difference by what they do next",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Allies abandon the protagonist",
+  "concept_id": "allies-disagree",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the tragic hero faces the end alone, with nobody left to stop them",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Allies disagree on what to do next",
+  "concept_id": "allies-disagree",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the protagonist is stripped of support right before the hardest part",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Hero becomes separated from what's important",
+  "concept_id": "allies-disagree",
+  "verdict": "wrong",
+  "better_concept": "NEW:separation-from-what-matters",
+  "reason": "Concept teaches a GROUP splitting; this beat is losing the person, place or thing that had become the anchor — if the student's 'important thing' is not an ally, the concept gives them nothing. Job also differs between the two archetypes.",
+  "why": "so losing what mattered most forces them to prove who they really are",
+  "why_by_archetype": {
+   "rags-to-riches": "so what they gained is torn away and must be re-earned honestly",
+   "the-quest": "so the goal costs them something they thought they could keep"
+  }
+ },
+ {
+  "batch": 3,
+  "label": "Obstacles, crises with those once close to",
+  "concept_id": "allies-disagree",
+  "verdict": "weak",
+  "better_concept": null,
+  "reason": "Concept teaches ONE split moment; the beat asks for SEVERAL escalating crises. Missing: escalation — each clash worse than the last (the 'obstacles' teaching) layered onto the relational break.",
+  "why": "so the hero's fall costs them everyone who could have pulled them back",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "An ally betrays the protagonist",
+  "concept_id": "betrayal",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the danger becomes personal and the protagonist can trust only themselves",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "FIRST EPIPHANY: moment of genuine insight",
+  "concept_id": "epiphany",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the change starts small and the reader believes the later transformation",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "SECOND EPIPHANY: deeper realisation",
+  "concept_id": "epiphany",
+  "verdict": "weak",
+  "better_concept": null,
+  "reason": "All three epiphanies share one concept, so it cannot ladder them. Missing here: this insight is about the SELF (not the world) and must change how they ACT — reactive to purposeful. The criteria still say 'a step, not the ending', which under-pitches it.",
+  "why": "so the protagonist stops reacting and starts choosing what happens next",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "THIRD EPIPHANY: enlightened, possibly via redemption figure",
+  "concept_id": "epiphany",
+  "verdict": "wrong",
+  "better_concept": "NEW:final-realisation",
+  "reason": "The concept's criterion 'they need not understand ALL of it yet' directly CONTRADICTS the beat ('they fully understand the truth they could not see when they set out'). The example (Scrooge asking about Tiny Tim) is a first-epiphany example. The 'redemption figure' delivering the truth is untaught.",
+  "why": "so the reader sees the change is real, not just a scare",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "THIRD EPIPHANY: protagonist becomes enlightened",
+  "concept_id": "epiphany",
+  "verdict": "wrong",
+  "better_concept": "NEW:final-realisation",
+  "reason": "Same contradiction as the other third epiphany — the concept tells the student to hold back full understanding when the beat requires it. Worse: this row spans tragedy, where the beat is the too-late recognition and the correct concept is tragic-acceptance ('sees the truth too late — and goes on anyway'), a genuinely different job.",
+  "why": "so the hero finally understands the truth the whole journey was teaching",
+  "why_by_archetype": {
+   "heros-journey": "so the hero finally understands the truth the journey was always teaching",
+   "coming-of-age": "so they finally understand what no adult could simply tell them",
+   "overcoming-the-monster": "so they understand the monster well enough to actually beat it",
+   "rags-to-riches": "so they learn the riches were never the thing that mattered",
+   "the-quest": "so they see the goal was never what they set out for",
+   "voyage-and-return": "so they carry home understanding, not just a story about somewhere strange",
+   "tragedy": "so the hero sees the truth too late, and the loss means something"
+  }
+ },
+ {
+  "batch": 3,
+  "label": "Allies pull out their own bag of tricks",
+  "concept_id": "fatal-blow",
+  "verdict": "wrong",
+  "better_concept": "NEW:allies-pay-off",
+  "reason": "The concept insists 'your protagonist must be the one who does it' — the beat is the ALLIES acting. The student is told the opposite of what the beat asks. The real teaching is the pay-off of the distinct skill each ally was introduced with.",
+  "why": "so every ally you introduced earns their place in the ending",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Dark forces accuse protagonist of being the same; not fooled",
+  "concept_id": "fatal-blow",
+  "verdict": "wrong",
+  "better_concept": "villain-accuses",
+  "reason": "There is an exact concept already — villain-accuses ('You Are the Same as Me': the claim should be PARTLY TRUE, and the answer is an action not an argument). The regex branch 'final attempt' stole this row for fatal-blow, which teaches the decisive killing act instead.",
+  "why": "so the protagonist proves the riches did not make them the villain",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Hero emerges to win the prize",
+  "concept_id": "fatal-blow",
+  "verdict": "wrong",
+  "better_concept": "NEW:the-prize-won",
+  "reason": "Stage VI aftermath beat — CLAIMING the prize, not striking the blow. fatal-blow would have the student rewrite the previous beat. What is needed: the prize must be the thing set up at the start, and be shown being taken.",
+  "why": "so the reader finally gets the payoff the whole story promised",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Monster attacks the protagonist in final attempt",
+  "concept_id": "fatal-blow",
+  "verdict": "wrong",
+  "better_concept": "nightmare-battle",
+  "reason": "The beat is the MONSTER attacking; the concept teaches the protagonist's own decisive act ('your protagonist must be the one who does it'). nightmare-battle is the right home — the external danger forcing the internal choice in one event.",
+  "why": "so the monster is most dangerous exactly when the hero must win",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Glimpse of true self; warmer humanity, potential to change",
+  "concept_id": "glimpse-true-self",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader believes redemption is possible before it happens",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Protagonist shows glimpse of true self",
+  "concept_id": "glimpse-true-self",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader roots for them and believes they could succeed later",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Has he/she changed or was it all just a dream?",
+  "concept_id": "how-much-learnt",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the ending proves the change instead of just claiming it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Has he/she grown or was it all just a dream?",
+  "concept_id": "how-much-learnt",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader can see exactly what the journey was worth",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "How much has the protagonist learnt?",
+  "concept_id": "how-much-learnt",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the story answers the question it asked at the start",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "But things begin to go wrong",
+  "concept_id": "mood-turns",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader sees the dream souring before the hero does",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "But things continue to go wrong",
+  "concept_id": "mood-turns",
+  "verdict": "weak",
+  "better_concept": "world-deteriorates",
+  "reason": "'Continue' means this is the second, deeper decline; mood-turns teaches a one-time shift in FEEL and tells the student to compare against an earlier scene they have already used. world-deteriorates ('measurably WORSE while your protagonist watches') carries the escalation this beat needs.",
+  "why": "so the reader watches their world darken while they refuse to change",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "FRUSTRATION",
+  "concept_id": "mood-turns",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the easy way stops working and they must change approach",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Hero begins to feel frustrated",
+  "concept_id": "mood-turns",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the hero's impatience pushes them towards the choice that destroys them",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Mood changes to frustration, difficulty, or oppression",
+  "concept_id": "mood-turns",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader can measure how far things have fallen since the start",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Hero becomes focused on this object",
+  "concept_id": "object-of-desire",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader knows exactly what the hero will destroy themselves chasing",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Some object of desire presents itself",
+  "concept_id": "object-of-desire",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the hero has something to want that will cost them everything",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Attacked again; resistance does not work",
+  "concept_id": "physical-attack",
+  "verdict": "wrong",
+  "better_concept": "obstacles",
+  "reason": "The concept is literally 'The First Attack' and teaches 'the opposition touches them for the FIRST time' — this beat is explicitly 'attacked AGAIN'. The student is handed the wrong occasion. Also untaught: they lose because they cannot yet use the elixir they were given.",
+  "why": "so losing twice proves they must change, not just try harder",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Protagonist suffers a physical attack",
+  "concept_id": "physical-attack",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader learns the danger is real and the goal is not free",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Protagonist returns with elixir; mastered himself",
+  "concept_id": "return-with-elixir",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the change is proved by what they give back, not what they say",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Protagonist returns with elixir; newfound wisdom",
+  "concept_id": "return-with-elixir",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the community gains something from the journey, not just the hero",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Protagonist returns with elixir; newfound wisdom and maturity",
+  "concept_id": "return-with-elixir",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so growing up is shown by what they can now give others",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Protagonist returns with the elixir; newfound wisdom",
+  "concept_id": "return-with-elixir",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the journey changes the world the hero left, not only the hero",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "A shadowy figure may appear",
+  "concept_id": "shadow-dominates",
+  "verdict": "wrong",
+  "better_concept": "monster-distant",
+  "reason": "The concept teaches total domination ('the opposition is now the STRONGEST thing in your story'); this beat is a single glimpse of something that 'may' appear. monster-distant's teaching — withhold the thing itself, the less you show the larger it feels — is exactly the help a portent needs.",
+  "why": "so the reader feels the doom closing in before it arrives",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Dark power begins to dominate",
+  "concept_id": "shadow-dominates",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader sees how much must be overcome for redemption to count",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Monster begins to dominate; powerful forces unleashed",
+  "concept_id": "shadow-dominates",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so beating the monster later actually means something",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Shadow begins to dominate; powerful forces unleashed",
+  "concept_id": "shadow-dominates",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the opposition is strong enough to make the victory worth reading",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Main character's flaw is revealed",
+  "concept_id": "the-flaw",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the story has something to fix, and the ending can prove it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Main character's flaw revealed (may be another character's flaw)",
+  "concept_id": "the-flaw",
+  "verdict": "weak",
+  "better_concept": null,
+  "reason": "The beat's distinctive rebirth mechanic — the flaw may belong to ANOTHER central character whom the protagonist must arc — is entirely untaught. The concept assumes the flaw is the protagonist's, so a student choosing the displaced version gets no help deciding whose flaw drives the story.",
+  "why": "so we know exactly what must change before redemption can be believed",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Time is running out to change",
+  "concept_id": "ticking-clock",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the redemption has a deadline the reader can feel slipping away",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Dark forces demonstrate their power again",
+  "concept_id": "villain-advances",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the new position is nearly taken back before they defend it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Dark power demonstrates its power again",
+  "concept_id": "villain-advances",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the pull back to the old self is at its strongest",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Monster advances like a bulldozer",
+  "concept_id": "villain-advances",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader sees the monster is unstoppable unless the hero changes",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Monster demonstrates his power again",
+  "concept_id": "villain-advances",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the final fight feels genuinely dangerous, not a formality",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Opposition advances",
+  "concept_id": "villain-advances",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the walls close in while the hero keeps making things worse",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Opposition demonstrates his power again",
+  "concept_id": "villain-advances",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the hero's fall is caused by a force stronger than them",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Villain advances like a bulldozer",
+  "concept_id": "villain-advances",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the danger keeps growing while the protagonist is still not ready",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 3,
+  "label": "Villain demonstrates his power again",
+  "concept_id": "villain-advances",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": "",
+  "why": "so the reader doubts they can win right before they do",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Goal becomes much more specific",
+  "concept_id": "approach",
+  "verdict": "weak",
+  "better_concept": "object-of-desire",
+  "reason": "Beat sits in Stage III where the goal merely sharpens; the concept's 'last stretch is the worst / preparations before going in' half is a Stage V approach and misleads here.",
+  "why": "so the reader knows exactly what winning would look like",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Hero arrives within sight of goal",
+  "concept_id": "approach",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader feels how close success is before the hardest part",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Hero becomes committed to his course of action",
+  "concept_id": "approach",
+  "verdict": "weak",
+  "better_concept": "threshold",
+  "reason": "Beat is the point of no return, not sighting a goal; only the concept's 'what they decide or give up' line touches it. Threshold teaches the irreversible crossing this beat needs.",
+  "why": "so the fall is his own choice, not bad luck",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Hero makes preparations to defend winnings",
+  "concept_id": "approach",
+  "verdict": "wrong",
+  "better_concept": "NEW:defending-the-prize",
+  "reason": "Swept in by the bare word 'preparations'. Approach teaches moving TOWARD a goal; this tragedy beat is protecting a prize already taken, where each act of protection is a fresh crime. Proposed: 'defending-the-prize' — Defending the Prize.",
+  "why": "so keeping the prize costs him more than winning it did",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist makes preparations for battle",
+  "concept_id": "approach",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader sees what the fight will cost before it starts",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist makes preparations to change",
+  "concept_id": "approach",
+  "verdict": "wrong",
+  "better_concept": "sees-way-to-fix",
+  "reason": "Same 'preparations' regex sweep. There is no external goal in sight here — the preparation is internal and rebirth-only. 'A Way to Fix It' (a decision plus an action, first plan, too simple to work) is exactly this beat.",
+  "why": "so the change looks earned, not a sudden switch at the end",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Given supernatural or visionary direction; ONLY HE/SHE can solve it",
+  "concept_id": "call-to-adventure",
+  "verdict": "weak",
+  "better_concept": "prophecy",
+  "reason": "The generic Call is already covered by the 'INCITING INCIDENT' row in the same stage; what is distinctive here — a visionary/prophetic message and the chosen-one claim — is what Prophecy teaches (believed, incomplete or double-edged).",
+  "why": "so the reader accepts that only this person can do it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Hero experiences a Call to confront it",
+  "concept_id": "call-to-adventure",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the hero must face the monster instead of hiding from it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "INCITING INCIDENT - CALL TO ADVENTURE",
+  "concept_id": "call-to-adventure",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the old life ends and the story properly starts",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Something calls or sends protagonist into wider world",
+  "concept_id": "call-to-adventure",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so they leave the small world where they could never rise",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Focused on solving a very simple problem",
+  "concept_id": "facade-goal",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the story starts small and believable, not with a grand mission",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist's goal is a façade at this stage",
+  "concept_id": "facade-goal",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the real need can surface later and surprise them",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "If the protagonist's life stays the same, figurative death",
+  "concept_id": "figurative-death",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader knows what is lost if nothing changes",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist sees life as oppressive, even though has a lot",
+  "concept_id": "figurative-death",
+  "verdict": "weak",
+  "better_concept": "false-balance",
+  "reason": "Beat is about restless appetite despite plenty — the discontent that feeds the tragic ambition. The concept asks the student to name a LOSS, which is not what this beat shows. False Balance ('looks steady from outside — show the crack') is the job here.",
+  "why": "so his hunger for more looks inevitable before he does anything wrong",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist's life is oppressive because he is alone",
+  "concept_id": "figurative-death",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so his loneliness is the thing the redemption has to undo",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Hero looks for unusual gratification",
+  "concept_id": "gratification",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so we see the appetite that will destroy him before it does",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Highlight the immaturity that needs to be overcome",
+  "concept_id": "limited-awareness",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so we can measure how far they have grown by the end",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist has limited awareness, disconnected from reality",
+  "concept_id": "limited-awareness",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so his blindness explains the harm he does to other people",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist has limited awareness, disconnected, unfulfilled",
+  "concept_id": "limited-awareness",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so his blindness, not bad luck, starts the fall",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist has limited awareness, naive, ignorant...",
+  "concept_id": "limited-awareness",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader can watch them learn what they do not know",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "New Information: second Catalyst, choice to continue",
+  "concept_id": "new-information",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so going on is a deliberate choice, not just stubbornness",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Greater obstacles before getting the prize",
+  "concept_id": "obstacles",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the prize feels earned rather than handed over",
+  "why_by_archetype": {
+   "tragedy": "so each obstacle drags him deeper instead of teaching him"
+  }
+ },
+ {
+  "batch": 4,
+  "label": "Obstacles and crises; more chances to change",
+  "concept_id": "obstacles",
+  "verdict": "weak",
+  "better_concept": "warning-ignored",
+  "reason": "Escalation is only half the beat. The rebirth-specific half — repeated chances and reasons to change, which he keeps waving away — is taught by Warning Ignored, not by Rising Obstacles.",
+  "why": "so refusing to change again makes the final change cost more",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist encounters further monsters and temptations",
+  "concept_id": "obstacles",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the middle keeps rising instead of drifting",
+  "why_by_archetype": {
+   "tragedy": "so every temptation taken makes the next crime easier"
+  }
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist experimenting and learning from tests",
+  "concept_id": "obstacles",
+  "verdict": "wrong",
+  "better_concept": "NEW:tests-and-learning",
+  "reason": "Obstacles teaches escalation of difficulty; this beat is the hero LEARNING from tests, allies and enemies — acquiring the skill and knowledge that makes the later win credible. Nothing in the 70 covers it. Proposed: 'tests-and-learning' — Tests, Allies and Enemies.",
+  "why": "so the hero earns the skills the final fight will demand",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Hero feels terrible and disgusted with false identity",
+  "concept_id": "powerless",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the old self becomes unbearable and change starts feeling necessary",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist starts to become more open to change",
+  "concept_id": "powerless",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the change later is not sudden — the door opens first",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "The hero seems powerless",
+  "concept_id": "powerless",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so we feel the old self holding him down, not just hear it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "The hero seems tiny and alone",
+  "concept_id": "powerless",
+  "verdict": "wrong",
+  "better_concept": "shadow-dominates",
+  "reason": "Overcoming-the-monster, Stage IV: nothing to do with a false identity or a mask. The beat is scale and isolation against a monster at its strongest — The Shadow Dominates ('show its reach; one image of the world under it') is the concept.",
+  "why": "so the monster feels overwhelming and beating it means something",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Things going downhill; trouble letting go of old self",
+  "concept_id": "powerless",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader believes how hard letting go really is",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist comes back from dead; one last attempt to change",
+  "concept_id": "reversal",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the final change comes from something planted earlier, not luck",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist comes back from dead; one last attempt to destroy monster",
+  "concept_id": "reversal",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the hero's return to fight is earned, not a lucky rescue",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist comes back from the dead for one last attempt",
+  "concept_id": "reversal",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the last attempt is powered by something we already met",
+  "why_by_archetype": {
+   "tragedy": "so his last effort raises hope the ending will crush"
+  }
+ },
+ {
+  "batch": 4,
+  "label": "Reversal: Mentor or ally brings protagonist back to life",
+  "concept_id": "reversal",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the rescue pays off someone the reader already knows",
+  "why_by_archetype": {
+   "tragedy": "so the brief hope makes the coming destruction hurt more"
+  }
+ },
+ {
+  "batch": 4,
+  "label": "Hero excited or fascinated by the new world",
+  "concept_id": "special-world",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the thrill of the new life hides the danger inside it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Hero is excited or fascinated by the new world",
+  "concept_id": "special-world",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader feels the wonder before the world turns on them",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist excited or fascinated by the new world",
+  "concept_id": "special-world",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the escape feels exciting before it starts costing him",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist is presented with a sword",
+  "concept_id": "the-sword",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the new identity has an object the reader can see",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist receives apparent wisdom and ambiguous gifts",
+  "concept_id": "the-sword",
+  "verdict": "wrong",
+  "better_concept": "prophecy",
+  "reason": "The word 'apparent' and 'ambiguous' is the whole beat — a tragedy gift that is double-edged and misleads him. The Gift teaches an object that MEANS the change; it says nothing about a promise that comes true in a way he never meant. Prophecy teaches exactly that.",
+  "why": "so his confidence rests on advice that was never what it seemed",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist receives crucial wisdom and/or gifts",
+  "concept_id": "the-sword",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so they enter the final test holding something they lacked before",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist receives new clothes, symbolic of new identity",
+  "concept_id": "the-sword",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the change is visible on the outside, not just stated",
+  "why_by_archetype": {
+   "tragedy": "so the new role never quite fits the man wearing it"
+  }
+ },
+ {
+  "batch": 4,
+  "label": "Forces of opposition and fate closing in",
+  "concept_id": "tragic-acceptance",
+  "verdict": "wrong",
+  "better_concept": "cornered",
+  "reason": "Tragic Acceptance is about recognition — seeing the truth too late and going on. This beat is external pressure tightening, before any recognition. Cornered ('close every exit; name the cost of losing') is the job.",
+  "why": "so escape is impossible and the ending feels inevitable",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist accepts his/her fate forever",
+  "concept_id": "tragic-acceptance",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so he faces the ending he made instead of being rescued",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist reflects on past mistakes; expresses regret",
+  "concept_id": "tragic-acceptance",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader sees him understand, exactly when it is too late",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Opponent understands the protagonist's weakness",
+  "concept_id": "villain-weakness",
+  "verdict": "wrong",
+  "better_concept": "NEW:flaw-exploited",
+  "reason": "The mapping is the beat REVERSED — the concept teaches the protagonist working out the ANTAGONIST's flaw, while this tragedy beat is the opponent working out the PROTAGONIST's. The Lion King example coaches the opposite move. Proposed: 'flaw-exploited' — The Flaw Turned Against Them (fallback: the-flaw).",
+  "why": "so he is destroyed by his own flaw, not by chance",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist understands the dark force's weakness",
+  "concept_id": "villain-weakness",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the dark force is beaten by understanding, not by luck",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist understands the dark forces' weakness",
+  "concept_id": "villain-weakness",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the underdog wins by working it out, not by luck",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist understands the monster's weakness",
+  "concept_id": "villain-weakness",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the monster is beaten by cleverness the reader can follow",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 4,
+  "label": "Protagonist understands the villain's weakness",
+  "concept_id": "villain-weakness",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the win comes from something the hero noticed earlier",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "B Story: discussion about the Theme",
+  "concept_id": "b-story",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the story's truth gets said out loud by people, not the author",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Dark forces appear to have cornered the protagonist",
+  "concept_id": "cornered",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader stops seeing a way out, and fears they lose everything",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Hero may fall into the monster's clutches",
+  "concept_id": "cornered",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the monster feels genuinely deadly before the hero can beat it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Hero may fall into the shadow's clutches",
+  "concept_id": "cornered",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader believes the hero could actually lose here",
+  "why_by_archetype": {
+   "heros-journey": "so the reader believes the hero could actually lose here",
+   "coming-of-age": "so growing up is shown to carry a real, frightening cost",
+   "rags-to-riches": "so everything they have gained can visibly be taken back",
+   "the-quest": "so the goal looks unreachable right before they reach it",
+   "tragedy": "so the fall ahead feels inevitable, not sudden — here he does not escape",
+   "voyage-and-return": "so getting home stops looking certain, and the strange world turns hostile"
+  }
+ },
+ {
+  "batch": 5,
+  "label": "Monster appears to have cornered the protagonist",
+  "concept_id": "cornered",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the fight feels lost before the hero finds a way to win",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Serious threat to hero's survival; seems only one outcome",
+  "concept_id": "cornered",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the danger is real and the reader can see no escape",
+  "why_by_archetype": {
+   "heros-journey": "so the danger is real and the reader can see no escape",
+   "coming-of-age": "so the lesson ahead is paid for with genuine fear",
+   "rags-to-riches": "so everything they climbed for can still be lost in one moment",
+   "rebirth-redemption": "so he must face the life he built, with nowhere left to hide",
+   "the-quest": "so the last stretch of the journey costs more than the rest",
+   "tragedy": "so the doom closes in and the ending feels already decided",
+   "voyage-and-return": "so the strange world shows its teeth before they get home"
+  }
+ },
+ {
+  "batch": 5,
+  "label": "There seems only one outcome",
+  "concept_id": "cornered",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the monster looks unbeatable right before the hero beats it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Villain appears to have cornered the protagonist",
+  "concept_id": "cornered",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the villain proves dangerous, and the escape has to cost something",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "May have a false sense of balance or complete imbalance",
+  "concept_id": "false-balance",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader feels the crack before anything actually breaks",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Expand on the opening image",
+  "concept_id": "final-image-setup",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so we see their whole world, and the hole in the middle",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Everything suddenly goes wrong",
+  "concept_id": "greater-crises",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the collapse feels earned — one failure knocking over the next",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Greater crises",
+  "concept_id": "greater-crises",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the danger keeps rising instead of repeating, and the reader stays hooked",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Compelled to commit dark acts",
+  "concept_id": "lowest-point",
+  "verdict": "wrong",
+  "better_concept": "NEW:dark-acts-escalate",
+  "reason": "lowest-point teaches despair and being stripped bare; this beat is the protagonist ACTING — committing worse deeds to protect the first one. The branch 'compelled to commit dark acts' was bolted onto the regex.",
+  "why": "so each crime forces the next, and turning back stops being possible",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Compelled to run away from the truth",
+  "concept_id": "lowest-point",
+  "verdict": "weak",
+  "better_concept": "refusal",
+  "reason": "missing how to write avoidance: lowest-point teaches the bottom (goal lost, ally stripped), but this beat is a second refusal — refusal teaches saying no because of the flaw, with an action.",
+  "why": "so he is given one last chance to face it, and refuses",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Lowest point; mounting sense of threat and despair",
+  "concept_id": "lowest-point",
+  "verdict": "weak",
+  "better_concept": null,
+  "reason": "in tragedy the third criterion is false — it promises 'the change has to be EARNED out of this, later', but a tragic protagonist does not come back up; the tragedy-specific note is missing.",
+  "why": "so the bottom is real, and nothing after it can rescue him",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Suddenly realises things will never be the same",
+  "concept_id": "lowest-point",
+  "verdict": "weak",
+  "better_concept": "epiphany",
+  "reason": "this is a RECOGNITION beat, not a despair beat; lowest-point's 'strip the ally, mask goes back on' does not teach how to write a realisation landing on a character.",
+  "why": "so he finally sees there is no going back to who he was",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "This is his/her lowest point",
+  "concept_id": "lowest-point",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the change afterwards has to be earned, not simply handed over",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Dark forces are dealt a fatal blow",
+  "concept_id": "nick-of-time",
+  "verdict": "wrong",
+  "better_concept": "fatal-blow",
+  "reason": "nick-of-time teaches only the TIMING; the beat's job is the decisive act itself, and fatal-blow ('your protagonist must be the one who does it') is the lesson this beat needs — its regex already contains 'fatal blow' but nick-of-time claims the row first.",
+  "why": "so the thing that oppressed them is beaten, by them, on the page",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Dark forces dealt a fatal blow; goal is won",
+  "concept_id": "nick-of-time",
+  "verdict": "wrong",
+  "better_concept": "fatal-blow",
+  "reason": "same over-claim: fatal-blow's regex matches both 'fatal blow' and 'goal is won', and it teaches the decisive act; nick-of-time teaches only pace.",
+  "why": "so the quest is finished by the hero's own hand, not by luck",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "In the nick of time, the protagonist changes",
+  "concept_id": "nick-of-time",
+  "verdict": "wrong",
+  "better_concept": "seizes-sword",
+  "reason": "the beat is the REDEMPTION TURN, not an escape; nick-of-time teaches escape timing and short sentences, which gives a rebirth student nothing. seizes-sword teaches the mask coming off visibly.",
+  "why": "so the change comes late enough to cost him and still save him",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "In the nick of time, the protagonist escapes",
+  "concept_id": "nick-of-time",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the escape is won by seconds, and the danger stays believable",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Monster is dealt a fatal blow",
+  "concept_id": "nick-of-time",
+  "verdict": "wrong",
+  "better_concept": "fatal-blow",
+  "reason": "the beat is the kill, not the clock; fatal-blow teaches that the protagonist must land it on the page rather than have it summarised.",
+  "why": "so the monster dies by the hero's hand, in a scene we watch",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "More obstacles, crises and conflicts; thrilling escape",
+  "concept_id": "nick-of-time",
+  "verdict": "wrong",
+  "better_concept": "obstacles",
+  "reason": "this sits at STAGE III (escalation), not the finale — nick-of-time claimed it on the words 'thrilling escape'. The beat's job is rising obstacles, which is exactly what the obstacles concept teaches.",
+  "why": "so the danger grows step by step before the real fight arrives",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Obstacles, betrayal, crises and conflicts",
+  "concept_id": "nick-of-time",
+  "verdict": "wrong",
+  "better_concept": "obstacles",
+  "reason": "STAGE III escalation beat mis-claimed by 'thrilling escape'; obstacles teaches escalation, and the betrayal clause is served by the betrayal concept, not by escape timing.",
+  "why": "so each setback is harder, and growing up costs something real",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Obstacles, crises and conflicts ending in thrilling escape",
+  "concept_id": "nick-of-time",
+  "verdict": "wrong",
+  "better_concept": "obstacles",
+  "reason": "same STAGE III mis-claim: the row is about mounting obstacles, and nick-of-time only teaches the last-second win.",
+  "why": "so the journey gets harder each time, and progress feels earned",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Protagonist struggles to escape",
+  "concept_id": "nick-of-time",
+  "verdict": "wrong",
+  "better_concept": "NEW:futile-struggle",
+  "reason": "archetype-blind mis-claim, and it teaches the OPPOSITE of the beat: nick-of-time promises the win 'lands with nothing to spare', but this is tragedy — the struggle must fail. A tragedy student is being told to write a rescue.",
+  "why": "so we watch him fight, and still lose — the loss must be earned",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Final Image: opposite of Opening Image",
+  "concept_id": "opening-image",
+  "verdict": "wrong",
+  "better_concept": "final-image",
+  "reason": "the /opening image/i regex claims the row because the label contains the words; the final-image concept exists and teaches exactly this beat (mirror the opening, changed, show don't explain).",
+  "why": "so the reader SEES the change instead of being told about it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Opening Image represents the central struggle & tone",
+  "concept_id": "opening-image",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the first picture already carries the story's struggle and its mood",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Snapshot of the main character's problem",
+  "concept_id": "problem-snapshot",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so we watch the problem happen instead of being told about it",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Protagonist sees a way to fix it",
+  "concept_id": "sees-way-to-fix",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the story has a plan simple enough to go wrong later",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Protagonist sees a way to fix it, such as a long journey",
+  "concept_id": "sees-way-to-fix",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the journey is chosen by them, and simple enough to fail",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "A shadow begins to intrude; increasingly alarming",
+  "concept_id": "storm-coming",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so dread builds before anything happens, and the reader feels it coming",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "A storm is coming; onset of evil felt in the air",
+  "concept_id": "storm-coming",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the air changes before the danger does, and tension starts early",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "A storm is coming; something threatening",
+  "concept_id": "storm-coming",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the reader senses the ruin coming while the hero does not",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Greater obstacles; reminded of repressed emotional wound",
+  "concept_id": "the-wound",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so we understand why he became this, before we watch him change",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Painful past experience revealed",
+  "concept_id": "the-wound",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the flaw has a cause, and changing later feels possible",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Community may rejoice in or mourn the death",
+  "concept_id": "tragic-death",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the death means something to the world, not only to him",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "If they don't learn, same problem likely to happen again",
+  "concept_id": "tragic-death",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the warning outlives him — the same danger is still loaded",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "If they mourn, they may realise the problem in society",
+  "concept_id": "tragic-death",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the survivors learn what the hero understood far too late",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Protagonist is killed by forces or final act of violence",
+  "concept_id": "tragic-death",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the flaw is paid for, and the story keeps its promise",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Hero ignores this warning",
+  "concept_id": "warning-ignored",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so the disaster ahead is his own fault, not bad luck",
+  "why_by_archetype": null
+ },
+ {
+  "batch": 5,
+  "label": "Receives sign or warning urging him to change",
+  "concept_id": "warning-ignored",
+  "verdict": "ok",
+  "better_concept": null,
+  "reason": null,
+  "why": "so he is offered a fair chance to change before losing it",
+  "why_by_archetype": null
+ }
+]

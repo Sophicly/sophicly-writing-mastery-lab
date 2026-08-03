@@ -56,17 +56,20 @@ if (!CONCEPTS.length) {
     process.exit(1);
 }
 
-// The SHIPPED resolver: most specific match wins, ties keep array order.
-// Must stay byte-equivalent to conceptFor() in wml-assessment.js.
-function resolveIndex(hay) {
-    let best = -1, bestLen = -1;
-    for (let k = 0; k < CONCEPTS.length; k++) {
-        const m = hay.match(CONCEPTS[k].m);
-        if (!m) continue;
-        const len = (m[0] || '').length;
-        if (len > bestLen) { best = k; bestLen = len; }
-    }
-    return best;
+// ⭐ v7.20.408 — CALLS THE REAL RESOLVER. It used to reimplement it, with a comment saying the copy
+// "must stay byte-equivalent to conceptFor()". It did not stay equivalent, and could not have caught
+// it if it had drifted: a check that duplicates its subject is testing its own memory
+// (`feedback_a_check_that_duplicates_its_subject_is_not_a_check`). The proof is the bug this file
+// exists to catch — for months there were TWO live resolvers, this lint mirrored one of them, and
+// the disagreement between them (41 of 232 beats) was invisible here.
+// `CM.conceptFor` is now the one implementation; this maps its answer back to an index.
+if (typeof CM.conceptFor !== 'function') {
+    console.error('cw6-concept-lint: WML_CW6_CONCEPTS.conceptFor is not exported — the lint cannot test the real resolver.');
+    process.exit(1);
+}
+function resolveIndex(hay, archetypeKey) {
+    const c = CM.conceptFor(hay, '', archetypeKey);
+    return c ? CONCEPTS.indexOf(c) : -1;
 }
 
 // The plain-text alternatives a concept claims. Anything with regex metacharacters is skipped —
@@ -101,7 +104,64 @@ CONCEPTS.forEach(function (c, j) {
     }
 });
 
-console.log('cw6-concept-lint: ' + CONCEPTS.length + ' concepts checked.');
+// ─────────────────────────────────────────────────────────────────────────────────────────
+// ⭐ v7.20.408 — ROWMAP CHECKS. The 55+20 audited exceptions are only trustworthy if the table
+// itself stays honest: a dead id serves NO concept (the row silently loses its examples and
+// chips), a duplicate entry means one of the two is unreachable and nobody can tell which, and
+// a REDUNDANT entry (the regex already resolves there) is drift waiting to happen — it hides the
+// fact that the regex fix was made, so a later regex edit breaks a row the table appears to own.
+// Row-level checks — coverage, dead LABELS, arch-scope violations — live in
+// bin/cw6-outline-harness.js, which already parses the eight templates. Do not duplicate that
+// extraction here; two copies of the template loader is the same trap as two resolvers.
+// ─────────────────────────────────────────────────────────────────────────────────────────
+const ROWMAP = CM.ROWMAP || [];
+const idSet = {};
+CONCEPTS.forEach(function (c) { idSet[c.id] = true; });
+
+const seenEntry = {};
+ROWMAP.forEach(function (e, i) {
+    if (!e || !e.l || !e.id) { fatal.push('  ROWMAP[' + i + '] is missing `l` or `id`'); return; }
+    if (!idSet[e.id]) {
+        fatal.push('  ROWMAP[' + i + '] "' + e.l + '" → `' + e.id + '` — NO SUCH CONCEPT.\n'
+            + '        That row would resolve to nothing: no criteria, no examples, no technique chips.');
+    }
+    if (e.arch && (!Array.isArray(e.arch) || !e.arch.length || e.arch.some(function (a) { return typeof a !== 'string' || !a; }))) {
+        fatal.push('  ROWMAP[' + i + '] "' + e.l + '" — `arch` must be a non-empty array of archetype keys');
+    }
+    const key = e.l + '|' + (e.arch ? e.arch.slice().sort().join(',') : '*');
+    if (seenEntry[key] !== undefined) {
+        fatal.push('  ROWMAP[' + i + '] "' + e.l + '" duplicates ROWMAP[' + seenEntry[key] + '] — '
+            + 'first match wins, so the second can never apply and nobody can tell which is live.');
+    }
+    seenEntry[key] = i;
+});
+
+// Redundant entries: the regex sweep would already land this label on the same concept.
+// Not fatal — a belt-and-braces entry on a fragile phrase is a legitimate choice — but every one
+// is a place where the table and the regex both claim ownership, so list them.
+const redundant = [];
+ROWMAP.forEach(function (e) {
+    if (!e || !e.l || !idSet[e.id]) return;
+    let best = null, bestLen = -1;
+    for (let k = 0; k < CONCEPTS.length; k++) {
+        const c = CONCEPTS[k];
+        if (c.arch && e.arch && !e.arch.some(function (a) { return c.arch.indexOf(a) !== -1; })) continue;
+        const m = (e.l + ' — ').match(c.m);
+        if (!m) continue;
+        const len = (m[0] || '').length;
+        if (len > bestLen) { best = c; bestLen = len; }
+    }
+    if (best && best.id === e.id) redundant.push('  "' + e.l + '" → `' + e.id + '` (the regex already resolves here)');
+});
+
+console.log('cw6-concept-lint: ' + CONCEPTS.length + ' concepts, ' + ROWMAP.length + ' ROWMAP entries checked.');
+
+if (redundant.length) {
+    console.log('\nℹ️  ROWMAP entries the regex would resolve anyway (' + redundant.length + ') — safe, but the'
+        + '\n    concept and the table both own these rows, so a later regex edit will not show up here:');
+    redundant.slice(0, 12).forEach(function (r) { console.log(r); });
+    if (redundant.length > 12) console.log('    … and ' + (redundant.length - 12) + ' more');
+}
 
 if (warn.length) {
     console.log('\n⚠️  PARTIALLY SHADOWED (' + warn.length + ') — each one is a beat served another beat’s teaching:');

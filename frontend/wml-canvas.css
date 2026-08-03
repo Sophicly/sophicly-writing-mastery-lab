@@ -13955,6 +13955,31 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-wp-item-text .swml-beat-egs li { margin-bottom: 6px; }
 .swml-wp-item-text .swml-beat-egs li:last-child,
 .swml-wp-item-text .swml-beat-crit li:last-child { margin-bottom: 0; }
+/* ⭐ v7.20.408 — "Why this beat exists". Deliberately styled as an ASIDE, not as instructions:
+   it is authorial craft knowledge for the student, never something they write into the outline
+   (Neil: "the student cannot write 'so the redemption lands' — it needs to be shown, not told").
+   The left rule + inset + smaller label are doing safety work, not decoration — they keep it
+   visually OUTSIDE the criteria list directly beneath it. Colours inherit from the panel, so this
+   follows the light/dark toggle with no second declaration. */
+.swml-wp-item-text.swml-beat-why {
+    white-space: normal;
+    margin: 0 0 10px;
+    padding: 8px 10px;
+    border-left: 2px solid rgba(83, 51, 237, 0.45);
+    background: rgba(83, 51, 237, 0.07);
+    border-radius: 0 6px 6px 0;
+}
+.swml-beat-why-label,
+.swml-beat-why-note {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    opacity: 0.68;
+}
+.swml-beat-why-label { text-transform: uppercase; margin-bottom: 4px; }
+.swml-beat-why-note { margin-top: 5px; font-style: normal; }
+.swml-beat-why em { font-size: 14px; line-height: 1.45; }
+
 .swml-beat-tech {
     white-space: normal;
     display: flex;
