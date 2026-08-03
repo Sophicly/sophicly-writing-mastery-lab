@@ -212,6 +212,25 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/rail-panel-harness.js || fail=1
 fi
 
+# v7.20.410: REVISIT FLAG DURABILITY (#207). The flag is student state that lives in the saved
+# document, and it round-trips through a string patch over the serialised HTML — so the write side
+# (patchRevisitIntoHTML) and the read side (the NodeView's parse of data-revisit) are two halves of
+# one key, far apart in a 48k-line file. That is the §5d write-key/read-key class. This drives the
+# REAL sliced functions and also asserts a cleared flag cannot resurrect on the next load.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|revisit-flag-harness\.js'; then
+  node bin/revisit-flag-harness.js || fail=1
+fi
+
+# v7.20.410: EXAMPLE-QUOTE ANTI-FABRICATION GATE (#210). The .407 audit found a FABRICATED Lion
+# King quote that had already SHIPPED to students, and #210 adds quotations across the pool — so
+# the surface for that failure is now a few hundred lines wide. Every quoted span in a Step-6
+# example must be findable verbatim in a real source on disk. Invented text fails the build.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-cw6-concepts\.js|cw6-quote-gate\.js'; then
+  node bin/cw6-quote-gate.js || fail=1
+fi
+
 # v7.20.322: CW KEY-SHAPE GATE (first half of the ghost-call/key-shape harness Neil approved).
 # Root CLAUDE.md §5d: a write-key that does not match a read-key is the number-one recurring
 # Sophicly defect, and it is SILENT — "it saved fine but nothing appears". This asserts that every

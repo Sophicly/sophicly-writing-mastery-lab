@@ -9297,6 +9297,31 @@
     // Keyed by fieldId. Flushed into TipTap attributes only before save.
     const _outlineCheckState = new Map();
 
+    // ⭐⭐ v7.20.410 (FIXLIST #207) — THE "COME BACK TO THIS" FLAG. Neil: *"some sort of button…
+    // to indicate I wanna come back and revise this later on… it should be something that only
+    // appears once the student has actually written something in there… otherwise what I don't
+    // want them to do is just put everything come back to come back to."*
+    //
+    // Keyed by fieldId, shape `{ on: 1, note: '…' }`. Baked into the saved HTML by
+    // patchRevisitIntoHTML exactly as _outlineCheckState is — so the flag is DOCUMENT state and
+    // survives finish(), reload and re-entry. ⚠️ NEVER localStorage
+    // (`feedback_walk_liveness_must_be_durable_not_localstorage`; a sidecar pick was destroyed by
+    // finish() — `reference_cw_walk_picks_must_be_document_rows`).
+    //
+    // ⭐ A SEPARATE STORE, DELIBERATELY — not another key inside _outlineCheckState. Three of that
+    // Map's writers REPLACE the whole object (`set(fid, { checked: [] })` at the clear-row path,
+    // `set(fid, { checked: [0] })` at the auto-tick), so a flag riding along inside it would be
+    // silently dropped by a checkbox clear. Own store, own attribute, own patch — and semantically
+    // right too: clearing a tick is not un-flagging a beat.
+    const _outlineRevisitState = new Map();
+    // Read helper — the ONE place the shape is interpreted, so a caller can never disagree about
+    // what "flagged" means. Returns null when not flagged.
+    function _revisitOf(fid) {
+        if (!fid) return null;
+        const st = _outlineRevisitState.get(fid);
+        return (st && st.on) ? st : null;
+    }
+
     // ── v7.17.32: MSQ checklist population (shared across all canvas mounts) ──
     // Q1-style "pick N from M" tasks render 8 empty checkbox placeholders. Sophia
     // populates them via @POPULATE_CHECKLIST marker. These helpers live at outer
@@ -22002,8 +22027,48 @@
                     + 'Tidy up any spelling or punctuation while you are in there — they are your sentences, so they are yours to polish. Nothing here is locked: you will come back and deepen this outline in every update lesson from here on.'
                     + cwEndpointLine());   // v7.20.337
                 try { applyCwSubstepProgress({ stepNum: 6, substepNum: 7, name: 'Review and Save' }); } catch (e) {}
+                serveRevisitReminder();
                 phase = 'done';
                 resetSend();
+            }
+            // ⭐ v7.20.410 (#207) — THE NAMED FAILURE, ENGINEERED OUT (§11). A flag with no
+            // clearing ritual becomes a graveyard: the student marks nine beats in Stage I, never
+            // sees them again, and the feature quietly becomes a way of NOT doing the work — the
+            // exact procrastination hole Neil named when he asked for it. So Review & Save, the one
+            // moment the whole outline is being read back, surfaces what is still outstanding and
+            // hands over a way straight to it.
+            //
+            // ⚠️ FOSSIL LAW (§4c.7) — DRAWN, NEVER STORED. "You flagged 3 beats" is a PRESENT-STATE
+            // assertion, not a past-event report: the student will clear those flags, and a stored
+            // turn would go on claiming 3 for ever. So it is painted with addChatMessage and
+            // deliberately NOT passed to WML.recordTurn — it re-derives every time the wrap runs.
+            // (The test that decides it: "if this fact changes tomorrow, should this sentence still
+            // be on the screen?" — no.)
+            function serveRevisitReminder() {
+                let n = 0;
+                try { _outlineRevisitState.forEach(function (v) { if (v && v.on) n++; }); } catch (_) { return; }
+                if (!n) return;   // nothing flagged → no turn at all, never an empty "0 beats" line
+                const txt = 'One thing before you go — you flagged **' + n + ' beat' + (n === 1 ? '' : 's')
+                    + '** to come back to.\n\nOpen the flag in the rail to see '
+                    + (n === 1 ? 'it' : 'them') + ', jump straight to the beat, and clear each one as you fix it. '
+                    + 'A flag you never clear is just a beat you did not finish.';
+                addChatMessage(formatAI(txt), 'ai', txt);
+                try {
+                    const bubble = chatMessages.lastElementChild;
+                    const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                    if (!bc) return;
+                    const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help });
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn',
+                        textContent: n === 1 ? 'Show the beat I flagged' : 'Show the ' + n + ' beats I flagged',
+                        icon: WML.icon('revisit', 15),
+                        onClick: function () {
+                            if (typeof _openRevisitPanel === 'function') _openRevisitPanel();
+                            else console.warn('WML revisit: the rail list is not wired yet — the flags are safe in the document.');
+                        }
+                    }));
+                    bc.appendChild(bar);
+                } catch (e) { /* the reminder text already landed; the chip is a convenience */ }
             }
 
             // ── RUNG 3 — Ask Sophia. The only rung that spends a call, and only on a tap. ──
@@ -24882,6 +24947,7 @@
         let resDetachBtn = null; // hoisted so the panel-build block can hand it to _wireRailPanel
         let wpPanel = null, wpTrigger = null, resTrigger = null; // v7.19.474: Writer's Profile panel (forward refs for mutual-exclusivity)
         let scTrigger = null, ssTrigger = null; // v7.20.291/.292: Story Components + Story Spine — extra triggers on the SAME panel shell
+        let rvTrigger = null; // v7.20.410 (#207): "Coming back to" — a FOURTH trigger on that same shell
         if (cwPanelRes && cwPanelRes.length > 0) {
             // Books, not a chain link: this trigger opens the Creative Writing Reference Guide,
             // so the icon now says what it IS rather than that it is a link.
@@ -24911,7 +24977,7 @@
                         try { toggleOutlinePanel(false); } catch (_) {}
                         if (wpPanel) {
                             wpPanel.classList.remove('swml-resources-open');
-                            [wpTrigger, scTrigger, ssTrigger].forEach((t) => { if (t) t.classList.remove('is-active'); });
+                            [wpTrigger, scTrigger, ssTrigger, rvTrigger].forEach((t) => { if (t) t.classList.remove('is-active'); });
                         }
                         showGuidePanel();
                         return;
@@ -24926,7 +24992,7 @@
                     // so they overlapped in the shared dock slot).
                     if (isOpen) {
                         try { toggleOutlinePanel(false); } catch (_) {}
-                        if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); }
+                        if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); if (rvTrigger) rvTrigger.classList.remove('is-active'); }
                         // v7.20.318: and every rail panel this scope holds no reference to
                         // (Previous Assessments). Class-based, so a future panel is covered too.
                         _closeOtherRailPanels(resPanel);
@@ -25043,6 +25109,7 @@
             // v7.20.291: Story Components — puzzle piece, distinct from the profile's person icon.
             const SVG_SPINE = WML.icon('spine', 16);   // v7.20.363: from the ONE icon registry (WML.ICONS) — Neil supplied the glyph.
             const SVG_COMPONENTS = WML.icon('components', 16);   // v7.20.364: Neil's puzzle glyph, from the ONE icon registry
+            const SVG_REVISIT = WML.icon('revisit', 16);   // v7.20.410 (#207): the flag, same ONE registry
             // Swap content with a short opacity fade-in so async loads + refreshes settle
             // smoothly rather than popping in.
             const _setWpBody = (bodyEl, html) => {
@@ -25201,6 +25268,7 @@
                     wpTrigger.classList.remove('is-active');
                     if (scTrigger) scTrigger.classList.remove('is-active'); // v7.20.291/.292: all three triggers share this shell
                     if (ssTrigger) ssTrigger.classList.remove('is-active');
+                    if (rvTrigger) rvTrigger.classList.remove('is-active'); // v7.20.410 (#207): four now
                     // v7.20.319b: fade-then-dock moved into _wireRailPanel — one close for all four.
                 }
             });
@@ -25260,10 +25328,133 @@
                     _setWpBody(wpBody, _cw6BeatHelpHTML(_wpBeatConcept));
                     wpBody._wpHasContent = true;
                 } },
+                // ⭐ v7.20.410 (#207) — "somewhere where it shows me the list of things that I
+                // thought I was gonna come back to." A FIFTH row on the same shell, which is the
+                // whole point of the table: a new source is a row, not another panel to keep in
+                // sync in five places. Unlike `examples` this one HAS its own rail button, because
+                // the student must be able to ask "what did I flag?" from anywhere in the
+                // document, not only from a row that happens to be flagged.
+                revisit:    { title: 'Coming back to',    note: false, load: function () {
+                    _setWpBody(wpBody, _revisitListHTML());
+                    wpBody._wpHasContent = true;
+                } },
             };
+            // Rebuilds the list IN PLACE if (and only if) it is the mode currently on screen.
+            // Called after any flag change so the panel can never show a stale list; never opens
+            // the panel itself (§4d liveness is about responding, not about hijacking the screen).
+            _refreshRevisitPanel = function () {
+                if (wpMode !== 'revisit' || !wpPanel.classList.contains('swml-resources-open')) return;
+                _setWpBody(wpBody, _revisitListHTML());
+                wpBody._wpHasContent = true;
+            };
+            // The bridge a document row calls (module-scope holder, same hoist pattern as
+            // _openBeatExamplesPanel).
+            _openRevisitPanel = function () { _openWpMode('revisit'); return true; };
+
+            // ── THE LIST ──────────────────────────────────────────────────────────────────
+            // Walks the LIVE document, not the Map, so every entry carries a real position to
+            // jump to and a label read from the row the student actually sees. A Map-only walk
+            // would happily list a beat that no longer exists in this document.
+            function _revisitRows() {
+                const out = [];
+                if (!canvasEditor) return out;
+                try {
+                    // Document order: a sectionBlock is always visited before the rows it
+                    // contains, so the last one seen IS this row's stage. No id parsing (see the
+                    // note on _repaintRevisitRow), no second copy of the stage names.
+                    let stage = '';
+                    canvasEditor.state.doc.descendants(function (n, pos) {
+                        if (n.type.name === 'sectionBlock') { stage = (n.attrs && n.attrs.label) || ''; return; }
+                        if (n.type.name !== 'outlineRow') return;
+                        const fid = n.attrs.fieldId || '';
+                        const st = _revisitOf(fid);
+                        if (!st) return;
+                        let crit = {};
+                        try { crit = JSON.parse(n.attrs.criteria || '{}'); } catch (e) { crit = {}; }
+                        out.push({
+                            fid: fid,
+                            pos: pos,
+                            label: crit.label || 'Beat',
+                            stage: stage,
+                            note: st.note || '',
+                            text: (n.textContent || '').trim()
+                        });
+                    });
+                } catch (e) { console.warn('WML revisit list: could not walk the document —', e && e.message); }
+                return out;
+            }
+            function _revisitListHTML() {
+                const rows = _revisitRows();
+                if (!rows.length) {
+                    // Empty state teaches the gesture — a bare "nothing here" tells a 14-year-old
+                    // nothing about how to put something here.
+                    return '<p class="swml-wp-empty">Nothing flagged yet.<br><br>'
+                        + 'When you have written a beat but want to come back and improve it, press '
+                        + '<strong>Come back to this</strong> in that beat’s criteria column. '
+                        + 'Everything you flag will be listed here so you can jump straight back to it.</p>';
+                }
+                const esc = (s) => String(s == null ? '' : s)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                let html = '<p class="swml-rv-count">' + rows.length + ' beat' + (rows.length === 1 ? '' : 's')
+                    + ' flagged to come back to.</p><ul class="swml-rv-list">';
+                rows.forEach(function (r) {
+                    // The row's own words are the most useful identifier — a list of bare beat
+                    // labels ("Turning Point #2") does not tell the student which one they meant.
+                    const preview = r.text.length > 90 ? r.text.slice(0, 90).trim() + '…' : r.text;
+                    html += '<li class="swml-rv-item" data-fid="' + esc(r.fid) + '" data-pos="' + r.pos + '">'
+                        + '<button type="button" class="swml-rv-jump" title="Jump to this beat">'
+                        + (r.stage ? '<span class="swml-rv-stage">' + esc(r.stage) + '</span>' : '')
+                        + '<span class="swml-rv-label">' + esc(r.label) + '</span>'
+                        + (preview ? '<span class="swml-rv-preview">' + esc(preview) + '</span>' : '')
+                        + '</button>'
+                        + '<input class="swml-rv-note" type="text" maxlength="120" '
+                        + 'placeholder="Why are you coming back? (optional)" value="' + esc(r.note) + '">'
+                        + '<button type="button" class="swml-rv-clear" title="Remove this flag">Done</button>'
+                        + '</li>';
+                });
+                return html + '</ul>';
+            }
+            // ONE delegated listener for the whole list — the body is replaced wholesale on every
+            // refresh, so per-element handlers would be discarded (the same reasoning as the
+            // technique-chip delegation above).
+            wpBody.addEventListener('click', function (e) {
+                const item = e.target && e.target.closest ? e.target.closest('.swml-rv-item') : null;
+                if (!item) return;
+                const fid = item.getAttribute('data-fid');
+                if (e.target.closest('.swml-rv-clear')) {
+                    e.stopPropagation();
+                    // ⭐ THE CLEARING RITUAL, second half: clear from the LIST as well as the row
+                    // (§11 — a flag with only one way out becomes a graveyard).
+                    _outlineRevisitState.delete(fid);
+                    _repaintRevisitRow(fid);
+                    _refreshRevisitPanel();
+                    saveCanvasContent();
+                    return;
+                }
+                if (e.target.closest('.swml-rv-jump')) {
+                    e.stopPropagation();
+                    const pos = parseInt(item.getAttribute('data-pos'), 10);
+                    if (!isNaN(pos)) scrollToPos(pos);
+                }
+            });
+            // The note is student words — bank it on every keystroke into the same durable store.
+            wpBody.addEventListener('input', function (e) {
+                const inp = e.target && e.target.closest ? e.target.closest('.swml-rv-note') : null;
+                if (!inp) return;
+                const item = inp.closest('.swml-rv-item');
+                if (!item) return;
+                const fid = item.getAttribute('data-fid');
+                const st = _outlineRevisitState.get(fid);
+                if (!st || !st.on) return;
+                st.note = inp.value;
+                _outlineRevisitState.set(fid, st);
+                clearTimeout(_rvNoteTimer);
+                _rvNoteTimer = setTimeout(function () { saveCanvasContent(); }, 1200);
+            });
             function _wpTriggerFor(mode) {
                 // 'examples' has no rail button of its own; anchor it where Story Spine sits so the
                 // panel opens in the place the student already knows, never off-screen.
+                if (mode === 'revisit') return rvTrigger;   // v7.20.410 (#207): its own rail button
                 return mode === 'components' ? scTrigger : (mode === 'spine' || mode === 'examples') ? ssTrigger : wpTrigger;
             }
             // The bridge the document rows call (module-scope holder, same hoist pattern as
@@ -25284,7 +25475,7 @@
                 return true;
             };
             function _wpClearTriggers() {
-                [wpTrigger, scTrigger, ssTrigger].forEach(function (t) { if (t) t.classList.remove('is-active'); });
+                [wpTrigger, scTrigger, ssTrigger, rvTrigger].forEach(function (t) { if (t) t.classList.remove('is-active'); });
             }
             function _openWpMode(mode) {
                 const cfg = WP_MODES[mode] || WP_MODES.profile;
@@ -25347,6 +25538,17 @@
             });
             btnColumn.appendChild(ssTrigger);
 
+            // v7.20.410 (#207) — "Coming back to": every beat the student flagged, click to jump.
+            // Its own rail button (unlike the beat-examples mode) because the question "what did I
+            // flag?" has to be answerable from anywhere in the document.
+            rvTrigger = el('button', {
+                className: 'swml-outline-btn swml-rv-trigger',
+                'data-tooltip': 'Coming back to', 'data-tooltip-pos': 'right',
+                'aria-label': 'Beats you flagged to come back to', innerHTML: SVG_REVISIT,
+                onClick: (e) => { e.stopPropagation(); _openWpMode('revisit'); }
+            });
+            btnColumn.appendChild(rvTrigger);
+
             // ── float / dock / drag / resize — v7.20.319: the ONE shared rail-panel layer ──
             // This shell serves three rail buttons, so the dock re-anchor resolves through the
             // same _wpTriggerFor mapping the opener uses — never a remembered second copy.
@@ -25363,12 +25565,17 @@
                 // v7.20.291: BOTH triggers own this shell — without .swml-sc-trigger here the
                 // Story Components click would be treated as "outside" and close the panel it
                 // had just opened.
-                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger, .swml-sc-trigger, .swml-ss-trigger')) return;
+                // v7.20.410 (#207): `.swml-rv-trigger` MUST be in this list. Without it, clicking
+                // the "Coming back to" rail button counts as a click OUTSIDE the panel, so the
+                // handler closes the panel that the button had just opened — the exact defect the
+                // .291 note above records for Story Components.
+                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger, .swml-sc-trigger, .swml-ss-trigger, .swml-rv-trigger')) return;
                 if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return; // v7.19.951: widgets live in in-flow control rows now (+ body-portaled popovers)
                 wpPanel.classList.remove('swml-resources-open');
                 wpTrigger.classList.remove('is-active');
                 if (scTrigger) scTrigger.classList.remove('is-active');
                 if (ssTrigger) ssTrigger.classList.remove('is-active');
+                if (rvTrigger) rvTrigger.classList.remove('is-active');
             });
         }
 
@@ -25851,7 +26058,7 @@
             if (outlineOpen) {
                 // v7.19.476: mutually exclusive with the resources + Writer's Profile panels
                 if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
-                if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); }
+                if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); if (rvTrigger) rvTrigger.classList.remove('is-active'); }
                 // v7.20.318: + any rail panel this scope has no reference to (Previous Assessments).
                 _closeOtherRailPanels(outlinePanel);
                 outlineBtn.classList.add('is-active');   // the sweep above clears all triggers
@@ -26596,6 +26803,10 @@
                     }).catch(() => {});
                     // Clear outline checkbox state
                     _outlineCheckState.clear();
+                    // v7.20.410 (#207): a doc reset clears the revisit flags too — they describe
+                    // rows that no longer exist. Left behind, they would repopulate the rail list
+                    // with beats from a document the student just threw away.
+                    _outlineRevisitState.clear();
                     // Regenerate template
                     if (canvasEditor) {
                         canvasEditor.commands.setContent(getDefaultEssayTemplate(), false);
@@ -34075,6 +34286,17 @@
                             return val !== '{}' ? { 'data-check-state': val } : {};
                         },
                     },
+                    // v7.20.410 (#207): the "come back to this" flag, persisted the same way
+                    // checkState is — its own attribute so a checkbox clear cannot drop it.
+                    // Format: { on: 1, note: "why I'm coming back" }
+                    revisit: {
+                        default: '{}',
+                        parseHTML: el => el.getAttribute('data-revisit') || '{}',
+                        renderHTML: attrs => {
+                            const val = attrs.revisit || '{}';
+                            return val !== '{}' ? { 'data-revisit': val } : {};
+                        },
+                    },
                 };
             },
 
@@ -34118,9 +34340,19 @@
                         if (fieldId && Object.keys(savedState).length) _outlineCheckState.set(fieldId, savedState);
                     }
 
-                    // v7.14.74: Write to Map only — no TipTap transaction, no PaginationPlus re-pagination
-                    function persistState(stateObj) {
-                        if (fieldId) _outlineCheckState.set(fieldId, stateObj);
+                    // v7.20.410 (#207): same seed for the revisit flag — Map leads (live), the
+                    // persisted attribute is the fallback on a cold mount. Without this a reload
+                    // would render an unflagged row while the saved doc still held the flag.
+                    if (fieldId && !_outlineRevisitState.has(fieldId)) {
+                        let rv;
+                        try { rv = JSON.parse(node.attrs.revisit || '{}'); } catch (e) { rv = {}; }
+                        if (rv && rv.on) _outlineRevisitState.set(fieldId, rv);
+                    }
+
+                    // v7.20.410 (#207): the save-trigger half of persistState, lifted out so the
+                    // revisit flag can mark the doc dirty WITHOUT writing checkState. Same
+                    // indicator, same debounce, one definition — a second copy would drift.
+                    function touchSave() {
                         // Trigger save indicator + debounced save (same as onUpdate path)
                         saveStatus.textContent = 'Editing...';
                         saveStatus.classList.remove('saving');
@@ -34131,6 +34363,11 @@
                             saveStatus.classList.add('saving');
                             setTimeout(() => saveStatus.classList.remove('saving'), 1500);
                         }, 2000);
+                    }
+                    // v7.14.74: Write to Map only — no TipTap transaction, no PaginationPlus re-pagination
+                    function persistState(stateObj) {
+                        if (fieldId) _outlineCheckState.set(fieldId, stateObj);
+                        touchSave();
                     }
 
                     // ── LEFT: Criteria column (read-only) ──
@@ -34193,6 +34430,84 @@
                         });
                         criteriaEl.appendChild(egBtn);
                     }
+
+                    // ⭐⭐ v7.20.410 (FIXLIST #207, Neil's own design) — THE REVISIT FLAG.
+                    // *"I'm in stage one. I've just finished beat eleven"* — he wants to mark a
+                    // beat he intends to come back to, without losing his place in the walk.
+                    //
+                    // PLACEMENT — the criteria column, which is his own instinct (*"it might have
+                    // to appear on the criteria column"*) and the only correct choice: a
+                    // hover-corner control does not exist on a tablet, which is what the students
+                    // use. It sits under the Examples button so the row's two affordances read as
+                    // one group rather than furniture scattered around the row.
+                    //
+                    // ⚠️ PM LAW (the v7.19.866 freeze class): built INSIDE the NodeView's own
+                    // render into `criteriaEl`, whose `ignoreMutation` returns
+                    // `criteriaEl.contains(mutation.target)` — so every later show/hide/toggle
+                    // here is firewalled and cannot feed the DOMObserver. The ResizeObserver on
+                    // `criteriaEl` re-measures the row automatically when the button appears, so
+                    // the absolute panel cannot outgrow its row.
+                    //
+                    // SCOPE — Step-6 beat rows only, gated on the canonical `_cw6RowFieldId`
+                    // prefix rather than on a concept resolving: the 64 rows that match NO concept
+                    // are exactly the ones a student is most likely to want to revisit, and gating
+                    // on `_beatConcept` would silently deny them the flag. Generalising to other
+                    // canvas families is a later decision, not an accident of a name check
+                    // (§CANVAS TASK-SCOPING: gate on a capability, never on a literal task name).
+                    const _isCw6BeatRow = String(fieldId).indexOf(CW6_FID_PREFIX) === 0;
+                    let _revisitBtn = null;
+                    if (_isCw6BeatRow) {
+                        _revisitBtn = document.createElement('button');
+                        _revisitBtn.type = 'button';
+                        _revisitBtn.className = 'swml-outline-revisit-btn';
+                        _revisitBtn.setAttribute('contenteditable', 'false');
+                        // Starts hidden and is revealed by the first checkRowComplete() — an empty
+                        // row must never flash the control before the gate above has decided.
+                        _revisitBtn.hidden = true;
+                        _revisitBtn.innerHTML = (WML.icon('revisit', 12) || '') + '<span>Come back to this</span>';
+                        _revisitBtn.addEventListener('mousedown', function (e) { e.preventDefault(); });  // never steal the caret
+                        _revisitBtn.addEventListener('click', function (e) {
+                            e.preventDefault(); e.stopPropagation();
+                            const on = !_revisitOf(fieldId);
+                            if (on) {
+                                const prev = _outlineRevisitState.get(fieldId) || {};
+                                _outlineRevisitState.set(fieldId, { on: 1, note: prev.note || '' });
+                            } else {
+                                // ⭐ THE CLEARING RITUAL (§11 — a flag with no way out becomes a
+                                // graveyard). Un-flagging DELETES the entry rather than storing
+                                // `{on:0}`, so patchRevisitIntoHTML strips the attribute and a
+                                // reload cannot resurrect a flag the student cleared.
+                                _outlineRevisitState.delete(fieldId);
+                            }
+                            paintRevisit();
+                            touchSave();
+                            // Liveness (§4d): the tap must visibly DO something beyond the button
+                            // itself, so the student can see where the flag went. Refresh the list
+                            // if it is open; never force it open — that would yank them out of the
+                            // beat they are working on, which is the opposite of the point.
+                            try { if (typeof _refreshRevisitPanel === 'function') _refreshRevisitPanel(); } catch (_) {}
+                        });
+                        criteriaEl.appendChild(_revisitBtn);
+                    }
+                    // Paints BOTH the button's on/off state and the row's flag marker. Idempotent
+                    // (§PM law #4): a same-value write fires no MutationRecord.
+                    function paintRevisit() {
+                        if (!_revisitBtn) return;
+                        const on = !!_revisitOf(fieldId);
+                        _revisitBtn.classList.toggle('is-flagged', on);
+                        const lbl = _revisitBtn.querySelector('span');
+                        const want = on ? 'Coming back to this' : 'Come back to this';
+                        if (lbl && lbl.textContent !== want) lbl.textContent = want;
+                        _revisitBtn.title = on
+                            ? 'Flagged to revisit — tap to clear. See all flagged beats in the rail.'
+                            : 'Mark this beat to come back to later';
+                        _revisitBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+                        if ((criteriaEl.getAttribute('data-revisit-on') === '1') !== on) {
+                            if (on) criteriaEl.setAttribute('data-revisit-on', '1');
+                            else criteriaEl.removeAttribute('data-revisit-on');
+                        }
+                    }
+                    dom._paintRevisit = paintRevisit;
 
                     // \u2500\u2500 v7.20.129: MULTI-CONTROL ROWS \u2500\u2500
                     // Neil's ruling: "it's actually just six sections\u2026 it's six with multiple
@@ -34545,6 +34860,26 @@
                         const complete = (CTL && CTL.controlOnly(crit)) ? criteriaOk : (hasText && criteriaOk);
                         dom.classList.toggle('swml-row-complete', complete);
                         contentDOM.classList.toggle('swml-input-filled', hasText);
+                        // ⭐ v7.20.410 (#207) — NEIL'S ANTI-PROCRASTINATION RULE, enforced here
+                        // because `hasText` is already computed and this pass already runs on
+                        // every edit (updateRowIndicators → _checkRowComplete). *"it should be
+                        // something that only appears once the student has actually written
+                        // something in there… otherwise what I don't want them to do is just put
+                        // everything come back to."* An EMPTY beat cannot be deferred — that is
+                        // just not doing it.
+                        // ⚠️ Deliberately does NOT touch `complete` above: a flagged beat still
+                        // counts as done in "beat 12 of 19". Making the flag subtract from progress
+                        // would turn it into the procrastination hole he named, and would punish
+                        // the student for being honest about wanting to improve something.
+                        if (_revisitBtn) {
+                            // A row that already carries a flag keeps its button even if the text
+                            // is later emptied — otherwise the control vanishes while the flag
+                            // survives in the document, leaving no way to clear it (§4d: refused
+                            // with nothing is unreachable by construction).
+                            const show = hasText || !!_revisitOf(fieldId);
+                            if (_revisitBtn.hidden !== !show) _revisitBtn.hidden = !show;
+                            paintRevisit();
+                        }
                     }
                     // NO MutationObserver — text changes detected by global updateRowIndicators() in onUpdate
                     // Initial check deferred to after all rows are built
@@ -45302,6 +45637,14 @@
     function _cw6RowFieldId(archetypeKey, sectionId, criterionId) {
         return 'outline-cw-' + archetypeKey + '-' + sectionId + '-' + criterionId;
     }
+    // v7.20.410 (#207): the prefix that identifies a CW6 beat row, DERIVED FROM THE PRODUCER
+    // ABOVE rather than written out a second time. Two consumers need to ask "is this a CW6 beat
+    // row?" (the revisit flag's scope gate, and patchRevisitIntoHTML's sweep over the saved HTML),
+    // and a pasted 'outline-cw-' literal in either of them is a copy that can silently outlive a
+    // format change — which is exactly what `cw6-outline-harness` fails the build for, correctly.
+    // Deriving it means the helper stays the single source of the id format (§5d: one canonical
+    // key-builder, both sides call it).
+    const CW6_FID_PREFIX = _cw6RowFieldId('', '', '').split('-').slice(0, 2).join('-') + '-';
     // v7.20.296: the THREE ALTITUDES need three rows the original template never had.
     //   story_open  (Stage I)  — their Step-4 Beat 1, echoed as the story's opening anchor
     //   story_close (Stage VI) — their Step-4 Beat 6, echoed as the story's closing anchor
@@ -45429,6 +45772,40 @@
     // `resDetachBtn`). Null until then — every caller must tolerate that, because a document can
     // render before the panel exists and a button that throws is worse than one that waits.
     let _openBeatExamplesPanel = null;
+    // v7.20.410 (#207): the same hoist pattern for the revisit list — assigned inside
+    // renderCanvasWorkspace, called from the NodeView and from the Step-6 wrap-up, both of which
+    // live in other scopes. Null-guarded at every call site; a walk that runs before the canvas
+    // is built must degrade quietly, never throw.
+    let _openRevisitPanel = null;
+    let _refreshRevisitPanel = null;
+    let _rvNoteTimer = null;
+
+    // ⚠️ NO fieldId PARSING HERE, deliberately. The obvious implementation splits
+    // `outline-cw-<archetype>-<sectionId>-<criterionId>` on '-' — but archetype keys and criterion
+    // ids contain their own separators (`rebirth-redemption`, `beat_3`), so the split is genuinely
+    // ambiguous, and the stage ids are semantic slugs (`setup` · `dream` · `fascination` ·
+    // `nightmare` · `aftermath`), never `stage_1`. A first cut of this DID assume `stage_\d+` and
+    // would have silently returned '' for every row — the §5d write-key/read-key class, caught by
+    // checking the real ids instead of trusting the shape.
+    // Instead the stage comes from the enclosing `sectionBlock`'s own `label` attribute, captured
+    // in document order during the walk below: it is the string the student already reads at the
+    // top of that stage, so the list cannot drift from the document (§14: show the name, not an id).
+    // Repaint ONE row's flag button after the list cleared it, so the document and the list can
+    // never disagree about whether a beat is flagged. Reaches the row through its rendered DOM —
+    // the NodeView parked `_paintRevisit` on its own `dom`, and that write is firewalled by the
+    // row's ignoreMutation, so this cannot feed a PM flush.
+    function _repaintRevisitRow(fid) {
+        if (!fid) return;
+        try {
+            const rows = document.querySelectorAll('.swml-outline-row[data-field-id]');
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].getAttribute('data-field-id') !== fid) continue;
+                if (typeof rows[i]._paintRevisit === 'function') rows[i]._paintRevisit();
+                if (typeof rows[i]._checkRowComplete === 'function') rows[i]._checkRowComplete();
+                return;
+            }
+        } catch (e) { console.warn('WML revisit: could not repaint row ' + fid + ' —', e && e.message); }
+    }
 
     const CW6_FRAME_ROWS = {
         stage_arc: { id: 'stage_arc', label: 'Where this stage takes your protagonist', beatType: 'neutral', type: 'checkbox',
@@ -47865,6 +48242,30 @@
         return html;
     }
 
+    // v7.20.410 (#207): the same patch for the revisit flag. Deliberately a TWIN of the function
+    // above rather than a generalised one — they differ in the clear semantics (an un-flagged row
+    // must have its attribute STRIPPED so a reload cannot resurrect it, whereas an empty
+    // checkState is a legitimate stored value), and fusing them would hide that difference behind
+    // a flag argument.
+    function patchRevisitIntoHTML(html) {
+        // Every CW6 row in the doc, not just the flagged ones — a row the student CLEARED must
+        // lose its stale data-revisit, and iterating only the Map would leave that attribute
+        // behind for ever (the flag would come back on the next load).
+        const rowPattern = new RegExp(
+            '(<div[^>]*data-field-id="(' + CW6_FID_PREFIX + '[^"]*)"[^>]*?)( data-revisit="[^"]*")?([^>]*>)',
+            'gi'
+        );
+        return html.replace(
+            rowPattern,
+            function (_m, head, fid, _old, tail) {
+                const st = _outlineRevisitState.get(fid);
+                if (!st || !st.on) return head + tail;                  // cleared → attribute gone
+                const json = JSON.stringify(st).replace(/"/g, '&quot;');
+                return head + ' data-revisit="' + json + '"' + tail;
+            }
+        );
+    }
+
     function saveCanvasContent() {
         if (!canvasEditor) return;
         // Tutor review mode: never save — read-only view of student's work (v7.15.2)
@@ -47902,6 +48303,7 @@
         try { if (typeof _flushEditTsStampsRef === 'function') _flushEditTsStampsRef(true); } catch (_) { /* stamp is best-effort */ }
         let html = canvasEditor.getHTML();
         html = patchCheckStateIntoHTML(html);
+        html = patchRevisitIntoHTML(html);   // v7.20.410 (#207): the revisit flag rides the same save
         const wc = getResponseWordCount(canvasEditor);
         // v7.19.136 instrumentation — entry breadcrumb before localStorage write
         try {
