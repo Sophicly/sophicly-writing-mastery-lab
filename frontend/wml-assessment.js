@@ -37712,6 +37712,49 @@
             }
         };
 
+        // ⭐ v7.20.415 — the teaching text, into a document that already has rows.
+        //
+        // The prose sections are read-only scaffold: a student never types in them, so they can be
+        // REPLACED wholesale. Their rows cannot. So this heal splices — it takes everything above
+        // the "VALUES AT THE BEGINNING" divider from the fresh template, and keeps everything from
+        // that divider down BYTE-FOR-BYTE out of the student's own document, ticks and all.
+        // If either anchor is missing it does nothing at all: a heal that cannot find its boundary
+        // must not guess where to cut.
+        const tryHealCwStep7Teaching = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 7) return;
+            try {
+                const current = canvasEditor.getHTML();
+                if (current.indexOf('cw-step-7-') === -1) return;              // no rows yet — the rebuild heal owns this doc
+                if (current.indexOf('Stories as Transformation') !== -1) return; // already has the full text
+                const rebuilt = getCwDocTemplate(cwStepDef);
+                const anchorAt = (html) => {
+                    const i = html.indexOf('data-section-label="YOUR PROTAGONIST');
+                    return i === -1 ? -1 : html.lastIndexOf('<div', i);
+                };
+                const cutCur = anchorAt(current), cutNew = anchorAt(rebuilt);
+                if (cutCur <= 0 || cutNew <= 0) {
+                    console.warn('WML CW7: the teaching heal could not find the values divider in both documents — left unchanged.');
+                    return;
+                }
+                const html = rebuilt.slice(0, cutNew) + current.slice(cutCur);
+                const _wasMigrating = _migrationActive;
+                try { _migrationActive = true; canvasEditor.commands.setContent(html, false); }
+                finally { try { _migrationActive = _wasMigrating; } catch (_) {} }
+                // Verify: the new text arrived AND the student's rows are still there.
+                const after = canvasEditor.getHTML();
+                if (after.indexOf('Stories as Transformation') === -1 || after.indexOf('cw-step-7-') === -1) {
+                    console.warn('WML CW7: the teaching heal did not survive — check the section guard.');
+                    return;
+                }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                try { snapshotTemplateBaseline(canvasEditor); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW7: refreshed the Step-7 teaching text; the student’s rows were kept.');
+            } catch (e) {
+                console.warn('WML CW7: teaching heal failed (non-fatal) —', e && e.message);
+            }
+        };
+
         // ⭐ v7.20.414 — the virtue-scale graphic, into a document that already has rows.
         //
         // ⚠️ WHY THIS IS A SEPARATE HEAL AND NOT ANOTHER TRIGGER ON THE ONE ABOVE. That heal
@@ -38400,7 +38443,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -41653,29 +41696,60 @@
                 '<h2>Step 7: Universal Human Values</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Mentor reveals the Universal Constants \u2014 the deep values that drive all human stories.</p>' +
                 '<p>Psychologists Christopher Peterson and Martin Seligman spent three years studying what makes us fundamentally human. Their research spanned 40 cultures, involved 55 scientists, and drew on 2,500 years of religious and philosophical thought. What they discovered was striking: across every culture, era, and belief system, <strong>six core moral values remain constant</strong>.</p>' +
-                '<p>Every heroic character is on a journey to embody these values. Before their journey begins, they might possess some of these traits but lack others. The story shows them developing what they lack \u2014 or, in a negative transformation, losing what they once had.</p>' +
                 // Neil's own graphic, at the end of section one exactly where he asked for it.
                 figureHTML('virtue-scale')
             );
-            // The Six Values table
+            // \u2b50 v7.20.415 \u2014 THE TEACHING TEXT IS NEIL'S, VERBATIM.
+            // He checked the built page and found the gap: *"we haven't said anything in the
+            // document about virtues being in excess, deficit or imbalance. I just checked."* He
+            // was right. The page carried a COMPRESSED PARAPHRASE of his original \u2014 four
+            // bold-lead bullets where he wrote two worked paragraphs, and no "Why This Matters"
+            // or "Stories as Transformation" at all \u2014 so a student was asked to choose between
+            // *in excess* and *in deficit* having never been told what either word means.
+            // The full text now lives at resources/step7/step7-teaching-text.md and
+            // bin/cw7-doc-gate.js checks this template against it paragraph by paragraph, so the
+            // paraphrase cannot creep back.
             html += dividerHTML('THE SIX UNIVERSAL HUMAN VALUES');
             html += sectionHTML('question', 'Values Reference', false, null,
                 '<h3>The Six Universal Human Values</h3>' +
-                '<p><strong>1. Wisdom and Knowledge</strong> \u2014 Creativity, curiosity, open-mindedness, love of learning</p>' +
-                '<p><strong>2. Courage</strong> \u2014 Bravery, persistence, integrity, vitality</p>' +
-                '<p><strong>3. Humanity</strong> \u2014 Love, kindness, social intelligence</p>' +
-                '<p><strong>4. Justice</strong> \u2014 Citizenship, fairness, leadership</p>' +
-                '<p><strong>5. Temperance</strong> \u2014 Forgiveness/mercy, humility/modesty, prudence, self-regulation</p>' +
-                '<p><strong>6. Transcendence</strong> \u2014 Appreciation of beauty, gratitude, hope, humour, spirituality</p>'
+                '<p>Each value contains specific character strengths \u2014 24 in total \u2014 that Peterson and Seligman identified as the building blocks of a fulfilling life.</p>' +
+                // DISCLOSED DEVIATION: the fuller trait wording, because these exact words appear
+                // on the tick boxes below. Neil's summary line writes some of them shorter
+                // ("forgiveness", "appreciation of beauty"); two spellings of one trait on a single
+                // screen read as two different traits.
+                '<p><strong>Wisdom and Knowledge</strong> \u2014 creativity, curiosity, open-mindedness, love of learning</p>' +
+                '<p><strong>Courage</strong> \u2014 bravery, persistence, integrity, vitality</p>' +
+                '<p><strong>Humanity</strong> \u2014 love, kindness, social intelligence</p>' +
+                '<p><strong>Justice</strong> \u2014 citizenship, fairness, leadership</p>' +
+                '<p><strong>Temperance</strong> \u2014 forgiveness/mercy, humility/modesty, prudence, self-regulation</p>' +
+                '<p><strong>Transcendence</strong> \u2014 appreciation of beauty and excellence, gratitude, hope, humour, spirituality</p>'
             );
-            // Balance insight
+            html += sectionHTML('question', 'Why This Matters', false, null,
+                '<h3>Why This Matters for Storytelling</h3>' +
+                '<p>Every heroic character is on a journey to embody these values. A hero, in essence, is someone working to integrate all six within themselves. Before their journey begins, they might possess some of these traits but lack others, or feel uncertain about the ones they do have. The story shows them developing what they lack \u2014 or, in a negative transformation, losing what they once had.</p>' +
+                '<p>When we recognise these qualities in characters, we feel admiration and empathy, even when those characters are deeply flawed. That emotional pull is what makes stories resonate.</p>'
+            );
             html += sectionHTML('question', 'Balance Insight', false, null,
                 '<h3>The Key Insight: Balance</h3>' +
                 '<p>Too much or too little of any virtue creates conflict \u2014 both in the real world and in stories.</p>' +
-                '<p><strong>Wisdom without restraint:</strong> In <em>Frankenstein</em>, Victor\u2019s unchecked curiosity creates a monster. Brilliance without temperance.</p>' +
-                '<p><strong>Courage without morality:</strong> In <em>Macbeth</em>, fearlessness untethered from conscience spirals into tyranny.</p>' +
-                '<p><strong>Humanity without boundaries:</strong> A character who loves too much without self-regulation might sacrifice everything, losing themselves.</p>' +
-                '<p><strong>Balance is the goal.</strong> Stories show characters finding \u2014 or failing to find \u2014 that equilibrium.</p>'
+                '<p>Consider wisdom and knowledge. We instinctively see these as good things, but what happens when someone pursues knowledge without restraint? In <em>Frankenstein</em>, Victor is consumed by his desire to unravel the mysteries of creation, with no regard for the consequences. His monster becomes the embodiment of reckless curiosity \u2014 brilliance without temperance.</p>' +
+                '<p>Now consider courage. We admire bravery, but <em>Macbeth</em> shows us what happens when courage operates without moral restraint. Macbeth\u2019s fearlessness, unchecked by temperance or justice, spirals into tyranny and destruction. Even he comes to recognise that extreme bravery, untethered from conscience, leads to catastrophic regret.</p>' +
+                '<p>Balance is the goal. Stories show characters finding \u2014 or failing to find \u2014 that equilibrium.</p>'
+            );
+            html += sectionHTML('question', 'Stories as Transformation', false, null,
+                '<h3>Stories as Transformation</h3>' +
+                '<p>At their core, stories are about complete and irreversible change. As we read or watch, we experience that transformation alongside the protagonist, and we learn something in the process. Every narrative journey follows one of these fundamental arcs: villain to hero, rags to riches, weakness to strength, hero to villain, or ignorance to wisdom.</p>'
+            );
+            // The one paragraph on this page that is NOT Neil's. The tables ask students to pick
+            // between three words the teaching never defines; these definitions come straight out
+            // of his own "too much or too little" sentence above, and add no new teaching.
+            html += sectionHTML('question', 'How to Read the Scale', false, null,
+                '<h3>How to read the scale</h3>' +
+                '<p>For every value below you will choose one of three answers, and they map onto the scale above.</p>' +
+                '<p><strong>In excess</strong> \u2014 too much of it. The virtue is there in force, unchecked by the others, and it is causing harm: Macbeth\u2019s courage without conscience.</p>' +
+                '<p><strong>In deficit</strong> \u2014 too little of it. The virtue is missing or faint, and your protagonist suffers or causes suffering for the lack of it.</p>' +
+                '<p><strong>In balance</strong> \u2014 the equilibrium. Enough of it, held in check by the other values.</p>' +
+                '<p><em>Most protagonists begin somewhere out of balance. That is usually where their story comes from \u2014 so a value in excess or in deficit at the beginning is not a weak answer, it is the interesting one.</em></p>'
             );
             // Values at Beginning — 6 value rows
             html += dividerHTML('YOUR PROTAGONIST\u2019S VALUES AT THE BEGINNING');

@@ -274,8 +274,63 @@ ok(/insertContentAt\(/.test(figureHeal),
     'the figure heal no longer inserts — it must add the figure to an existing document by transaction');
 ok(!/setContent\(/.test(figureHeal),
     'THE FIGURE HEAL REBUILDS THE DOCUMENT. A v7.20.413 document already holds a student\'s ticks, states and explanations; rebuilding it to add a picture destroys all of them. It must INSERT.');
-ok(/tryHealCwStep7Values\(\)\)\.then\(\(\) => tryHealCwStep7Figure\(\)\)/.test(SRC),
-    'the two Step-7 heals are not both wired into the init chain, in order');
+ok(/tryHealCwStep7Values\(\)\)\.then\(\(\) => tryHealCwStep7Teaching\(\)\)\.then\(\(\) => tryHealCwStep7Figure\(\)\)/.test(SRC),
+    'the three Step-7 heals are not all wired into the init chain, in order (rebuild → teaching → figure)');
+
+// The teaching heal REPLACES read-only prose but must never touch a row. Its whole safety rests on
+// splicing at the values divider and keeping the student's half of the document byte-for-byte.
+const teachHeal = sliceDecl(SRC, 'const tryHealCwStep7Teaching = async () => {', '{', '}');
+ok(/current\.slice\(cutCur\)/.test(teachHeal),
+    'the teaching heal no longer keeps the student’s half of the document verbatim — it would rebuild over their ticks and explanations');
+ok(/cutCur <= 0 \|\| cutNew <= 0/.test(teachHeal),
+    'the teaching heal lost its both-anchors-or-nothing guard — a heal that cannot find its boundary must not guess where to cut');
+ok(/indexOf\('Stories as Transformation'\) === -1 \|\| after\.indexOf\('cw-step-7-'\) === -1/.test(teachHeal),
+    'the teaching heal no longer verifies its own work — it must confirm the new text arrived AND the rows survived');
+
+// ── F. the teaching text is NEIL'S, verbatim (v7.20.415) ───────────────────────────
+// He read the built page and found the hole: *"we haven't said anything in the document about
+// virtues being in excess, deficit or imbalance."* The page was carrying a COMPRESSED PARAPHRASE
+// of his original — his two worked paragraphs flattened into bold-lead bullets, two whole
+// sections missing — so the words the task asks a student to choose between were never defined.
+// A paraphrase is easy to reintroduce and invisible in review, so it is now mechanical: every
+// paragraph of his source must appear in the template, verbatim.
+const TEACHING = fs.readFileSync(path.join(ROOT, 'resources', 'step7', 'step7-teaching-text.md'), 'utf8');
+// The template stores its punctuation as \uXXXX escapes; the source file stores real characters.
+// Normalising both sides is about typography only — every word still has to match.
+const norm = (s) => String(s)
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))   // source-file escapes
+    .replace(/<[^>]+>/g, '')                                                            // template markup
+    .replace(/[’']/g, "'").replace(/[“”]/g, '"')
+    .replace(/\s*—\s*/g, ' — ')                                                         // spaced vs unspaced em dash
+    .replace(/\s+/g, ' ')
+    .trim();
+const SRC_NORM = norm(SRC);
+// HIS prose only: between the first horizontal rule and the deviations note. Everything above the
+// rule is this repo's own explanation of the file and must never be treated as teaching text.
+const teachingBody = TEACHING.split('\n---\n')[1] || '';
+const paras = teachingBody.split('## TWO DISCLOSED DEVIATIONS')[0]
+    .split('\n').map((l) => l.trim())
+    .filter((l) => l && !/^[#>-]/.test(l) && l.length > 60)
+    // the six value lines carry the disclosed fuller trait wording — checked separately, above,
+    // against the protocol table
+    .filter((l) => !/^(Wisdom|Courage|Humanity|Justice|Temperance|Transcendence) —/.test(l));
+ok(paras.length >= 8, 'the teaching source yielded only ' + paras.length + ' paragraphs — this check has gone blind');
+let missing = 0;
+paras.forEach((p) => {
+    if (!SRC_NORM.includes(norm(p))) {
+        missing++;
+        ok(false, 'the document does not carry this paragraph of Neil\'s text verbatim:\n       "' + p.slice(0, 110) + '…"');
+    }
+});
+ok(missing === 0, missing + ' of ' + paras.length + ' paragraphs of the teaching text are missing or paraphrased');
+
+// The three words the task makes a student choose between must each be DEFINED on the page.
+['In excess', 'In deficit', 'In balance'].forEach((w) => {
+    ok(new RegExp(w + ' — \\w').test(SRC_NORM),
+        '"' + w + '" is never defined in the document — the task asks students to choose it blind (the v7.20.414 gap Neil found)');
+});
+ok(/too much of it/.test(SRC_NORM) && /too little of it/.test(SRC_NORM),
+    'the excess/deficit definitions no longer use Neil\'s own "too much or too little" framing');
 
 console.log('\n' + (fail ? '❌ CW7 DOC GATE FAILED' : '✅ cw7-doc-gate passed')
     + '  — ' + asserts.pass + ' passed, ' + asserts.fail + ' failed');
