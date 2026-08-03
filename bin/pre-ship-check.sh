@@ -289,6 +289,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw4-sim-harness.js || fail=1
 fi
 
+# v7.20.413: CW STEP-7 DOCUMENT GATE. Step 7 is a bare document — no walk, no controller, no API —
+# so there is no sim to inherit and this gate is the whole safety net. It runs the REAL builder and
+# the REAL WML.outlineRow completion rule, and takes the six values and their character strengths
+# from the PROTOCOL table rather than restating them, so a silent edit to either side fails here.
+# Proven non-vacuous: optional:false, choice:false, a reworded strength and a dropped row all go RED.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|cw7-doc-gate\.js|CW-STEP-07-universal-values\.md'; then
+  node bin/cw7-doc-gate.js || fail=1
+fi
+
 # v7.20.290: WALK STOP-RULE GATE. A code-owned walk means CODE serves every ask; if the protocol
 # does not order the model to END its reply at the verdict signal, the model invents the next ask
 # and the student sees TWO competing questions (Neil's live catch: Step 4 doubled every beat from 2

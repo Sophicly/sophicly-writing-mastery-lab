@@ -24,7 +24,7 @@ Every heroic character is on a journey to embody these values. Before their jour
 | **Humanity** | Love, kindness, social intelligence |
 | **Justice** | Citizenship, fairness, leadership |
 | **Temperance** | Forgiveness/mercy, humility/modesty, prudence, self-regulation |
-| **Transcendence** | Appreciation of beauty, gratitude, hope, humour, spirituality |
+| **Transcendence** | Appreciation of beauty and excellence, gratitude, hope, humour, spirituality |
 
 **The Key Insight: Balance**
 
@@ -54,8 +54,8 @@ This mapping shows your protagonist's transformation through the lens of univers
 | **Courage** (bravery, persistence, integrity, vitality) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
 | **Humanity** (love, kindness, social intelligence) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
 | **Justice** (citizenship, fairness, leadership) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
-| **Temperance** (forgiveness, humility, prudence, self-regulation) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
-| **Transcendence** (appreciation of beauty, gratitude, hope, humour, spirituality) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
+| **Temperance** (forgiveness/mercy, humility/modesty, prudence, self-regulation) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
+| **Transcendence** (appreciation of beauty and excellence, gratitude, hope, humour, spirituality) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
 
 `[SUBSTEP_COMPLETE: step_7, substep_1, "Values at Beginning"]`
 
@@ -69,8 +69,8 @@ This mapping shows your protagonist's transformation through the lens of univers
 | **Courage** (bravery, persistence, integrity, vitality) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
 | **Humanity** (love, kindness, social intelligence) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
 | **Justice** (citizenship, fairness, leadership) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
-| **Temperance** (forgiveness, humility, prudence, self-regulation) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
-| **Transcendence** (appreciation of beauty, gratitude, hope, humour, spirituality) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
+| **Temperance** (forgiveness/mercy, humility/modesty, prudence, self-regulation) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
+| **Transcendence** (appreciation of beauty and excellence, gratitude, hope, humour, spirituality) | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: | [ ] Yes [ ] No — Explain: |
 
 `[SUBSTEP_COMPLETE: step_7, substep_2, "Values at End"]`
 

@@ -37605,6 +37605,56 @@
         // beat already has text, the duplicate is simply dropped — its content was only ever a copy
         // of Step-4 Beat 1/6, which still lives in the Step-4 document.
         // Runs BEFORE tryHealCwStep6StageArcs so the arc heal sees the final shape.
+        // ⭐ v7.20.413 — STEP 7: heal a document built before the rows existed.
+        //
+        // Until .413 the Step-7 template was prose with NO field ids. A document saved under it
+        // keeps that prose for ever (saved content always wins over the template), so without
+        // this heal the student — or Neil, testing — opens Step 7 and sees the old page, decides
+        // the change never shipped, and is right to. One such document exists on production.
+        //
+        // NOTHING IS LOST: anything typed into the old empty paragraphs is carried into a
+        // clearly-labelled section at the end rather than silently dropped. The trigger is the
+        // ABSENCE of the canonical row prefix, not a version number, so it self-heals once and
+        // then never fires again.
+        const tryHealCwStep7Values = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 7) return;
+            try {
+                const currentHtml = canvasEditor.getHTML();
+                if (currentHtml.indexOf(CW7_FID_PREFIX) !== -1) return;   // already the row version
+                const rebuilt = getCwDocTemplate(cwStepDef);
+                // Which of the student's words are NOT part of either template? Compare on plain
+                // text, line by line — the old doc's own boilerplate re-appears in the new one and
+                // must not be handed back to them as "their earlier notes".
+                const plain = (h) => String(h || '')
+                    .replace(/<\/(p|h[1-3]|div|li)>/gi, '\n')
+                    .replace(/<[^>]+>/g, '')
+                    .replace(/&nbsp;/g, ' ')
+                    .split('\n').map((s) => s.trim()).filter(Boolean);
+                const known = new Set(plain(rebuilt));
+                const stranded = plain(currentHtml).filter((l) => !known.has(l) && l.length > 3);
+                let html = rebuilt;
+                if (stranded.length) {
+                    html += dividerHTML('YOUR EARLIER NOTES');
+                    html += sectionHTML('plan', 'Your Earlier Notes', true, null,
+                        '<h3>Your earlier notes</h3>' +
+                        '<p><em>You wrote these on the previous version of this page. Nothing has been deleted — move anything you still want into the tables above.</em></p>' +
+                        stranded.map((l) => '<p>' + escapeHTML(l) + '</p>').join('')
+                    );
+                }
+                const _wasMigrating = _migrationActive;
+                try { _migrationActive = true; } catch (_) {}
+                try { canvasEditor.commands.setContent(html, false); }
+                finally { try { _migrationActive = _wasMigrating; } catch (_) {} }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                try { snapshotTemplateBaseline(canvasEditor); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW7: healed the Step-7 document to the row template'
+                    + (stranded.length ? ' — carried ' + stranded.length + ' line(s) of earlier notes' : ''));
+            } catch (e) {
+                console.warn('WML CW7: Step-7 heal failed (non-fatal) —', e && e.message);
+            }
+        };
+
         const tryHealCwStep6DropAnchors = async () => {
             if (!isCwTask || !canvasEditor || cwStepDef?.step !== 6) return;
             try {
@@ -38250,7 +38300,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -41486,7 +41536,18 @@
             return html;
         }
 
-        // ── Step 7: Universal Human Values (v7.15.5: full workbook content) ──
+        // ── Step 7: Universal Human Values (v7.20.413: real rows, from Neil's workbook) ──
+        // Neil's ruling (2026-08-03): Step 7 is a BARE environment — a document, no chat, no
+        // walk. *"basically what I'm expecting is it's just a document with checkboxes, and the
+        // student chooses what universal human values their story explores. And then a little
+        // area for them to make a comment in case they wanna add quotes or put comments in."*
+        // So it stays tier:'workbook' (chat:false) and everything below is document, not dialogue.
+        //
+        // Until this version the rows were PROSE — six bold value names and empty <p></p>s with
+        // no field ids at all, so nothing could be ticked, filed, counted or completed. The
+        // structure now comes from CW7_VALUES via buildCW7ValuesSection() (see that function for
+        // the three deviations from the paper table and why each one is an improvement, not a
+        // liberty).
         if (step === 7) {
             html += sectionHTML('question', 'About This Step', false, null,
                 '<h2>Step 7: Universal Human Values</h2>' +
@@ -41516,36 +41577,27 @@
             );
             // Values at Beginning — 6 value rows
             html += dividerHTML('YOUR PROTAGONIST\u2019S VALUES AT THE BEGINNING');
-            html += sectionHTML('plan', 'Values at Beginning', true, null,
-                '<h3>Your Protagonist\u2019s Values at the Beginning</h3>' +
-                '<p><em>For each value, identify whether it is <strong>in balance</strong>, <strong>in excess</strong>, or <strong>in deficit</strong> for your protagonist at the start of the story.</em></p>' +
-                '<p><strong>Wisdom and Knowledge</strong> (creativity, curiosity, open-mindedness, love of learning)</p><p></p>' +
-                '<p><strong>Courage</strong> (bravery, persistence, integrity, vitality)</p><p></p>' +
-                '<p><strong>Humanity</strong> (love, kindness, social intelligence)</p><p></p>' +
-                '<p><strong>Justice</strong> (citizenship, fairness, leadership)</p><p></p>' +
-                '<p><strong>Temperance</strong> (forgiveness, humility, prudence, self-regulation)</p><p></p>' +
-                '<p><strong>Transcendence</strong> (appreciation of beauty, gratitude, hope, humour, spirituality)</p><p></p>'
-            );
+            html += buildCW7ValuesSection('begin');
             // Values at End — same 6 value rows
             html += dividerHTML('YOUR PROTAGONIST\u2019S VALUES AT THE END');
-            html += sectionHTML('plan', 'Values at End', true, null,
-                '<h3>Your Protagonist\u2019s Values at the End</h3>' +
-                '<p><em>For each value, identify whether it is <strong>in balance</strong>, <strong>in excess</strong>, or <strong>in deficit</strong> for your protagonist at the end of the story.</em></p>' +
-                '<p><strong>Wisdom and Knowledge</strong> (creativity, curiosity, open-mindedness, love of learning)</p><p></p>' +
-                '<p><strong>Courage</strong> (bravery, persistence, integrity, vitality)</p><p></p>' +
-                '<p><strong>Humanity</strong> (love, kindness, social intelligence)</p><p></p>' +
-                '<p><strong>Justice</strong> (citizenship, fairness, leadership)</p><p></p>' +
-                '<p><strong>Temperance</strong> (forgiveness, humility, prudence, self-regulation)</p><p></p>' +
-                '<p><strong>Transcendence</strong> (appreciation of beauty, gratitude, hope, humour, spirituality)</p><p></p>'
-            );
+            html += buildCW7ValuesSection('end');
             // Reflection
             html += dividerHTML('REFLECTION');
             html += sectionHTML('plan', 'Reflection', true, null,
                 '<h3>Reflection</h3>' +
-                '<p><em>Look at the difference between your beginning and end tables. The values that shift from deficit to balance (or from balance to excess) are the heart of your protagonist\u2019s transformation.</em></p>' +
-                '<p><strong>Which value changes the most dramatically?</strong></p><p></p>' +
-                '<p><strong>Does this change align with your character arc and your theme?</strong></p><p></p>' +
-                '<p><strong>Does your plot outline create enough pressure on this specific value?</strong></p><p></p>'
+                '<p><em>Look at the difference between your two tables. The values that shift \u2014 deficit to balance, or balance to excess \u2014 are the heart of your protagonist\u2019s transformation.</em></p>' +
+                outlineRowHTML({
+                    id: 'shift', label: 'The biggest shift',
+                    prompt: 'Which value changes the most between your beginning and your end \u2014 and what forces that change?',
+                }, _cw7RowFieldId('reflect', 'shift')) +
+                outlineRowHTML({
+                    id: 'align', label: 'Arc and theme',
+                    prompt: 'Does that change align with your character arc and the theme you chose in Step 5?',
+                }, _cw7RowFieldId('reflect', 'align')) +
+                outlineRowHTML({
+                    id: 'pressure', label: 'Pressure from the plot',
+                    prompt: 'Does your Step 6 plot outline put enough pressure on this value? Name the beats that test it.',
+                }, _cw7RowFieldId('reflect', 'pressure'))
             );
             return html;
         }
@@ -45862,6 +45914,81 @@
         // EMPTY ask position 2, which skipped the confirm AND skipped the stage explanation.
         // The Step-4 carry now lands in the real beat, as a confirm — see carrySrcFor().
         return ['stage_arc'];
+    }
+
+    // ══ CW STEP 7 — UNIVERSAL HUMAN VALUES (v7.20.413) ═══════════════════════════════════
+    //
+    // Neil's brief, verbatim: *"just a document with checkboxes, and the student chooses what
+    // universal human values their story explores. And then a little area for them to make a
+    // comment in case they wanna add quotes or put comments in there."* — plus, on being shown
+    // the workbook pages: *"maybe you can help design it better."*
+    //
+    // THREE DEVIATIONS FROM THE PAPER TABLE, each one stated rather than assumed (§13):
+    //
+    // 1. The paper asks Yes/No SEPARATELY under Balance, Excess and Deficit — six boxes to state
+    //    one fact, and nothing stops a student ticking "Yes" under both Balance and Excess. A
+    //    virtue is in exactly one of those states at a given point in the story, so the three
+    //    columns become ONE control with three options.
+    // 2. The paper gives each value THREE explanation boxes (one per column), so a full table
+    //    carries 18 boxes of which a student fills at most six. One box per value, per point in
+    //    the story — which is Neil's "little area to make a comment / add quotes".
+    // 3. `optional: true` on every value row. A story that seriously tests all six values tests
+    //    none of them properly, and the workbook itself says "tick the value(S) your story
+    //    explores" — so an untouched row must not leave the document permanently incomplete.
+    //    Started ⇒ finish it: the moment a row has text its controls are required like any other
+    //    (the v7.20.130 rule, reused — not a new one).
+    //
+    // Everything else is the workbook: its two tables in its order, its six values, its exact
+    // character strengths, its reflection questions.
+    //
+    // NO WALK, NO CHAT, NO API. Step 7 stays `tier: 'workbook'` (`panels.chat === false`), which
+    // is the bare environment Neil asked for. These are plain document rows a student fills by
+    // hand — the reason this step needed no controller, no sim and no round trip.
+    const CW7_VALUES = [
+        { id: 'wisdom', name: 'Wisdom and Knowledge', strengths: ['creativity', 'curiosity', 'open-mindedness', 'love of learning'] },
+        { id: 'courage', name: 'Courage', strengths: ['bravery', 'persistence', 'integrity', 'vitality'] },
+        { id: 'humanity', name: 'Humanity', strengths: ['love', 'kindness', 'social intelligence'] },
+        { id: 'justice', name: 'Justice', strengths: ['citizenship', 'fairness', 'leadership'] },
+        { id: 'temperance', name: 'Temperance', strengths: ['forgiveness/mercy', 'humility/modesty', 'prudence', 'self-regulation'] },
+        { id: 'transcendence', name: 'Transcendence', strengths: ['appreciation of beauty and excellence', 'gratitude', 'hope', 'humour', 'spirituality'] },
+    ];
+    const CW7_STATES = ['In balance', 'In excess', 'In deficit'];
+
+    // THE canonical Step-7 field id. One producer, every id in this step comes from it
+    // (§5d key-match: a write key and a read key that are built by two different pieces of
+    // code are the number-one recurring bug in this codebase).
+    //   `cw-step-7-begin-courage` · `cw-step-7-end-wisdom` · `cw-step-7-reflect-shift`
+    // The `cw-step-7-` shape is deliberate: bin/cw-keymatch-harness.js and bin/criteria-lint.js
+    // both key on `cw-step-N-*`, so these rows inherit those gates with no registration.
+    function _cw7RowFieldId(when, valueId) {
+        return 'cw-step-7-' + when + '-' + valueId;
+    }
+    const CW7_FID_PREFIX = _cw7RowFieldId('', '').replace(/-+$/, '') + '-';   // → 'cw-step-7-', DERIVED
+
+    // One section = one of the workbook's two tables. `when` is 'begin' | 'end'.
+    function buildCW7ValuesSection(when) {
+        const isBegin = when === 'begin';
+        const label = isBegin ? 'Values at Beginning' : 'Values at End';
+        const moment = isBegin ? 'at the START of your story' : 'at the END of your story';
+        let rows = '';
+        CW7_VALUES.forEach(function (v) {
+            rows += outlineRowHTML({
+                id: v.id,
+                label: v.name,
+                optional: true,
+                prompt: 'Explanation / quotes — how does your story show this?',
+                controls: [
+                    { id: 'strengths', label: 'Which of these does your story explore?', type: 'checklist', choice: true, items: v.strengths },
+                    { id: 'state', label: 'Is it…', type: 'checklist', choice: true, items: CW7_STATES },
+                ],
+            }, _cw7RowFieldId(when, v.id));
+        });
+        return sectionHTML('plan', label, true, null,
+            '<h3>Your Protagonist’s Values ' + (isBegin ? 'at the Beginning' : 'at the End') + '</h3>' +
+            '<p><em>Tick only the values your story actually explores ' + moment + ' — two or three, honestly done, beat all six ticked lightly. ' +
+            'For each one you tick, say whether the virtue is in balance, in excess or in deficit, then explain it in your own words or with a quote.</em></p>' +
+            rows
+        );
     }
 
     function buildCWPlotOutlineSection(archetypeKey) {
