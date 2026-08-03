@@ -14276,7 +14276,18 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    Scoped to the class, not to Step 7 — every outline checklist (literature thesis/evidence/
    effects rows, the IUMVCC pickers) had the identical defect and is fixed by the same rule. */
 .swml-outline-check {
-    /* the <label> itself — it can inherit a font stack and a transform too */
+    /* ⭐ v7.20.417 — THE ROOT, now proven rather than inferred. BuddyBoss ships
+       `label { color: var(--bb-headings-color); font-size: 17px; }` (theme.css:1481). These items
+       ARE `<label>` elements, so that rule owned their colour and size. v7.20.416 pinned the inner
+       span and set `color: inherit` on it — which then faithfully inherited the wrong thing, one
+       level up, from this label. Neil's computed styles said it exactly: `color rgb(44, 0, 62)`,
+       the brand ink, unreadable on a dark panel and fine on a light one, which is why light theme
+       looked correct and only dark was broken.
+       `color: inherit` HERE breaks the chain at the right link: it walks past the host rule to
+       `.swml-outline-criteria`, which already defines the right colour for each theme. No hex is
+       repeated, so neither theme can drift. */
+    color: inherit;
+    font-size: 12px;
     font-family: inherit;
     text-transform: none;
     letter-spacing: normal;

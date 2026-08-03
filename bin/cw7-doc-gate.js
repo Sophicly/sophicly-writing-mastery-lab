@@ -254,6 +254,21 @@ ok(/\.swml-figure-virtue-scale\s*\{/.test(CSS), 'wml-canvas.css has no .swml-fig
         'the trait label does not take its colour from the criteria column — hard-coding it means one theme reads correctly and the other does not');
     ok(/overflow-wrap:\s*anywhere/.test(rule),
         'the trait label can still overflow its column — "FORGIVENESS/MERCY" is wider than 180px');
+
+    // ⭐ v7.20.417 — `color: inherit` on the span is only as good as what the span inherits FROM.
+    // These items are <label> elements and BuddyBoss ships `label { color: var(--bb-headings-color) }`
+    // (theme.css:1481), so the wrapping label owned the colour and the span dutifully inherited it:
+    // brand ink, fine on white, invisible on the dark panel. The chain has to be broken at the
+    // label, not at the span.
+    // Parse DECLARATIONS, not raw text: a `}` inside a comment (this file quotes the host rule
+    // verbatim, braces and all) would truncate the slice and fail a rule that is in fact correct.
+    const CSS_NC = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+    const checkRules = CSS_NC.split('.swml-outline-check {').slice(1).map((s) => s.split('}')[0]);
+    ok(checkRules.some((r) => /color:\s*inherit/.test(r)),
+        'the .swml-outline-check LABEL does not reset colour — the host theme’s `label { color: … }` wins and the span inherits it (the v7.20.416 miss: dark theme only)');
+    ok(checkRules.some((r) => /font-size:\s*\d/.test(r)),
+        'the .swml-outline-check LABEL does not pin its font-size — the host theme sets 17px on every label');
+
 })();
 ok(/\.swml-vs-band\s*\{/.test(CSS), 'wml-canvas.css has no .swml-vs-band rule — the band labels would be unstyled');
 // The gradient carries the MEANING of the diagram: red at the extremes, green through the middle.
