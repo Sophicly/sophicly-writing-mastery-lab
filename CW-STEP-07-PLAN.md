@@ -1,6 +1,28 @@
 # CW STEP 7 — UNIVERSAL HUMAN VALUES: THE WHOLE-FEATURE PLAN
 
-**Status:** plan only, nothing built. Written 2026-08-03 against v7.20.412 (prod = staging).
+> ## ⛔ SUPERSEDED THE SAME DAY BY NEIL'S RULING — READ THIS BOX FIRST
+>
+> This document planned a **guided walk** (a controller, ~20 asks, tick lists, a sim). **Neil ruled
+> it out before any of it was built** (2026-08-03): *"the step seven should just be a diagnostic
+> environment, which just basically means a bare environment and with a document… basically what
+> I'm expecting is it's just a document with checkboxes, and the student chooses what universal
+> human values their story explores. And then a little area for them to make a comment in case
+> they wanna add quotes or put comments in there."*
+>
+> **What actually shipped — v7.20.413, on staging, prod owed.** No controller, no walk, no sim, no
+> API. Step 7 stays `tier:'workbook'` (`chat:false`), which IS that bare environment. The document
+> now carries **12 value rows + 3 reflection rows**, all from one producer `_cw7RowFieldId(when,
+> valueId)`; each value row is a strengths checklist + a Balance/Excess/Deficit choice + one
+> explanation-and-quotes box, and is `optional: true`. Gate: `bin/cw7-doc-gate.js` (90 assertions,
+> four injected defects proven red), wired into `pre-ship-check.sh`. A heal rebuilds documents
+> saved under the old prose template and carries any earlier notes forward.
+>
+> **What is still worth reading below:** §2's chain (the tier/environment finding, the slug trace,
+> the prod-document fact) and §6's registration map, which is the reference for Steps 8–9. The ask
+> sequence in §3 and the harness plan in §7 are dead — kept only so the next chat can see what was
+> considered and why it was dropped, rather than re-proposing it.
+
+**Status:** superseded (see box). Written 2026-08-03 against v7.20.412 (prod = staging).
 **Rule this obeys:** CLAUDE.md §16 (plan the whole feature end-to-end BEFORE building) and §11
 (grill first). Read this, disagree with anything, and I build the batch in one go.
 
