@@ -120,6 +120,7 @@
         // ───────────────────────── STAGE I — SETUP ─────────────────────────
         {
             id: 'opening-image', name: 'Opening Image', nudge: true,
+            find: { q: 'hook', l: 'All the ways to hook a reader' },
             why: 'so the first picture already carries the story\'s struggle and its mood',
             val: 'neg', valBy: { tragedy: 'pos' },
             m: /opening image/i,
@@ -147,6 +148,7 @@
         },
         {
             id: 'final-image-setup', name: 'The Opening Image, Expanded', nudge: true,
+            find: { q: 'opening', l: 'Every way to open a story' },
             why: 'so we see their whole world, and the hole in the middle',
             val: 'neg', pri: 1,
             m: /expand on the opening image/i,
@@ -164,6 +166,7 @@
         },
         {
             id: 'ordinary-world', name: 'The Ordinary World', nudge: false,
+            find: { q: 'hook', l: 'All the ways to hook a reader' },
             why: 'so the reader knows the life this story is about to break',
             val: 'neg', valBy: { tragedy: 'pos' },
             m: /ordinary world|world as it is|lowly state|youthful naivety|meet the protagonist/i,
@@ -261,6 +264,7 @@
         },
         {
             id: 'theme-stated', name: 'Theme Stated', nudge: true,
+            find: { q: 'theme', l: 'More on theme' },
             why: 'so the ending feels true — the reader was told it at the start',
             whyBy: { tragedy: 'so we hear the truth he never learns, and the loss stings' },
             val: 'neu',
@@ -298,6 +302,7 @@
         },
         {
             id: 'foreshadow', name: 'Foreshadowing', nudge: true,
+            find: { q: 'suspense', l: 'Ways to build suspense' },
             why: 'so the later rescue is a payoff you planted, not lucky timing',
             val: 'neg',
             m: /foreshadow/i,
@@ -364,6 +369,7 @@
         },
         {
             id: 'monster-distant', name: 'The Threat at a Distance', nudge: false,
+            find: { q: 'suspense', l: 'Ways to build suspense' },
             why: 'so the monster feels huge before we ever see it',
             val: 'neg',
             m: /monster from a distance|its reputation|aware of the monster|dangers ahead|threat becomes visible/i,
@@ -400,6 +406,7 @@
         },
         {
             id: 'object-of-desire', name: 'The Object of Desire', nudge: true,
+            find: { q: 'symbol', l: 'Objects that carry meaning' },
             why: 'so the reader knows exactly what winning would look like',
             val: 'neu',
             m: /object of desire|focused on this object/i,
@@ -661,6 +668,7 @@
         },
         {
             id: 'epiphany', name: 'Epiphany', nudge: true,
+            find: { q: 'turning point', l: 'Kinds of turning point' },
             why: 'so the change starts small and the reader believes the later transformation',
             val: 'pos',
             m: /epiphany|enlightened|genuine insight|deeper realisation/i,
@@ -784,6 +792,7 @@
         // ───────────────────── STAGE III — FASCINATION ─────────────────────
         {
             id: 'special-world', name: 'The Special World', nudge: false,
+            find: { q: 'setting', l: 'Ways to build a place' },
             why: 'so the reader feels the wonder before the world turns on them',
             val: 'pos',
             m: /excited or fascinated by the new world/i,
@@ -818,6 +827,7 @@
         },
         {
             id: 'underworld', name: 'Into the Underworld', nudge: true,
+            find: { q: 'setting', l: 'Ways to build a place' },
             why: 'so he faces the fear in a place that looks like it',
             val: 'neg',
             m: /underworld|inmost cave|deepest fears|inner demons/i,
@@ -869,6 +879,7 @@
         },
         {
             id: 'storm-coming', name: 'A Storm is Coming', nudge: true,
+            find: { q: 'mood', l: 'Ways to set a mood' },
             why: 'so the reader senses trouble before anything has actually happened',
             val: 'neg',
             m: /a storm is coming|onset of evil|something threatening|shadow begins to intrude/i,
@@ -886,6 +897,7 @@
         },
         {
             id: 'mood-turns', name: 'The Mood Turns', nudge: false,
+            find: { q: 'mood', l: 'Ways to set a mood' },
             why: 'so the reader can measure how far things have fallen since the start',
             val: 'neg',
             m: /mood changes|things (begin to |continue to )?go wrong|going downhill|frustrat|begins to feel/i,
@@ -903,6 +915,7 @@
         },
         {
             id: 'obstacles', name: 'Rising Obstacles', nudge: false,
+            find: { q: 'conflict', l: 'Kinds of conflict' },
             why: 'so the prize feels earned rather than handed over',
             whyBy: { tragedy: 'so every temptation taken makes the next crime easier' },
             val: 'neg',
@@ -921,6 +934,7 @@
         },
         {
             id: 'villain-advances', name: 'The Opposition Advances', nudge: false,
+            find: { q: 'conflict', l: 'Kinds of conflict' },
             why: 'so the danger keeps growing while the protagonist is still not ready',
             val: 'neg',
             m: /advances like a bulldozer|villain advances|monster advances|opposition advances|demonstrates his power|demonstrate their power|demonstrates its power/i,
@@ -990,6 +1004,7 @@
         },
         {
             id: 'ticking-clock', name: 'The Ticking Clock', nudge: false,
+            find: { q: 'suspense', l: 'Ways to build suspense' },
             why: 'so the redemption has a deadline the reader can feel slipping away',
             val: 'neg',
             m: /time is running out|closing in/i,
@@ -1009,6 +1024,7 @@
         // ───────────────────── STAGE IV — NIGHTMARE ─────────────────────
         {
             id: 'lowest-point', name: 'The Lowest Point (Dark Night)', nudge: true,
+            find: { q: 'suspense', l: 'Ways to build suspense' },
             critBy: { 'tragedy': [
                 '⚠ in a TRAGEDY nothing is earned out of this — do not write a bottom he climbs back from',
                 'the despair is the destination, not the turning point; what follows is consequence, not recovery',
@@ -1032,6 +1048,7 @@
         },
         {
             id: 'nightmare-battle', name: 'The Nightmare Battle', nudge: true,
+            find: { q: 'tension', l: 'Ways to build tension' },
             why: 'so beating the enemy and beating his old self are one act',
             whyBy: { tragedy: 'so we watch the old self win, and the fall is complete' },
             val: 'neg',
@@ -1107,6 +1124,7 @@
         },
         {
             id: 'greater-crises', name: 'Greater Crises', nudge: false,
+            find: { q: 'conflict', l: 'Kinds of conflict' },
             why: 'so the danger keeps rising instead of repeating, and the reader stays hooked',
             val: 'neg', pri: 1,
             m: /greater crises|everything suddenly goes wrong|suddenly realises/i,
@@ -1126,6 +1144,7 @@
         // ───────────────────── STAGE V — FINAL PUSH ─────────────────────
         {
             id: 'reversal', name: 'The Reversal', nudge: true,
+            find: { q: 'turning point', l: 'Kinds of turning point' },
             why: 'so the rescue pays off someone the reader already knows',
             whyBy: { tragedy: 'so the brief hope makes the coming destruction hurt more' },
             val: 'pos',
@@ -1310,6 +1329,7 @@
         // ───────────────────── STAGE VI — AFTERMATH ─────────────────────
         {
             id: 'final-image', name: 'The Final Image', nudge: true,
+            find: { q: 'ending', l: 'Every kind of ending' },
             why: 'so the reader SEES the change instead of being told about it',
             val: 'pos', pri: 1,
             m: /final image/i,
@@ -1345,6 +1365,7 @@
         },
         {
             id: 'balance-restored', name: 'Balance Restored', nudge: false,
+            find: { q: 'ending', l: 'Every kind of ending' },
             why: 'so the reader sees the victory changed everyone, not just the hero',
             val: 'pos',
             m: /community is liberated|balance is restored|establish a community|reconnecting with humanity|appears whole|role in the kingdom/i,
@@ -1362,6 +1383,7 @@
         },
         {
             id: 'return-with-elixir', name: 'Returning with the Elixir', nudge: true,
+            find: { q: 'ending', l: 'Every kind of ending' },
             why: 'so the community gains something from the journey, not just the hero',
             val: 'pos', pri: 1,
             m: /returns with (the )?elixir|newfound wisdom|mastered himself|finds fulfillment/i,
@@ -1379,6 +1401,7 @@
         },
         {
             id: 'tragic-death', name: 'The Death, and the Response', nudge: true,
+            find: { q: 'ending', l: 'Every kind of ending' },
             why: 'so the flaw is paid for, and the story keeps its promise',
             val: 'neg',
             m: /is killed by forces|final act of violence|rejoice in or mourn|if they mourn|if they don’t learn|if they don't learn|same problem likely/i,
@@ -1723,6 +1746,7 @@
         //    with a neighbour whose teaching contradicted them. See the block above for the rest.
         {
             id: 'second-epiphany', name: 'The Second Epiphany', nudge: true, val: 'neu',
+            find: { q: 'turning point', l: 'Kinds of turning point' },
             why: 'so he stops reacting to the story and starts choosing what happens next',
             m: /SECOND EPIPHANY/i,
             tech: [{ s: 'Tu', l: 'Turning Point' }, { s: 'Ng', l: 'Anagnorisis' }],

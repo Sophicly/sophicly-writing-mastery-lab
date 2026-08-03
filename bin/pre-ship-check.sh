@@ -231,6 +231,15 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw6-quote-gate.js || fail=1
 fi
 
+# v7.20.411: FAMILY-SEARCH CHIP GATE (#227). A chip that deep-links the Table of Techniques with a
+# search term must land on a POPULATED grid — a term matching nothing dims everything and tells the
+# student nothing, which is worse than no chip. Terms are checked against the real technique
+# dataset (300 cards, read through its D.push extensions).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-cw6-concepts\.js|cw6-find-gate\.js'; then
+  node bin/cw6-find-gate.js || fail=1
+fi
+
 # v7.20.322: CW KEY-SHAPE GATE (first half of the ghost-call/key-shape harness Neil approved).
 # Root CLAUDE.md §5d: a write-key that does not match a read-key is the number-one recurring
 # Sophicly defect, and it is SILENT — "it saved fine but nothing appears". This asserts that every

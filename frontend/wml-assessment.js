@@ -25285,6 +25285,19 @@
             // v7.20.406 (#201): the beat-examples body is set as HTML, so its technique cards are
             // reached by DELEGATION — one listener that survives every re-render, rather than
             // handlers that would be discarded the next time the body is replaced.
+            // v7.20.411 (#227): the family-search chip, same delegation and the same failure
+            // handling as the card chips below — the body is replaced wholesale on every refresh,
+            // so a per-element handler would be discarded on the next render.
+            wpBody.addEventListener('click', function (e) {
+                const fb = e.target && e.target.closest ? e.target.closest('.swml-beat-find-btn') : null;
+                if (!fb) return;
+                e.stopPropagation();
+                const q = fb.getAttribute('data-find-q');
+                try {
+                    if (window.SophiclyTable && window.SophiclyTable.open) window.SophiclyTable.open({ search: q });
+                    else console.warn('WML beat family-search: the Table of Techniques is not loaded — "' + q + '" cannot open.');
+                } catch (err) { console.warn('WML beat family-search: failed to open —', err && err.message); }
+            });
             wpBody.addEventListener('click', function (e) {
                 const btn = e.target && e.target.closest ? e.target.closest('.swml-beat-tech-btn') : null;
                 if (!btn) return;
@@ -45765,6 +45778,28 @@
                     return '<button type="button" class="swml-beat-tech-btn" data-tech-sym="' + esc(t.s) + '">'
                         + (WML.techIcon(t.s, 14) || '') + esc(t.l) + '</button>';
                 }).join('') + '</div></div>';
+        }
+        // ⭐⭐ v7.20.411 (FIXLIST #227, Neil's own idea) — BROWSE A WHOLE FAMILY, not one card.
+        // *"if we open the table of techniques and if we type in hook, it actually gives you eleven
+        // different types of hooks… are you able to create a quick-action button that has a deep
+        // link that leads to a search term like hook, so that when they land on it, they
+        // immediately see the different types of hooks they can use?"*
+        //
+        // The named card chips above are PRECISE (this beat uses Exposition); this one is BROAD
+        // (here is every hook you could open with). They answer different questions, so both ship.
+        //
+        // ⭐ THE CAPABILITY ALREADY EXISTED AND WML NEVER CALLED IT: `SophiclyTable.open({search})`
+        // has been in the notes bundle since v2.6.142 — built at Neil's own earlier request — and
+        // it drives the REAL search box and dispatches a real `input` event, so the student SEES
+        // what filtered the grid and can clear it. Every one of WML's ~10 deep-links was passing a
+        // SYMBOL. This is the missing half, not a new mechanism.
+        const find = (c.find || null);
+        if (find && find.q) {
+            html += '<div class="swml-wp-item"><div class="swml-wp-item-label">Browse the whole family</div>'
+                + '<div class="swml-wp-item-text swml-beat-tech">'
+                + '<button type="button" class="swml-beat-find-btn" data-find-q="' + esc(find.q) + '">'
+                + (WML.icon('examples', 13) || '') + esc(find.l || ('More like this')) + '</button>'
+                + '</div></div>';
         }
         return html;
     }
