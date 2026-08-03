@@ -14249,3 +14249,50 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     .swml-vs-band { font-size: 19px; }
     .swml-vs-balance { font-size: 20px; }
 }
+
+/* ══ v7.20.416 — THE CHECKLIST LABEL OWNS ITS OWN TYPOGRAPHY ═════════════════════════════
+   Neil, on the Step-7 traits: "the colour of the text has changed… it's gone, like, purple or
+   something. It's also gone quite big… it's just gone so dark in a dark theme, and it's also
+   spilling outside of the container."
+
+   ROOT CAUSE, and it is not a Step-7 bug. `.swml-outline-check-label` had **no rule anywhere in
+   either of our stylesheets** — verified by grep, the class appears only in the two JS renderers.
+   So every one of its typographic properties (family, size, weight, colour, text-transform,
+   letter-spacing) was inherited from whatever the host page supplies, and this canvas renders
+   inside the LearnDash Focus template with the Etch/BuddyBoss chrome loaded around it. A
+   `<label>` is a form element, and host themes style form labels. Step 7 is simply the first
+   screen with enough of them, and long enough words, for anyone to notice.
+
+   Two knock-on effects, both visible in his screenshots: the inherited colour ignored the canvas
+   theme entirely, so dark-on-dark in dark mode; and inherited large caps overflowed the 180px
+   criteria column ("FORGIVENESS/MERCY").
+
+   THE FIX IS THE HOUSE RULE, not a colour tweak: a component that renders inside someone else's
+   page must declare what it needs rather than inherit it (same principle as the takeover-modal
+   landmine "never rely on the host for a value you care about"). `color: inherit` deliberately
+   takes the criteria column's own colour, so light and dark themes both track automatically and
+   there is nothing to keep in sync.
+
+   Scoped to the class, not to Step 7 — every outline checklist (literature thesis/evidence/
+   effects rows, the IUMVCC pickers) had the identical defect and is fixed by the same rule. */
+.swml-outline-check {
+    /* the <label> itself — it can inherit a font stack and a transform too */
+    font-family: inherit;
+    text-transform: none;
+    letter-spacing: normal;
+    align-items: center;
+}
+.swml-outline-check-label {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    font-style: normal;
+    line-height: 1.35;
+    text-transform: none;
+    letter-spacing: normal;
+    color: inherit;          /* follows .swml-outline-criteria, so both themes track by themselves */
+    /* "FORGIVENESS/MERCY" and "APPRECIATION OF BEAUTY AND EXCELLENCE" are longer than the column
+       is wide; without this they render past its edge instead of wrapping. */
+    overflow-wrap: anywhere;
+    min-width: 0;
+}

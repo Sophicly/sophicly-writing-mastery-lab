@@ -240,6 +240,21 @@ if (ok(!!figured, 'could not run SwmlFigure.renderHTML — the figure block of t
 }
 
 ok(/\.swml-figure-virtue-scale\s*\{/.test(CSS), 'wml-canvas.css has no .swml-figure-virtue-scale rule — the figure would render as three lines of bare text');
+
+// ⭐ v7.20.416 — the checklist label must declare its own typography. It had NO rule at all, so it
+// inherited the host page's form-label styling: Neil saw purple, oversized, dark-on-dark in dark
+// mode, and long traits spilling out of the 180px column. A component rendering inside someone
+// else's page cannot inherit what it cares about.
+(function checkLabelTypography() {
+    const rule = (CSS.match(/\.swml-outline-check-label\s*\{([\s\S]*?)\}/) || [])[1];
+    if (!ok(!!rule, 'there is NO .swml-outline-check-label rule — every trait label inherits the host theme (the v7.20.415 defect: purple, oversized, unreadable on dark)')) return;
+    ok(/text-transform:\s*none/.test(rule), 'the trait label does not reset text-transform — the host theme can uppercase it again');
+    ok(/font-size:\s*\d/.test(rule) && /font-family:\s*inherit/.test(rule), 'the trait label does not pin its own size and family');
+    ok(/color:\s*inherit/.test(rule),
+        'the trait label does not take its colour from the criteria column — hard-coding it means one theme reads correctly and the other does not');
+    ok(/overflow-wrap:\s*anywhere/.test(rule),
+        'the trait label can still overflow its column — "FORGIVENESS/MERCY" is wider than 180px');
+})();
 ok(/\.swml-vs-band\s*\{/.test(CSS), 'wml-canvas.css has no .swml-vs-band rule — the band labels would be unstyled');
 // The gradient carries the MEANING of the diagram: red at the extremes, green through the middle.
 // Assert that by reading the stops, not by matching one hex — a single-hex check passes happily
