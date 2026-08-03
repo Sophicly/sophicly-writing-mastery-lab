@@ -305,6 +305,34 @@ for (const k of KEYS) {
     ok(w.ctl.active, k + ': walk did not become active on forceStart');
     ok(w.bubbles.length >= 4, k + ': orientation was not served as paced chunks (got ' + w.bubbles.length + ' bubbles)');
 
+    // ⭐⭐ v7.20.412 (Neil, 2026-08-03): *"make sure that all the questions fire in order for all
+    // the different plot structures from start to finish, every single beat."*
+    //
+    // THE GAP THIS CLOSES, and it is the reason the audit was worth running: every ordering
+    // assertion in this file until now compared the walk against `w.order`, which is the DOCUMENT
+    // order the sim itself seeded — and `expectAsks` is just its length. So "all rows filled" was
+    // true, but the SEQUENCE the student is actually marched through was never checked against
+    // anything independent. A walk that asked Stage IV before Stage II, or asked one beat twice and
+    // another never (filling the second by carry), would have passed every check here.
+    // `feedback_a_check_that_duplicates_its_subject_is_not_a_check`.
+    //
+    // So: record the fieldId of every ask AS IT IS SERVED, straight off the REAL `_walkSlot`, and
+    // assert the invariants below after the run.
+    // ⚠️ RECORD ONE ENTRY PER ANSWERED ASK — never "when the fieldId changes".
+    // The first cut of this recorder pushed only when `fid !== lastSlot`, to avoid re-recording the
+    // same still-armed slot on every poll of the drive loop. That collapsed CONSECUTIVE repeats,
+    // which made it blind to exactly the defect the duplicate check exists to catch: a mutation
+    // that forced one beat to be re-served for ever was NOT caught by the dupe assertion (it died
+    // on a different check instead). An instrument that cannot see the bug it is aimed at is worse
+    // than no instrument, because it reads as coverage.
+    // So the fid is sampled at the moment the sim ANSWERS, which is exactly once per served ask.
+    const askSeq = [];
+    const fidNow = function () {
+        const tok = w.deps._walkSlot.peek('cw6');
+        return (tok && (tok.fid || tok.field || tok.id)) || null;
+    };
+    const recordAnswer = function () { const f = fidNow(); if (f) askSeq.push(f); };
+
     // Drive the whole run. Guard generously above the real ask count so a stall is a failure, not a hang.
     let answered = 0, guard = 0, stageChecks = 0, finishChecks = 0;
     while (guard++ < expectAsks * 4) {
@@ -315,15 +343,80 @@ for (const k of KEYS) {
             w.resolveApi('ok'); continue;
         }
         // An anchor confirm is a chip, not a typed turn.
+        if (fidNow() && w.tap('still right')) { recordAnswer(); answered++; continue; }
         if (w.tap('still right')) { answered++; continue; }
         // v7.20.405: the stage-I/VI opening recap (three-turn opening, audit ruling A3 turn 1).
         if (w.tap('That’s it')) { continue; }
         // v7.20.368: so is the Step-4 CARRY confirm on the real first/last beat.
+        if (fidNow() && w.tap('Use this')) { recordAnswer(); answered++; continue; }
         if (w.tap('Use this')) { answered++; continue; }
         if (!w.ctl.active) break;
+        recordAnswer();
         w.ctl.handleTurn('answer ' + answered);
         answered++;
     }
+
+    // ── THE ORDER AUDIT (Neil, 2026-08-03) — five invariants, none of which restates the walk ──
+    (function auditOrder() {
+        const secIds = ARCH[k].sections.map(function (s) { return s.id; });
+        const stageOf = function (fid) {
+            for (let i = 0; i < secIds.length; i++) {
+                if (fid.indexOf(_cw6RowFieldId(k, secIds[i], '')) === 0) return i;
+            }
+            return -1;
+        };
+        // 1. NOTHING IS ASKED TWICE. A repeated ask is the shape of the rewind bugs (#I3b) and the
+        //    student experiences it as the walk going backwards for no reason.
+        const dupes = askSeq.filter(function (f, i) { return askSeq.indexOf(f) !== i; });
+        ok(dupes.length === 0, k + ': ' + dupes.length + ' beat(s) were asked more than once — ' + [...new Set(dupes)].slice(0, 3).join(', '));
+
+        // 2. EVERY ASK IS A REAL ROW IN THIS ARCHETYPE'S DOCUMENT. An ask for a row that does not
+        //    exist files nowhere — the write-key class (§5d), and silent.
+        const ghosts = askSeq.filter(function (f) { return !w.rows.has(f); });
+        ok(ghosts.length === 0, k + ': ' + ghosts.length + ' ask(s) targeted a row that is not in the document — ' + ghosts.slice(0, 3).join(', '));
+
+        // 3. STAGES RUN FORWARD. Every ask in Stage N precedes every ask in Stage N+1: the student
+        //    is never thrown back to an earlier stage mid-walk.
+        const stages = askSeq.map(stageOf);
+        ok(stages.every(function (s) { return s !== -1; }), k + ': an ask belonged to no stage of this archetype');
+        let backJump = -1;
+        for (let i = 1; i < stages.length; i++) if (stages[i] < stages[i - 1]) { backJump = i; break; }
+        ok(backJump === -1, k + ': the walk jumped BACK from stage ' + (stages[backJump - 1] + 1)
+            + ' to stage ' + (stages[backJump] + 1) + ' at ask ' + (backJump + 1));
+
+        // 4. WITHIN A STAGE, THE ARC IS ASKED AFTER THE BOOKEND AND BEFORE THE MIDDLES. The arc is a
+        //    compression of settled ends, so it cannot come first; and it frames the middles, so it
+        //    cannot come last. (The bubble-level bookend<arc check above tests the TURNS; this tests
+        //    the ROWS the student actually writes into.)
+        secIds.forEach(function (sid, si) {
+            const mine = askSeq.filter(function (f) { return stageOf(f) === si; });
+            const arcAt = mine.findIndex(function (f) { return /-stage_arc$/.test(f); });
+            if (arcAt === -1) return;    // a stage whose arc rode the frame carry
+            ok(arcAt > 0, k + '/' + sid + ': the arc row was the FIRST thing asked in the stage — it compresses ends that have not been settled yet');
+            ok(arcAt < mine.length - 1, k + '/' + sid + ': the arc row was the LAST thing asked in the stage — it is meant to frame the beats that follow it');
+        });
+
+        // 5. EVERY ASKABLE ROW IS EITHER ASKED OR CARRIED — and the two together account for all of
+        //    them exactly. This is the assertion that makes "every single beat" literal: a row that
+        //    is filled but never asked has to be a deliberate carry, not an accident.
+        const asked = new Set(askSeq);
+        const notAsked = w.order.filter(function (f) { return !asked.has(f); });
+        const notAskedButFilled = notAsked.filter(function (f) { return w.rows.get(f); });
+        ok(notAsked.length === notAskedButFilled.length,
+            k + ': ' + (notAsked.length - notAskedButFilled.length) + ' row(s) were neither asked nor filled — '
+            + notAsked.filter(function (f) { return !w.rows.get(f); }).slice(0, 3).join(', '));
+        ok(notAsked.length <= 3,
+            k + ': ' + notAsked.length + ' rows were filled WITHOUT being asked — only the Step-4 carries (opening, ending, and at most one arc) may skip their ask');
+        // ⚠️ EVERY NUMBER HERE IS MEASURED. The first cut printed the literal text
+        // "0 repeated · stages forward-only" — which stayed on screen unchanged while a mutated
+        // walk was re-serving one beat 300 times. A summary line that states a result it did not
+        // compute is a lie that reads as proof; it is the same defect class as the blind recorder
+        // above, and it is exactly what makes a green suite untrustworthy.
+        const backJumps = stages.filter(function (s, i) { return i && s < stages[i - 1]; }).length;
+        console.log('   · ' + k.padEnd(23) + askSeq.length + ' asks · ' + new Set(askSeq).size
+            + ' distinct · ' + dupes.length + ' repeated · ' + notAsked.length + ' carried · '
+            + backJumps + ' stage back-jump(s)');
+    })();
 
     const filled = [...w.rows.values()].filter(function (t) { return t; }).length;
     ok(filled === expectAsks, k + ': ' + filled + '/' + expectAsks + ' rows filled at the end of a full run');
@@ -881,6 +974,88 @@ await (async function zeroApiPass() {
     ok(landed.length === 1 && (!slotBefore || landed[0] === slotBefore.fid),
         'zero-api/rung3: the answer after a failed help call did not land in the beat in hand');
     console.log('   ✓ zero-API pass: full run completes, checks fail honestly, rung 3 degrades to the honest triple, nothing re-demanded');
+})();
+
+// ── v7.20.412 — THE EDIT-THE-BEAT BRANCHES (Neil, 2026-08-03) ─────────────────────────────
+// *"what about when students use the buttons like edit the beat and all this kind of stuff? Do
+// they all work properly?"*
+//
+// THE GAP THIS CLOSES. The frame offers THREE chips — [Both still right →] · [Change my opening] ·
+// [Change my ending] — and every test in this file tapped the FIRST one. The two that a student
+// presses when something is actually wrong had never been driven, in any archetype. A branch
+// nobody walks is a branch nobody has tested (`reference_wml_chip_ui_walk_every_branch…`), and
+// this is the branch where a student says "no, that's not my opening any more" — i.e. the exact
+// button he asked about.
+await (async function editTheBeatBranches() {
+    for (const k of ['tragedy', 'rags-to-riches']) {
+        for (const which of ['opening', 'ending']) {
+            const w = makeWorld(k);
+            w.ctl.forceStart();
+            await tick();
+            const chip = 'Change my ' + which;
+            const tapped = w.tap(chip);
+            ok(tapped, k + '/' + which + ': the frame never offered [' + chip + '] — the student cannot correct a wrong end');
+            if (!tapped) continue;
+
+            // §4d LIVENESS: after pressing it there must be something to do — a question or a chip.
+            // "Not filed, not sent" is a complete sentence in a commit message and a broken page to
+            // a 14-year-old.
+            const slot = w.deps._walkSlot.peek('cw6');
+            ok(!!slot || w.chips().length > 0,
+                k + '/' + which + ': after [' + chip + '] there is no armed ask AND no chip — the student is stranded');
+
+            // The rewrite must land in the END they said was wrong, and NOWHERE else.
+            const marker = 'MY REPLACEMENT ' + which.toUpperCase();
+            w.ctl.handleTurn(marker);
+            await tick();
+            const landed = [...w.rows.keys()].filter(function (f) { return (w.rows.get(f) || '').indexOf(marker) !== -1; });
+            ok(landed.length === 1,
+                k + '/' + which + ': the replacement landed in ' + landed.length + ' rows — it must file to exactly one');
+            if (landed.length === 1) {
+                const secIds = ARCH[k].sections.map(function (s) { return s.id; });
+                const wantSec = which === 'opening' ? secIds[0] : secIds[secIds.length - 1];
+                ok(landed[0].indexOf(_cw6RowFieldId(k, wantSec, '')) === 0,
+                    k + '/' + which + ': the replacement filed into ' + landed[0]
+                    + ' — the ' + which + ' belongs to stage ' + (which === 'opening' ? 'I' : 'VI'));
+            }
+
+            // …and the walk must still be able to run to the end afterwards. A correction that
+            // leaves the walk unable to finish is worse than no correction.
+            // Drive to the end like a real student: clear any judgment call, TYPE when a beat is
+            // actually armed, and otherwise press whatever button is on screen. The first cut
+            // enumerated three chip labels and stalled with 84 rows unwritten — not a product bug
+            // (the correction itself lands correctly), but a driver that did not know which chips
+            // the post-correction flow offers. Pressing whatever is offered removes that guesswork
+            // and is closer to the thing being simulated.
+            // ⚠️ `active` is checked AFTER the armed-API resolution, exactly as the main driver
+            // does. The first cut had `while (… && w.ctl.active)` — but the walk legitimately goes
+            // INACTIVE while a stage micro-check is in flight (active=false, pending=true, resume
+            // armed), so the loop exited at the first stage boundary and reported 84 unwritten
+            // rows as a product failure. The product was fine; the driver had mistaken "waiting
+            // for the marker" for "finished".
+            let guard = 0;
+            while (guard++ < w.order.length * 6) {
+                if (w.armed) {
+                    if (/^cw6-stage-/.test(w.armed.id)) { w.resolveApi('ok\n\n@STAGE_OK'); continue; }
+                    if (w.armed.id === 'cw6-finish') { w.resolveApi('ok\n\n@OUTLINE_OK'); continue; }
+                    w.resolveApi('ok'); continue;
+                }
+                if (!w.ctl.active) break;
+                if (w.deps._walkSlot.peek('cw6')) { w.ctl.handleTurn('answer ' + guard); continue; }
+                // Press the FIRST chip on screen through the same path a finger takes (world.tap's
+                // attrs.onClick — the stub's chips are el() nodes, not DOM buttons with .click()).
+                const chips = w.chips();
+                const first = chips.filter(function (b) { return b.attrs && b.attrs.onClick; })[0];
+                if (first) { first.attrs.onClick(); continue; }
+                w.ctl.handleTurn('answer ' + guard);
+            }
+            ok(!w.ctl.active, k + '/' + which + ': the walk never reached its wrap after [' + chip + ']');
+            const emptyRows = [...w.rows.keys()].filter(function (f) { return !w.rows.get(f); });
+            ok(emptyRows.length === 0,
+                k + '/' + which + ': ' + emptyRows.length + ' row(s) were left empty after correcting the ' + which);
+        }
+    }
+    console.log('   ✓ edit-the-beat: [Change my opening] and [Change my ending] file to the right end and the walk still completes');
 })();
 
 console.log('   ' + asserts.pass + ' behavioural assertions passed'
