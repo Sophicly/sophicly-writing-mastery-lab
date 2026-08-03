@@ -13908,3 +13908,76 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     background-position: 6px center, 23px center;
     background-size: 13px 13px, 15px 15px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════
+   v7.20.406 — BEAT EXAMPLES FROM THE DOCUMENT (FIXLIST #201, Neil's design)
+   ───────────────────────────────────────────────────────────────────────────────────────────
+   The button lives INSIDE `.swml-outline-criteria` (the read-only label column), under the row
+   label and its tick — exactly where he pointed. Quiet by default so ~100 of them down a long
+   outline never compete with the student's own writing; it earns colour on hover.
+   ═══════════════════════════════════════════════════════════════════════════════════════════ */
+.swml-outline-eg-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    margin-top: 7px;
+    padding: 4px 7px;
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: inherit;
+    opacity: 0.55;
+    background: rgba(127, 127, 127, 0.10);
+    border: 1px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.swml-outline-eg-btn:hover,
+.swml-outline-eg-btn:focus-visible {
+    opacity: 1;
+    background: rgba(83, 51, 237, 0.14);
+    border-color: rgba(83, 51, 237, 0.34);
+}
+.swml-outline-eg-btn .swml-ico { flex: 0 0 auto; }
+
+/* The panel body. `.swml-wp-item-text` is `white-space: pre-wrap` for the student's own free
+   text — which would turn these authored lists into a ladder of blank lines, so they opt out. */
+.swml-wp-item-text .swml-beat-crit,
+.swml-wp-item-text .swml-beat-egs {
+    white-space: normal;
+    margin: 4px 0 0;
+    padding-left: 16px;
+}
+.swml-wp-item-text .swml-beat-crit li,
+.swml-wp-item-text .swml-beat-egs li { margin-bottom: 6px; }
+.swml-wp-item-text .swml-beat-egs li:last-child,
+.swml-wp-item-text .swml-beat-crit li:last-child { margin-bottom: 0; }
+.swml-beat-tech {
+    white-space: normal;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.swml-beat-tech-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: inherit;
+    background: rgba(83, 51, 237, 0.12);
+    border: 1px solid rgba(83, 51, 237, 0.30);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.swml-beat-tech-btn:hover,
+.swml-beat-tech-btn:focus-visible {
+    background: rgba(83, 51, 237, 0.22);
+    border-color: rgba(83, 51, 237, 0.55);
+}

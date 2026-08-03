@@ -1396,3 +1396,46 @@ the help ladder on demand — never appended to every beat of a type the student
 Sharpens §12 (forward motion) for the ~100-beat scale: the walk's job is a COMPLETED outline the
 student owns, not maximal exercise per beat. Rough-now-polish-later (the drafts exist for depth)
 is the standing frame; a beat that took three interactions when one would do is a pacing defect.
+
+---
+
+## §27 — EXAMPLES ON DEMAND ARE GENEROUS. The conformity finding governs the PUSH, never the PULL. (Neil, 2026-08-03)
+
+**The ruling.** Neil, testing Step 6 live at Stage I beat 10 (False Identity), on the research
+recommendation "more examples is the wrong lever": *"I have to disagree with that. What I found
+really useful in the previous beats is just having the example button there, like more examples.
+It was very, very helpful… I think having more is actually better."*
+
+**He is right, and the evidence does not actually contradict him** — the two claims are about
+different mechanisms, and the recommendation was written too broadly:
+
+- **PUSH — examples stacked INTO the ask**, which the student cannot refuse. This is where
+  Smith, Ward & Schumacher (1993) bites: more examples in front of a generator produces more
+  feature-copying, and neither a delay nor an instruction not to copy reduces it. The design
+  answer there is CONTRAST (two cases, "what do they share?"), not volume. **Unchanged.**
+- **PULL — rung 1 `[💡 More examples]`**, which only a student who wants help ever taps. This is
+  a different act: it is self-directed help-seeking by a student who has already read the criteria
+  and one worked example and is still stuck. Kyun, Kalyuga & Sweller (2013) — worked examples in
+  ENGLISH ESSAYS, our exact domain — found the condition that worked showed **several possible
+  answers** per question, with the benefit concentrated in lower-prior-knowledge learners.
+  Gentner, Loewenstein & Thompson (2003): comparison across cases is what abstracts the principle.
+
+**So: be generous on the pull, disciplined on the push.** A rung the student reaches for should
+not run dry in one tap; an ask should not grow a fourth example nobody asked for.
+
+**Consequences for any walk (not just Step 6):**
+1. **The examples rung serves ONE per tap**, not the whole pool at once — it survives as long as
+   the student keeps wanting it, and retires only when genuinely spent (which is still Neil's
+   .373 rule: *"once the three are done, that quick action button just disappears"* — it just
+   takes three taps to get there now, not one).
+2. **A retired rung still says something** — a spent pool must never read as a dead button (§4d).
+3. **Growing the per-concept pool past 3 is a legitimate content job**, not a violation of the
+   conformity finding, PROVIDED the examples are drawn from DIFFERENT stories (variation is what
+   makes comparison possible; three examples of one text is the configuration that gets copied).
+4. **Never model on the student's own story** — unchanged, and the reason the pull is safe: every
+   example is a different text, so there is nothing to transcribe directly into their own beat.
+
+**Supersedes** the flat reading of `research/2026-08-02-learning-without-ai-creative-beats.md`
+rule 5 and recommendation 5 in `STEP6-RECOMMENDATIONS-2026-08-02.md`. Those rules stand for the
+ASK; they do not govern the ladder. (Pairs with §4c.9 — the ladder is cheapest-first precisely so
+a stuck student can spend as much FREE help as they like before reaching Sophia.)

@@ -20952,17 +20952,10 @@
             // `bin/cw6-concept-lint.js` now fails the build on it (added the same change).
             // Score = the length of the substring actually matched, so a longer, more specific
             // phrase beats a short generic one. Ties keep array order, so nothing else moves.
-            function conceptFor(label, prompt) {
-                const hay = (label || '') + ' — ' + (prompt || '');
-                let best = null, bestLen = -1;
-                for (let k = 0; k < CM.CONCEPTS.length; k++) {
-                    const m = hay.match(CM.CONCEPTS[k].m);
-                    if (!m) continue;
-                    const len = (m[0] || '').length;
-                    if (len > bestLen) { best = CM.CONCEPTS[k]; bestLen = len; }
-                }
-                return best;
-            }
+            // v7.20.406: ONE matcher, at module scope — the document's per-beat Examples button
+            // (#201) resolves a row's concept the SAME way the walk does, so a beat can never show
+            // one concept in the chat and a different one in the panel (CLAUDE.md #7).
+            function conceptFor(label, prompt) { return _cw6ConceptFor(label, prompt); }
             // ⭐⭐ v7.20.405 — THE THREE-TURN STAGE OPENING (FIXLIST #193; Fable audit ruling A).
             // ONE ASK = ONE ROW is law: the old compound arc ask ("tell me both…") filed both
             // halves into `stage_arc` while the closing-bookend row stayed empty — Neil predicted
@@ -21163,9 +21156,26 @@
             // be nice if More examples has up to three"), so the ceiling holds even if the concept
             // data later grows past it.
             const MORE_CAP = 3;
-            function moreFor(a) {
-                if (!a || !a.concept || moreSpent[a.fid]) return [];
+            // ⭐ v7.20.406 (FIXLIST #200; PEDAGOGY §27) — ONE EXAMPLE PER TAP, not the whole pool.
+            // Neil, live on the False Identity beat: *"having the example button there… was very,
+            // very helpful… I think having more is actually better."* The rung used to spend its
+            // entire pool on the first tap and then retire, so the help he valued most lasted
+            // exactly one press. `moreSpent[fid]` is now a COUNT of examples already served, so the
+            // chip survives until the pool is genuinely empty — which is still his .373 rule
+            // ("once the three are done, that quick action button just disappears"), just reached
+            // in three taps instead of one.
+            // ⚠️ Back-compatible with sidecars written before .406, where the value was the flag
+            // `1`: that reads as "one example served", which is exactly what it meant.
+            function morePool(a) {
+                if (!a || !a.concept) return [];
                 return ((a.concept && a.concept.more) || []).slice(0, MORE_CAP);
+            }
+            function moreServed(a) {
+                const n = a ? moreSpent[a.fid] : 0;
+                return (typeof n === 'number' && n > 0) ? n : 0;
+            }
+            function moreFor(a) {
+                return morePool(a).slice(moreServed(a));
             }
             function serveMoreExamples(a) {
                 const more = moreFor(a);
@@ -21175,16 +21185,22 @@
                 // decides the page is broken.
                 if (!more.length) {
                     aiBubble('That is every example I have for this one. Have a look at **Guidance** or '
-                        + 'the technique cards if you are still stuck — otherwise write yours rough and move on.');
+                        + 'the technique cards if you are still stuck — otherwise write yours rough and move on.\n\n'
+                        + '*(Every example for every beat stays in your document too — the **Examples** button on any '
+                        + 'beat row opens them beside your outline.)*');
                     helpBar(a);
                     resetSend();
                     return;
                 }
-                moreSpent[a.fid] = 1; persist();
-                aiBubble('**More examples — ' + (a.concept.name || a.label) + '**\n\n'
-                    + more.map(function (m) { return '- ' + m; }).join('\n')
+                // ONE example, and say how many are left so the chip is not a mystery box.
+                const served = moreServed(a);
+                moreSpent[a.fid] = served + 1; persist();
+                const left = morePool(a).length - (served + 1);
+                aiBubble('**Another example — ' + (a.concept.name || a.label) + '**\n\n'
+                    + '- ' + more[0]
+                    + (left > 0 ? '\n\n*' + left + ' more available if you want ' + (left === 1 ? 'it' : 'them') + '.*' : '')
                     + '\n\nNow write yours. Rough is fine — you will deepen it in later drafts.');
-                helpBar(a);          // the ladder stays available on the new bubble — minus this rung
+                helpBar(a);          // the ladder stays available on the new bubble — with this rung, until the pool is spent
                 resetSend();
             }
 
@@ -25162,6 +25178,19 @@
             const wpBody = el('div', { className: 'swml-outline-list swml-wp-body' });
             wpBody.innerHTML = '<p class="swml-wp-empty">Loading your Writer’s Profile…</p>';
             wpBody.addEventListener('wheel', (e) => { e.stopPropagation(); }, { passive: true });
+            // v7.20.406 (#201): the beat-examples body is set as HTML, so its technique cards are
+            // reached by DELEGATION — one listener that survives every re-render, rather than
+            // handlers that would be discarded the next time the body is replaced.
+            wpBody.addEventListener('click', function (e) {
+                const btn = e.target && e.target.closest ? e.target.closest('.swml-beat-tech-btn') : null;
+                if (!btn) return;
+                e.stopPropagation();
+                const sym = btn.getAttribute('data-tech-sym');
+                try {
+                    if (window.SophiclyTable && window.SophiclyTable.open) window.SophiclyTable.open(sym);
+                    else console.warn('WML beat examples: the Table of Techniques is not loaded — card "' + sym + '" cannot open.');
+                } catch (err) { console.warn('WML beat examples: technique card failed to open —', err && err.message); }
+            });
             wpPanel.appendChild(wpBody);
             ['n','s','e','w','nw','ne','sw','se'].forEach(dir => {
                 const h = el('div', { className: `swml-outline-rh swml-outline-rh-${dir.length > 1 ? 'corner' : 'edge'} swml-outline-rh-${dir}` });
@@ -25178,14 +25207,46 @@
             const _wpTitle = wpHeader.querySelector('span');
             // v7.20.292: THREE modes on the one shell. Table-driven so a fourth source is a row,
             // not another branch to keep in sync in five places.
+            // v7.20.406 (#201): the FOURTH row is the beat-examples panel, opened from a button on
+            // the document row itself rather than from a rail icon — so it declares `anchorOnly`,
+            // which anchors the shell in its usual place without lighting a rail button that the
+            // student did not press.
+            let _wpBeatConcept = null;
             const WP_MODES = {
                 profile:    { title: 'Writer’s Profile',  note: true,  load: function () { _loadWriterProfilePanel(wpBody); } },
                 components: { title: 'Story Components',  note: false, load: function () { _loadStoryComponentsPanel(wpBody); } },
                 spine:      { title: 'Story Spine',       note: false, load: function () { _loadStorySpinePanel(wpBody); } },
+                examples:   { title: 'Beat examples',     note: false, anchorOnly: true, load: function () {
+                    if (!_wpBeatConcept) {
+                        _setWpBody(wpBody, '<p class="swml-wp-empty">Open a beat’s <strong>Examples</strong> button to see what a strong version of it looks like.</p>');
+                        return;
+                    }
+                    _setWpBody(wpBody, _cw6BeatHelpHTML(_wpBeatConcept));
+                    wpBody._wpHasContent = true;
+                } },
             };
             function _wpTriggerFor(mode) {
-                return mode === 'components' ? scTrigger : mode === 'spine' ? ssTrigger : wpTrigger;
+                // 'examples' has no rail button of its own; anchor it where Story Spine sits so the
+                // panel opens in the place the student already knows, never off-screen.
+                return mode === 'components' ? scTrigger : (mode === 'spine' || mode === 'examples') ? ssTrigger : wpTrigger;
             }
+            // The bridge the document rows call (module-scope holder, same hoist pattern as
+            // resDetachBtn). Re-opening with a DIFFERENT beat must SWAP the content, never toggle
+            // the panel shut — tapping Examples on row 12 while row 3's examples are open is a
+            // request to see row 12, not to close the panel.
+            _openBeatExamplesPanel = function (concept) {
+                if (!concept) return false;
+                const same = _wpBeatConcept === concept;
+                _wpBeatConcept = concept;
+                if (wpMode === 'examples' && wpPanel.classList.contains('swml-resources-open') && !same) {
+                    wpBody._wpHasContent = false;
+                    WP_MODES.examples.load();
+                    if (_wpTitle) _wpTitle.textContent = WP_MODES.examples.title;
+                    return true;
+                }
+                _openWpMode('examples');
+                return true;
+            };
             function _wpClearTriggers() {
                 [wpTrigger, scTrigger, ssTrigger].forEach(function (t) { if (t) t.classList.remove('is-active'); });
             }
@@ -25212,7 +25273,9 @@
                 _anchorRailPanel(wpPanel, _wpTriggerFor(mode));
                 wpPanel.classList.add('swml-resources-open');
                 _wpClearTriggers();
-                const t = _wpTriggerFor(mode);
+                // v7.20.406: an `anchorOnly` mode borrows a rail button for POSITION only — it must
+                // not light it up, or the student sees Story Spine active while reading examples.
+                const t = cfg.anchorOnly ? null : _wpTriggerFor(mode);
                 if (t) t.classList.add('is-active');
                 // mutually exclusive with the other two rail panels
                 if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
@@ -34053,6 +34116,44 @@
                         labelEl.className = 'swml-outline-criterion-label';
                         labelEl.textContent = crit.label;
                         criteriaEl.appendChild(labelEl);
+                    }
+
+                    // ⭐⭐ v7.20.406 (FIXLIST #201, Neil's own design) — EXAMPLES, FROM THE ROW.
+                    // *"if I wanna go back and I wanna edit something, I need the examples in
+                    // there"* — revising a beat meant scrolling the whole chat back to find them.
+                    // The button sits under the label + tick, exactly where he pointed, and opens
+                    // the rail panel beside the document. NOT the chat: a re-served bubble pushed
+                    // into history replays out of order for ever (the .344/.345 defect he
+                    // correctly predicted when he asked *"will that mess up the order?"*).
+                    //
+                    // ⚠️ PM LAW (the v7.19.866 freeze class): this is built INSIDE the NodeView's
+                    // own render, into `criteriaEl` — the contentEditable=false column, not the
+                    // `.swml-outline-row` wrapper and never a write from outside a transaction.
+                    // So the DOMObserver never sees a foreign mutation and cannot flush.
+                    //
+                    // Drawn ONLY where a concept actually resolves (CW6 beat rows). Every other
+                    // outline family — literature, language, para-AO — renders byte-identically to
+                    // before, because `_cw6ConceptFor` returns null for them.
+                    const _beatConcept = _cw6ConceptFor(crit.label, node.attrs.prompt);
+                    if (_beatConcept) {
+                        const egBtn = document.createElement('button');
+                        egBtn.type = 'button';
+                        egBtn.className = 'swml-outline-eg-btn';
+                        egBtn.setAttribute('contenteditable', 'false');
+                        const _n = 1 + ((_beatConcept.more || []).length);
+                        egBtn.title = _n + ' example' + (_n === 1 ? '' : 's') + ' for this beat';
+                        egBtn.innerHTML = (WML.icon('examples', 13) || '') + '<span>Examples</span>';
+                        egBtn.addEventListener('mousedown', function (e) { e.preventDefault(); });   // never steal the caret
+                        egBtn.addEventListener('click', function (e) {
+                            e.preventDefault(); e.stopPropagation();
+                            // Liveness (§4d): a button that silently does nothing is how a student
+                            // decides the page is broken. If the panel is not wired yet, say so.
+                            if (typeof _openBeatExamplesPanel === 'function' && _openBeatExamplesPanel(_beatConcept)) return;
+                            console.warn('WML beat examples: the rail panel is not wired yet — falling back to the technique card.');
+                            const t = (_beatConcept.tech || [])[0];
+                            try { if (t && window.SophiclyTable && window.SophiclyTable.open) window.SophiclyTable.open(t.s); } catch (_) {}
+                        });
+                        criteriaEl.appendChild(egBtn);
                     }
 
                     // \u2500\u2500 v7.20.129: MULTI-CONTROL ROWS \u2500\u2500
@@ -45175,6 +45276,77 @@
     // "Your story opens" is his own instruction: "that should actually just be 'the ordinary
     // world'". ⚠️ These labels are BAKED into a saved document, so they change for NEW
     // documents only; an existing outline keeps the labels it was built with until a heal runs.
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.406 — BEAT EXAMPLES, REACHABLE FROM THE DOCUMENT (FIXLIST #201, Neil's design)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Neil, revising his outline: *"I'm looking at my beats, and I'm thinking, oh, maybe I should
+    // change them. But it's quite a long journey to find the examples again… what if we were to
+    // have a button there for the examples?… because if it pops up in the chat, will that mess up
+    // the order of the messages?"*
+    //
+    // His worry is RIGHT and it is the v7.20.344/.345 scar: a re-serve pushed into
+    // `canvasChatHistory` replays for ever and accumulates out of order. So the examples do NOT go
+    // to the chat at all — they open in the RAIL PANEL beside the document, which has no
+    // transcript by construction. Nothing here can reorder anything.
+    //
+    // ⭐ ONE MATCHER. The walk resolved a beat's concept with its own closure-local `conceptFor`;
+    // a second copy here is exactly the drift CLAUDE.md #7 forbids, so that one now calls this.
+    // Score = the length of the substring actually matched, so a longer, more specific phrase
+    // beats a short generic one (the v7.20.391 fix — `/opening image/i` swallowing "expand on the
+    // opening image"). Ties keep array order.
+    function _cw6ConceptFor(label, prompt) {
+        const CM = window.WML_CW6_CONCEPTS;
+        if (!CM || !Array.isArray(CM.CONCEPTS)) return null;
+        const hay = (label || '') + ' — ' + (prompt || '');
+        let best = null, bestLen = -1;
+        for (let k = 0; k < CM.CONCEPTS.length; k++) {
+            const m = hay.match(CM.CONCEPTS[k].m);
+            if (!m) continue;
+            const len = (m[0] || '').length;
+            if (len > bestLen) { best = CM.CONCEPTS[k]; bestLen = len; }
+        }
+        return best;
+    }
+    // The panel body for one beat: what makes it strong, EVERY example it has (the one the ask
+    // showed inline + the rung-1 pool — #200: he ruled that more examples on demand is better),
+    // and its technique cards. Concept text is authored, but it is escaped anyway — an apostrophe
+    // in "protagonist's" must never be able to become markup.
+    function _cw6BeatHelpHTML(c) {
+        if (!c) return '';
+        const esc = (s) => String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        // The concept's own examples are markdown-ish (*Great Expectations:* …) — render the
+        // emphasis, nothing else, and only AFTER escaping.
+        const md = (s) => esc(s).replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        let html = '<div class="swml-wp-item"><div class="swml-wp-item-label">' + esc(c.name || 'This beat') + '</div>';
+        const crit = (c.crit || []);
+        if (crit.length) {
+            html += '<div class="swml-wp-item-text"><strong>A strong version of this beat:</strong><ul class="swml-beat-crit">'
+                + crit.map(function (b) { return '<li>' + md(b) + '</li>'; }).join('') + '</ul></div>';
+        }
+        html += '</div>';
+        const all = [].concat(c.ex ? [c.ex] : [], c.more || []);
+        if (all.length) {
+            html += '<div class="swml-wp-item"><div class="swml-wp-item-label">Examples ('
+                + all.length + ')</div><div class="swml-wp-item-text"><ul class="swml-beat-egs">'
+                + all.map(function (e) { return '<li>' + md(e) + '</li>'; }).join('') + '</ul></div></div>';
+        }
+        const tech = (c.tech || []);
+        if (tech.length) {
+            html += '<div class="swml-wp-item"><div class="swml-wp-item-label">Technique cards</div>'
+                + '<div class="swml-wp-item-text swml-beat-tech">'
+                + tech.map(function (t) {
+                    return '<button type="button" class="swml-beat-tech-btn" data-tech-sym="' + esc(t.s) + '">'
+                        + (WML.techIcon(t.s, 14) || '') + esc(t.l) + '</button>';
+                }).join('') + '</div></div>';
+        }
+        return html;
+    }
+    // Set by the panel-build block when the rail panel is wired (same hoist pattern as
+    // `resDetachBtn`). Null until then — every caller must tolerate that, because a document can
+    // render before the panel exists and a button that throws is worse than one that waits.
+    let _openBeatExamplesPanel = null;
+
     const CW6_FRAME_ROWS = {
         stage_arc: { id: 'stage_arc', label: 'Where this stage takes your protagonist', beatType: 'neutral', type: 'checkbox',
             prompt: 'How your protagonist ENTERS this stage — and how they are different when they LEAVE it' },

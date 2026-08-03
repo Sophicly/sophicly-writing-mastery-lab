@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.405';
+var WML_BUILD = '7.20.406';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3824,6 +3824,19 @@ window.WML = (function() {
         // This is one of the symbols that was falling back to the generic 🗂 — which is the emoji
         // Neil saw on the Imagery quick-action.
         tech_Im: { kind: 'line', vb: '0 0 24 24', src: 'neil-imagery.svg', body: '<path d="M3 16C4.40293 15.7662 6.63687 15.7073 8.94504 16.2427M8.94504 16.2427C11.5726 16.8522 14.2965 18.2317 16 21M8.94504 16.2427C10.8946 13.9852 14.5577 12 21 12H22M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM8.5 7C8 7 7 7.3 7 8.5C7 9.7 8 10 8.5 10C9 10 10 9.7 10 8.5C10 7.3 9 7 8.5 7Z" />' },
+        // v7.20.406 (Neil, #199 — Rising Action.svg, his own file). A FILLED drawing (the export
+        // sets `stroke-width:0`), so it rides the `filled` wrapper, not `line`. Path data and the
+        // 24 grid are VERBATIM — the flame is his, nothing redrawn. Keyed on the TABLE SYMBOL (Ra),
+        // like every other per-technique glyph, so retitling the card cannot orphan it. Ra is one
+        // of the symbols that was falling back to the generic 🗂 — that is the emoji he saw on the
+        // Rising Action quick-action. It appears on 5 beat rows across the archetypes.
+        // ⚠️ ONE FORCED CHANGE, STATED (CLAUDE.md #13), identical to the arrows below: his export
+        // paints through `<defs><style>.cls-1{fill:#000}</style></defs>`. A hardcoded black cannot
+        // inherit, so it would sit invisible on the dark rail and on the purple chips (#88/#114),
+        // and an inlined `<style>` puts `.cls-1` into the GLOBAL stylesheet where it collides with
+        // every other Illustrator export using that default class name. The rule is dropped and the
+        // path takes the wrapper's currentColor.
+        tech_Ra: { kind: 'filled', vb: '0 0 24 24', src: 'neil-rising-action.svg', body: '<path d="M19.98,12.82c-.17-1.81-.69-3.51-1.54-5.06-1.5-2.73-3.65-4.33-5.19-5.2-.19-.11-.43-.08-.59.07-.16.15-.2.39-.11.58.12.25,1.14,2.48.01,4.54-.25.46-.58.87-.98,1.22-.11.1-.26.14-.41.11-.15-.03-.28-.13-.35-.26-.15-.3-.26-.61-.33-.93-.13-.58-.13-1.2,0-1.78.04-.18-.02-.37-.17-.49-.14-.12-.34-.15-.51-.08-.88.36-3.85,1.81-5.27,5.27l-.04.11c-.86,2.16-.68,4.58.49,6.64,1.16,2.05,3.14,3.44,5.42,3.81.53.09,1.07.13,1.6.13.58,0,1.11-.06,1.46-.12,4.05-.62,6.91-4.38,6.52-8.56ZM13.31,20.39c-.61.09-1.78.15-2.75-.01-.79-.13-1.54-.41-2.22-.8-.34-.57-.75-1.47-.83-2.62-.09-1.19.19-2.19.51-2.91.47.8,1.01,1.56,1.61,2.27.62.74,1.32,1.44,2.06,2.06.14.12.34.15.52.08.17-.07.29-.24.31-.42.05-.69.26-1.72.92-2.77.38-.6.87-1.13,1.44-1.56.28.46.5.95.66,1.45.57,1.74.37,3.35.07,4.42-.69.4-1.46.68-2.29.81ZM16.8,18.7c.15-1.09.15-2.43-.32-3.86-.25-.75-.61-1.47-1.06-2.13-.15-.22-.45-.28-.68-.14-.86.55-1.61,1.29-2.15,2.15-.51.8-.79,1.6-.94,2.28-.45-.42-.87-.87-1.26-1.33-.75-.89-1.4-1.87-1.94-2.91-.08-.16-.24-.26-.42-.27-.18-.02-.35.08-.44.23-.47.75-1.23,2.3-1.07,4.3.03.45.12.86.22,1.24-.33-.37-.62-.77-.88-1.22-1.02-1.79-1.17-3.9-.43-5.78l.04-.1c.98-2.39,2.79-3.71,3.93-4.34-.01.42.03.85.12,1.26.09.4.23.79.41,1.16.21.42.59.71,1.05.8.46.09.92-.03,1.26-.34.49-.43.9-.94,1.2-1.5.81-1.48.73-2.99.49-4.06,1.23.87,2.6,2.18,3.64,4.06.79,1.43,1.27,3,1.42,4.67.21,2.25-.66,4.37-2.19,5.78Z"/>' },
         // ── NEIL'S ARROWS (#177, his own files, 2026-08-02). FOUR rows, because he asked to see the
         // decision rather than have it made for him: *"whether we want the square borders around the
         // outside or if we wanna minimize it… what do you think?"*

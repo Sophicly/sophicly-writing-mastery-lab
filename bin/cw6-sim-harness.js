@@ -90,6 +90,13 @@ function sliceFn(name) {
 const _cw6RowFieldId = new Function('return ' + sliceFn('_cw6RowFieldId').replace(/^function\s+\w+/, 'function') + ';')();
 // eslint-disable-next-line no-new-func
 const _cw6FrameRowsFor = new Function('return ' + sliceFn('_cw6FrameRowsFor').replace(/^function\s+\w+/, 'function') + ';')();
+// v7.20.406: the concept matcher moved to MODULE scope so the document's per-beat Examples
+// button (#201) resolves a row exactly as the walk does. Sliced, not re-typed — a divergent copy
+// here would hide the very drift that having one matcher exists to prevent. It reads
+// `window.WML_CW6_CONCEPTS`, so it is built with the sandbox's window bound in.
+const _cw6ConceptForSrc = sliceFn('_cw6ConceptFor').replace(/^function\s+\w+/, 'function');
+// eslint-disable-next-line no-new-func
+const _cw6ConceptForFactory = new Function('window', 'return ' + _cw6ConceptForSrc + ';');
 
 // The controller itself.
 const ctlIdx = src.indexOf('const _cwOutlineCtl = (function () {');
@@ -193,6 +200,8 @@ function makeWorld(archKey, opts) {
         CW6_FRAME_ROWS: CW6_FRAME_ROWS,
         _cw6FrameRowsFor: _cw6FrameRowsFor,
         _cw6RowFieldId: _cw6RowFieldId,
+        // v7.20.406 — the REAL module-scope matcher, bound to this world's window.
+        _cw6ConceptFor: _cw6ConceptForFactory({ WML_CW6_CONCEPTS: conceptsSandbox.window.WML_CW6_CONCEPTS }),
         detectBuiltPlotSlug: function () { return archKey; },
         resolvePlotStructureSlug: function (v) { return v; },
         // ── paced chunks: the sim taps Continue instantly ──
@@ -684,13 +693,32 @@ await (async function moreExamples() {
     ok(w.chips().some(function (b) { return /More examples/.test(String(b.textContent)); }),
         'more-examples: no ask in the first 40 offered the rung at all — the ladder is not reachable');
 
+    // ⭐ v7.20.406 (FIXLIST #200; PEDAGOGY §27) — ONE EXAMPLE PER TAP. Neil overruled the
+    // "more examples is the wrong lever" recommendation from his own live run: *"having the
+    // example button there… was very, very helpful… I think having more is actually better."*
+    // The rung used to spend its whole pool on the first tap and retire, so the help he valued
+    // lasted exactly one press. It now survives until the pool is genuinely empty — which is
+    // still his .373 rule, reached in three taps instead of one.
     const before = w.bubbles.length;
     ok(w.tap('More examples'), 'more-examples: the chip did not fire');
     const served = w.bubbles[w.bubbles.length - 1];
     ok(w.bubbles.length === before + 1, 'more-examples: the tap did not put exactly one bubble on screen');
-    ok(/More examples —/.test(served), 'more-examples: the tap served something other than the examples');
+    ok(/Another example —/.test(served), 'more-examples: the tap served something other than an example');
+    ok((served.match(/\n- /g) || []).length === 1,
+        'more-examples: the tap served the WHOLE pool at once — one per tap is the ruling (#200)');
+    ok(w.chips().some(function (b) { return /More examples/.test(String(b.textContent)); }),
+        'more-examples: the rung retired after ONE tap while examples remained — that is the '
+        + 'behaviour Neil overruled (PEDAGOGY §27)');
 
-    // THE DEFECT: the rung must be gone once its pool is spent.
+    // Drain the pool: the rung must survive until it is genuinely empty, then retire.
+    let taps = 1;
+    while (taps < 10 && w.chips().some(function (b) { return /More examples/.test(String(b.textContent)); })) {
+        if (!w.tap('More examples')) break;
+        taps++;
+    }
+    ok(taps === 3, 'more-examples: expected the pool to last exactly 3 taps (MORE_CAP), got ' + taps);
+    // THE ORIGINAL DEFECT, still guarded: once spent, the rung is gone — Neil's .373 words were
+    // "once the three are done, that quick action button just disappears".
     ok(!w.chips().some(function (b) { return /More examples/.test(String(b.textContent)); }),
         'more-examples: the chip is STILL offered after its pool was spent — this is exactly the '
         + 'three-identical-bubbles defect Neil hit');

@@ -398,5 +398,66 @@ if (!fs.existsSync(guidePath)) {
     }
 }
 
+// ── ⭐⭐ v7.20.406 (FIXLIST #201) — BEAT EXAMPLES ARE REACHABLE FROM THE DOCUMENT ────────────
+// Neil, revising his outline: *"it's quite a long journey to find the examples again… what if we
+// were to have a button there for the examples?"* — with the sharp follow-up *"if it pops up in
+// the chat, will that mess up the order of the messages?"*, which is the v7.20.344/.345 fossil
+// defect he correctly predicted. So the contract has THREE parts and each is asserted:
+//   1. the row button EXISTS and resolves its beat through the ONE canonical matcher;
+//   2. it opens the RAIL PANEL, never the chat — nothing may push a bubble into history;
+//   3. PM LAW (the v7.19.866 freeze class): it is built into the NodeView's own read-only
+//      `criteriaEl`, never appended to the `.swml-outline-row` wrapper from outside.
+{
+    const NV = assessSrc.slice(assessSrc.indexOf('const OutlineRow = Node.create({'));
+    const nvBody = NV.slice(0, NV.indexOf('\n        });'));
+
+    if (!/swml-outline-eg-btn/.test(nvBody)) {
+        bad('the per-beat Examples button is gone from the OutlineRow NodeView — revising a beat means '
+            + 'scrolling the whole chat back for its examples again (#201).');
+    } else {
+        ok('the per-beat Examples button is rendered by the OutlineRow NodeView');
+    }
+    if (!/const _beatConcept = _cw6ConceptFor\(/.test(nvBody)) {
+        bad('the Examples button no longer resolves its concept through _cw6ConceptFor — a second '
+            + 'matcher means a beat can show one concept in the chat and another in the panel (CLAUDE.md #7).');
+    } else {
+        ok('the row button and the walk share ONE concept matcher');
+    }
+    // PM LAW. The button must be appended to criteriaEl (contentEditable=false, inside the
+    // NodeView's own render); appending it to `dom` is a foreign mutation on the NodeView wrapper
+    // and that is the compounding-remount freeze.
+    if (/dom\.appendChild\(egBtn\)/.test(nvBody) || !/criteriaEl\.appendChild\(egBtn\)/.test(nvBody)) {
+        bad('the Examples button is not appended to criteriaEl — a write onto the NodeView wrapper is the '
+            + 'v7.19.866 DOMObserver-flush freeze class.');
+    } else {
+        ok('the Examples button is built into the row’s read-only column (PM-safe by construction)');
+    }
+    // It must open the PANEL. If this ever routes through a walk bubble, the transcript can
+    // reorder — the exact thing Neil asked about.
+    if (!/_openBeatExamplesPanel\(_beatConcept\)/.test(nvBody)) {
+        bad('the Examples button does not open the rail panel — if it serves into the chat instead, a '
+            + 'stored re-serve replays out of order for ever (the .344/.345 defect).');
+    } else {
+        ok('the Examples button opens the rail panel, so it cannot touch the transcript');
+    }
+    if (/aiBubble|canvasChatHistory|recordTurn/.test(nvBody.slice(nvBody.indexOf('swml-outline-eg-btn')))) {
+        bad('the Examples button path touches the chat transcript — it must never write a turn.');
+    }
+    // And the panel mode it opens has to exist, with a loader.
+    if (!/examples:\s*\{\s*title: 'Beat examples'/.test(assessSrc) || !/_cw6BeatHelpHTML\(_wpBeatConcept\)/.test(assessSrc)) {
+        bad('the "examples" rail-panel mode or its loader is missing — the button would open an empty shell.');
+    } else {
+        ok('the Beat examples panel mode is registered and loads the beat’s own content');
+    }
+    // Every concept the button can surface must actually HAVE something to show (it renders
+    // criteria + examples + technique cards; a concept with none would open a blank panel).
+    const thin = MAP.CONCEPTS.filter(c => !(c.crit || []).length && !c.ex && !(c.more || []).length);
+    if (thin.length) {
+        bad(thin.length + ' concept(s) would open an EMPTY examples panel: ' + thin.map(c => c.id).join(', '));
+    } else {
+        ok('all ' + MAP.CONCEPTS.length + ' concepts have criteria/examples for the panel to show');
+    }
+}
+
 if (fail) { console.error('\ncw6-outline-harness FAILED'); process.exit(1); }
 console.log('✅ cw6-outline-harness passed.');
