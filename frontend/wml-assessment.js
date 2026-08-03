@@ -20958,6 +20958,37 @@
             // v7.20.408: takes the archetype key, so a beat that exists in only one plot structure
             // can be scoped to it (`arch:` on the concept) instead of a shared concept claiming it.
             function conceptFor(label, prompt, archetypeKey) { return _cw6ConceptFor(label, prompt, archetypeKey); }
+            // ⭐⭐ v7.20.409 — THE WHY, IN THE ASK (Neil: "put the why in the panels. I think the
+            // chat as well"). Same content as the rail panel, same safety rules, ONE line.
+            //
+            // ⚠️ WHY IT IS FRAMED AND NOT SIMPLY PRINTED. Neil caught this before it shipped: *"The
+            // student cannot write 'so the redemption lands'. It needs to be shown and not told in
+            // the actual writing."* A bare purpose line above an empty box gets typed INTO the box,
+            // or turns into tell-y prose ("this shows he will be redeemed"). So the label states who
+            // it is for, and the show-don't-tell instruction rides with it EVERY time — never one
+            // without the other, and never merged into the criteria the student is working to.
+            //
+            // ⚠️ §4b LENGTH. The ask is already at its budget: ONE line, between the header and the
+            // criteria (motivation before criteria, matching the panel). Never a paragraph, and the
+            // concrete action at the end of the ask never refers back to it (§4c.4).
+            //
+            // ⚠️ SCOPE — this lives HERE, beside `conceptFor`, and not at module scope. It was
+            // written at module scope first and `bin/cw6-sim-harness.js` threw
+            // `_cw6WhyLine is not defined`: the sim runs the REAL sliced controller, so a helper
+            // outside the slice does not exist for it. That is the pre-ship gate doing its job
+            // (WML CLAUDE.md §0 — `node --check` cannot see this class, the sim can).
+            //
+            // Archetype comes from `walkArch`, set by buildAsks — `whyBy` differs in tragedy, whose
+            // rise beats exist to set up a fall.
+            function whyLineFor(c) {
+                if (!c || !c.why) return '';
+                const over = (walkArch && c.whyBy && c.whyBy[walkArch]) || '';
+                return '*Why this beat exists — for you, not for the page:* ' + (over || c.why)
+                    + '. **Show it. Never say it.**\n\n';
+            }
+            // The structure this walk is running, captured when the ask list is built. The ask
+            // composer needs it for `whyBy`, and buildAsks is the one place it is authoritative.
+            let walkArch = null;
             // ⭐⭐ v7.20.405 — THE THREE-TURN STAGE OPENING (FIXLIST #193; Fable audit ruling A).
             // ONE ASK = ONE ROW is law: the old compound arc ask ("tell me both…") filed both
             // halves into `stage_arc` while the closing-bookend row stayed empty — Neil predicted
@@ -20979,6 +21010,7 @@
             // lesson: a position is not an identity, and this reorder is exactly the change that
             // would have silently broken every positional read.
             function buildAsks(k) {
+                walkArch = k || null;   // v7.20.409: the ask composer needs it for `whyBy`
                 const arch = OUTLINE_CRITERIA.cwPlotArchetypes[k];
                 ASKS = []; stages = [];
                 if (!arch || !Array.isArray(arch.sections)) return;
@@ -21316,7 +21348,8 @@
                     out += '**Where ' + s.name + ' ' + (isOpen ? 'opens' : 'ends') + '**\n\n';
                     const p = (a.prompt || '').trim();
                     if (p && p.replace(/[.…]$/, '').toLowerCase() !== (a.label || '').replace(/[.…]$/, '').toLowerCase()) out += p + '\n\n';
-                    out += '**A strong version of this beat:**\n\n'
+                    out += whyLineFor(c)
+                        + '**A strong version of this beat:**\n\n'
                         + ((c && c.crit) || GENERIC_CRIT).map(function (b) { return '- ' + b; }).join('\n') + '\n\n'
                         + 'Example: ' + ((c && c.ex) || s.ex) + '\n\n'
                         + '**What happens in YOUR story that ' + (isOpen ? 'opens this stage' : 'brings your protagonist to that point') + '? One or two sentences.**';
@@ -21330,7 +21363,8 @@
                 // The template's own prompt, when it says more than the label already did.
                 const p = (a.prompt || '').trim();
                 if (p && p.replace(/[.…]$/, '').toLowerCase() !== (a.label || '').replace(/[.…]$/, '').toLowerCase()) out += p + '\n\n';
-                out += '**A strong version of this beat:**\n\n'
+                out += whyLineFor(c)
+                    + '**A strong version of this beat:**\n\n'
                     + ((c && c.crit) || GENERIC_CRIT).map(function (b) { return '- ' + b; }).join('\n') + '\n\n'
                     + 'Example: ' + ((c && c.ex) || s.ex) + '\n\n';
                 // The symbolic nudge — Neil ruling 2026-07-25: image / symbol / turning-point beats
