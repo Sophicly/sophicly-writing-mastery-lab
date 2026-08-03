@@ -14193,3 +14193,59 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     transform: translateY(-1px);
 }
 .swml-beat-find-btn:active { transform: translateY(1px); }
+
+/* ══ v7.20.414 — TEACHING FIGURES. The Step-7 virtue scale ═══════════════════════════════
+   Neil's own graphic, recreated in CSS rather than shipped as an image: the canvas schema has
+   no image node, so an <img> would be stripped on parse and render as nothing at all.
+   The band labels are real text children of the node — if this file ever fails to load, the
+   student still reads Excess / Balance / Deficit rather than seeing an empty rectangle.
+   The black frame and the red→yellow→green→yellow→red gradient are HIS design, kept as drawn
+   (this is one deliberate exception to the house "no heavy borders" default — it is a
+   diagram of a scale, not a UI surface, and the frame is what makes it read as one). */
+.swml-figure-virtue-scale {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 22px 0 6px;
+    padding: 18px 12px;
+    min-height: 190px;
+    border: 9px solid #000;
+    border-radius: 3px;
+    background: linear-gradient(
+        to bottom,
+        #d8391c 0%,
+        #ef7f20 11%,
+        #f3d029 21%,
+        #f5e53a 28%,
+        #57a838 37%,
+        #3f8f2c 46%,
+        #3f8f2c 54%,
+        #57a838 63%,
+        #f5e53a 72%,
+        #f3d029 79%,
+        #ef7f20 89%,
+        #d8391c 100%
+    );
+    /* A student cannot type into it or part-delete it — `atom: true` on the node — so it must
+       not look like an editable surface either. */
+    cursor: default;
+    user-select: none;
+}
+.swml-vs-band {
+    display: block;
+    text-align: center;
+    color: #fff;
+    font-weight: 500;
+    font-size: 26px;
+    line-height: 1.25;
+    letter-spacing: 0.2px;
+    /* The white sits on yellow at the mid-points of the gradient, where contrast is weakest.
+       A soft dark shadow keeps it legible there without darkening Neil's colours. */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+.swml-vs-balance { font-size: 28px; }
+@media (max-width: 900px) {
+    .swml-figure-virtue-scale { min-height: 150px; border-width: 6px; padding: 14px 10px; }
+    .swml-vs-band { font-size: 19px; }
+    .swml-vs-balance { font-size: 20px; }
+}

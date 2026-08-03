@@ -33161,6 +33161,62 @@
             },
         });
 
+        // ⭐ v7.20.414 — SWML FIGURE: a taught-to-the-schema teaching graphic.
+        //
+        // Neil, on the Step-7 document: *"the only thing it's missing is a graphic… I made this
+        // little graphic for the students… you'd probably put it at the end of section one."*
+        //
+        // ⚠️ WHY THIS IS A NODE AND NOT AN <img>, AND WHY THAT IS NOT OVER-ENGINEERING.
+        // The canvas has NO image support: StarterKit is configured without an Image node and the
+        // bundled Tiptap build ships none, so an `<img>` is dropped on parse. So is a styled
+        // `<div>` — the same stripping that collapsed the v440 "card" into run-together text (see
+        // buildCWPlotOutlineSection's note). Either one would have LOOKED right in the template
+        // string and rendered as nothing in the document, which is the worst possible failure
+        // shape: silent. The FbGlyph mold is the established answer — teach the schema the node,
+        // and it survives both insertion and the save→reload round trip.
+        //
+        // Drawn in CSS (.swml-figure-virtue-scale), so it is resolution-independent, needs no
+        // asset request, adds no bytes to every student's saved document, and re-themes with the
+        // canvas. The three band labels are REAL TEXT children, not pseudo-element content: if the
+        // stylesheet ever fails to load the student still reads Excess / Balance / Deficit.
+        // `atom: true` ⇒ the student cannot type inside it or half-delete it.
+        const SwmlFigure = Node.create({
+            name: 'swmlFigure',
+            group: 'block',
+            atom: true,
+            selectable: false,
+            draggable: false,
+            addAttributes() {
+                return {
+                    kind: {
+                        default: 'virtue-scale',
+                        parseHTML: el => el.getAttribute('data-swml-figure') || 'virtue-scale',
+                        renderHTML: attrs => ({ 'data-swml-figure': attrs.kind }),
+                    },
+                };
+            },
+            parseHTML() { return [{ tag: 'div[data-swml-figure]' }]; },
+            renderHTML({ HTMLAttributes }) {
+                const kind = HTMLAttributes['data-swml-figure'] || 'virtue-scale';
+                if (kind !== 'virtue-scale') {
+                    // Fail loud rather than draw a blank box: an unknown kind means someone added a
+                    // figure and forgot the CSS, and an empty rectangle reads as a broken page.
+                    console.warn('WML figure: unknown kind "' + kind + '" — nothing will be drawn.');
+                    return ['div', { 'data-swml-figure': kind, class: 'swml-figure' }];
+                }
+                return ['div', {
+                    'data-swml-figure': kind,
+                    class: 'swml-figure swml-figure-virtue-scale',
+                    role: 'img',
+                    'aria-label': 'A scale showing a virtue in excess at the top, in balance in the middle, and in deficit at the bottom',
+                },
+                    ['span', { class: 'swml-vs-band swml-vs-excess' }, '+++ Virtue in Excess +++'],
+                    ['span', { class: 'swml-vs-band swml-vs-balance' }, 'Virtue in Balance'],
+                    ['span', { class: 'swml-vs-band swml-vs-deficit' }, '--- Virtue in Deficit ---'],
+                ];
+            },
+        });
+
         // v7.19.949 (Neil ruling 2026-07-08): in-CONTEXT Fix→Learn chip — an inline atom node
         // at the END of the penalty line it belongs to (the FbGlyph mold: taught to the schema,
         // so it survives insertion AND the save→reload round-trip; v948's box-bottom rows are
@@ -36518,6 +36574,7 @@
                 SelectField,
                 ClozeCheck,
                 FbGlyph, // v7.19.898: feedback status-badge inline node (SVG in cards)
+                SwmlFigure, // v7.20.414: teaching graphics (the Step-7 virtue scale) — the canvas has no image node
                 LearnChip, // v7.19.949: in-context Fix→Learn chip inline node (penalty lines)
                 // v7.14.76: PaginationPlus DISABLED — continuous scroll mode.
                 // Eliminates scroll-jump bugs, criteria splitting across page breaks,
@@ -37655,6 +37712,49 @@
             }
         };
 
+        // ⭐ v7.20.414 — the virtue-scale graphic, into a document that already has rows.
+        //
+        // ⚠️ WHY THIS IS A SEPARATE HEAL AND NOT ANOTHER TRIGGER ON THE ONE ABOVE. That heal
+        // REBUILDS the document from the template. It is safe only because it fires when there
+        // are no rows at all, so there is nothing but boilerplate to lose. A document saved under
+        // v7.20.413 has real rows — ticks, states, a student's explanations — and rebuilding it to
+        // add a picture would destroy all of it. So this one INSERTS, by transaction, and touches
+        // nothing else.
+        const tryHealCwStep7Figure = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 7) return;
+            try {
+                if (canvasEditor.getHTML().indexOf('data-swml-figure') !== -1) return;   // already has it
+                // Anchor: the END of "About This Step" — where Neil asked for it. Find that
+                // section and insert at its last position, never at a guessed offset.
+                let secPos = null, secNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (secPos !== null) return false;
+                    if (node.type && node.type.name === 'sectionBlock'
+                        && node.attrs && node.attrs.label === 'About This Step') { secPos = pos; secNode = node; return false; }
+                    return true;
+                });
+                if (secPos === null) {
+                    console.warn('WML CW7: the figure heal found no "About This Step" section — leaving the document alone.');
+                    return;
+                }
+                const at = secPos + secNode.nodeSize - 1;   // just inside the section's closing token
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt(at, figureHTML('virtue-scale')); }
+                finally { _migrationActive = false; }
+                // A heal must verify its own work — the v7.20.370 lesson: the section guard can
+                // revert a transaction and a heal that counts INSERTS ISSUED reports success anyway.
+                if (canvasEditor.getHTML().indexOf('data-swml-figure') === -1) {
+                    console.warn('WML CW7: the virtue-scale insert did not survive — the document was left unchanged.');
+                    return;
+                }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW7: inserted the virtue-scale figure into an existing Step-7 document.');
+            } catch (e) {
+                console.warn('WML CW7: figure heal failed (non-fatal) —', e && e.message);
+            }
+        };
+
         const tryHealCwStep6DropAnchors = async () => {
             if (!isCwTask || !canvasEditor || cwStepDef?.step !== 6) return;
             try {
@@ -38300,7 +38400,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -41553,7 +41653,9 @@
                 '<h2>Step 7: Universal Human Values</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Mentor reveals the Universal Constants \u2014 the deep values that drive all human stories.</p>' +
                 '<p>Psychologists Christopher Peterson and Martin Seligman spent three years studying what makes us fundamentally human. Their research spanned 40 cultures, involved 55 scientists, and drew on 2,500 years of religious and philosophical thought. What they discovered was striking: across every culture, era, and belief system, <strong>six core moral values remain constant</strong>.</p>' +
-                '<p>Every heroic character is on a journey to embody these values. Before their journey begins, they might possess some of these traits but lack others. The story shows them developing what they lack \u2014 or, in a negative transformation, losing what they once had.</p>'
+                '<p>Every heroic character is on a journey to embody these values. Before their journey begins, they might possess some of these traits but lack others. The story shows them developing what they lack \u2014 or, in a negative transformation, losing what they once had.</p>' +
+                // Neil's own graphic, at the end of section one exactly where he asked for it.
+                figureHTML('virtue-scale')
             );
             // The Six Values table
             html += dividerHTML('THE SIX UNIVERSAL HUMAN VALUES');
@@ -43571,6 +43673,13 @@
             }
         }
         return `<div data-section-type="${type}" data-section-label="${label}" data-editable="${editable !== false}"${ro}${part}${extra} class="swml-section-block swml-section-${type}${roClass}">${innerHTML}</div>`;
+    }
+
+    // v7.20.414 — the ONE producer for a teaching graphic. Everything the schema needs is the
+    // data attribute; the classes are re-derived by the node's own renderHTML on every load, so a
+    // saved document cannot drift from the current styling.
+    function figureHTML(kind) {
+        return `<div data-swml-figure="${escapeHTML(kind)}"></div>`;
     }
 
     function dividerHTML(label, extraDataAttrs) {
@@ -45932,11 +46041,17 @@
     // 2. The paper gives each value THREE explanation boxes (one per column), so a full table
     //    carries 18 boxes of which a student fills at most six. One box per value, per point in
     //    the story — which is Neil's "little area to make a comment / add quotes".
-    // 3. `optional: true` on every value row. A story that seriously tests all six values tests
-    //    none of them properly, and the workbook itself says "tick the value(S) your story
-    //    explores" — so an untouched row must not leave the document permanently incomplete.
-    //    Started ⇒ finish it: the moment a row has text its controls are required like any other
-    //    (the v7.20.130 rule, reused — not a new one).
+    // 3. ⛔ THE ONE I GOT WRONG, and the correction is Neil's (v7.20.414). I shipped .413 with
+    //    `optional: true` on every value row, reasoning that a student exploring two values should
+    //    not sit below 100%. But `optional` means *an EMPTY row is satisfied* — so six untouched
+    //    rows satisfied the section and it drew its green tick the moment the page opened. Neil
+    //    caught it on the first test: *"it's ticked off… but I haven't even touched it."* The
+    //    completion rule was behaving exactly as documented; the row was DECLARED wrong.
+    //    His ruling, which is now the spec: **every one of the six values must be completed** —
+    //    at least one TRAIT ticked, one of balance / excess / deficit chosen, and an explanation
+    //    written. A value in deficit is a real answer, so all six are always answerable.
+    //    (Lesson worth keeping: `optional: true` is for a row a student may legitimately never
+    //    reach — a fourth IUMVCC point. It is NOT a way to keep a progress number tidy.)
     //
     // Everything else is the workbook: its two tables in its order, its six values, its exact
     // character strengths, its reflection questions.
@@ -45944,13 +46059,16 @@
     // NO WALK, NO CHAT, NO API. Step 7 stays `tier: 'workbook'` (`panels.chat === false`), which
     // is the bare environment Neil asked for. These are plain document rows a student fills by
     // hand — the reason this step needed no controller, no sim and no round trip.
+    // `traits` is Neil's word for them and therefore the students' (2026-08-03: *"they're called
+    // traits, by the way — so I think you should put them in there"*). Peterson & Seligman call
+    // them character strengths; the protocol notes both, the student only ever sees "traits".
     const CW7_VALUES = [
-        { id: 'wisdom', name: 'Wisdom and Knowledge', strengths: ['creativity', 'curiosity', 'open-mindedness', 'love of learning'] },
-        { id: 'courage', name: 'Courage', strengths: ['bravery', 'persistence', 'integrity', 'vitality'] },
-        { id: 'humanity', name: 'Humanity', strengths: ['love', 'kindness', 'social intelligence'] },
-        { id: 'justice', name: 'Justice', strengths: ['citizenship', 'fairness', 'leadership'] },
-        { id: 'temperance', name: 'Temperance', strengths: ['forgiveness/mercy', 'humility/modesty', 'prudence', 'self-regulation'] },
-        { id: 'transcendence', name: 'Transcendence', strengths: ['appreciation of beauty and excellence', 'gratitude', 'hope', 'humour', 'spirituality'] },
+        { id: 'wisdom', name: 'Wisdom and Knowledge', traits: ['creativity', 'curiosity', 'open-mindedness', 'love of learning'] },
+        { id: 'courage', name: 'Courage', traits: ['bravery', 'persistence', 'integrity', 'vitality'] },
+        { id: 'humanity', name: 'Humanity', traits: ['love', 'kindness', 'social intelligence'] },
+        { id: 'justice', name: 'Justice', traits: ['citizenship', 'fairness', 'leadership'] },
+        { id: 'temperance', name: 'Temperance', traits: ['forgiveness/mercy', 'humility/modesty', 'prudence', 'self-regulation'] },
+        { id: 'transcendence', name: 'Transcendence', traits: ['appreciation of beauty and excellence', 'gratitude', 'hope', 'humour', 'spirituality'] },
     ];
     const CW7_STATES = ['In balance', 'In excess', 'In deficit'];
 
@@ -45975,18 +46093,18 @@
             rows += outlineRowHTML({
                 id: v.id,
                 label: v.name,
-                optional: true,
                 prompt: 'Explanation / quotes — how does your story show this?',
                 controls: [
-                    { id: 'strengths', label: 'Which of these does your story explore?', type: 'checklist', choice: true, items: v.strengths },
+                    { id: 'traits', label: 'Which of these traits does your story explore?', type: 'checklist', choice: true, items: v.traits },
                     { id: 'state', label: 'Is it…', type: 'checklist', choice: true, items: CW7_STATES },
                 ],
             }, _cw7RowFieldId(when, v.id));
         });
         return sectionHTML('plan', label, true, null,
             '<h3>Your Protagonist’s Values ' + (isBegin ? 'at the Beginning' : 'at the End') + '</h3>' +
-            '<p><em>Tick only the values your story actually explores ' + moment + ' — two or three, honestly done, beat all six ticked lightly. ' +
-            'For each one you tick, say whether the virtue is in balance, in excess or in deficit, then explain it in your own words or with a quote.</em></p>' +
+            '<p><em>Work through all six values ' + moment + '. For each one: tick at least one trait, say whether that virtue is ' +
+            'in balance, in excess or in deficit, and explain it in your own words or with a quote. ' +
+            'A value your protagonist barely has is not a blank — it is in deficit, and that is often the most interesting answer.</em></p>' +
             rows
         );
     }

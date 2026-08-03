@@ -16,18 +16,22 @@
  *      ([[feedback_a_check_that_duplicates_its_subject_is_not_a_check]]), so the source document
  *      is the authority and a silent edit to the strengths list fails here.
  *   C. The three states are the workbook's three columns — Balance / Excess / Deficit.
- *   D. COMPLETION BEHAVIOUR, through the real `WML.outlineRow` rule, not a restatement of it:
- *        · an untouched value row is satisfied     (`optional: true` — a story explores two or
- *          three values, so ten empty rows must not hold the document below 100% for ever)
- *        · a row with text but nothing ticked is NOT satisfied  (started ⇒ finish it)
- *        · a row with text + one strength + one state IS satisfied
- *      Without D this gate would prove the HTML exists and nothing about how it behaves.
+ *   D. COMPLETION BEHAVIOUR, through the real `WML.outlineRow` rule, not a restatement of it.
+ *      Neil's ruling (2026-08-03), after v7.20.413 ticked a section he had never touched:
+ *      **all six values are required**, and one value is complete when it has at least one TRAIT,
+ *      one of balance/excess/deficit, and an explanation. So:
+ *        · an untouched value row is NOT satisfied — and neither is a whole untouched section
+ *        · text with nothing ticked is NOT satisfied
+ *        · text + a state but no trait is NOT satisfied
+ *        · text + one trait + one state IS satisfied
+ *      Without D this gate would prove the HTML exists and nothing about how it behaves — which
+ *      is exactly how .413 shipped a section that ticked itself.
  *
  * PROVEN NON-VACUOUS — each check was made to fail before it was kept:
- *   · returned 5 rows            → A red
+ *   · returned 5 rows                     → A red
  *   · swapped 'curiosity' for 'nosiness'  → B red
- *   · dropped `optional: true`   → D red (untouched row reported incomplete)
- *   · dropped `choice: true`     → D red (one tick no longer satisfies a 4-item strengths list)
+ *   · re-added `optional: true`           → D red (the .413 defect, caught at row AND section level)
+ *   · dropped `choice: true`              → D red (one tick no longer satisfies a 4-item trait list)
  *
  * Usage: node bin/cw7-doc-gate.js
  */
@@ -164,8 +168,8 @@ const rowsOf = (html) => {
             when + ' ' + c.label + ': the state options are not Balance / Excess / Deficit');
         ok(ctlS.choice === true && ctlState.choice === true,
             when + ' ' + c.label + ': a control lost `choice: true` — a 4-item strengths list would then demand ALL four ticks');
-        ok(c.optional === true,
-            when + ' ' + c.label + ': lost `optional: true` — a story exploring two values would sit permanently incomplete');
+        ok(!c.optional,
+            when + ' ' + c.label + ': carries `optional` — that is the v7.20.413 defect, an empty row satisfies itself and the section ticks green untouched');
         ok(/quote|comment|explanation/i.test(r.prompt || ''),
             when + ' ' + c.label + ': the row has no explanation/quotes prompt — that box is the whole second half of the brief');
     });
@@ -183,15 +187,95 @@ const stateWith = (strengthIdx, stateIdx) => {
     if (stateIdx != null) st = outlineRow.withControlState(sample, st, sample.controls[1], { checked: [stateIdx] });
     return st;
 };
-ok(outlineRow.complete(sample, {}, false) === true,
-    'an UNTOUCHED value row must be satisfied — otherwise ten unexplored values hold the document below 100% for ever');
+// ⭐ THE REGRESSION Neil caught on v7.20.413, live: *"it's ticked off… but I haven't even touched
+// it."* Every value row carried `optional: true`, which means an EMPTY row is satisfied — so six
+// untouched rows satisfied the whole section and it drew its green tick on arrival. This is the
+// assertion that makes that unshippable, stated as the SECTION-level fact he actually saw, not
+// just the row-level one.
+ok(outlineRow.complete(sample, {}, false) === false,
+    'AN UNTOUCHED VALUE ROW MUST NOT BE SATISFIED — this is the v7.20.413 defect: `optional: true` ticked the section before the student did anything');
+const untouchedSection = rowsOf(sandbox.buildCW7ValuesSection('end'))
+    .map((r) => outlineRow.complete(r.crit, {}, false));
+ok(untouchedSection.every((c) => c === false),
+    'a whole UNTOUCHED "Values at End" section reports ' + untouchedSection.filter(Boolean).length
+    + '/6 rows complete — the green tick would appear before the student has touched it');
 ok(outlineRow.complete(sample, {}, true) === false,
     'a row with TEXT but nothing ticked must NOT be satisfied — started means finish it');
+ok(outlineRow.complete(sample, stateWith(null, 1), true) === false,
+    'text + a state but NO trait must NOT be satisfied — Neil: "they need to tick at least one trait"');
 ok(outlineRow.complete(sample, stateWith(0, null), true) === false,
     'text + a strength but no Balance/Excess/Deficit must NOT be satisfied — the state is the point of the table');
 ok(outlineRow.complete(sample, stateWith(0, 1), true) === true,
     'text + one strength + one state must be satisfied — one tick completes a `choice` control');
 ok(outlineRow.isMulti(sample) === true, 'the value row is not registering as a multi-control row — its state would not namespace by control id (§5d)');
+
+// ── E. the virtue-scale figure (v7.20.414) ─────────────────────────────────────────
+// The canvas has NO image node, so a figure that is not taught to the schema renders as
+// nothing at all — silently. These assertions are what stand between that and a student.
+const CSS = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-canvas.css'), 'utf8');
+
+ok(/const SwmlFigure = Node\.create\(\{/.test(SRC), 'the SwmlFigure node is gone — a data-swml-figure div would be stripped on parse and draw nothing');
+ok(/^\s*SwmlFigure,/m.test(SRC), 'SwmlFigure is not in the editor extensions list — an unregistered node is dropped from the document');
+ok(/parseHTML\(\) \{ return \[\{ tag: 'div\[data-swml-figure\]' \}\]; \}/.test(SRC),
+    'SwmlFigure lost its parseHTML — the figure would vanish on the first save→reload round trip');
+
+// Run the node's OWN spec — the real Node.create argument, with Node stubbed to hand it back.
+// Slicing the renderHTML body alone is fragile (its first `{` is the destructured parameter);
+// evaluating the whole declaration is both simpler and closer to what Tiptap actually does.
+let figured = null;
+try {
+    const spec = new Function('Node', 'return ' + sliceDecl(SRC, 'const SwmlFigure = Node.create({', '(', ')') + ';')
+        ({ create: (s) => s });
+    figured = spec.renderHTML({ HTMLAttributes: { 'data-swml-figure': 'virtue-scale' } });
+    ok(spec.atom === true && spec.selectable === false,
+        'the figure is no longer an unselectable atom — a student could type inside it or half-delete it');
+    ok(spec.group === 'block', 'the figure is not a block node — it would not sit as its own element in the document');
+} catch (e) { /* reported below */ }
+if (ok(!!figured, 'could not run SwmlFigure.renderHTML — the figure block of this gate is vacuous, fix the slice')) {
+    const flat = JSON.stringify(figured);
+    ok(/Virtue in Excess/.test(flat) && /Virtue in Balance/.test(flat) && /Virtue in Deficit/.test(flat),
+        'the three band labels are not real text in the rendered node — if the stylesheet fails the student sees an empty box');
+    ok(/swml-figure-virtue-scale/.test(flat), 'the rendered figure carries no swml-figure-virtue-scale class — the CSS could never reach it');
+    ok(/"role":"img"/.test(flat) && /aria-label/.test(flat), 'the figure has no accessible name');
+}
+
+ok(/\.swml-figure-virtue-scale\s*\{/.test(CSS), 'wml-canvas.css has no .swml-figure-virtue-scale rule — the figure would render as three lines of bare text');
+ok(/\.swml-vs-band\s*\{/.test(CSS), 'wml-canvas.css has no .swml-vs-band rule — the band labels would be unstyled');
+// The gradient carries the MEANING of the diagram: red at the extremes, green through the middle.
+// Assert that by reading the stops, not by matching one hex — a single-hex check passes happily
+// while another stop is recoloured (it survived exactly that mutation on its first run).
+(function checkGradient() {
+    const g = (CSS.match(/\.swml-figure-virtue-scale\s*\{[\s\S]*?background:\s*linear-gradient\(([\s\S]*?)\);/) || [])[1];
+    if (!ok(!!g, 'no linear-gradient on .swml-figure-virtue-scale — the scale would be a flat box')) return;
+    const stops = [];
+    const re = /#([0-9a-f]{6})\s+(\d+)%/gi;
+    let m;
+    while ((m = re.exec(g))) {
+        const h = m[1];
+        stops.push({
+            at: +m[2],
+            r: parseInt(h.slice(0, 2), 16), gr: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16),
+        });
+    }
+    if (!ok(stops.length >= 5, 'the gradient has ' + stops.length + ' colour stops — too few to read as a scale; this check has gone blind')) return;
+    const isGreen = (s) => s.gr > s.r && s.gr > s.b;
+    const isHot = (s) => s.r > s.gr && s.r > s.b;
+    const middle = stops.filter((s) => s.at >= 40 && s.at <= 60);
+    ok(middle.length > 0 && middle.every(isGreen),
+        'the middle of the virtue scale is not green — "Virtue in Balance" sits there, and the colour is what says it is the good place to be');
+    ok(isHot(stops[0]) && isHot(stops[stops.length - 1]),
+        'the top and bottom of the scale are not hot — Excess and Deficit read as warnings only because the extremes are red');
+})();
+ok(/figureHTML\('virtue-scale'\)/.test(SRC), 'the Step-7 template no longer emits the figure');
+
+// The two heals do DIFFERENT things on purpose, and getting that backwards destroys work.
+const figureHeal = sliceDecl(SRC, 'const tryHealCwStep7Figure = async () => {', '{', '}');
+ok(/insertContentAt\(/.test(figureHeal),
+    'the figure heal no longer inserts — it must add the figure to an existing document by transaction');
+ok(!/setContent\(/.test(figureHeal),
+    'THE FIGURE HEAL REBUILDS THE DOCUMENT. A v7.20.413 document already holds a student\'s ticks, states and explanations; rebuilding it to add a picture destroys all of them. It must INSERT.');
+ok(/tryHealCwStep7Values\(\)\)\.then\(\(\) => tryHealCwStep7Figure\(\)\)/.test(SRC),
+    'the two Step-7 heals are not both wired into the init chain, in order');
 
 console.log('\n' + (fail ? '❌ CW7 DOC GATE FAILED' : '✅ cw7-doc-gate passed')
     + '  — ' + asserts.pass + ' passed, ' + asserts.fail + ' failed');
