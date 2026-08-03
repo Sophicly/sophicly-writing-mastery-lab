@@ -70,7 +70,7 @@
         'fascination': {
             name: 'Stage III — Initial Fascination',
             job: 'your protagonist wavers between the old self and the new as complications gather — tested, and not yet winning cleanly',
-            ex: '*Stranger Things:* the danger widens, the adults disbelieve them, and it creeps closer to home.',
+            ex: '*Great Expectations:* in London Pip is neither the forge boy nor a gentleman — he is ashamed of Joe’s visit, and ashamed of being ashamed.',
             concepts: {
                 forWhat: "Your protagonist wavers between the old self and the new while the pressure gathers.",
                 seeing: "Tests they do not cleanly win. Old habits creeping back under stress. Complications widening beyond the first problem.",
@@ -137,7 +137,7 @@
                 'it carries the story’s central struggle and its TONE before a word of plot happens',
                 'it will be MIRRORED by your final image, so choose something you can show changed at the end',
             ],
-            ex: '*A Christmas Carol:* Scrooge alone in a freezing counting-house, refusing his clerk a second lump of coal — greed and cold in one picture.',
+            ex: '*A Christmas Carol:* Scrooge in his freezing counting-house, keeping the coal-box in his own room so his clerk cannot build up the fire — greed and cold in one picture.',
             more: [
                 '*Of Mice and Men:* two men walking a dusty road with everything they own on their backs — hope and homelessness together.',
                 '*Lord of the Flies:* a scar torn through the jungle by the crashed plane — paradise already damaged.',
@@ -207,9 +207,9 @@
                 'name what your protagonist LOSES if nothing changes — not death, but the death of something in them',
                 'make it concrete: a person, a chance, a version of themselves that runs out of time',
             ],
-            ex: '*A Christmas Carol:* if Scrooge does not change, he dies with his money and no one at the funeral — which is what the third spirit shows him.',
+            ex: '*A Christmas Carol:* if Scrooge does not change he stays the man Belle walked away from — she left because "another idol has displaced me", and the boy who could love went with her.',
             more: [
-                '*Great Expectations:* if Pip stays at the forge believing he is common, he never finds out what he could have been.',
+                '*Great Expectations:* if Pip keeps believing "common" means worthless, he loses Joe — which is exactly what happens when he grows ashamed of the man who raised him.',
                 '*An Inspector Calls:* if Sheila stays the girl who had a shop assistant sacked for smiling, she becomes her mother.',
                 // v7.20.379 (#134): was Simba in the jungle — a Stage III/IV state on a Stage I beat.
                 '*The Hunger Games:* if Katniss keeps her head down and trades quietly, Prim’s name goes back in the bowl every year for the rest of her childhood.',
@@ -240,7 +240,7 @@
                 'the flaw is a SHIELD — it once protected them, and now it holds them back',
                 'show it as behaviour, not a label: "cannot ask for help", not "insecure"',
             ],
-            ex: '*Macbeth:* his flaw is ambition he will not question — he acts on the prophecy rather than asking what it costs.',
+            ex: '*Macbeth:* he cannot stand to be seen hesitating — one taunt about being a coward and he stops arguing and acts, because being the fearless soldier is the only self he trusts.',
             more: [
                 '*A Christmas Carol:* Scrooge’s flaw is that he decided long ago people cost more than they give.',
                 '*Jekyll and Hyde:* Jekyll’s flaw is that he wants his appetites without his reputation paying for them.',
@@ -257,9 +257,9 @@
                 'it is a line of dialogue, not a moral: short, ordinary, easy to walk past',
                 'they will only understand it by the end, which is what makes the ending land',
             ],
-            ex: '*An Inspector Calls:* "We are members of one body. We are responsible for each other." Said in Act 3 — the Birlings spend the play failing to hear it.',
+            ex: '*An Inspector Calls:* Sheila, in Act 1 — "But these girls aren’t cheap labour — they’re people" — the play’s truth, said early and brushed aside by the table.',
             more: [
-                '*A Christmas Carol:* Fred insists Christmas has "done me good, and will do me good" — the truth Scrooge dismisses in scene one.',
+                '*A Christmas Carol:* Fred insists Christmas "has done me good, and will do me good" — the truth Scrooge dismisses in Stave One.',
                 '*Animal Farm:* "All animals are equal" is stated at the start, and the whole book is what happens to it.',
                 '*Of Mice and Men:* "Guys like us... are the loneliest guys in the world" — George says it in chapter one, and the rest of the book tests it.',
             ],
@@ -275,10 +275,10 @@
             ],
             ex: '*Great Expectations:* Pip accepts the label "common labouring boy" and is ashamed of his own hands — the mask is put on him before he chooses it.',
             more: [
-                '*Jekyll and Hyde:* Jekyll’s respectable public face is the mask, and the locked laboratory door is where he keeps it.',
+                '*Jekyll and Hyde:* Jekyll’s respectable public face is the mask — and the locked laboratory door is where he goes to take it off.',
                 // v7.20.379 (#134): was Simba in the jungle — Stage III, not the Setup.
                 '*Harry Potter:* Harry is "the boy in the cupboard", a label the Dursleys handed him so early he has never thought to question it.',
-                '*An Inspector Calls:* Birling wears the self-made public man — the port, the cigars, the knighthood he expects is coming.',
+                '*An Inspector Calls:* Sheila plays the pleased, pretty daughter of the engagement dinner — a mask she drops the moment she hears what she did to Eva Smith.',
             ],
         },
         {
@@ -294,7 +294,7 @@
             more: [
                 '*Romeo and Juliet:* Romeo says he fears "some consequence yet hanging in the stars" before he ever reaches the party.',
                 '*Macbeth:* the witches’ "fair is foul, and foul is fair" tells you how every promise in the play will work.',
-                '*A Christmas Carol:* Marley’s chain is described link by link — and Scrooge is told his own is already longer.',
+                '*A Christmas Carol:* Scrooge never painted out his dead partner’s name, so "Scrooge and Marley" still stands over the warehouse door — an ordinary detail until Marley walks in.',
             ],
         },
         {
@@ -337,10 +337,10 @@
                 'the pressure is not only on your protagonist — show it lying over EVERYONE around them',
                 'one small detail standing for the whole: what people stopped doing, or learned not to say',
             ],
-            ex: '*Animal Farm:* the hens’ eggs are taken and no animal argues, because arguing stopped being possible some time ago.',
+            ex: '*Animal Farm:* rations are cut again and Squealer reads out lists of figures proving the animals are better fed than in Jones’s day — and nobody contradicts him.',
             more: [
                 '*The Hunger Games:* the whole of District 12 stands silent at the reaping, because grief has a schedule there.',
-                '*Macbeth:* under his rule Scotland "sinks beneath the yoke" — the country itself is the victim.',
+                '*Romeo and Juliet:* the Prince tells Verona a third brawl will cost lives — a whole city living under a grudge none of them chose.',
                 '*Jane Eyre:* at Lowood the girls’ hair is cut off and their porridge arrives burnt, and nobody complains, because complaining has a price.',
             ],
         },
@@ -356,8 +356,8 @@
             ex: '*Stranger Things:* Will vanishes and the lights behave strangely long before anything is seen — the town fills the gap with fear.',
             more: [
                 '*Frankenstein:* Walton’s crew glimpse a huge figure on the ice before we ever meet the creature.',
-                '*Macbeth:* we hear the Captain describe Macbeth carving his way through the battle before Macbeth ever walks on stage.',
-                '*Jekyll and Hyde:* Enfield’s story of a man calmly trampling a child is all we are given of Hyde for chapters.',
+                '*Jane Eyre:* the strange laugh on the third floor, the fire in Rochester’s bed, the torn veil — the thing in the attic is heard for hundreds of pages before it is seen.',
+                '*Jekyll and Hyde:* Enfield’s story of a man calmly trampling a child is all we are given of Hyde until Utterson finally waits for him in the dark.',
             ],
         },
         {
@@ -390,7 +390,7 @@
             ex: '*Of Mice and Men:* the farm with the rabbits — a few acres standing for every kind of safety the two men will never have.',
             more: [
                 '*Great Expectations:* Estella, who Pip wants because she is everything he has been told he is not.',
-                '*The Lion King:* being king — which, to a cub, mostly means nobody telling him what to do.',
+                '*The Lion King:* the sunlit land Mufasa shows him from Pride Rock — "everything the light touches" — the exact thing Simba wants to own.',
                 '*A Christmas Carol:* the coins in the strongbox — the one thing Scrooge can count that has never disappointed him.',
             ],
         },
@@ -423,7 +423,7 @@
             ex: '*Harry Potter:* Hagrid arrives with a letter and tells Harry he is a wizard — the cupboard is over.',
             more: [
                 '*A Christmas Carol:* Marley’s ghost walks through the door dragging chains of cash-boxes.',
-                '*Frankenstein:* Victor sees the spark of life take hold, and there is no version of his old life after it.',
+                '*An Inspector Calls:* the doorbell cuts Birling off mid-speech — an unasked-for ring at the door, and the evening the family planned is over.',
                 '*The Hunger Games:* Prim’s name is read out at the reaping — one name, and the old life is finished.',
             ],
         },
@@ -452,7 +452,7 @@
                 'what they were trying to do BEFORE the story — small, ordinary, unglamorous',
                 'get through a shift, pass a test, avoid a person, keep something quiet',
             ],
-            ex: '*An Inspector Calls:* Mr Birling’s goal is a knighthood and a good year for the business — nothing more.',
+            ex: '*An Inspector Calls:* Sheila’s goal is to enjoy her engagement dinner and be admired in her new ring — nothing beyond the evening.',
             more: [
                 '*Of Mice and Men:* George’s goal is to get through the bucking season with the pay in his pocket and Lennie out of trouble.',
                 '*Harry Potter:* Harry’s goal is to get through the summer without the Dursleys noticing he exists.',
@@ -471,7 +471,7 @@
             ex: '*Animal Farm:* the rations shrink, the hours grow, and the pigs move into the farmhouse — each step small, the direction unmistakable.',
             more: [
                 '*Lord of the Flies:* the signal fire goes out, the shelters stay half-built, and fewer boys answer the conch.',
-                '*Macbeth:* after the murder the horses turn on each other, an owl kills a falcon, and the day never gets light — the country curdles with him.',
+                '*Jane Eyre:* typhus sweeps Lowood and Jane watches the school empty bed by bed, Helen Burns among the dead.',
                 '*The Hunger Games:* the arena itself tightens: the Gamemakers set the woods alight to drive the tributes together.',
             ],
         },
@@ -522,7 +522,7 @@
             more: [
                 '*Frankenstein:* Victor flees the room rather than look at what he has made.',
                 '*A Christmas Carol:* Scrooge turns down Fred’s invitation and goes back to his ledger.',
-                '*Macbeth:* Macbeth tells his wife "we will proceed no further in this business" — and it lasts one scene.',
+                '*Macbeth:* Macbeth tells his wife "we will proceed no further in this business" — and she has him back inside forty lines.',
             ],
         },
         {
@@ -534,7 +534,7 @@
                 'someone who has BEEN where your protagonist is going, and gives guidance rather than rescue',
                 'they should be specific and flawed — a mentor who is simply wise is furniture',
             ],
-            ex: '*A Christmas Carol:* the three spirits, who never tell Scrooge what to do — they only make him look.',
+            ex: '*A Christmas Carol:* Marley, who lived Scrooge’s life exactly and now drags the chain he made yard by yard — a mentor who is the warning.',
             more: [
                 '*The Lion King:* Rafiki, who hits Simba with a stick before he explains anything.',
                 '*Great Expectations:* Joe, whose mentoring is only ever by example, and Pip takes years to notice it.',
@@ -552,7 +552,7 @@
             ],
             ex: '*Macbeth:* "none of woman born" shall harm him — true, and useless, because he hears it as safety.',
             more: [
-                '*Romeo and Juliet:* the Prologue tells us they die in the first fourteen lines, and we watch anyway.',
+                '*Romeo and Juliet:* before the Capulet feast Romeo says his mind misgives "some consequence yet hanging in the stars" — and goes in anyway.',
                 '*Frankenstein:* the creature promises "I will be with you on your wedding-night", and Victor assumes it means his own death.',
                 '*Harry Potter:* the prophecy says neither can live while the other survives — and Voldemort makes it true by acting on it.',
             ],
@@ -570,7 +570,7 @@
             more: [
                 '*Cinderella:* the gown and glass slippers, which let her be SEEN as what she already is.',
                 '*The Hunger Games:* Katniss is given the mockingjay pin — a small metal bird that ends up meaning rebellion.',
-                '*The Lion King:* Rafiki shows Simba his own reflection in the water — not an object, but the thing he was given and could not use until now.',
+                '*Lord of the Flies:* Piggy finds the conch and shows Ralph how to blow it — the object that turns a boy on a beach into a chief.',
             ],
         },
         {
@@ -601,7 +601,7 @@
             ex: '*A Christmas Carol:* the boy left alone at school every Christmas — the first spirit shows it, and the whole miser makes sense.',
             more: [
                 '*The Lion King:* Mufasa dying while Simba watches, and being told it was his fault.',
-                '*Great Expectations:* Miss Havisham stopped every clock at twenty to nine, and never left that day.',
+                '*Frankenstein:* Victor’s mother dies of scarlet fever just before he leaves for Ingolstadt — the death the whole obsession with reanimating the dead is built to undo.',
                 '*Jane Eyre:* the red room at Gateshead, where Jane is locked in as a child and left with her fear until she faints.',
             ],
         },
@@ -633,9 +633,9 @@
             ],
             ex: '*A Christmas Carol:* Scrooge watches the Cratchits at their thin Christmas table and, for the first time, asks about Tiny Tim.',
             more: [
-                '*Sheila in An Inspector Calls:* she works out that the girl in the photograph is the girl she had sacked, and never goes back to who she was.',
+                '*An Inspector Calls:* Sheila works out that the girl in the photograph is the girl she had sacked, and never goes back to who she was.',
                 '*The Lion King:* Rafiki shows Simba his reflection, and he sees Mufasa in it.',
-                '*Of Mice and Men:* Candy, after his dog is carried out to be shot, works out that he should have done it himself — and says so out loud.',
+                '*Of Mice and Men:* George hears Candy say he should have shot his own dog himself, and understands what he will one day have to do for Lennie.',
             ],
         },
         {
@@ -665,7 +665,7 @@
             ],
             ex: '*A Christmas Carol:* Scrooge laughs at Fezziwig’s party — the first time we see he was once capable of joy.',
             more: [
-                '*Lennie in Of Mice and Men:* offering to leave and live in a cave so George does not have to put up with him.',
+                '*Of Mice and Men:* George, alone with Slim, admits he used to torment Lennie for laughs until it stopped being funny — one honest sentence, then the joking closes over again.',
                 '*Macbeth:* "I dare do all that may become a man; who dares do more is none" — for one line he knows exactly where the limit is.',
                 '*Great Expectations:* Pip secretly pays to set Herbert up in business and makes sure Herbert never learns who did it — the one thing he hides because it is generous.',
             ],
@@ -697,8 +697,8 @@
             ],
             ex: '*Harry Potter:* Ron gives him a family and Hermione gives him a brain — neither is a copy of Harry.',
             more: [
-                '*Stranger Things:* the boys, Eleven, Nancy and Hopper all hunt the same thing with completely different tools.',
-                '*The Lion King:* Timon and Pumbaa, who are no use at all in a fight and are the only reason Simba lives long enough to have one.',
+                '*Stranger Things:* Dustin’s science, Eleven’s power and Hopper’s police badge — three tools, none of which Mike has.',
+                '*The Lion King:* Timon and Pumbaa, who are experts at the one thing Simba cannot do — forgetting — and who keep him fed and alive for years.',
                 '*The Hunger Games:* Rue, who can read the arena’s trees, and Cinna, who can read its audience — neither skill is Katniss’s.',
             ],
         },
@@ -711,7 +711,7 @@
                 'the opposition touches them for the first time — and your protagonist LOSES',
                 'losing here is the point: it proves the goal is not free',
             ],
-            ex: '*The Hunger Games:* the first night in the arena, hiding in a tree while a pack of Careers hunts below.',
+            ex: '*The Hunger Games:* at the Cornucopia a knife thrown by Clove buries itself in the pack on Katniss’s back, and she runs with almost nothing — the bloodbath proves she cannot win in the open.',
             more: [
                 '*Frankenstein:* the creature kills William, and Victor understands what he has released.',
                 '*Lord of the Flies:* the hunters let the signal fire go out and a ship passes the island — the first real loss, and Ralph can do nothing about it.',
@@ -729,7 +729,7 @@
             ],
             ex: '*Animal Farm:* Napoleon acquires the dogs, and after that the votes stop mattering.',
             more: [
-                '*Macbeth:* the murders multiply and the court empties — his power grows as his support drains.',
+                '*Macbeth:* Malcolm and Siward raise ten thousand men in England and the thanes slip away to join them, while Macbeth shuts himself inside Dunsinane.',
                 '*The Lion King:* the hyenas move into the Pride Lands and the herds leave — Scar’s reach measured in empty grass.',
                 '*Stranger Things:* the lab widens its reach — phones tapped, a body faked, the town’s own police told to stop looking.',
             ],
@@ -748,7 +748,7 @@
             ex: '*Harry Potter:* Diagon Alley, where the wonder is total and nobody explains anything — Harry is delighted and completely out of his depth.',
             more: [
                 '*Cinderella:* the ball, where for one night she is treated as though she has always belonged.',
-                '*Voyage and Return stories:* Oz in colour after Kansas in grey — beautiful, and not on her side.',
+                '*The Wizard of Oz:* Oz in colour after Kansas in grey — beautiful, and not on her side.',
                 '*The Hunger Games:* the Capitol — food arriving up a lift, people with dyed skin, and everyone delighted to meet a girl they intend to watch die.',
             ],
         },
@@ -761,9 +761,9 @@
                 'someone TRUSTED turns — and their reason should make sense from where they stand',
                 'the betrayal must cost your protagonist something specific',
             ],
-            ex: '*Animal Farm:* Squealer, who was there for every promise and rewrites each one.',
+            ex: '*Animal Farm:* Napoleon sends Boxer — the animal who worked hardest and trusted most — to the knacker’s, and buys whisky with the money.',
             more: [
-                '*Macbeth:* Macbeth betrays Duncan, who has just called him "worthiest cousin" and given him a title.',
+                '*Macbeth:* the witches’ promises of safety turn out to be equivocation — the voice he trusted most is the one that walks him into Birnam Wood.',
                 '*The Lion King:* Scar holds his brother at the edge of the gorge, says "long live the king", and lets go.',
                 '*Great Expectations:* Miss Havisham lets Pip believe for years that she is his benefactor, because his hope is useful to her.',
             ],
@@ -777,7 +777,7 @@
                 'a DARK PLACE they go down into — a cellar, a tunnel, a night, a hospital, a forest',
                 'the place should look like the fear: let the setting do the psychology',
             ],
-            ex: '*Harry Potter:* the trapdoor beneath the trick step, and everything under the school it leads to.',
+            ex: '*Harry Potter:* the trapdoor under Fluffy’s paws on the third floor, and everything beneath the school it leads down into.',
             more: [
                 '*Jekyll and Hyde:* Soho at night, and the locked dissecting-room where Jekyll keeps the other half of himself.',
                 '*Great Expectations:* the sluice-house on the marshes, in the dark, alone with Orlick.',
@@ -809,7 +809,7 @@
                 'a stretch where it WORKS — real success, not a fake one',
                 'let the reader relax; put one small wrong detail in the corner of the picture',
             ],
-            ex: '*Animal Farm:* the windmill goes up, the harvest is good, and the animals sing — while the pigs are already drinking milk.',
+            ex: '*Animal Farm:* the first harvest is the biggest the farm has ever had and the animals work singing — while the milk and the windfall apples quietly go to the pigs alone.',
             more: [
                 '*Macbeth:* he is crowned, the banquet is laid, and Banquo’s murderer is at the door.',
                 '*The Hunger Games:* Katniss and Rue destroy the Careers’ supplies, and for one night the alliance is actually working.',
@@ -825,7 +825,7 @@
                 'ATMOSPHERE, not event — weather, light, sound, an animal behaving oddly',
                 'nothing has happened yet; the reader should simply not want to turn the page',
             ],
-            ex: '*Macbeth:* the night Duncan dies, chimneys are blown down, horses eat each other and an owl kills a falcon.',
+            ex: '*Macbeth:* Banquo outside Duncan’s chamber before the murder — the candles of heaven are all out, he cannot sleep, and he will not say why.',
             more: [
                 '*Jane Eyre:* the chestnut tree is split by lightning the night Rochester proposes.',
                 '*Lord of the Flies:* the heat presses down and thunder builds for pages before Simon dies.',
@@ -843,7 +843,7 @@
             ],
             ex: '*Lord of the Flies:* meetings that were exciting become arguments nobody attends, and the beach stops being a holiday.',
             more: [
-                '*Of Mice and Men:* the farm talk gets quieter each time it comes up, and George stops finishing the sentence.',
+                '*Of Mice and Men:* after Curley’s wife is found in the barn, Candy asks about the farm and George answers "I think I knowed we’d never do her" — same dream, said flat.',
                 '*Animal Farm:* "Beasts of England" is banned, the rations shrink again, and the animals work longer for less.',
                 '*An Inspector Calls:* the celebration never restarts — same room, same people, and nobody sits back down.',
             ],
@@ -859,7 +859,7 @@
             ],
             ex: '*Harry Potter:* Fluffy, then the Devil’s Snare, then the keys, then the chess board — each one costs more than the last.',
             more: [
-                '*The Hunger Games:* the tracker jackers, then the fire, then the mutts — the arena keeps raising the price.',
+                '*The Hunger Games:* the wall of fire, then the tracker jacker nest, then the mutts at the Cornucopia — the arena keeps raising the price.',
                 '*Macbeth:* Banquo, then Fleance escaping, then Macduff gone to England — every answer he finds makes a bigger problem.',
                 '*Great Expectations:* hiding Magwitch, then moving him, then the river and the customs boat — each step costs more than the last.',
             ],
@@ -873,11 +873,11 @@
                 'show the antagonist WINNING something — not threatening, actually taking',
                 'their competence is what makes your protagonist’s victory worth anything',
             ],
-            ex: '*Macbeth:* the murderers reach Macduff’s castle and kill his wife and children while he is out of the country.',
+            ex: '*Macbeth:* Macduff and Malcolm raise an English army and the thanes desert — the opposition stops threatening and starts taking Scotland back.',
             more: [
                 '*Frankenstein:* the creature kills Clerval, and Victor understands that everyone he loves is a target.',
-                '*Lord of the Flies:* Jack takes the fire, then Piggy’s glasses, then the conch — and everything he takes, he keeps.',
-                '*Stranger Things:* the lab takes Barb, and the town is handed a story that explains her away.',
+                '*Lord of the Flies:* Jack takes the fire, then the hunters, then raids the shelters for Piggy’s glasses — and everything he takes, he keeps.',
+                '*Stranger Things:* the lab passes off a fake body as Will’s, and the whole town buries a boy who is still alive.',
             ],
         },
         {
@@ -959,8 +959,8 @@
             ex: '*Macbeth:* told of his wife’s death, he calls life "a tale told by an idiot, signifying nothing" — the ambition has bought him emptiness.',
             more: [
                 '*The Lion King:* Simba refuses to go home while the Pride Lands starve, choosing guilt over responsibility.',
-                '*Great Expectations:* Pip, in debt and ill, learns his fortune came from a convict and Estella has married Drummle.',
-                '*Of Mice and Men:* Lennie waiting in the brush by the river, and George walking towards him with Carlson’s pistol.',
+                '*Great Expectations:* Magwitch is taken, the fortune dies with him, and Estella is married — everything Pip built himself out of turns out to belong to someone else.',
+                '*A Christmas Carol:* Scrooge kneels at his own neglected headstone and grips the Spirit’s hand — everything he built has bought him an unvisited grave.',
             ],
         },
         {
@@ -1004,7 +1004,7 @@
                 'close every exit — the reader should not be able to see a way out either',
                 'name the cost of losing, in one specific thing they will not get back',
             ],
-            ex: '*The Hunger Games:* Katniss up the tree with the Careers camped below and no water left.',
+            ex: '*The Hunger Games:* Katniss up the tree, calf burned, with the Careers camped underneath and nowhere to go but down.',
             more: [
                 '*Macbeth:* Dunsinane surrounded, the wood moving, and every prophecy turning out to be a trap.',
                 '*Jekyll and Hyde:* the original salt runs out, and there is no more of it to be had anywhere in London.',
@@ -1070,9 +1070,9 @@
                 'one FACT arrives that makes going on possible — and it forces a choice, not a feeling',
                 'the choice should cost something: they continue knowing what it will take',
             ],
-            ex: '*Macbeth:* he learns Macduff was not "of woman born" — new information, and the choice to fight anyway.',
+            ex: '*Jane Eyre:* the innkeeper’s news that Bertha is dead and Thornfield burned is the one fact that makes returning possible — and Jane goes, knowing what she is taking on.',
             more: [
-                '*The Hunger Games:* the rule change is revoked, and Katniss decides what to do with the berries.',
+                '*Frankenstein:* Walton’s crew tells Victor the ice is breaking — the one fact that makes the pursuit possible again, and he chooses to go on north.',
                 '*The Lion King:* Simba hears Scar admit he killed Mufasa — the guilt he had carried for years was never his to carry.',
                 '*Great Expectations:* Pip learns whose daughter Estella really is, and chooses to give the fact to a dying man rather than keep it.',
             ],
@@ -1102,11 +1102,11 @@
                 'the mentor must be OUT of the way for the final test — dead, defeated, absent or simply wrong',
                 'your protagonist then does the thing the mentor could not',
             ],
-            ex: '*Harry Potter:* Dumbledore is deliberately away, so Harry faces the last room without him.',
+            ex: '*Harry Potter:* Dumbledore is lured to London by a forged summons, so Harry faces the last room without him.',
             more: [
-                '*The Lion King:* Mufasa is long dead; Simba has to be the one who says "I am".',
+                '*The Lion King:* Mufasa is long dead, so it is Simba alone who climbs the rock and takes the throne his father cannot hand him.',
                 '*A Christmas Carol:* the third spirit never speaks a word — Scrooge has to do the reading himself.',
-                '*Great Expectations:* Joe never asks Pip for anything, so Pip has to work the debt out alone and go back to pay it.',
+                '*Jane Eyre:* Helen Burns dies at Lowood, and it is Jane who has to carry Helen’s endurance out into a world Helen never lived to face.',
             ],
         },
         {
@@ -1134,11 +1134,11 @@
                 'your protagonist WORKS OUT the flaw in the opposition — from something they saw earlier',
                 'the weakness should be the antagonist’s strength taken too far',
             ],
-            ex: '*Macbeth:* his certainty in the prophecies is exactly what Malcolm’s army uses against him.',
+            ex: '*The Lion King:* Simba works out that Scar’s hold rests entirely on the lie about Mufasa’s death — so he forces Scar to say it out loud in front of the pride.',
             more: [
-                '*Animal Farm:* the pigs’ weakness is that the rules keep having to be repainted — and someone is always awake to see it.',
+                '*Frankenstein:* Victor realises the creature’s one need is a companion — its only hold over him — and tears the half-made bride apart in front of it.',
                 '*The Hunger Games:* the Capitol’s weakness is that it needs an audience, so Katniss plays to the cameras instead of to the arena.',
-                '*Lord of the Flies:* Jack’s hold depends entirely on the show — the paint, the chant, the dance — and it collapses the second an adult is standing on the beach.',
+                '*Harry Potter:* Harry works out from the Mirror of Erised that Quirrell can only take the Stone by wanting to use it — so he wins by wanting only to find it.',
             ],
         },
         {
@@ -1152,7 +1152,7 @@
             ],
             ex: '*Frankenstein:* the creature tells Victor they are bound together and equally guilty — and the book never quite disagrees.',
             more: [
-                '*An Inspector Calls:* the Inspector puts the whole family in the same sentence, and only Sheila and Eric accept it.',
+                '*Great Expectations:* Magwitch tells Pip that convict money made him a gentleman — "I’m your second father" — and Pip cannot deny it, so his answer is to stay with him to the end.',
                 '*The Lion King:* Scar tells Simba he is a murderer just like him — and Simba has believed exactly that for years.',
                 '*Jekyll and Hyde:* Hyde is not a stranger arguing with Jekyll; the final confession admits they were one person the whole time.',
             ],
@@ -1170,7 +1170,7 @@
             more: [
                 '*Harry Potter:* Harry gets the Stone as Quirrell reaches him, and passes out in the same breath.',
                 '*A Christmas Carol:* Scrooge wakes and finds it is still Christmas Day — the one morning he had left to use.',
-                '*Great Expectations:* Pip reaches the sluice-house as Orlick raises the hammer, and Herbert is one step behind him.',
+                '*Great Expectations:* Orlick has the hammer raised over Pip in the sluice-house when Herbert and Trabb’s boy break the door down — one second later and there is no ending.',
             ],
         },
         {
@@ -1182,11 +1182,11 @@
                 'the DECISIVE act — the one the whole story has promised, delivered on the page and not summarised',
                 'your protagonist must be the one who does it',
             ],
-            ex: '*The Lion King:* Simba does not push Scar; Scar’s own lie brings him down, and Simba lets it.',
+            ex: '*The Lion King:* Simba throws Scar off the top of Pride Rock himself — the one act he had spent the whole film refusing.',
             more: [
-                '*Macbeth:* Macduff kills him in a single fight, off a promise made in Act 4.',
+                '*Macbeth:* "Lay on, Macduff" — Macbeth refuses to yield and walks into the fight himself rather than wait for it.',
                 '*Harry Potter:* Harry holds on to Quirrell rather than let go — his own skin is the weapon, and he is the one using it.',
-                '*An Inspector Calls:* Sheila hands the ring back — the one decisive act anybody in that family actually takes.',
+                '*Frankenstein:* Victor tears the half-finished bride apart in front of the creature — the one irreversible act he takes with his own hands.',
             ],
         },
         {
@@ -1200,9 +1200,9 @@
             ],
             ex: '*Macbeth:* "I have lived long enough" — he understands exactly what he traded, and still walks out to fight.',
             more: [
-                '*Eric in An Inspector Calls:* he accepts what he did while his parents are still arguing about whether it happened.',
+                '*An Inspector Calls:* Eric accepts what he did while his parents are still arguing about whether it happened.',
                 '*Of Mice and Men:* George knows exactly what he is about to do, and talks about the rabbits while he does it.',
-                '*Romeo and Juliet:* "Then I defy you, stars" — Romeo has read the situation completely wrongly and chooses the vault anyway.',
+                '*Jekyll and Hyde:* Jekyll’s last confession admits the change is now beyond his control, and he finishes writing anyway — the recognition arrives exactly too late to act on.',
             ],
         },
 
@@ -1221,7 +1221,7 @@
             more: [
                 '*The Lion King:* Rafiki lifts a new cub on Pride Rock, exactly as Simba was lifted in scene one.',
                 '*Great Expectations:* Pip and Estella in the ruined garden where they first met, both of them worn down into kindness.',
-                '*Of Mice and Men:* the same green pool by the river the book opened on — and now only one man walking away from it.',
+                '*Of Mice and Men:* the same green pool the book opened on — two men walked in at the start, and only one of them walks back out alive.',
             ],
         },
         {
@@ -1267,7 +1267,7 @@
             ],
             ex: '*A Christmas Carol:* Scrooge brings back Christmas itself — a turkey, a raised wage, and a nephew’s dinner accepted at last.',
             more: [
-                '*Voyage and Return stories:* Dorothy brings home the knowledge that she wanted what she already had.',
+                '*Jane Eyre:* Jane returns to Ferndean with her own inheritance and becomes Rochester’s eyes and hand — the visible thing that house had lost.',
                 '*Harry Potter:* Harry goes back to the Dursleys carrying the one thing he did not have in chapter one — somewhere else to belong.',
                 '*Great Expectations:* what Pip brings back is the ability to see Joe clearly, which is the only fortune he ends the book with.',
             ],
@@ -1283,8 +1283,8 @@
             ],
             ex: '*Romeo and Juliet:* the families make peace over two bodies, and the play is careful to note the price of the lesson.',
             more: [
-                '*Of Mice and Men:* nobody understands what George did, and Candy’s question hangs over the last page.',
-                '*An Inspector Calls:* the phone rings again — the family has learnt nothing, and it is all about to happen for real.',
+                '*Of Mice and Men:* only Slim understands what George did — Carlson’s closing "what the hell ya suppose is eatin’ them two guys?" shows nobody else ever will.',
+                '*An Inspector Calls:* the phone rings again — the older Birlings have learnt nothing, and the whole night is about to happen for real.',
                 '*Macbeth:* his head is carried on stage and Scotland gets a new king — the response is relief, not grief, which is its own verdict.',
             ],
         },
