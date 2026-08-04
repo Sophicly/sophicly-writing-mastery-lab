@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.428';
+var WML_BUILD = '7.20.429';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -2268,7 +2268,44 @@ window.WML = (function() {
         } catch(e) {}
         return getSystemTheme();
     }
+    /* ⭐⭐ v7.20.429 (Neil, #264): "when you switch the themes, it actually blinks."
+       ROOT CAUSE, and it is structural rather than cosmetic: a theme swap is NOT one write. It
+       lands on FOUR different elements in sequence — document.body, #swml-root, the overlay's
+       dataset, and the `.swml-canvas-light` class on the canvas — and WML's CSS keys off several
+       of them (`[data-swml-theme="light"] X` AND `.swml-canvas-light X`). Between the first write
+       and the last, some rules have flipped and others have not, so elements briefly resolve to a
+       MIXED state. Every one of them also carries a `transition` on background/colour/box-shadow,
+       so the browser politely ANIMATES its way through that mixed state. That animated pass is
+       the blink.
+       You cannot fix this by reordering the writes — they cannot be simultaneous, and the
+       transitions would still animate the (correct) end-to-end change. The fix is to make the swap
+       INSTANT: kill transitions for the duration, then restore them.
+       ONE implementation, three callers — core's applyTheme plus the two `syncCanvasTheme`s in
+       wml-assessment.js (the LD-driven path, which is the one live in the canvas). Exported so a
+       fourth theme path cannot quietly reintroduce the blink by hand-rolling its own version. */
+    function beginThemeSwap() {
+        try {
+            const b = document.body;
+            if (!b) return;
+            b.classList.add('swml-theme-switching');
+            if (beginThemeSwap._t) cancelAnimationFrame(beginThemeSwap._t);
+            // TWO frames: one for the class to take effect, one for the paint to land with
+            // transitions already off. Removing on a timer instead would race a slow frame.
+            beginThemeSwap._t = requestAnimationFrame(() => {
+                beginThemeSwap._t = requestAnimationFrame(() => {
+                    b.classList.remove('swml-theme-switching');
+                    beginThemeSwap._t = null;
+                });
+            });
+        } catch (e) {}
+    }
+
     function applyTheme(theme) {
+        // `typeof` guard, not a bare call: theme-writer-harness evaluates this function in
+        // ISOLATION to prove there is exactly one theme writer, so a sibling-scope reference
+        // throws there while being perfectly in scope in the real bundle. Same defensive shape as
+        // the two syncCanvasTheme call sites in wml-assessment.js — one pattern, three callers.
+        if (typeof beginThemeSwap === 'function') beginThemeSwap();
         // Apply to both body and #swml-root to ensure CSS selectors match
         document.body.setAttribute('data-swml-theme', theme);
         const root = $('#swml-root');
@@ -4655,6 +4692,7 @@ window.WML = (function() {
         stripAIInternals, detectAssessmentStep, formatAI, svgifyStatusGlyphs, countWords,
         registerLiveValue, resolveLiveValues,   // v7.20.351 — the fossil cure (see formatAI)
         recordTurn, rehydrateTurn,              // v7.20.352 — the ONLY writers into chat history
+        beginThemeSwap,                         // v7.20.429 — call BEFORE any theme write (#264)
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
         parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG, setHaloLabel, approvalIconSVG, guideIconSVG, spineIconSVG, phoenixIconHTML, icon, techIcon, ICONS,
         arrowIcon, arrowize, arrowizeEl, setArrowStyle,   // v7.20.404 (#177) — Neil's arrows; setArrowStyle('boxed'|'bare') switches the whole app

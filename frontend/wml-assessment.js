@@ -25962,6 +25962,8 @@
         // Also save to localStorage so WML's own getTheme() stays in sync.
         {
             const syncCanvasTheme = (theme) => {
+                // v7.20.429 (#264): kill transitions for the swap — see WML.beginThemeSwap in wml-core.js.
+                if (window.WML && WML.beginThemeSwap) WML.beginThemeSwap();
                 canvas.classList.toggle('swml-canvas-light', theme === 'light');
                 overlay.dataset.swmlTheme = theme;
                 document.body.setAttribute('data-swml-theme', theme);
@@ -56264,6 +56266,8 @@ ${html}
         // Reads <html data-theme> (LD controls this) and mirrors into the canvas.
         {
             const syncCanvasTheme = (theme) => {
+                // v7.20.429 (#264): kill transitions for the swap — see WML.beginThemeSwap in wml-core.js.
+                if (window.WML && WML.beginThemeSwap) WML.beginThemeSwap();
                 canvas.classList.toggle('swml-canvas-light', theme === 'light');
                 overlay.dataset.swmlTheme = theme;
                 document.body.setAttribute('data-swml-theme', theme);
