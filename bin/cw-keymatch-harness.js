@@ -187,8 +187,11 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         // Losing them is not survivable: a value row is only complete with a trait AND a state AND
         // text (Neil's #232 ruling), so a pick that lived only in the sidecar would leave a section
         // that can never tick green.
-        onValueTraitsDone:    { kind: 'content', note: 'Step 7 traits multi-select → ticks the row’s `traits` control' },
-        onValueStatePick:     { kind: 'content', note: 'Step 7 In balance/excess/deficit → ticks the row’s `state` control, exclusively' },
+        // v7.20.421 (#245): the value-wide traits/state pair is retired. The condition belongs to
+        // the TRAIT, so the walk is serial and each of these files against ONE trait control.
+        onTraitDecision:      { kind: 'content', note: 'Step 7 Yes / No / Not-yet → ticks that TRAIT’s control (No ⇒ "Not explored", Not-yet ⇒ In deficit + the build list)' },
+        onTraitCondition:     { kind: 'content', note: 'Step 7 In balance/excess/deficit → ticks that TRAIT’s control, exclusively' },
+        onValueRescuePick:    { kind: 'content', note: 'Step 7 rescue — every trait answered No, so pick the one to GAIN (→ In deficit + the build list)' },
         onValuesWrapRecall:   { kind: 'flow', note: 'Step 7 wrap: open the change-an-answer picker — the way back into an answered row' },
         onValuesRecallPick:   { kind: 'flow', note: 'Step 7 wrap: which answer to change — the REWRITE that follows is what is filed' },
         onSelfAssessTicks:    { kind: 'scaffold', note: 'the criteria tick list — the claim is fed to the end-of-set review, never to a document row' },

@@ -4512,13 +4512,22 @@
     // `_cwOutlineCtl`). A per-walk copy is how the v7.20.289 replace-vs-append fix was made in
     // one controller and lost in another.
     const _walkSlot = (function () {
-        let tok = null;   // { walk, fid, askId, cycle, servedAt }
+        let tok = null;   // { walk, fid, askId, cycle, data, servedAt }
         let seq = 0;
         return {
             // Called when an ask is DELIVERED (not when it is queued behind a Continue chip).
+            // v7.20.421: `opts.data` rides the token back to the writer. Step 7 needs it because
+            // ONE row now collects an explanation PER TRAIT — the fid says which row, and only
+            // the ask itself knows which trait it just asked about. Carrying that on the token
+            // keeps it impossible to file an answer against a trait no ask named (§4c.6).
             arm(walk, fid, opts) {
                 if (!walk || !fid) { console.warn('WML slot: refusing to arm without walk+fid'); return null; }
-                tok = { walk, fid, askId: ++seq, cycle: (opts && opts.cycle) || 'accumulate', servedAt: Date.now() };
+                tok = {
+                    walk, fid, askId: ++seq,
+                    cycle: (opts && opts.cycle) || 'accumulate',
+                    data: (opts && opts.data) || null,
+                    servedAt: Date.now(),
+                };
                 return tok.askId;
             },
             peek(walk) { return (tok && tok.walk === walk) ? tok : null; },
@@ -12748,6 +12757,11 @@
             // could not express. The RULE itself is WML.outlineRow.controlOk (wml-core.js) —
             // this only adapts live DOM into the state shape it expects.
             const rule = window.WML && window.WML.outlineRow;
+            // ⭐ v7.20.421 — REQUIRE-ANY is a ROW rule, so no per-group stamp can carry it: with
+            // every trait control optional, all of them stamp `1` on an untouched value row.
+            // The row nodeView stamps its own verdict; this reader trusts it, the same way it
+            // trusts data-ctl-done for controls that render without a native input.
+            if (r.getAttribute('data-row-require-any') === '1' && r.getAttribute('data-row-any') !== '1') allFilled = false;
             const groups = r.querySelectorAll('.swml-outline-ctl');
             if (!rule || !groups.length) {
                 // Pre-v7.20.129 DOM (no groups) or a load-order break — fall back to the old
@@ -12790,6 +12804,7 @@
                 const ctl = {
                     type: gtype,
                     choice: g.getAttribute('data-choice') === '1',
+                    optional: g.getAttribute('data-ctl-optional') === '1',   // v7.20.421
                     items: boxes, // controlOk only reads .length
                 };
                 const st = { checked: [] };
@@ -23609,7 +23624,11 @@
             const STATIONS = [];
             ['begin', 'end'].forEach(function (when) {
                 CW7_VALUES.forEach(function (v) {
-                    STATIONS.push({ kind: 'value', when: when, v: v, fid: _cw7RowFieldId(when, v.id) });
+                    STATIONS.push({
+                        kind: 'value', when: when, v: v,
+                        fid: _cw7RowFieldId(when, v.id),
+                        addFid: _cw7AddRowFieldId(v.id),   // v7.20.421 — the wanted-traits row (#249)
+                    });
                 });
             });
             const REFLECT = [
@@ -23634,7 +23653,25 @@
             function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ i, phase, active, done })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            // ⭐⭐ v7.20.421 (#247) — THE EMISSION COUNTER, and it is the whole fix for
+            // "two messages arrived at once".
+            //
+            // ROOT, read off Neil's own staging transcript rather than guessed: entry ran TWO
+            // routes. One (`startWalk` → `serveCurrent` → `serveOrientation`) emitted orientation
+            // chunk 1 and armed its Continue. 400ms later the deferred `tryResume` reattach fired,
+            // saw `oriented()` now true — chunk 1 having just been STORED — and served the first
+            // station INSIDE the replay wrapper, so it drew without storing. That is exactly the
+            // fingerprint in the database: chunk 1 stored, chunks 2-6 missing, the traits ask on
+            // screen but absent from the transcript.
+            //
+            // .420 fixed the SKIP (the orientation is derived, so no route can miss it) and left
+            // the RACE. Listing the routes and guarding each one is what produced the bug in the
+            // first place — a control-flow condition standing in for a fact. So the guard asks the
+            // only question that matters and can be OBSERVED: *has anything been said since I
+            // scheduled this?* If yes, another route is already driving, and this one stands down.
+            let emitted = 0;
             function aiBubble(plain) {
+                emitted++;
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // a resume re-serve is DRAWN, never saved (§4c.7)
                 WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
@@ -23659,25 +23696,54 @@
                 } catch (e) {}
                 return out;
             }
-            const traitsOf = (st) => _rowControlPicks(st.fid, 'traits');
-            const stateOf  = (st) => _rowControlPicks(st.fid, 'state');
+            // ── PER-TRAIT READS (v7.20.421) ────────────────────────────────────────────────
+            // Every one of these answers a question about the DOCUMENT. Nothing here consults a
+            // counter, a sidecar or the transcript, which is what makes a 70-ask serial walk
+            // survive a reload: the page IS the state.
+            const traitPicks = (when, v, trait) => _rowControlPicks(_cw7RowFieldId(when, v.id), _cw7TraitCtlId(trait));
+            const traitState = (when, v, trait) => (traitPicks(when, v, trait)[0] || '');
+            const isRealState = (s) => CW7_STATES.indexOf(s) !== -1;
+            // Carried forward = the student gave this trait a REAL condition at the beginning, so
+            // the end pass asks what has CHANGED rather than asking from zero (§4c.8b: "a second
+            // pass over the same set asks what changed").
+            const carried = (v, trait) => isRealState(traitState('begin', v, trait));
+            // The wanted-trait footprint. `**` is deliberately NOT used in the probe: the row's
+            // text is written as PLAIN text through _writeOutlineRowField, so a markdown-shaped
+            // probe would match nothing and re-ask for ever.
+            const wantsTrait = (st, trait) => rowText(st.addFid).indexOf(_cw7TraitLabel(trait) + ' — ') !== -1;
+            const whyDone = (st, trait) => rowText(st.fid).indexOf(_cw7TraitLabel(trait) + ' — ') !== -1;
 
-            // ⭐ THE POSITION IS DERIVED FROM THE DOCUMENT, NEVER FROM A COUNTER.
-            // Returns which of the three parts of this station is still outstanding, or '' when
-            // the station is complete. A student who filled a row by hand — the document sits
-            // open beside the chat and stays fully hand-usable — moves the walk on, exactly as
-            // firstEmpty() does for every other CW walk.
-            function phaseOf(n) {
+            // ⭐⭐ THE POSITION IS DERIVED FROM THE DOCUMENT, NEVER FROM A COUNTER — and since
+            // v7.20.421 it is derived per TRAIT, because the walk is serial (§4c.8b).
+            //
+            // Returns the outstanding piece of this station as { phase, trait }, or null when the
+            // station is done. A student who fills the row by hand moves the walk on, exactly as
+            // before — the document sits open beside the chat and stays fully hand-usable.
+            //
+            // ⚠️ There is NO 'condition' phase in the derivation, deliberately. A "yes" tap has no
+            // document footprint until the condition is chosen, so a reload in that one-tap gap
+            // re-asks the trait. That is the honest reading of the page, and re-asking costs one
+            // tap; inventing a sidecar flag to remember it would put the walk's position back in
+            // storage that a reload can contradict.
+            function posOf(n) {
                 const st = STATIONS[n];
-                if (!st) return '';
-                if (st.kind === 'reflect') return rowText(st.fid) ? '' : 'why';
-                if (!traitsOf(st).length) return 'traits';
-                if (!stateOf(st).length) return 'state';
-                if (!rowText(st.fid)) return 'why';
-                return '';
+                if (!st) return null;
+                if (st.kind === 'reflect') return rowText(st.fid) ? null : { phase: 'reflect' };
+                for (let k = 0; k < st.v.traits.length; k++) {
+                    const trait = st.v.traits[k];
+                    const s = traitState(st.when, st.v, trait);
+                    // Undecided → ask. On the BEGIN pass a "not yet, but I want it" also decides
+                    // the trait (it ticks In deficit AND lists it), so the wants probe is only a
+                    // belt-and-braces read of the same fact.
+                    if (!s && !(st.when === 'begin' && wantsTrait(st, trait))) return { phase: 'ask', trait: trait };
+                    // Decided with a real condition → it owes an explanation.
+                    if (isRealState(s) && !whyDone(st, trait)) return { phase: 'why', trait: trait };
+                }
+                return null;
             }
+            function phaseOf(n) { const p = posOf(n); return p ? p.phase : ''; }
             function firstEmpty() {
-                for (let n = 0; n < STATIONS.length; n++) if (phaseOf(n)) return n;
+                for (let n = 0; n < STATIONS.length; n++) if (posOf(n)) return n;
                 return STATIONS.length;
             }
 
@@ -23794,84 +23860,219 @@
                     + 'is your character’s transformation**, and we will look straight at it when the '
                     + 'six are done.\n\n---\n\n';
             }
-            function serveTraits(n) {
-                const st = STATIONS[n];
+            // ⭐⭐ v7.20.421 — SERIAL, ONE TRAIT AT A TIME (§4c.8b; Neil, 2026-08-04).
+            // *"If you present all of them, they'll most likely skip over the rest. They'll just
+            // choose one and skip over the rest. But if you say, okay, we're gonna start with
+            // wisdom and knowledge, and then give an example from a text — lots of examples… And
+            // then we say, okay, now I'm gonna present the first trait. So you show a trait. Does
+            // your character explore this trait? Yes or no."*
+            //
+            // The old multi-select ask is gone. It asked for every trait of a value at once, took
+            // ONE state for all of them, and could not describe a protagonist whose creativity is
+            // in excess while her open-mindedness is in deficit — which is Neil's own character.
+            const CW7_YES = 'Yes';
+            const CW7_NO = 'No';
+            const CW7_WANT = 'Not yet — but I want it';
+            // The value's frame, served ONCE per station as the first paced chunk. Folded into
+            // the same run as the first trait ask so §4b holds by construction: one bubble lands,
+            // the next waits on a tap.
+            function valueIntro(st) {
                 const t = TEACH[st.v.id];
-                phase = 'traits'; persist();
-                _walkSlot.clear('cw7');   // a tick list is a TAP — nothing typed may file here
                 const moment = st.when === 'begin' ? 'when your story OPENS' : 'by the time your story ENDS';
-                aiBubble(passLead(n) + bar(n, stationTitle(st))
-                    + '**' + st.v.name + '**\n\n' + t.what + '\n\n'
-                    + 'Its traits are: ' + st.v.traits.map(function (x) { return '**' + x + '**'; }).join(' · ') + '.\n\n'
-                    + 'Example — ' + t.deficit + '\n\n'
-                    + '**Which of these traits does your protagonist show ' + moment + '?** Tap every one that '
-                    + 'applies, then Continue. If they show none of them, that is a real answer too — tap the '
-                    + 'closest one and we will call it a deficit in a moment.');
-                chipBarMulti(st.v.traits, onValueTraitsDone);
-                helpBar(st);
-                resetSend();
+                return '**' + st.v.name + '**\n\n' + t.what + '\n\n'
+                    + 'Example — ' + t.balance + '\n\n'
+                    + 'I am going to take you through its traits **one at a time** — '
+                    + st.v.traits.map(function (x) { return '**' + _cw7TraitLabel(x) + '**'; }).join(' · ')
+                    + ' — and for each one you tell me whether your protagonist shows it ' + moment + '. '
+                    + 'Traits inside one value can pull in different directions, and that is what makes a '
+                    + 'character complex rather than a type.';
             }
-            // CONTENT: each tap ticks a real `traits` item on the row, through the student's own
-            // click path (_setRowControlChoice). Nothing lives only in the sidecar.
-            function onValueTraitsDone(picks) {
-                const st = STATIONS[i];
-                if (!st || st.kind !== 'value') { advance(); return; }
-                if (!picks.length) {
-                    // A REFUSAL IS HALF A CHANGE (law 4d) — re-ask in the same breath, and say why.
-                    // The row genuinely cannot complete with no trait ticked (Neil's #232 ruling),
-                    // so this is not tidiness: continuing would leave the student a section that
-                    // can never tick green and no idea why.
-                    aiBubble('Pick at least one — even a value your protagonist barely has shows up as **one** of '
-                        + 'these traits going missing. Tap the closest one; the balance/excess/deficit question '
-                        + 'straight after is where you say how much of it they have.');
-                    chipBarMulti(st.v.traits, onValueTraitsDone);
+            function traitAskText(st, trait, n) {
+                const t = TEACH[st.v.id];
+                const label = _cw7TraitLabel(trait);
+                const idx = st.v.traits.indexOf(trait) + 1;
+                const head = bar(n, stationTitle(st))
+                    + '**' + label + '** — trait ' + idx + ' of ' + st.v.traits.length + ' in ' + st.v.name + '\n\n';
+                // THE END PASS ASKS WHAT CHANGED, never from zero (§4c.8b).
+                if (st.when === 'end' && carried(st.v, trait)) {
+                    return head
+                        + 'At the **beginning** you said their ' + label.toLowerCase() + ' was **'
+                        + traitState('begin', st.v, trait).toLowerCase() + '**.\n\n'
+                        + 'Example — ' + t.excess + '\n\n'
+                        + '**Where is it by the END of your story?** If nothing has moved, say so — a trait '
+                        + 'that stays exactly where it started is an honest answer, and it tells you the '
+                        + 'story is not testing it.';
+                }
+                const verb = st.when === 'begin' ? 'show' : 'show by the END of your story';
+                return head
+                    + 'Example — ' + t.deficit + '\n\n'
+                    + '**Does your protagonist ' + verb + ' ' + label.toLowerCase() + '?**\n\n'
+                    + '- **' + CW7_YES + '** — it is there in the story, in some amount.\n'
+                    + '- **' + CW7_NO + '** — it is not part of this story.\n'
+                    + '- **' + CW7_WANT + '** — they do not have it, and you want them to gain it. '
+                    + 'Pick this and it goes on your build list; in the next lesson you decide the beat '
+                    + 'where they actually earn it.';
+            }
+            // `opts.defer` — this ask is a CONTINUATION of a paced run that has just emitted in
+            // this same frame (the orientation handing over). Without it the last orientation
+            // chunk and the value's frame land together, which is precisely the two-messages-at-
+            // once Neil reported (#247) arriving by a different route. serveCwChunks' own
+            // `deferFirst` attaches a Continue instead of emitting, so the rhythm holds.
+            function serveTraitAsk(n, trait, opts) {
+                const st = STATIONS[n];
+                phase = 'ask'; persist();
+                _walkSlot.clear('cw7');   // a chip is a TAP — nothing typed may file here
+                const isFirstTrait = st.v.traits[0] === trait;
+                const endCarried = (st.when === 'end' && carried(st.v, trait));
+                // FACTORY form, not an inline closure: cw-keymatch-harness reads chip-menu CALL
+                // SITES to check every menu is classified content-or-flow, and an inline
+                // `function (p) { onX(p, trait); }` hides the handler from it (it reads the
+                // captured variable as the menu name). A gate that cannot see a menu cannot check
+                // where its pick is filed, which is how the throughline and the unmet need were
+                // both lost.
+                const attach = function () {
+                    if (endCarried) chipBar(CW7_STATES, onTraitCondition(trait));
+                    else chipBar([CW7_YES, CW7_NO, CW7_WANT], onTraitDecision(trait));
                     helpBar(st);
                     resetSend();
+                };
+                if (isFirstTrait) {
+                    // TWO bubbles, so it PAGES (§4b): the value frame lands, then the first trait
+                    // ask waits behind a Continue. serveCwChunks is resume-safe by design.
+                    serveCwChunks([passLead(n) + valueIntro(st), traitAskText(st, trait, n)],
+                        { emit: aiBubble, onDone: attach, deferFirst: !!(opts && opts.defer) });
                     return;
                 }
-                userTurn(picks.join(', '));
-                let wrote = 0;
-                picks.forEach(function (p) { if (_setRowControlChoice(st.fid, 'traits', p)) wrote++; });
-                if (wrote < picks.length) {
-                    console.warn('WML CW7: ' + (picks.length - wrote) + ' trait tick(s) did not land on ' + st.fid);
+                if (opts && opts.defer) {
+                    // A single-bubble ask that must still wait its turn — same reason as above.
+                    serveCwChunks([traitAskText(st, trait, n)],
+                        { emit: aiBubble, onDone: attach, deferFirst: true });
+                    return;
                 }
-                serveState(i);
+                aiBubble(traitAskText(st, trait, n));
+                attach();
             }
-
-            function serveState(n) {
-                const st = STATIONS[n];
-                const t = TEACH[st.v.id];
-                phase = 'state'; persist();
-                _walkSlot.clear('cw7');   // a pick is a TAP
-                aiBubble(bar(n, stationTitle(st))
-                    + '**How much of it do they have?**\n\n'
-                    + '- **In balance** — the right amount, used well. ' + t.balance + '\n'
-                    + '- **In excess** — too much, unchecked. ' + t.excess + '\n'
-                    + '- **In deficit** — too little. ' + t.deficit + '\n\n'
-                    + 'Too much or too little of any virtue creates conflict, in stories and out of them. '
-                    + '**Which is it for your protagonist ' + (st.when === 'begin' ? 'at the start' : 'at the end') + '?**');
-                chipBar(CW7_STATES, onValueStatePick);
-                helpBar(st);
-                resetSend();
-            }
-            // CONTENT: files into the row's `state` control. EXCLUSIVE — a value cannot be in
-            // balance and in deficit at once, and a row showing two is not an answer.
-            function onValueStatePick(pick) {
+            // Yes / No / Not-yet. Every branch leaves a DOCUMENT footprint, which is what makes a
+            // 70-ask serial walk resumable (see CW7_NOT_EXPLORED).
+            function onTraitDecision(trait) { return function (pick) { _onTraitDecision(pick, trait); }; }
+            function _onTraitDecision(pick, trait) {
                 const st = STATIONS[i];
                 if (!st || st.kind !== 'value') { advance(); return; }
                 userTurn(pick);
-                if (!_setRowControlChoice(st.fid, 'state', pick, { exclusive: true })) {
-                    console.warn('WML CW7: state pick "' + pick + '" did not land on ' + st.fid);
+                if (pick === CW7_YES) { serveTraitCondition(i, trait); return; }
+                const label = _cw7TraitLabel(trait);
+                if (pick === CW7_NO) {
+                    if (!_setRowControlChoice(st.fid, _cw7TraitCtlId(trait), CW7_NOT_EXPLORED, { exclusive: true })) {
+                        console.warn('WML CW7: "not explored" did not land on ' + st.fid + ' / ' + trait);
+                    }
+                    // A REFUSAL IS HALF A CHANGE (law 4d): if this was the LAST trait and the whole
+                    // value is now "not explored", the row can never complete — so the student is
+                    // told, and given the way through, rather than left with a section that will
+                    // not tick and no idea why. Neil's ruling: *"if you don't have it, then you
+                    // need to implement it. So choose one that you think suits your character."*
+                    if (valueIsEmpty(st)) { serveValueRescue(i); return; }
+                    advance();
+                    return;
                 }
-                serveWhy(i);
+                applyWant(st, trait);
+            }
+            // WANT — the trait is absent in a way that MATTERS, so it is In deficit AND on the
+            // build list. Two writes, deliberately: the condition makes the value row answerable,
+            // the list is what the next lesson reads. Shared by the trait ask and the rescue,
+            // which each own their OWN transcript turn (the student tapped different words).
+            function applyWant(st, trait) {
+                const label = _cw7TraitLabel(trait);
+                if (!_setRowControlChoice(st.fid, _cw7TraitCtlId(trait), 'In deficit', { exclusive: true })) {
+                    console.warn('WML CW7: want→deficit did not land on ' + st.fid + ' / ' + trait);
+                }
+                try {
+                    _writeOutlineRowField(st.addFid,
+                        label + ' — they do not have it yet, and you want them to gain it.');
+                    if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                } catch (e) { console.warn('WML CW7: build-list write failed for ' + st.addFid + ' —', e && e.message); }
+                serveWhy(i, trait);
             }
 
-            function serveWhy(n) {
+            function serveTraitCondition(n, trait) {
+                const st = STATIONS[n];
+                const t = TEACH[st.v.id];
+                const label = _cw7TraitLabel(trait);
+                phase = 'cond'; persist();
+                _walkSlot.clear('cw7');   // a pick is a TAP
+                aiBubble(bar(n, stationTitle(st))
+                    + '**How much ' + label.toLowerCase() + ' do they have?**\n\n'
+                    + '- **In balance** — the right amount, used well. ' + t.balance + '\n'
+                    + '- **In excess** — too much, unchecked. ' + t.excess + '\n'
+                    + '- **In deficit** — too little, and it costs them. ' + t.deficit + '\n\n'
+                    + 'Too much or too little of any virtue creates conflict, in stories and out of them. '
+                    + '**Which is it for their ' + label.toLowerCase() + ' '
+                    + (st.when === 'begin' ? 'at the start' : 'at the end') + '?**');
+                chipBar(CW7_STATES, onTraitCondition(trait));
+                helpBar(st);
+                resetSend();
+            }
+            // EXCLUSIVE — a trait cannot be in balance and in deficit at once, and a control
+            // showing two is not an answer.
+            function onTraitCondition(trait) { return function (pick) { _onTraitCondition(pick, trait); }; }
+            function _onTraitCondition(pick, trait) {
+                const st = STATIONS[i];
+                if (!st || st.kind !== 'value') { advance(); return; }
+                userTurn(pick);
+                if (!_setRowControlChoice(st.fid, _cw7TraitCtlId(trait), pick, { exclusive: true })) {
+                    console.warn('WML CW7: condition "' + pick + '" did not land on ' + st.fid + ' / ' + trait);
+                }
+                serveWhy(i, trait);
+            }
+
+            // Every trait of this value answered, and not one of them a real condition.
+            function valueIsEmpty(st) {
+                return st.v.traits.every(function (tr) { return traitState(st.when, st.v, tr) === CW7_NOT_EXPLORED; });
+            }
+            // The way through, not a dead end (law 4d). Re-offers the value's traits as a CHOICE
+            // of what to build in — serial is the rule for asks, but this is one decision among
+            // alternatives, which §4c.8b keeps on one screen.
+            function serveValueRescue(n) {
+                const st = STATIONS[n];
+                phase = 'rescue'; persist();
+                _walkSlot.clear('cw7');
+                aiBubble(bar(n, stationTitle(st))
+                    + 'You have said your protagonist shows **none** of the traits in ' + st.v.name + '.\n\n'
+                    + 'That is allowed as a feeling, but not as an answer — a value nobody in your story '
+                    + 'has is a value your story is not about, and all six of these are in every human '
+                    + 'life somewhere. So pick the one you most want them to **gain**. It goes on your '
+                    + 'build list, and in the next lesson you decide the beat where they earn it.\n\n'
+                    + '**Which one suits your character?**');
+                chipBar(st.v.traits.map(_cw7TraitLabel), onValueRescuePick);
+                helpBar(st);
+                resetSend();
+            }
+            function onValueRescuePick(pick) {
+                const st = STATIONS[i];
+                if (!st || st.kind !== 'value') { advance(); return; }
+                userTurn(pick);
+                const trait = st.v.traits.filter(function (tr) { return _cw7TraitLabel(tr) === pick; })[0];
+                if (!trait) {
+                    console.warn('WML CW7: rescue chip did not resolve —', pick);
+                    serveValueRescue(i);        // never a dead end (law 4d)
+                    resetSend();
+                    return;
+                }
+                applyWant(st, trait);
+            }
+
+            // ⭐ v7.20.421 — ONE EXPLANATION PER TRAIT, APPENDED. Neil: *"and then maybe even an
+            // explanation. And maybe the explanation needs to get autofiled, and we just keep
+            // appending all the explanations into the section."* So the value row's text box
+            // accumulates a labelled line per trait rather than holding one answer for the whole
+            // value — which is also why this ask arms `accumulate` and carries the trait on the
+            // slot token (§4c.6: the cycle kind is stamped at the ask, never inferred).
+            function serveWhy(n, trait) {
                 const st = STATIONS[n];
                 phase = 'why'; persist();
                 if (st.kind === 'reflect') { serveReflect(n); return; }
-                const picked = stateOf(st)[0] || 'the state you chose';
-                const traits = traitsOf(st).join(', ');
+                const label = _cw7TraitLabel(trait);
+                const picked = traitState(st.when, st.v, trait) || 'the condition you chose';
+                const beganAt = (st.when === 'end') ? traitState('begin', st.v, trait) : '';
                 // DRAWN, NOT STORED, on the END pass only (§4c.7). Its text quotes what the
                 // student wrote in the BEGINNING row, and that row stays editable for ever — a
                 // stored copy would keep asserting a sentence they have since changed. The
@@ -23879,22 +24080,31 @@
                 // still holds the real record of the walk.
                 const emit = function () {
                     aiBubble(bar(n, stationTitle(st))
-                        + '**Now say it in your own words.**\n\n'
+                        + '**' + label + ' — now say it in your own words.**\n\n'
                         + 'A strong explanation:\n\n'
                         + '- names the **moment in your plot** where we would SEE this — not a summary of the whole story\n'
                         + '- says what it **costs** them, or what it wins them\n'
                         + '- one or two sentences is plenty; a quote from your own draft is welcome if you have one\n\n'
-                        + 'Example: *At the start, Amina’s courage is in deficit — she watches her brother take the '
+                        + 'Example: *At the start, Amina’s bravery is in deficit — she watches her brother take the '
                         + 'blame in the head teacher’s office and says nothing, because speaking up has never once '
                         + 'worked for her.*\n\n'
-                        + (st.when === 'end' && rowText(_cw7RowFieldId('begin', st.v.id))
-                            ? 'At the beginning you wrote:\n\n> ' + rowText(_cw7RowFieldId('begin', st.v.id))
-                              + '\n\n**What has changed by the end — and what in your plot changed it?**'
-                            : '**You said ' + st.v.name + ' is ' + picked.toLowerCase() + (traits ? ' (' + traits + ')' : '')
-                              + ' — where does your story show that?**'));
+                        + (beganAt && beganAt !== picked
+                            ? '**Their ' + label.toLowerCase() + ' has moved from ' + beganAt.toLowerCase()
+                              + ' to ' + picked.toLowerCase() + ' — what in your plot changed it?**'
+                            : beganAt
+                              ? '**Their ' + label.toLowerCase() + ' is still ' + picked.toLowerCase()
+                                + ' at the end — why has nothing moved it?**'
+                              : '**You said their ' + label.toLowerCase() + ' is ' + picked.toLowerCase()
+                                + ' — where does your story show that?**'));
                 };
+                // DRAWN, NOT STORED on the END pass (§4c.7): its text names the CURRENT beginning
+                // condition, and that stays editable in the document for ever, so a stored copy
+                // would keep asserting a fact the student has since changed.
                 if (st.when === 'end') _cwReplay(emit); else emit();
-                _walkSlot.arm('cw7', st.fid, { cycle: 'rewrite' });   // one self-contained answer per row
+                // `accumulate`, not `rewrite` (§4c.6): this row collects one line PER TRAIT, so a
+                // rewrite would wipe the traits already explained. `data.trait` is how the writer
+                // knows which trait it is filing — the fid alone cannot say.
+                _walkSlot.arm('cw7', st.fid, { cycle: 'accumulate', data: { trait: trait, state: picked } });
                 helpBar(st);
                 persist();
                 resetSend();
@@ -23903,12 +24113,21 @@
             // ── the three reflection asks ──────────────────────────────────────────────────
             // The shift is COMPUTED from the student's own twelve picks and shown to them, so the
             // ask is never a blank "which value changed most?" when the document already knows.
+            // v7.20.421: PER TRAIT, because that is where the condition now lives. A value can
+            // move in two directions at once — creativity settling while open-mindedness opens —
+            // and a value-level summary would have to pick one and hide the other.
             function shiftLines() {
                 const out = [];
                 CW7_VALUES.forEach(function (v) {
-                    const a = _rowControlPicks(_cw7RowFieldId('begin', v.id), 'state')[0] || '';
-                    const b = _rowControlPicks(_cw7RowFieldId('end', v.id), 'state')[0] || '';
-                    if (a && b && a !== b) out.push('- **' + v.name + ':** ' + a + ' → ' + b);
+                    v.traits.forEach(function (tr) {
+                        const a = traitState('begin', v, tr);
+                        const b = traitState('end', v, tr);
+                        if (!isRealState(a) && !isRealState(b)) return;
+                        if (a === b) return;
+                        const from = isRealState(a) ? a.toLowerCase() : 'not in the story';
+                        const to = isRealState(b) ? b.toLowerCase() : 'not in the story';
+                        out.push('- **' + _cw7TraitLabel(tr) + '** (' + v.name + '): ' + from + ' → ' + to);
+                    });
                 });
                 return out;
             }
@@ -23978,24 +24197,39 @@
             // The marker sits in the FIRST orientation chunk, deliberately. The run is paced, so a
             // student can leave after chunk one — if the marker lived in a later chunk, `oriented()`
             // would read false on their return and the whole orientation would replay from the top.
-            const ORIENT_MARK = 'what sits UNDERNEATH it';   // a phrase only orientation chunk 1 says
+            const ORIENT_MARK = 'Here is what we are going to do';   // a phrase only orientation chunk 1 says
+            // v7.20.421: the .420 phrase is still honoured. Changing the marker WITH the text
+            // would otherwise re-orient every student already part-way through the step — the
+            // marker identifies "has this person been oriented", and that fact did not stop being
+            // true because we rewrote the wording.
+            const ORIENT_MARK_LEGACY = 'what sits UNDERNEATH it';
             function oriented() {
                 try {
                     return (canvasChatHistory || []).some(function (m) {
-                        return m && m.role === 'assistant' && String(m.content || '').indexOf(ORIENT_MARK) !== -1;
+                        if (!m || m.role !== 'assistant') return false;
+                        const c = String(m.content || '');
+                        return c.indexOf(ORIENT_MARK) !== -1 || c.indexOf(ORIENT_MARK_LEGACY) !== -1;
                     });
                 } catch (e) { return false; }
             }
-            function needsOrientation() { return i === 0 && phaseOf(0) === 'traits' && !oriented(); }
-            function serveCurrent() {
+            // v7.20.421: ask whether station 0 has ANYTHING outstanding, never whether it is at a
+            // NAMED phase. The old form compared against 'traits', a phase name the serial walk
+            // retired — so the orientation silently stopped running, which is the .419 defect
+            // returning by a different door. A predicate that names a phase is a predicate that
+            // breaks the next time the phases change; "is this student at the very start, and have
+            // they been oriented?" is the fact, and it survives.
+            function needsOrientation() { return i === 0 && !!posOf(0) && !oriented(); }
+            function serveCurrent(opts) {
                 const st = STATIONS[i];
                 if (!st) { serveWrap(); return; }
                 if (needsOrientation()) { serveOrientation(); return; }
-                const p = phaseOf(i) || 'why';
                 if (st.kind === 'reflect') { serveReflect(i); return; }
-                if (p === 'traits') { serveTraits(i); return; }
-                if (p === 'state') { serveState(i); return; }
-                serveWhy(i);
+                const p = posOf(i);
+                // Nothing outstanding here — the document moved on under us (a hand edit, a
+                // resume after the last answer). advance() re-derives, so this can never dead-end.
+                if (!p) { advance(); return; }
+                if (p.phase === 'ask') { serveTraitAsk(i, p.trait, opts); return; }
+                serveWhy(i, p.trait);
             }
             function advance() {
                 i = firstEmpty();
@@ -24018,10 +24252,18 @@
                 // DRAWN, not stored — it names the current picks (§4c.7), and it fires again on
                 // every re-entry of a finished Step 7, which is what keeps the way back in alive.
                 _cwReplay(function () {
-                    aiBubble('**That is Step 7 done — all twelve values mapped, and the reflection with them.**\n\n'
-                        + (moved.length ? 'Your protagonist’s transformation, in your own answers:\n\n' + moved.join('\n') + '\n\n' : '')
-                        + 'This is the layer under your plot. Step 8 picks the scenes you will actually draft, and '
-                        + 'the scenes worth drafting are the ones where these values are tested.'
+                    const wanted = CW7_VALUES.map(function (v) { return rowText(_cw7AddRowFieldId(v.id)); })
+                        .filter(function (x) { return !!(x && x.trim()); });
+                    aiBubble('**That is Step 7 done — both passes mapped, and the reflection with them.**\n\n'
+                        + (moved.length ? 'Your protagonist’s transformation, trait by trait, in your own answers:\n\n' + moved.join('\n') + '\n\n' : '')
+                        + (wanted.length
+                            ? 'And you have a **build list** — traits you want them to gain that are not in the story yet. '
+                              + 'That list is at the bottom of your document.\n\n'
+                            : '')
+                        + 'This is the layer under your plot. **Next you take it back INTO your plot**: every trait you '
+                        + 'said is in the story has to actually be somewhere in your outline, and every trait on your '
+                        + 'build list needs the beat where they earn it. A value a reader is told about rather than '
+                        + 'shown is a value that is not in the story yet.'
                         + cwEndpointLine());
                 });
                 serveWrapRecall();
@@ -24087,10 +24329,19 @@
                 const target = STATIONS.filter(function (s) { return s.fid === slot.fid; })[0] || STATIONS[i];
                 if (!target) { serveWrap(); return; }
                 try {
-                    // `replace: true` — every ask here owns ONE self-contained answer (§4c.6
-                    // `rewrite`), which is also what makes the wrap's change-an-answer route file a
-                    // clean rewrite instead of stitching it onto the old one.
-                    if (_writeOutlineRowField(target.fid, clean, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    // v7.20.421 — TWO cycles in one walk, and the ask decides which (§4c.6):
+                    //  • a REFLECTION row owns ONE self-contained answer → `rewrite`, so the
+                    //    wrap's change-an-answer route files a clean replacement.
+                    //  • a VALUE row collects one labelled line PER TRAIT → `accumulate`, so a
+                    //    second trait's explanation must not wipe the first. The label is what
+                    //    whyDone() reads back, so it is structure, not decoration — change the
+                    //    format here and the walk loses its place (byte-pair rule).
+                    const tr = slot.data && slot.data.trait;
+                    const body = tr
+                        ? _cw7TraitLabel(tr) + ' — ' + (slot.data.state || '') + ': ' + clean
+                        : clean;
+                    const opts = (slot.cycle === 'rewrite') ? { replace: true } : {};
+                    if (_writeOutlineRowField(target.fid, body, opts) && typeof saveCanvasContent === 'function') saveCanvasContent();
                 } catch (e) { console.warn('WML CW7: write failed (non-fatal) for ' + target.fid + ' —', e && e.message); }
                 // ⛔ deliberately NO _tickOutlineRow here: these rows are multi-control, and that
                 // helper would replace their whole check-state and delete the traits and state the
@@ -24135,13 +24386,24 @@
             // was coming, so "at the beginning" read as decoration.
             function serveOrientation() {
                 serveCwChunks([
-                    'Your plot has a shape now. This step is about what sits UNDERNEATH it — what your story is actually *about*.',
-                    'Psychologists Peterson and Seligman spent three years, across 40 cultures and 2,500 years of thought, looking for what stays constant in human beings. They found **six values**: Wisdom and Knowledge · Courage · Humanity · Justice · Temperance · Transcendence.\n\nEvery heroic character is on a journey to embody them. Before the story begins they might hold some and lack others — and the story is them gaining what they lacked, or, in a darker arc, losing what they had.',
-                    '**Here is the idea that makes this useful rather than a personality quiz: too much or too little of any virtue creates conflict.** In *Frankenstein*, Victor’s curiosity runs with no restraint at all and makes a monster — brilliance without temperance. In *Macbeth*, courage untethered from conscience becomes tyranny. Neither man LACKS the virtue. They have it in **excess**.',
-                    '⭐ **So here is how this step works, and it is worth knowing before we start.**\n\nYou will map the same six values **TWICE**:\n\n- **First at the BEGINNING of your story** — who your protagonist is on page one.\n- **Then at the END** — who they have become.\n\n**The difference between those two is your character’s transformation.** That gap is what your whole plot exists to earn, and by the end of this step you will be able to see it written down.',
-                    'For each value I will ask you three quick things: which **traits** your protagonist shows, whether the value sits **in balance, in excess or in deficit**, and **where in your story** we would see it. Then the same six again for the end, and three short questions about what changed.\n\nAll six are compulsory, and that is deliberate: a value your protagonist barely has is **not a blank** — it is **in deficit**, and that is usually the most interesting answer on the page.',
+                    // ⭐ v7.20.421 (#246) — THE JOB FIRST. Neil, on the .420 version: *"it doesn't
+                    // say what we're gonna be doing… the students need to know beforehand that
+                    // they're gonna be talking about this."* The .420 orientation DID say it — in
+                    // chunk 4 of 6, by which point he had already formed his impression. This is a
+                    // re-order, not more words: the job, in order, in the FIRST bubble, with
+                    // **traits** named there because he calls them out as the thing students must
+                    // know is coming.
+                    '**Here is what we are going to do in this lesson.**\n\n'
+                        + '1. Take your protagonist through **six human values** — and, inside each one, its **traits**, one trait at a time.\n'
+                        + '2. For every trait: does your protagonist show it, and is it **in balance, in excess or in deficit**?\n'
+                        + '3. Do all of that **twice** — once for the BEGINNING of your story, once for the END.\n'
+                        + '4. Look at what moved. **That is your character’s transformation.**\n\n'
+                        + 'Nothing here is a personality quiz. This is the layer underneath your plot — what your story is actually *about*.',
+                    'Psychologists Peterson and Seligman spent three years, across 40 cultures and 2,500 years of thought, looking for what stays constant in human beings. They found **six values**: Wisdom and Knowledge · Courage · Humanity · Justice · Temperance · Transcendence.\n\nEach one contains a handful of **traits** — Wisdom and Knowledge holds creativity, curiosity, open-mindedness and love of learning. Those traits are what you will actually be answering about, and they are asked **one at a time** so none of them gets skipped.',
+                    '**Here is the idea that makes this useful: too much or too little of any virtue creates conflict.** In *Frankenstein*, Victor’s curiosity runs with no restraint at all and makes a monster — brilliance without temperance. In *Macbeth*, courage untethered from conscience becomes tyranny. Neither man LACKS the virtue. They have it in **excess**.\n\nAnd traits inside ONE value can pull in opposite directions: a character can be creative to the point of destruction and closed-minded at the same time. That is not a contradiction — it is what makes a character complex rather than a type.',
+                    'For each trait you get three answers: **Yes** (it is in the story), **No** (it is not part of this story), or **Not yet — but I want it**.\n\nThat third one matters. If your protagonist does not have something and you WANT them to have it, say so — it goes on a build list at the bottom of your document, and in the **next lesson** you take each one back into your plot and decide the exact beat where they earn it.\n\nWhen you say Yes, I will ask how much of it they have, and then where your story shows it.',
                     'Under every question you get **💡 More examples**, **📖 Guidance**, **🧩 Story Components** and **🗒 Story Spine**. All free — and there is no waiting on me in this step, everything here is instant.\n\n**Don’t overthink it.** Rough answers now; you will sharpen all of it across your drafts.\n\nLet’s start at the beginning of your story, with the first value.',
-                ], { emit: aiBubble, onDone: function () { serveCurrent(); } });
+                ], { emit: aiBubble, onDone: function () { serveCurrent({ defer: true }); } });
             }
 
             function onReply(reply) {
@@ -24178,7 +24440,8 @@
                     // .330 lesson): going active here would leave the greeting's hand-over with
                     // nothing to hand to, and the student on help chips and no question.
                     const pristine = firstEmpty() === 0
-                        && !traitsOf(STATIONS[0]).length && !stateOf(STATIONS[0]).length && !rowText(STATIONS[0].fid);
+                        && !STATIONS[0].v.traits.some(function (tr) { return !!traitState('begin', STATIONS[0].v, tr); })
+                        && !rowText(STATIONS[0].fid);
                     if (!raw && pristine) {
                         active = false; pending = false;
                         console.log('WML CW7: pristine document and no sidecar — fresh start, not a resume.');
@@ -24186,16 +24449,24 @@
                     }
                     done = !!d.done;
                     i = firstEmpty();
+                    // v7.20.421 (#247): every deferred serve stands down if ANOTHER route spoke
+                    // while it was waiting. `emitted` is the observation, not a list of routes.
+                    const mark = emitted;
+                    const standDown = function (what) {
+                        if (emitted === mark) return false;
+                        console.log('WML CW7: another route already served — skipping the deferred ' + what + '.');
+                        return true;
+                    };
                     if (i >= STATIONS.length) {
                         active = false; pending = false; done = true;
                         console.log('WML CW7: walk finished — re-serving the wrap’s change route');
-                        setTimeout(function () { _cwReplay(serveWrap); }, 500);
+                        setTimeout(function () { if (standDown('wrap')) return; _cwReplay(serveWrap); }, 500);
                         return false;
                     }
                     phase = phaseOf(i) || 'why';
                     active = true; pending = false;
                     console.log('WML CW7: resumed at station ' + (i + 1) + '/' + STATIONS.length + ' (phase ' + phase + ')');
-                    setTimeout(reattach, 400);
+                    setTimeout(function () { if (standDown('reattach')) return; reattach(); }, 400);
                     return true;
                 } catch (e) { return false; }
             }
@@ -35568,6 +35839,11 @@
                         if (ctl.id) group.setAttribute('data-ctl-id', ctl.id);
                         if (ctl.type) group.setAttribute('data-ctl-type', ctl.type);
                         if (ctl.choice) group.setAttribute('data-choice', '1');
+                        // v7.20.421: OPTIONAL control (Step-7 per-trait conditions). The DOM
+                        // section-reader's no-stamp fallback rebuilds a control object from these
+                        // attributes, so the flag has to reach the DOM or that path would demand
+                        // an answer on every trait — the exact rule this flag exists to relax.
+                        if (CTL && CTL.controlOptional(ctl)) group.setAttribute('data-ctl-optional', '1');
                         // v7.20.136: the group's DOM ref, so the completion stamp can reach it.
                         // `choice` and `techniques` controls render as buttons/chips with NO native
                         // input, so the DOM section-reader (checkSectionComplete) cannot scrape
@@ -35853,7 +36129,22 @@
                         // row class is cosmetic and must not auto-tick a LOCKED empty row, which
                         // .complete deliberately does for the SECTION count. v7.19.679.)
                         stampGroups();
-                        const criteriaOk = CTL ? rendered.every(e => CTL.controlOk(e.ctl, liveState(e))) : true;
+                        let criteriaOk = CTL ? rendered.every(e => CTL.controlOk(e.ctl, liveState(e))) : true;
+                        // ⭐ v7.20.421 — REQUIRE-ANY, stamped for the DOM reader exactly as the
+                        // per-control result is (the .137 root fix, one level up). A row-level
+                        // rule cannot be expressed by per-group stamps: every optional group can
+                        // legitimately stamp `1` while the row is still unanswered. Without the
+                        // row stamp the section reader would tick a value the student never
+                        // touched — the same silent false-green as the `optional: true` bug Neil
+                        // caught on the first Step-7 test.
+                        if (CTL && CTL.requiresAny(crit)) {
+                            const _ignore = Array.isArray(crit.anyIgnore) ? crit.anyIgnore : null;
+                            const anyOk = rendered.some(e => CTL.controlStarted(e.ctl, liveState(e), _ignore));
+                            if (dom.getAttribute('data-row-require-any') !== '1') dom.setAttribute('data-row-require-any', '1');
+                            const wantAny = anyOk ? '1' : '0';
+                            if (dom.getAttribute('data-row-any') !== wantAny) dom.setAttribute('data-row-any', wantAny);
+                            if (!anyOk) criteriaOk = false;
+                        }
                         // v7.20.348: a control-only row has no text to have — its controls are the
                         // whole answer, so requiring text here would leave it permanently unticked
                         // (the defect Neil hit: the archetype row could never complete once the
@@ -38681,17 +38972,50 @@
             return out;
         };
         // .413 wrote ticks under `strengths`; the control is `traits` from .414.
-        const _cw7MigrateCheck = (raw) => {
-            if (!raw || raw.indexOf('strengths') === -1) return raw;
-            try {
-                const st = JSON.parse(raw.replace(/&quot;/g, '"'));
-                if (st && st.c && st.c.strengths && !st.c.traits) {
-                    st.c.traits = st.c.strengths;
-                    delete st.c.strengths;
-                    return JSON.stringify(st).replace(/"/g, '&quot;');
+        //
+        // ⭐⭐ v7.20.421 adds the SECOND migration, and it is a real one rather than a rename: the
+        // condition moved from the VALUE to the TRAIT (#245). A .414-.420 row holds one `traits`
+        // tick-list plus ONE `state`; the current row holds one control PER TRAIT, each carrying
+        // its own condition.
+        //
+        // THE CARRY IS FAITHFUL, NOT CLEVER: every trait the student ticked takes the condition
+        // they chose for that value. They asserted exactly that — the old row simply could not
+        // say it per trait — so nothing is invented and nothing is dropped. A trait they never
+        // ticked stays untouched, which now reads as "not explored yet" and is re-asked by the
+        // walk rather than guessed at here.
+        //
+        // `fid` is needed because a checklist stores INDICES: without knowing which value's row
+        // this is, index 2 cannot be resolved to a trait. It is passed by _cw7MergeScaffold,
+        // which has the id in hand.
+        const _cw7MigrateCheck = (raw, fid) => {
+            if (!raw || raw.indexOf('&quot;c&quot;') === -1) return raw;
+            let st = null;
+            try { st = JSON.parse(raw.replace(/&quot;/g, '"')); } catch (e) { return raw; }
+            if (!st || !st.c) return raw;
+            let touched = false;
+            if (st.c.strengths && !st.c.traits) { st.c.traits = st.c.strengths; delete st.c.strengths; touched = true; }
+            // → per-trait. Only fires when BOTH halves of the old shape are present; a half-answered
+            // row has nothing honest to carry, so it is left for the walk to ask again.
+            const tIdx = (st.c.traits && Array.isArray(st.c.traits.checked)) ? st.c.traits.checked : null;
+            const sIdx = (st.c.state && Array.isArray(st.c.state.checked)) ? st.c.state.checked : null;
+            if (tIdx && sIdx && tIdx.length && sIdx.length) {
+                const v = CW7_VALUES.filter((x) => fid === _cw7RowFieldId('begin', x.id) || fid === _cw7RowFieldId('end', x.id))[0];
+                if (v) {
+                    tIdx.forEach((k) => {
+                        const trait = v.traits[k];
+                        if (!trait) return;
+                        // The condition INDEX is unchanged: CW7_TRAIT_CHOICES is CW7_STATES with
+                        // "Not explored" APPENDED, so 0/1/2 still mean the same three words.
+                        st.c[_cw7TraitCtlId(trait)] = { checked: [sIdx[0]] };
+                    });
+                    delete st.c.traits;
+                    delete st.c.state;
+                    touched = true;
+                } else {
+                    console.warn('WML CW7: could not resolve a value for ' + fid + ' — its ticks were left as they were.');
                 }
-            } catch (e) { /* leave it exactly as it was */ }
-            return raw;
+            }
+            return touched ? JSON.stringify(st).replace(/"/g, '&quot;') : raw;
         };
         // The whole transform, as ONE pure function of two strings — so bin/cw7-doc-gate.js can run
         // the REAL merge against a REAL v7.20.413 document (bin/fixtures/) instead of a rig's
@@ -38707,7 +39031,7 @@
             ids.forEach((id) => {
                 const was = cur[id];
                 if (!was) return;
-                const check = _cw7MigrateCheck(was.check);
+                const check = _cw7MigrateCheck(was.check, id);
                 let tag = fresh[id].tag;
                 if (check) tag = tag.replace('<div', '<div data-check-state="' + check + '"');
                 html = html.replace(fresh[id].whole, tag + was.inner + '</div>');
@@ -42786,7 +43110,12 @@
             // of his own "too much or too little" sentence above, and add no new teaching.
             html += sectionHTML('question', 'How to Read the Scale', false, null,
                 '<h3>How to read the scale</h3>' +
-                '<p>For every value below you will choose one of three answers, and they map onto the scale above.</p>' +
+                // v7.20.421: per TRAIT, not per value (#245). The old wording said "for every
+                // value below you will choose one of three answers", which is no longer what the
+                // tables ask — and a page that teaches a scale the controls do not use is the
+                // kind of quiet mismatch a student reads as their own mistake.
+                '<p>For every trait your protagonist actually shows you will choose one of three answers, and they map onto the scale above. ' +
+                'Leave a trait untouched if your protagonist does not show it at all.</p>' +
                 '<p><strong>In excess</strong> \u2014 too much of it. The virtue is there in force, unchecked by the others, and it is causing harm: Macbeth\u2019s courage without conscience.</p>' +
                 '<p><strong>In deficit</strong> \u2014 too little of it. The virtue is missing or faint, and your protagonist suffers or causes suffering for the lack of it.</p>' +
                 '<p><strong>In balance</strong> \u2014 the equilibrium. Enough of it, held in check by the other values.</p>' +
@@ -42798,6 +43127,10 @@
             // Values at End — same 6 value rows
             html += dividerHTML('YOUR PROTAGONIST\u2019S VALUES AT THE END');
             html += buildCW7ValuesSection('end');
+            // v7.20.421 (#249) — what they want their protagonist to GAIN. Filled by the walk's
+            // third chip; the hand-over to the next lesson, where each line becomes a real beat.
+            html += dividerHTML('TO BUILD INTO YOUR STORY');
+            html += buildCW7AddSection();
             // Reflection
             html += dividerHTML('REFLECTION');
             html += sectionHTML('plan', 'Reflection', true, null,
@@ -47186,6 +47519,19 @@
         { id: 'transcendence', name: 'Transcendence', traits: ['appreciation of beauty and excellence', 'gratitude', 'hope', 'humour', 'spirituality'] },
     ];
     const CW7_STATES = ['In balance', 'In excess', 'In deficit'];
+    // ⭐ v7.20.421 — the fourth answer, and it is the one that makes the walk RESUMABLE.
+    // A student who says "no, my protagonist doesn't show this trait" is giving a real answer,
+    // but under the three-state scale it leaves NO trace in the document — and this walk derives
+    // its position from the document, never from a counter. Without a footprint for "no", every
+    // reload would re-ask the same trait for ever. So "no" ticks `Not explored`: honest on the
+    // page, hand-editable, and it moves the walk on.
+    //
+    // ⚠️ It deliberately does NOT count as answering the value (see `anyIgnore` on the row).
+    // *Not explored* means the trait is not part of this story; *In deficit* means it is absent
+    // in a way that MATTERS. That distinction is the teaching, not bookkeeping — Neil's own
+    // protagonist is in deficit on love of learning, which is a plot point, not a blank.
+    const CW7_NOT_EXPLORED = 'Not explored';
+    const CW7_TRAIT_CHOICES = CW7_STATES.concat([CW7_NOT_EXPLORED]);
 
     // THE canonical Step-7 field id. One producer, every id in this step comes from it
     // (§5d key-match: a write key and a read key that are built by two different pieces of
@@ -47198,6 +47544,47 @@
     }
     const CW7_FID_PREFIX = _cw7RowFieldId('', '').replace(/-+$/, '') + '-';   // → 'cw-step-7-', DERIVED
 
+    // ⭐⭐ v7.20.421 — THE CONDITION BELONGS TO THE TRAIT, NOT THE VALUE (Neil, 2026-08-04,
+    // FIXLIST #245, found by using the shipped step on his own story).
+    //
+    // *"With my character, her CREATIVITY is in excess. She's too creative… And then with her
+    // OPEN-MINDEDNESS, I would say she's not open-minded enough. So that would be in deficit. And
+    // I would even go as far as say that LOVE OF LEARNING is in deficit as well."*
+    //
+    // All three of those are traits of ONE value (Wisdom and Knowledge), and the shipped row could
+    // hold exactly one balance/excess/deficit for the whole value — so his own protagonist could
+    // not be described in it. That is the normal case for a complex character, not an edge case:
+    // *"if I wanna develop a really complex character, which is what I do wanna do, then I can't
+    // do that."*
+    //
+    // SO: one CONTROL PER TRAIT, each holding the three conditions. Ticking a condition IS
+    // choosing the trait — there is no separate "which traits?" control any more, because a
+    // second control asking the same question in a weaker form is how the two drift apart.
+    // An untouched trait means "not explored", which is why every trait control is `optional`.
+    //
+    // The row still cannot be empty: `requireAny` forces at least one trait to carry a condition,
+    // which is his own instinct in his own words — *"I think it's true that we should force them
+    // to choose… they need to choose at least one."* Both flags are v7.20.421 additions to the
+    // ONE rule (WML.outlineRow), so the row ✓, the section ✓ and the header ✓ all learned them
+    // together rather than three times.
+    //
+    // ⚠️ ONE PRODUCER for the control id (§5d): the document builder, the walk and the heal all
+    // call this. A trait's id is derived from its own name, so adding a trait to CW7_VALUES needs
+    // no second edit anywhere.
+    function _cw7TraitCtlId(trait) {
+        return 't-' + String(trait || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+    // The wanted-but-absent list: one row per VALUE, appended to by the walk (#249). Kept in its
+    // own field-id family so the walk, the heal and the Step-8 hand-over can find it by shape
+    // rather than by scanning prose.
+    function _cw7AddRowFieldId(valueId) {
+        return 'cw-step-7-add-' + valueId;
+    }
+    function _cw7TraitLabel(trait) {
+        const s = String(trait || '');
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
     // One section = one of the workbook's two tables. `when` is 'begin' | 'end'.
     function buildCW7ValuesSection(when) {
         const isBegin = when === 'begin';
@@ -47209,17 +47596,64 @@
                 id: v.id,
                 label: v.name,
                 prompt: 'Explanation / quotes — how does your story show this?',
-                controls: [
-                    { id: 'traits', label: 'Which of these traits does your story explore?', type: 'checklist', choice: true, items: v.traits },
-                    { id: 'state', label: 'Is it…', type: 'checklist', choice: true, items: CW7_STATES },
-                ],
+                // v7.20.421: one control per TRAIT. `optional` on each (an untouched trait is not
+                // explored) + `requireAny` on the row (at least one trait must carry a condition).
+                requireAny: true,
+                anyIgnore: [CW7_NOT_EXPLORED],
+                controls: v.traits.map(function (t) {
+                    return {
+                        id: _cw7TraitCtlId(t),
+                        label: _cw7TraitLabel(t),
+                        type: 'checklist',
+                        choice: true,
+                        optional: true,
+                        items: CW7_TRAIT_CHOICES,
+                    };
+                }),
             }, _cw7RowFieldId(when, v.id));
         });
         return sectionHTML('plan', label, true, null,
             '<h3>Your Protagonist’s Values ' + (isBegin ? 'at the Beginning' : 'at the End') + '</h3>' +
-            '<p><em>Work through all six values ' + moment + '. For each one: tick at least one trait, say whether that virtue is ' +
-            'in balance, in excess or in deficit, and explain it in your own words or with a quote. ' +
-            'A value your protagonist barely has is not a blank — it is in deficit, and that is often the most interesting answer.</em></p>' +
+            '<p><em>Work through all six values ' + moment + '. For each trait your protagonist actually shows, say whether it is ' +
+            'in balance, in excess or in deficit — and leave the traits they do not show untouched. ' +
+            'Traits inside one value can pull in different directions: a character can be creative to the point of destruction ' +
+            'and closed-minded at the same time, and that is what makes them complex. ' +
+            'A trait your protagonist barely has is not a blank — it is in deficit, and that is often the most interesting answer.</em></p>' +
+            rows
+        );
+    }
+
+    // ⭐ v7.20.421 (#249) — WHAT THEY WANT TO BUILD IN. Neil: *"they might think, oh actually I
+    // don't have this trait, but I want it. So they can choose the trait, and we can let them know
+    // that if you don't have it, you can add it after… I think in step seven, if they say that
+    // they wanna add something to it, there needs to be something in the document which shows
+    // that."*
+    //
+    // One row per VALUE rather than per trait: the count of wanted traits is unknowable at bake
+    // time and these rows are BAKED into the saved document, so a per-trait row set would either
+    // be 23 mostly-empty rows or need a dynamic scaffold. The walk APPENDS a labelled line per
+    // wanted trait, which reads as a list and stays one stable row.
+    //
+    // Every row is `optional` — a student whose protagonist already shows what they need adds
+    // nothing here, and must not be left with a section that can never tick green.
+    // This section is also the hand-over to the NEXT lesson (Update Your Plot): the gain has to
+    // land in a real Step-6 beat or Step 7 is an audit that changes nothing.
+    function buildCW7AddSection() {
+        let rows = '';
+        CW7_VALUES.forEach(function (v) {
+            rows += outlineRowHTML({
+                id: 'add-' + v.id,
+                label: v.name,
+                prompt: 'Traits you want your protagonist to GAIN in this value — and why',
+                optional: true,
+            }, _cw7AddRowFieldId(v.id));
+        });
+        return sectionHTML('plan', 'To Build Into Your Story', true, null,
+            '<h3>To Build Into Your Story</h3>' +
+            '<p><em>Anything you said your protagonist does not have yet but you WANT them to gain lands here. ' +
+            'Leave it empty if there is nothing — it is not a question you have to answer. ' +
+            'In the next lesson you will take each one back into your plot outline and decide the beat where it actually happens, ' +
+            'because a trait a character gains off the page is a trait the reader never sees them earn.</em></p>' +
             rows
         );
     }

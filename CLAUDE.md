@@ -131,6 +131,35 @@
       answer is "several"** — a main pick may stage into an optional "any others?" multi
       (the CW4 unmet-needs pattern, v7.20.285). A pick is a transcript-visible user turn,
       never `hidden`.
+   8b. **⭐⭐ SERIAL, NEVER A MENU — a set of things that each need a decision is walked ONE
+      AT A TIME (Neil, 2026-08-04, ruled as a general UX law: *"all questions as much as
+      possible and everything should always be serial… that needs to be a rule. I think
+      that's, like, an important user experience rule"*).**
+      **THE REASON, in his words:** *"if you present all of them, they'll most likely skip
+      over the rest. They'll just choose one and skip over the rest."* A menu turns N
+      judgements into one judgement plus N−1 skips. Serial makes every item cost a
+      deliberate tap, which is the whole point — the student has to actually consider the
+      one in front of them.
+      **THE DISCRIMINATOR, so this does not over-fire — ask what each option IS:**
+      - **Each option needs its own decision → SERIAL.** The 23 Step-7 traits, a list of
+        techniques to consider, beats to confirm, criteria to self-check. Present ONE, ask
+        for a verdict on it (`Yes / No`, a condition, a rating), then the next. A `No` must
+        cost exactly one tap so the walk stays cheap for the items that don't apply.
+      - **The options are mutually-exclusive ALTERNATIVES and only one applies → ONE
+        screen.** "Which plot structure?" is a single choice among 8, not 8 decisions;
+        walking it serially would be strictly worse. §8 above still governs this case.
+      **AND WHAT SERIAL BUYS THAT A MENU CANNOT:** each item gets its own worked EXAMPLE
+      at the moment it is asked (§4c.2, §4c.9 rung 0) — impossible in a menu, where the
+      examples would have to be either absent or a wall. **Neil explicitly overrules the
+      example-count finding in `research/learning-WITHOUT-AI` for this shape**: *"I know the
+      research says don't worry about examples. I don't agree with that, that's not from my
+      experience. In my experience, the examples really help students."* That is a ruling —
+      do not re-argue it from the research doc.
+      **THE COST, stated so it is designed for and not discovered:** serial multiplies turn
+      count, so §4b pacing and §4c.6 banking are load-bearing, and a long serial run needs
+      resume to land the student back on the exact item they were on (not the top of the
+      value/section). Design the carry-forward for any SECOND pass over the same set — a
+      re-walk of items already decided should ask what CHANGED, never re-ask from zero.
    9. **⭐ THE HELP LADDER — Sophia is the LAST rung, never the first (Neil, 2026-07-25).**
       *"If we make it so that the students have lots of examples and very clear criteria,
       they'll become much less reliant on the API… maybe they could ask Sophia, but only as

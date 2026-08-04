@@ -52,11 +52,23 @@ function evalAfter(label) {
 }
 const CW7_VALUES = evalAfter('const CW7_VALUES =');
 const CW7_STATES = evalAfter('const CW7_STATES =');
-const fidIdx = SRC.indexOf('function _cw7RowFieldId(');
-if (fidIdx < 0) { console.error('❌ _cw7RowFieldId not found — the ONE field-id producer is gone'); process.exit(1); }
-// eslint-disable-next-line no-new-func
-const _cw7RowFieldId = new Function('return ' + SRC.slice(fidIdx, braceSliceFrom(SRC, fidIdx, '{', '}').end)
-    .replace(/^function\s+\w+/, 'function') + ';')();
+// v7.20.421: lifted, never re-typed — a second copy of "Not explored" would let the walk and the
+// document disagree about the one answer that means "this trait is not in the story".
+const CW7_NOT_EXPLORED = (SRC.match(/const CW7_NOT_EXPLORED = '([^']+)'/) || [])[1];
+if (!CW7_NOT_EXPLORED) { console.error('❌ CW7_NOT_EXPLORED not found — this harness would go blind'); process.exit(1); }
+const CW7_TRAIT_CHOICES = CW7_STATES.concat([CW7_NOT_EXPLORED]);
+// Every id producer the walk uses, sliced from the shipped source (§5d: one producer, both sides).
+function fnFrom(name) {
+    const i = SRC.indexOf('function ' + name + '(');
+    if (i < 0) { console.error('❌ ' + name + ' not found — the ONE id producer is gone'); process.exit(1); }
+    // eslint-disable-next-line no-new-func
+    return new Function('return ' + SRC.slice(i, braceSliceFrom(SRC, i, '{', '}').end)
+        .replace(/^function\s+\w+/, 'function') + ';')();
+}
+const _cw7RowFieldId = fnFrom('_cw7RowFieldId');
+const _cw7TraitCtlId = fnFrom('_cw7TraitCtlId');
+const _cw7TraitLabel = fnFrom('_cw7TraitLabel');
+const _cw7AddRowFieldId = fnFrom('_cw7AddRowFieldId');
 
 const ctlIdx = SRC.indexOf('const _cwValuesCtl = (function () {');
 if (ctlIdx < 0) { console.error('❌ _cwValuesCtl not found in wml-assessment.js'); process.exit(1); }
@@ -67,26 +79,47 @@ const FIDS = [];
 ['shift', 'align', 'pressure'].forEach((s) => FIDS.push(_cw7RowFieldId('reflect', s)));
 const VALUE_FIDS = FIDS.slice(0, CW7_VALUES.length * 2);
 const REFLECT_FIDS = FIDS.slice(CW7_VALUES.length * 2);
+// v7.20.421 (#249): the build-list rows. Registered with the rig so a write to one is not counted
+// as a lost write, but kept OUT of FIDS — they are legitimately empty for most students, so a
+// "no row left empty" assertion over them would be false by construction.
+const ADD_FIDS = CW7_VALUES.map((v) => _cw7AddRowFieldId(v.id));
+const ALL_FIDS = FIDS.concat(ADD_FIDS);
 
-// The real roster for each control, so the rig can refuse a label the document does not carry.
-function ctlItemsFor(fid, ctlId) {
-    if (ctlId === 'state') return CW7_STATES;
-    const v = CW7_VALUES.filter((x) => fid.indexOf('-' + x.id) !== -1)
-        .sort((a, b) => b.id.length - a.id.length)[0];
-    return v ? v.traits : [];
+// The value a field id belongs to. Longest-id-first because `wisdom` would otherwise also match
+// nothing and `courage`/`humanity` share no prefix — the sort keeps it honest if one ever does.
+function valueOf(fid) {
+    return CW7_VALUES.filter((x) => fid.indexOf('-' + x.id) !== -1)
+        .sort((a, b) => b.id.length - a.id.length)[0] || null;
 }
+// The real roster for each control, so the rig can refuse a label the document does not carry.
+// v7.20.421: EVERY control on a value row is a trait control, and they all offer the same four
+// answers. A control id the document does not build returns [] — which makes the rig report the
+// walk as ticking a control that does not exist, rather than passing silently.
+function ctlItemsFor(fid, ctlId) {
+    const v = valueOf(fid);
+    if (!v) return [];
+    return v.traits.some((t) => _cw7TraitCtlId(t) === ctlId) ? CW7_TRAIT_CHOICES : [];
+}
+// What condition is this trait sitting at, read the way the walk reads it.
+const traitStateIn = (w, fid, trait) => ((w.ctls.get(fid + '|' + _cw7TraitCtlId(trait)) || [])[0] || '');
+const isRealState = (s) => CW7_STATES.indexOf(s) !== -1;
 
 function world(opts) {
     opts = opts || {};
     return makeWorld(CTL_SRC, Object.assign({
         task: 'cw_step_7',
-        fids: FIDS,
+        fids: ALL_FIDS,
         ok: ok,                     // enables the rig's automatic liveness check
         ctlItemsFor: ctlItemsFor,
         extraDeps: {
             CW7_VALUES: CW7_VALUES,
             CW7_STATES: CW7_STATES,
+            CW7_NOT_EXPLORED: CW7_NOT_EXPLORED,
+            CW7_TRAIT_CHOICES: CW7_TRAIT_CHOICES,
             _cw7RowFieldId: _cw7RowFieldId,
+            _cw7TraitCtlId: _cw7TraitCtlId,
+            _cw7TraitLabel: _cw7TraitLabel,
+            _cw7AddRowFieldId: _cw7AddRowFieldId,
         },
     }, opts));
 }
@@ -98,32 +131,70 @@ function world(opts) {
 // explicitly instead, which is also what lets a test assert WHICH one it is on.
 const isNav = (c) => /Continue/.test(String(c.textContent));
 const isState = (c) => CW7_STATES.indexOf(String(c.textContent).replace(/^✓ /, '')) !== -1;
+const chipText = (c) => String(c.textContent).replace(/^✓ /, '');
+const chipNamed = (w, label) => w.chips().filter((c) => chipText(c) === label)[0];
 
-// A PACED teaching run: one bubble, one Continue, nothing else on the bar (law 4b).
+// ⭐⭐ v7.20.421 (#247) — ONE BUBBLE PER TAP, ASSERTED. This is the assertion the previous gate
+// did not have, and its absence is exactly why Neil received two messages at once on .420: the
+// suite proved the paced run REACHED the ask, never that only ONE bubble landed per Continue.
+// It is pure counting, so it cannot rot into a style note.
 function tapThroughPacing(w, limit) {
     for (let g = 0; g < (limit || 12); g++) {
         const chips = w.chips();
         if (chips.length !== 1 || !isNav(chips[0])) return true;
+        const before = w.bubbles.length;
         w.tap(chips[0]);
+        const landed = w.bubbles.length - before;
+        ok(landed === 1, 'PACING: ' + landed + ' bubbles landed on one Continue tap — a code-served '
+            + 'run must emit exactly ONE and gate the next behind a chip (law 4b). This is #247: '
+            + '"I received them both at the same time, rather than step by step."');
     }
     return false;
 }
 
-// Drive one value station the way a student does: tick a trait, Continue, tap a state, write.
-function playStation(w, traitIdx, stateLabel, text) {
+// ── DRIVING A SERIAL STATION (v7.20.421) ──────────────────────────────────────────────────────
+// A station is now: [value frame → Continue] → per trait { Yes/No/Not-yet → condition → why }.
+// `plan` maps trait index → what the student does with it: a CW7_STATES label means "Yes, and it
+// is that", 'No' means not in the story, 'Want' means not yet but I want it.
+function playTrait(w, decision, text) {
     tapThroughPacing(w);
     const chips = w.chips();
-    const traits = chips.filter((c) => !isNav(c));
-    if (!traits.length) return false;
-    w.tap(traits[Math.min(traitIdx || 0, traits.length - 1)]);
-    const cont = w.chips().filter(isNav)[0];
-    if (!cont) return false;
-    w.tap(cont);
-    const st = w.chips().filter((c) => String(c.textContent) === stateLabel)[0];
+    if (!chips.length) return false;
+    // The END pass asks a carried trait for its condition DIRECTLY — no Yes/No in front of it.
+    const askingCondition = chips.some(isState) && !chipNamed(w, 'Yes');
+    if (decision === 'No' || decision === 'Want') {
+        const label = decision === 'No' ? 'No' : 'Not yet — but I want it';
+        const chip = chipNamed(w, label);
+        if (!chip) return false;
+        w.tap(chip);
+        if (decision === 'No') return true;                 // no explanation owed
+        w.say(text || 'she has never once been asked to.');  // Want ⇒ In deficit ⇒ owes a why
+        return true;
+    }
+    if (!askingCondition) {
+        const yes = chipNamed(w, 'Yes');
+        if (!yes) return false;
+        w.tap(yes);
+    }
+    const st = chipNamed(w, decision);
     if (!st) return false;
     w.tap(st);
-    w.say(text);
+    w.say(text || 'she says nothing in the head teacher’s office.');
     return true;
+}
+// Drive a whole value station: one decision per trait, in document order.
+function playStation(w, plan, text) {
+    const v = plan.value || null;
+    const n = (v ? v.traits.length : (plan.count || 5));
+    for (let k = 0; k < n; k++) {
+        if (!playTrait(w, plan.decisions[k] || 'No', text)) return false;
+    }
+    return true;
+}
+// The simplest honest station: first trait in deficit, the rest not in the story.
+function playSimpleStation(w, v, text) {
+    const decisions = v.traits.map((_t, k) => (k === 0 ? 'In deficit' : 'No'));
+    return playStation(w, { value: v, decisions: decisions }, text);
 }
 
 async function main() {
@@ -148,20 +219,22 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
     // Orientation is PACED (law 4b) — more than one bubble must never land in a single frame.
     ok(w.bubbles.length >= 1, 'full run: nothing was served on start');
     ok(tapThroughPacing(w, 12), 'full run: the paced orientation never handed over to a station');
-    ok(w.chips().length > 1, 'full run: the first station did not open on its trait multi-select');
+    ok(!!chipNamed(w, 'Yes'), 'full run: the first station did not open on its per-trait Yes/No ask');
 
     let guard = 0;
-    while (guard++ < 120 && w.ctl.active) {
+    while (guard++ < 400 && w.ctl.active) {
         const before = w.bubbles.length;
         const chips = w.chips();
         if (chips.some((c) => /Change an answer/.test(String(c.textContent)))) break;   // the wrap
         if (chips.length) {
             const state = chips.filter(isState)[0];
             if (state) { w.tap(state); continue; }
-            const traits = chips.filter((c) => !isNav(c));
-            if (traits.length) { w.tap(traits[0]); }        // tick one, then Continue in the SAME pass
-            const cont = w.chips().filter(isNav)[0];
+            const yes = chipNamed(w, 'Yes');
+            if (yes) { w.tap(yes); continue; }
+            const cont = chips.filter(isNav)[0];
             if (cont) { w.tap(cont); continue; }
+            w.tap(chips[0]);                                 // the rescue picker
+            continue;
         }
         if (w.deps._walkSlot && w.deps._walkSlot.armed) {
             w.say('answer ' + guard + ' — she says nothing in the head teacher’s office.');
@@ -172,14 +245,47 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
 
     const emptyRows = FIDS.filter((f) => !w.rows.get(f));
     ok(emptyRows.length === 0, 'full run: rows STILL EMPTY at the end — ' + emptyRows.join(', '));
-    const noTraits = VALUE_FIDS.filter((f) => !(w.ctls.get(f + '|traits') || []).length);
-    ok(noTraits.length === 0, 'full run: ' + noTraits.length + ' value row(s) have no trait ticked — '
-        + 'the row can never complete and the section can never tick green (#232)');
-    const noState = VALUE_FIDS.filter((f) => !(w.ctls.get(f + '|state') || []).length);
-    ok(noState.length === 0, 'full run: ' + noState.length + ' value row(s) have no balance/excess/deficit');
-    const twoStates = VALUE_FIDS.filter((f) => (w.ctls.get(f + '|state') || []).length > 1);
-    ok(twoStates.length === 0, 'full run: a row holds TWO states at once (' + twoStates.join(', ')
-        + ') — the state pick must be exclusive, a value cannot be in balance and in deficit');
+    // ⭐ v7.20.421 — EVERY TRAIT DECIDED, not just "the row has something on it". A serial walk
+    // that silently skipped a trait would still leave the row complete, and the student would
+    // never know they were not asked.
+    const undecided = [];
+    VALUE_FIDS.forEach((f) => {
+        const v = valueOf(f);
+        v.traits.forEach((t) => { if (!traitStateIn(w, f, t)) undecided.push(f + ' / ' + t); });
+    });
+    ok(undecided.length === 0, 'full run: ' + undecided.length + ' trait(s) were never asked about — '
+        + undecided.slice(0, 4).join(', ') + '. Serial means EVERY item gets its own decision (§4c.8b).');
+    // At least one REAL condition per value, or the row can never complete (#232 / requireAny).
+    const noRealState = VALUE_FIDS.filter((f) => {
+        const v = valueOf(f);
+        return !v.traits.some((t) => isRealState(traitStateIn(w, f, t)));
+    });
+    ok(noRealState.length === 0, 'full run: ' + noRealState.length + ' value row(s) hold no real '
+        + 'condition — requireAny would never be satisfied and the section could never tick green');
+    const twoStates = [];
+    VALUE_FIDS.forEach((f) => {
+        const v = valueOf(f);
+        v.traits.forEach((t) => {
+            if ((w.ctls.get(f + '|' + _cw7TraitCtlId(t)) || []).length > 1) twoStates.push(f + ' / ' + t);
+        });
+    });
+    ok(twoStates.length === 0, 'full run: a TRAIT holds two conditions at once (' + twoStates.join(', ')
+        + ') — the condition pick must be exclusive; a trait cannot be in balance and in deficit');
+    // ⭐ THE EXPLANATIONS ACCUMULATE, one labelled line per conditioned trait — Neil: *"we just
+    // keep appending all the explanations into the section."* An `accumulate` cycle that had been
+    // stamped `rewrite` would leave exactly ONE line here, and every earlier trait would be gone.
+    const missingWhy = [];
+    VALUE_FIDS.forEach((f) => {
+        const v = valueOf(f);
+        const text = w.rows.get(f) || '';
+        v.traits.forEach((t) => {
+            if (!isRealState(traitStateIn(w, f, t))) return;
+            if (text.indexOf(_cw7TraitLabel(t) + ' — ') === -1) missingWhy.push(f + ' / ' + t);
+        });
+    });
+    ok(missingWhy.length === 0, 'full run: ' + missingWhy.length + ' conditioned trait(s) lost their '
+        + 'explanation from the row — ' + missingWhy.slice(0, 4).join(', ') + '. A `rewrite` cycle '
+        + 'here would keep only the last one (§4c.6).');
     ok(!w.lostWrite, 'full run: a write targeted a row that does not exist — ' + w.lostWrite);
     ok(!w.lostCtl, 'full run: a control tick targeted a row that does not exist — ' + w.lostCtl);
     ok(!w.lostCtlLabel, 'full run: the walk offered a choice the DOCUMENT does not carry — '
@@ -192,55 +298,97 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
     ok(!w.ctl.active, 'full run: still active after the wrap');
 }
 
-// ── 2. THE STATE PICK IS EXCLUSIVE, AND IT CANNOT CLOBBER THE TRAITS ─────────────────────────
-// The defect this models is invisible in the browser: _tickOutlineRow would replace the row's
-// whole check-state object and delete the traits the student had just chosen.
+// ── 2. ⭐⭐ THE COMPLEX CHARACTER — the whole reason for #245 ─────────────────────────────────
+// Neil, on his own protagonist: creativity IN EXCESS, open-mindedness IN DEFICIT, love of learning
+// IN DEFICIT — three different conditions inside ONE value. Under the shipped row that was
+// unsayable, and this is the assertion that keeps it sayable.
 {
     const w = world();
-    w.ctl.forceStart(); await settle(); w.toAsk(12);
-    const f0 = VALUE_FIDS[0];
-    playStation(w, 0, 'In deficit', 'she says nothing when it counts.');
-    ok((w.ctls.get(f0 + '|traits') || []).length >= 1,
-        'exclusivity: the traits were LOST when the state was picked — this is the multi-control '
-        + 'clobber, and in the browser it happens with no error at all');
-    ok((w.ctls.get(f0 + '|state') || []).join('') === 'In deficit', 'exclusivity: the state did not file');
-    ok(!!w.rows.get(f0), 'exclusivity: the explanation did not reach the row');
-}
-
-// ── 2b. THE STATE PICK REPLACES ONE ALREADY IN THE DOCUMENT ──────────────────────────────────
-// ⚠️ THIS TEST EXISTS BECAUSE THE OBVIOUS ONE WAS VACUOUS. A full run only ever picks a state
-// once, so it passes identically with and without `exclusive` — proved by injecting the defect
-// and watching nothing fail. The reachable case is a student who ticked a state BY HAND in the
-// document (the boxes stay hand-usable, deliberately) and then walks the step: the walk's pick
-// must REPLACE theirs, not sit alongside it.
-//
-// Worth stating plainly, because it is pre-existing and not ours to change here: BY HAND the
-// document lets a student tick two states, because the control is a `choice` checklist rather
-// than a radio group. The walk never produces that state; only a hand tick can.
-{
-    const w = world();
-    const f0 = VALUE_FIDS[0];
-    w.ctls.set(f0 + '|state', ['In balance']);          // ← their earlier hand tick
     w.ctl.forceStart(); await settle(); tapThroughPacing(w, 12);
-    playStation(w, 0, 'In deficit', 'nothing about him is in balance at the start.');
-    const states = w.ctls.get(f0 + '|state') || [];
-    ok(states.length === 1 && states[0] === 'In deficit',
-        'exclusivity: the row now holds [' + states.join(', ') + ']. A value cannot be in balance '
-        + 'AND in deficit — the walk\'s pick must replace what was there, not add to it.');
+    const wisdom = CW7_VALUES[0];
+    const f0 = _cw7RowFieldId('begin', wisdom.id);
+    ok(wisdom.traits.join('|') === 'creativity|curiosity|open-mindedness|love of learning',
+        'the Wisdom traits are not the ones this test names — re-read it before trusting the result');
+    ok(playStation(w, { value: wisdom, decisions: ['In excess', 'No', 'In deficit', 'In deficit'] }),
+        'complex character: the serial station did not run to the end of its traits');
+    ok(traitStateIn(w, f0, 'creativity') === 'In excess', 'complex character: creativity is not in excess');
+    ok(traitStateIn(w, f0, 'open-mindedness') === 'In deficit', 'complex character: open-mindedness is not in deficit');
+    ok(traitStateIn(w, f0, 'love of learning') === 'In deficit', 'complex character: love of learning is not in deficit');
+    ok(traitStateIn(w, f0, 'curiosity') === CW7_NOT_EXPLORED,
+        'complex character: a "No" left no footprint — the walk would re-ask that trait on every reload');
+    const text = w.rows.get(f0) || '';
+    ['Creativity', 'Open-mindedness', 'Love of learning'].forEach((label) => {
+        ok(text.indexOf(label + ' — ') !== -1,
+            'complex character: the row lost the ' + label + ' explanation — the explanations must ACCUMULATE');
+    });
+    ok(text.indexOf('Curiosity — ') === -1,
+        'complex character: a trait answered "No" was given an explanation it was never asked for');
 }
 
-// ── 3. TICKING NOTHING IS REFUSED — AND THE REFUSAL LEAVES A QUESTION ON SCREEN (law 4d) ─────
+// ── 2b. THE CONDITION PICK REPLACES ONE ALREADY IN THE DOCUMENT ──────────────────────────────
+// ⚠️ THIS TEST EXISTS BECAUSE THE OBVIOUS ONE WAS VACUOUS. A run only ever picks a condition
+// once per trait, so it passes identically with and without `exclusive` — proved by injecting the
+// defect and watching nothing fail. The reachable case is a student who ticked a condition BY HAND
+// in the document (the boxes stay hand-usable, deliberately) and then walks the step: the walk's
+// pick must REPLACE theirs, not sit alongside it.
 {
     const w = world();
-    w.ctl.forceStart(); await settle(); w.toAsk(12);
-    const before = w.bubbles.length;
-    const cont = w.chips().filter((c) => /Continue/.test(String(c.textContent)))[0];
-    ok(!!cont, 'empty-tick: no Continue on the trait multi-select');
-    w.tap(cont);                                  // Continue with nothing ticked
-    ok(w.bubbles.length > before, 'empty-tick: the walk said NOTHING when it refused — a refusal with '
-        + 'nothing in its place is a dead end (law 4d)');
-    ok(w.chips().length > 0, 'empty-tick: the trait chips were not re-offered — the student is stuck');
-    ok(!(w.ctls.get(VALUE_FIDS[0] + '|traits') || []).length, 'empty-tick: something was filed anyway');
+    const wisdom = CW7_VALUES[0];
+    const f0 = _cw7RowFieldId('begin', wisdom.id);
+    w.ctls.set(f0 + '|' + _cw7TraitCtlId('creativity'), ['In balance']);   // ← their earlier hand tick
+    w.rows.set(f0, 'Creativity — In balance: she makes things constantly.');  // …and its explanation
+    w.ctl.forceStart(); await settle(); tapThroughPacing(w, 12);
+    // The document already answers creativity, so the walk opens on the NEXT trait — which is
+    // itself the point of deriving position from the document. Answer curiosity, then check that
+    // nothing doubled up on creativity.
+    playTrait(w, 'In deficit', 'she never asks a second question.');
+    const picks = w.ctls.get(f0 + '|' + _cw7TraitCtlId('creativity')) || [];
+    ok(picks.length === 1,
+        'exclusivity: creativity now holds [' + picks.join(', ') + '] — a trait cannot be in two conditions at once');
+    ok(traitStateIn(w, f0, 'curiosity') === 'In deficit',
+        'derivation: the walk did not resume on the first UNANSWERED trait — it must read the document, not a counter');
+}
+
+// ── 3. A VALUE WITH NO TRAITS AT ALL IS REFUSED — WITH A WAY THROUGH (law 4d) ────────────────
+// Neil: *"if you don't have it, then you need to implement it. So choose one that you think suits
+// your character."* Answering "No" to every trait leaves a row that can NEVER complete, so the
+// walk must not simply move on — it must say so and offer the build-list route.
+{
+    const w = world();
+    w.ctl.forceStart(); await settle(); tapThroughPacing(w, 12);
+    const wisdom = CW7_VALUES[0];
+    const f0 = _cw7RowFieldId('begin', wisdom.id);
+    wisdom.traits.forEach(() => playTrait(w, 'No'));
+    ok(w.chips().length > 0, 'all-No: the student was left with no chip at all after refusing every trait (law 4d)');
+    const rescue = w.bubbles.join('\n\n');
+    ok(/none/i.test(rescue) && /gain/i.test(rescue),
+        'all-No: the walk moved on silently from a value that can never complete — it must say why and offer a way through');
+    // Take the way through and check it actually resolves the row.
+    const pick = w.chips()[0];
+    w.tap(pick);
+    w.say('she has never been shown that being wrong is survivable.');
+    ok(wisdom.traits.some((t) => isRealState(traitStateIn(w, f0, t))),
+        'all-No: the rescue did not give the row a real condition — it would still never complete');
+    ok(!!(w.rows.get(_cw7AddRowFieldId(wisdom.id)) || '').trim(),
+        'all-No: the rescued trait never reached the build list — the next lesson would have nothing to work from (#249)');
+}
+
+// ── 3b. "NOT YET — BUT I WANT IT" WRITES BOTH PLACES (#249) ──────────────────────────────────
+// It is In deficit (absent in a way that MATTERS, so the row is answerable) AND on the build list
+// (which is what the next lesson reads). Either write alone is a silent half-feature.
+{
+    const w = world();
+    w.ctl.forceStart(); await settle(); tapThroughPacing(w, 12);
+    const wisdom = CW7_VALUES[0];
+    const f0 = _cw7RowFieldId('begin', wisdom.id);
+    playTrait(w, 'Want', 'she refuses to hear anyone out, and it costs her Marcus.');
+    ok(traitStateIn(w, f0, 'creativity') === 'In deficit',
+        '"want": the trait was not marked In deficit — the row would be unanswerable on a value they only WANT');
+    const list = w.rows.get(_cw7AddRowFieldId(wisdom.id)) || '';
+    ok(list.indexOf('Creativity — ') !== -1,
+        '"want": the trait never reached the build list, so the next lesson has nothing to place in the plot (#249)');
+    ok((w.rows.get(f0) || '').indexOf('Creativity — ') !== -1,
+        '"want": no explanation was banked for a wanted trait — it is In deficit, so it owes a why like any other');
 }
 
 // ── 4. RESUME — mid-station, at each of the three phases, from the DOCUMENT ───────────────────
@@ -250,13 +398,12 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
 {
     const ls = new Map();
     const w = world({ ls: ls });
-    w.ctl.forceStart(); await settle(); w.toAsk(12);
-    playStation(w, 0, 'In balance', 'he is curious about everything, and it gets him into trouble.');
-    // Now part-way through station 2: traits ticked, no state yet.
-    const chips = w.chips();
-    w.tap(chips[0]);
-    const cont = w.chips().filter((c) => /Continue/.test(String(c.textContent)))[0];
-    w.tap(cont);
+    w.ctl.forceStart(); await settle(); tapThroughPacing(w, 12);
+    playSimpleStation(w, CW7_VALUES[0], 'he is curious about everything, and it gets him into trouble.');
+    // Now part-way through the SECOND value: one trait conditioned, its explanation not yet written.
+    tapThroughPacing(w, 12);
+    const yes = chipNamed(w, 'Yes');
+    if (yes) { w.tap(yes); const st = chipNamed(w, 'In excess'); if (st) w.tap(st); }
 
     // RELOAD: same document + sidecar, fresh controller.
     const w2 = world({ ls: ls });
@@ -286,8 +433,9 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
     FIDS.forEach((f) => { prefill[f] = 'already answered'; });
     const w = world({ prefill: prefill });
     VALUE_FIDS.forEach((f) => {
-        w.ctls.set(f + '|traits', [ctlItemsFor(f, 'traits')[0]]);
-        w.ctls.set(f + '|state', ['In balance']);
+        const v = valueOf(f);
+        v.traits.forEach((t, k) => w.ctls.set(f + '|' + _cw7TraitCtlId(t), [k === 0 ? 'In balance' : CW7_NOT_EXPLORED]));
+        w.rows.set(f, _cw7TraitLabel(v.traits[0]) + ' — In balance: ' + (w.rows.get(f) || 'answered'));
     });
     w.ctl.forceStart();
     await settle();
@@ -305,18 +453,25 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
     const prefill = {};
     FIDS.forEach((f) => { prefill[f] = 'answered'; });
     const w = world({ prefill: prefill });
+    // Beginning: the first trait in deficit. End: the same trait in balance. That ONE trait moving
+    // is the transformation the wrap has to be able to state back to them — per TRAIT since #245,
+    // because a value can move in two directions at once and a value-level summary would hide one.
     VALUE_FIDS.forEach((f, n) => {
-        w.ctls.set(f + '|traits', [ctlItemsFor(f, 'traits')[0]]);
-        w.ctls.set(f + '|state', [n < CW7_VALUES.length ? 'In deficit' : 'In balance']);
+        const v = valueOf(f);
+        v.traits.forEach((t, k) => w.ctls.set(f + '|' + _cw7TraitCtlId(t),
+            [k === 0 ? (n < CW7_VALUES.length ? 'In deficit' : 'In balance') : CW7_NOT_EXPLORED]));
+        // The row must carry the labelled explanation, or the walk correctly reports the station
+        // unfinished and never reaches its wrap.
+        w.rows.set(f, _cw7TraitLabel(v.traits[0]) + ' — answered');
     });
     w.ctl.forceStart();
     await settle();
     const wrap = w.bubbles[w.bubbles.length - 1] || '';
-    ok(/In deficit → In balance/.test(wrap),
+    ok(/in deficit → in balance/i.test(wrap),
         'wrap: the transformation was not computed from the student’s own picks — the ask would be '
         + 'a blank "which value changed?" when the document already knows');
     const stored = (w.deps.canvasChatHistory || []).map((t) => String(t.content || '')).join('\n');
-    ok(!/In deficit → In balance/.test(stored),
+    ok(!/in deficit → in balance/i.test(stored),
         'wrap: the computed shift was PUSHED into chat history. It names values the student can '
         + 'still change, and replay is verbatim — it would assert the old answer for ever (§4c.7).');
 }
@@ -372,9 +527,24 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
     ok(/transformation/i.test(orientation),
         'the orientation never says the DIFFERENCE between the two passes is the transformation — '
         + 'which is the entire reason this step exists (Neil, #242)');
-    ok(/compulsory/i.test(orientation) && /deficit/i.test(orientation),
-        'the orientation never explains that all six are compulsory and that "barely has it" is a '
-        + 'deficit, not a blank (#237)');
+    // ⭐ v7.20.421 (#246) — THE JOB IS STATED IN THE FIRST BUBBLE, not four chunks later. Neil
+    // formed his impression of .420 from bubble one and it opened on a theme, so this asserts the
+    // ORDER, not merely the presence of the framing.
+    ok(/Here is what we are going to do/i.test(w.bubbles[0] || ''),
+        'the orientation does not open by saying what the lesson will DO — that framing arrived in '
+        + 'chunk 4 on .420, by which point Neil had already formed his impression (#246)');
+    ok(/trait/i.test(w.bubbles[0] || ''),
+        'the FIRST orientation bubble never mentions traits — Neil: "they need to know beforehand '
+        + 'that they\'re gonna be talking about this" (#246)');
+    ok(/one at a time|one trait at a time/i.test(orientation),
+        'the orientation never tells the student the traits come one at a time — the serial shape is '
+        + 'the lesson\'s whole rhythm (§4c.8b)');
+    ok(/deficit/i.test(orientation),
+        'the orientation never explains that "barely has it" is a deficit, not a blank (#237)');
+    // The three-answer contract, including the build-list route (#249) — a student who does not
+    // know that third chip exists simply answers No and the next lesson gets nothing.
+    ok(/Not yet/i.test(orientation) && /next lesson/i.test(orientation),
+        'the orientation never explains the "Not yet — but I want it" answer or where it leads (#249)');
 
     // (b2) ⭐ AND IT MUST RUN ON EVERY ENTRY ROUTE, NOT JUST THE HAPPY ONE.
     //      This is the assertion that actually catches the staging defect. Four routes reach the
@@ -404,7 +574,7 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
     const w2 = world();
     w2.ctl.forceStart(); tapThroughPacing(w2, 20);
     for (let n = 0; n < CW7_VALUES.length; n++) {
-        playStation(w2, 0, 'In deficit', 'answer for value ' + n);
+        playSimpleStation(w2, CW7_VALUES[n], 'answer for value ' + n);
     }
     const crossing = w2.bubbles.slice(-3).join('\n\n');
     ok(/END/.test(crossing) && /transformation|gap between/i.test(crossing),

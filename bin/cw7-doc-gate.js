@@ -59,17 +59,37 @@ function ok(cond, msg) {
 function braceSliceFrom(s, idx, open, close) {
     const start = s.indexOf(open, idx);
     if (start < 0) return null;
-    let depth = 0, i = start, inS = null, inLine = false, inBlock = false;
+    // ⚠️ v7.20.421 — REGEX LITERALS ARE SKIPPED, and this is a real fix rather than tidying.
+    // Without it, a literal like `.replace(/"/g, '…')` fed the scanner a bare `"`, it opened a
+    // phantom string, and every brace from there on stopped counting. The slice then ran past the
+    // end of the function and closed on some unrelated brace far below — so this gate was slicing
+    // the WRONG TEXT and passing anyway. It only surfaced when a body grew long enough to change
+    // where the runaway happened to land. A slicer that is right by luck is not a slicer.
+    // The regex/division ambiguity is resolved the standard way: a `/` is a regex only where a
+    // VALUE may begin, i.e. after an operator, opener or terminator.
+    let depth = 0, i = start, inS = null, inLine = false, inBlock = false, inRe = false, prev = '';
+    const reAllowedAfter = '(,=:[!&|?{};+-*%~^<>\n';
     for (; i < s.length; i++) {
         const c = s[i], n = s[i + 1];
         if (inLine) { if (c === '\n') inLine = false; continue; }
         if (inBlock) { if (c === '*' && n === '/') { inBlock = false; i++; } continue; }
+        if (inRe) {
+            if (c === '\\') { i++; continue; }
+            if (c === '[') { // a character class may hold an unescaped '/'
+                while (i < s.length && s[i] !== ']') { if (s[i] === '\\') i++; i++; }
+                continue;
+            }
+            if (c === '/') inRe = false;
+            continue;
+        }
         if (inS) { if (c === '\\') { i++; continue; } if (c === inS) inS = null; continue; }
         if (c === '/' && n === '/') { inLine = true; i++; continue; }
         if (c === '/' && n === '*') { inBlock = true; i++; continue; }
+        if (c === '/' && reAllowedAfter.indexOf(prev) !== -1) { inRe = true; continue; }
         if (c === '"' || c === "'" || c === '`') { inS = c; continue; }
         if (c === open) depth++;
         else if (c === close) { depth--; if (depth === 0) return { text: s.slice(start, i + 1), end: i + 1 }; }
+        if (c.trim()) prev = c;
     }
     return null;
 }
@@ -85,20 +105,36 @@ function sliceDecl(src, decl, open, close) {
 const CW7_VALUES_SRC = sliceDecl(SRC, 'const CW7_VALUES = [', '[', ']');
 const CW7_STATES_SRC = sliceDecl(SRC, 'const CW7_STATES = [', '[', ']');
 const FID_SRC = sliceDecl(SRC, 'function _cw7RowFieldId(', '{', '}');
+const TRAIT_ID_SRC = sliceDecl(SRC, 'function _cw7TraitCtlId(', '{', '}');
+const TRAIT_LABEL_SRC = sliceDecl(SRC, 'function _cw7TraitLabel(', '{', '}');
+const ADD_FID_SRC = sliceDecl(SRC, 'function _cw7AddRowFieldId(', '{', '}');
 const BUILD_SRC = sliceDecl(SRC, 'function buildCW7ValuesSection(', '{', '}');
+const ADD_BUILD_SRC = sliceDecl(SRC, 'function buildCW7AddSection(', '{', '}');
 const ROW_SRC = sliceDecl(SRC, 'function outlineRowHTML(', '{', '}');
+// v7.20.421: the "Not explored" constant is a plain string literal in the source; lift it the
+// same way as everything else so the gate can never drift from what the builder actually uses.
+const NOT_EXPLORED = (SRC.match(/const CW7_NOT_EXPLORED = '([^']+)'/) || [])[1];
+if (!NOT_EXPLORED) throw new Error('could not lift CW7_NOT_EXPLORED from the source — this gate would go blind');
 
 const sandbox = new Function(
-    'escapeHTML', 'sectionHTML',
+    'escapeHTML', 'sectionHTML', 'dividerHTML',
     'const CW7_VALUES = ' + CW7_VALUES_SRC + ';\n'
     + 'const CW7_STATES = ' + CW7_STATES_SRC + ';\n'
+    + "const CW7_NOT_EXPLORED = '" + NOT_EXPLORED + "';\n"
+    + 'const CW7_TRAIT_CHOICES = CW7_STATES.concat([CW7_NOT_EXPLORED]);\n'
     + 'function _cw7RowFieldId(when, valueId) ' + FID_SRC + '\n'
+    + 'function _cw7TraitCtlId(trait) ' + TRAIT_ID_SRC + '\n'
+    + 'function _cw7TraitLabel(trait) ' + TRAIT_LABEL_SRC + '\n'
+    + 'function _cw7AddRowFieldId(valueId) ' + ADD_FID_SRC + '\n'
     + 'function outlineRowHTML(criterion, fieldId) ' + ROW_SRC + '\n'
     + 'function buildCW7ValuesSection(when) ' + BUILD_SRC + '\n'
-    + 'return { CW7_VALUES, CW7_STATES, _cw7RowFieldId, buildCW7ValuesSection };'
+    + 'function buildCW7AddSection() ' + ADD_BUILD_SRC + '\n'
+    + 'return { CW7_VALUES, CW7_STATES, CW7_NOT_EXPLORED, CW7_TRAIT_CHOICES, _cw7RowFieldId, '
+    + '_cw7TraitCtlId, _cw7TraitLabel, _cw7AddRowFieldId, buildCW7ValuesSection, buildCW7AddSection };'
 )(
     (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
-    (type, label, collapsible, x, content) => '<section data-section-label="' + label + '">' + content + '</section>'
+    (type, label, collapsible, x, content) => '<section data-section-label="' + label + '">' + content + '</section>',
+    (t) => '<hr data-divider="' + t + '">'
 );
 
 // the real completion RULE, lifted from wml-core.js — never reimplemented here
@@ -191,16 +227,33 @@ const rowsOf = (html) => {
         const c = r.crit;
         // B — the values and strengths are the workbook's
         ok(c.label === wb.name, when + ' row ' + (i + 1) + ': label "' + c.label + '" ≠ workbook "' + wb.name + '"');
-        const ctlS = (c.controls || [])[0] || {};
-        const got = (ctlS.items || []).map((s) => s.toLowerCase());
+        // ⭐ v7.20.421 — ONE CONTROL PER TRAIT (#245). The controls ARE the strengths list now,
+        // in the workbook's own order, so a renamed/dropped/re-ordered trait fails here.
+        const got = (c.controls || []).map((x) => String(x.label || '').toLowerCase());
         ok(JSON.stringify(got) === JSON.stringify(wb.strengths),
-            when + ' ' + c.label + ': strengths ' + JSON.stringify(got) + ' ≠ workbook ' + JSON.stringify(wb.strengths));
-        // C — the three states are the workbook's three columns
-        const ctlState = (c.controls || [])[1] || {};
-        ok(JSON.stringify(ctlState.items) === JSON.stringify(['In balance', 'In excess', 'In deficit']),
-            when + ' ' + c.label + ': the state options are not Balance / Excess / Deficit');
-        ok(ctlS.choice === true && ctlState.choice === true,
-            when + ' ' + c.label + ': a control lost `choice: true` — a 4-item strengths list would then demand ALL four ticks');
+            when + ' ' + c.label + ': trait controls ' + JSON.stringify(got) + ' ≠ workbook ' + JSON.stringify(wb.strengths));
+        // The control id is the ONE producer's, never a literal (§5d).
+        const wantIds = wb.strengths.map((s) => sandbox._cw7TraitCtlId(s));
+        ok(JSON.stringify((c.controls || []).map((x) => x.id)) === JSON.stringify(wantIds),
+            when + ' ' + c.label + ': a trait control id is not the one _cw7TraitCtlId builds — someone pasted a literal (§5d)');
+        ok(new Set((c.controls || []).map((x) => x.id)).size === (c.controls || []).length,
+            when + ' ' + c.label + ': two trait controls share an id — one would overwrite the other’s saved condition');
+        // C — every trait offers the three states PLUS the "not explored" answer.
+        (c.controls || []).forEach((x) => {
+            ok(JSON.stringify(x.items) === JSON.stringify(['In balance', 'In excess', 'In deficit', sandbox.CW7_NOT_EXPLORED]),
+                when + ' ' + c.label + ' / ' + x.label + ': the options are not Balance / Excess / Deficit / ' + sandbox.CW7_NOT_EXPLORED);
+            ok(x.choice === true,
+                when + ' ' + c.label + ' / ' + x.label + ': lost `choice: true` — it would demand ALL four ticks at once');
+            ok(x.optional === true,
+                when + ' ' + c.label + ' / ' + x.label + ': lost `optional` — every one of the 23 traits would be compulsory, '
+                + 'which is the 24-cell audit Neil ruled against');
+        });
+        ok(c.requireAny === true,
+            when + ' ' + c.label + ': lost `requireAny` — with every control optional the row would complete on text alone, '
+            + 'and a student could explain a value without naming a single trait (Neil: "they need to choose at least one")');
+        ok(Array.isArray(c.anyIgnore) && c.anyIgnore.indexOf(sandbox.CW7_NOT_EXPLORED) !== -1,
+            when + ' ' + c.label + ': lost `anyIgnore` — a value where EVERY trait is "' + sandbox.CW7_NOT_EXPLORED
+            + '" would count as answered');
         ok(!c.optional,
             when + ' ' + c.label + ': carries `optional` — that is the v7.20.413 defect, an empty row satisfies itself and the section ticks green untouched');
         ok(/quote|comment|explanation/i.test(r.prompt || ''),
@@ -208,18 +261,30 @@ const rowsOf = (html) => {
     });
 });
 
+// ── A2. the build list (#249) ──────────────────────────────────────────────────────
+(function checkAddSection() {
+    const addRows = rowsOf(sandbox.buildCW7AddSection());
+    if (!ok(addRows.length === 6, 'the build-list section has ' + addRows.length + ' rows, expected one per value')) return;
+    const wantAdd = sandbox.CW7_VALUES.map((v) => sandbox._cw7AddRowFieldId(v.id));
+    ok(JSON.stringify(addRows.map((r) => r.fid)) === JSON.stringify(wantAdd),
+        'the build-list field ids are not the ones _cw7AddRowFieldId builds — the walk writes by that id, so a literal here files nowhere (§5d)');
+    ok(addRows.every((r) => r.crit.optional === true),
+        'a build-list row is not `optional` — a student whose protagonist already has everything would be left with a section that can never tick green');
+    ok(addRows.every((r) => !r.crit.controls),
+        'a build-list row grew controls — it is a written list, and controls there would become a second place to say the same thing');
+})();
+
 // the workbook's own header wording, so a silent re-label of the columns is caught
 ok(/IS THIS VALUE\/VIRTUE IN BALANCE\?/i.test(WORKBOOK) && /IN EXCESS\?/i.test(WORKBOOK) && /IN DEFICIT\?/i.test(WORKBOOK),
     'the workbook source no longer names Balance / Excess / Deficit — check C is now vacuous');
 
 // ── D. completion BEHAVIOUR, through the real rule ─────────────────────────────────
-const sample = rowsOf(sandbox.buildCW7ValuesSection('begin'))[1].crit;   // Courage: 4 strengths, 3 states
-const stateWith = (strengthIdx, stateIdx) => {
-    let st = {};
-    if (strengthIdx != null) st = outlineRow.withControlState(sample, st, sample.controls[0], { checked: [strengthIdx] });
-    if (stateIdx != null) st = outlineRow.withControlState(sample, st, sample.controls[1], { checked: [stateIdx] });
-    return st;
-};
+const sample = rowsOf(sandbox.buildCW7ValuesSection('begin'))[1].crit;   // Courage: 4 traits, 4 answers each
+// Set ONE trait's condition. `traitIdx` picks the trait control, `answerIdx` indexes
+// [balance, excess, deficit, not-explored].
+const traitAt = (traitIdx, answerIdx, from) => outlineRow.withControlState(
+    sample, from || {}, sample.controls[traitIdx], { checked: [answerIdx] });
+const NOT_EXPLORED_IDX = 3;
 // ⭐ THE REGRESSION Neil caught on v7.20.413, live: *"it's ticked off… but I haven't even touched
 // it."* Every value row carried `optional: true`, which means an EMPTY row is satisfied — so six
 // untouched rows satisfied the whole section and it drew its green tick on arrival. This is the
@@ -233,13 +298,40 @@ ok(untouchedSection.every((c) => c === false),
     'a whole UNTOUCHED "Values at End" section reports ' + untouchedSection.filter(Boolean).length
     + '/6 rows complete — the green tick would appear before the student has touched it');
 ok(outlineRow.complete(sample, {}, true) === false,
-    'a row with TEXT but nothing ticked must NOT be satisfied — started means finish it');
-ok(outlineRow.complete(sample, stateWith(null, 1), true) === false,
-    'text + a state but NO trait must NOT be satisfied — Neil: "they need to tick at least one trait"');
-ok(outlineRow.complete(sample, stateWith(0, null), true) === false,
-    'text + a strength but no Balance/Excess/Deficit must NOT be satisfied — the state is the point of the table');
-ok(outlineRow.complete(sample, stateWith(0, 1), true) === true,
-    'text + one strength + one state must be satisfied — one tick completes a `choice` control');
+    'a row with TEXT but no trait conditioned must NOT be satisfied — Neil: "they need to choose at least one"');
+ok(outlineRow.complete(sample, traitAt(0, 1), true) === true,
+    'text + ONE trait in excess must be satisfied — the other three traits are optional by design');
+ok(outlineRow.complete(sample, traitAt(0, 1), false) === false,
+    'a conditioned trait with NO explanation must not be satisfied — the explanation box is half the brief');
+
+// ⭐⭐ v7.20.421 — THE PER-TRAIT POINT ITSELF, which is the entire reason this row changed.
+// Neil, on his own protagonist: creativity IN EXCESS, open-mindedness IN DEFICIT, love of
+// learning IN DEFICIT — three different conditions inside ONE value. The shipped row could hold
+// exactly one, so his own character could not be described in it.
+const complexChar = traitAt(2, 2, traitAt(1, 2, traitAt(0, 1)));
+ok(outlineRow.complete(sample, complexChar, true) === true,
+    'a row holding THREE different per-trait conditions is not satisfied — this is the whole #245 change');
+[[0, 1], [1, 2], [2, 2]].forEach(([t, a]) => {
+    const st = outlineRow.stateOf(sample, complexChar, sample.controls[t]);
+    ok(JSON.stringify(st.checked) === JSON.stringify([a]),
+        'trait ' + sample.controls[t].label + ' did not keep its own condition — the conditions are sharing one slot again');
+});
+
+// ⭐ THE "NOT EXPLORED" DISCRIMINATOR. It must satisfy its own control (so the walk can move on)
+// and must NOT satisfy the row (so a value nobody explores is still unanswered). Those two pull
+// in opposite directions, which is exactly why `anyIgnore` exists and why it is asserted here.
+const allNotExplored = sample.controls.reduce(
+    (st, _c, idx) => traitAt(idx, NOT_EXPLORED_IDX, st), {});
+sample.controls.forEach((c, idx) => {
+    ok(outlineRow.controlOk(c, outlineRow.stateOf(sample, allNotExplored, c)) === true,
+        'the "' + sandbox.CW7_NOT_EXPLORED + '" answer does not satisfy the ' + c.label + ' control — the walk would re-ask that trait for ever');
+    void idx;
+});
+ok(outlineRow.complete(sample, allNotExplored, true) === false,
+    'a value where EVERY trait is "' + sandbox.CW7_NOT_EXPLORED + '" reports complete — the row would tick green while saying the value is not in the story at all');
+ok(outlineRow.complete(sample, traitAt(1, 2, allNotExplored), true) === true,
+    'one real condition alongside three "' + sandbox.CW7_NOT_EXPLORED + '" answers is not accepted — that is the normal case, not an edge case');
+
 ok(outlineRow.isMulti(sample) === true, 'the value row is not registering as a multi-control row — its state would not namespace by control id (§5d)');
 
 // ── E. the virtue-scale figure (v7.20.414) ─────────────────────────────────────────
@@ -418,7 +510,11 @@ const FIXTURE = fs.readFileSync(path.join(ROOT, 'bin', 'fixtures', 'cw7-v413-doc
         return b.text;
     };
     const rowsOfFn = new Function('return function (html) ' + arrowBody('const _cw7RowsOf = (html) => {') + ';')();
-    const migrateFn = new Function('return function (raw) ' + arrowBody('const _cw7MigrateCheck = (raw) => {') + ';')();
+    // v7.20.421: the migration now resolves trait INDICES, so it needs the value table and the
+    // two id producers. Handed the REAL ones out of the sandbox — never a copy.
+    const migrateFn = new Function('CW7_VALUES', '_cw7RowFieldId', '_cw7TraitCtlId', 'console',
+        'return function (raw, fid) ' + arrowBody('const _cw7MigrateCheck = (raw, fid) => {') + ';'
+    )(sandbox.CW7_VALUES, sandbox._cw7RowFieldId, sandbox._cw7TraitCtlId, console);
     const merge = new Function('_cw7RowsOf', '_cw7MigrateCheck',
         'return function (current, rebuilt) ' + arrowBody('const _cw7MergeScaffold = (current, rebuilt) => {') + ';'
     )(rowsOfFn, migrateFn);
@@ -434,18 +530,67 @@ const FIXTURE = fs.readFileSync(path.join(ROOT, 'bin', 'fixtures', 'cw7-v413-doc
         'the heal does not consider a v7.20.413 document stale — every existing Step-7 document would keep its self-ticking rows');
     if (!out.ok || !out.stale) return;
 
-    ok(!/optional&quot;:true/.test(out.html),
-        'after the heal the rows STILL carry optional:true — the section would still tick itself untouched (the exact bug Neil saw twice)');
+    // ⚠️ v7.20.421 — this must be asked of the ROW, not of the html. A substring test for
+    // `optional":true` now matches the CORRECT per-trait control flag as well as the row-level
+    // defect, so it would fail on a healthy document — and, worse, the obvious way to make it
+    // pass again is to delete the assertion. Parse the criteria and ask the precise question.
+    (function noRowLevelOptional() {
+        const healed = Object.entries(rowsOfFn(out.html))
+            .filter(([id]) => /^cw-step-7-(begin|end)-/.test(id));
+        if (!ok(healed.length === 12, 'expected 12 healed value rows, found ' + healed.length)) return;
+        healed.forEach(([id, r]) => {
+            let crit = null;
+            try { crit = JSON.parse((r.criteria || '{}').replace(/&quot;/g, '"')); } catch (e) { /* below */ }
+            if (!ok(!!crit, id + ': the healed row has unparseable criteria')) return;
+            ok(crit.optional !== true,
+                id + ': the healed ROW still carries optional:true — the section would tick itself untouched (the exact bug Neil saw twice)');
+            ok(crit.requireAny === true,
+                id + ': the healed row lost requireAny — it would complete on text alone, with no trait named');
+            ok((crit.controls || []).every((c) => c.optional === true),
+                id + ': a healed trait control is not optional — all 23 traits would be compulsory');
+        });
+    })();
     ok(!/id&quot;:&quot;strengths/.test(out.html),
         'after the heal the rows still declare the retired `strengths` control id');
-    ok(/id&quot;:&quot;traits/.test(out.html), 'the healed rows do not declare the `traits` control');
+    // v7.20.421: `traits` and `state` are BOTH retired — the controls are one per trait now.
+    ok(!/id&quot;:&quot;traits&quot;/.test(out.html),
+        'the healed rows still declare the retired row-wide `traits` control — the condition is per TRAIT since #245');
+    ok(!/id&quot;:&quot;state&quot;/.test(out.html),
+        'the healed rows still declare the retired row-wide `state` control — one condition for a whole value is the #245 defect');
+    ok(/id&quot;:&quot;t-bravery&quot;/.test(out.html),
+        'the healed rows do not declare a per-trait control (expected t-bravery on Courage)');
 
     // His answers must survive — this is the half that matters more than the fix.
     ok(/>TEST</.test(out.html), 'the student\'s typed answer was LOST by the heal — revert rather than ship this');
-    ok(/traits&quot;:\{&quot;checked&quot;/.test(out.html),
-        'the student\'s tick was not migrated from `strengths` to `traits` — it would survive in the document but attach to a control that no longer exists');
     ok(!/strengths&quot;:\{&quot;checked&quot;/.test(out.html), 'a tick is still namespaced under the retired control id');
     ok(out.carried.length >= 2, 'the heal reports carrying ' + out.carried.length + ' answers; the fixture has at least two');
+
+    // ⭐⭐ THE MIGRATION ITSELF, run on a REAL old-shape state rather than described in prose.
+    // A student who ticked two traits and chose "In excess" for the value must come out with
+    // BOTH traits in excess — the faithful reading of what they actually asserted.
+    (function migrateShape() {
+        const fid = sandbox._cw7RowFieldId('begin', 'courage');
+        const legacy = JSON.stringify({ c: { traits: { checked: [0, 2] }, state: { checked: [1] } } })
+            .replace(/"/g, '&quot;');
+        const got = migrateFn(legacy, fid);
+        let parsed = null;
+        try { parsed = JSON.parse(got.replace(/&quot;/g, '"')); } catch (e) { /* reported below */ }
+        if (!ok(!!(parsed && parsed.c), 'the per-trait migration produced unparseable state — a student would lose every tick')) return;
+        ok(!parsed.c.traits && !parsed.c.state,
+            'the migration left the retired `traits`/`state` keys in place — the row would carry two contradictory answers');
+        const courage = sandbox.CW7_VALUES.filter((v) => v.id === 'courage')[0];
+        [0, 2].forEach((k) => {
+            const id = sandbox._cw7TraitCtlId(courage.traits[k]);
+            ok(!!(parsed.c[id] && JSON.stringify(parsed.c[id].checked) === JSON.stringify([1])),
+                'the trait "' + courage.traits[k] + '" did not carry the value\'s condition across the migration');
+        });
+        ok(!parsed.c[sandbox._cw7TraitCtlId(courage.traits[1])],
+            'a trait the student never ticked was given a condition — the migration is inventing answers');
+        // Half-answered rows have nothing honest to carry, and must be left alone rather than guessed.
+        const half = JSON.stringify({ c: { traits: { checked: [0] } } }).replace(/"/g, '&quot;');
+        ok(migrateFn(half, fid) === half,
+            'a half-answered legacy row was rewritten — traits with no chosen condition must be left for the walk to ask again');
+    })();
 
     // Idempotent: healing an already-healed document must be a no-op, or every load rewrites the doc.
     const again = merge(out.html, rebuilt);

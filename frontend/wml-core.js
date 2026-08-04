@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.420';
+var WML_BUILD = '7.20.421';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -4461,10 +4461,69 @@ window.WML = (function() {
             return Object.assign({}, st, { c });
         },
 
+        // ⭐ v7.20.421 — HAS THIS CONTROL BEEN TOUCHED AT ALL? Render-agnostic, exactly like
+        // controlOk: it must answer for a checkbox list, a <select> and every picker
+        // ({picked,free}) without knowing how any of them draw. Needed by the two flags below,
+        // which both turn on "started" rather than "satisfied".
+        // `ignore` (optional) = item LABELS that do not count as an answer. Step 7 uses it for
+        // "Not explored": a real tick the student made, which must satisfy the control (so the
+        // walk moves on) while NOT satisfying the row's requireAny (so a value where every trait
+        // is "not explored" is still unanswered). Without it those two needs collide and one of
+        // them silently loses.
+        controlStarted(ctl, st, ignore) {
+            const c = ctl || {}, s = st || {};
+            const skip = Array.isArray(ignore) && ignore.length ? ignore.map(x => String(x)) : null;
+            const live = (arr) => {
+                if (!Array.isArray(arr)) return false;
+                return arr.some(x => String(x || '').trim() && (!skip || skip.indexOf(String(x)) === -1));
+            };
+            if (live(s.picked)) return true;
+            if (live(s.free)) return true;
+            if (Array.isArray(s.checked) && s.checked.length) {
+                if (!skip) return true;
+                const items = Array.isArray(c.items) ? c.items : [];
+                // A checklist stores INDICES, so an ignore list can only be applied when the
+                // control's own items are to hand. They always are for a real criterion; the DOM
+                // reader's fallback passes DOM nodes, where indexOf simply never matches and the
+                // tick counts — the safe direction (it can only make a row look less complete).
+                if (s.checked.some(i => skip.indexOf(String(items[i])) === -1)) return true;
+            }
+            if (s.selected && (!skip || skip.indexOf(String(s.selected)) === -1)) return true;
+            return false;
+        },
+
+        // ⭐ v7.20.421 — OPTIONAL CONTROL (Neil's Step-7 per-trait ruling, 2026-08-04).
+        // Step 7 asks the condition of EVERY trait the student chooses — so a value row carries
+        // one control PER TRAIT (23 traits across the six values). Every one of those cannot be
+        // required, or the row would demand a verdict on all 23 and become the "24-cell audit"
+        // he explicitly does not want. `optional: true` on a CONTROL ⇒ an untouched control is
+        // satisfied; the moment it is touched it must be finished, exactly like an `optional`
+        // ROW. This is the control-level twin of the row flag (v7.20.130) and reads the same way.
+        controlOptional(ctl) {
+            return !!(ctl && (ctl.optional === true || ctl.optional === 'true'));
+        },
+
+        // ⭐ v7.20.421 — REQUIRE-ANY (the other half of the same ruling). A row of all-optional
+        // controls could be completed by text alone, which would let a student write an
+        // explanation of a value and name no trait at all. Neil: *"I think they need to choose at
+        // least one."* `requireAny: true` on the CRITERION ⇒ at least ONE control must be
+        // started. `optional` says "you need not answer this one"; `requireAny` says "you must
+        // answer one of them" — both are needed, and neither implies the other.
+        requiresAny(crit) {
+            return !!(crit && (crit.requireAny === true || crit.requireAny === 'true'));
+        },
+        anyStarted(crit, state) {
+            const ignore = (crit && Array.isArray(crit.anyIgnore)) ? crit.anyIgnore : null;
+            return this.controlsOf(crit).some(ctl => this.controlStarted(ctl, this.stateOf(crit, state, ctl), ignore));
+        },
+
         // Is ONE control satisfied? `choice: true` ⇒ ≥1 ticked (the student picks what
         // applies); no flag ⇒ every item required (v7.20.99: effects vs evidence).
         controlOk(ctl, st) {
             const c = ctl || {}, s = st || {};
+            // v7.20.421: an untouched OPTIONAL control is satisfied. Read FIRST, before any
+            // type branch — every branch below would otherwise report it unsatisfied.
+            if (this.controlOptional(c) && !this.controlStarted(c, s)) return true;
             const chk = Array.isArray(s.checked) ? s.checked.length : 0;
             // v7.20.131: the TECHNIQUE PICKER. Satisfied by ONE device — from the taught 14
             // (`picked`, table codes) or the student's own words (`free`). Deliberately NOT 2:
@@ -4516,11 +4575,13 @@ window.WML = (function() {
         },
         complete(crit, state, hasText) {
             if (crit && (crit.locked === true || crit.locked === 'true')) return true;
-            if (this.controlOnly(crit)) {
-                return this.controlsOf(crit).every(ctl => this.controlOk(ctl, this.stateOf(crit, state, ctl)));
-            }
+            // v7.20.421: requireAny rides ALONGSIDE the every() check, never instead of it —
+            // "at least one answered" and "nothing half-answered" are different questions.
+            const everyOk = () => this.controlsOf(crit).every(ctl => this.controlOk(ctl, this.stateOf(crit, state, ctl)));
+            const anyOk = () => !this.requiresAny(crit) || this.anyStarted(crit, state);
+            if (this.controlOnly(crit)) return everyOk() && anyOk();
             if (!hasText) return !!(crit && (crit.optional === true || crit.optional === 'true'));
-            return this.controlsOf(crit).every(ctl => this.controlOk(ctl, this.stateOf(crit, state, ctl)));
+            return everyOk() && anyOk();
         },
     };
 
