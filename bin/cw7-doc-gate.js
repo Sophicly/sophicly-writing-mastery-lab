@@ -304,8 +304,11 @@ ok(/insertContentAt\(/.test(figureHeal),
     'the figure heal no longer inserts — it must add the figure to an existing document by transaction');
 ok(!/setContent\(/.test(figureHeal),
     'THE FIGURE HEAL REBUILDS THE DOCUMENT. A v7.20.413 document already holds a student\'s ticks, states and explanations; rebuilding it to add a picture destroys all of them. It must INSERT.');
-ok(/tryHealCwStep7Values\(\)\)\.then\(\(\) => tryHealCwStep7Teaching\(\)\)\.then\(\(\) => tryHealCwStep7Figure\(\)\)/.test(SRC),
-    'the three Step-7 heals are not all wired into the init chain, in order (rebuild → teaching → figure)');
+// Order matters: rebuild a doc with no rows → re-stamp stale row definitions → refresh the prose →
+// add the figure. Scaffold must precede teaching, or the teaching splice preserves rows the
+// scaffold heal was about to replace and the two fight over the same document on every load.
+ok(/tryHealCwStep7Values\(\)\)\.then\(\(\) => tryHealCwStep7Scaffold\(\)\)\.then\(\(\) => tryHealCwStep7Teaching\(\)\)\.then\(\(\) => tryHealCwStep7Figure\(\)\)/.test(SRC),
+    'the four Step-7 heals are not all wired into the init chain, in order (rebuild → scaffold → teaching → figure)');
 
 // The teaching heal REPLACES read-only prose but must never touch a row. Its whole safety rests on
 // splicing at the values divider and keeping the student's half of the document byte-for-byte.
@@ -361,6 +364,61 @@ ok(missing === 0, missing + ' of ' + paras.length + ' paragraphs of the teaching
 });
 ok(/too much of it/.test(SRC_NORM) && /too little of it/.test(SRC_NORM),
     'the excess/deficit definitions no longer use Neil\'s own "too much or too little" framing');
+
+// ── G. THE SCAFFOLD HEAL, run against a REAL v7.20.413 document (v7.20.418) ────────
+// Neil, after .414 removed `optional: true`: "why has section 4.1 got a green tick? I haven't
+// touched it yet." Because the row definitions are BAKED into the saved document at build time —
+// changing the builder fixes documents that do not exist yet and nothing else. The fixture below
+// is his actual staging document, pulled off the server: 12 rows carrying `optional:true`, the
+// retired `strengths` control id, and two of his own ticks.
+//
+// This runs the REAL `_cw7MergeScaffold` — the same function the heal calls — not a copy of it.
+const FIXTURE = fs.readFileSync(path.join(ROOT, 'bin', 'fixtures', 'cw7-v413-document.html'), 'utf8');
+(function scaffoldHeal() {
+    // Slice an arrow function's BODY (the `{…}` after `=>`) and rebuild it with known params.
+    const arrowBody = (decl) => {
+        const i = SRC.indexOf(decl);
+        if (i < 0) throw new Error('not found: ' + decl);
+        const arrow = SRC.indexOf('=>', i);
+        const b = braceSliceFrom(SRC, arrow, '{', '}');
+        if (!b) throw new Error('unbalanced arrow body: ' + decl);
+        return b.text;
+    };
+    const rowsOfFn = new Function('return function (html) ' + arrowBody('const _cw7RowsOf = (html) => {') + ';')();
+    const migrateFn = new Function('return function (raw) ' + arrowBody('const _cw7MigrateCheck = (raw) => {') + ';')();
+    const merge = new Function('_cw7RowsOf', '_cw7MigrateCheck',
+        'return function (current, rebuilt) ' + arrowBody('const _cw7MergeScaffold = (current, rebuilt) => {') + ';'
+    )(rowsOfFn, migrateFn);
+
+    // The current builder's own output for the two value tables — the rows the heal stamps in.
+    const rebuilt = sandbox.buildCW7ValuesSection('begin') + sandbox.buildCW7ValuesSection('end');
+
+    ok(/optional&quot;:true/.test(FIXTURE) && /id&quot;:&quot;strengths/.test(FIXTURE),
+        'the v7.20.413 fixture no longer contains the defect it exists to reproduce — this check is now vacuous');
+
+    const out = merge(FIXTURE, rebuilt);
+    ok(out.ok && out.stale === true,
+        'the heal does not consider a v7.20.413 document stale — every existing Step-7 document would keep its self-ticking rows');
+    if (!out.ok || !out.stale) return;
+
+    ok(!/optional&quot;:true/.test(out.html),
+        'after the heal the rows STILL carry optional:true — the section would still tick itself untouched (the exact bug Neil saw twice)');
+    ok(!/id&quot;:&quot;strengths/.test(out.html),
+        'after the heal the rows still declare the retired `strengths` control id');
+    ok(/id&quot;:&quot;traits/.test(out.html), 'the healed rows do not declare the `traits` control');
+
+    // His answers must survive — this is the half that matters more than the fix.
+    ok(/>TEST</.test(out.html), 'the student\'s typed answer was LOST by the heal — revert rather than ship this');
+    ok(/traits&quot;:\{&quot;checked&quot;/.test(out.html),
+        'the student\'s tick was not migrated from `strengths` to `traits` — it would survive in the document but attach to a control that no longer exists');
+    ok(!/strengths&quot;:\{&quot;checked&quot;/.test(out.html), 'a tick is still namespaced under the retired control id');
+    ok(out.carried.length >= 2, 'the heal reports carrying ' + out.carried.length + ' answers; the fixture has at least two');
+
+    // Idempotent: healing an already-healed document must be a no-op, or every load rewrites the doc.
+    const again = merge(out.html, rebuilt);
+    ok(again.ok && again.stale === false,
+        'the heal is not idempotent — it would re-stamp and re-save the document on every single load');
+})();
 
 console.log('\n' + (fail ? '❌ CW7 DOC GATE FAILED' : '✅ cw7-doc-gate passed')
     + '  — ' + asserts.pass + ' passed, ' + asserts.fail + ' failed');

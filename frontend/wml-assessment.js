@@ -37712,6 +37712,115 @@
             }
         };
 
+        // ⭐⭐ v7.20.418 — THE SCAFFOLD HEAL. Re-stamp the row definitions, keep the answers.
+        //
+        // Neil, still seeing it after .414 removed `optional: true`: *"why is the section 4.1
+        // values at end got a green tick? I haven't touched it yet."* He was right again, and the
+        // cause is a law this codebase already knows and I did not apply:
+        // **THE OUTLINE SCAFFOLD IS BAKED INTO THE SAVED DOCUMENT.** Every row serialises its whole
+        // criteria object into `data-criteria` at BUILD time. Changing the builder therefore fixes
+        // documents that do not exist yet and nothing else. His document — proved by reading it off
+        // the server — still carried `&quot;optional&quot;:true` and the old `strengths` control id,
+        // so its untouched rows still satisfied themselves and the section still ticked.
+        //
+        // WHAT THIS DOES: rebuilds the scaffold from the current template and carries the student's
+        // answers across — the row's text and its `data-check-state` — then verifies that every
+        // answer it took out went back in. If anything is missing it restores the original and
+        // leaves the document alone; a heal that loses work is worse than the bug it fixes.
+        //
+        // It also migrates the tick namespace: .413 stored checks under the control id `strengths`,
+        // which .414 renamed to `traits` (Neil's word). Without the rename his own ticks would be
+        // silently orphaned — present in the document, attached to a control that no longer exists.
+        //
+        // STALENESS IS MEASURED, NOT PATTERN-MATCHED: each row's saved `data-criteria` is compared
+        // against the one the current builder produces for that same field id. So this keeps
+        // working for the next change to the row definition, without anyone remembering to add a
+        // new marker to look for.
+        const _cw7RowsOf = (html) => {
+            const out = {};
+            const re = /<div[^>]*?data-field-id="(cw-step-7-[a-z-]+)"[^>]*?>([\s\S]*?)<\/div>/g;
+            let m;
+            while ((m = re.exec(html))) {
+                const tag = m[0].slice(0, m[0].indexOf('>') + 1);
+                const crit = (tag.match(/data-criteria="([^"]*)"/) || [])[1] || '';
+                const chk = (tag.match(/data-check-state="([^"]*)"/) || [])[1] || '';
+                out[m[1]] = { whole: m[0], tag, inner: m[2], criteria: crit, check: chk };
+            }
+            return out;
+        };
+        // .413 wrote ticks under `strengths`; the control is `traits` from .414.
+        const _cw7MigrateCheck = (raw) => {
+            if (!raw || raw.indexOf('strengths') === -1) return raw;
+            try {
+                const st = JSON.parse(raw.replace(/&quot;/g, '"'));
+                if (st && st.c && st.c.strengths && !st.c.traits) {
+                    st.c.traits = st.c.strengths;
+                    delete st.c.strengths;
+                    return JSON.stringify(st).replace(/"/g, '&quot;');
+                }
+            } catch (e) { /* leave it exactly as it was */ }
+            return raw;
+        };
+        // The whole transform, as ONE pure function of two strings — so bin/cw7-doc-gate.js can run
+        // the REAL merge against a REAL v7.20.413 document (bin/fixtures/) instead of a rig's
+        // imitation of one. A heal tested by a re-implementation of itself is not tested.
+        const _cw7MergeScaffold = (current, rebuilt) => {
+            const cur = _cw7RowsOf(current), fresh = _cw7RowsOf(rebuilt);
+            const ids = Object.keys(fresh);
+            if (!ids.length) return { ok: false, reason: 'no rows in template', stale: false };
+            const stale = ids.some((id) => !cur[id] || cur[id].criteria !== fresh[id].criteria);
+            if (!stale) return { ok: true, stale: false, html: current, ids: ids, carried: [] };
+            let html = rebuilt;
+            const carried = [];
+            ids.forEach((id) => {
+                const was = cur[id];
+                if (!was) return;
+                const check = _cw7MigrateCheck(was.check);
+                let tag = fresh[id].tag;
+                if (check) tag = tag.replace('<div', '<div data-check-state="' + check + '"');
+                html = html.replace(fresh[id].whole, tag + was.inner + '</div>');
+                if (was.inner.trim() || check) carried.push(id);
+            });
+            return { ok: true, stale: true, html: html, ids: ids, carried: carried, before: cur };
+        };
+        const tryHealCwStep7Scaffold = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 7) return;
+            try {
+                const current = canvasEditor.getHTML();
+                if (current.indexOf('cw-step-7-') === -1) return;      // no rows — the rebuild heal owns this doc
+                const merged = _cw7MergeScaffold(current, getCwDocTemplate(cwStepDef));
+                if (!merged.ok) { console.warn('WML CW7: scaffold heal skipped —', merged.reason); return; }
+                if (!merged.stale) return;
+                const html = merged.html, carried = merged.carried, cur = merged.before;
+
+                const _wasMigrating = _migrationActive;
+                try { _migrationActive = true; canvasEditor.commands.setContent(html, false); }
+                finally { try { _migrationActive = _wasMigrating; } catch (_) {} }
+
+                // Verify every answer survived. Anything less and we put the document back.
+                const after = _cw7RowsOf(canvasEditor.getHTML());
+                const lost = carried.filter((id) => {
+                    const a = after[id];
+                    if (!a) return true;
+                    const hadText = cur[id].inner.replace(/<[^>]+>/g, '').trim();
+                    const hasText = a.inner.replace(/<[^>]+>/g, '').trim();
+                    return hadText && !hasText;
+                });
+                if (lost.length) {
+                    console.warn('WML CW7: scaffold heal would have lost ' + lost.length + ' answer(s) — reverting.', lost);
+                    try { _migrationActive = true; canvasEditor.commands.setContent(current, false); }
+                    finally { try { _migrationActive = _wasMigrating; } catch (_) {} }
+                    return;
+                }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                try { snapshotTemplateBaseline(canvasEditor); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW7: re-stamped ' + merged.ids.length + ' row definitions; carried ' + carried.length + ' answer(s).');
+            } catch (e) {
+                console.warn('WML CW7: scaffold heal failed (non-fatal) —', e && e.message);
+            }
+        };
+
         // ⭐ v7.20.415 — the teaching text, into a document that already has rows.
         //
         // The prose sections are read-only scaffold: a student never types in them, so they can be
@@ -38443,7 +38552,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
