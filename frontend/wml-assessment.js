@@ -3687,6 +3687,134 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════════
+    // TICK ONE ITEM INSIDE ONE CONTROL OF A MULTI-CONTROL ROW (v7.20.419)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Built for the Step-7 walk, whose rows carry TWO checklists (`traits` and `state`) plus a
+    // text box. Every other code-tick primitive in this file is wrong for those rows, and the
+    // reason is worth stating once because it is silent when you get it wrong:
+    //
+    // ⛔ `_tickOutlineRow` CANNOT be used on a multi-control row. It does
+    //    `_outlineCheckState.set(fid, { checked: [0] })` — it REPLACES the row's whole state
+    //    object. A multi-control row namespaces its state per control (`{ c: { traits: {...},
+    //    state: {...} } }` — WML.outlineRow.stateOf/withControlState in wml-core.js), so a flat
+    //    write silently deletes every trait and state the student already picked. No error, no
+    //    symptom until they look at the document. Same class as §5d, one level down.
+    //
+    // So this routes through the checkbox's OWN click handler, exactly like _tickRowLikeAStudent:
+    // that handler calls persistControl(entry), which MERGES through withControlState and cannot
+    // clobber a sibling control. The chat and the hand tick are then the same code path by
+    // construction (v7.20.336's reasoning, applied to controls rather than rows).
+    //
+    // PM-safe for the same reason as its two siblings: `.click()` toggles the `checked` PROPERTY,
+    // which produces no MutationRecord, so PM's DOMObserver cannot see it and cannot flush (the
+    // v7.19.866 freeze class).
+    //
+    // `exclusive: true` makes the group behave as a radio — Balance/Excess/Deficit are three
+    // spellings of one answer, and a row showing two of them at once is not an answer at all.
+    // Clearing is done by clicking the ticked sibling, so the sibling's own handler persists it.
+    //
+    // Returns true if the item ended up ticked. Never throws — the caller owns what the student
+    // sees (law 4d), and a thrown tick must not swallow the turn.
+    function _setRowControlChoice(fid, ctlId, itemLabel, opts) {
+        if (!fid || !ctlId || !itemLabel) return false;
+        try {
+            let rowEl = null;
+            document.querySelectorAll('[data-outline-row]').forEach((r) => {
+                if (!rowEl && r.getAttribute('data-field-id') === fid) rowEl = r;
+            });
+            if (!rowEl) { console.warn('WML ctl-tick: no outline row for', fid); return false; }
+            let group = null;
+            rowEl.querySelectorAll('.swml-outline-ctl').forEach((g) => {
+                if (!group && g.getAttribute('data-ctl-id') === ctlId) group = g;
+            });
+            if (!group) { console.warn('WML ctl-tick: row', fid, 'has no control group', ctlId); return false; }
+            const want = String(itemLabel).trim().toLowerCase();
+            let hit = null;
+            const all = [];
+            group.querySelectorAll('.swml-outline-check').forEach((lbl) => {
+                const cb = lbl.querySelector('input[type="checkbox"]');
+                const txt = lbl.querySelector('.swml-outline-check-label');
+                if (!cb) return;
+                all.push(cb);
+                if (!hit && txt && String(txt.textContent || '').trim().toLowerCase() === want) hit = cb;
+            });
+            if (!hit) {
+                // FAIL LOUD. A label the walk offers that the document does not carry is a
+                // write-key ≠ read-key drift (§5d) — the chip would tick nothing, silently.
+                console.warn('WML ctl-tick: "' + itemLabel + '" is not an item of ' + ctlId + ' on ' + fid
+                    + ' — the walk is offering a choice the document does not have');
+                return false;
+            }
+            if (opts && opts.exclusive) {
+                all.forEach((cb) => { if (cb !== hit && cb.checked) cb.click(); });   // through their own handlers
+            }
+            if (!hit.checked) hit.click();
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            _scrollToFilledField(fid);
+            return true;
+        } catch (e) {
+            console.warn('WML ctl-tick: failed for', fid, ctlId, '—', e && e.message);
+            return false;
+        }
+    }
+
+    // Read one control's state back — the DOM leads (the student may have just toggled it by
+    // hand), falling back to the persisted Map so a row that has scrolled out of the rendered
+    // window still answers honestly. Returns an array of the ticked item LABELS.
+    // Used by the Step-7 walk to decide what is already done (resume from the DOCUMENT, never a
+    // counter) and to compute the reflection's shift from the student's own picks.
+    function _rowControlPicks(fid, ctlId) {
+        const out = [];
+        if (!fid || !ctlId) return out;
+        try {
+            let rowEl = null;
+            document.querySelectorAll('[data-outline-row]').forEach((r) => {
+                if (!rowEl && r.getAttribute('data-field-id') === fid) rowEl = r;
+            });
+            if (rowEl) {
+                let group = null;
+                rowEl.querySelectorAll('.swml-outline-ctl').forEach((g) => {
+                    if (!group && g.getAttribute('data-ctl-id') === ctlId) group = g;
+                });
+                if (group) {
+                    group.querySelectorAll('.swml-outline-check').forEach((lbl) => {
+                        const cb = lbl.querySelector('input[type="checkbox"]');
+                        const txt = lbl.querySelector('.swml-outline-check-label');
+                        if (cb && cb.checked && txt) out.push(String(txt.textContent || '').trim());
+                    });
+                    return out;
+                }
+            }
+            // Not rendered — read the persisted state through the SAME accessor the renderer
+            // uses (WML.outlineRow.stateOf), so the two cannot disagree about the shape.
+            const saved = _outlineCheckState.get(fid);
+            if (!saved) return out;
+            const idxs = ((saved.c || {})[ctlId] || {}).checked;
+            if (!Array.isArray(idxs)) return out;
+            const items = _cw7ControlItems(fid, ctlId);
+            idxs.forEach((i) => { if (items[i]) out.push(items[i]); });
+        } catch (e) {
+            console.warn('WML ctl-read: failed for', fid, ctlId, '—', e && e.message);
+        }
+        return out;
+    }
+
+    // The item roster for one control, read off the row's baked `data-criteria` — the same
+    // definition the NodeView renders from, so an index can never resolve against a stale list.
+    function _cw7ControlItems(fid, ctlId) {
+        try {
+            let rowEl = null;
+            document.querySelectorAll('[data-outline-row]').forEach((r) => {
+                if (!rowEl && r.getAttribute('data-field-id') === fid) rowEl = r;
+            });
+            if (!rowEl) return [];
+            const crit = JSON.parse(rowEl.getAttribute('data-criteria') || '{}');
+            const ctl = (crit.controls || []).filter((c) => c && c.id === ctlId)[0];
+            return (ctl && Array.isArray(ctl.items)) ? ctl.items : [];
+        } catch (e) { return []; }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
     // SET AN OUTLINE ROW'S DROPDOWN FROM CODE (v7.20.297)
     // ───────────────────────────────────────────────────────────────────────────────────────
     // Twin of _tickOutlineRow, for `type: 'dropdown'` rows. Same PM law: the selection lives in
@@ -15325,6 +15453,7 @@
             const m = {
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
+                cw_step_7: _cwValuesCtl,
             };
             const c = m[(state && state.task) || ''];
             if (!c || typeof c.nudge !== 'function') return false;
@@ -15334,6 +15463,7 @@
             const m = {
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
+                cw_step_7: _cwValuesCtl,
             };
             const c = m[(state && state.task) || ''];
             return !!(c && c.active);
@@ -15430,6 +15560,7 @@
                 const _cwCtls = {
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
+                cw_step_7: _cwValuesCtl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -15521,6 +15652,14 @@
             // on-demand Ask-Sophia, and this gate correctly falls through for exactly those.
             if (state.task === 'cw_step_6' && _cwOutlineCtl.active && _inboundIsAnswer) {
                 await _cwOutlineCtl.handleTurn(msg);
+                return;
+            }
+            // v7.20.419: CW Step 7 (Universal Human Values) — 15 code-served stations, filed
+            // verbatim. `active` NEVER goes false for a round trip here: this walk spends no
+            // judgment calls at all, so unlike Steps 2-6 there is no turn this gate should fall
+            // through for once the walk has started.
+            if (state.task === 'cw_step_7' && _cwValuesCtl.active && _inboundIsAnswer) {
+                await _cwValuesCtl.handleTurn(msg);
                 return;
             }
 
@@ -23306,6 +23445,643 @@
             };
         })();
 
+        // ═══════════════════════════════════════════════════════════════════════════════════
+        // CW STEP 7 — UNIVERSAL HUMAN VALUES (code-owned walk, v7.20.419)
+        // ───────────────────────────────────────────────────────────────────────────────────
+        // Neil, 2026-08-04, reversing the bare-document ruling of the day before: *"the
+        // environment that step seven is currently in is beautiful… But I was just thinking that
+        // it might be easier when the students go through the chat because it ensures that they
+        // do everything. Would it be difficult to change the environment and then to programatize
+        // the questions?"* — and, confirming the shape: *"you're not just gonna edit the current
+        // environment, but you're gonna change it to training environment to, basically, exactly
+        // the same as step five."*
+        //
+        // So this is _cwStructureCtl's shape, not a new one: `tier: 'si'` (wml-core.js), one
+        // greeting turn from the model that ends in @CW7_START, and then CODE serves every ask.
+        //
+        // ⭐ WHAT IS DIFFERENT, and it is the only genuinely new mechanic in the walk: a Step-7
+        // row is MULTI-CONTROL. Each of the twelve value rows carries a `traits` checklist, a
+        // `state` checklist (In balance / In excess / In deficit) AND a text box, and Neil's #232
+        // ruling makes all three required for the row to count as done. So a station here is
+        // THREE turns, not one: tick the traits → tap the state → write the explanation. The
+        // walk's position is therefore (station, phase), and BOTH are derived from the document
+        // rather than a counter — see phaseOf().
+        //
+        // ⛔ NEVER call _tickOutlineRow on these rows. It replaces the row's whole check-state
+        // object and would silently delete the student's traits and state (see the note on
+        // _setRowControlChoice, which is why that primitive exists).
+        //
+        // ZERO judgment API calls — no verdicts, no stage checks, no finish check. The greeting is
+        // the only round trip in the step, exactly as #220b ruled, and cw7-sim asserts it
+        // mechanically (`world.sends.length === 0` across the whole walk).
+        //
+        // #237 (Neil's "does your story explore this value?" question) is answered HERE, in the
+        // ask prose, not as a gate: all six values stay compulsory per his own #232 ruling, and
+        // the honest form of "my story barely explores this" is already on the page — *in
+        // deficit*. Every ask says so in as many words.
+        const _cwValuesCtl = (function () {
+            // ── THE TEACHING, per value ────────────────────────────────────────────────────
+            // Grounded, not invented (§5c): the balance insight and the two worked examples
+            // (Frankenstein = wisdom in excess, Macbeth = courage in excess) are Neil's own words
+            // from resources/step7/step7-teaching-text.md; "humanity without boundaries" is the
+            // protocol's. The remaining examples are PLOT-LEVEL claims about canon texts the CW
+            // arc already teaches from (Scrooge, Katniss, Marlin, the Birlings, Of Mice and Men)
+            // — no invented quotations anywhere, which is also why nothing here is in quote marks.
+            const TEACH = {
+                wisdom: {
+                    what: 'Wisdom is not being clever. It is knowing what is worth knowing, and being willing to change your mind.',
+                    excess: 'In *Frankenstein*, Victor is consumed by his desire to unravel the mysteries of creation, with no regard for the consequences — brilliance without temperance.',
+                    deficit: 'Mr Birling in *An Inspector Calls* is certain about everything: the Titanic is unsinkable, war is impossible. Confidence with no curiosity is wisdom in deficit.',
+                    balance: 'Sheila Birling ends that same play willing to question what she is told — she has learned faster than anyone else on stage.',
+                    tech: [{ s: 'Th', l: 'Theme' }],
+                },
+                courage: {
+                    what: 'Courage is acting while you are still afraid. A character with nothing to fear is not brave — they are just safe.',
+                    excess: '*Macbeth* shows what happens when courage operates without moral restraint: fearlessness, unchecked by temperance or justice, spirals into tyranny and destruction.',
+                    deficit: 'Marlin at the start of *Finding Nemo* cannot let his son out of his sight. Fear is making every decision for him.',
+                    balance: 'Katniss volunteers in her sister’s place — terrified, and doing it anyway. That is the whole definition.',
+                    tech: [{ s: 'Fw', l: 'The Flaw' }],
+                },
+                humanity: {
+                    what: 'Humanity is love, kindness and reading other people well — the ability to be close to someone.',
+                    excess: 'A character who loves too much without self-regulation might sacrifice everything and lose themselves — George gives up every plan he has to keep Lennie safe.',
+                    deficit: 'Scrooge at the start has decided people cost more than they give. Money cannot abandon him; people can.',
+                    balance: 'Scrooge at the end — the same man, with the shield down.',
+                    tech: [{ s: 'Ey', l: 'Empathy — making us care' }],
+                },
+                justice: {
+                    what: 'Justice is fairness beyond your own circle: what you owe people who cannot make you pay.',
+                    excess: 'Justice with no mercy in it becomes cruelty — a character so fixed on punishment that forgiveness stops being possible, like Javert pursuing one man for decades over a stolen loaf.',
+                    deficit: 'Mr Birling refuses any responsibility for Eva Smith at all. Fairness and citizenship are simply absent.',
+                    balance: 'The Inspector holds every one of them to account and still asks them to change, rather than only condemning them.',
+                    tech: [{ s: 'Th', l: 'Theme' }],
+                },
+                temperance: {
+                    what: 'Temperance is the brake: forgiveness, humility, prudence, self-regulation. It is what stops every other value running away with the character.',
+                    excess: 'Self-control so complete that nothing is ever risked — a character who never acts cannot change, and a story is a change.',
+                    deficit: 'Macbeth’s ambition has nothing to check it, which is precisely why it eats him.',
+                    balance: 'A character who can want something badly and still choose when to stop.',
+                    tech: [{ s: 'Fw', l: 'The Flaw' }],
+                },
+                transcendence: {
+                    what: 'Transcendence is the sense that life is bigger than you — beauty, gratitude, hope, humour, meaning.',
+                    excess: 'Hope with nothing underneath it: George and Lennie’s farm is a dream they repeat rather than a plan they act on.',
+                    deficit: 'Scrooge at the start has no gratitude, no humour and no eye for beauty. Christmas is only a day people expect money from him.',
+                    balance: 'Scrooge at the end laughs, gives, and is glad to be alive.',
+                    tech: [{ s: 'Th', l: 'Theme' }],
+                },
+            };
+            const GUIDE = 'Universal Human Values';
+
+            // ── THE STATIONS ───────────────────────────────────────────────────────────────
+            // ⚠️ Every field id comes from _cw7RowFieldId — the ONE producer that also builds the
+            // document rows (§5d). Deliberately NO `fid: 'cw-step-7-…'` literals anywhere in this
+            // controller: bin/cw-keymatch-harness.js requires a literal walk-table fid to be
+            // matched by a literal outlineRowHTML(..., 'fid'), and these rows are generated, so a
+            // literal here would be a second producer AND a false gate failure at once.
+            const STATIONS = [];
+            ['begin', 'end'].forEach(function (when) {
+                CW7_VALUES.forEach(function (v) {
+                    STATIONS.push({ kind: 'value', when: when, v: v, fid: _cw7RowFieldId(when, v.id) });
+                });
+            });
+            const REFLECT = [
+                { slot: 'shift', label: 'The biggest shift' },
+                { slot: 'align', label: 'Does it align?' },
+                { slot: 'pressure', label: 'Pressure from the plot' },
+            ];
+            REFLECT.forEach(function (r) {
+                STATIONS.push({ kind: 'reflect', slot: r.slot, label: r.label, fid: _cw7RowFieldId('reflect', r.slot) });
+            });
+            const FIRST_END = CW7_VALUES.length;                 // station index where "at the end" starts
+            const FIRST_REFLECT = CW7_VALUES.length * 2;
+
+            let active = false, pending = false, i = 0;
+            // The phase INSIDE a value station: 'traits' → 'state' → 'why'. A reflection station
+            // has only 'why'. Never trusted from the sidecar alone — phaseOf() re-derives it from
+            // the document, because the document survives a reload and a counter does not.
+            let phase = 'traits';
+            let done = false;
+
+            const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw7') + '_cw7'; } catch (e) { return 'swml_cw7'; } };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ i, phase, active, done })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;   // a resume re-serve is DRAWN, never saved (§4c.7)
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function userTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
+                                && n.attrs && n.attrs.fieldId === fid) { out = _cwNodeText(n).trim(); return false; }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            const traitsOf = (st) => _rowControlPicks(st.fid, 'traits');
+            const stateOf  = (st) => _rowControlPicks(st.fid, 'state');
+
+            // ⭐ THE POSITION IS DERIVED FROM THE DOCUMENT, NEVER FROM A COUNTER.
+            // Returns which of the three parts of this station is still outstanding, or '' when
+            // the station is complete. A student who filled a row by hand — the document sits
+            // open beside the chat and stays fully hand-usable — moves the walk on, exactly as
+            // firstEmpty() does for every other CW walk.
+            function phaseOf(n) {
+                const st = STATIONS[n];
+                if (!st) return '';
+                if (st.kind === 'reflect') return rowText(st.fid) ? '' : 'why';
+                if (!traitsOf(st).length) return 'traits';
+                if (!stateOf(st).length) return 'state';
+                if (!rowText(st.fid)) return 'why';
+                return '';
+            }
+            function firstEmpty() {
+                for (let n = 0; n < STATIONS.length; n++) if (phaseOf(n)) return n;
+                return STATIONS.length;
+            }
+
+            // ── chips ──────────────────────────────────────────────────────────────────────
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
+                options.forEach(function (opt) {
+                    const label = (opt && typeof opt === 'object') ? opt.label : opt;
+                    const attrs = {
+                        className: 'swml-quick-btn', textContent: label,
+                        onClick: function () { bar.remove(); onPick(label); },
+                    };
+                    if (opt && typeof opt === 'object' && opt.icon) attrs.icon = opt.icon;
+                    bar.appendChild(el('button', attrs));
+                });
+                bc.appendChild(bar);
+                return true;
+            }
+            // MULTI-SELECT (§4c.8 — the honest answer to "which traits?" is usually several).
+            function chipBarMulti(options, onDone) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
+                const sel = [];
+                options.forEach(function (opt) {
+                    const btn = el('button', { className: 'swml-quick-btn', textContent: opt });
+                    btn.addEventListener('click', function () {
+                        const x = sel.indexOf(opt);
+                        if (x === -1) { sel.push(opt); btn.textContent = '✓ ' + opt; }
+                        else { sel.splice(x, 1); btn.textContent = opt; }
+                    });
+                    bar.appendChild(btn);
+                });
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Continue →',
+                    onClick: function () { bar.remove(); onDone(sel.slice()); },
+                }));
+                bc.appendChild(bar);
+                return true;
+            }
+
+            // ⭐ THE HELP LADDER (§4c.9) — rungs 0-2, all free. There is no rung 3 in this step:
+            // it spends no API calls at all, and a chip that promises Sophia would either lie or
+            // break that. The examples ARE the help here, which is the whole zero-API thesis.
+            function helpBar(st) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
+                if (st && st.kind === 'value') {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: 'More examples', icon: WML.icon('examples', 15),
+                        onClick: function () { serveMore(st); },
+                    }));
+                }
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Guidance', icon: WML.icon('guide', 15),
+                    onClick: function () { try { if (typeof showGuidePanel === 'function') showGuidePanel(GUIDE); } catch (e) {} },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Story Components', icon: WML.icon('components', 15),
+                    onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Story Spine', icon: WML.icon('spine', 15),
+                    onClick: function () { try { var t = document.querySelector('.swml-ss-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
+                (((st && st.kind === 'value' && TEACH[st.v.id].tech) || [])).forEach(function (t) {
+                    if (!(window.SophiclyTable && window.SophiclyTable.open)) return;
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: (WML.techIcon(t.s) ? '' : '🗂 ') + t.l, icon: WML.techIcon(t.s, 15),
+                        onClick: function () { try { window.SophiclyTable.open(t.s); } catch (e) {} },
+                    }));
+                });
+                bc.appendChild(bar);
+            }
+            // Rung 1 — the same value, seen in two more stories. Free, code-served, no round trip.
+            function serveMore(st) {
+                const t = TEACH[st.v.id];
+                aiBubble('**' + st.v.name + ' — three ways it can sit**\n\n'
+                    + '- **In balance.** ' + t.balance + '\n'
+                    + '- **In excess.** ' + t.excess + '\n'
+                    + '- **In deficit.** ' + t.deficit + '\n\n'
+                    + 'Notice that none of the three is “the good one”. Excess and deficit are where the '
+                    + 'conflict lives, which is why they are usually the more interesting answer.');
+                helpBar(st);
+                resetSend();
+            }
+
+            // ── the three parts of a value station ─────────────────────────────────────────
+            function stationTitle(st) {
+                if (st.kind === 'reflect') return st.label;
+                return st.v.name + (st.when === 'begin' ? ' — at the beginning' : ' — at the end');
+            }
+            function bar(n, heading) { return cwProgressBar(n + 1, STATIONS.length, 'Universal Values', heading); }
+
+            function serveTraits(n) {
+                const st = STATIONS[n];
+                const t = TEACH[st.v.id];
+                phase = 'traits'; persist();
+                _walkSlot.clear('cw7');   // a tick list is a TAP — nothing typed may file here
+                const moment = st.when === 'begin' ? 'when your story OPENS' : 'by the time your story ENDS';
+                aiBubble(bar(n, stationTitle(st))
+                    + '**' + st.v.name + '**\n\n' + t.what + '\n\n'
+                    + 'Its traits are: ' + st.v.traits.map(function (x) { return '**' + x + '**'; }).join(' · ') + '.\n\n'
+                    + 'Example — ' + t.deficit + '\n\n'
+                    + '**Which of these traits does your protagonist show ' + moment + '?** Tap every one that '
+                    + 'applies, then Continue. If they show none of them, that is a real answer too — tap the '
+                    + 'closest one and we will call it a deficit in a moment.');
+                chipBarMulti(st.v.traits, onValueTraitsDone);
+                helpBar(st);
+                resetSend();
+            }
+            // CONTENT: each tap ticks a real `traits` item on the row, through the student's own
+            // click path (_setRowControlChoice). Nothing lives only in the sidecar.
+            function onValueTraitsDone(picks) {
+                const st = STATIONS[i];
+                if (!st || st.kind !== 'value') { advance(); return; }
+                if (!picks.length) {
+                    // A REFUSAL IS HALF A CHANGE (law 4d) — re-ask in the same breath, and say why.
+                    // The row genuinely cannot complete with no trait ticked (Neil's #232 ruling),
+                    // so this is not tidiness: continuing would leave the student a section that
+                    // can never tick green and no idea why.
+                    aiBubble('Pick at least one — even a value your protagonist barely has shows up as **one** of '
+                        + 'these traits going missing. Tap the closest one; the balance/excess/deficit question '
+                        + 'straight after is where you say how much of it they have.');
+                    chipBarMulti(st.v.traits, onValueTraitsDone);
+                    helpBar(st);
+                    resetSend();
+                    return;
+                }
+                userTurn(picks.join(', '));
+                let wrote = 0;
+                picks.forEach(function (p) { if (_setRowControlChoice(st.fid, 'traits', p)) wrote++; });
+                if (wrote < picks.length) {
+                    console.warn('WML CW7: ' + (picks.length - wrote) + ' trait tick(s) did not land on ' + st.fid);
+                }
+                serveState(i);
+            }
+
+            function serveState(n) {
+                const st = STATIONS[n];
+                const t = TEACH[st.v.id];
+                phase = 'state'; persist();
+                _walkSlot.clear('cw7');   // a pick is a TAP
+                aiBubble(bar(n, stationTitle(st))
+                    + '**How much of it do they have?**\n\n'
+                    + '- **In balance** — the right amount, used well. ' + t.balance + '\n'
+                    + '- **In excess** — too much, unchecked. ' + t.excess + '\n'
+                    + '- **In deficit** — too little. ' + t.deficit + '\n\n'
+                    + 'Too much or too little of any virtue creates conflict, in stories and out of them. '
+                    + '**Which is it for your protagonist ' + (st.when === 'begin' ? 'at the start' : 'at the end') + '?**');
+                chipBar(CW7_STATES, onValueStatePick);
+                helpBar(st);
+                resetSend();
+            }
+            // CONTENT: files into the row's `state` control. EXCLUSIVE — a value cannot be in
+            // balance and in deficit at once, and a row showing two is not an answer.
+            function onValueStatePick(pick) {
+                const st = STATIONS[i];
+                if (!st || st.kind !== 'value') { advance(); return; }
+                userTurn(pick);
+                if (!_setRowControlChoice(st.fid, 'state', pick, { exclusive: true })) {
+                    console.warn('WML CW7: state pick "' + pick + '" did not land on ' + st.fid);
+                }
+                serveWhy(i);
+            }
+
+            function serveWhy(n) {
+                const st = STATIONS[n];
+                phase = 'why'; persist();
+                if (st.kind === 'reflect') { serveReflect(n); return; }
+                const picked = stateOf(st)[0] || 'the state you chose';
+                const traits = traitsOf(st).join(', ');
+                // DRAWN, NOT STORED, on the END pass only (§4c.7). Its text quotes what the
+                // student wrote in the BEGINNING row, and that row stays editable for ever — a
+                // stored copy would keep asserting a sentence they have since changed. The
+                // beginning asks carry no mutable value, so those stay durable and the transcript
+                // still holds the real record of the walk.
+                const emit = function () {
+                    aiBubble(bar(n, stationTitle(st))
+                        + '**Now say it in your own words.**\n\n'
+                        + 'A strong explanation:\n\n'
+                        + '- names the **moment in your plot** where we would SEE this — not a summary of the whole story\n'
+                        + '- says what it **costs** them, or what it wins them\n'
+                        + '- one or two sentences is plenty; a quote from your own draft is welcome if you have one\n\n'
+                        + 'Example: *At the start, Amina’s courage is in deficit — she watches her brother take the '
+                        + 'blame in the head teacher’s office and says nothing, because speaking up has never once '
+                        + 'worked for her.*\n\n'
+                        + (st.when === 'end' && rowText(_cw7RowFieldId('begin', st.v.id))
+                            ? 'At the beginning you wrote:\n\n> ' + rowText(_cw7RowFieldId('begin', st.v.id))
+                              + '\n\n**What has changed by the end — and what in your plot changed it?**'
+                            : '**You said ' + st.v.name + ' is ' + picked.toLowerCase() + (traits ? ' (' + traits + ')' : '')
+                              + ' — where does your story show that?**'));
+                };
+                if (st.when === 'end') _cwReplay(emit); else emit();
+                _walkSlot.arm('cw7', st.fid, { cycle: 'rewrite' });   // one self-contained answer per row
+                helpBar(st);
+                persist();
+                resetSend();
+            }
+
+            // ── the three reflection asks ──────────────────────────────────────────────────
+            // The shift is COMPUTED from the student's own twelve picks and shown to them, so the
+            // ask is never a blank "which value changed most?" when the document already knows.
+            function shiftLines() {
+                const out = [];
+                CW7_VALUES.forEach(function (v) {
+                    const a = _rowControlPicks(_cw7RowFieldId('begin', v.id), 'state')[0] || '';
+                    const b = _rowControlPicks(_cw7RowFieldId('end', v.id), 'state')[0] || '';
+                    if (a && b && a !== b) out.push('- **' + v.name + ':** ' + a + ' → ' + b);
+                });
+                return out;
+            }
+            function serveReflect(n) {
+                const st = STATIONS[n];
+                phase = 'why'; persist();
+                // DRAWN, NEVER STORED (§4c.7 / the .351 fossil law): every one of these names the
+                // student's current picks, and those stay editable in the document beside the
+                // chat. Re-derived on entry, so it is always true.
+                _cwReplay(function () {
+                    if (st.slot === 'shift') {
+                        const moved = shiftLines();
+                        aiBubble(bar(n, stationTitle(st))
+                            + '**That is your whole values map done.** Here is what your own answers say changed:\n\n'
+                            + (moved.length ? moved.join('\n') : '*(Nothing moved — every value sits where it started.)*')
+                            + '\n\n' + (moved.length
+                                ? 'The value that travels furthest is usually the heart of the story: it is what the '
+                                  + 'plot is actually for.\n\n**Which of these shifts matters most, and why that one?**'
+                                : 'That is worth looking at. A protagonist who ends exactly where they began has not '
+                                  + 'been changed by the story — and stories are about complete and irreversible '
+                                  + 'change.\n\n**Which value SHOULD move, and what would have to happen to move it?**'));
+                    } else if (st.slot === 'align') {
+                        aiBubble(bar(n, stationTitle(st))
+                            + 'Your theme and your plot structure were decided in Step 5, and they are in your '
+                            + 'document — open **Story Components** or **Story Spine** below if you want them beside you.\n\n'
+                            + 'A strong answer names the value AND the theme in one sentence, and admits it if they '
+                            + 'pull in different directions — a mismatch found now is a fixed story; found in Draft 3 '
+                            + 'it is a rewrite.\n\n'
+                            + 'Example: *My theme is that people are shaped by who is watching, and my biggest shift '
+                            + 'is humanity moving from deficit to balance — they match, because she only becomes kind '
+                            + 'once someone finally sees her.*\n\n'
+                            + '**Does the shift you just named line up with your theme and your character arc?**');
+                    } else {
+                        aiBubble(bar(n, stationTitle(st))
+                            + 'Last one, and it is the practical one. A value only changes if the PLOT forces it to. '
+                            + 'If nothing in your Step-6 outline puts that value under real pressure, the change will '
+                            + 'read as something you announced rather than something that happened.\n\n'
+                            + 'A strong answer names **specific beats** — “the argument in stage three”, “the moment '
+                            + 'she finds the letter” — not “the middle of the story”.\n\n'
+                            + '**Does your Step-6 plot outline put enough pressure on that value? Name the beats that '
+                            + 'test it.**');
+                    }
+                });
+                _walkSlot.arm('cw7', st.fid, { cycle: 'rewrite' });
+                helpBar(st);
+                persist();
+                resetSend();
+            }
+
+            // ── flow ───────────────────────────────────────────────────────────────────────
+            function serveCurrent() {
+                const st = STATIONS[i];
+                if (!st) { serveWrap(); return; }
+                const p = phaseOf(i) || 'why';
+                if (st.kind === 'reflect') { serveReflect(i); return; }
+                if (p === 'traits') { serveTraits(i); return; }
+                if (p === 'state') { serveState(i); return; }
+                serveWhy(i);
+            }
+            function advance() {
+                i = firstEmpty();
+                active = true;
+                // The sidebar's three sub-steps (CW_SIDEBAR_STEPS[7]) — DERIVED from where the
+                // walk actually is, never a hand-stamped count.
+                try {
+                    if (i >= FIRST_REFLECT) applyCwSubstepProgress({ stepNum: 7, substepNum: 3, name: 'Reflection' });
+                    else if (i >= FIRST_END) applyCwSubstepProgress({ stepNum: 7, substepNum: 2, name: 'Values at End' });
+                    else applyCwSubstepProgress({ stepNum: 7, substepNum: 1, name: 'Values at Beginning' });
+                } catch (e) {}
+                if (i >= STATIONS.length) { active = false; done = true; clearPersist(); serveWrap(); return; }
+                persist();
+                serveCurrent();
+            }
+            function serveWrap() {
+                const moved = shiftLines();
+                done = true;
+                _walkSlot.clear('cw7');
+                // DRAWN, not stored — it names the current picks (§4c.7), and it fires again on
+                // every re-entry of a finished Step 7, which is what keeps the way back in alive.
+                _cwReplay(function () {
+                    aiBubble('**That is Step 7 done — all twelve values mapped, and the reflection with them.**\n\n'
+                        + (moved.length ? 'Your protagonist’s transformation, in your own answers:\n\n' + moved.join('\n') + '\n\n' : '')
+                        + 'This is the layer under your plot. Step 8 picks the scenes you will actually draft, and '
+                        + 'the scenes worth drafting are the ones where these values are tested.'
+                        + cwEndpointLine());
+                });
+                serveWrapRecall();
+                resetSend();
+            }
+            // THE WAY BACK IN (universal; CW4 carries the reference note). A finished walk is not
+            // a dead one — costs zero API calls, the student owns the rewrite, code only files it.
+            function serveWrapRecall() { chipBar(['Change an answer →'], onValuesWrapRecall); }
+            function recallable() { return STATIONS.filter(function (s) { return !!rowText(s.fid); }); }
+            function onValuesWrapRecall(pick) {
+                userTurn(pick);
+                const list = recallable();
+                if (!list.length) {
+                    aiBubble('Nothing is filled in yet — there is nothing to change. Tap below and we will start at the top.');
+                    chipBar(['Start the walk →'], function (p) { userTurn(p); i = firstEmpty(); done = false; advance(); });
+                    resetSend();
+                    return;
+                }
+                aiBubble('**Which answer do you want to change?**\n\nYour new version replaces that row, and nothing else moves.');
+                serveRecallPicker();
+                resetSend();
+            }
+            function serveRecallPicker() {
+                const opts = recallable().map(function (s) { return stationTitle(s); });
+                opts.push('Nothing — I’m done →');
+                chipBar(opts, onValuesRecallPick);
+            }
+            function onValuesRecallPick(pick) {
+                userTurn(pick);
+                if (pick.indexOf('Nothing') === 0) { serveWrapRecall(); resetSend(); return; }
+                const hit = recallable().filter(function (s) { return stationTitle(s) === pick; })[0];
+                if (!hit) {
+                    console.warn('WML CW7: recall chip did not resolve to a station —', pick);
+                    aiBubble('I did not catch which one that was — pick one below.');
+                    serveRecallPicker();
+                    resetSend();
+                    return;
+                }
+                i = STATIONS.indexOf(hit);
+                active = true; done = false; phase = 'why'; persist();
+                _cwReplay(function () {
+                    aiBubble('**Changing “' + stationTitle(hit) + '”**\n\nWrite the **whole answer again** — your new '
+                        + 'version replaces what is there now.\n\nHere is what you have:\n\n> ' + (rowText(hit.fid) || '*(blank)*'));
+                });
+                _walkSlot.arm('cw7', hit.fid, { cycle: 'rewrite' });
+                helpBar(hit);
+                resetSend();
+            }
+
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                // WHERE this answer goes comes from the ask that requested it. No ask served →
+                // nothing is written, and the current ask is re-served in the same breath (4d).
+                const slot = _walkSlot.consume('cw7');
+                if (!slot) {
+                    _cwNoAskGuard('cw7', function () { serveCurrent(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
+                userTurn(clean);
+                const target = STATIONS.filter(function (s) { return s.fid === slot.fid; })[0] || STATIONS[i];
+                if (!target) { serveWrap(); return; }
+                try {
+                    // `replace: true` — every ask here owns ONE self-contained answer (§4c.6
+                    // `rewrite`), which is also what makes the wrap's change-an-answer route file a
+                    // clean rewrite instead of stitching it onto the old one.
+                    if (_writeOutlineRowField(target.fid, clean, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                } catch (e) { console.warn('WML CW7: write failed (non-fatal) for ' + target.fid + ' —', e && e.message); }
+                // ⛔ deliberately NO _tickOutlineRow here: these rows are multi-control, and that
+                // helper would replace their whole check-state and delete the traits and state the
+                // student just chose. The row's own completion recomputes from the controls plus
+                // this text (WML.outlineRow.complete), which is what ticks it.
+                advance();
+            }
+
+            function startWalk() {
+                if (active || pending) return;
+                i = firstEmpty();
+                if (i >= STATIONS.length) {
+                    // Nothing left to walk — but never SILENT (the #74 lesson from Step 5): a
+                    // student re-entering a finished step must still see where they are and get a
+                    // route back into any answer.
+                    active = false; done = true;
+                    console.log('WML CW7: every station already complete — re-serving the wrap.');
+                    serveWrap();
+                    return;
+                }
+                active = true; pending = false;
+                console.log('WML CW7: code-served values walk start at station ' + (i + 1) + '/' + STATIONS.length);
+                if (i === 0 && phaseOf(0) === 'traits') { serveOrientation(); return; }
+                serveCurrent();
+            }
+            function serveOrientation() {
+                serveCwChunks([
+                    'Your plot has a shape now. This step is about what is UNDERNEATH it — the values your story is actually about.',
+                    'Psychologists Peterson and Seligman spent three years, across 40 cultures and 2,500 years of thought, looking for what stays constant in human beings. They found **six values**: Wisdom · Courage · Humanity · Justice · Temperance · Transcendence. Every heroic character is on a journey to embody them.',
+                    '**Here is the idea that makes this useful rather than a personality quiz: too much or too little of any virtue creates conflict.** In *Frankenstein*, Victor’s curiosity runs with no restraint at all and makes a monster — brilliance without temperance. In *Macbeth*, courage untethered from conscience becomes tyranny. Neither man lacks the virtue. They have it in EXCESS.',
+                    'So for each of the six values I will ask you three quick things: which traits your protagonist shows, whether the value is **in balance, in excess or in deficit**, and where your story shows it. First at the beginning of your story, then at the end — and the difference between those two tables IS your character’s transformation.\n\nAll six are compulsory, and that is deliberate: a value your protagonist barely has is not a blank, it is **in deficit** — and that is usually the most interesting answer on the page.',
+                    'Under every question you get **💡 More examples**, **📖 Guidance**, **🧩 Story Components** and **🗒 Story Spine**. All free, and there is no waiting on me in this step — everything here is instant.\n\n**Don’t overthink it.** Rough answers now; you will sharpen all of it across your drafts.',
+                ], { emit: aiBubble, onDone: function () { serveCurrent(); } });
+            }
+
+            function onReply(reply) {
+                if (state.task !== 'cw_step_7') return;
+                const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                if (!/@CW7_START/.test(norm)) return;
+                startWalk();
+            }
+            function reset() { active = false; pending = false; i = 0; phase = 'traits'; done = false; clearPersist(); }
+
+            // KIND-AWARE reattach, not phase-only — the Step-5 lesson. The chips are DOM-only, so
+            // a reload while the student is parked on a tick list or a state pick must re-attach
+            // THAT surface; re-serving the wrong one is how a walk eats an answer as the wrong
+            // field. Derived → drawn, never pushed (§4c.7).
+            function reattach() { _cwReplay(_reattachBody); }
+            function _reattachBody() {
+                if (done || i >= STATIONS.length) { serveWrap(); return; }
+                serveCurrent();
+            }
+            function tryResume() {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    const d = (raw ? JSON.parse(raw) : null) || {};
+                    if (!raw) console.warn('WML CW7: sidecar missing — resuming from the document.');
+                    // A pristine document with no sidecar is a FRESH START, not a resume (the
+                    // .330 lesson): going active here would leave the greeting's hand-over with
+                    // nothing to hand to, and the student on help chips and no question.
+                    const pristine = firstEmpty() === 0
+                        && !traitsOf(STATIONS[0]).length && !stateOf(STATIONS[0]).length && !rowText(STATIONS[0].fid);
+                    if (!raw && pristine) {
+                        active = false; pending = false;
+                        console.log('WML CW7: pristine document and no sidecar — fresh start, not a resume.');
+                        return false;
+                    }
+                    done = !!d.done;
+                    i = firstEmpty();
+                    if (i >= STATIONS.length) {
+                        active = false; pending = false; done = true;
+                        console.log('WML CW7: walk finished — re-serving the wrap’s change route');
+                        setTimeout(function () { _cwReplay(serveWrap); }, 500);
+                        return false;
+                    }
+                    phase = phaseOf(i) || 'why';
+                    active = true; pending = false;
+                    console.log('WML CW7: resumed at station ' + (i + 1) + '/' + STATIONS.length + ' (phase ' + phase + ')');
+                    setTimeout(reattach, 400);
+                    return true;
+                } catch (e) { return false; }
+            }
+            // A stale generic chip tap means "let's carry on" — show them where they are. Never
+            // files, never sends.
+            function nudge() {
+                if (!active || pending) return false;
+                if (i >= STATIONS.length) return false;
+                serveCurrent();
+                return true;
+            }
+
+            return {
+                handleTurn, onReply, reset, tryResume, nudge,
+                forceStart: startWalk,
+                atStart: function () { return firstEmpty() < STATIONS.length; },
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+
         // v7.20.265: FAIL-LOUD START FALLBACK.
         // All three walks begin on a marker the model must emit (@CW2_MENU / @CW3_START /
         // @CW4_START). If it never arrives — a paraphrase, a dropped marker, a protocol file
@@ -23321,20 +24097,22 @@
         let _cwStartMissTask = '';
         // v7.20.277: chat-clear resets every walk (see resetCwWalks). Registered together so a
         // future controller added here is covered by construction.
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl]);
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
             _cwSpineCtl.onReply(reply);
             _cwStructureCtl.onReply(reply);
             _cwOutlineCtl.onReply(reply);
+            _cwValuesCtl.onReply(reply);
 
             const t = (state && state.task) || '';
             const ctl = t === 'cw_step_2' ? _cwIdeasCtl
                 : t === 'cw_step_3' ? _cwLoglineCtl
                 : t === 'cw_step_4' ? _cwSpineCtl
                 : t === 'cw_step_5' ? _cwStructureCtl
-                : t === 'cw_step_6' ? _cwOutlineCtl : null;
+                : t === 'cw_step_6' ? _cwOutlineCtl
+                : t === 'cw_step_7' ? _cwValuesCtl : null;
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
             if (ctl.active || ctl.pending || !ctl.atStart()) { _cwStartMisses = 0; return; }
@@ -23374,6 +24152,7 @@
             cwSpineCtl: _cwSpineCtl,
             cwStructureCtl: _cwStructureCtl,   // v7.20.297 — boot resume calls tryResume() on this
             cwOutlineCtl: _cwOutlineCtl,       // v7.20.296 — boot resume calls tryResume() on this
+            cwValuesCtl: _cwValuesCtl,         // v7.20.419 — boot resume calls tryResume() on this
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
             set canvasChatId(v) { canvasChatId = v; },
@@ -29557,6 +30336,10 @@
                         await _cwStep6EntryLine(tp);
                         tp.cwOutlineCtl.tryResume();
                     }
+                    // v7.20.419: CW Step 7 resumes the same way. Its chips (the trait multi-select
+                    // and the balance/excess/deficit picks) are DOM-only like every other walk's,
+                    // so without this a reload mid-station leaves a question with no buttons.
+                    if (state.task === 'cw_step_7' && tp.cwValuesCtl) tp.cwValuesCtl.tryResume();
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
                     // (student types on); only re-surface the programmatic picker when NO poem is
                     // active (last poem finished, or none picked yet). The picker bubble is DOM-only

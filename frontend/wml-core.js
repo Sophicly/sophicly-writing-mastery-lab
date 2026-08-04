@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.418';
+var WML_BUILD = '7.20.419';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -1021,7 +1021,15 @@ window.WML = (function() {
         { step: 4,  label: 'Brief Outline',             tier: 'si', phase: 'planning' },
         { step: 5,  label: 'Choose Plot Structure',     tier: 'si', phase: 'planning' },
         { step: 6,  label: 'Plot Outline Workshop',     tier: 'si', phase: 'planning' },
-        { step: 7,  label: 'Universal Values',          tier: 'workbook', phase: 'planning' },
+        // ⭐ v7.20.419 (Neil, 2026-08-04) — TRAINING ENVIRONMENT, exactly as Step 5. This one word
+        // is the whole environment switch: `si` → EXERCISE_MANIFEST.cw_si → `panels.chat: true`
+        // + sidebar. His instruction, verbatim: *"you're not just gonna edit the current
+        // environment, but you're gonna change it to training environment to, basically, exactly
+        // the same as step five."* It reverses the `workbook` ruling of 2026-08-03 (#229) because
+        // he reconsidered (#236): *"it might be easier when the students go through the chat
+        // because it ensures that they do everything."* The DOCUMENT is unchanged — the walk
+        // (_cwValuesCtl) writes into exactly the rows the workbook version already shipped.
+        { step: 7,  label: 'Universal Values',          tier: 'si', phase: 'planning' },
         // Drafting Cycle
         { step: 8,  label: 'Scene Selection',           tier: 'si', phase: 'drafting' },
         { step: 9,  label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1 },
@@ -1117,6 +1125,15 @@ window.WML = (function() {
             { step: 5, label: 'Final Push' },
             { step: 6, label: 'Goal & Aftermath' },
             { step: 7, label: 'Review & Save' },
+        ],
+        // v7.20.419: the three sub-steps are the PROTOCOL's own
+        // (CW-STEP-07-universal-values.md §Sub-step Overview), not invented here — and
+        // _cwValuesCtl derives which one is live from where the walk actually is, never from a
+        // hand-stamped count.
+        7: [
+            { step: 1, label: 'Values at Beginning' },
+            { step: 2, label: 'Values at End' },
+            { step: 3, label: 'Reflection' },
         ],
         8: [
             { step: 1, label: 'Review Outline' },

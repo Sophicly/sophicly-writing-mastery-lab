@@ -179,6 +179,18 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         // which run BEFORE finish() clears the sidecar — so unlike the throughline there is no
         // moment at which a needed value is destroyed. They survive a reload because the sidecar
         // does. Asserted below: the claim must actually REACH the review, or banking it is theatre.
+        // v7.20.419 — STEP 7. Both picks are CONTENT, and neither writes TEXT: they tick real
+        // controls on the row (`traits` and `state`) through _setRowControlChoice, which routes
+        // through the checkbox's own click handler exactly as _tickRowLikeAStudent does for a row.
+        // No `fid` key for the same reason as onSeedsDone — they tick an existing row rather than
+        // writing a new one, so the "must call _writeOutlineRowField(FID)" check does not apply.
+        // Losing them is not survivable: a value row is only complete with a trait AND a state AND
+        // text (Neil's #232 ruling), so a pick that lived only in the sidecar would leave a section
+        // that can never tick green.
+        onValueTraitsDone:    { kind: 'content', note: 'Step 7 traits multi-select → ticks the row’s `traits` control' },
+        onValueStatePick:     { kind: 'content', note: 'Step 7 In balance/excess/deficit → ticks the row’s `state` control, exclusively' },
+        onValuesWrapRecall:   { kind: 'flow', note: 'Step 7 wrap: open the change-an-answer picker — the way back into an answered row' },
+        onValuesRecallPick:   { kind: 'flow', note: 'Step 7 wrap: which answer to change — the REWRITE that follows is what is filed' },
         onSelfAssessTicks:    { kind: 'scaffold', note: 'the criteria tick list — the claim is fed to the end-of-set review, never to a document row' },
         onSelfAssessFollowUp: { kind: 'flow', note: 'add-a-line / it is fine — steers the walk, must stay ephemeral' },
     };
@@ -252,8 +264,12 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         'fewer than two walks expose nudge() — a walk that cannot re-serve its ask can strand a student');
     // All six CW arms gate on it. The quiz arms deliberately do NOT: an MSQ/FQ answer chip IS the
     // student's answer, so the flag must not reach them.
+    // v7.20.419: SEVEN arms — Step 7 (_cwValuesCtl) joined when Neil moved it from the bare
+    // workbook environment to the training one. This count is deliberately exact rather than
+    // `>= 6`: a NEW walk that forgets `_inboundIsAnswer` would file its own chip taps as student
+    // answers, and an inequality would let it through silently.
     const armed = (JS.match(/state\.task === 'cw_step_\d' && _cw\w+Ctl\.active && _inboundIsAnswer/g) || []).length;
-    ok(armed === 6, `expected all 6 CW walk arms to require _inboundIsAnswer, found ${armed}`);
+    ok(armed === 7, `expected all 7 CW walk arms to require _inboundIsAnswer, found ${armed}`);
     ok(/if \(_inboundIsAnswer && _cwWalkActive\(\)\) \{[\s\S]{0,160}?chatTextarea\.value = '';/.test(JS),
         'a walk turn does not clear the chat input — the six arms return before the shared clear, so '
         + 'the text stays in the box and the next dictation appends to it (v7.20.329)');

@@ -282,7 +282,9 @@ function makeWorld(ctl, opts) {
     (opts.fids || []).forEach((f) => rows.set(f, ''));
     Object.keys(opts.prefill || {}).forEach((f) => rows.set(f, opts.prefill[f]));
 
-    const world = { rows, bubbles, users, writes, sends, ls, ticked: new Set(), get armed() { return armed; } };
+    // `ctls` holds multi-control row state, keyed `fid|ctlId` → [ticked labels] (v7.20.419).
+    const world = { rows, bubbles, users, writes, sends, ls, ticked: new Set(), ctls: new Map(),
+        get armed() { return armed; } };
 
     function findIn(node, sel) {
         if (!node || !node.children) return null;
@@ -360,6 +362,37 @@ function makeWorld(ctl, opts) {
             world.ticked.add(fid);
             return true;
         },
+        // ⭐ v7.20.419 — MULTI-CONTROL TICKS, MODELLED not stubbed (the Step-7 rows, and every
+        // workbook step after it: 10, 11, 13, 14, 16, 17, 19, 20…).
+        //
+        // A bare `return true` would let the whole class of defects this primitive exists to
+        // prevent pass every test, so this reproduces the three behaviours that actually matter
+        // from the real _setRowControlChoice:
+        //   • per-control NAMESPACING — ticking `state` can never disturb `traits` on the same
+        //     row. (In production the failure mode is the reverse: using _tickOutlineRow here
+        //     would REPLACE the row's whole state object and delete both.)
+        //   • `exclusive` — In balance / In excess / In deficit is one answer, so a second pick
+        //     REPLACES the first. A row holding two of them is not an answer.
+        //   • an UNKNOWN label is REFUSED and recorded — a walk offering a choice the document
+        //     does not carry is a write-key ≠ read-key drift (§5d), and in the browser it ticks
+        //     nothing at all. Assert on `world.lostCtlLabel`.
+        // Pass `opts.ctlItemsFor(fid, ctlId) -> [labels]` so the rig knows each control's real
+        // roster; without it every label is accepted and this stops modelling the refusal.
+        _setRowControlChoice: function (fid, ctlId, label, o) {
+            if (!fid || !ctlId || !label) return false;
+            if (!rows.has(fid)) { world.lostCtl = fid; return false; }
+            if (opts.ctlItemsFor) {
+                const items = opts.ctlItemsFor(fid, ctlId) || [];
+                if (items.indexOf(label) === -1) { world.lostCtlLabel = fid + '|' + ctlId + '|' + label; return false; }
+            }
+            const k = fid + '|' + ctlId;
+            const cur = world.ctls.get(k) || [];
+            if (o && o.exclusive) { world.ctls.set(k, [label]); return true; }
+            if (cur.indexOf(label) === -1) cur.push(label);
+            world.ctls.set(k, cur);
+            return true;
+        },
+        _rowControlPicks: function (fid, ctlId) { return (world.ctls.get(fid + '|' + ctlId) || []).slice(); },
         saveCanvasContent: function () {},
         CANVAS_SAVE_KEY: function () { return 'sim'; },
         _cwLoadDocValues: function () { return Promise.resolve({}); },

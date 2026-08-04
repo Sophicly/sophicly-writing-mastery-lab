@@ -115,12 +115,45 @@ const outlineRow = new Function('return ' + sliceDecl(CORE, 'const outlineRow = 
 // wins, and the protocol was corrected to match it in the same commit (v7.20.413). This gate's
 // first run caught exactly that divergence, which is the whole reason it parses a source instead
 // of restating a list.
-const wbValues = [];
-PROTOCOL.split('\n').forEach((line) => {
-    const m = line.match(/^\|\s*\*\*([A-Z][A-Za-z ]+)\*\*\s*\|\s*([^|]+?)\s*\|\s*$/);
-    if (m) wbValues.push({ name: m[1].trim(), strengths: m[2].split(/,\s*/).map((s) => s.trim().toLowerCase()) });
+// ⚠️ v7.20.419 — THE AUTHORITY MOVED, AND THAT IS THE FIX, NOT A WORKAROUND.
+// This block used to parse the value table out of the PROTOCOL. When Step 7 gained a chat
+// (#236) the protocol became a file the manifest LOADS INTO THE MODEL'S CONTEXT, so its
+// teaching content had to go — the retained-source law (WML CLAUDE.md §5): text left in a
+// loaded module gets narrated over the code-served walk regardless of any fence. The gate then
+// correctly reported itself BLIND rather than passing on an empty parse, which is exactly what
+// its own blindness check exists for.
+//
+// So the authority is now Neil's OWN workbook export — one step closer to the source than the
+// protocol ever was, and a file the manifest does not load. Its table lost its commas in export
+// (`Wisdom and knowledge creativity curiosity …`), so each value's traits are matched by
+// CONTAINMENT within that value's own row rather than by splitting — which is the honest test
+// anyway: every trait we put on a tick box must appear on the page he teaches from.
+const WB_ROWS = [];
+WORKBOOK.split('\n').forEach((line) => {
+    const m = line.match(/^\|\s*([A-Z][A-Za-z][^|]*?)\s*\|/);
+    if (!m) return;
+    const cell = m[1].trim();
+    if (/^TICK THE UNIVERSAL/i.test(cell)) return;      // the header row
+    if (WB_ROWS.indexOf(cell) === -1) WB_ROWS.push(cell);
 });
-ok(wbValues.length === 6, 'the protocol value table no longer yields six values (' + wbValues.length + ') — this gate has gone blind, fix the parse before trusting a pass');
+const wbValues = sandbox.CW7_VALUES.map((v) => {
+    const row = WB_ROWS.filter((r) => r.toLowerCase().indexOf(v.name.toLowerCase()) === 0)[0] || '';
+    return { name: v.name, row: row, strengths: v.traits.map((s) => s.toLowerCase()) };
+});
+ok(wbValues.filter((v) => v.row).length === 6,
+    'only ' + wbValues.filter((v) => v.row).length + '/6 values were found in Neil\'s workbook table '
+    + '(resources/step7/universal-human-values-source.md) — this gate has gone blind, fix the parse '
+    + 'before trusting a pass');
+// Every trait on a tick box must be a trait HE lists for that value — not one we tidied, renamed
+// or moved to a neighbouring value.
+wbValues.forEach((v) => {
+    if (!v.row) return;
+    v.strengths.forEach((s) => {
+        ok(v.row.toLowerCase().indexOf(s) !== -1,
+            'the ' + v.name + ' row offers the trait "' + s + '", which is not on that value\'s row in '
+            + 'Neil\'s workbook — we would be teaching a strength he does not');
+    });
+});
 // …and the protocol must still agree with the workbook Neil teaches from, or we have quietly
 // corrected HIS page rather than our own copy of it.
 ['forgiveness/mercy', 'humility/modesty', 'appreciation of beauty and excellence'].forEach((phrase) => {

@@ -289,8 +289,19 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw4-sim-harness.js || fail=1
 fi
 
-# v7.20.413: CW STEP-7 DOCUMENT GATE. Step 7 is a bare document — no walk, no controller, no API —
-# so there is no sim to inherit and this gate is the whole safety net. It runs the REAL builder and
+# v7.20.419: CW STEP-7 WALK SIM. Step 7 stopped being a bare document when Neil moved it to the
+# training environment (#236), so it now has BOTH gates: the doc gate below (the rows and the
+# teaching prose) and this one (the walk that writes into them). It is the only sim whose API
+# budget is ZERO, and the only one driving multi-control rows — a state pick that wipes the
+# traits it sits beside is invisible in the browser and fails here.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|cw7-sim-harness\.js|walk-sim-lib\.js'; then
+  node bin/cw7-sim-harness.js || fail=1
+fi
+
+# v7.20.413: CW STEP-7 DOCUMENT GATE. The document half of Step 7 — the fifteen rows, their
+# completion rule and Neil's teaching prose. (The walk that fills them is gated by cw7-sim above.)
+# It runs the REAL builder and
 # the REAL WML.outlineRow completion rule, and takes the six values and their character strengths
 # from the PROTOCOL table rather than restating them, so a silent edit to either side fails here.
 # Proven non-vacuous: optional:false, choice:false, a reworded strength and a dropped row all go RED.

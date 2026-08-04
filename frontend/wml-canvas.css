@@ -2935,17 +2935,34 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 [data-swml-theme="light"] .swml-outline-group-title:hover {
     color: #4D76FD;
 }
-/* v7.19.448: light theme — BRAND Light Surface raised grey, no outline (brand §light
-   surfaces: a darker grey reads as raised without relying on a border). */
+/* ⭐ v7.20.419 (Neil, FIXLIST #235): *"in Light theme, I think the rail buttons on the left side,
+   I think they need to be white in Light theme. The grey… they're too hidden. It's a bit too
+   subtle. That way, I think white will look a lot better."*
+
+   THE CHIP goes white; the ICONS stay dark. White icons on a light rail would be invisible, and
+   the white he is asking for is the raised card behind each control.
+
+   ⚠️ THIS WAS A CONFLICT, NOT A MISSING RULE — worth stating because it is the reason the rail
+   looked white in some places and grey in others. There are TWO light mechanisms in this file and
+   they disagreed: `[data-swml-theme="light"] .swml-outline-btn` (~line 2607) already said
+   `#ffffff`, while THIS rule said `#e7e7ed` — same specificity, later in the file, so the grey
+   won wherever both applied. Averaging them is what produced a chip that is neither (root
+   CLAUDE.md §7: pick one, say why, don't blend). White is the one Neil asked for, so the two
+   mechanisms now agree and there is nothing left to drift.
+
+   ⛔ Untouched, deliberately: the ::before hover FLOOD (asymmetric 1s in / 1.5s out) and the
+   derived `color-mix` icon ink — both Neil-tuned, and the flood is what gives each control its
+   identity on hover. Only the REST state changes.
+   Scope: this is the SHARED rail, so it changes every canvas, not only Step 7. */
 .swml-canvas-light .swml-outline-btn {
-    background: #e7e7ed;
+    background: #ffffff;
     border: none;
-    color: rgba(0,0,0,0.5);
+    color: rgba(0,0,0,0.55);
     box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 }
 .swml-canvas-light .swml-outline-btn:hover {
-    color: #4D76FD;
-    background: #dddde1;
+    color: rgba(0,0,0,0.8);
+    background: #ffffff;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 .swml-canvas-light .swml-outline-btn.is-active {

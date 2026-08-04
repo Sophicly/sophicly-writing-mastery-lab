@@ -159,6 +159,23 @@ function makeWorld(opts) {
             if (pre) Array.from(world.ticked).forEach(function (t) { if (t.indexOf(pre) === 0 && t !== fid) world.ticked.delete(t); });
             world.ticked.add(fid); return true; },
         cwEndpointLine: function () { return '\n\n---\n\n**That\u2019s this step done.** (sim endpoint)'; },
+        // v7.20.419 — MULTI-CONTROL TICKS. Modelled, not stubbed, and present in EVERY rig even
+        // though only Step 7 uses them today: a rig missing a dependency its siblings have tests a
+        // slightly different product, which is the drift the parity gate exists to stop. Same
+        // three behaviours as the shared lib — per-control namespacing, `exclusive` replaces, and
+        // a tick against a row that does not exist is recorded rather than silently swallowed.
+        _setRowControlChoice: function (fid, ctlId, label, o) {
+            if (!fid || !ctlId || !label) return false;
+            if (!rows.has(fid)) { world.lostCtl = fid; return false; }
+            world.ctls = world.ctls || new Map();
+            const k = fid + '|' + ctlId;
+            if (o && o.exclusive) { world.ctls.set(k, [label]); return true; }
+            const cur = world.ctls.get(k) || [];
+            if (cur.indexOf(label) === -1) cur.push(label);
+            world.ctls.set(k, cur);
+            return true;
+        },
+        _rowControlPicks: function (fid, ctlId) { return ((world.ctls || new Map()).get(fid + '|' + ctlId) || []).slice(); },
         saveCanvasContent: function () {},
         CANVAS_SAVE_KEY: function () { return 'sim'; },
         _cwDocValue: function (artifact, fid) {
