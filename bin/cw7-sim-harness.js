@@ -586,9 +586,34 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
 //     one text is not fair on other students who are not doing that text."* Pure counting, run
 //     over the REAL content, so it cannot rot into a style note.
 {
+    // ⭐ v7.20.422 (#251) — THE ROSTER IS THE REAL CATALOGUE, not a hand-typed list. Every text an
+    // example may cite must be one the course actually teaches, so a plausible-sounding example
+    // from a text no Sophicly student studies fails here rather than reaching a student.
+    const CORE_JS = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
+    const catIdx = CORE_JS.indexOf('const TEXT_CATALOGUE');
+    const CATALOGUE = catIdx >= 0
+        ? Array.from(new Set([...CORE_JS.slice(catIdx, catIdx + 9000)
+            .matchAll(/label: (?:'([^']+)'|"([^"]+)"), icon/g)].map((m) => m[1] || m[2])))
+        : [];
+    ok(CATALOGUE.length > 20, 'could not read TEXT_CATALOGUE out of wml-core.js — the text roster check has gone blind');
     const TEXTS = ['An Inspector Calls', 'Frankenstein', 'Macbeth', 'A Christmas Carol',
         'Of Mice and Men', 'Animal Farm', 'Blood Brothers', 'Much Ado About Nothing',
-        'The Hunger Games', 'Romeo and Juliet'];
+        'Romeo and Juliet', 'Jekyll and Hyde', 'The Curious Incident of the Dog in the Night-Time',
+        'Pride and Prejudice', 'Twelfth Night', 'Jane Eyre', 'The Tempest',
+        'To Kill a Mockingbird', "Journey's End", 'The Old Man and the Sea',
+        'Great Expectations', 'Lord of the Flies', 'Julius Caesar', 'My Name Is Leon',
+        'Never Let Me Go', 'Othello', 'Henry V', 'The Merchant of Venice',
+        'The Sign of the Four', 'Pigeon English', 'Anita and Me', 'DNA'];
+    // Every text this gate knows about must exist in the catalogue (allowing for the catalogue's
+    // own shorthand — "Jekyll & Hyde" vs the prose form used in an example sentence).
+    const norm = (s) => s.toLowerCase().replace(/[^a-z]/g, '');
+    const catNorm = CATALOGUE.map(norm);
+    TEXTS.forEach((t) => {
+        const n = norm(t);
+        ok(catNorm.some((c) => c === n || n.indexOf(c) === 0 || c.indexOf(n) === 0
+            || n.replace('and', '') === c.replace('and', '')),
+            `"${t}" is cited by a Step-7 example but is not in TEXT_CATALOGUE — we would be teaching from a text no Sophicly student studies (§5c)`);
+    });
     // Characters resolve to their text, because that is how the examples actually name them.
     const WHO = {
         'Sheila Birling': 'An Inspector Calls', 'Mr Birling': 'An Inspector Calls',
@@ -596,27 +621,94 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
         'Victor': 'Frankenstein', 'Scrooge': 'A Christmas Carol', 'Bob Cratchit': 'A Christmas Carol',
         'George': 'Of Mice and Men', 'Lennie': 'Of Mice and Men',
         'Mrs Johnstone': 'Blood Brothers', 'Mrs Lyons': 'Blood Brothers', 'Mickey': 'Blood Brothers',
-        'Katniss': 'The Hunger Games', 'Romeo': 'Romeo and Juliet', 'Juliet': 'Romeo and Juliet',
-        'Friar Lawrence': 'Romeo and Juliet', 'Hero': 'Much Ado About Nothing',
+        'Romeo': 'Romeo and Juliet', 'Juliet': 'Romeo and Juliet', 'Mercutio': 'Romeo and Juliet',
+        'Friar Lawrence': 'Romeo and Juliet', 'The Prince': 'Romeo and Juliet',
+        'Hero': 'Much Ado About Nothing', 'Beatrice': 'Much Ado About Nothing',
         'Benedick': 'Much Ado About Nothing', 'Claudio': 'Much Ado About Nothing',
-        'Macbeth': 'Macbeth',
+        'Macbeth': 'Macbeth', 'Macduff': 'Macbeth',
+        'Holmes': 'The Sign of the Four', 'Christopher': 'The Curious Incident of the Dog in the Night-Time',
+        'Jekyll': 'Jekyll and Hyde', 'Malvolio': 'Twelfth Night', 'Sir Toby': 'Twelfth Night',
+        'Darcy': 'Pride and Prejudice', 'Mr Collins': 'Pride and Prejudice',
+        'Jane': 'Jane Eyre', 'Mrs Reed': 'Jane Eyre', 'Helen Burns': 'Jane Eyre',
+        'Prospero': 'The Tempest', 'Atticus': 'To Kill a Mockingbird',
+        'Hibbert': "Journey's End", 'Stanhope': "Journey's End",
+        'Santiago': 'The Old Man and the Sea',
+        'Miss Havisham': 'Great Expectations', 'Joe Gargery': 'Great Expectations', 'Pip': 'Great Expectations',
+        'Ralph': 'Lord of the Flies', 'Brutus': 'Julius Caesar', 'Cinna': 'Julius Caesar',
+        'Squealer': 'Animal Farm', 'Eva Smith': 'An Inspector Calls',
+        'Leon': 'My Name Is Leon', 'Kathy': 'Never Let Me Go',
+        'Iago': 'Othello', 'Othello': 'Othello', 'Desdemona': 'Othello',
+        'Henry': 'Henry V', 'Shylock': 'The Merchant of Venice',
+        'Harri': 'Pigeon English', 'Meena': 'Anita and Me',
     };
-    const teachIdx = SRC.indexOf('const TEACH = {');
-    const TEACH = teachIdx >= 0
+    // Resolve every text a line cites — by title, or by a character the roster knows.
+    const textsIn = (line) => {
+        const s = String(line || '');
+        const hits = new Set();
+        TEXTS.forEach((t) => { if (s.indexOf(t) !== -1) hits.add(t); });
+        Object.keys(WHO).forEach((who) => { if (new RegExp('\\b' + who + '\\b').test(s)) hits.add(WHO[who]); });
+        return Array.from(hits);
+    };
+    const evalBlock = (decl) => {
+        const idx = SRC.indexOf(decl);
+        if (idx < 0) return null;
         // eslint-disable-next-line no-eval
-        ? eval('(' + braceSliceFrom(SRC, teachIdx, '{', '}').text + ')') : null;
+        return eval('(' + braceSliceFrom(SRC, idx, '{', '}').text + ')');
+    };
+    const TEACH = evalBlock('const TEACH = {');
     ok(!!TEACH, 'the Step-7 TEACH content block was not found — this check has gone blind');
+
+    // ⭐⭐ v7.20.422 (#251) — THE PER-TRAIT CARDS. Neil, on .421: *"how much CREATIVITY do they
+    // have? In balance: Sheila ends An Inspector Calls willing to question what she is told —
+    // that's not really to do with creativity, is it?"* The examples were keyed by VALUE and the
+    // walk asks by TRAIT, so a card written for open-mindedness was served as the model for
+    // creativity. These assertions are what make that unshippable.
+    const TRAIT_TEACH = evalBlock('const TRAIT_TEACH = {');
+    if (ok(!!TRAIT_TEACH, 'the Step-7 TRAIT_TEACH block was not found — the per-trait examples check has gone blind')) {
+        const seen = new Map();
+        const allTraits = [];
+        CW7_VALUES.forEach((v) => v.traits.forEach((t) => allTraits.push(t)));
+        // (a) EVERY trait the walk can ask about has its own card. A missing one is a trait asked
+        //     with no example at all, which is rung 0 of the help ladder simply absent (§4c.9).
+        allTraits.forEach((t) => {
+            ok(!!TRAIT_TEACH[t], `the trait "${t}" has no card in TRAIT_TEACH — it would be asked with no definition and no example`);
+        });
+        ok(Object.keys(TRAIT_TEACH).length === allTraits.length,
+            `TRAIT_TEACH has ${Object.keys(TRAIT_TEACH).length} cards for ${allTraits.length} traits — a card for a trait that does not exist is dead content`);
+        // (b) each card defines its trait and gives three examples from THREE DIFFERENT texts.
+        Object.keys(TRAIT_TEACH).forEach((t) => {
+            const card = TRAIT_TEACH[t];
+            ok(!!String(card.what || '').trim(),
+                `the ${t} card has no one-line definition — the student is asked to judge a word nobody defined (§4c.1)`);
+            const perState = ['balance', 'excess', 'deficit'].map((k) => textsIn(card[k]));
+            perState.forEach((hits, k) => {
+                ok(hits.length >= 1,
+                    `the ${t} card's ${['balance', 'excess', 'deficit'][k]} example names no text this course teaches — either it is invented or the roster is missing one (§5c)`);
+            });
+            const flat = perState.flat();
+            const dupes = flat.filter((x, n) => flat.indexOf(x) !== n);
+            ok(dupes.length === 0,
+                `the ${t} card cites ${dupes.join(', ')} more than once — three examples must come from THREE DIFFERENT texts, or a student not studying that one gets nothing (#243)`);
+            flat.forEach((x) => seen.set(x, (seen.get(x) || 0) + 1));
+        });
+        // (c) ⭐ CONCENTRATION, across the whole set — the half of #243 that a per-card check
+        //     cannot see. Neil: *"don't just reuse An Inspector Calls all the time… we need to
+        //     make sure we've got lots of different examples."* Sixty-nine examples could all sit
+        //     on six texts and pass every per-card check above.
+        const CAP = 5;
+        Array.from(seen.entries()).forEach(([text, n]) => {
+            ok(n <= CAP, `${text} is cited ${n} times across the Step-7 trait examples (cap ${CAP}) — `
+                + 'a student not studying it gets nothing, and a student studying it gets the same book every time');
+        });
+        ok(seen.size >= 20, `the trait examples span only ${seen.size} texts — Neil asked for "lots of different examples"`);
+        const total = Array.from(seen.values()).reduce((a, b) => a + b, 0);
+        console.log(`   per-trait examples: ${Object.keys(TRAIT_TEACH).length} traits · ${total} text citations · ${seen.size} different texts · busiest ${Math.max(...seen.values())}`);
+    }
+
     const seenAcross = new Set();
     Object.keys(TEACH || {}).forEach((id) => {
         const card = TEACH[id];
-        const perCard = ['balance', 'excess', 'deficit'].map((k) => {
-            const line = String(card[k] || '');
-            const hits = new Set();
-            TEXTS.forEach((t) => { if (line.indexOf(t) !== -1) hits.add(t); });
-            Object.keys(WHO).forEach((who) => { if (new RegExp('\\b' + who + '\\b').test(line)) hits.add(WHO[who]); });
-            return Array.from(hits);
-        });
-        const flat = perCard.flat();
+        const flat = ['balance', 'excess', 'deficit'].map((k) => textsIn(card[k])).flat();
         flat.forEach((t) => seenAcross.add(t));
         const dupes = flat.filter((t, n) => flat.indexOf(t) !== n);
         ok(dupes.length === 0,
@@ -630,7 +722,7 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
     ['Animal Farm', 'Romeo and Juliet', 'Much Ado About Nothing', 'Blood Brothers'].forEach((t) => {
         ok(seenAcross.has(t), `no Step-7 example comes from ${t}, which Neil named explicitly (#243)`);
     });
-    console.log(`   examples span ${seenAcross.size} different texts across the six values`);
+    console.log(`   value-frame examples span ${seenAcross.size} different texts across the six values`);
 }
 
 console.log(`\n${asserts.pass} passed, ${asserts.fail} failed`);

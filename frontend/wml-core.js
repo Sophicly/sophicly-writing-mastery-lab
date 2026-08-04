@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.421';
+var WML_BUILD = '7.20.422';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -4461,7 +4461,7 @@ window.WML = (function() {
             return Object.assign({}, st, { c });
         },
 
-        // ⭐ v7.20.421 — HAS THIS CONTROL BEEN TOUCHED AT ALL? Render-agnostic, exactly like
+        // ⭐ v7.20.422 — HAS THIS CONTROL BEEN TOUCHED AT ALL? Render-agnostic, exactly like
         // controlOk: it must answer for a checkbox list, a <select> and every picker
         // ({picked,free}) without knowing how any of them draw. Needed by the two flags below,
         // which both turn on "started" rather than "satisfied".
@@ -4492,7 +4492,7 @@ window.WML = (function() {
             return false;
         },
 
-        // ⭐ v7.20.421 — OPTIONAL CONTROL (Neil's Step-7 per-trait ruling, 2026-08-04).
+        // ⭐ v7.20.422 — OPTIONAL CONTROL (Neil's Step-7 per-trait ruling, 2026-08-04).
         // Step 7 asks the condition of EVERY trait the student chooses — so a value row carries
         // one control PER TRAIT (23 traits across the six values). Every one of those cannot be
         // required, or the row would demand a verdict on all 23 and become the "24-cell audit"
@@ -4503,7 +4503,7 @@ window.WML = (function() {
             return !!(ctl && (ctl.optional === true || ctl.optional === 'true'));
         },
 
-        // ⭐ v7.20.421 — REQUIRE-ANY (the other half of the same ruling). A row of all-optional
+        // ⭐ v7.20.422 — REQUIRE-ANY (the other half of the same ruling). A row of all-optional
         // controls could be completed by text alone, which would let a student write an
         // explanation of a value and name no trait at all. Neil: *"I think they need to choose at
         // least one."* `requireAny: true` on the CRITERION ⇒ at least ONE control must be
@@ -4521,7 +4521,7 @@ window.WML = (function() {
         // applies); no flag ⇒ every item required (v7.20.99: effects vs evidence).
         controlOk(ctl, st) {
             const c = ctl || {}, s = st || {};
-            // v7.20.421: an untouched OPTIONAL control is satisfied. Read FIRST, before any
+            // v7.20.422: an untouched OPTIONAL control is satisfied. Read FIRST, before any
             // type branch — every branch below would otherwise report it unsatisfied.
             if (this.controlOptional(c) && !this.controlStarted(c, s)) return true;
             const chk = Array.isArray(s.checked) ? s.checked.length : 0;
@@ -4575,7 +4575,7 @@ window.WML = (function() {
         },
         complete(crit, state, hasText) {
             if (crit && (crit.locked === true || crit.locked === 'true')) return true;
-            // v7.20.421: requireAny rides ALONGSIDE the every() check, never instead of it —
+            // v7.20.422: requireAny rides ALONGSIDE the every() check, never instead of it —
             // "at least one answered" and "nothing half-answered" are different questions.
             const everyOk = () => this.controlsOf(crit).every(ctl => this.controlOk(ctl, this.stateOf(crit, state, ctl)));
             const anyOk = () => !this.requiresAny(crit) || this.anyStarted(crit, state);

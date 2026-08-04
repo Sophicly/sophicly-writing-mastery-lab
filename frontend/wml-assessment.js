@@ -23581,7 +23581,10 @@
                     what: 'Courage is acting while you are still afraid. A character with nothing to fear is not brave — they are just safe.',
                     excess: '*Macbeth* shows what happens when courage operates without moral restraint: fearlessness, unchecked by temperance or justice, spirals into tyranny and destruction.',
                     deficit: 'Mrs Johnstone in *Blood Brothers* is too frightened of Mrs Lyons to say no to her, and gives away a child because of it.',
-                    balance: 'Katniss volunteers in her sister’s place in *The Hunger Games* — terrified, and doing it anyway. That is the whole definition.',
+                    // v7.20.422: was Katniss / *The Hunger Games*, which is not a text this course
+                    // teaches — the roster check (bin/cw7-sim-harness.js) caught it the moment the
+                    // gate started reading TEXT_CATALOGUE instead of a hand-typed list.
+                    balance: 'Atticus in *To Kill a Mockingbird* sits alone outside the jail at night, knowing exactly who is coming and what for.',
                     tech: [{ s: 'Fw', l: 'The Flaw' }],
                 },
                 humanity: {
@@ -23611,6 +23614,183 @@
                     deficit: 'By the end of *Blood Brothers*, Mickey can find nothing to hope for and nothing to enjoy — the humour and the life have gone out of him completely.',
                     balance: 'Scrooge on Christmas morning laughs, gives, and is simply glad to be alive.',
                     tech: [{ s: 'Th', l: 'Theme' }],
+                },
+            };
+            // ⭐⭐ v7.20.422 — THE EXAMPLES BELONG TO THE TRAIT, NOT THE VALUE (FIXLIST #251).
+            //
+            // Neil, testing the .421 serial walk: *"the walk is much more scaffolded, much much
+            // better… it's almost a model walk now. However, I'm not sure that all the examples
+            // are really appropriate. Wisdom and Knowledge — how much CREATIVITY do they have?
+            // 'In balance: Sheila ends An Inspector Calls willing to question what she is told.'
+            // That's not really to do with creativity, though, is it? And in deficit, 'Romeo acts
+            // on whatever he feels in the moment' — that's not about creativity, it's more about
+            // temperance."*
+            //
+            // He is exactly right, and the cause is structural rather than careless. `TEACH` is
+            // keyed by VALUE; .421 made the walk per-TRAIT and kept serving the value's one card
+            // for all four of its traits. So an example chosen to illustrate OPEN-MINDEDNESS was
+            // being offered as the model answer for CREATIVITY. The teaching was sound; it was
+            // pointed at the wrong question.
+            //
+            // So: 23 traits × three conditions = 69 examples, each one about THAT trait.
+            //
+            // ⚠️ SOURCING RULES, because #5c forbids inventing student-facing content:
+            //  • Every text is one the course actually teaches — the roster is TEXT_CATALOGUE
+            //    (wml-core.js), not a general-knowledge list.
+            //  • Every example is a PLOT-LEVEL claim about that text. Nothing is in quotation
+            //    marks, because nothing here is a quotation.
+            //  • Each card's three examples come from THREE DIFFERENT texts (#243), and Neil's
+            //    further instruction is enforced across the whole set, not just per card:
+            //    *"don't just reuse An Inspector Calls all the time — it's a very proper text, we
+            //    do need quite a lot of examples from it, but we need to make sure we've got lots
+            //    of different examples."* bin/cw7-sim-harness.js caps per-text concentration, so
+            //    a future edit cannot quietly collapse the spread back onto four favourites.
+            //  • `what` is the trait in one line — the criteria-upfront rule (§4c.1) applied at
+            //    trait level, so the student is never asked to judge a word nobody defined.
+            const TRAIT_TEACH = {
+                // ── WISDOM AND KNOWLEDGE ──────────────────────────────────────────────────
+                'creativity': {
+                    what: 'Creativity is making something that was not there before — a plan, an object, a way out.',
+                    balance: 'In *The Sign of the Four*, Holmes builds an explanation out of details everyone else walked past.',
+                    excess: 'In *Frankenstein*, Victor is consumed by his desire to unravel the mysteries of creation, with no regard for the consequences — brilliance without temperance.',
+                    deficit: 'In *Animal Farm*, the sheep can only bleat back the slogan they were given. Not one of them can imagine an alternative.',
+                },
+                'curiosity': {
+                    what: 'Curiosity is wanting to know — asking the question instead of assuming the answer.',
+                    balance: 'Christopher in *The Curious Incident of the Dog in the Night-Time* follows the question of who killed Wellington all the way to London, alone.',
+                    excess: 'In *Jekyll and Hyde*, Jekyll keeps going with the experiment long past the point where every warning says stop.',
+                    deficit: 'Mr Birling in *An Inspector Calls* never once asks whether he might have been wrong about Eva Smith. The question does not occur to him.',
+                },
+                'open-mindedness': {
+                    what: 'Open-mindedness is being willing to change your mind when the evidence changes.',
+                    balance: 'Sheila Birling ends *An Inspector Calls* willing to question what she is told — she learns faster than anyone else on stage.',
+                    excess: 'Malvolio in *Twelfth Night* believes a forged letter the moment he reads it, because it tells him what he wants to hear.',
+                    deficit: 'Darcy in *Pride and Prejudice* has settled his opinion of Elizabeth and her family before he has properly spoken to any of them.',
+                },
+                'love of learning': {
+                    what: 'Love of learning is wanting to get better at something for its own sake, not for a mark.',
+                    balance: 'Jane at Lowood in *Jane Eyre* studies her way out of a school designed to break her.',
+                    excess: 'Prospero in *The Tempest* buried himself so deep in his books that he lost the dukedom he was supposed to be running.',
+                    deficit: 'Mickey in *Blood Brothers* leaves school with nothing and mocks Edward for staying on.',
+                },
+                // ── COURAGE ───────────────────────────────────────────────────────────────
+                'bravery': {
+                    what: 'Bravery is doing the thing while you are still afraid of it.',
+                    balance: 'Atticus in *To Kill a Mockingbird* sits alone outside the jail, knowing exactly who is coming.',
+                    excess: '*Macbeth* shows what happens when courage operates without moral restraint: fearlessness, unchecked, spirals into tyranny.',
+                    deficit: 'Hibbert in *Journey\'s End* tries to get himself sent down the line on sick leave rather than face the attack.',
+                },
+                'persistence': {
+                    what: 'Persistence is finishing what you started after it stops being exciting.',
+                    balance: 'Santiago in *The Old Man and the Sea* holds the line for three days with his hands cut open.',
+                    excess: 'Miss Havisham in *Great Expectations* keeps her wedding day running for decades — the clocks stopped, the cake still on the table.',
+                    deficit: 'In *Lord of the Flies*, the boys let the signal fire go out because tending it is boring.',
+                },
+                'integrity': {
+                    what: 'Integrity is being the same person when it costs you something.',
+                    balance: 'Eva Smith in *An Inspector Calls* refuses money she knows was stolen, even destitute.',
+                    excess: 'Brutus in *Julius Caesar* follows his principle so exactly that it takes him to killing his own friend.',
+                    deficit: 'Squealer in *Animal Farm* rewrites the commandments on the barn wall to fit whatever the pigs have just done.',
+                },
+                'vitality': {
+                    what: 'Vitality is energy and appetite for life — being fully switched on.',
+                    balance: 'Beatrice in *Much Ado About Nothing* fills every room she walks into, and everyone else raises their game.',
+                    excess: 'Mercutio in *Romeo and Juliet* cannot let anything go, and that same brilliant energy runs him straight into the duel that kills him.',
+                    deficit: 'Mickey in *Blood Brothers*, flattened by the tablets, has nothing left in him at all.',
+                },
+                // ── HUMANITY ──────────────────────────────────────────────────────────────
+                'love': {
+                    what: 'Love is being closely attached to someone and letting it cost you.',
+                    balance: 'Leon in *My Name Is Leon* holds on to his baby brother through every placement.',
+                    excess: 'George in *Of Mice and Men* gives up every plan he has to keep Lennie safe.',
+                    deficit: 'Scrooge at the start of *A Christmas Carol* has decided people cost more than they give. Money cannot abandon him; people can.',
+                },
+                'kindness': {
+                    what: 'Kindness is doing something for someone with nothing coming back.',
+                    balance: 'Joe Gargery in *Great Expectations* keeps being good to Pip long after Pip stops deserving it.',
+                    excess: 'Kathy in *Never Let Me Go* cares for everyone, endlessly, and never once asks whether she is allowed to refuse.',
+                    deficit: 'Mrs Reed in *Jane Eyre* locks a frightened child in the red room and calls it discipline.',
+                },
+                'social intelligence': {
+                    what: 'Social intelligence is reading what other people actually feel and want.',
+                    balance: 'Inspector Goole in *An Inspector Calls* knows exactly which Birling will break, and in what order.',
+                    excess: 'Iago in *Othello* reads people so accurately that he can steer them into destroying themselves.',
+                    deficit: 'Christopher in *The Curious Incident of the Dog in the Night-Time* cannot read faces — the book shows him working from a drawn chart of them.',
+                },
+                // ── JUSTICE ───────────────────────────────────────────────────────────────
+                'citizenship': {
+                    what: 'Citizenship is pulling your weight for the group you belong to.',
+                    balance: 'Henry in *Henry V* stands among his men before Agincourt and makes them one company.',
+                    excess: 'In *Julius Caesar*, the crowd tears apart Cinna the poet for having the wrong name. Loyalty to the mob, and nothing else.',
+                    deficit: 'In *Animal Farm*, the pigs take the milk and the apples and explain why the farm needs them to have it.',
+                },
+                'fairness': {
+                    what: 'Fairness is giving people what they are owed, including people you dislike.',
+                    balance: 'Atticus in *To Kill a Mockingbird* takes the case knowing the town, the verdict and the cost.',
+                    excess: 'Shylock in *The Merchant of Venice* holds out for the exact terms of the bond. The letter of a fair agreement, with nothing human left in it.',
+                    deficit: 'Claudio destroys Hero publicly in *Much Ado About Nothing* on nothing but suspicion — punishment with no proof and no mercy in it.',
+                },
+                'leadership': {
+                    what: 'Leadership is getting a group to do something together, and being answerable for it.',
+                    balance: 'Ralph in *Lord of the Flies* keeps calling the assembly and keeps the fire on the agenda, long after it stops being popular.',
+                    excess: 'Prospero in *The Tempest* runs every person on the island, down to who falls in love with whom.',
+                    deficit: 'The Prince in *Romeo and Juliet* issues order after order that nobody obeys, until two children are dead.',
+                },
+                // ── TEMPERANCE ────────────────────────────────────────────────────────────
+                'forgiveness/mercy': {
+                    what: 'Mercy is choosing not to take what you are entitled to take.',
+                    balance: 'Prospero in *The Tempest* has his enemies helpless and lets them go — the rarer action, as he puts it, is in virtue.',
+                    excess: 'Helen Burns in *Jane Eyre* forgives every cruelty done to her and accepts it as her due, which is how it goes on being done.',
+                    deficit: 'Macbeth sends men to Macduff\'s castle to kill a wife and children who threaten nothing.',
+                },
+                'humility/modesty': {
+                    what: 'Humility is a true measure of yourself — not smaller, not larger.',
+                    balance: 'Henry in *Henry V* walks through his own camp in a borrowed cloak to hear what his men really think of him.',
+                    excess: 'The students in *Never Let Me Go* accept what they are for without ever once claiming a right to more than that.',
+                    deficit: 'Mr Collins in *Pride and Prejudice* cannot get through a sentence without reminding you of his own consequence.',
+                },
+                'prudence': {
+                    what: 'Prudence is thinking one step past what you want to do right now.',
+                    balance: 'Holmes in *The Sign of the Four* refuses to name a suspect until the evidence has actually closed.',
+                    excess: 'Friar Lawrence is so set on managing everything quietly that he chooses a secret sleeping potion over simply telling the truth.',
+                    deficit: 'Harri in *Pigeon English* investigates a murder without once working out what it will cost him if he is right.',
+                },
+                'self-regulation': {
+                    what: 'Self-regulation is governing your own reactions instead of being run by them.',
+                    balance: 'Atticus in *To Kill a Mockingbird* is spat at in the street and does not raise a hand.',
+                    excess: 'Jekyll holds himself so tightly in check that he has to build somewhere else to be, and *Jekyll and Hyde* is what comes of it.',
+                    deficit: 'Othello smothers Desdemona in a single night of rage that nothing in him is able to slow down.',
+                },
+                // ── TRANSCENDENCE ─────────────────────────────────────────────────────────
+                'appreciation of beauty and excellence': {
+                    what: 'This is being genuinely moved by something done well, or by something beautiful.',
+                    balance: 'Santiago in *The Old Man and the Sea* admires the marlin as an equal, even while he is killing it.',
+                    excess: 'Pip in *Great Expectations* is so dazzled by Estella and by gentility that he becomes ashamed of the forge and of Joe.',
+                    deficit: 'The boys in *Lord of the Flies* land on an island the book calls beautiful and burn it down without noticing.',
+                },
+                'gratitude': {
+                    what: 'Gratitude is noticing what you have been given and saying so.',
+                    balance: 'Bob Cratchit toasts Scrooge at his own family table, after everything.',
+                    excess: 'Mrs Johnstone in *Blood Brothers* is so grateful for the job that she cannot bring herself to refuse Mrs Lyons anything.',
+                    deficit: 'Meena in *Anita and Me* wants what she has not got so badly that she cannot see her own family in front of her.',
+                },
+                'hope': {
+                    what: 'Hope is expecting that the future can be better, and acting like it.',
+                    balance: 'Leon in *My Name Is Leon* never stops believing he will get his brother back, and keeps doing things about it.',
+                    excess: 'George and Lennie\'s farm in *Of Mice and Men* is a dream they repeat rather than a plan they act on.',
+                    deficit: 'By the end of *Blood Brothers*, Mickey can find nothing to hope for and nothing to enjoy.',
+                },
+                'humour': {
+                    what: 'Humour is being able to play, and to make other people lighter.',
+                    balance: 'Beatrice and Benedick in *Much Ado About Nothing* keep an entire court laughing while they fall in love.',
+                    excess: 'Sir Toby in *Twelfth Night* carries the joke on Malvolio well past funny and into cruelty.',
+                    deficit: 'Stanhope in *Journey\'s End* has lost the ability to take anything lightly at all.',
+                },
+                'spirituality': {
+                    what: 'Spirituality is a sense that life means something bigger than you.',
+                    balance: 'Santiago in *The Old Man and the Sea* understands himself as one small part of the sea he works.',
+                    excess: 'Macbeth ends up trusting the witches\' prophecies more than any person alive.',
+                    deficit: 'The group in *DNA* bury what they have done and decide, out loud, that it does not mean anything.',
                 },
             };
             const GUIDE = 'Universal Human Values';
@@ -23827,10 +24007,26 @@
                 });
                 bc.appendChild(bar);
             }
-            // Rung 1 — the same value, seen in two more stories. Free, code-served, no round trip.
-            function serveMore(st) {
-                const t = TEACH[st.v.id];
-                aiBubble('**' + st.v.name + ' — three ways it can sit**\n\n'
+            // ⭐ v7.20.422 (#251) — THE ONE READER for a trait's teaching card. Fails LOUD rather
+            // than silently falling back to the value's card: a value-level example served for a
+            // trait is exactly the defect Neil caught, so a missing trait must be visible in the
+            // console instead of quietly looking almost right. (A new trait added to CW7_VALUES
+            // without a card also fails bin/cw7-sim-harness.js, so it cannot reach a student.)
+            function _traitCard(trait) {
+                const card = TRAIT_TEACH[trait];
+                if (card) return card;
+                console.warn('WML CW7: no teaching card for the trait "' + trait + '" — add one to '
+                    + 'TRAIT_TEACH. Serving the definition only, rather than another trait’s examples.');
+                return { what: '', balance: '', excess: '', deficit: '' };
+            }
+            // Rung 1 — the same TRAIT, seen in three more stories. Free, code-served, no round trip.
+            function serveMore(st, trait) {
+                // The help bar lives on a value station, so `trait` is whichever trait the walk is
+                // actually on — derived, never remembered (the position is the document's).
+                const p = posOf(i);
+                const tr = trait || (p && p.trait) || st.v.traits[0];
+                const t = _traitCard(tr);
+                aiBubble('**' + _cw7TraitLabel(tr) + ' — three ways it can sit**\n\n'
                     + '- **In balance.** ' + t.balance + '\n'
                     + '- **In excess.** ' + t.excess + '\n'
                     + '- **In deficit.** ' + t.deficit + '\n\n'
@@ -23888,24 +24084,26 @@
                     + 'character complex rather than a type.';
             }
             function traitAskText(st, trait, n) {
-                const t = TEACH[st.v.id];
+                // v7.20.422 (#251): the TRAIT's own card, never the value's. A Wisdom example
+                // chosen to show open-mindedness is not a model answer for creativity.
+                const t = _traitCard(trait);
                 const label = _cw7TraitLabel(trait);
                 const idx = st.v.traits.indexOf(trait) + 1;
                 const head = bar(n, stationTitle(st))
-                    + '**' + label + '** — trait ' + idx + ' of ' + st.v.traits.length + ' in ' + st.v.name + '\n\n';
+                    + '**' + label + '** — trait ' + idx + ' of ' + st.v.traits.length + ' in ' + st.v.name + '\n\n'
+                    + t.what + '\n\n';
                 // THE END PASS ASKS WHAT CHANGED, never from zero (§4c.8b).
                 if (st.when === 'end' && carried(st.v, trait)) {
                     return head
                         + 'At the **beginning** you said their ' + label.toLowerCase() + ' was **'
                         + traitState('begin', st.v, trait).toLowerCase() + '**.\n\n'
-                        + 'Example — ' + t.excess + '\n\n'
                         + '**Where is it by the END of your story?** If nothing has moved, say so — a trait '
                         + 'that stays exactly where it started is an honest answer, and it tells you the '
                         + 'story is not testing it.';
                 }
                 const verb = st.when === 'begin' ? 'show' : 'show by the END of your story';
                 return head
-                    + 'Example — ' + t.deficit + '\n\n'
+                    + 'Example — ' + t.balance + '\n\n'
                     + '**Does your protagonist ' + verb + ' ' + label.toLowerCase() + '?**\n\n'
                     + '- **' + CW7_YES + '** — it is there in the story, in some amount.\n'
                     + '- **' + CW7_NO + '** — it is not part of this story.\n'
@@ -23995,7 +24193,7 @@
 
             function serveTraitCondition(n, trait) {
                 const st = STATIONS[n];
-                const t = TEACH[st.v.id];
+                const t = _traitCard(trait);   // v7.20.422 (#251) — this trait's examples, not the value's
                 const label = _cw7TraitLabel(trait);
                 phase = 'cond'; persist();
                 _walkSlot.clear('cw7');   // a pick is a TAP
