@@ -335,6 +335,134 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
         'answer slot: the refusal left the student with nothing on screen (law 4d)');
 }
 
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// ⭐⭐ 9. WHAT THE STUDENT ACTUALLY READS (v7.20.420 — added AFTER Neil found both defects)
+// ──────────────────────────────────────────────────────────────────────────────────────────────
+// THE HONEST REASON THIS SECTION EXISTS. Neil, having tested .419: *"why are we allowing, once
+// again, duplicate messages to go through? Have we not got a harness in place? And why have we
+// also allowed a walk with a subpar user experience to go through?"*
+//
+// Because every assertion above this line is a NEGATIVE — nothing is filed without an ask, no row
+// is left empty, no API call is spent, no state is double-ticked. **A suite made entirely of "X
+// must not happen" passes perfectly on a walk that never says the right thing** (the law is
+// already written down as `feedback_negative_only_tests_pass_on_a_dead_screen`; this is the same
+// failure wearing a UX costume). The rig HAD the full transcript the whole time — 146 assertions
+// ran over it and not one of them READ it.
+//
+// So these assert what is on the screen. They are still mechanical: presence of a framing the step
+// cannot work without, and a text-repeat check that is pure counting.
+{
+    const w = world();
+    w.ctl.forceStart();
+    // Drive the paced orientation to its end.
+    tapThroughPacing(w, 20);
+    const orientation = w.bubbles.join('\n\n');
+
+    // (a) THE ORIENTATION MUST RUN AT ALL. It did not, on staging: Neil's saved transcript went
+    //     from the greeting straight into Wisdom and Knowledge, because the orientation hung off
+    //     ONE control-flow branch and three entry routes bypassed it.
+    ok(/Peterson and Seligman/.test(orientation),
+        'the orientation never ran — the walk opened straight on the first value ask (#242)');
+
+    // (b) IT MUST FRAME THE TWO PASSES AND THE DIFFERENCE BETWEEN THEM. That framing IS the step:
+    //     without it, "— at the beginning" in a heading is decoration and the student has no idea
+    //     a second pass is coming.
+    ok(/BEGINNING/i.test(orientation) && /END/i.test(orientation),
+        'the orientation never tells the student they will map the values TWICE (beginning and end)');
+    ok(/transformation/i.test(orientation),
+        'the orientation never says the DIFFERENCE between the two passes is the transformation — '
+        + 'which is the entire reason this step exists (Neil, #242)');
+    ok(/compulsory/i.test(orientation) && /deficit/i.test(orientation),
+        'the orientation never explains that all six are compulsory and that "barely has it" is a '
+        + 'deficit, not a blank (#237)');
+
+    // (b2) ⭐ AND IT MUST RUN ON EVERY ENTRY ROUTE, NOT JUST THE HAPPY ONE.
+    //      This is the assertion that actually catches the staging defect. Four routes reach the
+    //      first station — @CW7_START, the fail-loud fallback, tryResume's reattach, and the
+    //      send-path revive — and on staging the orientation ran on the first and was skipped by
+    //      the others. Driving only forceStart() proved nothing: with the derived predicate
+    //      deliberately disabled, this suite still passed, because startWalk carried its own
+    //      second copy of the condition. So the RESUME route is driven explicitly here.
+    {
+        const ls = new Map();
+        ls.set('sim_cw7', JSON.stringify({ i: 0, phase: 'traits', active: true, done: false }));
+        const wr = world({ ls: ls });
+        const revived = wr.ctl.tryResume();
+        ok(revived, 'resume-at-station-0: the walk did not revive from its sidecar');
+        // Tap through the paced run — the orientation is chunked (law 4b), so asserting before
+        // tapping would test only its first bubble. (This test was wrong first: it asserted a
+        // phrase from a later chunk and reported a defect that did not exist.)
+        tapThroughPacing(wr, 20);
+        const text = wr.bubbles.join('\n\n');
+        ok(/Peterson and Seligman/.test(text),
+            'a student who RESUMES at station 0 is never oriented — they land straight on the first '
+            + 'value ask with no idea the step has two passes. This is the exact route that shipped '
+            + 'broken in .419 (#242).');
+    }
+
+    // (c) THE SECOND PASS IS ANNOUNCED when the walk crosses into it.
+    const w2 = world();
+    w2.ctl.forceStart(); tapThroughPacing(w2, 20);
+    for (let n = 0; n < CW7_VALUES.length; n++) {
+        playStation(w2, 0, 'In deficit', 'answer for value ' + n);
+    }
+    const crossing = w2.bubbles.slice(-3).join('\n\n');
+    ok(/END/.test(crossing) && /transformation|gap between/i.test(crossing),
+        'crossing from the beginning table into the end table says nothing — the same six values '
+        + 'are simply asked again with no explanation (#242)');
+}
+
+// (d) NO CARD MAY CITE TWO EXAMPLES FROM THE SAME TEXT — Neil, #243: *"giving two examples from
+//     one text is not fair on other students who are not doing that text."* Pure counting, run
+//     over the REAL content, so it cannot rot into a style note.
+{
+    const TEXTS = ['An Inspector Calls', 'Frankenstein', 'Macbeth', 'A Christmas Carol',
+        'Of Mice and Men', 'Animal Farm', 'Blood Brothers', 'Much Ado About Nothing',
+        'The Hunger Games', 'Romeo and Juliet'];
+    // Characters resolve to their text, because that is how the examples actually name them.
+    const WHO = {
+        'Sheila Birling': 'An Inspector Calls', 'Mr Birling': 'An Inspector Calls',
+        'Inspector Goole': 'An Inspector Calls', 'Birlings': 'An Inspector Calls',
+        'Victor': 'Frankenstein', 'Scrooge': 'A Christmas Carol', 'Bob Cratchit': 'A Christmas Carol',
+        'George': 'Of Mice and Men', 'Lennie': 'Of Mice and Men',
+        'Mrs Johnstone': 'Blood Brothers', 'Mrs Lyons': 'Blood Brothers', 'Mickey': 'Blood Brothers',
+        'Katniss': 'The Hunger Games', 'Romeo': 'Romeo and Juliet', 'Juliet': 'Romeo and Juliet',
+        'Friar Lawrence': 'Romeo and Juliet', 'Hero': 'Much Ado About Nothing',
+        'Benedick': 'Much Ado About Nothing', 'Claudio': 'Much Ado About Nothing',
+        'Macbeth': 'Macbeth',
+    };
+    const teachIdx = SRC.indexOf('const TEACH = {');
+    const TEACH = teachIdx >= 0
+        // eslint-disable-next-line no-eval
+        ? eval('(' + braceSliceFrom(SRC, teachIdx, '{', '}').text + ')') : null;
+    ok(!!TEACH, 'the Step-7 TEACH content block was not found — this check has gone blind');
+    const seenAcross = new Set();
+    Object.keys(TEACH || {}).forEach((id) => {
+        const card = TEACH[id];
+        const perCard = ['balance', 'excess', 'deficit'].map((k) => {
+            const line = String(card[k] || '');
+            const hits = new Set();
+            TEXTS.forEach((t) => { if (line.indexOf(t) !== -1) hits.add(t); });
+            Object.keys(WHO).forEach((who) => { if (new RegExp('\\b' + who + '\\b').test(line)) hits.add(WHO[who]); });
+            return Array.from(hits);
+        });
+        const flat = perCard.flat();
+        flat.forEach((t) => seenAcross.add(t));
+        const dupes = flat.filter((t, n) => flat.indexOf(t) !== n);
+        ok(dupes.length === 0,
+            `the ${id} card cites ${dupes.join(', ')} more than once — three examples must come from `
+            + 'THREE DIFFERENT texts, or a student not studying that one gets nothing (#243)');
+        ok(flat.length >= 3,
+            `the ${id} card resolves only ${flat.length} example(s) to a known text — either a text `
+            + 'is missing from the roster above, or an example names no text at all');
+    });
+    // The spread must actually reach the texts Neil named.
+    ['Animal Farm', 'Romeo and Juliet', 'Much Ado About Nothing', 'Blood Brothers'].forEach((t) => {
+        ok(seenAcross.has(t), `no Step-7 example comes from ${t}, which Neil named explicitly (#243)`);
+    });
+    console.log(`   examples span ${seenAcross.size} different texts across the six values`);
+}
+
 console.log(`\n${asserts.pass} passed, ${asserts.fail} failed`);
 if (fail) { console.error('cw7-sim-harness FAILED'); process.exit(1); }
 console.log('✅ cw7-sim-harness passed — 15 stations, every row complete, ZERO API calls.');

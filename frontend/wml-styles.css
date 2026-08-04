@@ -1388,6 +1388,36 @@ body.swml-page {
     background: var(--swml-gradient); color: #fff;
     box-shadow: 0 2px 8px rgba(83,51,237,0.3);
 }
+/* ⭐ v7.20.420 (Neil, FIXLIST #241) — THE CHAT OWNS ITS OWN ITALIC.
+   *"where it says Mr Birling in An Inspector Calls… why is it calling a Nectar font? I don't want
+   anything using Nectar."*
+
+   ROOT, and it is the SAME defect as #234 one level along: WML styled `em` inside the DOCUMENT
+   (`.swml-section-block em`, `[data-section-type="feedback"] em`) but NEVER inside a CHAT BUBBLE.
+   So every italic in the chat — and italic is how we render every play and novel title — inherited
+   whatever the host page says about `em`. This canvas renders inside the LearnDash Focus template
+   with the theme's chrome loaded around it, and that theme ships an `em` rule (Nectar's
+   `.nectar-font-em, em`). Nothing was "calling" Nectar: we simply never said what our own italic
+   should be, so the host's answer won.
+
+   The house rule, stated twice already this month: a component rendering inside someone else's
+   page DECLARES what it needs instead of inheriting it.
+
+   Playfair Display Complete is the site's true italic serif — @font-face'd at the top of this very
+   file (line ~194) from the Bunny CDN, and already the italic used by the document's own headings.
+   So this is the font Neil asked for, from the source WML already loads; no new asset, no !important
+   needed, because scoping to our own bubble is enough to beat a bare `em` selector. Weight and size
+   inherit so a title inside a bold line stays bold. */
+.swml-bubble-content em,
+.swml-bubble-content i {
+    font-family: 'Playfair Display Complete', Georgia, serif;
+    font-style: italic;
+    /* Explicit, so the host's `font-size: 17px` on `em`-ish elements cannot leak in (the #234b
+       lesson: inheriting is only as safe as whatever sits above it). */
+    font-size: inherit;
+    color: inherit;
+}
+
 .swml-bubble-sender {
     font-size: 9px; font-weight: 700; color: var(--swml-purple);
     text-transform: uppercase; letter-spacing: 1px;

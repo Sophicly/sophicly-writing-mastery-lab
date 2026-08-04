@@ -877,6 +877,70 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
+// ⭐⭐ THE STEP GREETING IS DRAWN ONCE (v7.20.420, FIXLIST #240)
+// ───────────────────────────────────────────────────────────────────────────────────────────
+// Neil, testing Step 7: *"the first message seems to be duplicated"* — and then the fair
+// question: *"why are we allowing, once again, duplicate messages to go through? Have we not
+// got a harness in place?"*
+//
+// We did not, and the reason is worth writing down: the sim harnesses slice a CONTROLLER and
+// drive it, so BY CONSTRUCTION they cannot see a defect that lives in the render path. The
+// greeting is emitted by the render path. It is the same blind spot the DISPATCHER section
+// above was created for, and this is its second instance.
+//
+// The product fix is an idempotent emit (`_cwGreetOnce`), because there are three emitters —
+// the main pipeline, the transition handler and the chat-clear re-greet — plus a transcript
+// replay that redraws saved history. Which pair fires depends on the entry route, so guarding
+// the emit is the only fix that covers routes nobody has enumerated.
+//
+// This gate stops a FOURTH emitter being added without the guard.
+{
+    console.log('CW GREETING — emitted at most once per screen');
+    ok(/function _cwGreetOnce\(stepKey, history, emit\)/.test(JS),
+        'the greeting once-guard is gone — every CW step can double-greet again (#240)');
+    ok(/function _cwResetGreetOnce\(\)/.test(JS),
+        'the once-guard has no reset — a chat-clear would be unable to legitimately re-greet');
+
+    // ⭐ ANCHORED ON THE GREETING STRING, not on the emit call.
+    //
+    // The first cut of this check counted `addChatMessage(formatAI(gt))` calls against
+    // `_cwGreetOnce(` calls. It found the real miss, but it ALSO counted the assessment greeting
+    // ("Hi {name}! Welcome to the assessment phase…"), which is not a CW step greeting at all — a
+    // gate that cries wolf gets switched off, so it is scoped properly here.
+    //
+    // Anchoring on the STRING is also what makes it complete: the sites word themselves
+    // differently ("Welcome to Step" in the two fresh-entry emitters, "Welcome back to Step" in
+    // the two chat-clear twins), and searching for one wording is exactly how the twin was missed
+    // by hand in the first place.
+    const GREET_RE = /`Welcome (?:back )?to Step \$\{stepNum\}/g;
+    const lines = JS.split('\n');
+    let idx = 0, sites = 0, unguarded = [];
+    lines.forEach((line, n) => {
+        GREET_RE.lastIndex = 0;
+        if (!GREET_RE.test(line)) return;
+        sites++;
+        // The guard must appear within the same block as the string it protects. 25 lines, not
+        // 14: the emitters build the string, branch on the prerequisite gate, and only THEN emit,
+        // so the guard legitimately sits ~17 lines below its greeting. The tighter window reported
+        // a correctly-guarded site as unguarded — and a gate that cries wolf is a gate that gets
+        // switched off.
+        const window = lines.slice(n, n + 25).join('\n');
+        if (!/_cwGreetOnce\(/.test(window)) unguarded.push(n + 1);
+    });
+    ok(sites >= 4, `only ${sites} CW step-greeting site(s) found — this check has gone blind ` +
+        '(there are four: two fresh-entry emitters and two chat-clear twins, in the dual pipeline)');
+    ok(unguarded.length === 0,
+        `CW step greeting(s) at line(s) ${unguarded.join(', ')} do not go through _cwGreetOnce — ` +
+        'the twin emitter or the transcript replay can draw them a second time (#240)');
+
+    // And the guard must key on the STEP, not the exact string: the two emitters word their
+    // second sentence differently, so a byte-comparison would let both through — which is the bug.
+    ok(/indexOf\('Step ' \+ key \+ ':'\)/.test(JS),
+        'the once-guard compares whole strings rather than keying on the step — the two emitters ' +
+        'word their greeting differently, so both would still pass (#240)');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════
 // SIM RIG PARITY — four fake worlds must not drift apart (v7.20.338)
 // ───────────────────────────────────────────────────────────────────────────────────────────
 // There should be ONE fake world for the walk sims. There are FOUR: the shared

@@ -4665,6 +4665,54 @@
         return false;
     }
 
+    // ⭐⭐ v7.20.420 — A STEP GREETING IS EMITTED AT MOST ONCE PER SCREEN (Neil, FIXLIST #240:
+    // *"the first message seems to be duplicated"*, Step 7 on staging).
+    //
+    // WHAT WAS ACTUALLY MEASURED, before any fix: his SAVED history holds exactly ONE greeting
+    // (read off the staging DB, `swml_chat_universal_creative_writing_cw_7__…`). So this was never
+    // a double WRITE — it is a double DRAW: the greeting reaches the screen twice while the
+    // transcript stores it once.
+    //
+    // WHY A GUARD RATHER THAN A HUNT FOR THE SECOND CALLER. There are TWO isCwSi greeting emitters
+    // (the dual chat pipeline — one in the render path, one in the transition handler), plus the
+    // replay that redraws saved history on entry. Which pair fires depends on how the student
+    // arrived: fresh render, SPA nav, chat-clear, resume. Chasing one ordering fixes one route and
+    // leaves the others, which is exactly how this class keeps coming back.
+    //
+    // So the emit is made IDEMPOTENT instead: whoever asks second gets nothing. That holds for
+    // every entry route, including ones nobody has thought of yet, and it protects all seven CW
+    // steps rather than the one where it was noticed.
+    //
+    // Keyed on the STEP, not the exact string, because the two emitters word their second sentence
+    // differently ("Now we'll explore your story's values" vs "…the universal human values that will
+    // give your story its deeper meaning") — a byte-comparison would think those were two different
+    // greetings and let both through, which is the bug.
+    let _cwGreetedFor = '';
+    function _cwGreetOnce(stepKey, history, emit) {
+        const key = String(stepKey || '');
+        if (!key) { emit(); return true; }
+        // Already drawn this page-load (the two emitters, or one emitter twice).
+        if (_cwGreetedFor === key) {
+            console.warn('WML CW: greeting for step ' + key + ' already drawn this load — not drawing it again (#240).');
+            return false;
+        }
+        // Already in the transcript, which the replay is about to draw (or has drawn).
+        const seen = Array.isArray(history) && history.some(function (m) {
+            return m && m.role === 'assistant' && /^Welcome (back )?to Step /.test(String(m.content || '').trim())
+                && String(m.content || '').indexOf('Step ' + key + ':') !== -1;
+        });
+        if (seen) {
+            _cwGreetedFor = key;
+            console.warn('WML CW: step ' + key + ' greeting is already in the transcript — the replay draws it; not emitting a second copy (#240).');
+            return false;
+        }
+        _cwGreetedFor = key;
+        emit();
+        return true;
+    }
+    // A chat-clear legitimately re-greets: the transcript it was guarding against is gone.
+    function _cwResetGreetOnce() { _cwGreetedFor = ''; }
+
     // v7.20.340 — THE IN-CHAT PROGRESS BAR, for CODE-SERVED walks (Neil, 2026-07-29:
     // "I thought that was universal and dynamic so that it always appears… hasn't appeared on a
     // single message in any of the creative writing protocols").
@@ -14703,7 +14751,10 @@
                             // the FRESH-entry greeting, so the one Neil actually saw stayed anonymous.
                             const _emitBack = function (extra) {
                                 const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**${extra}\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
-                                addChatMessage(formatAI(gt), 'ai', gt);
+                                // v7.20.420 (#240): the transcript this would have duplicated has just
+                                // been cleared, so re-greeting is correct — reset the once-guard first.
+                                _cwResetGreetOnce();
+                                _cwGreetOnce(stepNum, [], function () { addChatMessage(formatAI(gt), 'ai', gt); });
                                 // v7.20.324: DOM-only — a derived greeting must never be persisted (see the twin site).
                             };
                             if (stepNum === 6) {
@@ -23487,47 +23538,63 @@
             // protocol's. The remaining examples are PLOT-LEVEL claims about canon texts the CW
             // arc already teaches from (Scrooge, Katniss, Marlin, the Birlings, Of Mice and Men)
             // — no invented quotations anywhere, which is also why nothing here is in quote marks.
+            // ⭐ v7.20.420 (Neil, FIXLIST #243) — ONE TEXT PER EXAMPLE, THREE DIFFERENT TEXTS PER CARD.
+            // *"you've given two examples from An Inspector Calls. One is more than enough… we have
+            // some students doing Animal Farm… there's Romeo and Juliet, there's Much Ado About
+            // Nothing… Blood Brothers as well. Giving two examples from one text is not fair on
+            // other students who are not doing that text."*
+            //
+            // The Wisdom card had Sheila Birling AND Mr Birling — same play, same card. Every card
+            // now draws its balance / excess / deficit from THREE DIFFERENT texts, and the set
+            // across the six values covers the ten texts the course actually teaches from,
+            // including the four he named. Enforced by bin/cw7-sim-harness.js, so a future edit
+            // cannot quietly collapse back onto one text.
+            //
+            // Neil's own two worked examples (Frankenstein = wisdom in excess, Macbeth = courage in
+            // excess) are kept verbatim from resources/step7/step7-teaching-text.md. Everything
+            // else is a PLOT-LEVEL claim about a text the CW arc already uses — no invented
+            // quotations anywhere, which is why nothing here sits in quotation marks.
             const TEACH = {
                 wisdom: {
                     what: 'Wisdom is not being clever. It is knowing what is worth knowing, and being willing to change your mind.',
                     excess: 'In *Frankenstein*, Victor is consumed by his desire to unravel the mysteries of creation, with no regard for the consequences — brilliance without temperance.',
-                    deficit: 'Mr Birling in *An Inspector Calls* is certain about everything: the Titanic is unsinkable, war is impossible. Confidence with no curiosity is wisdom in deficit.',
-                    balance: 'Sheila Birling ends that same play willing to question what she is told — she has learned faster than anyone else on stage.',
+                    deficit: 'Romeo acts on whatever he feels the moment he feels it. He never once stops to check whether the news about Juliet is true, and that missing question kills them both.',
+                    balance: 'Sheila Birling ends *An Inspector Calls* willing to question what she is told — she learns faster than anyone else on stage.',
                     tech: [{ s: 'Th', l: 'Theme' }],
                 },
                 courage: {
                     what: 'Courage is acting while you are still afraid. A character with nothing to fear is not brave — they are just safe.',
                     excess: '*Macbeth* shows what happens when courage operates without moral restraint: fearlessness, unchecked by temperance or justice, spirals into tyranny and destruction.',
-                    deficit: 'Marlin at the start of *Finding Nemo* cannot let his son out of his sight. Fear is making every decision for him.',
-                    balance: 'Katniss volunteers in her sister’s place — terrified, and doing it anyway. That is the whole definition.',
+                    deficit: 'Mrs Johnstone in *Blood Brothers* is too frightened of Mrs Lyons to say no to her, and gives away a child because of it.',
+                    balance: 'Katniss volunteers in her sister’s place in *The Hunger Games* — terrified, and doing it anyway. That is the whole definition.',
                     tech: [{ s: 'Fw', l: 'The Flaw' }],
                 },
                 humanity: {
                     what: 'Humanity is love, kindness and reading other people well — the ability to be close to someone.',
-                    excess: 'A character who loves too much without self-regulation might sacrifice everything and lose themselves — George gives up every plan he has to keep Lennie safe.',
-                    deficit: 'Scrooge at the start has decided people cost more than they give. Money cannot abandon him; people can.',
-                    balance: 'Scrooge at the end — the same man, with the shield down.',
+                    excess: 'A character who loves too much without self-regulation can lose themselves: George in *Of Mice and Men* gives up every plan he has to keep Lennie safe.',
+                    deficit: 'Scrooge at the start of *A Christmas Carol* has decided people cost more than they give. Money cannot abandon him; people can.',
+                    balance: 'When Hero is publicly shamed in *Much Ado About Nothing*, Benedick takes her side against his own friends — kindness that costs him something.',
                     tech: [{ s: 'Ey', l: 'Empathy — making us care' }],
                 },
                 justice: {
                     what: 'Justice is fairness beyond your own circle: what you owe people who cannot make you pay.',
-                    excess: 'Justice with no mercy in it becomes cruelty — a character so fixed on punishment that forgiveness stops being possible, like Javert pursuing one man for decades over a stolen loaf.',
-                    deficit: 'Mr Birling refuses any responsibility for Eva Smith at all. Fairness and citizenship are simply absent.',
-                    balance: 'The Inspector holds every one of them to account and still asks them to change, rather than only condemning them.',
+                    excess: 'Claudio destroys Hero publicly on nothing but suspicion — punishment with no proof and no mercy in it. Justice taken that far stops being justice.',
+                    deficit: 'In *Animal Farm*, the pigs quietly rewrite the commandments until “all animals are equal” means whatever suits them.',
+                    balance: 'Inspector Goole holds every one of the Birlings to account and still asks them to CHANGE, rather than only condemning them.',
                     tech: [{ s: 'Th', l: 'Theme' }],
                 },
                 temperance: {
                     what: 'Temperance is the brake: forgiveness, humility, prudence, self-regulation. It is what stops every other value running away with the character.',
-                    excess: 'Self-control so complete that nothing is ever risked — a character who never acts cannot change, and a story is a change.',
-                    deficit: 'Macbeth’s ambition has nothing to check it, which is precisely why it eats him.',
-                    balance: 'A character who can want something badly and still choose when to stop.',
+                    excess: 'Friar Lawrence is so set on managing everything quietly that he chooses a secret sleeping potion over simply telling the truth. Caution taken that far becomes its own catastrophe.',
+                    deficit: 'Macbeth’s ambition has nothing at all to check it, which is precisely why it eats him.',
+                    balance: 'Bob Cratchit toasts Scrooge at his own family table, after everything — restraint and forgiveness working together.',
                     tech: [{ s: 'Fw', l: 'The Flaw' }],
                 },
                 transcendence: {
                     what: 'Transcendence is the sense that life is bigger than you — beauty, gratitude, hope, humour, meaning.',
                     excess: 'Hope with nothing underneath it: George and Lennie’s farm is a dream they repeat rather than a plan they act on.',
-                    deficit: 'Scrooge at the start has no gratitude, no humour and no eye for beauty. Christmas is only a day people expect money from him.',
-                    balance: 'Scrooge at the end laughs, gives, and is glad to be alive.',
+                    deficit: 'By the end of *Blood Brothers*, Mickey can find nothing to hope for and nothing to enjoy — the humour and the life have gone out of him completely.',
+                    balance: 'Scrooge on Christmas morning laughs, gives, and is simply glad to be alive.',
                     tech: [{ s: 'Th', l: 'Theme' }],
                 },
             };
@@ -23714,13 +23781,26 @@
             }
             function bar(n, heading) { return cwProgressBar(n + 1, STATIONS.length, 'Universal Values', heading); }
 
+            // v7.20.420 (#242): the SECOND PASS gets announced. Without this the walk asked the
+            // same six values again with nothing said, and "— at the end" in a heading is not an
+            // explanation. Rides the ask rather than arriving as its own bubble (one message at a
+            // time), and is derived from position, so it cannot desync.
+            function passLead(n) {
+                if (n !== FIRST_END) return '';
+                return '⭐ **That is the beginning of your story mapped — all six values.**\n\n'
+                    + 'Now the same six, but at the **END**: who your protagonist has become by the '
+                    + 'last page. Answer these against where they finish, not where they started — '
+                    + 'and where nothing has moved, say so honestly. **The gap between the two passes '
+                    + 'is your character’s transformation**, and we will look straight at it when the '
+                    + 'six are done.\n\n---\n\n';
+            }
             function serveTraits(n) {
                 const st = STATIONS[n];
                 const t = TEACH[st.v.id];
                 phase = 'traits'; persist();
                 _walkSlot.clear('cw7');   // a tick list is a TAP — nothing typed may file here
                 const moment = st.when === 'begin' ? 'when your story OPENS' : 'by the time your story ENDS';
-                aiBubble(bar(n, stationTitle(st))
+                aiBubble(passLead(n) + bar(n, stationTitle(st))
                     + '**' + st.v.name + '**\n\n' + t.what + '\n\n'
                     + 'Its traits are: ' + st.v.traits.map(function (x) { return '**' + x + '**'; }).join(' · ') + '.\n\n'
                     + 'Example — ' + t.deficit + '\n\n'
@@ -23879,9 +23959,38 @@
             }
 
             // ── flow ───────────────────────────────────────────────────────────────────────
+            // ⭐⭐ v7.20.420 (Neil, FIXLIST #242) — THE ORIENTATION IS DERIVED, NOT BRANCH-BOUND.
+            //
+            // He tested .419 and the walk went from "Welcome to Step 7" straight into Wisdom and
+            // Knowledge. Reading his ACTUAL saved transcript off staging settled it: the
+            // orientation had not been trimmed or lost — it had **never run**. Zero trace of it.
+            //
+            // ROOT: it was served from exactly ONE branch (`startWalk`, when `i === 0`). But four
+            // routes reach the first station — a fresh `@CW7_START`, the fail-loud start fallback,
+            // `tryResume`'s reattach, and the send-path revive — and three of them call
+            // `serveCurrent()` directly, which went straight to the ask. That is a control-flow
+            // condition standing in for a FACT about the session, and it fails the moment a route
+            // nobody listed is taken.
+            //
+            // So the question is now asked of the TRANSCRIPT — has this student been oriented? —
+            // which is true or false regardless of how they arrived. Same reasoning as deriving the
+            // walk's position from the document instead of a counter.
+            // The marker sits in the FIRST orientation chunk, deliberately. The run is paced, so a
+            // student can leave after chunk one — if the marker lived in a later chunk, `oriented()`
+            // would read false on their return and the whole orientation would replay from the top.
+            const ORIENT_MARK = 'what sits UNDERNEATH it';   // a phrase only orientation chunk 1 says
+            function oriented() {
+                try {
+                    return (canvasChatHistory || []).some(function (m) {
+                        return m && m.role === 'assistant' && String(m.content || '').indexOf(ORIENT_MARK) !== -1;
+                    });
+                } catch (e) { return false; }
+            }
+            function needsOrientation() { return i === 0 && phaseOf(0) === 'traits' && !oriented(); }
             function serveCurrent() {
                 const st = STATIONS[i];
                 if (!st) { serveWrap(); return; }
+                if (needsOrientation()) { serveOrientation(); return; }
                 const p = phaseOf(i) || 'why';
                 if (st.kind === 'reflect') { serveReflect(i); return; }
                 if (p === 'traits') { serveTraits(i); return; }
@@ -24004,16 +24113,34 @@
                 }
                 active = true; pending = false;
                 console.log('WML CW7: code-served values walk start at station ' + (i + 1) + '/' + STATIONS.length);
-                if (i === 0 && phaseOf(0) === 'traits') { serveOrientation(); return; }
+                // v7.20.420: NO second copy of the orientation condition here. It used to read
+                // `if (i === 0 && phaseOf(0) === 'traits') serveOrientation()`, which is the same
+                // fact serveCurrent() now decides — and TWO conditions expressing one fact is how
+                // the orientation came to run on this route and be skipped on the other three.
+                // (Proved by the harness: disabling the derived predicate changed nothing, because
+                // this branch was still firing. A gate that only drives the working route is not a
+                // gate.)
                 serveCurrent();
             }
+            // ── THE ORIENTATION (rewritten v7.20.420 after Neil's UX audit, #242) ──────────
+            // *"It doesn't say to the student, okay, we're gonna look at how your story evolves
+            // from the beginning to end… There should be a difference from the beginning and the
+            // end. There needs to be an introduction."*
+            //
+            // He is right, and the gap was structural rather than cosmetic: the old version taught
+            // the six values and the balance idea but never once said that this step has TWO
+            // passes, that the SAME six values are asked twice, or that the DIFFERENCE between
+            // them is the transformation — which is the entire reason the step exists. A student
+            // meeting "Wisdom and Knowledge — at the beginning" had no way to know a second pass
+            // was coming, so "at the beginning" read as decoration.
             function serveOrientation() {
                 serveCwChunks([
-                    'Your plot has a shape now. This step is about what is UNDERNEATH it — the values your story is actually about.',
-                    'Psychologists Peterson and Seligman spent three years, across 40 cultures and 2,500 years of thought, looking for what stays constant in human beings. They found **six values**: Wisdom · Courage · Humanity · Justice · Temperance · Transcendence. Every heroic character is on a journey to embody them.',
-                    '**Here is the idea that makes this useful rather than a personality quiz: too much or too little of any virtue creates conflict.** In *Frankenstein*, Victor’s curiosity runs with no restraint at all and makes a monster — brilliance without temperance. In *Macbeth*, courage untethered from conscience becomes tyranny. Neither man lacks the virtue. They have it in EXCESS.',
-                    'So for each of the six values I will ask you three quick things: which traits your protagonist shows, whether the value is **in balance, in excess or in deficit**, and where your story shows it. First at the beginning of your story, then at the end — and the difference between those two tables IS your character’s transformation.\n\nAll six are compulsory, and that is deliberate: a value your protagonist barely has is not a blank, it is **in deficit** — and that is usually the most interesting answer on the page.',
-                    'Under every question you get **💡 More examples**, **📖 Guidance**, **🧩 Story Components** and **🗒 Story Spine**. All free, and there is no waiting on me in this step — everything here is instant.\n\n**Don’t overthink it.** Rough answers now; you will sharpen all of it across your drafts.',
+                    'Your plot has a shape now. This step is about what sits UNDERNEATH it — what your story is actually *about*.',
+                    'Psychologists Peterson and Seligman spent three years, across 40 cultures and 2,500 years of thought, looking for what stays constant in human beings. They found **six values**: Wisdom and Knowledge · Courage · Humanity · Justice · Temperance · Transcendence.\n\nEvery heroic character is on a journey to embody them. Before the story begins they might hold some and lack others — and the story is them gaining what they lacked, or, in a darker arc, losing what they had.',
+                    '**Here is the idea that makes this useful rather than a personality quiz: too much or too little of any virtue creates conflict.** In *Frankenstein*, Victor’s curiosity runs with no restraint at all and makes a monster — brilliance without temperance. In *Macbeth*, courage untethered from conscience becomes tyranny. Neither man LACKS the virtue. They have it in **excess**.',
+                    '⭐ **So here is how this step works, and it is worth knowing before we start.**\n\nYou will map the same six values **TWICE**:\n\n- **First at the BEGINNING of your story** — who your protagonist is on page one.\n- **Then at the END** — who they have become.\n\n**The difference between those two is your character’s transformation.** That gap is what your whole plot exists to earn, and by the end of this step you will be able to see it written down.',
+                    'For each value I will ask you three quick things: which **traits** your protagonist shows, whether the value sits **in balance, in excess or in deficit**, and **where in your story** we would see it. Then the same six again for the end, and three short questions about what changed.\n\nAll six are compulsory, and that is deliberate: a value your protagonist barely has is **not a blank** — it is **in deficit**, and that is usually the most interesting answer on the page.',
+                    'Under every question you get **💡 More examples**, **📖 Guidance**, **🧩 Story Components** and **🗒 Story Spine**. All free — and there is no waiting on me in this step, everything here is instant.\n\n**Don’t overthink it.** Rough answers now; you will sharpen all of it across your drafts.\n\nLet’s start at the beginning of your story, with the first value.',
                 ], { emit: aiBubble, onDone: function () { serveCurrent(); } });
             }
 
@@ -24029,7 +24156,15 @@
             // a reload while the student is parked on a tick list or a state pick must re-attach
             // THAT surface; re-serving the wrong one is how a walk eats an answer as the wrong
             // field. Derived → drawn, never pushed (§4c.7).
-            function reattach() { _cwReplay(_reattachBody); }
+            // ⚠️ The orientation is served OUTSIDE the replay wrapper, deliberately. Everything a
+            // resume re-draws is drawn-not-stored (§4c.7) — right for re-serving an ask the
+            // transcript already holds, and wrong for a turn that has never been said: inside the
+            // wrapper it would draw and never persist, so `oriented()` would stay false and it
+            // would re-narrate on every single entry for ever.
+            function reattach() {
+                if (needsOrientation()) { serveOrientation(); return; }
+                _cwReplay(_reattachBody);
+            }
             function _reattachBody() {
                 if (done || i >= STATIONS.length) { serveWrap(); return; }
                 serveCurrent();
@@ -30566,11 +30701,15 @@
                     } else {
                         greetingText = `${introLine}\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
                     }
-                    tp.addChatMessage(formatAI(greetingText), 'ai', greetingText);
+                    // v7.20.420 (#240): idempotent — the twin emitter or the transcript replay may
+                    // already have put this on screen. See _cwGreetOnce.
+                    const _greeted = _cwGreetOnce(stepNum, tp.canvasChatHistory, function () {
+                        tp.addChatMessage(formatAI(greetingText), 'ai', greetingText);
+                    });
                     // v7.20.284: the prerequisite GATE is EPHEMERAL — persisting it fossilised
                     // "go back to Step N" beyond the point the step was completed. Real
                     // greetings persist; the gate re-derives on every entry.
-                    if (!(missingPrereq && stepNum > 1)) {
+                    if (_greeted && !(missingPrereq && stepNum > 1)) {
                         WML.recordTurn(tp.canvasChatHistory, { role: 'assistant', content: greetingText }, { durable: true, why: 'a real opening turn; its mutable value is a [SWML_LIVE:] token, not a snapshot' });
                         saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
                     }
@@ -31721,7 +31860,12 @@
                                             // persisting it freezes a fact that has since changed (WML CLAUDE.md §4c.7).
                                             const _emitBack = function (extra) {
                                                 const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**${extra}\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
-                                                addChatMessage(formatAI(gt), 'ai', gt);
+                                                // v7.20.420 (#240): the TWIN of the chat-clear re-greet in the other
+                                                // pipeline. Missed on the first pass because it words the greeting
+                                                // "Welcome BACK to Step" and the patch was an exact-string replace
+                                                // capped at one occurrence — the counting gate is what found it.
+                                                _cwResetGreetOnce();
+                                                _cwGreetOnce(stepNum, [], function () { addChatMessage(formatAI(gt), 'ai', gt); });
                                             };
                                             if (stepNum === 6) {
                                                 _cwPlotStructureName(state.cwProjectId).then(function (n) {
@@ -33468,10 +33612,15 @@
                                                 // Steps 2+: context-aware, no generic Inside Out repeat
                                                 greetingText = `${introLine}\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
                                             }
-                                            addChatMessage(formatAI(greetingText), 'ai', greetingText);
+                                            // v7.20.420 (#240): idempotent — the twin emitter in the
+                                            // main pipeline, or the transcript replay, may already have
+                                            // drawn this. See _cwGreetOnce.
+                                            const _greetedB = _cwGreetOnce(stepNum, canvasChatHistory, function () {
+                                                addChatMessage(formatAI(greetingText), 'ai', greetingText);
+                                            });
                                             // v7.20.284: gate greetings are EPHEMERAL — see the
                                             // twin greet block in the main pipeline.
-                                            if (!(missingPrereq && stepNum > 1)) {
+                                            if (_greetedB && !(missingPrereq && stepNum > 1)) {
                                                 WML.recordTurn(canvasChatHistory, { role: 'assistant', content: greetingText }, { durable: true, why: 'a real opening turn; its mutable value is a [SWML_LIVE:] token, not a snapshot' });
                                                 saveCanvasChat(canvasChatHistory, canvasChatId);
                                             }
