@@ -10049,10 +10049,16 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     width: 36px;
     height: 36px;
     border-radius: 9999px;
-    /* v7.20.395 (Neil): was rgba(20,18,30,0.8) — a purple-black on no ladder, and translucent so
-       it changed colour depending on what scrolled under it. RAISED tier, solid, like every other
-       floating control (toolbar, rail buttons, Dynamic Island, AI bubbles). */
-    background: #1b1c1f;
+    /* ⭐ v7.20.423 (Neil, #253): *"the scroll-to-top and scroll-to-bottom button is a different
+       colour to the dynamic island in the centre, and I would like a bit of consistency."*
+       He is right, and this was a DEFECT AGAINST THE LADDER rather than a design question: .395
+       wrote "RAISED tier, solid, like every other floating control" in the comment and then set
+       #1b1c1f, which is the RECESSED rung (light's #f5f5f7). So a control FLOATING ABOVE the chat
+       (#232427 Dark Base) was painted DARKER than the surface it floats on — it read as a hole,
+       while its neighbour the Dynamic Island read as raised. Same plane, two materials.
+       Now the value the comment always claimed: #2b2c2f, RAISED-ON-BASE — the toolbar header, the
+       rail buttons, the AI bubbles and the Dynamic Island. One material for everything floating. */
+    background: #2b2c2f;
     color: rgba(255,255,255,0.85);
     display: flex;
     align-items: center;
@@ -10061,15 +10067,19 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     z-index: 10;
     border: 0.5px solid rgba(255,255,255,0.12);
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -2px rgba(0,0,0,0.15);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    /* v7.20.423: backdrop-filter DROPPED. Its twin lost it at .395 when the translucency went and
+       this one kept it — so the pair diverged silently. It is also the documented landmine:
+       backdrop-filter on a `border-radius:9999px` element renders SQUARE when a transform is in
+       play, and this element carries its own translateX(-50%)
+       (reference_sitewide_takeover_modal_css_landmines §1). A round button that goes square on
+       some machines and not others is exactly the bug that memory exists to stop. */
     transition: opacity 0.2s ease, box-shadow 0.2s ease;
     user-select: none;
     padding: 4px;
 }
 .swml-scroll-down-btn:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    background: #232427;   /* v7.20.397: one rung up from recessed on hover */
+    /* v7.20.423: hover lifts the SHADOW, not the colour — see the twin above. */
 }
 .swml-canvas-light .swml-scroll-down-btn {
     background: hsla(0,0%,100%,0.8);
@@ -10091,12 +10101,11 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     width: 36px;
     height: 36px;
     border-radius: 9999px;
-    /* v7.20.395 (Neil, on the scroll-to-top arrow): was rgba(20,18,30,0.8) — a purple-black on no
-       ladder, and translucent, so it changed colour depending on what scrolled underneath it.
-       RAISED tier, solid, like every other floating control. Its twin `.swml-scroll-down-btn` had
-       the identical value and was fixed in the same change — they sit side by side, so a fix to
-       one alone would have been visible as a mismatched pair. */
-    background: #1b1c1f;
+    /* v7.20.423 (#253): RAISED-ON-BASE, matching its twin and the Dynamic Island — see the note on
+       `.swml-scroll-down-btn`. They sit side by side, so both move together or the pair mismatches.
+       Visibility against the chat comes from the hairline + shadow, not from going darker: an
+       elevated control is lighter than what it floats above, and the shadow is what lifts it. */
+    background: #2b2c2f;
     color: rgba(255,255,255,0.85);
     display: flex;
     align-items: center;
@@ -10114,7 +10123,10 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-scroll-up-btn:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    background: #232427;   /* v7.20.397: one rung up from recessed on hover — was raised-2 */
+    /* v7.20.423: hover lifts the SHADOW, not the colour. The old "+1 rung" hover was derived from
+       the wrong base, and the rung above raised is the retired fifth grey (#2e2f32, killed at .386
+       and it must not come back). Apple does the same thing — elevation changes, material does
+       not. */
 }
 .swml-canvas-light .swml-scroll-up-btn {
     background: hsla(0,0%,100%,0.8);

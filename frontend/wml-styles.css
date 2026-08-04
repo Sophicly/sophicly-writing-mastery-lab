@@ -1408,6 +1408,36 @@ body.swml-page {
    So this is the font Neil asked for, from the source WML already loads; no new asset, no !important
    needed, because scoping to our own bubble is enough to beat a bare `em` selector. Weight and size
    inherit so a title inside a bold line stays bold. */
+/* ⭐⭐ v7.20.423 (#252) — EVERY WML SURFACE, not just the chat bubble.
+   Neil, looking at real student screens: *"some of the italics… not all of them were Playfair
+   Display Complete, but they were on different lessons. Some were like step four, some step three…
+   some of them, I think, were just Proxima Soft italics."*
+
+   He is right, and the .420 rule was the cause: it declared our italic for `.swml-bubble-content`
+   ONLY. Every other place WML renders an `<em>` — a rail panel, a document row's criteria column,
+   a resources card, an outline prompt — still inherited whatever the host page gives `em`, and the
+   host's italic is Proxima Soft slanted. So the SAME title rendered in Playfair in the chat and in
+   Proxima four inches to the right, on the same screen.
+
+   ⚠️ WHY IT IS A LIST OF ROOTS AND NOT ONE. There is no single WML container: planning renders in
+   `.swml-workspace`, the canvas in `.swml-canvas`, the standalone template on `body.swml-page` —
+   and the four rail panels share `.swml-outline-panel`, which DETACHES TO BODY and therefore has no
+   WML ancestor at all (the same reason the light-theme panel rules are keyed off the root attribute
+   at wml-canvas.css ~2845). A rule scoped to one root would have silently missed the detached case,
+   which is exactly the class of miss being fixed here.
+
+   ⚠️ AND WHY IT TARGETS `em`/`i` ELEMENTS ONLY. Plenty of WML rules set `font-style: italic` on a
+   CLASS to mark a placeholder or a muted note (`.swml-wp-empty`, `.swml-outline-empty`); those are
+   deliberately Proxima and are untouched, because they are not `<em>` tags. Italic-the-typeface and
+   italic-the-emphasis are two different decisions, and only the second one is a title.
+
+   Scoped to our own containers, never a bare `em` — a site-wide `em` rule from a plugin would
+   clobber the host page (root CLAUDE.md, the site-wide-modal landmines). */
+.swml-page em, .swml-page i,
+.swml-workspace em, .swml-workspace i,
+.swml-canvas em, .swml-canvas i,
+.swml-outline-panel em, .swml-outline-panel i,
+.swml-extract-panel em, .swml-extract-panel i,
 .swml-bubble-content em,
 .swml-bubble-content i {
     font-family: 'Playfair Display Complete', Georgia, serif;
