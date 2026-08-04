@@ -271,8 +271,29 @@ body.swml-fullscreen-active { overflow: hidden !important; }
      • #232427 — DARK BASE (light's #ffffff)  .swml-canvas-doc (the writing sheet) · -chat (+ its
                  header/messages) · .swml-outline-panel popover · -plan · -status · .swml-toc (+gaps) ·
                  the coach box/input · the ctx dropdown · the highlight picker · #swml-root
-     • #2b2c2f — RAISED-ON-BASE                canvas toolbar header · rail buttons · Dynamic Island ·
-                 AI bubbles (--swml-bubble-ai-bg) · --swml-tb-fade (the toolbar's end-fades)
+     • #333437 — RAISED-ON-BASE                rail buttons (.swml-outline-btn) · Dynamic Island ·
+                 AI bubbles (--swml-bubble-ai-bg) · both scroll buttons · zoom indicator ·
+                 the comment modal (as rgba(49,50,53,0.97))
+       ⭐ v7.20.428 (Neil): "do you think they're lifted enough? I feel like we should go one shade
+       lighter." He is right — and he then had to correct HOW it was derived, which is the part
+       worth recording: *"the lifted colour should be one of our shades. We did, like, a palette,
+       and remember, they're all derived from the colour #1c1d1f."*
+       The first attempt reached #313235 by adding +14 to the RAW RGB CHANNELS to match Apple's
+       dark step (#1C1C1E → #2C2C2E → #3A3A3C, ~14–16). ⛔ That is EXACTLY the mistake this file
+       already documents 25 lines above — raw-channel arithmetic swings the hue, and #313235 is
+       not on the lattice at all (it computes to N=+2.71).
+       DERIVED PROPERLY: seed #1c1d1f is L=23.05 C=0.0041 H=264.5°; rungs are seed + N × 3.2 OKLCH
+       lightness with hue and chroma HELD. N=+2 reproduces #2b2c2f EXACTLY — which proves the
+       formula is the live ladder and not a story about it — so the next rung is N=+3 = #333437.
+       It happens to land ~6.6 OKLCH points above DARK BASE, so the bubbles now clear the surface
+       they sit on by two rungs. The Apple comparison was the right INSTINCT and the wrong MATHS;
+       our own palette had the answer already.
+       He chose to move the WHOLE RUNG rather than give the bubbles a private fourth grey — one
+       ladder, still three greys, and everything he had just approved as MATCHING each other
+       (bubbles · Island · rail buttons · scroll buttons) stays matched, one step higher.
+       ⚠️ The canvas toolbar header LEFT this rung at v7.20.425 — it is #232427 now, matching the
+       SPL header. Raised is for things that genuinely FLOAT; chrome sits on base.
+       ⚠️ --swml-tb-fade also left this rung at .425: it follows the header, by construction.
      • #1b1c1f — (light's #f5f5f7)            .swml-canvas container / gutter / editor / backdrop ·
                  inputs / wells
      • #101112 — sidebar, darkest              LearnDash focus sidebar only (BRAND.md's own rung)
@@ -1078,7 +1099,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
        on a dead colour through four palette moves because it is spelled rgba, so every hex sweep
        missed it. Found by bin/palette-lint.js on its first run. A modal floats over the document,
        so it takes the RAISED tier, like every other floating surface. */
-    background: rgba(43, 44, 47, 0.97);
+    background: rgba(51, 52, 55, 0.97);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 16px;
     padding: 20px 24px;
@@ -1395,6 +1416,63 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     transform: translateY(-1px);
 }
 .swml-sel-neumorphic .swml-sel-btn:active { transform: translateY(1px); }
+
+/* ⭐⭐ v7.20.428 (Neil, #263) — THE CONTEXTUAL TOOLBAR GETS A LIGHT THEME.
+   *"the contextual toolbar is black in light theme. Everything else is white. Should we make it
+   support light theme as well? Make it white in light theme. It is a new morphic style, so on the
+   hover it's going to have to be quite bright, I think."*
+   He is right on both counts. It was painted dark in BOTH themes, so in light mode it was the only
+   black object on a white screen — and his instinct about the hover is the load-bearing part:
+   ⭐ A DARK morphic hover works by going LIGHTER than its rest. Invert the surface and that rule
+   inverts with it — a light button that goes lighter on hover reads as DISABLED, and one that goes
+   slightly darker reads as PRESSED. So light's hover goes to SATURATED BRAND, not to a grey step.
+   Values are NOT invented: they are the file's own light-morphic precedents —
+   `.swml-canvas-light .swml-tb-arrow` for the rest state and
+   `.swml-canvas-light .swml-msg-top-btn:hover` for the bright purple hover.
+   `data-swml-theme` is written to document.body (wml-core.js:2273), so this matches wherever the
+   toolbar mounts — it is appended to the messages list, not to a WML root. */
+.swml-canvas-light .swml-selection-toolbar,
+[data-swml-theme="light"] .swml-selection-toolbar {
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.07);
+}
+.swml-canvas-light .swml-sel-neumorphic .swml-sel-btn,
+[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn {
+    --btn-inner: hsla(226deg 60% 96% / 100%);
+    --btn-outer: hsla(226deg 50% 92% / 100%);
+    --btn-glow: hsla(252deg 70% 60% / 0%);
+    color: rgba(0,0,0,0.7);
+    box-shadow:
+        inset 0 2px 1px -1px rgba(255,255,255,0.9),
+        inset 0 2px 3px rgba(0,0,0,0.04),
+        0 1px 0 1px rgba(0,0,0,0.08);
+}
+.swml-canvas-light .swml-sel-neumorphic .swml-sel-btn:hover,
+[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn:hover {
+    /* "quite bright" — his word, and the correct call: saturated brand, white type. */
+    --btn-glow: hsla(252deg 70% 60% / 25%);
+    --btn-inner: hsla(252deg 83% 56% / 100%);
+    --btn-outer: hsla(252deg 60% 50% / 100%);
+    color: #fff;
+    box-shadow:
+        inset 0 -1px 2px rgba(255,255,255,0.25),
+        0 1px 0 1px rgba(83,51,237,0.35),
+        0 2px 10px rgba(83,51,237,0.28);
+}
+.swml-canvas-light .swml-sel-neumorphic .swml-sel-btn.swml-sel-notes:hover,
+[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn.swml-sel-notes:hover {
+    /* Notes keeps its teal identity, but DARKENED for light: the dark theme's 174deg 50%/35% on a
+       white ground would not carry white type. */
+    --btn-glow: hsla(174deg 70% 45% / 25%);
+    --btn-inner: hsla(174deg 65% 36% / 100%);
+    --btn-outer: hsla(174deg 70% 30% / 100%);
+    color: #fff;
+    box-shadow:
+        inset 0 -1px 2px rgba(255,255,255,0.25),
+        0 1px 0 1px rgba(81,218,207,0.35),
+        0 2px 10px rgba(81,218,207,0.28);
+}
+
 /* Notes button — teal variant */
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-notes:hover {
     --btn-glow: hsla(174deg 70% 60% / 20%);
@@ -1651,7 +1729,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        ⭐ Dropping backdrop-filter also removes a live landmine: backdrop-filter + border-radius
        renders SQUARE when an ancestor carries a transform, and this element has its own
        translate(-50%,-50%) (reference_sitewide_takeover_modal_css_landmines §1). */
-    background: #2b2c2f;
+    background: #333437;
     color: #fff;
     font-size: 16px;
     font-weight: 700;
@@ -2621,7 +2699,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    v7.19.448: no outline border (brand: no thin outline borders on default buttons).
    Raised filled shade off Dark Base #1c1d1f + soft shadow so it reads as a button. */
 .swml-outline-btn {
-    background: #2b2c2f; /* v7.20.389 (Neil): RAISED-ON-BASE, same as the toolbar header, the
+    background: #333437; /* v7.20.389 (Neil): RAISED-ON-BASE, same as the toolbar header, the
                             Dynamic Island and the AI bubbles — every raised control is one colour.
                             Was #26272a, a one-off 2 points away: invisible as a difference, pure
                             inconsistency as a value. */
@@ -10107,7 +10185,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
        while its neighbour the Dynamic Island read as raised. Same plane, two materials.
        Now the value the comment always claimed: #2b2c2f, RAISED-ON-BASE — the toolbar header, the
        rail buttons, the AI bubbles and the Dynamic Island. One material for everything floating. */
-    background: #2b2c2f;
+    background: #333437;
     color: rgba(255,255,255,0.85);
     display: flex;
     align-items: center;
@@ -10161,7 +10239,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
        `.swml-scroll-down-btn`. They sit side by side, so both move together or the pair mismatches.
        Visibility against the chat comes from the hairline + shadow, not from going darker: an
        elevated control is lighter than what it floats above, and the shadow is what lifts it. */
-    background: #2b2c2f;
+    background: #333437;
     color: rgba(255,255,255,0.85);
     display: flex;
     align-items: center;
@@ -10236,7 +10314,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
        is this?" problem by construction. Solid also lets the backdrop-filter go, which removes a
        known landmine: backdrop-filter + border-radius renders SQUARE when an ancestor carries a
        transform, and this element has its own translateX(-50%) (reference_sitewide_takeover_modal_css_landmines §1). */
-    background: #2b2c2f;
+    background: #333437;
     /* CONSTANT radius — never morphed. Morphing radius is what made the open look
        like "a rectangle that then snaps its corners". Jhey/Nextbricks hold one
        rounded-rect radius and animate only width + height. */

@@ -46,7 +46,7 @@
     --swml-border: #333438;
     --swml-input-bg: #1b1c1f;
     --swml-input-border: #444549;
-    --swml-bubble-ai-bg: #2b2c2f;   /* v7.20.388 (Neil: "I prefer the previous shade"). The pure
+    --swml-bubble-ai-bg: #333437;   /* v7.20.388 (Neil: "I prefer the previous shade"). The pure
                                        light-inversion put the bubble DARKER than its panel — true to
                                        light (#f5f5f7 on #ffffff) but wrong on dark, where a recessed
                                        bubble reads as a hole rather than a message. Raised instead. */
@@ -651,7 +651,12 @@ body.swml-page {
        RECESSED tier, solid: Neil asked for the contextual toolbar to read predominantly dark. */
     background: #1b1c1f; border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(81,218,207,0.25);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    /* v7.20.428: backdrop-filter DROPPED. It is a no-op — the background went SOLID at v7.20.397
+       and there is nothing left to see through — and it is the documented landmine: backdrop-filter
+       on a `border-radius` element renders SQUARE when a transform is in play, and this element
+       animates with `transform: scale()` on every appearance via swml-reply-pop
+       (reference_sitewide_takeover_modal_css_landmines §1). Same leftover, same reason, as the
+       scroll button's at v7.20.423 — a filter that outlived the translucency it was added for. */
     animation: swml-reply-pop 0.15s ease-out;
 }
 .swml-sel-btn {

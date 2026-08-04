@@ -47,6 +47,11 @@ const RETIRED = [
     ['#25272b', 'Dark Base — retired .393 (wrong chroma; not a true tint)'],
     ['#2d3034', 'raised tier — retired .393'],
     ['#151617', 'recessed tier — retired .393'],
+    ['#2b2c2f', 'raised tier — retired .428 when Neil lifted the rung to #333437 (OKLCH N=+3). ' +
+                'Chrome left this rung at .425 (header → #232427); the floating family left at .428.'],
+    ['#313235', 'NEVER SHIPPED. The .428 first attempt: +14 on the RAW RGB channels to match ' +
+                'Apple\'s dark step. Off-lattice (N=+2.71) and hue-drifted — the exact mistake the ' +
+                'ladder comment warns about. Neil caught it: "they\'re all derived from #1c1d1f."'],
 ];
 
 // Declarations that paint a SURFACE. `color:` is deliberately absent — see the header note.
