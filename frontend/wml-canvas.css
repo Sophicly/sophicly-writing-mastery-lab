@@ -1753,18 +1753,31 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        belongs, on the things that genuinely float (chat bubbles, Dynamic Island, scroll buttons). */
     background: #232427;
     /* v7.20.181 (Neil): canvas-header bottom border removed — cleaner edge. */
-    /* v7.20.402 (Neil): "can we give that a nice subtle box shadow just like we have with the chat
-       on the right?" — the same pair as .swml-canvas-chat-header (v7.20.383), verbatim, so the two
-       headers read as the same kind of plane rather than two near-misses. The header is already
-       position:relative + z-index:10, so the shadow paints OVER the document beneath it. */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.28);
+    /* ⭐ v7.20.426 (Neil, #257) — SHADOW REMOVED. He first asked only to kill the bleed on the RIGHT
+       ("we need to get rid of the box shadow on the right of the header"), then, looking at it on
+       the new #232427: *"most of the document is actually a different colour anyway… I think I do
+       like the simplicity, or the minimalism, without it."*
+       WHY REMOVING IS THE ROOT FIX AND NOT A COMPROMISE: `0 2px 6px` is a 6px blur with ZERO
+       spread, so it bleeds 6px on EVERY side — including right, onto the chat panel seam, which is
+       the smudge he saw. There is no "bottom-only" box-shadow; faking one needs a ::after strip or
+       a clip-path, and clip-path is impossible here because the header is `overflow: visible` and
+       the toolbar tooltips escape its box. So the choice was a whole extra element, or deleting the
+       thing that no longer has a job.
+       It no longer has a job: v7.20.402 added it when the header was #2b2c2f sitting over a
+       document of a different tone, as a plane separator. At v7.20.425 the header became #232427,
+       and the document pane it sits over is a different colour anyway — the edge is already read.
+       ⚠️ THIS DELIBERATELY BREAKS THE .402 PAIRING with .swml-canvas-chat-header, which KEEPS its
+       shadow. Not an oversight: the chat header sits over .swml-canvas-chat-messages, which is
+       ALSO #232427 — same colour, so there the shadow is the ONLY thing separating the two, and
+       removing it would merge them. Same value, two different jobs.
+       To restore: `box-shadow: 0 2px 6px rgba(0,0,0,0.28);` here, and 0 1px 3px / 0.07 in light. */
     flex-shrink: 0;
     height: 50px;
     min-width: 0;
     overflow: visible;
 }
-[data-swml-theme="light"] .swml-canvas-header,
-.swml-canvas-light .swml-canvas-header { box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+/* v7.20.426: light's twin removed with it — see the note in .swml-canvas-header above. A light
+   header carries the same sideways bleed, just quieter, and the same reasoning applies. */
 /* ⭐ v7.20.402 (Neil): "the protocol progress sidebar, I'd like box shadow on the right of that as
    well. The only caveat is I don't want the box shadow to be visible over the canvas header…
    I want the box shadow to end where the header starts."
