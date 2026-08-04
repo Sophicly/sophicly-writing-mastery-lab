@@ -1731,18 +1731,27 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        dark block at each end of the carousel — which is what Neil spotted. Publishing the value as
        a variable pair here makes the fades follow the header by construction. Change the header and
        they change with it; there is nothing left to remember. */
-    --swml-tb-fade: #2b2c2f;
+    --swml-tb-fade: #232427;
     /* ⚠️ v7.20.394 — THIS LINE PROVES THE rgba TRAP IS REAL, because it caught the person who
        had just written the warning about it. The .393 palette move swept every HEX occurrence of
        the retired raised value and this one survived, because it is the SAME COLOUR written as
        rgba() — so it sat one generation behind (#2d3034, the .392 value) while everything around
        it moved. Zero-alpha hides it from casual inspection; it is not invisible, because gradient
        interpolation passes THROUGH this colour on its way out.
-       Keep this byte-identical to --swml-tb-fade above: #2b2c2f = rgb(43,44,47). */
-    --swml-tb-fade-0: rgba(43,44,47,0);
-    background: #2b2c2f; /* v7.20.388 (Neil: "give the WML header a different shade… maybe lighter"):
-                            RAISED-ON-BASE, the BRAND.md ladder's own lighter rung. The toolbar is the
-                            one piece of chrome that should read as sitting ON TOP of everything. */
+       Keep this byte-identical to --swml-tb-fade above: #232427 = rgb(35,36,39). */
+    --swml-tb-fade-0: rgba(35,36,39,0);
+    /* ⭐⭐ v7.20.425 (Neil, #255): *"my issue is just the colours. I just feel like there's just too
+       many colours. The colour of the SPL header, for a bit more consistency and simplicity?"*
+       So the header now takes the SPL header's OWN material, read from live rather than guessed:
+       `--spl-header-bg` in etch-theme-child/assets/css/sophicly-focus-mode.css = #232427 dark,
+       #ffffff light. The two headers stack vertically on the same screen, so matching them is the
+       single biggest simplification available on this strip.
+       ⚠️ THIS REVERSES v7.20.388, which read: (Neil) "give the WML header a different shade… maybe
+       lighter" → #2b2c2f RAISED-ON-BASE, chosen so the toolbar read as sitting ON TOP. Stated
+       rather than silently flipped: the newer instruction wins, and the reasoning changed with it —
+       the header is CHROME and should match the other chrome, while the raised rung stays where it
+       belongs, on the things that genuinely float (chat bubbles, Dynamic Island, scroll buttons). */
+    background: #232427;
     /* v7.20.181 (Neil): canvas-header bottom border removed — cleaner edge. */
     /* v7.20.402 (Neil): "can we give that a nice subtle box shadow just like we have with the chat
        on the right?" — the same pair as .swml-canvas-chat-header (v7.20.383), verbatim, so the two
@@ -1815,7 +1824,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: #51dacf;
     letter-spacing: 0.5px;
 }
-.swml-canvas-light .swml-canvas-header { border-bottom-color: rgba(0,0,0,0.08); background: rgba(255,255,255,0.7); }
+/* v7.20.425 (#255): SOLID #ffffff, the SPL header's own light value (`--spl-header-bg`). Was
+   rgba(255,255,255,0.7) — translucent chrome over a scrolling document, the same fault Neil caught
+   on the light scroll buttons in #254 one build earlier. Chrome is opaque in both themes. */
+.swml-canvas-light .swml-canvas-header { border-bottom-color: rgba(0,0,0,0.08); background: #ffffff; }
 .swml-canvas-light .swml-canvas-ctx-badge { background: rgba(77,118,253,0.08); color: #4D76FD; }
 .swml-canvas-light .swml-canvas-ctx-mode { background: rgba(77,118,253,0.08); color: #4D76FD; }
 /* v7.19.265: floating "Pull from previous stage" icon. Lives on the canvas
@@ -2077,27 +2089,40 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     align-items: center;
     justify-content: center;
     font-size: 11px;
-    color: rgba(255,255,255,0.5);
-    --btn-inner: hsla(252deg 20% 20% / 50%);
-    --btn-outer: hsla(252deg 20% 14% / 40%);
+    /* ⭐ v7.20.425 (Neil, #255): "identical to the toolbar buttons". These were a DIVERGED NEAR-COPY
+       of .swml-tb-item — purple-tinted translucent greys (hsla 252deg 20% 20%/50%) where the items
+       had been de-purpled to neutral solids at v7.20.397, a weaker rest shadow, and a hover one
+       notch dimmer than .swml-tb-winona's. Three near-misses in one 24px control, which is exactly
+       the "too many colours" Neil is reading on this strip.
+       Now byte-identical to .swml-tb-item / .swml-tb-winona:hover. Only the SIZE and the round
+       border-radius stay their own — they are navigation, not tools. */
+    color: rgba(255,255,255,0.6);
+    --btn-inner: #232427;
+    --btn-outer: #1b1c1f;
     --btn-glow: hsla(252deg 70% 60% / 0%);
     background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
                 radial-gradient(var(--btn-inner), var(--btn-outer));
     box-shadow:
         inset 0 2px 1px -1px rgba(255,255,255,0.1),
-        0 1px 0 1px rgba(0,0,0,0.4);
-    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 200ms,
+        inset 0 2px 4px 2px rgba(9,11,10,0.16),
+        0 1px 0 1px #17181a,
+        0 1px 0 2px rgba(0,0,0,0.6);
+    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 300ms,
                 box-shadow 200ms, color 200ms;
 }
 .swml-tb-arrow:hover {
-    --btn-glow: hsla(252deg 70% 60% / 15%);
-    --btn-inner: hsla(252deg 50% 35% / 100%);
-    --btn-outer: hsla(252deg 60% 30% / 100%);
+    /* v7.20.425: byte-identical to .swml-tb-winona:hover. */
+    --btn-glow: hsla(252deg 70% 65% / 25%);
+    --btn-inner: hsla(252deg 55% 40% / 100%);
+    --btn-outer: hsla(252deg 60% 32% / 100%);
     color: #fff;
     box-shadow:
-        inset 0 -1px 2px rgba(255,255,255,0.2),
-        0 1px 0 1px rgba(83,51,237,0.5),
-        0 2px 8px rgba(83,51,237,0.2);
+        inset 0 -1px 1px rgba(255,255,255,0.25),
+        inset 0 0 12px rgba(44,0,62,0.25),
+        0 1px 0 1px rgba(83,51,237,0.6),
+        0 1px 6px rgba(255,255,255,0.1),
+        0 2px 12px rgba(83,51,237,0.3),
+        0 1px 0 2px rgba(0,0,0,0.5);
 }
 .swml-tb-arrow:active { transform: translateY(1px); }
 /* ── Highlight picker (on canvas overlay, positioned by JS) ── */
@@ -2184,8 +2209,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 /* v7.20.390: same mechanism, light's own values — one place per theme, not four literals. */
 .swml-canvas-light .swml-canvas-header,
 [data-swml-theme="light"] .swml-canvas-header {
-    --swml-tb-fade: #f8f8fa;
-    --swml-tb-fade-0: rgba(248,248,250,0);
+    /* v7.20.425: follows the light header to #ffffff (SPL's `--spl-header-bg` light value). It was
+       #f8f8fa against a header that was rgba(255,255,255,0.7) — the fade has to dissolve into the
+       header's ACTUAL colour or it paints a visible block at each end of the carousel, which is the
+       exact drift v7.20.390 published these variables to stop. */
+    --swml-tb-fade: #ffffff;
+    --swml-tb-fade-0: rgba(255,255,255,0);
 }
 .swml-canvas-light .swml-tb-arrow {
     --btn-inner: hsla(226deg 60% 96% / 100%);
