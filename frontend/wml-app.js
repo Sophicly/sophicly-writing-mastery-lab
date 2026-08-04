@@ -3303,9 +3303,14 @@
         _swmlSelToolbarBound = true;
 
         let toolbar = null;
+        // ⭐⭐ v7.20.431 (Neil, #267): the signature of the selection the CURRENT toolbar was built
+        // for. Without it, every mouseup destroyed and rebuilt the toolbar even when the selection
+        // had not changed at all — see the guard in the mouseup handler below.
+        let toolbarSelKey = null;
 
         function removeToolbar() {
             if (toolbar) { toolbar.remove(); toolbar = null; }
+            toolbarSelKey = null;
         }
 
         // v7.19.120: chat-toolbar now supports THREE chat surfaces:
@@ -3414,9 +3419,32 @@
                 if (selectedText.length < 2 || selectedText.length > 2000) { removeToolbar(); return; }
 
                 // Position the toolbar near the selection
-                removeToolbar();
                 const range = sel.getRangeAt(0);
                 const rect = range.getBoundingClientRect();
+
+                /* ⭐⭐ v7.20.431 (Neil, #267) — THE THEME-TOGGLE BLINK, and it was never a
+                   transition. Verbatim: "if it's open and you click the theme toggle, it sort of
+                   blinks OUT and then blinks back IN in the new theme, rather than just changing
+                   themes."
+                   ROOT CAUSE: this handler ran `removeToolbar()` and rebuilt from scratch on EVERY
+                   mouseup that survived the guards above — including a mouseup that changed nothing
+                   about the selection. The theme toggle lives in the SPL header, OUTSIDE the chat,
+                   so clicking it does NOT collapse the selection: every guard passes, the toolbar
+                   is destroyed, an identical one is built, and `swml-reply-pop` (opacity 0 → 1,
+                   scale 0.9 → 1) replays on the new node. Destroy + re-pop IS the blink.
+                   ⚠️ This is why v7.20.429 did not fix it. That change kills transitions during the
+                   swap, which was a real and separate defect — but you cannot suppress an animation
+                   on an element that did not exist when the suppression was active. The node is
+                   genuinely gone and remade, a beat later.
+                   FIX: if the selection is unchanged and a toolbar is already up, leave it alone.
+                   The key is the text plus its on-screen box, so a genuine re-selection of the same
+                   words somewhere else still rebuilds. Also fixes the same flicker on any stray
+                   mouseup — clicking the scrollbar, a rail button, or anywhere outside the chat. */
+                const selKey = selectedText + '@' + Math.round(rect.top) + ',' + Math.round(rect.left);
+                if (toolbar && selKey === toolbarSelKey && toolbar.isConnected) return;
+
+                removeToolbar();
+                toolbarSelKey = selKey;
                 const msgsRect = msgs.getBoundingClientRect();
 
                 // v7.19.121: neumorphic style + .swml-sel-neumorphic class shares
