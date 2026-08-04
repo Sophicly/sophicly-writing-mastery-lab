@@ -10082,13 +10082,20 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     /* v7.20.423: hover lifts the SHADOW, not the colour — see the twin above. */
 }
 .swml-canvas-light .swml-scroll-down-btn {
-    background: hsla(0,0%,100%,0.8);
+    /* ⭐ v7.20.424 (Neil, #254): *"in light theme, the translucency doesn't work over text. It needs
+       to be just solid white… because you can actually see the text behind it, which doesn't look
+       great."* Was hsla(0,0%,100%,0.8) — 80% white over a SCROLLING chat, so bubble text read
+       straight through a control that is meant to be an opaque floating object. .423 fixed the dark
+       rung and left this one translucent, so the pair was inconsistent across themes too.
+       An elevated control is OPAQUE in both themes; separation comes from the hairline + shadow. */
+    background: #ffffff;
     color: rgba(0,0,0,0.7);
     border-color: rgba(0,0,0,0.1);
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.06);
 }
 .swml-canvas-light .swml-scroll-down-btn:hover {
-    background: hsla(0,0%,100%,1);
+    /* v7.20.424: hover lifts the SHADOW and holds the material — same rule as the dark twin. The old
+       hover only existed to take the base from 0.8 to 1.0 opacity; the base is now already solid. */
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
@@ -10129,13 +10136,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
        not. */
 }
 .swml-canvas-light .swml-scroll-up-btn {
-    background: hsla(0,0%,100%,0.8);
+    /* v7.20.424 (#254): solid white, matching its twin — see the note on `.swml-scroll-down-btn`.
+       They sit side by side, so both move together or the pair mismatches. */
+    background: #ffffff;
     color: rgba(0,0,0,0.7);
     border-color: rgba(0,0,0,0.1);
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.06);
 }
 .swml-canvas-light .swml-scroll-up-btn:hover {
-    background: hsla(0,0%,100%,1);
+    /* v7.20.424: shadow lifts, material holds — same as the dark twin and as the down button. */
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
