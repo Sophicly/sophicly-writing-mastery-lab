@@ -4317,15 +4317,22 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        rather than a box drawn with a line. Both themes get one, tuned to their own ground: the
        dark ladder needs a deeper, softer fall; light needs barely a breath or it reads as dirt. */
     border-bottom: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.28);
+    /* ⭐ v7.20.427 (Neil, #258): "probably need to get rid of the box shadow at the following" —
+       and he pasted this rule with the box-shadow commented out. So BOTH headers now carry no
+       shadow, which RESTORES the v7.20.402 pairing the other way up: it paired them on having one,
+       .426 broke it by removing only the canvas header's, and this puts them back in step.
+       ⚠️ ACCEPTED CONSEQUENCE, recorded so nobody "fixes" it back: this header and
+       .swml-canvas-chat-messages are BOTH #232427, so with the shadow gone there is nothing at all
+       separating them — the chat reads as one continuous column. That is the minimalism he asked
+       for, twice, on both headers.
+       To restore: `box-shadow: 0 2px 6px rgba(0,0,0,0.28);` here, 0 1px 3px / 0.07 in light. */
     position: relative;
-    z-index: 1;              /* paint the shadow OVER the messages beneath, not under them */
+    z-index: 1;              /* still above the messages for stacking, shadow or no shadow */
     flex-shrink: 0;
     display: flex;
     align-items: center;
 }
-[data-swml-theme="light"] .swml-canvas-chat-header,
-.swml-canvas-light .swml-canvas-chat-header { box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+/* v7.20.427: light's twin removed with it — see the note in .swml-canvas-chat-header above. */
 .swml-clear-chat-btn {
     background: none;
     border: none;
