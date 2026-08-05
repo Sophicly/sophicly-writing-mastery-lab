@@ -9,7 +9,7 @@
 
 ---
 
-#### Task: Map Empathy Across Your Plot Outline (Update 3 of 6)
+#### Task: Map Empathy Across Your Plot Outline (Update 4 of 7)
 
 Your plot outline is loaded automatically with your Step 6 beats, Step 12 goals/needs, and Step 15 archetype annotations. Add the next layer: **empathy**. For each stage, answer these three questions:
 
@@ -101,11 +101,11 @@ Your plot outline is loaded automatically with your Step 6 beats, Step 12 goals/
 #### Data Requirements
 
 **Reads from project:**
-- `plot_outline` — Six-stage plot outline (version 3 from Step 15)
+- `plot_outline` — Six-stage plot outline (version 4 from Step 15)
 - `empathy_techniques` — Chosen techniques from Step 17
 
 **Writes to project:**
-- `plot_outline` — Updated with empathy annotations (version 4)
+- `plot_outline` — Updated with empathy annotations (version 5)
 - `plot_outline_empathy` — Empathy-specific annotations
 
 **Next step:** Step 19 — Draft 4: Empathy (AI protocol).

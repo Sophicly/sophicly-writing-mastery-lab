@@ -750,10 +750,17 @@
             const card = el('div', { className: 'swml-upgrade-card' });
             card.appendChild(el('div', { className: 'swml-upgrade-icon', innerHTML: WML.lockIconSVG(34) })); // v7.19.952: 🔒 → tabler lock (Neil)
             card.appendChild(el('h3', { textContent: 'Upgrade to unlock the Writing Mastery Lab', style: { margin: '12px 0 8px', fontSize: '18px' } }));
-            card.appendChild(el('p', { textContent: 'Get access to AI-powered essay planning, assessment, polishing, model answers, and exam preparation across all exam boards.', style: { fontSize: '13px', opacity: '0.7', lineHeight: '1.5', margin: '0 0 16px' } }));
+            // ⚠️ v7.20.452 — CUSTOMER-FACING COPY. Two rules govern this card and both were broken:
+            // (1) the price ladder is Free · Silver £50 · Gold £140 · Platinum £300 (root CLAUDE.md
+            //     §SERVICE MODEL). Silver was £20 and rose to £50 to cover model costs (Neil,
+            //     2026-08-05) — this card was never updated and was quoting the retired price to
+            //     real students on a paywall.
+            // (2) never say "AI" in customer-facing copy — parents anchor to ChatGPT at £20/month
+            //     and the value collapses. Describe by OUTCOME instead.
+            card.appendChild(el('p', { textContent: 'Get access to guided essay planning, assessment, polishing, model answers, and exam preparation across all exam boards.', style: { fontSize: '13px', opacity: '0.7', lineHeight: '1.5', margin: '0 0 16px' } }));
 
             const features = [
-                { tier: 'Silver', price: '£20/month', desc: 'AI writing tools — practise freely on any text' },
+                { tier: 'Silver', price: '£50/month', desc: 'Full platform access — practise freely on any text' },
                 { tier: 'Gold', price: '£140/month', desc: 'Full mastery programme with structured topics & progress tracking', recommended: true },
             ];
             features.forEach(f => {

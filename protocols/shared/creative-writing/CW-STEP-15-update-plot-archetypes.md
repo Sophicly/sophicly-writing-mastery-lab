@@ -9,7 +9,7 @@
 
 ---
 
-#### Task: Map Archetypes Across Your Plot Outline (Update 2 of 6)
+#### Task: Map Archetypes Across Your Plot Outline (Update 3 of 7)
 
 Your plot outline is loaded automatically with your Step 6 beats and Step 12 goals/needs annotations. Add the next layer: **archetypal traits**. For each stage, answer these four questions:
 
@@ -109,12 +109,12 @@ Your plot outline is loaded automatically with your Step 6 beats and Step 12 goa
 #### Data Requirements
 
 **Reads from project:**
-- `plot_outline` — Six-stage plot outline with goals/needs (version 2 from Step 12)
+- `plot_outline` — Six-stage plot outline with goals/needs (version 3 from Step 12)
 - `archetype_beginning` / `archetype_middle` / `archetype_end` — From Step 14
 - `archetype_physical` — Physical presentation at each stage (from Step 14)
 
 **Writes to project:**
-- `plot_outline` — Updated with archetype annotations (version 3)
+- `plot_outline` — Updated with archetype annotations (version 4)
 - `plot_outline_archetypes` — Archetype-specific annotations
 
 **Next step:** Step 16 — Draft 3: Archetypes (AI protocol).

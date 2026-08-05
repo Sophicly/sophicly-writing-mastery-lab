@@ -31,7 +31,7 @@ Each time, the system loads your existing outline with all previous annotations.
 
 ---
 
-#### Task: Map Goals and Needs Across Your Plot Outline (Update 1 of 6)
+#### Task: Map Goals and Needs Across Your Plot Outline (Update 2 of 7)
 
 Your six-stage plot outline from Step 6 is loaded automatically below, showing all the beats you workshopped. For each stage, add notes about how your protagonist's goals, needs, and stakes are present or developing.
 
@@ -133,7 +133,7 @@ Look at your notes across all six stages:
 - `character_profile` — Goals, needs, stakes, arc type (from Step 11)
 
 **Writes to project:**
-- `plot_outline` — Updated with goals/needs annotations (version 2)
-- `plot_outline_version` — Incremented to 2
+- `plot_outline` — Updated with goals/needs annotations (version 3)
+- `plot_outline_version` — Incremented to 3
 
 **Next step:** Step 13 — Draft 2: Character Arc (AI protocol).

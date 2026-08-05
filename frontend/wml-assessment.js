@@ -5317,7 +5317,10 @@
     const CW_STEP_DEPS = {
         2: ['writer_profile'], 3: ['writer_profile', 'story_ideas', 'chosen_idea'],
         4: ['logline'], 5: ['brief_outline'], 6: ['plot_structure_choice'],
-        8: ['plot_outline'], 9: ['plot_outline', 'scene_selection'],
+        // v7.20.452 renumber: 8 is now Update Plot (Values) and needs the outline it revises,
+        // plus the Step-7 values audit it maps in; 9 is Scene Selection; 10 is Draft 1.
+        8: ['plot_outline', 'universal_values'],
+        9: ['plot_outline'], 10: ['plot_outline', 'scene_selection'],
     };
     function _cwDepLabel(key) { return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
     function _cwDepTag(key) { return '[CONTEXT FROM PREVIOUS STEP] ' + _cwDepLabel(key) + ':'; }
@@ -31243,8 +31246,9 @@
                         5: 'In Step 4, you outlined your story. Now we\u2019ll choose the plot structure.',
                         6: 'In Step 5, you chose your plot structure. Now we\u2019ll build a detailed plot outline.',
                         7: 'In Step 6, you built your plot outline. Now we\u2019ll explore your story\u2019s values.',
-                        8: 'You\u2019ve built your plot outline and explored values. Now choose your scene(s).',
-                        9: 'You\u2019ve chosen your scene(s). Now write your first draft.',
+                        8: 'In Step 7, you audited your story\u2019s values. Now we\u2019ll make sure they actually show up in your plot.',
+                        9: 'Your plot now carries your values. Next, choose your scene(s).',
+                        10: 'You\u2019ve chosen your scene(s). Now write your first draft.',
                     };
                     // v7.20.292: name the chosen structure (shared resolver — see _cwPlotStructureName).
                     // \u2b50 v7.20.351: the await is a PRESENCE check only \u2014 "has a structure been
@@ -34162,8 +34166,9 @@
                                                 5: 'In Step 4, you outlined your story using the Story Spine. Now we\u2019ll choose the archetypal plot structure that best fits your story.',
                                                 6: 'In Step 5, you chose your plot structure. Now we\u2019ll build a detailed, stage-by-stage plot outline \u2014 your master document for the rest of the course.',
                                                 7: 'In Step 6, you built your plot outline. Now we\u2019ll explore the universal human values that will give your story its deeper meaning.',
-                                                8: 'You\u2019ve built your plot outline and explored your story\u2019s values. Now it\u2019s time to choose which scene(s) to bring to life in your first draft.',
-                                                9: 'You\u2019ve chosen your scene(s). Now it\u2019s time to write your first draft \u2014 focusing on basic prose style.',
+                                                8: 'In Step 7, you audited the values your story explores. Now it\u2019s time to make sure they actually appear in your plot \u2014 stage by stage, beat by beat.',
+                                                9: 'You\u2019ve built your plot outline and explored your story\u2019s values. Now it\u2019s time to choose which scene(s) to bring to life in your first draft.',
+                                                10: 'You\u2019ve chosen your scene(s). Now it\u2019s time to write your first draft \u2014 focusing on basic prose style.',
                                             };
                                             // v7.20.292: name the chosen structure (shared resolver — see _cwPlotStructureName).
                                             if (stepNum === 6) {
@@ -43549,10 +43554,10 @@
             return html;
         }
 
-        // ── Step 8: Scene Selection (v7.13.74: full workbook match) ──
-        if (step === 8) {
+        // ── Step 9: Scene Selection (v7.13.74: full workbook match) ──
+        if (step === 9) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 8: Pick the Scene(s) You Want to Focus On</h2>' +
+                '<h2>Step 9: Pick the Scene(s) You Want to Focus On</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> Selecting the Most Dramatically Powerful Moment \u2014 the scene you\u2019ll bring to life first.</p>' +
                 '<p>In the exam, you almost certainly won\u2019t have time to write a complete story from beginning to end. Instead, you have two options: write a short story with a compressed arc, or focus on one or two key scenes that read as a self-contained narrative. Either approach can achieve top marks \u2014 but both require careful planning.</p>' +
                 '<p><strong>Keep these five principles in mind:</strong></p>' +
@@ -43605,10 +43610,10 @@
             return html;
         }
 
-        // ── Step 10: Character Profile Parts 1-3 (v7.13.74: full workbook match) ──
-        if (step === 10) {
+        // ── Step 11: Character Profile Parts 1-3 (v7.13.74: full workbook match) ──
+        if (step === 11) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 10: Create Your Protagonist\u2019s Character Profile \u2014 Parts 1\u20133</h2>' +
+                '<h2>Step 11: Create Your Protagonist\u2019s Character Profile \u2014 Parts 1\u20133</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials continues \u2014 understanding your protagonist\u2019s deeper psychology: GOALS vs. NEEDS.</p>' +
                 '<p>The engine of meaningful storytelling is the <strong>gap between what a character wants and what they need</strong>. A character\u2019s <strong>goal</strong> is external and conscious \u2014 something tangible like a crown, wealth, or adventure. A character\u2019s <strong>need</strong> is internal and usually unconscious \u2014 the thing they genuinely require to become whole but cannot yet see.</p>' +
                 '<p><em>Macbeth</em> chases power, blind to his need for honour and inner peace. <em>Scrooge</em> hoards wealth, unable to recognise his need for human connection. The story\u2019s entire momentum comes from this mismatch.</p>' +
@@ -43644,8 +43649,8 @@
             return html;
         }
 
-        // ── Step 13: Character Archetypes Parts 4-6 (v7.13.74: full workbook match) ──
-        if (step === 13) {
+        // ── Step 14: Character Archetypes Parts 4-6 (v7.13.74: full workbook match) ──
+        if (step === 14) {
             const archetypeRef =
                 '<p><strong>The 10 Core Archetypes:</strong></p>' +
                 '<p><strong>1. The Everyman</strong> \u2014 Relatable, ordinary \u2014 creates empathy</p>' +
@@ -43659,7 +43664,7 @@
                 '<p><strong>9. The Shadow</strong> \u2014 Destructive, frightening \u2014 reflects fears and trauma</p>' +
                 '<p><strong>10. The Hero</strong> \u2014 Courageous, self-sacrificing \u2014 creates admiration and aspiration</p>';
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 13: Character Profile \u2014 Parts 4\u20136 (Archetypes)</h2>' +
+                '<h2>Step 14: Character Profile \u2014 Parts 4\u20136 (Archetypes)</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials deepens \u2014 understanding the MASKS your protagonist wears.</p>' +
                 '<p>Archetypes are universal character patterns recognised across all cultures. Your protagonist will shift between archetypes as they transform \u2014 this shift <em>is</em> the visible evidence of their change.</p>' +
                 archetypeRef
@@ -43688,10 +43693,10 @@
             return html;
         }
 
-        // ── Step 16: Empathy Techniques (v7.13.74: full workbook match) ──
-        if (step === 16) {
+        // ── Step 17: Empathy Techniques (v7.13.74: full workbook match) ──
+        if (step === 17) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 16: Deepen Empathy for Your Protagonist</h2>' +
+                '<h2>Step 17: Deepen Empathy for Your Protagonist</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials continues \u2014 making readers <em>care</em>.</p>' +
                 '<p>According to Carl Iglesias in <em>Writing for Emotional Impact</em>, empathy is <strong>the</strong> most important emotion a writer can generate. Every protagonist, without exception, must produce empathy in the reader. This includes protagonists who are morally reprehensible.</p>' +
                 '<p><strong>Empathy vs Sympathy:</strong> Sympathy means feeling sorry for someone; empathy means feeling <em>with</em> them \u2014 understanding their internal world, their fears, their reasoning, even when we disagree with their choices.</p>' +
@@ -43729,10 +43734,10 @@
             return html;
         }
 
-        // ── Step 19: Theme & Tone (v7.13.74: full workbook match) ──
-        if (step === 19) {
+        // ── Step 20: Theme & Tone (v7.13.74: full workbook match) ──
+        if (step === 20) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 19: Theme and Tone</h2>' +
+                '<h2>Step 20: Theme and Tone</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials nears its end \u2014 your story\u2019s deeper meaning and emotional atmosphere.</p>' +
                 '<p><strong>Theme</strong> = your story\u2019s deeper meaning about life and humanity. Theme emerges from your protagonist\u2019s transformation, NOT from explicit statement. It\u2019s what your story is REALLY about beneath the surface plot.</p>' +
                 '<p><strong>Examples:</strong> <em>Macbeth</em>: \u201cUnchecked ambition corrupts absolutely.\u201d <em>An Inspector Calls</em>: \u201cWe are all responsible for each other.\u201d <em>A Christmas Carol</em>: \u201cGreed isolates; generosity connects.\u201d</p>' +
@@ -43756,10 +43761,10 @@
             return html;
         }
 
-        // ── Step 22: Genre (v7.13.74: full workbook match) ──
-        if (step === 22) {
+        // ── Step 23: Genre (v7.13.74: full workbook match) ──
+        if (step === 23) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 22: Give Your Story Genre(s)</h2>' +
+                '<h2>Step 23: Give Your Story Genre(s)</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Final Trial approaches \u2014 the emotional contract with your reader.</p>' +
                 '<p><strong>Genre = a promise to the reader about what emotional experience they will have.</strong> Genres are types of stories. When we understand how genres work, we can apply their styles to give our stories more depth and meaning. Most sophisticated stories <em>blend</em> genres. Your story can shift genres from beginning to middle to end.</p>'
             );
@@ -43776,10 +43781,10 @@
             return html;
         }
 
-        // ── Step 25: Structural Elements (v7.13.74: full workbook match) ──
-        if (step === 25) {
+        // ── Step 26: Structural Elements (v7.13.74: full workbook match) ──
+        if (step === 26) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 25: Other Key Structural Elements</h2>' +
+                '<h2>Step 26: Other Key Structural Elements</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Final Trial begins \u2014 these advanced structural techniques will elevate your writing to professional level.</p>' +
                 '<p>Study these 11 sophisticated techniques, then plan where and how you will use each one in your scene.</p>'
             );
@@ -43801,15 +43806,20 @@
             return html;
         }
 
-        // ── Plot update steps (11, 14, 17, 20, 23, 26) — v7.15.5: full workbook content ──
-        if ([11, 14, 17, 20, 23, 26].includes(step)) {
+        // ── Plot update steps (8, 12, 15, 18, 21, 24, 27) — v7.15.5: full workbook content ──
+        if ([8, 12, 15, 18, 21, 24, 27].includes(step)) {
             const plotInfo = {
-                11: { layer: 'Goals and Needs', update: '1 of 6', desc: 'Map your protagonist\u2019s goals, needs, and stakes across your complete story. For each stage, identify what goal drives the protagonist and where their unconscious need surfaces.' },
-                14: { layer: 'Archetypes', update: '2 of 6', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
-                17: { layer: 'Empathy', update: '3 of 6', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
-                20: { layer: 'Theme and Tone', update: '4 of 6', desc: 'Map meaning and atmosphere across your complete story. For each stage, identify the dominant tone and how the theme emerges through action and image \u2014 never through explicit statement.' },
-                23: { layer: 'Genre', update: '5 of 6', desc: 'Map genre across your plot outline. For each stage, identify which genre(s) dominate, what conventions appear, and what emotion readers should feel.' },
-                26: { layer: 'Structural Elements', update: '6 of 6 (FINAL)', desc: 'This is the <strong>final update</strong>. Map advanced structural techniques (irony, symbols, senses, pacing, suspense) across your complete story. You now have a <strong>complete 7-layer story architecture</strong> \u2014 a professional-level blueprint.' },
+                // ⭐⭐ v7.20.452 — Neil's new Step 8, the FIRST of what are now SEVEN plot updates
+                // (2026-08-05). Served by this family branch deliberately rather than a bespoke
+                // builder: it is the same job as its six siblings — walk the six stages, add a
+                // layer — and the family shape is the thing to copy, not re-derive.
+                8:  { layer: 'Universal Human Values', update: '1 of 7', desc: 'Map the values and traits you audited in Step 7 across your complete story. For each stage, identify which values are visible and in which beat — a trait can appear in more than one stage, and usually should.' },
+                12: { layer: 'Goals and Needs', update: '2 of 7', desc: 'Map your protagonist\u2019s goals, needs, and stakes across your complete story. For each stage, identify what goal drives the protagonist and where their unconscious need surfaces.' },
+                15: { layer: 'Archetypes', update: '3 of 7', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
+                18: { layer: 'Empathy', update: '4 of 7', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
+                21: { layer: 'Theme and Tone', update: '5 of 7', desc: 'Map meaning and atmosphere across your complete story. For each stage, identify the dominant tone and how the theme emerges through action and image \u2014 never through explicit statement.' },
+                24: { layer: 'Genre', update: '6 of 7', desc: 'Map genre across your plot outline. For each stage, identify which genre(s) dominate, what conventions appear, and what emotion readers should feel.' },
+                27: { layer: 'Structural Elements', update: '7 of 7 (FINAL)', desc: 'This is the <strong>final update</strong>. Map advanced structural techniques (irony, symbols, senses, pacing, suspense) across your complete story. You now have a <strong>complete 8-layer story architecture</strong> \u2014 a professional-level blueprint.' },
             };
             const info = plotInfo[step] || { layer: '', update: '', desc: '' };
             html += sectionHTML('question', 'Update Focus', false, null,
@@ -43819,7 +43829,19 @@
             );
             // Per-step stage questions
             const stagePrompts = {
-                11: {
+                // v7.20.452 — Step 8 (Values). Mirrors CW-STEP-08-update-plot-values.md, which is
+                // itself the family shape with values in place of goals. Deliberately asks WHICH
+                // BEAT, not just which stage: a value the student cannot point to in a beat is not
+                // yet in the story, which is the whole reason this step exists.
+                8: {
+                    I: '<p><strong>Which of your values/traits are visible in this stage, and in which beat?</strong></p><p></p><p><strong>For each one — is it in balance, in excess, or in deficit here?</strong></p><p></p><p><strong>Which beat would show it most clearly to a reader who is told nothing?</strong></p><p></p>',
+                    II: '<p><strong>Which values/traits are visible in this stage, and in which beat?</strong></p><p></p><p><strong>Is each in balance, in excess, or in deficit here?</strong></p><p></p><p><strong>Has anything shifted since Stage I? If so, which beat carries the shift?</strong></p><p></p>',
+                    III: '<p><strong>Which values/traits are visible in this stage, and in which beat?</strong></p><p></p><p><strong>Is each in balance, in excess, or in deficit here?</strong></p><p></p><p><strong>Which trait is being tested hardest here?</strong></p><p></p>',
+                    IV: '<p><strong>Which values/traits are visible in this stage, and in which beat?</strong></p><p></p><p><strong>Is each in balance, in excess, or in deficit here?</strong></p><p></p><p><strong>A trait in excess is as interesting as a trait in deficit — is any trait now overshooting?</strong></p><p></p>',
+                    V: '<p><strong>Which values/traits are visible in this stage, and in which beat?</strong></p><p></p><p><strong>Which trait does the protagonist have to draw on to get through this stage?</strong></p><p></p><p><strong>Which trait fails them here?</strong></p><p></p>',
+                    VI: '<p><strong>Which values/traits are visible in this stage, and in which beat?</strong></p><p></p><p><strong>Do your Step 7 “at the end” answers match what this stage actually shows?</strong></p><p></p><p><strong>If a trait you wanted to add is still missing, which beat could carry it?</strong></p><p></p>',
+                },
+                12: {
                     I: '<p><strong>Which goals (external and internal) are visible in this stage?</strong></p><p></p><p><strong>How is the protagonist\u2019s need (the thing they can\u2019t yet see) hinted at here?</strong></p><p></p><p><strong>What are the stakes in this stage? What could the protagonist lose?</strong></p><p></p>',
                     II: '<p><strong>Which goals are visible in this stage?</strong></p><p></p><p><strong>How is the need hinted at here?</strong></p><p></p><p><strong>What are the stakes?</strong></p><p></p>',
                     III: '<p><strong>Which goals are visible in this stage?</strong></p><p></p><p><strong>How is the need hinted at here?</strong></p><p></p><p><strong>What are the stakes?</strong></p><p></p>',
@@ -43827,7 +43849,7 @@
                     V: '<p><strong>How does the protagonist\u2019s goal clash with their need in this stage?</strong></p><p></p><p><strong>What is the dilemma \u2014 the moment where goal and need collide?</strong></p><p></p><p><strong>What must the protagonist sacrifice?</strong></p><p></p>',
                     VI: '<p><strong>Does the protagonist achieve their external goal, fail, or abandon it?</strong></p><p></p><p><strong>Do they recognise their need?</strong></p><p></p><p><strong>How have the stakes resolved?</strong></p><p></p>',
                 },
-                14: {
+                15: {
                     I: '<p><strong>Which archetype(s) dominate in this stage?</strong></p><p></p><p><strong>Which specific traits are visible? (Physical description, behaviour, dialogue, reactions)</strong></p><p></p><p><strong>How does appearance/behaviour reflect the archetype?</strong></p><p></p><p><strong>What moments show the archetype in action?</strong></p><p></p>',
                     II: '<p><strong>Which archetype(s) dominate?</strong></p><p></p><p><strong>Which traits are visible?</strong></p><p></p><p><strong>How does appearance/behaviour reflect the archetype?</strong></p><p></p><p><strong>What moments show the archetype in action?</strong></p><p></p>',
                     III: '<p><strong>Which archetype(s) dominate?</strong></p><p></p><p><strong>Where does the protagonist start showing traits of a DIFFERENT archetype?</strong></p><p></p><p><strong>Which traits are visible?</strong></p><p></p><p><strong>What moments show the shift?</strong></p><p></p>',
@@ -43835,7 +43857,7 @@
                     V: '<p><strong>Which archetype(s) emerge?</strong></p><p></p><p><strong>How does the new archetype manifest in the climactic moment?</strong></p><p></p><p><strong>Which traits prove the transformation?</strong></p><p></p>',
                     VI: '<p><strong>Which archetype(s) does the protagonist embody at the end?</strong></p><p></p><p><strong>How is this different from Stage I?</strong></p><p></p><p><strong>What final detail proves the archetypal shift is complete?</strong></p><p></p>',
                 },
-                17: {
+                18: {
                     I: '<p><strong>Which empathy-building techniques appear in this stage? (victim, virtue, desirable quality)</strong></p><p></p><p><strong>Where are the key empathy moments?</strong></p><p></p><p><strong>What does the reader feel for the protagonist here?</strong></p><p></p>',
                     II: '<p><strong>Which empathy techniques appear?</strong></p><p></p><p><strong>Key empathy moments?</strong></p><p></p><p><strong>What does the reader feel?</strong></p><p></p>',
                     III: '<p><strong>Which empathy techniques appear?</strong></p><p></p><p><strong>Key empathy moments?</strong></p><p></p><p><strong>Does empathy intensify here? How?</strong></p><p></p>',
@@ -43843,7 +43865,7 @@
                     V: '<p><strong>Which empathy techniques appear?</strong></p><p></p><p><strong>How does the protagonist\u2019s courage (compulsory) manifest at the climax?</strong></p><p></p><p><strong>How does the reader feel about the protagonist\u2019s sacrifice?</strong></p><p></p>',
                     VI: '<p><strong>Which empathy techniques appear at the resolution?</strong></p><p></p><p><strong>How does the reader feel about the protagonist at the end?</strong></p><p></p><p><strong>Has the reader\u2019s relationship with the protagonist changed from Stage I?</strong></p><p></p>',
                 },
-                20: {
+                21: {
                     I: '<p><strong>What is the tone (mood/atmosphere) in this stage?</strong></p><p></p><p><strong>How does the theme begin to emerge? (Remember: show, never state)</strong></p><p></p><p><strong>What words/images reinforce both theme and tone?</strong></p><p></p>',
                     II: '<p><strong>What is the tone?</strong></p><p></p><p><strong>How does the theme develop?</strong></p><p></p><p><strong>Words/images?</strong></p><p></p>',
                     III: '<p><strong>Tone? (Does it shift from Stages I\u2013II?)</strong></p><p></p><p><strong>How is the theme tested or complicated here?</strong></p><p></p><p><strong>Words/images?</strong></p><p></p>',
@@ -43851,7 +43873,7 @@
                     V: '<p><strong>Tone? (Does it shift at the climax?)</strong></p><p></p><p><strong>How is the theme proven through the protagonist\u2019s climactic choice?</strong></p><p></p><p><strong>Words/images?</strong></p><p></p>',
                     VI: '<p><strong>Tone? (Final emotional atmosphere)</strong></p><p></p><p><strong>How does the theme crystallise in the resolution \u2014 through action/image, not statement?</strong></p><p></p><p><strong>What final image carries the thematic weight?</strong></p><p></p>',
                 },
-                23: {
+                24: {
                     I: '<p><strong>Which genre(s) dominate in this stage?</strong></p><p></p><p><strong>What genre conventions/tropes appear?</strong></p><p></p><p><strong>What is the dominant emotion readers should feel?</strong></p><p></p><p><strong>How do genre elements reinforce character transformation?</strong></p><p></p>',
                     II: '<p><strong>Genre(s)?</strong></p><p></p><p><strong>Conventions?</strong></p><p></p><p><strong>Dominant emotion?</strong></p><p></p><p><strong>How do they reinforce transformation?</strong></p><p></p>',
                     III: '<p><strong>Genre(s)? (Does the genre shift or blend here?)</strong></p><p></p><p><strong>Conventions?</strong></p><p></p><p><strong>Dominant emotion?</strong></p><p></p><p><strong>How do they reinforce transformation?</strong></p><p></p>',
@@ -43859,7 +43881,7 @@
                     V: '<p><strong>Genre(s)?</strong></p><p></p><p><strong>Conventions? (The final battle, the revelation, the escape)</strong></p><p></p><p><strong>Dominant emotion?</strong></p><p></p><p><strong>How do they reinforce transformation?</strong></p><p></p>',
                     VI: '<p><strong>Genre(s)? (Does the genre shift in the resolution?)</strong></p><p></p><p><strong>Conventions?</strong></p><p></p><p><strong>Final emotional note?</strong></p><p></p><p><strong>How do they reinforce the completed transformation?</strong></p><p></p>',
                 },
-                26: {
+                27: {
                     I: '<p><strong>Where do irony and duality appear?</strong></p><p></p><p><strong>What symbols are introduced (or should be)?</strong></p><p></p><p><strong>Which senses are emphasised?</strong></p><p></p><p><strong>How does pacing work in this stage? (Fast/slow/varied)</strong></p><p></p><p><strong>Where are the key suspense points?</strong></p><p></p>',
                     II: '<p><strong>Irony and duality?</strong></p><p></p><p><strong>Symbols?</strong></p><p></p><p><strong>Senses?</strong></p><p></p><p><strong>Pacing?</strong></p><p></p><p><strong>Suspense?</strong></p><p></p>',
                     III: '<p><strong>Irony and duality?</strong></p><p></p><p><strong>Symbols? (Do they develop from Stage I?)</strong></p><p></p><p><strong>Senses?</strong></p><p></p><p><strong>Pacing? (Should be building)</strong></p><p></p><p><strong>Suspense? (Mounting tension)</strong></p><p></p>',
@@ -43877,8 +43899,8 @@
                     `<h3>${stageLabels[s]}</h3>` + (prompts[s] || '<p></p>')
                 );
             });
-            // Coherence check (all except Step 26 which has celebration)
-            if (step === 26) {
+            // Coherence check (all except Step 27 which has celebration)
+            if (step === 27) {
                 html += dividerHTML('CONGRATULATIONS');
                 html += sectionHTML('question', 'Completion', false, null,
                     '<h3>Your Story Architecture is Complete</h3>' +
@@ -43895,10 +43917,10 @@
             return html;
         }
 
-        // ── Step 28: Final Draft ──
-        if (step === 28) {
+        // ── Step 29: Final Draft ──
+        if (step === 29) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 28: Final Draft (SPAG Polish)</h2>' +
+                '<h2>Step 29: Final Draft (SPAG Polish)</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Return with the Elixir \u2014 perfecting form.</p>' +
                 '<p>You\u2019ve built this scene through seven progressive drafts, adding layer after layer of craft. Now we\u2019re going to make sure every word is exactly right. This step is <strong>SPAG</strong> \u2014 Spelling, Punctuation, and Grammar. No more creative changes. This is about polish and precision.</p>' +
                 '<p>Read your work aloud \u2014 if a sentence sounds awkward, rewrite it. Check every comma, every full stop, every apostrophe.</p>'
@@ -43908,10 +43930,10 @@
             return html;
         }
 
-        // ── Step 29: Metacognitive Reflection ──
-        if (step === 29) {
+        // ── Step 30: Metacognitive Reflection ──
+        if (step === 30) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 29: Metacognitive Reflection</h2>' +
+                '<h2>Step 30: Metacognitive Reflection</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Return with the Elixir \u2014 understanding your transformation.</p>' +
                 '<p>The Hero\u2019s Journey concludes. You must now reflect \u2014 understanding <em>how</em> you\u2019ve been transformed. Write a short reflection (150\u2013250 words) comparing your understanding at the beginning to now.</p>' +
                 '<p>Which concept grew most? Which skill improved most dramatically? How will understanding story <em>creation</em> help you <em>analyse</em> literature? Congratulations \u2014 you\u2019ve completed the journey and returned transformed.</p>'

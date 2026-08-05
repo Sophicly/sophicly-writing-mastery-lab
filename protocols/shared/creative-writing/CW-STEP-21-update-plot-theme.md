@@ -9,7 +9,7 @@
 
 ---
 
-#### Task: Map Theme and Tone Across Your Plot Outline (Update 4 of 6)
+#### Task: Map Theme and Tone Across Your Plot Outline (Update 5 of 7)
 
 Your plot outline is loaded automatically with all previous annotations (beats, goals/needs, archetypes, empathy). Add the next layer: **theme and tone**. For each stage, answer these three questions:
 
@@ -101,13 +101,13 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 #### Data Requirements
 
 **Reads from project:**
-- `plot_outline` — Six-stage plot outline (version 4 from Step 18)
+- `plot_outline` — Six-stage plot outline (version 5 from Step 18)
 - `theme` — Story's theme (from Step 20)
 - `tone_choices` — Tone per stage (from Step 20)
 - `universal_human_values` — Values explored (from Step 7)
 
 **Writes to project:**
-- `plot_outline` — Updated with theme/tone annotations (version 5)
+- `plot_outline` — Updated with theme/tone annotations (version 6)
 - `plot_outline_theme_tone` — Theme/tone-specific annotations
 
 **Next step:** Step 22 — Draft 5: Theme & Tone (AI protocol).

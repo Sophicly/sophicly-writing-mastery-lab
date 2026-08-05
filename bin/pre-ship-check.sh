@@ -376,6 +376,14 @@ fi
 # the frontend is three files and the trace is cheap, so it runs on every invocation.
 node bin/fossil-lint.js || fail=1
 
+# The CW course numbering must agree with ITSELF across six independent number-keyed surfaces.
+# v7.20.452 scar: a new Step 8 renumbered the course 8..29 -> 9..30. The handoff said one file;
+# it was six, and the hand sweep STILL missed the document builder (it greps as `step === N`,
+# not `cwStepDef.step`), so staging rendered the Scene Selection document under the heading
+# "Update Plot: Values" with no error anywhere. Cross-surface agreement is falsifiable; a human
+# diffing two lists is not. Whole-repo and instant. (v7.20.452)
+node bin/cw-step-coherence-lint.js || fail=1
+
 # CSS has NO fatal errors — a parse failure is recovered by discarding tokens until something looks
 # like a rule again, so a broken stylesheet renders as a subtly (or wildly) wrong page rather than
 # an error anyone sees. `node --check`/`php -l` were the only syntax gates here and both are blind

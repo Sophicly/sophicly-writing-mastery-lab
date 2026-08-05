@@ -9,7 +9,7 @@
 
 ---
 
-#### Task: Map Genre Across Your Plot Outline (Update 5 of 6)
+#### Task: Map Genre Across Your Plot Outline (Update 6 of 7)
 
 Your plot outline is loaded automatically with all previous annotations (beats, goals/needs, archetypes, empathy, theme/tone). Add the next layer: **genre**. For each stage, answer these four questions:
 
@@ -113,12 +113,12 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 #### Data Requirements
 
 **Reads from project:**
-- `plot_outline` — Six-stage plot outline (version 5 from Step 21)
+- `plot_outline` — Six-stage plot outline (version 6 from Step 21)
 - `genre_choices` — Primary and secondary genres (from Step 23)
 - `genre_conventions` — Specific conventions (from Step 23)
 
 **Writes to project:**
-- `plot_outline` — Updated with genre annotations (version 6)
+- `plot_outline` — Updated with genre annotations (version 7)
 - `plot_outline_genre` — Genre-specific annotations
 
 **Next step:** Step 25 — Draft 6: Genre (AI protocol).

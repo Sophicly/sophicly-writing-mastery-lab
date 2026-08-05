@@ -9,7 +9,7 @@
 
 ---
 
-#### Task: Map Structural Elements Across Your Plot Outline (Update 6 of 6 — FINAL)
+#### Task: Map Structural Elements Across Your Plot Outline (Update 7 of 7 — FINAL)
 
 Your plot outline is loaded automatically with ALL previous annotations (beats, goals/needs, archetypes, empathy, theme/tone, genre). This is the **final update** — add the last layer: **structural elements**. For each stage, answer these five questions:
 
@@ -131,11 +131,11 @@ This is a professional-level story blueprint. Everything from here is execution.
 #### Data Requirements
 
 **Reads from project:**
-- `plot_outline` — Six-stage plot outline (version 6 from Step 24)
+- `plot_outline` — Six-stage plot outline (version 7 from Step 24)
 - `structural_elements_plan` — Chosen techniques (from Step 26)
 
 **Writes to project:**
-- `plot_outline` — FINAL version with all annotations (version 7)
+- `plot_outline` — FINAL version with all annotations (version 8)
 - `plot_outline_structural` — Structural element annotations
 
 **Next step:** Step 28 — Draft 7: Structural Elements (AI protocol).
