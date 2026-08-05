@@ -1392,15 +1392,25 @@ body.swml-fullscreen-active { overflow: hidden !important; }
    a swap writes to FOUR elements in sequence and WML's CSS keys off several of them, so there is a
    brief MIXED state — and every transition on the page politely animates its way through it.
    Killing transitions for the swap makes it instant, which is what a theme change should be.
-   ⚠️ `animation` is included deliberately: swml-reply-pop re-fires on the selection toolbar during
-   a swap and was part of what Neil was seeing.
+   ⛔⛔ v7.20.432 — `animation: none` REMOVED, because it was CAUSING the very blink it was added to
+   stop. Neil, after .431: *"it's still blinking… whether in the Sophia chat or in the main canvas
+   document."* Both surfaces, which ruled out the per-toolbar rebuild theory (#267) and pointed at
+   the one thing they share: `.swml-selection-toolbar` carries `animation: swml-reply-pop`, whose
+   first keyframe is `opacity: 0`.
+   THE MECHANISM: suppressing an animation and then RESTORING it does not resume it — the browser
+   treats the restored `animation` property as a NEW animation and runs it from 0%. So this rule
+   added `animation: none` for two frames, removed it, and the toolbar replayed its ENTRANCE — fade
+   from transparent, scale from 0.9. Blink out, blink in, on every toggle, on both toolbars.
+   A finite entrance animation does not need suppressing during a theme swap: it has long since
+   finished, and it holds no theme-dependent value. Only `transition` does.
+   LESSON, because it is general: `transition: none` is SAFE to toggle (there is nothing to restart
+   — it only governs future changes). `animation: none` is NOT — toggling it re-triggers.
    ⚠️ !important is load-bearing here — the rules being suppressed are themselves highly specific
    (.swml-sel-neumorphic .swml-sel-btn:hover and friends), so nothing weaker would win. */
 body.swml-theme-switching *,
 body.swml-theme-switching *::before,
 body.swml-theme-switching *::after {
     transition: none !important;
-    animation: none !important;
 }
 
 /* ── Canvas Selection Toolbar — Neumorphic Buttons ── */
@@ -1462,8 +1472,11 @@ body.swml-theme-switching *::after {
    toolbar mounts — it is appended to the messages list, not to a WML root. */
 .swml-canvas-light .swml-selection-toolbar,
 [data-swml-theme="light"] .swml-selection-toolbar {
+    /* v7.20.432 (#269): matched to the dark side's shadow/hairline pair so the two themes are the
+       same object under different light. Already #ffffff, which is what Neil noticed light gets
+       right — it matches the Dynamic Island and the scroll buttons there. */
     background: #ffffff;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.07);
+    box-shadow: 0 8px 24px rgba(44,0,62,0.16), 0 0 0 1px rgba(20,18,30,0.08);
 }
 /* v7.20.430 (#266): light is now the SAME design, inverted — not a white repaint of the morphic
    style. The .428 version gave light buttons their own bevel and a saturated purple hover, which

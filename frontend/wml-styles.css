@@ -649,8 +649,22 @@ body.swml-page {
     /* v7.20.397 (Neil): was rgba(20,20,40,0.95) — the same off-ladder blue-black as the zoom pill and
        the scroll buttons, and translucent, so it changed colour depending on the text under it.
        RECESSED tier, solid: Neil asked for the contextual toolbar to read predominantly dark. */
-    background: #1b1c1f; border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(81,218,207,0.25);
+    /* ⭐ v7.20.432 (Neil, #269) — TWO CHANGES, one question answered.
+       (a) THE STROKE. *"the strokes around the outside"* — it was `0 0 0 1px rgba(81,218,207,0.25)`,
+       a TEAL ring at 25%. A coloured outline is a decoration, and it was the last piece of the
+       morphic era left on this element after .430 stripped the buttons. Now a neutral hairline that
+       reads as an EDGE, not a highlight.
+       (b) THE SURFACE. *"in dark theme it's jet black… in light theme it actually matches the
+       Dynamic Island and even the scroll-to-top button. Should the colour be slightly different or
+       not?"* — he spotted a real inconsistency and the ladder answers it: this toolbar FLOATS above
+       the document, exactly like the Island and the scroll buttons, so it belongs on the SAME rung
+       as them. It was on `#1b1c1f` — the RECESSED rung, i.e. painted as a HOLE while behaving as a
+       floating object. That is the identical defect fixed on the scroll buttons at v7.20.423.
+       Now `#333437`, the raised rung (v7.20.428), so all four floating controls share one material
+       in dark — which is what already happens in light, where they are all `#ffffff`. His
+       observation was that light was consistent and dark was not; it now matches in both. */
+    background: #333437; border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);
     /* v7.20.428: backdrop-filter DROPPED. It is a no-op — the background went SOLID at v7.20.397
        and there is nothing left to see through — and it is the documented landmine: backdrop-filter
        on a `border-radius` element renders SQUARE when a transform is in play, and this element
