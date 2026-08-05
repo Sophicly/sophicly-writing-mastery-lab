@@ -37641,20 +37641,40 @@
 
             document.addEventListener('mousedown', (e) => {
                 _selDragging = true;
-                /* ⭐ v7.20.434 (#267) — READ THIS BEFORE ASSUMING .433 COVERED THIS SURFACE.
-                   .433 deferred the click-away dismissal in TWO places (wml-app.js:3580 and
-                   wml-assessment.js:15237) and the FIXLIST records that as "BOTH copies". It is
-                   not. This — the canvas DOCUMENT toolbar's dismissal — was never touched, and it
-                   is still the ORIGINAL undeferred form: any mousedown outside the toolbar
-                   destroys it, and the mouseup handler immediately below reschedules a rebuild.
-                   That is precisely the destroy→rebuild pair .433 was written to stop.
-                   ⛔ NOT FIXED HERE ON PURPOSE. §19: measure first. If the dump shows this line
-                   firing on a theme toggle, the fix is the .433 shape applied here; if it does
-                   not fire, the theory is dead on this surface too and the STYLE-CHANGE probe
-                   holds the answer. Do not pre-empt the measurement. */
-                if (canvasSelToolbar && !canvasSelToolbar.contains(e.target)) {
-                    removeCanvasSelToolbar('document mousedown click-away (onThemeToggle=' + !!e.target?.closest?.('.theme-toggle') + ')');
-                }
+                /* ⭐⭐ v7.20.435 (#267) — THE BLINK, AND THIS TIME IT IS MEASURED.
+                   THE EVIDENCE, and it is a controlled comparison rather than a fifth theory.
+                   .433 deferred this same click-away in wml-app.js (the CHAT toolbar) and did NOT
+                   reach here. Neil on .434: *"when I highlight a word in the chat and change
+                   themes, the toolbox doesn't blink, but it still blinks in the Canvas document."*
+                   One surface patched → fixed. The other unpatched → still broken. Same symptom,
+                   same shape, the only difference being this fix. That is an A/B with a control,
+                   which is what the previous four attempts never had (§19).
+                   THE MECHANISM, traced end to end on THIS surface: the theme toggle sits in the
+                   SPL header, outside the toolbar, so this handler destroyed it on mousedown
+                   (blink OUT) — and the `mouseup` listener directly below then calls
+                   scheduleCanvasSelToolbar(), which finds the selection perfectly intact and
+                   builds an identical toolbar 10ms later, replaying `swml-reply-pop`
+                   (opacity 0→1, scale .9→1) on the new node (blink IN). Two handlers, one click.
+                   ⭐ Checked, not assumed, before porting: the OTHER teardown on this surface —
+                   the PM-state bail (`tFrom === tTo`) — cannot be the cause here, because its
+                   driver is `selectionchange`, and clicking the toggle does not change the DOM
+                   selection at all (proved by the chat now surviving the same click). So the
+                   rebuild can only be arriving from `mouseup`, which is exactly what this fixes.
+                   THE FIX (identical to wml-app.js:3580): a click-away only DISMISSES if it
+                   actually took the selection away. Defer one frame and re-check; if the
+                   selection survived, the toolbar was never stale, so leave it mounted. Clicking
+                   into the document or onto empty space still collapses the selection and still
+                   dismisses — the behaviour this handler exists for is untouched. */
+                if (!canvasSelToolbar || canvasSelToolbar.contains(e.target)) return;
+                const _onToggle = !!e.target?.closest?.('.theme-toggle');
+                requestAnimationFrame(() => {
+                    const s = window.getSelection();
+                    if (!s || s.isCollapsed || !s.toString().trim()) {
+                        removeCanvasSelToolbar('document mousedown click-away, selection GONE (onThemeToggle=' + _onToggle + ')');
+                    } else {
+                        window.__swmlSelDiagLog?.('dismiss-declined', 'assessment.js:mousedown (DOC)', 'selection survived the click-away (onThemeToggle=' + _onToggle + ')');
+                    }
+                });
             });
             // Drag finished — release the latch and show the toolbar for the new selection.
             document.addEventListener('mouseup', () => {
