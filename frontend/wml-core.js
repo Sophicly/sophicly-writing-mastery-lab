@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.443';
+var WML_BUILD = '7.20.444';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -3974,6 +3974,54 @@ window.WML = (function() {
         tech_Cy: { kind: 'filled', vb: '0 0 26 26', src: 'technique-cyclical-structure.svg', body: '<path d="M 13.15625 0.03125 C 12.058594 0.0195313 10.925781 0.167969 9.84375 0.4375 C 9.308594 0.574219 8.988281 1.121094 9.125 1.65625 C 9.261719 2.191406 9.808594 2.511719 10.34375 2.375 C 13.773438 1.519531 17.394531 2.371094 20.1875 4.8125 L 18 7 L 24 7 L 24 1 L 21.625 3.375 C 19.207031 1.226563 16.203125 0.0664063 13.15625 0.03125 Z M 1 2 L 3.3125 4.3125 C 0.339844 7.632813 -0.589844 12.148438 0.4375 16.25 C 0.574219 16.785156 1.121094 17.105469 1.65625 16.96875 C 2.191406 16.832031 2.511719 16.285156 2.375 15.75 C 1.511719 12.300781 2.28125 8.546875 4.71875 5.75 L 7 8 L 7 2 Z M 24.4375 8.875 C 24.148438 8.917969 23.894531 9.082031 23.738281 9.328125 C 23.582031 9.574219 23.539063 9.878906 23.625 10.15625 C 24.496094 13.632813 23.707031 17.417969 21.21875 20.21875 L 19 18 L 19 24 L 25 24 L 22.625 21.625 C 25.644531 18.300781 26.59375 13.785156 25.5625 9.65625 C 25.457031 9.179688 25.019531 8.847656 24.53125 8.875 C 24.5 8.875 24.46875 8.875 24.4375 8.875 Z M 2 19 L 2 25 L 4.3125 22.6875 C 7.632813 25.660156 12.148438 26.589844 16.25 25.5625 C 16.785156 25.425781 17.105469 24.878906 16.96875 24.34375 C 16.832031 23.808594 16.285156 23.488281 15.75 23.625 C 12.300781 24.488281 8.546875 23.71875 5.75 21.28125 L 8 19 Z"/>' },
         tech_Sy: { kind: 'filled', vb: '0 0 32 32', src: 'technique-symbolism.svg', body: '<g id="swan"><path d="M30,10a6.16,6.16,0,0,0-4.8-6,6.09,6.09,0,0,0-6,2.38,1,1,0,0,0,1.6,1.2A3.94,3.94,0,0,1,28,9.49l-1.57,1-.5-1a1,1,0,0,0-1.34-.44l-.86.43a2.46,2.46,0,0,0-1.23,3c.2.58.39,1.18.59,1.78.49,1.55,1,3.14,1.39,4.72a6.3,6.3,0,0,1-.75,3.84,1,1,0,0,0,.4,1.36,1,1,0,0,0,1.36-.41,8,8,0,0,0,.92-5.32c-.44-1.6-.91-3.22-1.42-4.79-.19-.62-.39-1.22-.59-1.82a.46.46,0,0,1,.19-.54l.51,1,1,3.89a1,1,0,0,0,.55.67,1,1,0,0,0,.87,0l.67-.33a3.39,3.39,0,0,0,1.88-3V10h0Zm-2.36,4.47-.5-2,.86-.57v1.64A1.38,1.38,0,0,1,27.64,14.45Z"/><path d="M26,26H13.87a10.75,10.75,0,0,1-6.3-1.82,10.61,10.61,0,0,1-3.37-4l.67-.66a10.48,10.48,0,0,0,2.49,2.29A10,10,0,0,0,9.69,23a10.19,10.19,0,0,0,3.15.51,11.15,11.15,0,0,0,5.69-1.61,1,1,0,0,0-1.06-1.7,8.76,8.76,0,0,1-7.16.9,8.38,8.38,0,0,1-1.86-.89,9.15,9.15,0,0,1-3.22-3.78c.21-.13.41-.26.62-.37A14.81,14.81,0,0,1,7.3,15.3,16.47,16.47,0,0,1,10,14.7a16.22,16.22,0,0,1,7.13.58,15.69,15.69,0,0,1,3.38,1.57,1,1,0,0,0,1.3-.21,1,1,0,0,0,0-1.3A6.93,6.93,0,0,1,20,11,1,1,0,0,0,18,11a8.67,8.67,0,0,0,.48,2.62l-.78-.27a18.17,18.17,0,0,0-8-.67,19.42,19.42,0,0,0-3,.71,16.76,16.76,0,0,0-1.76.84,16.15,16.15,0,0,0-1.45.93,1,1,0,0,0-.37,1.13,10.65,10.65,0,0,0,.69,1.53L2.29,19.29a1,1,0,0,0-.21,1.1,12.57,12.57,0,0,0,4.35,5.43,2.82,2.82,0,0,0,.29.18H4a1,1,0,0,0,0,2H26a1,1,0,0,0,0-2Z"/></g>' },
         profile: { kind: 'line', src: 'tabler-user-circle.svg', body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" />' },
+        // ⭐ v7.20.444 (#282, Neil): the ANIMATED Writer's-Profile glyph — `profile` above, rebuilt so
+        // the reference micro-interaction can play on it. Ported from
+        // `reference/animated-icons/Animated Profile Icon.html` (the CodePen dump Neil supplied),
+        // `svg.user` at line 1036. The animation itself is CSS and lives in wml-canvas.css; this row
+        // only supplies the four hooks it drives.
+        //
+        // ⚠️ A SEPARATE ROW ON PURPOSE. `profile` is also rendered by the Writer's Profile PANEL
+        // HEADER at 12px (wml-assessment.js ~26647), where an eye that is 0.6 units across is mush.
+        // Mutating the shared glyph would have changed that surface silently, so the rail gets its
+        // own entry and `profile` is untouched.
+        //
+        // ⭐ WHY THE HEAD IS NOW FILLED WITH TWO HOLES, when the reference has a face and we do not.
+        // The reference's "blink" is NOT a bar appearing — it is the EYES being covered for ~60ms by
+        // a rect that shares the silhouette's fill. Our tabler head is a hollow outline circle with
+        // no eyes, so there was literally nothing to blink: measured at the real 20px on a retina
+        // render, an eye-bar or a head-flash bolted onto the outline glyph read as a glitch, not a
+        // blink. Filling the head and cutting the eyes as HOLES reproduces the reference's own
+        // mechanic, keeps the tabler line weight for the ring and shoulders, and the blink is
+        // legible at rail size. At rest the eyes are SHUT, so the glyph reads as today's avatar;
+        // they open on hover. That is the reference's rest state too.
+        //
+        // ⭐⭐ AND WHY THERE IS NO EYE-BAR RECT, unlike the reference. Porting its rect verbatim
+        // produced a defect the reference cannot have: our icon paints in a SEMI-TRANSPARENT
+        // currentColor (rgba(255,255,255,.55) at rest), so a bar overlapping the head composited
+        // two 0.55 fills into ~0.8 and rendered as a visible lighter BAND across the face at rest —
+        // observed in a retina render, not theorised. The reference's fills are fully opaque, so it
+        // never meets this. The fix removes the overlap rather than papering over it: the eyes are
+        // subpaths of the head, wound the same way as the disc, so `fill-rule` alone decides whether
+        // they CUT (evenodd → eyes open) or MERGE (nonzero → eyes shut). One path, one fill, no
+        // compositing, and it is correct at any colour or alpha. The blink therefore animates
+        // `fill-rule` — see wml-canvas.css for the stop-for-stop mapping.
+        // NOTE: no `fill-rule` attribute here on purpose — the CSS owns it, so the resting value
+        // cannot disagree with the animated one.
+        profileAnimated: {
+            kind: 'line', src: 'tabler-user-circle.svg + Animated Profile Icon.html (svg.user)',
+            body: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/>'
+                // The static ring — the reference's `circle.solid`. Dims on hover so the drawn ring reads.
+                + '<path class="swml-wp-ring" d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />'
+                // The ring that DRAWS — the reference's `circle.animation`. `pathLength="200"` lets the
+                // reference's literal dash values (1,200 → 200,0 with offset 2) apply verbatim to a
+                // r=9 circle whose real circumference is 56.5. If an engine ignored pathLength the
+                // dasharray still resolves to "hidden → fully drawn", so it degrades to a plain draw.
+                + '<path class="swml-wp-ring-draw" pathLength="200" d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />'
+                // Head + eye holes. r 2.85 rather than the outline glyph's 3 so the filled disc carries
+                // the same optical weight as the hollow one it replaces.
+                + '<path class="swml-wp-head" d="M12 10m-2.85 0a2.85 2.85 0 1 0 5.7 0a2.85 2.85 0 1 0 -5.7 0 M10.9 9.45m-.6 0a.6 .6 0 1 0 1.2 0a.6 .6 0 1 0 -1.2 0 M13.1 9.45m-.6 0a.6 .6 0 1 0 1.2 0a.6 .6 0 1 0 -1.2 0" />'
+                + '<path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" />'
+        },
         // v7.20.404 (Neil, #177 — Imagery.svg). ZERO forced changes: the export is a STROKE drawing
         // on the 24 grid with `stroke="currentColor"`, width 2, round caps and joins — i.e. exactly
         // what the `line` wrapper already emits, so it inherits as drawn. Keyed on the TABLE SYMBOL

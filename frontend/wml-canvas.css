@@ -2929,6 +2929,125 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     .swml-outline-btn:hover { transform: none; }
 }
 
+/* ══ v7.20.444 (#282): THE WRITER'S-PROFILE ICON ANIMATES ON HOVER ══════════════
+   Neil: "for the writer's profile, what if we were to have that same animation, but on hover
+   rather than just click… You can still have the background animation that's currently on the
+   writer's profile button." So this is ADDITIVE — the flood, the hue clone and the swell above
+   are untouched; the glyph gains a life of its own on top of them.
+
+   SOURCE: `reference/animated-icons/Animated Profile Icon.html`, `svg.user` (line 1036) — the
+   CodePen dump Neil supplied. Seven rules + one keyframe, all ported. The reference triggers on
+   `.toggle` (a jQuery click); ours triggers on `:hover`. That swap is the change Neil named, and
+   it is the whole mechanical difference.
+
+   ⭐ THE TWO FORCED DEVIATIONS, both disclosed rather than assumed (root CLAUDE.md §13):
+   1. PALETTE. The pen colours the active state with its own `--primary-color` (#121f4E) against
+      `--state-inactive` (#DDD). We cannot: by the time the animation plays, this chip is being
+      flooded gold by `.swml-outline-btn::before` and the icon is already being swapped to the
+      derived ink by the `.swml-rail-hue` clone. A second palette here would fight both. So the
+      glyph animates in `currentColor` and the ring-draw is made legible by DIMMING the static
+      ring instead — same read (a ring drawing itself round), no new colour, and it works
+      identically on the base layer (white on the dark chip) and on the clone (dark ink on the
+      flood) without either being special-cased.
+   2. GEOMETRY. The reference is a 64-grid glyph with a drawn face; ours is the 24-grid tabler
+      user-circle. Ratios ported, absolute numbers re-derived — see the `profileAnimated` row in
+      wml-core.js for why the head is filled and the eyes are holes.
+
+   ⭐ SCOPED `> svg`, WHICH DELIBERATELY HITS BOTH LAYERS. The hue clone is a `cloneNode(true)` of
+   the base icon (wml-assessment.js ~26107), so it carries these same inner classes. Both layers
+   therefore animate, from the same instant, with the same timings — which is REQUIRED, not
+   incidental: the flood sweeps across the icon, so a ring drawn on only one layer would be cut in
+   half by the sweep line.
+
+   ⚠️ Confined to `.swml-wp-trigger`. The other eight rail buttons are untouched — Neil asked for
+   this one, so it is built here alone where he can judge it in isolation. */
+.swml-wp-trigger > svg .swml-wp-ring {
+    /* Reference: `svg.user circle.solid { stroke: var(--state-inactive) }` — the always-there ring. */
+    transition: opacity 400ms linear 0ms;
+}
+.swml-wp-trigger:hover > svg .swml-wp-ring,
+.swml-wp-trigger:focus-visible > svg .swml-wp-ring {
+    opacity: 0.4;   /* deviation (1) above: the dim is what makes the draw visible without a 2nd colour */
+}
+.swml-wp-trigger > svg .swml-wp-ring-draw {
+    /* Reference, verbatim: transition + dasharray 1,200 + dashoffset 2.
+       `stroke-linecap: butt` is REQUIRED and is not in the reference because the reference never
+       needed it — its circles inherit no linecap, ours inherit `round` from the tabler icon wrap.
+       Measured: with round caps the 0.28-unit rest dash renders as a 2-unit blob sitting on the
+       ring, which reads as a defect on a button nobody is even hovering. */
+    stroke-linecap: butt;
+    transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+    stroke-dasharray: 1,200;
+    stroke-dashoffset: 2;
+}
+.swml-wp-trigger:hover > svg .swml-wp-ring-draw,
+.swml-wp-trigger:focus-visible > svg .swml-wp-ring-draw {
+    /* Reference: `svg.toggle.user circle.animation`. */
+    stroke-dasharray: 200,0;
+    stroke-dashoffset: 0;
+}
+.swml-wp-trigger > svg .swml-wp-head {
+    /* Reference: `svg.user rect, svg.user path { transition: fill 400ms linear 0ms; fill: … }`.
+       Ours fills with currentColor so the existing per-layer colouring keeps working. */
+    fill: currentColor;
+    stroke: none;
+    transition: fill 400ms linear 0ms;
+    /* REST = eyes SHUT (the reference's resting state, where the bar covers them). `nonzero` unions
+       the eye subpaths into the disc because they are wound the same way as it. */
+    fill-rule: nonzero;
+}
+/* THE BLINK. Reference: `svg.toggle.user rect { animation: blink 6s ease-in-out infinite }`.
+   ⭐ It is a DOUBLE blink — one flash at 31%, then a flicker at 71% and 73%. Those percentages are
+   the character of the thing and are ported to the digit.
+   ⭐ THE ONE MECHANICAL DEVIATION, and it exists because a verbatim port rendered a DEFECT here.
+   The reference blinks by fading an eye-BAR over an opaque silhouette. Our icon paints in a
+   semi-transparent currentColor, so that bar composited with the head underneath it (0.55 over
+   0.55 ≈ 0.8) and drew a visible lighter band across the face AT REST — observed in a retina
+   render of the real CSS, not predicted. Removing the overlap is the root fix: the eyes are
+   subpaths of the head wound the same way as the disc, so `fill-rule` alone decides whether they
+   CUT (evenodd → open) or MERGE (nonzero → shut). One path, one fill, no compositing, correct at
+   any colour or alpha — and the STOPS are the reference's, unchanged.
+   ⚠️ `fill-rule` animates DISCRETELY, so each flip lands at the midpoint of its interval rather
+   than exactly on the stop — the 31% flash becomes 30.5%–31.5%. Same 60ms, same rhythm; verified
+   by sampling the animation with the Web Animations API, not assumed.
+   ⭐ The un-animated `evenodd` on the same rule is the DEGRADED MODE, deliberately: an engine that
+   cannot animate a discrete property still opens the eyes on hover and simply does not blink,
+   rather than showing a face that never opens. */
+.swml-wp-trigger:hover > svg .swml-wp-head,
+.swml-wp-trigger:focus-visible > svg .swml-wp-head {
+    fill-rule: evenodd;
+    animation: swmlWpBlink 6s ease-in-out infinite;
+}
+/* Namespaced. The reference calls this `blink` — far too generic to declare from a plugin that
+   loads onto pages we do not own (the `@property` lesson: a global name is a global collision).
+   Stop for stop against the reference: its `opacity: 0` (bar hidden → eyes open) is `evenodd`,
+   its `opacity: 1` (bar covering → eyes shut) is `nonzero`. */
+@keyframes swmlWpBlink {
+    0%   { fill-rule: evenodd; }
+    30%  { fill-rule: evenodd; }
+    31%  { fill-rule: nonzero; }
+    32%  { fill-rule: evenodd; }
+    70%  { fill-rule: evenodd; }
+    71%  { fill-rule: nonzero; }
+    72%  { fill-rule: evenodd; }
+    73%  { fill-rule: nonzero; }
+    74%  { fill-rule: evenodd; }
+    100% { fill-rule: evenodd; }
+}
+/* An `infinite` animation with no reduced-motion escape is an accessibility defect. The icon still
+   changes on hover (eyes open, ring drawn) — it just arrives rather than animating, so the hover
+   still ANSWERS, which is the §4d liveness point applied to chrome. */
+@media (prefers-reduced-motion: reduce) {
+    .swml-wp-trigger > svg .swml-wp-ring,
+    .swml-wp-trigger > svg .swml-wp-ring-draw,
+    .swml-wp-trigger > svg .swml-wp-head { transition-duration: 0.01ms; }
+    /* `animation: none` alone would leave the head at its rest `nonzero` — eyes shut, so the hover
+       would say nothing at all. The `fill-rule: evenodd` beside it is the liveness half: no motion,
+       but the eyes still open, so the button still ANSWERS the hover (§4d). */
+    .swml-wp-trigger:hover > svg .swml-wp-head,
+    .swml-wp-trigger:focus-visible > svg .swml-wp-head { animation: none; fill-rule: evenodd; }
+}
+
 /* Per-button hue. Same specificity as the default, so SOURCE ORDER decides —
    the default must stay first (every button carries both classes). */
 .swml-outline-btn        { --swml-rail-hue: #42A1EC; }  /* Document Outline — its own blue */

@@ -26495,6 +26495,11 @@
         // use the inline task check.
         if (state.task && state.task.indexOf('cw_') === 0 && state.cwProjectId) {
             const SVG_PROFILE = WML.icon('profile', 16);   // v7.20.363: from the ONE icon registry (WML.ICONS) — Neil supplied the glyph.
+            // v7.20.444 (#282): the RAIL BUTTON gets the animated cut of that same glyph — same
+            // icon, rebuilt with the hooks the hover animation drives (wml-canvas.css). Deliberately
+            // NOT the shared `profile` row: SVG_PROFILE is also the PANEL HEADER at 12px, where the
+            // eye detail would be mush. Two rows, two surfaces, neither mutating the other.
+            const SVG_PROFILE_RAIL = WML.icon('profileAnimated', 16);
             // v7.20.291: Story Components — puzzle piece, distinct from the profile's person icon.
             const SVG_SPINE = WML.icon('spine', 16);   // v7.20.363: from the ONE icon registry (WML.ICONS) — Neil supplied the glyph.
             const SVG_COMPONENTS = WML.icon('components', 16);   // v7.20.364: Neil's puzzle glyph, from the ONE icon registry
@@ -26953,7 +26958,7 @@
             wpTrigger = el('button', {
                 className: 'swml-outline-btn swml-wp-trigger',
                 'data-tooltip': 'Writer’s Profile', 'data-tooltip-pos': 'right',
-                'aria-label': 'Writer’s Profile', innerHTML: SVG_PROFILE,
+                'aria-label': 'Writer’s Profile', innerHTML: SVG_PROFILE_RAIL,
                 onClick: (e) => { e.stopPropagation(); _openWpMode('profile'); }
             });
             btnColumn.appendChild(wpTrigger);
