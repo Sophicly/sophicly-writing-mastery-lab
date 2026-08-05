@@ -1905,11 +1905,24 @@ body.swml-page {
        Material's dark purple, with white — just the member of that palette that is built to be
        filled. Hover deepens within the same purple rather than flipping to another colour.
 
-       ⚠️ BRAND TENSION, stated not buried: #4F378B is NOT a Sophicly brand purple (#5333ed /
-       #2c003e), and BRAND.md's non-negotiable is *"not generic AI-purple."* This is Neil's explicit
-       request, so it ships — but it wants a BRAND.md line or a revisit, not silent adoption. */
-    --swml-qa-bg: #4F378B;
-    --swml-qa-bg-hover: #5D43A0;
+       ⭐⭐ v7.20.448 (#304) — AND NEIL WAS RIGHT THAT IT WAS THE WRONG SHADE. *"I was actually
+       thinking of the material purple that we used in our brand guidelines… if you look in the
+       LearnDash sidebar where it's got Course Average, that is the purple I'm thinking about."*
+       He is remembering something real and BRAND.md names it: **Brand Purple Light `#a78bfa` —
+       "Dark-theme purple accent (MATERIAL TONAL — Neil, 2026-07-07)"**. So "the Material purple" is
+       ours, not Google's, and #4F378B is gone.
+       ⭐ BUT THE SAME BRAND ENTRY DECIDES WHICH MEMBER TO USE HERE, and it is not the one in the
+       ring: *"on dark, purple FILLS stay `#5333ed`; purple TEXT/accents step up to `#a78bfa`."*
+       A quick-action chip is a FILL. The Course-Average ring he pointed at is a STROKE, i.e. an
+       accent — which is exactly why it is the lighter tone there. Confirmed by contrast, since the
+       rule is not arbitrary: `#5333ed` + white = **6.85:1** (passes AA); `#a78bfa` + white = 3.46:1
+       (fails). And there is direct precedent for this exact use — the LearnDash sidebar already
+       paints `.spl-grade-chip.is-band-purple { background: #5333ed }`.
+       ⚠️ The ring in his screenshot is currently `#8c79ec` in one stale copy of
+       `sophicly-focus-mode.css`; that value is **RETIRED** (BRAND.md, Neil 2026-08-02, superseded by
+       `#a78bfa`). Not ours to edit — flagged to the LearnDash lane, not fixed here. */
+    --swml-qa-bg: #5333ed;
+    --swml-qa-bg-hover: #6544f0;
     background: var(--swml-qa-bg);
     color: #ffffff;
     box-shadow: none;
@@ -2538,8 +2551,19 @@ body.swml-page {
         0 3px 0 3px rgba(0,0,0,0.8);
     transform: translateY(-2px);
 }
-/* Keep collapse btn visible when sidebar is collapsed */
-.swml-sidebar.collapsed .swml-collapse-btn { display: flex; }
+/* Keep collapse btn visible when sidebar is collapsed.
+   ⭐⭐ v7.20.448 (#303, Neil: *"it's not centred… it needs to be slightly more to the left"*) —
+   `display: grid`, NOT `flex`, and that one word IS the bug he spotted.
+   MEASURED, not guessed: the button computed to `display:flex` here, because this rule (0,3,0)
+   outranks the base `.swml-collapse-btn { display:grid; place-items:center }` (0,1,0). This rule
+   pre-dates the two-arrow swap — it was written when the button held a single text glyph, where
+   flex vs grid made no difference. With TWO stacked 18px arrows it does: flex lays them out SIDE BY
+   SIDE (36px of content in a 28px button) instead of in one cell, so the visible arrow sat ~9px
+   right of centre and its right edge was clipped by `overflow:hidden`.
+   ⚠️ THE CLASS, worth carrying: a `display` declared for VISIBILITY reasons silently becomes a
+   LAYOUT decision the moment the element gains a second child. Its intent here is "not hidden";
+   grid satisfies that and keeps the base's centring. */
+.swml-sidebar.collapsed .swml-collapse-btn { display: grid; place-items: center; }
 
 .swml-sidebar.collapsed { width: 54px; padding: 10px 6px; align-items: center; }
 .swml-sidebar.collapsed .swml-sidebar-head {
