@@ -3578,7 +3578,15 @@
         // or anything else) without needing to know container IDs up front —
         // works whether or not the canvas chat container is mounted at init.
         document.addEventListener('mousedown', (e) => {
-            if (toolbar && !toolbar.contains(e.target)) removeToolbar();
+            /* v7.20.433 (#267): the twin of wml-assessment.js:15237 — see the full measured
+               root-cause note there. A click-away only DISMISSES if it actually took the selection
+               away; the theme toggle does not, so deferring one frame and re-checking stops the
+               destroy/rebuild that WAS the blink. */
+            if (!toolbar || toolbar.contains(e.target)) return;
+            requestAnimationFrame(() => {
+                const s = window.getSelection();
+                if (!s || s.isCollapsed || !s.toString().trim()) removeToolbar();
+            });
         });
         document.addEventListener('scroll', removeToolbar, true);
     }

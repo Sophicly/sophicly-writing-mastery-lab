@@ -15235,7 +15235,25 @@
         });
 
         document.addEventListener('mousedown', (e) => {
-            if (canvasChatSelToolbar && !canvasChatSelToolbar.contains(e.target)) removeChatSelToolbar();
+            /* ⭐⭐ v7.20.433 (Neil, #267) — THE MEASURED CAUSE OF THE THEME-TOGGLE BLINK.
+               Found by ENUMERATING every teardown path and its trigger, after three fixes built on
+               plausible-but-unverified causes (.429 transitions, .431 rebuild-idempotence, .432 the
+               animation suppressor) all failed. Root CLAUDE.md §19 exists because of that.
+               OBSERVED: this handler dismisses the toolbar on ANY mousedown outside it — and the
+               theme toggle is outside it. So: mousedown on the toggle destroys the toolbar (blink
+               OUT), then mouseup reaches the document-bound rebuild handler, the selection is still
+               perfectly intact, and an identical toolbar is built (blink IN). Two handlers, one
+               click. It fires on BOTH surfaces because both have this pair — which is exactly the
+               fact that killed the .431 theory and should have been the clue.
+               FIX: a click-away only DISMISSES if it actually took the selection away. Defer one
+               frame and re-check; if the selection survived, the toolbar was never stale, so leave
+               it mounted. Clicking into the document or onto empty space still collapses the
+               selection and still dismisses, which is the behaviour this handler is for. */
+            if (!canvasChatSelToolbar || canvasChatSelToolbar.contains(e.target)) return;
+            requestAnimationFrame(() => {
+                const s = window.getSelection();
+                if (!s || s.isCollapsed || !s.toString().trim()) removeChatSelToolbar();
+            });
         });
 
         // Typing indicators
