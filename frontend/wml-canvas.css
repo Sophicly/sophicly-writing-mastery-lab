@@ -2102,10 +2102,23 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        ⛔ The icon ROLL is deliberately KEPT (`.swml-tb-icon` / `.swml-tb-clone` below). He asked
        for flat, not for the motion to go, and the roll is the one piece of character these buttons
        have that costs nothing visually at rest. */
-    color: rgba(255,255,255,0.55);   /* rail parity (was 0.6) */
-    background: var(--swml-bubble-ai-bg, #333437);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
-    transition: background 200ms, box-shadow 200ms, color 200ms;
+    /* ⭐⭐ v7.20.440 — NO SURFACE AT ALL. Neil, showing a TipTap editor as the reference: *"with the
+       toolbar at the top, just get rid of the backgrounds. Just have it super minimalistic, just
+       with the icons, with no background at all… I'm not saying copy their background colour or
+       their strokes — I'm just showing you it actually probably looks better if it's super
+       minimalistic. And I think we've got a little bit of a shadow as well — we don't need a
+       shadow either."*
+       ⚠️ .438 gave these buttons the BUBBLE's surface, which was the right answer to the question
+       as he asked it then (*"same surface colour as the bubbles"*) and one step short of what he
+       actually wanted. This goes the rest of the way: the chip disappears entirely and only the
+       GLYPH is left, exactly as `.swml-sel-btn` has done since .430 — a treatment he has already
+       approved twice. The reference was shown for the IDEA, not the values; nothing is copied
+       from it (§13 — and he said so explicitly, which is why this is a port of OUR .430 rules
+       rather than of their CSS). */
+    color: rgba(255,255,255,0.62);
+    background: transparent;
+    box-shadow: none;
+    transition: background 200ms, color 200ms;
 }
 /* ── Icon→Icon roll effect (two identical spans) ── */
 .swml-tb-icon {
@@ -2132,8 +2145,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    flat literal is the fallback for any engine without color-mix (the file already relies on
    color-mix for the rail ink, so this is an established pattern here, not a new dependency). */
 .swml-tb-winona:hover {
-    background: #3e3f43;
-    background: color-mix(in srgb, var(--swml-bubble-ai-bg, #333437) 88%, #ffffff);
+    /* v7.20.440: byte-identical to `.swml-sel-neumorphic .swml-sel-btn:hover` — a wash on nothing,
+       not a lighter chip. The wash IS the affordance now that there is no resting surface. */
+    background: rgba(255,255,255,0.09);
     color: #fff;
 }
 .swml-tb-winona:hover > .swml-tb-icon:not(.swml-tb-clone) {
@@ -2216,15 +2230,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        the items and leaving the arrows morphic would recreate that defect immediately, with the
        arrows as the new sore thumb. Same surface token, same wash, same edge.
        Their SIZE and round radius stay their own, per .425: they are navigation, not tools. */
-    color: rgba(255,255,255,0.55);
-    background: var(--swml-bubble-ai-bg, #333437);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
-    transition: background 200ms, box-shadow 200ms, color 200ms;
+    color: rgba(255,255,255,0.62);
+    background: transparent;
+    box-shadow: none;
+    transition: background 200ms, color 200ms;
 }
 .swml-tb-arrow:hover {
     /* v7.20.438: byte-identical to .swml-tb-winona:hover, as .425 established. */
-    background: #3e3f43;
-    background: color-mix(in srgb, var(--swml-bubble-ai-bg, #333437) 88%, #ffffff);
+    background: rgba(255,255,255,0.09);
     color: #fff;
 }
 /* (the light arrows are flattened further down the file, where the pre-existing light-arrow block
@@ -2300,16 +2313,15 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-light .swml-tb-item,
 [data-swml-theme="light"] .swml-tb-item {
     /* the light bubble is #f5f5f7 (`:root`), so the token carries this for free */
-    background: var(--swml-bubble-ai-bg, #f5f5f7);
-    color: rgba(20,18,30,0.72);
-    box-shadow: 0 1px 2px rgba(44,0,62,0.10), inset 0 1px 0 rgba(255,255,255,0.7);
+    background: transparent;
+    color: rgba(20,18,30,0.78);
+    box-shadow: none;
 }
 .swml-canvas-light .swml-tb-winona:hover,
 [data-swml-theme="light"] .swml-tb-winona:hover {
     /* Inverted: dark's wash goes LIGHTER, so light's goes DARKER. A light chip that brightens on
        hover reads as DISABLED — the .428 finding, and it still holds now the chip is flat. */
-    background: #e9e9ee;
-    background: color-mix(in srgb, var(--swml-bubble-ai-bg, #f5f5f7) 92%, #14121e);
+    background: rgba(20,18,30,0.07);
     color: #14121e;
 }
 .swml-canvas-light .swml-tb-item.is-active,
@@ -2339,14 +2351,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    rather than editing the block you happen to be looking at. */
 .swml-canvas-light .swml-tb-arrow,
 [data-swml-theme="light"] .swml-tb-arrow {
-    background: var(--swml-bubble-ai-bg, #f5f5f7);
-    color: rgba(20,18,30,0.72);
-    box-shadow: 0 1px 2px rgba(44,0,62,0.10), inset 0 1px 0 rgba(255,255,255,0.7);
+    background: transparent;
+    color: rgba(20,18,30,0.78);
+    box-shadow: none;
 }
 .swml-canvas-light .swml-tb-arrow:hover,
 [data-swml-theme="light"] .swml-tb-arrow:hover {
-    background: #e9e9ee;
-    background: color-mix(in srgb, var(--swml-bubble-ai-bg, #f5f5f7) 92%, #14121e);
+    background: rgba(20,18,30,0.07);
     color: #14121e;
 }
 .swml-hl-picker-light {
