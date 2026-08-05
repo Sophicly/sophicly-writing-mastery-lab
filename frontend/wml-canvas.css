@@ -2885,11 +2885,27 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        An SVG's `width`/`height` ATTRIBUTES are presentation hints — CSS beats them. So one rule
        here sizes every rail icon, now and for every button added later, and the nine literals
        become dead weight rather than nine things to keep in step.
-       16px → 20px (+25%) is the size increase he asked for; it fills the 20px cell that the 28px
-       button and its 4px padding leave. Both layers are selected together — the hue layer must
-       stay registered with the base layer or the hover sweep reveals a misaligned glyph. */
-    width: 20px;
-    height: 20px;
+       Both layers are selected together — the hue layer must stay registered with the base layer or
+       the hover sweep reveals a misaligned glyph.
+
+       ⭐⭐ v7.20.446 (Neil, FIXLIST #289) — 20px WAS A MISREADING OF HIM, and this is the correction.
+       *"the icons in the rail, they just look a little bit too big… I think you misunderstood me
+       last time when I said make them bigger. I actually meant the BUTTONS."* At .437 I took
+       16px → 20px inside a 28px button. That is a 0.71 icon-to-button ratio.
+       BRAND.md §4 settles it without a taste argument: **"A button's icon is
+       `calc(var(--btn-h)/2)`, not an independent 24px"** — and the canonical icon button in
+       BRAND.md §8 is a 32px button with a 16px icon, i.e. exactly one half. So 28px → 14px.
+       ⭐ AND THE ANSWER TO HIS SECOND QUESTION — *"are they gonna be aligned with the top of the
+       first badge in the left panel and the third badge?"* — is why the BUTTON stays at 28px.
+       Measured: `.swml-sidebar-badge` is `padding:4px` + `line-height:20px` = **28px tall**, in a
+       `gap:12px` flex — a 40px vertical rhythm. The rail is 28px + 12px gap = **the same 40px**.
+       They are in lockstep today. Taking the buttons to 32px would make the rail 44px and the two
+       columns would drift apart by 4px per row — which is precisely the misalignment he was asking
+       about. So the buttons were never the problem; the icon inside them was.
+       DERIVED, not typed: `calc()` off the column's own token, so a future resize of the button
+       moves the icon with it and the ratio cannot drift (BRAND §4 derive-don't-duplicate). */
+    width: calc(var(--swml-rail-size, 28px) / 2);
+    height: calc(var(--swml-rail-size, 28px) / 2);
 }
 /* The revealed icon is the SAME icon in the ink that reads on the flooded chip —
    so as the circle sweeps past, background and icon change together as one tile.
@@ -4693,10 +4709,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* Multi-select toggle-on for canvas dark mode (v7.12.6) */
 .swml-canvas-chat-messages .swml-quick-btn.swml-quick-toggle-on {
-    --btn-inner: hsla(174deg 55% 35% / 100%);
-    --btn-outer: hsla(174deg 60% 28% / 100%);
+    /* v7.20.446 (#293): flat teal, no shadow — matches the base chip's new treatment. */
+    background: #2f7d76;
     color: #fff;
-    box-shadow: inset 0 -1px 2px rgba(125,249,233,0.25), 0 1px 0 1px rgba(81,218,207,0.5), 0 2px 8px rgba(81,218,207,0.25);
 }
 .swml-canvas-chat-messages .swml-quick-btn.swml-quick-toggle-on::before {
     content: '✓ ';
@@ -10522,7 +10537,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
        like "a rectangle that then snaps its corners". Jhey/Nextbricks hold one
        rounded-rect radius and animate only width + height. */
     border-radius: 24px;
-    box-shadow: 0 10px 34px rgba(0,0,0,0.45);
+    /* ⭐ v7.20.446 (Neil, FIXLIST #295) — he ASKED whether this needs a shadow at all, in the
+       Apple/minimal frame that removed the chat bubbles' (#294). It KEEPS one, softened, and the
+       reason is a real distinction rather than an exception: this island genuinely FLOATS over
+       document text that scrolls underneath it, so the shadow is a depth cue doing work. A chat
+       bubble sits IN the flow, so its shadow was describing an elevation it does not have — which
+       is why that one goes and this one stays. `0 10px 34px rgba(0,0,0,.45)` was a heavy,
+       far-throw drop from the pre-minimal chrome; this is the same idea at Apple weight — closer,
+       tighter, and it reads as lift rather than as a dark smear on the page. */
+    box-shadow: 0 4px 16px rgba(0,0,0,0.28);
     overflow: hidden;
     /* subtle spring — only width animates here; height follows the nav's max-height */
     transition: width 0.5s cubic-bezier(0.34,1.3,0.5,1), box-shadow 0.3s ease;
@@ -10878,10 +10901,12 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* v7.19.996 (Neil): light hover was a faint wash — match the DARK hover's semantics
    (fills brand purple, text goes white, lifts) so the effect actually reads. */
 .swml-canvas-light .swml-quick-btn:hover {
+    /* v7.20.446 (#293): the LIFT goes — BRAND §8 retired `translateY(-1px)` site-wide on
+       2026-07-26, and it is the last bit of push-button depth left on this chip. Colour still
+       carries the hover, which is what .996 was actually asking for. */
     background: rgba(83,51,237,0.9) !important;
     border-color: rgba(83,51,237,0.9) !important;
     color: #fff !important;
-    transform: translateY(-1px);
 }
 /* Multi-select toggle-on for canvas light mode (v7.12.6) */
 .swml-canvas-light .swml-quick-btn.swml-quick-toggle-on {

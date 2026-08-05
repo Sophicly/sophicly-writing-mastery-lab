@@ -1424,15 +1424,23 @@ body.swml-page {
     overflow-wrap: break-word; word-wrap: break-word;
     min-width: 0;
 }
+/* ⭐ v7.20.446 (Neil, FIXLIST #294) — BOTH BUBBLE SHADOWS REMOVED, light and dark.
+   *"the chat bubbles, they seem to have a small box shadow underneath them… I think it's better if
+   we just get rid of them on light and dark theme."* He was right, and there were TWO, not one:
+   the AI bubble carried `0 1px 4px var(--swml-shadow)` and the user bubble a purple
+   `0 2px 8px rgba(83,51,237,0.3)`.
+   ⭐ WHY THIS IS CORRECT AND NOT JUST OBEDIENT (#291, the Apple/minimal direction): a bubble sits
+   IN the flow — it does not float over anything — so its shadow was describing an elevation the
+   element does not have. Separation comes from the surface step (`--swml-bubble-ai-bg` against the
+   chat panel), which is the ladder doing its job. The Dynamic Island keeps its shadow precisely
+   because it DOES float over scrolling text; that is the discriminator, not a style preference. */
 .swml-bubble.ai .swml-bubble-content {
     border-radius: 4px 18px 18px 18px;
     background: var(--swml-bubble-ai-bg); color: var(--swml-bubble-ai-text);
-    box-shadow: 0 1px 4px var(--swml-shadow);
 }
 .swml-bubble.user .swml-bubble-content {
     border-radius: 20px 6px 20px 20px;
     background: var(--swml-gradient); color: #fff;
-    box-shadow: 0 2px 8px rgba(83,51,237,0.3);
 }
 /* ⭐ v7.20.420 (Neil, FIXLIST #241) — THE CHAT OWNS ITS OWN ITALIC.
    *"where it says Mr Birling in An Inspector Calls… why is it calling a Nectar font? I don't want
@@ -1859,15 +1867,35 @@ body.swml-page {
     padding: 5px 14px; border-radius: 10px; border: none;
     font-size: 12px; font-weight: 600; cursor: pointer;
     font-family: inherit; line-height: 1.3; white-space: nowrap;
-    --btn-inner: hsla(252deg 30% 35% / 80%);
-    --btn-outer: hsla(252deg 25% 28% / 70%);
-    --btn-glow: hsla(252deg 70% 60% / 0%);
-    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
-                radial-gradient(var(--btn-inner), var(--btn-outer));
-    color: rgba(255,255,255,0.7);
-    box-shadow: inset 0 2px 1px -1px rgba(255,255,255,0.12), inset 0 2px 3px rgba(0,0,0,0.06),
-                0 1px 0 1px rgba(0,0,0,0.3), 0 1px 0 2px rgba(83,51,237,0.06);
-    transition: --btn-glow 200ms, --btn-inner 200ms, box-shadow 200ms, transform 200ms, color 200ms;
+    /* ⭐⭐ v7.20.446 (Neil, FIXLIST #293) — FLAT. The 3D push treatment is gone from this chip.
+       *"in light theme, they're just a bit too heavy… they don't really look very nice in light
+       theme. I think light theme looks beautiful in general, but they are kind of spoiling the
+       light theme look."*
+
+       ⭐ MEASURED CAUSE, and it explains why LIGHT was the theme he noticed. The chip carried a
+       radial-gradient fill plus a FOUR-layer shadow stack, and the light-theme override
+       (`#swml-root:not([data-swml-theme="dark"])`, below) only ever re-coloured `--btn-inner` /
+       `--btn-outer`. **The shadow stack was never overridden**, so a white-surface chip was still
+       wearing shadows authored for a dark one — `rgba(0,0,0,0.3)` hard against pale lilac. It was
+       not "too heavy in both themes and worse in light"; light was inheriting dark's weight
+       wholesale.
+
+       ⚠️ A STATED DEVIATION FROM BRAND, not an oversight: the push-button gradient is a named brand
+       element ("the canonical good gradient"), and `--btn-inner`/`--btn-outer` still drive ~159
+       declarations across these two stylesheets. This change is SCOPED TO THE QUICK-ACTION CHIP
+       ONLY, because that is what Neil pointed at. The wider question — whether the push look is
+       being retired site-wide under the minimal direction (#291) — is his to make and is NOT
+       assumed here.
+
+       What replaces it: one flat surface, no gradient, no shadow, and hover that moves the surface
+       rather than adding depth. Same shape in both themes, so light is no longer the ugly one.
+       ⭐ The ICONS ARE UNTOUCHED — *"I'm happy with the icons. That's pretty cool."* */
+    --swml-qa-bg: #2a2b2e;
+    --swml-qa-bg-hover: #34353a;
+    background: var(--swml-qa-bg);
+    color: rgba(255,255,255,0.78);
+    box-shadow: none;
+    transition: background 180ms ease, color 180ms ease;
     /* v7.20.363 (Neil, FIXLIST #88/#89): chip glyphs are registry SVG icons, not emojis.
        inline-flex + gap rather than a leading text node, because an emoji carried its own
        spacing and an <svg> does not. The icon inherits `color`, so it dims and brightens with
@@ -1878,20 +1906,17 @@ body.swml-page {
 /* The phoenix is the ONE full-colour mark in a row of monochrome glyphs — deliberately, because
    it is Sophia's identity, not an icon. It is an <img> and must not be asked to inherit colour. */
 .swml-quick-btn .swml-ico-phoenix { border-radius: 3px; }
+/* v7.20.446 (#293): hover moves the SURFACE, not the depth — no lift, no glow, no shadow.
+   The lift is also what BRAND §8 already retired site-wide ("no lift", 2026-07-26), so dropping it
+   here brings the chip back onto the current button doctrine rather than inventing a new one. */
 .swml-quick-btn:hover {
-    --btn-glow: hsla(252deg 70% 60% / 20%);
-    --btn-inner: hsla(252deg 60% 45% / 100%);
-    --btn-outer: hsla(252deg 70% 50% / 100%);
+    background: var(--swml-qa-bg-hover);
     color: #fff;
-    box-shadow: inset 0 -1px 2px rgba(255,255,255,0.25), 0 1px 0 1px rgba(83,51,237,0.5), 0 2px 8px rgba(83,51,237,0.2);
-    transform: translateY(-1px);
 }
-.swml-quick-btn:active { transform: translateY(1px); }
+.swml-quick-btn:active { background: var(--swml-qa-bg); }
 .swml-quick-btn.selected {
-    --btn-inner: hsla(252deg 60% 45% / 100%);
-    --btn-outer: hsla(252deg 70% 50% / 100%);
+    background: #5333ed;
     color: #fff;
-    box-shadow: inset 0 -1px 2px rgba(255,255,255,0.2), 0 1px 0 1px rgba(83,51,237,0.5), 0 2px 8px rgba(83,51,237,0.2);
 }
 /* v7.19.879: blind self-assessment walk — descriptor buttons carry full-sentence rung
    labels, so they stack full-width and wrap (the default quick-btn is a nowrap pill). */
@@ -1902,11 +1927,10 @@ body.swml-page {
 }
 /* Multi-select toggle: persistent teal selected state with checkmark (v7.12.6) */
 .swml-quick-btn.swml-quick-toggle-on {
-    --btn-inner: hsla(174deg 55% 35% / 100%);
-    --btn-outer: hsla(174deg 60% 28% / 100%);
+    /* v7.20.446 (#293): flat teal — the selected state is carried by COLOUR and the ✓, which is all
+       it ever needed; the lift and the glow were the push treatment, not the semantics. */
+    background: #2f7d76;
     color: #fff;
-    box-shadow: inset 0 -1px 2px rgba(125,249,233,0.25), 0 1px 0 1px rgba(81,218,207,0.5), 0 2px 8px rgba(81,218,207,0.25);
-    transform: translateY(-1px);
 }
 .swml-quick-btn.swml-quick-toggle-on::before {
     content: '✓ ';
@@ -2204,30 +2228,26 @@ body.swml-page {
 
 /* ── Light Mode Neumorphic Buttons ── */
 /* Quick action buttons in chat */
+/* ⭐ v7.20.446 (#293) — LIGHT IS NOW THE SAME DESIGN, NOT A RE-COLOUR OF A DARK ONE.
+   This block is where the heaviness Neil saw actually came from: it re-coloured the gradient and
+   left the base rule's four-layer SHADOW STACK in place, so a chip on white was wearing shadows
+   authored for a dark surface. Flat tint, no shadow, in both themes — one design, inverted. */
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn {
-    --btn-inner: hsla(252deg 80% 96% / 100%);
-    --btn-outer: hsla(252deg 60% 92% / 100%);
+    background: #EEF0FF;
     color: #5333ed;
-    box-shadow: inset 0 2px 1px -1px rgba(255,255,255,0.8), inset 0 2px 3px rgba(83,51,237,0.06),
-                0 1px 0 1px rgba(83,51,237,0.12), 0 1px 0 2px rgba(255,255,255,0.3);
 }
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn:hover {
-    --btn-inner: hsla(252deg 83% 56% / 100%);
-    --btn-outer: hsla(252deg 70% 50% / 100%);
-    color: #fff;
-    box-shadow: inset 0 -1px 2px rgba(255,255,255,0.4), 0 1px 0 1px rgba(83,51,237,0.5),
-                0 2px 8px rgba(83,51,237,0.2), 0 1px 2px rgba(255,255,255,0.5);
+    background: #E0E4FF;
+    color: #4327c4;
 }
+#swml-root:not([data-swml-theme="dark"]) .swml-quick-btn:active { background: #EEF0FF; }
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn.selected {
-    --btn-inner: hsla(174deg 70% 50% / 100%);
-    --btn-outer: hsla(174deg 60% 42% / 100%);
+    background: #5333ed;
     color: #fff;
 }
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn.swml-quick-toggle-on {
-    --btn-inner: hsla(174deg 70% 50% / 100%);
-    --btn-outer: hsla(174deg 60% 42% / 100%);
+    background: #2f7d76;
     color: #fff;
-    box-shadow: inset 0 -1px 2px rgba(255,255,255,0.4), 0 1px 0 1px rgba(65,170,168,0.5), 0 2px 8px rgba(65,170,168,0.2);
 }
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn.swml-quick-toggle-on::before {
     color: #2c003e;
@@ -2381,40 +2401,69 @@ body.swml-page {
 .swml-sidebar-body {
     display: flex; flex-direction: column; gap: 14px; flex: 1;
 }
+/* ⭐⭐ v7.20.446 (Neil, FIXLIST #292) — THE COLLAPSE BUTTON GOES MINIMAL.
+   *"it's sort of sticking out like a sore thumb now since everything else is so minimalistic. I
+   prefer the clean look."* It was the single loudest control left in the canvas: a 5-layer
+   pressed-button shadow stack, a radial-gradient fill, a 7-layer purple-glow hover and a 2px lift
+   — the full skeuomorphic push treatment, on a 28px utility toggle.
+   Now: no fill, no ring, no shadow, no lift. Exactly BRAND.md §8's icon-button spec ("32px, no
+   ring, no fill, no shadow"), at this control's own 28px. Hover is carried by ink alone.
+   ⚠️ SCOPED TO THIS BUTTON. `--btn-inner`/`--btn-outer` still drive ~159 declarations across these
+   stylesheets; whether the push look is retired site-wide is Neil's call (#291) and is not assumed
+   here. */
 .swml-collapse-btn {
-    border: none; color: rgba(255,255,255,0.6);
+    border: none;
+    background: none;
+    box-shadow: none;
+    color: rgba(255,255,255,0.55);
     width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
-    font-size: 12px; display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
-    --btn-inner: hsla(252deg 20% 24% / 60%);
-    --btn-outer: hsla(252deg 20% 18% / 50%);
-    --btn-glow: hsla(252deg 70% 60% / 0%);
-    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
-                radial-gradient(var(--btn-inner), var(--btn-outer));
-    box-shadow:
-        inset 0 4px 1px -3px rgba(255,255,255,0.1),
-        inset 0 4px 8px 5px rgba(9,11,10,0.16),
-        0 2px 0 1px #1a1e1c,
-        0 2px 0 3px rgba(0,0,0,0.9),
-        0 2px 0 4px rgba(255,255,255,0.04);
-    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 300ms, box-shadow 200ms, transform 200ms, color 200ms;
+    /* The two arrows are stacked in one cell — grid, so the button still sizes to its icon and
+       neither copy needs a positioning context. Same technique as the rail's hue layer. */
+    display: grid; place-items: center;
+    overflow: hidden;
+    transition: color 200ms ease, background 200ms ease;
 }
 .swml-collapse-btn:hover {
-    --btn-glow: hsla(252deg 70% 65% / 25%);
-    --btn-inner: hsla(252deg 55% 40% / 100%);
-    --btn-outer: hsla(252deg 60% 32% / 100%);
     color: #fff;
-    box-shadow:
-        inset 0 -1px 2px 1px rgba(255,255,255,0.3),
-        inset 0 0 24px rgba(44,0,62,0.3),
-        0 3px 0 1px rgba(83,51,237,0.7),
-        0 1px 2px rgba(255,255,255,0.8),
-        0 4px 32px 2px rgba(83,51,237,0.35),
-        0 3px 0 3px rgba(0,0,0,0.8),
-        0 3px 0 4px rgba(83,51,237,0.4);
-    transform: translateY(-2px);
+    background: rgba(255,255,255,0.06);
 }
-.swml-collapse-btn:active { transform: translateY(1px); }
+.swml-collapse-btn:active { background: rgba(255,255,255,0.03); }
+[data-swml-theme="light"] .swml-collapse-btn,
+.swml-canvas-light .swml-collapse-btn { color: rgba(0,0,0,0.45); }
+[data-swml-theme="light"] .swml-collapse-btn:hover,
+.swml-canvas-light .swml-collapse-btn:hover { color: rgba(0,0,0,0.8); background: rgba(0,0,0,0.05); }
+
+/* ── The arrow swap. Ported from the idiom in Neil's Aaron Iker "Arrow Animation.html": the
+   outgoing arrow exits ALONG THE WAY IT POINTS while the incoming one arrives from the opposite
+   side, so collapse and expand read as one continuous movement instead of a glyph substitution.
+   ⚠️ Duration is a disclosed deviation — the reference is 1.6s because it is a showcase loop; on a
+   control you click to get work done that is sluggish, so this runs at 380ms on the brand easing.
+   The SHAPE of the motion is his, the timing is not.
+   Both copies live in one grid cell and only `transform`/`opacity` animate, so the swap is
+   compositor-only — no layout, no repaint of the sidebar behind it. ── */
+.swml-collapse-ico {
+    grid-area: 1 / 1;
+    display: flex;
+    transition: transform 380ms cubic-bezier(0.23, 1, 0.32, 1),
+                opacity   380ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.swml-collapse-ico svg { display: block; }
+/* Expanded (default): the LEFT arrow is home; the right arrow waits off to the right. */
+.swml-collapse-ico--in  { transform: translateX(0);     opacity: 1; }
+.swml-collapse-ico--out { transform: translateX(14px);  opacity: 0; }
+/* Collapsed: the left arrow leaves to the LEFT (the way it points) and the right arrow lands. */
+.swml-collapse-btn.is-collapsed .swml-collapse-ico--in  { transform: translateX(-14px); opacity: 0; }
+.swml-collapse-btn.is-collapsed .swml-collapse-ico--out { transform: translateX(0);     opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+    /* The swap still HAPPENS — only the travel is removed. A guard that left both arrows hidden,
+       or the wrong one showing, would be the §4d defect: refusing the motion is not the same as
+       refusing the state change. */
+    .swml-collapse-ico { transition-duration: 0.01ms; }
+    .swml-collapse-ico--out { transform: translateX(0); }
+    .swml-collapse-btn.is-collapsed .swml-collapse-ico--in { transform: translateX(0); }
+}
 .swml-collapse-btn.right {
     --btn-inner: hsla(174deg 20% 22% / 60%);
     --btn-outer: hsla(174deg 20% 16% / 50%);

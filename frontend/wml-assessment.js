@@ -13931,12 +13931,36 @@
         // Logo + collapse button
         const protoHead = el('div', { className: 'swml-sidebar-head', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
         protoHead.appendChild(renderLogo ? renderLogo() : el('span'));
-        const protoCollapseBtn = el('button', { className: 'swml-collapse-btn', textContent: '\u25C0', title: 'Collapse sidebar' });
+        // \u2B50\u2B50 v7.20.446 (Neil, FIXLIST #292) \u2014 Neil: *"the collapse sidebar button\u2026 it's sort of
+        // sticking out like a sore thumb now since everything else is so minimalistic."*
+        // ROOT, and it was never really the styling: this button's glyph was the TEXT CHARACTER
+        // U+25C0 \u25C0 \u2014 a filled unicode triangle in a chrome made entirely of 24-grid stroke icons.
+        // No amount of restyling the chip fixes a glyph from a different species; it had to become
+        // a real icon. Neil supplied both arrows, so they are the ones used (\u00A713).
+        // TWO GLYPHS, BOTH MOUNTED, one visible \u2014 the Aaron Iker arrow idiom he pointed at
+        // ("Arrow Animation.html"): the outgoing arrow leaves along the way it POINTS while the
+        // incoming one arrives from the opposite side, so the swap reads as one continuous motion
+        // rather than a swap. Stacking both up front is what makes that possible \u2014 you cannot
+        // animate between two states of a single element you are about to overwrite.
+        // \u26A0\uFE0F Timing is adapted, and this is a disclosed deviation: the reference runs 1.6s because
+        // it is a showcase loop. On a control you click to get work done that is sluggish, so this
+        // is 380ms on the brand's own easing. The SHAPE of the motion is his; the duration is not.
+        const protoCollapseBtn = el('button', {
+            className: 'swml-collapse-btn swml-collapse-btn--icon',
+            title: 'Collapse sidebar', 'aria-label': 'Collapse sidebar', 'aria-expanded': 'true',
+            innerHTML: '<span class="swml-collapse-ico swml-collapse-ico--in">' + WML.icon('collapseLeft', 18) + '</span>'
+                     + '<span class="swml-collapse-ico swml-collapse-ico--out">' + WML.icon('collapseRight', 18) + '</span>'
+        });
         protoCollapseBtn.addEventListener('click', () => {
             protoPanel.classList.toggle('collapsed');
             const isC = protoPanel.classList.contains('collapsed');
-            protoCollapseBtn.textContent = isC ? '\u25B6' : '\u25C0';
+            // The button carries the state itself so the CSS can drive the swap. Kept OFF the
+            // panel's own class so a future change to how the panel collapses cannot silently
+            // desynchronise the arrow from the thing it describes.
+            protoCollapseBtn.classList.toggle('is-collapsed', isC);
             protoCollapseBtn.title = isC ? 'Expand sidebar' : 'Collapse sidebar';
+            protoCollapseBtn.setAttribute('aria-label', protoCollapseBtn.title);
+            protoCollapseBtn.setAttribute('aria-expanded', isC ? 'false' : 'true');
         });
         protoHead.appendChild(protoCollapseBtn);
         protoPanel.appendChild(protoHead);
