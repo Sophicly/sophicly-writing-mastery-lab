@@ -233,6 +233,15 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw-board-pin-harness.js || fail=1
 fi
 
+# v7.20.445: THE WRITER'S-PROFILE HOVER ANIMATION (#282). The port's character lives in properties
+# that are INVISIBLE IN A STILL — dasharray, the transition delays, animation-*, and which of the
+# TWO icon layers got them — so a screenshot cannot gate it. Skips cleanly when playwright is not
+# resolvable, so it never blocks a machine without it.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-core\.js|wml-canvas\.css|wp-icon-anim-harness\.js'; then
+  node bin/wp-icon-anim-harness.js || fail=1
+fi
+
 # v7.20.445: ENQUEUE PARITY. Scripts are registered in TWO places — the standalone page and the
 # shortcode, which is how every LearnDash lesson loads. They drifted, and four modules went missing
 # from the shortcode path: Step 6 lost its concept map and served every ask without criteria or

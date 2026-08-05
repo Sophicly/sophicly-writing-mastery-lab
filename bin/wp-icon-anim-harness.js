@@ -273,5 +273,7 @@ function report() {
     ok.forEach(m => console.log('  ✓ ' + m));
     fail.forEach(m => console.log('  ✗ ' + m));
     console.log(`\n${ok.length} passed, ${fail.length} failed`);
-    process.exit(fail.length ? 1 : 0);
+    if (fail.length) { console.log('❌ wp-icon-anim-harness FAILED'); process.exit(1); }
+    console.log('✅ wp-icon-anim-harness passed (the ring draws, the eyes open, the double blink is the reference\'s — on BOTH icon layers).');
+    process.exit(0);
 }
