@@ -447,16 +447,56 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
     const yes = chipNamed(w, 'Yes');
     if (yes) { w.tap(yes); const st = chipNamed(w, 'In excess'); if (st) w.tap(st); }
 
-    // RELOAD: same document + sidecar, fresh controller.
-    const w2 = world({ ls: ls });
+    // RELOAD: same document + sidecar + TRANSCRIPT, fresh controller.
+    /* ⭐⭐ v7.20.439 (#280) — THE TRANSCRIPT NOW SURVIVES THE RELOAD, and that is the whole point.
+       Neil, walking Step 7 on staging: *"it's repeating the one about Vitality… I am flipping back
+       and forth between different lessons."* The why-ask was stored durable on the BEGIN pass AND
+       re-served by `serveCurrent()` on resume, so every re-entry appended another permanent copy
+       to his saved history — compounding, not merely displayed twice.
+       This block already resumed at a why-ask, and still passed, because `w2` started with an
+       EMPTY transcript: a stored turn re-served had nothing to duplicate. Carrying the history is
+       what makes the defect reachable. Verified by injection — restoring the old
+       `if (st.when === 'end') _cwReplay(emit); else emit();` fails the assertion below. */
+    const history = w.deps.canvasChatHistory;
+    const before = history.length;
+    const w2 = world({ ls: ls, history: history });
     w2.ctls = w.ctls;                     // the document survives a reload; the DOM does not
     w2.deps._rowControlPicks = function (fid, ctlId) { return (w.ctls.get(fid + '|' + ctlId) || []).slice(); };
     w2.deps._setRowControlChoice = w.deps._setRowControlChoice;
     FIDS.forEach((f) => w2.rows.set(f, w.rows.get(f) || ''));
+    /* ⭐⭐ THE TRANSCRIPT IS RENDERED TO SCREEN FIRST, exactly as the real app does on re-entry.
+       Without this the rig can never see a screen duplicate: it reloads into an EMPTY bubble list,
+       so a stored turn that replays AND is re-served looks like one bubble instead of two. */
+    history.forEach((m) => { if (m && m.role === 'assistant') w2.deps.addChatMessage(m.content, 'ai', m.content); });
+    const bubblesAfterReplay = w2.bubbles.length;
     const revived = w2.ctl.tryResume();
+    /* ⭐⭐ AND THE REATTACH IS ACTUALLY AWAITED. `settle()` is `setImmediate`, which does NOT
+       advance tryResume's `setTimeout(..., 400)` — so `reattach()` had NEVER ONCE RUN in this
+       harness, and every "resume" assertion here was really testing the sidecar and the answer
+       slot, not what the student ends up looking at. */
+    await new Promise((r) => setTimeout(r, 600));
     ok(revived, 'resume: the walk did not revive from a live sidecar');
     ok(w2.chips().length > 0 || (w2.deps._walkSlot && w2.deps._walkSlot.armed),
         'resume: came back to a screen with no question and no chip (law 4d)');
+    // A re-entry must not APPEND to the saved transcript. Re-serving is fine; storing is not.
+    ok(history.length === before,
+        'RESUME WROTE TO THE TRANSCRIPT: history went ' + before + ' -> ' + history.length
+        + '. A re-served ask must be DRAWN, never stored (law 4c.7).');
+    // \u2b50\u2b50 THE ONE NEIL ACTUALLY HIT: the same ask on screen TWICE after a re-entry.
+    const screenDupes = w2.bubbles.filter((b, n) => n > 0 && String(b) === String(w2.bubbles[n - 1]));
+    ok(screenDupes.length === 0,
+        'DUPLICATE ON SCREEN after a re-entry: ' + screenDupes.length + ' bubble(s) repeat the one '
+        + 'directly above them (replayed ' + bubblesAfterReplay + ' turns, ended with '
+        + w2.bubbles.length + ' bubbles). Neil, walking Step 7: "it is repeating the one about '
+        + 'Vitality... I am flipping back and forth between different lessons." A turn stored in '
+        + 'the transcript AND re-served by the resume path renders twice.');
+    // And nothing may be stored twice in a row, whatever put it there.
+    const dupes = history.filter((m, n) => n > 0 && m && history[n - 1]
+        && m.role === 'assistant' && history[n - 1].role === 'assistant'
+        && m.content === history[n - 1].content);
+    ok(dupes.length === 0,
+        dupes.length + ' consecutive byte-identical assistant turn(s) in the saved transcript — '
+        + 'the duplicate-on-re-entry class (#280).');
 }
 
 // ── 5. A PRISTINE DOCUMENT WITH NO SIDECAR IS A FRESH START, NOT A RESUME (the .330 lesson) ───

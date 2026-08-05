@@ -13789,7 +13789,25 @@
             healed++;
             return Object.assign({}, m, { content: next });
         });
-        return { history: out, healed: healed };
+        /* ⭐⭐ v7.20.439 — AND THE ALREADY-STORED DUPLICATES, because a stored fossil does not heal
+           itself (§4c.7). Stopping new ones is only half the job: every re-entry Neil made before
+           .439 appended ANOTHER permanent copy of the Step-7 why-ask to his saved transcript, so
+           his document is carrying them right now and the fix above cannot reach them.
+           Collapses CONSECUTIVE byte-identical assistant turns. That is a deliberately narrow
+           rule: two identical assistant turns back to back are never legitimate — the pacing law
+           (§4b) serves DISTINCT chunks one at a time, and a genuine repeat always has a student
+           turn between it and its twin. Non-adjacent repeats are left alone precisely because
+           those CAN be legitimate (the same ask re-served after an answer). */
+        const deduped = [];
+        let dropped = 0;
+        for (const m of out) {
+            const prev = deduped[deduped.length - 1];
+            if (prev && m && prev.role === 'assistant' && m.role === 'assistant'
+                && typeof m.content === 'string' && prev.content === m.content) { dropped++; continue; }
+            deduped.push(m);
+        }
+        if (dropped) console.warn('WML: healed ' + dropped + ' duplicated assistant turn(s) from the saved transcript (#280).');
+        return { history: deduped, healed: healed + dropped };
     }
 
     // Heal a loaded chat object in place-ish (returns the same shape) and report loudly.
@@ -24379,11 +24397,37 @@
                 const label = _cw7TraitLabel(trait);
                 const picked = traitState(st.when, st.v, trait) || 'the condition you chose';
                 const beganAt = (st.when === 'end') ? traitState('begin', st.v, trait) : '';
-                // DRAWN, NOT STORED, on the END pass only (§4c.7). Its text quotes what the
-                // student wrote in the BEGINNING row, and that row stays editable for ever — a
-                // stored copy would keep asserting a sentence they have since changed. The
-                // beginning asks carry no mutable value, so those stay durable and the transcript
-                // still holds the real record of the walk.
+                /* ⭐⭐ v7.20.439 — DRAWN, NEVER STORED, ON **BOTH** PASSES (§4c.7).
+                   Neil, walking Step 7 on staging: *"I don't know if the messages are repeating…
+                   it's repeating the one about Vitality. I am flipping back and forth between
+                   different lessons — I'm not sure if that message had repeated before or if it's
+                   only repeating because I'm going back and forth."* His own detail was the
+                   diagnostic: it is the going back and forth.
+
+                   THE OLD COMMENT HERE ASSERTED THE EXACT OPPOSITE OF WHAT THE CODE DOES — *"the
+                   beginning asks carry no mutable value, so those stay durable"* — and the line
+                   twenty rows below it is `'You said their ' + label + ' is ' + picked`, where
+                   `picked` is `traitState(...)`, a LIVE READ of a control the student can change
+                   at any time. So the BEGIN pass was a VALUE fossil (freeze it and the sentence
+                   keeps saying "in excess" after they change it to deficit) AND, because a stored
+                   turn REPLAYS on re-entry while the resume path ALSO re-serves the ask, it put
+                   the same question on screen twice — the first copy without chips (replayed from
+                   the transcript), the second with them (freshly served). That is exactly what
+                   Neil photographed.
+                   ⚠️ IT DOES **NOT** COMPOUND IN STORAGE, and I claimed it did before measuring:
+                   `reattach()` wraps `_reattachBody` in `_cwReplay`, so the re-serve is already
+                   drawn-not-stored. The transcript holds ONE copy; the SCREEN showed two. Making
+                   the first serve drawn as well removes the stored copy entirely, so the replay
+                   has nothing to render and the re-serve is the only copy. (The heal in
+                   `_healFossilTurns` is for documents that stored one before this build.)
+                   ⚠️ The sibling path is resume-safe and this one was not, which is what hid it:
+                   `serveTraitAsk` goes through `serveCwChunks(..., {deferFirst})`, which replays
+                   delivered bubbles from history instead of re-emitting. Only the why-ask emitted
+                   bare. An asymmetry between two branches of the same walk is the shape to look
+                   for when "it repeats on re-entry".
+                   THE TEST that settles it (§4c.7): *if this fact changes tomorrow, should this
+                   sentence still be on the screen?* No — so it is DRAWN, on both passes, and
+                   re-derives correctly on every entry. */
                 const emit = function () {
                     aiBubble(bar(n, stationTitle(st))
                         + '**' + label + ' — now say it in your own words.**\n\n'
@@ -24403,10 +24447,7 @@
                               : '**You said their ' + label.toLowerCase() + ' is ' + picked.toLowerCase()
                                 + ' — where does your story show that?**'));
                 };
-                // DRAWN, NOT STORED on the END pass (§4c.7): its text names the CURRENT beginning
-                // condition, and that stays editable in the document for ever, so a stored copy
-                // would keep asserting a fact the student has since changed.
-                if (st.when === 'end') _cwReplay(emit); else emit();
+                _cwReplay(emit);   // v7.20.439: BOTH passes — see the note above.
                 // `accumulate`, not `rewrite` (§4c.6): this row collects one line PER TRAIT, so a
                 // rewrite would wipe the traits already explained. `data.trait` is how the writer
                 // knows which trait it is filing — the fid alone cannot say.

@@ -300,7 +300,13 @@ function makeWorld(ctl, opts) {
         chatMessages: { get lastElementChild() { return world._lastBubbleEl; } },
         chatTextarea: { value: '', style: {} },
         chatSendBtn: { style: {} },
-        canvasChatHistory: [],
+        /* ⭐ v7.20.439 — the transcript can now SURVIVE a simulated reload (`opts.history`).
+           It could not before, and that is why "resume repeats nothing" passed while a walk was
+           appending a permanent duplicate to Neil's saved history on every re-entry: each reload
+           in the rig started from an EMPTY transcript, so a stored turn re-served on resume had
+           nothing to be a duplicate OF. A reload that discards the transcript cannot test the one
+           thing a transcript is for. */
+        canvasChatHistory: opts.history || [],
         canvasChatId: 'sim',
         saveCanvasChat: function () {},
         formatAI: function (t) { return t; },
