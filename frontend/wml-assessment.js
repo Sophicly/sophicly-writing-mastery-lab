@@ -34448,9 +34448,14 @@
         // v7.15.100: also hide for foundational_quiz, conceptual_notes,
         // mark_scheme_assessment — none of these produce written essays.
         // v7.17.21: also hide for mark_scheme_unit (quiz + forging your weapon notes).
-        // v7.17.29: also hide for CW pre-draft idea/structure stages (cw_step_1..8 —
-        // writer_profile through scene_selection). Widget reappears on cw_step_9
-        // (draft_1) and later draft beats. Belt-and-braces with the CSS rule
+        // v7.17.29: also hide for CW pre-draft idea/structure stages (cw_step_1..9 —
+        // writer_profile through scene_selection). Widget reappears on cw_step_10
+        // (draft_1) and later draft beats.
+        // ⭐ v7.20.451 — THE BOUNDARY MOVED 8 → 9 with the course renumber. This is a NUMERIC
+        // gate, so it does not appear in any `cw_step_N` grep and the renumber handoff missed it:
+        // scene_selection is step 9 now, and leaving this at 8 would put a word counter on a
+        // planning step. The boundary is "the last pre-draft step", not a literal.
+        // Belt-and-braces with the CSS rule
         // [data-cw-stage="ideas"] in wml-canvas.css set just below.
         // v7.18.7: also hide floating widget for exam_question (AI-generated content, not student writing).
         // v7.19.210: also hide for mastery_codex — induction reflections, no word target.
@@ -34458,7 +34463,7 @@
         // v7.19.697: hide for 'planning' too — Response Planning is about structure,
         // not length (Neil); a word count there is noise.
         const _hideWcByTask = ['planning', 'essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes', 'exam_question', 'mastery_codex', 'exam_crib'].includes(state.task);
-        const _hideWcByCwStage = isCwTask && cwStepDef?.step && cwStepDef.step <= 8;
+        const _hideWcByCwStage = isCwTask && cwStepDef?.step && cwStepDef.step <= 9;
         if (_hideWcByTask || _hideWcByCwStage) {
             wcWidget.style.display = 'none';
         }

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.450';
+var WML_BUILD = '7.20.451';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -1030,36 +1030,45 @@ window.WML = (function() {
         // because it ensures that they do everything."* The DOCUMENT is unchanged — the walk
         // (_cwValuesCtl) writes into exactly the rows the workbook version already shipped.
         { step: 7,  label: 'Universal Values',          tier: 'si', phase: 'planning' },
+        // ⭐⭐ v7.20.451 (Neil, 2026-08-05) — THE +1 RENUMBER. A new Step 8 ("Update Your Plot —
+        // Values") sits between Step 7 and Scene Selection, so every step from the old 8 upward
+        // moved. ⚠️ THIS TABLE IS NOT COSMETIC: `tier` selects the ENVIRONMENT (`si` = training
+        // chat + sidebar, `workbook` = document only), so an off-by-one here boots a step into the
+        // wrong environment, not merely under the wrong label. The LearnDash course (41165) was
+        // renumbered first on staging; this follows it.
+        // ⭐ Step 8 is `si` for the same reason Step 7 is (v7.20.419): Neil, 2026-08-05 — *"whenever
+        // we need students to do things a specific way, we need them to do a walk."*
+        { step: 8,  label: 'Update Plot: Values',       tier: 'si', phase: 'planning' },
         // Drafting Cycle
-        { step: 8,  label: 'Scene Selection',           tier: 'si', phase: 'drafting' },
-        { step: 9,  label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1 },
+        { step: 9,  label: 'Scene Selection',           tier: 'si', phase: 'drafting' },
+        { step: 10, label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1 },
         { id: 'trial_1', label: 'Trial 1: Story Coherence', tier: 'si', phase: 'drafting', trial: 1 },
-        { step: 10, label: 'Character Profile',         tier: 'workbook', phase: 'drafting' },
-        { step: 11, label: 'Update Plot: Goals',        tier: 'workbook', phase: 'drafting' },
-        { step: 12, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2 },
+        { step: 11, label: 'Character Profile',         tier: 'workbook', phase: 'drafting' },
+        { step: 12, label: 'Update Plot: Goals',        tier: 'workbook', phase: 'drafting' },
+        { step: 13, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2 },
         { id: 'trial_2', label: 'Trial 2: Character Depth', tier: 'si', phase: 'drafting', trial: 2 },
-        { step: 13, label: 'Character Archetypes',      tier: 'workbook', phase: 'drafting' },
-        { step: 14, label: 'Update Plot: Archetypes',   tier: 'workbook', phase: 'drafting' },
-        { step: 15, label: 'Draft 3: Archetypes',       tier: 'si', phase: 'drafting', draft: 3 },
+        { step: 14, label: 'Character Archetypes',      tier: 'workbook', phase: 'drafting' },
+        { step: 15, label: 'Update Plot: Archetypes',   tier: 'workbook', phase: 'drafting' },
+        { step: 16, label: 'Draft 3: Archetypes',       tier: 'si', phase: 'drafting', draft: 3 },
         { id: 'trial_3', label: 'Trial 3: Archetype Coherence', tier: 'si', phase: 'drafting', trial: 3 },
-        { step: 16, label: 'Deepen Empathy',            tier: 'workbook', phase: 'drafting' },
-        { step: 17, label: 'Update Plot: Empathy',      tier: 'workbook', phase: 'drafting' },
-        { step: 18, label: 'Draft 4: Empathy',          tier: 'si', phase: 'drafting', draft: 4 },
+        { step: 17, label: 'Deepen Empathy',            tier: 'workbook', phase: 'drafting' },
+        { step: 18, label: 'Update Plot: Empathy',      tier: 'workbook', phase: 'drafting' },
+        { step: 19, label: 'Draft 4: Empathy',          tier: 'si', phase: 'drafting', draft: 4 },
         { id: 'trial_4', label: 'Trial 4: Emotional Impact', tier: 'si', phase: 'drafting', trial: 4 },
-        { step: 19, label: 'Theme & Tone',              tier: 'workbook', phase: 'drafting' },
-        { step: 20, label: 'Update Plot: Theme',        tier: 'workbook', phase: 'drafting' },
-        { step: 21, label: 'Draft 5: Theme & Tone',     tier: 'si', phase: 'drafting', draft: 5 },
+        { step: 20, label: 'Theme & Tone',              tier: 'workbook', phase: 'drafting' },
+        { step: 21, label: 'Update Plot: Theme',        tier: 'workbook', phase: 'drafting' },
+        { step: 22, label: 'Draft 5: Theme & Tone',     tier: 'si', phase: 'drafting', draft: 5 },
         { id: 'trial_5', label: 'Trial 5: Thematic Clarity', tier: 'si', phase: 'drafting', trial: 5 },
-        { step: 22, label: 'Genre',                      tier: 'workbook', phase: 'drafting' },
-        { step: 23, label: 'Update Plot: Genre',        tier: 'workbook', phase: 'drafting' },
-        { step: 24, label: 'Draft 6: Genre',            tier: 'si', phase: 'drafting', draft: 6 },
-        { step: 25, label: 'Structural Elements',       tier: 'workbook', phase: 'drafting' },
-        { step: 26, label: 'Update Plot: Structural',   tier: 'workbook', phase: 'drafting' },
-        { step: 27, label: 'Draft 7: Structural',       tier: 'si', phase: 'drafting', draft: 7 },
+        { step: 23, label: 'Genre',                      tier: 'workbook', phase: 'drafting' },
+        { step: 24, label: 'Update Plot: Genre',        tier: 'workbook', phase: 'drafting' },
+        { step: 25, label: 'Draft 6: Genre',            tier: 'si', phase: 'drafting', draft: 6 },
+        { step: 26, label: 'Structural Elements',       tier: 'workbook', phase: 'drafting' },
+        { step: 27, label: 'Update Plot: Structural',   tier: 'workbook', phase: 'drafting' },
+        { step: 28, label: 'Draft 7: Structural',       tier: 'si', phase: 'drafting', draft: 7 },
         { id: 'trial_6', label: 'Trial 6: Technical Proficiency', tier: 'si', phase: 'drafting', trial: 6 },
         // Polish Phase
-        { step: 28, label: 'Final Draft — SPAG',        tier: 'si', phase: 'polish' },
-        { step: 29, label: 'Metacognitive Reflection',  tier: 'workbook', phase: 'polish' },
+        { step: 29, label: 'Final Draft — SPAG',        tier: 'si', phase: 'polish' },
+        { step: 30, label: 'Metacognitive Reflection',  tier: 'workbook', phase: 'polish' },
     ];
 
     // Lookup helper: task string → CW_STEPS entry
@@ -1077,15 +1086,20 @@ window.WML = (function() {
     const CW_ARTIFACT_MAP = {
         1: 'writer_profile', 2: 'story_ideas', 3: 'logline', 4: 'brief_outline',
         5: 'plot_structure_choice', 6: 'plot_outline', 7: 'universal_values',
-        8: 'scene_selection',
-        9: 'draft_1', 12: 'draft_2', 15: 'draft_3', 18: 'draft_4',
-        21: 'draft_5', 24: 'draft_6', 27: 'draft_7', 28: 'final_draft',
-        10: 'character_profile', 13: 'character_archetypes',
-        16: 'empathy_plan', 19: 'theme_tone', 22: 'genre',
-        25: 'structural_elements', 29: 'reflection',
-        // Plot updates save back to plot_outline
-        11: 'plot_outline', 14: 'plot_outline', 17: 'plot_outline',
-        20: 'plot_outline', 23: 'plot_outline', 26: 'plot_outline',
+        9: 'scene_selection',
+        10: 'draft_1', 13: 'draft_2', 16: 'draft_3', 19: 'draft_4',
+        22: 'draft_5', 25: 'draft_6', 28: 'draft_7', 29: 'final_draft',
+        11: 'character_profile', 14: 'character_archetypes',
+        17: 'empathy_plan', 20: 'theme_tone', 23: 'genre',
+        26: 'structural_elements', 30: 'reflection',
+        // Plot updates save back to plot_outline. v7.20.451: step 8 (Values) is the FIRST of these
+        // — Neil's new step — so there are now SEVEN plot updates, not six, and every later one
+        // shifted +1. It writes to plot_outline like its siblings because it APPENDS a layer to the
+        // living outline (his ruling, 2026-08-05: *"we don't want to overwrite it. We want to just
+        // append and add to it"*).
+        8:  'plot_outline',
+        12: 'plot_outline', 15: 'plot_outline', 18: 'plot_outline',
+        21: 'plot_outline', 24: 'plot_outline', 27: 'plot_outline',
     };
 
     // Sidebar sub-steps for each CW SI exercise (from protocol sub-step tables)
@@ -1135,47 +1149,58 @@ window.WML = (function() {
             { step: 2, label: 'Values at End' },
             { step: 3, label: 'Reflection' },
         ],
+        // v7.20.451 — the new Step 8 (Update Plot: Values). Its four sub-steps are the
+        // Update-Plot family's own shape, ported from CW-STEP-12-update-plot-goals.md rather than
+        // invented: the walk goes STAGE BY STAGE, not value by value, which is what lets one trait
+        // recur across several stages and beats (Neil: *"the traits can appear in more than one
+        // stage and more than one beat. In fact, they probably should"*).
         8: [
+            { step: 1, label: 'Stages I–II' },
+            { step: 2, label: 'Stages III–IV' },
+            { step: 3, label: 'Stages V–VI' },
+            { step: 4, label: 'Coherence Check' },
+        ],
+        9: [
             { step: 1, label: 'Review Outline' },
             { step: 2, label: 'Choose Scene(s)' },
             { step: 3, label: 'Scene Plan' },
         ],
-        9: [
+        10: [
             { step: 1, label: 'Writing Focus' },
             { step: 2, label: 'Draft Scene' },
             { step: 3, label: 'Review & Save' },
         ],
-        12: [
+        13: [
             { step: 1, label: 'Character Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        15: [
+        16: [
             { step: 1, label: 'Archetype Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        18: [
+        19: [
             { step: 1, label: 'Empathy Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        21: [
+        22: [
             { step: 1, label: 'Theme Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        24: [
+        25: [
             { step: 1, label: 'Genre Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        27: [
+        28: [
             { step: 1, label: 'Structure Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        28: [
+        29: [
             { step: 1, label: 'SPAG Review' },
             { step: 2, label: 'Final Polish' },
             { step: 3, label: 'Submit Final Draft' },
@@ -1196,9 +1221,10 @@ window.WML = (function() {
     CW_SIDEBAR_STEPS['trial_6'] = CW_SIDEBAR_STEPS['trial_1'];
 
     // Map draft steps to the artifact key of their predecessor (for pre-population)
+    // v7.20.451: every key here is a DRAFT step, so every one shifted +1 with the renumber.
     const CW_DRAFT_PREDECESSOR = {
-        12: 'draft_1', 15: 'draft_2', 18: 'draft_3', 21: 'draft_4',
-        24: 'draft_5', 27: 'draft_6', 28: 'draft_7',
+        13: 'draft_1', 16: 'draft_2', 19: 'draft_3', 22: 'draft_4',
+        25: 'draft_5', 28: 'draft_6', 29: 'draft_7',
     };
 
     // ── EXERCISE MANIFEST — single source of truth for all exercise types (v7.13.11) ──

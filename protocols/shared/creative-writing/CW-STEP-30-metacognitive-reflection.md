@@ -1,9 +1,9 @@
-### Creative Writing Workbook: Step 29 — Metacognitive Reflection
+### Creative Writing Workbook: Step 30 — Metacognitive Reflection
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 28 (Final Draft)
+- **Prerequisite:** Step 29 (Final Draft)
 - **Feeds into:** Course completion
 - **Hero's Journey Stage:** The Return with the Elixir requires reflection — understanding HOW you've been transformed.
 
@@ -29,7 +29,7 @@ _Example: "When I started, I thought a protagonist was just 'the main character'
 **Your reflection:**
 ___
 
-`[SUBSTEP_COMPLETE: step_29, substep_1, "Growth Reflection"]`
+`[SUBSTEP_COMPLETE: step_30, substep_1, "Growth Reflection"]`
 
 ---
 
@@ -45,7 +45,7 @@ _Example: "When analysing Macbeth, I can now identify his GOAL (power/kingship) 
 **Your reflection:**
 ___
 
-`[SUBSTEP_COMPLETE: step_29, substep_2, "Transfer Reflection"]`
+`[SUBSTEP_COMPLETE: step_30, substep_2, "Transfer Reflection"]`
 
 ---
 
@@ -64,7 +64,7 @@ ___
 
 **Word count:** ___ (aim for 150-250 total)
 
-`[SUBSTEP_COMPLETE: step_29, substep_3, "Next Steps"]`
+`[SUBSTEP_COMPLETE: step_30, substep_3, "Next Steps"]`
 
 ---
 
@@ -78,15 +78,15 @@ Compare this reflection to where you started — the growth should be clear. You
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 3 | Growth Reflection | 75-100 word paragraph on skill growth | `[SUBSTEP_COMPLETE: step_29, substep_1, "Growth Reflection"]` |
-| 2 of 3 | Transfer Reflection | 50-75 word paragraph on analysis transfer | `[SUBSTEP_COMPLETE: step_29, substep_2, "Transfer Reflection"]` |
-| 3 of 3 | Next Steps | 25-50 word paragraph on future plans | `[SUBSTEP_COMPLETE: step_29, substep_3, "Next Steps"]` |
+| 1 of 3 | Growth Reflection | 75-100 word paragraph on skill growth | `[SUBSTEP_COMPLETE: step_30, substep_1, "Growth Reflection"]` |
+| 2 of 3 | Transfer Reflection | 50-75 word paragraph on analysis transfer | `[SUBSTEP_COMPLETE: step_30, substep_2, "Transfer Reflection"]` |
+| 3 of 3 | Next Steps | 25-50 word paragraph on future plans | `[SUBSTEP_COMPLETE: step_30, substep_3, "Next Steps"]` |
 
 #### Data Requirements
 
 **Reads from project:**
 - All project data (for reference during reflection)
-- `final_draft` — The completed creative writing piece (from Step 28)
+- `final_draft` — The completed creative writing piece (from Step 29)
 - `draft_1` — Original Draft 1 (for comparison)
 
 **Writes to project:**

@@ -4069,8 +4069,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-has-chat .swml-wc-widget { left: 24px; right: auto; }
 
 /* v7.17.29: hide word-count widget on pre-draft CW idea/structure stages.
-   Canvas root gets data-cw-stage="ideas" when state.task is cw_step_1..8
-   (writer_profile through scene_selection). Widget reappears on cw_step_9+. */
+   Canvas root gets data-cw-stage="ideas" when state.task is cw_step_1..9
+   (writer_profile through scene_selection). Widget reappears on cw_step_10+.
+   v7.20.451: boundary moved 8 → 9 with the course renumber (new Step 8 = Update Plot: Values). */
 .swml-canvas[data-cw-stage="ideas"] .swml-wc-widget { display: none !important; }
 
 /* v7.18.14: While an attempt-selector overlay is mounted, hide every OTHER

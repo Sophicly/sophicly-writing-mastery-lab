@@ -10,7 +10,7 @@ Evaluate Draft 2 for character depth — are goals, needs, and internal conflict
 4. **Growth Signals** — Are there hints of potential character development?
 
 ## Procedure
-1. Review Draft 2 alongside the character profile from Steps 10-11
+1. Review Draft 2 alongside the character profile from Steps 11-12
 2. Score each criterion on a scale of 1-5
 3. Highlight moments where character depth shines
 4. Identify 2-3 places where deeper characterisation would strengthen the draft

@@ -1,30 +1,33 @@
-### Creative Writing Workbook: Step 11 — Update Plot Structure (Goals & Needs)
+### Creative Writing Workbook: Step 12 — Update Plot Structure (Goals & Needs)
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 10 (Character Profile Parts 1-3)
-- **Feeds into:** Step 12 (Draft 2 — Character Arc, AI protocol)
+- **Prerequisite:** Step 11 (Character Profile Parts 1-3)
+- **Feeds into:** Step 13 (Draft 2 — Character Arc, AI protocol)
 - **Hero's Journey Stage:** Before applying goals/needs to your scene, you must first map them across your ENTIRE story to ensure the transformation is coherent from beginning to end.
 
 ---
 
 #### How Plot Structure Updates Work
 
-Your plot outline is a **living document**. You created it in Step 6, and it will be recalled and updated **six times** throughout the course — each time adding a new layer of depth:
+Your plot outline is a **living document**. You created it in Step 6, and it will be recalled and updated **seven times** throughout the course — each time adding a new layer of depth:
 
 | Update | Step | Layer Added | Version |
 |--------|------|-------------|---------|
-| **1st (this step)** | Step 11 | Goals and Needs | v2 |
-| 2nd | Step 14 | Archetypes | v3 |
-| 3rd | Step 17 | Empathy | v4 |
-| 4th | Step 20 | Theme and Tone | v5 |
-| 5th | Step 23 | Genre | v6 |
-| 6th | Step 26 | Structural Elements | v7 (final) |
+| 1st | Step 8 | Universal Human Values | v2 |
+| **2nd (this step)** | Step 12 | Goals and Needs | v3 |
+| 3rd | Step 15 | Archetypes | v4 |
+| 4th | Step 18 | Empathy | v5 |
+| 5th | Step 21 | Theme and Tone | v6 |
+| 6th | Step 24 | Genre | v7 |
+| 7th | Step 27 | Structural Elements | v8 (final) |
 
-Each time, the system loads your existing outline with all previous annotations. You add the new layer's notes alongside the existing ones. By Step 26, your outline will have 7 layers of depth — a professional-level story blueprint.
+Each time, the system loads your existing outline with all previous annotations. You add the new layer's notes alongside the existing ones. By Step 27, your outline will have 8 layers of depth — a professional-level story blueprint.
 
 **You are NOT starting fresh.** You are adding to what already exists.
+
+**And nothing you have already written gets deleted.** New notes are always *added* to your outline, never written over the top of it.
 
 ---
 
@@ -43,7 +46,7 @@ Your six-stage plot outline from Step 6 is loaded automatically below, showing a
 3. What are the stakes in this stage? What could the protagonist lose?
    ___
 
-`[SUBSTEP_COMPLETE: step_11, substep_1, "Stages I-II"]`
+`[SUBSTEP_COMPLETE: step_12, substep_1, "Stages I-II"]`
 
 **STAGE II: [Stage Name]**
 
@@ -65,7 +68,7 @@ Your six-stage plot outline from Step 6 is loaded automatically below, showing a
 3. What are the stakes?
    ___
 
-`[SUBSTEP_COMPLETE: step_11, substep_2, "Stages III-IV"]`
+`[SUBSTEP_COMPLETE: step_12, substep_2, "Stages III-IV"]`
 
 **STAGE IV: [Stage Name]**
 
@@ -87,7 +90,7 @@ Your six-stage plot outline from Step 6 is loaded automatically below, showing a
 3. What must the protagonist sacrifice?
    ___
 
-`[SUBSTEP_COMPLETE: step_11, substep_3, "Stages V-VI"]`
+`[SUBSTEP_COMPLETE: step_12, substep_3, "Stages V-VI"]`
 
 **STAGE VI: [Stage Name]**
 
@@ -110,7 +113,7 @@ Look at your notes across all six stages:
 - [ ] The dilemma in Stage V forces a choice between goal and need
 - [ ] The resolution in Stage VI answers whether the protagonist changed
 
-`[SUBSTEP_COMPLETE: step_11, substep_4, "Coherence Check"]`
+`[SUBSTEP_COMPLETE: step_12, substep_4, "Coherence Check"]`
 
 ---
 
@@ -118,19 +121,19 @@ Look at your notes across all six stages:
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 4 | Stages I-II | Goals, needs, stakes mapped for first two stages | `[SUBSTEP_COMPLETE: step_11, substep_1, "Stages I-II"]` |
-| 2 of 4 | Stages III-IV | Goals, needs, stakes mapped for middle stages | `[SUBSTEP_COMPLETE: step_11, substep_2, "Stages III-IV"]` |
-| 3 of 4 | Stages V-VI | Dilemma, sacrifice, resolution mapped | `[SUBSTEP_COMPLETE: step_11, substep_3, "Stages V-VI"]` |
-| 4 of 4 | Coherence Check | All stages checked for logical progression | `[SUBSTEP_COMPLETE: step_11, substep_4, "Coherence Check"]` |
+| 1 of 4 | Stages I-II | Goals, needs, stakes mapped for first two stages | `[SUBSTEP_COMPLETE: step_12, substep_1, "Stages I-II"]` |
+| 2 of 4 | Stages III-IV | Goals, needs, stakes mapped for middle stages | `[SUBSTEP_COMPLETE: step_12, substep_2, "Stages III-IV"]` |
+| 3 of 4 | Stages V-VI | Dilemma, sacrifice, resolution mapped | `[SUBSTEP_COMPLETE: step_12, substep_3, "Stages V-VI"]` |
+| 4 of 4 | Coherence Check | All stages checked for logical progression | `[SUBSTEP_COMPLETE: step_12, substep_4, "Coherence Check"]` |
 
 #### Data Requirements
 
 **Reads from project:**
 - `plot_outline` — The six-stage plot outline (from Step 6)
-- `character_profile` — Goals, needs, stakes, arc type (from Step 10)
+- `character_profile` — Goals, needs, stakes, arc type (from Step 11)
 
 **Writes to project:**
 - `plot_outline` — Updated with goals/needs annotations (version 2)
 - `plot_outline_version` — Incremented to 2
 
-**Next step:** Step 12 — Draft 2: Character Arc (AI protocol).
+**Next step:** Step 13 — Draft 2: Character Arc (AI protocol).

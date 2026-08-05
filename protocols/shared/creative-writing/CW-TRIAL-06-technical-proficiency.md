@@ -10,10 +10,10 @@ Evaluate Draft 7 for overall technical craft — structure, language, and storyt
 4. **Overall Impact** — Does the piece work as a complete, polished scene?
 
 ## Procedure
-1. Review Draft 7 alongside the structural elements work from Steps 25-26
+1. Review Draft 7 alongside the structural elements work from Steps 26-27
 2. Score each criterion on a scale of 1-5
 3. This is the FINAL trial — provide comprehensive feedback
-4. Create a strengths summary and a priorities list for the final draft (Step 28)
+4. Create a strengths summary and a priorities list for the final draft (Step 29)
 5. Celebrate how far the student has come since Draft 1
 
 ## Important

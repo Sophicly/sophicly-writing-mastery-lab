@@ -1,10 +1,10 @@
-### Creative Writing Workbook: Step 20 — Update Plot Structure (Theme & Tone)
+### Creative Writing Workbook: Step 21 — Update Plot Structure (Theme & Tone)
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 19 (Theme and Tone)
-- **Feeds into:** Step 21 (Draft 5 — Theme & Tone, AI protocol)
+- **Prerequisite:** Step 20 (Theme and Tone)
+- **Feeds into:** Step 22 (Draft 5 — Theme & Tone, AI protocol)
 - **Hero's Journey Stage:** Map theme and tone across your complete story before applying to your scene.
 
 ---
@@ -33,7 +33,7 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 3. Words/images?
    ___
 
-`[SUBSTEP_COMPLETE: step_20, substep_1, "Stages I-II"]`
+`[SUBSTEP_COMPLETE: step_21, substep_1, "Stages I-II"]`
 
 **STAGE III: [Stage Name]**
 
@@ -53,7 +53,7 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 3. Words/images?
    ___
 
-`[SUBSTEP_COMPLETE: step_20, substep_2, "Stages III-IV"]`
+`[SUBSTEP_COMPLETE: step_21, substep_2, "Stages III-IV"]`
 
 **STAGE V: [Stage Name]**
 
@@ -73,7 +73,7 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 3. What final image carries the thematic weight?
    ___
 
-`[SUBSTEP_COMPLETE: step_20, substep_3, "Stages V-VI"]`
+`[SUBSTEP_COMPLETE: step_21, substep_3, "Stages V-VI"]`
 
 ---
 
@@ -85,7 +85,7 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 - [ ] The thematic question is posed early, tested in the middle, and answered at the end
 - [ ] Words and images reinforce tone throughout (not fighting against it)
 
-`[SUBSTEP_COMPLETE: step_20, substep_4, "Coherence Check"]`
+`[SUBSTEP_COMPLETE: step_21, substep_4, "Coherence Check"]`
 
 ---
 
@@ -93,21 +93,21 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 4 | Stages I-II | Theme emergence and opening tone mapped | `[SUBSTEP_COMPLETE: step_20, substep_1, "Stages I-II"]` |
-| 2 of 4 | Stages III-IV | Theme complication and tonal intensity mapped | `[SUBSTEP_COMPLETE: step_20, substep_2, "Stages III-IV"]` |
-| 3 of 4 | Stages V-VI | Theme resolution and final tone mapped | `[SUBSTEP_COMPLETE: step_20, substep_3, "Stages V-VI"]` |
-| 4 of 4 | Coherence Check | Theme/tone progression verified | `[SUBSTEP_COMPLETE: step_20, substep_4, "Coherence Check"]` |
+| 1 of 4 | Stages I-II | Theme emergence and opening tone mapped | `[SUBSTEP_COMPLETE: step_21, substep_1, "Stages I-II"]` |
+| 2 of 4 | Stages III-IV | Theme complication and tonal intensity mapped | `[SUBSTEP_COMPLETE: step_21, substep_2, "Stages III-IV"]` |
+| 3 of 4 | Stages V-VI | Theme resolution and final tone mapped | `[SUBSTEP_COMPLETE: step_21, substep_3, "Stages V-VI"]` |
+| 4 of 4 | Coherence Check | Theme/tone progression verified | `[SUBSTEP_COMPLETE: step_21, substep_4, "Coherence Check"]` |
 
 #### Data Requirements
 
 **Reads from project:**
-- `plot_outline` — Six-stage plot outline (version 4 from Step 17)
-- `theme` — Story's theme (from Step 19)
-- `tone_choices` — Tone per stage (from Step 19)
+- `plot_outline` — Six-stage plot outline (version 4 from Step 18)
+- `theme` — Story's theme (from Step 20)
+- `tone_choices` — Tone per stage (from Step 20)
 - `universal_human_values` — Values explored (from Step 7)
 
 **Writes to project:**
 - `plot_outline` — Updated with theme/tone annotations (version 5)
 - `plot_outline_theme_tone` — Theme/tone-specific annotations
 
-**Next step:** Step 21 — Draft 5: Theme & Tone (AI protocol).
+**Next step:** Step 22 — Draft 5: Theme & Tone (AI protocol).

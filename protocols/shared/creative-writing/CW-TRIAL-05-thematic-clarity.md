@@ -10,7 +10,7 @@ Evaluate Draft 5 for thematic depth — does the story explore meaningful ideas?
 4. **Universal Resonance** — Does the theme connect to broader human experience?
 
 ## Procedure
-1. Review Draft 5 alongside the theme and tone work from Steps 19-20
+1. Review Draft 5 alongside the theme and tone work from Steps 20-21
 2. Score each criterion on a scale of 1-5
 3. Identify where theme emerges most powerfully
 4. Suggest where theme could be woven in more subtly

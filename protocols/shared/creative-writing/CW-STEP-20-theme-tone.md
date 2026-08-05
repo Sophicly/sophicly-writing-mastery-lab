@@ -1,10 +1,10 @@
-### Creative Writing Workbook: Step 19 — Theme and Tone
+### Creative Writing Workbook: Step 20 — Theme and Tone
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 18 (Draft 4) + Trial 4
-- **Feeds into:** Step 20 (Update Plot Structure) then Step 21 (Draft 5 — Theme & Tone)
+- **Prerequisite:** Step 19 (Draft 4) + Trial 4
+- **Feeds into:** Step 21 (Update Plot Structure) then Step 22 (Draft 5 — Theme & Tone)
 - **Hero's Journey Stage:** The Road of Trials nears its end. Now you must ensure your story MEANS something — theme — and creates the right emotional atmosphere — tone.
 
 ---
@@ -50,7 +50,7 @@ ___
 What is your story ultimately SAYING about this value? (This is your theme):
 ___
 
-`[SUBSTEP_COMPLETE: step_19, substep_1, "Theme Defined"]`
+`[SUBSTEP_COMPLETE: step_20, substep_1, "Theme Defined"]`
 
 ---
 
@@ -73,7 +73,7 @@ For each stage, identify the dominant tone and explain how it connects to the th
 - [ ] Deliberately subverted — the tone contrasts with events for ironic effect
 - [ ] Needs adjustment — describe what to change: ___
 
-`[SUBSTEP_COMPLETE: step_19, substep_2, "Tone Mapped"]`
+`[SUBSTEP_COMPLETE: step_20, substep_2, "Tone Mapped"]`
 
 ---
 
@@ -81,18 +81,18 @@ For each stage, identify the dominant tone and explain how it connects to the th
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 2 | Theme Defined | Universal Human Value and thematic statement identified | `[SUBSTEP_COMPLETE: step_19, substep_1, "Theme Defined"]` |
-| 2 of 2 | Tone Mapped | Tone per stage identified with theme connection | `[SUBSTEP_COMPLETE: step_19, substep_2, "Tone Mapped"]` |
+| 1 of 2 | Theme Defined | Universal Human Value and thematic statement identified | `[SUBSTEP_COMPLETE: step_20, substep_1, "Theme Defined"]` |
+| 2 of 2 | Tone Mapped | Tone per stage identified with theme connection | `[SUBSTEP_COMPLETE: step_20, substep_2, "Tone Mapped"]` |
 
 #### Data Requirements
 
 **Reads from project:**
 - `universal_human_values` — Values explored (from Step 7)
-- `character_profile` — Arc type (from Step 10)
+- `character_profile` — Arc type (from Step 11)
 - `plot_outline` — Six-stage plot outline (version 4)
 
 **Writes to project:**
 - `theme` — What the story says about its values
 - `tone_choices` — Tone per stage
 
-**Next step:** Step 20 — Update Plot Structure (Theme & Tone), then Step 21 — Draft 5 (AI protocol).
+**Next step:** Step 21 — Update Plot Structure (Theme & Tone), then Step 22 — Draft 5 (AI protocol).

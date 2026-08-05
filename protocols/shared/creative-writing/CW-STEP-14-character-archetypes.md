@@ -1,10 +1,10 @@
-### Creative Writing Workbook: Step 13 — Character Profile Parts 4-6 (Archetypes)
+### Creative Writing Workbook: Step 14 — Character Profile Parts 4-6 (Archetypes)
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 12 (Draft 2) + Trial 2
-- **Feeds into:** Step 14 (Update Plot Structure) then Step 15 (Draft 3 — Archetypes)
+- **Prerequisite:** Step 13 (Draft 2) + Trial 2
+- **Feeds into:** Step 15 (Update Plot Structure) then Step 16 (Draft 3 — Archetypes)
 - **Hero's Journey Stage:** The Road of Trials deepens. Now you must understand the MASKS your protagonist wears — their archetypal identity at the beginning, middle, and end.
 
 ---
@@ -60,7 +60,7 @@ Select all archetypes that apply to your protagonist at the **beginning** of the
 | Name | | |
 | Bonds (family/relationships) | | |
 
-`[SUBSTEP_COMPLETE: step_13, substep_1, "Archetypes at Beginning"]`
+`[SUBSTEP_COMPLETE: step_14, substep_1, "Archetypes at Beginning"]`
 
 ---
 
@@ -90,7 +90,7 @@ Select all archetypes that apply to your protagonist in the **middle** of the st
 | Prop | [ ] Yes [ ] No | | |
 | Hair/Eyes | [ ] Yes [ ] No | | |
 
-`[SUBSTEP_COMPLETE: step_13, substep_2, "Archetypes in Middle"]`
+`[SUBSTEP_COMPLETE: step_14, substep_2, "Archetypes in Middle"]`
 
 ---
 
@@ -120,7 +120,7 @@ Select all archetypes that apply to your protagonist at the **end** of the story
 | Prop | [ ] Yes [ ] No | | |
 | Hair/Eyes | [ ] Yes [ ] No | | |
 
-`[SUBSTEP_COMPLETE: step_13, substep_3, "Archetypes at End"]`
+`[SUBSTEP_COMPLETE: step_14, substep_3, "Archetypes at End"]`
 
 ---
 
@@ -131,9 +131,9 @@ Look at the shift from beginning to end:
 - My protagonist moves from **[beginning archetype(s)]** to **[end archetype(s)]**
 - The most visible change is: ___
 - This transformation is shown through: ___
-- This connects to my character arc (Step 10): ___
+- This connects to my character arc (Step 11): ___
 
-`[SUBSTEP_COMPLETE: step_13, substep_4, "Transformation Summary"]`
+`[SUBSTEP_COMPLETE: step_14, substep_4, "Transformation Summary"]`
 
 ---
 
@@ -141,17 +141,17 @@ Look at the shift from beginning to end:
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 4 | Archetypes at Beginning | Beginning archetypes and physical presentation defined | `[SUBSTEP_COMPLETE: step_13, substep_1, "Archetypes at Beginning"]` |
-| 2 of 4 | Archetypes in Middle | Middle archetypes and changes identified | `[SUBSTEP_COMPLETE: step_13, substep_2, "Archetypes in Middle"]` |
-| 3 of 4 | Archetypes at End | End archetypes and full physical transformation mapped | `[SUBSTEP_COMPLETE: step_13, substep_3, "Archetypes at End"]` |
-| 4 of 4 | Transformation Summary | Complete archetypal shift documented | `[SUBSTEP_COMPLETE: step_13, substep_4, "Transformation Summary"]` |
+| 1 of 4 | Archetypes at Beginning | Beginning archetypes and physical presentation defined | `[SUBSTEP_COMPLETE: step_14, substep_1, "Archetypes at Beginning"]` |
+| 2 of 4 | Archetypes in Middle | Middle archetypes and changes identified | `[SUBSTEP_COMPLETE: step_14, substep_2, "Archetypes in Middle"]` |
+| 3 of 4 | Archetypes at End | End archetypes and full physical transformation mapped | `[SUBSTEP_COMPLETE: step_14, substep_3, "Archetypes at End"]` |
+| 4 of 4 | Transformation Summary | Complete archetypal shift documented | `[SUBSTEP_COMPLETE: step_14, substep_4, "Transformation Summary"]` |
 
 #### Data Requirements
 
 **Reads from project:**
-- `character_profile` — Goals, needs, arc type (from Step 10)
-- `plot_outline` — Six-stage plot outline with goals/needs (from Step 11)
-- `draft_2` — Draft 2 prose (from Step 12)
+- `character_profile` — Goals, needs, arc type (from Step 11)
+- `plot_outline` — Six-stage plot outline with goals/needs (from Step 12)
+- `draft_2` — Draft 2 prose (from Step 13)
 
 **Writes to project:**
 - `archetype_beginning` — Archetype(s) and traits at beginning
@@ -159,4 +159,4 @@ Look at the shift from beginning to end:
 - `archetype_end` — Archetype(s) and traits at end
 - `archetype_physical` — Physical presentation details at each stage
 
-**Next step:** Step 14 — Update Plot Structure (Archetypes), then Step 15 — Draft 3 (AI protocol).
+**Next step:** Step 15 — Update Plot Structure (Archetypes), then Step 16 — Draft 3 (AI protocol).

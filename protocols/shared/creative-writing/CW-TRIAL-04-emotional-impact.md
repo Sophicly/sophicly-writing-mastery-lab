@@ -10,7 +10,7 @@ Evaluate Draft 4 for emotional engagement — does the reader feel something?
 4. **Authenticity** — Do emotions feel genuine rather than melodramatic?
 
 ## Procedure
-1. Review Draft 4 alongside the empathy plan from Steps 16-17
+1. Review Draft 4 alongside the empathy plan from Steps 17-18
 2. Score each criterion on a scale of 1-5
 3. Identify the strongest emotional moment and explain why it works
 4. Suggest 2-3 places where emotional depth could be added

@@ -1,10 +1,10 @@
-### Creative Writing Workbook: Step 10 — Character Profile (Parts 1-3: Goals vs Needs)
+### Creative Writing Workbook: Step 11 — Character Profile (Parts 1-3: Goals vs Needs)
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 9 (Draft 1) + Trial 1
-- **Feeds into:** Step 11 (Update Plot Structure) then Step 12 (Draft 2 — Character Arc)
+- **Prerequisite:** Step 10 (Draft 1) + Trial 1
+- **Feeds into:** Step 12 (Update Plot Structure) then Step 13 (Draft 2 — Character Arc)
 - **Hero's Journey Stage:** The Road of Trials continues. Now you must understand your protagonist's deeper psychology — their GOALS vs. NEEDS.
 
 ---
@@ -67,7 +67,7 @@ Explain: ___
 
 Explain your choice(s): ___
 
-`[SUBSTEP_COMPLETE: step_10, substep_1, "Goals at Beginning"]`
+`[SUBSTEP_COMPLETE: step_11, substep_1, "Goals at Beginning"]`
 
 ---
 
@@ -125,7 +125,7 @@ Explain: ___
 
 Explain: ___
 
-`[SUBSTEP_COMPLETE: step_10, substep_2, "Goals at End"]`
+`[SUBSTEP_COMPLETE: step_11, substep_2, "Goals at End"]`
 
 ---
 
@@ -169,7 +169,7 @@ Which type of character arc does your protagonist experience? Choose ONE categor
 
 Explain your choice: ___
 
-`[SUBSTEP_COMPLETE: step_10, substep_3, "Character Arc"]`
+`[SUBSTEP_COMPLETE: step_11, substep_3, "Character Arc"]`
 
 ---
 
@@ -177,9 +177,9 @@ Explain your choice: ___
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 3 | Goals at Beginning | External goal, internal goal, need, and stakes defined | `[SUBSTEP_COMPLETE: step_10, substep_1, "Goals at Beginning"]` |
-| 2 of 3 | Goals at End | End-state, achieved goals, realisation, dilemma, tone, meaning | `[SUBSTEP_COMPLETE: step_10, substep_2, "Goals at End"]` |
-| 3 of 3 | Character Arc | Arc type and description selected and justified | `[SUBSTEP_COMPLETE: step_10, substep_3, "Character Arc"]` |
+| 1 of 3 | Goals at Beginning | External goal, internal goal, need, and stakes defined | `[SUBSTEP_COMPLETE: step_11, substep_1, "Goals at Beginning"]` |
+| 2 of 3 | Goals at End | End-state, achieved goals, realisation, dilemma, tone, meaning | `[SUBSTEP_COMPLETE: step_11, substep_2, "Goals at End"]` |
+| 3 of 3 | Character Arc | Arc type and description selected and justified | `[SUBSTEP_COMPLETE: step_11, substep_3, "Character Arc"]` |
 
 #### Data Requirements
 
@@ -187,7 +187,7 @@ Explain your choice: ___
 - `story_components` — Protagonist, flaw, goal, obstacle, stakes (from Step 3)
 - `story_spine` — The Story Spine outline (from Step 4)
 - `plot_outline` — The six-stage plot outline (from Step 6)
-- `draft_1` — Draft 1 prose (from Step 9)
+- `draft_1` — Draft 1 prose (from Step 10)
 
 **Writes to project:**
 - `external_goal` — What the protagonist wants
@@ -200,4 +200,4 @@ Explain your choice: ___
 - `character_realisation` — What they ultimately learn
 - `character_profile` — Complete profile data (all of the above)
 
-**Next step:** Step 11 — Update Plot Structure (Goals & Needs), then Step 12 — Draft 2 (AI protocol).
+**Next step:** Step 12 — Update Plot Structure (Goals & Needs), then Step 13 — Draft 2 (AI protocol).

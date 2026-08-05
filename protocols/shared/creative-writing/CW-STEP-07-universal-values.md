@@ -96,5 +96,5 @@ _Completion:_ `[SUBSTEP_COMPLETE: step_7, substep_2, "Values at End"]` ·
 **Writes to project:** nothing directly — code writes the fifteen `cw-step-7-*` document rows
 (twelve value rows: traits + balance/excess/deficit + explanation; three reflection rows).
 
-**Next step:** Step 8 — Scene Selection. The scenes worth drafting are the ones where these values
+**Next step:** Step 9 — Scene Selection. The scenes worth drafting are the ones where these values
 are tested.
