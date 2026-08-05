@@ -2165,10 +2165,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 /* v7.20.438 (#266b): flattened with the rest. The teal INK carries the state; the surface is a
    teal tint of the same flat chip rather than a bevelled teal gradient. Kept clearly distinct from
    the hover wash so "active" and "hovered" can never be confused at a glance. */
+/* v7.20.442 (#283) — NO STROKE ON THE ACTIVE TOOL. Neil: *"the active tool has got a stroke
+   around it, which is horrible."* The 1px inset ring is gone; the tint + the colour carry the
+   active state on their own. This finishes the .438→.440 pass, which took every surface off this
+   bar — a stroked pill was the last thing in the row still wearing chrome. Separation by TINT,
+   not by lines (the same ruling as the .181 elevation ladder). */
 .swml-tb-item.is-active {
     background: rgba(81,218,207,0.16);
     color: #51dacf;
-    box-shadow: inset 0 0 0 1px rgba(81,218,207,0.22);
 }
 /* ── Separator ── */
 .swml-tb-sep {
@@ -2324,11 +2328,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     background: rgba(20,18,30,0.07);
     color: #14121e;
 }
+/* v7.20.442 (#283): the light twin of the stroke removal above. BOTH copies must change — this
+   file carries theme pairs, and patching only the dark one leaves the ring alive in light. */
 .swml-canvas-light .swml-tb-item.is-active,
 [data-swml-theme="light"] .swml-tb-item.is-active {
     background: rgba(44,107,104,0.12);
     color: #2c6b68;
-    box-shadow: inset 0 0 0 1px rgba(44,107,104,0.22);
 }
 .swml-canvas-light .swml-tb-sep {
     background: rgba(77,118,253,0.12);
