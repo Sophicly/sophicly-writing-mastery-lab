@@ -222,6 +222,27 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/revisit-flag-harness.js || fail=1
 fi
 
+# v7.20.445: THE CW BOARD PIN. state.board is part of the canvas META KEY, every CW lesson's
+# shortcode ships board="all", and `universal` exists only because renderSetup pins it. A path that
+# reaches the canvas without the pin asks for a key the student has nothing under, gets hasDoc:false
+# and is handed a freshly SEEDED document — no error, and it reads as success. That is exactly what
+# bit tutor review mode (the review branch RETURNED before the pin). ⚠️ Grepping for the pin proves
+# nothing: it was present throughout the bug. This drives the REAL renderSetup instead.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-app\.js|cw-board-pin-harness\.js'; then
+  node bin/cw-board-pin-harness.js || fail=1
+fi
+
+# v7.20.445: ENQUEUE PARITY. Scripts are registered in TWO places — the standalone page and the
+# shortcode, which is how every LearnDash lesson loads. They drifted, and four modules went missing
+# from the shortcode path: Step 6 lost its concept map and served every ask without criteria or
+# examples, the technique picker lost its vocabulary, and two modules never registered at all.
+# Nothing crashed; three of the four were entirely silent. Runs on any change to the plugin file.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'sophicly-writing-mastery-lab\.php|enqueue-parity-lint\.js'; then
+  node bin/enqueue-parity-lint.js || fail=1
+fi
+
 # v7.20.410: EXAMPLE-QUOTE ANTI-FABRICATION GATE (#210). The .407 audit found a FABRICATED Lion
 # King quote that had already SHIPPED to students, and #210 adds quotations across the pool — so
 # the surface for that failure is now a few hundred lines wide. Every quoted span in a Step-6

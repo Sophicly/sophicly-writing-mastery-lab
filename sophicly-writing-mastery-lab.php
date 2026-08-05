@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.444
+ * Version: 7.20.445
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.444');
+define('SWML_VERSION', '7.20.445');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -1034,7 +1034,29 @@ class Sophicly_Writing_Mastery_Lab {
         wp_enqueue_script('swml-core', SWML_URL . 'frontend/wml-core.js', [], SWML_VERSION, true);
         // v7.19.78: shared SectionBlock NodeView factory — load before wml-assessment.
         wp_enqueue_script('swml-section-block', SWML_URL . 'frontend/wml-section-block.js', ['swml-core'], SWML_VERSION, true);
-        wp_enqueue_script('swml-assessment', SWML_URL . 'frontend/wml-assessment.js', ['swml-core', 'swml-section-block', 'swml-tiptap'], SWML_VERSION, true);
+        // ⭐⭐ v7.20.445 — FOUR MODULES WERE MISSING FROM THIS PATH, and this is the path every
+        // CW lesson actually loads through (the shortcode renders embedded mode). Reported by the
+        // dashboard lane from a PROD console line — `WML CW6: window.WML_CW6_CONCEPTS missing` —
+        // which named ONE of them; auditing the two lists against each other found the other three.
+        // Symptom of each, all silent, all degrade-not-crash:
+        //   · swml-cw6-concepts    — the Step-6 outline walk loses its concept map, so every ask
+        //                            degrades to the example-less fallback (help-ladder rungs 0
+        //                            and 1 both go with it). This is the one that was logged.
+        //   · swml-techniques-index — window.WML_TECHNIQUES is absent, so the outline row's
+        //                            technique picker has no taught vocabulary to offer.
+        //   · swml-selection-chip   — window.WML.SelectionChip never registers (inline-coaching).
+        //   · swml-pull-overlay     — window.WML.PullOverlay never registers, so the pull chip in
+        //                            wml-section-block fires an event nothing is listening for.
+        // ⚠️ The dependency ARRAY on swml-assessment was equally wrong here: WordPress only
+        // orders what it is told about, so listing a handle it never enqueues would still have
+        // left the globals undefined. Both halves — the enqueues AND the deps — are needed.
+        // Kept in sync by bin/enqueue-parity-lint.js, because "two lists that must agree" is the
+        // defect, not the omission (BRAND §4 / root CLAUDE.md §7).
+        wp_enqueue_script('swml-techniques-index', SWML_URL . 'frontend/wml-techniques-index.js', [], SWML_VERSION, true);
+        wp_enqueue_script('swml-cw6-concepts', SWML_URL . 'frontend/wml-cw6-concepts.js', [], SWML_VERSION, true);
+        wp_enqueue_script('swml-assessment', SWML_URL . 'frontend/wml-assessment.js', ['swml-core', 'swml-section-block', 'swml-techniques-index', 'swml-cw6-concepts', 'swml-tiptap'], SWML_VERSION, true);
+        wp_enqueue_script('swml-selection-chip', SWML_URL . 'frontend/wml-selection-chip.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
+        wp_enqueue_script('swml-pull-overlay', SWML_URL . 'frontend/wml-pull-overlay.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
         wp_enqueue_script('swml-app', SWML_URL . 'frontend/wml-app.js', ['swml-core', 'swml-assessment', 'swml-shader'], SWML_VERSION, true);
 
         // Video player

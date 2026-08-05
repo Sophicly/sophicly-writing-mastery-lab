@@ -139,10 +139,9 @@
         }
         // v7.13.34: CW embedded mode — set creative writing state + auto-load project
         if (state.task && state.task.startsWith('cw_')) {
-            state.board = 'universal';
-            state.subject = 'creative_writing';
-            state.text = 'creative_writing';
-            state.textName = 'Creative Writing';
+            _pinCwIdentity();                        // v7.20.445: the ONE pin
+            state.textName = 'Creative Writing';     // unconditional here on purpose — the label
+                                                     // resolved above used the PRE-pin state.text
             state.mode = 'creative';
             const cwStepDef = WML.getCwStepDef(state.task);
             state.cwStep = cwStepDef?.step || null;
@@ -365,12 +364,45 @@
         syncUrl(); // Clear URL params on reset
     }
 
+    // ⭐⭐ v7.20.445 — THE ONE PLACE THAT SAYS "A CW TASK MEANS universal / creative_writing".
+    //
+    // `state.board` is part of the canvas META KEY (`swml_canvas_{board}_{text}_{suffix}…`), so a
+    // board that drifts between visits is root CLAUDE.md §5d in its purest form: the write lands
+    // where no read looks. Every CW lesson's shortcode ships `board="all"` — `universal` exists
+    // ONLY because this pin puts it there — so anything that reaches the canvas without running
+    // this asks for a key the student has nothing under, gets `hasDoc:false`, and is handed a
+    // freshly SEEDED document. It looks like data loss and it reads as success.
+    //
+    // Declared as a `function` (hoisted) so call order cannot bite; twin of `_assertBoardValid()`
+    // further down, which catches the same drift leaking the OTHER way at save time.
+    function _pinCwIdentity() {
+        if (!(state.task && state.task.startsWith('cw_'))) return false;
+        state.board   = 'universal';
+        state.subject = 'creative_writing';
+        state.text    = 'creative_writing';
+        if (!state.textName) state.textName = 'Creative Writing';
+        return true;
+    }
+
     function renderSetup() {
         // Tier gate: Free and Guest cannot use WML at all
         if (!hasWMLAccess) {
             renderUpgradePrompt();
             return;
         }
+
+        // ⭐ v7.20.445 — PIN FIRST, because everything below this line can RETURN.
+        // Reported by the dashboard lane with the measurement attached: reviewing Billo (1332) on
+        // prod, Neil stepped Step 6 → Step 5 through the Focus sidebar and saw the material carried
+        // over from Step 4 but NOT the student's own Step 5 work; a page refresh cured it.
+        // ROOT: the review branch immediately below returns before the embedded branch's CW pin
+        // (~line 460) ever runs, and `_doSpaReinit` assigns `state.board = cfg.board || ''`
+        // verbatim from the embed dataset — which is `"all"` on all 29 CW lessons. So a reviewer
+        // arriving by SPA nav fetched `swml_canvas_ALL_creative_writing_cw_5…`, which does not
+        // exist, and the server seeded a fresh doc from the brief_outline artifact.
+        // A full page load never showed it, because boot (~line 141) had already pinned the board —
+        // which is exactly why refreshing "fixed" it and why this survived so long.
+        _pinCwIdentity();
 
         // ── Tutor review mode: skip all setup, go straight to canvas (v7.15.3) ──
         if (state.reviewMode && state.board && state.text) {
@@ -445,12 +477,10 @@
                 // the server meta key between visits to the same CW step (observed:
                 // step 1 fetched with board=all, step 2 with board=universal, same
                 // project — canvas keys differed, data invisible across the drift).
-                if (isCwTask) {
-                    state.board = 'universal';
-                    state.subject = 'creative_writing';
-                    state.text = 'creative_writing';
-                    if (!state.textName) state.textName = 'Creative Writing';
-                }
+                // v7.20.445: now redundant (renderSetup pins before any branch can return), kept
+                // as the belt to that braces — it is idempotent and this branch is also reachable
+                // from paths that may one day not come through renderSetup.
+                if (isCwTask) { _pinCwIdentity(); }
                 // v7.17.43: respect ?cw_project_id=<id> in URL so the "My Projects" sidebar
                 // switcher can deep-link the student into a specific project on reload
                 // (instead of falling back to the most-recently-updated row).
@@ -617,10 +647,7 @@
             // about CW board leaking into non-CW tasks is handled by the guard
             // being scoped to the `state.task.startsWith('cw_')` branch — non-CW
             // tasks never reach this pin.
-            state.subject = 'creative_writing';
-            state.board = 'universal';
-            state.text = 'creative_writing';
-            state.textName = state.textName || 'Creative Writing';
+            _pinCwIdentity();   // v7.20.445: the ONE pin (was four assignments here)
             // Load project context — URL > sessionStorage > most-recent (v7.17.44)
             const _urlProjectIdDL = new URLSearchParams(window.location.search).get('cw_project_id');
             const _sessionProjectIdDL = (function () { try { return sessionStorage.getItem(WML.cwProject.pinKey()) || ''; } catch (_) { return ''; } })();
