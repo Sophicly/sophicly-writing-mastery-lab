@@ -25899,7 +25899,14 @@
         // BETA label + theme toggle (right)
         const headerRight = el('div', { className: 'swml-canvas-header-right' });
 
-        headerRight.appendChild(el('span', { className: 'swml-canvas-ctx-mode', textContent: 'BETA' }));
+        // v7.20.443 (#284) — THE BETA BADGE IS GONE. Neil, 2026-08-05: *"we can remove the beta
+        // badge."* It was permanent, unpressable furniture in a bar the student sees every lesson,
+        // and after .438-.440 stripped every surface off this strip it had become the loudest
+        // object in a row of quiet icons — the same argument that removed the active-tool stroke
+        // one build earlier. A beta signal, if wanted again, belongs somewhere read ONCE, not on
+        // permanent display in the writing chrome.
+        // ⚠️ A SECOND BETA badge still exists on the "Write Essay" task card (wml-app.js, inline
+        // styles) — a different surface, deliberately left alone because he pointed at the toolbar.
         // v7.19.265: "Pull from Previous Stage" moved OUT of the header to a
         // floating icon on the canvas column (see _mountPullFab below) — the
         // header is too cramped on small laptops / Chromebooks.

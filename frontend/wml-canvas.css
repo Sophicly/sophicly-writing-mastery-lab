@@ -1932,21 +1932,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     flex-shrink: 0;
     z-index: 1; /* Above absolute toolbar */
 }
-.swml-canvas-ctx-mode {
-    font-size: 9px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 3px;
-    background: rgba(81,218,207,0.15);
-    color: #51dacf;
-    letter-spacing: 0.5px;
-}
+/* v7.20.443 (#284): `.swml-canvas-ctx-mode` (the BETA badge) removed — its one and only consumer
+   was deleted in wml-assessment.js this build, so the rule is dead, not merely unused. */
 /* v7.20.425 (#255): SOLID #ffffff, the SPL header's own light value (`--spl-header-bg`). Was
    rgba(255,255,255,0.7) — translucent chrome over a scrolling document, the same fault Neil caught
    on the light scroll buttons in #254 one build earlier. Chrome is opaque in both themes. */
 .swml-canvas-light .swml-canvas-header { border-bottom-color: rgba(0,0,0,0.08); background: #ffffff; }
 .swml-canvas-light .swml-canvas-ctx-badge { background: rgba(77,118,253,0.08); color: #4D76FD; }
-.swml-canvas-light .swml-canvas-ctx-mode { background: rgba(77,118,253,0.08); color: #4D76FD; }
 /* v7.19.265: floating "Pull from previous stage" icon. Lives on the canvas
    column (.swml-canvas-editor, position:relative) so it works in BOTH the free
    and training environments and never crowds the header. Appears only when the
