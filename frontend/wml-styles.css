@@ -1905,34 +1905,31 @@ body.swml-page {
        Material's dark purple, with white — just the member of that palette that is built to be
        filled. Hover deepens within the same purple rather than flipping to another colour.
 
-       ⭐⭐ v7.20.449 (#305) — NEIL OVERRULED #5333ed, AND THE MEASUREMENT PROVES HIM RIGHT.
-       *"That's definitely not the purple I had in mind… the material purple we should be using in
-       dark theme should be #a78bfa. #5333ed we can't use, because it's too dark. It just doesn't
-       provide enough contrast to the dark theme colours we use."*
+       ⭐⭐ v7.20.450 (#307) — SETTLED: #4F378B WITH WHITE TEXT. Neil chose it after seeing the
+       numbers: *"I was really hoping for white text… the original purple was actually much better
+       than this one because it allowed for white text."*
 
-       ⭐ HE IS CORRECT AND I HAD THE RULE BACKWARDS FOR THIS CASE. Measured against the surface the
-       chip actually sits on (the AI bubble, #333437):
-           #5333ed vs #333437 = 1.82:1   ← the chip barely separates from its own bubble
-           #a78bfa vs #333437 = 4.57:1   ← 2.5× the separation
-       I had applied BRAND.md line 73's *"on dark, purple FILLS stay #5333ed"* — but that line was
-       written for fills on the DARK BASE, not for a chip floating on a RAISED #333437 surface.
-       At this elevation #5333ed has nothing left to separate against. **His eye caught a number.**
+       ⭐ THE MEASUREMENT THAT UNBLOCKED IT, and I had framed it wrongly at .449. I called
+       `#5333ed`'s 1.82:1 against the bubble "barely separating" — but that is a SURFACE
+       relationship, not a text one, and **our own ladder steps are 1.11:1 (base→raised) and 1.22:1
+       (raised→bubble)**. Both dark candidates therefore separate from the bubble MORE than any two
+       adjacent surfaces in our own design system. Judging a surface by a text yardstick is what made
+       a dark fill look impossible; it never was.
+           #4F378B + white = 9.33:1  · vs bubble 1.33:1   ← chosen
+           #5333ed + white = 6.85:1  · vs bubble 1.82:1
+           #a78bfa + white = 2.72:1  FAIL (this is why .449 had to use dark ink)
+       Hover #6247AD: white 6.94:1, a 1.34:1 shift from rest — picked off a measured shortlist, not
+       typed (the #6544f0 lesson).
 
-       ⚠️ AND THE INK MUST BE DARK, WHICH HE DID NOT SPECIFY — measured, not assumed:
-           #a78bfa + white   = 2.72:1  FAIL
-           #a78bfa + #1c1d1f = 6.20:1  passes AA
-       So the dark-theme chip is a LIGHT lavender with DARK ink. That is the same polarity rule as
-       the light theme, inverted: **the chip is the opposite polarity to the surface behind it, and
-       the ink is the opposite of the chip.** On a dark panel a light chip separates; on a light
-       panel a dark one does (#306).
-
-       ⛔ #6544f0 IS GONE AND HE WAS RIGHT TO ASK WHERE IT CAME FROM: I INVENTED IT as a hover shade
-       for #5333ed. It was not in BRAND.md, not measured, not derived from anything — exactly the
-       guessing he has asked to stop. Hover is now #b9a1fb: one tonal step lighter, ink contrast
-       still 7.67:1, chosen from a measured shortlist rather than typed. */
-    --swml-qa-bg: #a78bfa;
-    --swml-qa-ink: #1c1d1f;
-    --swml-qa-bg-hover: #b9a1fb;
+       ⚠️ A KNOWN, DELIBERATE DIVERGENCE — do not "fix" it silently. The LearnDash sidebar paints its
+       filled grade chip `#5333ed` (`.spl-grade-chip.is-band-purple`, no dark override). WML's action
+       chips are now `#4F378B`. That is Neil's call, made with the comparison in front of him. The
+       two are different jobs — a GRADE BAND in a semantic scale (g9/purple/blue/green/amber/red)
+       versus an ACTION chip — and recolouring the grade band would shift a meaning, not a style.
+       Handed off to the LearnDash lane as an FYI, not a change request. */
+    --swml-qa-bg: #4F378B;
+    --swml-qa-ink: #ffffff;
+    --swml-qa-bg-hover: #6247AD;
     background: var(--swml-qa-bg);
     color: var(--swml-qa-ink);
     box-shadow: none;

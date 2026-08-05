@@ -155,9 +155,20 @@ T(/transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear
         return out;
     });
 
+    // ⚠️ SETTLE BEFORE THE FIRST READ — this harness was FLAKY without it, and a flaky gate is worse
+    // than no gate: it blocks a good ship at random and teaches the next person to bypass it.
+    // Observed at v7.20.450: identical code, one run reported `transition: "none"` on the draw-ring
+    // and the next reported the correct value. The glyph is injected with `innerHTML` and the
+    // stylesheet is a `<style>` in the same document, so the very first `getComputedStyle` could
+    // land before style resolution had caught up with the freshly-inserted SVG subtree. Two nested
+    // rAFs guarantee a completed style+layout pass; the read is only meaningful after one.
+    const settle = () => page.evaluate(() => new Promise(
+        r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    await settle();
     const rest = await read();
     await page.hover('#wp');
     await page.waitForTimeout(700);          // past the 400ms draw
+    await settle();
     const hover = await read();
 
     ['base', 'hue'].forEach(layer => {
