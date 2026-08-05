@@ -1890,10 +1890,28 @@ body.swml-page {
        What replaces it: one flat surface, no gradient, no shadow, and hover that moves the surface
        rather than adding depth. Same shape in both themes, so light is no longer the ugly one.
        ⭐ The ICONS ARE UNTOUCHED — *"I'm happy with the icons. That's pretty cool."* */
-    --swml-qa-bg: #2a2b2e;
-    --swml-qa-bg-hover: #34353a;
+    /* ⭐⭐ v7.20.447 (#299 + #302, Neil) — DARK CHIPS GAIN COLOUR: MATERIAL'S DARK PURPLE + WHITE.
+       Two things he said, one fix. First: *"when you hover over them, they have no colour, or the
+       colour is too pale so you can't really see it."* That was my .446 regression — I replaced the
+       old push-button hover (which filled brand purple) with #2a2b2e → #34353a, a ~6% luminance
+       step, which reads as nothing. Then: *"how about if we use the Material dark theme purple and
+       white? I'm just wondering if it's just slightly lacking a little bit of colour there."*
+
+       ⚠️ MEASURED BEFORE SHIPPING, because the obvious reading of that is unreadable: Material's
+       headline dark purple is #BB86FC, and **#BB86FC with white text is 2.65:1** — it fails WCAG AA
+       badly, because #BB86FC is designed as a light ACCENT ON a dark surface, not as a fill behind
+       white. The correct Material 3 token for a FILLED container in dark theme is
+       `primaryContainer` **#4F378B**, and white on it is **9.33:1**. So this is genuinely his ask —
+       Material's dark purple, with white — just the member of that palette that is built to be
+       filled. Hover deepens within the same purple rather than flipping to another colour.
+
+       ⚠️ BRAND TENSION, stated not buried: #4F378B is NOT a Sophicly brand purple (#5333ed /
+       #2c003e), and BRAND.md's non-negotiable is *"not generic AI-purple."* This is Neil's explicit
+       request, so it ships — but it wants a BRAND.md line or a revisit, not silent adoption. */
+    --swml-qa-bg: #4F378B;
+    --swml-qa-bg-hover: #5D43A0;
     background: var(--swml-qa-bg);
-    color: rgba(255,255,255,0.78);
+    color: #ffffff;
     box-shadow: none;
     transition: background 180ms ease, color 180ms ease;
     /* v7.20.363 (Neil, FIXLIST #88/#89): chip glyphs are registry SVG icons, not emojis.
@@ -1911,7 +1929,7 @@ body.swml-page {
    here brings the chip back onto the current button doctrine rather than inventing a new one. */
 .swml-quick-btn:hover {
     background: var(--swml-qa-bg-hover);
-    color: #fff;
+    color: #ffffff;
 }
 .swml-quick-btn:active { background: var(--swml-qa-bg); }
 .swml-quick-btn.selected {
@@ -2232,15 +2250,22 @@ body.swml-page {
    This block is where the heaviness Neil saw actually came from: it re-coloured the gradient and
    left the base rule's four-layer SHADOW STACK in place, so a chip on white was wearing shadows
    authored for a dark surface. Flat tint, no shadow, in both themes — one design, inverted. */
+/* ⭐⭐ v7.20.447 (#300) — NEIL'S TWO BLUES, AND THEY ARE THE BRAND PAIR.
+   *"in light theme… I think it's better if you colour them with the blue. The background should be
+   the light blue and then the text and the icon should be the darker blue."* → #ECF3FF on #4D76FD.
+   ⚠️ WORTH RECORDING: these are not new values — they are BRAND.md's halo-button light pair
+   VERBATIM (*"light-blue #ECF3FF fill + #4D76FD text/icon"*). My .446 used #EEF0FF / #5333ed:
+   near enough to look deliberate, which is precisely the drift BRAND §4 exists to stop. He caught
+   a token divergence by eye. The icon inherits `color`, so it comes with the text for free. */
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn {
-    background: #EEF0FF;
-    color: #5333ed;
+    background: #ECF3FF;
+    color: #4D76FD;
 }
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn:hover {
-    background: #E0E4FF;
-    color: #4327c4;
+    background: #D8E5FF;
+    color: #2F5BEA;
 }
-#swml-root:not([data-swml-theme="dark"]) .swml-quick-btn:active { background: #EEF0FF; }
+#swml-root:not([data-swml-theme="dark"]) .swml-quick-btn:active { background: #ECF3FF; }
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn.selected {
     background: #5333ed;
     color: #fff;
@@ -2415,7 +2440,11 @@ body.swml-page {
     border: none;
     background: none;
     box-shadow: none;
-    color: rgba(255,255,255,0.55);
+    /* ⭐ v7.20.447 (#296, Neil): *"why is that such a pale colour? Just make it white, solid white."*
+       Was rgba(255,255,255,0.55) — I had matched it to the RAIL's muted ink at .446, but the rail
+       buttons sit on a raised chip and this one sits bare on the dark panel, so the same alpha
+       reads as washed-out rather than quiet. Solid. */
+    color: #ffffff;
     width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -2425,15 +2454,34 @@ body.swml-page {
     overflow: hidden;
     transition: color 200ms ease, background 200ms ease;
 }
-.swml-collapse-btn:hover {
-    color: #fff;
-    background: rgba(255,255,255,0.06);
+.swml-collapse-btn:hover { background: rgba(255,255,255,0.10); }
+.swml-collapse-btn:active { background: rgba(255,255,255,0.05); }
+/* ⭐⭐ v7.20.447 (#298, Neil): *"in light theme, the expand and collapse sidebar buttons shouldn't
+   change colour. They should be white in light theme, BECAUSE THE PANEL DOESN'T CHANGE."*
+   He is right, and it is a BRAND rule rather than a preference — BRAND.md: *"Sidebar always dark —
+   never inverts with light/dark theme toggle."* A control painted ON that always-dark panel must
+   follow the PANEL, not the page. My .446 light override made it follow the page, which is the
+   defect: dark ink on a dark panel. There is deliberately NO light-theme rule for this button now;
+   its absence is the fix, so do not "restore" one. */
+
+/* ⭐⭐ v7.20.447 (#297, Neil) — WHERE THE EXPAND BUTTON SITS WHEN THE SIDEBAR IS COLLAPSED.
+   *"when you do collapse the sidebar, the expand button to the right is in such a weird position.
+   I think what would be best is you have to make that centred — well, middle — in the panel, but
+   then you should make the BOTTOM of that icon aligned with the TOP of the buttons in the rail."*
+   Two constraints. The horizontal one is CSS (absolute + left:50% + translateX(-50%) inside the
+   54px collapsed panel). The vertical one is NOT: the rail's top depends on the canvas header's
+   height, which changes with the toolbar's contents, so any literal here would be a magic number
+   that silently drifts the day the header changes. `--swml-collapse-top` is therefore MEASURED at
+   runtime (wml-assessment.js, `_alignCollapseBtnToRail`) and the fallback below only applies for
+   the frame before that runs, or if the rail is absent entirely. */
+.swml-sidebar.collapsed .swml-sidebar-head { position: relative; }
+.swml-sidebar.collapsed .swml-collapse-btn {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: var(--swml-collapse-top, 8px);
+    margin: 0;
 }
-.swml-collapse-btn:active { background: rgba(255,255,255,0.03); }
-[data-swml-theme="light"] .swml-collapse-btn,
-.swml-canvas-light .swml-collapse-btn { color: rgba(0,0,0,0.45); }
-[data-swml-theme="light"] .swml-collapse-btn:hover,
-.swml-canvas-light .swml-collapse-btn:hover { color: rgba(0,0,0,0.8); background: rgba(0,0,0,0.05); }
 
 /* ── The arrow swap. Ported from the idiom in Neil's Aaron Iker "Arrow Animation.html": the
    outgoing arrow exits ALONG THE WAY IT POINTS while the incoming one arrives from the opposite

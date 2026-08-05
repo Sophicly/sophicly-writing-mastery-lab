@@ -13951,9 +13951,35 @@
             innerHTML: '<span class="swml-collapse-ico swml-collapse-ico--in">' + WML.icon('collapseLeft', 18) + '</span>'
                      + '<span class="swml-collapse-ico swml-collapse-ico--out">' + WML.icon('collapseRight', 18) + '</span>'
         });
+        // ⭐⭐ v7.20.447 (#297, Neil): *"make the BOTTOM of that icon aligned with the TOP of the
+        // buttons in the rail."* MEASURED, never a literal. The rail column's top depends on the
+        // canvas header's height, which changes with what the toolbar is carrying — so a hardcoded
+        // offset would look right today and drift silently the next time the header moves. This
+        // reads the real geometry and writes it to the CSS var the collapsed rule consumes.
+        // offsetTop, deliberately, NOT getBoundingClientRect: the rail column is `position:sticky;
+        // top:0`, so its viewport rect moves as the student scrolls and the button would crawl up
+        // the panel with it. offsetTop is the un-stuck position and is scroll-independent.
+        const _alignCollapseBtnToRail = () => {
+            try {
+                if (!protoPanel.classList.contains('collapsed')) return;
+                const rail = document.querySelector('.swml-outline-btn-column');
+                const head = protoCollapseBtn.parentElement;
+                if (!rail || !head) return;             // no rail on this task → CSS fallback stands
+                const railTop = rail.getBoundingClientRect().top + (rail.scrollTop || 0);
+                const headTop = head.getBoundingClientRect().top;
+                // The icon's BOTTOM lands on the rail's TOP, so subtract the button's own height.
+                const top = Math.max(0, Math.round(railTop - headTop - protoCollapseBtn.offsetHeight));
+                protoPanel.style.setProperty('--swml-collapse-top', top + 'px');
+            } catch (_) { /* fallback in CSS */ }
+        };
+        // Re-measure on resize: the header wraps at narrow widths, which moves the rail.
+        try { window.addEventListener('resize', _alignCollapseBtnToRail); } catch (_) {}
+
         protoCollapseBtn.addEventListener('click', () => {
             protoPanel.classList.toggle('collapsed');
             const isC = protoPanel.classList.contains('collapsed');
+            // After the class lands, so the collapsed layout is the thing being measured.
+            if (isC) requestAnimationFrame(_alignCollapseBtnToRail);
             // The button carries the state itself so the CSS can drive the swap. Kept OFF the
             // panel's own class so a future change to how the panel collapses cannot silently
             // desynchronise the arrow from the thing it describes.

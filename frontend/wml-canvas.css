@@ -10893,20 +10893,24 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 
 /* ── Fix 4: Light theme quick action buttons — more colour ── */
+/* v7.20.447 (#300): Neil's two blues here too — this is the override that actually WINS inside the
+   canvas (it carries !important), so leaving it on the old purple would have made his change look
+   like it had not landed. BRAND.md halo-button light pair: #ECF3FF fill, #4D76FD ink. */
 .swml-canvas-light .swml-quick-btn {
-    background: rgba(83,51,237,0.08) !important;
-    border-color: rgba(83,51,237,0.2) !important;
-    color: #5333ed !important;
+    background: #ECF3FF !important;
+    border-color: transparent !important;
+    color: #4D76FD !important;
 }
 /* v7.19.996 (Neil): light hover was a faint wash — match the DARK hover's semantics
    (fills brand purple, text goes white, lifts) so the effect actually reads. */
 .swml-canvas-light .swml-quick-btn:hover {
-    /* v7.20.446 (#293): the LIFT goes — BRAND §8 retired `translateY(-1px)` site-wide on
-       2026-07-26, and it is the last bit of push-button depth left on this chip. Colour still
-       carries the hover, which is what .996 was actually asking for. */
-    background: rgba(83,51,237,0.9) !important;
-    border-color: rgba(83,51,237,0.9) !important;
-    color: #fff !important;
+    /* v7.20.446 (#293): the LIFT goes — BRAND §8 retired `translateY(-1px)` site-wide on 2026-07-26.
+       v7.20.447 (#300): and the hover deepens WITHIN the blue pair rather than flooding brand purple
+       and flipping the text white. A chip that inverts on hover is the loud behaviour he is moving
+       away from; staying in the pair keeps the row calm while still clearly answering the pointer. */
+    background: #D8E5FF !important;
+    border-color: transparent !important;
+    color: #2F5BEA !important;
 }
 /* Multi-select toggle-on for canvas light mode (v7.12.6) */
 .swml-canvas-light .swml-quick-btn.swml-quick-toggle-on {
