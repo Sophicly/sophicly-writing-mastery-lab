@@ -3308,7 +3308,9 @@
         // had not changed at all — see the guard in the mouseup handler below.
         let toolbarSelKey = null;
 
-        function removeToolbar() {
+        function removeToolbar(_why) {
+            // v7.20.434 instrument (#267) — see the header block in wml-core.js. Measures only.
+            if (toolbar) window.__swmlSelDiagLog?.('destroy', 'app.js:removeToolbar (CHAT)', _why || 'unlabelled');
             if (toolbar) { toolbar.remove(); toolbar = null; }
             toolbarSelKey = null;
         }
@@ -3396,7 +3398,7 @@
             setTimeout(() => {
                 const sel = window.getSelection();
                 if (!sel || sel.isCollapsed || !sel.toString().trim()) {
-                    removeToolbar();
+                    removeToolbar('mouseup: selection collapsed/empty');
                     return;
                 }
 
@@ -3404,19 +3406,19 @@
                 const anchor = sel.anchorNode;
                 const msgEl = anchor?.parentElement?.closest?.('.swml-bubble.ai');
                 if (!msgEl) {
-                    removeToolbar();
+                    removeToolbar('mouseup: anchor not in .swml-bubble.ai');
                     return;
                 }
                 const panel = _findActiveChatPanel(msgEl);
                 if (!panel) {
-                    removeToolbar();
+                    removeToolbar('mouseup: no CHAT_PANELS match');
                     return;
                 }
                 const msgs = panel.msgs;
                 const activeInput = panel.input;
 
                 const selectedText = sel.toString().trim();
-                if (selectedText.length < 2 || selectedText.length > 2000) { removeToolbar(); return; }
+                if (selectedText.length < 2 || selectedText.length > 2000) { removeToolbar('mouseup: length ' + selectedText.length + ' out of range'); return; }
 
                 // Position the toolbar near the selection
                 const range = sel.getRangeAt(0);
@@ -3441,15 +3443,19 @@
                    words somewhere else still rebuilds. Also fixes the same flicker on any stray
                    mouseup — clicking the scrollbar, a rail button, or anywhere outside the chat. */
                 const selKey = selectedText + '@' + Math.round(rect.top) + ',' + Math.round(rect.left);
-                if (toolbar && selKey === toolbarSelKey && toolbar.isConnected) return;
+                if (toolbar && selKey === toolbarSelKey && toolbar.isConnected) {
+                    window.__swmlSelDiagLog?.('idempotent-skip', 'app.js:mouseup (CHAT)', 'same selKey, toolbar left alone');
+                    return;
+                }
 
-                removeToolbar();
+                removeToolbar('mouseup: rebuilding, selKey changed (' + (toolbarSelKey === null ? 'none' : 'was different') + ')');
                 toolbarSelKey = selKey;
                 const msgsRect = msgs.getBoundingClientRect();
 
                 // v7.19.121: neumorphic style + .swml-sel-neumorphic class shares
                 // the same CSS used by the canvas selection toolbar (wml-canvas.css:1058).
                 toolbar = el('div', { className: 'swml-selection-toolbar swml-sel-neumorphic' });
+                window.__swmlSelDiagLog?.('create', 'app.js:3452 (CHAT builder)', 'selKey=' + selKey.slice(0, 40));
 
                 // Truncate for display
                 const quote = selectedText.length > 120
@@ -3583,12 +3589,14 @@
                away; the theme toggle does not, so deferring one frame and re-checking stops the
                destroy/rebuild that WAS the blink. */
             if (!toolbar || toolbar.contains(e.target)) return;
+            const _onToggle = !!e.target?.closest?.('.theme-toggle');
             requestAnimationFrame(() => {
                 const s = window.getSelection();
-                if (!s || s.isCollapsed || !s.toString().trim()) removeToolbar();
+                if (!s || s.isCollapsed || !s.toString().trim()) removeToolbar('document mousedown click-away (onThemeToggle=' + _onToggle + ')');
+                else window.__swmlSelDiagLog?.('dismiss-declined', 'app.js:mousedown (CHAT)', 'selection survived the click-away (onThemeToggle=' + _onToggle + ')');
             });
         });
-        document.addEventListener('scroll', removeToolbar, true);
+        document.addEventListener('scroll', (e) => removeToolbar('document scroll capture, target=' + (e.target?.className || e.target?.nodeName || '?')), true);
     }
 
     // ── Sophicly Notes Integration ──

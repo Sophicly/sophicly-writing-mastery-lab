@@ -15141,8 +15141,19 @@
         }
 
         // Selection toolbar
+        /* ⭐⭐ v7.20.434 (#267) — MEASURED, STATICALLY: THIS WHOLE COPY IS DEAD CODE, AND .433
+           PATCHED IT BELIEVING IT WAS LIVE. The `chatMessages→mouseup` handler 4 lines down opens
+           with an unconditional `return;` (disabled at v7.19.195 because it double-rendered
+           against wml-app.js's CHAT_PANELS handler). `canvasChatSelToolbar` is assigned in exactly
+           ONE place — inside that unreachable block — so it is permanently null, every guard below
+           short-circuits, and the deferred click-away fix shipped at .433 into this file has never
+           executed a single time. The .433 note claiming "BOTH copies" is therefore wrong: it
+           patched the LIVE chat toolbar in wml-app.js and this DEAD one, and left the canvas
+           DOCUMENT toolbar (assessment.js:37528) — the other surface Neil says blinks — untouched.
+           Instrumented anyway: if any of these ever log, this comment is what is wrong. */
         let canvasChatSelToolbar = null;
-        function removeChatSelToolbar() {
+        function removeChatSelToolbar(_why) {
+            if (canvasChatSelToolbar) window.__swmlSelDiagLog?.('destroy', 'assessment.js:15146 (CANVAS-CHAT, believed DEAD)', _why || 'unlabelled');
             if (canvasChatSelToolbar) { canvasChatSelToolbar.remove(); canvasChatSelToolbar = null; }
         }
 
@@ -15169,6 +15180,7 @@
 
                 const tb = el('div', { className: 'swml-selection-toolbar swml-sel-neumorphic' });
                 canvasChatSelToolbar = tb;
+                window.__swmlSelDiagLog?.('create', 'assessment.js:15170 (CANVAS-CHAT, believed DEAD)', 'if this logs, the unreachable-code note above is WRONG');
 
                 // v7.15.54: Reply + Insert hidden in review mode — no chat input, doc is read-only.
                 if (!state.reviewMode) {
@@ -23946,7 +23958,30 @@
             }
 
             // ── chips ──────────────────────────────────────────────────────────────────────
-            function chipBar(options, onPick) {
+            /* ⭐⭐ v7.20.434 (#274) — THE LIVE ASK, so a HELP TAP CANNOT EAT IT.
+               Neil, on .433: *"if I click more examples, I lose the Yes / No / Not yet quick
+               action buttons."* ROOT, read not guessed: chips attach to `chatMessages
+               .lastElementChild`. `serveMore` emits the examples as a NEW bubble — so the newest
+               bubble now carries ONLY the help bar, and the answer chips are stranded on a bubble
+               that has scrolled above the fold. `serveMore` re-attached `helpBar(st)` and nothing
+               else, so the student was left mid-walk with help buttons and no way to answer.
+               That is law §4d exactly: a change that moves the screen must say what the student
+               sees next, and "either a question on screen or a chip to press" is the invariant.
+               THE FIX IS STRUCTURAL, not a patch at the one call site. Every chip menu records how
+               to REBUILD ITSELF; any code that emits a bubble mid-ask re-arms the live ask onto
+               the new bubble. A future help rung that emits a bubble therefore inherits the fix
+               instead of re-introducing the bug — which is the only reason this is worth a
+               closure variable rather than three lines in `serveMore`. */
+            /* ⚠️ The re-arm calls the BUILDERS below, never `chipBar`/`chipBarMulti` themselves.
+               cw-keymatch-harness scans `chipBar(…)` CALL SITES and classifies each by its last
+               argument, so a re-arm written as `chipBar(options, onPick)` invents a phantom menu
+               and fails the gate (it did — on `sel`). The wrappers keep the menu surface exactly
+               as the gate expects it: one call site per real menu, no more. */
+            let _cw7ReArm = null;
+            let _cw7LiveBar = null;   // the chip bar currently holding the unanswered ask
+            function chipBar(options, onPick) { return _cw7BuildChips(options, onPick); }
+            function _cw7BuildChips(options, onPick) {
+                _cw7ReArm = function () { return _cw7BuildChips(options, onPick); };
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
                 if (!bc) return false;
@@ -23956,24 +23991,47 @@
                     const label = (opt && typeof opt === 'object') ? opt.label : opt;
                     const attrs = {
                         className: 'swml-quick-btn', textContent: label,
-                        onClick: function () { bar.remove(); onPick(label); },
+                        // The ask is ANSWERED — it must not be resurrectable by a later help tap.
+                        onClick: function () { _cw7ReArm = null; _cw7LiveBar = null; bar.remove(); onPick(label); },
                     };
                     if (opt && typeof opt === 'object' && opt.icon) attrs.icon = opt.icon;
                     bar.appendChild(el('button', attrs));
                 });
                 bc.appendChild(bar);
+                _cw7LiveBar = bar;
                 return true;
             }
+            /* Move the live ask onto the newest bubble. Removes the OLD bar first: leaving it
+               mounted would give one question two live answer bars, and each chip's handler
+               removes only its OWN bar — so the stale one would survive the answer and sit there
+               live, ready to file a second time.
+               ⚠️ Deliberately a held REFERENCE, not a `querySelectorAll` sweep over the chat. A
+               sweep would also be blind in the sim rig (whose `chatMessages` is a stub with no
+               query methods — it threw on the first cut of this), and it would happily delete a
+               bar belonging to something other than this walk. */
+            function reArmLiveAsk() {
+                if (!_cw7ReArm) return false;
+                const again = _cw7ReArm;
+                if (_cw7LiveBar && typeof _cw7LiveBar.remove === 'function') _cw7LiveBar.remove();
+                _cw7LiveBar = null;
+                return again();
+            }
             // MULTI-SELECT (§4c.8 — the honest answer to "which traits?" is usually several).
-            function chipBarMulti(options, onDone) {
+            function chipBarMulti(options, onDone) { return _cw7BuildChipsMulti(options, onDone, null); }
+            function _cw7BuildChipsMulti(options, onDone, _keep) {
+                // #274: `_keep` carries the ticks THROUGH a re-arm. Rebuilding a multi-select from
+                // zero would silently discard everything already ticked — a help tap must cost the
+                // student nothing, which is the whole point of the ladder being free.
+                const sel = (_keep || []).slice();
+                _cw7ReArm = function () { return _cw7BuildChipsMulti(options, onDone, sel); };
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
                 if (!bc) return false;
                 if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
-                const sel = [];
                 options.forEach(function (opt) {
-                    const btn = el('button', { className: 'swml-quick-btn', textContent: opt });
+                    const on = sel.indexOf(opt) !== -1;
+                    const btn = el('button', { className: 'swml-quick-btn', textContent: on ? '✓ ' + opt : opt });
                     btn.addEventListener('click', function () {
                         const x = sel.indexOf(opt);
                         if (x === -1) { sel.push(opt); btn.textContent = '✓ ' + opt; }
@@ -23983,11 +24041,20 @@
                 });
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'Continue →',
-                    onClick: function () { bar.remove(); onDone(sel.slice()); },
+                    onClick: function () { _cw7ReArm = null; _cw7LiveBar = null; bar.remove(); onDone(sel.slice()); },
                 }));
                 bc.appendChild(bar);
+                _cw7LiveBar = bar;
                 return true;
             }
+
+            // #274b: which traits have already spent their "More examples" bank. Declared ABOVE
+            // its first consumer (helpBar) on purpose — a `const` read before its declaration line
+            // is a TDZ throw, and in this codebase that class has blanked the whole app three
+            // times (`reference_hook_dep_tdz_blanks_the_whole_app`). Not per-session-persisted:
+            // on a reload the ask re-serves its own example, so the bank is honestly fresh.
+            const _cw7MoreServed = Object.create(null);
+            function _cw7MoreKey(st, tr) { return st.fid + '|' + tr; }
 
             // ⭐ THE HELP LADDER (§4c.9) — rungs 0-2, all free. There is no rung 3 in this step:
             // it spends no API calls at all, and a chip that promises Sophia would either lie or
@@ -23998,11 +24065,20 @@
                 if (!bc) return;
                 if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
+                /* #274b: the button is offered only while this TRAIT still has unseen examples.
+                   Repeating a bubble the student is already looking at is not help — and a chip
+                   that does nothing new is worse than an absent one. The bank is three examples
+                   per trait: one on the ask, two on the tap. Spent → the chip goes, and the
+                   remaining rungs (Guidance, the technique cards) are still right there. */
                 if (st && st.kind === 'value') {
-                    bar.appendChild(el('button', {
-                        className: 'swml-quick-btn', textContent: 'More examples', icon: WML.icon('examples', 15),
-                        onClick: function () { serveMore(st); },
-                    }));
+                    const _p = posOf(i);
+                    const _tr = (_p && _p.trait) || st.v.traits[0];
+                    if (!_cw7MoreServed[_cw7MoreKey(st, _tr)]) {
+                        bar.appendChild(el('button', {
+                            className: 'swml-quick-btn', textContent: 'More examples', icon: WML.icon('examples', 15),
+                            onClick: function () { serveMore(st); },
+                        }));
+                    }
                 }
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'Guidance', icon: WML.icon('guide', 15),
@@ -24038,18 +24114,32 @@
                 return { what: '', balance: '', excess: '', deficit: '' };
             }
             // Rung 1 — the same TRAIT, seen in three more stories. Free, code-served, no round trip.
+            /* ⭐ v7.20.434 (#274b) — "the examples are repeating", and they literally were.
+               `traitAskText` (rung 0) already prints `'Example — ' + t.balance`, so the FIRST line
+               this served was byte-identical to the example still on the student's screen, and a
+               second tap re-served all three verbatim. Neither is new material; both read as
+               broken. FIX, and note it authors NO new content (§5c — the card is the source of
+               truth): lead with the two the student has NOT seen, name the third as already shown
+               so the balance/excess/deficit CONTRAST survives intact, and retire the button once
+               this trait's bank is spent rather than repeating it. */
             function serveMore(st, trait) {
                 // The help bar lives on a value station, so `trait` is whichever trait the walk is
                 // actually on — derived, never remembered (the position is the document's).
                 const p = posOf(i);
                 const tr = trait || (p && p.trait) || st.v.traits[0];
                 const t = _traitCard(tr);
-                aiBubble('**' + _cw7TraitLabel(tr) + ' — three ways it can sit**\n\n'
-                    + '- **In balance.** ' + t.balance + '\n'
+                _cw7MoreServed[_cw7MoreKey(st, tr)] = true;
+                aiBubble('**' + _cw7TraitLabel(tr) + ' — the other two ways it can sit**\n\n'
                     + '- **In excess.** ' + t.excess + '\n'
                     + '- **In deficit.** ' + t.deficit + '\n\n'
-                    + 'Notice that none of the three is “the good one”. Excess and deficit are where the '
-                    + 'conflict lives, which is why they are usually the more interesting answer.');
+                    + 'Together with the balanced example above, that is all three. Notice that none of '
+                    + 'them is “the good one”. Excess and deficit are where the conflict lives, which is '
+                    + 'why they are usually the more interesting answer.');
+                // ⭐ §4d LIVENESS: the ask moved off the newest bubble when the examples landed, so
+                // it is re-armed here. Without this the student is left with help chips and nothing
+                // to answer — which is exactly what Neil hit. Re-armed BEFORE the help bar so the
+                // answer chips sit ABOVE the help row, exactly as they do on the ask itself.
+                reArmLiveAsk();
                 helpBar(st);
                 resetSend();
             }
@@ -32754,8 +32844,14 @@
                         }
 
                         // ── Canvas Chat Selection Toolbar (identical to document toolbar) ──
+                        /* ⭐ v7.20.434 (#267): a THIRD copy of this toolbar, with its own shadowed
+                           `canvasChatSelToolbar`. Unlike the copy at :15144 this one's mouseup is
+                           NOT disabled, and its click-away dismissal below is the ORIGINAL
+                           undeferred form — .433 never touched it either. Whether it is reachable
+                           at all is unknown, so it is instrumented rather than assumed. */
                         let canvasChatSelToolbar = null;
-                        function removeChatSelToolbar() {
+                        function removeChatSelToolbar(_why) {
+                            if (canvasChatSelToolbar) window.__swmlSelDiagLog?.('destroy', 'assessment.js:32759 (CANVAS-CHAT copy 2)', _why || 'unlabelled');
                             if (canvasChatSelToolbar) { canvasChatSelToolbar.remove(); canvasChatSelToolbar = null; }
                         }
 
@@ -32774,6 +32870,7 @@
 
                                 const tb = el('div', { className: 'swml-selection-toolbar swml-sel-neumorphic' });
                                 canvasChatSelToolbar = tb;
+                                window.__swmlSelDiagLog?.('create', 'assessment.js:32775 (CANVAS-CHAT copy 2)', 'reachability of this copy was unknown — it just proved itself LIVE');
 
                                 // v7.15.54: Reply + Insert hidden in review mode — no chat input, doc is read-only.
                                 if (!state.reviewMode) {
@@ -32846,7 +32943,10 @@
                         });
 
                         document.addEventListener('mousedown', (e) => {
-                            if (canvasChatSelToolbar && !canvasChatSelToolbar.contains(e.target)) removeChatSelToolbar();
+                            // v7.20.434 (#267): still the undeferred form — .433 did not reach here. Measured, not fixed.
+                            if (canvasChatSelToolbar && !canvasChatSelToolbar.contains(e.target)) {
+                                removeChatSelToolbar('document mousedown click-away (onThemeToggle=' + !!e.target?.closest?.('.theme-toggle') + ')');
+                            }
                         });
 
                         // ── Canvas Chat — AI Engine Wiring ──
@@ -37241,7 +37341,9 @@
         // v7.20.121: the PM from:to the mounted toolbar belongs to. See the idempotence guard
         // in showCanvasSelToolbar — this is what makes "same selection" answerable.
         let _selToolbarKey = null;
-        function removeCanvasSelToolbar() {
+        function removeCanvasSelToolbar(_why) {
+            // v7.20.434 instrument (#267) — see the header block in wml-core.js. Measures only.
+            if (canvasSelToolbar) window.__swmlSelDiagLog?.('destroy', 'assessment.js:removeCanvasSelToolbar (DOC)', _why || 'unlabelled');
             if (canvasSelToolbar) { canvasSelToolbar.remove(); canvasSelToolbar = null; }
             _selToolbarKey = null;
         }
@@ -37286,25 +37388,25 @@
                     // selectionchange also fires when a selection COLLAPSES (arrow key, click
                     // away) or moves outside the canvas — mouseup never had to handle that, so
                     // every bail must now clear a stale toolbar rather than just return.
-                    if (!sel || sel.isCollapsed) { removeCanvasSelToolbar(); return; }
+                    if (!sel || sel.isCollapsed) { removeCanvasSelToolbar('selectionchange: DOM selection collapsed/absent'); return; }
                     // v7.20.124: serialize the selection ONCE. This used to call sel.toString()
                     // here AND again for selectedText below — two full serializations of the
                     // whole selection on every call, which is free for a few dragged words and
                     // is not for a Cmd+A'd 1700-word essay.
                     const _selStr = sel.toString().trim();
-                    if (!_selStr) { removeCanvasSelToolbar(); return; }
+                    if (!_selStr) { removeCanvasSelToolbar('selectionchange: selection serialized empty'); return; }
 
                     // Find ProseMirror editor from anchor — fresh lookup every time
                     const anchor = sel.anchorNode;
                     const pm = anchor?.parentElement?.closest?.('.ProseMirror');
                     const wrap = pm?.closest('.swml-canvas-content');
-                    if (!pm || !wrap) { removeCanvasSelToolbar(); return; }
+                    if (!pm || !wrap) { removeCanvasSelToolbar('selectionchange: anchor outside .ProseMirror/.swml-canvas-content (pm=' + !!pm + ' wrap=' + !!wrap + ')'); return; }
 
                     const selectedText = _selStr; // v7.20.124: serialized once above
                     // v7.19.71: drop the silent 2000-char upper cap — Neil reported toolbar
                     // missing on whole-essay-plan highlights (>2000 chars, e.g. exam-prep crib
                     // SKELETON PLAN sections). Lower bound stays at 2 to keep stray clicks out.
-                    if (selectedText.length < 2) { removeCanvasSelToolbar(); return; }
+                    if (selectedText.length < 2) { removeCanvasSelToolbar('selectionchange: length ' + selectedText.length + ' < 2'); return; }
 
                     // v7.20.121 IDEMPOTENCE (Neil: "it blinks twice"). This path DESTROYS and
                     // REBUILDS the toolbar element, and .swml-selection-toolbar carries
@@ -37321,14 +37423,25 @@
                     // Must sit BEFORE the teardown below, or the rebuild has already happened.
                     const tFrom = canvasEditor?.state?.selection?.from;
                     const tTo = canvasEditor?.state?.selection?.to;
-                    if (tFrom == null || tTo == null || tFrom === tTo) { removeCanvasSelToolbar(); return; }
+                    /* ⭐ v7.20.434 instrument (#267): this bail is a LIVE SUSPECT and has never been
+                       observed either way. The idempotence key is built from the PM STATE selection,
+                       not the DOM one — so if clicking the theme toggle blurs the editor and PM
+                       collapses (or momentarily loses) its selection, this line tears the toolbar
+                       down even though the DOM selection is untouched, and the next selectionchange
+                       rebuilds it. That would be destroy+rebuild WITHOUT any click-away handler
+                       involved, which is exactly why .433 did not stop it on the document surface.
+                       Not asserted — measured. The dump will say whether this line fired. */
+                    if (tFrom == null || tTo == null || tFrom === tTo) { removeCanvasSelToolbar('selectionchange: PM state selection null/collapsed (from=' + tFrom + ' to=' + tTo + ')'); return; }
                     const _selKey = tFrom + ':' + tTo;
-                    if (canvasSelToolbar && _selToolbarKey === _selKey && wrap.contains(canvasSelToolbar)) return;
+                    if (canvasSelToolbar && _selToolbarKey === _selKey && wrap.contains(canvasSelToolbar)) {
+                        window.__swmlSelDiagLog?.('idempotent-skip', 'assessment.js:showCanvasSelToolbar (DOC)', 'same PM key ' + _selKey);
+                        return;
+                    }
                     _selToolbarKey = _selKey;
 
                     // Remove any existing toolbar
                     const old = wrap.querySelector('.swml-selection-toolbar');
-                    if (old) old.remove();
+                    if (old) { window.__swmlSelDiagLog?.('destroy', 'assessment.js:37330 (DOC stale sweep)', 'wrap.querySelector found an orphan before rebuild'); old.remove(); }
 
                     const range = sel.getRangeAt(0);
                     // v7.19.71: prefer first client rect over bounding rect for multi-block
@@ -37361,6 +37474,7 @@
 
                     const tb = el('div', { className: 'swml-selection-toolbar swml-sel-neumorphic' });
                     canvasSelToolbar = tb;
+                    window.__swmlSelDiagLog?.('create', 'assessment.js:37362 (DOC builder)', 'PM key ' + _selKey);
 
                     // Comment
                     const SVG_CMT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
@@ -37527,7 +37641,20 @@
 
             document.addEventListener('mousedown', (e) => {
                 _selDragging = true;
-                if (canvasSelToolbar && !canvasSelToolbar.contains(e.target)) removeCanvasSelToolbar();
+                /* ⭐ v7.20.434 (#267) — READ THIS BEFORE ASSUMING .433 COVERED THIS SURFACE.
+                   .433 deferred the click-away dismissal in TWO places (wml-app.js:3580 and
+                   wml-assessment.js:15237) and the FIXLIST records that as "BOTH copies". It is
+                   not. This — the canvas DOCUMENT toolbar's dismissal — was never touched, and it
+                   is still the ORIGINAL undeferred form: any mousedown outside the toolbar
+                   destroys it, and the mouseup handler immediately below reschedules a rebuild.
+                   That is precisely the destroy→rebuild pair .433 was written to stop.
+                   ⛔ NOT FIXED HERE ON PURPOSE. §19: measure first. If the dump shows this line
+                   firing on a theme toggle, the fix is the .433 shape applied here; if it does
+                   not fire, the theory is dead on this surface too and the STYLE-CHANGE probe
+                   holds the answer. Do not pre-empt the measurement. */
+                if (canvasSelToolbar && !canvasSelToolbar.contains(e.target)) {
+                    removeCanvasSelToolbar('document mousedown click-away (onThemeToggle=' + !!e.target?.closest?.('.theme-toggle') + ')');
+                }
             });
             // Drag finished — release the latch and show the toolbar for the new selection.
             document.addEventListener('mouseup', () => {

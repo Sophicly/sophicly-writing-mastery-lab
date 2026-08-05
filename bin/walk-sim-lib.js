@@ -505,6 +505,29 @@ function makeWorld(ctl, opts) {
             });
         return out;
     };
+    /* ⭐⭐ v7.20.434 (#274) — THE HELP RUNGS, WHICH NO SIM COULD TAP UNTIL NOW.
+       `world.chips()` above deliberately EXCLUDES help-bar buttons, because for driving a walk
+       they are noise. The consequence went unnoticed for the whole life of the rig: **a help chip
+       was UNTAPPABLE BY CONSTRUCTION, so no assertion about one could ever be written**, and the
+       branch simply did not exist to be walked. That is how a rung-1 tap that destroys the ask
+       shipped to Neil with the CW7 suite fully green — the sim was not failing to catch it, it was
+       structurally incapable of reaching it.
+       This is the same shape as `feedback_negative_only_tests_pass_on_a_dead_screen`: the suite
+       proves things about the paths it can drive and says nothing about the ones it cannot.
+       Any surface a STUDENT can press, the rig must be able to press. */
+    world.helpChips = function () {
+        const content = world._lastBubbleEl && world._lastBubbleEl.children[0];
+        if (!content) return [];
+        const out = [];
+        content.children
+            .filter((c) => String(c.className).indexOf('swml-quick-actions') !== -1
+                && HELP_BAR_RE.test(String(c.className)) && !c._removed)
+            .forEach((bar) => bar.children.forEach((b) => { if (!b._removed) out.push(b); }));
+        return out;
+    };
+    world.helpChipNamed = function (re) {
+        return world.helpChips().filter((c) => re.test(String(c.textContent)))[0];
+    };
     world.resolveApi = function (reply) {
         if (!armed) return false;
         // The real pipeline RENDERS the model's reply as a fresh bubble before the walk's resume

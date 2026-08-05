@@ -221,6 +221,48 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
     ok(tapThroughPacing(w, 12), 'full run: the paced orientation never handed over to a station');
     ok(!!chipNamed(w, 'Yes'), 'full run: the first station did not open on its per-trait Yes/No ask');
 
+    /* ⭐⭐ v7.20.434 (#274) — A HELP TAP MUST NOT COST THE STUDENT THE ASK.
+       Neil, on .433: "if I click more examples, I lose the Yes / No / Not yet quick action
+       buttons." The whole CW7 suite was green while that shipped, because `world.chips()` filters
+       help buttons out and there was no way to press one — the branch was unreachable to the rig,
+       not merely untested. `world.helpChips()` (v7.20.434) is what makes this assertable at all.
+       ⭐ VERIFIED BY INJECTION, not by going green: with `reArmLiveAsk()` removed from serveMore
+       this block fails on the first assertion. A check that passes both before and after the fix
+       is testing its own memory (`feedback_a_check_that_duplicates_its_subject_is_not_a_check`). */
+    {
+        const before = w.chips().map(chipText).sort().join('|');
+        const more = w.helpChipNamed(/More examples/i);
+        ok(!!more, 'the trait ask offers no "More examples" rung — rung 1 of the help ladder (§4c.9) is missing');
+        const bubblesBefore = w.bubbles.length;
+        more.click();
+        ok(w.bubbles.length > bubblesBefore, '"More examples" served nothing — a free rung that does nothing is worse than an absent one');
+        const after = w.chips().map(chipText).sort().join('|');
+        ok(after === before,
+            'HELP ATE THE ASK: the answer chips were "' + before + '" before the "More examples" tap and "'
+            + after + '" after it. §4d — the student must always have a question on screen or a chip to press, '
+            + 'and a FREE help rung must never cost them the ask it was offered beside.');
+        // ONE live answer bar, never two. The re-arm sweeps the stale one; without that sweep the
+        // old bar survives (each chip's handler removes only its OWN bar) and would sit there live
+        // after the question had already been answered.
+        const liveBars = w.bubbles.length ? w.chips().length : 0;
+        ok(liveBars === before.split('|').length,
+            'after the help tap there are ' + liveBars + ' answer chips for a ' + before.split('|').length
+            + '-option question — a stale bar was left mounted, so one question now has two live answer bars');
+        // #274b — the examples must not repeat what the ask already showed.
+        const askText = String(w.bubbles[bubblesBefore - 1] || '');
+        const moreText = String(w.bubbles[w.bubbles.length - 1] || '');
+        const exampleLine = (askText.match(/Example — (.+)/) || [])[1];
+        if (exampleLine) {
+            ok(moreText.indexOf(exampleLine.trim()) === -1,
+                'REPEATED EXAMPLE: "More examples" re-served the exact line the ask already showed ('
+                + exampleLine.trim().slice(0, 60) + '…). Neil: "the examples are repeating."');
+        }
+        // Spent bank ⇒ the chip retires rather than repeating itself.
+        ok(!w.helpChipNamed(/More examples/i),
+            'the "More examples" chip is still offered after its bank is spent — tapping it again '
+            + 'repeats a bubble the student is already looking at, which is what he reported.');
+    }
+
     let guard = 0;
     while (guard++ < 400 && w.ctl.active) {
         const before = w.bubbles.length;
