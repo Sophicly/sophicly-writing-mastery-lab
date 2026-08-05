@@ -2688,16 +2688,45 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     line-height: 1.5;
 }
 /* v7.13.53: Sticky column for outline + resources buttons */
+/* ⭐⭐ v7.20.437 — THE RAIL JOINS THE GRID, and it is arithmetic, not taste.
+   Neil, 2026-08-05, looking at the aligned sidebar: *"one issue that you can see is actually the
+   rail buttons. They're slightly out of alignment with the others… could we increase the size
+   slightly, and maybe increase the spacing slightly, so that the third button in the rail is also
+   in line with the badges and the LearnDash row?"*
+
+   MEASURED on the live staging Step 7 page, not estimated. The rail carried THREE off-scale
+   values — button `30×30` (30/4 = 7.5), `padding: 6px`, `gap: 6px` — and that is precisely WHY it
+   missed: its third button ended at y=276 against the LearnDash row's 282. Six pixels, exactly
+   what he spotted by eye.
+
+   ONE candidate is clean on every count, and it is the one that matches what is already here:
+       3 × 28 + 2 × 12 = 108  →  third button bottom = 282  →  Δ 0.0
+   28 and 12 are both on the 4px scale AND are the badge's own height and gap, so the rail now
+   inherits the badge column's exact 40px pitch. Three rails, three badges and the LearnDash
+   progress row all share one rhythm.
+   Rejected, with reasons: `32+6` also lands on 282 but keeps an off-scale gap — it would fail the
+   very audit Neil asked for; `32+8` = 286; `28+8` = 274.
+
+   ⚠️ HONEST NOTE: he asked for the button to get BIGGER and the scale-clean answer makes the box
+   2px SMALLER. The ICON is what actually grows — 16px → 20px (+25%), see the `> svg` rule — so the
+   control reads more substantial while the box gets tidier. That is the trade he was really after.
+
+   ⭐ TOKENISED, because the negative margin MUST equal the width (it cancels the float so the
+   column takes no layout width, which is what keeps the document's horizontal position unchanged).
+   Two literals that must stay in sync is the BRAND §4 derive-don't-duplicate defect by definition —
+   spelling the size once means a future resize cannot shift the document sideways. */
 .swml-outline-btn-column {
+    --swml-rail-size: 28px;
+    --swml-rail-gap: 12px;
     position: sticky;
     top: 0;
     float: left;
     z-index: 8;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin: 0 -30px 0 12px;
-    width: 30px;
+    gap: var(--swml-rail-gap);
+    margin: 0 calc(-1 * var(--swml-rail-size)) 0 12px;
+    width: var(--swml-rail-size);
 }
 /* ⭐ v7.20.383 (Neil: "the contextual toolbar was sitting above the outline panel… the panel
    should sit above pretty much everything else"). ROOT: this column is `position:sticky` with a
@@ -2732,15 +2761,17 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     border: none;
     color: rgba(255,255,255,0.55);
     cursor: pointer;
-    padding: 6px;
+    padding: 4px;   /* v7.20.437: was 6px — off the 4px scale, and 4px is what gives the 20px icon its cell */
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
     transition: color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s;
-    width: 30px;
-    height: 30px;
+    /* v7.20.437: reads the column's token. The fallback matters — a couple of rail buttons are
+       appended by code paths that could in principle mount them outside the column. */
+    width: var(--swml-rail-size, 28px);
+    height: var(--swml-rail-size, 28px);
     position: relative; /* tooltip anchor */
 }
 .swml-outline-btn:hover {
@@ -2832,6 +2863,20 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     grid-area: 1 / 1;
     position: relative;
     z-index: 1;
+    /* ⭐⭐ v7.20.437 — THE ICON IS SIZED HERE, IN ONE PLACE, and that is the whole point.
+       Neil asked for the rail buttons to read bigger. The nine rail buttons each build their own
+       glyph at their own call site in wml-assessment.js, every one of them passing a hardcoded
+       `16` — so "make the icons bigger" LOOKED like a nine-file edit, and I nearly reported that
+       as a reason not to do it. It is not a constraint; it is the defect. BRAND §4: *"a repeated
+       literal that must stay in sync with another literal is a defect, not a style choice."*
+       An SVG's `width`/`height` ATTRIBUTES are presentation hints — CSS beats them. So one rule
+       here sizes every rail icon, now and for every button added later, and the nine literals
+       become dead weight rather than nine things to keep in step.
+       16px → 20px (+25%) is the size increase he asked for; it fills the 20px cell that the 28px
+       button and its 4px padding leave. Both layers are selected together — the hue layer must
+       stay registered with the base layer or the hover sweep reveals a misaligned glyph. */
+    width: 20px;
+    height: 20px;
 }
 /* The revealed icon is the SAME icon in the ink that reads on the flooded chip —
    so as the circle sweeps past, background and icon change together as one tile.
