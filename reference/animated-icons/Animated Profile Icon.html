@@ -1,0 +1,1211 @@
+
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  
+
+    <link rel="apple-touch-icon" type="image/png" href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico" />
+
+    <link rel="mask-icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-b4b4269c16397ad2f0f7a01bcdf513a1994f4c94b8af2f191c09eb0d601762b1.svg" color="#111" />
+
+
+
+  
+    <script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-f07739098a39bd4e74ddd974652dac904146f33fdc1ecab356e8c809a05faccb.js"></script>
+
+
+  <title>Animated SVG Icons</title>
+
+    <link rel="canonical" href="https://codepen.io/mowcode/pen/PvEWPN">
+  
+  
+  
+  
+<style>
+/* Ignore This */
+  @import url('https://fonts.googleapis.com/css?family=Muli:300,300i,400,400i,600,600i,700,700i&display=swap');
+
+  :root {
+    --primary-color: #121f4E;
+    --secondary-color: #28A5EA;
+    --tertiary-color: #16E2C5;
+
+    --state-default: #7997AB;
+    --state-success: #5DBE7F;
+    --state-error: #F56060;
+    --state-warning: #FFBA00;
+    --state-inactive: #DDD;
+
+    --primary-background: #E5E5E5;
+    --secondary-background: #FFF;
+    
+    --primary-font: #04244d;
+    --secondary-font: #526680;
+
+    --time-cubit: .6s;
+    --time-quarter: calc(var(--time-cubit) / 4);
+    --time-half: calc(var(--time-cubit) / 2);
+    --time-threequater: calc(var(--time-cubit) / .75);
+    --time-single: var(--time-cubit);
+    --time-double: calc(var(--time-cubit) * 2);
+    --time-triple: calc(var(--time-cubit) * 3);
+  }
+
+  body {
+    background: var(--primary-background, #E5E5E5);
+    font-family: 'Muli', sans-serif;
+    color: var(--secondary-font, #526680);
+    font-weight: 400;
+  }
+  h1,
+  h2,
+  h3 {
+    display: block;
+    line-height: 100%;
+    color: var(--primary-font, #04244d);
+    font-weight: 600;
+    margin-bottom: 0px;
+  }
+  hr {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 0px;
+    margin: 16px 0px 32px;
+    border: none;
+    border-top: solid 1px var(--primary-background, #E5E5E5);
+    border-bottom: solid 1px var(--secondary-background, #FFF);
+  }
+  p {
+  	box-sizing: border-box;
+  	padding: 0 20px;
+  	display: block;
+  	width: 100%;
+  }
+  p span {
+    height: 16px;
+    line-height: 16px;
+    padding: 2px 8px;
+    background: var(--tertiary-color, #16E2C5);
+    color: var(--secondary-background, #FFF);
+    font-size: 12px;
+    border-radius: 999px;
+  }
+  ul {
+    padding-left: 0;
+    list-style-type: none;
+  }
+  article {
+    position: relative;
+    display: block;
+    padding: 16px 0px 0px;
+    margin: 32px auto;
+    max-width: 700px;
+    width: 100%;
+    border-radius: 4px;
+    background: var(--secondary-background, #FFF);
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 0 30px 60px -10px rgba(0,0,0,0.15);
+  }
+  article * {
+    display: inline-block;
+  }
+.grid {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 32px;
+  padding: 0px 32px 32px;
+}
+.grid li {
+  display: block;
+  background: #F2F2F2;
+  padding: 24px 24px 12px;
+  border-radius: 4px;
+}
+.grid li span {
+  text-align: center;
+  display: block;
+  color: var(--tertiary-font);
+  font-size: 13px;
+  height: 20px;
+  line-height: 20px;
+  margin-top: 12px;
+}
+svg {
+  cursor: pointer;
+}
+/* Ignore This */
+
+/* Custom Code Here */
+svg.error circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.error circle.animation {
+  transition: stroke-dashoffset 200ms linear 260ms, stroke-dasharray 200ms linear 260ms;
+  stroke: var(--state-error);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.error.toggle circle.animation {
+  transition: stroke-dashoffset 200ms linear 0ms, stroke-dasharray 200ms linear 0ms;
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.error line {
+  stroke: var(--state-error);
+}
+svg.error line {
+  stroke-dashoffset: -50px;
+  stroke-dasharray: 50px;
+}
+svg.error line.left {
+  transition: stroke-dashoffset 120ms linear 0ms;
+}
+svg.error line.right {
+  transition: stroke-dashoffset 120ms linear 160ms;
+}
+svg.error.toggle line.left {
+  transition: stroke-dashoffset 120ms linear 260ms;
+  stroke-dashoffset: 0;
+}
+svg.error.toggle line.right {
+  transition: stroke-dashoffset 120ms linear 440ms;
+  stroke-dashoffset: 0;
+}
+
+
+svg.success circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.success circle.animation {
+  transition: stroke-dashoffset 200ms linear 260ms, stroke-dasharray 200ms linear 260ms;
+  stroke: var(--state-success);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.success.toggle circle.animation {
+  transition: stroke-dashoffset 200ms linear 0ms, stroke-dasharray 200ms linear 0ms;
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.success path {
+  stroke: var(--state-success);
+  transition: stroke-dashoffset 160ms linear 0ms;
+  stroke-dashoffset: -50px;
+  stroke-dasharray: 50px;
+}
+svg.success.toggle path {
+  transition: stroke-dashoffset 200ms linear 260ms;
+  stroke-dashoffset: 0;
+}
+
+
+svg.warning circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.warning circle.animation {
+  transition: stroke-dashoffset 200ms linear 260ms, stroke-dasharray 200ms linear 260ms;
+  stroke: var(--state-warning);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.warning.toggle circle.animation {
+  transition: stroke-dashoffset 200ms linear 0ms, stroke-dasharray 200ms linear 0ms;
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.warning path,
+svg.warning line {
+  stroke: var(--state-warning);
+}
+svg.warning path {
+  transition: stroke-dashoffset 180ms linear 0ms;
+  stroke-dashoffset: -50px;
+  stroke-dasharray: 50px;
+}
+svg.warning line {
+  transition: stroke-width 30ms linear 200ms;
+  stroke-width: 0;
+}
+svg.warning.toggle path {
+  transition: stroke-dashoffset 180ms linear 280ms;
+  stroke-dashoffset: 0;
+}
+svg.warning.toggle line {
+  transition: stroke-width 30ms linear 260ms;
+  stroke-width: 8;
+}
+
+svg.checkbox circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.checkbox circle.animation {
+  transition: stroke-dashoffset 460ms linear 260ms, stroke-dasharray 460ms linear 260ms, 160ms linear 200ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+  fill: transparent;
+}
+svg.toggle.checkbox  circle.animation {
+  transition: stroke-dashoffset 200ms linear 0ms, stroke-dasharray 200ms linear 0ms,fill 200ms linear 260ms;
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+  fill: var(--primary-color);
+}
+svg.checkbox path {
+  stroke: #FFF;
+  transition: stroke-dashoffset 160ms linear 0ms;
+  stroke-dashoffset: -50px;
+  stroke-dasharray: 50px;
+}
+svg.toggle.checkbox  path {
+  transition: stroke-dashoffset 200ms linear 460ms;
+  stroke-dashoffset: 0;
+}
+
+svg.exit path.solid {
+  stroke: var(--state-inactive);
+}
+svg.exit path.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.exit line {
+  stroke: var(--state-inactive);
+  transition: stroke 200ms linear 0ms;
+}
+svg.exit g.exit-icon {
+  transition: transform 200ms linear 0ms;
+  transform-origin: center center;
+}
+svg.exit .exit-arrow {
+  transform: translateY(2px);
+}
+svg.exit.toggle path.animation,
+svg.exit:hover path.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.exit.toggle line,
+svg.exit:hover line {
+  stroke: var(--primary-color);
+}
+svg.exit.toggle g.exit-icon,
+svg.exit:hover g.exit-icon {
+  transform: rotate(-90deg);
+}
+svg.exit.toggle .exit-arrow,
+svg.exit:hover .exit-arrow {
+  animation: arrow 2s ease-in-out infinite;
+  transform: translateY(2px);
+}
+@keyframes arrow {
+  0% {
+    transform: translateY(2px);
+  }
+
+  50% {
+    transform: translateY(6px);
+  }
+
+  100% {
+    transform: translateY(2px);
+  }
+}
+svg.exit .exit-right,
+svg.exit .exit-left {
+  display: none;
+}
+svg.exit.toggle .exit-right,
+svg.exit.toggle .exit-left,
+svg.exit:hover .exit-right,
+svg.exit:hover .exit-left {
+  display: block;
+}
+svg.exit .exit-arrow line {
+  transition: stroke-width 200ms linear 0s;
+}
+svg.exit.toggle .exit-arrow line,
+svg.exit:hover .exit-arrow line {
+  stroke-width: 6px;
+}
+
+svg.menu circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.menu circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.toggle.menu circle.animation {
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.menu line {
+  stroke: var(--state-inactive);
+  transform-origin: 50% 50%;
+}
+svg.menu line.top,
+svg.menu line.mid,
+svg.menu line.bot {
+  stroke-width: 4px;
+  opacity: 1;
+  transition: opacity 0ms linear 200ms, transform 200ms linear 200ms, stroke 200ms linear 0ms, stroke-width 200ms linear 200ms;
+}
+svg.menu line.top {
+  transform: translateY(10px);
+}
+svg.menu line.bot {
+  transform: translateY(-10px);
+}
+svg.menu:hover line.top {
+  transform: translateY(12px);
+}
+svg.menu:hover line.bot {
+  transform: translateY(-12px);
+}
+
+svg.toggle.menu line {
+  stroke: var(--primary-color);
+}
+svg.toggle.menu line.top,
+svg.toggle.menu line.mid,
+svg.toggle.menu line.bot {
+  transform: translateY(0);
+  opacity: 0;
+  stroke-width: 6px;
+  transition: opacity 0s linear 200ms, transform 200ms linear 0s, stroke 200ms linear 0ms, stroke-width 200ms linear 0ms;
+}
+svg.menu line.left,
+svg.menu line.right {
+  opacity: 0;
+  transition: opacity 0ms linear 200ms, transform 200ms linear 0s, stroke 200ms linear 0ms;
+}
+svg.toggle.menu line.left,
+svg.toggle.menu line.right {
+  opacity: 1;
+  transition: opacity 0ms linear 200ms, transform 200ms linear 200ms, stroke 200ms linear 0ms;
+}
+svg.toggle.menu line.left {
+  transform: rotateZ(45deg);
+}
+svg.toggle.menu line.right {
+  transform: rotateZ(-45deg);
+}
+
+svg.user circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.user circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.toggle.user circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.user rect,
+svg.user path {
+  transition: fill 400ms linear 0ms;
+  fill: var(--state-inactive);
+}
+svg.user:hover rect {
+  opacity: 0;
+}
+svg.toggle.user rect,
+svg.toggle.user path {
+  transition: fill 400ms linear 0ms;
+  fill: var(--primary-color);
+}
+svg.toggle.user rect {
+  animation: blink 6s ease-in-out infinite;
+}
+@keyframes blink {  
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0;
+  }
+  31% {
+    opacity: 1;
+  }
+  32% {
+    opacity: 0;
+  }
+  70% {
+    opacity: 0;
+  }
+  71% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 0;
+  }
+  73% {
+    opacity: 1;
+  }
+  74% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+svg.view circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.view circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.view:hover  circle.animation {
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.view line {
+  stroke: var(--state-inactive);
+}
+svg.view:hover line {
+  stroke: var(--primary-color);
+}
+svg.view g.lines-draw {
+  transition: stroke-width 200ms linear 0ms;
+  stroke-width: 0;
+}
+svg.view g.dots {
+  transition: stroke-width 100ms linear 250ms;
+  stroke-width: 8px;
+}
+svg.view.toggle g.lines-draw {
+  transition: stroke-width 100ms linear 250ms;
+  stroke-width: 6px;
+}
+svg.view.toggle g.dots {
+  transition: stroke-width 200ms linear 0ms;
+  stroke-width: 0;
+}
+
+svg.settings circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.settings circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.toggle.settings circle.animation {
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.settings path {
+  transition: fill 400ms linear 0ms;
+  fill: var(--state-inactive);
+}
+svg.toggle.settings path {
+  animation: cognate 6s ease-in-out infinite;
+  transform-origin: center center;
+  transition: fill 400ms linear 0ms;
+  fill: var(--primary-color);
+}
+@keyframes cognate {  
+  0% {
+    transform: rotateZ(0deg);
+  }
+  10% {
+    transform: rotateZ(-45deg);
+  }
+  20% {
+    transform: rotateZ(45deg);
+  }
+  30% {
+    transform: rotateZ(90deg);
+  }
+  40% {
+    transform: rotateZ(45deg);
+  }
+  50% {
+    transform: rotateZ(-45deg);
+  }
+  60% {
+    transform: rotateZ(45deg);
+  }
+  70% {
+    transform: rotateZ(-45deg);
+  }
+  80% {
+    transform: rotateZ(45deg);
+  }
+  100% {
+    transform: rotateZ(0deg);
+  }
+}
+
+svg.edit circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.edit line,
+svg.edit circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.toggle.edit  circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.toggle.edit  line {
+  transition: stroke-dashoffset 2s linear 0ms, stroke-dasharray 2s linear 0ms;
+  stroke-dasharray: 32,0;
+  stroke-dashoffset: 0;
+}
+svg.edit path {
+  transition: fill 400ms linear 0ms, transform 400ms linear 0ms;
+  transform-origin: center center;
+  transform: rotate(360deg);
+  fill: var(--state-inactive);
+}
+svg.toggle.edit  path {
+  transition: fill 400ms linear 0ms;
+  fill: var(--primary-color);
+  animation: scribble 1s ease-in-out 2;
+  transform-origin: 16px 50px;
+}
+@keyframes scribble {  
+  0% {
+    transform: rotateZ(0deg);
+  }
+  10% {
+    transform: rotateZ(-1deg);
+  }
+  20% {
+    transform: rotateZ(1deg);
+  }
+  30% {
+    transform: rotateZ(0.5deg);
+  }
+  40% {
+    transform: rotateZ(-1deg);
+  }
+  50% {
+    transform: rotateZ(-3deg);
+  }
+  60% {
+    transform: rotateZ(1deg);
+  }
+  70% {
+    transform: rotateZ(2deg);
+  }
+  80% {
+    transform: rotateZ(-3deg);
+  }
+  100% {
+    transform: rotateZ(0deg);
+  }
+}
+
+svg.download circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.download circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.toggle.download circle.animation {
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.download path {
+  stroke: var(--state-inactive);
+}
+svg.toggle.download path {
+  stroke: var(--primary-color);
+}
+svg.toggle.download path.arrow {
+  animation: download 1s linear infinite;
+}
+svg.toggle.download path.disk {
+  animation: download-disk 1s linear infinite;
+}
+@keyframes download-disk {
+  0%, 24%, 40% ,100% {
+    transform: translateY(0px);
+  }
+
+  25% {
+    transform: translateY(1px);
+  }
+}
+@keyframes download {
+  0%, 50%, 100% {
+    transform: translateY(0px);
+  }
+  25% {
+    transform: translateY(2px);
+  }
+  75% {
+    transform: translateY(-2px);
+  }
+}		
+
+svg.upload  circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.upload  circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.toggle.upload circle.animation {
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.upload path {
+  stroke: var(--state-inactive);
+}
+svg.toggle.upload path {
+  stroke: var(--primary-color);
+}
+
+svg.toggle.upload path.arrow {
+  animation: upload 1s linear infinite;
+}
+svg.toggle.upload path.disk {
+  animation: upload-disk 1s linear infinite;
+}
+@keyframes upload-disk {
+  0%, 74%, 90% ,100% {
+    transform: translateY(0px);
+  }
+
+  75% {
+    transform: translateY(1px);
+  }
+}
+@keyframes upload {
+  0%, 50%, 100% {
+    transform: translateY(0px);
+  }
+  25% {
+    transform: translateY(-2px);
+  }
+  75% {
+    transform: translateY(2px);
+  }
+}
+
+svg.search circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.search circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.toggle.search circle.animation {
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.search g * {
+  stroke: var(--state-inactive);
+}
+svg.toggle.search g * {
+  stroke: var(--primary-color);
+}
+
+svg.toggle.search g.find {
+  animation: find 4s linear infinite;
+  transform-origin: center;
+}
+@keyframes find{
+  0% {
+    transform: rotateZ(0deg) translate(0, 0);
+  }
+  10% {
+    transform: rotateZ(-1deg) translate(1px, 1px);
+  }
+  20% {
+    transform: rotateZ(1deg);
+  }
+  30% {
+    transform: rotateZ(0.5deg) translate(-1px, -1px);
+  }
+  40% {
+    transform: rotateZ(-1deg);
+  }
+  50% {
+    transform: rotateZ(-3deg);
+  }
+  60% {
+    transform: rotateZ(1deg) translate(-2px, 1px);
+  }
+  70% {
+    transform: rotateZ(2deg);
+  }
+  80% {
+    transform: rotateZ(-3deg) translate(-1px, -1px);
+  }
+  100% {
+    transform: rotateZ(0deg);
+  }
+}
+
+svg.archive circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.archive circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.toggle.archive circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.archive path {
+  transition: fill 400ms linear 0ms;
+  fill: var(--state-inactive);
+}
+svg.toggle.archive path {
+  transition: fill 400ms linear 0ms;
+  fill: var(--primary-color);
+}
+svg.toggle.archive path.lid {
+  animation: lid 400ms linear 1;
+  transform-origin: center;
+}
+@keyframes lid{
+  0% {
+    transform: rotateZ(0deg) translate(0, 0);
+  }
+  25% {
+    transform: rotateZ(6deg) translate(0, -1px);
+  }
+  50% {
+    transform: rotateZ(-6deg) translate(0, -1px);
+  }
+  75% {
+    transform: rotateZ(6deg) translate(0, -1px);
+  }
+  100% {
+    transform: rotateZ(0deg) translate(0, 0);
+  }
+}
+
+svg.activate  circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.activate  circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.toggle.activate  circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.activate  path {
+  transition: fill 400ms linear 0ms;
+  fill: var(--state-inactive);
+}
+svg.toggle.activate  path {
+  transition: fill 400ms linear 0ms;
+  fill: var(--primary-color);
+  animation: activate 400ms linear 1;
+  transform-origin: center;
+}
+@keyframes activate{
+  0% {
+    transform: rotateZ(0deg) scale(1);
+  }
+  25% {
+    transform: rotateZ(6deg) scale(0.95);
+  }
+  50% {
+    transform: rotateZ(-6deg) scale(0.95);
+  }
+  75% {
+    transform: rotateZ(6deg) scale(0.95);
+  }
+  100% {
+    transform: rotateZ(0deg) scale(1);
+  }
+}
+
+svg.star circle.solid {
+  stroke: var(--state-inactive);
+}
+svg.star circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke: var(--primary-color);
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 2;
+}
+svg.toggle.star circle.animation {
+  transition: stroke-dashoffset 400ms linear 0ms, stroke-dasharray 400ms linear 0ms;
+  stroke-dasharray: 200,0;
+  stroke-dashoffset: 0;
+}
+svg.star polygon {
+  transition: fill 400ms linear 0ms;
+  fill: var(--state-inactive);
+}
+svg.toggle.star polygon {
+  transition: fill 400ms linear 0ms;
+  fill: var(--primary-color);
+  animation: star 400ms linear 1;
+  transform-origin: center;
+}
+@keyframes star{
+  0% {
+    transform: rotateZ(0deg) scale(1);
+  }
+  25% {
+    transform: rotateZ(6deg) scale(0.95);
+  }
+  50% {
+    transform: rotateZ(-6deg) scale(0.95);
+  }
+  75% {
+    transform: rotateZ(6deg) scale(0.95);
+  }
+  100% {
+    transform: rotateZ(0deg) scale(1);
+  }
+}
+
+svg.spinner {
+  animation: rotater 4s linear infinite;
+}
+svg.spinner circle {
+  animation: spinner 3s ease-in-out infinite;
+  stroke-linecap: round;
+  transform-origin: center center;
+  stroke: var(--state-inactive);
+
+  transition: stroke 200ms linear 0ms;
+}
+svg.spinner:hover circle,
+svg.spinner.toggle circle {
+  stroke: var(--primary-color);
+}
+@keyframes rotater {  
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes spinner {  
+  0% {
+    stroke-dasharray: 1, 188;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 94, 188;
+    stroke-dashoffset: -127;
+  }
+  100% {
+    stroke-dasharray: 94, 188;
+    stroke-dashoffset: -188;
+  }
+}
+/* Custom Code Here */
+</style>
+
+  <script>
+  window.console = window.console || function(t) {};
+</script>
+
+  
+  
+</head>
+
+<body translate="no">
+  <article>
+  <h1>Animated SVG Icons</h1>
+
+  <p>
+    <span>HTML</span>
+    <span>CSS Animations</span>
+    <span>SVG</span>
+  </p>
+
+  <p>Click on icon to animate</p>
+
+  <hr>
+
+  <!-- Custom Code Here -->
+  <ul class="grid">
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="error">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+
+        <line class="left" fill="none" stroke="#000000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" x1="19.271" y1="19.521" x2="44.729" y2="44.979"/>
+        <line class="right" fill="none" stroke="#000000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" x1="44.729" y1="19.521" x2="19.271" y2="44.979"/>
+      </svg>
+      <span>Error Icon</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="success">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="6" fill="none" stroke="#000" d="M47.91 23.39L26.7 44.61 16.09 34"/>
+      </svg>
+      <span>Success Icon</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="warning">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <path fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-miterlimit="10" d="M32 15v20"/>
+        <line fill="none" stroke="#000" stroke-width="8" stroke-linecap="round" stroke-miterlimit="10" x1="32" y1="46" x2="32" y2="46"/>
+      </svg>
+      <span>Warning Icon</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="checkbox">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="6" fill="none" stroke="#000" d="M47.91 23.39L26.7 44.61 16.09 34"/>
+      </svg>
+      <span>Checkbox</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="exit">
+        <g class="exit-icon">
+          <path class="solid" fill="none" stroke-width="4" stroke-linecap="round" stroke-miterlimit="10" d="M16.106,6.896
+                                                                                                            C7.758,12.177,2.199,21.466,2.199,32.074c0,16.456,13.345,29.801,29.801,29.801c16.456,0,29.802-13.346,29.802-29.801
+                                                                                                            c0-10.607-5.561-19.896-13.908-25.178"/>
+          <path class="animation" fill="none" stroke-width="4" stroke-linecap="round" stroke-miterlimit="10" d="M16.106,6.896
+                                                                                                                C7.758,12.177,2.199,21.466,2.199,32.074c0,16.456,13.345,29.801,29.801,29.801c16.456,0,29.802-13.346,29.802-29.801
+                                                                                                                c0-10.607-5.561-19.896-13.908-25.178"/>
+          <g class="exit-arrow">
+            <line class="exit-line" fill="none" stroke-width="6" stroke-linecap="round" stroke-miterlimit="10" x1="32" y1="1.875" x2="32" y2="31.484"/>
+            <line class="exit-left" fill="none" stroke-width="4" stroke-linecap="round" stroke-miterlimit="10" x1="32" y1="31.484" x2="20.874" y2="20.358"/>
+            <line class="exit-right" fill="none" stroke-width="4" stroke-linecap="round" stroke-miterlimit="10" x1="32" y1="31.484" x2="43.126" y2="20.358"/>
+          </g>
+        </g>
+      </svg>	
+      <span>Power/Exit</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="menu">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+
+        <line class="top" fill="none" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" x1="14" y1="32" x2="50" y2="32"/>
+        <line class="mid" fill="none" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" x1="14" y1="32" x2="50" y2="32"/>
+        <line class="bot" fill="none" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" x1="14" y1="32" x2="50" y2="32"/>
+
+        <line class="left" fill="none" stroke="#000000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" x1="14" y1="32" x2="50" y2="32"/>
+        <line class="right" fill="none" stroke="#000000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" x1="14" y1="32" x2="50" y2="32"/>
+      </svg>
+      <span>Burger Menu</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="user">
+        <rect x="24.5" y="22.875" width="15" height="5"/>
+        <path d="M37.25,38.999v-3.5c0.788-0.39,3.04-3.071,3.275-5.166c0.621-0.047,1.594-0.616,1.879-2.861
+                 c0.154-1.206-0.457-1.883-0.828-2.097c0,0,0.924-1.755,0.924-3.874c0-4.249-1.668-7.875-5.25-7.875c0,0-1.244-2.625-5.25-2.625
+                 c-7.423,0-10.5,4.762-10.5,10.5c0,1.932,0.924,3.874,0.924,3.874c-0.371,0.214-0.984,0.893-0.828,2.097
+                 c0.285,2.245,1.258,2.814,1.879,2.861c0.235,2.095,2.487,4.776,3.275,5.166v3.5c-1.412,4.235-10.792,2.78-14.366,8.49
+                 C16.962,53.279,24.044,57,32,57s15.038-3.721,19.616-9.511C48.042,41.779,38.662,43.234,37.25,38.999z M27.944,26.706
+                 c-0.979,0.072-1.86-0.415-2.359-1.185c0.444-0.438,1.103-0.745,1.862-0.801c1.01-0.074,1.909,0.315,2.383,0.937
+                 C29.396,26.244,28.728,26.649,27.944,26.706z M34.169,25.658c0.475-0.622,1.373-1.012,2.384-0.938
+                 c0.76,0.056,1.418,0.363,1.862,0.801c-0.499,0.77-1.381,1.256-2.359,1.185C35.272,26.648,34.604,26.244,34.169,25.658z"/>
+        <circle class="solid" fill="none" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+      </svg>
+      <span>User Icon</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="view">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+
+        <line fill="none" stroke="#000" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="20" y1="20" x2="20" y2="20"/>
+
+        <line fill="none" stroke="#000" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="20" y1="32" x2="20" y2="32"/>
+
+        <line fill="none" stroke="#000" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="20" y1="44" x2="20" y2="44"/>
+
+        <g class="lines-draw">
+          <line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="31" y1="20" x2="45" y2="20"/>
+
+          <line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="31" y1="32" x2="45" y2="32"/>
+
+          <line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="31" y1="44" x2="45" y2="44"/>
+        </g>
+
+        <g class="dots">
+          <line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="32" y1="20" x2="32" y2="20"/>
+
+          <line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="32" y1="32" x2="32" y2="32"/>
+
+          <line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="32" y1="44" x2="32" y2="44"/>
+
+
+          <line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="44" y1="20" x2="44" y2="20"/>
+
+          <line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="44" y1="32" x2="44" y2="32"/>
+
+          <line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="44" y1="44" x2="44" y2="44"/>
+        </g>
+      </svg>
+      <span>View Style</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="settings">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <path d="M56.998,33.547v-3.063l-4.371-0.704c-0.1-0.926-0.277-1.825-0.494-2.71l3.887-2.167l-1.047-2.878l-4.371,0.837
+                 c-0.406-0.826-0.85-1.631-1.359-2.391l2.9-3.355l-1.967-2.347l-3.82,2.281c-0.66-0.634-1.365-1.218-2.104-1.761l1.586-4.165
+                 l-2.652-1.532l-2.801,3.441c-0.836-0.371-1.697-0.687-2.586-0.945l0.064-4.438l-3.016-0.533l-1.459,4.2
+                 c-0.461-0.03-0.92-0.07-1.389-0.07c-0.458,0-0.905,0.039-1.356,0.068l-1.46-4.202l-3.017,0.53l0.065,4.436
+                 c-0.889,0.258-1.752,0.57-2.588,0.939l-2.803-3.441l-2.653,1.53l1.585,4.162c-0.739,0.542-1.444,1.126-2.104,1.759l-3.823-2.282
+                 l-1.969,2.345l2.897,3.353c-0.511,0.759-0.954,1.563-1.362,2.39L9.04,21.996l-1.048,2.877l3.882,2.167
+                 c-0.218,0.884-0.396,1.783-0.496,2.707l-4.376,0.704v3.063l4.371,0.703c0.099,0.926,0.276,1.826,0.493,2.711l-3.887,2.166
+                 l1.048,2.879l4.37-0.84c0.408,0.826,0.852,1.633,1.361,2.393l-2.903,3.357l1.969,2.346l3.82-2.283
+                 c0.66,0.633,1.365,1.217,2.104,1.762l-1.587,4.168l2.652,1.531l2.802-3.443c0.835,0.369,1.697,0.686,2.585,0.943l-0.064,4.443
+                 l3.016,0.531l1.459-4.203c0.462,0.029,0.921,0.07,1.39,0.07c0.458,0,0.905-0.039,1.356-0.068l1.461,4.207l3.016-0.531l-0.064-4.439
+                 c0.887-0.258,1.752-0.57,2.586-0.939l2.805,3.445l2.652-1.531l-1.586-4.164c0.74-0.543,1.445-1.127,2.105-1.758l3.824,2.283
+                 l1.969-2.344l-2.898-3.355c0.51-0.758,0.953-1.564,1.363-2.389l4.373,0.838l1.049-2.877l-3.885-2.166
+                 c0.219-0.885,0.396-1.783,0.496-2.709L56.998,33.547z M48.674,30.496H37.287c-0.656-2.305-2.775-4-5.288-4
+                 c-0.464,0-0.912,0.064-1.343,0.173l-5.688-9.853c2.142-0.996,4.518-1.568,7.031-1.568C40.729,15.248,47.91,21.961,48.674,30.496z
+                 M15.25,31.998c0-5.651,2.821-10.647,7.12-13.683l5.689,9.853c-0.964,0.991-1.56,2.341-1.56,3.828c0,1.487,0.596,2.836,1.559,3.827
+                 l-5.69,9.857C18.07,42.645,15.25,37.648,15.25,31.998z M29.5,31.996c0-1.379,1.121-2.5,2.5-2.5c1.379,0,2.5,1.121,2.5,2.5
+                 c0,1.379-1.121,2.5-2.5,2.5C30.621,34.496,29.5,33.375,29.5,31.996z M24.965,47.178l5.689-9.855c0.432,0.109,0.88,0.174,1.345,0.174
+                 c2.512,0,4.631-1.695,5.288-4h11.387C47.912,42.031,40.73,48.748,32,48.748C29.486,48.748,27.108,48.176,24.965,47.178z"/>
+      </svg>
+      <span>Settings</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="edit">
+        <circle class="solid" fill="none" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+
+        <path d="M40.485,17.858l2.829-2.83c1.562-1.562,4.095-1.56,5.656,0.001c1.562,1.561,1.564,4.097,0.001,5.656l-2.829,2.83
+                 L40.485,17.858z M38.6,19.743L17.027,41.316l-1.998,7.654l7.657-2L44.257,25.4L38.6,19.743z"/>
+
+        <line fill="none" stroke-width="1" stroke-linecap="round" stroke-miterlimit="10" x1="16" y1="50" x2="48" y2="50"/>
+      </svg>
+      <span>User Icon</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="download">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+
+        <path class="arrow" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M31.999 14v20M24.929 26.93l7.07 7.07M39.07 26.93L31.999 34"/>
+
+        <path class="disk" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M16 44h32"/>
+      </svg>	
+      <span>Download</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="upload">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+
+        <path class="arrow" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M32 34V14M39.07 21.069L32 14M24.929 21.069L32 14" />
+
+        <path class="disk" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M16 44h32"/>
+      </svg>
+      <span>Upload</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="search">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+
+        <g class="find">
+          <circle fill="none" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" cx="28.101" cy="28.1" r="12"/>
+
+          <line fill="none" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="36.586" y1="36.585" x2="47.899" y2="47.899"/>
+
+          <line fill="none" stroke="#000000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="40.828" y1="40.828" x2="47.899" y2="47.899"/>
+        </g>
+      </svg>
+      <span>Search</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="archive">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+
+        <path class="lid" fill="#F800FF" d="M46.585,18.5h-28c-1.104,0-2,0.896-2,2v4h32v-4C48.585,19.396,47.688,18.5,46.585,18.5z"/>
+        <path class="box" fill="#090509" d="M18.585,44.5c0,1.104,0.896,2,2,2h24c1.104,0,2-0.896,2-2v-18h-28V44.5z M28.585,30.5h8c1.104,0,2,0.896,2,2
+                                            s-0.896,2-2,2h-8c-1.104,0-2-0.896-2-2S27.481,30.5,28.585,30.5z"/>
+      </svg>
+      <span>Archive</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="activate">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <path d="M29.545,36.376l-8.766,6.333c-1.052,0.691-1.871,1.151-2.922,1.151c-2.104,0-3.857-1.842-3.857-3.915 c0-1.728,1.403-2.995,2.688-3.57L26.974,32l-10.286-4.491C15.286,26.933,14,25.667,14,23.939c0-2.072,1.87-3.799,3.974-3.799 c1.052,0,1.753,0.345,2.805,1.151l8.766,6.333l-1.168-10.248C28.026,14.958,29.662,13,32,13c2.337,0,3.974,1.842,3.623,4.261 l-1.167,10.363l8.766-6.333c1.052-0.806,1.87-1.151,2.921-1.151c2.105,0,3.858,1.728,3.858,3.799c0,1.843-1.286,2.994-2.688,3.57 L37.026,32l10.286,4.376C48.714,36.951,50,38.218,50,40.061c0,2.072-1.871,3.799-3.974,3.799c-0.936,0-1.753-0.46-2.805-1.151 l-8.766-6.333l1.167,10.248C35.974,49.042,34.337,51,32,51c-2.338,0-3.974-1.842-3.623-4.261L29.545,36.376z"/>
+      </svg>
+      <span>Activate</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="star">
+        <circle class="solid" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+        <circle class="animation" fill="none" stroke-linecap="round" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+
+        <polygon points="32,15 37.562,26.192 50,27.987 41,36.699 43.125,49 32,43.192 20.875,49 23,36.699 14,27.987 26.438,26.192 "/>
+      </svg>
+      <span>Star</span>
+    </li>
+    <li>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="spinner">
+        <circle fill="none" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="30"/>
+      </svg>
+      <span>Spinner</span>
+    </li>
+  </ul>
+  <!-- Custom Code Here -->
+</article>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js'></script>
+    <script id="rendered-js" >
+$(document).ready(function () {
+  $("svg").click(function () {
+    $(this).toggleClass("toggle");
+  });
+});
+//# sourceURL=pen.js
+  </script>
+
+  
+</body>
+
+</html>
