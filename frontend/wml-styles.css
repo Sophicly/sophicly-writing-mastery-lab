@@ -1905,26 +1905,36 @@ body.swml-page {
        Material's dark purple, with white — just the member of that palette that is built to be
        filled. Hover deepens within the same purple rather than flipping to another colour.
 
-       ⭐⭐ v7.20.448 (#304) — AND NEIL WAS RIGHT THAT IT WAS THE WRONG SHADE. *"I was actually
-       thinking of the material purple that we used in our brand guidelines… if you look in the
-       LearnDash sidebar where it's got Course Average, that is the purple I'm thinking about."*
-       He is remembering something real and BRAND.md names it: **Brand Purple Light `#a78bfa` —
-       "Dark-theme purple accent (MATERIAL TONAL — Neil, 2026-07-07)"**. So "the Material purple" is
-       ours, not Google's, and #4F378B is gone.
-       ⭐ BUT THE SAME BRAND ENTRY DECIDES WHICH MEMBER TO USE HERE, and it is not the one in the
-       ring: *"on dark, purple FILLS stay `#5333ed`; purple TEXT/accents step up to `#a78bfa`."*
-       A quick-action chip is a FILL. The Course-Average ring he pointed at is a STROKE, i.e. an
-       accent — which is exactly why it is the lighter tone there. Confirmed by contrast, since the
-       rule is not arbitrary: `#5333ed` + white = **6.85:1** (passes AA); `#a78bfa` + white = 3.46:1
-       (fails). And there is direct precedent for this exact use — the LearnDash sidebar already
-       paints `.spl-grade-chip.is-band-purple { background: #5333ed }`.
-       ⚠️ The ring in his screenshot is currently `#8c79ec` in one stale copy of
-       `sophicly-focus-mode.css`; that value is **RETIRED** (BRAND.md, Neil 2026-08-02, superseded by
-       `#a78bfa`). Not ours to edit — flagged to the LearnDash lane, not fixed here. */
-    --swml-qa-bg: #5333ed;
-    --swml-qa-bg-hover: #6544f0;
+       ⭐⭐ v7.20.449 (#305) — NEIL OVERRULED #5333ed, AND THE MEASUREMENT PROVES HIM RIGHT.
+       *"That's definitely not the purple I had in mind… the material purple we should be using in
+       dark theme should be #a78bfa. #5333ed we can't use, because it's too dark. It just doesn't
+       provide enough contrast to the dark theme colours we use."*
+
+       ⭐ HE IS CORRECT AND I HAD THE RULE BACKWARDS FOR THIS CASE. Measured against the surface the
+       chip actually sits on (the AI bubble, #333437):
+           #5333ed vs #333437 = 1.82:1   ← the chip barely separates from its own bubble
+           #a78bfa vs #333437 = 4.57:1   ← 2.5× the separation
+       I had applied BRAND.md line 73's *"on dark, purple FILLS stay #5333ed"* — but that line was
+       written for fills on the DARK BASE, not for a chip floating on a RAISED #333437 surface.
+       At this elevation #5333ed has nothing left to separate against. **His eye caught a number.**
+
+       ⚠️ AND THE INK MUST BE DARK, WHICH HE DID NOT SPECIFY — measured, not assumed:
+           #a78bfa + white   = 2.72:1  FAIL
+           #a78bfa + #1c1d1f = 6.20:1  passes AA
+       So the dark-theme chip is a LIGHT lavender with DARK ink. That is the same polarity rule as
+       the light theme, inverted: **the chip is the opposite polarity to the surface behind it, and
+       the ink is the opposite of the chip.** On a dark panel a light chip separates; on a light
+       panel a dark one does (#306).
+
+       ⛔ #6544f0 IS GONE AND HE WAS RIGHT TO ASK WHERE IT CAME FROM: I INVENTED IT as a hover shade
+       for #5333ed. It was not in BRAND.md, not measured, not derived from anything — exactly the
+       guessing he has asked to stop. Hover is now #b9a1fb: one tonal step lighter, ink contrast
+       still 7.67:1, chosen from a measured shortlist rather than typed. */
+    --swml-qa-bg: #a78bfa;
+    --swml-qa-ink: #1c1d1f;
+    --swml-qa-bg-hover: #b9a1fb;
     background: var(--swml-qa-bg);
-    color: #ffffff;
+    color: var(--swml-qa-ink);
     box-shadow: none;
     transition: background 180ms ease, color 180ms ease;
     /* v7.20.363 (Neil, FIXLIST #88/#89): chip glyphs are registry SVG icons, not emojis.
@@ -1942,7 +1952,7 @@ body.swml-page {
    here brings the chip back onto the current button doctrine rather than inventing a new one. */
 .swml-quick-btn:hover {
     background: var(--swml-qa-bg-hover);
-    color: #ffffff;
+    color: var(--swml-qa-ink);
 }
 .swml-quick-btn:active { background: var(--swml-qa-bg); }
 .swml-quick-btn.selected {
@@ -2263,22 +2273,27 @@ body.swml-page {
    This block is where the heaviness Neil saw actually came from: it re-coloured the gradient and
    left the base rule's four-layer SHADOW STACK in place, so a chip on white was wearing shadows
    authored for a dark surface. Flat tint, no shadow, in both themes — one design, inverted. */
-/* ⭐⭐ v7.20.447 (#300) — NEIL'S TWO BLUES, AND THEY ARE THE BRAND PAIR.
-   *"in light theme… I think it's better if you colour them with the blue. The background should be
-   the light blue and then the text and the icon should be the darker blue."* → #ECF3FF on #4D76FD.
-   ⚠️ WORTH RECORDING: these are not new values — they are BRAND.md's halo-button light pair
-   VERBATIM (*"light-blue #ECF3FF fill + #4D76FD text/icon"*). My .446 used #EEF0FF / #5333ed:
-   near enough to look deliberate, which is precisely the drift BRAND §4 exists to stop. He caught
-   a token divergence by eye. The icon inherits `color`, so it comes with the text for free. */
+/* ⭐⭐ v7.20.449 (#306) — LIGHT THEME INVERTS, because he watched his own call fail in situ.
+   *"My call to have the lighter blue as the background and the darker blue for the main colour in
+   light theme, unfortunately, was the wrong call — because obviously the chat bubble is GREY. So
+   it's better if you just inverted it: have the darker blue as the background, and the icon and the
+   text white."*
+   ⭐ THE REASON IS THE SAME NUMBER AS #305, one theme along: a pale #ECF3FF chip on the light
+   bubble had almost nothing to separate against, so the row of chips dissolved into the bubble.
+   Inverting gives the chip its own presence. Measured: #4D76FD + white = 3.94:1, and the chip
+   separates from the light bubble (#f5f5f7) at 3.62:1.
+   ⚠️ STATED, NOT HIDDEN: 3.94:1 clears AA for LARGE text but not the 4.5 bar for a 12px label. His
+   call, his product — recorded here so it is a known trade rather than an accident. Hover #3B63E8
+   deepens it to 5.08:1, so the hovered state is comfortably above the bar. */
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn {
-    background: #ECF3FF;
-    color: #4D76FD;
+    background: #4D76FD;
+    color: #ffffff;
 }
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn:hover {
-    background: #D8E5FF;
-    color: #2F5BEA;
+    background: #3B63E8;
+    color: #ffffff;
 }
-#swml-root:not([data-swml-theme="dark"]) .swml-quick-btn:active { background: #ECF3FF; }
+#swml-root:not([data-swml-theme="dark"]) .swml-quick-btn:active { background: #4D76FD; }
 #swml-root:not([data-swml-theme="dark"]) .swml-quick-btn.selected {
     background: #5333ed;
     color: #fff;

@@ -4709,9 +4709,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* Multi-select toggle-on for canvas dark mode (v7.12.6) */
 .swml-canvas-chat-messages .swml-quick-btn.swml-quick-toggle-on {
-    /* v7.20.446 (#293): flat teal, no shadow — matches the base chip's new treatment. */
-    background: #2f7d76;
-    color: #fff;
+    /* v7.20.446 (#293): flat teal, no shadow — matches the base chip's new treatment.
+       v7.20.449: teal LIGHTENED to sit on the same polarity as the new lavender chip (a light fill
+       with dark ink on dark theme), so a selected chip does not become the only dark tile in the
+       row. #7DF9E9 + #1c1d1f = 13.33:1 (measured). */
+    background: #7DF9E9;
+    color: #1c1d1f;
 }
 .swml-canvas-chat-messages .swml-quick-btn.swml-quick-toggle-on::before {
     content: '✓ ';
@@ -10896,10 +10899,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* v7.20.447 (#300): Neil's two blues here too — this is the override that actually WINS inside the
    canvas (it carries !important), so leaving it on the old purple would have made his change look
    like it had not landed. BRAND.md halo-button light pair: #ECF3FF fill, #4D76FD ink. */
+/* v7.20.449 (#306): INVERTED with the other light rule — dark blue fill, white ink. This override
+   carries !important and WINS inside the canvas, so leaving it pale would have made his change look
+   like it never landed (the same trap as .447). */
 .swml-canvas-light .swml-quick-btn {
-    background: #ECF3FF !important;
+    background: #4D76FD !important;
     border-color: transparent !important;
-    color: #4D76FD !important;
+    color: #ffffff !important;
 }
 /* v7.19.996 (Neil): light hover was a faint wash — match the DARK hover's semantics
    (fills brand purple, text goes white, lifts) so the effect actually reads. */
@@ -10908,9 +10914,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
        v7.20.447 (#300): and the hover deepens WITHIN the blue pair rather than flooding brand purple
        and flipping the text white. A chip that inverts on hover is the loud behaviour he is moving
        away from; staying in the pair keeps the row calm while still clearly answering the pointer. */
-    background: #D8E5FF !important;
+    background: #3B63E8 !important;
     border-color: transparent !important;
-    color: #2F5BEA !important;
+    color: #ffffff !important;
 }
 /* Multi-select toggle-on for canvas light mode (v7.12.6) */
 .swml-canvas-light .swml-quick-btn.swml-quick-toggle-on {
