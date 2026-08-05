@@ -2067,9 +2067,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     position: relative;
     margin: 0 3px;
     white-space: nowrap;
-    border-radius: 6px;
+    border-radius: 8px;   /* v7.20.438 (#266b): was 6px — now `.swml-outline-btn`'s radius exactly */
     overflow: hidden;
-    height: 28px;
+    height: 28px;         /* already the rail's size; .437 moved the RAIL to 28 to meet the grid */
     min-width: 28px;
     display: flex;
     align-items: center;
@@ -2079,29 +2079,33 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     font-size: 11px;
     line-height: 1;
     font-family: inherit;
-    color: rgba(255,255,255,0.6);
-    /* ⭐ v7.20.397 (Neil): "make the colour of those predominantly #1c1d1f… just make the shades
-       complementary as well." They were hsla(252deg …) — PURPLE-TINTED, and translucent, so on top
-       of being off-ladder they took a tint from whatever the header was doing. BRAND.md is explicit
-       that these greys are neutral, NOT purple-tinted, so this was a double deviation.
-       Now the ladder's own two dark rungs: the button reads predominantly RECESSED, with BASE as
-       the soft centre so the radial still has something to do. Solid, so a button is one colour.
-       ⚠️ --btn-glow STAYS brand purple: it is the hover/active glow, it sits at 0% alpha at rest,
-       and it is the only thing that makes these buttons feel like Sophicly rather than generic
-       chrome. Neil asked for the SHADES to be complementary, not for the brand to leave. */
-    --btn-inner: #232427;
-    --btn-outer: #1b1c1f;
-    --btn-glow: hsla(252deg 70% 60% / 0%);
-    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
-                radial-gradient(var(--btn-inner), var(--btn-outer));
-    box-shadow:
-        inset 0 2px 1px -1px rgba(255,255,255,0.1),
-        inset 0 2px 4px 2px rgba(9,11,10,0.16),
-        0 1px 0 1px #17181a,   /* v7.20.397: was #1a1e1c — a GREEN-cast edge (G>R and G>B). Now one
-                                  rung under recessed, on the same neutral hue as everything else. */
-        0 1px 0 2px rgba(0,0,0,0.6);
-    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 300ms,
-                box-shadow 200ms, color 200ms;
+    /* ⭐⭐ v7.20.438 (#266b) — THE HEADER TOOLBAR GOES FLAT, and it is now a RAIL BUTTON.
+       Neil, 2026-08-05, once the rail and badges had landed: *"it's becoming more minimalistic,
+       which is actually better. Unfortunately those neumorphic buttons at the top really stand out
+       like a sore thumb… we need to bring them into alignment with everything else. So I think they
+       need the same surface colour as the bubbles in the chat. Same surface colour as that. And
+       then just make them flat, same size as the buttons in the rail."*
+       ⚠️ This SUPERSEDES his v7.20.425 ruling in #255 (*"keep morphic AND purple, only unify the
+       greys"*). Recorded, not silently flipped: the morphic treatment was right while its
+       neighbours were morphic, and became the odd one out as everything around it flattened.
+
+       THREE RULES, all his, all literal:
+       (a) SURFACE = the chat bubble's. Read from `--swml-bubble-ai-bg` rather than re-typing
+           `#333437`, so the two cannot drift and light follows for free (the token is `#f5f5f7`
+           on `:root`, `#333437` under `[data-swml-theme="dark"]`). This is the same relationship
+           BRAND §4 derive-don't-duplicate exists to protect.
+       (b) FLAT — the .430 contextual-toolbar treatment: no radial gradients, no bevel, no
+           four-layer inset. The edge that remains is byte-identical to `.swml-outline-btn`'s, so a
+           header button and a rail button are now the same object in two places.
+       (c) SIZE = the rail's. `height`/`min-width` were ALREADY 28px, so only the radius moved
+           (6px → 8px) to match `.swml-outline-btn`. Nothing else about the geometry changed.
+       ⛔ The icon ROLL is deliberately KEPT (`.swml-tb-icon` / `.swml-tb-clone` below). He asked
+       for flat, not for the motion to go, and the roll is the one piece of character these buttons
+       have that costs nothing visually at rest. */
+    color: rgba(255,255,255,0.55);   /* rail parity (was 0.6) */
+    background: var(--swml-bubble-ai-bg, #333437);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: background 200ms, box-shadow 200ms, color 200ms;
 }
 /* ── Icon→Icon roll effect (two identical spans) ── */
 .swml-tb-icon {
@@ -2122,18 +2126,15 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     transform: translate3d(0, 40%, 0);
     pointer-events: none;
 }
+/* v7.20.438 (#266b): a WASH, not a chip — the .430 rule, and the same one the contextual toolbar
+   uses. The surface lifts one step off the bubble colour rather than becoming a purple gradient
+   with six shadow layers. Derived from the same token, so it cannot drift from the rest state; the
+   flat literal is the fallback for any engine without color-mix (the file already relies on
+   color-mix for the rail ink, so this is an established pattern here, not a new dependency). */
 .swml-tb-winona:hover {
-    --btn-glow: hsla(252deg 70% 65% / 25%);
-    --btn-inner: hsla(252deg 55% 40% / 100%);
-    --btn-outer: hsla(252deg 60% 32% / 100%);
+    background: #3e3f43;
+    background: color-mix(in srgb, var(--swml-bubble-ai-bg, #333437) 88%, #ffffff);
     color: #fff;
-    box-shadow:
-        inset 0 -1px 1px rgba(255,255,255,0.25),
-        inset 0 0 12px rgba(44,0,62,0.25),
-        0 1px 0 1px rgba(83,51,237,0.6),
-        0 1px 6px rgba(255,255,255,0.1),
-        0 2px 12px rgba(83,51,237,0.3),
-        0 1px 0 2px rgba(0,0,0,0.5);
 }
 .swml-tb-winona:hover > .swml-tb-icon:not(.swml-tb-clone) {
     opacity: 0;
@@ -2147,16 +2148,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     transform: translateY(1px);
 }
 /* ── Active state (teal) ── */
+/* v7.20.438 (#266b): flattened with the rest. The teal INK carries the state; the surface is a
+   teal tint of the same flat chip rather than a bevelled teal gradient. Kept clearly distinct from
+   the hover wash so "active" and "hovered" can never be confused at a glance. */
 .swml-tb-item.is-active {
-    --btn-glow: hsla(174deg 70% 60% / 12%);
-    --btn-inner: hsla(174deg 40% 28% / 100%);
-    --btn-outer: hsla(174deg 50% 22% / 100%);
+    background: rgba(81,218,207,0.16);
     color: #51dacf;
-    box-shadow:
-        inset 0 2px 1px -1px rgba(81,218,207,0.1),
-        inset 0 2px 4px 2px rgba(9,11,10,0.16),
-        0 1px 0 1px #1a1e1c,
-        0 1px 0 2px rgba(81,218,207,0.06);
+    box-shadow: inset 0 0 0 1px rgba(81,218,207,0.22);
 }
 /* ── Separator ── */
 .swml-tb-sep {
@@ -2213,34 +2211,24 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        the "too many colours" Neil is reading on this strip.
        Now byte-identical to .swml-tb-item / .swml-tb-winona:hover. Only the SIZE and the round
        border-radius stay their own — they are navigation, not tools. */
-    color: rgba(255,255,255,0.6);
-    --btn-inner: #232427;
-    --btn-outer: #1b1c1f;
-    --btn-glow: hsla(252deg 70% 60% / 0%);
-    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
-                radial-gradient(var(--btn-inner), var(--btn-outer));
-    box-shadow:
-        inset 0 2px 1px -1px rgba(255,255,255,0.1),
-        inset 0 2px 4px 2px rgba(9,11,10,0.16),
-        0 1px 0 1px #17181a,
-        0 1px 0 2px rgba(0,0,0,0.6);
-    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 300ms,
-                box-shadow 200ms, color 200ms;
+    /* ⭐ v7.20.438 (#266b): FLATTENED WITH THE ITEMS, and this is not optional — .425 made these
+       byte-identical to `.swml-tb-item` precisely so they could never diverge again. Flattening
+       the items and leaving the arrows morphic would recreate that defect immediately, with the
+       arrows as the new sore thumb. Same surface token, same wash, same edge.
+       Their SIZE and round radius stay their own, per .425: they are navigation, not tools. */
+    color: rgba(255,255,255,0.55);
+    background: var(--swml-bubble-ai-bg, #333437);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: background 200ms, box-shadow 200ms, color 200ms;
 }
 .swml-tb-arrow:hover {
-    /* v7.20.425: byte-identical to .swml-tb-winona:hover. */
-    --btn-glow: hsla(252deg 70% 65% / 25%);
-    --btn-inner: hsla(252deg 55% 40% / 100%);
-    --btn-outer: hsla(252deg 60% 32% / 100%);
+    /* v7.20.438: byte-identical to .swml-tb-winona:hover, as .425 established. */
+    background: #3e3f43;
+    background: color-mix(in srgb, var(--swml-bubble-ai-bg, #333437) 88%, #ffffff);
     color: #fff;
-    box-shadow:
-        inset 0 -1px 1px rgba(255,255,255,0.25),
-        inset 0 0 12px rgba(44,0,62,0.25),
-        0 1px 0 1px rgba(83,51,237,0.6),
-        0 1px 6px rgba(255,255,255,0.1),
-        0 2px 12px rgba(83,51,237,0.3),
-        0 1px 0 2px rgba(0,0,0,0.5);
 }
+/* (the light arrows are flattened further down the file, where the pre-existing light-arrow block
+   lives — it sits later at equal specificity, so it has to be the one that carries the values.) */
 .swml-tb-arrow:active { transform: translateY(1px); }
 /* ── Highlight picker (on canvas overlay, positioned by JS) ── */
 .swml-hl-picker {
@@ -2254,10 +2242,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     max-width: 160px;
 }
 /* ── Dictation active — red pulse ── */
+/* v7.20.438 (#266b): flattened with the rest. This one drove the surface entirely through
+   `--btn-*`, so leaving it would have made the RECORDING state — the one state that must be
+   unmistakable — the only morphic button left on the strip, and on a red gradient at that.
+   Red ink + a red tint + the existing pulse carry it; `!important` is kept because it must beat
+   `.is-active` on the same element. */
 .swml-tb-item.swml-dictating {
-    --btn-glow: hsla(0deg 70% 50% / 20%) !important;
-    --btn-inner: hsla(0deg 50% 35% / 100%) !important;
-    --btn-outer: hsla(0deg 60% 28% / 100%) !important;
+    background: rgba(255,107,107,0.18) !important;
+    box-shadow: inset 0 0 0 1px rgba(255,107,107,0.3) !important;
     color: #ff6b6b !important;
     animation: canvasDictPulse 1.5s ease infinite;
 }
@@ -2298,27 +2290,33 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     border-bottom-color: hsla(252deg 25% 16% / 95%);
 }
 /* ═══ LIGHT MODE — Carousel Toolbar ═══ */
-.swml-canvas-light .swml-tb-item {
-    --btn-inner: hsla(226deg 60% 96% / 100%);
-    --btn-outer: hsla(226deg 50% 92% / 100%);
-    --btn-glow: hsla(226deg 70% 60% / 0%);
-    color: #4D76FD;
-    box-shadow: inset 0 2px 1px rgba(255,255,255,0.8), 0 1px 0 0 #c8d4f0;
+/* ⭐ v7.20.438 (#266b): light is the SAME DESIGN INVERTED, never a white repaint of the morphic
+   style — the law that came out of .430. The old rules gave light its own bevel and a saturated
+   blue hover, which was the right answer while the buttons still HAD surfaces and the wrong one
+   the moment they stopped.
+   Matched on BOTH `.swml-canvas-light` and `[data-swml-theme="light"]`, the same pair the .428
+   contextual-toolbar rules use: the class rides the canvas, the attribute rides document.body, and
+   a rule keyed on only one of them silently misses wherever the other is the live signal. */
+.swml-canvas-light .swml-tb-item,
+[data-swml-theme="light"] .swml-tb-item {
+    /* the light bubble is #f5f5f7 (`:root`), so the token carries this for free */
+    background: var(--swml-bubble-ai-bg, #f5f5f7);
+    color: rgba(20,18,30,0.72);
+    box-shadow: 0 1px 2px rgba(44,0,62,0.10), inset 0 1px 0 rgba(255,255,255,0.7);
 }
-.swml-canvas-light .swml-tb-winona:hover {
-    --btn-inner: hsla(226deg 97% 65% / 100%);
-    --btn-outer: hsla(226deg 90% 55% / 100%);
-    color: #fff;
-    box-shadow:
-        inset 0 -1px 2px rgba(255,255,255,0.4),
-        0 2px 8px rgba(77,118,253,0.3),
-        0 1px 0 0 rgba(77,118,253,0.5);
+.swml-canvas-light .swml-tb-winona:hover,
+[data-swml-theme="light"] .swml-tb-winona:hover {
+    /* Inverted: dark's wash goes LIGHTER, so light's goes DARKER. A light chip that brightens on
+       hover reads as DISABLED — the .428 finding, and it still holds now the chip is flat. */
+    background: #e9e9ee;
+    background: color-mix(in srgb, var(--swml-bubble-ai-bg, #f5f5f7) 92%, #14121e);
+    color: #14121e;
 }
-.swml-canvas-light .swml-tb-item.is-active {
-    --btn-inner: #e8fafa;
-    --btn-outer: #d2fafb;
+.swml-canvas-light .swml-tb-item.is-active,
+[data-swml-theme="light"] .swml-tb-item.is-active {
+    background: rgba(44,107,104,0.12);
     color: #2c6b68;
-    box-shadow: inset 0 2px 1px rgba(255,255,255,0.8), 0 1px 0 0 #b5e6e2;
+    box-shadow: inset 0 0 0 1px rgba(44,107,104,0.22);
 }
 .swml-canvas-light .swml-tb-sep {
     background: rgba(77,118,253,0.12);
@@ -2333,16 +2331,23 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     --swml-tb-fade: #ffffff;
     --swml-tb-fade-0: rgba(255,255,255,0);
 }
-.swml-canvas-light .swml-tb-arrow {
-    --btn-inner: hsla(226deg 60% 96% / 100%);
-    --btn-outer: hsla(226deg 50% 92% / 100%);
-    color: #4D76FD;
-    box-shadow: inset 0 2px 1px rgba(255,255,255,0.8), 0 1px 0 0 #c8d4f0;
+/* ⭐ v7.20.438 (#266b): the light arrows are flattened HERE rather than up beside the dark ones.
+   ⚠️ This block sits LATER in the file at the SAME specificity as the light-arrow rules added next
+   to the dark ones, so it wins — leaving the old bevel here would have silently reinstated it in
+   light only, and dark would have looked correct while light kept the sore thumb. Cascade order
+   beats intent; when flattening a themed component, sweep the whole file for its theme rules
+   rather than editing the block you happen to be looking at. */
+.swml-canvas-light .swml-tb-arrow,
+[data-swml-theme="light"] .swml-tb-arrow {
+    background: var(--swml-bubble-ai-bg, #f5f5f7);
+    color: rgba(20,18,30,0.72);
+    box-shadow: 0 1px 2px rgba(44,0,62,0.10), inset 0 1px 0 rgba(255,255,255,0.7);
 }
-.swml-canvas-light .swml-tb-arrow:hover {
-    --btn-inner: hsla(226deg 97% 65% / 100%);
-    --btn-outer: hsla(226deg 90% 55% / 100%);
-    color: #fff;
+.swml-canvas-light .swml-tb-arrow:hover,
+[data-swml-theme="light"] .swml-tb-arrow:hover {
+    background: #e9e9ee;
+    background: color-mix(in srgb, var(--swml-bubble-ai-bg, #f5f5f7) 92%, #14121e);
+    color: #14121e;
 }
 .swml-hl-picker-light {
     background: rgba(255,255,255,0.95);
