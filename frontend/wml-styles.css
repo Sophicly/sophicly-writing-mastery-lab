@@ -1197,12 +1197,39 @@ body.swml-page {
     flex-shrink: 0; overflow-y: auto;
     transition: width 0.3s ease;
 }
+/* ⭐⭐ v7.20.436 — THE BADGES GO ONTO THE 4px SCALE, and the bottom edge is ARITHMETIC.
+   From the LearnDash lane's handoff (`learndash-to-wml-BADGE-GRID-put-the-badges-on-the-4px-scale-2026-08-04.md`),
+   which measured BOTH columns' computed styles on a real logged-in staging lesson before deciding
+   whose side was wrong. Ours was — and not as a matter of taste: BRAND.md §4 names one of these
+   values by number (*"Never use odd-pixel padding (5px, 7px, 13px, 18px)"*). Was `5px 8px` padding,
+   `6px` gap, `5px` radius — three off-scale values, one of them explicitly forbidden.
+
+   Neil's ask (2026-08-04, on Chris Do's *"everything should be aligned to something"*): *"when you
+   have three badges like that, I think the bottom badge should be in alignment with the LearnDash
+   spl-sidebar-progress-merged. It needs to be measured and fixed mathematically."*
+
+   THE ARITHMETIC, which is why these three numbers and not three others:
+       badge height = 20 (line-height) + 4 + 4 (padding)  = 28
+       row pitch    = 28 + 12 (gap)                       = 40
+       three rows   = 3×28 + 2×12                         = 108
+       LearnDash progress row (their v5.86.2, shipped)    = 108   ← the edges meet
+   ⚠️ `line-height: 20px`, NOT `1.8`. 11 × 1.8 = 19.8, and 19.8 + 8 = 27.8 — which rounds on screen
+   and is exactly why the badge measures 29.8px today instead of a round number. A px line-height is
+   what makes the 28 exact; a unitless one cannot.
+   ⚠️ HONEST LIMIT, to state to Neil rather than imply otherwise: the edges coincide at THREE rows.
+   At two or four they sit one clean 40px pitch apart — still a shared grid, not an arbitrary
+   offset. Our block's height is content-dependent (badges wrap) and theirs is fixed, so
+   bottom-to-bottom cannot hold at every count.
+   ⛔ Do NOT chase the edge by hand-tuning a height: if it misses 108 at three rows, one of these
+   values is wrong — fix the value, not the total (BRAND §4 derive, don't duplicate).
+   ⛔ Do NOT touch font-size. 11px is correct in the CHROME context (§3) and Neil likes the badges;
+   this is spacing and radius only. */
 .swml-sidebar-badges {
-    display: flex; flex-wrap: wrap; gap: 6px;
+    display: flex; flex-wrap: wrap; gap: 12px;
 }
 .swml-sidebar-badge {
-    padding: 5px 8px; border-radius: 5px;
-    font-size: 11px; font-weight: 600;
+    padding: 4px 8px; border-radius: 4px;
+    font-size: 11px; line-height: 20px; font-weight: 600;
     background: rgba(255,255,255,0.12);
     color: rgba(255,255,255,0.8); letter-spacing: 0.3px;
 }
