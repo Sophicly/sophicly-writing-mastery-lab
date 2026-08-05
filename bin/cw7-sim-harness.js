@@ -57,6 +57,19 @@ const CW7_STATES = evalAfter('const CW7_STATES =');
 const CW7_NOT_EXPLORED = (SRC.match(/const CW7_NOT_EXPLORED = '([^']+)'/) || [])[1];
 if (!CW7_NOT_EXPLORED) { console.error('❌ CW7_NOT_EXPLORED not found — this harness would go blind'); process.exit(1); }
 const CW7_TRAIT_CHOICES = CW7_STATES.concat([CW7_NOT_EXPLORED]);
+// v7.20.441 (#276): the per-trait cards moved to MODULE scope in wml-assessment.js so the
+// Trait-examples rail panel could read them, which means the walk no longer carries them in its
+// own closure — the sim has to inject them like every other module-scope dep, or `_traitCard`
+// throws on the first ask. Sliced from the shipped source, never re-typed (§5d one producer);
+// the content assertions further down consume this same object.
+function evalObjBlock(decl) {
+    const i = SRC.indexOf(decl);
+    if (i < 0) return null;
+    // eslint-disable-next-line no-eval
+    return eval('(' + braceSliceFrom(SRC, i, '{', '}').text + ')');
+}
+const TRAIT_TEACH = evalObjBlock('const TRAIT_TEACH = {');
+if (!TRAIT_TEACH) { console.error('❌ TRAIT_TEACH not found in wml-assessment.js — this harness would go blind'); process.exit(1); }
 // Every id producer the walk uses, sliced from the shipped source (§5d: one producer, both sides).
 function fnFrom(name) {
     const i = SRC.indexOf('function ' + name + '(');
@@ -69,6 +82,20 @@ const _cw7RowFieldId = fnFrom('_cw7RowFieldId');
 const _cw7TraitCtlId = fnFrom('_cw7TraitCtlId');
 const _cw7TraitLabel = fnFrom('_cw7TraitLabel');
 const _cw7AddRowFieldId = fnFrom('_cw7AddRowFieldId');
+// v7.20.441 (#276): the panel body builder needs the module-scope data it reads, which `fnFrom`'s
+// bare `new Function` cannot see. Same slice, deps passed in — still ONE producer (the shipped
+// source), never a re-typed copy.
+function fnFromWithDeps(name, deps) {
+    const i = SRC.indexOf('function ' + name + '(');
+    if (i < 0) { console.error('❌ ' + name + ' not found — the trait-panel body check would go blind'); process.exit(1); }
+    const body = SRC.slice(i, braceSliceFrom(SRC, i, '{', '}').end).replace(/^function\s+\w+/, 'function');
+    const names = Object.keys(deps);
+    // eslint-disable-next-line no-new-func
+    return new Function(...names, 'return ' + body + ';')(...names.map((n) => deps[n]));
+}
+const _cw7TraitHelpHTML = fnFromWithDeps('_cw7TraitHelpHTML', {
+    CW7_VALUES: CW7_VALUES, TRAIT_TEACH: TRAIT_TEACH, _cw7TraitLabel: _cw7TraitLabel, console: console,
+});
 
 const ctlIdx = SRC.indexOf('const _cwValuesCtl = (function () {');
 if (ctlIdx < 0) { console.error('❌ _cwValuesCtl not found in wml-assessment.js'); process.exit(1); }
@@ -106,7 +133,12 @@ const isRealState = (s) => CW7_STATES.indexOf(s) !== -1;
 
 function world(opts) {
     opts = opts || {};
-    return makeWorld(CTL_SRC, Object.assign({
+    // v7.20.441 (#276): a recording stand-in for the rail-panel bridge. The real one lives in the
+    // canvas render, which the sim does not build — so without this the chip's branch is untestable
+    // (`typeof` on an undeclared name is silently "undefined", so it would fall to the fallback and
+    // LOOK fine). That is the same untappable-by-construction hole #274 exposed.
+    const panelCalls = [];
+    const w = makeWorld(CTL_SRC, Object.assign({
         task: 'cw_step_7',
         fids: ALL_FIDS,
         ok: ok,                     // enables the rig's automatic liveness check
@@ -120,8 +152,15 @@ function world(opts) {
             _cw7TraitCtlId: _cw7TraitCtlId,
             _cw7TraitLabel: _cw7TraitLabel,
             _cw7AddRowFieldId: _cw7AddRowFieldId,
+            TRAIT_TEACH: TRAIT_TEACH,   // v7.20.441 (#276): module-scope in the shipped file now
+            _openCw7TraitPanel: function (valueId, focus) {
+                panelCalls.push({ valueId: valueId, focus: focus });
+                return true;
+            },
         },
     }, opts));
+    w.panelCalls = panelCalls;
+    return w;
 }
 
 // ── DRIVING THIS WALK ─────────────────────────────────────────────────────────────────────────
@@ -233,6 +272,45 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
         const before = w.chips().map(chipText).sort().join('|');
         const more = w.helpChipNamed(/More examples/i);
         ok(!!more, 'the trait ask offers no "More examples" rung — rung 1 of the help ladder (§4c.9) is missing');
+
+        /* ⭐⭐ v7.20.441 (#276) — THE PANEL RUNG SITS ALONGSIDE THE CHIP, RULED BY NEIL:
+           "No, the panel should definitely not replace the More examples chip. For sure.
+           Definitely not. It should sit alongside it." Asserted while BOTH should be live, so a
+           future tidy-up that quietly swaps one for the other fails here instead of in a lesson. */
+        {
+            const panel = w.helpChipNamed(/Trait examples/i);
+            ok(!!panel, 'the trait ask offers no "Trait examples" rung — the depth rung (#276) is missing');
+            ok(!!more && !!panel,
+                'the panel rung REPLACED the "More examples" chip. Neil ruled they sit alongside each '
+                + 'other: the chip is the free one-tap rung, the panel is the browsable depth rung.');
+            if (panel) {
+                const bubblesBeforePanel = w.bubbles.length;
+                const callsBefore = w.panelCalls.length;
+                panel.click();
+                ok(w.panelCalls.length === callsBefore + 1,
+                    '"Trait examples" did not open the rail panel — it fell through to the fallback, '
+                    + 'which means the bridge is not reachable from the walk.');
+                const call = w.panelCalls[w.panelCalls.length - 1] || {};
+                ok(call.valueId === CW7_VALUES[0].id,
+                    'the panel opened on value "' + call.valueId + '" while the walk is on "'
+                    + CW7_VALUES[0].id + '" — the student would browse the wrong value\'s traits.');
+                ok(call.focus === CW7_VALUES[0].traits[0],
+                    'the panel focused trait "' + call.focus + '" while the ask is on "'
+                    + CW7_VALUES[0].traits[0] + '" — "you are here" would point at the wrong row.');
+                /* ⭐ ZERO TRANSCRIPT COST is the whole reason this is a panel and not more chat
+                   (#276): it can be re-opened at any point without the fossil problem a stored turn
+                   has. A bubble here would mean it had quietly become another chat rung. */
+                ok(w.bubbles.length === bubblesBeforePanel,
+                    'the panel rung emitted ' + (w.bubbles.length - bubblesBeforePanel) + ' chat bubble(s). '
+                    + 'It must cost the transcript nothing — that is what makes it re-openable and fossil-proof.');
+                /* §4d liveness — a help tap must never cost the student the ask. Same law the
+                   "More examples" assertions below enforce; a second rung is a second way to break it. */
+                const afterPanel = w.chips().map(chipText).sort().join('|');
+                ok(afterPanel === before,
+                    'HELP ATE THE ASK: the answer chips were "' + before + '" before the "Trait examples" '
+                    + 'tap and "' + afterPanel + '" after it.');
+            }
+        }
         const bubblesBefore = w.bubbles.length;
         more.click();
         ok(w.bubbles.length > bubblesBefore, '"More examples" served nothing — a free rung that does nothing is worse than an absent one');
@@ -261,6 +339,12 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
         ok(!w.helpChipNamed(/More examples/i),
             'the "More examples" chip is still offered after its bank is spent — tapping it again '
             + 'repeats a bubble the student is already looking at, which is what he reported.');
+        // v7.20.441 (#276): the panel is NOT a bank, so it cannot be spent. It must still be there
+        // once the chip has retired — otherwise the student who most needs depth (the one who has
+        // already read every inline example) is the one left with no depth rung at all.
+        ok(!!w.helpChipNamed(/Trait examples/i),
+            'the "Trait examples" rung retired along with the "More examples" bank. The panel is '
+            + 'browsable, not a bank — it must survive after the inline examples are spent.');
     }
 
     let guard = 0;
@@ -745,7 +829,8 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
     // that's not really to do with creativity, is it?"* The examples were keyed by VALUE and the
     // walk asks by TRAIT, so a card written for open-mindedness was served as the model for
     // creativity. These assertions are what make that unshippable.
-    const TRAIT_TEACH = evalBlock('const TRAIT_TEACH = {');
+    // v7.20.441: extracted ONCE at the top of this file (it is also injected into the sim world
+    // now that the cards live at module scope). Re-slicing it here would be a second producer.
     if (ok(!!TRAIT_TEACH, 'the Step-7 TRAIT_TEACH block was not found — the per-trait examples check has gone blind')) {
         const seen = new Map();
         const allTraits = [];
@@ -785,6 +870,52 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
         ok(seen.size >= 20, `the trait examples span only ${seen.size} texts — Neil asked for "lots of different examples"`);
         const total = Array.from(seen.values()).reduce((a, b) => a + b, 0);
         console.log(`   per-trait examples: ${Object.keys(TRAIT_TEACH).length} traits · ${total} text citations · ${seen.size} different texts · busiest ${Math.max(...seen.values())}`);
+
+        /* ⭐⭐ v7.20.441 (#276) — THE PANEL BODY ACTUALLY RENDERS THE CARDS.
+           The assertions above prove the DATA is sound; this proves the panel SHOWS it. Those are
+           different claims, and a panel wired to the wrong key would pass every one of them
+           (§14b: presence proves plumbing, never behaviour). Driven per value, because the panel's
+           unit is the value — the comparison a Step-7 student needs is trait-against-trait inside
+           one value, since that is where they pull in opposite directions. */
+        CW7_VALUES.forEach((v) => {
+            const html = _cw7TraitHelpHTML(v.id, v.traits[0]);
+            ok(!!html, `the trait panel renders nothing for "${v.id}" — the button would open an empty shell`);
+            ok(html.indexOf(v.name) !== -1, `the trait panel for "${v.id}" never names the value it is showing`);
+            v.traits.forEach((t) => {
+                const card = TRAIT_TEACH[t] || {};
+                ok(html.indexOf(_cw7TraitLabel(t)) !== -1,
+                    `the trait panel for "${v.id}" omits its trait "${t}" — a student browsing it would never see that one`);
+                // All THREE sittings, for every trait: browsing all three at once is the entire
+                // reason this is a panel (it is what dissolves the "what if they change their
+                // mind to deficit?" recall problem Neil raised).
+                ['balance', 'excess', 'deficit'].forEach((k) => {
+                    const line = String(card[k] || '');
+                    // Compare on the escaped-and-emphasised form the builder emits, not the raw
+                    // card — otherwise this checks its own transformation rather than the output.
+                    const rendered = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                    ok(rendered && html.indexOf(rendered) !== -1,
+                        `the trait panel for "${v.id}" does not show ${t} in ${k} — the student cannot compare the three sittings, which is the whole point of the panel`);
+                });
+            });
+            ok(html.indexOf('undefined') === -1,
+                `the trait panel for "${v.id}" leaked the literal "undefined" — a missing field is being printed at a student`);
+            // The focused trait is marked, and exactly once — "you are here" pointing at two rows
+            // is worse than pointing at none.
+            ok((html.match(/swml-cw7-here/g) || []).length === 1,
+                `the trait panel for "${v.id}" marks ${(html.match(/swml-cw7-here/g) || []).length} traits as "you are here" — it must mark exactly the one the walk is on`);
+        });
+        // Opened from the document row there is no walk position, so nothing is focused — and that
+        // must render cleanly rather than marking an arbitrary trait.
+        {
+            const noFocus = _cw7TraitHelpHTML(CW7_VALUES[0].id, null);
+            ok((noFocus.match(/swml-cw7-here/g) || []).length === 0,
+                'opened from the document row (no walk position) the panel still marks a trait as "you are here" — it would point the student at a trait they are not on');
+            ok(noFocus.indexOf(_cw7TraitLabel(CW7_VALUES[0].traits[0])) !== -1,
+                'with no focus the panel dropped its traits entirely — the document-row button would open a shell with nothing in it');
+        }
+        ok(_cw7TraitHelpHTML('not-a-value', null) === '',
+            'the trait panel renders something for an unknown value id — it must fail empty, not draw a half card');
     }
 
     const seenAcross = new Set();
