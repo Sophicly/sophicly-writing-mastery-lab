@@ -1561,8 +1561,25 @@ student approaches it, but it becomes a more advanced version of what was there 
 - Going back to an earlier step is a first-run/exception case, not the flow. The chain flows
   forward; the student improves the newest copy.
 
-**OPEN at time of ruling (research in flight, Opus agents):** WHEN the amalgamation happens —
-straight after each beat's new material (Neil's stated assumption: *"while the new material is
-still fresh"*), or batched per stage. The tension is real: instructional evidence favours closing
-the loop while working memory is warm; revision research suggests distance can improve
-substance-revision. Record the answer here when it lands.
+**AMALGAMATION TIMING — RESEARCHED AND ANSWERED, same day** (two Opus agents, convergent; full
+returns + citations in `research/2026-08-06-amalgamation-timing-and-successive-refinement.md`):
+**PER BEAT, immediately after that beat's new material** — Neil's assumption, confirmed, with a
+sharper reason than freshness. The "distance improves revision" tradition is not violated: the
+distance is ALREADY BANKED, because drafting (Step 6) and amalgamating (Step 8+) are separate
+lessons — Chanquoy (2001) condemns only revising-while-composing. Within the session, batching six
+beats maximises exactly the cognitive load that pushes novice adolescents to surface edits
+(Kellogg 2001; Bereiter & Scardamalia CDO). Three-part shape for every plot-update walk:
+1. **Per-beat amalgamation, one operation at a time**, the new material kept visible beside the
+   beat (WM externalised — Gathercole & Alloway).
+2. **Scaffolded CDO-shaped ask, never "improve this":** what does the new material say this beat
+   should show? · where doesn't your version show it? · rewrite the beat. Criteria-first beats
+   models-first ~3× (Graham & Perin 0.82 vs 0.25).
+3. **One short whole-stage continuity pass AFTER the six beats** — reread for contradiction only,
+   not re-revision (the last-phase effect; the one thing batching would have bought).
+Plus the project-shape rules: each pass opens code-served (lens + criteria + one-line state recap,
+never a re-read) · progress is a PROCESS goal ("Lens 1 of 7 built in") · passes 6–7 (genre,
+structural elements) must be the SHORTEST — most revision gain lands in the first ~5 passes and
+perceived repetition is what kills long projects. ⭐ **The biggest named risk is SURFACE DRIFT,
+not fatigue** — novices tinker instead of revising; the lens-with-criteria design is the
+countermeasure and must not be diluted. (Confidence: moderate — no study tests beat-level batching
+in creative writing directly; limits recorded in the research file.)
