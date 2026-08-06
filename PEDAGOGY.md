@@ -1553,13 +1553,38 @@ student approaches it, but it becomes a more advanced version of what was there 
    each outline step becomes a snapshot of what was done at that stage. That's really what the whole
    project is about."*
 
-**CONSEQUENCES FOR MECHANISM (so the next builder does not re-derive them):**
-- The Phase-2 **reseed-until-started** behaviour (track upstream until the student types) is RIGHT
-  for CW plot steps — an untouched Step 8 should keep following Step 6.
-- The Phase-2 **pull-from-previous** and update-dot are WRONG for CW — pulling would regress an
-  amalgamated outline to the older, worse version. Backwards is downhill here by design.
-- Going back to an earlier step is a first-run/exception case, not the flow. The chain flows
-  forward; the student improves the newest copy.
+**CONSEQUENCES FOR MECHANISM — ⭐⭐ THE CW MIRROR, RULED BY NEIL 2026-08-06 (his "yes" after the
+append-vs-replace walk-through; supersedes the first draft of this block, which barred CW from the
+mirror entirely — an overcorrection he caught). CW JOINS the automatic forward flow, with ONE
+substitution:**
+- **Relay (already built):** `6 → 8 → 12 → 15 → 18 → 21 → 24 → 27`, nearest-earlier-with-content,
+  first-open copies the whole doc (`cw_seed_lineages`, class-rest-api.php ~5700).
+- **Reseed-until-started** — YES for CW, same as Phase 2: an untouched downstream doc keeps
+  re-copying upstream on every load; looking never freezes anything; the student's first real work
+  in the doc freezes it. ⚠️ The CW freeze fingerprint must IGNORE derived cards (Document
+  Progress text changes without the student typing) or docs false-freeze.
+- **Automatic per-beat mirror after start — YES. Neil's rule: changes flow forward down the chain
+  automatically, "unless the one in the subsequent step is newer."** That gate is newest-edit-wins,
+  identical to literature's arbitration. **The ONE substitution: when upstream is newer AND the
+  downstream beat has content, the new material APPENDS under the beat — never replaces.** The
+  student amalgamates it: the same move the walk teaches. WHY not replace: literature's shared
+  fields are single-valued (keywords are keywords in every lesson) so latest-wins-replace keeps one
+  coherent value; CW beats FORK by design (each stage's version is an advancing snapshot), so
+  replace would silently destroy amalgamation work — the exact data-loss class the Question-Focus
+  repro (2026-07-14) killed in literature, and a breach of the standing append-never-overwrite
+  ruling. Empty downstream beat → plain copy-in. Downstream newer → nothing moves (the frontier
+  case — the normal case).
+- **Engineering obligations riding the build:** a per-beat last-appended baseline so a reload can
+  never append the same edit twice (extend the pull-stamp machinery) · the append must be VISIBLE
+  when it lands (a change the student cannot see is a change that did not happen) · never backwards
+  · never into a doc mid-walk without the walk knowing (the walk owns the screen while active).
+- **No dot, no manual pull.** The pull FAB was retired at v7.20.75 by Neil's own ruling ("the chain
+  feeds forward itself"); the automatic append-mirror re-earns that ruling for CW. The soft gate
+  stays: the walk opens with "this builds on your finished Step 6 — [Go to Step 6] [Continue
+  anyway]" — teach, never force (Neil, same day: no forced linear progression; extreme cases may
+  legitimately skip lessons).
+- Going back to an earlier step stays an exception, not the flow — but with the append-mirror it is
+  a SAFE exception: nothing done downstream can be lost by it, by construction.
 
 **AMALGAMATION TIMING — RESEARCHED AND ANSWERED, same day** (two Opus agents, convergent; full
 returns + citations in `research/2026-08-06-amalgamation-timing-and-successive-refinement.md`):
