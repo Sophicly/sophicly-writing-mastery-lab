@@ -5653,29 +5653,69 @@ class SWML_REST_API {
             return null; // no earlier stage has content — frontend seeds its own template
         }
         if (strpos($suffix, '_cw_') !== 0) return null; // unknown stage — never guess a seed
-        // CW workbook steps keep the legacy most-recent pick, SCOPED to _cw_ sibling keys
-        // only (they never held essay-stage docs, so recency stays safe there).
-        global $wpdb;
-        $prefix = 'swml_canvas_' . $board . '_' . $text . '_t' . (int) $topic_number;
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s",
-            $user_id,
-            $wpdb->esc_like($prefix . '_cw_') . '%'
-        ));
-        if (empty($rows)) return null;
-        $best_html = null;
-        $best_time = '';
-        foreach ($rows as $row) {
-            if ($row->meta_key === $exclude_key) continue;
-            $d = self::decode_canvas_json($row->meta_value);
-            if (!is_array($d) || empty($d['html'])) continue;
-            $t = isset($d['savedAt']) ? (string) $d['savedAt'] : '';
-            if ($best_html === null || strcmp($t, $best_time) > 0) {
-                $best_html = $d['html'];
-                $best_time = $t;
-            }
+        return $this->seed_from_cw_lineage($user_id, $board, $text, $topic_number, $exclude_key, $suffix, $attempt, $cw_project_id);
+    }
+
+    /**
+     * ⭐⭐ v7.20.453 (Neil, 2026-08-05) — CW FORWARD-SNAPSHOT. THE CW half of the
+     * v7.19.855 root fix, which Literature got on 2026-07-04 and CW never did.
+     *
+     * WHAT WAS HERE BEFORE, AND WHY IT WAS WRONG: the CW branch took the most-recently-SAVED
+     * `_cw_` sibling — "whichever doc you touched last" — which is the exact anti-pattern
+     * stage_seed_chain() was written to kill. Every `cw_*` load sends seedFromSiblings=1
+     * (wml-assessment.js), so ANY empty CW step inherited the last doc the student saved:
+     * open Step 8 with Scene Selection freshest and Step 8 opens as a copy of Scene Selection.
+     * That is precisely what Neil hit — *"it's pulling a copy of the step nine document. It's
+     * meant to pull in a copy of the step six document."*
+     *
+     * WHAT REPLACES IT: CW is NOT one linear chain — its steps are different documents, so a
+     * blanket "seed from the previous step" would be just as wrong. There are exactly TWO
+     * living documents that genuinely carry forward, and a step outside them seeds from
+     * NOTHING and builds its own template:
+     *
+     *   PLOT OUTLINE  6 → 8 → 12 → 15 → 18 → 21 → 24 → 27
+     *     The document Step 6 creates and every "Update Your Plot" step revises. Neil's model:
+     *     *"each one is a snapshot of what the student did at that stage"* — each update
+     *     APPENDS a layer (v2..v8) and never overwrites, so the outline reaching Step 27
+     *     carries all eight layers.
+     *   DRAFT         10 → 13 → 16 → 19 → 22 → 25 → 28 → 29
+     *     The prose. Already encoded client-side as CW_DRAFT_PREDECESSOR (wml-core.js) for
+     *     chat pre-population; this is the same order, so the two must not drift.
+     *
+     * Same walk-back rule as the essay chain: the NEAREST EARLIER member WITH CONTENT, never
+     * the newest. A gap (student skipped Step 12) is walked THROUGH, not treated as empty.
+     */
+    private static function cw_seed_lineages() {
+        return [
+            'plot'  => [6, 8, 12, 15, 18, 21, 24, 27],
+            'draft' => [10, 13, 16, 19, 22, 25, 28, 29],
+        ];
+    }
+
+    private function seed_from_cw_lineage($user_id, $board, $text, $topic_number, $exclude_key, $suffix, $attempt, $cw_project_id) {
+        // `_cw_8` → 8. Trials (`_cw_trial_1`) and any non-numeric step never seed.
+        if (!preg_match('/^_cw_(\d+)$/', $suffix, $m)) return null;
+        $step = (int) $m[1];
+
+        $lineage = null;
+        foreach (self::cw_seed_lineages() as $chain) {
+            $i = array_search($step, $chain, true);
+            if ($i !== false) { $lineage = ['chain' => $chain, 'i' => $i]; break; }
         }
-        return $best_html;
+        // Not in a lineage (writer profile, logline, scene selection, a trial…) — its document
+        // is its own. Seeding one of these from anything is the bug this function replaced.
+        if ($lineage === null || $lineage['i'] === 0) return null;
+
+        for ($j = $lineage['i'] - 1; $j >= 0; $j--) {
+            $key = $this->canvas_meta_key($board, $text, (int) $topic_number, '_cw_' . $lineage['chain'][$j], $attempt, $cw_project_id);
+            if ($key === $exclude_key) continue;
+            $raw = get_user_meta($user_id, $key, true);
+            if (empty($raw)) continue;
+            $d = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+            if (!is_array($d) || empty($d['html'])) continue;
+            return $d['html'];
+        }
+        return null; // nothing upstream yet — the frontend builds this step's own template
     }
 
     /**

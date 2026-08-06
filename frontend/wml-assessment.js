@@ -5314,6 +5314,36 @@
     // the model hunted the raw doc and restated a Step-1 SPARK as "your chosen idea" (the
     // Sparks section reads like a polished idea; the real chosen row can be one rough line).
     // Code knows the answer; the model must never have to guess it (programmatic-first).
+    // ⭐⭐ v7.20.453 — THE PLOT-UPDATE LADDER, one source. Read by BOTH the document template
+    // (a student with no Step-6 outline yet) and the seed composer (a student who has one, the
+    // normal case). It was local to _cwDocTemplateInner; the seed path needs the same strings,
+    // and two copies of a seven-row ladder is the drift class this repo keeps paying for (§7).
+    // Server twin: SWML_REST_API::cw_seed_lineages()['plot'] — same seven steps, same order.
+    const CW_PLOT_UPDATE_INFO = {
+        8:  { layer: 'Universal Human Values', update: '1 of 7', desc: 'Map the values and traits you audited in Step 7 across your complete story. For each stage, identify which values are visible and in which beat — a trait can appear in more than one stage, and usually should.' },
+        12: { layer: 'Goals and Needs', update: '2 of 7', desc: 'Map your protagonist’s goals, needs, and stakes across your complete story. For each stage, identify what goal drives the protagonist and where their unconscious need surfaces.' },
+        15: { layer: 'Archetypes', update: '3 of 7', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
+        18: { layer: 'Empathy', update: '4 of 7', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
+        21: { layer: 'Theme and Tone', update: '5 of 7', desc: 'Map meaning and atmosphere across your complete story. For each stage, identify the dominant tone and how the theme emerges through action and image — never through explicit statement.' },
+        24: { layer: 'Genre', update: '6 of 7', desc: 'Map genre across your plot outline. For each stage, identify which genre(s) dominate, what conventions appear, and what emotion readers should feel.' },
+        27: { layer: 'Structural Elements', update: '7 of 7 (FINAL)', desc: 'This is the <strong>final update</strong>. Map advanced structural techniques (irony, symbols, senses, pacing, suspense) across your complete story. You now have a <strong>complete 8-layer story architecture</strong> — a professional-level blueprint.' },
+    };
+
+    // The instruction header that rides ON TOP of a seeded plot outline. The seed is the
+    // student's OWN Step-6 document (their beats, their words) — this only tells them which
+    // layer they are adding to it this time, and that nothing gets overwritten (Neil's ruling,
+    // 2026-08-05: *"we don't want to overwrite it. We want to just append and add to it."*).
+    function _cwPlotUpdateHeaderHTML(step, sectionHTMLFn) {
+        const info = CW_PLOT_UPDATE_INFO[step];
+        if (!info) return '';
+        return sectionHTMLFn('question', 'Update Focus', false, null,
+            '<h2>Plot Outline — Update for ' + info.layer + ' (' + info.update + ')</h2>' +
+            '<p><strong>This is your own plot outline from Step 6, with everything you have added since.</strong> You are NOT starting fresh — you are adding to what already exists.</p>' +
+            '<p><strong>Nothing you have already written gets deleted.</strong> Add your new notes to the beats they belong to. If a beat reads roughly, that is fine — tidy it up whenever you like. This unit is still planning; the writing itself is the focus from Unit 7 onwards.</p>' +
+            '<p>' + info.desc + '</p>'
+        );
+    }
+
     const CW_STEP_DEPS = {
         2: ['writer_profile'], 3: ['writer_profile', 'story_ideas', 'chosen_idea'],
         4: ['logline'], 5: ['brief_outline'], 6: ['plot_structure_choice'],
@@ -43808,25 +43838,12 @@
 
         // ── Plot update steps (8, 12, 15, 18, 21, 24, 27) — v7.15.5: full workbook content ──
         if ([8, 12, 15, 18, 21, 24, 27].includes(step)) {
-            const plotInfo = {
-                // ⭐⭐ v7.20.452 — Neil's new Step 8, the FIRST of what are now SEVEN plot updates
-                // (2026-08-05). Served by this family branch deliberately rather than a bespoke
-                // builder: it is the same job as its six siblings — walk the six stages, add a
-                // layer — and the family shape is the thing to copy, not re-derive.
-                8:  { layer: 'Universal Human Values', update: '1 of 7', desc: 'Map the values and traits you audited in Step 7 across your complete story. For each stage, identify which values are visible and in which beat — a trait can appear in more than one stage, and usually should.' },
-                12: { layer: 'Goals and Needs', update: '2 of 7', desc: 'Map your protagonist\u2019s goals, needs, and stakes across your complete story. For each stage, identify what goal drives the protagonist and where their unconscious need surfaces.' },
-                15: { layer: 'Archetypes', update: '3 of 7', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
-                18: { layer: 'Empathy', update: '4 of 7', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
-                21: { layer: 'Theme and Tone', update: '5 of 7', desc: 'Map meaning and atmosphere across your complete story. For each stage, identify the dominant tone and how the theme emerges through action and image \u2014 never through explicit statement.' },
-                24: { layer: 'Genre', update: '6 of 7', desc: 'Map genre across your plot outline. For each stage, identify which genre(s) dominate, what conventions appear, and what emotion readers should feel.' },
-                27: { layer: 'Structural Elements', update: '7 of 7 (FINAL)', desc: 'This is the <strong>final update</strong>. Map advanced structural techniques (irony, symbols, senses, pacing, suspense) across your complete story. You now have a <strong>complete 8-layer story architecture</strong> \u2014 a professional-level blueprint.' },
-            };
-            const info = plotInfo[step] || { layer: '', update: '', desc: '' };
-            html += sectionHTML('question', 'Update Focus', false, null,
-                `<h2>Plot Outline \u2014 Update for ${info.layer} (${info.update})</h2>` +
-                '<p><strong>Your plot outline is a living document.</strong> You created it in Step 6, and it has been updated after each new layer of learning. You are NOT starting fresh \u2014 you are adding to what already exists.</p>' +
-                `<p>${info.desc}</p>`
-            );
+            // v7.20.453: the ladder + header now come from the ONE module-level source
+            // (CW_PLOT_UPDATE_INFO / _cwPlotUpdateHeaderHTML) so the TEMPLATE path and the
+            // SEED path cannot drift. This branch is now the FALLBACK — it only runs for a
+            // student with no Step-6 outline to seed from; the normal case is a seeded copy
+            // of their own outline with the same header composed on top.
+            html += _cwPlotUpdateHeaderHTML(step, sectionHTML);
             // Per-step stage questions
             const stagePrompts = {
                 // v7.20.452 — Step 8 (Values). Mirrors CW-STEP-08-update-plot-values.md, which is
@@ -51322,6 +51339,25 @@
                     // gate threw away every Model B copy-forward seed (~35KB local template > 20
                     // chars → preferServer=false), blanking each new stage.
                     const _isSeed = !!(res && res.is_seed);
+                    // ⭐⭐ v7.20.453 — a seeded PLOT-UPDATE step arrives as the student's OWN plot
+                    // outline (Step 6 forward, all layers so far) with no instruction on it. Put
+                    // the Update Focus header on top so they know which layer they are adding.
+                    // Composed HERE, before the editor is built, rather than as a ProseMirror heal:
+                    // the doc has not mounted yet, so there is no NodeView to mutate and no
+                    // foreign-mutation risk (see the PM NodeView law in CLAUDE.md).
+                    // Idempotent by construction — it runs only on a SEED, and the first autosave
+                    // persists the result under this step's own key, after which it is a normal doc.
+                    if (_isSeed && res.doc && typeof res.doc.html === 'string') {
+                        try {
+                            const _pu = WML.getCwStepDef ? WML.getCwStepDef(state.task) : null;
+                            const _puStep = _pu && _pu.step;
+                            if (_puStep && CW_PLOT_UPDATE_INFO[_puStep]
+                                && res.doc.html.indexOf('Update Focus') === -1) {
+                                res.doc.html = _cwPlotUpdateHeaderHTML(_puStep, sectionHTML) + res.doc.html;
+                                console.log('WML CW: composed the Update Focus header onto the seeded plot outline (step ' + _puStep + ')');
+                            }
+                        } catch (e) { console.warn('WML CW: could not compose the plot-update header —', e && e.message); }
+                    }
                     const _preferServer = _isSeed || isCwTaskHydrate || isCribHydrate || !localContent || localContent.length < 20;
                     // v7.19.136 instrumentation — prefer-server decision + editor doc size at this moment
                     // v7.19.858: gated — one more full-doc serialise per load.
