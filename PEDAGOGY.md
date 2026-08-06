@@ -1524,3 +1524,45 @@ question, not an assumption.** Where no peer is available, the fallback is the b
 
 **WHAT THIS DOES NOT LICENCE.** Peer feedback replaces neither the tutor's marking nor the
 protocols. It is a check on whether an answer is ON TASK, done by someone holding the same criteria.
+
+---
+
+## §29. ⭐⭐ THE PLOT OUTLINE IS A LIVING DOCUMENT THAT MOVES FORWARD — append, then AMALGAMATE; each step keeps a snapshot (Neil, ruled 2026-08-06)
+
+**The shape of the whole CW project, in his words:** *"each stage is just a snapshot, but the plot
+outline is almost like a project within the project."* The outline is drafted once (Step 6), then
+revisited seven times (Steps 8, 12, 15, 18, 21, 24, 27), each pass adding one conceptual lens —
+values, goals, archetypes, empathy, theme/tone, genre, structural elements. **The drafts of the
+scene will work the same way** — one scene, repeatedly improved, each draft a snapshot.
+
+**"LAYER" IS CONCEPTUAL, NOT STRUCTURAL.** Ruled explicitly, because the opposite was nearly built:
+*"they're adding more information for depth, but it's not necessarily a literal layer… it could just
+be the student adds some information and then tweaks what was there before, and it becomes an
+amalgamated new piece. It's creative writing — there could be a lot of different ways that the
+student approaches it, but it becomes a more advanced version of what was there before."* So:
+
+1. **The walk APPENDS.** Each beat's new material is auto-filed *underneath* what was seeded —
+   nothing is ever overwritten by the system (his standing ruling, 2026-08-05).
+2. **The student AMALGAMATES.** They manually merge the appended material into the beat, advancing
+   it *"in the way that they think is most appropriate."* The seam is meant to dissolve. This IS the
+   pedagogy — the merge is where the deepening happens; do not automate it, do not preserve the
+   layers structurally, do not build a mechanism that keeps "from Step 6" separable.
+3. **The living outline MOVES FORWARD.** After Step 8, Step 8's document is the outline; Step 6's is
+   a frozen snapshot of what the student could do at that stage. Each update step seeds from the
+   nearest earlier plot step and becomes the new home. *"Not only does each step seed the next one —
+   each outline step becomes a snapshot of what was done at that stage. That's really what the whole
+   project is about."*
+
+**CONSEQUENCES FOR MECHANISM (so the next builder does not re-derive them):**
+- The Phase-2 **reseed-until-started** behaviour (track upstream until the student types) is RIGHT
+  for CW plot steps — an untouched Step 8 should keep following Step 6.
+- The Phase-2 **pull-from-previous** and update-dot are WRONG for CW — pulling would regress an
+  amalgamated outline to the older, worse version. Backwards is downhill here by design.
+- Going back to an earlier step is a first-run/exception case, not the flow. The chain flows
+  forward; the student improves the newest copy.
+
+**OPEN at time of ruling (research in flight, Opus agents):** WHEN the amalgamation happens —
+straight after each beat's new material (Neil's stated assumption: *"while the new material is
+still fresh"*), or batched per stage. The tension is real: instructional evidence favours closing
+the loop while working memory is warm; revision research suggests distance can improve
+substance-revision. Record the answer here when it lands.
