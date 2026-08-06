@@ -121,5 +121,44 @@ else {
     if (!ladderBad) ok(`the published ladder says ${N} plot updates everywhere it is stated`);
 }
 
+// ── 6. No SECOND source for the plot-update step set ─────────────────────────
+// v7.20.455. Check 5 above proves the ladder the TEMPLATE gate uses is coherent. It cannot
+// see a literal list held somewhere else — and five sites held `[11, 14, 17, 20, 23, 26]`,
+// invisible to the .451 renumber sweep (which grepped `cwStepDef.step <op> N`). Stale, they
+// were wrong in both directions: step 8 was not a plot update, and steps 11/14/17/20/23/26
+// were, so entering Character Profile / Archetypes / Empathy / Theme & Tone / Genre /
+// Structural Elements loaded the plot outline over that step's own document. The predicate
+// is now derived (`isCwPlotUpdateStep`), so ANY re-introduced literal is a second source.
+{
+    const CANON = [...ASSESS.matchAll(/^\s{8}(\d+):\s*\{\s*layer:/gm)].map(m => +m[1]).sort((a, b) => a - b);
+    if (!CANON.length) fail('could not read CW_PLOT_UPDATE_INFO — the plot-update ladder source is missing');
+    else {
+        const canonSet = CANON.join(',');
+        // ⚠️ DO NOT "improve" this into an overlap test. The first cut of this check asked
+        // whether a literal OVERLAPPED the ladder — and it passed the real defect cleanly,
+        // because a renumber SHIFTS EVERY ELEMENT: the stale [11,14,17,20,23,26] shares not
+        // one member with [8,12,15,18,21,24,27]. A stale copy looks maximally UNLIKE the
+        // truth, so the only sound test is "names steps, and is not EXACTLY the ladder".
+        const suspects = [
+            // const plotUpdateSteps = [ ... ];   — a step list held in a variable
+            ...ASSESS.matchAll(/(?:const|let|var)\s+(\w*[Ss]tep\w*)\s*=\s*\[\s*(\d+(?:\s*,\s*\d+){3,})\s*\]/g),
+            // [ ... ].includes(step) / .indexOf(stepNum)  — a step list tested inline
+            ...ASSESS.matchAll(/\[\s*(\d+(?:\s*,\s*\d+){3,})\s*\]\s*\.\s*(?:includes|indexOf)\s*\(\s*[\w?.]*[Ss]tep\w*/g),
+        ];
+        let bad = 0;
+        for (const m of suspects) {
+            const digits = (m[2] !== undefined ? m[2] : m[1]);
+            const list = digits.split(',').map(s => +s.trim()).sort((a, b) => a - b);
+            // EXACTLY the ladder = the template gate itself (check 5 reads it). Allowed.
+            if (list.join(',') === canonSet) continue;
+            fail(`literal step list [${list.join(', ')}] is a second source for a CW step set — `
+                + `the ladder is [${canonSet}] (CW_PLOT_UPDATE_INFO). Derive it (isCwPlotUpdateStep / `
+                + `CW_ARTIFACT_MAP); a renumber cannot find a literal.`);
+            bad++;
+        }
+        if (!bad) ok(`the plot-update step set has ONE source (CW_PLOT_UPDATE_INFO: ${canonSet})`);
+    }
+}
+
 console.log(failed ? `\n❌ cw-step-coherence-lint FAILED (${failed})` : '\n✅ cw-step-coherence-lint passed (CW numbering agrees across every surface).');
 process.exit(failed ? 1 : 0);

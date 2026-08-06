@@ -5329,6 +5329,16 @@
         27: { layer: 'Structural Elements', update: '7 of 7 (FINAL)', desc: 'This is the <strong>final update</strong>. Map advanced structural techniques (irony, symbols, senses, pacing, suspense) across your complete story. You now have a <strong>complete 8-layer story architecture</strong> — a professional-level blueprint.' },
     };
 
+    // ⭐ v7.20.455 — the ONE predicate for "is this a plot-update step?", derived from the
+    // ladder above. FIVE sites carried their own literal `[11, 14, 17, 20, 23, 26]`, and the
+    // .451 renumber never saw them: that sweep grepped `cwStepDef.step <op> N`, which a literal
+    // array does not match (the same too-narrow-grep class that hid the document builder). Left
+    // stale they were wrong in both directions — step 8 was not treated as a plot update, while
+    // steps 11/14/17/20/23/26 (Character Profile, Archetypes, Empathy, Theme & Tone, Genre,
+    // Structural Elements) were, so entering one fresh loaded the plot outline OVER its own
+    // document. `bin/cw-step-coherence-lint.js` now fails the build on any such literal.
+    const isCwPlotUpdateStep = (step) => !!CW_PLOT_UPDATE_INFO[step];
+
     // The instruction header that rides ON TOP of a seeded plot outline. The seed is the
     // student's OWN Step-6 document (their beats, their words) — this only tells them which
     // layer they are adding to it this time, and that nothing gets overwritten (Neil's ruling,
@@ -31249,8 +31259,11 @@
                     }
 
                     // Load plot outline for update steps
-                    const plotUpdateSteps = [11, 14, 17, 20, 23, 26];
-                    if (plotUpdateSteps.includes(cwStepDef?.step) && projectId) {
+                    // v7.20.455: derived predicate (was a stale literal), and gated on an EMPTY
+                    // editor like every sibling artifact load. Unguarded it raced the server seed
+                    // and replaced the seeded outline — header and all — with the raw artifact.
+                    if (isCwPlotUpdateStep(cwStepDef?.step) && projectId
+                        && canvasEditor && (canvasEditor.getText() || '').trim().length <= 50) {
                         try {
                             const plotArtifact = await WML.cwProject.loadArtifact(projectId, 'plot_outline');
                             if (plotArtifact?.success && plotArtifact.value && canvasEditor) {
@@ -34168,8 +34181,10 @@
                                             }
 
                                             // For plot update steps, load current plot outline
-                                            const plotUpdateSteps = [11, 14, 17, 20, 23, 26];
-                                            if (plotUpdateSteps.includes(cwStepDef?.step) && projectId) {
+                                            // v7.20.455: derived predicate + empty-editor gate (see the
+                                            // twin of this block in the isCwSi greeting branch).
+                                            if (isCwPlotUpdateStep(cwStepDef?.step) && projectId
+                                                && canvasEditor && (canvasEditor.getText() || '').trim().length <= 50) {
                                                 try {
                                                     const plotArtifact = await WML.cwProject.loadArtifact(projectId, 'plot_outline');
                                                     if (plotArtifact?.success && plotArtifact.value && canvasEditor) {
@@ -38863,8 +38878,9 @@
             // Only pre-populate if editor is empty (no server-saved content)
             const currentContent = canvasEditor.getText().trim();
             if (currentContent.length > 50) return; // Already has content
-            const plotUpdateSteps = [11, 14, 17, 20, 23, 26];
-            const artifactKey = plotUpdateSteps.includes(cwStepDef?.step) ? 'plot_outline' : WML.CW_ARTIFACT_MAP[cwStepDef?.step];
+            // v7.20.455: CW_ARTIFACT_MAP already maps every plot-update step to 'plot_outline'
+            // (wml-core.js), so the literal list this used to carry was a stale second source.
+            const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
             if (!artifactKey) return;
             try {
                 const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, artifactKey);
@@ -50968,11 +50984,10 @@
         if (snap.cwProjectId) {
             const cwStepDef = WML.getCwStepDef ? WML.getCwStepDef(snap.task) : null;
             const cwStepNum = cwStepDef && cwStepDef.step;
-            const plotUpdateSteps = [11, 14, 17, 20, 23, 26];
+            // v7.20.455: CW_ARTIFACT_MAP is the one source — it already maps every plot-update
+            // step to 'plot_outline'. The literal list here was a stale duplicate.
             const artifactKey = cwStepNum
-                ? (plotUpdateSteps.indexOf(cwStepNum) !== -1
-                    ? 'plot_outline'
-                    : (WML.CW_ARTIFACT_MAP && WML.CW_ARTIFACT_MAP[cwStepNum]))
+                ? (WML.CW_ARTIFACT_MAP && WML.CW_ARTIFACT_MAP[cwStepNum])
                 : null;
             if (artifactKey) {
                 _pendingCwArtifact = { projectId: snap.cwProjectId, artifactKey: artifactKey, html: html };
@@ -51307,7 +51322,12 @@
                 }
                 if (state.reviewMode) {
                     // Review mode: always load server content (student's document)
-                    canvasEditor.commands.setContent(res.doc.html, false);
+                    // v7.20.455: under _migrationActive — a student doc with fewer protected
+                    // nodes than this step's template is reverted by the section guard, and
+                    // the reviewer is shown the TEMPLATE instead of the work they opened.
+                    _migrationActive = true;
+                    try { canvasEditor.commands.setContent(res.doc.html, false); }
+                    finally { _migrationActive = false; }
                     // v7.15.30: Load comments from server doc for review mode
                     if (res.doc.comments && typeof res.doc.comments === 'object' && _currentComments) {
                         Object.assign(_currentComments, res.doc.comments);
@@ -51390,7 +51410,20 @@
                         if (!_isSeed && _curHtml.length > 20 && _normText(_curHtml) === _normText(res.doc.html)) {
                             console.log('WML v7.19.465: mounted content already matches server doc (text-equal) — skipping redundant re-paint to avoid the load-twice flicker');
                         } else {
-                            canvasEditor.commands.setContent(res.doc.html, false);
+                            // ⭐ v7.20.455 — the server doc MUST land under _migrationActive.
+                            // MEASURED on staging, driving Step 8 with a small seed:
+                            //   "WML: Section deletion blocked — reverting (17 → 2)"
+                            // The editor mounts on this step's TEMPLATE, so _sectionCount is the
+                            // template's protected-node count. Any authoritative server doc with
+                            // FEWER protected nodes — a seed from a barely-started upstream step,
+                            // a student's own sparse doc in review mode, a crib migration that
+                            // drops rows — trips the section guard, which undo()s the setContent
+                            // and leaves the TEMPLATE on screen. Silent: the load logs success.
+                            // Same cure as the v7.19.445 plot-structure rebuild; the guard
+                            // re-snapshots _sectionCount itself while the flag is set.
+                            _migrationActive = true;
+                            try { canvasEditor.commands.setContent(res.doc.html, false); }
+                            finally { _migrationActive = false; }
                             console.log(isCwTaskHydrate
                                 ? 'WML v7.17.44: CW canvas loaded from server (project-authoritative on mount)'
                                 : (isCribHydrate
@@ -52621,10 +52654,8 @@
         const stepDef = WML.getCwStepDef ? WML.getCwStepDef(state.task) : null;
         const stepNum = stepDef?.step;
         if (!stepNum) return;
-        const plotUpdateSteps = [11, 14, 17, 20, 23, 26];
-        const artifactKey = plotUpdateSteps.includes(stepNum)
-            ? 'plot_outline'
-            : (WML.CW_ARTIFACT_MAP && WML.CW_ARTIFACT_MAP[stepNum]);
+        // v7.20.455: one source — CW_ARTIFACT_MAP already maps the plot-update steps.
+        const artifactKey = (WML.CW_ARTIFACT_MAP && WML.CW_ARTIFACT_MAP[stepNum]);
         if (!artifactKey) return;
         try {
             const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, artifactKey);
