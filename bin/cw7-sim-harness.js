@@ -356,6 +356,7 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
             + 'browsable, not a bank — it must survive after the inline examples are spent.');
     }
 
+    const saidFor = new Map();   // fid → [markers said while the slot was armed on that fid]
     let guard = 0;
     while (guard++ < 400 && w.ctl.active) {
         const before = w.bubbles.length;
@@ -372,7 +373,19 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
             continue;
         }
         if (w.deps._walkSlot && w.deps._walkSlot.armed) {
-            w.say('answer ' + guard + ' — she says nothing in the head teacher’s office.');
+            // ⭐ v7.20.456 — SAY SOMETHING UNIQUE, AND RECORD WHO ASKED FOR IT.
+            // This used to type the SAME sentence at every station and assert only that no row
+            // ended empty — which is true even if every answer lands one row off. Inserting a
+            // station mid-list (as the 'falter' row does) is exactly how that happens, and the
+            // suite would have passed it. The token knows which row the ask armed, so tag each
+            // answer with it and check the landing site below.
+            const _tok = w.deps._walkSlot.peek ? w.deps._walkSlot.peek('cw7') : null;
+            const _mark = 'MK' + guard + 'MK';
+            if (_tok && _tok.fid) {
+                if (!saidFor.has(_tok.fid)) saidFor.set(_tok.fid, []);
+                saidFor.get(_tok.fid).push(_mark);
+            }
+            w.say('answer ' + _mark + ' — she says nothing in the head teacher’s office.');
             continue;
         }
         if (w.bubbles.length === before && !w.chips().length) break;       // stalled
@@ -380,6 +393,36 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
 
     const emptyRows = FIDS.filter((f) => !w.rows.get(f));
     ok(emptyRows.length === 0, 'full run: rows STILL EMPTY at the end — ' + emptyRows.join(', '));
+
+    // ⭐ v7.20.456 — EVERY ANSWER LANDED IN THE ROW THAT ASKED FOR IT. "No row is empty" is
+    // satisfied by a walk that files every answer one row off; this is not. Two directions,
+    // because only the pair pins it: the marker must be IN its own row, and in NO other.
+    {
+        let mis = 0, stray = 0;
+        saidFor.forEach((marks, fid) => {
+            const mine = String(w.rows.get(fid) || '');
+            marks.forEach((m) => {
+                if (mine.indexOf(m) === -1) {
+                    const landed = FIDS.filter((f) => String(w.rows.get(f) || '').indexOf(m) !== -1);
+                    ok(false, 'answer ' + m + ' was asked for ' + fid + ' but filed into '
+                        + (landed.length ? landed.join(', ') : 'NOTHING'));
+                    mis++;
+                }
+                FIDS.forEach((f) => {
+                    if (f !== fid && String(w.rows.get(f) || '').indexOf(m) !== -1) {
+                        ok(false, 'answer ' + m + ' (asked for ' + fid + ') ALSO leaked into ' + f);
+                        stray++;
+                    }
+                });
+            });
+        });
+        ok(saidFor.size > 0, 'the targeting check saw no answers at all — it would pass vacuously');
+        if (!mis && !stray) {
+            ok(true, 'every one of the ' + [...saidFor.values()].reduce((n, a) => n + a.length, 0)
+                + ' typed answers landed in the row whose ask armed it, and leaked into no other ('
+                + saidFor.size + ' rows)');
+        }
+    }
     // ⭐ v7.20.421 — EVERY TRAIT DECIDED, not just "the row has something on it". A serial walk
     // that silently skipped a trait would still leave the row complete, and the student would
     // never know they were not asked.
