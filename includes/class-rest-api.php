@@ -5618,6 +5618,16 @@ class SWML_REST_API {
     }
 
     private function seed_from_sibling_stage($user_id, $board, $text, $topic_number, $exclude_key, $suffix = '', $attempt = 1, $cw_project_id = '') {
+        // ⭐ v7.20.453 — CW FIRST, because the topic guard below would swallow it. CW steps carry
+        // NO topic number (one long project, scoped by cw_project_id instead), so `topic <= 0` is
+        // their normal state, not a missing value. The guard exists for ESSAY stages, which are
+        // per-topic. Ordering matters: while the CW dispatch sat after it, the whole CW branch was
+        // unreachable — syntactically fine, gated behind an always-true early return, and a drive
+        // of the real lesson is the only thing that shows it (presence proves plumbing, not
+        // behaviour). Caught exactly that way on staging before this shipped.
+        if (strpos($suffix, '_cw_') === 0) {
+            return $this->seed_from_cw_lineage($user_id, $board, $text, $topic_number, $exclude_key, $suffix, $attempt, $cw_project_id);
+        }
         if ($topic_number === null || (int) $topic_number <= 0) return null;
         $text = $this->normalize_text_slug($text);
         // v7.19.855 ROOT FIX (Neil 2026-07-04 — FORWARD-SNAPSHOT model, settled): a new
