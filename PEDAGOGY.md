@@ -1471,3 +1471,56 @@ not run dry in one tap; an ask should not grow a fourth example nobody asked for
 rule 5 and recommendation 5 in `STEP6-RECOMMENDATIONS-2026-08-02.md`. Those rules stand for the
 ASK; they do not govern the ladder. (Pairs with §4c.9 — the ladder is cheapest-first precisely so
 a stuck student can spend as much FREE help as they like before reaching Sophia.)
+
+---
+
+## §28. ⭐⭐ PEER FEEDBACK IS THE PRIMARY NON-API CHECK — AND ITS PRECONDITIONS ARE NOT OPTIONAL (Neil, ruled 2026-08-06)
+
+**The trigger.** Neil, reviewing a real student on prod Step 5: the *Thematic Message / Moral* box
+held a 120-word retelling of the plot. *"That's got nothing to do with the moral. This is the
+problem when you don't have AI… I don't wanna use any API calls, but at the same time, this is the
+type of thing that'll slip through the net."* Then, on the answer: *"peer review has to have hard
+preconditions, explicit criteria, training — exactly what you've said there… if we're trying not to
+use API calls, then what we need to do is leverage peer feedback, which is totally doable. But it
+has to be done very, very well."*
+
+**THE RULING.** Where a written answer needs checking and we do not want to spend a call, **the
+check is a PEER, working from the same criteria card the author was given.** This is not a
+second-best substitute for an AI check — on the evidence it outperforms one.
+
+**THE EVIDENCE** (`research/2026-08-02-learning-without-ai-creative-beats.md` §5):
+- **Graham & Perin (2007)** — peer assistance **0.75** for adolescents; a top-five writing intervention.
+- **Graham, Hebert & Harris (2015)** — peer feedback **0.58**, *above* computer feedback at **0.38**.
+- **Gielen et al. (2010)**, secondary-school writing — a **single peer's feedback was as effective as
+  the teacher's comments**, and **"justified" comments (carrying a reason) beat unexplained ones.**
+
+**THE PRECONDITIONS, and a peer route does not ship without them** (Topping's reviews; the failure
+mode is well attested): **explicit criteria · training · modelling of how to assess · repeated
+practice.** Unstructured peer response *reliably* degrades into praise and proofreading, and turns
+actively harmful when it becomes personal (Kluger & DeNisi — >⅓ of feedback interventions made
+performance WORSE, and the harmful ones aimed at the person, not the task).
+
+**THE DESIGN RULES that follow, and they are what make it safe:**
+1. **The peer answers the SAME criteria items about someone else's answer** — never a free-form
+   "what do you think?". Our criteria card IS the training artefact; the precondition is something
+   we already produce.
+2. **A reason is REQUIRED per item.** Gielen: justified comments carried the effect. A comment
+   without a reason is not a comment.
+3. **Task, never person** (§18, Hattie & Timperley) — the form should make a personal remark
+   structurally hard to write, not merely discouraged.
+4. **The author must see that it happened** and be able to act on it — a peer check the student
+   cannot reach is not a check (Neil: *"it needs to be something that's reachable to the student…
+   to show that they've signed off on it"*).
+5. **Correct the GROUNDING, never the reading** (the §Corrective-Feedback ownership line). "Your
+   moral is wrong" is injection; "that is what HAPPENS — what does it MEAN?" is task-level.
+
+**WHO GETS A PEER — availability, NOT tier (Neil's correction, 2026-08-06).** *"Even students on a
+silver package, it doesn't mean that they won't have someone to study with. It's just gonna be less
+likely."* So the gate is **"is a peer available?"**, never "which tier are they on". Gold/Platinum
+have a group of ≤16 so a peer is structurally there; Silver is link-only and not in an attendance
+group, so pairing them needs its own mechanism (an invite, most likely) — **an open product
+question, not an assumption.** Where no peer is available, the fallback is the batched API check.
+**Encourage it for everyone; require it of no one who has nobody.**
+
+**WHAT THIS DOES NOT LICENCE.** Peer feedback replaces neither the tutor's marking nor the
+protocols. It is a check on whether an answer is ON TASK, done by someone holding the same criteria.
