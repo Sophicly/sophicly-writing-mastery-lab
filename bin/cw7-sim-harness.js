@@ -103,7 +103,13 @@ const CTL_SRC = { src: braceSliceFrom(SRC, ctlIdx, '(', ')').text + '()' };
 
 const FIDS = [];
 ['begin', 'end'].forEach((w) => CW7_VALUES.forEach((v) => FIDS.push(_cw7RowFieldId(w, v.id))));
-['shift', 'align', 'pressure'].forEach((s) => FIDS.push(_cw7RowFieldId('reflect', s)));
+// v7.20.456: SLICED, not re-typed. This line used to read `['shift','align','pressure']` — a
+// second copy of the walk's own REFLECT list, in the one file whose job is to catch exactly that.
+// Adding a reflection station to the walk therefore failed the sim with "a write targeted a row
+// that does not exist", blaming the change rather than the stale copy. Now it derives, so a new
+// station is covered the moment it is added.
+const CW7_REFLECT = evalAfter('const REFLECT =');
+CW7_REFLECT.forEach((r) => FIDS.push(_cw7RowFieldId('reflect', r.slot)));
 const VALUE_FIDS = FIDS.slice(0, CW7_VALUES.length * 2);
 const REFLECT_FIDS = FIDS.slice(CW7_VALUES.length * 2);
 // v7.20.421 (#249): the build-list rows. Registered with the rig so a write to one is not counted
@@ -243,7 +249,10 @@ console.log('CW STEP-7 VALUES WALK — behavioural sim (real _cwValuesCtl)');
 ok(CW7_VALUES.length === 6, 'there are six universal values, found ' + CW7_VALUES.length);
 ok(CW7_STATES.length === 3 && CW7_STATES.join('|') === 'In balance|In excess|In deficit',
     'the three states are not the ones the document offers — the walk would tick nothing');
-ok(FIDS.length === 15, 'expected 15 rows (12 value + 3 reflection), got ' + FIDS.length);
+const _wantFids = CW7_VALUES.length * 2 + CW7_REFLECT.length;
+ok(FIDS.length === _wantFids,
+    'expected ' + _wantFids + ' rows (' + (CW7_VALUES.length * 2) + ' value + '
+    + CW7_REFLECT.length + ' reflection), got ' + FIDS.length);
 // Every id the walk uses must be one the DOCUMENT builder produces. Both sides call the same
 // producer here, which is the point — but if someone re-types one, this catches it (§5d).
 ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
@@ -940,7 +949,7 @@ ok(FIDS.every((f) => f.indexOf('cw-step-7-') === 0),
 
 console.log(`\n${asserts.pass} passed, ${asserts.fail} failed`);
 if (fail) { console.error('cw7-sim-harness FAILED'); process.exit(1); }
-console.log('✅ cw7-sim-harness passed — 15 stations, every row complete, ZERO API calls.');
+console.log('✅ cw7-sim-harness passed — ' + FIDS.length + ' stations, every row complete, ZERO API calls.');
 }
 
 main().catch((e) => { console.error('cw7-sim-harness THREW —', e && e.stack); process.exit(1); });

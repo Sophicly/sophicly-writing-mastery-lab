@@ -23785,6 +23785,17 @@
             });
             const REFLECT = [
                 { slot: 'shift', label: 'The biggest shift' },
+                // ⭐ v7.20.456 — THE MIDDLE OF THE ARC (Neil, 2026-08-06: *"are we missing the
+                // middle? Do we really want to make them do the middle?"*). The answer from our own
+                // source research (`research/cw-guide-source-research-2026-07-24.md`, Edson): the
+                // middle of a transformation is not a STATE, it is a sequence of ACTIONS —
+                // EXPRESS → BATTLE (at the midpoint, and it FAILS, the shield goes back up) →
+                // OVERCOME. So a third begin/middle/end audit table would have asked for the one
+                // answer that cannot be given honestly ("in balance or in deficit, mid-change?")
+                // at ~50% more work than the two tables already cost. What was genuinely missing
+                // is ONE question: the attempt that fails. It goes here, straight after the shift,
+                // because it is the MECHANISM of that shift.
+                { slot: 'falter', label: 'The attempt that fails' },
                 { slot: 'align', label: 'Does it align?' },
                 { slot: 'pressure', label: 'Pressure from the plot' },
             ];
@@ -24437,6 +24448,23 @@
                                 : 'That is worth looking at. A protagonist who ends exactly where they began has not '
                                   + 'been changed by the story — and stories are about complete and irreversible '
                                   + 'change.\n\n**Which value SHOULD move, and what would have to happen to move it?**'));
+                    } else if (st.slot === 'falter') {
+                        aiBubble(bar(n, stationTitle(st))
+                            + 'One more before the practical one. A change that happens in a single clean move '
+                            + 'reads as convenient. Real change is **attempted, fails, and is attempted again** — '
+                            + 'so somewhere in the middle your protagonist should reach for the new version of '
+                            + 'themselves and get pulled back.\n\n'
+                            + '**A strong answer:**\n'
+                            + '- names an **action they take**, not a feeling they have\n'
+                            + '- names **what pulls them back** — the old fear, habit or loyalty\n'
+                            + '- sits in the **middle** of the story, not at the end\n\n'
+                            + 'Example — *Macbeth*: he reaches for the better version of himself and says it out '
+                            + 'loud, “We will proceed no further in this business” — and Lady Macbeth’s goading '
+                            + 'pulls him straight back.\n\n'
+                            + 'Example — *Finding Nemo*: Marlin starts to trust Dory and let go, then panics inside '
+                            + 'the whale and clings on — he has to be talked into letting go.\n\n'
+                            + '**When your protagonist first tries to change, what do they DO — and what pulls '
+                            + 'them back?**');
                     } else if (st.slot === 'align') {
                         aiBubble(bar(n, stationTitle(st))
                             + 'Your theme and your plot structure were decided in Step 5, and they are in your '
@@ -43588,6 +43616,12 @@
                     id: 'shift', label: 'The biggest shift',
                     prompt: 'Which value changes the most between your beginning and your end \u2014 and what forces that change?',
                 }, _cw7RowFieldId('reflect', 'shift')) +
+                // v7.20.456 — the middle of the arc, as an ACTION not a state (see the REFLECT
+                // stations for the sourcing). Sits after the shift because it is its mechanism.
+                outlineRowHTML({
+                    id: 'falter', label: 'The attempt that fails',
+                    prompt: 'Before the change sticks, your protagonist reaches for it once and is pulled back. What do they DO, and what pulls them back?',
+                }, _cw7RowFieldId('reflect', 'falter')) +
                 outlineRowHTML({
                     id: 'align', label: 'Arc and theme',
                     prompt: 'Does that change align with your character arc and the theme you chose in Step 5?',
