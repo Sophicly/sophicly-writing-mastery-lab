@@ -26140,6 +26140,68 @@
                 if (!_selectionIsInDoc(s)) _hideDocSelToolbar();
             });
         });
+
+        /* ⭐⭐ v7.20.459 — THE SILENT FIRST-RUN DEMO (spec §5).
+           Deleting the header solves clutter and creates ONE problem: a formatting toolbar that
+           only exists on selection is invisible until you happen to select something. Rather than
+           a tooltip, a coach-mark or a dismissible tip — all of which are words a student has to
+           read and a thing they have to close — the interface performs itself ONCE: a phrase
+           selects itself, the toolbar appears, and ~1.6s later both let go. Nothing to dismiss,
+           nothing to read, never shown again.
+
+           ⚠️ A DOM Range, NOT a ProseMirror selection transaction. Writing a PM selection here
+           would be a foreign mutation in NodeView territory — the exact class documented in
+           `reference_wml_pm_nodeview_foreign_mutation_loop` (a doc of 53 section NodeViews, an
+           on-mount write, a redraw that re-runs the write, and a frozen tab with NO error). A
+           native Range paints a selection without PM ever seeing a transaction.
+
+           GUARDS, each for a named way this could misfire:
+             • once per user, ever — a durable key, not session (this is an onboarding beat)
+             • never in review mode — a tutor is not the audience for a student's first run
+             • never while a walk owns the screen — a self-moving selection mid-ask reads as a bug
+             • never if the student is already typing or has already selected something
+             • only if there is a real paragraph long enough to be worth selecting
+             • the key is written BEFORE the animation, so a reload mid-demo cannot replay it */
+        const DOC_TB_DEMO_KEY = 'swml-doc-toolbar-demo-seen';
+        function _maybeRunToolbarDemo() {
+            try {
+                if (state.reviewMode) return;
+                if (localStorage.getItem(DOC_TB_DEMO_KEY) === '1') return;
+                /* ⚠️ THE WALK GUARD, ARRIVED AT IN THREE STEPS — worth recording, because the
+                   first two both LOOKED right:
+                     1. `typeof _anyWalkActive === 'function' && _anyWalkActive()` — no such
+                        function exists, so it was always false: a silent no-op guard.
+                     2. naming the seven walk controllers directly — `eslint no-undef` then
+                        proved they are CLOSURE-LOCALS of another function and unreachable here.
+                        (That is the .898 class, and it is exactly what the gate is for.)
+                     3. this: a BEHAVIOURAL signal that needs no cross-scope access. A walk owns
+                        the screen precisely when it has an ask on screen, and an ask always
+                        renders a `.swml-quick-actions` chip bar. If one is present, the student
+                        is mid-question and a self-moving selection would read as a bug. */
+                if (document.querySelector('#swml-canvas-overlay .swml-quick-actions')) return;
+                const sel0 = window.getSelection();
+                if (sel0 && !sel0.isCollapsed) return;                 // they are already working
+                // mid-message — resolved by id, since the textarea is a closure-local elsewhere
+                if (document.activeElement === document.getElementById('swml-canvas-chat-input')) return;
+                const p = Array.from(contentWrap.querySelectorAll('.ProseMirror p'))
+                    .find(n => (n.textContent || '').trim().length >= 40);
+                if (!p || !p.firstChild || p.firstChild.nodeType !== 3) return;
+                localStorage.setItem(DOC_TB_DEMO_KEY, '1');            // before, never after
+                const range = document.createRange();
+                range.setStart(p.firstChild, 0);
+                range.setEnd(p.firstChild, Math.min(28, p.firstChild.length));
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+                contentWrap.dispatchEvent(new Event('mouseup'));       // the real show path, not a second one
+                setTimeout(() => {
+                    // Let go of BOTH — and only if the student has not taken over in the meantime.
+                    const s = window.getSelection();
+                    if (s && s.toString() === range.toString()) { s.removeAllRanges(); _hideDocSelToolbar(); }
+                }, 1600);
+            } catch (e) { /* an onboarding flourish must never break the canvas */ }
+        }
+        setTimeout(_maybeRunToolbarDemo, 1400);   // after the doc has settled, before they start
         // v7.19.213: Add codex class so CSS counter scope offsets section numbering
         // (About the Codex = 0, Unit 1 children = 1.1, 1.2, ...). Pairs with
         // .swml-codex-doc counter-reset rule in wml-canvas.css.
