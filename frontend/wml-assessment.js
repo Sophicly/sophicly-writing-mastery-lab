@@ -13973,7 +13973,13 @@
 
         // Logo + collapse button
         const protoHead = el('div', { className: 'swml-sidebar-head', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
-        protoHead.appendChild(renderLogo ? renderLogo() : el('span'));
+        // v7.20.459: the Writing Mastery Lab phoenix is gone from the sidebar (spec §1) — they know
+        // which product they are in, and it was the last pure branding in the writing chrome. The
+        // empty <span> stays as the flex spacer so `justify-content:space-between` still parks the
+        // collapse button on the right; dropping the child entirely slides that button across.
+        // BOTH sidebar-head sites changed together (buildTrainingPanels + the assessment-transition
+        // rebuild) — one without the other is the audit-stops-one-site-short class.
+        protoHead.appendChild(el('span'));
         // \u2B50\u2B50 v7.20.446 (Neil, FIXLIST #292) \u2014 Neil: *"the collapse sidebar button\u2026 it's sort of
         // sticking out like a sore thumb now since everything else is so minimalistic."*
         // ROOT, and it was never really the styling: this button's glyph was the TEXT CHARACTER
@@ -15009,8 +15015,16 @@
                 );
             }
         });
-        chatHeader.appendChild(clearChatBtn);
-        chatPanel.appendChild(chatHeader);
+        /* ⭐⭐ v7.20.459 — THE CHAT HEADER IS DELETED (Neil: "I want the WML header and the chat
+           header, I want them both gone. There's really no reason for them to be there.")
+           It carried two things: the step title — a THIRD copy of what the LearnDash breadcrumb
+           and the lesson list already say — and Clear Chat.
+           ⚠️ CLEAR CHAT IS DESTRUCTIVE, so it does not simply vanish with its bar. It is rehomed
+           to the input area below: rare + destructive = quiet, not permanent display, and never
+           deleted outright. GATE CHECKED, NOT ASSUMED: it already opens a confirm
+           ({confirmText:'Clear Chat', cancelText:'Keep Chat'}, ~:15008), so no confirm needed
+           adding — the spec required verifying that before moving it, and it holds.
+           `chatHeader` itself is left built but unmounted; its only other child was the title. */
 
         chatPanel.appendChild(chatMessages);
 
@@ -15201,6 +15215,9 @@
 
         chatInputWrap.appendChild(chatInputInner);
         chatInputArea.appendChild(chatInputWrap);
+        // v7.20.459: Clear Chat's new home — see the note where the chat header was deleted.
+        clearChatBtn.classList.add('swml-clear-chat-quiet');
+        chatInputArea.appendChild(clearChatBtn);
         if (state.reviewMode) {
             appendChatReadonlyNote(chatPanel);
         } else {
@@ -26021,7 +26038,16 @@
         overlay.dataset.swmlTheme = initTheme;
         headerRow.appendChild(headerRight);
 
-        editorPane.appendChild(headerRow);
+        /* ⭐⭐ v7.20.459 — THE CANVAS HEADER IS NEVER MOUNTED. Neil: "I want the WML header and the
+           chat header, I want them both gone. There's really no reason for them to be there."
+           `headerRow` is still BUILT so that `headerRight` exists as a collection point — the rail
+           adopts its children further down, which is what keeps the theme toggle and fullscreen
+           alive. Dropping the build entirely would strand both. It is simply never appended to
+           `editorPane`, so nothing renders.
+           ⭐ No height recalculation is needed anywhere: `.swml-canvas-content` is `flex:1` inside
+           `.swml-canvas{display:flex;height:100%}`, so the document absorbs the freed space by
+           construction. (Measured before the deletion — this was one of the four facts the spec
+           turned on, and the alternative would have been hunting hardcoded offsets.) */
 
         // Content area
         const contentWrap = el('div', { className: 'swml-canvas-content' });
@@ -26282,6 +26308,32 @@
         _railTool('swml-rail-text-larger', 'Larger text', '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7v12m0 0l-2.5-2.5M4 19l2.5-2.5"/><path d="M10 19l5-14 5 14M11.8 14.5h6.4"/></svg>',
             () => { textSizeIndex = Math.min(TEXT_SIZES.length - 1, textSizeIndex + 1); applyTextSize(); });
         _railTool('swml-rail-export', 'Download', SVG_EXPORT, () => exportToDocx());
+
+        /* ⭐⭐ v7.20.459 — ADOPT WHATEVER IS LEFT IN `headerRight` INTO THE RAIL, then the header
+           can go. Today that is the theme toggle and the fullscreen button.
+
+           ⚠️ THE THEME TOGGLE IS NOT OPTIONAL, and this was measured rather than assumed. It looks
+           safe to drop because `:26082` hides it whenever `WML.isEmbedded` — but the fullscreen
+           handler RE-SHOWS it (`canvasThemeToggle.style.display = goingFs ? '' : 'none'`), and
+           fullscreen is the one place LearnDash's own toggle is hidden. It is also the only theme
+           control in standalone mode. Deleting the header without rehoming it would have
+           resurrected FIXLIST #183 — Neil: "in full screen the theme toggle doesn't work… it's
+           kind of frozen" — in a new costume. The NODE is moved, so its one-writer `toggleTheme()`
+           handler and its display logic come with it untouched and `bin/theme-writer-harness.js`
+           still governs it.
+
+           ⚠️ FULLSCREEN STAYS HERE FOR NOW. Spec §4 sends it to the SPL header, which is the
+           LearnDash lane's work and IS NOT SHIPPED. Deleting a control on the strength of another
+           lane's unshipped change would make fullscreen unreachable in the meantime. It comes out
+           of this rail only once that button is live and verified on the page.
+
+           MOVED AS NODES, not rebuilt, and adopted generically rather than by name: anything a
+           future change leaves in headerRight travels here too instead of silently disappearing
+           with the bar. appendChild MOVES a node, so no clone and no duplicate handlers. */
+        Array.from(headerRight.children).forEach((btn) => {
+            btn.classList.add('swml-rail-adopted');
+            btnColumn.appendChild(btn);
+        });
 
         // v7.19.926 (Neil Run 9): collapse/expand EVERY collapsible section in one click.
         // Operates on the same .swml-collapsible capability class the chevrons stamp — any
@@ -32306,7 +32358,13 @@
 
                         // Logo + collapse button (uses existing .collapsed class)
                         const protoHead = el('div', { className: 'swml-sidebar-head', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
-                        protoHead.appendChild(renderLogo ? renderLogo() : el('span'));
+                        // v7.20.459: the Writing Mastery Lab phoenix is gone from the sidebar (spec §1) — they know
+        // which product they are in, and it was the last pure branding in the writing chrome. The
+        // empty <span> stays as the flex spacer so `justify-content:space-between` still parks the
+        // collapse button on the right; dropping the child entirely slides that button across.
+        // BOTH sidebar-head sites changed together (buildTrainingPanels + the assessment-transition
+        // rebuild) — one without the other is the audit-stops-one-site-short class.
+        protoHead.appendChild(el('span'));
                         const protoCollapseBtn = el('button', { className: 'swml-collapse-btn', textContent: '◀', title: 'Collapse sidebar' });
                         protoCollapseBtn.addEventListener('click', () => {
                             protoPanel.classList.toggle('collapsed');
@@ -56827,14 +56885,15 @@ ${html}
 
         const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
         if (state.reviewMode) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
-        ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: boardLabel }));
-        ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: subjectLabel }));
-        ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: textLabel }));
-        if (state.topicNumber) {
-            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: `Topic ${state.topicNumber}` }));
-        }
-        const SVG_BADGE_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
-        ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_BADGE_ICON + cfg.badgeLabel }));
+        /* v7.20.459: identity badges deleted here too — board · subject · text · Topic N · the task
+           badge. `feedback_discussion` is a `free`-environment task, so this header WAS its only
+           badge strip; that is exactly why the deletion had to be justified by the breadcrumb
+           rather than by "the sidebar shows them" (there is no WML sidebar here). Same ruling,
+           same reason: the lesson is called "5. Discuss Your Feedback with Your Tutor" inside
+           "Macbeth Mastery for AQA", which says all of it, permanently and without scrolling.
+           ⚠️ Changed in the SAME commit as the main canvas deliberately — a badge sweep that
+           stops at the first builder is the audit-stops-one-site-short class, and this file has
+           three separate ctxBadges builders. */
         // v7.15.48: Attempt badge placeholder — always inserted, visibility controlled
         // by _updateCtxAttemptBadge (see equivalent change in renderCanvasWorkspace).
         // v7.15.49: visibility uses _isGuidedContext().
@@ -57434,10 +57493,11 @@ ${html}
         const headerRow = el('div', { className: 'swml-canvas-header' });
         const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
         if (state.reviewMode) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
-        [state.board?.toUpperCase(), ucfirst(state.subject || ''), state.textName || ucfirst(state.text || '')].filter(Boolean).forEach(b => {
-            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: b }));
-        });
-        ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', textContent: exerciseConfig.chatHeaderLabel || ucfirst(state.task || '') }));
+        /* v7.20.459: identity badges deleted here too (third and last ctxBadges builder) — board ·
+           subject · text · the task label. Same ruling, same reason as the other two: the lesson
+           is called "2. EXAM PREP: Generate an Exam-Style Question" inside a named course, which
+           is the whole strip in one permanent, non-scrolling line. Only the tutor-view pill above
+           survives, because it is a control and a safety signal, not a label. */
         headerRow.appendChild(ctxBadges);
 
         // Simplified toolbar (essential tools only)

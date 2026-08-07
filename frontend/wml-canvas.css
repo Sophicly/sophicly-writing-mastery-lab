@@ -14866,12 +14866,24 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    With `order`, a button appended anywhere still lands under the `+` and still
    folds — including ones added in future, for free.
    ══════════════════════════════════════════════════════════════════════════ */
-.swml-outline-btn-column > .swml-outline-btn { order: 2; }
+/* ⭐ Keyed on `> *`, NOT on `> .swml-outline-btn`. The rail also ADOPTS nodes that were built
+   elsewhere — the theme toggle and the fullscreen button come out of the deleted header and are
+   not .swml-outline-btn. A class-keyed rule would have left those two permanently visible beside
+   a collapsed strip, which is the "new sibling silently misses the behaviour" failure this file
+   already warns about, arriving through the back door. Folding is a property of being IN the
+   rail, so the selector says exactly that. */
+.swml-outline-btn-column > * { order: 2; }
 .swml-outline-btn-column > .swml-rail-permanent { order: 0; }
 .swml-outline-btn-column > .swml-rail-toggle { order: 1; }
 
-/* Collapsed: only the permanent button and the `+` itself remain. */
-.swml-outline-btn-column.swml-rail-collapsed > .swml-outline-btn:not(.swml-rail-permanent):not(.swml-rail-toggle) {
+/* Collapsed: only the permanent button and the `+` itself remain. Panels are excluded —
+   they are children of the column too, and hiding an OPEN outline panel because the strip is
+   collapsed would be a liveness break, not a tidy-up. */
+/* `.swml-outline-panel` is the ONE class every rail panel carries — verified, not assumed: the
+   resources, writer's-profile and prior-attempts panels all declare it alongside their own
+   modifier (`swml-outline-panel swml-resources-panel …`), so this single exclusion covers all
+   four without naming them. */
+.swml-outline-btn-column.swml-rail-collapsed > *:not(.swml-rail-permanent):not(.swml-rail-toggle):not(.swml-outline-panel) {
     display: none;
 }
 /* The `+` rotates to an `×` when open — the state is visible on the control itself,
