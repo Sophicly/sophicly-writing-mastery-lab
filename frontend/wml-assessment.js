@@ -25308,15 +25308,28 @@
             { id: 'blockquote', html: '❝', label: 'Quote' },
             { id: 'hr', html: '—', label: 'Rule' },
             { id: 'checklist', html: '☑', label: 'Checklist' },
-            { id: 'sep3', sep: true },
-            { id: 'undo', html: '↩', label: 'Undo' },
-            { id: 'redo', html: '↪', label: 'Redo' },
-            { id: 'sep4', sep: true },
-            { id: 'comment', html: SVG_COMMENT, label: 'Comment' },
-            { id: 'save', html: SVG_SAVE_SMALL, label: 'Save' },
-            { id: 'export', html: SVG_EXPORT, label: 'Export' },
-            { id: 'sep5', sep: true },
-            { id: 'dictation', html: SVG_MIC_ICON, label: 'Dictate' },
+            /* ⭐ v7.20.459 — WHAT LEFT THIS LIST, and where it went (spec §4). The carousel is now
+               the SELECTION-SCOPED set only: everything here acts on selected text or its block,
+               which is what lets the whole strip live inside a toolbar that only exists while
+               something is selected.
+                 • comment    → PINNED in the document toolbar (Neil: "I would definitely want to
+                                use the comments quite a lot"). Outside the scroll track, so it
+                                never scrolls away.
+                 • dictation  → PINNED beside comment (Neil's ruling) AND listed in the `+` strip.
+                                BOTH, by construction: the toolbar only exists while text is
+                                SELECTED, and a student starting to dictate has selected nothing —
+                                pin-only would make dictation unreachable from a blank document,
+                                which is the §4d liveness failure exactly. Do not "tidy" this into
+                                one home.
+                 • textSmaller/textLarger, export → the `+` strip. Comfort settings and a rare
+                                document-scoped action; neither is selection-scoped.
+                 • undo/redo  → keyboard only. Cmd+Z / Cmd+Shift+Z already work everywhere; a
+                                button for a universal shortcut is furniture.
+                 • save       → DELETED outright. An autosave indicator already sits in the status
+                                bar, and a manual Save button beside it teaches students the save
+                                might not have happened.
+               The toolActions entries for the rehomed ids are deliberately KEPT — their new homes
+               call the same handlers, so there is still exactly one implementation of each. */
         ];
 
         // Text size scale — applied to editor paragraph text via CSS variable
@@ -25856,8 +25869,15 @@
            (~:8838) finds it by `#swml-canvas-overlay .swml-canvas-ctx`, so the ONE writer of the
            attempt value keeps working with no change and cannot end up writing to a detached node. */
 
-        // Toolbar buttons (centre)
-        headerRow.appendChild(toolbar);
+        /* ⭐⭐ v7.20.459 — THE CAROUSEL NO LONGER MOUNTS IN THE HEADER. It is REPARENTED, further
+           down, into the floating document toolbar (_mountDocSelToolbar).
+           WHY REPARENT RATHER THAN REBUILD: `toolbar` is already a self-contained element — its
+           drag, wheel, momentum, arrow and Winona-hover handlers are all bound to its own
+           `tbScroll` / `tbArrowL` / `tbArrowR`, never to the header. Moving the NODE carries every
+           one of them across untouched. Re-implementing a "carousel for the toolbar" would have
+           been a second copy of ~150 lines of tuned motion code, drifting from this one the first
+           time either was edited (CLAUDE.md §13: a working component is copied, not re-derived —
+           and here it isn't even copied, it's moved). */
 
         // BETA label + theme toggle (right)
         const headerRight = el('div', { className: 'swml-canvas-header-right' });
@@ -26012,6 +26032,88 @@
         try {
             if (window.ResizeObserver) new ResizeObserver(_swmlReclampDockedPanels).observe(contentWrap);
         } catch (_) {}
+
+        /* ⭐⭐ v7.20.459 — THE DOCUMENT CONTEXTUAL TOOLBAR (NEW COMPONENT, spec §5).
+           Measured first, because the spec's own §2 got this wrong once: there was NO document
+           selection toolbar before this. Both existing `.swml-selection-toolbar` instances bind to
+           `chatMessages` mouseup and carry Reply / Insert into Doc / Copy / Note — they act on
+           SOPHIA's text. Neil ruled the chat one unchanged, so this is a new component beside it,
+           not an extension of it. They cannot collide: that one listens on the chat pane, this one
+           on the document scroller.
+
+           SHAPE: [ Comment | Dictate ] │ [ the reparented 11-tool carousel ]
+           The two pins sit OUTSIDE `.swml-tb-scroll` and outside the gradient masks, so they can
+           never scroll out of reach — that is the entire point of pinning them. */
+        const docSelPins = el('div', { className: 'swml-doc-sel-pins' });
+        docSelPins.appendChild(el('button', {
+            className: 'swml-doc-sel-pin', innerHTML: SVG_COMMENT + '<span>Comment</span>',
+            'aria-label': 'Comment on the selected text',
+            onClick: (ev) => { ev.stopPropagation(); addComment(); _hideDocSelToolbar(); },
+        }));
+        docSelPins.appendChild(el('button', {
+            className: 'swml-doc-sel-pin swml-doc-sel-mic', innerHTML: SVG_MIC_ICON + '<span>Dictate</span>',
+            'aria-label': 'Dictate',
+            // Same handler the `+` strip calls — ONE implementation, two entry points (§4a).
+            onClick: (ev) => { ev.stopPropagation(); toggleDictation(); },
+        }));
+
+        const docSelTb = el('div', { className: 'swml-doc-sel-toolbar' });
+        docSelTb.appendChild(docSelPins);
+        docSelTb.appendChild(el('div', { className: 'swml-doc-sel-div' }));
+        docSelTb.appendChild(toolbar);           // ⭐ the reparent — see the note at the old mount
+        docSelTb.style.display = 'none';
+        contentWrap.appendChild(docSelTb);
+
+        function _hideDocSelToolbar() { docSelTb.style.display = 'none'; }
+
+        // A selection is only ours if it lives inside the document's editable body.
+        function _selectionIsInDoc(sel) {
+            if (!sel || sel.isCollapsed || !String(sel.toString()).trim()) return false;
+            let n = sel.anchorNode;
+            if (n && n.nodeType === 3) n = n.parentNode;
+            return !!(n && contentWrap.contains(n) && n.closest && n.closest('.ProseMirror'));
+        }
+
+        /* Trigger: mouseup on the scroller, deferred so the browser has committed the selection.
+           Never on typing and never on a caret-only click — _selectionIsInDoc rejects a collapsed
+           range, which is what keeps the toolbar from flashing on every click into the prose. */
+        contentWrap.addEventListener('mouseup', () => {
+            setTimeout(() => {
+                const sel = window.getSelection();
+                if (!_selectionIsInDoc(sel)) { _hideDocSelToolbar(); return; }
+                const rect = sel.getRangeAt(0).getBoundingClientRect();
+                const wrapRect = contentWrap.getBoundingClientRect();
+                docSelTb.style.display = 'flex';
+                const tbW = docSelTb.offsetWidth, tbH = docSelTb.offsetHeight;
+                // Above the selection by default; flip BELOW when it would sit off the top of the
+                // scroller, so it never covers what is being worked on (spec §5).
+                const above = rect.top - wrapRect.top - tbH - 10;
+                docSelTb.style.top = (above < 4
+                    ? rect.bottom - wrapRect.top + contentWrap.scrollTop + 10
+                    : above + contentWrap.scrollTop) + 'px';
+                docSelTb.style.left = Math.max(4, Math.min(
+                    rect.left - wrapRect.left + (rect.width / 2) - (tbW / 2),
+                    wrapRect.width - tbW - 4
+                )) + 'px';
+            }, 10);
+        });
+
+        document.addEventListener('mousedown', (e) => {
+            /* ⭐⭐ PORTED VERBATIM FROM v7.20.433 (wml-assessment.js ~:15361) — DO NOT "SIMPLIFY".
+               The obvious form (dismiss on any mousedown outside) is what caused the theme-toggle
+               BLINK: mousedown on any other control destroys the toolbar, then mouseup reaches the
+               rebuild handler with the selection still perfectly intact and builds an identical
+               one. Two handlers, one click. That bug survived THREE speculative fixes before
+               anyone measured it, and root CLAUDE.md §19 exists because of it.
+               ⚠️ Note the live CHAT copy at ~:33010 is still the naive form ("measured, not
+               fixed") — so this was taken from the .433 reference, NOT copied from the neighbour.
+               THE RULE: a click-away only dismisses if it actually took the selection away. */
+            if (docSelTb.style.display === 'none' || docSelTb.contains(e.target)) return;
+            requestAnimationFrame(() => {
+                const s = window.getSelection();
+                if (!_selectionIsInDoc(s)) _hideDocSelToolbar();
+            });
+        });
         // v7.19.213: Add codex class so CSS counter scope offsets section numbering
         // (About the Codex = 0, Unit 1 children = 1.1, 1.2, ...). Pairs with
         // .swml-codex-doc counter-reset rule in wml-canvas.css.

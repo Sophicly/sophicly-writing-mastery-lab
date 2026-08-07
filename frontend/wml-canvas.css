@@ -14744,3 +14744,113 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     overflow-wrap: anywhere;
     min-width: 0;
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   DOCUMENT CONTEXTUAL TOOLBAR — v7.20.459 (spec §5)
+   [ Comment | Dictate ] │ [ the reparented formatting carousel ]
+   Appears only while text is selected inside the document body. The chat's own
+   selection toolbar (.swml-selection-toolbar) is a DIFFERENT component and is
+   deliberately untouched this cycle — Neil: "no change to the contextual
+   toolbar in the chat."
+   ══════════════════════════════════════════════════════════════════════════ */
+.swml-doc-sel-toolbar {
+    position: absolute;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 6px;
+    border-radius: 13px;
+    /* The raised rung, derived in OKLCH from the #1c1d1f seed (N=+3) — the same value the
+       AI bubbles, Dynamic Island and rail buttons use. It must read as an OBJECT ABOVE the
+       page, which is why it is the raised tier and carries a real shadow rather than a border. */
+    background: #333437;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.44), 0 2px 6px rgba(0,0,0,0.3);
+
+    /* ⭐⭐ THE FADE VARIABLES MOVE WITH THE CAROUSEL — this is the v7.20.390 landmine.
+       They were declared on .swml-canvas-header ("the fades follow the header by
+       construction"), so reparenting the carousel out of the header would have left
+       .swml-tb-gradient-left/right resolving var(--swml-tb-fade) to NOTHING — an invalid
+       gradient, i.e. no fade at all, on a surface that still needs one. Redeclared here on
+       the new host so the same guarantee holds: the fades dissolve into whatever this
+       toolbar's background actually is. Keep byte-identical: #333437 = rgb(51,52,55). */
+    --swml-tb-fade: #333437;
+    --swml-tb-fade-0: rgba(51,52,55,0);
+}
+/* The pins live OUTSIDE .swml-tb-scroll and outside the gradient masks, so no amount of
+   carousel scrolling can move them. That is the whole reason Neil pinned them. */
+.swml-doc-sel-pins {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.swml-doc-sel-pin {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px;
+    padding: 0 10px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: rgba(255,255,255,0.88);
+    font: inherit;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.16s ease, color 0.16s ease;
+}
+.swml-doc-sel-pin:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.swml-doc-sel-pin:active { background: rgba(255,255,255,0.16); }
+.swml-doc-sel-pin svg { flex-shrink: 0; }
+/* v7.20.459: the mic reflects recording state via the same class the rail entry uses, so
+   both entry points (§4a: pinned AND in the `+`) show one truth. */
+.swml-doc-sel-mic.recording { background: rgba(239,68,68,0.22); color: #fecaca; }
+.swml-doc-sel-div {
+    width: 1px;
+    align-self: stretch;
+    margin: 4px 2px;
+    background: rgba(255,255,255,0.14);
+    flex-shrink: 0;
+}
+/* The carousel keeps its own rules; it only needs to stop behaving like a header child.
+   ⭐ `position: relative`, NOT `static`. The base rule centres it with
+   `position:absolute; left:50%; top:50%; translate(-50%,-50%)` inside the header, so that has to
+   go — but its OWN children are absolutely positioned against it: `.swml-tb-arrows{right:4px}` and
+   both `.swml-tb-gradient-*`. Making it `static` would remove it as the containing block and those
+   would anchor to `.swml-doc-sel-toolbar` instead, throwing the arrows past the Comment/Dictate
+   pins and the fades onto the wrong edges. `relative` drops the centring and keeps the anchor.
+   The base `padding-right:54px` still reserves the arrows' lane, matching
+   `.swml-tb-gradient-right{right:54px}` — left alone deliberately, they are one measurement. */
+.swml-doc-sel-toolbar .swml-canvas-toolbar {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 340px;
+    max-width: 340px;
+}
+/* Light theme — same mechanism, light's own values (one place per theme, not four literals). */
+[data-swml-theme="light"] .swml-doc-sel-toolbar,
+.swml-canvas-light .swml-doc-sel-toolbar {
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.10);
+    --swml-tb-fade: #ffffff;
+    --swml-tb-fade-0: rgba(255,255,255,0);
+}
+[data-swml-theme="light"] .swml-doc-sel-pin,
+.swml-canvas-light .swml-doc-sel-pin { color: rgba(0,0,0,0.72); }
+[data-swml-theme="light"] .swml-doc-sel-pin:hover,
+.swml-canvas-light .swml-doc-sel-pin:hover { background: rgba(0,0,0,0.06); color: #000; }
+[data-swml-theme="light"] .swml-doc-sel-div,
+.swml-canvas-light .swml-doc-sel-div { background: rgba(0,0,0,0.12); }
+
+/* ⚠️ iPad / iOS: the native selection handles and callout menu coexist with this toolbar and
+   NO emulator reproduces that — it must be checked on a real device (spec §5). Keeping the
+   toolbar clear of the selection's own vertical band is what gives the handles room. */
+@media (pointer: coarse) {
+    .swml-doc-sel-pin { min-height: 36px; padding: 0 12px; }
+}
