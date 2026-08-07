@@ -14854,3 +14854,34 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 @media (pointer: coarse) {
     .swml-doc-sel-pin { min-height: 36px; padding: 0 12px; }
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   THE `+` RAIL STRIP — v7.20.459 (spec §4b)
+   Outline is permanent; everything else folds behind a `+` that rotates 45°.
+   ⭐ Expressed as ORDER + one class on the column, never as a DOM restructure.
+   The rail is assembled across eight appendChild sites spread over ~3,500 lines
+   (see the note at wml-assessment.js ~:26160), so any design that depended on
+   DOM order or on a wrapper element would have had to edit all eight and would
+   have broken the MutationObserver that gives rail buttons their hue layer.
+   With `order`, a button appended anywhere still lands under the `+` and still
+   folds — including ones added in future, for free.
+   ══════════════════════════════════════════════════════════════════════════ */
+.swml-outline-btn-column > .swml-outline-btn { order: 2; }
+.swml-outline-btn-column > .swml-rail-permanent { order: 0; }
+.swml-outline-btn-column > .swml-rail-toggle { order: 1; }
+
+/* Collapsed: only the permanent button and the `+` itself remain. */
+.swml-outline-btn-column.swml-rail-collapsed > .swml-outline-btn:not(.swml-rail-permanent):not(.swml-rail-toggle) {
+    display: none;
+}
+/* The `+` rotates to an `×` when open — the state is visible on the control itself,
+   so the strip never looks like it has simply lost its buttons. */
+.swml-rail-toggle > svg { transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1); }
+.swml-rail-toggle.is-open > svg { transform: rotate(45deg); }
+
+/* ⚠️ LIVENESS (root CLAUDE.md §4d): while collapsed the `+` is the ONLY way back to the
+   tools, so it must never be mistakable for decoration or be hidden by anything above.
+   It keeps full opacity when the rest of the strip is dimmed, and it is never subject to
+   the collapsed rule above — that exclusion is written into the selector, not left to
+   ordering, so a later rule cannot accidentally fold the one control that unfolds. */
+.swml-outline-btn-column.swml-rail-collapsed > .swml-rail-toggle { opacity: 1; }

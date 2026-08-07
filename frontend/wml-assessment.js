@@ -26205,7 +26205,83 @@
             innerHTML: SVG_OUTLINE,
             onClick: (e) => { e.stopPropagation(); toggleOutlinePanel(); }
         });
+        outlineBtn.classList.add('swml-rail-permanent');   // never folds behind the `+`
         btnColumn.appendChild(outlineBtn);
+
+        /* ⭐⭐ v7.20.459 — THE `+` STRIP (Neil, ruled 2026-08-07; spec §4b).
+           *"the permanent button would be the outline panel, and then you have the plus icon"* —
+           everything else folds behind a `+` that rotates 45° when open.
+
+           ⭐ HOW, AND WHY IT TOUCHES NONE OF THE EIGHT APPEND SITES. The comment above records
+           that this rail is assembled across EIGHT separate appendChild sites spread over ~3,500
+           lines, several conditional — and that wiring each one individually is exactly the "new
+           sibling silently misses the behaviour" class this codebase keeps hitting. That lesson
+           applies here unchanged, so folding is a property of BEING a rail button, expressed as
+           ONE class on the column plus CSS `order`:
+             • `.swml-rail-permanent` (Outline) → order 0, always visible
+             • `.swml-rail-toggle`    (the `+`) → order 1, always visible
+             • every other .swml-outline-btn    → order 2, hidden while collapsed
+           DOM order therefore does not matter, so a button appended 3,000 lines below still lands
+           under the `+` and still folds — including any added in future, for free. Rebuilding the
+           rail into a container would have meant editing all eight sites and would have broken the
+           MutationObserver above.
+
+           ⭐ STICKY, AND THAT IS LOAD-BEARING — it is what pays back the extra click Neil was
+           warned about: a student who opens the strip finds it open next lesson. ONE key, ONE
+           writer, default CLOSED (his aesthetic default). Session-scoped like the theme preference,
+           so it never becomes a stale cross-device surprise. */
+        const RAIL_OPEN_KEY = 'swml-rail-open';
+        function _railIsOpen() {
+            try { return sessionStorage.getItem(RAIL_OPEN_KEY) === '1'; } catch (e) { return false; }
+        }
+        function _writeRailOpen(open) {          // the ONE writer — nothing else touches the key
+            try { sessionStorage.setItem(RAIL_OPEN_KEY, open ? '1' : '0'); } catch (e) {}
+        }
+        function _applyRailOpen(open) {
+            btnColumn.classList.toggle('swml-rail-collapsed', !open);
+            railToggle.classList.toggle('is-open', open);
+            railToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            railToggle.setAttribute('aria-label', open ? 'Hide tools' : 'Show tools');
+            railToggle.dataset.tooltip = open ? 'Hide tools' : 'Show tools';
+        }
+        const SVG_RAIL_PLUS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+        const railToggle = el('button', {
+            className: 'swml-outline-btn swml-rail-toggle',
+            'data-tooltip-pos': 'right',
+            innerHTML: SVG_RAIL_PLUS,
+            onClick: (e) => {
+                e.stopPropagation();
+                const next = !_railIsOpen();
+                _writeRailOpen(next);
+                _applyRailOpen(next);
+            },
+        });
+        btnColumn.appendChild(railToggle);
+        _applyRailOpen(_railIsOpen());
+
+        /* The controls that LOSE their home when the header goes. Each calls the SAME handler the
+           carousel called — one implementation, a second entry point (spec §4).
+           ⚠️ DICTATION IS DELIBERATELY HERE **AND** PINNED IN THE DOCUMENT TOOLBAR. The toolbar
+           only exists while text is SELECTED, and a student starting to dictate has selected
+           nothing — that is the definition of the act. Pin-only would make dictation unreachable
+           from a blank document, which is root CLAUDE.md §4d liveness in its purest form. If a
+           later change removes this entry, dictation becomes unreachable; do not "de-duplicate" it. */
+        const _railTool = (cls, tip, html, fn) => {
+            const b = el('button', {
+                className: 'swml-outline-btn ' + cls,
+                'data-tooltip': tip, 'data-tooltip-pos': 'right', 'aria-label': tip,
+                innerHTML: html,
+                onClick: (e) => { e.stopPropagation(); fn(); },
+            });
+            btnColumn.appendChild(b);
+            return b;
+        };
+        _railTool('swml-rail-dictate', 'Dictate', SVG_MIC_ICON, () => toggleDictation());
+        _railTool('swml-rail-text-smaller', 'Smaller text', '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V7m0 0L1.5 9.5M4 7l2.5 2.5"/><path d="M11 19l4-12 4 12M12.5 15h5"/></svg>',
+            () => { textSizeIndex = Math.max(0, textSizeIndex - 1); applyTextSize(); });
+        _railTool('swml-rail-text-larger', 'Larger text', '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7v12m0 0l-2.5-2.5M4 19l2.5-2.5"/><path d="M10 19l5-14 5 14M11.8 14.5h6.4"/></svg>',
+            () => { textSizeIndex = Math.min(TEXT_SIZES.length - 1, textSizeIndex + 1); applyTextSize(); });
+        _railTool('swml-rail-export', 'Download', SVG_EXPORT, () => exportToDocx());
 
         // v7.19.926 (Neil Run 9): collapse/expand EVERY collapsible section in one click.
         // Operates on the same .swml-collapsible capability class the chevrons stamp — any
