@@ -3633,7 +3633,7 @@ TEMPLATE;
                 // RECALL MODE — timed verbal recall
                 $preamble .= "### MODE A — RECALL (TIMED VERBAL)\n";
                 $preamble .= "This is a **retrieval practice** exercise. The student explains a complete TTECEA+C essay plan from memory under time pressure.\n\n";
-                $preamble .= "**FLOW:** A.0 Opening Explanation → A.1 Question Selection (random/saved/paste) → A.1b Extract Check → A.2 Timer Briefing → WAIT for verbal response → A.3 AI Evaluation → A.4 Refinement → A.5 Confirm & Save.\n\n";
+                $preamble .= "**FLOW:** A.0 Opening Explanation → A.1 Question Selection (random/saved/paste) → A.1b Extract Check → A.2 Timer Briefing → WAIT for verbal response → A.3 Sophia Evaluation → A.4 Refinement → A.5 Confirm & Save.\n\n";
                 $preamble .= "**CRITICAL TIMER RULES:**\n";
                 $preamble .= "- The 4-minute timer is managed by the frontend — do NOT try to track time.\n";
                 $preamble .= "- After the timer briefing (A.2), simply WAIT for the student's response.\n";
@@ -3643,7 +3643,7 @@ TEMPLATE;
                 $preamble .= "- In Practice mode, the student submits manually after the timer ends.\n\n";
                 $preamble .= "**SKIP-AHEAD RULE (v7.15.14):**\n";
                 $preamble .= "- If the student's FIRST message contains a question AND an `[EXTRACT` marker, they selected the question from the frontend overlay. Skip A.0 (Opening) and A.1 (Question Selection) — go directly to A.1b (Extract Check) then A.2 (Timer Briefing).\n";
-                $preamble .= "- **CONVERSATION STATE:** Read the chat history carefully. If you already sent the timer briefing ('press the microphone button when you're ready'), do NOT repeat it. Proceed to the NEXT step (wait for verbal response, then A.3 AI Evaluation).\n";
+                $preamble .= "- **CONVERSATION STATE:** Read the chat history carefully. If you already sent the timer briefing ('press the microphone button when you're ready'), do NOT repeat it. Proceed to the NEXT step (wait for verbal response, then A.3 Sophia Evaluation).\n";
                 $preamble .= "- Never repeat a step you already completed in the conversation.\n\n";
                 $preamble .= "**RANDOM QUESTION GENERATION (when student picks Option A in A.1):**\n";
                 $preamble .= "- The full Exam Question Creator protocol has been loaded at the end of the assembled protocol under 'EXAM QUESTION FORMAT REFERENCE'.\n";
@@ -3935,7 +3935,7 @@ TEMPLATE;
             $preamble .= "🔴 **SAVE NOW:** Call `save_session_element` with `body_para_2` = the cleaned-up paragraph text.\n";
             $preamble .= "Then proceed to Step 7.\n\n";
 
-            $preamble .= "**STEP 7 — AI MODEL (for comparison)**\n";
+            $preamble .= "**STEP 7 — SOPHIA MODEL (for comparison)**\n";
             $preamble .= "Present YOUR OWN Grade 9 plan AND paragraph for the same quote — so the student can compare their attempt with the gold standard.\n";
             $preamble .= "Label it clearly: '📝 Here's how I would approach this quote:'\n";
             $preamble .= "First show the plan (brief TTECEA+C elements), then the full paragraph (7-10 sentences, Grade 9 quality).\n";

@@ -200,7 +200,7 @@ Then proceed to Step 7.
 
 ---
 
-### STEP 7 — AI Model (Comparison)
+### STEP 7 — Sophia Model (Comparison)
 
 Present your own Grade 9 plan AND paragraph for the same quote:
 
@@ -252,7 +252,7 @@ You MUST call `save_session_element` at EVERY point below. If you do not, the ri
 
 ---
 
-## QUALITY MARKERS FOR AI MODEL PARAGRAPH
+## QUALITY MARKERS FOR SOPHIA MODEL PARAGRAPH
 
 The AI's comparison paragraph must demonstrate ALL of the following (same criteria as the Model Answer Writing Protocol):
 

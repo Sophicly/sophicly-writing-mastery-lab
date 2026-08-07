@@ -49218,9 +49218,9 @@
         html += sectionHTML('response', 'Your Paragraph', true, null,
             `<p><em>Write your full paragraph here (200-250 words).</em></p><p></p>`);
         html += dividerHTML('Grade 9 Comparison');
-        html += sectionHTML('feedback', 'AI Model Plan', false, null,
+        html += sectionHTML('feedback', 'Sophia Model Plan', false, null,
             `<p><em>The Grade 9 model plan will appear here for comparison.</em></p>`);
-        html += sectionHTML('feedback', 'AI Model Paragraph', false, null,
+        html += sectionHTML('feedback', 'Sophia Model Paragraph', false, null,
             `<p><em>The Grade 9 model paragraph will appear here for comparison.</em></p>`);
         html += buildSignoffSection();
         return html;
@@ -57237,7 +57237,7 @@ ${html}
             container.appendChild(useBtn);
 
             // ── Skip ──
-            const skipBtn = el('button', { textContent: 'Skip \u2014 let the AI choose', onClick: () => selectAndGo('', '', '') });
+            const skipBtn = el('button', { textContent: 'Skip \u2014 let Sophia choose', onClick: () => selectAndGo('', '', '') });
             skipBtn.style.cssText = 'display:block;margin:16px auto 0;background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;cursor:pointer;padding:4px;';
             container.appendChild(skipBtn);
         });

@@ -1898,8 +1898,7 @@
                     }, [
                         el('span', { className: 'icon', textContent: '✍️' }),
                         el('span', { className: 'label', textContent: 'Write Essay' }),
-                        el('span', { className: 'desc', textContent: 'Write in the AI-powered editor with your plan beside you' }),
-                        el('span', { style: { position: 'absolute', top: '8px', right: '8px', background: 'rgba(81,218,207,0.25)', color: '#51dacf', fontSize: '9px', fontWeight: '700', padding: '2px 6px', borderRadius: '3px', letterSpacing: '0.5px' }, textContent: 'BETA' }),
+                        el('span', { className: 'desc', textContent: 'Write in the editor with your plan beside you' }),
                     ]));
                 }
             }
@@ -2030,7 +2029,7 @@
             inner.appendChild(card);
 
             inner.appendChild(el('h2', { textContent: 'Choose Your Model Answer Mode' }));
-            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'The AI will guide you through each section in the chat' }));
+            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'Sophia will guide you through each section in the chat' }));
 
             const grid = el('div', { className: 'swml-task-grid' });
             [
@@ -2227,7 +2226,7 @@
                 container.appendChild(el('button', {
                     className: 'swml-back-link muted',
                     style: { marginTop: '16px', display: 'block', textAlign: 'center' },
-                    textContent: 'Skip \u2014 let the AI choose',
+                    textContent: 'Skip \u2014 let Sophia choose',
                     onClick: () => { state.question = ''; selectTask(taskId); },
                 }));
             });
@@ -3881,8 +3880,8 @@
             { key: 'qa_quote',              legacy: 'question_text', title: 'Random Quote', label: ' ' },
             { key: 'qa_student_plan',       legacy: 'body_para_1',   title: "Student's Plan", label: ' ' },
             { key: 'qa_student_paragraph',  legacy: 'body_para_2',   title: "Student's Paragraph", label: ' ' },
-            { key: 'qa_ai_plan',            legacy: 'body_para_3',   title: 'AI Plan (Grade 9)', label: ' ' },
-            { key: 'qa_ai_paragraph',       legacy: 'introduction',  title: 'AI Paragraph (Grade 9)', label: ' ' },
+            { key: 'qa_ai_plan',            legacy: 'body_para_3',   title: 'Sophia Model Plan (Grade 9)', label: ' ' },
+            { key: 'qa_ai_paragraph',       legacy: 'introduction',  title: 'Sophia Model Paragraph (Grade 9)', label: ' ' },
         ];
         sections.forEach(s => {
             const has = !!(p[s.key] || p[s.legacy]);

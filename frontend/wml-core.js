@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.457';
+var WML_BUILD = '7.20.458';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -677,7 +677,7 @@ window.WML = (function() {
         { step: 3, label: 'Plan Feedback' },
         { step: 4, label: 'Full Paragraph' },
         { step: 5, label: 'Paragraph Feedback' },
-        { step: 6, label: 'AI Model' },
+        { step: 6, label: 'Sophia Model' },
     ];
 
     const CONCEPTUAL_NOTES_STEPS = [
@@ -948,7 +948,7 @@ window.WML = (function() {
     const ESSAY_PLAN_RECALL_STEPS = [
         { step: 1, label: 'Question' },
         { step: 2, label: 'Verbal Recall' },
-        { step: 3, label: 'AI Evaluation' },
+        { step: 3, label: 'Sophia Evaluation' },
         { step: 4, label: 'Refinement' },
         { step: 5, label: 'Confirm & Save' },
     ];
@@ -2133,8 +2133,8 @@ window.WML = (function() {
         { type: 'qa_quote', label: 'Random Quote', section: 'focus' },
         { type: 'qa_student_plan', label: 'Your Plan', section: 'student' },
         { type: 'qa_student_paragraph', label: 'Your Paragraph', section: 'student' },
-        { type: 'qa_ai_plan', label: 'AI Plan', section: 'model' },
-        { type: 'qa_ai_paragraph', label: 'AI Paragraph', section: 'model' },
+        { type: 'qa_ai_plan', label: 'Sophia Model Plan', section: 'model' },
+        { type: 'qa_ai_paragraph', label: 'Sophia Model Paragraph', section: 'model' },
     ];
 
     const MODEL_ANSWER_ELEMENTS = [
@@ -3009,7 +3009,7 @@ window.WML = (function() {
                     id: 'assessment',
                     icon: SVG_ASSESS,
                     title: 'Get Assessed',
-                    desc: 'Submit your essay for detailed AI marking and feedback.',
+                    desc: 'Submit your essay for detailed marking and feedback.',
                     status: statuses.assessment || (statuses.diagnostic === 'complete' ? 'not_started' : 'locked'),
                     statusLabel: statuses.assessmentLabel || null,
                     onClick: () => {
@@ -3102,7 +3102,7 @@ window.WML = (function() {
                 id: 'polishing',
                 icon: SVG_POLISH,
                 title: 'Polish Your Essay',
-                desc: 'Write your improved essay using your outline with AI guidance.',
+                desc: 'Write your improved essay using your outline with Sophia\'s guidance.',
                 status: statuses.polishing || (statuses.outlining === 'complete' ? 'not_started' : 'locked'),
                 statusLabel: statuses.polishingLabel || null,
                 onClick: () => {
