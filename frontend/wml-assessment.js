@@ -56984,7 +56984,17 @@ ${html}
         if (WML.isEmbedded) fbThemeToggle.style.display = 'none';
         headerRight.appendChild(fbThemeToggle);
         headerRow.appendChild(headerRight);
-        canvas.appendChild(headerRow);
+        /* ⭐ v7.20.459 — MOUNT ONLY IF IT WILL ACTUALLY SHOW SOMETHING. With the identity badges
+           deleted, this bar's entire remaining contents are the tutor-view pill (review mode only)
+           and the theme toggle (hidden whenever embedded). For an ordinary embedded student that is
+           NOTHING — so mounting it unconditionally would render an empty strip above the document,
+           which is a worse outcome than either keeping the badges or deleting the bar.
+           This canvas has no rail and no status bar to adopt into, so the honest fix is to mount
+           the bar only in the two cases where it still carries a control. Liveness holds both ways:
+           a tutor keeps the "you are not the student" pill, and standalone keeps its only theme
+           control. (`renderExamPrepCanvas` still mounts its header unconditionally and correctly —
+           it carries its own toolbar, so it is never empty.) */
+        if (state.reviewMode || !WML.isEmbedded) canvas.appendChild(headerRow);
 
         // v7.15.45: One-directional LD → WML theme sync for the lightweight canvas.
         // Reads <html data-theme> (LD controls this) and mirrors into the canvas.
