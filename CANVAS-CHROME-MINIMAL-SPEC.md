@@ -15,7 +15,7 @@ Measured from the code today, not from memory.
 
 | surface | contents | verdict |
 |---|---|---|
-| `.swml-canvas-header` | context badges (tutor-view pill, CW badge, attempt badge) · **19-tool carousel** · theme toggle · fullscreen | **DELETE the bar.** Contents redistributed below. |
+| `.swml-canvas-header` | context badges — **EIGHT kinds, not three; one of them is a button. Full inventory + ruling in §4d** · **19-tool carousel** · theme toggle · fullscreen | **DELETE the bar.** Contents redistributed below. |
 | `.swml-canvas-chat-header` | step title (`Step 5: Choose Plot Structure — "project"`) · clear-chat button | **DELETE the bar.** Title is a third copy; button rehomed. |
 | `.swml-logo` (sidebar) | Writing Mastery Lab phoenix | **DELETE.** They know which product they are in. |
 | `.swml-collapse-btn` | collapse/expand sidebar | **KEEP,** unchanged position. |
@@ -106,11 +106,12 @@ exactly the moment it is wanted (root `CLAUDE.md §4d` liveness).
 | **dictation** | **document toolbar — PINNED**, beside comment (Neil, 2026-08-07: *"the microphone definitely belongs in the contextual toolbar next to the comment button… definitely not in the rail"*) | ⚠️ **AND ALSO listed inside the `+` strip** — see the note below; this is not optional |
 | **text size ± ** | inside the `+` strip | a comfort setting fixed before writing, not mid-selection |
 | **export / download** | inside the `+` strip | document-scoped, rare |
-| **fullscreen** | **SPL header** (LearnDash lane) | Neil's call, agreed — it is page chrome, not document chrome |
+| **fullscreen** | **SPL header** (LearnDash lane) — ⚠️ **but STAYS in the `+` strip until that lane actually ships it** | Neil's call, agreed — it is page chrome, not document chrome. **Deleting it on the strength of another lane's unshipped work makes fullscreen unreachable in the meantime.** Remove it here only after the SPL button is live, verified on the page — not on the handoff being filed. |
+| **theme toggle** | **`+` strip**, under exactly today's conditions | ⚠️ **MISSING FROM THE FIRST DRAFT OF THIS TABLE — measured 2026-08-07.** `:26082` hides it when embedded (SPL owns it there, so deleting costs nothing) — **but `:26147` RE-SHOWS it on entering fullscreen** (`goingFs ? '' : 'none'`), and fullscreen is precisely where LD's own toggle is hidden. It is also the only theme control in standalone mode. Deleting the header without rehoming it resurrects **FIXLIST #183** (Neil: *"in full screen the theme toggle doesn't work… it's kind of frozen"*) in a new costume. It must keep calling `toggleTheme()` and nothing else — `bin/theme-writer-harness.js` gates that. |
 | **clear chat** | **rail overflow, chat panel** | see the warning below |
 | **undo · redo** | **keyboard only** | Cmd+Z / Cmd+Shift+Z already work; a button for a universal shortcut is furniture |
 | **save** | **DELETE the button** | an autosave status indicator already sits beside it. A manual save button next to an autosave teaches students the save might not have happened |
-| context badges (tutor-view, CW, attempt) | **top of the document column**, inline, no bar | they are document metadata, not controls |
+| context badges — all EIGHT kinds | ⭐ **SUPERSEDED BY §4d (Neil, ruled 2026-08-07): Tier A deleted · Tier B to the sidebar `LESSON` cell · Tier C tutor pill pinned to the sidebar header.** The "top of the document column" answer in this row was written before he ruled and is **WRONG** — an inline strip above the document scrolls away exactly when a long piece is being written, and he rejected it. | and one of them is a `<button>`, not metadata — see §4d |
 | step title | **DELETE** | already in the LD breadcrumb and the sidebar — a third copy |
 
 ### ⭐⭐ 4a. THE MICROPHONE IS PINNED **AND** IN THE `+` — both, by construction
@@ -178,6 +179,224 @@ write it. Default when unset = **closed** (Neil's aesthetic default).
 **Also required by `CLAUDE.md §4d` (a refusal is half a change):** while collapsed, the `+` must be
 the only thing on the strip and must be unmistakably pressable — no state exists where a student
 has neither a visible control nor a way to reveal one.
+
+---
+
+### ⭐⭐ 4d. THE CONTEXT BADGES — THREE TIERS, RULED (Neil, 2026-08-07)
+
+**Neil raised the gap in this spec himself:** *"in the top of the header where it has the toolbar,
+you also have the badges there. So if we get rid of that header, what are we gonna do with the
+badges? I think that's sort of a question that we need to think about."* He was right — §1 above
+listed only three badges in passing. **There are eight kinds.** Measured at
+`wml-assessment.js:25840-25942`:
+
+| badge | class | when | interactive? |
+|---|---|---|---|
+| Tutor view pill + "View as student" toggle | `.swml-tutor-view-pill` | `state.reviewMode` | ⭐ **YES — a `<button>`** opening the review-context modal (`:513-532`) |
+| Creative Writing Masterclass · `Step N` / `Trial N` | `…-lowpri` / `…-topic` | CW tasks | no |
+| board · subject · text | `…-lowpri` ×3 | non-CW | no |
+| `Topic N` · `Stage N of M` | `…-topic` / `…-stage` | most / staged CN | no |
+| exercise label (e.g. Mastery Codex) | `…-topic` | manifest | no |
+| `Phase 1` / `Phase 2` / Preliminary / Free Practice / Exam Practice | `…-phase` | non-CW | no |
+| `Diagnostic` / Plan Redraft / Outline Redraft / Polish Redraft / Discuss Feedback | `…-diag` | most | no |
+| `Attempt N` | `.swml-ctx-attempt-badge` | guided context only | no |
+| `…` overflow + dropdown | `.swml-canvas-ctx-overflow` | **when they collide with the carousel** | yes |
+
+⚠️ **The correction that matters: the tutor-view pill is a CONTROL, not a label.** Deleting the
+header deletes a button and a safety signal, not just text. The first read of this spec called the
+badges decorative; they are not, uniformly.
+
+### ⭐⭐ THE TWO STRIPS ARE ALTERNATES, NOT DUPLICATES — the gate decides which one runs (Neil's correction, 2026-08-07)
+
+⛔ **AN EARLIER DRAFT OF THIS SECTION CLAIMED THE HEADER STRIP WAS A "STRICT SUBSET" OF THE SIDEBAR
+STRIP AND COULD SIMPLY BE DELETED. THAT WAS WRONG, AND NEIL CAUGHT IT IN ONE LINE:** *"remember, for
+the diagnostic, there is no sidebar. That's the point."*
+
+**THE MEASURED GATE.** `useTrainingEnv = envType === 'training'` (`wml-assessment.js:28561`), and
+`buildTrainingPanels()` — the function that builds `protoPanel` / `.swml-sidebar-badges` — is called
+**only** inside `} else if (useTrainingEnv) {` (`:30346`). Meanwhile `:26014` hides the HEADER badges
+**only** in training env, with the comment that gives the whole game away: *"Hide context badges for
+training-env exercises — **sidebar already shows them**"*.
+
+| environment | WML sidebar | header badges | consequence of deleting the header |
+|---|---|---|---|
+| **training** — assessment · redraft_assessment · mark_scheme · mark_scheme_unit · planning · exam_question · essay_plan · model_answer · verbal_rehearsal · conceptual_notes · foundational_quiz · memory_practice · cw_si | ✅ built | already hidden | **nothing changes** |
+| **free** — `diagnostic` · `outlining` · `response` · `mastery_codex` · `cw_workbook` · `feedback_discussion` · `model_answer_video` | ❌ **none** | **the only copy** | ⚠️ **all WML orientation lost** |
+
+**So they are ALTERNATES selected by environment, and the free-env list is SEVEN tasks, not just the
+diagnostic.** (Task→environment map read from `wml-core.js` — `polishing` and `exam_crib` are a third
+value, `inline-coaching`.)
+
+⚠️ **TWO SIDEBARS, AND CONFLATING THEM IS WHAT CAUSED THE ERROR.** The sidebar visible in Neil's
+Mastery Codex screenshot — course title, COURSE/UNIT/LESSON rings, the lesson list — is the
+**LearnDash Focus** sidebar, which is present regardless. WML's own `.swml-canvas-proto` sidebar is a
+different element and is absent in that shot. Mastery Codex is `free`, which is *precisely why* its
+badges (`ALL · Induction · Mastery Codex · …`) are in the header there. **The header badges appear
+exactly when there is no WML sidebar to hold them.** Do not reason about this from a screenshot; read
+the environment.
+
+---
+
+### ⭐⭐ 4d-ii. WHAT TO ACTUALLY DO — Neil's two options, and the measurement that separates them (2026-08-07)
+
+**Neil, thinking aloud after the correction, put two options on the table and asked for a view
+rather than agreement:**
+1. **ETCH THEM INTO THE DOCUMENT** — *"write them as a slightly lighter shade of the document itself
+   in dark theme, and a slightly darker shade [in light]… almost like watermarks at the top of the
+   document"*, applied **everywhere** (free AND training) for consistency, *"they could be fairly
+   light"* even where the sidebar repeats them.
+2. **GET RID OF THEM** — *"If we get rid of them, the next option is just to make sure that the
+   lessons are really named very well."*
+
+He also named option 1's own defect before anyone else could: *"the problem with etching them into
+the top of the document would be you won't see them when you're typing… we don't have pages, so"* a
+running per-page badge is not available.
+
+**⭐ THE PRECONDITION IN OPTION 2 IS CHECKABLE, SO IT WAS CHECKED (real prod titles, 2026-08-07):**
+
+| course | lesson titles |
+|---|---|
+| Creative Writing Masterclass (41165) | `STEP 5: Choose Your Plot Structure` · `STEP 14: Character Archetypes` · `STEP 2: Explore Story Ideas` |
+| Macbeth Mastery for AQA (41370) | `3. Write Your Diagnostic Essay` · `4. Polish Your Writing` · `5. Discuss Your Feedback with Your Tutor` · `2. EXAM PREP: Generate an Exam-Style Question` |
+
+**The titles already carry the orientation, and the course name carries the rest.** "Macbeth Mastery
+for AQA" is board + text; the unit + lesson title are topic + task; "Diagnostic" vs "Polish" implies
+the phase. **All of it sits in the SPL breadcrumb and the LearnDash Focus sidebar, which are
+permanent and never scroll** — unlike anything etched at the top of a document. His precondition
+holds *today*, without new naming work.
+
+**⭐ THE SPLIT THAT DECIDES IT — ask what each badge ANSWERS:**
+
+| what it answers | badges | verdict |
+|---|---|---|
+| **"Which lesson am I in?"** — IDENTITY | board · subject · text · `Topic N` · `Phase 1/2` · task/diag label · `Step N`/`Trial N` · `Stage N of M` · course name | **DELETE.** Redundant against a permanent, non-scrolling breadcrumb. Seven of the nine kinds. |
+| **"What is true about ME right now that no title can state?"** — STATE | ⭐ **`Attempt N`** · ⭐ **the tutor-view pill** | **KEEP, and NOT as a watermark.** |
+
+**RECOMMENDATION: option 2 (delete), plus keep exactly those two.** Reasoning, stated as
+disagreement with option 1 rather than deference (`CLAUDE.md §20`):
+- **Etching optimises the wrong eight.** It makes the redundant identity badges prettier while
+  leaving them redundant, and it puts them where they vanish under the first paragraph of writing.
+- **A watermark structurally cannot carry either survivor.** The tutor-view badge is a `<button>`
+  and a safety signal — "you are not the student" must be legible and pressable, never a 6%-opacity
+  smudge. And `Attempt N` mutates (`_updateCtxAttemptBadge` rewrites it live), so baking it into
+  document chrome makes it a value fossil.
+- **Consistency argues for deleting, not for etching.** Etching "everywhere" means the training env
+  shows every badge TWICE — once etched, once in the sidebar. Deleting is what actually makes the
+  two environments behave the same.
+
+⚠️ **THE TWO SURVIVORS STILL NEED A HOME, and it must not be a new bar.** Both are small, rare and
+state-shaped: `Attempt N` belongs beside the existing autosave/status indicator (document state,
+already a permanent non-scrolling spot); the tutor-view pill stays a real pill, and in the training
+env it is already in the sidebar at `:14042` — free env needs the same pill pinned, never etched,
+never behind the `+`. **And the collapsed-sidebar exemption still applies**
+(`wml-canvas.css:4443` zeroes `.swml-sidebar-badges` opacity; the tutor pill must survive it).
+
+🟢 **RULED BY NEIL, 2026-08-07 — option 2 + keep exactly two. THE IDENTITY/STATE SPLIT IS THE SPEC.**
+Etching is rejected. The eight identity badges are DELETED in **both** environments — that includes
+removing them from `protoBadges` in the sidebar, not only from the header, because the argument that
+kills them (the breadcrumb already says it, permanently) is environment-independent. What survives,
+and all that survives:
+
+| survivor | home | rules |
+|---|---|---|
+| **`Attempt N`** | beside the existing autosave/status indicator | document state, permanent non-scrolling spot; keep `_updateCtxAttemptBadge` as the ONE writer and re-point it there — it must not write to a detached node |
+| **the tutor-view pill** (+ "View as student" toggle) | a real pill, visible whenever `state.reviewMode` | ⛔ never etched · ⛔ never behind the `+` · ⛔ must survive sidebar collapse (`wml-canvas.css:4443` exemption) — it is a safety signal, not decoration |
+
+⭐ **CONSEQUENCE WORTH STATING: `.swml-canvas-ctx`, the whole overflow mechanism
+(`.swml-canvas-ctx-overflow` + `.swml-canvas-ctx-dropdown` + `checkCtxOverflow` + its
+`ResizeObserver`), and the THREE duplicate phase maps (`PHASE_LABELS` `:14084`, `PHASE_LABELS_SB`
+`:14095`, `CANVAS_PHASE_LABELS` `:25882`) all die with this.** The overflow existed only to hide
+identity badges that no longer exist. Delete them rather than leaving them inert.
+⚠️ **Two consumers query `.swml-canvas-ctx` and must be handled, not left to silently no-op:**
+`_updateCtxAttemptBadge` (`:8838`) — re-point to the attempt survivor's new home; and the assessment
+transition's badge fade (`:32253-32256`) — its `if (ctxEl)` guard would swallow the change silently,
+so remove the dead fade rather than let it read as working.
+
+---
+
+### The evidence that made the wrong claim tempting — kept, because the sidebar strip IS a superset of CONTENT
+
+Where the WML sidebar *does* render, `protoBadges` (`wml-assessment.js:14041-14140`) carries **every
+badge the header carries, plus two more**. That part was measured correctly; the error was concluding
+the sidebar is always there.
+
+| badge | header `:25840+` | sidebar `:14041+` |
+|---|---|---|
+| tutor-view pill | `:25843` | ✅ `:14042` |
+| Creative Writing Masterclass | `:25846` | ✅ `:14044` |
+| `Step N` / `Trial N` | `:25850` | ✅ `:14046-14049` |
+| CW project name | — | ✅ `:14055` **(sidebar only)** |
+| board · subject · text | `:25855-25863` | ✅ `:14064` |
+| `Topic N` | `:25869` | ✅ `:14074` |
+| `Phase 1/2` etc. | `:25884` | ✅ `:14095-14098` |
+| task / diagnostic label | `:25891-25897` | ✅ `:14091-14094` |
+| CN `Stage N of M` | `:25874` | ✅ `:14114` |
+| FQ `Stage N of M` | — | ✅ `:14103` **(sidebar only)** |
+| `Attempt N` | `:25919` | ✅ `:14118-14120` |
+
+⭐ **The code already said so.** `:14110-14113`: *"The canvas ctxBadges are HIDDEN in training-env,
+and CN lessons ARE training-env, so the canvas badge never shows — this sidebar row is the only
+visible chip strip."* And **three copies of the same phase map** exist (`PHASE_LABELS` `:14084`,
+`PHASE_LABELS_SB` `:14095`, `CANVAS_PHASE_LABELS` `:25882`) — the duplication was already a known
+smell nobody had cashed in.
+
+**SO THE BUILD IS: DELETE THE HEADER STRIP. Nothing relocates. Nothing needs a new home.** Tier A
+was right for the wrong reason (the duplication is with the *sidebar*, not only the SPL bar); Tier B
+needs no new sidebar line, because that line already exists; Tier C is already pinned in the sidebar
+at `:14042`. This is the `CLAUDE.md §14c Gate 0` outcome — **reuse before port** — and it removes an
+entire component's worth of new code from this cycle.
+
+⚠️ **THE ONE REAL REQUIREMENT THAT SURVIVES, and it is a `§4d` liveness fix:**
+`.swml-canvas-proto.collapsed .swml-sidebar-badges { opacity: 0 }` (`wml-canvas.css:4443`) — a
+collapsed sidebar hides the badge strip. **Today the header pill is the fallback; delete the header
+and a tutor in review mode with a collapsed sidebar has NO indication they are not the student.**
+So: **exempt the tutor-view pill from the collapsed rule** and let it render icon-only when
+collapsed (`.swml-sidebar-icon-btn` at `:4449` already does exactly this). A student losing
+orientation chrome on a deliberate collapse is the intended effect of collapsing; a tutor losing the
+safety signal is not.
+
+⚠️ **Small label gap to close in the same change:** the sidebar's `sidebarTaskLabel` (`:14091`) maps
+only guided planning/polishing and otherwise falls back to `exerciseConfig.label || 'Assessment'`,
+while the header's `diagBadgeLabel` (`:25891`) also covers **`Outline Redraft`**, **`Discuss
+Feedback`** and the plain **`Diagnostic`** default. Fold those cases into the sidebar label — do
+not leave an outlining lesson reading "Assessment". (This is the `v7.19.718` defect exactly: a
+mislabelled task there once hid the Notes tab.)
+
+---
+
+**THE ORIGINAL RULING — kept for the reasoning; superseded in mechanism by the correction above:**
+
+**TIER A — DELETE, genuinely duplicated.** Course name · board · subject · text. The WML sidebar
+already renders the course title and COURSE · UNIT n · LESSON n, and the SPL bar above renders
+`Unit 1 / 4. WRITING: …`. Three copies of "where am I". ⭐ **Cutting Tier A also deletes the `…`
+overflow and its dropdown outright** — the overflow exists *because* of the pills that repeat the
+sidebar, so it has nothing left to hide. Two components die for the price of one.
+
+**TIER B — MOVES TO THE SIDEBAR `LESSON` CELL.** `Phase 1/2` · `Diagnostic / Plan Redraft /
+Outline Redraft / Polish Redraft / Discuss Feedback` · `Topic N` · `Step N` (CW) · `Stage N of M`
+(CN) · `Attempt N`. This is *which pass am I on*, and **nothing outside WML knows it** — the SPL
+breadcrumb and the sidebar rings cannot supply it. Rendered as one quiet line beneath the existing
+`Complete` status, e.g. `Diagnostic · Phase 1` / `Topic 3 · Attempt 2`. Why the sidebar: it is
+already the orientation surface, it never scrolls away, and it puts **zero** chrome back into the
+writing area — which is the whole point of the pass.
+⛔ **Not behind the `+`.** Orientation you must press to see is orientation you do not have.
+⛔ **Not a subtitle above the document** — it would scroll out of view exactly when a long piece is
+being written, and it re-introduces a strip in the area being emptied.
+
+**TIER C — TUTOR VIEW PINS TO THE SIDEBAR HEADER, always visible while `reviewMode` is on.** Never
+inside the `+`, never conditional on scroll. A tutor must know they are not the student **before**
+they type. It costs a student nothing — they never render it. (The chat pane's
+`.swml-chat-readonly-note` at `:502` stays as the second, independent signal.)
+
+**Build obligations riding this:**
+- ONE producer for the Tier-B line — it reads the same `state` fields the header read
+  (`state.phase` · `state.task` · `state.topicNumber` · `state.cnStage` · `state.attempt` ·
+  `getCwStepDef`), so the label maps (`CANVAS_PHASE_LABELS`, `diagBadgeLabel`) MOVE, they are not
+  re-authored. Re-deriving them is how "Outline Redraft" silently became "Diagnostic" at v7.19.718.
+- The attempt badge's live updater `_updateCtxAttemptBadge` currently targets the header node —
+  **re-point it, do not leave it writing to a detached element** (a ghost-function silent no-op).
+- Tier B must render in **every** canvas task, not just the ones with a topic number — CW has no
+  `state.topicNumber` and must still show `Step N`.
 
 ---
 

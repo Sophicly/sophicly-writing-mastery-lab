@@ -1608,3 +1608,48 @@ perceived repetition is what kills long projects. ⭐ **The biggest named risk i
 not fatigue** — novices tinker instead of revising; the lens-with-criteria design is the
 countermeasure and must not be diluted. (Confidence: moderate — no study tests beat-level batching
 in creative writing directly; limits recorded in the research file.)
+
+---
+
+## §30. ⭐⭐ A PLOT-UPDATE WALK ITERATES OVER THE LENS, NOT OVER THE PLOT — trait by trait, tapping real beats (Neil, ruled 2026-08-07)
+
+**The question §29 left open, now closed.** §29 fixes *when* amalgamation happens (per beat) and
+*how* the material lands (append, student merges). It never fixed **what the walk loops over**, and
+the two obvious answers both fail on arithmetic:
+
+| shape | asks | why it fails |
+|---|---|---|
+| **per STAGE** (what `CW-STEP-08-update-plot-values.md` currently says) | 7 | *"Which of your values are visible in this stage, and in which beat?"* is a **menu** — root `CLAUDE.md §18`: the student names one and skips the rest. 23 traits offered, ~3 answered. |
+| **per BEAT** | ~700 | Step 6 emits **98–108 beat rows** (~17 per stage). Seven update steps × 100 beats is not a lesson. |
+| ⭐ **per TRAIT** (RULED) | ~24–36 | Walk the **flagged traits only** (~8–12 of Step 7's 23), each ~3 taps. |
+
+**THE RULING — the walk iterates over the LENS's own items.** For Step 8 the lens is values/traits,
+so the unit is **one trait at a time** (root `CLAUDE.md §18` serial: one item, one verdict, next).
+Per trait:
+
+1. **Show the trait with its own worked example** — the thing a menu structurally cannot do (§18).
+2. **The student TAPS the real beat rows where it shows** — picks from their own Step 6 outline,
+   never a paste, never a retyped beat (WML `CLAUDE.md §3`: never ask for what the system holds).
+   Multi-select, because the honest answer is often two or three beats (`CLAUDE.md §4c.8`).
+3. **"Doesn't show anywhere yet" must cost exactly one tap** — that answer is the *interesting* one
+   (it names an unexpressed trait), so it is cheap and it is not a failure state.
+
+**THEN amalgamate only what was tagged** — typically **~10–20 beats**, not 100, per §29's per-beat
+CDO-scaffolded shape, followed by the one whole-stage continuity pass. The beats nobody tagged were
+never claimed to express this lens, so there is nothing there to merge.
+
+**WHY THIS IS THE RIGHT UNIT AND NOT JUST THE CHEAP ONE.** The lens is the *teaching*; the plot is
+the *material*. Looping over the plot asks "what is in this beat?", which is description and invites
+the surface drift §29 names as the biggest risk. Looping over the lens asks "where does my story
+show this, and if nowhere, why not?" — which is the transferable question, and it is the one that
+makes an absent trait visible instead of invisible.
+
+**GENERALISES TO ALL SEVEN PLOT-UPDATE STEPS** (8, 12, 15, 18, 21, 24, 27): each iterates over its
+own lens's items — goals, archetypes, empathy beats, theme/tone, genre conventions, structural
+elements — never over the ~100 beats. ⚠️ **Passes 6–7 must still be the SHORTEST** (§29), so their
+item lists get pruned hardest.
+
+⚠️ **The protocol markdown is now the stale surface.** `CW-STEP-08-update-plot-values.md` describes
+the per-stage menu and must be rewritten to the trait-first shape in the same batch as the walk —
+it is the source of truth (WML `CLAUDE.md` §1: protocol files are content) and a walk that
+contradicts it will be re-derived wrongly by the next model.

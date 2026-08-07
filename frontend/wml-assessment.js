@@ -14040,14 +14040,23 @@
         // Badges
         const protoBadges = el('div', { className: 'swml-sidebar-badges' });
         if (state.reviewMode) protoBadges.appendChild(buildTutorViewPill()); // v7.15.55
+        /* ⭐⭐ v7.20.459 — THE IDENTITY BADGES ARE DELETED HERE TOO (Neil, ruled 2026-08-07; §4d-ii).
+           Deleting them only from the canvas header would have been half a change: the header and
+           this strip are ALTERNATES selected by environment (`useTrainingEnv`, :28561 → the
+           `} else if (useTrainingEnv) {` at :30346 is the ONLY caller of buildTrainingPanels), so
+           the header strip shows in `free` tasks and this one shows in `training` tasks. The
+           argument that kills them — the SPL breadcrumb and Focus sidebar already answer "which
+           lesson am I in?", permanently and without scrolling — is environment-independent, so
+           both strips lose the same badges. Gone: "Creative Writing Masterclass", Step/Trial N,
+           board · subject · text, Topic N, the Exam-Practice fallback, the task label, the phase
+           label, and both Stage N of M chips (FQ + CN).
+           ⭐ KEPT, and each for a stated reason — no lesson title can state any of them:
+             • the tutor-view pill above (a CONTROL + safety signal),
+             • the CW PROJECT NAME below — with multi-story CW a student has several projects and
+               NOTHING in the breadcrumb says which story this is. That makes it state, like
+               Attempt N, not lesson identity,
+             • Attempt N (further down, still driven by the single _updateAttemptBadge writer). */
         if (isCwTask) {
-            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Creative Writing Masterclass' }));
-            // v7.15.5: Step/Trial number badge
-            if (cwStepDef?.step) {
-                protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Step ${cwStepDef.step}` }));
-            } else if (cwStepDef?.trial) {
-                protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Trial ${cwStepDef.trial}` }));
-            }
             if (state.cwProjectName) {
                 // v7.17.29: shares swml-cw-project-name-badge class with
                 // _updateCwProjectNameBadge so post-switcher updates find +
@@ -14055,66 +14064,13 @@
                 const nameEl = el('span', { className: 'swml-sidebar-badge swml-cw-project-name-badge', textContent: '\u201c' + state.cwProjectName + '\u201d', style: { fontStyle: 'italic', opacity: '0.85' } });
                 protoBadges.appendChild(nameEl);
             }
-        } else {
-            // v7.19.594: drop the text chip for skipTextSelect subjects (Language
-            // papers, unseen poetry) — its label restates board+subject ("Aqa lang
-            // paper 1" alongside "Language P1"), so it's redundant noise. Real
-            // set-texts (Macbeth, Jane Eyre) keep their chip.
-            const _skipText = WML.isSkipTextSelect && WML.isSkipTextSelect(state.subject);
-            [boardLabel, subjectLabel, _skipText ? '' : textLabel].filter(Boolean).forEach(b =>
-                protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: b }))
-            );
         }
-        // Topic / mode badge
-        // v7.17.12: topic number is identity, not mode-dependent. Show whenever
-        // the lesson is mounted inside a numbered topic (1–10), regardless of
-        // whether the bridge populated state.mode='guided' or not. Previously
-        // required mode==='guided' — a missing wml_phase from the bridge hid
-        // the Topic chip entirely on perfectly valid topic mounts.
-        if (state.topicNumber && state.topicNumber >= 1 && state.topicNumber <= 10) {
-            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
-        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && !isCwTask && !['foundational_quiz', 'conceptual_notes', 'mark_scheme_unit'].includes(state.task)) {
-            // v7.14.61: Only show "Exam Practice" if no phase is set — phase label takes priority
-            // v7.15.97: Notes/study tasks (conceptual_notes, foundational_quiz) are mastery-standalone
-            //           — never exam practice, regardless of mode. The label describes task TYPE,
-            //           not entry mode. Bridge will eventually supply wml_phase='mastery_standalone'
-            //           and this exclusion list can reduce to a phase check.
-            // v7.17.19: mark_scheme_unit is a pre-topic drill — never "Exam Practice" even
-            //           if bridge wml_phase is missing and mode falls back to exam_prep.
-            const PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
-            const phaseLabel = PHASE_LABELS[state.phase] || '';
-            if (!phaseLabel) {
-                protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
-            }
-        }
-        // Task label
-        const sidebarTaskLabel = (state.task === 'planning' && state.mode === 'guided') ? 'Plan Redraft'
-            : (state.task === 'polishing' && state.mode === 'guided') ? 'Polish Redraft'
-            : exerciseConfig.label || 'Assessment';
-        protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: sidebarTaskLabel }));
-        const PHASE_LABELS_SB = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
-        const sidebarPhaseLabel = PHASE_LABELS_SB[state.phase] || '';
-        if (sidebarPhaseLabel) {
-            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: sidebarPhaseLabel }));
-        }
-        // v7.19.997 (Neil): staged FQ (poetry forms / poem quizzes) — surface the
-        // bridge-mapped stage as its own badge; without it three staged lessons on one
-        // text read identically in the sidebar.
-        if (state.task === 'foundational_quiz' && state.fqStage) {
-            // v7.20.46 (Neil): "Stage N of M" for consistency with the CN badge, so students see how
-            // many stages remain. M = the anthology's stage count (same helper as CN); for a
-            // non-anthology FQ with no resolvable total, fall back to bare "Stage N".
-            var _fqTot = (WML.cnStageCountFor ? WML.cnStageCountFor(state.board, state.text) : 0);
-            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: _fqTot ? 'Stage ' + state.fqStage + ' of ' + _fqTot : 'Stage ' + state.fqStage }));
-        }
-        // v7.20.43 (Neil staging): CN staged-delivery "Stage N of M" — the SIDEBAR twin of the
-        // canvas CN badge (13200). The canvas ctxBadges are HIDDEN in training-env (13317), and CN
-        // lessons ARE training-env, so the canvas badge never shows — this sidebar row is the only
-        // visible chip strip. Same gate/text as the canvas badge; mirrors the FQ stage badge above.
-        if (state.task === 'conceptual_notes' && state.cnStage && WML.cnStageCountFor) {
-            const _cnTot = WML.cnStageCountFor(state.board, state.text);
-            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: _cnTot ? 'Stage ' + state.cnStage + ' of ' + _cnTot : 'Stage ' + state.cnStage }));
-        }
+        /* v7.20.459: DELETED here — board · subject · text · Topic N · the Exam-Practice fallback ·
+           the task label · the phase label · FQ "Stage N of M" · CN "Stage N of M", together with
+           the two duplicate phase maps (PHASE_LABELS and PHASE_LABELS_SB, which were byte-identical
+           to each other AND to the canvas header's CANVAS_PHASE_LABELS — three copies of one map,
+           now zero). Every one of them answered "which lesson am I in?", which the breadcrumb
+           answers permanently. See the ruling block above for why this is environment-independent. */
         // v7.15.20: Attempt badge — injected/updated dynamically after attempt resolution
         // (state.attempt is 0 at build time; resolved later via server or sessionStorage)
         function _updateAttemptBadge() {
@@ -25841,64 +25797,21 @@
         // v7.13.42: CW exercises — check BOTH state.task and state.mode for robust detection
         const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
         if (state.reviewMode) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
-        const _isCwBadge = (state.task && state.task.startsWith('cw_')) || state.mode === 'creative' || state.subject === 'creative_writing';
-        if (_isCwBadge) {
-            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-lowpri', textContent: 'Creative Writing Masterclass' }));
-            // v7.15.5: Step/Trial number badge in canvas header
-            const _cwDef = WML.getCwStepDef ? WML.getCwStepDef(state.task) : null;
-            if (_cwDef?.step) {
-                ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: `Step ${_cwDef.step}` }));
-            } else if (_cwDef?.trial) {
-                ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: `Trial ${_cwDef.trial}` }));
-            }
-        } else {
-            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-lowpri', textContent: boardLabel }));
-            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-lowpri', textContent: subjectLabel }));
-            // v7.14.14: Skip text badge when it duplicates subject (skipTextSelect subjects like unseen_poetry, language1)
-            // v7.19.594: also skip via the skipTextSelect flag — language papers' text
-            // label ("Aqa lang paper 1") differs from the subject string so the
-            // normalized-equality test missed it; the flag catches it reliably.
-            const _skipTextHdr = WML.isSkipTextSelect && WML.isSkipTextSelect(state.subject);
-            if (textLabel && !_skipTextHdr && textLabel.toLowerCase().replace(/[\s_-]/g, '') !== subjectLabel.toLowerCase().replace(/[\s_-]/g, '')) {
-                ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-lowpri', textContent: textLabel }));
-            }
-        }
 
-        // Topic / exercise badge
-        if (state.topicNumber) {
-            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: `Topic ${state.topicNumber}` }));
-            // v7.20.38: anthology CN staged-delivery badge — "Stage N of M" beside the Topic
-            // badge; only on a staged CN lesson (cn_stage set + text is a staged anthology).
-            if (state.cnStage && WML.cnStageCountFor) {
-                const _cnTot = WML.cnStageCountFor(state.board, state.text);
-                ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-stage', textContent: _cnTot ? `Stage ${state.cnStage} of ${_cnTot}` : `Stage ${state.cnStage}` }));
-            }
-        } else if (state.task && state.task !== 'planning') {
-            // v7.13.11: read label from exercise manifest instead of hardcoded map
-            const headerConfig = WML.getExerciseConfig(state.task);
-            if (headerConfig.label) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: headerConfig.label }));
-        }
-        // Phase badge (v7.12.98) — skip for CW exercises
-        const CANVAS_PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
-        const phaseLabel = CANVAS_PHASE_LABELS[state.phase] || '';
-        if (phaseLabel && !_isCwBadge) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic swml-canvas-ctx-phase', textContent: phaseLabel }));
-        const SVG_DIAGNOSTIC = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.91" stroke-miterlimit="10" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M8.18,16.77V13H4.36v3.82L2.09,19a2,2,0,0,0-.59,1.44h0a2,2,0,0,0,2,2H9a2,2,0,0,0,2-2h0a2,2,0,0,0-.6-1.44Z"/><line x1="2.45" y1="12.95" x2="10.09" y2="12.95"/><path d="M20.59,15.39V11.05H16.77v4.34a3.82,3.82,0,1,0,3.82,0Z"/><line x1="22.5" y1="11.05" x2="14.86" y2="11.05"/><path d="M18.68,11.05V3.89A2.39,2.39,0,0,0,16.3,1.5h0a2.39,2.39,0,0,0-2.39,2.39V6.27A1.91,1.91,0,0,1,12,8.18h0a1.91,1.91,0,0,1-1.91-1.91V5.32A1.9,1.9,0,0,0,8.18,3.41h0A1.91,1.91,0,0,0,6.27,5.32v.95"/><line x1="5.32" y1="9.14" x2="7.23" y2="9.14"/><line x1="14.86" y1="17.73" x2="19.64" y2="17.73"/><line x1="2.45" y1="18.68" x2="6.27" y2="18.68"/></svg>';
-        // v7.13.42: Skip diagnostic badge for CW exercises
-        // v7.14.34: Added planning + polishing (Phase 2 canvas exercises)
-        const _epTasks = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'planning', 'polishing', 'mastery_codex'];
-        const _epConfig = WML.getExerciseConfig(state.task);
-        // v7.14.39: Context-aware badge labels — mastery programme uses redraft-specific names
-        const diagBadgeLabel = state.task === 'feedback_discussion' ? 'Discuss Feedback'
-            : state.task === 'planning' && state.phase === 'redraft' ? 'Plan Redraft'
-            : state.task === 'outlining' ? 'Outline Redraft'  // v7.19.718: was falling through to 'Diagnostic' (bridge injects task=outlining; mislabel hid the Notes tab)
-            : state.task === 'polishing' && state.phase === 'redraft' ? 'Polish Redraft'
-            : _epTasks.includes(state.task) ? (_epConfig.chatHeaderLabel || ucfirst(state.task))
-            : 'Diagnostic';
-        const diagBadge = el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_DIAGNOSTIC + diagBadgeLabel });
-        // v7.19.207: skip diagBadge for mastery_codex — headerConfig.label badge
-        // above (line 4233) already renders "Mastery Codex" via manifest, so
-        // diagBadge would duplicate it.
-        if (!_isCwBadge && state.phase !== 'exam_practice' && state.task !== 'mastery_codex') ctxBadges.appendChild(diagBadge);
+        /* ⭐⭐ v7.20.459 — THE IDENTITY BADGES ARE GONE (Neil, ruled 2026-08-07; spec §4d-ii).
+           The task/diagnostic badge, the phase badge, board/subject/text, Topic N, Step N and
+           Stage N of M all answered ONE question — "which lesson am I in?" — which the SPL
+           breadcrumb and the LearnDash Focus sidebar already answer PERMANENTLY and without
+           scrolling. Verified against real prod titles before deleting: "Macbeth Mastery for AQA"
+           gives board + text, "3. Write Your Diagnostic Essay" gives topic + task + phase,
+           "STEP 5: Choose Your Plot Structure" gives the CW step. Neil's condition for deleting
+           them was that "the lessons are really named very well" — measured, and they are.
+           ⛔ Do NOT reinstate these as an etched/watermark strip at the top of the document: that
+           was the rejected alternative. It hides orientation under the first paragraph typed, and
+           it cannot carry either survivor below (one is a button, one mutates).
+           WHAT SURVIVES, and only this: the tutor-view pill (a CONTROL and a safety signal) and
+           Attempt N (per-student STATE no lesson title can state). Both now live in the footer
+           status bar — permanent, non-scrolling — see the ctxBadges mount at statusBar. */
 
         // v7.15.48: Attempt badge placeholder — always inserted, visibility controlled
         // by _updateCtxAttemptBadge. Previously gated on state.mode === 'guided', but on
@@ -25924,95 +25837,24 @@
             ctxBadges.appendChild(attemptPlaceholder);
         }
 
-        // Overflow ... button — shows hidden badges on small screens
-        // v7.20.141 ellipsis icon (Elipsis.svg); v7.20.142 (Neil): monochrome currentColor so it
-        // matches the fullscreen button (the gradient stood out too much).
-        const SVG_CTX_DOTS = '<svg viewBox="0 0 512.005 512.005" aria-hidden="true"><path d="m257.849 181.884c-40.876 0-74.131 33.25-74.131 74.118s33.255 74.118 74.131 74.118 74.131-33.25 74.131-74.118-33.255-74.118-74.131-74.118zm0 108.237c-18.82 0-34.131-15.305-34.131-34.118s15.312-34.118 34.131-34.118 34.131 15.305 34.131 34.118-15.312 34.118-34.131 34.118zm-183.718-108.237c-40.876 0-74.131 33.25-74.131 74.119s33.255 74.118 74.131 74.118 74.132-33.25 74.132-74.118-33.256-74.119-74.132-74.119zm0 108.237c-18.82 0-34.131-15.305-34.131-34.118s15.311-34.118 34.131-34.118 34.132 15.305 34.132 34.118-15.312 34.118-34.132 34.118zm425.158-35.154c-10.284 4.024-21.889-1.049-25.913-11.335-5.091-13.008-17.875-21.747-31.811-21.747-18.819 0-34.131 15.305-34.131 34.118 0 13.563 8.062 25.847 20.538 31.295 10.122 4.42 14.745 16.209 10.325 26.333-3.283 7.517-10.63 12.001-18.34 12.001-2.672 0-5.388-.539-7.993-1.676-27.051-11.812-44.53-38.485-44.53-67.952 0-40.869 33.255-74.118 74.131-74.118 30.265 0 58.018 18.956 69.059 47.169 4.026 10.285-1.049 21.887-11.335 25.912z" fill="currentColor"/></svg>';
-        const ctxOverflowBtn = el('button', { className: 'swml-canvas-ctx-overflow', innerHTML: SVG_CTX_DOTS, title: 'Show all' });
-        const ctxOverflowDrop = el('div', { className: 'swml-canvas-ctx-dropdown' });
-        ctxOverflowBtn.style.display = 'none';
-        ctxOverflowDrop.style.display = 'none';
-        ctxOverflowBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const showing = ctxOverflowDrop.style.display !== 'none';
-            ctxOverflowDrop.style.display = showing ? 'none' : 'flex';
-        });
-        document.addEventListener('click', () => { ctxOverflowDrop.style.display = 'none'; });
-        ctxBadges.appendChild(ctxOverflowBtn);
-        ctxBadges.appendChild(ctxOverflowDrop);
+        /* v7.20.459: the `…` OVERFLOW BUTTON + DROPDOWN ARE DELETED, not disabled. They existed for
+           exactly one reason — the identity badges collided with the centred carousel on narrow
+           screens — and those badges no longer exist. Two survivors (a pill and a counter, both
+           usually absent) cannot overflow anything. Deleting rather than leaving them inert also
+           removes `checkCtxOverflow`, `_badgesOverlapToolbar` and the header ResizeObserver below;
+           an inert mechanism that still runs on every resize is a cost with no consumer. */
 
-        // Observe overflow and hide/show badges dynamically
-        const ctxAllBadges = Array.from(ctxBadges.querySelectorAll('.swml-canvas-ctx-badge'));
-        // v7.14.23: helper — check if badges collide with centered toolbar
-        function _badgesOverlapToolbar() {
-            const tb = ctxBadges.parentElement?.querySelector('.swml-canvas-toolbar');
-            if (!tb) return false;
-            const tbLeft = tb.getBoundingClientRect().left;
-            const visible = ctxAllBadges.filter(b => b.style.display !== 'none');
-            const last = visible[visible.length - 1];
-            if (!last) return false;
-            // v7.20.141 (Neil: "the ellipsis still overlaps the toolbar slightly"): the overflow
-            // button sits AFTER the last badge and is NOT in ctxAllBadges, so the old +8 buffer
-            // never reserved room for it → it crept under the toolbar. Reserve its width + gap.
-            return last.getBoundingClientRect().right + 44 > tbLeft;
-        }
-        function checkCtxOverflow() {
-            // Reset all visible
-            ctxAllBadges.forEach(b => b.style.display = '');
-            ctxOverflowBtn.style.display = 'none';
-            ctxOverflowDrop.innerHTML = '';
-            ctxOverflowDrop.style.display = 'none';
-            void ctxBadges.offsetWidth; // force reflow
-            // v7.14.23: dual check — scrollWidth overflow OR toolbar collision
-            const scrollOverflow = ctxBadges.scrollWidth > ctxBadges.clientWidth + 2;
-            if (!scrollOverflow && !_badgesOverlapToolbar()) return;
-            // v7.20.143 (Neil's ranking, header/non-training only — training env hides this row
-            // entirely, see below): the SINGLE most important badge is the TASK (Outline Redraft /
-            // diag) — it must survive down to one badge. Then Topic, then Phase; board / paper /
-            // text (lowpri, redundant with the LearnDash sidebar) fold FIRST and always. So as the
-            // header narrows: 3 badges → Topic·Phase·Task; 2 → Topic·Task; 1 → Task. Fold LOWEST
-            // priority first, ties → rightmost first. Keep-≥1 + fit-to-toolbar semantics unchanged.
-            const _pri = (b) => b.classList.contains('swml-canvas-ctx-lowpri') ? 0
-                : b.classList.contains('swml-canvas-ctx-phase') ? 1
-                : b.classList.contains('swml-canvas-ctx-topic') ? 2
-                : b.classList.contains('swml-canvas-ctx-diag') ? 3
-                : 2; // unclassified badge (e.g. Attempt) → mid priority, folds with Topic
-            const _hideOrder = ctxAllBadges.slice().sort((a, b) =>
-                _pri(a) - _pri(b) || (ctxAllBadges.indexOf(b) - ctxAllBadges.indexOf(a)));
-            const _hidden = new Set();
-            for (const b of _hideOrder) {
-                if (ctxAllBadges.length - _hidden.size <= 1) break; // always keep one badge visible
-                b.style.display = 'none';
-                _hidden.add(b);
-                void ctxBadges.offsetWidth; // reflow
-                if (ctxBadges.scrollWidth <= ctxBadges.clientWidth + 2 && !_badgesOverlapToolbar()) break;
-            }
-            // Populate the dropdown in ORIGINAL left-to-right order for readability.
-            ctxAllBadges.forEach(b => {
-                if (_hidden.has(b)) ctxOverflowDrop.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: b.textContent }));
-            });
-            if (ctxOverflowDrop.children.length > 0) ctxOverflowBtn.style.display = '';
-        }
-        if (typeof ResizeObserver !== 'undefined') {
-            // v7.19.239: observe the header, not ctxBadges. Toolbar is
-            // position:absolute so it doesn't take flex space — ctxBadges never
-            // shrinks when the window narrows, and the resize observer never
-            // fires. Watching the header (which DOES resize with the window)
-            // re-runs checkCtxOverflow → _badgesOverlapToolbar() collapses chips.
-            // v7.20.144 (Neil: "resize doesn't update live, only refresh"): the
-            // observer targeted `ctxBadges.parentElement`, but ctxBadges is not
-            // appended to headerRow until BELOW — so parentElement was null at
-            // setup and it silently fell back to observing ctxBadges (which never
-            // resizes). Observe `headerRow` directly: it exists here and is the
-            // element that actually resizes with the window / canvas column.
-            new ResizeObserver(() => requestAnimationFrame(checkCtxOverflow)).observe(headerRow);
-        }
-        setTimeout(checkCtxOverflow, 200);
-
-        // v7.14.50: Hide context badges for training-env exercises — sidebar already shows them
-        // Note: useTrainingEnv is declared later, so check inline from manifest
-        if ((WML.getExerciseConfig(state.task)?.environment || 'free') === 'training') ctxBadges.style.display = 'none';
-        headerRow.appendChild(ctxBadges);
+        /* ⭐ v7.20.459 — ctxBadges NO LONGER MOUNTS IN THE HEADER, and is no longer hidden in
+           training env. Both of those behaviours existed to manage the identity badges:
+             • the training-env hide (v7.14.50, "sidebar already shows them") is meaningless now —
+               the sidebar's identity badges are deleted too, and the two survivors are needed in
+               BOTH environments. That gate is why the header/sidebar strips were ALTERNATES rather
+               than duplicates, which is the fact that made this whole redesign non-trivial.
+             • the mount moves to the footer `statusBar` (see below), which is permanent and does
+               not scroll — the property the rejected "etch it into the document" option lacked.
+           ⭐ The element KEEPS its `.swml-canvas-ctx` class deliberately: `_updateCtxAttemptBadge`
+           (~:8838) finds it by `#swml-canvas-overlay .swml-canvas-ctx`, so the ONE writer of the
+           attempt value keeps working with no change and cannot end up writing to a detached node. */
 
         // Toolbar buttons (centre)
         headerRow.appendChild(toolbar);
@@ -28832,6 +28674,21 @@
         }
 
         statusBar.appendChild(saveStatus);
+
+        /* ⭐⭐ v7.20.459 — THE TWO SURVIVING BADGES LIVE HERE (Neil, ruled 2026-08-07; spec §4d-ii).
+           The header that used to hold them is deleted. Everything that answered "which lesson am
+           I in?" was deleted outright (the breadcrumb answers it permanently); what is left is the
+           two things NO lesson title can state:
+             • the TUTOR-VIEW pill — a <button> and a SAFETY signal ("you are not the student"),
+               so it must be legible and pressable. This is why the rejected watermark option could
+               not have carried it.
+             • ATTEMPT N — per-student state that MUTATES (_updateCtxAttemptBadge rewrites it live),
+               so it could never be baked into document chrome without becoming a value fossil.
+           The status bar is the right home for both: it is document state, it is always on screen,
+           and it does not scroll. When neither survivor applies — the ordinary student case — the
+           container renders empty and CSS collapses it, so the common path shows nothing at all. */
+        statusBar.appendChild(ctxBadges);
+
         _currentUpdateCommentCount = updateCommentCount; // v7.15.30: Expose to module scope
 
         // ── Detachable Extract Panel (v7.11.6, v7.14.61: dual independent panels) ──
