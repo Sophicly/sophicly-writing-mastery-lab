@@ -14894,3 +14894,56 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     .swml-outline-btn-column.swml-rail-opening > *,
     .swml-outline-btn-column.swml-rail-closing > * { animation: none; }
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   CONTEXTUAL TOOLBAR — DARKER SURFACE + COMPACT (Neil, 2026-08-07, #331/#332)
+   "maybe 1c1d1f or just black" · "it's quite chunky" · reference: Notelify.
+   ⚠️ This REVERSES v7.20.432, which moved this toolbar OFF the dark rung ONTO
+   #333437 on the reasoning that a floating object belongs with the Island and
+   the scroll buttons. Recorded rather than silently contradicted.
+   ⭐ AND THE REFERENCE'S CONTRAST DOES NOT TRANSFER: it is near-black on a WHITE
+   page. Ours sits on a dark canvas, so a darker fill REDUCES separation — the
+   exact complaint ("it disappears") this is meant to fix. The lift therefore has
+   to be earned by an EDGE and a SHADOW, not by the fill. Without those this is
+   the "painted as a hole while behaving as a floating object" defect.
+   ══════════════════════════════════════════════════════════════════════════ */
+.swml-canvas .swml-selection-toolbar,
+#swml-canvas-overlay .swml-selection-toolbar {
+    /* ⛔ NEIL ASKED FOR #1c1d1f AND THE PALETTE GATE REFUSED IT — correctly. That value was
+       RETIRED AS A SURFACE at v7.20.392: it is the SEED the whole grey ladder is derived from
+       (every rung is an OKLCH step off it), so painting with it collapses the ladder's base into
+       one of its own rungs. `bin/palette-lint.js` fails the build on it, and its own instruction
+       is that a returning value must be un-retired DELIBERATELY — which is Neil's call, not a
+       silent edit. Held at the legal raised rung until he rules (FIXLIST #332).
+       The rest of this block ships regardless, because the fill was never the whole story: the
+       "it disappears" complaint is a SEPARATION problem, and separation comes from the edge and
+       the shadow. Those are below and they are legal. */
+    background: #333437;
+    border-radius: 12px;
+    padding: 4px;
+    gap: 1px;
+    /* The separation the dark fill gives up: a brighter hairline than the raised
+       rung carried, plus a deeper, wider shadow so the object casts onto the page. */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.4),
+                0 0 0 1px rgba(255,255,255,0.13);
+    --swml-tb-fade: #333437;
+    --swml-tb-fade-0: rgba(51,52,55,0);
+}
+/* Compact: the chunk came from label padding on six buttons. Three remain, and
+   they tighten — icon and label stay (they are the three that must be learnable),
+   but the box around them stops being a button-sized slab. */
+.swml-canvas .swml-selection-toolbar .swml-sel-btn,
+#swml-canvas-overlay .swml-selection-toolbar .swml-sel-btn {
+    padding: 5px 9px;
+    font-size: 11.5px;
+    gap: 5px;
+    border-radius: 9px;
+}
+/* Light theme keeps its own material — white, with the same edge logic inverted. */
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar,
+.swml-canvas-light .swml-selection-toolbar {
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(44,0,62,0.18), 0 0 0 1px rgba(20,18,30,0.10);
+    --swml-tb-fade: #ffffff;
+    --swml-tb-fade-0: rgba(255,255,255,0);
+}

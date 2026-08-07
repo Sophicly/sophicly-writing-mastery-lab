@@ -26352,7 +26352,20 @@
             btnColumn.appendChild(b);
             return b;
         };
-        _railTool('swml-rail-dictate', 'Dictate', SVG_MIC_ICON, () => toggleDictation());
+        /* ⭐⭐ DICTATE IS PERMANENT ON THE RAIL — not behind the `+` (Neil, 2026-08-07).
+           THE MEASURED FAILURE: §4a already required dictation in BOTH the toolbar and the rail,
+           precisely because the toolbar only exists while text is SELECTED and a student starting
+           to dictate has selected nothing. It WAS in both. But the `+` defaults CLOSED, so the
+           rail copy was one unmade press away — and Neil hit exactly the wall the rule exists to
+           prevent: *"if I do wanna dictate, there isn't really a way for me to do it… if I'm
+           entering something into a blank space and I wanna dictate into that, I can't."*
+           ⭐ THE LESSON, worth more than the fix: "it is reachable" is NOT "it is available".
+           A control folded behind a collapsed strip satisfies a liveness audit and still fails
+           the student, because nothing on screen says it is there. Dictation is the ONE tool whose
+           entire purpose is to be used with nothing selected and nothing typed, so it is the one
+           tool that can never live behind a press. */
+        _railTool('swml-rail-dictate', 'Dictate', SVG_MIC_ICON, () => toggleDictation())
+            .classList.add('swml-rail-permanent');
         _railTool('swml-rail-text-smaller', 'Smaller text', '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V7m0 0L1.5 9.5M4 7l2.5 2.5"/><path d="M11 19l4-12 4 12M12.5 15h5"/></svg>',
             () => { textSizeIndex = Math.max(0, textSizeIndex - 1); applyTextSize(); });
         _railTool('swml-rail-text-larger', 'Larger text', '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7v12m0 0l-2.5-2.5M4 19l2.5-2.5"/><path d="M10 19l5-14 5 14M11.8 14.5h6.4"/></svg>',
@@ -37742,34 +37755,19 @@
                         }
                     }));
 
-                    // v7.15.54: gate Reply + Insert by reviewMode explicitly — hasChat alone is
-                    // insufficient because the chat-input DOM node may still exist in review mode.
-                    if (hasChat && !state.reviewMode) {
-                        tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_REPLY + ' <span>Reply</span>',
-                            onClick: (ev) => {
-                                ev.stopPropagation();
-                                const input = document.getElementById('swml-canvas-chat-input');
-                                if (input) { input.value = `Regarding "${quote}" — `; input.focus(); }
-                                removeCanvasSelToolbar(); sel.removeAllRanges();
-                            }
-                        }));
-                        tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert</span>',
-                            onClick: (ev) => {
-                                ev.stopPropagation();
-                                const input = document.getElementById('swml-canvas-chat-input');
-                                if (input) { input.value += (input.value && !input.value.endsWith(' ') ? ' ' : '') + selectedText; input.focus(); }
-                                removeCanvasSelToolbar(); sel.removeAllRanges();
-                            }
-                        }));
-                    }
-
-                    tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_COPY + ' <span>Copy</span>',
-                        onClick: (ev) => {
-                            ev.stopPropagation();
-                            navigator.clipboard.writeText(selectedText).catch(() => document.execCommand('copy'));
-                            removeCanvasSelToolbar(); sel.removeAllRanges();
-                        }
-                    }));
+                    /* ⭐⭐ v7.20.459 (FIXLIST #331) — REPLY · INSERT · COPY REMOVED FROM THE
+                       *DOCUMENT* TOOLBAR (Neil, ruled 2026-08-07): *"I think we need to have three
+                       things that are permanent: comment, note, and dictate. So only those three.
+                       The other ones — reply, insert, and copy — I don't think students use them
+                       much. I haven't seen them myself."*
+                       They were inherited wholesale from the CHAT toolbar's vocabulary, where they
+                       make sense (reply to Sophia, insert her words). On the student's OWN prose
+                       they are close to meaningless — "Reply" to your own sentence, "Insert" your
+                       own words into the chat box — which is very likely why he has never seen one
+                       used. Six labelled buttons plus the carousel also ran nearly the full width
+                       of the canvas, which is what he actually noticed first.
+                       ⛔ THE CHAT TOOLBAR KEEPS ALL THREE — he ruled it unchanged twice, and it is
+                       a DIFFERENT builder (~:32935). Do not "tidy" that one to match this. */
 
                     // v7.19.42: detect inline-coaching env so we can surface a
                     // Sophia button as an additional entry point alongside
