@@ -14024,10 +14024,20 @@
         // Re-measure on resize: the header wraps at narrow widths, which moves the rail.
         try { window.addEventListener('resize', _alignCollapseBtnToRail); } catch (_) {}
 
-        protoCollapseBtn.addEventListener('click', () => {
-            protoPanel.classList.toggle('collapsed');
-            const isC = protoPanel.classList.contains('collapsed');
-            // After the class lands, so the collapsed layout is the thing being measured.
+        /* ⭐⭐ v7.20.459 — THE COLLAPSE IS NOW STICKY (Neil, ruled 2026-08-07).
+           The button has existed for a long time, but the state was never persisted, so the panel
+           sprang back open on every lesson and every reload — which is why hiding it never felt
+           like a real option. Same defect and same fix as the `+` rail strip in this build:
+           ONE key, ONE writer, and the state is applied on build rather than re-derived.
+           Session-scoped deliberately, matching the `+`: a collapse is a "for now, I want to
+           focus" gesture, not a permanent preference, and a durable key would silently hide the
+           step progress on a device weeks later with no memory of having asked for it. */
+        const SIDEBAR_COLLAPSED_KEY = 'swml-sidebar-collapsed';
+        function _writeSidebarCollapsed(isC) {   // the ONE writer
+            try { sessionStorage.setItem(SIDEBAR_COLLAPSED_KEY, isC ? '1' : '0'); } catch (e) {}
+        }
+        function _applySidebarCollapsed(isC) {
+            protoPanel.classList.toggle('collapsed', isC);
             if (isC) requestAnimationFrame(_alignCollapseBtnToRail);
             // The button carries the state itself so the CSS can drive the swap. Kept OFF the
             // panel's own class so a future change to how the panel collapses cannot silently
@@ -14036,8 +14046,18 @@
             protoCollapseBtn.title = isC ? 'Expand sidebar' : 'Collapse sidebar';
             protoCollapseBtn.setAttribute('aria-label', protoCollapseBtn.title);
             protoCollapseBtn.setAttribute('aria-expanded', isC ? 'false' : 'true');
+        }
+        protoCollapseBtn.addEventListener('click', () => {
+            const next = !protoPanel.classList.contains('collapsed');
+            _writeSidebarCollapsed(next);
+            _applySidebarCollapsed(next);
         });
         protoHead.appendChild(protoCollapseBtn);
+        /* Restore on build. ⚠️ The expand path is what keeps this safe: whatever the stored value,
+           the ←| button is rendered and pressable, so a collapsed sidebar always has a visible way
+           back (root CLAUDE.md §4d — a state with no way out must be unreachable by construction).
+           Default when unset is EXPANDED, so nothing changes for anyone who never presses it. */
+        try { _applySidebarCollapsed(sessionStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'); } catch (e) {}
         protoPanel.appendChild(protoHead);
 
         // Body wrapper
@@ -26059,88 +26079,6 @@
             if (window.ResizeObserver) new ResizeObserver(_swmlReclampDockedPanels).observe(contentWrap);
         } catch (_) {}
 
-        /* ⭐⭐ v7.20.459 — THE DOCUMENT CONTEXTUAL TOOLBAR (NEW COMPONENT, spec §5).
-           Measured first, because the spec's own §2 got this wrong once: there was NO document
-           selection toolbar before this. Both existing `.swml-selection-toolbar` instances bind to
-           `chatMessages` mouseup and carry Reply / Insert into Doc / Copy / Note — they act on
-           SOPHIA's text. Neil ruled the chat one unchanged, so this is a new component beside it,
-           not an extension of it. They cannot collide: that one listens on the chat pane, this one
-           on the document scroller.
-
-           SHAPE: [ Comment | Dictate ] │ [ the reparented 11-tool carousel ]
-           The two pins sit OUTSIDE `.swml-tb-scroll` and outside the gradient masks, so they can
-           never scroll out of reach — that is the entire point of pinning them. */
-        const docSelPins = el('div', { className: 'swml-doc-sel-pins' });
-        docSelPins.appendChild(el('button', {
-            className: 'swml-doc-sel-pin', innerHTML: SVG_COMMENT + '<span>Comment</span>',
-            'aria-label': 'Comment on the selected text',
-            onClick: (ev) => { ev.stopPropagation(); addComment(); _hideDocSelToolbar(); },
-        }));
-        docSelPins.appendChild(el('button', {
-            className: 'swml-doc-sel-pin swml-doc-sel-mic', innerHTML: SVG_MIC_ICON + '<span>Dictate</span>',
-            'aria-label': 'Dictate',
-            // Same handler the `+` strip calls — ONE implementation, two entry points (§4a).
-            onClick: (ev) => { ev.stopPropagation(); toggleDictation(); },
-        }));
-
-        const docSelTb = el('div', { className: 'swml-doc-sel-toolbar' });
-        docSelTb.appendChild(docSelPins);
-        docSelTb.appendChild(el('div', { className: 'swml-doc-sel-div' }));
-        docSelTb.appendChild(toolbar);           // ⭐ the reparent — see the note at the old mount
-        docSelTb.style.display = 'none';
-        contentWrap.appendChild(docSelTb);
-
-        function _hideDocSelToolbar() { docSelTb.style.display = 'none'; }
-
-        // A selection is only ours if it lives inside the document's editable body.
-        function _selectionIsInDoc(sel) {
-            if (!sel || sel.isCollapsed || !String(sel.toString()).trim()) return false;
-            let n = sel.anchorNode;
-            if (n && n.nodeType === 3) n = n.parentNode;
-            return !!(n && contentWrap.contains(n) && n.closest && n.closest('.ProseMirror'));
-        }
-
-        /* Trigger: mouseup on the scroller, deferred so the browser has committed the selection.
-           Never on typing and never on a caret-only click — _selectionIsInDoc rejects a collapsed
-           range, which is what keeps the toolbar from flashing on every click into the prose. */
-        contentWrap.addEventListener('mouseup', () => {
-            setTimeout(() => {
-                const sel = window.getSelection();
-                if (!_selectionIsInDoc(sel)) { _hideDocSelToolbar(); return; }
-                const rect = sel.getRangeAt(0).getBoundingClientRect();
-                const wrapRect = contentWrap.getBoundingClientRect();
-                docSelTb.style.display = 'flex';
-                const tbW = docSelTb.offsetWidth, tbH = docSelTb.offsetHeight;
-                // Above the selection by default; flip BELOW when it would sit off the top of the
-                // scroller, so it never covers what is being worked on (spec §5).
-                const above = rect.top - wrapRect.top - tbH - 10;
-                docSelTb.style.top = (above < 4
-                    ? rect.bottom - wrapRect.top + contentWrap.scrollTop + 10
-                    : above + contentWrap.scrollTop) + 'px';
-                docSelTb.style.left = Math.max(4, Math.min(
-                    rect.left - wrapRect.left + (rect.width / 2) - (tbW / 2),
-                    wrapRect.width - tbW - 4
-                )) + 'px';
-            }, 10);
-        });
-
-        document.addEventListener('mousedown', (e) => {
-            /* ⭐⭐ PORTED VERBATIM FROM v7.20.433 (wml-assessment.js ~:15361) — DO NOT "SIMPLIFY".
-               The obvious form (dismiss on any mousedown outside) is what caused the theme-toggle
-               BLINK: mousedown on any other control destroys the toolbar, then mouseup reaches the
-               rebuild handler with the selection still perfectly intact and builds an identical
-               one. Two handlers, one click. That bug survived THREE speculative fixes before
-               anyone measured it, and root CLAUDE.md §19 exists because of it.
-               ⚠️ Note the live CHAT copy at ~:33010 is still the naive form ("measured, not
-               fixed") — so this was taken from the .433 reference, NOT copied from the neighbour.
-               THE RULE: a click-away only dismisses if it actually took the selection away. */
-            if (docSelTb.style.display === 'none' || docSelTb.contains(e.target)) return;
-            requestAnimationFrame(() => {
-                const s = window.getSelection();
-                if (!_selectionIsInDoc(s)) _hideDocSelToolbar();
-            });
-        });
-
         /* ⭐⭐ v7.20.459 — THE SILENT FIRST-RUN DEMO (spec §5).
            Deleting the header solves clutter and creates ONE problem: a formatting toolbar that
            only exists on selection is invisible until you happen to select something. Rather than
@@ -26193,11 +26131,16 @@
                 const sel = window.getSelection();
                 sel.removeAllRanges();
                 sel.addRange(range);
-                contentWrap.dispatchEvent(new Event('mouseup'));       // the real show path, not a second one
+                /* ⭐ NOTHING ELSE TO DO — and that is the point of driving the EXISTING toolbar
+                   rather than a second one. It listens on `selectionchange` (v7.20.118), which
+                   `addRange` fires by itself, so the demo shows the real control by the real code
+                   path. Dropping the selection likewise fires `selectionchange` again and the
+                   toolbar removes itself; there is no separate hide to call and therefore no way
+                   for the demo's teardown to drift from the product's. */
                 setTimeout(() => {
-                    // Let go of BOTH — and only if the student has not taken over in the meantime.
+                    // Let go — but only if the student has not taken over in the meantime.
                     const s = window.getSelection();
-                    if (s && s.toString() === range.toString()) { s.removeAllRanges(); _hideDocSelToolbar(); }
+                    if (s && s.toString() === range.toString()) s.removeAllRanges();
                 }, 1600);
             } catch (e) { /* an onboarding flourish must never break the canvas */ }
         }
@@ -26325,7 +26268,49 @@
         function _writeRailOpen(open) {          // the ONE writer — nothing else touches the key
             try { sessionStorage.setItem(RAIL_OPEN_KEY, open ? '1' : '0'); } catch (e) {}
         }
-        function _applyRailOpen(open) {
+        /* v7.20.459 (FIXLIST #329) — the staggered reveal. JS owns only the two things CSS
+           cannot: the per-item index (and its reverse, so the close is a true mirror rather
+           than the same order replayed) and the hide that must wait for the exit to finish,
+           because `display` is not animatable. */
+        let _railAnimTimer = null;
+        function _railStagger(open) {
+            const items = Array.from(btnColumn.children).filter(n =>
+                !n.classList.contains('swml-rail-permanent') &&
+                !n.classList.contains('swml-rail-toggle') &&
+                !n.classList.contains('swml-outline-panel'));
+            const n = items.length;
+            items.forEach((el_, i) => {
+                el_.style.setProperty('--i', i);          // open: first → last
+                el_.style.setProperty('--j', n - 1 - i);  // close: last → first
+            });
+            // A rapid re-tap must never leave a button stranded mid-fade.
+            clearTimeout(_railAnimTimer);
+            btnColumn.classList.remove('swml-rail-opening', 'swml-rail-closing');
+            void btnColumn.offsetWidth;                   // restart the animations
+            btnColumn.classList.add(open ? 'swml-rail-opening' : 'swml-rail-closing');
+            const total = open ? (220 + n * 40) : (180 + n * 35);
+            _railAnimTimer = setTimeout(() => {
+                btnColumn.classList.remove('swml-rail-opening', 'swml-rail-closing');
+            }, total + 30);
+            return open ? 0 : total;                      // how long to defer the hide
+        }
+        function _applyRailOpen(open, animate) {
+            if (animate) {
+                const hideAfter = _railStagger(open);
+                if (!open) {
+                    // Keep them in flow until they have finished leaving, THEN collapse.
+                    clearTimeout(_applyRailOpen._hide);
+                    _applyRailOpen._hide = setTimeout(() => btnColumn.classList.add('swml-rail-collapsed'), hideAfter);
+                } else {
+                    clearTimeout(_applyRailOpen._hide);
+                    btnColumn.classList.remove('swml-rail-collapsed');
+                }
+                railToggle.classList.toggle('is-open', open);
+                railToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                railToggle.setAttribute('aria-label', open ? 'Hide tools' : 'Show tools');
+                railToggle.dataset.tooltip = open ? 'Hide tools' : 'Show tools';
+                return;
+            }
             btnColumn.classList.toggle('swml-rail-collapsed', !open);
             railToggle.classList.toggle('is-open', open);
             railToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -26341,11 +26326,14 @@
                 e.stopPropagation();
                 const next = !_railIsOpen();
                 _writeRailOpen(next);
-                _applyRailOpen(next);
+                _applyRailOpen(next, true);   // a TAP animates
             },
         });
         btnColumn.appendChild(railToggle);
-        _applyRailOpen(_railIsOpen());
+        // Restoring the sticky state on build does NOT animate — a stagger on every page load
+        // would be a flourish the student did not ask for, and it would fire before the rail has
+        // finished being assembled (its buttons are appended across eight later sites).
+        _applyRailOpen(_railIsOpen(), false);
 
         /* The controls that LOSE their home when the header goes. Each calls the SAME handler the
            carousel called — one implementation, a second entry point (spec §4).
@@ -37882,6 +37870,36 @@
                         });
                         sophiaWrap.appendChild(sophiaPen);
                         tb.appendChild(sophiaWrap);
+                    }
+
+                    /* ⭐⭐ v7.20.459 (FIXLIST #327) — DICTATE + THE FORMATTING CAROUSEL JOIN *THIS*
+                       TOOLBAR, rather than a second one beside it.
+                       ⛔ THE MISTAKE THIS REPLACES: the approved spec's "measured fact #1" said
+                       there was NO document selection toolbar, so a whole new component was built
+                       — and Neil saw both of them stacked on staging. The fact was wrong because
+                       the grep that produced it found `.swml-selection-toolbar` at :15292 (dead)
+                       and :32935 (live, chat) and STOPPED, never enumerating this third builder.
+                       ⭐ WHY THIS ONE SURVIVED AND MINE WAS DELETED (§14c Gate 0, reuse-before-
+                       port): this toolbar carries correctness a three-hour-old component does not
+                       — it is driven by `selectionchange` rather than `mouseup` (v7.20.118,
+                       precisely so KEYBOARD selection is not missed), it guards on ProseMirror's
+                       own from/to as well as the DOM selection, and it handles the mid-drag latch.
+                       Keeping the newer, less-tested one would have thrown all of that away.
+                       The carousel is MOVED here, not rebuilt — appendChild relocates the node, so
+                       its drag/wheel/momentum/arrow handlers come with it untouched. It is
+                       re-appended on every rebuild of `tb`, which is free: same node, same state. */
+                    if (!state.reviewMode) {
+                        tb.appendChild(el('button', {
+                            className: 'swml-sel-btn swml-sel-mic',
+                            innerHTML: SVG_MIC_ICON + ' <span>Dictate</span>',
+                            'aria-label': 'Dictate',
+                            // Same handler the `+` rail entry calls — one implementation, two entry
+                            // points. The rail copy is what keeps dictation reachable with NOTHING
+                            // selected, which this toolbar by definition cannot cover (§4a).
+                            onClick: (ev) => { ev.stopPropagation(); toggleDictation(); },
+                        }));
+                        tb.appendChild(el('div', { className: 'swml-doc-sel-div' }));
+                        tb.appendChild(toolbar);
                     }
 
                     // Append to measure, then position (matching chat toolbar pattern)
