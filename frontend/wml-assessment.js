@@ -15235,9 +15235,24 @@
 
         chatInputWrap.appendChild(chatInputInner);
         chatInputArea.appendChild(chatInputWrap);
-        // v7.20.459: Clear Chat's new home — see the note where the chat header was deleted.
+        /* ⭐ v7.20.461 (FIXLIST #335) — CLEAR CHAT IS NOT PARKED UNDER THE INPUT ANY MORE.
+           v7.20.459 put it there when the chat header was deleted, reasoning that a destructive
+           control should go somewhere "quiet" rather than vanish. It was not quiet — Neil:
+           *"very awkwardly placed… that's pushing the chat area up, which means the scroll-to-top
+           and scroll-to-bottom arrows are being displaced… it can't just be sitting underneath the
+           chat input like that."* He is right, and the mechanism is the giveaway: adding a button
+           to the input area ADDS HEIGHT, the messages list gives that height up, and the floating
+           scroll buttons — positioned against the list — collide with it.
+           ⭐ THE LESSON: "somewhere quiet" is not a home. A control needs a place that already
+           holds things of its kind. Rare + destructive + session-scoped is exactly what the `+`
+           strip now holds, so it goes there with the other rarely-pressed tools, behind a press,
+           still carrying its confirm. Nothing is added to the input area's height. */
         clearChatBtn.classList.add('swml-clear-chat-quiet');
-        chatInputArea.appendChild(clearChatBtn);
+        try {
+            const _rail = document.querySelector('#swml-canvas-overlay .swml-outline-btn-column');
+            if (_rail) _rail.appendChild(clearChatBtn);
+            else chatInputArea.appendChild(clearChatBtn);   // fail-safe: reachable beats tidy
+        } catch (e) { chatInputArea.appendChild(clearChatBtn); }
         if (state.reviewMode) {
             appendChatReadonlyNote(chatPanel);
         } else {

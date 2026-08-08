@@ -14939,11 +14939,80 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     gap: 5px;
     border-radius: 9px;
 }
-/* Light theme keeps its own material — white, with the same edge logic inverted. */
+/* ⭐⭐ LIGHT THEME KEEPS THE DARK BAR — and therefore keeps WHITE INK (Neil, 2026-08-08:
+   "in light theme you need to get the text in the toolbar to go back to white").
+   This is the classic theme defect: the surface changed, the text did not. The bar is now
+   #1c1d1f in BOTH themes (his reference showed exactly that pair — a dark toolbar floating on
+   a light page), but the page's light-theme rules still recoloured `.swml-sel-btn` toward dark
+   for the WHITE surface it used to have, so light theme rendered dark ink on a dark bar.
+   ⭐ THE RULE THIS ENCODES: the toolbar's ink is a property of the TOOLBAR'S OWN SURFACE, not
+   of the page theme. So light theme does NOT reach in and recolour it — it restates the dark
+   surface's ink, and the fades stay pointed at the surface that is actually there. Any future
+   theme rule that sets a colour inside this component must ask which GROUND it lands on. */
 [data-swml-theme="light"] .swml-canvas .swml-selection-toolbar,
 .swml-canvas-light .swml-selection-toolbar {
-    background: #ffffff;
-    box-shadow: 0 10px 30px rgba(44,0,62,0.18), 0 0 0 1px rgba(20,18,30,0.10);
-    --swml-tb-fade: #ffffff;
-    --swml-tb-fade-0: rgba(255,255,255,0);
+    background: #1c1d1f;
+    box-shadow: 0 10px 30px rgba(44,0,62,0.22), 0 2px 8px rgba(20,18,30,0.16),
+                0 0 0 1px rgba(255,255,255,0.10);
+    --swml-tb-fade: #1c1d1f;
+    --swml-tb-fade-0: rgba(28,29,31,0);
+}
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-sel-btn,
+.swml-canvas-light .swml-selection-toolbar .swml-sel-btn,
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-tb-item,
+.swml-canvas-light .swml-selection-toolbar .swml-tb-item {
+    color: rgba(255,255,255,0.88);
+}
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-sel-btn:hover,
+.swml-canvas-light .swml-selection-toolbar .swml-sel-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: #ffffff;
+}
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-doc-sel-div,
+.swml-canvas-light .swml-selection-toolbar .swml-doc-sel-div {
+    background: rgba(255,255,255,0.14);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   FROSTED-GLASS TOOLBAR — v7.20.461 (Neil, 2026-08-08: "we didn't actually
+   think about having a glassmorphic or frosted glass style of toolbar like
+   this. Can we try that, please?")
+   ⚠️⚠️ THIS IS ONLY SAFE BECAUSE THE SCALE ANIMATION GOES WITH IT. Read before
+   touching: `backdrop-filter` on a `border-radius` element renders SQUARE
+   whenever a transform is in play, and this element animated with
+   `transform: scale()` via `swml-reply-pop`. That pairing is exactly why the
+   blur was DROPPED at v7.20.428 — so re-adding the filter alone would have
+   reproduced a known bug, not tried a new idea. The entrance below is
+   opacity + translateY only: no scale, no square corners.
+   ⛔ Do not restore a scaling entrance on this element while the blur is on it.
+   ⚠️ SECOND CAVEAT, worth judging on screen: the reference is glass over a
+   vivid, high-variance background, where the effect reads instantly. Our canvas
+   is a near-flat dark document, so what shows through is mostly blurred text.
+   That can look genuinely good over prose — but it is a weaker effect than the
+   reference promises, and it is Neil's call whether it earns its keep.
+   ══════════════════════════════════════════════════════════════════════════ */
+.swml-canvas .swml-selection-toolbar,
+#swml-canvas-overlay .swml-selection-toolbar {
+    background: rgba(28, 29, 31, 0.62);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    backdrop-filter: blur(22px) saturate(150%);
+    /* Glass needs its edge more than a solid does — the top hairline reads as the lit
+       edge of a pane, which is what stops it looking like a flat translucent rectangle. */
+    box-shadow: 0 12px 34px rgba(0,0,0,0.5), 0 2px 10px rgba(0,0,0,0.34),
+                inset 0 1px 0 rgba(255,255,255,0.09),
+                0 0 0 1px rgba(255,255,255,0.11);
+    animation: swmlGlassIn 160ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@keyframes swmlGlassIn { from { opacity: 0; transform: translateY(5px); } }
+/* Light theme: same pane, slightly denser so page text behind it cannot fight the labels. */
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar,
+.swml-canvas-light .swml-selection-toolbar {
+    background: rgba(28, 29, 31, 0.74);
+    box-shadow: 0 12px 34px rgba(44,0,62,0.24), 0 2px 10px rgba(20,18,30,0.18),
+                inset 0 1px 0 rgba(255,255,255,0.10),
+                0 0 0 1px rgba(255,255,255,0.12);
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-canvas .swml-selection-toolbar,
+    #swml-canvas-overlay .swml-selection-toolbar { animation: none; }
 }
