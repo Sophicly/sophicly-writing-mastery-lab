@@ -4550,6 +4550,218 @@
     })();
 
     // ═══════════════════════════════════════════════════════════════════════════════════════
+    // v7.20.482 (#356) — REACHABILITY: AN ASK NOBODY CAN SEE WAS NEVER ASKED.
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // ROOT, found by Neil sitting next to a student and by no instrument we own. Fatou Soumah
+    // (uid 1330), on an iPad: "she couldn't see the input area in the exercises… it was being
+    // pushed past the viewport. So to her, it looked like just a bunch of buttons, and she didn't
+    // know why she was clicking them." Her Step 3 document stops at ask 4 of 7 — measured
+    // 2026-08-08: the walk served the inciting-incident ask (a 1124-character bubble), filed
+    // nothing after it, and every earlier answer had landed in exactly the right row. Nothing was
+    // broken about the walk. The question was simply below the bottom of her screen.
+    //
+    // WHY NOTHING CAUGHT IT, and this is the part worth carrying forward:
+    //   · `bin/reachability-lint.js` (v7.20.474) rules out the two CSS traps that have bitten us —
+    //     a growing scroller with no `min-height: 0`, and `100vh` with no `dvh` companion. It is
+    //     static. It has no opinion whatever about whether a control is on a real screen.
+    //   · `walk-sim-lib`'s liveness check (v7.20.330) asserts the student has a question or a chip
+    //     after every input. It runs in jsdom, where nothing has a size, so "on screen" is not a
+    //     concept it can express.
+    // Both gates passed on the build that stranded her. LIVENESS AND REACHABILITY ARE DIFFERENT
+    // CLAIMS: liveness says the control EXISTS, reachability says a person can SEE it. CLAUDE.md
+    // §4d already ruled that "the input box would accept text" is not liveness — this is that
+    // ruling made mechanical at runtime.
+    //
+    // ⚠️ THE SINGLE MOST IMPORTANT DETAIL: the band is `window.visualViewport`, NEVER
+    // `window.innerHeight`. An on-screen keyboard shrinks the VISUAL viewport and leaves the
+    // LAYOUT viewport untouched, so `innerHeight` still reports the full height and a check built
+    // on it passes with the field sitting behind the keyboard — the exact failing shape.
+    // `getBoundingClientRect()` is in layout-viewport coordinates and `visualViewport.offsetTop`
+    // is the offset between the two, so the visible band in rect coordinates is
+    // [offsetTop, offsetTop + height]. Getting that pair wrong is how this ships looking correct.
+    //
+    // WHERE IT IS WIRED, and why not at the arm points: `_walkSlot.arm()` is the choke point for
+    // TYPED asks only — a chip-only ask never arms it, and `_armLiveChips` is called by three
+    // walks out of seven. The one thing NO ask of any kind can avoid is emitting a bubble, so the
+    // hook lives at the bottom of `addChatMessage` — both definitions — and a walk added tomorrow
+    // inherits it without knowing it exists. `bin/reach-runtime-harness.js` fails the build if a
+    // third `addChatMessage` ever appears without it.
+    //
+    // WHAT IT DOES, in escalation order (§4d: a refusal is half a change):
+    //   1. measure the live answer surface — the chat input when the slot is armed, else the
+    //      newest chip bar — against the visual viewport;
+    //   2. if it is not fully visible, `scrollIntoView` and re-measure;
+    //   3. if it still cannot be shown, SAY SO ON SCREEN: a fixed pill inside the visual viewport
+    //      that names the field and jumps to it. A student who cannot find the question at least
+    //      learns that there is one.
+    // Every pass is recorded to `window.__wmlReach` (last 30) so the next report from a real iPad
+    // is DATA and not a hunch (root §19).
+    const _askReach = (function () {
+        /* @REACH-GEOM-START — extracted and unit-tested by bin/reach-runtime-harness.js.
+           Keep these PURE: no DOM, no globals beyond the arguments. */
+        function reachBand(vv, innerH) {
+            // vv = window.visualViewport (may be undefined on old browsers).
+            if (vv && typeof vv.height === 'number' && vv.height > 0) {
+                return { top: vv.offsetTop || 0, bottom: (vv.offsetTop || 0) + vv.height, src: 'visual' };
+            }
+            return { top: 0, bottom: innerH || 0, src: 'layout-fallback' };
+        }
+        // FULLY visible — the bar the ask must clear. Two pixels of tolerance for sub-pixel layout.
+        function reachFully(rect, band) {
+            if (!rect || !(rect.height > 0)) return false;
+            return rect.top >= band.top - 2 && rect.bottom <= band.bottom + 2;
+        }
+        // USABLE — enough of the control is in the band to see and tap it. This is the bar we
+        // accept AFTER a scroll, for layouts where the control genuinely cannot fit whole.
+        function reachUsable(rect, band, minPx) {
+            if (!rect || !(rect.height > 0)) return false;
+            const need = Math.min(rect.height, typeof minPx === 'number' ? minPx : 32);
+            const vis = Math.min(rect.bottom, band.bottom) - Math.max(rect.top, band.top);
+            return vis >= need - 0.5;
+        }
+        /* @REACH-GEOM-END */
+
+        let timer = null, confirmTimer = null, pill = null, misses = 0, installed = false;
+
+        function vis(elm) {
+            if (!elm || typeof elm.getBoundingClientRect !== 'function') return null;
+            const r = elm.getBoundingClientRect();
+            return (r && r.width > 0 && r.height > 0) ? r : null;
+        }
+        function band() {
+            return reachBand(window.visualViewport, window.innerHeight
+                || (document.documentElement && document.documentElement.clientHeight) || 0);
+        }
+        // THE LIVE ANSWER SURFACE. Armed slot → the student types, so the input IS the ask.
+        // Otherwise the newest chip bar, which is what the sim's `chips()` also treats as the ask
+        // (help bars excluded — a help chip is not what was asked for).
+        function surface() {
+            if (_walkSlot.armed) {
+                const ids = ['swml-canvas-chat-input', 'swml-canvas-chat-input-field'];
+                for (let i = 0; i < ids.length; i++) {
+                    const t = document.getElementById(ids[i]);
+                    if (vis(t)) return { el: t, kind: 'input', focus: t };
+                }
+                const t2 = document.querySelector('.swml-canvas-chat-input textarea, .swml-chat-input textarea');
+                if (vis(t2)) return { el: t2, kind: 'input', focus: t2 };
+            }
+            const host = document.getElementById('swml-canvas-chat-messages');
+            if (!host) return null;
+            const bars = Array.prototype.slice.call(host.querySelectorAll('.swml-quick-actions'))
+                .filter((b) => String(b.className).indexOf('-help') === -1 && vis(b));
+            const bar = bars[bars.length - 1];
+            if (bar) return { el: bar, kind: 'chips', focus: bar.querySelector('button') || bar };
+            return null;
+        }
+        function note(rec) {
+            try {
+                window.__wmlReach = window.__wmlReach || [];
+                window.__wmlReach.push(rec);
+                if (window.__wmlReach.length > 30) window.__wmlReach.shift();
+            } catch (e) {}
+        }
+        function dropPill() {
+            if (pill) { try { pill.remove(); } catch (e) {} pill = null; }
+        }
+        // §4d's other half. The screen must respond even when we cannot fix the geometry: a fixed
+        // control INSIDE the visual viewport (so it is reachable whatever the layout is doing)
+        // that names the thing the student cannot see and takes them to it.
+        function showPill(t, b) {
+            const label = t.kind === 'input'
+                ? '↓ Your answer box is below — tap to go to it'
+                : '↓ Your options are below — tap to go to them';
+            if (!pill) {
+                pill = document.createElement('button');
+                pill.type = 'button';
+                pill.className = 'swml-reach-pill';
+                pill.addEventListener('click', function () {
+                    const cur = surface();
+                    if (!cur) { dropPill(); return; }
+                    try { cur.el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+                    // Focusing is the part that actually rescues iPadOS: the browser scrolls a
+                    // focused field above its own keyboard even when our scroll could not.
+                    if (cur.kind === 'input') { try { cur.focus.focus(); } catch (e) {} }
+                    setTimeout(check.bind(null, 'pill-tap'), 400);
+                });
+                document.body.appendChild(pill);
+            }
+            pill.textContent = label;
+            // The pill hangs off <body>, so it cannot inherit the canvas theme by selector — the
+            // class is stamped from the live canvas instead. Read every time: the student can flip
+            // the toggle while the pill is up.
+            const isLight = !!(document.querySelector('.swml-canvas.swml-canvas-light')
+                || document.querySelector('#swml-canvas-overlay[data-swml-theme="light"]'));
+            pill.classList.toggle('is-light', isLight);
+            // Anchored to the VISUAL viewport, not the layout one — the whole point is that it is
+            // visible on a screen whose layout viewport is taller than the glass.
+            pill.style.top = Math.max(8, b.bottom - 56) + 'px';
+            const pane = document.querySelector('.swml-canvas-chat');
+            const pr = vis(pane);
+            if (pr) { pill.style.left = (pr.left + pr.width / 2) + 'px'; }
+            else { pill.style.left = '50%'; }
+        }
+        function check(why) {
+            if (document.hidden) return;
+            const t = surface();
+            if (!t) { dropPill(); misses = 0; return; }        // no ask in flight — nothing to assert
+            const b = band();
+            let r = t.el.getBoundingClientRect();
+            let scrolled = false;
+            if (!reachFully(r, b)) {
+                scrolled = true;
+                try { t.el.scrollIntoView({ block: 'nearest', behavior: 'auto' }); } catch (e) {}
+                r = t.el.getBoundingClientRect();
+            }
+            const ok = reachFully(r, b) || reachUsable(r, b);
+            note({ why: why, kind: t.kind, ok: ok, scrolled: scrolled, band: b,
+                rect: { top: Math.round(r.top), bottom: Math.round(r.bottom), h: Math.round(r.height) } });
+            if (ok) { misses = 0; dropPill(); return; }
+            // Twice in a row before we draw anything: one failure is usually a bubble still
+            // animating, and a pill that flashes on every turn is a pill students stop reading.
+            if (++misses < 2) return;
+            console.warn('WML reach: the ' + t.kind + ' the student must answer is off screen — '
+                + 'rect ' + Math.round(r.top) + '→' + Math.round(r.bottom)
+                + ', visible band ' + Math.round(b.top) + '→' + Math.round(b.bottom)
+                + ' (' + b.src + '). Showing the jump-to control. See window.__wmlReach.');
+            showPill(t, b);
+        }
+        function schedule(why) {
+            clearTimeout(timer); clearTimeout(confirmTimer);
+            // Two passes on purpose. 220ms lands after the bubble's own scroll settles; 900ms
+            // lands after chips are attached and any paced animation has finished, which is when
+            // the geometry is finally the geometry the student sees.
+            timer = setTimeout(check.bind(null, why), 220);
+            confirmTimer = setTimeout(check.bind(null, why + '/settled'), 900);
+        }
+        function install() {
+            if (installed) return;
+            installed = true;
+            // The keyboard opening emits NO bubble, and it is the failing shape. Listen for it.
+            const vv = window.visualViewport;
+            if (vv && vv.addEventListener) {
+                vv.addEventListener('resize', function () { schedule('viewport-resize'); });
+                vv.addEventListener('scroll', function () { schedule('viewport-scroll'); });
+            }
+            window.addEventListener('orientationchange', function () { schedule('orientation'); });
+        }
+        return {
+            afterBubble: function (why) { install(); schedule(why || 'bubble'); },
+            check: check,
+            // The pill draws ONLY when a control genuinely cannot be shown, which on a healthy
+            // layout is never — so without this it could ship having never once been rendered, and
+            // "it has never been seen" is not a state anything student-facing may be in. Type
+            // `WML._askReach.demo()` in the console to draw it against the live theme and geometry.
+            demo: function () {
+                const t = surface() || { kind: 'input' };
+                showPill(t, band());
+                return 'reach pill shown — tap it, or WML._askReach.check("manual") to clear.';
+            },
+            _band: reachBand, _fully: reachFully, _usable: reachUsable,
+        };
+    })();
+    try { if (window.WML) window.WML._askReach = _askReach; } catch (e) {}
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
     // v7.20.339 — THE LIVE-CHIPS REGISTRY: a refusal RE-SERVES, it never POINTS.
     // ───────────────────────────────────────────────────────────────────────────────────────
     // ROOT of a dead end Neil hit live on staging (2026-07-29). A chip-only ask — the §19
@@ -14742,6 +14954,10 @@
                     } catch (_) { chatMessages.scrollTop = chatMessages.scrollHeight; }
                 }, 240);
             }
+            // v7.20.482 (#356): the bubble is on the page — now prove the student can SEE what it
+            // asks them to answer. Here because every ask of every kind emits a bubble; the arm
+            // points would miss chip-only asks. See `_askReach`.
+            _askReach.afterBubble('addChatMessage');
         }
 
         // Clear chat button
@@ -33219,6 +33435,9 @@
                             bubble.appendChild(content);
                             chatMessages.appendChild(bubble);
                             chatMessages.scrollTop = chatMessages.scrollHeight;
+                            // v7.20.482 (#356) — the second pipeline owes the same proof. See the
+                            // twin at the primary `addChatMessage` and `_askReach`.
+                            _askReach.afterBubble('addChatMessage/2');
                         }
 
                         // ── Canvas Chat Selection Toolbar (identical to document toolbar) ──

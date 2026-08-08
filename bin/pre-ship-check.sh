@@ -393,6 +393,12 @@ node bin/cw-step-coherence-lint.js || fail=1
 # to 6,000+ lines of the UI. Whole-repo and instant, like fossil-lint. (v7.20.372)
 node bin/css-lint.js || fail=1
 node bin/reachability-lint.js || fail=1   # v7.20.474 (#343): unreachable-control gate
+# v7.20.482 (#356): the RUNTIME half of the same defect. The lint above rules out two CSS traps and
+# is blind to whether a control is on a real screen — which is how Fatou Soumah's Step 3 stopped at
+# ask 4 of 7 with a perfectly correct walk. This guards the runtime check (`_askReach`): the
+# arithmetic, the wiring into every chat pipeline, the keyboard listener, and the pill's own
+# reachability.
+node bin/reach-runtime-harness.js || fail=1
 
 # v7.20.394 — a RETIRED surface colour written as rgba() is invisible to the hex sweep that
 # retires it. That has now bitten three times on one palette (.swml-extract-panel, the rail shell,

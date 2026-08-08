@@ -10654,6 +10654,56 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
+/* ── v7.20.482 (#356) — THE REACHABILITY PILL ──────────────────────────────────────────────
+   The last rung of the runtime reachability check in wml-assessment.js (`_askReach`). It is drawn
+   only when the control the student must answer could not be brought on screen, which on a healthy
+   layout is never. Neil, on the student it was built for: "to her, it looked like just a bunch of
+   buttons, and she didn't know why she was clicking them."
+
+   ⚠️ `position: fixed` and a JS-set `top` are both load-bearing, not styling. The element is
+   positioned against the VISUAL viewport (the glass), because the failure it exists to survive is
+   precisely a layout viewport taller than the glass — anything positioned in normal flow would be
+   stranded by the same geometry as the control it is rescuing. JS writes `top` and `left` from
+   `visualViewport`; this rule must not add its own.
+
+   Material is the floating family — RAISED-ON-BASE #333437 dark / solid #ffffff light, hairline +
+   shadow — the same one the scroll buttons above use. An elevated control is opaque in both themes
+   (v7.20.424); no new palette value is introduced here. */
+.swml-reach-pill {
+    position: fixed;
+    transform: translateX(-50%);
+    z-index: 2147483000;   /* above the canvas overlay: a rescue control nothing may cover */
+    max-width: min(88vw, 420px);
+    padding: 10px 16px;
+    border-radius: 9999px;
+    font: 500 13px/1.35 var(--swml-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    text-align: center;
+    cursor: pointer;
+    background: #333437;
+    color: rgba(255,255,255,0.92);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    box-shadow: 0 6px 16px -2px rgba(0,0,0,0.35), 0 2px 6px -2px rgba(0,0,0,0.2);
+    animation: swml-reach-pill-in 0.22s ease both;
+}
+@keyframes swml-reach-pill-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-reach-pill { animation: none; }
+}
+.swml-reach-pill.is-light {
+    /* ⚠️ The pill is a child of <body>, so it CANNOT inherit the canvas's theme the way an in-tree
+       control does — neither `.swml-canvas-light .x` nor an overlay attribute selector can reach
+       it. Descendant selectors here would compile fine and simply never match, which is the worst
+       kind of wrong. The JS reads the live canvas theme and stamps `.is-light`, so the class on the
+       element is the single source and there is nothing to drift. */
+    background: #ffffff;
+    color: rgba(0,0,0,0.78);
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 6px 16px -2px rgba(0,0,0,0.15), 0 2px 6px -2px rgba(0,0,0,0.08);
+}
+
 /* ── Scroll-to-top floating arrow — chat panel (v7.12.49) ── */
 .swml-scroll-up-btn {
     position: absolute;
