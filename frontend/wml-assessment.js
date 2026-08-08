@@ -14319,7 +14319,23 @@
                    same frame are the same origin by definition and cannot drift. */
                 const scroller = rail.closest('.swml-canvas-content');
                 if (scroller && scroller.scrollTop > 0) return _badgeAligned;   // sticky rail lies once scrolled
-                const railTop = rail.getBoundingClientRect().top;
+                /* ⭐⭐ v7.20.471 — MEASURE THE BUTTON, NOT THE COLUMN. This is the fifth cut of this
+                   alignment and it is the one that was actually wrong all along.
+                   Neil's datum is the OUTLINE BUTTON's top. Until .470 the column's top and the
+                   button's top were the same pixel (the column had no padding), so measuring the
+                   column happened to work and hid the error. .470 then added `padding-top: 32px`
+                   to the column to make room — and padding sits INSIDE the border box, so
+                   `rail.getBoundingClientRect().top` did not move at all while the buttons dropped
+                   32px. The badge stayed exactly where it was and the gap got WORSE: "it's still
+                   the same."
+                   ⭐ THE LESSON, and it is the §14c partial-read defect in geometry form: a
+                   coincidence (two edges sharing a pixel) was carried as if it were a definition.
+                   Measure the THING NAMED IN THE DATUM — here `.swml-rail-permanent`, the outline
+                   button, which is `order: 0` and therefore always the visually first control —
+                   never a container that merely starts in the same place today. */
+                const railFirstBtn = rail.querySelector('.swml-rail-permanent') || rail.firstElementChild;
+                if (!railFirstBtn) return false;
+                const railTop = railFirstBtn.getBoundingClientRect().top;
                 const panelTop = protoPanel.getBoundingClientRect().top;
                 if (!railTop && !panelTop) return false;                        // nothing laid out yet
                 /* ⭐⭐ v7.20.468 — ALIGN THE TOPS, NOT THE BADGE'S BOTTOM. THE MEASUREMENT WAS
