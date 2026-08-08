@@ -13964,6 +13964,7 @@
             isCwTask, cwStepDef, isCwSi, isExamPrep,
             canvasInMarkScheme, canvasInFeedback,
             canvasChatHeaderLabel, canvasSidebarSteps,
+            railColumn,                 // v7.20.464 (#335): the `+` rail node, handed in — see the caller
         } = ctx;
         // Mutable ref — caller passes { value: btn } so we can write back
         const assessCompleteBtnRef = ctx.assessCompleteBtnRef; // { value: null }
@@ -15247,12 +15248,47 @@
            holds things of its kind. Rare + destructive + session-scoped is exactly what the `+`
            strip now holds, so it goes there with the other rarely-pressed tools, behind a press,
            still carrying its confirm. Nothing is added to the input area's height. */
-        clearChatBtn.classList.add('swml-clear-chat-quiet');
+        /* ⭐⭐ v7.20.464 (#335) — THE .461 MOVE NEVER ONCE FIRED, AND THE FAIL-SAFE HID IT.
+           .461 resolved the rail with
+               document.querySelector('#swml-canvas-overlay .swml-outline-btn-column')
+           and fell back to the chat input area if that came back null. MEASURED: it came back
+           null EVERY TIME. renderCanvasWorkspace() creates the overlay (:~25325), creates the
+           rail (:~26204) and appends it to contentWrap (:~26585) — then calls us (:~30527) —
+           and only attaches the overlay to the document ~4,200 lines further down. We are
+           querying `document` for a node that is still in a DETACHED tree, so Clear Chat has
+           been sitting under the chat input this whole time, which is exactly what Neil's
+           2026-08-08 screenshot shows.
+           ⭐⭐ THE REAL LESSON, worth more than the fix: A FAIL-SAFE THAT FIRES 100% OF THE TIME
+           IS INDISTINGUISHABLE FROM THE FIX WORKING. The try/catch + else read as defensive
+           tidiness and logged nothing, so a total failure looked like a shipped feature and
+           cost Neil a test cycle to catch by eye. Hence the console.warn below: a fallback
+           path must ANNOUNCE itself, or it is not a fallback, it is a silent bug (root §10).
+           ⛔ Never re-find this node with a document query — it is handed in as `railColumn`. */
+        /* ⭐ v7.20.464 — AND IT BECOMES A REAL RAIL BUTTON, not a chat-header button parked in a
+           rail. `.swml-clear-chat-quiet` was added at .461 and NEVER STYLED — there is no such
+           rule anywhere in wml-canvas.css, so it did nothing at all; removed rather than left as
+           a decoy. `.swml-clear-chat-btn` is header-era styling (its `margin-left:auto` is a
+           flex-row push that means nothing in a column) so it comes OFF, and the button wears
+           `.swml-outline-btn` — the ONE class every other rail button already wears. It then
+           inherits the rail size token, radius, hover and the hue layer for free, and cannot
+           drift when the rail is restyled (§4 derive-don't-duplicate). It carries no
+           `.swml-rail-permanent`, so it folds behind the `+` with the other rare tools — which
+           is the ruling — and it stays on the default `order: 2`, so #338's Download
+           (`.swml-rail-last`, order 3) is still pinned below it. */
         try {
-            const _rail = document.querySelector('#swml-canvas-overlay .swml-outline-btn-column');
-            if (_rail) _rail.appendChild(clearChatBtn);
-            else chatInputArea.appendChild(clearChatBtn);   // fail-safe: reachable beats tidy
-        } catch (e) { chatInputArea.appendChild(clearChatBtn); }
+            const _rail = railColumn || document.querySelector('#swml-canvas-overlay .swml-outline-btn-column');
+            if (_rail) {
+                clearChatBtn.classList.remove('swml-clear-chat-btn');
+                clearChatBtn.classList.add('swml-outline-btn');
+                _rail.appendChild(clearChatBtn);
+            } else {
+                console.warn('WML #335: no rail column for Clear Chat — parking it under the chat input. This is the fallback, not the design.');
+                chatInputArea.appendChild(clearChatBtn);   // fail-safe: reachable beats tidy
+            }
+        } catch (e) {
+            console.warn('WML #335: rail append threw, parking Clear Chat under the chat input.', e);
+            chatInputArea.appendChild(clearChatBtn);
+        }
         if (state.reviewMode) {
             appendChatReadonlyNote(chatPanel);
         } else {
@@ -30531,6 +30567,15 @@
                 canvasInMarkScheme, canvasInFeedback,
                 canvasChatHeaderLabel, canvasSidebarSteps,
                 assessCompleteBtnRef: _assessBtnRef,
+                /* ⭐ v7.20.464 (#335) — THE RAIL NODE IS HANDED IN, NOT LOOKED UP.
+                   buildTrainingPanels used to find it with
+                   `document.querySelector('#swml-canvas-overlay .swml-outline-btn-column')`,
+                   which CANNOT WORK from here: this whole overlay tree is still DETACHED at
+                   this point — it is only attached to the document ~4,200 lines later (the
+                   `document.body.appendChild(overlay)` below). So the query returned null on
+                   every single run and Clear Chat always took the fail-safe branch under the
+                   chat input. `btnColumn` is a function-body const built above, so pass it. */
+                railColumn: btnColumn,
             });
             assessCompleteBtn = _assessBtnRef.value;
             // v7.19.915: wml-app.js showPhaseCompleteCard styles this button but lives in
