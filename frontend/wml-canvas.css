@@ -357,6 +357,20 @@ body.swml-fullscreen-active { overflow: hidden !important; }
    existed. The LD side is set in etch-theme-child/assets/css/sophicly-focus-mode.css (--spl-*).
    Light theme has its own overrides (white + rgba washes) — do NOT fold these hex values into it. */
 .swml-canvas {
+    /* ⭐⭐ v7.20.475 (#340/#346) — THE ONE TOP INSET. The document sheet, the rail's first button
+       and the project badge all start HERE, and they each read this token independently. That
+       independence is the point: Neil, seeing them drag each other around — *"the rail buttons…
+       influence and are attached to the protocol sidebar… they should be separate."* He was right,
+       and there were TWO couplings, both removed in this build:
+         (1) the JS aligner DERIVED the badge's offset by MEASURING the rail, so moving one moved
+             the other. Deleted — a shared constant cannot create a dependency the way a
+             measurement does.
+         (2) `.swml-sidebar` is a flex column with `gap: 32px`, so the collapse-button row was a
+             flex SIBLING that pushed the badge down by its own height plus the gap. It is now
+             absolutely positioned, i.e. out of flow, so it cannot push anything.
+       ⛔ Do NOT reintroduce a measurement between these two columns. If the inset changes, change
+       THIS token and all three move together, by construction. */
+    --swml-canvas-top-inset: 32px;
     display: flex;
     gap: 0;
     width: 100%;
@@ -440,7 +454,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 32px 0 32px;
+    padding: var(--swml-canvas-top-inset, 32px) 0 32px;
     position: relative;
     /* v7.20.54 (Neil): slim minimal scrollbar — default chunky thumb was ugly in
        the canvas. Matches the stepper-wrap treatment (wml-styles.css L681). */
@@ -2782,7 +2796,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        32px more puts the first button ~64px down, so a bottom-aligned badge sits at ~36px with
        real air above it. The number is the SAME 32px the content padding already uses, so the two
        insets stay in step rather than becoming a magic offset. */
-    padding-top: 32px;
+    /* v7.20.475: the .470 `padding-top: 32px` is REMOVED. It existed only to buy room for the
+       old bottom-aligned badge datum; the datum is now TOPS-aligned to the document, so the rail
+       simply starts where `.swml-canvas-content`'s inset puts it — the same line as the sheet. */
 }
 /* ⭐ v7.20.383 (Neil: "the contextual toolbar was sitting above the outline panel… the panel
    should sit above pretty much everything else"). ROOT: this column is `position:sticky` with a
@@ -15091,9 +15107,13 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    MEASURED against the rail's real top by `_alignBadgeToRail` and lands the
    badge's BOTTOM on the top rail button's TOP — the same datum #297 established.
    ══════════════════════════════════════════════════════════════════════════ */
+/* The badge starts on the document's own line. A CONSTANT read from the shared token — NOT a
+   measurement of the rail, which is what coupled the two columns. */
 .swml-canvas-proto .swml-sidebar-badges {
-    padding-top: var(--swml-badge-top, 0px);
+    padding-top: var(--swml-canvas-top-inset, 32px);
 }
+/* The panel is the positioning context for the collapse row below. */
+.swml-canvas-proto { position: relative; }
 /* ILLUMINATED — and the biggest win was removing a dimmer, not adding light: the
    CW project badge carried an inline `opacity: 0.85` on top of an already-soft
    `rgba(255,255,255,0.8)` ink, so it rendered at ~0.68 white on deep purple. The
@@ -15153,16 +15173,16 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    hides it in either state. It is also the FIRST child of the panel, so it sits
    above the badge and does not disturb the #340c badge/rail alignment.
    ══════════════════════════════════════════════════════════════════════════ */
+/* ⚠️ ABSOLUTE, DELIBERATELY. As a flex child it was a sibling in a column with `gap: 32px`, so it
+   pushed the badge down by 28 + 32px — one of the two couplings Neil reported. Out of flow it
+   cannot move anything, and the badge's inset is then purely the shared token. */
 .swml-canvas-proto .swml-proto-collapse-row {
+    position: absolute;
+    top: 6px;
+    right: 12px;
     display: flex;
-    justify-content: flex-end;
     align-items: center;
-    flex-shrink: 0;
-    min-height: 28px;
-    margin-bottom: -28px;   /* overlays the badge band's air rather than adding height,
-                               so the badge keeps the alignment measured in #340c */
-    position: relative;
-    z-index: 2;
+    z-index: 3;
 }
 /* Collapsed: the panel centres its children, so the row follows and the button
    stays reachable and obviously pressable. */

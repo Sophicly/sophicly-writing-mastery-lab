@@ -14306,175 +14306,19 @@
         protoBody.appendChild(protoSpacer);
         protoPanel.appendChild(protoBody);
 
-        /* ⭐⭐ v7.20.465 (#340) — LIFT THE BADGE SO ITS BOTTOM MEETS THE RAIL'S TOP BUTTON.
-           Neil: *"everything needs to be lifted up… my instinct is that the bottom of the badge
-           should probably be in line with the top button in the rail, which is the document
-           outline button."* He asked for exactly this alignment once before, against the collapse
-           icon (#297, v7.20.447), and accepted it — so this is the house datum, not a new one, and
-           the helper that measured it then is reused here rather than re-derived.
-           ⭐ MEASURED, NEVER A LITERAL — the same reasoning as #297: the rail's top depends on the
-           chrome above it, which has moved three times this week, so a hardcoded offset would look
-           right today and drift silently on the next change.
-           ⚠️ offsetTop, NOT getBoundingClientRect, WHENEVER THE TWO SHARE AN OFFSET PARENT: the
-           rail column is `position:sticky; top:0`, so once the student scrolls, its viewport rect
-           is pinned while the panel's is not, and a rect-based sum would make the badge crawl up
-           the panel as they scroll. offsetTop is the un-stuck position and is scroll-independent.
-           The rect path is the fallback for the case where they do NOT share one, where the two
-           rects are at least measured in the same frame. */
-        /* ⚠️⚠️ v7.20.466 — THE .465 CUT OF THIS DID NOTHING, AND IT FAILED SILENTLY. Neil, seeing
-           it: *"the badge is sitting right at the top of the sidebar… doesn't look great at all."*
-           TWO defects, both measured, and the first one is embarrassing because .465's own commit
-           message warns about it:
-           1. IT RAN BEFORE THE PANEL WAS IN THE DOCUMENT. It was scheduled with
-              `requestAnimationFrame` from inside this builder — but `renderCanvasWorkspace` has
-              `await fetch(...)` calls between the call to us (:~30527) and the point where the
-              overlay is finally attached to the document (:~34771). The frame therefore fires
-              DURING those network round-trips, while this whole tree is still detached, so
-              `protoBadges.offsetHeight` was 0, the guard returned early and no variable was ever
-              set. Same root as #335: MEASURING A TREE THAT IS NOT IN THE DOCUMENT YET.
-              ⭐ And the same lesson twice in two commits: a bail-out that says nothing is
-              indistinguishable from a success. This one now WARNS if it never resolves.
-           2. THE COMPARISON WAS MEANINGLESS ANYWAY. It preferred `offsetTop` when the two shared
-              an `offsetParent` — they never do: the rail lives inside `editorPane` (appended to
-              `contentWrap`) while this panel is `editorPane`'s SIBLING. Subtracting offsetTops
-              across two different offset parents compares two unrelated origins.
-           THE FIX FOR BOTH: drive it from a ResizeObserver on the RAIL NODE ITSELF — which we are
-           handed as `railColumn` (#335) rather than hunting for in a document it may not be in —
-           so it runs exactly when the rail first gets a real box, however long the awaits take.
-           And measure by walking each element's offsetTop up to their COMMON ancestor, which is
-           correct whatever the offset parents are AND is scroll-independent: a rect-based sum
-           would be wrong the moment the student scrolls, because the rail is `position:sticky;
-           top:0` and its viewport rect stops moving while the panel's does not. */
-        let _badgeAligned = false;
-        const _alignBadgeToRail = () => {
-            try {
-                const rail = railColumn || document.querySelector('.swml-outline-btn-column');
-                if (!rail || !protoBadges) return false;          // no rail on this task → CSS default stands
-                if (!rail.isConnected || !protoBadges.offsetHeight) return false;   // not laid out yet
-                /* ⭐⭐ v7.20.467 — MEASURED WITH RECTS, NOT AN offsetTop WALK. Neil pasted the live
-                   DOM and it read `--swml-badge-top: 0px` — which PROVES the aligner ran and the
-                   ARITHMETIC was wrong, not the timing (the .466 theory). The offsetTop walk was
-                   the wrong instrument: the rail's chain runs rail → `.swml-canvas-content`
-                   (position:relative) → `.swml-canvas-editor` (position:relative), while the panel
-                   is a flex SIBLING of the editor, so the two chains pass through different
-                   positioned ancestors and their sums are not comparable. Two rects read in the
-                   same frame are the same origin by definition and cannot drift. */
-                const scroller = rail.closest('.swml-canvas-content');
-                if (scroller && scroller.scrollTop > 0) return _badgeAligned;   // sticky rail lies once scrolled
-                /* ⭐⭐ v7.20.471 — MEASURE THE BUTTON, NOT THE COLUMN. This is the fifth cut of this
-                   alignment and it is the one that was actually wrong all along.
-                   Neil's datum is the OUTLINE BUTTON's top. Until .470 the column's top and the
-                   button's top were the same pixel (the column had no padding), so measuring the
-                   column happened to work and hid the error. .470 then added `padding-top: 32px`
-                   to the column to make room — and padding sits INSIDE the border box, so
-                   `rail.getBoundingClientRect().top` did not move at all while the buttons dropped
-                   32px. The badge stayed exactly where it was and the gap got WORSE: "it's still
-                   the same."
-                   ⭐ THE LESSON, and it is the §14c partial-read defect in geometry form: a
-                   coincidence (two edges sharing a pixel) was carried as if it were a definition.
-                   Measure the THING NAMED IN THE DATUM — here `.swml-rail-permanent`, the outline
-                   button, which is `order: 0` and therefore always the visually first control —
-                   never a container that merely starts in the same place today. */
-                const railFirstBtn = rail.querySelector('.swml-rail-permanent') || rail.firstElementChild;
-                if (!railFirstBtn) return false;
-                const railTop = railFirstBtn.getBoundingClientRect().top;
-                const panelTop = protoPanel.getBoundingClientRect().top;
-                if (!railTop && !panelTop) return false;                        // nothing laid out yet
-                /* ⭐⭐ v7.20.468 — ALIGN THE TOPS, NOT THE BADGE'S BOTTOM. THE MEASUREMENT WAS
-                   FINALLY CORRECT AT .467 AND THAT IS PRECISELY WHAT EXPOSED THE REAL PROBLEM:
-                   it resolved to `--swml-badge-top: 3px`, and Neil — rightly — said it still
-                   looked horrible.
-                   ⭐ THE DATUM ITSELF WAS THE BUG, and the numbers say so plainly: the rail's
-                   first button starts only ~31px below the panel's top edge (it inherits
-                   `.swml-canvas-content { padding: 32px 0 }`), and the badge is 28px tall. So
-                   "badge BOTTOM level with the button's TOP" can only ever leave 31 − 28 = 3px
-                   above the badge — i.e. the constraint MATHEMATICALLY GUARANTEES the badge is
-                   jammed against the top edge. Three builds were spent making a measurement
-                   produce a number that was always going to look wrong.
-                   ⚠️ He asked for the bottom datum twice (here and #297) and I followed it twice;
-                   it worked for the COLLAPSE ICON because that sat in a 50px head that gave it
-                   room above. With the head deleted (#340a) that room is gone, so the same datum
-                   now yields a different, worse result. A datum is only as good as the box it
-                   sits in — carrying one across a layout change is not the same as reusing it.
-                   ⭐⭐ v7.20.469 — NEIL RE-ASSERTED THE BOTTOM DATUM ("just sort out the
-                   arithmetics"), SO THE BOTTOM DATUM IS WHAT SHIPS. It is his call and it is now
-                   exact: badge BOTTOM lands on the outline button's TOP.
-                   ⚠️ The consequence is arithmetic, not a bug, and it is stated here so the next
-                   model does not "fix" it again: the button top is ~31px below the panel edge and
-                   the badge is 28px tall, so this leaves ~3px above the badge BY CONSTRUCTION.
-                   The only free variable that buys air above the badge is the RAIL'S OWN TOP —
-                   move the rail down and the badge follows it down, still bottom-aligned. That is
-                   a one-line `padding-top` on `.swml-outline-btn-column`, deliberately NOT done
-                   unilaterally because it also unpins the rail from the document sheet's top. */
-                const top = Math.max(0, Math.round(railTop - panelTop - protoBadges.offsetHeight));
-                protoPanel.style.setProperty('--swml-badge-top', top + 'px');
-                /* v7.20.472: the temporary .467 diagnostic console.log is removed — Neil
-                   confirmed the alignment on .471. The 8s fail-loud warn below STAYS: it only
-                   fires when the alignment never resolves, which is the case that must never
-                   again pass silently. */
-                _badgeAligned = true;
-                return true;
-            } catch (_) { return false; }
-        };
-        /* ⭐⭐ v7.20.467 — A ResizeObserver ALONE WAS NOT ENOUGH, and I stopped guessing why.
-           .466 drove this from an RO on the rail and the panel. On Neil's screen the .466 CSS
-           landed (the pill and the Playfair italic are visibly there) while `--swml-badge-top`
-           did not, which proves the STYLESHEET shipped and only this JS never resolved. Two
-           failed attempts is the point at which another hypothesis is worth less than a
-           measurement (root §19), so this build does three things instead of a third guess:
-             1. RETRIES until the layout is real — the panel is inserted into the canvas at
-                `:~30624`, AFTER this builder returns, and the overlay reaches the document later
-                still, so "observe it and hope" has too many ways to miss. A bounded rAF poll
-                (~5s, then it stops) cannot be defeated by whichever of those lands last.
-             2. RE-RUNS on the RO as well, so later layout changes still re-place it.
-             3. PRINTS THE FOUR NUMBERS ONCE. If it is still wrong, the console says exactly
-                which term is wrong instead of me inferring it from a screenshot.
-           ⚠️ The diagnostic line is temporary and comes out once the alignment is confirmed. */
-        /* ⭐⭐ v7.20.467 — THE OBSERVER IS ONE-SHOT, AND THAT IS THE SECOND BUG NEIL FOUND.
-           His words: *"when I click the plus icon in the rail, when the buttons come down, that
-           protocol sidebar actually shifts down a few pixels… I don't wanna see the sidebar
-           moving. They should work independently of each other."*
-           ⭐ THE CAUSE WAS THIS CODE. .466 kept a ResizeObserver on the rail column for the whole
-           session. Opening the `+` strip makes the rail TALLER, the observer fires, the offset is
-           recomputed, and the sidebar's padding changes — so the rail and the sidebar became
-           coupled BY MY OWN FIX. Nothing else linked them.
-           ⭐ AND THE RAIL'S HEIGHT IS IRRELEVANT TO THE ANSWER ANYWAY: we align to where the rail
-           STARTS, which does not move when it grows downward. So watching its size was never
-           needed — it was only ever a way of learning WHEN the layout became real. The moment we
-           have the answer, we stop watching: the poll ends and the observer disconnects. After
-           that the two columns are genuinely independent, which is what he asked for. */
-        let _badgeTries = 0;
-        let _badgeRO = null;
-        const _badgeStopWatching = () => {
-            try { _badgeRO?.disconnect(); } catch (_) {}
-            _badgeRO = null;
-        };
-        const _badgeTick = () => {
-            if (_alignBadgeToRail()) { _badgeStopWatching(); return; }
-            if (++_badgeTries > 300) { _badgeStopWatching(); return; }   // ~5s at 60fps, then give up
-            requestAnimationFrame(_badgeTick);
-        };
-        requestAnimationFrame(_badgeTick);
-        try {
-            _badgeRO = new ResizeObserver(() => { if (_alignBadgeToRail()) _badgeStopWatching(); });
-            if (railColumn) _badgeRO.observe(railColumn);
-            _badgeRO.observe(protoPanel);
-        } catch (_) { /* the poll above already covers the initial placement */ }
-        /* Re-measure on a WINDOW resize only — the chrome above the rail can genuinely move, and a
-           window resize is not something the student triggers by using the rail. Deliberately NOT
-           an observer on the rail: see the coupling note above. */
-        try { window.addEventListener('resize', _alignBadgeToRail); } catch (_) {}
-        /* FAIL LOUD (root §10). If the badge never got its offset, the sidebar silently reverts to
-           the un-lifted look Neil rejected — so say so rather than let it pass as shipped. */
-        setTimeout(() => {
-            if (!_badgeAligned) {
-                console.warn('WML #340: badge/rail alignment never resolved — badge sits at the panel top.',
-                    { rail: !!(railColumn || document.querySelector('.swml-outline-btn-column')),
-                      badgesConnected: !!(protoBadges && protoBadges.isConnected),
-                      badgeH: protoBadges ? protoBadges.offsetHeight : null,
-                      root: !!(protoPanel && protoPanel.closest('.swml-canvas')) });
-            }
-        }, 8000);
+        /* ⭐⭐ v7.20.475 (#346) — THE JS BADGE ALIGNER IS DELETED, AND THE DELETION IS THE FIX.
+           Neil: *"the rail buttons… influence and are attached to the protocol sidebar… they should
+           be separate. There must be some class or something where they share the same class."* The
+           shared thing was not a class — it was THIS CODE. It computed the badge's offset by
+           MEASURING the rail, so the two columns were bound by construction: move the rail and the
+           badge followed, and .470's rail padding moved both.
+           ⭐ AND IT WAS NEVER NEEDED. The rail's first button sits where `.swml-canvas-content`'s
+           top padding puts it — a value CSS already knows. Both columns now read the one
+           `--swml-canvas-top-inset` token independently, so they land on the same line as the
+           document sheet WITHOUT either one knowing the other exists. Exact on first paint, no
+           timing, no observers, no offsetParent chains, no failure mode.
+           ⛔ Never reintroduce a runtime measurement between these two columns. Seven builds
+           (v7.20.465–.474) went into making one produce a number a constant states for free. */
 
         // 2. Build right chat panel
         const chatPanel = el('div', { className: 'swml-canvas-chat' });
