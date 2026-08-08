@@ -14366,17 +14366,10 @@
                    unilaterally because it also unpins the rail from the document sheet's top. */
                 const top = Math.max(0, Math.round(railTop - panelTop - protoBadges.offsetHeight));
                 protoPanel.style.setProperty('--swml-badge-top', top + 'px');
-                if (!_badgeAligned) {
-                    // v7.20.467 TEMPORARY DIAGNOSTIC — remove once Neil confirms the alignment.
-                    // Prints the terms so a wrong result names WHICH ONE is wrong, instead of it
-                    // being inferred from a screenshot (root §19 — measure, do not guess).
-                    console.log('WML #340 badge align:', {
-                        railTop: Math.round(railTop),
-                        panelTop: Math.round(panelTop),
-                        badgeH: protoBadges.offsetHeight,
-                        paddingTop: top,
-                    });
-                }
+                /* v7.20.472: the temporary .467 diagnostic console.log is removed — Neil
+                   confirmed the alignment on .471. The 8s fail-loud warn below STAYS: it only
+                   fires when the alignment never resolves, which is the case that must never
+                   again pass silently. */
                 _badgeAligned = true;
                 return true;
             } catch (_) { return false; }
