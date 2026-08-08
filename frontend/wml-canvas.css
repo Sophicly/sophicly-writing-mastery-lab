@@ -14909,16 +14909,16 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    ══════════════════════════════════════════════════════════════════════════ */
 .swml-canvas .swml-selection-toolbar,
 #swml-canvas-overlay .swml-selection-toolbar {
-    /* ⛔ NEIL ASKED FOR #1c1d1f AND THE PALETTE GATE REFUSED IT — correctly. That value was
-       RETIRED AS A SURFACE at v7.20.392: it is the SEED the whole grey ladder is derived from
-       (every rung is an OKLCH step off it), so painting with it collapses the ladder's base into
-       one of its own rungs. `bin/palette-lint.js` fails the build on it, and its own instruction
-       is that a returning value must be un-retired DELIBERATELY — which is Neil's call, not a
-       silent edit. Held at the legal raised rung until he rules (FIXLIST #332).
-       The rest of this block ships regardless, because the fill was never the whole story: the
-       "it disappears" complaint is a SEPARATION problem, and separation comes from the edge and
-       the shadow. Those are below and they are legal. */
-    background: #333437;
+    /* ⭐ #1c1d1f — RULED BACK IN FOR THIS COMPONENT ONLY (Neil, 2026-08-07: "for the toolbar, we
+       can make a special case to unretire 1c1d1f"). It is the SEED the grey ladder is derived
+       from and was retired as a surface at .392; it is re-opened here via a SCOPED exemption in
+       `bin/palette-lint.js` keyed to `.swml-selection-toolbar`, NOT by deleting it from RETIRED —
+       so if this value reappears on a card, a panel or a rail button, the gate still fails.
+       This deliberately reverses v7.20.432, which put this toolbar on the raised rung with the
+       Island and the scroll buttons. ⚠️ Because the fill is now DARKER than the page behind it,
+       the object's separation comes entirely from the hairline + shadow below — they are not
+       decoration here, they are what stops it reading as a hole. */
+    background: #1c1d1f;
     border-radius: 12px;
     padding: 4px;
     gap: 1px;
@@ -14926,8 +14926,8 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
        rung carried, plus a deeper, wider shadow so the object casts onto the page. */
     box-shadow: 0 10px 30px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.4),
                 0 0 0 1px rgba(255,255,255,0.13);
-    --swml-tb-fade: #333437;
-    --swml-tb-fade-0: rgba(51,52,55,0);
+    --swml-tb-fade: #1c1d1f;
+    --swml-tb-fade-0: rgba(28,29,31,0);
 }
 /* Compact: the chunk came from label padding on six buttons. Three remain, and
    they tighten — icon and label stay (they are the three that must be learnable),

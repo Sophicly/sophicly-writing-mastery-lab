@@ -26031,25 +26031,24 @@
             // `body` keeps swml-fullscreen-active, so the next click ADDS the overlay class but
             // REMOVES the body class → a stuck half-state. FIX: derive BOTH from ONE canonical
             // source — the persistent `document.body` flag — and set them to the SAME value.
-            const _isFsNow = () => document.body.classList.contains('swml-fullscreen-active');
-            const fsBtn = el('button', {
-                className: 'swml-canvas-fullscreen-btn',
-                title: _isFsNow() ? 'Exit fullscreen' : 'Enter fullscreen',
-                innerHTML: _isFsNow() ? SVG_SHRINK : SVG_EXPAND,
-                onClick: () => {
-                    const goingFs = !_isFsNow();
-                    document.body.classList.toggle('swml-fullscreen-active', goingFs);
-                    overlay.classList.toggle('swml-canvas-fullscreen', goingFs);
-                    fsBtn.innerHTML = goingFs ? SVG_SHRINK : SVG_EXPAND;
-                    fsBtn.title = goingFs ? 'Exit fullscreen' : 'Enter fullscreen';
-                    // Show WML theme toggle when LD header is collapsed (LD's toggle disappears)
-                    canvasThemeToggle.style.display = goingFs ? '' : 'none';
-                }
-            });
-            // Re-render during fullscreen: the new overlay must re-adopt the class (body is the
-            // source of truth) so the layout doesn't break until the next click.
-            if (_isFsNow()) overlay.classList.add('swml-canvas-fullscreen');
-            headerRight.appendChild(fsBtn);
+            /* ⭐⭐ v7.20.460 — THE FULLSCREEN BUTTON IS RETIRED (Neil, ruled 2026-08-07).
+               His reasoning, and it is the right one: *"the whole purpose of it initially was
+               actually to get rid of the SPL header to make it more minimalistic. But now… just
+               by minimising the LearnDash sidebar, and then minimising the protocols sidebar as
+               well, we pretty much achieved that effect. So I'm not sure we need the enter
+               fullscreen button anymore."*
+               The control existed to SOLVE a problem this whole pass has now deleted — both WML
+               headers are gone, both sidebars collapse and the collapse is sticky. A button whose
+               purpose has been engineered away is furniture, and this build has removed several
+               others on exactly that test (Save, undo/redo, the identity badges, the `…` overflow).
+               ⭐ AND IT CLOSES A CROSS-LANE THREAD: the spec sent this button to the SPL header,
+               and the LearnDash lane offered to add a mount point for us to inject into. Neither
+               is needed now — tell them to skip it rather than leave an empty slot on their
+               roadmap (handoff owed).
+               ⚠️ `_isFsNow` and the SVG pair go with it. `swml-fullscreen-active` still has ONE
+               remaining writer at ~:28679, which only ever REMOVES the class — a teardown that is
+               now a no-op but is harmless and not mine to prune blind. The CSS keyed on
+               `.swml-canvas-fullscreen` likewise goes inert rather than wrong. */
         }
 
         // Apply user's theme immediately — canvas fades in with correct colours

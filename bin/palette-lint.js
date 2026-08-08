@@ -54,6 +54,29 @@ const RETIRED = [
                 'ladder comment warns about. Neil caught it: "they\'re all derived from #1c1d1f."'],
 ];
 
+/* ⭐ SCOPED EXEMPTIONS — a retired value deliberately brought back for ONE component.
+ * Added v7.20.460 (Neil, 2026-08-07): *"for the toolbar, we can make a special case to
+ * unretire 1c1d1f."*
+ *
+ * WHY THIS SHAPE, rather than deleting the row from RETIRED. #1c1d1f is the SEED the whole
+ * grey ladder is derived from, and it was retired as a surface at .392 for that reason —
+ * deleting the row would silently re-open it to EVERY surface in the codebase, which is
+ * exactly the drift this gate exists to catch. An exemption keyed to a selector re-opens it
+ * for the one component Neil ruled on and nowhere else: if it reappears on a card, a panel
+ * or a rail button tomorrow, the gate still fails.
+ *
+ * A new entry needs Neil's explicit ruling and a dated reason. Never add one to make a build
+ * pass. */
+const EXEMPT = [
+    {
+        selector: /swml-selection-toolbar/,
+        hex: '#1c1d1f',
+        why: 'v7.20.460 — Neil ruled the contextual toolbar darker after seeing a near-black ' +
+             'reference. Deliberately reverses .432 (which put this toolbar on the raised rung ' +
+             'with the Island + scroll buttons). Scoped to this component only.',
+    },
+];
+
 // Declarations that paint a SURFACE. `color:` is deliberately absent — see the header note.
 const SURFACE_DECL = /(^|[;{\s])(background(-color|-image)?|border(-[a-z]+)?-color|border(-[a-z]+)?|--swml-tb-fade(-0)?)\s*:/i;
 
@@ -101,6 +124,8 @@ files.forEach(function (file) {
             if (!SURFACE_DECL.test(prop + ':')) return;
             RETIRED.forEach(function (entry) {
                 const hex = entry[0], why = entry[1], rgb = hexToRgb(hex);
+                // Scoped exemption: this value, deliberately re-opened for this component only.
+                if (EXEMPT.some(function (e) { return e.hex === hex && e.selector.test(selector); })) return;
                 const reRgb = new RegExp('rgba?\\(\\s*' + rgb[0] + '\\s*,\\s*' + rgb[1] + '\\s*,\\s*' + rgb[2] + '\\s*[,)]');
                 let form = null;
                 if (new RegExp(hex, 'i').test(value)) form = 'hex ' + hex;
