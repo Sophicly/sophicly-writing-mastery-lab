@@ -14338,11 +14338,17 @@
                    room above. With the head deleted (#340a) that room is gone, so the same datum
                    now yields a different, worse result. A datum is only as good as the box it
                    sits in — carrying one across a layout change is not the same as reusing it.
-                   ⭐ TOPS ALIGNED is what he actually wants: the badge lands ~31px down, level
-                   with the outline button, with real breathing room above it, and the two columns
-                   share ONE top inset — which is also the standard answer for two adjacent chrome
-                   columns. */
-                const top = Math.max(0, Math.round(railTop - panelTop));
+                   ⭐⭐ v7.20.469 — NEIL RE-ASSERTED THE BOTTOM DATUM ("just sort out the
+                   arithmetics"), SO THE BOTTOM DATUM IS WHAT SHIPS. It is his call and it is now
+                   exact: badge BOTTOM lands on the outline button's TOP.
+                   ⚠️ The consequence is arithmetic, not a bug, and it is stated here so the next
+                   model does not "fix" it again: the button top is ~31px below the panel edge and
+                   the badge is 28px tall, so this leaves ~3px above the badge BY CONSTRUCTION.
+                   The only free variable that buys air above the badge is the RAIL'S OWN TOP —
+                   move the rail down and the badge follows it down, still bottom-aligned. That is
+                   a one-line `padding-top` on `.swml-outline-btn-column`, deliberately NOT done
+                   unilaterally because it also unpins the rail from the document sheet's top. */
+                const top = Math.max(0, Math.round(railTop - panelTop - protoBadges.offsetHeight));
                 protoPanel.style.setProperty('--swml-badge-top', top + 'px');
                 if (!_badgeAligned) {
                     // v7.20.467 TEMPORARY DIAGNOSTIC — remove once Neil confirms the alignment.
