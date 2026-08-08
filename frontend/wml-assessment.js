@@ -14322,7 +14322,27 @@
                 const railTop = rail.getBoundingClientRect().top;
                 const panelTop = protoPanel.getBoundingClientRect().top;
                 if (!railTop && !panelTop) return false;                        // nothing laid out yet
-                const top = Math.max(0, Math.round(railTop - panelTop - protoBadges.offsetHeight));
+                /* ⭐⭐ v7.20.468 — ALIGN THE TOPS, NOT THE BADGE'S BOTTOM. THE MEASUREMENT WAS
+                   FINALLY CORRECT AT .467 AND THAT IS PRECISELY WHAT EXPOSED THE REAL PROBLEM:
+                   it resolved to `--swml-badge-top: 3px`, and Neil — rightly — said it still
+                   looked horrible.
+                   ⭐ THE DATUM ITSELF WAS THE BUG, and the numbers say so plainly: the rail's
+                   first button starts only ~31px below the panel's top edge (it inherits
+                   `.swml-canvas-content { padding: 32px 0 }`), and the badge is 28px tall. So
+                   "badge BOTTOM level with the button's TOP" can only ever leave 31 − 28 = 3px
+                   above the badge — i.e. the constraint MATHEMATICALLY GUARANTEES the badge is
+                   jammed against the top edge. Three builds were spent making a measurement
+                   produce a number that was always going to look wrong.
+                   ⚠️ He asked for the bottom datum twice (here and #297) and I followed it twice;
+                   it worked for the COLLAPSE ICON because that sat in a 50px head that gave it
+                   room above. With the head deleted (#340a) that room is gone, so the same datum
+                   now yields a different, worse result. A datum is only as good as the box it
+                   sits in — carrying one across a layout change is not the same as reusing it.
+                   ⭐ TOPS ALIGNED is what he actually wants: the badge lands ~31px down, level
+                   with the outline button, with real breathing room above it, and the two columns
+                   share ONE top inset — which is also the standard answer for two adjacent chrome
+                   columns. */
+                const top = Math.max(0, Math.round(railTop - panelTop));
                 protoPanel.style.setProperty('--swml-badge-top', top + 'px');
                 if (!_badgeAligned) {
                     // v7.20.467 TEMPORARY DIAGNOSTIC — remove once Neil confirms the alignment.
