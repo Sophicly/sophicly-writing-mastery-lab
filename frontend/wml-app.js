@@ -3640,7 +3640,41 @@
         const taskLabel = taskLabels[state.task] || ucfirst(state.task || 'Session');
         const wmlContext = state.step ? `${taskLabel} · Step ${state.step}` : taskLabel;
 
-        // Preferred path: use the Notes plugin's global API (v2.0.3+)
+        /* ⭐⭐ v7.20.480 (#355, Neil) — SAVE THROUGH `saveClipping`, WHICH IS WHAT PLAYS THE WIPE.
+           *"the add to note button, when we click it, is supposed to animate the hover wipe effect
+           on the note tab, then open the note panel, then add the note; it's not doing that."*
+           ROOT CAUSE, and it is ours not theirs: this path called `open()` + `createNote()`, so the
+           panel was thrown open INSTANTLY and the tab wipe never ran at all. The notes plugin has
+           owned that whole choreography since its v2.6.169 — `saveClipping()` calls `playTabWipe()`
+           FIRST and opens the panel at 620ms, i.e. DURING the wipe rather than after it (their note
+           records that Neil described the steps sequentially but praised the build that OVERLAPS
+           them). We were simply not calling it.
+           ⛔ DO NOT reimplement the wipe here. It belongs to the notes plugin; a second copy in WML
+           is the drift class, and their timings are the ruled ones.
+           ⚠️ GUARDED ON THE METHOD, NOT ON A VERSION NUMBER: prod runs notes 2.6.170 and staging
+           2.6.174 — both carry `saveClipping` (checked over ssh, not assumed) — but a page that
+           somehow loads an older build must still SAVE, just without the flourish. Hence the
+           fallthrough to the original open()+createNote below rather than a hard requirement.
+           NOTE: `saveClipping` composes its own content (it splits paragraphs, so a multi-paragraph
+           clipping survives — v2.6.171) and stamps `source: 'wml'` itself, which is what drives the
+           "FROM WML" badge. Passing raw `content` here would lose both. */
+        if (window.sophiclyNotesAPI && typeof window.sophiclyNotesAPI.saveClipping === 'function') {
+            window.sophiclyNotesAPI.saveClipping({
+                quote: text,
+                textName: state.textName || ucfirst(state.text || ''),
+                board: (state.board || '').toUpperCase(),
+                step: wmlContext,
+                pageTitle: 'Writing Mastery Lab',
+                pageUrl: window.location.href
+            }).then(() => {
+                showToast(SVG_SEL_NOTE + ' <strong>Saved to notes</strong> — tagged as WML · ' + taskLabel, 4000, true);
+            }).catch(() => {
+                showToast('Could not save note — please try again.', 5000, true);
+            });
+            return;
+        }
+
+        // Older notes build with no saveClipping: still save, just without the wipe (v2.0.3+ API).
         if (window.sophiclyNotesAPI && typeof window.sophiclyNotesAPI.createNote === 'function') {
             window.sophiclyNotesAPI.open();
             window.sophiclyNotesAPI.createNote({

@@ -374,9 +374,18 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     /* ⭐ v7.20.477 — THE GROUND, AS A TOKEN, for the same reason the inset is one. The collapse
        button's corner notch (#347) has to be painted the PAGE BEHIND so it reads as a bite out of
        the panel rather than a chip on it — and a literal `#1b1c1f` there would be correct in dark
-       and wrong in light, which is the classic theme defect this file keeps catching (the toolbar's
-       ink at .459, the fades at .390). One token, restated in each theme rule below, so the notch
-       cannot drift from the plane it is pretending to be. */
+       and wrong in light, which is the classic theme defect this file keeps catching.
+       ⭐⭐ v7.20.480 (#354, Neil: light theme *"needs to be the same colour as the background of the
+       canvas — not the actual canvas itself, but the DARKER background of the canvas"*). He is
+       naming the right surface and .479 had the wrong one. THE PLANE BESIDE THE NOTCH IS
+       `.swml-canvas-editor`, the gutter the writing sheet floats on — `#e8e8ed` in light. I had set
+       this token to `#f5f5f7`, which is `.swml-canvas`'s OWN background: a different surface that
+       happens to be IDENTICAL to the editor's in dark (`#1b1c1f` both) and different in light.
+       ⚠️ THAT IS WHY DARK LOOKED PERFECT AND LIGHT DID NOT — two values agree in one theme and
+       diverge in the other, so testing the first theme proves nothing about the second.
+       ⛔ THE TOKEN IS NOW THE ONE DECLARATION: `.swml-canvas-editor` READS it (below) instead of
+       carrying its own hex, so the notch and the gutter are the same value BY CONSTRUCTION and a
+       future theme tweak cannot separate them again. Change the ground here, not there. */
     --swml-canvas-ground: #1b1c1f;
     display: flex;
     gap: 0;
@@ -388,11 +397,14 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 /* Dark/light theme for canvas */
 .swml-canvas.swml-canvas-light {
     background: #f5f5f7;
-    --swml-canvas-ground: #f5f5f7;   /* v7.20.477: keep the notch on the plane it sits in */
+    /* v7.20.480 (#354): #e8e8ed, NOT #f5f5f7. This is the EDITOR's gutter — the darker plane the
+       sheet floats on and the surface the notch actually abuts — not this element's own background
+       one line above. The two are identical in dark and different in light, which is what hid it. */
+    --swml-canvas-ground: #e8e8ed;
 }
 #swml-canvas-overlay[data-swml-theme="light"] {
     background: #f5f5f7;
-    --swml-canvas-ground: #f5f5f7;
+    --swml-canvas-ground: #e8e8ed;
 }
 .swml-canvas.swml-canvas-light .swml-canvas-toolbar {
     border-bottom-color: rgba(0,0,0,0.1);
@@ -451,12 +463,15 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     flex-direction: column;
     min-width: 0;
     position: relative;
-    background: #1b1c1f; /* v7.20.386: PAGE BEHIND — the gutter the writing sheet floats on. */
+    /* v7.20.386: PAGE BEHIND — the gutter the writing sheet floats on.
+       ⭐ v7.20.480 (#354): reads `--swml-canvas-ground` rather than carrying its own hex, so this
+       gutter and the collapse notch painted against it are ONE declaration. They had drifted
+       (#e8e8ed here vs #f5f5f7 on the token) and the seam showed in light theme only. */
+    background: var(--swml-canvas-ground, #1b1c1f);
     transition: flex 0.6s cubic-bezier(0.16,1,0.3,1), margin 0.6s cubic-bezier(0.16,1,0.3,1);
 }
-.swml-canvas-light .swml-canvas-editor {
-    background: #e8e8ed;
-}
+/* v7.20.480: the light override is retired — the token above now carries the theme, and a second
+   declaration here is exactly how the two surfaces came apart in the first place. */
 
 /* ── Editor Content — Document Style ── */
 .swml-canvas-content {
@@ -15192,6 +15207,56 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 [data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-doc-sel-div,
 .swml-canvas-light .swml-selection-toolbar .swml-doc-sel-div {
     background: rgba(255,255,255,0.14);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ⭐⭐ v7.20.480 (#355) — THE REST OF THE LIGHT-THEME INK, AND THE SWEEP THAT MISSED IT
+   ══════════════════════════════════════════════════════════════════════════════
+   Neil: *"the arrows in the toolbar in light theme are not visible."* True, and the arrows were
+   not the only one — a full sweep of this file for light rules that paint inside this component
+   found **six** still assuming the WHITE bar this toolbar had before it was ruled dark-in-both-
+   themes. They all paint near-black ink onto `#1c1d1f`:
+     `.swml-tb-arrow`            rgba(20,18,30,.78)   ← the one he can see
+     `.swml-tb-arrow:hover`      #14121e on a dark wash
+     `.swml-tb-winona:hover`     #14121e             (hovering any tool)
+     `.swml-tb-item.is-active`   #2c6b68 on rgba(44,107,104,.12)  (e.g. Bold while on)
+     `.swml-tb-sep`              rgba(77,118,253,.12) — a blue hairline, invisible on dark
+     `.swml-sel-notes:hover`     #0d7a70             (the Note button's hover)
+   ⚠️ THE BLOCK ABOVE ALREADY STATES THE LAW — *"the toolbar's ink is a property of the TOOLBAR'S
+   OWN SURFACE, not of the page theme… any future theme rule that sets a colour inside this
+   component must ask which GROUND it lands on"* — and the .432 note on `.swml-tb-arrow` itself
+   says *"when flattening a themed component, sweep the WHOLE FILE for its theme rules rather than
+   editing the block you happen to be looking at."* Both were written down, and the sweep still
+   stopped at `.swml-sel-btn` + `.swml-tb-item`. **A rule in prose loses to the block you are
+   looking at.** Only Neil's eyes caught the remainder, on prod.
+   ⭐ EVERY VALUE BELOW IS THE DARK RULE'S OWN, RESTATED — not re-picked. That is the point: there
+   is one surface, so there is one set of inks, and light simply stops overriding them. */
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-tb-arrow,
+.swml-canvas-light .swml-selection-toolbar .swml-tb-arrow {
+    background: transparent;
+    color: rgba(255,255,255,0.62);
+    box-shadow: none;
+}
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-tb-arrow:hover,
+.swml-canvas-light .swml-selection-toolbar .swml-tb-arrow:hover,
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-tb-winona:hover,
+.swml-canvas-light .swml-selection-toolbar .swml-tb-winona:hover {
+    background: rgba(255,255,255,0.09);
+    color: #ffffff;
+}
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-tb-item.is-active,
+.swml-canvas-light .swml-selection-toolbar .swml-tb-item.is-active {
+    background: rgba(81,218,207,0.16);
+    color: #51dacf;
+}
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-tb-sep,
+.swml-canvas-light .swml-selection-toolbar .swml-tb-sep {
+    background: rgba(255,255,255,0.08);
+}
+[data-swml-theme="light"] .swml-canvas .swml-selection-toolbar .swml-sel-btn.swml-sel-notes:hover,
+.swml-canvas-light .swml-selection-toolbar .swml-sel-btn.swml-sel-notes:hover {
+    background: rgba(81,218,207,0.14);
+    color: #7DF9E9;
 }
 
 /* v7.20.463 — FROSTED GLASS WAS TRIED AND REVERTED (Neil, 2026-08-08: "I just had a look at
