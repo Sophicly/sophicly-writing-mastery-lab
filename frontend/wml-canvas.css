@@ -15111,6 +15111,13 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    measurement of the rail, which is what coupled the two columns. */
 .swml-canvas-proto .swml-sidebar-badges {
     padding-top: var(--swml-canvas-top-inset, 32px);
+    /* ⭐ v7.20.476 — RESERVE THE BUTTON'S STRIP. Now that the collapse button shares this line
+       (it reads the same token), a long story name would truncate UNDER it. The pill already
+       ellipsises (.473), so without this it would simply ellipsise too late and sit beneath the
+       icon. Arithmetic: the button is absolute at `right:12px` and 32px wide, so it occupies the
+       last 44px of the PADDING box; this container's content box already stops 25px short of it
+       (`.swml-sidebar { padding: 0 25px }`), leaving 19px of overlap — plus an 8px gap = 27, so 28. */
+    padding-right: 28px;
 }
 /* The panel is the positioning context for the collapse row below. */
 .swml-canvas-proto { position: relative; }
@@ -15175,20 +15182,45 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    ══════════════════════════════════════════════════════════════════════════ */
 /* ⚠️ ABSOLUTE, DELIBERATELY. As a flex child it was a sibling in a column with `gap: 32px`, so it
    pushed the badge down by 28 + 32px — one of the two couplings Neil reported. Out of flow it
-   cannot move anything, and the badge's inset is then purely the shared token. */
+   cannot move anything, and the badge's inset is then purely the shared token.
+   ⭐⭐ v7.20.476 (#346, Neil: the button "sits ~28px above the shared line") — IT NOW READS THE
+   TOKEN, like everything else in this column. `top: 6px` was the one control on the panel still
+   carrying a literal, which is the exact mistake .475 removed from the badge and the rail, showing
+   up again in the control added at .474.
+   THE ARITHMETIC, written out because the §ALIGNMENT law says a datum is checked on paper first:
+     shared line              = --swml-canvas-top-inset          = 32px
+     the badge's line box     = 4px pad + 20px line + 4px pad    = 28px   → occupies y 32…60
+     the button's touch box   = 32px (min-height, Apple's target guidance)
+   The row is therefore given the BADGE'S OWN HEIGHT (28px) and centres its taller child in it, so
+   the 32px button overhangs 2px each side and the ICON's centre lands on y=46 — the badge's centre,
+   exactly. Top-aligning the two boxes instead would sit the icon 2px low, which is the kind of
+   near-miss that costs a test cycle. */
 .swml-canvas-proto .swml-proto-collapse-row {
     position: absolute;
-    top: 6px;
+    top: var(--swml-canvas-top-inset, 32px);
     right: 12px;
+    height: 28px;               /* the badge's line box — see the arithmetic above */
     display: flex;
-    align-items: center;
+    align-items: center;        /* centres the 32px button on the badge's centre line */
     z-index: 3;
 }
-/* Collapsed: the panel centres its children, so the row follows and the button
-   stays reachable and obviously pressable. */
+/* ⭐⭐ COLLAPSED — AND THE DATUM CANNOT BE GIVEN TO BOTH (§ALIGNMENT rule 1, stated not discovered).
+   At 54px the panel is a single column: the button and the first step circle are stacked, so they
+   cannot both start on the 32px line. The line goes to the BUTTON, because that buys a real
+   property — the button does not JUMP vertically when you collapse or expand. The steps then start
+   below it, at a derived offset rather than hard against the panel top (#346.4).
+   ⚠️ The badges row is `display:none` here (wml-styles.css `.swml-sidebar.collapsed`), which is why
+   the steps rose into the button in the first place — nothing was holding the inset open. */
 .swml-canvas-proto.collapsed .swml-proto-collapse-row {
-    justify-content: center;
-    margin-bottom: 0;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+}
+/* The panel's own 10px top padding is retired when collapsed so the shared token is the ONE origin
+   for this column; the body then carries the whole inset. 44px = the 32px button + a 12px gap. */
+.swml-canvas-proto.collapsed { padding-top: 0; }
+.swml-canvas-proto.collapsed .swml-sidebar-body {
+    padding-top: calc(var(--swml-canvas-top-inset, 32px) + 44px);
 }
 /* Touch: a comfortable target regardless of the icon's own box (Apple's 44px
    guidance; the visual chip stays small). No hover-gated visibility anywhere —

@@ -14005,8 +14005,19 @@
            the iPad reports (#342/#343) are live and a control only a mouse can reach is not
            restored. */
         const collapseRow = el('div', { className: 'swml-proto-collapse-row' });
+        /* ⭐⭐ v7.20.476 (#346.3) — WHY THE TOOLTIP LANDED ON THE STORY NAME, MEASURED not assumed.
+           Neil's screenshot read "Crea[Collapse sidebar]ing". The prior note guessed it was spilling
+           LEFT onto the LearnDash sidebar; it is not. WML's styled tooltip (wml-core.js `showTooltip`,
+           ~:98) defaults to BELOW the element, horizontally centred on it — and directly below this
+           button, by construction, is the badge row that shares its line. Below is therefore the one
+           placement that cannot work here.
+           `data-tooltip-pos="right"` is the existing opt-in for exactly this collision (v7.19.450,
+           added for the stacked outline/resources buttons whose below-tooltips covered their panel).
+           It is also correct in BOTH states: expanded and collapsed, the space to this button's right
+           is document margin. */
         const protoCollapseBtn = el('button', {
             className: 'swml-collapse-btn swml-collapse-btn--icon',
+            'data-tooltip-pos': 'right',
             title: 'Collapse sidebar', 'aria-label': 'Collapse sidebar', 'aria-expanded': 'true',
             innerHTML: '<span class="swml-collapse-ico swml-collapse-ico--in">' + WML.icon('collapseLeft', 18) + '</span>'
                      + '<span class="swml-collapse-ico swml-collapse-ico--out">' + WML.icon('collapseRight', 18) + '</span>'
@@ -25739,6 +25750,20 @@
         const TB_FRICTION = 0.88;      // v7.14.59: reduced from 0.92 — momentum decays faster
         const TB_MIN_VEL = 0.05;
 
+        /* ⭐⭐ v7.20.476 (#331c/#346-B) — THE ARROWS DERIVE FROM THE CAPABILITY, they are not hidden
+           by hand. Neil reported them as inert. The ask was "hide the dead arrows", but hiding a
+           control because we BELIEVE it is dead is the guess §19 forbids — and if the carousel is
+           in fact alive, hiding them removes the only click-driven way to reach the tools past the
+           visible set. So the control's presence is tied to the one condition that decides it:
+           `scrollCarousel()` bails at `tbSetWidth === 0` (below), so tbSetWidth IS the liveness
+           test. Zero → the arrows cannot do anything → they are not shown. Non-zero → they work
+           and they stay. No belief required, in either direction (§4d: no control that answers a
+           tap with nothing). */
+        function _tbSyncArrows() {
+            const alive = tbSetWidth > 0;
+            tbArrows.style.display = alive ? '' : 'none';
+            tbArrows.setAttribute('aria-hidden', alive ? 'false' : 'true');
+        }
         function initCarousel() {
             const allItems = tbItems.children;
             const setCount = toolDefs.length;
@@ -25748,6 +25773,7 @@
                 const s = getComputedStyle(li);
                 tbSetWidth += li.offsetWidth + parseFloat(s.marginLeft) + parseFloat(s.marginRight);
             }
+            _tbSyncArrows();          // before the early return — a zero measure must reach the UI
             if (tbSetWidth === 0) return;
             tbItems.style.width = (tbSetWidth * 3) + 'px';
             tbLogicalX = -tbSetWidth;
@@ -25857,6 +25883,34 @@
 
         // Init carousel after DOM append (deferred to ensure layout)
         requestAnimationFrame(() => requestAnimationFrame(() => initCarousel()));
+
+        /* ⭐⭐ v7.20.476 — AND THE LIKELY REASON tbSetWidth IS ZERO. HYPOTHESIS, NOT MEASURED — I
+           have no browser here and say so plainly (§19). But the shape is one this codebase has hit
+           twice this week: `initCarousel` measures `offsetWidth` on a double-rAF after append, and
+           re-runs on NOTHING but `window.resize`. A toolbar that is display:none, zero-width or
+           reparented at that instant measures 0 and stays 0 FOR EVER — the identical defect as the
+           v7.20.465 badge aligner, which measured a detached tree. The toolbar IS reparented into
+           the canvas (v7.20.459), so the ordering is at least plausible.
+           The fix is the same either way and is safe if the hypothesis is wrong: observe the
+           SCROLLER and re-measure the first time it actually has width. Observing `tbScroll` — the
+           viewport — and never `tbItems`, whose width initCarousel itself writes, so this cannot
+           feed back into a resize loop. One-shot per width change, guarded, and it self-disconnects
+           once a real measurement lands. */
+        if (typeof ResizeObserver === 'function') {
+            let tbLastObservedW = -1;
+            const tbRO = new ResizeObserver((entries) => {
+                const w = entries[0] && entries[0].contentRect ? entries[0].contentRect.width : 0;
+                if (w <= 0 || w === tbLastObservedW) return;
+                tbLastObservedW = w;
+                if (tbSetWidth > 0) { tbRO.disconnect(); return; }   // already alive — nothing to heal
+                initCarousel();
+                if (tbSetWidth > 0) {
+                    console.warn('[WML] toolbar carousel measured 0 on init and healed on first real layout — see v7.20.476');
+                    tbRO.disconnect();
+                }
+            });
+            try { tbRO.observe(tbScroll); } catch (e) {}
+        }
 
         // Resize handler
         let tbResizeTimer;
