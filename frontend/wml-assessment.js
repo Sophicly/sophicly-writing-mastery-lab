@@ -25360,6 +25360,10 @@
             { id: 'blockquote', html: '❝', label: 'Quote' },
             { id: 'hr', html: '—', label: 'Rule' },
             { id: 'checklist', html: '☑', label: 'Checklist' },
+            // v7.20.461 (#337) — text size RETURNS to the toolbar. It is formatting, and formatting
+            // lives here; the rail is for document-scoped and rare things. See the rail note.
+            { id: 'textSmaller', html: '<span style="font-size:11px">A</span>↓', label: 'Smaller text' },
+            { id: 'textLarger', html: '<span style="font-size:15px">A</span>↑', label: 'Larger text' },
             /* ⭐ v7.20.459 — WHAT LEFT THIS LIST, and where it went (spec §4). The carousel is now
                the SELECTION-SCOPED set only: everything here acts on selected text or its block,
                which is what lets the whole strip live inside a toolbar that only exists while
@@ -26380,11 +26384,19 @@
            tool that can never live behind a press. */
         _railTool('swml-rail-dictate', 'Dictate', SVG_MIC_ICON, () => toggleDictation())
             .classList.add('swml-rail-permanent');
-        _railTool('swml-rail-text-smaller', 'Smaller text', '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V7m0 0L1.5 9.5M4 7l2.5 2.5"/><path d="M11 19l4-12 4 12M12.5 15h5"/></svg>',
-            () => { textSizeIndex = Math.max(0, textSizeIndex - 1); applyTextSize(); });
-        _railTool('swml-rail-text-larger', 'Larger text', '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7v12m0 0l-2.5-2.5M4 19l2.5-2.5"/><path d="M10 19l5-14 5 14M11.8 14.5h6.4"/></svg>',
-            () => { textSizeIndex = Math.min(TEXT_SIZES.length - 1, textSizeIndex + 1); applyTextSize(); });
-        _railTool('swml-rail-export', 'Download', SVG_EXPORT, () => exportToDocx());
+        /* v7.20.461 (#337) — TEXT SIZE ± ARE NOT RAIL TOOLS. Neil: *"those are formatting buttons.
+           They should be in the toolbar."* v7.20.459 put them here reasoning they were "a comfort
+           setting fixed before writing, not selection-scoped" — wrong twice: they ARE formatting,
+           and this rail is now the home for document-scoped and RARE things, not type controls.
+           They return to the toolbar's tool set (toolDefs), where the rest of formatting lives. */
+
+        /* v7.20.461 (#338) — DOWNLOAD STAYS, PINNED LAST. Neil's own hesitation is the reason:
+           *"if it's in the rail, then what are you downloading? Not clear."* Bottom placement
+           separates it from the tool cluster so it does not read as one of them, and the tooltip
+           names the OBJECT rather than just the verb (root CLAUDE.md §14 — never make a person
+           guess what a control refers to). Ordered by CSS, matching how the `+` strip orders
+           itself, rather than by a DOM move that the eight append sites could fight. */
+        _railTool('swml-rail-export swml-rail-last', 'Download this document', SVG_EXPORT, () => exportToDocx());
 
         /* ⭐⭐ v7.20.459 — ADOPT WHATEVER IS LEFT IN `headerRight` INTO THE RAIL, then the header
            can go. Today that is the theme toggle and the fullscreen button.

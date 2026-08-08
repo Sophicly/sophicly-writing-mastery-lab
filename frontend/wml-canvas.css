@@ -15016,3 +15016,8 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     .swml-canvas .swml-selection-toolbar,
     #swml-canvas-overlay .swml-selection-toolbar { animation: none; }
 }
+
+/* v7.20.461 (#338): Download sits BELOW the rest of the rail, so it reads as its own thing
+   rather than as one more tool. Order 3 puts it after the folding cluster (order 2), which
+   keeps it last whether the `+` strip is open or closed. */
+.swml-outline-btn-column > .swml-rail-last { order: 3; margin-top: 6px; }
