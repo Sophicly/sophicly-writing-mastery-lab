@@ -75,6 +75,18 @@ const EXEMPT = [
              'reference. Deliberately reverses .432 (which put this toolbar on the raised rung ' +
              'with the Island + scroll buttons). Scoped to this component only.',
     },
+    {
+        selector: /swml-weight-card/,
+        hex: '#1c1d1f',
+        why: 'v7.20.481 — Neil ruled it explicitly, 2026-08-08: *"the colour in dark theme ' +
+             'especially is wrong… LearnDash also has these sort of coaching cards. I think it ' +
+             'would be good if the surface colour of both of those is consistent. It should be ' +
+             '1c1d1f in dark theme or a variation of that."* The card was painted #1b1c1f — the ' +
+             'PAGE-BEHIND value — so a floating card was the same colour as the plane it floats ' +
+             'on and read as a hole, the same defect fixed on the scroll buttons at .423 and the ' +
+             'toolbar at .432. Its own comment claimed "canonical raised-on-base (#1c1d1f)" while ' +
+             'the value said otherwise, which is how it survived. Scoped to this component only.',
+    },
 ];
 
 // Declarations that paint a SURFACE. `color:` is deliberately absent — see the header note.

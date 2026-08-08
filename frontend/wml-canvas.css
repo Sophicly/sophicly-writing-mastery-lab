@@ -447,8 +447,19 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-canvas.swml-canvas-light .swml-canvas-status button { color: rgba(0,0,0,0.4); }
 /* Light mode: ensure these inherit transparent backgrounds */
 .swml-canvas-light .swml-canvas-chat-header,
-.swml-canvas-light .swml-canvas-chat-messages,
-.swml-canvas-light .swml-canvas-status { background-color: transparent; }
+.swml-canvas-light .swml-canvas-chat-messages { background-color: transparent; }
+/* ⭐ v7.20.481 (#358, Neil: *"the footer still needs a bit of polishing off. In light theme it
+   needs to be white"*). It was `transparent`, so it showed the editor's gutter (#e8e8ed) — a grey
+   strip under a white document, which is the seam he can see where the chat meets it.
+   ⭐ WHITE ALSO CLOSES THE JOIN FOR FREE: `.swml-canvas-light .swml-canvas-chat` is already
+   #ffffff (:4746), so a white footer and a white chat now meet with nothing between them. That is
+   the "transitions smoothly from footer to chat" he asked for, achieved by making the two surfaces
+   agree rather than by deleting a shadow that is carrying real depth elsewhere.
+   ⚠️ The ink needed no change and that was checked, not assumed: the status text is already
+   `rgba(0,0,0,0.55)` and its buttons `rgba(0,0,0,0.4)` (:443–447), both authored for a light
+   ground. The icons are `stroke="currentColor"`, so they follow that ink automatically. */
+.swml-canvas-light .swml-canvas-status,
+[data-swml-theme="light"] .swml-canvas .swml-canvas-status { background-color: #ffffff; }
 
 /* Dark mode only: explicit backgrounds for chat area (v7.12.72) */
 .swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-header,
@@ -8389,7 +8400,20 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     z-index: 38;
     width: 300px;
     max-width: calc(100% - 44px);
-    background: #1b1c1f; /* canonical raised-on-base (#1c1d1f) — neutral, NOT purple-tinted (BRAND.md) */
+    /* ⭐⭐ v7.20.481 (#357, Neil) — #1c1d1f, NOT #1b1c1f, AND THE OLD COMMENT WAS THE TELL.
+       *"the colour in dark theme especially is wrong… LearnDash also has these sort of coaching
+       cards. I think it'd be good if the surface colour of both of those is consistent. It should
+       be 1c1d1f in dark theme or a variation of that."*
+       The line used to read `background: #1b1c1f;` with the comment *"canonical raised-on-base
+       (#1c1d1f)"* — the comment named the right value and the declaration used the one a unit
+       BELOW it, which is the PAGE-BEHIND plane. So a card that floats over the document was
+       painted the same colour as the ground it floats on, and read as a hole rather than an
+       object. ⚠️ A comment that disagrees with its own declaration is worse than no comment: it
+       reads as verification and it is why this survived several passes.
+       Identical defect, third component: the scroll buttons at .423, the toolbar at .432, this now.
+       #1c1d1f is a RETIRED surface — re-opened for this component only, via a dated scoped
+       exemption in `bin/palette-lint.js`, never by deleting the row from RETIRED. */
+    background: #1c1d1f;
     border-radius: 12px; /* lg max for rectangular surfaces (BRAND.md) */
     padding: 16px 18px 15px;
     box-shadow: 0 12px 36px rgba(44, 0, 62, 0.5); /* brand deep-purple tinted elevation, no border */
@@ -8446,9 +8470,19 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     transition: filter 0.15s ease;
 }
 .swml-weight-card-ok:hover { filter: brightness(1.08); }
-[data-swml-theme="light"] .swml-weight-card {
-    background: #e7e7ed; /* brand light raised surface (BRAND.md) — not pure white */
-    box-shadow: 0 12px 36px rgba(44, 0, 62, 0.16);
+/* v7.20.481 (#357): WHITE, per Neil's ruling the same day — *"in light theme I think it should be
+   white, with a nice little soft shadow beneath it."* It was #e7e7ed, which is within a whisker of
+   the light gutter (#e8e8ed) — the SAME hole-not-object defect as the dark side, just quieter.
+   ⭐ The card floats over a light page, so on this side the elevation has to come entirely from
+   the shadow: a tight contact shadow for the edge plus the existing wide cast for the height,
+   both on the brand's deep purple rather than neutral black (a grey shadow on a warm-white page
+   reads as dirt — the same reasoning as the toolbar at .479). */
+[data-swml-theme="light"] .swml-weight-card,
+.swml-canvas-light .swml-weight-card {
+    background: #ffffff;
+    box-shadow: 0 12px 36px rgba(44, 0, 62, 0.16),
+                0 2px 6px rgba(44, 0, 62, 0.10),
+                0 1px 2px rgba(20, 18, 30, 0.10);
 }
 [data-swml-theme="light"] .swml-weight-card-eyebrow { color: #5333ed; }
 [data-swml-theme="light"] .swml-weight-card-body { color: rgba(44,0,62,0.82); }
