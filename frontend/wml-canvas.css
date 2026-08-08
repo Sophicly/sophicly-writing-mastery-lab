@@ -1950,9 +1950,61 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    header ends — the caveat holds BY CONSTRUCTION, with no height to keep in sync. Reads as the
    sidebar casting onto the page, which is what he asked for. The negative spread keeps it a soft
    edge rather than a bar. */
-.swml-canvas-content { box-shadow: inset 10px 0 12px -10px rgba(0,0,0,0.38); }
+/* ⭐⭐ v7.20.479 (#351, Neil) — THE CAST NOW STARTS AT THE SHARED LINE, so the collapse notch reads
+   as TRUE NEGATIVE SPACE. His report: *"what I want is the cutout to be the same colour as the
+   background of the canvas, with no shadows. It looks like negative space. But because it's got a
+   shadow, it's easy to tell it's not."* He hunted for it and could not find it — reasonably, because
+   THE SHADOW IS NOT ON THE BUTTON, THE ROW, OR THE SIDEBAR. It is this rule, on the DOCUMENT, and
+   it has been here since .402.
+   ⛔ WHY IT COULD NOT STAY AS AN INSET ON `.swml-canvas-content`: an inset box-shadow paints down
+   the element's whole left edge, and that edge now runs alongside the notch. There is no way to
+   start an inset shadow partway down. So it becomes a pseudo-element that starts AT the token.
+   ⚠️ AND WHY THE PSEUDO IS ON `.swml-canvas-editor`, NOT ON `.swml-canvas-content`:
+   `.swml-canvas-content` is `overflow-y: auto`. An absolutely-positioned child of a scroll container
+   is positioned against its PADDING BOX, so it SCROLLS AWAY WITH THE TEXT — the shadow would slide
+   off the top the moment a student scrolled. `box-shadow` does not have that problem (it paints
+   against the border box and stays put), which is why the .402 version could live there and this
+   one cannot. The editor pane is a non-scrolling flex column, so the pseudo holds still.
+   The .402 caveat still holds BY CONSTRUCTION and for the same reason as before: the cast begins
+   where the DOCUMENT begins, both read from `--swml-canvas-top-inset`, so there is no second copy
+   of anyone's height to drift. */
+.swml-canvas-editor::before {
+    content: '';
+    position: absolute;
+    z-index: 1;                 /* over `.swml-canvas-content` (positioned, z-index auto) */
+    pointer-events: none;
+    left: 0;
+    top: var(--swml-canvas-top-inset, 32px);
+    bottom: 0;
+    width: 12px;
+    background: linear-gradient(to right, rgba(0,0,0,0.38), rgba(0,0,0,0));
+}
+.swml-canvas-light .swml-canvas-editor::before,
+[data-swml-theme="light"] .swml-canvas-editor::before {
+    width: 10px;
+    background: linear-gradient(to right, rgba(0,0,0,0.10), rgba(0,0,0,0));
+}
+/* ⭐⭐ v7.20.479 (#352, Neil) — THE CHAT'S CAST MOVES TO THIS SIDE, WHICH IS WHAT STOPS IT AT THE
+   FOOTER. *"at the bottom where it joins to the footer of the WML, there's also a shadow there as
+   well, and it just looks a little bit untidy."* Then the real constraint, which is why it is not
+   simply deleted: *"if you get rid of it, you lose the sense of depth… and if the page is smaller,
+   there's no separation between the chat and the document because they have the same background."*
+   THE CAUSE: `.swml-canvas-chat` is a SIBLING of `.swml-canvas-editor`, and the status footer lives
+   INSIDE the editor (`editorPane.appendChild(statusBar)`, wml-assessment.js ~30256). So the chat's
+   leftward `box-shadow` — which blurs in every direction, including past its own bottom corner —
+   lands across a footer that is `#232427`, the SAME colour as the chat. There it separates nothing
+   and reads as dirt.
+   THE FIX, and it is the .402 idea reused rather than a new trick: draw the cast as an INSET on the
+   document side instead. `.swml-canvas-content` is the flex child directly ABOVE the status bar, so
+   its bottom edge IS the footer's top edge — the shadow ends there BY CONSTRUCTION, with no footer
+   height copied anywhere. (`min-height: 36px` is a MINIMUM, so hard-coding it would be the #154
+   fade class: a decorative element re-declaring another element's measurement, which fails silently
+   the day that element grows.)
+   ⭐ The 1px inset catch-light STAYS on `.swml-canvas-chat` — that hairline is what separates the
+   two columns when the window is narrow, which is the half of his note that is easy to drop. */
+.swml-canvas-content { box-shadow: inset -12px 0 20px -14px rgba(0,0,0,0.40); }
 [data-swml-theme="light"] .swml-canvas-content,
-.swml-canvas-light .swml-canvas-content { box-shadow: inset 8px 0 10px -9px rgba(0,0,0,0.10); }
+.swml-canvas-light .swml-canvas-content { box-shadow: inset -10px 0 16px -13px rgba(0,0,0,0.12); }
 .swml-canvas-ctx {
     display: flex;
     align-items: center;
@@ -2089,7 +2141,15 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     align-items: center;
     width: 520px;
     max-width: calc(100% - 260px); /* Safety: don't overlap badges or toggle */
-    height: 34px;
+    /* ⭐ v7.20.479 (#353, Neil: *"the toolbar is just a little bit too tall… it gives the feeling a
+       bit fat"*) — 34 → 28px, which is `.swml-tb-item`'s OWN height, so the track now fits its
+       contents exactly instead of carrying 6px of slack. 28 is also where BRAND.md §8 puts an icon
+       control, and 34 was on no scale at all (§4 is a 4px base).
+       ⚠️ Nothing has to be kept in sync with this: `.swml-tb-arrows` and both `.swml-tb-gradient`
+       masks are `top: 0; bottom: 0`, so they follow the height by construction, and the 24px arrows
+       centre inside it. `padding-right: 54px` is a HORIZONTAL reservation for the arrow lane and is
+       unaffected. */
+    height: 28px;
     padding-right: 54px;
 }
 .swml-tb-scroll {
@@ -2104,7 +2164,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-tb-items {
     display: flex;
     list-style: none;
-    padding: 10px;
+    /* v7.20.479 (#353): the 10px was symmetric, so it added 20px of height the 28px items did not
+       need — that slack, not the buttons, is what read as "fat". The HORIZONTAL 10px stays: it is
+       what the edge fades have to eat into, and removing it would clip the first and last tool. */
+    padding: 0 10px;
     margin: 0;
     position: relative;
     will-change: transform;
@@ -4653,10 +4716,16 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        side panel that pools all the weight at the bottom and shows nothing along the edge that
        actually needs separating. Same character — layered, soft, with the inset catch-light — but
        aimed LEFT along the seam. The inset highlight moves to the left edge for the same reason. */
-    box-shadow:
-        inset 1px 0 0 rgba(255, 255, 255, 0.055),
-        -12px 0 24px -12px rgba(0, 0, 0, 0.40),
-        -32px 0 48px -32px rgba(0, 0, 0, 0.28);
+    /* ⛔ v7.20.479 (#352): THE TWO OUTER CASTS ARE GONE FROM HERE — they are not deleted, they moved
+       to `inset -12px 0 20px -14px` on `.swml-canvas-content` (see the note there). A box-shadow
+       blurs in EVERY direction, including past this panel's own bottom corner and across the status
+       footer, which is the same colour as this panel and so gained a smudge that separated nothing.
+       Drawn from the document side instead, it ends at the footer by construction.
+       ⭐ THE 1px INSET CATCH-LIGHT STAYS, and it is now load-bearing rather than decorative: it is
+       the whole separation between the two columns when the window is narrow enough that they meet
+       (Neil, #352: *"if the page is smaller, there's no separation between the chat and the document
+       because they have the same background colour"*). Do not remove it with the casts. */
+    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.055);
 }
 [data-swml-theme="light"] .swml-canvas-chat,
 .swml-canvas-light .swml-canvas-chat {
@@ -15070,9 +15139,15 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 /* Compact: the chunk came from label padding on six buttons. Three remain, and
    they tighten — icon and label stay (they are the three that must be learnable),
    but the box around them stops being a button-sized slab. */
+/* v7.20.479 (#353): 5px → 4px vertical, so these sit inside the carousel's 28px rather than
+   setting the bar's height themselves. Horizontal padding is untouched — the complaint was height,
+   and narrowing these would start crowding the 19 tools that already do not fit (#333).
+   ⭐ TOUCH IS DELIBERATELY NOT SLIMMED: the `@media (pointer: coarse)` rule above keeps
+   `min-height: 36px` on these buttons, so an iPad still gets a proper target while the desktop bar
+   loses its slack. Trimming a control on a device Neil cannot test is exactly the #342/#343 shape. */
 .swml-canvas .swml-selection-toolbar .swml-sel-btn,
 #swml-canvas-overlay .swml-selection-toolbar .swml-sel-btn {
-    padding: 5px 9px;
+    padding: 4px 9px;
     font-size: 11.5px;
     gap: 5px;
     border-radius: 9px;
@@ -15375,6 +15450,33 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     outline: 2px solid var(--swml-teal, #51dacf);
     outline-offset: -2px;
     border-radius: 8px;
+}
+
+/* ⭐⭐ v7.20.479 (#351b, Neil: *"in light theme the arrows and the line are white, so you can't see
+   them — I'm guessing they'll need to be black"*) — HE IS RIGHT, AND THE REASON IS THAT MY OWN
+   CHANGE INVALIDATED AN EARLIER RULING RATHER THAN THAT THE RULING WAS WRONG.
+   v7.20.447 (#298) says, in terms: *"in light theme the expand and collapse buttons shouldn't change
+   colour. They should be white in light theme, BECAUSE THE PANEL DOESN'T CHANGE"* — and it notes
+   there is deliberately NO light-theme rule, its ABSENCE being the fix. That was correct while the
+   button sat on the always-dark purple panel (BRAND.md: "sidebar always dark, never inverts").
+   ⭐ THE NOTCH MOVED IT OFF THAT PANEL. Expanded, the button now sits in a cut-out painted
+   `--swml-canvas-ground`, which DOES follow the theme — `#f5f5f7` in light. So the ink has to follow
+   the theme too, because it is no longer on the panel the .447 ruling was about. This is the
+   §ALIGNMENT lesson in a different costume: a rule inherited from an earlier ruling has to be
+   re-checked against the BOX IT NOW SITS IN, not just re-read.
+   ⛔ SO THIS IS SCOPED TO `:not(.collapsed)` AND THAT IS LOAD-BEARING, NOT TIDINESS. COLLAPSED, the
+   notch is gone and the button sits centred on the PURPLE PANEL again — where .447 still governs and
+   the ink must stay white. Both states are correct at once only because of that selector; drop it
+   and light theme paints dark ink on the dark panel, which is the exact defect .447 fixed.
+   Values are the file's own light-ink family (`.swml-canvas-light .swml-canvas-ctx-overflow`), not
+   invented, and not pure #000 — BRAND.md forbids it. */
+[data-swml-theme="light"] .swml-canvas-proto:not(.collapsed) .swml-collapse-btn--icon,
+.swml-canvas-light .swml-canvas-proto:not(.collapsed) .swml-collapse-btn--icon {
+    color: rgba(0,0,0,0.62);
+}
+[data-swml-theme="light"] .swml-canvas-proto:not(.collapsed) .swml-collapse-btn--icon:hover,
+.swml-canvas-light .swml-canvas-proto:not(.collapsed) .swml-collapse-btn--icon:hover {
+    color: rgba(0,0,0,0.88);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
