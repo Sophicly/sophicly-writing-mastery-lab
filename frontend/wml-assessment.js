@@ -14303,39 +14303,99 @@
            correct whatever the offset parents are AND is scroll-independent: a rect-based sum
            would be wrong the moment the student scrolls, because the rail is `position:sticky;
            top:0` and its viewport rect stops moving while the panel's does not. */
-        const _topWithin = (node, root) => {
-            let y = 0, n = node;
-            while (n && n !== root) { y += n.offsetTop; n = n.offsetParent; }
-            return y;
-        };
         let _badgeAligned = false;
         const _alignBadgeToRail = () => {
             try {
                 const rail = railColumn || document.querySelector('.swml-outline-btn-column');
                 if (!rail || !protoBadges) return false;          // no rail on this task → CSS default stands
                 if (!rail.isConnected || !protoBadges.offsetHeight) return false;   // not laid out yet
-                const root = protoPanel.closest('.swml-canvas');
-                if (!root) return false;
-                const top = Math.max(0, Math.round(
-                    _topWithin(rail, root) - _topWithin(protoPanel, root) - protoBadges.offsetHeight
-                ));
+                /* ⭐⭐ v7.20.467 — MEASURED WITH RECTS, NOT AN offsetTop WALK. Neil pasted the live
+                   DOM and it read `--swml-badge-top: 0px` — which PROVES the aligner ran and the
+                   ARITHMETIC was wrong, not the timing (the .466 theory). The offsetTop walk was
+                   the wrong instrument: the rail's chain runs rail → `.swml-canvas-content`
+                   (position:relative) → `.swml-canvas-editor` (position:relative), while the panel
+                   is a flex SIBLING of the editor, so the two chains pass through different
+                   positioned ancestors and their sums are not comparable. Two rects read in the
+                   same frame are the same origin by definition and cannot drift. */
+                const scroller = rail.closest('.swml-canvas-content');
+                if (scroller && scroller.scrollTop > 0) return _badgeAligned;   // sticky rail lies once scrolled
+                const railTop = rail.getBoundingClientRect().top;
+                const panelTop = protoPanel.getBoundingClientRect().top;
+                if (!railTop && !panelTop) return false;                        // nothing laid out yet
+                const top = Math.max(0, Math.round(railTop - panelTop - protoBadges.offsetHeight));
                 protoPanel.style.setProperty('--swml-badge-top', top + 'px');
+                if (!_badgeAligned) {
+                    // v7.20.467 TEMPORARY DIAGNOSTIC — remove once Neil confirms the alignment.
+                    // Prints the terms so a wrong result names WHICH ONE is wrong, instead of it
+                    // being inferred from a screenshot (root §19 — measure, do not guess).
+                    console.log('WML #340 badge align:', {
+                        railTop: Math.round(railTop),
+                        panelTop: Math.round(panelTop),
+                        badgeH: protoBadges.offsetHeight,
+                        paddingTop: top,
+                    });
+                }
                 _badgeAligned = true;
                 return true;
             } catch (_) { return false; }
         };
+        /* ⭐⭐ v7.20.467 — A ResizeObserver ALONE WAS NOT ENOUGH, and I stopped guessing why.
+           .466 drove this from an RO on the rail and the panel. On Neil's screen the .466 CSS
+           landed (the pill and the Playfair italic are visibly there) while `--swml-badge-top`
+           did not, which proves the STYLESHEET shipped and only this JS never resolved. Two
+           failed attempts is the point at which another hypothesis is worth less than a
+           measurement (root §19), so this build does three things instead of a third guess:
+             1. RETRIES until the layout is real — the panel is inserted into the canvas at
+                `:~30624`, AFTER this builder returns, and the overlay reaches the document later
+                still, so "observe it and hope" has too many ways to miss. A bounded rAF poll
+                (~5s, then it stops) cannot be defeated by whichever of those lands last.
+             2. RE-RUNS on the RO as well, so later layout changes still re-place it.
+             3. PRINTS THE FOUR NUMBERS ONCE. If it is still wrong, the console says exactly
+                which term is wrong instead of me inferring it from a screenshot.
+           ⚠️ The diagnostic line is temporary and comes out once the alignment is confirmed. */
+        /* ⭐⭐ v7.20.467 — THE OBSERVER IS ONE-SHOT, AND THAT IS THE SECOND BUG NEIL FOUND.
+           His words: *"when I click the plus icon in the rail, when the buttons come down, that
+           protocol sidebar actually shifts down a few pixels… I don't wanna see the sidebar
+           moving. They should work independently of each other."*
+           ⭐ THE CAUSE WAS THIS CODE. .466 kept a ResizeObserver on the rail column for the whole
+           session. Opening the `+` strip makes the rail TALLER, the observer fires, the offset is
+           recomputed, and the sidebar's padding changes — so the rail and the sidebar became
+           coupled BY MY OWN FIX. Nothing else linked them.
+           ⭐ AND THE RAIL'S HEIGHT IS IRRELEVANT TO THE ANSWER ANYWAY: we align to where the rail
+           STARTS, which does not move when it grows downward. So watching its size was never
+           needed — it was only ever a way of learning WHEN the layout became real. The moment we
+           have the answer, we stop watching: the poll ends and the observer disconnects. After
+           that the two columns are genuinely independent, which is what he asked for. */
+        let _badgeTries = 0;
+        let _badgeRO = null;
+        const _badgeStopWatching = () => {
+            try { _badgeRO?.disconnect(); } catch (_) {}
+            _badgeRO = null;
+        };
+        const _badgeTick = () => {
+            if (_alignBadgeToRail()) { _badgeStopWatching(); return; }
+            if (++_badgeTries > 300) { _badgeStopWatching(); return; }   // ~5s at 60fps, then give up
+            requestAnimationFrame(_badgeTick);
+        };
+        requestAnimationFrame(_badgeTick);
         try {
-            const _badgeRO = new ResizeObserver(() => _alignBadgeToRail());
+            _badgeRO = new ResizeObserver(() => { if (_alignBadgeToRail()) _badgeStopWatching(); });
             if (railColumn) _badgeRO.observe(railColumn);
             _badgeRO.observe(protoPanel);
-        } catch (_) { requestAnimationFrame(_alignBadgeToRail); }
-        // Re-measure when the layout moves: the rail's top shifts with the chrome above it.
+        } catch (_) { /* the poll above already covers the initial placement */ }
+        /* Re-measure on a WINDOW resize only — the chrome above the rail can genuinely move, and a
+           window resize is not something the student triggers by using the rail. Deliberately NOT
+           an observer on the rail: see the coupling note above. */
         try { window.addEventListener('resize', _alignBadgeToRail); } catch (_) {}
         /* FAIL LOUD (root §10). If the badge never got its offset, the sidebar silently reverts to
            the un-lifted look Neil rejected — so say so rather than let it pass as shipped. */
         setTimeout(() => {
-            if (!_badgeAligned && protoBadges && protoBadges.isConnected) {
-                console.warn('WML #340: badge/rail alignment never resolved — the badge is sitting at the panel top. railColumn:', !!railColumn);
+            if (!_badgeAligned) {
+                console.warn('WML #340: badge/rail alignment never resolved — badge sits at the panel top.',
+                    { rail: !!(railColumn || document.querySelector('.swml-outline-btn-column')),
+                      badgesConnected: !!(protoBadges && protoBadges.isConnected),
+                      badgeH: protoBadges ? protoBadges.offsetHeight : null,
+                      root: !!(protoPanel && protoPanel.closest('.swml-canvas')) });
             }
         }, 8000);
 
