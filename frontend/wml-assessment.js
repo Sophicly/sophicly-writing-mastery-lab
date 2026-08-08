@@ -13988,8 +13988,50 @@
            precisely the "refused, with nothing" outcome §4d says must be unreachable BY
            CONSTRUCTION, so the state is not merely left unwritten, it is actively cleared on build
            and the panel is forced expanded. A state with no exit does not survive its only exit. */
-        try { sessionStorage.removeItem('swml-sidebar-collapsed'); } catch (e) {}
-        protoPanel.classList.remove('collapsed');
+        /* ⭐⭐ v7.20.474 (#344) — THE COLLAPSE IS BACK. Neil, same day: *"we need the protocol
+           sidebar to be collapsible ASAP on prod."* This REVERSES the retirement above; the block
+           is kept rather than deleted because it explains why the stored key had to be cleared
+           while there was no button, and that reasoning is what makes re-enabling it safe now.
+           ⭐ WHAT HE OBJECTED TO WAS THE LOOK, NOT THE CAPABILITY. So the button returns and the
+           50px `.swml-sidebar-head` does NOT — its removal is what lifted the badge (#340c, which
+           he approved). The control gets its own slim row instead.
+           ⚠️⚠️ IT CANNOT LIVE IN `.swml-sidebar-badges`, AND THAT IS A LIVENESS CONSTRAINT, NOT A
+           layout preference: `.swml-canvas-proto.collapsed .swml-sidebar-badges` is set to
+           `opacity: 0` (wml-canvas.css ~:4484), so a button parked there would VANISH the instant
+           the sidebar collapsed — a collapsed panel with no way back, which is exactly the §4d
+           "refused, with nothing" state the note above says must be unreachable by construction.
+           Its own row survives the collapsed rules, and the CSS keeps it visible in both states.
+           ⚠️ TOUCH: a plain <button> with a click handler and no hover-gated visibility, because
+           the iPad reports (#342/#343) are live and a control only a mouse can reach is not
+           restored. */
+        const collapseRow = el('div', { className: 'swml-proto-collapse-row' });
+        const protoCollapseBtn = el('button', {
+            className: 'swml-collapse-btn swml-collapse-btn--icon',
+            title: 'Collapse sidebar', 'aria-label': 'Collapse sidebar', 'aria-expanded': 'true',
+            innerHTML: '<span class="swml-collapse-ico swml-collapse-ico--in">' + WML.icon('collapseLeft', 18) + '</span>'
+                     + '<span class="swml-collapse-ico swml-collapse-ico--out">' + WML.icon('collapseRight', 18) + '</span>'
+        });
+        const SIDEBAR_COLLAPSED_KEY = 'swml-sidebar-collapsed';
+        function _writeSidebarCollapsed(isC) {          // the ONE writer
+            try { sessionStorage.setItem(SIDEBAR_COLLAPSED_KEY, isC ? '1' : '0'); } catch (e) {}
+        }
+        function _applySidebarCollapsed(isC) {
+            protoPanel.classList.toggle('collapsed', isC);
+            protoCollapseBtn.classList.toggle('is-collapsed', isC);
+            protoCollapseBtn.title = isC ? 'Expand sidebar' : 'Collapse sidebar';
+            protoCollapseBtn.setAttribute('aria-label', protoCollapseBtn.title);
+            protoCollapseBtn.setAttribute('aria-expanded', isC ? 'false' : 'true');
+        }
+        protoCollapseBtn.addEventListener('click', () => {
+            const next = !protoPanel.classList.contains('collapsed');
+            _writeSidebarCollapsed(next);
+            _applySidebarCollapsed(next);
+        });
+        collapseRow.appendChild(protoCollapseBtn);
+        protoPanel.appendChild(collapseRow);
+        // Restore on build. Safe again BECAUSE the button is back: whatever the stored value, there
+        // is always a visible, pressable way out (§4d). Default when unset is EXPANDED.
+        try { _applySidebarCollapsed(sessionStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'); } catch (e) {}
         /* ⭐ v7.20.465 (#340) — AND THE HEAD GOES WITH IT. `.swml-sidebar-head` is a 50px bar with a
            bottom rule whose ONLY remaining job was to park that button on the right (the logo left
            at .459, leaving an empty <span> as a flex spacer). With the button gone it is 50px of
@@ -14025,7 +14067,7 @@
                 // v7.17.29: shares swml-cw-project-name-badge class with
                 // _updateCwProjectNameBadge so post-switcher updates find +
                 // overwrite rather than appending a duplicate.
-                const nameEl = el('span', { className: 'swml-sidebar-badge swml-cw-project-name-badge', textContent: '\u201c' + state.cwProjectName + '\u201d', style: { fontStyle: 'italic' } });
+                const nameEl = el('span', { className: 'swml-sidebar-badge swml-cw-project-name-badge', textContent: '\u201c' + state.cwProjectName + '\u201d', title: state.cwProjectName, style: { fontStyle: 'italic' } });
                 protoBadges.appendChild(nameEl);
             }
         }
@@ -53170,6 +53212,7 @@
         badge = el('span', {
             className: 'swml-sidebar-badge swml-cw-project-name-badge',
             textContent: '“' + name + '”',
+            title: name,                    // v7.20.473: the pill truncates now — full name on hover
             style: { fontStyle: 'italic' }
         });
         protoBadges.appendChild(badge);
