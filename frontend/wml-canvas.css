@@ -14847,7 +14847,13 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    resources, writer's-profile and prior-attempts panels all declare it alongside their own
    modifier (`swml-outline-panel swml-resources-panel …`), so this single exclusion covers all
    four without naming them. */
-.swml-outline-btn-column.swml-rail-collapsed > *:not(.swml-rail-permanent):not(.swml-rail-toggle):not(.swml-outline-panel) {
+/* ⭐ v7.20.465 (#339) — `:not(.swml-rail-closing)` is what KEEPS THE ITEMS IN FLOW while they
+   animate out. It replaces the `display: flex !important` the closing rule used to carry, and
+   that swap is the whole fix for two of #339's three defects: asserting a display VALUE broke
+   the buttons (they are `display:grid`, see below) and resurrected a node hidden inline. This
+   says the same thing without asserting anything — while closing, the hide simply does not
+   apply, so every item keeps whatever display it already had. */
+.swml-outline-btn-column.swml-rail-collapsed:not(.swml-rail-closing) > *:not(.swml-rail-permanent):not(.swml-rail-toggle):not(.swml-outline-panel) {
     display: none;
 }
 /* The `+` rotates to an `×` when open — the state is visible on the control itself,
@@ -14876,15 +14882,37 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 @keyframes swmlRailIn  { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
 @keyframes swmlRailOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-8px); } }
 
-/* OPEN — first to last. --i is stamped by JS in DOM order. */
-.swml-outline-btn-column.swml-rail-opening > *:not(.swml-rail-permanent):not(.swml-rail-toggle):not(.swml-outline-panel) {
+/* ⭐⭐ v7.20.465 (#339) — BOTH RULES NOW KEY ON `.swml-rail-anim`, THE CLASS JS STAMPS ON THE
+   ITEMS THAT ARE ACTUALLY TAKING PART. The old `> *:not(…)` swept in members that are hidden by
+   their OWN inline `display:none` — chiefly the theme toggle, which `wml-assessment.js:26036`
+   hides whenever `WML.isEmbedded` (i.e. inside LearnDash Focus, which is where students are).
+   A swept-in hidden node consumed a stagger slot, leaving a silent 40ms gap in the sequence.
+   ⭐ `--i` IS NOW THE VISUAL INDEX, NOT THE DOM INDEX — this is #339(i). The strip is laid out
+   with CSS `order` (deliberately, so the eight scattered appendChild sites cannot fight over
+   position), but the stagger was indexed off `btnColumn.children`. Those are TWO SOURCES OF
+   TRUTH for one sequence, and #338 moved one without the other: Download is the FIRST folding
+   child in the DOM but carries `.swml-rail-last { order: 3 }`, so it painted at the bottom and
+   animated in first. Neil: *"the download button appears before all the others, whereas it's
+   obviously the last."* JS now sorts by computed `order` before stamping, so the animation and
+   the layout read the same list. ⛔ Never index this stagger off DOM position again. */
+/* OPEN — first to last, in VISUAL order. */
+.swml-outline-btn-column.swml-rail-opening > .swml-rail-anim {
     animation: swmlRailIn 220ms cubic-bezier(0.4, 0, 0.2, 1) both;
     animation-delay: calc(var(--i, 0) * 40ms);
 }
-/* CLOSE — last to first. --j is the REVERSED index, so this is a true reverse of
-   the open rather than the same order played backwards. */
-.swml-outline-btn-column.swml-rail-closing > *:not(.swml-rail-permanent):not(.swml-rail-toggle):not(.swml-outline-panel) {
-    display: flex !important;   /* keep them in flow while they leave */
+/* CLOSE — last to first. --j is the REVERSED visual index, so this is a true reverse of
+   the open rather than the same order played backwards.
+   ⛔ NO `display` DECLARATION HERE, AND IT MUST NEVER COME BACK. It used to carry
+   `display: flex !important` to "keep them in flow while they leave" — unnecessary (the
+   `.swml-rail-collapsed` hide is not applied until AFTER this animation finishes) and the cause
+   of two live defects: (1) rail buttons are `display: grid` with `place-items:center`, and
+   `addHueLayer` appends a SECOND svg (`.swml-rail-hue`) to each one, so grid STACKS the two
+   layers in a single cell — forcing flex un-stacked them into a row inside a 28px
+   `overflow:hidden` box, which is the "they all suddenly shift" Neil saw; (2) an `!important`
+   in a stylesheet BEATS a plain inline style, so it un-hid the inline-hidden theme toggle
+   mid-transition. Flow is now preserved by `:not(.swml-rail-closing)` on the collapsed rule
+   above, which asserts no value at all. */
+.swml-outline-btn-column.swml-rail-closing > .swml-rail-anim {
     animation: swmlRailOut 180ms cubic-bezier(0.4, 0, 1, 1) both;
     animation-delay: calc(var(--j, 0) * 35ms);
 }
@@ -14990,3 +15018,31 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    rather than as one more tool. Order 3 puts it after the folding cluster (order 2), which
    keeps it last whether the `+` strip is open or closed. */
 .swml-outline-btn-column > .swml-rail-last { order: 3; margin-top: 6px; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   PROTOCOL SIDEBAR — LIFTED, AND THE PROJECT BADGE ILLUMINATED
+   v7.20.465 (FIXLIST #340, Neil 2026-08-08)
+   *"we still haven't sorted out the protocol sidebar… everything needs to be
+    lifted up… the bottom of the badge should probably be in line with the top
+    button in the rail"* and *"that probably needs to be illuminated a bit more"*.
+   The 50px `.swml-sidebar-head` and its collapse button are gone (see the JS),
+   so the badge is now the first thing in the column; `--swml-badge-top` is
+   MEASURED against the rail's real top by `_alignBadgeToRail` and lands the
+   badge's BOTTOM on the top rail button's TOP — the same datum #297 established.
+   ══════════════════════════════════════════════════════════════════════════ */
+.swml-canvas-proto .swml-sidebar-badges {
+    padding-top: var(--swml-badge-top, 0px);
+}
+/* ILLUMINATED — and the biggest win was removing a dimmer, not adding light: the
+   CW project badge carried an inline `opacity: 0.85` on top of an already-soft
+   `rgba(255,255,255,0.8)` ink, so it rendered at ~0.68 white on deep purple. The
+   inline opacity is deleted at BOTH writers (build + the post-switcher update).
+   With the identity badges gone this is the ONLY badge on the panel, so it no
+   longer has to stay quiet to avoid a row of shouting chips — it is the one
+   thing on screen naming WHICH STORY this is, which with multi-story CW is real
+   state, not decoration. Ink to near-white, chip a touch brighter so it still
+   reads as a chip against the purple rather than as loose italic text. */
+.swml-canvas-proto .swml-sidebar-badge.swml-cw-project-name-badge {
+    background: rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.96);
+}

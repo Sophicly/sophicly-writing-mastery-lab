@@ -13972,94 +13972,31 @@
         // 1. Build left protocol panel — sidebar
         const protoPanel = el('div', { className: 'swml-sidebar swml-canvas-proto' });
 
-        // Logo + collapse button
-        const protoHead = el('div', { className: 'swml-sidebar-head', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
-        // v7.20.459: the Writing Mastery Lab phoenix is gone from the sidebar (spec §1) — they know
-        // which product they are in, and it was the last pure branding in the writing chrome. The
-        // empty <span> stays as the flex spacer so `justify-content:space-between` still parks the
-        // collapse button on the right; dropping the child entirely slides that button across.
-        // BOTH sidebar-head sites changed together (buildTrainingPanels + the assessment-transition
-        // rebuild) — one without the other is the audit-stops-one-site-short class.
-        protoHead.appendChild(el('span'));
-        // \u2B50\u2B50 v7.20.446 (Neil, FIXLIST #292) \u2014 Neil: *"the collapse sidebar button\u2026 it's sort of
-        // sticking out like a sore thumb now since everything else is so minimalistic."*
-        // ROOT, and it was never really the styling: this button's glyph was the TEXT CHARACTER
-        // U+25C0 \u25C0 \u2014 a filled unicode triangle in a chrome made entirely of 24-grid stroke icons.
-        // No amount of restyling the chip fixes a glyph from a different species; it had to become
-        // a real icon. Neil supplied both arrows, so they are the ones used (\u00A713).
-        // TWO GLYPHS, BOTH MOUNTED, one visible \u2014 the Aaron Iker arrow idiom he pointed at
-        // ("Arrow Animation.html"): the outgoing arrow leaves along the way it POINTS while the
-        // incoming one arrives from the opposite side, so the swap reads as one continuous motion
-        // rather than a swap. Stacking both up front is what makes that possible \u2014 you cannot
-        // animate between two states of a single element you are about to overwrite.
-        // \u26A0\uFE0F Timing is adapted, and this is a disclosed deviation: the reference runs 1.6s because
-        // it is a showcase loop. On a control you click to get work done that is sluggish, so this
-        // is 380ms on the brand's own easing. The SHAPE of the motion is his; the duration is not.
-        const protoCollapseBtn = el('button', {
-            className: 'swml-collapse-btn swml-collapse-btn--icon',
-            title: 'Collapse sidebar', 'aria-label': 'Collapse sidebar', 'aria-expanded': 'true',
-            innerHTML: '<span class="swml-collapse-ico swml-collapse-ico--in">' + WML.icon('collapseLeft', 18) + '</span>'
-                     + '<span class="swml-collapse-ico swml-collapse-ico--out">' + WML.icon('collapseRight', 18) + '</span>'
-        });
-        // ⭐⭐ v7.20.447 (#297, Neil): *"make the BOTTOM of that icon aligned with the TOP of the
-        // buttons in the rail."* MEASURED, never a literal. The rail column's top depends on the
-        // canvas header's height, which changes with what the toolbar is carrying — so a hardcoded
-        // offset would look right today and drift silently the next time the header moves. This
-        // reads the real geometry and writes it to the CSS var the collapsed rule consumes.
-        // offsetTop, deliberately, NOT getBoundingClientRect: the rail column is `position:sticky;
-        // top:0`, so its viewport rect moves as the student scrolls and the button would crawl up
-        // the panel with it. offsetTop is the un-stuck position and is scroll-independent.
-        const _alignCollapseBtnToRail = () => {
-            try {
-                if (!protoPanel.classList.contains('collapsed')) return;
-                const rail = document.querySelector('.swml-outline-btn-column');
-                const head = protoCollapseBtn.parentElement;
-                if (!rail || !head) return;             // no rail on this task → CSS fallback stands
-                const railTop = rail.getBoundingClientRect().top + (rail.scrollTop || 0);
-                const headTop = head.getBoundingClientRect().top;
-                // The icon's BOTTOM lands on the rail's TOP, so subtract the button's own height.
-                const top = Math.max(0, Math.round(railTop - headTop - protoCollapseBtn.offsetHeight));
-                protoPanel.style.setProperty('--swml-collapse-top', top + 'px');
-            } catch (_) { /* fallback in CSS */ }
-        };
-        // Re-measure on resize: the header wraps at narrow widths, which moves the rail.
-        try { window.addEventListener('resize', _alignCollapseBtnToRail); } catch (_) {}
+        /* v7.20.465 (#340): `.swml-sidebar-head` is GONE from this panel — a 50px bar with a bottom
+           rule that held the phoenix (removed .459) and the collapse button (removed here), i.e.
+           nothing. See the retirement note further down for why its stored state had to go too. */
 
-        /* ⭐⭐ v7.20.459 — THE COLLAPSE IS NOW STICKY (Neil, ruled 2026-08-07).
-           The button has existed for a long time, but the state was never persisted, so the panel
-           sprang back open on every lesson and every reload — which is why hiding it never felt
-           like a real option. Same defect and same fix as the `+` rail strip in this build:
-           ONE key, ONE writer, and the state is applied on build rather than re-derived.
-           Session-scoped deliberately, matching the `+`: a collapse is a "for now, I want to
-           focus" gesture, not a permanent preference, and a durable key would silently hide the
-           step progress on a device weeks later with no memory of having asked for it. */
-        const SIDEBAR_COLLAPSED_KEY = 'swml-sidebar-collapsed';
-        function _writeSidebarCollapsed(isC) {   // the ONE writer
-            try { sessionStorage.setItem(SIDEBAR_COLLAPSED_KEY, isC ? '1' : '0'); } catch (e) {}
-        }
-        function _applySidebarCollapsed(isC) {
-            protoPanel.classList.toggle('collapsed', isC);
-            if (isC) requestAnimationFrame(_alignCollapseBtnToRail);
-            // The button carries the state itself so the CSS can drive the swap. Kept OFF the
-            // panel's own class so a future change to how the panel collapses cannot silently
-            // desynchronise the arrow from the thing it describes.
-            protoCollapseBtn.classList.toggle('is-collapsed', isC);
-            protoCollapseBtn.title = isC ? 'Expand sidebar' : 'Collapse sidebar';
-            protoCollapseBtn.setAttribute('aria-label', protoCollapseBtn.title);
-            protoCollapseBtn.setAttribute('aria-expanded', isC ? 'false' : 'true');
-        }
-        protoCollapseBtn.addEventListener('click', () => {
-            const next = !protoPanel.classList.contains('collapsed');
-            _writeSidebarCollapsed(next);
-            _applySidebarCollapsed(next);
-        });
-        protoHead.appendChild(protoCollapseBtn);
-        /* Restore on build. ⚠️ The expand path is what keeps this safe: whatever the stored value,
-           the ←| button is rendered and pressable, so a collapsed sidebar always has a visible way
-           back (root CLAUDE.md §4d — a state with no way out must be unreachable by construction).
-           Default when unset is EXPANDED, so nothing changes for anyone who never presses it. */
-        try { _applySidebarCollapsed(sessionStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'); } catch (e) {}
-        protoPanel.appendChild(protoHead);
+        /* ⭐⭐ v7.20.465 (#340) — THE COLLAPSE IS RETIRED, AND SO IS ITS STORED STATE. Neil, on the
+           protocol sidebar: *"we still got the collapse sidebar button there, which I think we need
+           to get rid of anyway."*
+           ⚠️⚠️ RETIRING THE STORED STATE IS NOT TIDY-UP, IT IS THE SAFETY HALF OF THIS CHANGE, and
+           the code it replaces said so itself: *"the expand path is what keeps this safe: whatever
+           the stored value, the ←| button is rendered and pressable, so a collapsed sidebar always
+           has a visible way back (root CLAUDE.md §4d)."* Delete the button and leave the key, and
+           every student whose session already holds `swml-sidebar-collapsed=1` — anyone who pressed
+           it since .459 — reopens into a collapsed sidebar with NOTHING that can expand it. That is
+           precisely the "refused, with nothing" outcome §4d says must be unreachable BY
+           CONSTRUCTION, so the state is not merely left unwritten, it is actively cleared on build
+           and the panel is forced expanded. A state with no exit does not survive its only exit. */
+        try { sessionStorage.removeItem('swml-sidebar-collapsed'); } catch (e) {}
+        protoPanel.classList.remove('collapsed');
+        /* ⭐ v7.20.465 (#340) — AND THE HEAD GOES WITH IT. `.swml-sidebar-head` is a 50px bar with a
+           bottom rule whose ONLY remaining job was to park that button on the right (the logo left
+           at .459, leaving an empty <span> as a flex spacer). With the button gone it is 50px of
+           nothing above the content, which is most of what Neil means by *"everything needs to be
+           lifted up."* Removing it makes the project badge the first thing in the column.
+           Nothing is appended here now — `protoBody`, which carries the badges, is appended below
+           exactly as before and simply becomes the panel's first child. */
 
         // Body wrapper
         const protoBody = el('div', { className: 'swml-sidebar-body' });
@@ -14088,7 +14025,7 @@
                 // v7.17.29: shares swml-cw-project-name-badge class with
                 // _updateCwProjectNameBadge so post-switcher updates find +
                 // overwrite rather than appending a duplicate.
-                const nameEl = el('span', { className: 'swml-sidebar-badge swml-cw-project-name-badge', textContent: '\u201c' + state.cwProjectName + '\u201d', style: { fontStyle: 'italic', opacity: '0.85' } });
+                const nameEl = el('span', { className: 'swml-sidebar-badge swml-cw-project-name-badge', textContent: '\u201c' + state.cwProjectName + '\u201d', style: { fontStyle: 'italic' } });
                 protoBadges.appendChild(nameEl);
             }
         }
@@ -14326,6 +14263,40 @@
         // v7.19.479: Back to Steps button removed — redundant (top nav arrows + Previous/Next + LD left nav).
         protoBody.appendChild(protoSpacer);
         protoPanel.appendChild(protoBody);
+
+        /* ⭐⭐ v7.20.465 (#340) — LIFT THE BADGE SO ITS BOTTOM MEETS THE RAIL'S TOP BUTTON.
+           Neil: *"everything needs to be lifted up… my instinct is that the bottom of the badge
+           should probably be in line with the top button in the rail, which is the document
+           outline button."* He asked for exactly this alignment once before, against the collapse
+           icon (#297, v7.20.447), and accepted it — so this is the house datum, not a new one, and
+           the helper that measured it then is reused here rather than re-derived.
+           ⭐ MEASURED, NEVER A LITERAL — the same reasoning as #297: the rail's top depends on the
+           chrome above it, which has moved three times this week, so a hardcoded offset would look
+           right today and drift silently on the next change.
+           ⚠️ offsetTop, NOT getBoundingClientRect, WHENEVER THE TWO SHARE AN OFFSET PARENT: the
+           rail column is `position:sticky; top:0`, so once the student scrolls, its viewport rect
+           is pinned while the panel's is not, and a rect-based sum would make the badge crawl up
+           the panel as they scroll. offsetTop is the un-stuck position and is scroll-independent.
+           The rect path is the fallback for the case where they do NOT share one, where the two
+           rects are at least measured in the same frame. */
+        const _alignBadgeToRail = () => {
+            try {
+                const rail = document.querySelector('.swml-outline-btn-column');
+                if (!rail || !protoBadges || !protoBadges.offsetHeight) return;  // no rail on this task → CSS default stands
+                let railTop, panelTop;
+                if (rail.offsetParent && rail.offsetParent === protoPanel.offsetParent) {
+                    railTop = rail.offsetTop; panelTop = protoPanel.offsetTop;
+                } else {
+                    railTop = rail.getBoundingClientRect().top;
+                    panelTop = protoPanel.getBoundingClientRect().top;
+                }
+                const top = Math.max(0, Math.round(railTop - panelTop - protoBadges.offsetHeight));
+                protoPanel.style.setProperty('--swml-badge-top', top + 'px');
+            } catch (_) { /* CSS default stands */ }
+        };
+        requestAnimationFrame(_alignBadgeToRail);
+        // Re-measure when the layout moves: the rail's top shifts with the chrome above it.
+        try { window.addEventListener('resize', _alignBadgeToRail); } catch (_) {}
 
         // 2. Build right chat panel
         const chatPanel = el('div', { className: 'swml-canvas-chat' });
@@ -26327,15 +26298,41 @@
            than the same order replayed) and the hide that must wait for the exit to finish,
            because `display` is not animatable. */
         let _railAnimTimer = null;
+        /* ⭐⭐ v7.20.465 (#339) — TWO FIXES, BOTH MEASURED (see the CSS note by the keyframes).
+           (i) THE STAGGER FOLLOWS THE VISUAL ORDER, NOT THE DOM ORDER. The strip is laid out with
+               CSS `order`, but this used to index off `btnColumn.children`. Download is the FIRST
+               folding child in the DOM and carries `.swml-rail-last` (order 3), so it painted last
+               and animated in first — Neil caught it immediately. `order` and a DOM-index stagger
+               are two sources of truth for one sequence; sorting by the computed `order` collapses
+               them to one. `sort` is stable, so buttons sharing an order keep their DOM order.
+           (ii) A MEMBER HIDDEN BY ITS OWN INLINE `display:none` TAKES NO PART. The theme toggle is
+               hidden that way whenever `WML.isEmbedded` (:26036) — which is every student, since
+               they are inside LearnDash Focus. It was being handed a stagger index it could never
+               spend, leaving a silent gap in the sequence, and the old closing rule's
+               `display:flex !important` then out-specified its inline style and briefly revealed
+               it. Filtering here is the honest half of that fix.
+           `.swml-rail-anim` is what the two animation rules key on, so a node excluded here is
+           excluded from the animation by construction rather than by a second condition that
+           could drift out of step with this one. */
         function _railStagger(open) {
-            const items = Array.from(btnColumn.children).filter(n =>
+            const folding = Array.from(btnColumn.children).filter(n =>
                 !n.classList.contains('swml-rail-permanent') &&
                 !n.classList.contains('swml-rail-toggle') &&
                 !n.classList.contains('swml-outline-panel'));
+            // Deliberately hidden by its owner → not an animation participant.
+            const items = folding.filter(n => n.style.display !== 'none');
+            // Visual order = the order the flex column actually paints in.
+            items.sort((a, b) => {
+                const oa = parseInt(getComputedStyle(a).order, 10) || 0;
+                const ob = parseInt(getComputedStyle(b).order, 10) || 0;
+                return oa - ob;
+            });
+            folding.forEach(n => n.classList.remove('swml-rail-anim'));
             const n = items.length;
             items.forEach((el_, i) => {
-                el_.style.setProperty('--i', i);          // open: first → last
-                el_.style.setProperty('--j', n - 1 - i);  // close: last → first
+                el_.classList.add('swml-rail-anim');
+                el_.style.setProperty('--i', i);          // open: first → last (visual)
+                el_.style.setProperty('--j', n - 1 - i);  // close: last → first (visual)
             });
             // A rapid re-tap must never leave a button stranded mid-fade.
             clearTimeout(_railAnimTimer);
@@ -37681,6 +37678,19 @@
         function removeCanvasSelToolbar(_why) {
             // v7.20.434 instrument (#267) — see the header block in wml-core.js. Measures only.
             if (canvasSelToolbar) window.__swmlSelDiagLog?.('destroy', 'assessment.js:removeCanvasSelToolbar (DOC)', _why || 'unlabelled');
+            /* v7.20.465 (#336): release the re-placement handles BEFORE the node goes. This is the
+               ONE teardown for this toolbar, and it runs on every dismissal path, so releasing here
+               covers all of them. The placer itself also no-ops on an unmounted toolbar — belt and
+               braces, deliberately: this toolbar is torn down from a dozen call sites and a leaked
+               ResizeObserver on `wrap` would fire for the rest of the session. */
+            if (canvasSelToolbar) {
+                try { canvasSelToolbar._swmlPlaceRO?.disconnect(); } catch (_) {}
+                if (canvasSelToolbar._swmlPlaceOnResize) {
+                    try { window.removeEventListener('resize', canvasSelToolbar._swmlPlaceOnResize); } catch (_) {}
+                }
+                canvasSelToolbar._swmlPlaceRO = null;
+                canvasSelToolbar._swmlPlaceOnResize = null;
+            }
             if (canvasSelToolbar) { canvasSelToolbar.remove(); canvasSelToolbar = null; }
             _selToolbarKey = null;
         }
@@ -37778,7 +37788,17 @@
 
                     // Remove any existing toolbar
                     const old = wrap.querySelector('.swml-selection-toolbar');
-                    if (old) { window.__swmlSelDiagLog?.('destroy', 'assessment.js:37330 (DOC stale sweep)', 'wrap.querySelector found an orphan before rebuild'); old.remove(); }
+                    if (old) {
+                        window.__swmlSelDiagLog?.('destroy', 'assessment.js:37330 (DOC stale sweep)', 'wrap.querySelector found an orphan before rebuild');
+                        // v7.20.465 (#336): this path removes the node WITHOUT going through
+                        // removeCanvasSelToolbar, so it must release the placement handles itself
+                        // or an orphan's ResizeObserver outlives it for the rest of the session.
+                        try { old._swmlPlaceRO?.disconnect(); } catch (_) {}
+                        if (old._swmlPlaceOnResize) {
+                            try { window.removeEventListener('resize', old._swmlPlaceOnResize); } catch (_) {}
+                        }
+                        old.remove();
+                    }
 
                     const range = sel.getRangeAt(0);
                     // v7.19.71: prefer first client rect over bounding rect for multi-block
@@ -37973,21 +37993,72 @@
 
                     // Append to measure, then position (matching chat toolbar pattern)
                     wrap.appendChild(tb);
-                    const tbW = tb.offsetWidth;
-                    const tbH = tb.offsetHeight;
-                    // v7.19.71: clamp top so the toolbar never mounts above the visible
-                    // canvas top — protects against very-tall selections (or selections
-                    // starting above the current scroll position) where the raw rect-top
-                    // would place the toolbar offscreen and Neil sees nothing.
-                    const desiredTop = rect.top - wrapRect.top + wrap.scrollTop - tbH - 8;
-                    const minTop = wrap.scrollTop + 8;
-                    tb.style.top = Math.max(minTop, desiredTop) + 'px';
-                    // v7.17.77: clamp BOTH edges so toolbar never bleeds off the right
-                    // of the canvas wrap (was only clamping left at 0).
-                    tb.style.left = Math.max(4, Math.min(
-                        rect.left - wrapRect.left + rect.width / 2 - tbW / 2,
-                        wrapRect.width - tbW - 4
-                    )) + 'px';
+                    /* ⭐⭐ v7.20.465 (#336) — THE PLACEMENT IS A FUNCTION NOW, AND IT RE-RUNS WHEN
+                       THE LAYOUT MOVES UNDER IT.
+                       THE DEFECT, in Neil's words: *"previously the toolbar just shifted in sync
+                       with the highlighted text. At the moment it's shifting in sync with the
+                       SIDEBAR — maintaining the gap to the sidebar rather than its position above
+                       the highlighted text… it's shifting AWAY from the text when I open the
+                       sidebar."*
+                       ⚠️ AND HE IS DESCRIBING THE MECHANISM EXACTLY — an earlier note on this card
+                       claimed the toolbar "did not move at all"; that was wrong. `tb` is a child of
+                       `wrap` and its `left` is an offset measured FROM `wrap`, written once. When
+                       the LearnDash sidebar toggles, `wrap` slides and resizes, so a constant
+                       offset inside it keeps the toolbar a constant distance from the host edge —
+                       while the TEXT inside reflows by a different amount. The toolbar tracks its
+                       host faithfully; the host is just not what it is supposed to be pinned to.
+                       ⭐ ONE PLACER, called on mount and again on every layout change, always
+                       recomputing from the LIVE selection rect — never from a cached one, which is
+                       the same stale-offset trap in a different costume.
+                       ⛔ It re-POSITIONS, it never rebuilds: rebuilding this element is the
+                       v7.20.121 blink. It also no-ops the moment the toolbar is unmounted or the
+                       selection has gone, so a late observer callback cannot resurrect anything. */
+                    const _placeTb = () => {
+                        if (!tb.isConnected) return;
+                        const s = window.getSelection();
+                        if (!s || s.rangeCount === 0 || s.isCollapsed) return;
+                        const r = s.getRangeAt(0);
+                        // Same hybrid as the initial measure: first client rect for the VERTICAL
+                        // anchor (a bounding rect over many blocks is oversized and throws the
+                        // toolbar off-screen), bounding rect for HORIZONTAL centring so it centres
+                        // over the whole selection rather than just its first line.
+                        const rects = r.getClientRects();
+                        const first = rects.length > 0 ? rects[0] : null;
+                        const bound = r.getBoundingClientRect();
+                        const rc = first
+                            ? { top: first.top, left: bound.left, width: bound.width }
+                            : bound;
+                        const wr = wrap.getBoundingClientRect();
+                        const tbW = tb.offsetWidth;
+                        const tbH = tb.offsetHeight;
+                        // v7.19.71: clamp top so the toolbar never mounts above the visible
+                        // canvas top — protects against very-tall selections (or selections
+                        // starting above the current scroll position) where the raw rect-top
+                        // would place the toolbar offscreen and Neil sees nothing.
+                        const desiredTop = rc.top - wr.top + wrap.scrollTop - tbH - 8;
+                        const minTop = wrap.scrollTop + 8;
+                        tb.style.top = Math.max(minTop, desiredTop) + 'px';
+                        // v7.17.77: clamp BOTH edges so toolbar never bleeds off the right
+                        // of the canvas wrap (was only clamping left at 0).
+                        tb.style.left = Math.max(4, Math.min(
+                            rc.left - wr.left + rc.width / 2 - tbW / 2,
+                            wr.width - tbW - 4
+                        )) + 'px';
+                    };
+                    _placeTb();
+                    /* The layout changes that matter are the two sidebars collapsing and the window
+                       resizing. Both change `wrap`'s box, so a ResizeObserver on `wrap` catches
+                       them — and because the sidebar ANIMATES, the observer fires throughout the
+                       transition and the toolbar travels with the text instead of jumping at the
+                       end. Handles are parked on the element so the teardown can release them;
+                       `removeCanvasSelToolbar` is the one place that happens. */
+                    try {
+                        const _ro = new ResizeObserver(() => _placeTb());
+                        _ro.observe(wrap);
+                        tb._swmlPlaceRO = _ro;
+                    } catch (_) { /* no ResizeObserver → the window listener still covers resize */ }
+                    tb._swmlPlaceOnResize = () => _placeTb();
+                    window.addEventListener('resize', tb._swmlPlaceOnResize);
                 }
             }
 
@@ -52963,7 +53034,7 @@
         badge = el('span', {
             className: 'swml-sidebar-badge swml-cw-project-name-badge',
             textContent: '“' + name + '”',
-            style: { fontStyle: 'italic', opacity: '0.85' }
+            style: { fontStyle: 'italic' }
         });
         protoBadges.appendChild(badge);
     }
