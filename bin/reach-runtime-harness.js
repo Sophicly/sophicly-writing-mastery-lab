@@ -167,6 +167,17 @@ ok(/showPill/.test(reachBlock) && /console\.warn\('WML reach/.test(reachBlock),
     + 'sentence in a log and a broken page to a 14-year-old.');
 ok(/__wmlReach/.test(reachBlock),
     'every pass is recorded to window.__wmlReach for the next real-device report (root §19)');
+// The one named failure mode this feature has, and the reason it is worth a gate of its own:
+// `afterBubble` runs INSIDE `addChatMessage`. An uncaught throw there takes the chat down for
+// every student on every turn — a check whose job is to stop students being stranded must not be
+// able to strand them.
+ok(/afterBubble:\s*guard\(/.test(reachBlock),
+    'afterBubble is wrapped — it runs inside addChatMessage and may never throw into it',
+    'Without this, one bad rect reading breaks the chat for every student. It must go inert and '
+    + 'say so once, never take the pipeline with it.');
+ok(/const safeCheck = guard\(check\)/.test(reachBlock)
+    && !/setTimeout\(check\.bind/.test(reachBlock),
+    'every scheduled pass goes through safeCheck, not the raw check');
 
 // ── 4. THE PILL MUST BE REACHABLE ITSELF ───────────────────────────────────────────────────
 console.log('reach-runtime: the pill');

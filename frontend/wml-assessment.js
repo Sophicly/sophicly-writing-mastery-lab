@@ -4674,15 +4674,15 @@
                 pill = document.createElement('button');
                 pill.type = 'button';
                 pill.className = 'swml-reach-pill';
-                pill.addEventListener('click', function () {
+                pill.addEventListener('click', guard(function () {
                     const cur = surface();
                     if (!cur) { dropPill(); return; }
                     try { cur.el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
                     // Focusing is the part that actually rescues iPadOS: the browser scrolls a
                     // focused field above its own keyboard even when our scroll could not.
                     if (cur.kind === 'input') { try { cur.focus.focus(); } catch (e) {} }
-                    setTimeout(check.bind(null, 'pill-tap'), 400);
-                });
+                    setTimeout(safeCheck.bind(null, 'pill-tap'), 400);
+                }));
                 document.body.appendChild(pill);
             }
             pill.textContent = label;
@@ -4699,6 +4699,20 @@
             const pr = vis(pane);
             if (pr) { pill.style.left = (pr.left + pr.width / 2) + 'px'; }
             else { pill.style.left = '50%'; }
+        }
+        // ⛔ EVERY ENTRY POINT IS WRAPPED, and this is not defensive habit — it is the one named
+        // failure mode this feature has. `afterBubble` is called from inside `addChatMessage`, so
+        // a throw in here would take the CHAT down for every student, on every turn. A check whose
+        // job is to stop students being stranded must not be able to strand them. If it breaks it
+        // goes quiet and says so once; the chat carries on.
+        function guard(fn) {
+            return function () {
+                try { return fn.apply(null, arguments); }
+                catch (e) {
+                    if (!guard._said) { guard._said = true; console.warn('WML reach: the reachability check threw and is now inert — ' + (e && e.message)); }
+                    return undefined;
+                }
+            };
         }
         function check(why) {
             if (document.hidden) return;
@@ -4725,13 +4739,14 @@
                 + ' (' + b.src + '). Showing the jump-to control. See window.__wmlReach.');
             showPill(t, b);
         }
+        const safeCheck = guard(check);
         function schedule(why) {
             clearTimeout(timer); clearTimeout(confirmTimer);
             // Two passes on purpose. 220ms lands after the bubble's own scroll settles; 900ms
             // lands after chips are attached and any paced animation has finished, which is when
             // the geometry is finally the geometry the student sees.
-            timer = setTimeout(check.bind(null, why), 220);
-            confirmTimer = setTimeout(check.bind(null, why + '/settled'), 900);
+            timer = setTimeout(safeCheck.bind(null, why), 220);
+            confirmTimer = setTimeout(safeCheck.bind(null, why + '/settled'), 900);
         }
         function install() {
             if (installed) return;
@@ -4745,17 +4760,17 @@
             window.addEventListener('orientationchange', function () { schedule('orientation'); });
         }
         return {
-            afterBubble: function (why) { install(); schedule(why || 'bubble'); },
-            check: check,
+            afterBubble: guard(function (why) { install(); schedule(why || 'bubble'); }),
+            check: safeCheck,
             // The pill draws ONLY when a control genuinely cannot be shown, which on a healthy
             // layout is never — so without this it could ship having never once been rendered, and
             // "it has never been seen" is not a state anything student-facing may be in. Type
             // `WML._askReach.demo()` in the console to draw it against the live theme and geometry.
-            demo: function () {
+            demo: guard(function () {
                 const t = surface() || { kind: 'input' };
                 showPill(t, band());
                 return 'reach pill shown — tap it, or WML._askReach.check("manual") to clear.';
-            },
+            }),
             _band: reachBand, _fully: reachFully, _usable: reachUsable,
         };
     })();
