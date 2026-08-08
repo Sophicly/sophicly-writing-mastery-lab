@@ -15042,7 +15042,30 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    thing on screen naming WHICH STORY this is, which with multi-story CW is real
    state, not decoration. Ink to near-white, chip a touch brighter so it still
    reads as a chip against the purple rather than as loose italic text. */
+/* ⭐⭐ v7.20.466 — BRAND AUDIT of this badge (Neil: *"you're gonna need to do a brand audit"*).
+   Audited against BRAND.md rather than by eye. THREE fails, three passes:
+     ❌ RADIUS 4px — §Radius names `pill / 999px` for "Status pills, BADGES". Square is wrong.
+     ❌ ITALIC SANS — §Type gives italic to Playfair ("Serif italic (display, accents): Playfair
+        Display Complete — italic only"), and §3 puts COURSE NAMES in the DISPLAY tier. A story
+        title is a name, i.e. a brand moment, not chrome text. A faux-italic sans is neither the
+        signature nor body — it is the one thing the type system does not have a slot for.
+     ⚠️ LETTER-SPACING 0.3px — §Type tracks UPPERCASE micro-labels (mandatory); sentence case
+        takes the default. Tracking here is a small unearned deviation.
+     ✅ 11px sits in the CHROME tier (13/12/11/10, floor 10) — lifted to 12px, still in tier,
+        because Playfair at 11px loses its counters at this weight.
+     ✅ NEUTRAL FILL IS CORRECT AND STAYS. §Colour reserves blue-teal for progress, purple for
+        attainment, amber for not-started, green for complete. A project NAME carries none of
+        those meanings, so giving it a brand hue would assert progress semantics that are false.
+        "Illuminate" is answered with ink and presence, never by borrowing a semantic colour.
+   ⭐ The audit also answers *"illuminated a bit more"* better than a brightness bump would: a
+   Playfair-italic name in a pill reads as a TITLE — the thing it is — instead of a dim tag. */
 .swml-canvas-proto .swml-sidebar-badge.swml-cw-project-name-badge {
     background: rgba(255,255,255,0.18);
     color: rgba(255,255,255,0.96);
+    border-radius: 999px;          /* §Radius: badges are pills */
+    padding: 4px 12px;             /* a pill needs its horizontal room; still the 4px scale */
+    font-family: 'Playfair Display Complete', 'Playfair Display', Georgia, serif;
+    font-size: 12px;
+    font-weight: 400;              /* the hosted face is Black Italic; 600 double-weights it */
+    letter-spacing: normal;        /* §Type: tracking is for uppercase micro-labels */
 }

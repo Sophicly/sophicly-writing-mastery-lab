@@ -14279,24 +14279,65 @@
            the panel as they scroll. offsetTop is the un-stuck position and is scroll-independent.
            The rect path is the fallback for the case where they do NOT share one, where the two
            rects are at least measured in the same frame. */
+        /* ⚠️⚠️ v7.20.466 — THE .465 CUT OF THIS DID NOTHING, AND IT FAILED SILENTLY. Neil, seeing
+           it: *"the badge is sitting right at the top of the sidebar… doesn't look great at all."*
+           TWO defects, both measured, and the first one is embarrassing because .465's own commit
+           message warns about it:
+           1. IT RAN BEFORE THE PANEL WAS IN THE DOCUMENT. It was scheduled with
+              `requestAnimationFrame` from inside this builder — but `renderCanvasWorkspace` has
+              `await fetch(...)` calls between the call to us (:~30527) and the point where the
+              overlay is finally attached to the document (:~34771). The frame therefore fires
+              DURING those network round-trips, while this whole tree is still detached, so
+              `protoBadges.offsetHeight` was 0, the guard returned early and no variable was ever
+              set. Same root as #335: MEASURING A TREE THAT IS NOT IN THE DOCUMENT YET.
+              ⭐ And the same lesson twice in two commits: a bail-out that says nothing is
+              indistinguishable from a success. This one now WARNS if it never resolves.
+           2. THE COMPARISON WAS MEANINGLESS ANYWAY. It preferred `offsetTop` when the two shared
+              an `offsetParent` — they never do: the rail lives inside `editorPane` (appended to
+              `contentWrap`) while this panel is `editorPane`'s SIBLING. Subtracting offsetTops
+              across two different offset parents compares two unrelated origins.
+           THE FIX FOR BOTH: drive it from a ResizeObserver on the RAIL NODE ITSELF — which we are
+           handed as `railColumn` (#335) rather than hunting for in a document it may not be in —
+           so it runs exactly when the rail first gets a real box, however long the awaits take.
+           And measure by walking each element's offsetTop up to their COMMON ancestor, which is
+           correct whatever the offset parents are AND is scroll-independent: a rect-based sum
+           would be wrong the moment the student scrolls, because the rail is `position:sticky;
+           top:0` and its viewport rect stops moving while the panel's does not. */
+        const _topWithin = (node, root) => {
+            let y = 0, n = node;
+            while (n && n !== root) { y += n.offsetTop; n = n.offsetParent; }
+            return y;
+        };
+        let _badgeAligned = false;
         const _alignBadgeToRail = () => {
             try {
-                const rail = document.querySelector('.swml-outline-btn-column');
-                if (!rail || !protoBadges || !protoBadges.offsetHeight) return;  // no rail on this task → CSS default stands
-                let railTop, panelTop;
-                if (rail.offsetParent && rail.offsetParent === protoPanel.offsetParent) {
-                    railTop = rail.offsetTop; panelTop = protoPanel.offsetTop;
-                } else {
-                    railTop = rail.getBoundingClientRect().top;
-                    panelTop = protoPanel.getBoundingClientRect().top;
-                }
-                const top = Math.max(0, Math.round(railTop - panelTop - protoBadges.offsetHeight));
+                const rail = railColumn || document.querySelector('.swml-outline-btn-column');
+                if (!rail || !protoBadges) return false;          // no rail on this task → CSS default stands
+                if (!rail.isConnected || !protoBadges.offsetHeight) return false;   // not laid out yet
+                const root = protoPanel.closest('.swml-canvas');
+                if (!root) return false;
+                const top = Math.max(0, Math.round(
+                    _topWithin(rail, root) - _topWithin(protoPanel, root) - protoBadges.offsetHeight
+                ));
                 protoPanel.style.setProperty('--swml-badge-top', top + 'px');
-            } catch (_) { /* CSS default stands */ }
+                _badgeAligned = true;
+                return true;
+            } catch (_) { return false; }
         };
-        requestAnimationFrame(_alignBadgeToRail);
+        try {
+            const _badgeRO = new ResizeObserver(() => _alignBadgeToRail());
+            if (railColumn) _badgeRO.observe(railColumn);
+            _badgeRO.observe(protoPanel);
+        } catch (_) { requestAnimationFrame(_alignBadgeToRail); }
         // Re-measure when the layout moves: the rail's top shifts with the chrome above it.
         try { window.addEventListener('resize', _alignBadgeToRail); } catch (_) {}
+        /* FAIL LOUD (root §10). If the badge never got its offset, the sidebar silently reverts to
+           the un-lifted look Neil rejected — so say so rather than let it pass as shipped. */
+        setTimeout(() => {
+            if (!_badgeAligned && protoBadges && protoBadges.isConnected) {
+                console.warn('WML #340: badge/rail alignment never resolved — the badge is sitting at the panel top. railColumn:', !!railColumn);
+            }
+        }, 8000);
 
         // 2. Build right chat panel
         const chatPanel = el('div', { className: 'swml-canvas-chat' });
