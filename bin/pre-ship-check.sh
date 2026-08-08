@@ -36,6 +36,9 @@ if [ ${#FILES[@]} -eq 0 ]; then
     echo "pre-ship: no JS/PHP/CSS staged — nothing to check."; exit 0
   fi
   node bin/css-lint.js || { echo ""; echo "pre-ship gate FAILED — fix before shipping."; exit 1; }
+  # v7.20.474 (#343): a student on an iPad could not reach the chat input. Whole-repo by
+  # nature — a scroller in ANY stylesheet can strand a control, so this never keys on staging.
+  node bin/reachability-lint.js || { echo ""; echo "pre-ship gate FAILED — fix before shipping."; exit 1; }
   echo "pre-ship gate passed (CSS only)."
   exit 0
 fi
@@ -389,6 +392,7 @@ node bin/cw-step-coherence-lint.js || fail=1
 # an error anyone sees. `node --check`/`php -l` were the only syntax gates here and both are blind
 # to 6,000+ lines of the UI. Whole-repo and instant, like fossil-lint. (v7.20.372)
 node bin/css-lint.js || fail=1
+node bin/reachability-lint.js || fail=1   # v7.20.474 (#343): unreachable-control gate
 
 # v7.20.394 — a RETIRED surface colour written as rgba() is invisible to the hex sweep that
 # retires it. That has now bitten three times on one palette (.swml-extract-panel, the rail shell,

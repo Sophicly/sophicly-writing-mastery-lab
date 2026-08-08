@@ -57,6 +57,7 @@
     width: 100%; display: block; background: #000;
     border-radius: 0; outline: none;
     max-height: 55vh;
+    max-height: 55dvh;   /* v7.20.474 (#343): iOS vh excludes the collapsing bars — dvh is the VISIBLE viewport; the vh line above stays as the fallback */
 }
 .wml-vp[data-size="small"] .wml-vp-video::-webkit-media-controls-panel {
     transform: scale(0.85); transform-origin: bottom center;
