@@ -371,6 +371,13 @@ body.swml-fullscreen-active { overflow: hidden !important; }
        ⛔ Do NOT reintroduce a measurement between these two columns. If the inset changes, change
        THIS token and all three move together, by construction. */
     --swml-canvas-top-inset: 32px;
+    /* ⭐ v7.20.477 — THE GROUND, AS A TOKEN, for the same reason the inset is one. The collapse
+       button's corner notch (#347) has to be painted the PAGE BEHIND so it reads as a bite out of
+       the panel rather than a chip on it — and a literal `#1b1c1f` there would be correct in dark
+       and wrong in light, which is the classic theme defect this file keeps catching (the toolbar's
+       ink at .459, the fades at .390). One token, restated in each theme rule below, so the notch
+       cannot drift from the plane it is pretending to be. */
+    --swml-canvas-ground: #1b1c1f;
     display: flex;
     gap: 0;
     width: 100%;
@@ -381,9 +388,11 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 /* Dark/light theme for canvas */
 .swml-canvas.swml-canvas-light {
     background: #f5f5f7;
+    --swml-canvas-ground: #f5f5f7;   /* v7.20.477: keep the notch on the plane it sits in */
 }
 #swml-canvas-overlay[data-swml-theme="light"] {
     background: #f5f5f7;
+    --swml-canvas-ground: #f5f5f7;
 }
 .swml-canvas.swml-canvas-light .swml-canvas-toolbar {
     border-bottom-color: rgba(0,0,0,0.1);
@@ -15023,14 +15032,38 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
        Island and the scroll buttons. ⚠️ Because the fill is now DARKER than the page behind it,
        the object's separation comes entirely from the hairline + shadow below — they are not
        decoration here, they are what stops it reading as a hole. */
+    /* ⭐⭐ v7.20.477 (#349, Neil: *"there seems to be a stroke around the outside of the toolbar
+       itself. Can you get rid of that, please?"*) — THE RING IS GONE, AND THE JOB IT WAS DOING
+       HAD TO GO SOMEWHERE. This is his SECOND report of a stroke on this one element (the first,
+       #269 at .432, was a teal ring at 25% — replaced then by the neutral hairline being removed
+       now). Twice is a pattern, and the pattern is that ANY ring on this object reads to him as
+       decoration stuck on the edge, not as the edge itself. So the answer is no ring at all,
+       rather than a quieter one — do not reintroduce a third.
+       ⚠️ THE RISK, NAMED BEFORE IT WAS TAKEN: the fill here is #1c1d1f and the page behind is
+       #1b1c1f, so this bar is a single unit DARKER than the plane it floats on. The hairline was
+       load-bearing under that arrangement — delete it bare and the toolbar reads as a HOLE punched
+       in the document, which is the exact "painted as a hole while behaving as a floating object"
+       defect fixed on the scroll buttons at .423 and on this element at .432.
+       ⭐ SO THE SEPARATION MOVES INTO THE LIGHT, WHICH IS WHERE IT BELONGS ON A FLOATING OBJECT.
+       Three layers replace the one ring, and none of them is an outline:
+         · a TIGHT contact shadow (0 1px 2px) — the dark seam directly under the edge that a real
+           object casts, and the thing the eye actually reads as "this is in front";
+         · the existing mid and ambient shadows, deepened and widened, so the cast reaches further
+           onto the page and the object gains height instead of gaining a border;
+         · a TOP-EDGE INSET HIGHLIGHT (inset 0 1px 0) at 7% — light falls from above, so the upper
+           lip catches it. This is a highlight on ONE edge, which reads as material; a ring on all
+           four reads as a stroke. It is also the discipline BRAND.md already asks of the push
+           gradient, applied at a whisper.
+       Net effect: the bar sits higher off the page than it did WITH the ring, and there is no
+       line anywhere on it. */
     background: #1c1d1f;
     border-radius: 12px;
     padding: 4px;
     gap: 1px;
-    /* The separation the dark fill gives up: a brighter hairline than the raised
-       rung carried, plus a deeper, wider shadow so the object casts onto the page. */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.4),
-                0 0 0 1px rgba(255,255,255,0.13);
+    box-shadow: 0 12px 34px rgba(0,0,0,0.58),
+                0 4px 12px rgba(0,0,0,0.42),
+                0 1px 2px rgba(0,0,0,0.55),
+                inset 0 1px 0 rgba(255,255,255,0.07);
     --swml-tb-fade: #1c1d1f;
     --swml-tb-fade-0: rgba(28,29,31,0);
 }
@@ -15057,8 +15090,16 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 [data-swml-theme="light"] .swml-canvas .swml-selection-toolbar,
 .swml-canvas-light .swml-selection-toolbar {
     background: #1c1d1f;
-    box-shadow: 0 10px 30px rgba(44,0,62,0.22), 0 2px 8px rgba(20,18,30,0.16),
-                0 0 0 1px rgba(255,255,255,0.10);
+    /* v7.20.477 (#349): the ring goes here too — one object, one treatment in both themes, which
+       is the rule the block above this one already establishes for its ink.
+       ⭐ Light needs LESS help, not more: a #1c1d1f bar on a #f5f5f7 page is ~13 units of
+       lightness apart, so the edge is already unambiguous and the shadow only has to give it
+       height. Kept on the brand's deep purple (#2c003e) rather than neutral black — a grey shadow
+       on a warm-white page reads as dirt; a purple-cast one reads as the site's own light. The
+       inset top highlight is dropped: on this ground the lip would read as a seam, not a lift. */
+    box-shadow: 0 12px 32px rgba(44,0,62,0.24),
+                0 4px 10px rgba(44,0,62,0.16),
+                0 1px 2px rgba(20,18,30,0.22);
     --swml-tb-fade: #1c1d1f;
     --swml-tb-fade-0: rgba(28,29,31,0);
 }
@@ -15111,13 +15152,12 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    measurement of the rail, which is what coupled the two columns. */
 .swml-canvas-proto .swml-sidebar-badges {
     padding-top: var(--swml-canvas-top-inset, 32px);
-    /* ⭐ v7.20.476 — RESERVE THE BUTTON'S STRIP. Now that the collapse button shares this line
-       (it reads the same token), a long story name would truncate UNDER it. The pill already
-       ellipsises (.473), so without this it would simply ellipsise too late and sit beneath the
-       icon. Arithmetic: the button is absolute at `right:12px` and 32px wide, so it occupies the
-       last 44px of the PADDING box; this container's content box already stops 25px short of it
-       (`.swml-sidebar { padding: 0 25px }`), leaving 19px of overlap — plus an 8px gap = 27, so 28. */
-    padding-right: 28px;
+    /* ⛔ v7.20.477 (#347c) — THE 28px RESERVATION IS GONE, and deliberately not merely reduced.
+       .476 added it because the collapse button shared this line and a long story name would have
+       truncated under it. The button has moved to the corner (y 0…32) and this row starts AT the
+       inset (y 32), so the two no longer occupy any of the same space — the collision is solved by
+       VERTICAL separation, and a horizontal allowance for it would now just be dead width on a
+       220px panel. The pill keeps its own ellipsis (.473) for names that are genuinely too long. */
 }
 /* The panel is the positioning context for the collapse row below. */
 .swml-canvas-proto { position: relative; }
@@ -15195,41 +15235,151 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    the 32px button overhangs 2px each side and the ICON's centre lands on y=46 — the badge's centre,
    exactly. Top-aligning the two boxes instead would sit the icon 2px low, which is the kind of
    near-miss that costs a test cycle. */
+/* ⭐⭐ v7.20.477 (#347, Neil — prototype option B, chosen on screen) — THE BUTTON MOVES OUT OF THE
+   BADGE'S LINE AND INTO THE PANEL'S TOP-RIGHT CORNER, painted the page behind so it reads as a
+   BITE OUT of the panel rather than a chip sitting on it.
+   ⭐ WHAT THIS BUYS, and it is a real property rather than a preference: at `top: 0` with the row
+   given the INSET'S OWN HEIGHT, the button's BOTTOM edge IS the 32px line — by construction, with
+   nothing to measure and nothing to keep in sync. The .476 version centred a 32px button in a 28px
+   row to land the icon's centre on y=46; correct, but it depended on the BADGE's line box, so the
+   day the badge's font or padding changes the datum moves with it. This depends only on the token.
+     row box     = y 0 … 32   (top:0, height = --swml-canvas-top-inset)
+     button box  = 32px, bottom-aligned in it → y 0 … 32
+     ⇒ button bottom = 32 = the line the document, the rail and the badge all start on.
+   `align-items: flex-end` is therefore load-bearing, not decoration: it pins the BOTTOM, so a
+   future change to the button's touch box grows it upward into the notch instead of pushing it
+   off the datum.
+   ⭐ THE BADGE GETS ITS FULL WIDTH BACK. The row now occupies y 0…32 and the badge starts AT 32
+   (`.swml-sidebar-badges { padding-top: <inset> }` below), so they no longer share a line and
+   cannot collide — which is why .476's `padding-right: 28px` reservation is removed rather than
+   merely reduced. Vertical separation, not a horizontal allowance.
+   ⚠️ The notch is painted from `--swml-canvas-ground`, NOT a literal — see the token's note on
+   `.swml-canvas`. Only the BOTTOM-LEFT corner is rounded: the other three sit on the panel's own
+   square corner and the canvas edge, so rounding them would read as a rendering glitch. */
 .swml-canvas-proto .swml-proto-collapse-row {
     position: absolute;
-    top: var(--swml-canvas-top-inset, 32px);
-    right: 12px;
-    height: 28px;               /* the badge's line box — see the arithmetic above */
+    top: 0;
+    right: 0;
+    height: var(--swml-canvas-top-inset, 32px);
     display: flex;
-    align-items: center;        /* centres the 32px button on the badge's centre line */
+    align-items: flex-end;      /* pins the button's BOTTOM to the shared line — see above */
     z-index: 3;
+    background: var(--swml-canvas-ground, #1b1c1f);
+    border-bottom-left-radius: 10px;
 }
-/* ⭐⭐ COLLAPSED — AND THE DATUM CANNOT BE GIVEN TO BOTH (§ALIGNMENT rule 1, stated not discovered).
-   At 54px the panel is a single column: the button and the first step circle are stacked, so they
-   cannot both start on the 32px line. The line goes to the BUTTON, because that buys a real
-   property — the button does not JUMP vertically when you collapse or expand. The steps then start
-   below it, at a derived offset rather than hard against the panel top (#346.4).
-   ⚠️ The badges row is `display:none` here (wml-styles.css `.swml-sidebar.collapsed`), which is why
-   the steps rose into the button in the first place — nothing was holding the inset open. */
+/* ⭐⭐ COLLAPSED — the button keeps the same y, and the NOTCH GOES AWAY.
+   At 54px the panel is a single column, so the button centres horizontally. It stays at `top: 0`,
+   which preserves the property .476 bought and Neil has now seen: the control does NOT jump
+   vertically when you toggle. The notch paint and its radius are dropped here because a rectangle
+   of page-colour floating in the middle of a 54px column reads as a rendering fault, not as an
+   edge — a notch is only a notch when it is cut from a corner.
+   ⚠️ The badges row is `display:none` here (wml-styles.css `.swml-sidebar.collapsed`), so nothing
+   holds the inset open and the steps must carry it themselves — see the body rule below. */
 .swml-canvas-proto.collapsed .swml-proto-collapse-row {
     right: auto;
     left: 50%;
     transform: translateX(-50%);
+    background: none;
+    border-bottom-left-radius: 0;
 }
 /* The panel's own 10px top padding is retired when collapsed so the shared token is the ONE origin
-   for this column; the body then carries the whole inset. 44px = the 32px button + a 12px gap. */
+   for this column; the body then carries the whole inset.
+   v7.20.477: 12px, not 44px. The button's bottom now sits ON the line (y=32) rather than 32px
+   below it, so the steps follow at line + a 12px gap. The gap is the constant; the offset is
+   derived from where the button actually ends. */
 .swml-canvas-proto.collapsed { padding-top: 0; }
 .swml-canvas-proto.collapsed .swml-sidebar-body {
-    padding-top: calc(var(--swml-canvas-top-inset, 32px) + 44px);
+    padding-top: calc(var(--swml-canvas-top-inset, 32px) + 12px);
 }
 /* Touch: a comfortable target regardless of the icon's own box (Apple's 44px
    guidance; the visual chip stays small). No hover-gated visibility anywhere —
-   the iPad reports in #342/#343 are exactly that failure. */
+   the iPad reports in #342/#343 are exactly that failure.
+   ⭐⭐ v7.20.477 (#347a, Neil: *"the icon is sitting sort of to the left of the actual button"*) —
+   `display: grid`, NOT `inline-flex`, AND THAT ONE WORD WAS THE BUG. This is #303 EXACTLY, a
+   second time, four builds later: this rule is (0,2,0) and outranks the base
+   `.swml-collapse-btn { display: grid; place-items: center }` at (0,1,0), so the button computed
+   to a FLEX box — and the two stacked 18px arrows that share one grid cell were laid out SIDE BY
+   SIDE instead, 36px of content in a 32px box, pushing the visible arrow left of centre and
+   clipping its edge against `overflow: hidden`.
+   ⛔ THE CLASS, and it has now cost two test cycles: a `display` written for a SIZING or VISIBILITY
+   reason silently becomes a LAYOUT decision the moment the element gains a second child. The intent
+   here is only "give it a 32px touch box"; grid satisfies that and keeps the base's centring.
+   Any future rule that touches `display` on this button must ask what its CHILDREN need first. */
 .swml-canvas-proto .swml-collapse-btn--icon {
     min-width: 32px;
     min-height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ⭐⭐ v7.20.477 (#347e) — THE HOVER IS THE ICON, NOT A BACKGROUND (Neil, 2026-08-08)
+   ═══════════════════════════════════════════════════════════════════════════
+   *"when you hover over the button, you're gonna have the hover background pushing against the
+   top… instead of having the background appear, why don't we animate the icon instead? Like Aaron
+   Iker's animations."*
+   He is right, and the reason is structural rather than taste: in the corner notch the button's
+   box IS the notch, so an 8px-radius fill inside a 32px cut-out has nowhere to breathe — it lands
+   hard against two edges the panel does not own. A wash reads as a chip pressed into a hole.
+
+   ⚠️ DISCLOSED DEVIATION FROM THE REFERENCE (root §13 — a forced change is stated, never assumed).
+   I read `Aaron Iker/Arrow Animation.html` in full. It is NOT a hover interaction: it binds
+   `click touch`, adds `.animate` for exactly 1600ms, runs a 1.6s three-part keyframe set (the
+   chevron flies +17px, teleports to −22px invisible, returns; its two bars collapse to one line
+   via `scaleX(0.1)`) and draws a 44px ring with a 1s stroke on a 0.3s delay. Three things make a
+   1:1 port wrong HERE: the control is 32px and square with no ring to draw; 1.6s is far too slow
+   for a hover on something you click to get work done (the same objection already recorded against
+   that file's duration at .447); and it would collide with the 380ms collapse swap this button
+   already runs on click, giving one glyph two competing arrow animations.
+   ⭐ SO THE IDIOM IS PORTED, NOT THE FILE — and it is the SAME idiom .447 already borrowed from it:
+   the arrow moves ALONG THE WAY IT POINTS. Here that reads as a preview of the action, because the
+   glyph is literally an arrow flying into a wall: hover nudges the arrow toward its wall, the wall
+   holds, and 90ms later the wall takes the hit with a small vertical flex. Cause, then effect —
+   which is the stagger `Special Announcement.html` uses on hover (0s / 0.2s / 0.4s / 0.6s), at the
+   scale this control can afford.
+   The overshoot easing is deliberate and is where the "Iker" reads: it lands past the mark and
+   settles, rather than sliding to a stop. */
+.swml-canvas-proto .swml-collapse-btn--icon:hover,
+.swml-canvas-proto .swml-collapse-btn--icon:active {
+    background: none;   /* ⛔ the base wash is suppressed HERE ONLY — the panel-header and legacy
+                           sidebar buttons still sit on a flat surface where a wash is correct. */
+}
+.swml-canvas-proto .swml-collapse-btn--icon .swml-ico-arrow,
+.swml-canvas-proto .swml-collapse-btn--icon .swml-ico-wall {
+    /* 260ms with a slight overshoot; the wall trails the arrow by 90ms so the flex reads as impact
+       rather than as the two parts moving together. */
+    transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.swml-canvas-proto .swml-collapse-btn--icon .swml-ico-wall { transition-delay: 90ms; }
+/* Travel is in SVG user units (the glyph is a 24 grid rendered at 18px), so 2 units ≈ 1.5 device
+   px — a nudge, not a slide. `--in` points LEFT at a wall at x=4; `--out` points RIGHT at x=20.
+   Each arrow therefore moves toward ITS OWN wall, which is why the two rules differ in sign. */
+.swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--in  .swml-ico-arrow { transform: translateX(-2px); }
+.swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--out .swml-ico-arrow { transform: translateX(2px); }
+.swml-canvas-proto .swml-collapse-btn--icon:hover .swml-ico-wall { transform: scaleY(1.14); }
+/* Pressed: the arrow completes the journey and the wall absorbs it. */
+.swml-canvas-proto .swml-collapse-btn--icon:active .swml-collapse-ico--in  .swml-ico-arrow { transform: translateX(-3px); }
+.swml-canvas-proto .swml-collapse-btn--icon:active .swml-collapse-ico--out .swml-ico-arrow { transform: translateX(3px); }
+.swml-canvas-proto .swml-collapse-btn--icon:active .swml-ico-wall { transform: scaleY(1.06); }
+/* ⭐ REMOVING THE WASH REMOVED THE KEYBOARD AFFORDANCE TOO — that is the §4d shape (a change that
+   takes something away owes what replaces it), so the focus ring is added in the SAME change and
+   is not left to the browser default, which would draw a square halo across the notch's cut edge. */
+.swml-canvas-proto .swml-collapse-btn--icon:focus-visible {
+    outline: 2px solid var(--swml-teal, #51dacf);
+    outline-offset: -2px;
+    border-radius: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+    /* The hover still REGISTERS — only the travel is removed. A reduced-motion user who is given
+       nothing at all is back to a control that answers a pointer with silence. */
+    .swml-canvas-proto .swml-collapse-btn--icon .swml-ico-arrow,
+    .swml-canvas-proto .swml-collapse-btn--icon .swml-ico-wall {
+        transition-duration: 0.01ms;
+        transition-delay: 0ms;
+    }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--in  .swml-ico-arrow,
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--out .swml-ico-arrow { transform: none; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-ico-wall { transform: none; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover { color: var(--swml-teal, #51dacf); }
 }

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.476';
+var WML_BUILD = '7.20.477';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -4005,8 +4005,16 @@ window.WML = (function() {
         // already a 24 grid at stroke-width 2 with round caps and joins, i.e. exactly the `line`
         // wrapper's own geometry, so there was nothing to adapt. `collapseLeft` is the arrow into a
         // wall at x=4 (collapse); `collapseRight` is the arrow into a wall at x=20 (expand).
-        collapseLeft:  { kind: 'line', src: 'Collapse Left.svg',  body: '<path d="M8 12L12 8M8 12L12 16M8 12H20M4 4V20" />' },
-        collapseRight: { kind: 'line', src: 'Collapse Right.svg', body: '<path d="M16 12L12 8M16 12L12 16M16 12H4M20 4V20" />' },
+        // ⭐⭐ v7.20.477 (#347d, Neil) — SPLIT INTO WALL + ARROW so the two can move independently.
+        // The geometry is UNCHANGED, byte for byte: the same four subpaths, regrouped from one
+        // `d` into two. `M4 4V20` / `M20 4V20` is the wall; the rest is the arrow flying at it.
+        // Nothing renders differently at rest — this exists only so the hover micro-interaction
+        // (wml-canvas.css, "THE HOVER IS THE ICON") can nudge the arrow toward the wall while the
+        // wall holds its ground. A single path could not be animated in halves.
+        collapseLeft:  { kind: 'line', src: 'Collapse Left.svg',
+            body: '<path class="swml-ico-wall" d="M4 4V20" /><path class="swml-ico-arrow" d="M8 12L12 8M8 12L12 16M8 12H20" />' },
+        collapseRight: { kind: 'line', src: 'Collapse Right.svg',
+            body: '<path class="swml-ico-wall" d="M20 4V20" /><path class="swml-ico-arrow" d="M16 12L12 8M16 12L12 16M16 12H4" />' },
         // ⭐ v7.20.444 (#282, Neil): the ANIMATED Writer's-Profile glyph — `profile` above, rebuilt so
         // the reference micro-interaction can play on it. Ported from
         // `reference/animated-icons/Animated Profile Icon.html` (the CodePen dump Neil supplied),

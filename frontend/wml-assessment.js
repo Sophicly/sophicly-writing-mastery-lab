@@ -25553,10 +25553,24 @@
         // Without these the tbScroll pointerdown handler at L3964 fires
         // first, ProseMirror sees focus loss + collapses selection at the
         // wrong caret. preventDefault keeps focus + selection intact.
+        /* ⭐⭐ v7.20.477 (#348, Neil: *"when it loops, it actually drags the canvas behind it in the
+           same direction"*) — THE GUARD NOW COVERS THE WHOLE TOOLBAR, NOT JUST THE ITEMS.
+           The `.swml-tb-item` test above meant a pointerdown landing on the scroller BACKGROUND —
+           the 3px gaps between tools, the padding, the strip either side of the set — was let
+           through untouched. That is a mousedown inside a floating bar that sits ON TOP of a
+           ProseMirror document with a LIVE TEXT SELECTION under it (this toolbar only exists while
+           text is selected), so the browser starts a native selection drag: moving the pointer
+           extends the selection and auto-scrolls the document to follow it. Drag the carousel
+           sideways and the page is dragged the same way — exactly what he describes.
+           ⚠️ It only shows up NOW because the carousel only started scrolling at .476. The defect
+           has been there since the drag handler was written; nothing could reach it before.
+           `preventDefault()` on pointerdown/mousedown does NOT cancel the subsequent click, so the
+           tools still fire — that is already proven by the item branch this replaces, which has run
+           since v7.19.54. It also keeps the editor's focus and caret, which was the original job.
+           ⛔ Do not narrow this back to a selector. The scroller's whole surface is a drag handle;
+           anything the guard does not cover is a place a student can tear the document sideways. */
         const _preventToolbarFocusSteal = (ev) => {
-            if (ev.target.closest && ev.target.closest('.swml-tb-item')) {
-                ev.preventDefault();
-            }
+            ev.preventDefault();
         };
         toolbar.addEventListener('pointerdown', _preventToolbarFocusSteal, true);
         toolbar.addEventListener('mousedown', _preventToolbarFocusSteal, true);
