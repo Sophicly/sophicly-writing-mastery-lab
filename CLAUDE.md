@@ -237,6 +237,60 @@
 
 ---
 
+## ⭐⭐ ALIGNMENT / GEOMETRY ASKS — SOLVE THE GEOMETRY ON PAPER BEFORE WRITING ANY CODE (Neil, 2026-08-08, after FIVE builds on ONE badge: *"we've been back and forth with this too many times"*)
+
+**THE COST, stated first, because it is the whole reason this rule exists.** One 28px badge took
+v7.20.465 → .470 and five of Neil's test cycles. Every build was a real fix of a real defect, the
+gate passed every time, and **not one of them made the badge look right** — because the thing that
+was actually wrong was never a defect at all.
+
+**WHAT ACTUALLY HAPPENED, in order — the shape matters more than the details:**
+1. `.465` the aligner never ran (measured a detached tree). Real bug. Fixed.
+2. `.466` it ran too early, and compared `offsetTop` across two different `offsetParent` chains.
+   Two more real bugs. Fixed.
+3. `.467` measured correctly at last → returned **3px**. Neil: *"it looks horrible."*
+4. **The 3px WAS the correct answer.** The rail's first button sits ~31px below the panel's top
+   edge; the badge is 28px tall; so "badge BOTTOM level with the button's TOP" leaves 31 − 28 = 3px
+   above it — **by arithmetic, on every screen, forever.** No measurement fix could ever have
+   produced a different number.
+5. `.470` the only free variable was the RAIL'S OWN TOP. Lowering it 32px gave the badge ~36px of
+   air *and* kept the datum exact. **That change was available on day one.**
+
+**THE RULE — before ANY "align X to Y" / "line it up with" / "move it up/down" request, write the
+one-line equation and check it has a pleasing solution:**
+
+    available space = (Y's position) − (container edge)      e.g. 31px
+    required space  = (X's size) + (the gap you want above)  e.g. 28px + 32px = 60px
+    if required > available → THE DATUM CANNOT BE SATISFIED PRETTILY.
+    Say so, and name the free variable that fixes it, BEFORE writing code.
+
+**FOUR THINGS THAT WOULD EACH HAVE SAVED FOUR CYCLES:**
+1. ⭐ **A CONSTRAINT CAN BE UNSATISFIABLE. Check that FIRST.** "Make the numbers right" assumes a
+   good answer exists. Here the good answer did not exist inside the variables being adjusted. Ten
+   seconds of arithmetic beats four correct fixes to the wrong quantity.
+2. ⭐ **A DATUM IS ONLY AS GOOD AS THE BOX IT SITS IN.** Neil asked for this exact alignment once
+   before and was right (#297) — because the collapse icon it applied to sat in a **50px head**
+   that gave it room. #340a *deleted that head*. **Carrying a datum across a layout change is not
+   reusing it, it is re-deriving it against a box that no longer exists.** When a rule is inherited
+   from an earlier ruling, re-check its PRECONDITIONS, not just its wording.
+3. ⭐ **"IT LOOKS WRONG" IS NOT ALWAYS "IT IS COMPUTED WRONG."** Three builds assumed a broken
+   measurement because the result looked bad. The discriminator is cheap and must be run before
+   touching code: **compute the number the spec DEMANDS by hand. If it equals what the screen
+   shows, the code is right and the SPEC is what needs the conversation.**
+4. ⭐ **NEIL'S DOM PASTE ENDED IT IN ONE MESSAGE.** `--swml-badge-top: 3px` instantly proved the JS
+   ran and the arithmetic was the issue — something three rounds of source-reading had failed to
+   settle. **For any layout question, ASK FOR THE COMPUTED VALUE FIRST** (he can right-click →
+   Inspect and paste an element). It is seconds of his time and it replaces a whole cycle of
+   inference (root §19: measure, never guess — and the DOM is the measurement).
+
+**AND WHEN HE RE-ASSERTS A DATUM YOU BELIEVE IS UNSATISFIABLE** (he did: *"just sort out the
+arithmetics"*), the answer is not to silently substitute your own (`.468` switched to tops-aligned
+and was rejected) **and not to ship his and let it look bad** (`.469` restored the 3px he had
+already called horrible). It is to satisfy his datum AND fix the constraint that makes it ugly, in
+ONE change — which is what `.470` finally did. Root §12: work the whole list, one test cycle.
+
+---
+
 ## FILE STRUCTURE
 
 - `sophicly-writing-mastery-lab.php` — main, hooks, asset enqueue

@@ -2748,6 +2748,16 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     gap: var(--swml-rail-gap);
     margin: 0 calc(-1 * var(--swml-rail-size)) 0 12px;
     width: var(--swml-rail-size);
+    /* ⭐⭐ v7.20.470 (#340c) — THE RAIL STARTS ONE STEP LOWER, AND THIS IS THE LINE THAT MAKES
+       NEIL'S DATUM SURVIVABLE. He wants the project badge's BOTTOM level with this column's first
+       button, and he wants the badge not jammed against the sidebar's top edge. Both are
+       satisfiable only if this column starts far enough down to leave the badge room ABOVE it:
+       the badge is 28px tall, and with the column's old top (32px, inherited from
+       `.swml-canvas-content`'s padding) the arithmetic could only ever leave 32 − 28 = 4px.
+       32px more puts the first button ~64px down, so a bottom-aligned badge sits at ~36px with
+       real air above it. The number is the SAME 32px the content padding already uses, so the two
+       insets stay in step rather than becoming a magic offset. */
+    padding-top: 32px;
 }
 /* ⭐ v7.20.383 (Neil: "the contextual toolbar was sitting above the outline panel… the panel
    should sit above pretty much everything else"). ROOT: this column is `position:sticky` with a
