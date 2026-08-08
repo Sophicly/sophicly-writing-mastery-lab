@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.477';
+var WML_BUILD = '7.20.478';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
@@ -4011,10 +4011,28 @@ window.WML = (function() {
         // Nothing renders differently at rest — this exists only so the hover micro-interaction
         // (wml-canvas.css, "THE HOVER IS THE ICON") can nudge the arrow toward the wall while the
         // wall holds its ground. A single path could not be animated in halves.
+        // ⭐⭐ v7.20.478 (#347f, Neil) — THE WALL IS A CURVE THAT HAPPENS TO BE STRAIGHT.
+        // `M4 4 Q4 12 4 20` renders PIXEL-IDENTICAL to `M4 4V20`: the quadratic's control point is
+        // collinear with its endpoints, so the curve degenerates to the same segment. Nothing about
+        // the supplied glyph changes at rest — this is the same line, expressed so that it CAN bend.
+        // Why it has to be written this way: CSS can only transition `d` between paths with the
+        // IDENTICAL command sequence. A `V` cannot morph into a `Q`, so the rest state must already
+        // be the Q. See "THE WALL BENDS" in wml-canvas.css for the deflection arithmetic.
+        // The barbs are separate paths so they can SPLAY about the arrow's tip on impact, which is
+        // the reference's `--arrow-rotate: 45 → 70`. `.swml-ico-arrow` wraps nothing — the shaft and
+        // both barbs carry it so one rule still moves the whole arrow, while the barbs can also
+        // rotate about the tip (8,12) / (16,12) independently. Geometry unchanged: same four
+        // subpaths, same coordinates, just addressable.
         collapseLeft:  { kind: 'line', src: 'Collapse Left.svg',
-            body: '<path class="swml-ico-wall" d="M4 4V20" /><path class="swml-ico-arrow" d="M8 12L12 8M8 12L12 16M8 12H20" />' },
+            body: '<path class="swml-ico-wall" d="M4 4 Q4 12 4 20" />'
+                + '<path class="swml-ico-arrow swml-ico-shaft" d="M8 12H20" />'
+                + '<path class="swml-ico-arrow swml-ico-barb swml-ico-barb--a" d="M8 12L12 8" />'
+                + '<path class="swml-ico-arrow swml-ico-barb swml-ico-barb--b" d="M8 12L12 16" />' },
         collapseRight: { kind: 'line', src: 'Collapse Right.svg',
-            body: '<path class="swml-ico-wall" d="M20 4V20" /><path class="swml-ico-arrow" d="M16 12L12 8M16 12L12 16M16 12H4" />' },
+            body: '<path class="swml-ico-wall" d="M20 4 Q20 12 20 20" />'
+                + '<path class="swml-ico-arrow swml-ico-shaft" d="M16 12H4" />'
+                + '<path class="swml-ico-arrow swml-ico-barb swml-ico-barb--a" d="M16 12L12 8" />'
+                + '<path class="swml-ico-arrow swml-ico-barb swml-ico-barb--b" d="M16 12L12 16" />' },
         // ⭐ v7.20.444 (#282, Neil): the ANIMATED Writer's-Profile glyph — `profile` above, rebuilt so
         // the reference micro-interaction can play on it. Ported from
         // `reference/animated-icons/Animated Profile Icon.html` (the CodePen dump Neil supplied),

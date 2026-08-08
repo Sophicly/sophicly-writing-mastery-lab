@@ -15358,6 +15358,12 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--in  .swml-ico-arrow { transform: translateX(-2px); }
 .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--out .swml-ico-arrow { transform: translateX(2px); }
 .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-ico-wall { transform: scaleY(1.14); }
+/* ⭐ This scaleY is the FALLBACK only. It is a stretch, not a bend — Neil, seeing it: *"that's very
+   simplistic compared to what Aaron would actually do… the arrow would push against the line, and
+   the line would sort of bend to show some sort of force."* He is right, and a transform cannot
+   express it: scaling moves a straight line's endpoints, it never bows the middle. The real thing
+   is under "THE WALL BENDS" below, where the browser supports it; this stays for the ones that
+   don't, because a control with no hover response at all is worse than a plain one. */
 /* Pressed: the arrow completes the journey and the wall absorbs it. */
 .swml-canvas-proto .swml-collapse-btn--icon:active .swml-collapse-ico--in  .swml-ico-arrow { transform: translateX(-3px); }
 .swml-canvas-proto .swml-collapse-btn--icon:active .swml-collapse-ico--out .swml-ico-arrow { transform: translateX(3px); }
@@ -15369,6 +15375,163 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     outline: 2px solid var(--swml-teal, #51dacf);
     outline-offset: -2px;
     border-radius: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ⭐⭐ THE WALL BENDS — v7.20.478 (#347f, Neil)
+   ═══════════════════════════════════════════════════════════════════════════
+   *"the arrow would push against the line, and the line would sort of bend to show some sort of
+   force. That's what I'd imagine Aaron to do."* Correct, and it is the difference between a
+   micro-interaction and a hover state: the arrow arriving is an EVENT, but the wall giving way is
+   the CONSEQUENCE, and only the consequence tells you the two objects touched.
+
+   ⭐ WHY THIS COULD NOT BE A TRANSFORM, which is what .477 shipped. `scaleY` moves a straight
+   line's ENDPOINTS; it can stretch or squash the segment but the segment stays straight, because a
+   transform is affine and affine maps take lines to lines. Bowing the MIDDLE while pinning both
+   ends is a change of geometry, so the path data itself has to move.
+
+   THE MECHANISM: `d` is transitionable as a CSS property, but ONLY between paths with an identical
+   command sequence. That is why the glyph now ships its wall as `M4 4 Q4 12 4 20` (wml-core.js) —
+   a quadratic whose control point is collinear with its endpoints, so it renders pixel-identical to
+   the `M4 4V20` Neil supplied. Same line, written so it can bend. A `V` could never morph into a `Q`.
+
+   THE ARITHMETIC, because a bend that leaves the viewBox is clipped and reads as a broken glyph.
+   A quadratic at its midpoint sits at (P0 + 2·P1 + P2) / 4, so the visible deflection is HALF the
+   control point's offset — the control has to travel twice as far as the bow you want:
+     wall spans y 4…20 on a 24 grid, rendered at 18px  →  0.75 device px per unit
+     hover  control x = −1.2  →  midpoint (4 + 2(−1.2) + 4)/4 = 1.4  →  bow 2.6 units ≈ 1.95px
+     active control x = −2.0  →  midpoint (4 + 2(−2.0) + 4)/4 = 1.0  →  bow 3.0 units ≈ 2.25px
+   Stroke half-width is 1 unit, so the outer edge lands at x = 0.4 (hover) and x = 0.0 (active) —
+   inside the box, with nothing to clip. The right-hand glyph is the exact mirror about x = 12.
+   ⛔ Do not increase these without redoing that last line. The control points sit OUTSIDE the
+   viewBox by design (that is fine — control points are never drawn); the CURVE must not.
+
+   The 90ms delay inherited from the base rule is what makes it read as force rather than as two
+   things moving together: the arrow lands, and only then does the wall answer. The overshoot easing
+   supplies the recoil on the way back, so releasing the hover springs the line past straight and
+   settles — no keyframes needed. */
+/* ⭐⭐ THE TIMELINE IS PORTED FROM `Aaron Iker/Upload.html` (and `Download & Upload Animation.html`,
+   which runs the IDENTICAL arrow/line mechanic — only its particle burst differs). Neil: *"you could
+   literally just turn the arrow around, so it points at the line, and then flip them ninety
+   degrees."* That is exactly the mapping: his icon drives an arrow DOWN into a horizontal line
+   below it; ours drives an arrow SIDEWAYS into a vertical line beside it, so his Y axis is our X.
+
+   THE REFERENCE, read from the GSAP timeline in both files rather than inferred:
+     arrow    `--arrow-y`      0 → 6      ease elastic.in(1.1, .8)    duration .7
+     head     `--arrow-rotate` 45 → 70    (the barbs SPLAY on impact)  same tween
+     return   both back        6 → 0, 70 → 45   ease elastic.out(1.1, .8)   duration .7
+     line     midpoint y       12 → 15    duration .15   STARTING AT .65
+     recoil   midpoint y       15 → 12    ease elastic.out(1.2, .7)  duration .6  STARTING AT .8
+     loop     `setInterval(() => timeline.restart(), 1500)` while hovered
+   ⭐ THREE THINGS THAT MAKE IT READ, and .477 had none of them:
+     1. THE ENDPOINTS ARE PINNED and only the MIDDLE moves — `[5,12] [12,y] [19,12]`. That is a
+        bend. A `scaleY` moves the ends, which is a stretch, and is what Neil called "simplistic".
+     2. THE ARROW TRAVELS TWICE THE DENT (6 against 3). The wall gives, but it gives LESS than the
+        arrow pushed — that ratio is what makes it read as resistance rather than as a hole.
+     3. THE DENT STARTS AT .65, BEFORE the arrow finishes at .7 — they are in contact, not in
+        sequence. And the recoil is ELASTIC, which a cubic-bezier cannot express at all: it has to
+        oscillate, so this is keyframes, not a transition.
+
+   OUR SCALE. The reference's arrow closes a 12-unit gap by 6; ours has a 4-unit gap (tip at x=8,
+   wall at x=4), so the whole thing is halved and the RATIO is kept: arrow 4, dent 2.
+     dent midpoint x = 2  ⇒  quadratic control x = 2·2 − 4 = 0   (the curve's midpoint is
+     (P0 + 2·P1 + P2)/4, so the control travels twice the bow)
+   Stroke half-width is 1 unit, so at full dent the outer edge sits at x = 1 — inside the viewBox
+   with room to spare. The right-hand glyph mirrors about x = 12. ⛔ Increase these and re-check
+   that line; a bend that leaves the box is clipped and reads as a broken glyph.
+   The reference smooths its three points into cubics at `smoothing: .25`; a quadratic is naturally
+   smooth through its midpoint, so it is the same curve family with one control point instead of
+   four. Disclosed rather than silently substituted. */
+@supports (d: path("M0 0")) {
+    /* The .477 stretch is cancelled wherever the real bend is available — never both. */
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-ico-wall,
+    .swml-canvas-proto .swml-collapse-btn--icon:active .swml-ico-wall { transform: none; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--in  .swml-ico-arrow,
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--out .swml-ico-arrow,
+    .swml-canvas-proto .swml-collapse-btn--icon:active .swml-collapse-ico--in  .swml-ico-arrow,
+    .swml-canvas-proto .swml-collapse-btn--icon:active .swml-collapse-ico--out .swml-ico-arrow {
+        transform: none;
+        transition: none;
+    }
+    /* 1.5s = the reference's restart interval. The 1.4s of movement plus a 0.1s rest at the end is
+       what stops it reading as a nervous tic — the pause is part of the design, not slack. */
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--in  .swml-ico-arrow { animation: swmlCbArrowL 1.5s linear infinite; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--out .swml-ico-arrow { animation: swmlCbArrowR 1.5s linear infinite; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--in  .swml-ico-wall  { animation: swmlCbWallL  1.5s linear infinite; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--out .swml-ico-wall  { animation: swmlCbWallR  1.5s linear infinite; }
+    /* The barbs ride the arrow AND splay about its tip, so they carry both animations. The tip is
+       the transform-origin — (8,12) for the left glyph, (16,12) for the right. */
+    .swml-canvas-proto .swml-collapse-btn--icon .swml-ico-barb { transform-box: view-box; }
+    .swml-canvas-proto .swml-collapse-btn--icon .swml-collapse-ico--in  .swml-ico-barb { transform-origin: 8px 12px; }
+    .swml-canvas-proto .swml-collapse-btn--icon .swml-collapse-ico--out .swml-ico-barb { transform-origin: 16px 12px; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--in  .swml-ico-barb--a { animation: swmlCbArrowL 1.5s linear infinite, swmlCbBarbA 1.5s linear infinite; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--in  .swml-ico-barb--b { animation: swmlCbArrowL 1.5s linear infinite, swmlCbBarbB 1.5s linear infinite; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--out .swml-ico-barb--a { animation: swmlCbArrowR 1.5s linear infinite, swmlCbBarbB 1.5s linear infinite; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--out .swml-ico-barb--b { animation: swmlCbArrowR 1.5s linear infinite, swmlCbBarbA 1.5s linear infinite; }
+}
+/* ── The elastic curves, hand-stopped. GSAP's elastic.in winds up with small counter-moves before
+   the strike; elastic.out overshoots and rings down. Percentages are the reference's seconds over
+   its 1.5s cycle: impact at .7s = 46.7%, dent from .65s = 43.3%, recoil from .8s = 53.3%. ── */
+@keyframes swmlCbArrowL {
+    0%, 8%   { transform: translateX(0); }
+    18%      { transform: translateX(0.5px); }     /* wind-up: pulls AWAY first */
+    30%      { transform: translateX(-0.4px); }
+    40%      { transform: translateX(1px); }
+    46.7%    { transform: translateX(-4px); }      /* strike */
+    57%      { transform: translateX(0.9px); }     /* elastic.out: overshoot back past rest */
+    68%      { transform: translateX(-0.4px); }
+    79%      { transform: translateX(0.15px); }
+    88%      { transform: translateX(-0.05px); }
+    93.3%, 100% { transform: translateX(0); }
+}
+@keyframes swmlCbArrowR {
+    0%, 8%   { transform: translateX(0); }
+    18%      { transform: translateX(-0.5px); }
+    30%      { transform: translateX(0.4px); }
+    40%      { transform: translateX(-1px); }
+    46.7%    { transform: translateX(4px); }
+    57%      { transform: translateX(-0.9px); }
+    68%      { transform: translateX(0.4px); }
+    79%      { transform: translateX(-0.15px); }
+    88%      { transform: translateX(0.05px); }
+    93.3%, 100% { transform: translateX(0); }
+}
+/* The splay: 0 → 25° at impact, mirroring the reference's 45° → 70°, then rings down with the arrow. */
+@keyframes swmlCbBarbA {
+    0%, 40%  { rotate: 0deg; }
+    46.7%    { rotate: -25deg; }
+    57%      { rotate: 5deg; }
+    68%      { rotate: -2deg; }
+    79%      { rotate: 0.8deg; }
+    88%, 100% { rotate: 0deg; }
+}
+@keyframes swmlCbBarbB {
+    0%, 40%  { rotate: 0deg; }
+    46.7%    { rotate: 25deg; }
+    57%      { rotate: -5deg; }
+    68%      { rotate: 2deg; }
+    79%      { rotate: -0.8deg; }
+    88%, 100% { rotate: 0deg; }
+}
+/* The wall holds until 43.3% — it has no reason to move before it is hit — then dents over the
+   reference's 0.15s and rings back. Endpoints never move: only the control point travels. */
+@keyframes swmlCbWallL {
+    0%, 43.3% { d: path("M4 4 Q4 12 4 20"); }
+    53.3%     { d: path("M4 4 Q0 12 4 20"); }        /* dent: midpoint x = 2 */
+    63%       { d: path("M4 4 Q5.6 12 4 20"); }      /* recoil past straight */
+    73%       { d: path("M4 4 Q3.3 12 4 20"); }
+    82%       { d: path("M4 4 Q4.3 12 4 20"); }
+    90%       { d: path("M4 4 Q3.9 12 4 20"); }
+    95%, 100% { d: path("M4 4 Q4 12 4 20"); }
+}
+@keyframes swmlCbWallR {
+    0%, 43.3% { d: path("M20 4 Q20 12 20 20"); }
+    53.3%     { d: path("M20 4 Q24 12 20 20"); }
+    63%       { d: path("M20 4 Q18.4 12 20 20"); }
+    73%       { d: path("M20 4 Q20.7 12 20 20"); }
+    82%       { d: path("M20 4 Q19.7 12 20 20"); }
+    90%       { d: path("M20 4 Q20.1 12 20 20"); }
+    95%, 100% { d: path("M20 4 Q20 12 20 20"); }
 }
 @media (prefers-reduced-motion: reduce) {
     /* The hover still REGISTERS — only the travel is removed. A reduced-motion user who is given
@@ -15382,4 +15545,20 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-collapse-ico--out .swml-ico-arrow { transform: none; }
     .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-ico-wall { transform: none; }
     .swml-canvas-proto .swml-collapse-btn--icon:hover { color: var(--swml-teal, #51dacf); }
+    /* v7.20.478: the BEND and the whole looping timeline are motion too, so they go with the rest —
+       cancelling only the transforms would have left the path still bowing and the barbs still
+       splaying on a loop, which is by far the louder half. `animation: none` is safe here (unlike
+       the .432 landmine) because these animations are HOVER-SCOPED: there is no entrance to replay,
+       and the rule never toggles at runtime. The colour change above is what keeps the control
+       answering, so this is a refusal WITH a response (§4d), not a dead button. */
+    .swml-canvas-proto .swml-collapse-btn--icon .swml-ico-wall,
+    .swml-canvas-proto .swml-collapse-btn--icon .swml-ico-arrow,
+    .swml-canvas-proto .swml-collapse-btn--icon .swml-ico-barb { transition: none; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-ico-wall,
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-ico-arrow,
+    .swml-canvas-proto .swml-collapse-btn--icon:hover .swml-ico-barb { animation: none; rotate: 0deg; }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover  .swml-collapse-ico--in  .swml-ico-wall,
+    .swml-canvas-proto .swml-collapse-btn--icon:active .swml-collapse-ico--in  .swml-ico-wall { d: path("M4 4 Q4 12 4 20"); }
+    .swml-canvas-proto .swml-collapse-btn--icon:hover  .swml-collapse-ico--out .swml-ico-wall,
+    .swml-canvas-proto .swml-collapse-btn--icon:active .swml-collapse-ico--out .swml-ico-wall { d: path("M20 4 Q20 12 20 20"); }
 }
