@@ -25596,43 +25596,6 @@
         const overlay = el('div', { id: 'swml-canvas-overlay' });
         const canvas = el('div', { className: 'swml-canvas' });
 
-        // ═══════════════════════════════════════════════════════════════════════════════════
-        // v7.20.483 (#359) — THE FRAME. The footer spans the whole window, not just the doc.
-        // ───────────────────────────────────────────────────────────────────────────────────
-        // Neil: *"it would kinda be nice if the footer actually just stretched right across…
-        // from the LearnDash navigation panel all the way across the protocol progress panel,
-        // underneath the canvas document, and then joining onto the chat, it will create like
-        // a frame."*
-        //
-        // WHY IT IS WORTH A DOM CHANGE RATHER THAN A COLOUR TWEAK. It is Apple's window chrome:
-        // Final Cut, Logic, Xcode and Pages all run a continuous bar the full width of the
-        // WINDOW with the panes floating between it and the toolbar. It works because it stops
-        // the panes reading as three adjacent objects and makes them REGIONS OF ONE WINDOW.
-        // That dissolves the seam problem STRUCTURALLY — #335b, #352, #358 and #360 are all the
-        // same complaint about a join between two panels, and a frame ends the class instead of
-        // us chasing shadows one edge at a time.
-        // ⛔ It stops at OUR window's edge. The LearnDash nav is a different application's
-        // chrome and another lane's file, so the frame spans sidebar + document + chat and no
-        // further — which `.swml-canvas` already bounds (measured 2026-08-09: canvas.left=320,
-        // exactly the LD boundary).
-        //
-        // ⭐ THE STRUCTURE, and why a wrapper rather than re-parenting on a timer: the canvas
-        // was a flex ROW whose children are the panes. It becomes a flex COLUMN of
-        // [ paneRow ][ statusBar ], where paneRow is the old row. Every LAYOUT child now goes
-        // to `paneRow`; every ABSOLUTE/FIXED child (reopen button, word-count widget, confirm
-        // overlay, dictation bubble) still goes to `canvas`, because those are positioned, not
-        // flowed, and moving them would change what they are positioned against.
-        //
-        // ⚠️ SCOPED WITH A CLASS ON PURPOSE. Two other builders (:57422 feedback view, :58044
-        // standalone) append their panes DIRECTLY to a `.swml-canvas` and would STACK THEM
-        // VERTICALLY the moment the bare class became a column. They never get
-        // `swml-canvas-framed`, so they keep the row behaviour untouched and cannot break.
-        // This is the #340 lesson applied in the safe direction: converge later, deliberately,
-        // rather than change a shared selector under three divergent callers at once.
-        const paneRow = el('div', { className: 'swml-canvas-row' });
-        canvas.classList.add('swml-canvas-framed');
-        canvas.appendChild(paneRow);
-
         // Tutor / parent review mode: mark overlay so CSS can hide save/mark buttons.
         // v7.15.53: banner removed — chat pane is overlaid instead (see chatPanel below).
         if (state.reviewMode) {
@@ -30521,14 +30484,7 @@
             });
             _sbRO.observe(statusBar);
         } catch (_) {}
-        // v7.20.483 (#359): the footer leaves the editor and becomes the canvas's own bottom
-        // row, so it spans sidebar + document + chat. ⭐ THE .479 RELATIONSHIP SURVIVES, and it
-        // was the thing worth checking before touching this: `.swml-canvas-content`'s
-        // `inset -12px 0 20px -14px` cast ends at the footer BY CONSTRUCTION because the
-        // content's bottom edge and the footer's top edge are the same line. That is still true
-        // — the content now ends at the bottom of `paneRow`, and `paneRow`'s bottom edge IS the
-        // footer's top edge. The cast is unchanged; it simply meets the footer one level up.
-        canvas.appendChild(statusBar);
+        editorPane.appendChild(statusBar);
 
         // v7.19.265: floating "pull from previous stage" icon — last child so it
         // stacks above the editor. Appears only when the load flag turns it on.
@@ -30538,7 +30494,7 @@
         // admin/debug. Do NOT re-mount without a new Neil ruling.
         // _mountPullFab(editorPane);
 
-        paneRow.appendChild(editorPane);   // v7.20.483 (#359): layout child → the row
+        canvas.appendChild(editorPane);
 
         // v7.14.48: Hide document panel when manifest says panels.document === false
         // (e.g. mark_scheme is chat-only quiz — no document needed)
@@ -30945,9 +30901,9 @@
             WML._assessCompleteBtn = assessCompleteBtn;
 
             // Insert panels directly — no animation needed, they render with the canvas
-            paneRow.insertBefore(tp.protoPanel, editorPane);   // v7.20.483 (#359): editorPane's parent is paneRow now — insertBefore against `canvas` throws NotFoundError
-            paneRow.appendChild(tp.chatResizeHandle);   // v7.20.483 (#359)
-            paneRow.appendChild(tp.chatPanel);
+            canvas.insertBefore(tp.protoPanel, editorPane);
+            canvas.appendChild(tp.chatResizeHandle);
+            canvas.appendChild(tp.chatPanel);
 
             // Reveal resize handle
             tp.chatResizeHandle.style.transition = 'opacity 0.5s ease';
@@ -32415,7 +32371,7 @@
             // Append the Sophia side panel as a canvas child (sibling to
             // editorPane). Existing rightPanel stays appended later by the
             // shared canvas mount; we hide it above.
-            if (ip.sophiaPanel) paneRow.appendChild(ip.sophiaPanel);   // v7.20.483 (#359): a flowed pane belongs in the row
+            if (ip.sophiaPanel) canvas.appendChild(ip.sophiaPanel);
 
             requestAnimationFrame(() => {
                 if (state.viewerMode === 'readonly' || state.reviewRole === 'parent') {
@@ -34434,9 +34390,9 @@
                         const essayHTML = canvasEditor.getHTML();
 
                                 // 5. Insert panels (invisible) and stagger fade in
-                                paneRow.insertBefore(protoPanel, editorPane);   // v7.20.483 (#359): shares the primary canvas/editorPane — would throw NotFoundError otherwise
-                                paneRow.appendChild(chatResizeHandle);
-                                paneRow.appendChild(chatPanel);
+                                canvas.insertBefore(protoPanel, editorPane);
+                                canvas.appendChild(chatResizeHandle);
+                                canvas.appendChild(chatPanel);
 
                                 requestAnimationFrame(() => {
                                     // v7.12.45: All width changes simultaneously — one smooth document shift
@@ -35077,14 +35033,14 @@
         });
         reopenBtn.style.opacity = '0';
         reopenBtn.style.pointerEvents = 'none';
-        paneRow.appendChild(rightPanel);   // v7.20.483 (#359): flowed pane → the row
-        canvas.appendChild(reopenBtn);    // ⛔ stays: position:absolute, re-parenting changes what it is positioned against
+        canvas.appendChild(rightPanel);
+        canvas.appendChild(reopenBtn);
 
         // v7.13.77: Insert exam prep protocol panel (deferred from earlier branch)
         if (canvas._epProtoPanel) {
             const editorPane = canvas.querySelector('.swml-canvas-editor-pane') || contentWrap.parentElement;
-            if (editorPane) paneRow.insertBefore(canvas._epProtoPanel, editorPane);   // v7.20.483 (#359)
-            else paneRow.prepend(canvas._epProtoPanel);
+            if (editorPane) canvas.insertBefore(canvas._epProtoPanel, editorPane);
+            else canvas.prepend(canvas._epProtoPanel);
             delete canvas._epProtoPanel;
         }
 
