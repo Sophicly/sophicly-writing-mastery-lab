@@ -4565,11 +4565,20 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        (the project picker and the phase-coach card) and a third will; each sets these five
        and nothing else. Retyping the 20-rule mechanic per consumer is exactly how the site
        ended up with six divergent copies of `.btn-main`, one of which shipped broken. */
-    --swml-bm-face: #5333ed;        /* the resting plate */
-    --swml-bm-ink: #fff;            /* label at rest */
-    --swml-bm-flood: #51dacf;       /* what wipes up on hover */
-    --swml-bm-flood-ink: #12261d;   /* label once the flood lands */
-    --swml-bm-first-ink: #2c003e;   /* the two-tone reveal's first pass */
+    /* ⭐ v7.20.488 — OPTION A, "INVERSION" (Neil chose it from the four candidates,
+       2026-08-09). The reference's own move is a swap: its black button floods white and
+       its white button floods black. Ours swaps TEAL and NEAR-BLACK, and flips which one
+       leads per theme — which is what fixes the light-theme pairing he rejected
+       ("in light theme, the black against the green doesn't look great"): light now
+       leads with near-black and white ink, and the teal arrives on hover instead.
+       ⛔ PURPLE IS OUT of this button entirely — "that dark purple will need people for
+       very specific situations", and BRAND §1 reserves it for high attainment anyway. */
+    --swml-bm-face: #51dacf;        /* the resting plate */
+    --swml-bm-ink: #0f2b2a;         /* label at rest */
+    --swml-bm-flood: #1C1D1F;       /* what wipes up on hover */
+    --swml-bm-flood-ink: #51dacf;   /* label once the flood lands */
+    --swml-bm-first-ink: #51dacf;   /* the two-tone reveal's first pass */
+    --swml-bm-stroke: rgba(255,255,255,0.20);   /* the outline — see the note on __outer::after */
     display: flex; flex-direction: row; align-items: center; justify-content: center;
     position: relative;
     padding: 0;
@@ -4588,8 +4597,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-btn-main .btn-main__outer {
     position: relative; display: block; width: 100%; overflow: hidden;
-    padding: 8px 16px;                   /* D2 */
-    border-radius: 999rem;               /* D2 */
+    padding: 10px 18px;                  /* D2 */
+    /* v7.20.488 — Neil: "I don't like it as a pill. I think it's better as a rectangle
+       with rounder corners, really just like the original ones from the Incredibles."
+       The reference's own `--md` is a 6px rect (`0.375rem`); 999rem was its `--lg` PILL,
+       taken by mistake at .485. 8px is the brand's own md rung and a touch rounder. */
+    border-radius: 8px;                  /* D2 */
 }
 .swml-btn-main .btn-main__outer::after,
 .swml-btn-main .btn-main__outer::before {
@@ -4604,7 +4617,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-btn-main .btn-main__outer::before { clip-path: inset(0px); }
 .swml-btn-main .btn-main__outer::after {
     z-index: 5;
-    border: 1px solid rgba(255,255,255,0.22);   /* D3 — theirs is rgba(43,43,43,.17) on white */
+    /* ⭐ THE ONE BUTTON THAT KEEPS A STROKE. BRAND §0 bans hairlines on cards and default
+       buttons; this is the reference's own `__outer::after` and Neil named it as the
+       exception (2026-08-09). Tokenised so each theme can set its own weight. */
+    border: 1px solid var(--swml-bm-stroke);    /* D3 — theirs is rgba(43,43,43,.17) on white */
 }
 .swml-btn-main .btn-main__hover,
 .swml-btn-main .btn-main__inner {
@@ -4683,7 +4699,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-btn-main { color: var(--swml-bm-ink); }
 .swml-btn-main .btn-main__outer::before { background: var(--swml-bm-face); }
 .swml-btn-main .btn-main__hover { background: var(--swml-bm-flood); color: var(--swml-bm-flood-ink); }
-.swml-canvas-light .swml-btn-main .btn-main__outer::after { border-color: rgba(44,0,62,0.16); }
+.swml-canvas-light .swml-btn-main {
+    --swml-bm-face: #1C1D1F;
+    --swml-bm-ink: #ffffff;
+    --swml-bm-flood: #51dacf;
+    --swml-bm-flood-ink: #0f2b2a;
+    --swml-bm-first-ink: #0f2b2a;
+    --swml-bm-stroke: rgba(26,26,30,0.20);
+}
 @media (prefers-reduced-motion: reduce) {
     .swml-btn-main .btn-main__outer::before,
     .swml-btn-main .btn-main__hover,
@@ -7115,22 +7138,18 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    ⚠️ BRAND.md §0 still lists the Halo button under "Components confirmed loved"
    (2026-07-22). That is the components lane's file and this is one surface, not a
    retirement — flagged there, not rewritten from here. */
-.swml-phase-coach .swml-btn-main {
-    --swml-bm-face: #51dacf;
-    --swml-bm-ink: #1C1D1F;
-    --swml-bm-flood: #2c003e;
-    --swml-bm-flood-ink: #fff;
-    --swml-bm-first-ink: #51dacf;
-    align-self: flex-start;
-}
+/* v7.20.488: the card sets NO colours of its own — one skin, chosen once (option A).
+   Its own theme class carries the light values because the card is body-mounted, so it
+   sits outside `.swml-canvas-light`. */
+.swml-phase-coach .swml-btn-main { align-self: flex-start; }
 .swml-phase-coach--light .swml-btn-main {
-    --swml-bm-face: #ECF3FF;
-    --swml-bm-ink: #4D76FD;
-    --swml-bm-flood: #4D76FD;
-    --swml-bm-flood-ink: #fff;
-    --swml-bm-first-ink: #ECF3FF;
+    --swml-bm-face: #1C1D1F;
+    --swml-bm-ink: #ffffff;
+    --swml-bm-flood: #51dacf;
+    --swml-bm-flood-ink: #0f2b2a;
+    --swml-bm-first-ink: #0f2b2a;
+    --swml-bm-stroke: rgba(26,26,30,0.20);
 }
-.swml-phase-coach--light .swml-btn-main .btn-main__outer::after { border-color: rgba(77,118,253,0.22); }
 /* Light theme — self-carried class (body-mounted card is outside .swml-canvas-light). */
 .swml-phase-coach--light { background: #fff; color: #2c003e; box-shadow: 0 18px 44px -12px rgba(44,0,62,0.20), 0 2px 8px rgba(44,0,62,0.08); }
 .swml-phase-coach--light .swml-phase-coach-arrow { background: #fff; }
