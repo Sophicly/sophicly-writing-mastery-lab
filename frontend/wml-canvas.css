@@ -7086,8 +7086,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     width: 288px;
     max-width: calc(100vw - 24px);
     padding: 16px 16px 14px;
-    border-radius: 14px;
-    background: #232427;
+    border-radius: var(--swml-coach-radius);
+    background: var(--swml-coach-surface);
     box-shadow: 0 18px 44px -12px rgba(44,0,62,0.55), 0 2px 8px rgba(44,0,62,0.32);
     color: #e9e9ee;
     animation: swmlCoachIn 0.45s cubic-bezier(0.22,1,0.36,1);
@@ -8749,10 +8749,10 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
        Identical defect, third component: the scroll buttons at .423, the toolbar at .432, this now.
        #1c1d1f is a RETIRED surface — re-opened for this component only, via a dated scoped
        exemption in `bin/palette-lint.js`, never by deleting the row from RETIRED. */
-    background: #1c1d1f;
-    border-radius: 12px; /* lg max for rectangular surfaces (BRAND.md) */
+    background: var(--swml-coach-surface);
+    border-radius: var(--swml-coach-radius);
     padding: 16px 18px 15px;
-    box-shadow: 0 12px 36px rgba(44, 0, 62, 0.5); /* brand deep-purple tinted elevation, no border */
+    box-shadow: var(--swml-coach-shadow);
     opacity: 0;
     transform: translateY(10px) scale(0.985);
     transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1), transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
@@ -8761,21 +8761,24 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-weight-card.swml-weight-card-in { opacity: 1; transform: none; }
 .swml-weight-card.swml-weight-card-out { opacity: 0; transform: translateY(8px) scale(0.985); }
 .swml-weight-card-eyebrow {
+    color: var(--swml-coach-accent);
+    /* v7.20.489: the hardcoded near-white that used to sit below this won on order,
+       so the card's ink never followed its own surface. */
     font-size: 10.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.13em;
-    color: rgba(249,247,253,0.92); /* near-white, faint warm tint — reads neutral, never blue */
     margin-bottom: 8px;
     padding-right: 16px;
 }
 .swml-weight-card-body {
+    color: var(--swml-coach-text);
     font-size: 13.5px;
     line-height: 1.56;
-    color: rgba(255,255,255,0.82);
     margin-bottom: 14px;
 }
 .swml-weight-card-close {
+    color: var(--swml-coach-muted);
     position: absolute;
     top: 9px;
     right: 11px;
@@ -8787,25 +8790,18 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: none;
     border: none;
     border-radius: 6px;
-    color: rgba(255,255,255,0.5);
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
 }
-.swml-weight-card-close:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); }
-.swml-weight-card-ok {
-    background: #5333ed; /* solid brand purple — no gradient, no border */
-    color: #fff;
-    border: none;
-    border-radius: 9px;
-    padding: 7px 16px;
-    font-size: 12.5px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: filter 0.15s ease;
-}
-.swml-weight-card-ok:hover { filter: brightness(1.08); }
+.swml-weight-card-close:hover { background: rgba(127,127,140,0.14); color: var(--swml-coach-title); }
+/* v7.20.489: this was solid brand purple with a `filter: brightness()` hover — the
+   last action in the coaching-card family that was not the house button. Purple is
+   high attainment (BRAND §1) and a "Got it" has not earned it; `brightness()` is not
+   in the hover vocabulary at all. The markup now carries `.swml-btn-main` and the
+   rules below only place it. */
+.swml-weight-card-ok { align-self: flex-start; }
 /* v7.20.481 (#357): WHITE, per Neil's ruling the same day — *"in light theme I think it should be
    white, with a nice little soft shadow beneath it."* It was #e7e7ed, which is within a whisker of
    the light gutter (#e8e8ed) — the SAME hole-not-object defect as the dark side, just quieter.
@@ -8820,9 +8816,10 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
                 0 2px 6px rgba(44, 0, 62, 0.10),
                 0 1px 2px rgba(20, 18, 30, 0.10);
 }
-[data-swml-theme="light"] .swml-weight-card-eyebrow { color: #5333ed; }
-[data-swml-theme="light"] .swml-weight-card-body { color: rgba(44,0,62,0.82); }
-[data-swml-theme="light"] .swml-weight-card-close { color: rgba(44,0,62,0.45); }
+/* v7.20.489: the three ink overrides that lived here are gone — the card's ink now comes
+   from the family tokens, so it follows its own surface by construction. They were keyed on
+   `[data-swml-theme="light"]` while every sibling card keys on `.swml-canvas-light`, which is
+   why this card's surface went white while its body text stayed white with it. */
 [data-swml-theme="light"] .swml-weight-card-close:hover { background: rgba(44,0,62,0.06); color: #2c003e; }
 
 /* ── v7.19.12: Interactive matching widget (@MATCH marker) ── */
@@ -13339,6 +13336,95 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
 }
 .swml-canvas-light .swml-comment-preview-note { color: #5333ed; }
 
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ⭐⭐ THE COACHING-CARD FAMILY — ONE STYLE, v7.20.489.
+
+   Neil, 2026-08-09, having found a third one: *"isn't there, like, a central style
+   for all the coaching cards?"* There was not. WML alone had three, and they
+   disagreed on all three things that make a card look like itself:
+
+     phase-coach   #232427 · 14px · Incredibles button
+     weight card   #1c1d1f · 12px · solid purple + brightness() hover
+     tutor modal   #333437 · 12px · flat teal button
+
+   ⭐ HE HAD ALREADY RULED THE SURFACE, at v7.20.481 (#357): *"LearnDash also has
+   these sort of coaching cards. I think it'd be good if the surface colour of both
+   of those is consistent. It should be 1c1d1f in dark theme."* That ruling was
+   applied to ONE card and never generalised — which is exactly how the third one
+   ended up different again. So `#1c1d1f` is the family's surface, not a per-card
+   choice, and these tokens are the single place it is stated.
+
+   ⚠️ `#1c1d1f` is a RETIRED canvas colour, re-opened for this FAMILY by a dated
+   scoped exemption in `bin/palette-lint.js` — never by deleting the RETIRED row.
+   Widening that exemption from one component to the family is part of this change.
+
+   Light theme is his ruling from the same day: *"in light theme I think it should
+   be white, with a nice little soft shadow beneath it."*
+   ════════════════════════════════════════════════════════════════════════════ */
+.swml-phase-coach,
+.swml-weight-card,
+.swml-review-modal {
+    --swml-coach-surface: #1c1d1f;
+    --swml-coach-radius: 12px;
+    --swml-coach-shadow: 0 12px 36px rgba(44, 0, 62, 0.5);
+    --swml-coach-title: #f4f3f6;
+    --swml-coach-text: rgba(255, 255, 255, 0.72);
+    --swml-coach-muted: rgba(255, 255, 255, 0.45);
+    --swml-coach-accent: #51dacf;
+}
+.swml-canvas-light .swml-phase-coach,
+.swml-canvas-light .swml-weight-card,
+.swml-canvas-light .swml-review-modal,
+[data-swml-theme="light"] .swml-phase-coach,
+[data-swml-theme="light"] .swml-weight-card,
+[data-swml-theme="light"] .swml-review-modal,
+.swml-phase-coach--light {
+    --swml-coach-surface: #ffffff;
+    --swml-coach-shadow: 0 18px 44px -12px rgba(44, 0, 62, 0.20), 0 2px 8px rgba(44, 0, 62, 0.08);
+    --swml-coach-title: #1a0b2e;
+    --swml-coach-text: rgba(44, 0, 62, 0.72);
+    --swml-coach-muted: rgba(44, 0, 62, 0.45);
+    --swml-coach-accent: #41aaa8;
+}
+
+/* ── The two chat callouts. v7.20.489 (Neil: "the text is too light in light theme"):
+   both were INLINE-styled `color: rgba(255,255,255,.x)` inside template strings —
+   hardcoded white, so on the light theme's pale callout they were white-on-cream and
+   effectively unreadable. An inline style cannot answer a theme class, which is why
+   this could never have been fixed where it lived. FIVE sites carried it. */
+.swml-chat-callout {
+    margin-bottom: 14px; padding: 10px 14px;
+    background: rgba(241, 196, 15, 0.08);
+    border-left: 3px solid rgba(241, 196, 15, 0.4);
+    border-radius: 0 8px 8px 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+}
+.swml-chat-callout strong { color: rgba(255, 255, 255, 0.92); }
+.swml-canvas-light .swml-chat-callout {
+    background: rgba(241, 196, 15, 0.14);
+    border-left-color: rgba(191, 149, 8, 0.55);
+    color: rgba(44, 0, 62, 0.78);
+}
+.swml-canvas-light .swml-chat-callout strong { color: #2c003e; }
+
+.swml-chat-qblock {
+    margin-bottom: 12px; padding: 10px 14px;
+    background: rgba(81, 218, 207, 0.06);
+    border-left: 3px solid rgba(81, 218, 207, 0.3);
+    border-radius: 0 8px 8px 0;
+}
+.swml-chat-qblock-label {
+    font-size: 12px; margin-bottom: 4px;
+    color: rgba(255, 255, 255, 0.5);
+}
+.swml-canvas-light .swml-chat-qblock {
+    background: rgba(65, 170, 168, 0.10);
+    border-left-color: rgba(65, 170, 168, 0.45);
+}
+.swml-canvas-light .swml-chat-qblock-label { color: rgba(44, 0, 62, 0.6); }
+
 /* ════════════════════════════════════════════════════════════════════════════
    TUTOR-VIEW MODAL — brand + impeccable pass, v7.20.486.
    Shipped v7.15.56 and untouched since; every finding below is checkable
@@ -13405,16 +13491,15 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    /* Surface contrast, not an outline: the canvas raised rung on a dimmed page.
-       ⚠️ `#333437`, NOT `#2b2c2f` — palette-lint rejected that on the first run: Neil lifted
-       this rung at v7.20.428 and the old value is RETIRED. A retired colour is invisible to
-       a hex grep once it is spelled `rgba()`, which is why the gate checks both. */
-    background: #333437;
-    border-radius: 12px;               /* §5 — rectangles never exceed lg */
+    /* v7.20.489: joins the coaching-card family (Neil called this one a coaching card
+       too), so the surface comes from the family token rather than the canvas ladder. */
+    background: var(--swml-coach-surface);
+    border-radius: var(--swml-coach-radius);
     padding: 24px;
-    color: #e0e0ee;
-    box-shadow: 0 12px 40px rgba(44, 0, 62, 0.20),
-                0 2px 8px rgba(44, 0, 62, 0.28);
+    /* v7.20.489: ink follows the family surface. It was a hardcoded #e0e0ee,
+       which became light-text-on-white the moment the surface went white in light theme. */
+    color: var(--swml-coach-title);
+    box-shadow: var(--swml-coach-shadow);
 }
 .swml-review-modal-head {
     display: flex;
@@ -13423,7 +13508,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
     margin-bottom: 20px;
 }
 .swml-review-modal-icon {
-    color: #51dacf;
+    color: var(--swml-coach-accent);
     flex-shrink: 0;
     margin-top: 2px;
 }
@@ -13435,10 +13520,10 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
 }
 .swml-review-modal-sub {
     font-size: 13px;
-    color: #9da5b4;
+    color: var(--swml-coach-text);
 }
 .swml-review-modal-sub strong {
-    color: #51dacf;
+    color: var(--swml-coach-accent);
     font-weight: 700;
 }
 .swml-review-modal-section {
@@ -13449,7 +13534,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-weight: 700;
-    color: #9da5b4;
+    color: var(--swml-coach-muted);
     margin-bottom: 8px;
 }
 .swml-review-modal-list {
@@ -13483,38 +13568,22 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
    adding or reordering a section would silently swap the colours of a permissions
    list. (It also sat beside a dead `:nth-of-type(n)` no-op rule, now gone.) */
 .swml-review-modal-mark.is-yes {
-    background: rgba(81, 218, 207, 0.14);
-    color: #51dacf;
+    background: rgba(81, 218, 207, 0.16);
+    color: var(--swml-coach-accent);
 }
 .swml-review-modal-mark.is-no {
-    background: rgba(255, 255, 255, 0.07);
-    color: #9da5b4;
+    background: rgba(127, 127, 140, 0.14);
+    color: var(--swml-coach-muted);
 }
 .swml-review-modal-actions {
     display: flex;
     justify-content: flex-end;
     margin-top: 20px;
 }
-.swml-review-modal-btn {
-    padding: 9px 20px;
-    border-radius: 8px;                /* §5 md — the token, not a hand-picked 10 */
-    border: none;
-    background: #51dacf;
-    color: #1C1D1F;                    /* the documented dark-theme teal-fill ink */
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 13px;
-    cursor: pointer;
-    /* §7b house curve. Colour only — nothing reflows, nothing lifts. */
-    transition: background 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-}
-.swml-review-modal-btn:hover,
+/* v7.20.489: the modal's action joins the family too — it was a flat teal fill with a
+   colour-swap hover, which is not the house button. Markup now carries `.swml-btn-main`. */
 .swml-review-modal-btn:focus-visible {
-    background: #41aaa8;               /* Brand Deep Teal — the documented hover/pressed state */
-    outline: none;
-}
-.swml-review-modal-btn:focus-visible {
-    box-shadow: 0 0 0 2px #333437, 0 0 0 4px #51dacf;
+    box-shadow: 0 0 0 2px var(--swml-coach-surface), 0 0 0 4px var(--swml-coach-accent);
 }
 @media (prefers-reduced-motion: reduce) {
     .swml-review-modal-btn { transition: none; }

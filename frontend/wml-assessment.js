@@ -617,11 +617,11 @@
           +   '<div class="swml-review-modal-section-label">You cannot</div>'
           +   listHTML(cannot, '\u2715', 'is-no')
           + '</div>'
-          + '<div class="swml-review-modal-actions">'
-          +   '<button class="swml-review-modal-btn" type="button">Got it</button>'
-          + '</div>';
+          + '<div class="swml-review-modal-actions"></div>';
 
-        const btn = modal.querySelector('.swml-review-modal-btn');
+        // v7.20.489: the family's house button, from the one producer.
+        const btn = _swmlIncrediblesBtn('Got it', { className: 'swml-review-modal-btn' });
+        modal.querySelector('.swml-review-modal-actions').appendChild(btn);
         btn.addEventListener('click', close);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
@@ -15325,7 +15325,7 @@
                         const _isLang = _isAnyLanguagePaper(); // v7.19.828: covers Eduqas c1/c2 + CCEA u1/u4 for the noun
                         const workNoun = _isLang ? 'response' : 'essay';
                         const questionInfo = qText ? `\n\nYour ${workNoun} question: **${qText}**` : '';
-                        const questionHTML = qText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${workNoun} question:</p><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
+                        const questionHTML = qText ? `<div class="swml-chat-qblock"><p class="swml-chat-qblock-label">Your ${workNoun} question:</p><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
                         const essayLabel = (state.mode === 'exam_prep') ? `${tn} ${workNoun}` : (state.phase === 'redraft') ? `${tn} redraft ${workNoun}` : `${tn} diagnostic ${workNoun}`;
                         const _capN = _essayCapGreetingNote(wc); // v7.19.944: cap stated in the opening, before the grade goal (Neil ruling)
                         const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${_capN ? '\n\n' + _capN.plain : ''}${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
@@ -27012,7 +27012,11 @@
                     try { localStorage.setItem(_wnKey, '1'); } catch (e) {}
                 };
                 const wnClose = el('button', { className: 'swml-weight-card-close', title: 'Dismiss', innerHTML: '&times;', onClick: wnDismiss });
-                const wnOk = el('button', { className: 'swml-weight-card-ok', textContent: 'Got it', onClick: wnDismiss });
+                // v7.20.489: the house button, from the one producer — was a solid-purple
+                // button with a `brightness()` hover, the last action in the coaching-card
+                // family that wasn't the Incredibles one.
+                const wnOk = _swmlIncrediblesBtn('Got it', { className: 'swml-weight-card-ok' });
+                wnOk.addEventListener('click', wnDismiss);
                 wnCard.appendChild(wnClose);
                 wnCard.appendChild(wnEyebrow);
                 wnCard.appendChild(wnBody);
@@ -31803,7 +31807,7 @@
                                 const _isLangPaper2 = _isAnyLanguagePaper(); // v7.19.828: normalised, covers Eduqas c1/c2 + CCEA u1/u4 — never exact-match state.subject (827 slug-drift rule)
                                 const _workLabel2 = _isLangPaper2 ? 'response' : 'essay';
                                 const _qSnippet2 = _questionText ? `\n\nYour ${_workLabel2} question: **${_questionText}**` : '';
-                                const _qHTML2 = _questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel2} question:</p><p style="font-size:13px;font-style:italic">${_questionText}</p></div>` : '';
+                                const _qHTML2 = _questionText ? `<div class="swml-chat-qblock"><p class="swml-chat-qblock-label">Your ${_workLabel2} question:</p><p style="font-size:13px;font-style:italic">${_questionText}</p></div>` : '';
                                 const _essayLabel2 = (state.mode === 'exam_prep') ? `${_assessTextName} ${_workLabel2}` : (state.phase === 'redraft') ? `${_assessTextName} redraft ${_workLabel2}` : `${_assessTextName} diagnostic ${_workLabel2}`;
                                 const _capN2 = _essayCapGreetingNote(_assessWc); // v7.19.944: cap in the opening, before the grade goal
                                 const _newPlain = `Hi ${_firstName}! Welcome to the assessment phase. I've received your ${_essayLabel2} (${_assessWc} words). Let's review your writing together.${_capN2 ? '\n\n' + _capN2.plain : ''}${_qSnippet2}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
@@ -32053,7 +32057,12 @@
                     // template (no AI call), so detection + redirect is a pure UI change.
                     if (assessWc === 0) {
                         const redirectPlain = `Hi ${firstName} — I can see you haven't written your response yet. Before I can give you feedback, head back to the Writing exercise and draft your response. Once you've written something, come back here and I'll walk you through it.`;
-                        const redirectHTML = `<div style="margin-bottom:14px;padding:10px 14px;background:rgba(241,196,15,0.08);border-left:3px solid rgba(241,196,15,0.4);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.7)"><strong style="color:rgba(255,255,255,0.9)">Nothing to assess yet</strong> — your response is currently blank.</div><div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong> — I can see you haven't written your response yet.</p></div><div style="margin-bottom:12px"><p>Before I can give you feedback, head back to the <strong>Writing</strong> exercise and draft your response. Once you've written something, come back here and I'll walk you through it.</p></div>`;
+                        // v7.20.489 (Neil, 2026-08-09: "the text is too light in light theme"): this
+                        // was inline-styled `color: rgba(255,255,255,0.7)` — hardcoded white, so on
+                        // the light theme's cream callout it was white-on-cream and effectively
+                        // unreadable. Inline styles cannot answer a theme class, so the colours move
+                        // to `.swml-chat-callout` in wml-canvas.css where the light theme can set them.
+                        const redirectHTML = `<div class="swml-chat-callout"><strong>Nothing to assess yet</strong> — your response is currently blank.</div><div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong> — I can see you haven't written your response yet.</p></div><div style="margin-bottom:12px"><p>Before I can give you feedback, head back to the <strong>Writing</strong> exercise and draft your response. Once you've written something, come back here and I'll walk you through it.</p></div>`;
                         // ⭐ v7.20.351: DOM-ONLY. This is a GATE, not a turn — it is true only
                         // while `assessWc === 0`. Persisting it froze "head back and draft your
                         // response" into the transcript, so a student who then WROTE their
@@ -32092,7 +32101,7 @@
                     const _isLangPaper = _isAnyLanguagePaper(); // v7.19.828: normalised, covers Eduqas c1/c2 + CCEA u1/u4 — never exact-match state.subject (827 slug-drift rule)
                     const _workLabel = _isLangPaper ? 'response' : 'essay';
                     const questionSnippet = questionText ? `\n\nYour ${_workLabel} question: **${questionText}**` : '';
-                    const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel} question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
+                    const questionHTML = questionText ? `<div class="swml-chat-qblock"><p class="swml-chat-qblock-label">Your ${_workLabel} question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
                     const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} ${_workLabel}` : (state.phase === 'redraft') ? `${assessTextName} redraft ${_workLabel}` : `${assessTextName} diagnostic ${_workLabel}`;
                     const _capN3 = _essayCapGreetingNote(assessWc); // v7.19.944: cap in the opening, before the grade goal
                     const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${_capN3 ? '\n\n' + _capN3.plain : ''}${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
@@ -34949,7 +34958,7 @@
                                             if (questionText) state.question = questionText;
                                             const _workLabel4 = _isAnyLanguagePaper() ? 'response' : 'essay'; // v7.19.828: this twin missed the v7.15.116 response/essay split
                                             const questionSnippet = questionText ? `\n\nYour ${_workLabel4} question: **${questionText}**` : '';
-                                            const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel4} question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
+                                            const questionHTML = questionText ? `<div class="swml-chat-qblock"><p class="swml-chat-qblock-label">Your ${_workLabel4} question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
                                             const firstName = (config.userName || '').split(' ')[0] || 'there';
                                             // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
                                             const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} ${_workLabel4}` : (state.phase === 'redraft') ? `${assessTextName} redraft ${_workLabel4}` : `${assessTextName} diagnostic ${_workLabel4}`;
@@ -41839,14 +41848,42 @@
             // Body-mounted → the .swml-canvas-light ancestor no longer wraps it, so mirror the theme
             // onto the card itself (same pattern as the highlight picker portal, ~15177). Read the
             // canvas class, with the persisted theme as a fallback.
-            let _coachLight = false;
-            try {
-                const _cEl = editor.closest('.swml-canvas');
-                _coachLight = (_cEl && _cEl.classList.contains('swml-canvas-light')) || localStorage.getItem('swml-theme') === 'light';
-            } catch (_) {}
-            card.classList.toggle('swml-phase-coach--light', _coachLight);
+            // ⭐ v7.20.489 (Neil, 2026-08-09: "it doesn't support light theme properly… it didn't
+            // change colours"). THE THEME WAS READ ONCE, HERE, AT MOUNT — and never again. A card
+            // that is already on screen when the student flips the toggle keeps whichever class it
+            // was born with, which is exactly what he screenshotted: a dark card on a light page.
+            //
+            // Everything else in the canvas answers the toggle for free because it lives INSIDE
+            // `.swml-canvas-light`. This card cannot: it is body-mounted (so `position: fixed`
+            // doesn't ride the document scroll), which puts it outside that ancestor and makes the
+            // theme something it has to MIRROR. A mirror that only reflects once is a snapshot.
+            const _canvasEl = (function () { try { return editor.closest('.swml-canvas'); } catch (_) { return null; } })();
+            const _syncCoachTheme = () => {
+                let light = false;
+                try {
+                    light = (_canvasEl && _canvasEl.classList.contains('swml-canvas-light'))
+                        || localStorage.getItem('swml-theme') === 'light';
+                } catch (_) {}
+                card.classList.toggle('swml-phase-coach--light', light);
+            };
+            _syncCoachTheme();
+            // The canvas class IS the live signal — there is no theme-change event to listen for
+            // (checked). The observer dies with the card, so none accumulate.
+            let _coachThemeObs = null;
+            if (_canvasEl && window.MutationObserver) {
+                try {
+                    _coachThemeObs = new MutationObserver(_syncCoachTheme);
+                    _coachThemeObs.observe(_canvasEl, { attributes: true, attributeFilter: ['class'] });
+                } catch (_) {}
+            }
             card.setAttribute('contenteditable', 'false');
-            const dismiss = () => { try { localStorage.setItem(dismissKey, '1'); } catch (_) {} card.remove(); };
+            const dismiss = () => {
+                try { localStorage.setItem(dismissKey, '1'); } catch (_) {}
+                // v7.20.489: the theme observer dies with the card. An observer that outlives its
+                // element is the leak that arrives free with any listener you forget to unhook.
+                try { if (_coachThemeObs) { _coachThemeObs.disconnect(); _coachThemeObs = null; } } catch (_) {}
+                card.remove();
+            };
             const head = document.createElement('div');
             head.className = 'swml-phase-coach-head';
             const icon = document.createElement('span');
@@ -41883,6 +41920,7 @@
                 try {
                     const _coachObs = new MutationObserver(() => {
                         if (!card.isConnected || !document.body.contains(editor)) {
+                            try { if (_coachThemeObs) { _coachThemeObs.disconnect(); _coachThemeObs = null; } } catch (_) {}
                             card.remove();
                             _coachObs.disconnect();
                         }
