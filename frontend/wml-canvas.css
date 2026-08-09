@@ -394,6 +394,47 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     background: #1b1c1f; /* v7.20.386: PAGE BEHIND — the plane every panel sits ON. */
     overflow: hidden;
 }
+
+/* ── v7.20.483 (#359) — THE FRAME ─────────────────────────────────────────────────────────
+   Neil: *"it would kinda be nice if the footer actually just stretched right across… from the
+   LearnDash navigation panel all the way across the protocol progress panel, underneath the
+   canvas document, and then joining onto the chat, it will create like a frame."*
+
+   It is Apple's window chrome — Final Cut, Logic, Xcode and Pages all run a continuous bar the
+   full width of the WINDOW with the panes floating between it and the toolbar. It works because
+   it stops the panes reading as three adjacent objects and makes them REGIONS OF ONE WINDOW,
+   which dissolves the seam class (#335b, #352, #358, #360) structurally instead of us chasing
+   shadows one edge at a time.
+   ⛔ It stops at OUR window's edge. The LearnDash nav is a different application's chrome, and
+   `.swml-canvas` already bounds us there (measured: canvas.left = 320, the LD boundary exactly).
+
+   ⚠️ SCOPED TO `.swml-canvas-framed`, WHICH ONLY THE PRIMARY BUILDER SETS — this is the whole
+   safety of the change. Two other builders (wml-assessment.js :57422 feedback view, :58044
+   standalone) append their panes DIRECTLY to a bare `.swml-canvas`; the moment that bare class
+   became a column they would stack their panes VERTICALLY — a silent, total layout break in two
+   places nobody would have driven. They never get this class. Converge them later, deliberately
+   (the #340 lesson, applied in the safe direction). */
+.swml-canvas-framed {
+    flex-direction: column;
+}
+.swml-canvas-framed > .swml-canvas-row {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    /* ⛔ `min-height: 0` IS LOAD-BEARING, NOT TIDINESS. A flex child defaults to
+       `min-height: auto`, so this row would grow to its tallest pane rather than letting the
+       panes scroll — pushing the footer, and anything at the bottom of a pane, off the screen.
+       That is FIXLIST #343 exactly: students on iPads could not see the chat input at all, on
+       production. `bin/reachability-lint.js` fails the build without this line. */
+    min-height: 0;
+}
+/* The footer is the canvas's own bottom row now, so it spans sidebar + document + chat BY
+   CONSTRUCTION rather than by a width rule. `flex-shrink: 0` stops it being squeezed by a tall
+   row above. */
+.swml-canvas-framed > .swml-canvas-status {
+    width: 100%;
+    flex-shrink: 0;
+}
 /* Dark/light theme for canvas */
 .swml-canvas.swml-canvas-light {
     background: #f5f5f7;

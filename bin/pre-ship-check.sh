@@ -399,6 +399,10 @@ node bin/reachability-lint.js || fail=1   # v7.20.474 (#343): unreachable-contro
 # arithmetic, the wiring into every chat pipeline, the keyboard listener, and the pill's own
 # reachability.
 node bin/reach-runtime-harness.js || fail=1
+# v7.20.483 (#359): the frame. Guards the NotFoundError crash (three `insertBefore` calls against
+# editorPane, whose parent is the row now) and the class scoping that keeps the other two canvas
+# builders on the old row behaviour instead of silently stacking their panes.
+node bin/frame-structure-lint.js || fail=1
 
 # v7.20.394 — a RETIRED surface colour written as rgba() is invisible to the hex sweep that
 # retires it. That has now bitten three times on one palette (.swml-extract-panel, the rail shell,
