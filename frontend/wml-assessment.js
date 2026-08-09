@@ -537,9 +537,17 @@
     // v7.15.56: modal describing the viewer-mode context and capabilities.
     // Opens on pill click AND once per lesson on first load (entry-modal flow).
     function showTutorViewModal() {
-        // Deduplicate
+        // Deduplicate — a second click on the pill closes it.
+        // v7.20.486: it must go out through the SAME door as every other close. A bare
+        // `.remove()` now leaves the document-level Esc listener attached for the rest of
+        // the session and never restores focus, which is the leak that arrives free with
+        // any listener that outlives its element.
         const existing = document.querySelector('.swml-review-modal-overlay');
-        if (existing) { existing.remove(); return; }
+        if (existing) {
+            if (typeof existing.__swmlClose === 'function') existing.__swmlClose();
+            else existing.remove();
+            return;
+        }
 
         const name = state.reviewStudentName || 'Student';
         const isParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
@@ -551,38 +559,74 @@
             : ['View ' + name + '\u2019s written response', 'Read the AI chat transcript', 'Add comments on highlighted text', 'Sign off the attempt'];
         const cannot = ['Edit the document', 'Send chat messages as ' + name, 'Trigger Mark Complete on the student\u2019s lesson'];
 
+        // v7.20.486: the student's name reaches this markup from `display_name`, so it is
+        // TEXT of unknown shape being pasted into innerHTML. An apostrophe is common and a
+        // `<` is possible; either way a name is data, never markup.
+        const esc = (s) => String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
         const overlay = el('div', { className: 'swml-review-modal-overlay' });
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+        // v7.20.486: closing is now one function, because there are four ways out (the
+        // button, the backdrop, Esc, and a second click on the pill) and every one of them
+        // must also put focus back where it came from. A takeover that swallows focus and
+        // never returns it strands a keyboard user on the page behind it.
+        const prevFocus = document.activeElement;
+        const close = () => {
+            document.removeEventListener('keydown', onKeydown, true);
+            overlay.remove();
+            try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (_) {}
+        };
+        function onKeydown(e) {
+            if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+            // One focusable control, so the trap is simply "keep it here".
+            if (e.key === 'Tab') { e.preventDefault(); btn.focus(); }
+        }
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        overlay.__swmlClose = close;   // the one door — see the dedup branch above
 
         const modal = el('div', { className: 'swml-review-modal' });
-        const eyeIcon = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-        const listHTML = (arr, symbol) => '<ul class="swml-review-modal-list">'
-            + arr.map(x => '<li><span class="swml-review-modal-mark">' + symbol + '</span>' + x + '</li>').join('')
+        // v7.20.486: it is a dialog, and until now it said so to nobody \u2014 no role, no
+        // aria-modal, no accessible name, no Esc.
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'swml-review-modal-title');
+        const eyeIcon = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+        // The mark carries its meaning in a CLASS. It used to be coloured by the section's
+        // POSITION (`.section + .section`), so reordering or adding a section would have
+        // silently recoloured a permissions list.
+        const listHTML = (arr, symbol, kind) => '<ul class="swml-review-modal-list">'
+            + arr.map(x => '<li><span class="swml-review-modal-mark ' + kind + '" aria-hidden="true">'
+                + symbol + '</span>' + esc(x) + '</li>').join('')
             + '</ul>';
 
         modal.innerHTML =
             '<div class="swml-review-modal-head">'
           +   '<div class="swml-review-modal-icon">' + eyeIcon + '</div>'
           +   '<div>'
-          +     '<div class="swml-review-modal-title">' + viewLabel + '</div>'
-          +     '<div class="swml-review-modal-sub">' + tierLabel + ' &middot; ' + verb + ' <strong>' + name + '</strong>\u2019s work</div>'
+          +     '<div class="swml-review-modal-title" id="swml-review-modal-title">' + esc(viewLabel) + '</div>'
+          +     '<div class="swml-review-modal-sub">' + esc(tierLabel) + ' &middot; ' + esc(verb) + ' <strong>' + esc(name) + '</strong>\u2019s work</div>'
           +   '</div>'
           + '</div>'
           + '<div class="swml-review-modal-section">'
           +   '<div class="swml-review-modal-section-label">You can</div>'
-          +   listHTML(can, '\u2713')
+          +   listHTML(can, '\u2713', 'is-yes')
           + '</div>'
           + '<div class="swml-review-modal-section">'
           +   '<div class="swml-review-modal-section-label">You cannot</div>'
-          +   listHTML(cannot, '\u2715')
+          +   listHTML(cannot, '\u2715', 'is-no')
           + '</div>'
           + '<div class="swml-review-modal-actions">'
           +   '<button class="swml-review-modal-btn" type="button">Got it</button>'
           + '</div>';
 
-        modal.querySelector('.swml-review-modal-btn').addEventListener('click', () => overlay.remove());
+        const btn = modal.querySelector('.swml-review-modal-btn');
+        btn.addEventListener('click', close);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
+        document.addEventListener('keydown', onKeydown, true);
+        setTimeout(() => { try { btn.focus(); } catch (_) {} }, 50);
     }
 
     // v7.18.17: shared sidebar-steps renderer. Wraps consecutive steps that

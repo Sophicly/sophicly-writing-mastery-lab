@@ -13312,28 +13312,82 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
 }
 .swml-canvas-light .swml-comment-preview-note { color: #5333ed; }
 
-/* Tutor-view modal. */
+/* ════════════════════════════════════════════════════════════════════════════
+   TUTOR-VIEW MODAL — brand + impeccable pass, v7.20.486.
+   Shipped v7.15.56 and untouched since; every finding below is checkable
+   against BRAND.md, none of it is taste.
+
+   WHAT WAS WRONG, and the rule each one broke:
+   · a `1px` teal hairline round the card — §0 "Things explicitly NOT loved":
+     hairline borders around cards/panels. Surfaces separate by BACKGROUND
+     CONTRAST plus shadow. (The same defect Neil caught in the project picker.)
+   · `#1a1030` · `#FF9CA3` · `rgba(255,110,120,…)` — INVENTED. None appears in
+     BRAND.md. §1: "Never invent new colors."
+   · the button's `linear-gradient(#5333ed, #42A1EC)` — breaks colour semantics
+     twice: purple is HIGH ATTAINMENT and never a generic action, and `#42A1EC`
+     is the in-progress gradient's END-STOP, which BRAND §1 explicitly warns not
+     to reuse for another job. New work defaults to teal; a "Got it" has not
+     earned purple.
+   · `16px` card radius and `10px` on the button — §5 caps rectangles at 12px
+     (modals are 8px) and the scale is 4 / 8 / 12.
+   · `0 20px 60px rgba(0,0,0,0.5)` — §6: tint shadows with brand purple, NEVER
+     pure black. The modal token is `0 12px 40px rgba(44,0,62,0.20)`.
+   · `#7DF9E9` as the RESTING accent — Brand Mint's documented job is "hover glow
+     on dark surfaces"; the resting accent on dark is Brand Teal `#51dacf`.
+   · `filter: brightness(1.1)` on hover — not in the hover vocabulary (§7b: all
+     195 Risen hovers are transform/opacity/colour/background). Replaced with the
+     documented teal→deep-teal pressed state on the house curve.
+
+   ⭐ AND THE ONE THAT IS NOT A COLOUR: the "You cannot" list was styled as RED
+   ERRORS. Nothing has gone wrong — a tutor opening a student's document has made
+   no mistake. Red signals a failure and there isn't one; a boundary should
+   RECEDE, not alarm. It is now muted grey, and brand red stays where §1 puts it:
+   destructive actions only.
+   ════════════════════════════════════════════════════════════════════════════ */
 .swml-review-modal-overlay {
     position: fixed;
     inset: 0;
     z-index: 10000;
-    background: rgba(0, 0, 0, 0.6);
+    /* Matches the project picker's scrim rather than a pure-black one (§1 bans
+       `#000` as a surface). */
+    background: rgba(20, 20, 40, 0.72);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 24px;
+    overscroll-behavior: contain;
 }
 .swml-review-modal {
     max-width: 440px;
     width: 100%;
-    background: linear-gradient(135deg, #2c003e, #1a1030);
-    border: 1px solid rgba(125, 249, 233, 0.25);
-    border-radius: 16px;
+    /* ⭐ IT MUST BE ABLE TO SCROLL TO ITS OWN END. There was no bound at all, so
+       on a short viewport — iPad landscape, which is the shape nobody tests —
+       "Got it" sat below the fold with no way to reach it. Same class as the
+       defect that stopped students typing at v7.20.484. */
+    /* ⚠️ `box-sizing` is load-bearing here and it is not inherited on this element:
+       under content-box the max-height below applies to the CONTENT box, so the card's
+       own 48px of padding is added back on top and it renders exactly 48px TALLER than
+       the cap — measured at a 360px viewport: max-height 312, actual height 360, i.e.
+       edge-to-edge with the overlay's gutter overrun. It still scrolled, so this is
+       invisible to a "can you reach the button?" check and only a measurement finds it. */
+    box-sizing: border-box;
+    max-height: calc(100vh - 48px);
+    max-height: calc(100dvh - 48px);   /* iOS: vh measures the viewport with the bars COLLAPSED */
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Surface contrast, not an outline: the canvas raised rung on a dimmed page.
+       ⚠️ `#333437`, NOT `#2b2c2f` — palette-lint rejected that on the first run: Neil lifted
+       this rung at v7.20.428 and the old value is RETIRED. A retired colour is invisible to
+       a hex grep once it is spelled `rgba()`, which is why the gate checks both. */
+    background: #333437;
+    border-radius: 12px;               /* §5 — rectangles never exceed lg */
     padding: 24px;
-    color: #fff;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    color: #e0e0ee;
+    box-shadow: 0 12px 40px rgba(44, 0, 62, 0.20),
+                0 2px 8px rgba(44, 0, 62, 0.28);
 }
 .swml-review-modal-head {
     display: flex;
@@ -13342,7 +13396,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
     margin-bottom: 20px;
 }
 .swml-review-modal-icon {
-    color: #7DF9E9;
+    color: #51dacf;
     flex-shrink: 0;
     margin-top: 2px;
 }
@@ -13354,10 +13408,10 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
 }
 .swml-review-modal-sub {
     font-size: 13px;
-    opacity: 0.8;
+    color: #9da5b4;
 }
 .swml-review-modal-sub strong {
-    color: #7DF9E9;
+    color: #51dacf;
     font-weight: 700;
 }
 .swml-review-modal-section {
@@ -13368,7 +13422,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.5);
+    color: #9da5b4;
     margin-bottom: 8px;
 }
 .swml-review-modal-list {
@@ -13396,15 +13450,18 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
     justify-content: center;
     font-size: 11px;
     font-weight: 700;
-    background: rgba(125, 249, 233, 0.15);
-    color: #7DF9E9;
 }
-.swml-review-modal-list li:nth-of-type(n) .swml-review-modal-mark {
-    /* fallthrough; 'You cannot' section recolours via adjacency below */
+/* ⭐ THE MARK CARRIES ITS MEANING IN A CLASS, not in its position. The old rule
+   was `.section + .section .mark` — it recoloured the second section BY ORDER, so
+   adding or reordering a section would silently swap the colours of a permissions
+   list. (It also sat beside a dead `:nth-of-type(n)` no-op rule, now gone.) */
+.swml-review-modal-mark.is-yes {
+    background: rgba(81, 218, 207, 0.14);
+    color: #51dacf;
 }
-.swml-review-modal-section + .swml-review-modal-section .swml-review-modal-mark {
-    background: rgba(255, 110, 120, 0.15);
-    color: #FF9CA3;
+.swml-review-modal-mark.is-no {
+    background: rgba(255, 255, 255, 0.07);
+    color: #9da5b4;
 }
 .swml-review-modal-actions {
     display: flex;
@@ -13412,18 +13469,28 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
     margin-top: 20px;
 }
 .swml-review-modal-btn {
-    padding: 8px 20px;
-    border-radius: 10px;
+    padding: 9px 20px;
+    border-radius: 8px;                /* §5 md — the token, not a hand-picked 10 */
     border: none;
-    background: linear-gradient(135deg, #5333ed, #42A1EC);
-    color: #fff;
-    font-weight: 600;
+    background: #51dacf;
+    color: #1C1D1F;                    /* the documented dark-theme teal-fill ink */
+    font-family: inherit;
+    font-weight: 700;
     font-size: 13px;
     cursor: pointer;
-    transition: filter 0.15s ease;
+    /* §7b house curve. Colour only — nothing reflows, nothing lifts. */
+    transition: background 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
-.swml-review-modal-btn:hover {
-    filter: brightness(1.1);
+.swml-review-modal-btn:hover,
+.swml-review-modal-btn:focus-visible {
+    background: #41aaa8;               /* Brand Deep Teal — the documented hover/pressed state */
+    outline: none;
+}
+.swml-review-modal-btn:focus-visible {
+    box-shadow: 0 0 0 2px #333437, 0 0 0 4px #51dacf;
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-review-modal-btn { transition: none; }
 }
 
 /* Hide write-action buttons on any canvas rendered in review mode. */
