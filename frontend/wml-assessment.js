@@ -5591,7 +5591,13 @@
     // and two copies of a seven-row ladder is the drift class this repo keeps paying for (§7).
     // Server twin: SWML_REST_API::cw_seed_lineages()['plot'] — same seven steps, same order.
     const CW_PLOT_UPDATE_INFO = {
-        8:  { layer: 'Universal Human Values', update: '1 of 7', desc: 'Map the values and traits you audited in Step 7 across your complete story. For each stage, identify which values are visible and in which beat — a trait can appear in more than one stage, and usually should.' },
+        // v7.20.487: rewritten off the per-stage MENU. PEDAGOGY §30 rules that a plot-update walk
+        // iterates over the LENS (one trait at a time), not over the stages — "which of your values
+        // are visible in this stage?" offers 23 traits at once and root CLAUDE.md §18 is explicit
+        // that a student answers one and skips the rest. §30 named the protocol markdown as the
+        // stale surface; this string is the SECOND one, and it is the copy the student actually
+        // reads at the top of their document, so leaving it would have contradicted the walk.
+        8:  { layer: 'Universal Human Values', update: '1 of 7', desc: 'We will take the traits you flagged in Step 7 one at a time, and you will tap the beats where each one actually shows. A trait usually appears in more than one beat, and should — and “it doesn’t show anywhere yet” is a real answer worth having.' },
         12: { layer: 'Goals and Needs', update: '2 of 7', desc: 'Map your protagonist’s goals, needs, and stakes across your complete story. For each stage, identify what goal drives the protagonist and where their unconscious need surfaces.' },
         15: { layer: 'Archetypes', update: '3 of 7', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
         18: { layer: 'Empathy', update: '4 of 7', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
