@@ -52595,16 +52595,70 @@
                 } catch (e) { return ''; }
             };
 
+            // v7.20.485 (#362): the spine's letter. First LETTER OR DIGIT of the name, so
+            // "  the lighthouse" and "3am" both give something meaningful rather than a
+            // space or a quote mark. Falls back to a dot, never to an empty tile.
+            const _projectInitial = (name) => {
+                const m = String(name || '').match(/[\p{L}\p{N}]/u);
+                return m ? m[0].toUpperCase() : '·';
+            };
+
+            // v7.20.485 (#362): THE INCREDIBLES BUTTON, built to the canonical markup
+            // contract (`Incredibles Buttons - PORT.html`): the INNER text span carries the
+            // label, and the HOVER text span is EMPTY — its ::before/::after draw the label
+            // twice from `data-text`, which is what makes the two-tone reveal. Putting text
+            // in the hover span as well renders the word three times.
+            const _incrediblesButton = (label) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'btn-main';
+                const outer = document.createElement('span');
+                outer.className = 'btn-main__outer';
+                const inner = document.createElement('span');
+                inner.className = 'btn-main__inner';
+                const innerText = document.createElement('span');
+                innerText.className = 'btn-main__text';
+                innerText.textContent = label;
+                inner.appendChild(innerText);
+                const hover = document.createElement('span');
+                hover.className = 'btn-main__hover';
+                const hoverText = document.createElement('span');
+                hoverText.className = 'btn-main__text';
+                hoverText.setAttribute('data-text', label);
+                hover.appendChild(hoverText);
+                outer.appendChild(inner);
+                outer.appendChild(hover);
+                b.appendChild(outer);
+                return b;
+            };
+
             const cardButtons = [];
             sorted.forEach((p, idx) => {
-                const btn = document.createElement('button');
-                btn.className = 'swml-cw-project-overlay__list-btn';
-                btn.type = 'button';
+                // v7.20.485 (#362): the row is a DIV, not a BUTTON. The most-recent row now
+                // carries a real `.btn-main` Continue, and a <button> inside a <button> is
+                // invalid HTML that breaks keyboard and screen-reader behaviour. The row keeps
+                // its whole-surface click as a MOUSE convenience; the accessible control is the
+                // per-row button, which every row has — so nothing became unreachable.
+                const btn = document.createElement('div');
+                btn.className = 'swml-cw-project-overlay__list-row';
+
+                const spine = document.createElement('div');
+                spine.className = 'swml-cw-project-overlay__spine';
+                spine.setAttribute('aria-hidden', 'true');
+                const spineFace = document.createElement('div');
+                spineFace.className = 'swml-cw-project-overlay__spine-face';
+                spineFace.textContent = _projectInitial(p.name);
+                spine.appendChild(spineFace);
+                btn.appendChild(spine);
+
+                const rowText = document.createElement('div');
+                rowText.className = 'swml-cw-project-overlay__rowtext';
+                btn.appendChild(rowText);
 
                 const nameEl = document.createElement('div');
                 nameEl.className = 'swml-cw-project-overlay__list-name';
                 nameEl.textContent = p.name || 'Untitled project';
-                btn.appendChild(nameEl);
+                rowText.appendChild(nameEl);
 
                 // v7.20.299: show REAL progress, derived server-side from what is actually in the
                 // artifacts (derive_cw_project_progress). `current_step` reads 0 on every live
@@ -52612,33 +52666,85 @@
                 // to show a project holding eight answers and one never opened as identical —
                 // which is exactly how Rifat (uid 1386) lost track of his own work. The most
                 // recently edited project is also marked, so "the one you're on" is unambiguous.
+                // v7.20.485 (#362): DATE FIRST, progress second. The meta is one line and
+                // ellipsises, and the bar directly below already shows the progress — so the
+                // half that gets clipped in a narrow modal should be the half that is
+                // duplicated, never "last edited today", which is the unique fact and the
+                // one that tells a student which project they were actually in.
                 const bits = [];
-                if (p.progress_label) bits.push(p.progress_label);
                 const dateLabel = _formatDate(p.updated || p.created);
                 if (dateLabel) bits.push('last edited ' + dateLabel);
+                if (p.progress_label) bits.push(p.progress_label);
                 if (bits.length) {
                     const metaEl = document.createElement('div');
                     metaEl.className = 'swml-cw-project-overlay__list-meta';
                     metaEl.textContent = bits.join(' · ');
-                    btn.appendChild(metaEl);
-                }
-                if (idx === 0 && sorted.length > 1 && !_isReview) {
-                    const tagEl = document.createElement('div');
-                    tagEl.className = 'swml-cw-project-overlay__list-tag';
-                    tagEl.textContent = 'Carry on with this one';
-                    btn.appendChild(tagEl);
+                    rowText.appendChild(metaEl);
                 }
 
-                btn.addEventListener('click', async () => {
+                // v7.20.485 (#362): the progress bar, off the NUMBERS the server already
+                // sends. `derive_cw_project_progress` merges answered / total_rows /
+                // furthest_step / step_progress into every index entry
+                // (class-rest-api.php:6834), so nothing here parses `progress_label` back
+                // into digits — the label is for reading, the numbers are for measuring.
+                // Bar shows the FURTHEST step's fill, which is what "where am I" means and
+                // what the label already states in words.
+                const _stepCounts = (p.step_progress && p.furthest_step)
+                    ? p.step_progress[p.furthest_step] : null;
+                const _filled = _stepCounts ? Number(_stepCounts.filled) || 0 : 0;
+                const _total  = _stepCounts ? Number(_stepCounts.total)  || 0 : 0;
+                // The track is ALWAYS drawn, even at zero. A "Not started" row that omitted it
+                // was 16px shorter than its siblings and lost the one thing this redesign adds,
+                // on exactly the project that most needs to look like an object worth opening.
+                const bar = document.createElement('div');
+                bar.className = 'swml-cw-project-overlay__bar';
+                // The label above already says "Step 4 — 2 of 9 answered", so the bar is
+                // decoration for a screen reader, not a second announcement of the same fact.
+                bar.setAttribute('aria-hidden', 'true');
+                const fill = document.createElement('span');
+                fill.className = 'swml-cw-project-overlay__bar-fill';
+                fill.style.width = (_total > 0)
+                    ? Math.max(0, Math.min(100, (_filled / _total) * 100)) + '%'
+                    : '0%';
+                bar.appendChild(fill);
+                rowText.appendChild(bar);
+
+                const _open = async () => {
                     try {
                         await onLoad(p.id, p.name);
                         _finalize({ loaded: true, projectId: p.id, name: p.name });
                     } catch (e) {
                         console.warn('WML v7.17.29: CW project load failed', e);
                     }
-                });
+                };
+
+                // v7.20.485 (#362): the modal's ONE primary action is "carry on with the
+                // project you were last in" — so that is where `.btn-main` goes. It replaces
+                // the old green "Carry on with this one" tag, which wore #1CD991: BRAND.md §1's
+                // COMPLETE/success green, on a project that is by definition IN PROGRESS. The
+                // semantics were visibly inverted in Neil's own screenshot — a 7-of-7 project
+                // wore no green while a 2-of-9 one did.
+                // Note the old tag also required `sorted.length > 1`; the action does not. A
+                // student with exactly ONE project is the case that read as plain, and it is
+                // the case that most needs an obvious way in.
+                const _isPrimary = (idx === 0 && !_isReview);
+                let go;
+                if (_isPrimary) {
+                    go = _incrediblesButton('Continue');
+                    go.setAttribute('aria-label', 'Continue ' + (p.name || 'Untitled project'));
+                } else {
+                    go = document.createElement('button');
+                    go.type = 'button';
+                    go.className = 'swml-cw-project-overlay__go--quiet';
+                    go.textContent = 'Open';
+                    go.setAttribute('aria-label', 'Open ' + (p.name || 'Untitled project'));
+                }
+                go.addEventListener('click', (e) => { e.stopPropagation(); _open(); });
+                btn.appendChild(go);
+
+                btn.addEventListener('click', _open);
                 list.appendChild(btn);
-                cardButtons.push(btn);
+                cardButtons.push(go);
             });
 
             // v7.20.301: creation is a student-only affordance. A reviewer's create would land in

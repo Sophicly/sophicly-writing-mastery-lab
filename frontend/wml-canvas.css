@@ -4287,7 +4287,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-cw-project-overlay__frame {
     background: linear-gradient(180deg, #2c003e 0%, #5333ed 100%);
     color: #fff;
-    border: 1px solid rgba(81,218,207,0.28);
+    /* v7.20.485 (#362): NO STROKE AT REST. BRAND.md §0 "Things explicitly NOT loved" —
+       hairline borders around cards/panels/tiles; separate surfaces by BACKGROUND
+       CONTRAST plus shadow, never a 1px outline (Neil, recorded three times over).
+       The bloom below already separates this card from the canvas. */
     border-radius: 18px;
     padding: 28px 26px;
     max-width: 480px; width: 92%;
@@ -4307,12 +4310,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-light .swml-cw-project-overlay__frame {
     background: linear-gradient(180deg, #ffffff 0%, #f5f0fb 100%);
     color: #2c003e;
-    border-color: rgba(83,51,237,0.25);
     box-shadow: 0 24px 64px rgba(44,0,62,0.20),
                 0 0 50px rgba(81,218,207,0.22),
                 0 0 120px rgba(83,51,237,0.22);
     animation: swmlCwpFrameGlowLight 5.5s ease-in-out infinite;
 }
+/* v7.20.485 (#362): light theme drops the stroke too — see the note on the dark frame. */
+.swml-canvas-light .swml-cw-project-overlay__frame { border: none; }
 @keyframes swmlCwpFrameGlowLight {
     0%, 100% { box-shadow: 0 24px 64px rgba(44,0,62,0.20),
                            0 0 44px rgba(81,218,207,0.18),
@@ -4355,85 +4359,359 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     max-height: 40dvh;   /* v7.20.474 (#343): iOS vh excludes the collapsing bars — dvh is the VISIBLE viewport; the vh line above stays as the fallback */
     padding-right: 4px;
 }
-.swml-cw-project-overlay__list-btn {
-    display: flex; flex-direction: column; align-items: flex-start;
-    gap: 4px;
-    padding: 14px 16px;
+/* ════════════════════════════════════════════════════════════════════════════
+   v7.20.485 (#362) — THE PROJECT ROW. Neil: "the model is okay, but … it's a
+   little bit plain." Direction C, agreed 2026-08-09.
+
+   THE ROOT (diagnosed from source, not taste): everything that gave the old card
+   life was CONDITIONAL — the tag needed `idx===0 && sorted.length>1 && !_isReview`,
+   the new-project button needed `!_isReview && onNew`. A student with their FIRST
+   project, and a tutor reviewing ONE project, both got title + hint + one button.
+   So the row itself now carries an object to look at: a generated spine tile, and
+   a progress bar off numbers the server already sends. Nothing to author.
+
+   THREE RULES THIS OBEYS, all of them written down before this build:
+   · NO LIFT ON HOVER. Measured from the Risen source: the `.rShift` families
+     translate TEXT groups; the IMAGE families scale with NO translate
+     (`.sImgBg{scale(1.05)}`, `.reImages{scale(1.1)}`). TEXT MOVES, TILES SCALE
+     UNDER A CLIP. The spine is a tile → it scales in place, the row does not move.
+   · NO STROKES AT REST (BRAND.md §0). Rows separate by background contrast +
+     shadow; the stroke ARRIVES on hover — sourced: 26 of Risen's 195 hover rules
+     change `border`.
+   · CONTROLS ARE ALWAYS VISIBLE, never hover-revealed. Our students are on iPads,
+     where `:hover` does not exist — a control that appears on hover is a control
+     they cannot find. Hover only enriches.
+   ════════════════════════════════════════════════════════════════════════════ */
+.swml-cw-project-overlay__list-row {
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
     text-align: left;
-    background: rgba(255,255,255,0.06);
-    border: 2px solid rgba(255,255,255,0.14);
+    /* No stroke at rest — contrast + shadow do the separating. 0.06 was too close
+       to the frame to read as an object; the light row was `rgba(83,51,237,0.04)`,
+       a 4% wash on a near-white gradient, which is why it nearly vanished in
+       Neil's screenshot (same defect ruled at v7.20.424). */
+    background: rgba(255,255,255,0.11);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.18);
     border-radius: 12px;
     color: inherit;
     font-family: inherit;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    transition: background 0.15s, box-shadow 0.15s;
 }
-.swml-cw-project-overlay__list-btn:hover,
-.swml-cw-project-overlay__list-btn:focus-visible {
-    border-color: #51dacf;
-    background: rgba(81,218,207,0.10);
-    transform: translateY(-1px);
-    outline: none;
+/* The stroke arrives on hover — as an inset ring, so nothing reflows (a real
+   border would change the box and shift every row below it). */
+.swml-cw-project-overlay__list-row:hover,
+.swml-cw-project-overlay__list-row:focus-within {
+    background: rgba(81,218,207,0.12);
+    box-shadow: inset 0 0 0 1px #51dacf, 0 2px 8px rgba(0,0,0,0.22);
 }
-.swml-canvas-light .swml-cw-project-overlay__list-btn {
-    background: rgba(83,51,237,0.04);
-    border-color: rgba(83,51,237,0.18);
+.swml-canvas-light .swml-cw-project-overlay__list-row {
+    background: rgba(83,51,237,0.07);
+    box-shadow: 0 1px 2px rgba(44,0,62,0.10);
 }
-.swml-canvas-light .swml-cw-project-overlay__list-btn:hover,
-.swml-canvas-light .swml-cw-project-overlay__list-btn:focus-visible {
-    border-color: #41aaa8;
-    background: rgba(81,218,207,0.10);
+.swml-canvas-light .swml-cw-project-overlay__list-row:hover,
+.swml-canvas-light .swml-cw-project-overlay__list-row:focus-within {
+    background: rgba(81,218,207,0.16);
+    box-shadow: inset 0 0 0 1px #41aaa8, 0 2px 8px rgba(44,0,62,0.12);
+}
+
+/* ── The spine. A generated tile: the project's initial on a teal→purple face.
+   `overflow:hidden` on the frame is what makes the 1.05 a CLIPPED scale rather
+   than a grow — the tile fills its own box harder instead of getting bigger. */
+.swml-cw-project-overlay__spine {
+    width: 44px; height: 52px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+.swml-cw-project-overlay__spine-face {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, #51dacf 0%, #5333ed 100%);
+    color: #fff;
+    font-family: 'Playfair Display Complete', Georgia, serif;
+    font-style: italic;
+    font-size: 22px; font-weight: 700;
+    transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform;
+}
+.swml-cw-project-overlay__list-row:hover .swml-cw-project-overlay__spine-face,
+.swml-cw-project-overlay__list-row:focus-within .swml-cw-project-overlay__spine-face {
+    transform: scale(1.05);
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-cw-project-overlay__spine-face { transition: none; }
+    .swml-cw-project-overlay__list-row:hover .swml-cw-project-overlay__spine-face,
+    .swml-cw-project-overlay__list-row:focus-within .swml-cw-project-overlay__spine-face { transform: none; }
+}
+
+.swml-cw-project-overlay__rowtext {
+    display: flex; flex-direction: column; gap: 5px;
+    min-width: 0;   /* grid child must be allowed to shrink or a long name blows the row out */
 }
 .swml-cw-project-overlay__list-name {
     font-size: 16px; font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .swml-cw-project-overlay__list-meta {
     font-size: 12px;
     color: rgba(255,255,255,0.55);
+    /* One line. Wrapping made the most-recent row 86px against its siblings' 70px,
+       so the list read as ragged; and the tail that gets clipped is the progress
+       count, which the bar directly below is already showing. */
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .swml-canvas-light .swml-cw-project-overlay__list-meta { color: rgba(44,0,62,0.55); }
 
-/* v7.20.299: marks the most recently edited project so "the one you're on" is unambiguous
-   when a student has more than one. Teal = progress (BRAND colour semantics), never purple. */
-.swml-cw-project-overlay__list-tag {
-    display: inline-block;
-    margin-top: 6px;
-    padding: 2px 8px;
+/* ── The progress bar. BLUE-TEAL = progress (BRAND colour semantics: blue-teal
+   progress · purple attainment · green complete). It is deliberately NOT green:
+   this bar says "how far through", never "finished". */
+.swml-cw-project-overlay__bar {
+    height: 4px;
     border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    /* v7.20.336: saturate — a tag is small and green IS the object. */
-    color: #12261d;
-    background: #1CD991;
+    background: rgba(255,255,255,0.16);
+    overflow: hidden;
 }
-.swml-canvas-light .swml-cw-project-overlay__list-tag {
-    color: #0f7a52;
-    background: rgba(28,217,145,0.16);
+.swml-canvas-light .swml-cw-project-overlay__bar { background: rgba(44,0,62,0.12); }
+.swml-cw-project-overlay__bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #41aaa8 0%, #51dacf 100%);
 }
 
+/* ── The quiet control on every non-most-recent row. Always visible (iPad has no
+   hover) and a real <button>, so every row is keyboard-reachable now that the row
+   itself is a <div> rather than a button. */
+.swml-cw-project-overlay__go--quiet {
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 13px; font-weight: 600;
+    background: rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.86);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.swml-cw-project-overlay__go--quiet:hover,
+.swml-cw-project-overlay__go--quiet:focus-visible {
+    background: rgba(81,218,207,0.22);
+    color: #fff;
+    outline: none;
+}
+.swml-canvas-light .swml-cw-project-overlay__go--quiet {
+    background: rgba(83,51,237,0.10);
+    color: #2c003e;
+}
+.swml-canvas-light .swml-cw-project-overlay__go--quiet:hover,
+.swml-canvas-light .swml-cw-project-overlay__go--quiet:focus-visible {
+    background: rgba(81,218,207,0.28);
+    color: #2c003e;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   .btn-main — THE INCREDIBLES BUTTON, ported (BRAND.md §8; Neil 2026-08-05:
+   "becoming my favourite button"). Used here for the ONE primary action this
+   modal has: continue the project you were last working on.
+
+   ⚠️ WHY A SCOPED COPY AND NOT A REUSE. §14c Gate 0 says reuse before port, so
+   this was checked first: there is NO unscoped `.btn-main` anywhere on the site.
+   Five scoped copies exist — sophicly-notes ×3 (`#stxroot`, `#tkroot`,
+   `.sn-tab-btn`), library-hero-enhance, and the Etch global sheet "Sophicly
+   Course CTA" (`.sidebar-card__cta.is-btn-main`). This is the sixth, and a
+   handoff is open to the components lane to make ONE canonical mechanic that all
+   six skin. Until that lands, a scoped copy is the established pattern here.
+
+   THE MECHANIC BELOW IS VERBATIM from the canonical reference
+   (`CSS Shine Effect/Incredibles Buttons - PORT.html`, .btn-main, 50 rules
+   counted per §14c Gate 1 — the 21 base rules are ported whole; the size and
+   colour-variant rules are not, because this instance uses one size and one skin,
+   both stated below). Same four curves, same 0.35s delays, same plate layer, same
+   two-tone reveal — the four things the previous CTA build dropped and failed
+   port-diff on.
+
+   DISCLOSED DEVIATIONS (only these):
+   D1 FONT — Proxima Soft, not their commercial mono; `letter-spacing:.05em`
+      rather than the reference's `-.05em`, which is tuned for that mono face.
+      Follows the standing Sophicly ruling already applied in the CTA port.
+   D2 GEOMETRY — a small pill (28px tall, 999px radius) to sit in a 52px row,
+      not their 36px `--md`. Motion is size-independent; nothing else changes.
+   D3 SKIN — brand purple face flooding to teal on hover, instead of their
+      black/accent-pink. The two-tone reveal's first pass uses #2c003e where they
+      use accent pink. Both colours are already on this card; nothing invented.
+   D4 NO ICON — this instance has no icon, so the reference's `__icon` rules are
+      omitted rather than shipped dead.
+
+   ⭐ THE COUNT, so nobody re-litigates it (§14c Gate 1). Reference: 46 rules on the
+   component root. Port: 20. Every one of the 26 is accounted for, none by oversight:
+     · base mechanic  21 → 20 ported, 1 omitted (`__icon`, D4)
+     · size variants   8 →  1, inlined as this instance's geometry (D2)
+     · colour variants 19 →  3 skin rules (D3)
+   VERIFIED BY GATE 2, not by reading: `_nectar-recon/port-diff.mjs` diffs the computed
+   motion of this port against the reference per state and reports
+   "no motion property in the reference is missing from the port", with rest and hover
+   matching on every curve and both 0.35s delays. Re-run it after ANY edit below —
+   a still frame cannot show a delay, a curve, or a missing pseudo-element.
+   ⚠️ ON TOUCH there is no `:hover`, so an iPad student sees the resting face and
+      a normal press. That is the reference's behaviour too — the wipe is an
+      enrichment, never the affordance.
+   ══════════════════════════════════════════════════════════════════════════ */
+.swml-cw-project-overlay__frame .btn-main {
+    display: flex; flex-direction: row; align-items: center; justify-content: center;
+    position: relative;
+    padding: 0;
+    appearance: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Proxima Soft Complete', system-ui, sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.05em;              /* D1 */
+    line-height: 1;
+    text-decoration: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.swml-cw-project-overlay__frame .btn-main__outer {
+    position: relative; display: block; width: 100%; overflow: hidden;
+    padding: 8px 16px;                   /* D2 */
+    border-radius: 999rem;               /* D2 */
+}
+.swml-cw-project-overlay__frame .btn-main__outer::after,
+.swml-cw-project-overlay__frame .btn-main__outer::before {
+    position: absolute; top: 0; left: 0; z-index: 1;
+    width: 100%; height: 100%;
+    background: transparent;
+    border-radius: inherit;
+    content: "";
+}
+/* ⭐ THE PLATE — the layer that wipes up and off on hover. Without it there is no
+   reveal, only a flood. This is the rule the previous CTA build was missing. */
+.swml-cw-project-overlay__frame .btn-main__outer::before { clip-path: inset(0px); }
+.swml-cw-project-overlay__frame .btn-main__outer::after {
+    z-index: 5;
+    border: 1px solid rgba(255,255,255,0.22);   /* D3 — theirs is rgba(43,43,43,.17) on white */
+}
+.swml-cw-project-overlay__frame .btn-main__hover,
+.swml-cw-project-overlay__frame .btn-main__inner {
+    display: flex; flex-direction: row; align-items: center; justify-content: center;
+}
+.swml-cw-project-overlay__frame .btn-main__inner { position: relative; z-index: 2; }
+/* ⚠️ `width:auto` is LOAD-BEARING (the CTA lane found this the hard way): `::after`
+   is a normal-flow block and centres, `::before` is absolute and pins to left:0.
+   They only coincide while the text box is as wide as the word. */
+.swml-cw-project-overlay__frame .btn-main__text { display: block; width: auto; }
+.swml-cw-project-overlay__frame .btn-main__inner .btn-main__text {
+    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform;
+}
+.swml-cw-project-overlay__frame .btn-main__hover {
+    position: absolute; top: 0; left: 0; z-index: 3;
+    width: 100%; height: 100%;
+    border-radius: inherit;
+    clip-path: ellipse(80% 50% at 50% 152%);
+    transition: clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    will-change: clip-path;
+}
+.swml-cw-project-overlay__frame .btn-main__hover .btn-main__text {
+    transform: translate3d(0, 0.5em, 0);
+    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform;
+}
+/* The two-tone reveal — the label is drawn TWICE from `data-text`; ::before wipes
+   out downward while ::after wipes in, so the word changes colour as it lands. */
+.swml-cw-project-overlay__frame .btn-main__hover .btn-main__text::after,
+.swml-cw-project-overlay__frame .btn-main__hover .btn-main__text::before {
+    display: block;
+    transition: clip-path 1s cubic-bezier(0.23, 1, 0.32, 1);
+    content: attr(data-text);
+}
+.swml-cw-project-overlay__frame .btn-main__hover .btn-main__text::before {
+    position: absolute; top: 0; left: 0;
+    clip-path: inset(0px);
+    color: #2c003e;                      /* D3 */
+}
+.swml-cw-project-overlay__frame .btn-main__hover .btn-main__text::after {
+    position: relative;
+    clip-path: inset(100% 0px 0px);
+}
+.swml-cw-project-overlay__frame .btn-main:hover .btn-main__outer::before,
+.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__outer::before {
+    clip-path: inset(0px 0px 110%);
+    transition: clip-path 0.8s cubic-bezier(0.86, 0, 0.07, 1);
+}
+.swml-cw-project-overlay__frame .btn-main:hover .btn-main__inner .btn-main__text,
+.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__inner .btn-main__text {
+    transform: translate3d(0px, -0.75em, 0px);
+    transition: transform 0.4s cubic-bezier(0.55, -0.61, 0.73, 0.04);
+}
+.swml-cw-project-overlay__frame .btn-main:hover .btn-main__hover,
+.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__hover {
+    clip-path: ellipse(100% 70% at 50% 50%);
+    transition: clip-path 0.8s cubic-bezier(0.86, 0, 0.07, 1);
+}
+.swml-cw-project-overlay__frame .btn-main:hover .btn-main__hover .btn-main__text,
+.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__hover .btn-main__text {
+    transform: translateZ(0px);
+    transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.35s;
+}
+.swml-cw-project-overlay__frame .btn-main:hover .btn-main__hover .btn-main__text::before,
+.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__hover .btn-main__text::before {
+    clip-path: inset(0px 0px 100%);
+    transition: clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1) 0.35s;
+}
+.swml-cw-project-overlay__frame .btn-main:hover .btn-main__hover .btn-main__text::after,
+.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__hover .btn-main__text::after {
+    clip-path: inset(0px);
+    transition: clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1) 0.35s;
+}
+/* D3 — the skin. Purple face, teal flood. */
+.swml-cw-project-overlay__frame .btn-main { color: #fff; }
+.swml-cw-project-overlay__frame .btn-main__outer::before { background: #5333ed; }
+.swml-cw-project-overlay__frame .btn-main__hover { background: #51dacf; color: #12261d; }
+.swml-canvas-light .swml-cw-project-overlay__frame .btn-main__outer::after { border-color: rgba(44,0,62,0.16); }
+@media (prefers-reduced-motion: reduce) {
+    .swml-cw-project-overlay__frame .btn-main__outer::before,
+    .swml-cw-project-overlay__frame .btn-main__hover,
+    .swml-cw-project-overlay__frame .btn-main__text { transition: none; }
+}
+
+/* ── "Start new project". v7.20.485 (#362): was a 2px DASHED stroke — Neil ruled
+   the same no-strokes-at-rest objection applies (he had never seen it: it does not
+   render in the tutor view he tests in). Now a quiet filled surface like the rows,
+   with the stroke arriving on hover. */
 .swml-cw-project-overlay__new-btn {
     padding: 12px 16px;
     font-size: 14px; font-weight: 600;
-    background: transparent;
-    color: #51dacf;
-    border: 2px dashed rgba(81,218,207,0.5);
+    background: rgba(81,218,207,0.12);
+    color: #7ee8e0;
+    border: none;
     border-radius: 12px;
     cursor: pointer;
     font-family: inherit;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background 0.15s, box-shadow 0.15s, color 0.15s;
 }
-.swml-cw-project-overlay__new-btn:hover {
-    background: rgba(81,218,207,0.10);
-    border-color: #51dacf;
+.swml-cw-project-overlay__new-btn:hover,
+.swml-cw-project-overlay__new-btn:focus-visible {
+    background: rgba(81,218,207,0.20);
+    box-shadow: inset 0 0 0 1px #51dacf;
+    color: #fff;
+    outline: none;
 }
 .swml-canvas-light .swml-cw-project-overlay__new-btn {
+    background: rgba(83,51,237,0.09);
     color: #5333ed;
-    border-color: rgba(83,51,237,0.5);
 }
-.swml-canvas-light .swml-cw-project-overlay__new-btn:hover {
-    background: rgba(83,51,237,0.06);
-    border-color: #5333ed;
+.swml-canvas-light .swml-cw-project-overlay__new-btn:hover,
+.swml-canvas-light .swml-cw-project-overlay__new-btn:focus-visible {
+    background: rgba(83,51,237,0.14);
+    box-shadow: inset 0 0 0 1px #5333ed;
+    color: #2c003e;
 }
 
 .swml-cw-project-overlay__input {
