@@ -4560,7 +4560,16 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
       a normal press. That is the reference's behaviour too — the wipe is an
       enrichment, never the affordance.
    ══════════════════════════════════════════════════════════════════════════ */
-.swml-cw-project-overlay__frame .btn-main {
+.swml-btn-main {
+    /* ⭐ THE SKIN IS TOKENS, THE MECHANIC IS NOT. Two WML surfaces now wear this button
+       (the project picker and the phase-coach card) and a third will; each sets these five
+       and nothing else. Retyping the 20-rule mechanic per consumer is exactly how the site
+       ended up with six divergent copies of `.btn-main`, one of which shipped broken. */
+    --swml-bm-face: #5333ed;        /* the resting plate */
+    --swml-bm-ink: #fff;            /* label at rest */
+    --swml-bm-flood: #51dacf;       /* what wipes up on hover */
+    --swml-bm-flood-ink: #12261d;   /* label once the flood lands */
+    --swml-bm-first-ink: #2c003e;   /* the two-tone reveal's first pass */
     display: flex; flex-direction: row; align-items: center; justify-content: center;
     position: relative;
     padding: 0;
@@ -4577,13 +4586,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     text-transform: uppercase;
     white-space: nowrap;
 }
-.swml-cw-project-overlay__frame .btn-main__outer {
+.swml-btn-main .btn-main__outer {
     position: relative; display: block; width: 100%; overflow: hidden;
     padding: 8px 16px;                   /* D2 */
     border-radius: 999rem;               /* D2 */
 }
-.swml-cw-project-overlay__frame .btn-main__outer::after,
-.swml-cw-project-overlay__frame .btn-main__outer::before {
+.swml-btn-main .btn-main__outer::after,
+.swml-btn-main .btn-main__outer::before {
     position: absolute; top: 0; left: 0; z-index: 1;
     width: 100%; height: 100%;
     background: transparent;
@@ -4592,25 +4601,25 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* ⭐ THE PLATE — the layer that wipes up and off on hover. Without it there is no
    reveal, only a flood. This is the rule the previous CTA build was missing. */
-.swml-cw-project-overlay__frame .btn-main__outer::before { clip-path: inset(0px); }
-.swml-cw-project-overlay__frame .btn-main__outer::after {
+.swml-btn-main .btn-main__outer::before { clip-path: inset(0px); }
+.swml-btn-main .btn-main__outer::after {
     z-index: 5;
     border: 1px solid rgba(255,255,255,0.22);   /* D3 — theirs is rgba(43,43,43,.17) on white */
 }
-.swml-cw-project-overlay__frame .btn-main__hover,
-.swml-cw-project-overlay__frame .btn-main__inner {
+.swml-btn-main .btn-main__hover,
+.swml-btn-main .btn-main__inner {
     display: flex; flex-direction: row; align-items: center; justify-content: center;
 }
-.swml-cw-project-overlay__frame .btn-main__inner { position: relative; z-index: 2; }
+.swml-btn-main .btn-main__inner { position: relative; z-index: 2; }
 /* ⚠️ `width:auto` is LOAD-BEARING (the CTA lane found this the hard way): `::after`
    is a normal-flow block and centres, `::before` is absolute and pins to left:0.
    They only coincide while the text box is as wide as the word. */
-.swml-cw-project-overlay__frame .btn-main__text { display: block; width: auto; }
-.swml-cw-project-overlay__frame .btn-main__inner .btn-main__text {
+.swml-btn-main .btn-main__text { display: block; width: auto; }
+.swml-btn-main .btn-main__inner .btn-main__text {
     transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
     will-change: transform;
 }
-.swml-cw-project-overlay__frame .btn-main__hover {
+.swml-btn-main .btn-main__hover {
     position: absolute; top: 0; left: 0; z-index: 3;
     width: 100%; height: 100%;
     border-radius: inherit;
@@ -4618,67 +4627,67 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     transition: clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1);
     will-change: clip-path;
 }
-.swml-cw-project-overlay__frame .btn-main__hover .btn-main__text {
+.swml-btn-main .btn-main__hover .btn-main__text {
     transform: translate3d(0, 0.5em, 0);
     transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
     will-change: transform;
 }
 /* The two-tone reveal — the label is drawn TWICE from `data-text`; ::before wipes
    out downward while ::after wipes in, so the word changes colour as it lands. */
-.swml-cw-project-overlay__frame .btn-main__hover .btn-main__text::after,
-.swml-cw-project-overlay__frame .btn-main__hover .btn-main__text::before {
+.swml-btn-main .btn-main__hover .btn-main__text::after,
+.swml-btn-main .btn-main__hover .btn-main__text::before {
     display: block;
     transition: clip-path 1s cubic-bezier(0.23, 1, 0.32, 1);
     content: attr(data-text);
 }
-.swml-cw-project-overlay__frame .btn-main__hover .btn-main__text::before {
+.swml-btn-main .btn-main__hover .btn-main__text::before {
     position: absolute; top: 0; left: 0;
     clip-path: inset(0px);
-    color: #2c003e;                      /* D3 */
+    color: var(--swml-bm-first-ink);     /* D3 */
 }
-.swml-cw-project-overlay__frame .btn-main__hover .btn-main__text::after {
+.swml-btn-main .btn-main__hover .btn-main__text::after {
     position: relative;
     clip-path: inset(100% 0px 0px);
 }
-.swml-cw-project-overlay__frame .btn-main:hover .btn-main__outer::before,
-.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__outer::before {
+.swml-btn-main:hover .btn-main__outer::before,
+.swml-btn-main.is-forced .btn-main__outer::before {
     clip-path: inset(0px 0px 110%);
     transition: clip-path 0.8s cubic-bezier(0.86, 0, 0.07, 1);
 }
-.swml-cw-project-overlay__frame .btn-main:hover .btn-main__inner .btn-main__text,
-.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__inner .btn-main__text {
+.swml-btn-main:hover .btn-main__inner .btn-main__text,
+.swml-btn-main.is-forced .btn-main__inner .btn-main__text {
     transform: translate3d(0px, -0.75em, 0px);
     transition: transform 0.4s cubic-bezier(0.55, -0.61, 0.73, 0.04);
 }
-.swml-cw-project-overlay__frame .btn-main:hover .btn-main__hover,
-.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__hover {
+.swml-btn-main:hover .btn-main__hover,
+.swml-btn-main.is-forced .btn-main__hover {
     clip-path: ellipse(100% 70% at 50% 50%);
     transition: clip-path 0.8s cubic-bezier(0.86, 0, 0.07, 1);
 }
-.swml-cw-project-overlay__frame .btn-main:hover .btn-main__hover .btn-main__text,
-.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__hover .btn-main__text {
+.swml-btn-main:hover .btn-main__hover .btn-main__text,
+.swml-btn-main.is-forced .btn-main__hover .btn-main__text {
     transform: translateZ(0px);
     transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.35s;
 }
-.swml-cw-project-overlay__frame .btn-main:hover .btn-main__hover .btn-main__text::before,
-.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__hover .btn-main__text::before {
+.swml-btn-main:hover .btn-main__hover .btn-main__text::before,
+.swml-btn-main.is-forced .btn-main__hover .btn-main__text::before {
     clip-path: inset(0px 0px 100%);
     transition: clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1) 0.35s;
 }
-.swml-cw-project-overlay__frame .btn-main:hover .btn-main__hover .btn-main__text::after,
-.swml-cw-project-overlay__frame .btn-main.is-forced .btn-main__hover .btn-main__text::after {
+.swml-btn-main:hover .btn-main__hover .btn-main__text::after,
+.swml-btn-main.is-forced .btn-main__hover .btn-main__text::after {
     clip-path: inset(0px);
     transition: clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1) 0.35s;
 }
-/* D3 — the skin. Purple face, teal flood. */
-.swml-cw-project-overlay__frame .btn-main { color: #fff; }
-.swml-cw-project-overlay__frame .btn-main__outer::before { background: #5333ed; }
-.swml-cw-project-overlay__frame .btn-main__hover { background: #51dacf; color: #12261d; }
-.swml-canvas-light .swml-cw-project-overlay__frame .btn-main__outer::after { border-color: rgba(44,0,62,0.16); }
+/* D3 — the skin, resolved from the tokens above. */
+.swml-btn-main { color: var(--swml-bm-ink); }
+.swml-btn-main .btn-main__outer::before { background: var(--swml-bm-face); }
+.swml-btn-main .btn-main__hover { background: var(--swml-bm-flood); color: var(--swml-bm-flood-ink); }
+.swml-canvas-light .swml-btn-main .btn-main__outer::after { border-color: rgba(44,0,62,0.16); }
 @media (prefers-reduced-motion: reduce) {
-    .swml-cw-project-overlay__frame .btn-main__outer::before,
-    .swml-cw-project-overlay__frame .btn-main__hover,
-    .swml-cw-project-overlay__frame .btn-main__text { transition: none; }
+    .swml-btn-main .btn-main__outer::before,
+    .swml-btn-main .btn-main__hover,
+    .swml-btn-main .btn-main__text { transition: none; }
 }
 
 /* ── "Start new project". v7.20.485 (#362): was a 2px DASHED stroke — Neil ruled
@@ -7099,25 +7108,29 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    want it across the whole website"), so the hover state is halo + shadow only.
    NOTE: the full house button also carries a two-span text ROLL, which needs a markup
    change in wml-assessment.js — not done here, so this is the colour + geometry + halo. */
-.swml-phase-coach-cta {
-    position: relative;
-    display: inline-flex; align-items: center;
-    background: #51dacf;
-    border: 0; border-radius: 14px;
-    color: #0e1214;
-    font: 700 12px 'Proxima Soft Complete', sans-serif;
-    letter-spacing: 2px; text-transform: uppercase;
-    padding: 10px 20px; cursor: pointer;
-    transition: box-shadow 0.5s ease;
+/* ── The card's action. v7.20.487: was the HALO button (a `::after` copy scaling
+   1.35×1.55 and fading). Neil, 2026-08-09: *"I'm starting to not like that Halo style
+   button… if we just do an incredible style button, I think it would be much better."*
+   It now wears the shared `.swml-btn-main` mechanic and sets only its five skin tokens.
+   ⚠️ BRAND.md §0 still lists the Halo button under "Components confirmed loved"
+   (2026-07-22). That is the components lane's file and this is one surface, not a
+   retirement — flagged there, not rewritten from here. */
+.swml-phase-coach .swml-btn-main {
+    --swml-bm-face: #51dacf;
+    --swml-bm-ink: #1C1D1F;
+    --swml-bm-flood: #2c003e;
+    --swml-bm-flood-ink: #fff;
+    --swml-bm-first-ink: #51dacf;
+    align-self: flex-start;
 }
-.swml-phase-coach-cta::after {
-    content: ''; position: absolute; inset: 0; z-index: -1;
-    border-radius: 14px; background: #51dacf;
-    transition: transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease;
+.swml-phase-coach--light .swml-btn-main {
+    --swml-bm-face: #ECF3FF;
+    --swml-bm-ink: #4D76FD;
+    --swml-bm-flood: #4D76FD;
+    --swml-bm-flood-ink: #fff;
+    --swml-bm-first-ink: #ECF3FF;
 }
-.swml-phase-coach-cta:hover { box-shadow: 0 12px 24px rgba(81,218,207,0.42); }
-.swml-phase-coach-cta:hover::after { transform: scaleX(1.35) scaleY(1.55); opacity: 0; }
-.swml-phase-coach-cta:focus-visible { outline: 2px solid #51dacf; outline-offset: 3px; }
+.swml-phase-coach--light .swml-btn-main .btn-main__outer::after { border-color: rgba(77,118,253,0.22); }
 /* Light theme — self-carried class (body-mounted card is outside .swml-canvas-light). */
 .swml-phase-coach--light { background: #fff; color: #2c003e; box-shadow: 0 18px 44px -12px rgba(44,0,62,0.20), 0 2px 8px rgba(44,0,62,0.08); }
 .swml-phase-coach--light .swml-phase-coach-arrow { background: #fff; }
@@ -7128,11 +7141,6 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 /* Teal reads as a pale wash on white, so the light tile uses the house LIGHT pair
    (pale blue #ECF3FF / blue #4D76FD) — same pairing the house button uses. */
 .swml-phase-coach--light .swml-phase-coach-icon { background: #ECF3FF; color: #4D76FD; }
-.swml-phase-coach--light .swml-phase-coach-cta,
-.swml-phase-coach--light .swml-phase-coach-cta::after { background: #ECF3FF; }
-.swml-phase-coach--light .swml-phase-coach-cta { color: #4D76FD; }
-.swml-phase-coach--light .swml-phase-coach-cta:hover { box-shadow: 0 12px 24px rgba(77,118,253,0.28); }
-.swml-phase-coach--light .swml-phase-coach-cta:focus-visible { outline-color: #4D76FD; }
 .swml-transfer-all-btn svg { flex-shrink: 0; width: 11px; height: 11px; }
 .swml-transfer-all-btn:hover {
     background: linear-gradient(180deg, #5333ed, rgba(74,44,222,0.97));

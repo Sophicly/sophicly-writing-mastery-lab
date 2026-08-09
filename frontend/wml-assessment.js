@@ -3807,6 +3807,41 @@
     // window still answers honestly. Returns an array of the ticked item LABELS.
     // Used by the Step-7 walk to decide what is already done (resume from the DOCUMENT, never a
     // counter) and to compute the reflection's shift from the student's own picks.
+    // ⭐ v7.20.487 — THE ONE PRODUCER for the Incredibles button's markup, module scope so every
+    // WML surface builds it identically. Two wear it now (the CW project picker's Continue and the
+    // phase-coach card's Got it) and the mechanic lives once in `.swml-btn-main` (wml-canvas.css);
+    // a consumer sets five `--swml-bm-*` tokens and nothing else.
+    //
+    // ⚠️ THE MARKUP IS A CONTRACT, not a wrapper. The INNER text span carries the label; the HOVER
+    // text span is EMPTY and carries `data-text`, because its ::before/::after draw the label twice
+    // from that attribute — that is what makes the two-tone reveal. Put text in the hover span as
+    // well and the word renders three times.
+    function _swmlIncrediblesBtn(label, opts) {
+        const o = opts || {};
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'swml-btn-main' + (o.className ? ' ' + o.className : '');
+        if (o.ariaLabel) b.setAttribute('aria-label', o.ariaLabel);
+        const outer = document.createElement('span');
+        outer.className = 'btn-main__outer';
+        const inner = document.createElement('span');
+        inner.className = 'btn-main__inner';
+        const innerText = document.createElement('span');
+        innerText.className = 'btn-main__text';
+        innerText.textContent = label;
+        inner.appendChild(innerText);
+        const hover = document.createElement('span');
+        hover.className = 'btn-main__hover';
+        const hoverText = document.createElement('span');
+        hoverText.className = 'btn-main__text';
+        hoverText.setAttribute('data-text', label);
+        hover.appendChild(hoverText);
+        outer.appendChild(inner);
+        outer.appendChild(hover);
+        b.appendChild(outer);
+        return b;
+    }
+
     function _rowControlPicks(fid, ctlId) {
         const out = [];
         if (!fid || !ctlId) return out;
@@ -41830,10 +41865,8 @@
             const body = document.createElement('div');
             body.className = 'swml-phase-coach-text';
             body.textContent = multi ? coach.many : coach.one;
-            const cta = document.createElement('button');
-            cta.type = 'button';
-            cta.className = 'swml-phase-coach-cta';
-            cta.textContent = 'Got it';
+            // v7.20.487: the Incredibles button, from the one producer — was a bespoke halo button.
+            const cta = _swmlIncrediblesBtn('Got it');
             cta.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); dismiss(); });
             card.appendChild(head); card.appendChild(body); card.appendChild(cta);
             // Fade in AFTER the auto-scroll settles (Neil 2026-07-18): mount + position once the
@@ -52653,35 +52686,6 @@
                 return m ? m[0].toUpperCase() : '·';
             };
 
-            // v7.20.485 (#362): THE INCREDIBLES BUTTON, built to the canonical markup
-            // contract (`Incredibles Buttons - PORT.html`): the INNER text span carries the
-            // label, and the HOVER text span is EMPTY — its ::before/::after draw the label
-            // twice from `data-text`, which is what makes the two-tone reveal. Putting text
-            // in the hover span as well renders the word three times.
-            const _incrediblesButton = (label) => {
-                const b = document.createElement('button');
-                b.type = 'button';
-                b.className = 'btn-main';
-                const outer = document.createElement('span');
-                outer.className = 'btn-main__outer';
-                const inner = document.createElement('span');
-                inner.className = 'btn-main__inner';
-                const innerText = document.createElement('span');
-                innerText.className = 'btn-main__text';
-                innerText.textContent = label;
-                inner.appendChild(innerText);
-                const hover = document.createElement('span');
-                hover.className = 'btn-main__hover';
-                const hoverText = document.createElement('span');
-                hoverText.className = 'btn-main__text';
-                hoverText.setAttribute('data-text', label);
-                hover.appendChild(hoverText);
-                outer.appendChild(inner);
-                outer.appendChild(hover);
-                b.appendChild(outer);
-                return b;
-            };
-
             const cardButtons = [];
             sorted.forEach((p, idx) => {
                 // v7.20.485 (#362): the row is a DIV, not a BUTTON. The most-recent row now
@@ -52780,8 +52784,10 @@
                 const _isPrimary = (idx === 0 && !_isReview);
                 let go;
                 if (_isPrimary) {
-                    go = _incrediblesButton('Continue');
-                    go.setAttribute('aria-label', 'Continue ' + (p.name || 'Untitled project'));
+                    // v7.20.487: the shared producer — the local copy this walk shipped with
+                    // at .485 is gone, so the picker and the coach card cannot drift apart.
+                    go = _swmlIncrediblesBtn('Continue', {
+                        ariaLabel: 'Continue ' + (p.name || 'Untitled project') });
                 } else {
                     go = document.createElement('button');
                     go.type = 'button';
