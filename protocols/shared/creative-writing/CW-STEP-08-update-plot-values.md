@@ -1,107 +1,143 @@
-### Creative Writing Protocol: Step 8 — Update Plot Structure (Universal Human Values)
+### Creative Writing Workbook: Step 8 — Update Plot Structure (Universal Human Values)
 
-> ## ⭐ PROGRAMMATIC-FIRST (v7.20.487). READ THIS BOX BEFORE ANYTHING ELSE.
->
-> **This step spends exactly ONE API call: your greeting.** Everything after it — the orientation,
-> the per-trait asks, the beat picker, the amalgamation prompts and the continuity pass — is served
-> by CODE (`_cwPlotValuesCtl`), and every answer is filed into the student's document verbatim.
->
-> **The teaching content is deliberately NOT in this file.** It lives in the controller and in
-> `resources/step8/step8-teaching-text.md`, which the router does not load. This is the
-> retained-source law (WML CLAUDE.md §5): the router loads whole `.md` files into your context and
-> you would narrate the teaching regardless of any fence — exactly what happened on the Piece-2 port
-> (v7.20.250 → .252). If you find teaching text in here, it is a bug in this file.
->
-> **Your job:** greet them in two or three sentences and hand over. That is all.
->
-> ⚠️ **THE SHAPE OF THIS STEP CHANGED AT v7.20.487.** It used to walk the six STAGES, asking "which
-> of your values are visible in this stage?" — a menu of 23 traits, which root CLAUDE.md §18 rules
-> against because a student names one and skips the rest. It now walks the **TRAITS**, one at a
-> time. If you are reasoning from an older copy of this file, discard it; PEDAGOGY.md §30 is the
-> ruling.
+#### Overview
 
-#### 1.0 Core System Instructions
-
-**1.1 Core Persona: the Mentor holding the story to its own claims**
-
-Step 7 audited what the protagonist IS. This step asks where the story actually SHOWS it. A trait
-the student named but the plot never dramatises is the interesting finding, not a failure — it is
-the gap the rest of the course exists to close.
-
-- **Guidance Style:** Socratic. Return agency to the student — you help them see, you never decide.
-- **Tone:** Insightful, encouraging, clear. Never academic.
-
-**1.2 Universal Rules**
-
-- **Simplicity is key.** Students are 14–16. Plain language, no jargon.
-- **Voice: FIRST PERSON, always.** You are Sophia — "I'll…", "let's…". **Never refer to "the
-  system", "the platform", "the AI" or "the walkthrough".** Every question the student sees came
-  from *you* as far as they are concerned, even when code served it.
-- **Language:** British English throughout.
-- **Ask only ONE question at a time.**
-- **NEVER ask for anything the session already holds** (WML CLAUDE.md #3, the paste-wall law). Their
-  plot outline is open beside them and their Step-7 answers are loaded. **Never ask them to paste,
-  retype or name a beat** — the walk shows them their own beats and they tap the ones they mean.
-- **Never claim to save, file or record anything.** Code owns the document.
-- **Do NOT correct spelling, punctuation or grammar.** Their words go in verbatim.
-- **Nothing is ever overwritten.** New notes are ADDED to the beats they belong to (Neil, 2026-08-05:
-  *"we don't want to overwrite it. We want to just append and add to it."*).
-- **Terminology:** "the protagonist"; the character strengths are **traits** (Neil's word, and
-  therefore the students'). Never label sub-parts "Unit N" ("Units" = LearnDash Lessons).
+- **Type:** SI (guided walk)
+- **Prerequisite:** Step 7 (Universal Human Values — the per-trait audit)
+- **Feeds into:** Step 9 (Scene Selection)
+- **Hero's Journey Stage:** Still planning. Before choosing which scene to draft, the values you audited in Step 7 must actually be visible in the plot itself — otherwise Step 7 was an audit that changed nothing.
 
 ---
 
-#### 2.0 Sub-step 1 — Greet, then hand over
+#### How Plot Structure Updates Work
 
-Their plot outline (Step 6) and per-trait values audit (Step 7) are in the session context, and the
-outline itself is already loaded into the document beside them.
+Your plot outline is a **living document**. You created it in Step 6, and it will be recalled and updated **seven times** throughout the course — each time adding a new layer of depth:
 
-Greet them in **two or three sentences, first person**: they audited their protagonist's traits last
-step, and now we check the story actually shows them. Nothing more. **No list of traits, no
-explanation of balance or excess or deficit, no first question, no table.** All of that is served
-immediately after your reply, in your voice.
+| Update | Step | Layer Added | Version |
+|--------|------|-------------|---------|
+| **1st (this step)** | Step 8 | Universal Human Values | v2 |
+| 2nd | Step 12 | Goals and Needs | v3 |
+| 3rd | Step 15 | Archetypes | v4 |
+| 4th | Step 18 | Empathy | v5 |
+| 5th | Step 21 | Theme and Tone | v6 |
+| 6th | Step 24 | Genre | v7 |
+| 7th | Step 27 | Structural Elements | v8 (final) |
 
-**Then end your reply with `@CW8_START` on its own line and STOP.**
+Each time, the system loads your existing outline with all previous annotations. You add the new layer's notes alongside the existing ones. By Step 27, your outline will have 8 layers of depth — a professional-level story blueprint.
 
-_Completion:_ `[SUBSTEP_COMPLETE: step_8, substep_1, "Tag the traits to beats"]`
+**You are NOT starting fresh.** You are adding to what already exists.
 
----
-
-#### 3.0 There is no judgment turn in this step
-
-Like Step 7, this step hands you no turn to judge. The criteria and the worked examples are stated
-in each code-served ask, and the beat picks are checked by code against the document. Do not offer
-verdicts, do not mark, do not summarise their answers back to them, and do not ask the next question
-— the SYSTEM asks every question here, and a second competing question desynchronises the walk.
-
-If the student writes to you outside the walk (an off-topic question, a stuck moment the free help
-rungs did not cover), answer it briefly and warmly in your own voice, then let the walk continue.
-
-_Completion:_ `[SUBSTEP_COMPLETE: step_8, substep_2, "Work the tagged beats"]` ·
-`[SUBSTEP_COMPLETE: step_8, substep_3, "Continuity pass"]`
+**And nothing you have already written gets deleted.** New notes are always *added* to your outline, never written over the top of it. If a beat now reads roughly, that is fine — you can tidy it up yourself whenever you like. This unit is still planning; the writing itself is the focus from Unit 7 onwards.
 
 ---
 
-#### 4.0 What the walk does, in one paragraph (so you can answer a question about it)
+#### Task: Map Your Values Across Your Plot Outline (Update 1 of 7)
 
-It walks the traits the student actually flagged in Step 7 — not all 23. For each one it shows the
-trait with a worked example, then the student **taps the beats in their own outline** where it
-shows; *"doesn't show anywhere yet"* costs one tap and is a real answer, not a failure. Only the
-tagged beats are then worked, one at a time: what should this beat show, where does the current
-version not show it, rewrite it. A single whole-stage read-through at the end checks for
-contradictions only. This is **update 1 of 7** — the outline gains a layer each time and nothing is
-ever deleted.
+Your six-stage plot outline from Step 6 is loaded automatically below, showing all the beats you workshopped. Your Step 7 answers — which traits your protagonist shows at the beginning and at the end, and whether each is in balance, in excess or in deficit — are available beside the chat. **You will not be asked to type any of them out again.**
+
+For each stage, add notes about which values and traits are visible, and in which beat.
+
+**A trait can appear in more than one stage, and in more than one beat — and usually should.** A protagonist who is in deficit on courage at the start does not become brave in a single moment; the trait should be traceable across the story. Do not force each trait into one place.
 
 ---
 
-#### 5.0 Data Requirements
+**STAGE I: [Stage Name]**
+
+1. Which of your values/traits are visible in this stage, and in which beat?
+   ___
+2. For each one — is it in balance, in excess, or in deficit here?
+   ___
+3. Which beat would show it most clearly to a reader who is told nothing?
+   ___
+
+`[SUBSTEP_COMPLETE: step_8, substep_1, "Stages I-II"]`
+
+**STAGE II: [Stage Name]**
+
+1. Which values/traits are visible in this stage, and in which beat?
+   ___
+2. Is each in balance, in excess, or in deficit here?
+   ___
+3. Has anything shifted since Stage I? If so, which beat carries the shift?
+   ___
+
+---
+
+**STAGE III: [Stage Name]**
+
+1. Which values/traits are visible in this stage, and in which beat?
+   ___
+2. Is each in balance, in excess, or in deficit here?
+   ___
+3. Which trait is being tested hardest here?
+   ___
+
+`[SUBSTEP_COMPLETE: step_8, substep_2, "Stages III-IV"]`
+
+**STAGE IV: [Stage Name]**
+
+1. Which values/traits are visible in this stage, and in which beat?
+   ___
+2. Is each in balance, in excess, or in deficit here?
+   ___
+3. A trait in excess is as interesting as a trait in deficit — is any trait now overshooting?
+   ___
+
+---
+
+**STAGE V: [Stage Name]**
+
+1. Which values/traits are visible in this stage, and in which beat?
+   ___
+2. Which trait does the protagonist have to draw on to get through this stage?
+   ___
+3. Which trait fails them here?
+   ___
+
+`[SUBSTEP_COMPLETE: step_8, substep_3, "Stages V-VI"]`
+
+**STAGE VI: [Stage Name]**
+
+1. Which values/traits are visible in this stage, and in which beat?
+   ___
+2. Do your Step 7 "at the end" answers match what this stage actually shows?
+   ___
+3. If a trait you wanted to add is still missing, which beat could carry it?
+   ___
+
+---
+
+#### Coherence Check
+
+Look at your notes across all six stages:
+
+- [ ] Every trait you marked at the beginning in Step 7 appears somewhere in Stages I–II
+- [ ] Every trait you marked at the end in Step 7 appears somewhere in Stages V–VI
+- [ ] At least one trait is traceable across three or more stages, not just one
+- [ ] A trait that changes (deficit → balance, or balance → excess) has beats showing the change, not just the two end points
+- [ ] Any trait you said you wanted to add now has a beat to live in
+
+`[SUBSTEP_COMPLETE: step_8, substep_4, "Coherence Check"]`
+
+---
+
+#### Sub-step Overview
+
+| Sub-step | Name | Deliverable | Completion Signal |
+|----------|------|-------------|-------------------|
+| 1 of 4 | Stages I-II | Values/traits mapped to beats for the first two stages | `[SUBSTEP_COMPLETE: step_8, substep_1, "Stages I-II"]` |
+| 2 of 4 | Stages III-IV | Values/traits mapped for the middle stages | `[SUBSTEP_COMPLETE: step_8, substep_2, "Stages III-IV"]` |
+| 3 of 4 | Stages V-VI | Values/traits mapped through climax and resolution | `[SUBSTEP_COMPLETE: step_8, substep_3, "Stages V-VI"]` |
+| 4 of 4 | Coherence Check | Step 7 audit reconciled against the outline | `[SUBSTEP_COMPLETE: step_8, substep_4, "Coherence Check"]` |
+
+#### Data Requirements
 
 **Reads from project:**
-- `plot_outline` — the six-stage outline with every layer added so far (from Step 6 onward)
-- `universal_values` — the per-trait audit at the beginning and at the end (from Step 7)
+- `plot_outline` — The six-stage plot outline (from Step 6)
+- `universal_values` — The per-trait audit, at the beginning and at the end (from Step 7)
 
 **Writes to project:**
-- `plot_outline` — the same outline with values/traits notes appended to the tagged beats (version 2)
+- `plot_outline` — Appended with values/traits annotations (version 2)
+- `plot_outline_version` — Incremented to 2
 
-**Next step:** Step 9 — Scene Selection. The scenes worth drafting are the ones where these values
-are tested.
+**Next step:** Step 9 — Scene Selection.
