@@ -332,6 +332,18 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw7-sim-harness.js || fail=1
 fi
 
+# v7.20.491: CW STEP-8 WALK SIM. The trait-first plot update (PEDAGOGY §29+§30) — roster derived
+# from the Step-7 artifact (flagged traits only, WANT included), one-tap no-show WITH a document
+# footprint, CDO over tagged beats only, append-never-overwrite, ZERO API calls. It also asserts
+# the .490 incident class structurally: the @CW8_START marker, the controller, the dispatcher arm
+# and the start-miss fallback arm must all exist together — a marker with no controller put a
+# dead Step 8 on production for four deploys. Proven by injection (no-footprint, flag-everything,
+# spend-a-call — each fails it).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|cw8-sim-harness\.js|walk-sim-lib\.js|CW-STEP-08-update-plot-values\.md'; then
+  node bin/cw8-sim-harness.js || fail=1
+fi
+
 # v7.20.413: CW STEP-7 DOCUMENT GATE. The document half of Step 7 — the fifteen rows, their
 # completion rule and Neil's teaching prose. (The walk that fills them is gated by cw7-sim above.)
 # It runs the REAL builder and

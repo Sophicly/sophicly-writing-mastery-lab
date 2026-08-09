@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.490';
+var WML_BUILD = '7.20.491';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1195,16 +1195,15 @@ window.WML = (function() {
             { step: 2, label: 'Values at End' },
             { step: 3, label: 'Reflection' },
         ],
-        // v7.20.451 — the new Step 8 (Update Plot: Values). Its four sub-steps are the
-        // Update-Plot family's own shape, ported from CW-STEP-12-update-plot-goals.md rather than
-        // invented: the walk goes STAGE BY STAGE, not value by value, which is what lets one trait
-        // recur across several stages and beats (Neil: *"the traits can appear in more than one
-        // stage and more than one beat. In fact, they probably should"*).
+        // v7.20.491 — Step 8 (Update Plot: Values), TRAIT-FIRST (PEDAGOGY §30, ruled 2026-08-07):
+        // the walk iterates over the LENS's own items — one flagged trait at a time, tapping the
+        // real beats — never stage by stage (a per-stage ask is a 23-trait MENU, root §18). The
+        // old 'Stages I–II / III–IV / V–VI' labels described the retired per-stage shape and were
+        // the FOURTH stale surface of the .452 renumber (protocol · desc · Step-7 close · this).
         8: [
-            { step: 1, label: 'Stages I–II' },
-            { step: 2, label: 'Stages III–IV' },
-            { step: 3, label: 'Stages V–VI' },
-            { step: 4, label: 'Coherence Check' },
+            { step: 1, label: 'Tag the Traits' },
+            { step: 2, label: 'Work the Beats' },
+            { step: 3, label: 'Continuity Pass' },
         ],
         9: [
             { step: 1, label: 'Review Outline' },

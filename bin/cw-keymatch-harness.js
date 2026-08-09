@@ -196,6 +196,17 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onValuesRecallPick:   { kind: 'flow', note: 'Step 7 wrap: which answer to change — the REWRITE that follows is what is filed' },
         onSelfAssessTicks:    { kind: 'scaffold', note: 'the criteria tick list — the claim is fed to the end-of-set review, never to a document row' },
         onSelfAssessFollowUp: { kind: 'flow', note: 'add-a-line / it is fine — steers the walk, must stay ephemeral' },
+        // v7.20.491 — STEP 8 (Update Plot: Values), trait-first (PEDAGOGY §30). The tag picks
+        // are CONTENT: stages + beats together become the trait's map-row entry, written through
+        // _cw8MapRowFieldId (the one producer) with replace semantics — a pick that lived only
+        // in closure state would die on reload, which is why the map rows exist at all.
+        onCw8StagesDone:  { kind: 'content', note: 'Step 8 stage multi-select (incl. the one-tap no-show) → the trait’s map row via fileMap' },
+        onCw8BeatsDone:   { kind: 'content', note: 'Step 8 beat multi-select per stage → the trait’s map row via fileMap' },
+        onCw8KeepAsIs:    { kind: 'content', note: 'Step 8 “keep as is” → a ledger line in cw-step-8-beats-worked (the CDO footprint, so resume cannot re-ask)' },
+        onCw8Recall:      { kind: 'flow', note: 'Step 8 wrap: open the re-tag picker — the way back into an answered trait' },
+        onCw8RecallPick:  { kind: 'flow', note: 'Step 8 wrap: which trait to re-tag — the re-tag that follows is what is filed' },
+        onCw8GuardAck:    { kind: 'flow', note: 'Step 8 dead-end guard (no outline / no audit) acknowledgment — files nothing' },
+        onCw8Retry:       { kind: 'flow', note: 'Step 8 audit-load failure retry — files nothing' },
     };
     // Match CALL sites only. `function chipBar(options, onPick)` is a DEFINITION and its parameter
     // name would otherwise be scanned as though it were a handler — and Step 5's real handler
@@ -267,12 +278,12 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         'fewer than two walks expose nudge() — a walk that cannot re-serve its ask can strand a student');
     // All six CW arms gate on it. The quiz arms deliberately do NOT: an MSQ/FQ answer chip IS the
     // student's answer, so the flag must not reach them.
-    // v7.20.419: SEVEN arms — Step 7 (_cwValuesCtl) joined when Neil moved it from the bare
-    // workbook environment to the training one. This count is deliberately exact rather than
-    // `>= 6`: a NEW walk that forgets `_inboundIsAnswer` would file its own chip taps as student
-    // answers, and an inequality would let it through silently.
+    // v7.20.491: EIGHT arms — Step 8 (_cwPlotValuesCtl, the trait-first plot update) joined.
+    // This count is deliberately exact rather than `>= 6`: a NEW walk that forgets
+    // `_inboundIsAnswer` would file its own chip taps as student answers, and an inequality
+    // would let it through silently.
     const armed = (JS.match(/state\.task === 'cw_step_\d' && _cw\w+Ctl\.active && _inboundIsAnswer/g) || []).length;
-    ok(armed === 7, `expected all 7 CW walk arms to require _inboundIsAnswer, found ${armed}`);
+    ok(armed === 8, `expected all 8 CW walk arms to require _inboundIsAnswer, found ${armed}`);
     ok(/if \(_inboundIsAnswer && _cwWalkActive\(\)\) \{[\s\S]{0,160}?chatTextarea\.value = '';/.test(JS),
         'a walk turn does not clear the chat input — the six arms return before the shared clear, so '
         + 'the text stays in the box and the next dictation appends to it (v7.20.329)');
