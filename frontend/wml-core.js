@@ -11,8 +11,54 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.482';
+var WML_BUILD = '7.20.484';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+// v7.20.484 (#361) — PUBLISH THE WP ADMIN BAR'S HEIGHT, BY MEASUREMENT.
+// ───────────────────────────────────────────────────────────────────────────────────────────
+// The embedded canvas is sized `calc(100dvh - <spl header> - <this>)` and offset by the sum of
+// the two. Before this, only the SPL header was subtracted, so on any account WITH an admin bar
+// the shell overshot the bottom of the viewport by exactly the bar's height and the bottom of
+// the status footer sat under the glass. Measured on prod .482: canvas top 92 (= 32 + 60),
+// bottom 1029, viewport ~997.
+//
+// ⚠️ MEASURED, NOT ASSUMED — the constant is wrong more often than it is right:
+//   · 32px on desktop but 46px below 783px;
+//   · `position: fixed` on desktop and `position: absolute` on mobile, where it SCROLLS AWAY and
+//     must NOT be subtracted — counting it there would shorten the canvas by 46px for nothing;
+//   · absent entirely for students, which is why this resolves to 0px and changes nothing for
+//     them. This is a fix for the logged-in admin view, i.e. for Neil's own QA surface.
+//
+// Mirrors how the LearnDash lane publishes `--spl-header-height` (v7.20.459): a measurement on
+// the root element, republished on the events that can change it, so neither lane has to
+// remember anything. `focusSpaNavigated` is the Focus SPA's re-boot event — spelled exactly that
+// way (reference_focus_spa_reboot_event_is_focusSpaNavigated).
+(function () {
+    function publishAdminBar() {
+        try {
+            const bar = document.getElementById('wpadminbar');
+            let h = 0;
+            if (bar) {
+                const cs = getComputedStyle(bar);
+                // Only chrome that genuinely holds the top of the viewport counts. A mobile
+                // admin bar is `absolute` and scrolls out of the way — subtracting it would
+                // leave a permanent 46px gap at the bottom.
+                if (cs.position === 'fixed' && cs.display !== 'none' && cs.visibility !== 'hidden') {
+                    h = Math.round(bar.getBoundingClientRect().height) || 0;
+                }
+            }
+            document.documentElement.style.setProperty('--swml-admin-bar', h + 'px');
+        } catch (e) {}
+    }
+    publishAdminBar();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', publishAdminBar);
+    }
+    window.addEventListener('resize', publishAdminBar);
+    window.addEventListener('focusSpaNavigated', publishAdminBar);
+    try { if (window.WML) window.WML._publishAdminBar = publishAdminBar; } catch (e) {}
+})();
 
 // v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
 // The Sophicly Toasts plugin shows a "Document Shared" toast to tutors that
