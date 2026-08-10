@@ -1,0 +1,300 @@
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   WML Scene Selection island (Step 9) — visual layer ported from the Neil-approved
+   prototype (research/scene-selection-prototype-APPROVED-2026-08-10.html). Interaction
+   classes and values carried 1:1; the only additions are the overlay frame (.ssi-*) and
+   theme wiring. Brand/impeccable passes may re-pitch hexes — the 7-hue element mapping is
+   Neil's ruling (#204 addendum 10) and stays.
+
+   LAWS honoured here:
+   - CSS vars live on the component root, never :root (site-wide takeover landmine #3).
+   - Internal scroller: flex child with min-height:0 (reachability-lint), dvh companion.
+   - Green stays reserved for done; hues ride as edges/tints/badges, never washes.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+
+.swml-scene-island {
+  --ground:#171221; --surface:#1f1930; --surface2:#282041; --ink:#efeaf7;
+  --muted2:rgba(239,234,247,.62); --faint:rgba(239,234,247,.38);
+  --line:rgba(239,234,247,.12); --brand:#5333ed; --brand-soft:rgba(83,51,237,.28);
+  --teal:#2fb7c9; --done:#34c98e; --warn:#e8a33d;
+  --shadow:0 10px 28px rgba(0,0,0,.42);
+  position:fixed; inset:0; z-index:99950;
+  background:var(--ground); color:var(--ink);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:contain;
+}
+body[data-swml-theme="light"] .swml-scene-island {
+  --ground:#f4f2f9; --surface:#ffffff; --surface2:#eeeaf7; --ink:#241d33;
+  --muted2:rgba(36,29,51,.66); --faint:rgba(36,29,51,.4);
+  --line:rgba(36,29,51,.13); --brand:#5333ed; --brand-soft:rgba(83,51,237,.16);
+  --shadow:0 10px 24px rgba(46,32,88,.14);
+}
+.swml-scene-island * { box-sizing:border-box; }
+.swml-scene-island button:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
+
+/* ── overlay frame: header/scroller/actionbar as flex column (no fixed-position vh traps) ── */
+.swml-scene-island .ssi-frame {
+  display:flex; flex-direction:column;
+  height:100vh; height:100dvh;
+}
+.swml-scene-island .ssi-scroll {
+  flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.swml-scene-island .wrap { max-width:1120px; margin:0 auto; padding:20px 20px 40px; }
+.swml-scene-island .ssi-head { display:flex; gap:14px; align-items:flex-start; }
+.swml-scene-island .ssi-head > div { flex:1; min-width:0; }
+.swml-scene-island .ssi-close {
+  background:var(--surface2); color:var(--muted2); border:none; border-radius:10px;
+  width:36px; height:36px; font-size:15px; cursor:pointer; flex:0 0 auto;
+}
+.swml-scene-island .ssi-close:hover { color:var(--ink); }
+
+/* ── header + stepper ── */
+.swml-scene-island h1 { font-size:21px; font-weight:700; margin:0 0 4px; letter-spacing:-0.01em; text-wrap:balance; }
+.swml-scene-island .sub { color:var(--muted2); margin:0 0 18px; max-width:64ch; }
+.swml-scene-island .stepper { display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap; }
+.swml-scene-island .step-pill {
+  display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px;
+  background:var(--surface); border:1px solid var(--line); color:var(--muted2);
+  font-size:12.5px; font-weight:600; cursor:pointer; transition:background .18s,color .18s;
+  font-family:inherit;
+}
+.swml-scene-island .step-pill .n {
+  width:20px; height:20px; border-radius:50%; display:grid; place-items:center;
+  background:var(--surface2); font-size:11px; font-weight:700; color:var(--muted2);
+}
+.swml-scene-island .step-pill.is-live { background:var(--brand); border-color:var(--brand); color:#fff; }
+.swml-scene-island .step-pill.is-live .n { background:rgba(255,255,255,.22); color:#fff; }
+.swml-scene-island .step-pill.is-done { color:var(--ink); box-shadow:inset 3px 0 0 var(--done); }
+.swml-scene-island .step-pill.is-done .n { background:transparent; color:var(--done); }
+.swml-scene-island .step-pill[disabled] { opacity:.45; cursor:default; }
+
+/* ── phases ── */
+.swml-scene-island .phase.is-live { animation:ssiFadeUp .28s ease; }
+@keyframes ssiFadeUp { from { opacity:0; transform:translateY(6px);} to { opacity:1; transform:none;} }
+@media (prefers-reduced-motion:reduce){
+  .swml-scene-island .phase.is-live{animation:none;}
+  .swml-scene-island .shake{animation:none!important;}
+}
+.swml-scene-island .eyebrow {
+  font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--faint); margin:0 0 6px;
+}
+.swml-scene-island .phase h2 { font-size:17px; margin:0 0 4px; }
+.swml-scene-island .phase .lead { color:var(--muted2); margin:0 0 16px; max-width:70ch; }
+
+/* ── stage cards ── */
+.swml-scene-island .stage-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
+.swml-scene-island .stage-card {
+  text-align:left; background:var(--surface); border:1.5px solid var(--line); border-radius:12px;
+  padding:14px 16px; cursor:pointer; color:var(--ink); font:inherit;
+  transition:border-color .16s, transform .16s, box-shadow .16s;
+}
+.swml-scene-island .stage-card:hover { transform:translateY(-1px); }
+.swml-scene-island .stage-card.is-sel { border-color:var(--brand); background:linear-gradient(0deg,var(--brand-soft),var(--brand-soft)),var(--surface); box-shadow:var(--shadow); }
+.swml-scene-island .stage-card .roman { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); }
+.swml-scene-island .stage-card.is-sel .roman { color:var(--ink); }
+.swml-scene-island .stage-card .name { font-weight:700; font-size:14.5px; margin:3px 0 4px; }
+.swml-scene-island .stage-card .meta { font-size:12px; color:var(--muted2); }
+.swml-scene-island .shake { animation:ssiShake .3s ease; }
+@keyframes ssiShake { 20%{transform:translateX(-4px);} 50%{transform:translateX(4px);} 80%{transform:translateX(-2px);} }
+.swml-scene-island .hint { font-size:12.5px; color:var(--warn); margin-top:10px; min-height:18px; }
+
+/* ── beat cards ── */
+.swml-scene-island .stage-head {
+  font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--faint); margin:20px 0 8px; display:flex; align-items:center; gap:10px;
+}
+.swml-scene-island .stage-head::after { content:''; flex:1; height:1px; background:var(--line); }
+.swml-scene-island .beat-list { display:flex; flex-direction:column; gap:0; max-width:760px; }
+.swml-scene-island .beat-card {
+  display:flex; gap:10px; align-items:flex-start; text-align:left; width:100%;
+  background:var(--surface); border:1.5px solid var(--line); border-radius:10px;
+  padding:9px 12px; cursor:pointer; color:var(--ink); font:inherit; user-select:none;
+  -webkit-user-select:none; touch-action:pan-y; margin-bottom:6px;
+  transition:border-color .14s, background .14s;
+}
+.swml-scene-island .beat-card.is-sel {
+  border-color:var(--brand);
+  background:linear-gradient(0deg,var(--brand-soft),var(--brand-soft)),var(--surface);
+}
+/* the run reads as ONE band: selected neighbours fuse */
+.swml-scene-island .beat-card.is-sel + .beat-card.is-sel { border-top-left-radius:0; border-top-right-radius:0; margin-top:-7.5px; border-top-color:rgba(83,51,237,.35); }
+.swml-scene-island .beat-card.is-sel:has(+ .beat-card.is-sel) { border-bottom-left-radius:0; border-bottom-right-radius:0; }
+.swml-scene-island .beat-card.is-end { box-shadow:inset 3px 0 0 var(--teal); }
+.swml-scene-island .beat-card .b-text { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; font-size:13.5px; margin-top:2px; }
+.swml-scene-island .trim-note { font-size:11px; color:var(--faint); margin-left:auto; align-self:center; white-space:nowrap; }
+.swml-scene-island .beat-card .tick {
+  flex:0 0 18px; width:18px; height:18px; border-radius:6px; margin-top:2px;
+  border:1.5px solid var(--faint); display:grid; place-items:center; font-size:11px; color:#fff;
+}
+.swml-scene-island .ord {
+  font-size:10px; font-weight:700; color:var(--faint); letter-spacing:.04em;
+  font-variant-numeric:tabular-nums; margin-right:6px;
+}
+.swml-scene-island .beat-card.is-sel .ord { color:var(--teal); }
+.swml-scene-island .beat-card.is-sel .tick { background:var(--brand); border-color:var(--brand); }
+.swml-scene-island .beat-card .b-label { font-size:11.5px; font-weight:700; color:var(--muted2); letter-spacing:.02em; }
+
+/* ── story strip (overview + detail) ── */
+.swml-scene-island .strip-wrap {
+  position:sticky; top:0; z-index:20; background:var(--ground);
+  padding:10px 0 6px; margin-bottom:6px;
+}
+.swml-scene-island .storystrip { display:flex; gap:8px; touch-action:none; }
+.swml-scene-island .strip-group { display:flex; flex-direction:column; min-width:0; }
+.swml-scene-island .strip-segs { display:flex; gap:2px; height:24px; }
+.swml-scene-island .seg {
+  flex:1; min-width:5px; border-radius:4px; background:var(--surface2);
+  border:none; padding:0; cursor:pointer; transition:background .12s;
+}
+.swml-scene-island .seg:hover { background:var(--line); }
+.swml-scene-island .seg.in-run { background:var(--brand); }
+.swml-scene-island .seg.is-end { background:var(--teal); }
+.swml-scene-island .strip-label {
+  font-size:9.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--faint); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.swml-scene-island .strip-hint { font-size:11px; color:var(--faint); margin:4px 0 0; }
+
+/* ── the 7-element map ── */
+.swml-scene-island .el-map { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.swml-scene-island .el-pill {
+  display:flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px;
+  border:1.5px solid var(--line); background:var(--surface2); font-size:11.5px; font-weight:700;
+  color:var(--faint); white-space:nowrap;
+}
+.swml-scene-island .el-pill .n { font-variant-numeric:tabular-nums; font-weight:700; opacity:.7; }
+.swml-scene-island .el-pill.is-done { color:var(--ink); border-color:var(--line); box-shadow:inset 3px 0 0 var(--done); }
+.swml-scene-island .el-pill.is-done .tickmark { color:var(--done); }
+.swml-scene-island .el-pill.is-now { font-weight:700; }
+.swml-scene-island .el-map-hint { font-size:11px; color:var(--faint); margin:0 0 12px; }
+
+/* ── shape phase: ordered bands ── */
+.swml-scene-island .panel { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; }
+.swml-scene-island .ask-panel {
+  position:sticky; top:0; z-index:15; background:var(--surface);
+  border:1.5px solid var(--brand); border-radius:12px; padding:12px 16px;
+  margin-bottom:12px; box-shadow:var(--shadow); max-width:760px;
+}
+.swml-scene-island .ask-panel .ask-el { font-weight:700; }
+.swml-scene-island .ask-panel .ask-what { font-size:12.5px; color:var(--muted2); margin-top:2px; }
+.swml-scene-island .ask-chips { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.swml-scene-island .chip-btn {
+  background:var(--surface2); border:none; border-radius:999px; padding:7px 14px;
+  color:var(--ink); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer;
+}
+.swml-scene-island .chip-btn:hover { background:var(--brand-soft); }
+.swml-scene-island .band { border:1.5px solid var(--line); border-radius:12px; margin-bottom:10px; background:var(--surface); overflow:hidden; max-width:760px; }
+.swml-scene-island .band-head { display:flex; gap:10px; align-items:baseline; padding:9px 14px; background:var(--surface2); position:relative; }
+.swml-scene-island .band-head .el { font-weight:700; font-size:13.5px; white-space:nowrap; }
+.swml-scene-island .band-head .el-prompt { font-size:12px; color:var(--muted2); }
+.swml-scene-island .band-head .count { margin-left:auto; font-size:11px; color:var(--faint); white-space:nowrap; }
+.swml-scene-island .p3-row { display:flex; gap:10px; padding:8px 14px; border-top:1px solid var(--line); font-size:13px; align-items:baseline; }
+.swml-scene-island .p3-row .b-label { font-size:10.5px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.04em; }
+.swml-scene-island .p3-row .b-text { display:block; }
+.swml-scene-island .p3-row.new .b-label { color:var(--teal); }
+.swml-scene-island .p3-row.new button { background:none; border:none; color:var(--faint); cursor:pointer; margin-left:auto; font-size:13px; }
+.swml-scene-island .unshaped-head {
+  font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--faint); margin:16px 0 8px;
+}
+.swml-scene-island .u-row {
+  display:flex; gap:10px; align-items:baseline; width:100%; text-align:left;
+  background:var(--surface); border:1.5px solid var(--line); border-radius:10px;
+  padding:9px 12px; margin-bottom:6px; cursor:pointer; color:var(--ink); font:inherit; max-width:760px;
+}
+.swml-scene-island .u-row:hover { border-color:var(--brand); }
+.swml-scene-island .u-row .b-label { font-size:10.5px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.04em; }
+.swml-scene-island .u-row .ord, .swml-scene-island .p3-row .ord { color:var(--teal); }
+.swml-scene-island .band-add { padding:8px 14px; border-top:1px solid var(--line); }
+.swml-scene-island .add-in {
+  background:none; border:none; color:var(--faint); font-size:12px; font-weight:600; cursor:pointer;
+  padding:0; text-align:left; font-family:inherit;
+}
+.swml-scene-island .add-in:hover { color:var(--teal); }
+.swml-scene-island .add-form { display:none; gap:6px; margin-top:8px; }
+.swml-scene-island .add-form.show { display:flex; }
+.swml-scene-island .add-form input {
+  flex:1; background:var(--surface2); border:1.5px solid var(--line); border-radius:8px;
+  color:var(--ink); font:inherit; font-size:13px; padding:7px 10px; min-width:0;
+}
+.swml-scene-island .add-form input:focus { outline:none; border-color:var(--brand); }
+.swml-scene-island .reshape { font-size:12px; color:var(--faint); background:none; border:none; cursor:pointer; text-decoration:underline; padding:2px 0; font-family:inherit; }
+.swml-scene-island .refine-banner {
+  background:var(--surface); border:1.5px solid var(--line); border-left:3px solid var(--teal);
+  border-radius:12px; padding:10px 16px; margin-bottom:12px; max-width:760px;
+  display:flex; gap:12px; align-items:center; flex-wrap:wrap; font-size:13px;
+}
+.swml-scene-island .refine-banner strong { white-space:nowrap; }
+.swml-scene-island .refine-banner span { color:var(--muted2); }
+.swml-scene-island .row-grip {
+  color:var(--faint); font-size:14px; cursor:grab; touch-action:none;
+  user-select:none; -webkit-user-select:none; padding:0 4px; margin-left:-4px;
+}
+.swml-scene-island .row-grip:hover { color:var(--teal); }
+.swml-scene-island .band.drop-hot { border-color:var(--teal); border-style:solid; box-shadow:var(--shadow); }
+.swml-scene-island .p3-row.drag-src { opacity:.35; }
+.swml-scene-island .nudge {
+  background:var(--surface); border:1.5px solid var(--warn); border-radius:12px;
+  padding:10px 16px; margin-bottom:10px; max-width:760px; font-size:13px;
+}
+.swml-scene-island .nudge .n-title { font-weight:700; color:var(--warn); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+.swml-scene-island .nudge .n-body { color:var(--muted2); margin-top:3px; }
+.swml-scene-island .nudge .n-body strong { color:var(--ink); }
+.swml-scene-island .nudge .ask-chips { margin-top:8px; }
+.swml-scene-island .band.is-empty { border-color:var(--warn); border-style:dashed; }
+.swml-scene-island .band.is-empty .count { color:var(--warn); }
+.swml-scene-island .u-zone { border-radius:12px; }
+.swml-scene-island .u-zone.drop-hot { outline:2px dashed var(--teal); outline-offset:4px; }
+/* where the beat will slot in: a teal line at the exact landing edge */
+.swml-scene-island .band.drop-top .band-head::after {
+  content:''; position:absolute; left:10px; right:10px; bottom:-2px; height:3px;
+  border-radius:2px; background:var(--teal); z-index:2;
+}
+.swml-scene-island .band.drop-bottom .band-add::before {
+  content:''; display:block; height:3px; border-radius:2px; background:var(--teal); margin-bottom:6px;
+}
+/* the landed beat settles into place */
+@keyframes ssiLandPulse {
+  0% { background:rgba(47,183,201,.3); transform:translateY(-4px); }
+  100% { background:transparent; transform:none; }
+}
+.swml-scene-island .p3-row.just-landed { animation:ssiLandPulse .45s ease; }
+@media (prefers-reduced-motion:reduce){ .swml-scene-island .p3-row.just-landed { animation:none; } }
+/* edge-beat arrows — the click alternative to dragging (the LearnDash essay-mover pattern) */
+.swml-scene-island .row-ctl { margin-left:auto; display:flex; gap:4px; align-self:center; }
+.swml-scene-island .row-move {
+  background:none; border:1px solid var(--line); border-radius:6px; color:var(--muted2);
+  cursor:pointer; font:inherit; font-size:11px; line-height:1; padding:4px 8px;
+}
+.swml-scene-island .row-move:hover { color:var(--ink); border-color:var(--teal); }
+
+/* ── footer action bar (flex footer of the frame, not fixed — no vh trap) ── */
+.swml-scene-island .actionbar {
+  flex:0 0 auto;
+  background:var(--surface); border-top:1px solid var(--line);
+  padding:12px max(20px,env(safe-area-inset-left)) calc(12px + env(safe-area-inset-bottom));
+}
+.swml-scene-island .actionbar-in { max-width:1120px; margin:0 auto; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+.swml-scene-island .status { font-size:12.5px; color:var(--muted2); flex:1; min-width:200px; }
+.swml-scene-island .status strong { color:var(--ink); }
+.swml-scene-island .btn {
+  border:none; border-radius:10px; padding:10px 20px; font:inherit; font-weight:700; font-size:13.5px;
+  cursor:pointer; background:var(--surface2); color:var(--ink);
+}
+.swml-scene-island .btn.primary { background:var(--brand); color:#fff; box-shadow:0 6px 18px rgba(83,51,237,.35); }
+.swml-scene-island .btn[disabled] { opacity:.45; cursor:default; box-shadow:none; }
+
+/* ── summary / done ── */
+.swml-scene-island .summary-row { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+.swml-scene-island .summary-row:last-child { border-bottom:none; }
+.swml-scene-island .summary-row .el { flex:0 0 110px; font-weight:700; font-size:13px; }
+.swml-scene-island .summary-row .what { flex:1; font-size:13px; color:var(--muted2); }
+.swml-scene-island .summary-row .what .own { color:var(--ink); }
+.swml-scene-island .summary-row.fresh .what { font-style:italic; }
+.swml-scene-island .done-note {
+  margin-top:16px; background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--done);
+  border-radius:10px; padding:12px 16px; font-size:13px; color:var(--muted2);
+}

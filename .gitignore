@@ -24,3 +24,7 @@ CleanShot*.jpg
 # Claude Code session permissions — machine/session cruft, can capture secrets; never commit
 .claude/settings.json
 .claude/settings.local.json
+
+# Step 9 island build deps (the built bundle in frontend/ is committed; deps are not)
+island/node_modules/
+island/package-lock.json

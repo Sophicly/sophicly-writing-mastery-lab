@@ -16023,7 +16023,7 @@
             const m = {
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
-                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl,
+                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
             };
             const c = m[(state && state.task) || ''];
             if (!c || typeof c.nudge !== 'function') return false;
@@ -16033,7 +16033,7 @@
             const m = {
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
-                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl,
+                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
             };
             const c = m[(state && state.task) || ''];
             return !!(c && c.active);
@@ -16130,7 +16130,7 @@
                 const _cwCtls = {
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
-                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl,
+                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -25862,7 +25862,434 @@
         let _cwStartMissTask = '';
         // v7.20.277: chat-clear resets every walk (see resetCwWalks). Registered together so a
         // future controller added here is covered by construction.
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl]);
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // STEP 9 — SCENE SELECTION (#204, v7.20.494). Bridge between the vanilla canvas and
+        // the React island (frontend/wml-scene-island.min.js — built from island/, the
+        // Neil-approved prototype ported 1:1). WML core stays vanilla; the contract is
+        // beats in → placements out, and ONLY this module talks to the island.
+        //
+        // Zero-API by design (#219): the walk intro is code-served on entry (the Step-1
+        // deterministic-start precedent, v7.19.661), the interface is code, the transfer is
+        // code. The chat API remains available for free-typed questions only.
+        //
+        // DATA PATH (byte-traced 2026-08-10, §5d):
+        //   beats IN   = the `plot_outline` artifact (the student's living Step-6/8 outline,
+        //                rows keyed `outline-cw-{arch}-{stage}-{criterion}` — verified against
+        //                real staging data, uid 1355, keys=rebirth-redemption/tragedy).
+        //   filing OUT = THIS step's document rows `cw-step-8-hook … -denouement` (+ the
+        //                `cw-step-8-plot-position` dropdown) — pre-renumber names the stored
+        //                docs actually carry (verified against the one real cw_9 doc on prod).
+        //                ⛔ #363: never rename stored fids, never wildcard the shared
+        //                `cw-step-8-` prefix (Step 8's own rows live under it too).
+        //   state      = the `scene_selection_state` artifact (JSON). ⛔ NOT `scene_selection`
+        //                — CW_ARTIFACT_MAP[9] saves the step DOC into that key (proven on
+        //                prod: it held a Draft-1 document).
+        // ═══════════════════════════════════════════════════════════════════════════════
+        const _cw9SceneCtl = (function () {
+            // The 7 elements — labels/prompts byte-matched to the Scene Structure doc builder
+            // (the outlineRowHTML rows above); hues are Neil's element→colour ruling (#204
+            // addendum 10; a brand pass may re-pitch hexes, the MAPPING stays).
+            const ELEMENTS = [
+                { id: 'hook', label: 'Hook', prompt: 'Grab your reader’s attention.', c: '#ef8a4b', ca: 'rgba(239,138,75,.14)', cb: 'rgba(239,138,75,.5)', dk: 1 },
+                { id: 'setup', label: 'Setup', prompt: 'Introduce the problem and the characters around it.', c: '#e5c558', ca: 'rgba(229,197,88,.13)', cb: 'rgba(229,197,88,.5)', dk: 1 },
+                { id: 'reaction', label: 'Reaction', prompt: 'The protagonist deals with the problems the best they can: coping and not coping.', c: '#45c0d9', ca: 'rgba(69,192,217,.13)', cb: 'rgba(69,192,217,.5)' },
+                { id: 'epiphany', label: 'Epiphany', prompt: 'The protagonist begins to understand what’s really going on and what to do.', c: '#c678dd', ca: 'rgba(198,120,221,.14)', cb: 'rgba(198,120,221,.5)' },
+                { id: 'proaction', label: 'Proaction', prompt: 'The protagonist implements a plan. It fails.', c: '#5aa9f7', ca: 'rgba(90,169,247,.13)', cb: 'rgba(90,169,247,.5)' },
+                { id: 'climax', label: 'Climax', prompt: 'The forces of good and evil collide.', c: '#ef6a6a', ca: 'rgba(239,106,106,.13)', cb: 'rgba(239,106,106,.5)' },
+                { id: 'denouement', label: 'Denouement', prompt: 'You write an unforgettable ending.', c: '#ef79a7', ca: 'rgba(239,121,167,.13)', cb: 'rgba(239,121,167,.5)' },
+            ];
+            // Mismatch nudges (#204 addenda 7+8): deterministic, per-TYPE at-least-one-home.
+            // The regexes run against the CANON beat labels of whichever archetype the student
+            // built, so all 8 templates are covered without per-archetype authoring ("closing
+            // image" is tragedy's wording of final image — read off the real template).
+            const NUDGE_RULES = [
+                { re: /epiphany/i, el: 'epiphany' },
+                { re: /opening image/i, el: 'hook' },
+                { re: /final image|closing image/i, el: 'denouement' },
+                { re: /nightmare battle|climax/i, el: 'climax' },
+            ];
+            const STATE_KEY = 'scene_selection_state';
+            let world = null;          // { arch, stages } from the last open()
+            let opened = false;
+            let introServed = false;   // per page-load idempotence (the #240 double-draw class)
+            let lastSnapshot = null;
+            let saveTimer = null;
+            let pendingConflicts = [];
+
+            function aiBubble(plain) {
+                addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;   // a re-serve is DRAWN, never saved (§4c.7)
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            // Present-state notices (gates, drop warnings, conflict asks) are EPHEMERAL —
+            // drawn, never stored (the v7.20.284 prereq-gate lesson): they re-derive on entry.
+            function noteBubble(plain) { addChatMessage(formatAI(plain), 'ai', plain); }
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
+                                && n.attrs && n.attrs.fieldId === fid) { out = _cwNodeText(n).trim(); return false; }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            function save() { try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (e) {} }
+
+            // Replace an element row's content with one line per beat (hardBreak-separated —
+            // the proven multi-line inline shape, see _planLinesContent). _writeOutlineRowField
+            // cannot carry \n on its replace path, hence this sibling with the SAME row walk.
+            function _cw9ReplaceRowLines(fid, lines) {
+                if (!canvasEditor || !fid || !lines || !lines.length) return false;
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants(function (node, pos) {
+                    if (targetPos !== null) return false;
+                    if ((node.type.name === 'outlineRow' || node.type.name === 'inputField') && node.attrs && node.attrs.fieldId === fid) {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null) {
+                    console.warn('WML CW9: no row for field', fid, '— transfer for this element NOT filed');
+                    return false;
+                }
+                const hasBr = !!(canvasEditor.schema.nodes && canvasEditor.schema.nodes.hardBreak);
+                const content = [];
+                lines.forEach(function (t, i) {
+                    if (i && hasBr) content.push({ type: 'hardBreak' });
+                    content.push({ type: 'text', text: (i && !hasBr ? ' | ' : '') + t });
+                });
+                canvasEditor.commands.insertContentAt({ from: targetPos + 1, to: targetPos + targetNode.nodeSize - 1 }, content);
+                return true;
+            }
+
+            function stagePresentation(sec, si) {
+                const m = /^STAGE\s+([IVXLC]+)\s*:\s*(.+)$/i.exec(String(sec.label || ''));
+                if (m) return { roman: 'Stage ' + m[1], name: m[2].trim() };
+                return { roman: 'Stage ' + (si + 1), name: String(sec.label || 'Stage ' + (si + 1)) };
+            }
+            // The artifact twin of _cw8EnumerateBeats: same template walk, same beatType
+            // exclusions, but reading the SAVED plot_outline HTML (the plot doc is not on
+            // screen in Step 9). Only beats WITH the student's words become selectable.
+            function enumerateFromArtifact(html) {
+                const out = { arch: null, stages: [] };
+                if (!html || typeof DOMParser === 'undefined') return out;
+                let doc = null;
+                try { doc = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html'); } catch (e) { return out; }
+                const present = new Map();
+                doc.querySelectorAll('[data-outline-row][data-field-id]').forEach(function (d) {
+                    const fid = d.getAttribute('data-field-id');
+                    if (fid && !present.has(fid)) present.set(fid, (d.textContent || '').trim());
+                });
+                const keys = Object.keys(OUTLINE_CRITERIA.cwPlotArchetypes || {});
+                present.forEach(function (_v, fid) {
+                    if (out.arch) return;
+                    for (let i = 0; i < keys.length; i++) {
+                        if (fid.indexOf('outline-cw-' + keys[i] + '-') === 0) { out.arch = keys[i]; break; }
+                    }
+                });
+                if (!out.arch) return out;
+                const tmpl = OUTLINE_CRITERIA.cwPlotArchetypes[out.arch];
+                if (!tmpl || !Array.isArray(tmpl.sections)) { out.arch = null; return out; }
+                let ord = 0;
+                tmpl.sections.forEach(function (sec, si) {
+                    const beats = [];
+                    (sec.criteria || []).forEach(function (c) {
+                        if (c.beatType === 'turning-point' || c.beatType === 'marker') return;
+                        const fid = _cw6RowFieldId(out.arch, sec.id, c.id);
+                        const text = present.get(fid);
+                        if (!text) return;
+                        ord++;
+                        beats.push({ id: fid, ord: ord, label: c.label || c.id, text: text });
+                    });
+                    if (beats.length) {
+                        const p = stagePresentation(sec, si);
+                        beats.forEach(function () {});
+                        out.stages.push({ id: sec.id, si: si, roman: p.roman, name: p.name, beats: beats });
+                    }
+                });
+                return out;
+            }
+
+            async function loadState(pid) {
+                try {
+                    const art = await WML.cwProject.loadArtifact(pid, STATE_KEY);
+                    if (art && art.success && art.value) {
+                        const v = typeof art.value === 'string' ? JSON.parse(art.value) : art.value;
+                        if (v && typeof v === 'object') return v;
+                    }
+                } catch (e) {}
+                return {};
+            }
+            function persistState(pid, obj) {
+                try { WML.cwProject.saveArtifact(pid, STATE_KEY, JSON.stringify(obj)); } catch (e) {}
+            }
+
+            // Prior selection restores as the starting point (#204 addendum 12); a beat that no
+            // longer exists upstream DROPS WITH A NOTICE, and a changed run resets the partition
+            // (a partition is a shape OF the run).
+            function restoreInitial(w, saved) {
+                if (!saved || saved.arch !== w.arch || !Array.isArray(saved.stageIds)) return { value: null, dropped: false };
+                const stageIds = saved.stageIds.filter(function (id) { return w.stages.some(function (s) { return s.id === id; }); });
+                const vis = [];
+                w.stages.forEach(function (s) { if (stageIds.indexOf(s.id) !== -1) s.beats.forEach(function (b) { vis.push(b.id); }); });
+                let runStart = saved.runStartFid ? vis.indexOf(saved.runStartFid) : -1;
+                let runEnd = saved.runEndFid ? vis.indexOf(saved.runEndFid) : -1;
+                let dropped = false;
+                if (runStart === -1 || runEnd === -1 || runEnd < runStart) {
+                    dropped = !!(saved.runStartFid || saved.runEndFid);
+                    runStart = null; runEnd = null;
+                }
+                let cuts = (Array.isArray(saved.cuts) && saved.cuts.length === 7) ? saved.cuts.slice() : null;
+                if (runStart == null) cuts = null;
+                else if (cuts && cuts.every(function (c) { return c != null; })) {
+                    const sum = cuts.reduce(function (a, b) { return a + b; }, 0);
+                    if (sum !== (runEnd - runStart + 1)) cuts = null;   // the run changed → re-shape
+                }
+                return {
+                    value: {
+                        stageIds: stageIds,
+                        runStart: runStart, runEnd: runEnd,
+                        cuts: cuts || undefined,
+                        added: (saved.added && typeof saved.added === 'object') ? saved.added : undefined,
+                    },
+                    dropped: dropped,
+                };
+            }
+
+            function derivePlotPosition(stageIds) {
+                if (!world || !world.stages.length || !stageIds || !stageIds.length) return null;
+                const total = Math.max.apply(null, world.stages.map(function (s) { return s.si; })) + 1;
+                const first = world.stages.filter(function (s) { return stageIds.indexOf(s.id) !== -1; })[0];
+                if (!first || !total) return null;
+                const frac = first.si / total;
+                if (frac < 1 / 3) return 'Beginning (Stages I–II)';
+                if (frac < 2 / 3) return 'Middle (Stages III–IV)';
+                return 'End (Stages V–VI)';
+            }
+
+            function chipBar(items) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.swml-cw9-chips')) return true;   // idempotent per bubble
+                const bar = el('div', { className: 'swml-quick-actions swml-cw9-chips' });
+                items.forEach(function (it) {
+                    bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: it.label, onClick: function () { bar.remove(); it.go(); } }));
+                });
+                bc.appendChild(bar);
+                return true;
+            }
+            // LIVENESS (§4d): after any entry/resume/close there is ALWAYS a chip on screen.
+            function ensureChip() {
+                const done = !!(lastSnapshot && lastSnapshot.transferred);
+                return chipBar([{ label: done ? '🎬 Reopen scene selection' : '🎬 Choose my scene', go: open }]);
+            }
+
+            const INTRO = [
+                'Welcome to Step 9: **Scene Selection**\n\nYour plot now carries your values. Now we choose the part of it your exam story will actually tell.',
+                'Here’s why we pick a scene instead of writing the whole story. Examiners have seen that when students try to tell a full story in the exam, the writing goes shallow — there are simply too many plot points to cover. We’ve seen exactly the same thing.\n\nA full story really needs about 5,000–10,000 words (novels run 50,000–100,000). In the exam you can only write about 650–700.',
+                'What a lot of students don’t realise is that a **scene is a mini story**. It has the same structure — its own hook, its own setup, reaction, epiphany, proaction, climax and denouement. So one well-chosen scene can do everything a whole story does, at a depth the examiner rewards.\n\nThat’s why we select a scene.',
+                'Here’s how it works:\n\n1. **Pick your stage(s)** — one or two that sit next to each other.\n2. **Pick your beats** — one continuous run: tap the first, tap the last, everything between comes with it.\n3. **Shape the scene** — element by element, decide where each part of your run belongs.\n\nAnd from the moment shaping starts, you can **drag any beat by its ⠿ handle** to change where it goes — nothing is final as you go, and your beats never leave story order. Rough is fine; you can reopen this and change everything later.\n\nReady? Hit the button below.',
+            ];
+
+            function start() {
+                if (introServed) return;
+                introServed = true;
+                (async function () {
+                    const pid = state.cwProjectId;
+                    let w = { arch: null, stages: [] };
+                    if (pid) {
+                        try {
+                            const art = await WML.cwProject.loadArtifact(pid, 'plot_outline');
+                            w = enumerateFromArtifact((art && art.success && art.value) || '');
+                        } catch (e) {}
+                    }
+                    if (!w.arch || !w.stages.length) {
+                        // EPHEMERAL gate (the .284 rule) — re-derives on every entry, never persisted.
+                        noteBubble('Welcome to Step 9: **Scene Selection**\n\nI can’t find any written beats in your plot outline yet — this step selects a scene FROM that outline, so it needs Step 6 (and ideally Steps 7–8) done first.\n\nPlease go back and write your plot outline, then come back here.');
+                        chipBar([{ label: 'Back to Steps', go: function () { try { closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); } catch (e) {} } }]);
+                        return;
+                    }
+                    world = w;
+                    // Replay-aware: if the intro is already in the transcript (resume route),
+                    // just re-offer the chip — never draw the teaching twice (#240 class).
+                    const already = Array.isArray(canvasChatHistory) && canvasChatHistory.some(function (m) {
+                        return m && m.role === 'assistant' && String(m.content || '').indexOf('Welcome to Step 9: **Scene Selection**') === 0;
+                    });
+                    if (already) { ensureChip(); return; }
+                    serveCwChunks(INTRO, { emit: aiBubble, onDone: ensureChip });
+                })();
+            }
+
+            async function open() {
+                if (opened) return;
+                if (!window.WMLSceneIsland) {
+                    noteBubble('The scene picker didn’t load on this page. Refresh and try again — if it keeps happening, tell your tutor.');
+                    ensureChip();   // liveness: the way forward stays on screen
+                    console.error('WML CW9: window.WMLSceneIsland missing — is wml-scene-island.min.js enqueued?');
+                    return;
+                }
+                const pid = state.cwProjectId;
+                if (!pid) { noteBubble('I can’t find your story project on this page — open this step from your Creative Writing dashboard.'); ensureChip(); return; }
+                let art = null;
+                try { art = await WML.cwProject.loadArtifact(pid, 'plot_outline'); } catch (e) {}
+                // EVERY open re-reads the CURRENT plot (#204 addendum 12) — upstream edits appear.
+                const w = enumerateFromArtifact((art && art.success && art.value) || '');
+                if (!w.arch || !w.stages.length) {
+                    noteBubble('Your plot outline has no written beats right now — finish Step 6 first, then come back.');
+                    ensureChip();
+                    return;
+                }
+                world = w;
+                const saved = await loadState(pid);
+                const ini = restoreInitial(w, saved);
+                if (ini.dropped) noteBubble('Heads up — some beats from your previous selection have changed upstream, so your run needs re-picking. Your shaping starts fresh from the current outline.');
+                opened = true;
+                window.WMLSceneIsland.mount({
+                    stages: w.stages,
+                    elements: ELEMENTS,
+                    nudgeRules: NUDGE_RULES,
+                    initial: ini.value,
+                    onStateChange: function (snap) {
+                        lastSnapshot = snap;
+                        clearTimeout(saveTimer);
+                        saveTimer = setTimeout(function () {
+                            loadState(pid).then(function (st) {
+                                st.arch = w.arch;
+                                st.stageIds = snap.stageIds;
+                                st.runStartFid = snap.runStartId || null;
+                                st.runEndFid = snap.runEndId || null;
+                                st.cuts = snap.cuts;
+                                st.added = snap.added;
+                                persistState(pid, st);
+                            });
+                        }, 800);
+                    },
+                    onTransfer: function (payload) { return transfer(pid, payload); },
+                    onClose: function () {
+                        opened = false;
+                        if (pendingConflicts.length) serveNextConflict(pid);
+                        else ensureChip();
+                    },
+                });
+            }
+
+            // THE GATED DELIVERABLE (#204 addendum 12): verbatim filing into the real rows.
+            // Per-element re-transfer rules: machine-filed row (still exactly what the last
+            // transfer filed) → replace freely · student-edited row → NEVER silently
+            // overwritten, asked serially after close (§29/§18) · empty row → fill.
+            async function transfer(pid, payload) {
+                try {
+                    const saved = await loadState(pid);
+                    const transfers = saved.transfers || {};
+                    pendingConflicts = [];
+                    const filedEls = [];
+                    let beatTotal = 0, addTotal = 0;
+                    payload.elements.forEach(function (pe) {
+                        const fid = 'cw-step-8-' + pe.id;   // byte-traced stored fids (§5d)
+                        const lines = pe.beats.map(function (b) { return b.text; }).concat(pe.added || []);
+                        if (!lines.length) return;
+                        beatTotal += pe.beats.length; addTotal += (pe.added || []).length;
+                        const current = rowText(fid);
+                        const last = (transfers[pe.id] && transfers[pe.id].text) || '';
+                        if (current && current !== '' && current.replace(/\s+/g, ' ').trim() !== last.replace(/\s+/g, ' ').trim()) {
+                            pendingConflicts.push({ id: pe.id, fid: fid, lines: lines });
+                            return;
+                        }
+                        if (_cw9ReplaceRowLines(fid, lines)) {
+                            transfers[pe.id] = { text: lines.join('\n'), at: new Date().toISOString(), machine: true };
+                            filedEls.push(pe.id);
+                        }
+                    });
+                    const posLabel = derivePlotPosition(payload.stageIds);
+                    if (posLabel) { try { _setOutlineDropdown('cw-step-8-plot-position', posLabel); } catch (e) {} }
+                    save();
+                    saved.arch = world && world.arch;
+                    saved.transfers = transfers;
+                    if (lastSnapshot) {
+                        saved.stageIds = lastSnapshot.stageIds;
+                        saved.runStartFid = lastSnapshot.runStartId || null;
+                        saved.runEndFid = lastSnapshot.runEndId || null;
+                        saved.cuts = lastSnapshot.cuts;
+                        saved.added = lastSnapshot.added;
+                    }
+                    persistState(pid, saved);
+                    // ONE durable transcript turn — a past-event report (fossil-safe §4c.7).
+                    const parts = [];
+                    if (filedEls.length) parts.push('I’ve filed your scene into the Scene Structure — ' + beatTotal + ' beat' + (beatTotal === 1 ? '' : 's') + (addTotal ? ' plus ' + addTotal + ' added moment' + (addTotal === 1 ? '' : 's') : '') + ', in story order, in your own words. Your plot outline is untouched.');
+                    if (pendingConflicts.length) parts.push('You’ve edited ' + pendingConflicts.length + ' element' + (pendingConflicts.length === 1 ? '' : 's') + ' since the last transfer — I’ll check those with you one at a time when you close the picker, so nothing of yours is overwritten.');
+                    if (parts.length) aiBubble(parts.join('\n\n'));
+                    return true;
+                } catch (e) {
+                    console.error('WML CW9: transfer failed —', e && e.message);
+                    noteBubble('Something went wrong filing your scene — nothing was lost. Close the picker and try Transfer again.');
+                    return false;
+                }
+            }
+
+            // Serial keep-vs-replace (§18: one item, one decision, then the next).
+            function serveNextConflict(pid) {
+                const c = pendingConflicts.shift();
+                if (!c) { ensureChip(); return; }
+                const elm = ELEMENTS.filter(function (e) { return e.id === c.id; })[0];
+                noteBubble('**' + (elm ? elm.label : c.id) + '** — you’ve edited this element in the document since the last transfer. Keep your edited version, or replace it with your new selection?');
+                chipBar([
+                    { label: 'Keep my edits', go: function () { serveNextConflict(pid); } },
+                    { label: 'Use my new selection', go: function () {
+                        if (_cw9ReplaceRowLines(c.fid, c.lines)) {
+                            save();
+                            loadState(pid).then(function (st) {
+                                st.transfers = st.transfers || {};
+                                st.transfers[c.id] = { text: c.lines.join('\n'), at: new Date().toISOString(), machine: true };
+                                persistState(pid, st);
+                                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: 'Replaced your ' + (elm ? elm.label : c.id) + ' with the new selection, as you asked.' }, { durable: true, why: 'past-event report of a filing the student approved' });
+                                saveCanvasChat(canvasChatHistory, canvasChatId);
+                            });
+                        }
+                        serveNextConflict(pid);
+                    } },
+                ]);
+            }
+
+            function tryResume() {
+                if (!state.task || state.task !== 'cw_step_9') return false;
+                if (opened) return true;
+                // The transcript has replayed; the chip is DOM-only — re-offer it (liveness §4d).
+                const hasIntro = Array.isArray(canvasChatHistory) && canvasChatHistory.some(function (m) {
+                    return m && m.role === 'assistant' && String(m.content || '').indexOf('Welcome to Step 9: **Scene Selection**') === 0;
+                });
+                if (!hasIntro) { introServed = false; start(); return true; }
+                return ensureChip();
+            }
+
+            return {
+                // No typed asks — the walk never owns the send pipeline, so `active` stays
+                // false by construction and the provenance gates skip it.
+                get active() { return false; },
+                get pending() { return false; },
+                atStart: function () {
+                    return !(Array.isArray(canvasChatHistory) && canvasChatHistory.some(function (m) {
+                        return m && m.role === 'assistant' && String(m.content || '').indexOf('Welcome to Step 9: **Scene Selection**') === 0;
+                    }));
+                },
+                start: start,
+                forceStart: function () { introServed = false; start(); },
+                reset: function () { introServed = false; opened = false; lastSnapshot = null; pendingConflicts = []; try { window.WMLSceneIsland && window.WMLSceneIsland.unmount(); } catch (e) {} },
+                handleTurn: async function () { /* no typed asks — free text goes to the AI */ },
+                onReply: function () { /* zero-API walk: no markers to detect */ },
+                nudge: function () { return ensureChip(); },
+                tryResume: tryResume,
+                open: open,
+            };
+        })();
+
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl]);
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
@@ -25871,6 +26298,7 @@
             _cwOutlineCtl.onReply(reply);
             _cwValuesCtl.onReply(reply);
             _cwPlotValuesCtl.onReply(reply);
+            _cw9SceneCtl.onReply(reply);
 
             const t = (state && state.task) || '';
             // ⚠️ Every walk task needs its arm HERE as well as in onReply above — the .490
@@ -25883,7 +26311,8 @@
                 : t === 'cw_step_5' ? _cwStructureCtl
                 : t === 'cw_step_6' ? _cwOutlineCtl
                 : t === 'cw_step_7' ? _cwValuesCtl
-                : t === 'cw_step_8' ? _cwPlotValuesCtl : null;
+                : t === 'cw_step_8' ? _cwPlotValuesCtl
+                : t === 'cw_step_9' ? _cw9SceneCtl : null;
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
             if (ctl.active || ctl.pending || !ctl.atStart()) { _cwStartMisses = 0; return; }
@@ -25925,6 +26354,7 @@
             cwOutlineCtl: _cwOutlineCtl,       // v7.20.296 — boot resume calls tryResume() on this
             cwValuesCtl: _cwValuesCtl,         // v7.20.419 — boot resume calls tryResume() on this
             cwPlotValuesCtl: _cwPlotValuesCtl, // v7.20.491 — boot resume calls tryResume() on this
+            cw9SceneCtl: _cw9SceneCtl,         // v7.20.494 (#204) — fresh-entry intercept calls start() on this
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
             set canvasChatId(v) { canvasChatId = v; },
@@ -32554,6 +32984,13 @@
                     if (_poetryPlanActive()) {
                         setTimeout(() => { try { if (window.__swmlPoetrySeqResume) window.__swmlPoetrySeqResume(); } catch (_) {} }, 400);
                     }
+                    // v7.20.494 (#204): the step-9 scene chip is DOM-only — re-offer after the
+                    // replay so a reload never lands on teaching text with no way forward (§4d).
+                    // Via the exported handle: the controller lives in the training-panels
+                    // closure, not this one (the v7.19.898 out-of-scope class).
+                    if (state.task === 'cw_step_9' && tp.cw9SceneCtl) {
+                        setTimeout(() => { try { tp.cw9SceneCtl.tryResume(); } catch (_) {} }, 400);
+                    }
 
                     // v7.17.59: Hoisted greeting regen + grade buttons UP — was
                     // post-await (3-5s gap during which the un-styled bubble was
@@ -32685,6 +33122,16 @@
                     if (state.task === 'cw_step_1' && !state.reviewMode && tp.cwProfileCtl) {
                         console.log('WML v7.19.661: CW Step 1 — deterministic profile controller start (isCwSi entry)');
                         tp.cwProfileCtl.start();
+                        return;
+                    }
+
+                    // v7.20.494 (#204): Step 9 Scene Selection — zero-API code-served walk owns
+                    // the fresh entry (same precedent as Step 1 above). start() serves its own
+                    // greeting + intro + chip; its prerequisite gate (no written plot beats)
+                    // re-derives inside start() and stays ephemeral (.284 rule).
+                    if (state.task === 'cw_step_9' && !state.reviewMode && tp.cw9SceneCtl) {
+                        console.log('WML v7.20.494: CW Step 9 — deterministic scene-selection start (isCwSi entry)');
+                        tp.cw9SceneCtl.start();
                         return;
                     }
 

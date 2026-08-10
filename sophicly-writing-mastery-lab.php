@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.493
+ * Version: 7.20.494
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.493');
+define('SWML_VERSION', '7.20.494');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -415,6 +415,13 @@ class Sophicly_Writing_Mastery_Lab {
             SWML_VERSION,
             true
         );
+
+        // v7.20.494 (#204): Step 9 Scene Selection island — prebuilt React bundle (built from
+        // island/ by `npm run build`, committed like wml-tiptap.min.js; the server never builds).
+        // Standalone IIFE exposing window.WMLSceneIsland; no deps — _cw9SceneCtl (wml-assessment)
+        // is the only caller and fails loud if the global is absent.
+        wp_enqueue_style('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.css', [], SWML_VERSION);
+        wp_enqueue_script('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.min.js', [], SWML_VERSION, true);
 
         // Assessment module: canvas workspace, document building, TipTap editor
         wp_enqueue_script(
@@ -1054,6 +1061,9 @@ class Sophicly_Writing_Mastery_Lab {
         // defect, not the omission (BRAND §4 / root CLAUDE.md §7).
         wp_enqueue_script('swml-techniques-index', SWML_URL . 'frontend/wml-techniques-index.js', [], SWML_VERSION, true);
         wp_enqueue_script('swml-cw6-concepts', SWML_URL . 'frontend/wml-cw6-concepts.js', [], SWML_VERSION, true);
+        // v7.20.494 (#204): Step 9 Scene Selection island (see the standard-path twin for the law).
+        wp_enqueue_style('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.css', [], SWML_VERSION);
+        wp_enqueue_script('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.min.js', [], SWML_VERSION, true);
         wp_enqueue_script('swml-assessment', SWML_URL . 'frontend/wml-assessment.js', ['swml-core', 'swml-section-block', 'swml-techniques-index', 'swml-cw6-concepts', 'swml-tiptap'], SWML_VERSION, true);
         wp_enqueue_script('swml-selection-chip', SWML_URL . 'frontend/wml-selection-chip.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
         wp_enqueue_script('swml-pull-overlay', SWML_URL . 'frontend/wml-pull-overlay.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);

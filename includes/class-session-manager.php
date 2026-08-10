@@ -475,6 +475,10 @@ class SWML_Session_Manager {
             'brief_outline'   => null,
             'plot_template'   => '',
             'scene_selection'  => null,
+            // v7.20.494 (#204): the Step-9 picker's selection + transfer-provenance record
+            // (JSON). Separate key because `scene_selection` receives the step DOC on the
+            // artifact save path (CW_ARTIFACT_MAP[9]) — proven on prod 2026-08-10.
+            'scene_selection_state' => null,
             'character_profile' => null,
             'universal_values' => [],
             'theme_tone'      => null,
