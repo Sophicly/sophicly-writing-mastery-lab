@@ -14168,6 +14168,21 @@
     // Callers that hold a durable copy re-save, so the heal is paid once per project.
     function _healLoadedChat(chat, where) {
         if (!chat || !Array.isArray(chat.history)) return chat;
+        // v7.20.495 (#204): pre-.494 step-9 chats saved the GENERIC greeting ("…hit the button
+        // below…") durably; replayed, it sits above the walk's own greeting as a second welcome
+        // whose launch phrase summons the detector's "▶ Let's go" — the double Neil reported.
+        // Keyed on that launch phrase, which the walk's own greeting deliberately avoids, so no
+        // walk turn can ever match. Lives HERE because this is the ONE healer both pipelines
+        // call (localStorage + both server loads) — a strip in one pipeline misses the other.
+        const CW9_OLD_GREET_RE = /^Welcome (back )?to Step 9: \*\*Scene Selection\*\*[\s\S]*hit the button below/;
+        const beforeCw9 = chat.history.length;
+        chat.history = chat.history.filter(function (m) {
+            return !(m && m.role === 'assistant' && CW9_OLD_GREET_RE.test(m.content || ''));
+        });
+        if (chat.history.length !== beforeCw9) {
+            console.warn('WML CW9: stripped ' + (beforeCw9 - chat.history.length)
+                + ' pre-.495 generic step-9 greeting(s) (' + (where || '?') + ') — the walk serves its own.');
+        }
         const r = _healFossilTurns(chat.history);
         if (!r.healed) return chat;
         chat.history = r.history;
@@ -15172,6 +15187,12 @@
                             // must not have a stale mid-walk judgment fire into the fresh session.
                             clearWalkResume();
                             setTimeout(() => { _cwProfileCtl.reset(); _cwProfileCtl.start(); }, 200);
+                        } else if (state.task === 'cw_step_9') {
+                            // v7.20.495 (#204): Step 9's zero-API walk owns chat-clear too — the
+                            // generic "Welcome back … hit the button below" re-greet would summon
+                            // the detector chip and an API round the step never needs.
+                            clearWalkResume();
+                            setTimeout(() => { _cw9SceneCtl.reset(); _cw9SceneCtl.start(); }, 200);
                         } else if (isCwTask && cwStepDef) {
                             const stepLabel = cwStepDef.label || 'this step';
                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
@@ -26073,6 +26094,10 @@
                 return 'End (Stages V–VI)';
             }
 
+            // Neil's Scene glyph (frontend/icons/scene.svg, supplied 2026-08-10) — inlined so a
+            // chip can carry it; fill rides currentColor so it matches the chip text colour.
+            const SCENE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="15" height="15" fill="currentColor" style="vertical-align:-2px;margin-right:6px" aria-hidden="true"><path d="M13,16.53998l-2.29999-1.53998h-5.70001v8h8v-6.46002ZM10,20c-.55231,0-1-.44775-1-1,0-.55231.44769-1,1-1s1,.44769,1,1c0,.55225-.44769,1-1,1Z"/><polygon points="27.80023 16.05927 30.68274 5.97064 27.68311 6.24902 24.80048 16.33832 27.80023 16.05927"/><polygon points="32.93677 15.58148 35.81891 5.4939 32.81934 5.77228 29.93695 15.86053 32.93677 15.58148"/><path d="M42.09003,14.72998c.26996-.02997.50995-.15997.67999-.35999.16998-.21002.25-.47003.22998-.73999l-.77002-7.73004c-.06-.54999-.54999-.94995-1.08997-.89996l-3.18451.29559-2.88202,10.0871,7.01654-.65271Z"/><path d="M6,13h5c.20001,0,.39001.06.54999.16998l3,2c.28003.17999.45001.5.45001.83002v1.25l2.52722-.23511,2.88306-10.09082-14.50031,1.34589c-.26996.03003-.50995.16003-.67999.36005-.16998.20996-.25.46997-.22998.73999l.37,3.63h.63Z"/><polygon points="22.6637 16.53711 25.54651 6.44733 22.54688 6.72577 19.66394 16.81616 22.6637 16.53711"/><polygon points="35.38861 21 32.46857 21 30.1828 29 33.10291 29 35.38861 21"/><polygon points="30.38861 21 27.46857 21 25.1828 29 28.10291 29 30.38861 21"/><path d="M20.38861,21h-5.38861v3c0,.54999-.45001,1-1,1H5v3c0,.54999.45001,1,1,1h12.10291l2.28571-8Z"/><polygon points="20.1828 29 23.10291 29 25.38861 21 22.46857 21 20.1828 29"/><path d="M42,21h-4.53143l-2.28577,8h6.8172c.54999,0,1-.45001,1-1v-6c0-.54999-.45001-1-1-1Z"/><path d="M8,42c0,.54999.45001,1,1,1h30c.54999,0,1-.45001,1-1v-11H8v11ZM30,39h7c.55225,0,1,.44775,1,1s-.44775,1-1,1h-7c-.55225,0-1-.44775-1-1s.44775-1,1-1ZM26,39c.55231,0,1,.44769,1,1,0,.55225-.44769,1-1,1s-1-.44775-1-1c0-.55231.44769-1,1-1ZM10,36c0-.55225.44775-1,1-1s1,.44775,1,1v3h2c.55225,0,1,.44775,1,1s-.44775,1-1,1h-3c-.55225,0-1-.44775-1-1v-4Z"/></svg>';
+
             function chipBar(items) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
@@ -26080,7 +26105,10 @@
                 if (bc.querySelector('.swml-cw9-chips')) return true;   // idempotent per bubble
                 const bar = el('div', { className: 'swml-quick-actions swml-cw9-chips' });
                 items.forEach(function (it) {
-                    bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: it.label, onClick: function () { bar.remove(); it.go(); } }));
+                    const btn = el('button', { className: 'swml-quick-btn', onClick: function () { bar.remove(); it.go(); } });
+                    if (it.svg) { btn.innerHTML = it.svg; btn.appendChild(document.createTextNode(it.label)); }
+                    else btn.textContent = it.label;
+                    bar.appendChild(btn);
                 });
                 bc.appendChild(bar);
                 return true;
@@ -26088,15 +26116,41 @@
             // LIVENESS (§4d): after any entry/resume/close there is ALWAYS a chip on screen.
             function ensureChip() {
                 const done = !!(lastSnapshot && lastSnapshot.transferred);
-                return chipBar([{ label: done ? '🎬 Reopen scene selection' : '🎬 Choose my scene', go: open }]);
+                return chipBar([{ svg: SCENE_ICON, label: done ? 'Reopen scene selection' : 'Choose my scene', go: open }]);
             }
 
+            // ⭐ PROGRESSIVE, ONE BUBBLE AT A TIME (Neil, 2026-08-10, on the .494 first screen:
+            // both chips arrived on one bubble — "start with Let's go, and the messages should
+            // be given progressively"). The GREETING lands alone with ONE chip; the teaching
+            // chunks flow behind it (Continue-paced, §4b); the scene chip arrives LAST, alone.
+            // ⚠️ The greeting must NOT match the launch-prompt detector (wml-app.js:
+            // /hit the button below|let's get started|let's begin|ready to (begin|start|…)/i)
+            // or the detector adds a SECOND "▶ Let's go" — the exact double Neil saw.
+            const GREETING = 'Welcome to Step 9: **Scene Selection**\n\nYour plot now carries your values. Now we choose the part of it your exam story will actually tell.';
             const INTRO = [
-                'Welcome to Step 9: **Scene Selection**\n\nYour plot now carries your values. Now we choose the part of it your exam story will actually tell.',
                 'Here’s why we pick a scene instead of writing the whole story. Examiners have seen that when students try to tell a full story in the exam, the writing goes shallow — there are simply too many plot points to cover. We’ve seen exactly the same thing.\n\nA full story really needs about 5,000–10,000 words (novels run 50,000–100,000). In the exam you can only write about 650–700.',
                 'What a lot of students don’t realise is that a **scene is a mini story**. It has the same structure — its own hook, its own setup, reaction, epiphany, proaction, climax and denouement. So one well-chosen scene can do everything a whole story does, at a depth the examiner rewards.\n\nThat’s why we select a scene.',
-                'Here’s how it works:\n\n1. **Pick your stage(s)** — one or two that sit next to each other.\n2. **Pick your beats** — one continuous run: tap the first, tap the last, everything between comes with it.\n3. **Shape the scene** — element by element, decide where each part of your run belongs.\n\nAnd from the moment shaping starts, you can **drag any beat by its ⠿ handle** to change where it goes — nothing is final as you go, and your beats never leave story order. Rough is fine; you can reopen this and change everything later.\n\nReady? Hit the button below.',
+                'Here’s how it works:\n\n1. **Pick your stage(s)** — one or two that sit next to each other.\n2. **Pick your beats** — one continuous run: tap the first, tap the last, everything between comes with it.\n3. **Shape the scene** — element by element, decide where each part of your run belongs.\n\nAnd from the moment shaping starts, you can **drag any beat by its ⠿ handle** to change where it goes — nothing is final as you go, and your beats never leave story order. Rough is fine; you can reopen this and change everything later.',
             ];
+            // How far through the intro is the TRANSCRIPT? Durable turns replay, so position is
+            // doc-derived — a reload resumes at the exact next chunk, never from the top (§4c.8b).
+            function introProgress() {
+                const h = Array.isArray(canvasChatHistory) ? canvasChatHistory : [];
+                // ⚠️ 100-char signature for the greeting: the pre-.495 GENERIC step-9 greeting
+                // shares the first ~75 chars ("…Your plot now carries your values. ") — a 60-char
+                // probe would claim it as ours and skip our greeting entirely.
+                const has = function (t, len) {
+                    const sig = String(t).slice(0, len || 60);
+                    return h.some(function (m) { return m && m.role === 'assistant' && String(m.content || '').indexOf(sig) === 0; });
+                };
+                if (!has(GREETING, 100)) return -1;               // nothing served yet
+                let n = 0;
+                while (n < INTRO.length && has(INTRO[n])) n++;
+                return n;                                          // chunks already in transcript
+            }
+            function serveIntroFrom(n) {
+                serveCwChunks(INTRO, { emit: aiBubble, startAt: n, onDone: ensureChip });
+            }
 
             function start() {
                 if (introServed) return;
@@ -26117,13 +26171,15 @@
                         return;
                     }
                     world = w;
-                    // Replay-aware: if the intro is already in the transcript (resume route),
-                    // just re-offer the chip — never draw the teaching twice (#240 class).
-                    const already = Array.isArray(canvasChatHistory) && canvasChatHistory.some(function (m) {
-                        return m && m.role === 'assistant' && String(m.content || '').indexOf('Welcome to Step 9: **Scene Selection**') === 0;
-                    });
-                    if (already) { ensureChip(); return; }
-                    serveCwChunks(INTRO, { emit: aiBubble, onDone: ensureChip });
+                    const at = introProgress();
+                    if (at === -1) {
+                        aiBubble(GREETING);
+                        chipBar([{ label: '▶ Let’s go', go: function () { serveIntroFrom(0); } }]);
+                    } else if (at < INTRO.length) {
+                        chipBar([{ label: 'Continue →', go: function () { serveIntroFrom(at); } }]);
+                    } else {
+                        ensureChip();
+                    }
                 })();
             }
 
@@ -26260,11 +26316,11 @@
             function tryResume() {
                 if (!state.task || state.task !== 'cw_step_9') return false;
                 if (opened) return true;
-                // The transcript has replayed; the chip is DOM-only — re-offer it (liveness §4d).
-                const hasIntro = Array.isArray(canvasChatHistory) && canvasChatHistory.some(function (m) {
-                    return m && m.role === 'assistant' && String(m.content || '').indexOf('Welcome to Step 9: **Scene Selection**') === 0;
-                });
-                if (!hasIntro) { introServed = false; start(); return true; }
+                // The transcript has replayed; chips are DOM-only — re-offer the RIGHT one for
+                // the exact position (liveness §4d + resume-to-the-exact-item §4c.8b).
+                const at = introProgress();
+                if (at === -1) { introServed = false; start(); return true; }
+                if (at < INTRO.length) return chipBar([{ label: 'Continue →', go: function () { serveIntroFrom(at); } }]);
                 return ensureChip();
             }
 
@@ -26273,11 +26329,7 @@
                 // false by construction and the provenance gates skip it.
                 get active() { return false; },
                 get pending() { return false; },
-                atStart: function () {
-                    return !(Array.isArray(canvasChatHistory) && canvasChatHistory.some(function (m) {
-                        return m && m.role === 'assistant' && String(m.content || '').indexOf('Welcome to Step 9: **Scene Selection**') === 0;
-                    }));
-                },
+                atStart: function () { return introProgress() === -1; },
                 start: start,
                 forceStart: function () { introServed = false; start(); },
                 reset: function () { introServed = false; opened = false; lastSnapshot = null; pendingConflicts = []; try { window.WMLSceneIsland && window.WMLSceneIsland.unmount(); } catch (e) {} },
@@ -26290,6 +26342,10 @@
         })();
 
         registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl]);
+        // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
+        // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
+        // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
+        window.__swmlCw9Ctl = _cw9SceneCtl;
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
@@ -34360,7 +34416,13 @@
                                         const fn = (config.userName || '').split(' ')[0] || 'there';
 
                                         // v7.13.42: CW exercises get CW-specific greeting on chat clear
-                                        if (isCwTask && cwStepDef) {
+                                        // v7.20.495 (#204): Step 9 owns chat-clear on THIS pipeline too
+                                        // (twin — this closure cannot see _cw9SceneCtl, hence the
+                                        // window hook; absent hook falls through to the old greeting).
+                                        if (state.task === 'cw_step_9' && window.__swmlCw9Ctl) {
+                                            clearWalkResume();
+                                            setTimeout(() => { window.__swmlCw9Ctl.reset(); window.__swmlCw9Ctl.start(); }, 200);
+                                        } else if (isCwTask && cwStepDef) {
                                             const stepLabel = cwStepDef.label || 'this step';
                                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
                                             // v7.20.292: the RESUME greeting must echo the chosen structure too. .286 patched only
@@ -36065,6 +36127,16 @@
                                         } else if (isCwSi) {
                                             // v7.13.35: Creative Writing SI-guided exercise — show greeting, then auto-trigger AI
                                             setTimeout(async () => {
+                                            // v7.20.495 (#204 addendum 16): Step 9's code-served walk owns THIS
+                                            // emitter too — .494 intercepted only the other pipeline's greeting
+                                            // (the dual-pipeline checklist, verbatim), so Neil's entry route
+                                            // served the generic "hit the button below" greeting: the detector's
+                                            // "▶ Let's go" AND the scene chip landed on one bubble.
+                                            if (state.task === 'cw_step_9' && !state.reviewMode && window.__swmlCw9Ctl) {
+                                                console.log('WML v7.20.495: CW Step 9 — deterministic scene-selection start (transition-handler entry)');
+                                                window.__swmlCw9Ctl.start();
+                                                return;
+                                            }
                                             const firstName = (config.userName || '').split(' ')[0] || 'there';
                                             const stepLabel = cwStepDef?.label || 'this step';
                                             const stepNum = cwStepDef?.step || cwStepDef?.trial || '';
