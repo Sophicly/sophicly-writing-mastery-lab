@@ -283,6 +283,16 @@ function instances() {
         I('step-pill LIVE numeral (pill hovered)', [['swml-scene-island'], ['step-pill', 'is-live'], ['n']], { parentHover: true }),
         I('step-pill DONE', [['swml-scene-island'], ['step-pill', 'is-done']]),
         I('step-pill DONE numeral', [['swml-scene-island'], ['step-pill', 'is-done'], ['n']]),
+        /* ⚠️ COMBINED STATES. v7.20.498's list held only single-class instances and therefore
+           could not express "the step you are ON that is also COMPLETE" — which is the exact
+           markup Neil pasted (#204 add.21), and which was failing at ~1.7:1 while the gate
+           reported all-clear. A cascade gate is only as good as the states it enumerates: two
+           rules at EQUAL specificity are resolved by source order, so any pair of state classes
+           that can co-occur is its own instance and must be declared. */
+        I('step-pill LIVE+DONE', [['swml-scene-island'], ['step-pill', 'is-live', 'is-done']]),
+        I('step-pill LIVE+DONE HOVER', [['swml-scene-island'], ['step-pill', 'is-live', 'is-done']], { hover: true }),
+        I('step-pill LIVE+DONE numeral', [['swml-scene-island'], ['step-pill', 'is-live', 'is-done'], ['n']]),
+        I('step-pill LIVE+DONE numeral (pill hovered)', [['swml-scene-island'], ['step-pill', 'is-live', 'is-done'], ['n']], { parentHover: true }),
 
         I('stage-card body', [['swml-scene-island'], ['stage-card']]),
         I('stage-card roman', [['swml-scene-island'], ['stage-card'], ['roman']]),

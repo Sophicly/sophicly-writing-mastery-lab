@@ -190,5 +190,57 @@ section('B bridge wiring in wml-assessment.js');
     }
 }
 
+/* ── SECTION C: the SKIN contract (#204 add.21) ──────────────────────────────────────────
+ * Two rules that Neil has now had to state twice each, so neither is left to memory.
+ */
+section('C skin: Neil\'s arrow, and no strokes on the outside');
+{
+    const jsx = fs.readFileSync(path.join(ROOT, 'island', 'src', 'SceneSelection.jsx'), 'utf8');
+    const core = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
+    const css = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-scene-island.css'), 'utf8');
+
+    /* C1 — the island's inlined chevron must stay byte-identical to Neil's registered icon.
+       The island declares no script deps on purpose, so it cannot call WML.icon(); a copy is
+       therefore correct, but an unwatched copy rots. This is the watch. */
+    const inlined = (/const NEIL_CHEVRON_RIGHT = '([^']+)'/.exec(jsx) || [])[1];
+    const registered = (/arrowRightBare:[^}]*?body: '<path d="([^"]+)"/.exec(core) || [])[1];
+    ok(!!inlined, 'island defines NEIL_CHEVRON_RIGHT');
+    ok(!!registered, 'wml-core registers arrowRightBare (Neil\'s Right Arrow.svg)');
+    ok(inlined && registered && inlined === registered,
+        'the island\'s arrow is BYTE-IDENTICAL to Neil\'s registered glyph — not a lookalike');
+
+    /* C2 — no generic arrow glyph may come back. He rejected these by name.
+       Scans RENDERED source only: prose in a comment ("beats in → placements out") is not a
+       glyph on his screen, and a check that fires on it gets switched off. */
+    const jsxCode = jsx.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    ['←', '↑', '↓', '→'].forEach((g) => ok(jsxCode.indexOf(g) === -1,
+        'no generic arrow glyph ' + g + ' in the island (#204 add.21: "I don\'t like those generic ones")'));
+
+    /* C3 — STROKES ON THE OUTSIDE. add.18 killed side stripes and asked for the ban list to be
+       run as an END GATE; that never became mechanical, so the hairline OUTLINE — the same
+       banned family, one rung out — survived two brand passes until Neil caught it by eye.
+       Now it fails the build. Internal dividers (border-top/bottom between rows) are a
+       different thing and stay: his words were "the strokes are on the OUTSIDE". */
+    const CARD_SELECTORS = ['.panel', '.band', '.stage-card', '.beat-card', '.u-row', '.ask-panel',
+        '.refine-banner', '.nudge', '.done-note', '.row-move'];
+    const rules = css.replace(/\/\*[\s\S]*?\*\//g, '').split('}');
+    CARD_SELECTORS.forEach((sel) => {
+        const bad = rules.filter((r) => {
+            const head = r.split('{')[0] || '';
+            const body = r.split('{')[1] || '';
+            // the RESTING rule only — a state rule (.is-sel/:hover/.drop-hot) may paint a stroke,
+            // because then the stroke MEANS something rather than decorating everything equally
+            if (!new RegExp('\\' + sel + '\\s*\\{?\\s*$').test(head.trim())) return false;
+            return /border\s*:\s*1px\s+solid\s+(?!transparent)/.test(body);
+        });
+        ok(bad.length === 0, 'no hairline OUTLINE on the resting ' + sel + ' (BRAND.md absolute ban; separate by surface + shadow)');
+    });
+
+    /* C4 — and none may sneak back in as an inline style from the JS, which is how the element
+       hue was painting a full outline on every band. */
+    ok(jsx.indexOf('borderColor') === -1,
+        'no inline borderColor in the island JSX — hue rides as the number badge + tint (add.18)');
+}
+
 console.log('\n' + (fails ? '✗ ' + fails + ' of ' + checks + ' checks FAILED' : '✓ all ' + checks + ' checks passed'));
 process.exit(fails ? 1 : 0);

@@ -31,6 +31,8 @@
   /* brand roles */
   --teal:#51dacf; --teal-deep:#41aaa8; --teal-tint:rgba(81,218,207,.10);
   --done:#1CD991; --warn:#F1C40F;
+  /* status callouts carry their colour as a TINT, never an outside stroke (#204 add.21) */
+  --warn-tint:rgba(241,196,15,.09); --done-tint:rgba(28,217,145,.09);
   --btn-ink:#1C1D1F;
   --shadow-sm:0 1px 2px rgba(0,0,0,.06);
   --shadow-md:0 4px 12px rgba(83,51,237,.10);
@@ -61,6 +63,7 @@ body[data-swml-theme="light"] .swml-scene-island {
   --line:rgba(26,26,30,.10); --line-strong:rgba(26,26,30,.18);
   --teal:#2E4FC7; --teal-deep:#1F3FB8; --teal-tint:rgba(46,79,199,.10);
   --done:#0A6B46; --warn:#7A5D00;
+  --warn-tint:rgba(122,93,0,.08); --done-tint:rgba(10,107,70,.08);
   --btn-ink:#ffffff;                 /* white ink on the light accent fill, not the dark ink */
   --halo:rgba(46,79,199,.28);
 }
@@ -119,6 +122,12 @@ body[data-swml-theme="light"] .swml-scene-island {
 .swml-scene-island .step-pill.is-live .n { background:rgba(28,29,31,.16); color:var(--btn-ink); }
 .swml-scene-island .step-pill.is-done { color:var(--ink); }
 .swml-scene-island .step-pill.is-done .n { background:var(--done); color:var(--btn-ink); }
+/* ⚠️ THE COMBINED STATE — the step you are ON that is also COMPLETE (`is-live is-done`, which is
+   what Neil pasted in #204 add.21). `.is-done` is declared after `.is-live` at the SAME
+   specificity (0,3,0), so it silently won `color` and repainted --ink onto the live accent
+   ground: ~1.7:1. LIVE WINS, because "where you are" is the fact the student needs. */
+.swml-scene-island .step-pill.is-live.is-done { color:var(--btn-ink); }
+.swml-scene-island .step-pill.is-live.is-done .n { background:rgba(28,29,31,.16); color:var(--btn-ink); }
 .swml-scene-island .step-pill[disabled] { opacity:.4; cursor:default; }
 
 /* ── phases ── */
@@ -139,11 +148,11 @@ body[data-swml-theme="light"] .swml-scene-island {
 /* ── stage cards ── */
 .swml-scene-island .stage-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
 .swml-scene-island .stage-card {
-  text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:12px;
+  text-align:left; background:var(--surface); border:1px solid transparent; border-radius:12px;
   padding:16px 18px; cursor:pointer; color:var(--ink); font:inherit;
   transition:border-color .3s var(--ease), background .3s var(--ease), box-shadow .3s var(--ease);
 }
-.swml-scene-island .stage-card:hover { border-color:var(--line-strong); box-shadow:var(--shadow-md); }
+.swml-scene-island .stage-card:hover { background:var(--surface2); box-shadow:var(--shadow-md); }
 .swml-scene-island .stage-card.is-sel {
   border-color:var(--teal); background:linear-gradient(0deg,var(--teal-tint),var(--teal-tint)),var(--surface);
   box-shadow:var(--shadow-md);
@@ -167,12 +176,12 @@ body[data-swml-theme="light"] .swml-scene-island {
 .swml-scene-island .beat-list { display:flex; flex-direction:column; gap:0; max-width:760px; }
 .swml-scene-island .beat-card {
   display:flex; gap:12px; align-items:flex-start; text-align:left; width:100%;
-  background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  background:var(--surface); border:1px solid transparent; border-radius:10px;
   padding:10px 14px; cursor:pointer; color:var(--ink); font:inherit; user-select:none;
   -webkit-user-select:none; touch-action:pan-y; margin-bottom:6px;
   transition:border-color .25s var(--ease), background .25s var(--ease);
 }
-.swml-scene-island .beat-card:hover { border-color:var(--line-strong); }
+.swml-scene-island .beat-card:hover { background:var(--surface2); }
 .swml-scene-island .beat-card.is-sel {
   border-color:var(--teal-deep);
   background:linear-gradient(0deg,var(--teal-tint),var(--teal-tint)),var(--surface);
@@ -223,7 +232,7 @@ body[data-swml-theme="light"] .swml-scene-island {
 .swml-scene-island .el-map { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
 .swml-scene-island .el-pill {
   display:flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px;
-  border:1px solid var(--line); background:var(--surface2);
+  border:1px solid transparent; background:var(--surface2);
   font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
   color:var(--faint); white-space:nowrap;
 }
@@ -236,10 +245,10 @@ body[data-swml-theme="light"] .swml-scene-island {
 .swml-scene-island .el-map-hint { font-size:11.5px; color:var(--faint); margin:0 0 14px; max-width:68ch; }
 
 /* ── shape phase ── */
-.swml-scene-island .panel { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px; }
+.swml-scene-island .panel { background:var(--surface); border:none; border-radius:12px; padding:18px; box-shadow:var(--shadow-sm); }
 .swml-scene-island .ask-panel {
   position:sticky; top:0; z-index:15; background:var(--surface2);
-  border:1px solid var(--line-strong); border-radius:12px; padding:14px 18px;
+  border:1px solid transparent; border-radius:12px; padding:14px 18px;
   margin-bottom:14px; box-shadow:var(--shadow-lg); max-width:760px;
 }
 .swml-scene-island .ask-panel .ask-el { font-weight:700; font-size:14.5px; }
@@ -251,7 +260,7 @@ body[data-swml-theme="light"] .swml-scene-island {
   transition:background .25s var(--ease), color .25s var(--ease);
 }
 .swml-scene-island .chip-btn:hover { background:var(--teal); color:var(--btn-ink); }
-.swml-scene-island .band { border:1px solid var(--line); border-radius:12px; margin-bottom:10px; background:var(--surface); overflow:hidden; max-width:760px; }
+.swml-scene-island .band { border:1px solid transparent; border-radius:12px; margin-bottom:10px; background:var(--surface); overflow:hidden; max-width:760px; }
 .swml-scene-island .band-head { display:flex; gap:10px; align-items:center; padding:10px 16px; background:var(--surface2); position:relative; }
 .swml-scene-island .band-head .el { display:flex; align-items:center; gap:9px; font-weight:700; font-size:13.5px; white-space:nowrap; }
 /* the element's hue rides as a LEADING NUMBER BADGE, never a side stripe (Neil, 2026-08-10:
@@ -278,11 +287,11 @@ body[data-swml-theme="light"] .swml-scene-island {
 }
 .swml-scene-island .u-row {
   display:flex; gap:12px; align-items:baseline; width:100%; text-align:left;
-  background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  background:var(--surface); border:1px solid transparent; border-radius:10px;
   padding:10px 14px; margin-bottom:6px; cursor:pointer; color:var(--ink); font:inherit; max-width:760px;
   transition:border-color .25s var(--ease);
 }
-.swml-scene-island .u-row:hover { border-color:var(--teal-deep); }
+.swml-scene-island .u-row:hover { background:var(--surface2); }
 .swml-scene-island .u-row .b-label { font-size:10px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; }
 .swml-scene-island .band-add { padding:9px 16px; border-top:1px solid var(--line); }
 .swml-scene-island .add-in {
@@ -304,7 +313,7 @@ body[data-swml-theme="light"] .swml-scene-island {
 }
 .swml-scene-island .reshape:hover { color:var(--ink); }
 .swml-scene-island .refine-banner {
-  background:var(--surface); border:1px solid rgba(81,218,207,.34); border-radius:12px;
+  background:linear-gradient(0deg,var(--teal-tint),var(--teal-tint)),var(--surface); border:none; border-radius:12px;
   padding:12px 18px; margin-bottom:14px; max-width:760px;
   display:flex; gap:12px; align-items:center; flex-wrap:wrap; font-size:13px;
 }
@@ -319,7 +328,7 @@ body[data-swml-theme="light"] .swml-scene-island {
 .swml-scene-island .band.drop-hot { border-color:var(--teal); box-shadow:var(--shadow-md); }
 .swml-scene-island .p3-row.drag-src { opacity:.35; }
 .swml-scene-island .nudge {
-  background:var(--surface); border:1px solid rgba(241,196,15,.38); border-radius:12px;
+  background:linear-gradient(0deg,var(--warn-tint),var(--warn-tint)),var(--surface); border:none; border-radius:12px;
   padding:12px 18px; margin-bottom:10px; max-width:760px; font-size:13px;
 }
 .swml-scene-island .nudge .n-title { font-weight:700; color:var(--warn); font-size:10px; text-transform:uppercase; letter-spacing:.1em; }
@@ -349,11 +358,16 @@ body[data-swml-theme="light"] .swml-scene-island {
 /* edge-beat arrows — the click alternative to dragging */
 .swml-scene-island .row-ctl { margin-left:auto; display:flex; gap:4px; align-self:center; }
 .swml-scene-island .row-move {
-  background:none; border:1px solid var(--line-strong); border-radius:6px; color:var(--muted2);
+  background:none; border:none; border-radius:6px; color:var(--muted2);
   cursor:pointer; font:inherit; font-size:11px; line-height:1; padding:5px 9px;
   transition:color .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
 }
-.swml-scene-island .row-move:hover { color:var(--btn-ink); border-color:var(--teal); background:var(--teal); }
+.swml-scene-island .row-move:hover { color:var(--btn-ink); background:var(--teal); }
+/* Neil's own arrow (#204 add.21) — it inherits the button's colour, so every state the button
+   already defines carries the glyph with it and no arrow needs its own palette. */
+.swml-scene-island .ssi-arrow { display:inline-block; vertical-align:-2px; flex:0 0 auto; }
+.swml-scene-island .chip-btn .ssi-arrow { margin-right:6px; }
+.swml-scene-island .row-move .ssi-arrow { vertical-align:0; }
 
 /* ── footer action bar ── */
 .swml-scene-island .actionbar {
@@ -414,7 +428,7 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
 .swml-scene-island .summary-row .what .own { color:var(--ink); }
 .swml-scene-island .summary-row.fresh .what { font-style:italic; }
 .swml-scene-island .done-note {
-  margin-top:18px; background:var(--surface); border:1px solid rgba(28,217,145,.34);
+  margin-top:18px; background:linear-gradient(0deg,var(--done-tint),var(--done-tint)),var(--surface); border:none;
   border-radius:12px; padding:14px 18px; font-size:13px; color:var(--muted2);
 }
 .swml-scene-island .done-note strong { color:var(--ink); }

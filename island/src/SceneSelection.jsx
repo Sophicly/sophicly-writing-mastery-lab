@@ -20,6 +20,33 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as P from './partition.js';
 
+/**
+ * NEIL'S ARROW, not a generic glyph (#204 add.21: "I don't like those generic ones").
+ *
+ * The `d` below is the BARE CHEVRON from his own `Right Arrow.svg`, copied byte-for-byte out of
+ * the icon registry (`wml-core.js` → `WML.ICONS.arrowRightBare`) rather than redrawn. It is
+ * inlined instead of called through `WML.icon()` because the island script deliberately declares
+ * NO dependencies (`wp_enqueue_script('swml-scene-island', …, [], …)`) and must not start
+ * assuming a global that may not be loaded yet.
+ *
+ * ⚙️ Inlining a copy is drift bait, so `bin/scene-island-harness.js` asserts this string is
+ * byte-identical to the registry's. If they ever diverge, the build fails — the copy cannot rot.
+ *
+ * STATED DEVIATION (root §13): he supplied LEFT and RIGHT only. Up/down are the SAME path
+ * rotated, never a second glyph drawn to match — so the geometry stays his.
+ */
+const NEIL_CHEVRON_RIGHT = 'M12,23a1,1,0,0,1-.71-1.71L17.62,15,11.33,8.71a1,1,0,0,1,0-1.42,1,1,0,0,1,1.41,0l7,7a1,1,0,0,1,0,1.42l-7,7A1,1,0,0,1,12,23Z';
+const ARROW_ROTATION = { right: 0, down: 90, left: 180, up: -90 };
+function Arrow({ dir, size }) {
+    const s = size || 13;
+    return (
+        <svg className={'ssi-arrow ssi-arrow-' + dir} viewBox="0 0 30 30" width={s} height={s}
+            fill="currentColor" aria-hidden="true" focusable="false">
+            <path d={NEIL_CHEVRON_RIGHT} transform={`rotate(${ARROW_ROTATION[dir]} 15 15)`} />
+        </svg>
+    );
+}
+
 /* Module-level (stable identity — defined inside the parent they would REMOUNT on every
    parent render and lose their input state). */
 function AddForm({ show, placeholder, buttonLabel, onAdd }) {
@@ -49,7 +76,7 @@ function BandAdd({ elm, onAdd }) {
 function AskPanel({ elm, ask, remaining, mapNode, onAddMoment, onBack }) {
     const [formOpen, setFormOpen] = useState(false);
     return (
-        <div className="ask-panel" style={{ borderColor: elm.c }}>
+        <div className="ask-panel" style={{ '--el-hue': elm.c }}>
             {mapNode}
             <div className="ask-el">
                 {remaining === 0
@@ -65,7 +92,7 @@ function AskPanel({ elm, ask, remaining, mapNode, onAddMoment, onBack }) {
                     ? <button type="button" className="chip-btn" onClick={() => setFormOpen(true)}>My run has no {elm.label} — I’ll add the moment now</button>
                     : null}
                 {ask > 0
-                    ? <button type="button" className="chip-btn" onClick={onBack}>← Back one element</button>
+                    ? <button type="button" className="chip-btn" onClick={onBack}><Arrow dir="left" /> Back one element</button>
                     : null}
             </div>
             <AddForm show={formOpen || remaining === 0}
@@ -502,8 +529,8 @@ export default function SceneSelection(props) {
                     const now = !complete && i === ask;
                     const n = done ? normCuts[i] + ((added[elm.id] || []).length) : 0;
                     const st = now
-                        ? { background: elm.c, borderColor: elm.c, color: elm.dk ? '#1C1D1F' : '#fff' }
-                        : { borderColor: elm.cb, background: elm.ca, ...(done ? { color: 'var(--ink)' } : {}) };
+                        ? { background: elm.c, color: elm.dk ? '#1C1D1F' : '#fff' }
+                        : { background: elm.ca, ...(done ? { color: 'var(--ink)' } : {}) };
                     return (
                         <span key={elm.id} className={'el-pill' + (done ? ' is-done' : '') + (now ? ' is-now' : '')} style={st} title={elm.prompt}>
                             <span className="n" style={now ? undefined : { color: elm.c, opacity: 1 }}>{i + 1}</span>{elm.label}
@@ -564,7 +591,7 @@ export default function SceneSelection(props) {
                 <div key={elm.id} data-band={i}
                     className={'band' + (empty ? ' is-empty' : '') + (isHot ? ' drop-hot' : '')
                         + (isHot && dragVis.later ? ' drop-top' : '') + (isHot && !dragVis.later ? ' drop-bottom' : '')}
-                    style={{ '--el-hue': elm.c, ...(empty ? {} : { borderColor: elm.cb }) }}>
+                    style={{ '--el-hue': elm.c }}>
                     {/* the hue rides as a leading NUMBER BADGE + the header tint — never a side
                         stripe (Neil, 2026-08-10; also a banned pattern in the design system) */}
                     <div className="band-head" style={{ background: elm.ca }}>
@@ -579,10 +606,10 @@ export default function SceneSelection(props) {
                         const ctl = [];
                         if (k === 0 && i > 0) ctl.push(
                             <button type="button" key="up" className="row-move" title={'Move up into ' + elements[i - 1].label}
-                                onClick={() => moveByArrow(g, 'up')}>↑</button>);
+                                onClick={() => moveByArrow(g, 'up')}><Arrow dir="up" /></button>);
                         if (k === chips.length - 1 && i < 6) ctl.push(
                             <button type="button" key="down" className="row-move" title="Move down a section"
-                                onClick={() => moveByArrow(g, 'down')}>↓</button>);
+                                onClick={() => moveByArrow(g, 'down')}><Arrow dir="down" /></button>);
                         return (
                             <div key={b.id} data-g={g}
                                 className={'p3-row' + (b.id === landedBeatId ? ' just-landed' : '') + (dragVis && dragVis.src === g ? ' drag-src' : '')}>
