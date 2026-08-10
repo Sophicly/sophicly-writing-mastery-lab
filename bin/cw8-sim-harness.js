@@ -10,20 +10,23 @@
  * product delivers it: as a saved-document HTML string whose rows carry baked `data-check-state`,
  * built here with the SAME producers the document builder uses.
  *
- * What this walk needed its own gate for:
+ * What this walk needed its own gate for (v7.20.492 — Neil's #364 shape: the writing lands
+ * IN THE BEATS, "not a separate table in the document"):
  *  1. The ROSTER IS DERIVED — flagged traits only (real condition at begin OR end, or on the
  *     build list). Asking an unflagged trait, or skipping a CW7_WANT trait, is a walk that
- *     contradicts the student's own Step 7 (§30; FIXLIST #249).
- *  2. "Doesn't show anywhere yet" must cost EXACTLY ONE TAP and leave a document footprint —
- *     an answer with no footprint makes a document-derived walk re-ask it for ever (.421).
- *  3. Only TAGGED beats reach amalgamation (§30: the beats nobody tagged were never claimed
- *     to express this lens).
+ *     contradicts the student's own Step 7 (§30; FIXLIST #249). And the ask must carry THE
+ *     STUDENT'S OWN STEP-7 WORDS ("it should actually show me what I wrote").
+ *  2. The typed line APPENDS under the picked beat, labelled `Values (Trait):` — never
+ *     overwrites (§29) — and that append IS the walk's footprint for the trait.
+ *  3. "Doesn't show anywhere yet" must cost EXACTLY ONE TAP and leave a footprint in the one
+ *     surviving row (cw-step-8-notyet) — an answer with no footprint is re-asked for ever (.421).
  *  4. API budget: this walk spends ZERO calls (`sends.length === 0`), and the FLOOR is the
  *     protocol's one greeting — asserted against the protocol file itself, so a later
  *     "programmatic-first" pass cannot drive the step to zero turns while every negative
  *     assertion still passes (feedback_negative_only_tests_pass_on_a_dead_screen).
  *  5. The .490 incident class: the marker, the controller and the start-miss fallback arm must
  *     all exist together — a marker with no controller put a dead Step 8 on production.
+ *  6. The .491 Values Map table is DROPPED from documents that got it (the drop-heal).
  *
  * Usage: node bin/cw8-sim-harness.js
  */
@@ -69,6 +72,8 @@ const CW8_NO_SHOW = (SRC.match(/const CW8_NO_SHOW = '([^']+)'/) || [])[1];
 ok(!!CW8_NO_SHOW, 'CW8_NO_SHOW literal found');
 const CW8_LEDGER_FID = (SRC.match(/const CW8_LEDGER_FID = '([^']+)'/) || [])[1];
 const CW8_CONTINUITY_FID = (SRC.match(/const CW8_CONTINUITY_FID = '([^']+)'/) || [])[1];
+const CW8_NOTYET_FID = (SRC.match(/const CW8_NOTYET_FID = '([^']+)'/) || [])[1];
+ok(!!CW8_NOTYET_FID, 'CW8_NOTYET_FID literal found');
 
 const _cw7RowFieldId = fnFrom('_cw7RowFieldId');
 const _cw7TraitCtlId = fnFrom('_cw7TraitCtlId');
@@ -93,10 +98,10 @@ const _cw8EnumerateBeats = fnFrom('_cw8EnumerateBeats', {
     detectBuiltPlotSlug, OUTLINE_CRITERIA, _cwNodeText, _cw6RowFieldId,
 });
 const _cw8BeatSegment = fnFrom('_cw8BeatSegment');
-const _cw8ComposeMapEntry = fnFrom('_cw8ComposeMapEntry', { _cw8BeatSegment });
-const _cw8ParseMapEntry = fnFrom('_cw8ParseMapEntry', { _cw8BeatSegment });
-const _cw8LedgerLine = fnFrom('_cw8LedgerLine', { _cw8BeatSegment });
-const _cw8LedgerHas = fnFrom('_cw8LedgerHas', { _cw8BeatSegment });
+const _cw8AppendLine = fnFrom('_cw8AppendLine');
+const _cw8BeatHasTrait = fnFrom('_cw8BeatHasTrait');
+const _cw8NoShowLine = fnFrom('_cw8NoShowLine');
+const _cw8NoShowHas = fnFrom('_cw8NoShowHas');
 
 const ctlIdx = SRC.indexOf('const _cwPlotValuesCtl = (function () {');
 if (ctlIdx < 0) { console.error('❌ _cwPlotValuesCtl not found in wml-assessment.js'); process.exit(1); }
@@ -127,7 +132,7 @@ const AUDIT_HTML = [
     auditRow(_cw7RowFieldId('begin', 'wisdom'), { c: { [_cw7TraitCtlId('creativity')]: { checked: [idx('In excess')] } } },
         '<p>Creativity — she invents to the point of destruction.</p>'),
     auditRow(_cw7RowFieldId('begin', 'courage'), { c: { [_cw7TraitCtlId('bravery')]: { checked: [idx('In deficit')] } } },
-        '<p>Bravery — she watches and says nothing.</p>'),
+        '<p>Bravery — In deficit: she watches her brother take the blame and says nothing.</p>'),
     auditRow(_cw7RowFieldId('end', 'courage'), { c: { [_cw7TraitCtlId('bravery')]: { checked: [idx('In balance')] } } },
         '<p>Bravery — she speaks in the hall.</p>'),
     auditRow(_cw7AddRowFieldId('humanity'), null,
@@ -148,20 +153,20 @@ console.log('CW STEP-8 TRAIT-FIRST WALK — behavioural sim (real _cwPlotValuesC
         'parser: flagged traits in CW7_VALUES order — got ' + roster.map((r) => r.trait).join('|'));
     const brav = roster.filter((r) => r.trait === 'bravery')[0];
     ok(brav && brav.cond === 'In balance', 'parser: a moved trait teaches against where it FINISHES (end beats begin)');
+    ok(brav && /speaks in the hall/.test(brav.said), 'parser: the student\'s OWN Step-7 words come through, END pass preferred (#364: "show me what I wrote")');
     const kind = roster.filter((r) => r.trait === 'kindness')[0];
     ok(kind && kind.wanted && kind.cond === 'In deficit', 'parser: a CW7_WANT trait IS flagged, as In deficit (FIXLIST #249)');
     ok(!roster.some((r) => r.trait === 'humour'), 'parser: an untouched trait is NOT flagged');
-    // Byte-pair: compose → parse round-trips against the real beat population.
-    const world0 = { beats: [{ fid: BEAT_FIDS[0], stage: 0, stageLabel: ARCH[K].sections[0].label, label: 'X' }] };
-    const line = _cw8ComposeMapEntry('Bravery', 'In deficit', world0.beats);
-    const back = _cw8ParseMapEntry(line, world0.beats);
-    ok(back.answered && !back.noShow && back.beats.length === 1, 'map entry round-trips compose → parse');
-    const noline = _cw8ComposeMapEntry('Bravery', 'In deficit', []);
-    ok(_cw8ParseMapEntry(noline, world0.beats).noShow, 'no-show entry round-trips');
+    // Byte-pairs: the append line and the no-show line each round-trip through their reader.
+    ok(_cw8BeatHasTrait('old beat text\n' + _cw8AppendLine('Bravery', 'she speaks'), 'Bravery'),
+        'append line round-trips compose → probe');
+    ok(!_cw8BeatHasTrait('old beat text mentioning Bravery casually', 'Bravery'),
+        'the probe needs the labelled line, not a substring');
+    ok(_cw8NoShowHas(_cw8NoShowLine('Humour'), 'Humour'), 'no-show line round-trips');
 }
 
 // ── THE WORLD ────────────────────────────────────────────────────────────────────────────────
-const MAP_FIDS = EXPECTED.map(_cw8MapRowFieldId);
+const WALK_FIDS = [CW8_NOTYET_FID, CW8_CONTINUITY_FID];
 function world(opts) {
     opts = opts || {};
     const prefill = Object.assign({}, opts.prefill || {});
@@ -176,16 +181,16 @@ function world(opts) {
     }
     const w = makeWorld(CTL_SRC, Object.assign({
         task: 'cw_step_8',
-        fids: MAP_FIDS.concat([CW8_LEDGER_FID, CW8_CONTINUITY_FID]),
+        fids: WALK_FIDS.concat(opts.extraFids || []),
         prefill,
         history,
         ok,
         extraDeps: {
             TRAIT_TEACH, CW7_VALUES, CW7_STATES,
             _cw7TraitLabel, _cw7TraitCtlId,
-            _cw8MapRowFieldId, CW8_LEDGER_FID, CW8_CONTINUITY_FID, CW8_NO_SHOW,
-            _cw8ParseValuesAudit, _cw8EnumerateBeats, _cw8ComposeMapEntry, _cw8ParseMapEntry,
-            _cw8BeatSegment, _cw8LedgerLine, _cw8LedgerHas,
+            _cw8MapRowFieldId, CW8_LEDGER_FID, CW8_CONTINUITY_FID, CW8_NOTYET_FID, CW8_NO_SHOW,
+            _cw8ParseValuesAudit, _cw8EnumerateBeats, _cw8BeatSegment,
+            _cw8AppendLine, _cw8BeatHasTrait, _cw8NoShowLine, _cw8NoShowHas,
             _cwDepTag, outlineRowHTML, _migrationActive: false,
             _openCw7TraitPanel: function () { return true; },
         },
@@ -207,35 +212,9 @@ function tapThroughPacing(w, limit) {
     }
     return false;
 }
-// Tag one trait: either the one-tap no-show, or stage → beats.
-function tagTrait(w, mode) {
-    tapThroughPacing(w);
-    if (mode === 'noshow') {
-        const before = w.bubbles.length;
-        const chip = chipNamed(w, CW8_NO_SHOW);
-        if (!ok(!!chip, 'the no-show chip is offered on the tag ask')) return false;
-        w.tap(chip);
-        ok(w.bubbles.length > before || w.chips().length > 0, 'no-show advanced the walk in ONE tap (§30.3)');
-        return true;
-    }
-    // pick the first stage that has beats
-    const stageLabel = ARCH[K].sections[0].label;
-    const st = chipNamed(w, stageLabel);
-    if (!ok(!!st, 'stage chip "' + stageLabel + '" offered')) return false;
-    w.tap(st);                                    // toggle
-    const cont = w.chips().filter(isContinue)[0];
-    if (!ok(!!cont, 'multi-select carries a Continue')) return false;
-    w.tap(cont);
-    // now this stage's beat chips
-    const beatLabel = ARCH[K].sections[0].criteria.filter((c) => c.beatType !== 'turning-point' && c.beatType !== 'marker')[0].label;
-    const bc = chipNamed(w, beatLabel);
-    if (!ok(!!bc, 'beat chip "' + beatLabel + '" offered for the picked stage')) return false;
-    w.tap(bc);
-    const cont2 = w.chips().filter(isContinue)[0];
-    if (!ok(!!cont2, 'beat multi-select carries a Continue')) return false;
-    w.tap(cont2);
-    return true;
-}
+// The stage and beat labels of the fixture archetype's first askable beat.
+const STAGE1 = ARCH[K].sections[0].label;
+const BEAT1 = ARCH[K].sections[0].criteria.filter((c) => c.beatType !== 'turning-point' && c.beatType !== 'marker')[0].label;
 
 async function main() {
 
@@ -246,7 +225,7 @@ async function main() {
     ok(/ONE API call/i.test(proto), 'the protocol states the one-greeting budget (the API-call FLOOR)');
     ok(proto.indexOf('which of your values are visible in this stage') === -1,
         'the per-stage MENU ask is gone from the protocol (§30 — the shape §18 rules against)');
-    ok(/cw_step_8'\s*\?\s*_cwPlotValuesCtl/.test(SRC.replace(/\n/g, ' ')) || /t === 'cw_step_8' \? _cwPlotValuesCtl/.test(SRC),
+    ok(/t === 'cw_step_8' \? _cwPlotValuesCtl/.test(SRC),
         'the start-miss fallback ladder has a cw_step_8 arm — the guard that was inert at .490');
     ok(/cw_step_8: _cwPlotValuesCtl/.test(SRC), 'the task→ctl maps carry cw_step_8');
     ok(/state\.task === 'cw_step_8' && _cwPlotValuesCtl\.active && _inboundIsAnswer/.test(SRC),
@@ -256,34 +235,66 @@ async function main() {
         'boot resume calls tryResume() on it');
 }
 
-// ── 2. THE FULL WALK — roster-driven, serial, zero API calls ─────────────────────────────────
+// ── 2. THE FULL WALK — their words, stage → beat → write-appends, zero API calls ─────────────
 {
     const w = world();
     w.ctl.onReply('Right — let’s check the story shows it.\n\n@CW8_START');
     await settle(); await settle(); await settle();
-    // orientation: paced chunks, marker in chunk 1
     ok(w.bubbles.length >= 1, 'the walk said something after @CW8_START (liveness at the hand-over)');
     ok(/does your story actually SHOW it/.test(w.bubbles[0] || ''), 'orientation chunk 1 carries the derived marker phrase');
+    ok(!/Values Map|separate table/i.test(w.bubbles.join('\n')), 'nothing anywhere promises a map table (#364)');
     tapThroughPacing(w);
 
     // trait 1 (creativity) — the one-tap no-show
-    ok(/trait 1 of 3/.test(w.bubbles.join('\n')), 'the first tag ask is trait 1 of 3 (roster-derived, serial §18)');
-    ok(tagTrait(w, 'noshow'), 'trait 1 tagged as no-show');
-    const mapRow1 = w.rows.get(_cw8MapRowFieldId('creativity')) || '';
-    ok(/doesn’t show anywhere yet/.test(mapRow1), 'the no-show left a DOCUMENT footprint (resume cannot re-ask it)');
+    ok(/trait 1 of 3/.test(w.bubbles.join('\n')), 'the first ask is trait 1 of 3 (roster-derived, serial §18)');
+    {
+        const before = w.bubbles.length;
+        const chip = chipNamed(w, CW8_NO_SHOW);
+        ok(!!chip, 'the no-show chip is offered on the trait ask');
+        w.tap(chip);
+        ok(w.bubbles.length > before || w.chips().length > 0, 'no-show advanced the walk in ONE tap (§30.3)');
+        ok(_cw8NoShowHas(w.rows.get(CW8_NOTYET_FID), 'Creativity'),
+            'the no-show left a footprint in the build-list row (resume cannot re-ask it)');
+    }
 
-    // trait 2 (bravery) — stage → beats
+    // trait 2 (bravery) — their words shown, then stage → beat → write → APPEND
     tapThroughPacing(w);
-    ok(/Bravery/.test(w.bubbles.join('\n')), 'trait 2 (Bravery) is asked next, in roster order');
-    ok(tagTrait(w, 'beats'), 'trait 2 tagged into a real beat');
-    const mapRow2 = w.rows.get(_cw8MapRowFieldId('bravery')) || '';
-    ok(/shows in: /.test(mapRow2), 'the beat tag landed in the trait’s map row');
+    const askText = w.bubbles.slice(-1)[0] || '';
+    ok(/Bravery/.test(askText), 'trait 2 (Bravery) is asked next, in roster order');
+    ok(/Your own words from Step 7/.test(askText) && /speaks in the hall/.test(askText),
+        '#364: the ask SHOWS the student what they wrote in Step 7');
+    {
+        const st = chipNamed(w, STAGE1);
+        ok(!!st, 'stage chip "' + STAGE1 + '" offered (single tap — one choice among alternatives, §4c.8b)');
+        w.tap(st);
+        const bc = chipNamed(w, BEAT1);
+        ok(!!bc, 'beat chip "' + BEAT1 + '" offered for the picked stage');
+        w.tap(bc);
+        const writeAsk = w.bubbles.slice(-1)[0] || '';
+        ok(/Your beat says:/.test(writeAsk) && /their beat text for/.test(writeAsk),
+            'the write ask QUOTES the student’s own beat');
+        ok(/added\s+\*\*underneath the beat\*\*|added \*\*underneath/i.test(writeAsk),
+            'the write ask states the append-not-overwrite contract (§29)');
+        const beatFid = _cw6RowFieldId(K, ARCH[K].sections[0].id, ARCH[K].sections[0].criteria.filter((c) => c.beatType !== 'turning-point' && c.beatType !== 'marker')[0].id);
+        const beatBefore = w.rows.get(beatFid);
+        w.say('She hides the letter instead of reading it aloud.');
+        const beatAfter = w.rows.get(beatFid);
+        ok(beatAfter.indexOf(beatBefore) === 0 && /Values \(Bravery\): She hides the letter/.test(beatAfter),
+            '#364 core: the line APPENDED under the beat, labelled — never a separate table, never an overwrite');
+        ok(_cw8BeatHasTrait(beatAfter, 'Bravery'), 'the append doubles as the trait’s footprint');
+        // the "another beat?" offer, then decline
+        const more = w.chips().filter((c) => /Another beat/.test(String(c.textContent)))[0];
+        ok(!!more, 'after the append the walk offers another beat (a trait usually shows in more than one)');
+        const next = w.chips().filter((c) => /Next/.test(String(c.textContent)))[0];
+        ok(!!next, '…and the way on');
+        w.tap(next);
+    }
 
     // trait 3 (kindness — the WANT trait) — must be asked (FIXLIST #249)
     tapThroughPacing(w);
-    ok(/Kindness/.test(w.bubbles.slice(-3).join('\n')), 'the CW7_WANT trait IS asked (#249)');
-    ok(/build list/.test(w.bubbles.slice(-3).join('\n')), 'the WANT trait’s ask names the build-list framing');
-    ok(tagTrait(w, 'noshow'), 'trait 3 tagged');
+    ok(/Kindness/.test(w.bubbles.slice(-2).join('\n')), 'the CW7_WANT trait IS asked (#249)');
+    ok(/build list/.test(w.bubbles.slice(-2).join('\n')), 'the WANT trait’s ask names the build-list framing');
+    w.tap(chipNamed(w, CW8_NO_SHOW));
 
     // no unflagged trait was ever asked
     const askHeads = w.bubbles.filter((b) => /trait \d+ of \d+ you flagged/.test(b)).join('\n');
@@ -292,64 +303,62 @@ async function main() {
             'unflagged trait "' + t + '" was never asked (a Not-explored trait must not be)');
     });
 
-    // ── CDO phase: exactly the tagged beats, each with a keep-as-is escape ──
-    tapThroughPacing(w);
-    const tagged = _cw8ParseMapEntry(mapRow2, _cw8EnumerateBeats(w.deps.canvasEditor).beats).beats;
-    ok(tagged.length === 1, 'exactly ONE beat was tagged in this run');
-    ok(/Your beat says:/.test(w.bubbles.slice(-2).join('\n')), 'the CDO ask quotes the student’s own beat');
-    const beatRowBefore = w.rows.get(tagged[0].fid);
-    w.say('She hides the letter instead of reading it aloud.');
-    const beatRowAfter = w.rows.get(tagged[0].fid);
-    ok(beatRowAfter.indexOf(beatRowBefore) === 0 && /Values \(/.test(beatRowAfter),
-        'the rewrite APPENDED under the beat, labelled — never overwrote (§29, Neil 2026-08-05)');
-    const ledger = w.rows.get(CW8_LEDGER_FID) || '';
-    ok(_cw8LedgerHas(ledger, tagged[0]), 'the worked beat left a ledger footprint');
-
     // ── continuity, then the wrap ──
     ok(/read-through|contradictions/.test(w.bubbles.slice(-2).join('\n')), 'the continuity pass is asked once, at the end');
     w.say('Nothing — it holds together.');
     ok((w.rows.get(CW8_CONTINUITY_FID) || '').indexOf('holds together') !== -1, 'the continuity answer filed');
     const wrap = w.bubbles.slice(-2).join('\n');
     ok(/Lens 1 of 7/.test(wrap), 'the wrap closes on the PROCESS goal (§29: "Lens 1 of 7 built in")');
-    ok(/Creativity/.test(wrap), 'the wrap names the no-show traits as what the next drafts must add');
+    ok(/Not in the story yet/.test(wrap), 'the wrap points at the build list');
     ok(/sim endpoint/.test(wrap), 'the walk ends on the shared endpoint (v7.20.337)');
-    ok(w.chips().length > 0, 'the finished walk still offers a way back in (re-tag)');
+    ok(w.chips().length > 0, 'the finished walk still offers a way back in (add more to a trait)');
 
     // ── the budget: ZERO API calls in the whole walk ──
     ok(w.sends.length === 0, 'API ceiling: the walk spent ' + w.sends.length + ' calls — it must spend ZERO');
     ok(!w.lostWrite, 'no write targeted a row that does not exist (lost: ' + w.lostWrite + ')');
 }
 
-// ── 3. RESUME — from the document, repeats nothing ───────────────────────────────────────────
+// ── 3. RESUME — from the beats themselves, repeats nothing ───────────────────────────────────
 {
-    // A student who tagged trait 1 (no-show) and reloaded mid-walk.
+    // A student who no-showed trait 1 and appended for trait 2, then reloaded.
+    const beatFid = BEAT_FIDS[0];
     const pre = {};
-    pre[_cw8MapRowFieldId('creativity')] = _cw8ComposeMapEntry('Creativity', 'In excess', []);
+    pre[CW8_NOTYET_FID] = _cw8NoShowLine('Creativity');
+    pre[beatFid] = 'their beat text\n' + _cw8AppendLine('Bravery', 'she speaks at last');
     const history = [{ role: 'assistant', content: 'This step asks a harder question: **does your story actually SHOW it?**', durable: true, why: 'fixture orientation' }];
     const w = world({ prefill: pre, history });
     const resumed = w.ctl.tryResume();
-    ok(resumed === true, 'tryResume resumes a doc that carries walk rows');
+    ok(resumed === true, 'tryResume resumes a doc that carries the walk rows');
     await settle(); await settle(); await settle();
     const said = w.bubbles.join('\n');
-    ok(/Bravery/.test(said), 'resume lands on the FIRST untagged trait (trait 2), derived from the document');
-    ok(!/Creativity.*trait 1 of 3/.test(said), 'resume does not re-ask the trait whose map row is filled');
-    ok(!/does your story actually SHOW it\?\*\*$/m.test(w.bubbles[0] || ''), 'resume does not re-narrate the orientation (it is in the transcript)');
+    ok(/Kindness/.test(said), 'resume lands on the FIRST uncovered trait (trait 3), derived from the appends + build list');
+    ok(!/trait 1 of 3/.test(said), 'resume does not re-ask a covered trait');
     ok(w.sends.length === 0, 'resume spends no API calls');
 }
 
-// ── 4. THE GUARDS — refused, with a way forward (§4d) ────────────────────────────────────────
+// ── 4. THE .491 VALUES MAP IS DROPPED ON ARRIVAL (the drop-heal) ─────────────────────────────
+{
+    ok(/function dropLegacyMap/.test(SRC), 'the drop-heal exists');
+    ok(/cw-step-8-map-/.test(SRC.slice(SRC.indexOf('function dropLegacyMap'), SRC.indexOf('function dropLegacyMap') + 2000)),
+        'it targets the .491 map rows');
+    ok(new RegExp('CW8_LEDGER_FID').test(SRC.slice(SRC.indexOf('function dropLegacyMap'), SRC.indexOf('function dropLegacyMap') + 2000)),
+        'it targets the .491 ledger row');
+    ok(/SURVIVED the drop/.test(SRC), 'and it VERIFIES its own work (the .370 lesson) rather than trusting the delete count');
+}
+
+// ── 5. THE GUARDS — refused, with a way forward (§4d) ────────────────────────────────────────
 {
     // No Step-6 outline at all: every beat row absent.
     const w = makeWorld(CTL_SRC, {
         task: 'cw_step_8',
-        fids: MAP_FIDS.concat([CW8_LEDGER_FID, CW8_CONTINUITY_FID]),
+        fids: WALK_FIDS,
         history: [{ role: 'user', content: _cwDepTag('universal_values') + '\n\n' + AUDIT_HTML, durable: true, why: 'fixture prime' }],
         ok,
         extraDeps: {
             TRAIT_TEACH, CW7_VALUES, CW7_STATES, _cw7TraitLabel, _cw7TraitCtlId,
-            _cw8MapRowFieldId, CW8_LEDGER_FID, CW8_CONTINUITY_FID, CW8_NO_SHOW,
-            _cw8ParseValuesAudit, _cw8EnumerateBeats, _cw8ComposeMapEntry, _cw8ParseMapEntry,
-            _cw8BeatSegment, _cw8LedgerLine, _cw8LedgerHas,
+            _cw8MapRowFieldId, CW8_LEDGER_FID, CW8_CONTINUITY_FID, CW8_NOTYET_FID, CW8_NO_SHOW,
+            _cw8ParseValuesAudit, _cw8EnumerateBeats, _cw8BeatSegment,
+            _cw8AppendLine, _cw8BeatHasTrait, _cw8NoShowLine, _cw8NoShowHas,
             _cwDepTag, outlineRowHTML, _migrationActive: false,
             _openCw7TraitPanel: function () { return true; },
         },
@@ -361,7 +370,7 @@ async function main() {
     ok(w.ctl.atStart() === false, 'after the guard, atStart() is false — the start-miss fallback cannot re-fire the guard on every idle reply');
 }
 
-// ── 5. MARKER TOLERANCE — the model escapes the underscore sometimes ─────────────────────────
+// ── 6. MARKER TOLERANCE — the model escapes the underscore sometimes ─────────────────────────
 {
     const w = world();
     w.ctl.onReply('Here we go.\n\n@CW8\\_START');
@@ -371,7 +380,7 @@ async function main() {
 
 console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
 if (fail) { console.error('❌ cw8-sim-harness FAILED'); process.exit(1); }
-console.log('✅ cw8-sim-harness passed (trait-first walk: roster-derived, one-tap no-show, tagged-beats-only CDO, zero API calls).');
+console.log('✅ cw8-sim-harness passed (#364 shape: their words shown, stage → beat → write, appends ARE the state, zero API calls).');
 }
 
 main().catch((e) => { console.error('❌ cw8-sim-harness crashed:', e && e.stack || e); process.exit(1); });

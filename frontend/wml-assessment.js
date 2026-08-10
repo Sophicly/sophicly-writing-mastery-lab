@@ -25175,31 +25175,34 @@
         })();
 
         // ══════════════════════════════════════════════════════════════════════════════════
-        // CW STEP 8 — UPDATE PLOT (VALUES): the trait-first walk (v7.20.491; PEDAGOGY §29+§30).
+        // CW STEP 8 — UPDATE PLOT (VALUES): the trait-first walk (v7.20.492; PEDAGOGY §29+§30,
+        // reshaped to Neil's #364 correction the same day .491 shipped).
         // ──────────────────────────────────────────────────────────────────────────────────
-        // Zero API calls, like Step 7 — the greeting is the protocol's ONE call, and everything
-        // after `@CW8_START` is served here. Three phases, position DERIVED from the document:
-        //   1. TAG    — one flagged trait at a time (§30: the lens's items, never the ~100
-        //              beats, never a per-stage 23-trait menu). The student taps stage(s), then
-        //              that stage's beats; "doesn't show anywhere yet" costs one tap and is the
-        //              interesting answer. Each trait's verdict lands in its own map row.
-        //   2. BEATS  — §29's per-beat CDO amalgamation over ONLY the tagged beats (~10–20):
-        //              what should this beat show · where doesn't yours · add the lines. The
-        //              addition APPENDS under the beat (never overwrites — Neil, 2026-08-05);
-        //              the student amalgamates by hand, which IS the pedagogy.
-        //   3. CONTINUITY — one whole-outline read-through, contradiction only.
-        // The map rows / ledger / continuity row are healed into the 'Update Focus' section on
-        // first start, so the walk's position survives any reload with no sidecar at all
-        // (`reference_cw_walk_picks_must_be_document_rows`: a sidecar pick dies with finish()).
+        // Neil, on .491's Values Map table: *"the students are supposed to add to the beats
+        // that are already there… It should actually show me what I wrote, and then it should
+        // just ask me where I wanna write about it. The stage, the beat, and then I write my
+        // description, and then it appends that to the beat what's already there. Not a
+        // separate table in the document."*
+        //
+        // So, per flagged trait (roster from the Step-7 artifact, §30):
+        //   1. the trait + THE STUDENT'S OWN STEP-7 WORDS for it, + criteria + example
+        //   2. tap the STAGE (one tap) → tap the BEAT (one tap) — or "doesn't show yet" (one tap)
+        //   3. write the line(s) → they APPEND under that beat, labelled `Values (Trait): …`
+        //      (§29: nothing overwritten; the student amalgamates by hand — that IS the pedagogy)
+        //   4. "another beat for this trait?" — a trait usually shows in more than one — or next.
+        // Then ONE continuity pass, then the process-goal wrap ("Lens 1 of 7 built in").
+        //
+        // ⭐ THE BEATS THEMSELVES ARE THE WALK'S STATE: a trait is covered when some beat
+        // carries its labelled append, or when it is on the one surviving "Not in the story
+        // yet" row (a no-show has no beat to live in, and an answer with no document footprint
+        // is re-asked forever — the .421 law). No localStorage sidecar at all. Zero API calls —
+        // the protocol greeting is the one, then @CW8_START hands over.
         // ══════════════════════════════════════════════════════════════════════════════════
         const _cwPlotValuesCtl = (function () {
             let active = false, pending = false, done = false;
             let roster = null;    // flagged traits (from the universal_values artifact)
             let world = null;     // { arch, beats, stages } (from the live document)
-            // Transient tagging state for the CURRENT trait only. Deliberately not persisted:
-            // a reload mid-pick re-asks the trait from the top (its map row is still empty),
-            // which is the same honest one-tap cost as CW7's condition gap.
-            let stageQueue = [], pickedBeats = [], emitted = 0;
+            let emitted = 0;
 
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -25236,62 +25239,80 @@
                 return { what: '', balance: '', excess: '', deficit: '' };
             }
 
-            // ── POSITION — derived from the document, never a counter (the CW7 law) ────────
-            function mapEntry(r) { return _cw8ParseMapEntry(rowText(_cw8MapRowFieldId(r.trait)), world ? world.beats : []); }
-            function taggedBeats() {
-                const byFid = new Map();
-                (roster || []).forEach(function (r) {
-                    mapEntry(r).beats.forEach(function (b) {
-                        const cur = byFid.get(b.fid) || { beat: b, traits: [] };
-                        if (cur.traits.indexOf(r.trait) === -1) cur.traits.push(r.trait);
-                        byFid.set(b.fid, cur);
-                    });
-                });
-                return (world ? world.beats : []).filter(function (b) { return byFid.has(b.fid); })
-                    .map(function (b) { return byFid.get(b.fid); });
+            // ── POSITION — derived from the BEATS + the no-show row, never a counter ───────
+            function covered(r) {
+                const label = _cw7TraitLabel(r.trait);
+                if (_cw8NoShowHas(rowText(CW8_NOTYET_FID), label)) return true;
+                return (world ? world.beats : []).some(function (b) { return _cw8BeatHasTrait(rowText(b.fid), label); });
             }
             function posOf() {
                 if (!roster || !world) return null;
-                for (let n = 0; n < roster.length; n++) {
-                    if (!mapEntry(roster[n]).answered) return { phase: 'tag', n: n };
-                }
-                const tb = taggedBeats();
-                const ledger = rowText(CW8_LEDGER_FID);
-                for (let n = 0; n < tb.length; n++) {
-                    if (!_cw8LedgerHas(ledger, tb[n].beat)) return { phase: 'beat', n: n, tb: tb };
-                }
+                for (let n = 0; n < roster.length; n++) if (!covered(roster[n])) return { phase: 'trait', n: n };
                 if (!rowText(CW8_CONTINUITY_FID)) return { phase: 'continuity' };
                 return null;
             }
             function substepFor(p) {
                 try {
                     if (!p) return;
-                    if (p.phase === 'tag') applyCwSubstepProgress({ stepNum: 8, substepNum: 1, name: 'Tag the Traits' });
-                    else if (p.phase === 'beat') applyCwSubstepProgress({ stepNum: 8, substepNum: 2, name: 'Work the Beats' });
-                    else applyCwSubstepProgress({ stepNum: 8, substepNum: 3, name: 'Continuity Pass' });
+                    if (p.phase === 'trait') applyCwSubstepProgress({ stepNum: 8, substepNum: 1, name: 'Trait by Trait' });
+                    else applyCwSubstepProgress({ stepNum: 8, substepNum: 2, name: 'Continuity Pass' });
                 } catch (e) {}
             }
 
-            // ── THE DOC ROWS the walk writes into, healed in on first start. Idempotent; a
-            // trait newly flagged by a Step-7 revisit gains its row on the next entry. Rows go
-            // at the END of the 'Update Focus' header section — present on both the seeded path
-            // and the no-outline fallback template. `_migrationActive` wraps every insert so the
-            // section guard cannot revert it (the v7.20.370 lesson).
+            // ── THE DOC ROWS: ensure the two slim rows; DROP the .491 Values-Map table ─────
+            // (map rows + ledger + its heading held machine-composed text only, so nothing of
+            // the student's can be lost by dropping them; verified by re-scan, the .370 lesson.)
+            function rowExists(fid) {
+                let found = false;
+                try {
+                    canvasEditor.state.doc.descendants(function (n) {
+                        if (found) return false;
+                        if (n.type && n.type.name === 'outlineRow' && n.attrs && n.attrs.fieldId === fid) { found = true; return false; }
+                        return true;
+                    });
+                } catch (e) {}
+                return found;
+            }
+            function dropLegacyMap() {
+                if (!canvasEditor) return;
+                const dead = [];
+                canvasEditor.state.doc.descendants(function (n, pos) {
+                    if (n.type && n.type.name === 'outlineRow' && n.attrs && typeof n.attrs.fieldId === 'string'
+                        && (n.attrs.fieldId.indexOf('cw-step-8-map-') === 0 || n.attrs.fieldId === CW8_LEDGER_FID)) {
+                        dead.push({ pos: pos, size: n.nodeSize });
+                    }
+                    if (n.type && n.type.name === 'heading' && /^Your Values Map$/.test((n.textContent || '').trim())) {
+                        dead.push({ pos: pos, size: n.nodeSize });
+                    }
+                    return true;
+                });
+                if (!dead.length) return;
+                const _was = _migrationActive;
+                try {
+                    _migrationActive = true;
+                    // Last first, so earlier positions stay valid.
+                    dead.sort(function (a, b) { return b.pos - a.pos; }).forEach(function (d) {
+                        canvasEditor.view.dispatch(canvasEditor.state.tr.delete(d.pos, d.pos + d.size));
+                    });
+                } catch (e) { console.warn('WML CW8: legacy map drop failed —', e && e.message); }
+                finally { _migrationActive = _was; }
+                let survivors = 0;
+                canvasEditor.state.doc.descendants(function (n) {
+                    if (n.type && n.type.name === 'outlineRow' && n.attrs && typeof n.attrs.fieldId === 'string'
+                        && (n.attrs.fieldId.indexOf('cw-step-8-map-') === 0 || n.attrs.fieldId === CW8_LEDGER_FID)) survivors++;
+                });
+                if (survivors) { console.warn('WML CW8: ' + survivors + ' legacy map row(s) SURVIVED the drop — not saving.'); return; }
+                save();
+                console.log('WML CW8: dropped the .491 Values Map (' + dead.length + ' node(s)) — the beats carry the state now (#364)');
+            }
             function ensureRows() {
                 if (!canvasEditor || !roster) return;
+                dropLegacyMap();
                 const missing = [];
-                roster.forEach(function (r) {
-                    const fid = _cw8MapRowFieldId(r.trait);
-                    if (!rowExists(fid)) missing.push(outlineRowHTML({
-                        id: 'map-' + _cw7TraitCtlId(r.trait),
-                        label: _cw7TraitLabel(r.trait),
-                        prompt: 'Where does your story show this? Tagged in the chat walk.',
-                    }, fid));
-                });
-                if (!rowExists(CW8_LEDGER_FID)) missing.push(outlineRowHTML({
-                    id: 'beats-worked', label: 'Beats worked this pass',
-                    prompt: 'Filled in as you work each tagged beat.',
-                }, CW8_LEDGER_FID));
+                if (!rowExists(CW8_NOTYET_FID)) missing.push(outlineRowHTML({
+                    id: 'notyet', label: 'Not in the story yet',
+                    prompt: 'Traits you said don’t show anywhere yet — your build list for later drafts.',
+                }, CW8_NOTYET_FID));
                 if (!rowExists(CW8_CONTINUITY_FID)) missing.push(outlineRowHTML({
                     id: 'continuity', label: 'Continuity check',
                     prompt: 'One read-through of the whole outline — contradictions only.',
@@ -25308,32 +25329,19 @@
                     return true;
                 });
                 if (anchorPos === null) { anchorPos = lastPos; anchorNode = lastNode; }
-                if (anchorPos === null) { console.warn('WML CW8: no section to hold the values map — rows not inserted.'); return; }
-                const html = '<h3>Your Values Map</h3>' + missing.join('');
+                if (anchorPos === null) { console.warn('WML CW8: no section to hold the walk rows — not inserted.'); return; }
                 const _was = _migrationActive;
                 try {
                     _migrationActive = true;
-                    canvasEditor.commands.insertContentAt(anchorPos + anchorNode.nodeSize - 1, html);
-                } catch (e) { console.warn('WML CW8: values-map insert failed —', e && e.message); }
+                    canvasEditor.commands.insertContentAt(anchorPos + anchorNode.nodeSize - 1, missing.join(''));
+                } catch (e) { console.warn('WML CW8: row insert failed —', e && e.message); }
                 finally { _migrationActive = _was; }
                 save();
-                console.log('WML CW8: healed ' + missing.length + ' values-map row(s) into the document');
-            }
-            function rowExists(fid) {
-                let found = false;
-                try {
-                    canvasEditor.state.doc.descendants(function (n) {
-                        if (found) return false;
-                        if (n.type && n.type.name === 'outlineRow' && n.attrs && n.attrs.fieldId === fid) { found = true; return false; }
-                        return true;
-                    });
-                } catch (e) {}
-                return found;
+                console.log('WML CW8: healed ' + missing.length + ' walk row(s) into the document');
             }
 
-            // ── CHIPS — CW7's re-armable builders, with one addition: an `instant` option in a
-            // multi-select fires onDone immediately (the one-tap "doesn't show anywhere yet",
-            // §30.3). Factory-named handlers only (the keymatch gate classifies call sites).
+            // ── CHIPS — single-tap builders (the stage and the beat are each ONE choice among
+            // alternatives, §4c.8b), factory-named for the keymatch gate.
             let _reArm = null, _liveBar = null;
             function chipBar(options, onPick) { return _buildChips(options, onPick); }
             function _buildChips(options, onPick) {
@@ -25353,41 +25361,6 @@
                 _liveBar = bar;
                 return true;
             }
-            function chipBarMulti(options, onDone) { return _buildChipsMulti(options, onDone, null); }
-            function _buildChipsMulti(options, onDone, _keep) {
-                const sel = (_keep || []).slice();
-                _reArm = function () { return _buildChipsMulti(options, onDone, sel); };
-                const bubble = chatMessages.lastElementChild;
-                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
-                if (!bc) return false;
-                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
-                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
-                options.forEach(function (opt) {
-                    const label = (opt && typeof opt === 'object') ? opt.label : opt;
-                    if (opt && typeof opt === 'object' && opt.instant) {
-                        bar.appendChild(el('button', {
-                            className: 'swml-quick-btn', textContent: label,
-                            onClick: function () { _reArm = null; _liveBar = null; bar.remove(); onDone([label]); },
-                        }));
-                        return;
-                    }
-                    const on = sel.indexOf(label) !== -1;
-                    const btn = el('button', { className: 'swml-quick-btn', textContent: on ? '✓ ' + label : label });
-                    btn.addEventListener('click', function () {
-                        const x = sel.indexOf(label);
-                        if (x === -1) { sel.push(label); btn.textContent = '✓ ' + label; }
-                        else { sel.splice(x, 1); btn.textContent = label; }
-                    });
-                    bar.appendChild(btn);
-                });
-                bar.appendChild(el('button', {
-                    className: 'swml-quick-btn', textContent: 'Continue →',
-                    onClick: function () { _reArm = null; _liveBar = null; bar.remove(); onDone(sel.slice()); },
-                }));
-                bc.appendChild(bar);
-                _liveBar = bar;
-                return true;
-            }
             function reArmLiveAsk() {
                 if (!_reArm) return false;
                 const again = _reArm;
@@ -25397,6 +25370,7 @@
             }
 
             // ── THE HELP LADDER (§4c.9) — all free; this step spends no API calls at all.
+            // (No 📖 Guidance rung: the reference guide has no values chapter — see .491's note.)
             const _moreServed = Object.create(null);
             function helpBar(r) {
                 const bubble = chatMessages.lastElementChild;
@@ -25420,13 +25394,6 @@
                         },
                     }));
                 }
-                // ⚠️ NO 📖 Guidance rung here, deliberately: the reference guide has no
-                // Universal Human Values chapter (its chapters stop at Step 6), and the guide
-                // deep-link gate is right that an anchor matching no heading silently dumps the
-                // student at the TOP of the guide — the exact scrolling Neil complained about.
-                // Depth for this concept lives in the Table of Techniques / the trait panel
-                // (§4c.9's own ruling). If a Step-7/8 guide chapter is authored, add the rung
-                // back with its real heading.
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'Story Components', icon: WML.icon('components', 15),
                     onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
@@ -25446,10 +25413,10 @@
                 resetSend();
             }
 
-            // ── PHASE 1: TAG ───────────────────────────────────────────────────────────────
+            // ── PHASE 1: ONE TRAIT AT A TIME — their words, then stage → beat → write ─────
             function condLine(r) {
                 const label = _cw7TraitLabel(r.trait).toLowerCase();
-                const real = (x) => CW7_STATES.indexOf(x) !== -1;
+                const real = function (x) { return CW7_STATES.indexOf(x) !== -1; };
                 if (real(r.begin) && real(r.end) && r.begin !== r.end) {
                     return 'In Step 7 you said their ' + label + ' moves from **' + r.begin.toLowerCase()
                         + '** to **' + r.end.toLowerCase() + '** — so the beats should carry that journey.';
@@ -25461,36 +25428,37 @@
                 return 'In Step 7 you marked their ' + label + ' as **' + r.cond.toLowerCase() + '**.';
             }
             function tagBar(n, heading) { return cwProgressBar(n + 1, roster.length, 'Update: Values', heading, 'trait'); }
-            function serveTagAsk(n, opts) {
+            function stageChipLabels(withNoShow) {
+                const out = world.stages.map(function (s) { return s.label; });
+                if (withNoShow) out.push(CW8_NO_SHOW);
+                return out;
+            }
+            function serveTraitAsk(n, opts) {
                 const r = roster[n];
                 const t = traitCard(r.trait);
                 const label = _cw7TraitLabel(r.trait);
-                // The example that matches THEIR condition teaches the sitting they actually chose.
                 const ex = r.cond === 'In excess' ? t.excess : r.cond === 'In deficit' ? t.deficit : t.balance;
                 const emit = function () {
                     aiBubble(tagBar(n, label)
                         + '**' + label + '** — trait ' + (n + 1) + ' of ' + roster.length + ' you flagged.\n\n'
-                        + t.what + '\n\n' + condLine(r) + '\n\n'
-                        + 'A trait **shows** in a beat when:\n\n'
+                        + t.what + '\n\n' + condLine(r)
+                        + (r.said ? '\n\n**Your own words from Step 7:**\n\n> ' + r.said : '')
+                        + '\n\nA trait **shows** in a beat when:\n\n'
                         + '- the protagonist **does** something that could only be done by someone with (or without) it\n'
                         + '- a reader who was told nothing could point at the beat and name it\n'
                         + '- it is visible in action — not in the narrator explaining the character\n\n'
                         + 'Example — ' + ex + '\n\n'
-                        + '**Tap the stage(s) where a reader could actually SEE their '
+                        + '**Tap the stage where a reader could actually SEE their '
                         + label.toLowerCase() + '** — or tell me it doesn’t show anywhere yet.');
                 };
                 _walkSlot.clear('cw8');   // this ask is answered by TAP, nothing typed may file
                 const attach = function () {
-                    chipBarMulti(world.stages.map(function (s) { return s.label; })
-                        .concat([{ label: CW8_NO_SHOW, instant: true }]), onCw8StagesDone);
+                    chipBar(stageChipLabels(true), onCw8StagePick);
                     helpBar(r);
                     resetSend();
                 };
-                // DRAWN, both passes (§4c.7): the ask names the Step-7 condition, which the
-                // student can change by revisiting Step 7 — a stored copy becomes a lie. The
-                // defer path (orientation handing over in this same frame) still pages (§4b):
-                // serveCwChunks gates the emit behind a Continue; our emit ignores the chunk
-                // text and draws the derived ask instead.
+                // DRAWN, both passes (§4c.7): it quotes the Step-7 condition and their own words,
+                // both of which change if they revisit Step 7 — a stored copy becomes a lie.
                 if (opts && opts.defer) {
                     serveCwChunks(['(the first trait)'], { emit: function () { _cwReplay(emit); }, onDone: attach, deferFirst: true });
                     return;
@@ -25498,112 +25466,115 @@
                 _cwReplay(emit);
                 attach();
             }
-            function onCw8StagesDone(sel) {
+            function onCw8StagePick(pick) {
+                if (pick === 'Back to the wrap →') { _revisit = null; advance(); return; }
+                if (pick === 'No more — next →') { userTurn(pick); _revisit = null; advance(); return; }
                 const p = posOf();
-                if (!p || p.phase !== 'tag') { advance(); return; }
-                const r = roster[p.n];
-                if (sel.length === 1 && sel[0] === CW8_NO_SHOW) {
-                    userTurn(CW8_NO_SHOW);
-                    fileMap(r, []);
+                const r = p && p.phase === 'trait' ? roster[p.n] : (_revisit != null ? roster[_revisit] : null);
+                if (!r) { advance(); return; }
+                if (pick === CW8_NO_SHOW) {
+                    userTurn(pick);
+                    if (!_writeOutlineRowField(CW8_NOTYET_FID, _cw8NoShowLine(_cw7TraitLabel(r.trait)))) {
+                        console.warn('WML CW8: the no-show line did not land for ' + r.trait);
+                    }
+                    save();
+                    _revisit = null;
+                    advance();
                     return;
                 }
-                const stages = world.stages.filter(function (s) { return sel.indexOf(s.label) !== -1; });
-                if (!stages.length) {
-                    // Continue with nothing ticked — refused, WITH the way forward (§4d).
-                    aiBubble('Pick at least one stage — or, if it genuinely doesn’t show, tap **' + CW8_NO_SHOW + '**.');
-                    chipBarMulti(world.stages.map(function (s) { return s.label; })
-                        .concat([{ label: CW8_NO_SHOW, instant: true }]), onCw8StagesDone);
+                const stage = world.stages.filter(function (s) { return s.label === pick; })[0];
+                if (!stage) { console.warn('WML CW8: stage chip did not resolve —', pick); serveCurrent(); return; }
+                userTurn(pick);
+                serveBeatPick(r, stage.si);
+            }
+            function serveBeatPick(r, si) {
+                const inStage = world.beats.filter(function (b) { return b.stage === si; });
+                if (!inStage.length) {
+                    aiBubble('That stage has no beats on the page — pick another.');
+                    chipBar(stageChipLabels(!covered(r)), onCw8StagePick);
                     helpBar(r);
                     resetSend();
                     return;
                 }
-                userTurn(sel.join(' · '));
-                stageQueue = stages.map(function (s) { return s.si; });
-                pickedBeats = [];
-                serveBeatPick(r);
-            }
-            function serveBeatPick(r) {
-                const si = stageQueue[0];
-                const inStage = world.beats.filter(function (b) { return b.stage === si; });
-                if (!inStage.length) { stageQueue.shift(); finishOrNextStage(r); return; }
-                aiBubble('**' + inStage[0].stageLabel + '** — tap every beat where a reader could see **'
-                    + _cw7TraitLabel(r.trait).toLowerCase() + '**, then Continue.');
-                chipBarMulti(inStage.map(function (b) { return b.label; }), onCw8BeatsDone);
+                _pendingStage = si;
+                aiBubble('**' + inStage[0].stageLabel + '** — which beat should carry their **'
+                    + _cw7TraitLabel(r.trait).toLowerCase() + '**?');
+                chipBar(inStage.map(function (b) { return b.label; }).concat(['← Different stage']), onCw8BeatPick);
                 helpBar(r);
                 resetSend();
             }
-            function onCw8BeatsDone(sel) {
+            let _pendingStage = null;   // transient — a reload mid-pick re-asks the trait (honest, one tap)
+            let _revisit = null;        // wrap's revisit route: roster index being re-opened
+            function onCw8BeatPick(pick) {
                 const p = posOf();
-                if (!p || p.phase !== 'tag') { advance(); return; }
-                const r = roster[p.n];
-                const si = stageQueue.shift();
-                const chosen = world.beats.filter(function (b) { return b.stage === si && sel.indexOf(b.label) !== -1; });
-                if (chosen.length) userTurn(chosen.map(_cw8BeatSegment).join(' · '));
-                pickedBeats = pickedBeats.concat(chosen);
-                finishOrNextStage(r);
-            }
-            function finishOrNextStage(r) {
-                if (stageQueue.length) { serveBeatPick(r); return; }
-                if (!pickedBeats.length) {
-                    // Stages were named but no beat was — an honest dead end, re-opened (§4d).
-                    aiBubble('No beats tapped. If their ' + _cw7TraitLabel(r.trait).toLowerCase()
-                        + ' really isn’t visible yet, that is a good answer — tap **' + CW8_NO_SHOW + '**. '
-                        + 'Otherwise pick the stage again and tap the beat(s).');
-                    chipBarMulti(world.stages.map(function (s) { return s.label; })
-                        .concat([{ label: CW8_NO_SHOW, instant: true }]), onCw8StagesDone);
+                const r = p && p.phase === 'trait' ? roster[p.n] : (_revisit != null ? roster[_revisit] : null);
+                if (!r) { advance(); return; }
+                if (pick === '← Different stage') {
+                    chipBar(stageChipLabels(!covered(r)), onCw8StagePick);
                     helpBar(r);
                     resetSend();
                     return;
                 }
-                fileMap(r, pickedBeats);
+                const beat = world.beats.filter(function (b) { return b.stage === _pendingStage && b.label === pick; })[0];
+                if (!beat) { console.warn('WML CW8: beat chip did not resolve —', pick); serveCurrent(); return; }
+                userTurn(pick);
+                serveWrite(r, beat);
             }
-            function fileMap(r, beats) {
-                const line = _cw8ComposeMapEntry(_cw7TraitLabel(r.trait), r.cond, beats);
-                if (!_writeOutlineRowField(_cw8MapRowFieldId(r.trait), line, { replace: true })) {
-                    console.warn('WML CW8: map entry did not land for ' + r.trait);
-                }
-                save();
-                stageQueue = []; pickedBeats = [];
-                advance();
-            }
-
-            // ── PHASE 2: WORK THE TAGGED BEATS (§29's CDO shape, append never overwrite) ──
-            function serveBeatWork(entry, n, total) {
-                const b = entry.beat;
-                const traits = entry.traits.map(_cw7TraitLabel).join(', ');
-                const current = rowText(b.fid);
+            // The write ask — Neil's own sketch, mechanised: quote THEIR beat, ask for the
+            // lines, append underneath (§29 — the merge stays theirs, never automated).
+            function serveWrite(r, beat) {
+                const label = _cw7TraitLabel(r.trait);
                 const emit = function () {
-                    aiBubble(cwProgressBar(n + 1, total, 'Update: Values', b.label, 'beat')
-                        + '**' + b.stageLabel + ' — ' + b.label + '**\n\n'
-                        + 'Your beat says:\n\n> ' + (current || '*(blank so far)*') + '\n\n'
-                        + 'You tagged it for **' + traits + '**.\n\n'
-                        + '1. What would a reader have to **SEE** in this beat for that to land?\n'
-                        + '2. Where does your version not show it yet?\n'
-                        + '3. **Type the line(s) that show it.** They go UNDER the beat — nothing is '
-                        + 'deleted — and then you merge them into the beat however you think best.');
+                    aiBubble('**' + _cw8BeatSegment(beat) + '**\n\n'
+                        + 'Your beat says:\n\n> ' + (rowText(beat.fid) || '*(blank so far)*') + '\n\n'
+                        + '**Write the line(s) that would let a reader SEE their ' + label.toLowerCase()
+                        + ' here.** What do they DO — and what does it cost or win them?\n\n'
+                        + 'Your words are added **underneath the beat** — nothing is deleted — and then you '
+                        + 'merge them into the beat however you think reads best.');
                 };
                 _cwReplay(emit);   // quotes the live beat text — drawn, never stored (§4c.7)
-                _walkSlot.arm('cw8', b.fid, { cycle: 'accumulate', data: { kind: 'beat', traits: traits, stageLabel: b.stageLabel, label: b.label } });
-                chipBar(['It already shows it — keep as is'], onCw8KeepAsIs);
-                helpBar(null);
+                _walkSlot.arm('cw8', beat.fid, { cycle: 'accumulate', data: { kind: 'beat', traitLabel: label, seg: _cw8BeatSegment(beat) } });
+                chipBar(['← Pick a different beat'], onCw8BeatBack);
+                helpBar(r);
                 resetSend();
             }
-            function onCw8KeepAsIs(pick) {
+            function onCw8BeatBack(pick) {
                 const p = posOf();
-                if (!p || p.phase !== 'beat') { advance(); return; }
+                const r = p && p.phase === 'trait' ? roster[p.n] : (_revisit != null ? roster[_revisit] : null);
+                _walkSlot.clear('cw8');   // the write ask is dead — nothing typed may file to it
+                if (!r) { advance(); return; }
+                if (_pendingStage != null) { serveBeatPick(r, _pendingStage); return; }
+                chipBar(stageChipLabels(!covered(r)), onCw8StagePick);
+                helpBar(r);
+                resetSend();
+            }
+            function serveAfterAppend(r, seg) {
+                const label = _cw7TraitLabel(r.trait);
+                aiBubble('Added under **' + seg + '** — merge it into the beat whenever you like.\n\n'
+                    + 'A trait usually shows in **more than one beat**. Another beat for their '
+                    + label.toLowerCase() + '?');
+                chipBar(['Another beat for ' + label, 'Next →'], onCw8MoreOrNext);
+                helpBar(r);
+                resetSend();
+            }
+            function onCw8MoreOrNext(pick) {
                 userTurn(pick);
-                _walkSlot.clear('cw8');
-                ledger(_cw8LedgerLine(p.tb[p.n].beat, 'kept as is'));
+                const p = posOf();
+                const r = (_revisit != null) ? roster[_revisit]
+                    : (p && p.phase === 'trait' ? roster[p.n] : null);
+                if (pick.indexOf('Another beat') === 0 && r) {
+                    // §4d: every list carries its own way OUT — a student who changes their mind
+                    // mid-"another" must not have to fake a beat pick to escape.
+                    chipBar(stageChipLabels(false).concat(_revisit != null ? ['Back to the wrap →'] : ['No more — next →']), onCw8StagePick);
+                    helpBar(r);
+                    resetSend();
+                    return;
+                }
+                _revisit = null;
                 advance();
             }
-            function ledger(line) {
-                if (!_writeOutlineRowField(CW8_LEDGER_FID, line)) {
-                    console.warn('WML CW8: ledger line did not land — ' + line);
-                }
-                save();
-            }
 
-            // ── PHASE 3: CONTINUITY ────────────────────────────────────────────────────────
+            // ── PHASE 2: CONTINUITY ────────────────────────────────────────────────────────
             function serveContinuity() {
                 _cwReplay(function () {
                     aiBubble('**Last thing — one read-through.**\n\n'
@@ -25623,17 +25594,20 @@
                 _walkSlot.clear('cw8');
                 const R = roster || [];
                 _cwReplay(function () {
-                    const noShows = R.filter(function (r) { return mapEntry(r).noShow; });
-                    const worked = rowText(CW8_LEDGER_FID).split('\n').filter(function (l) { return l.trim(); }).length;
+                    const notyet = rowText(CW8_NOTYET_FID).split('\n').filter(function (l) { return l.trim(); });
+                    // ⚠️ String probe, not a regex: an UNBALANCED escaped paren in a regex
+                    // literal derails walk-sim-lib's paren-balancing controller slice, and the
+                    // whole sim goes blind (balanced regex parens are fine — `\(` alone is not).
+                    const workedBeats = (world ? world.beats : []).filter(function (b) {
+                        return rowText(b.fid).split('\n').some(function (l) { return l.trim().indexOf('Values (') === 0; });
+                    }).length;
                     aiBubble('**That is Lens 1 of 7 built in.**\n\n'
                         + 'You took ' + R.length + ' flagged trait' + (R.length === 1 ? '' : 's')
-                        + ' through your outline and worked ' + worked + ' beat' + (worked === 1 ? '' : 's') + '.'
-                        + (noShows.length
-                            ? '\n\n**Worth keeping in view:** '
-                              + noShows.map(function (r) { return _cw7TraitLabel(r.trait); }).join(', ')
-                              + (noShows.length === 1 ? ' doesn’t' : ' don’t')
-                              + ' show anywhere yet. That is not a failure — it names exactly what your '
-                              + 'next drafts have to add.'
+                        + ' through your outline and wrote into ' + workedBeats + ' beat' + (workedBeats === 1 ? '' : 's') + '.'
+                        + (notyet.length
+                            ? '\n\n**Worth keeping in view:** your *Not in the story yet* list has '
+                              + notyet.length + ' trait' + (notyet.length === 1 ? '' : 's') + ' on it. That is not a '
+                              + 'failure — it names exactly what your next drafts have to add.'
                             : '')
                         + '\n\nYour outline now carries the values layer. Six more lenses will join it in '
                         + 'later steps — goals, archetypes, empathy, theme and tone, genre, and structure — '
@@ -25643,11 +25617,11 @@
                 serveWrapRecall();
                 resetSend();
             }
-            function serveWrapRecall() { chipBar(['Re-tag a trait →'], onCw8Recall); }
+            function serveWrapRecall() { chipBar(['Add more to a trait →'], onCw8Recall); }
             function onCw8Recall(pick) {
                 userTurn(pick);
-                aiBubble('**Which trait?** Your new tags replace that trait’s entry; any newly tagged '
-                    + 'beat gets worked next.');
+                aiBubble('**Which trait?** You can add to more beats, or move one off the *Not in the '
+                    + 'story yet* list by finally giving it a beat.');
                 chipBar((roster || []).map(function (r) { return _cw7TraitLabel(r.trait); })
                     .concat(['Nothing — I’m done →']), onCw8RecallPick);
                 resetSend();
@@ -25660,11 +25634,13 @@
                     console.warn('WML CW8: recall chip did not resolve —', pick);
                     serveWrapRecall(); resetSend(); return;
                 }
-                // Empty the map row so the derivation re-opens exactly this trait, then walk on.
                 active = true; done = false;
-                _writeOutlineRowField(_cw8MapRowFieldId(roster[n].trait), ' ', { replace: true });
-                save();
-                serveCurrent();
+                _revisit = n;
+                const r = roster[n];
+                aiBubble('**' + _cw7TraitLabel(r.trait) + '** — pick the stage, then the beat.');
+                chipBar(stageChipLabels(false).concat(['Back to the wrap →']), onCw8StagePick);
+                helpBar(r);
+                resetSend();
             }
 
             // ── FLOW ───────────────────────────────────────────────────────────────────────
@@ -25672,9 +25648,8 @@
                 const p = posOf();
                 if (!p) { serveWrap(); return; }
                 substepFor(p);
-                if (p.phase === 'tag' && needsOrientation()) { serveOrientation(); return; }
-                if (p.phase === 'tag') { serveTagAsk(p.n, opts); return; }
-                if (p.phase === 'beat') { serveBeatWork(p.tb[p.n], p.n, p.tb.length); return; }
+                if (p.phase === 'trait' && needsOrientation()) { serveOrientation(); return; }
+                if (p.phase === 'trait') { serveTraitAsk(p.n, opts); return; }
                 serveContinuity();
             }
             function advance() {
@@ -25695,7 +25670,7 @@
             }
             function needsOrientation() {
                 const p = posOf();
-                return !!(p && p.phase === 'tag' && p.n === 0 && !oriented());
+                return !!(p && p.phase === 'trait' && p.n === 0 && !oriented());
             }
             function serveOrientation() {
                 serveCwChunks([
@@ -25704,26 +25679,25 @@
                         + 'asks a harder question: **' + ORIENT_MARK + '?**',
                     'A trait you named but never dramatised is invisible to a reader. They cannot see '
                         + 'your notes — they only see the beats. So we take the traits you flagged, **one '
-                        + 'at a time**, and find where each one actually appears in the outline you built.',
-                    'Two things before we start. **One:** a trait usually appears in more than one beat, '
-                        + 'and it should — a protagonist in deficit on courage does not become brave in a '
-                        + 'single moment. **Two:** “it doesn’t show anywhere yet” is a real answer and often '
-                        + 'the most useful one, because it names something worth adding. It costs you one tap.',
-                    'Your outline is open beside the chat. I will show you a trait, you tap the stage it '
-                        + 'shows in, then the exact beats. Then we work ONLY the beats you tagged — your '
-                        + 'additions go UNDER each beat, and **nothing is ever deleted**. Here is the first one.',
+                        + 'at a time**, and write them INTO the outline you built.',
+                    'For each trait I will show you what you wrote about it in Step 7, you pick the '
+                        + 'stage and the beat where it should show, and you write the line(s) that would '
+                        + 'let a reader see it. **Your words are added underneath that beat** — nothing is '
+                        + 'ever deleted — and you merge them in however you think reads best.\n\n'
+                        + 'And “it doesn’t show anywhere yet” is a real answer, often the most useful one: '
+                        + 'it goes on your build list, and it costs you one tap.',
+                    'Your outline is open beside the chat, and everything here is instant — no waiting '
+                        + 'on me. **Don’t overthink it**: rough lines now, you will sharpen them in the '
+                        + 'drafts. Here is the first trait.',
                 ], { emit: aiBubble, onDone: function () { serveCurrent({ defer: true }); } });
             }
 
             // ── DEAD-END GUARDS — refused, with a way forward, by construction (§4d).
-            // `done = true` so the start-miss fallback's `atStart()` goes false and an idle AI
-            // reply cannot re-fire the guard bubble on every turn; a fresh `@CW8_START` (they
-            // rebuilt Step 6/7 and came back) still restarts because startWalk resets `done`.
             function serveNoOutline() {
                 active = false; done = true;
                 aiBubble('**Your plot outline hasn’t been built yet**, and this step works by adding a '
-                    + 'layer to it — there is nothing here to tag.\n\nGo back to **Step 6 — Build Your '
-                    + 'Plot Outline** and bring your beats to life first; this lesson will be waiting.');
+                    + 'layer to it — there is nothing here to write into.\n\nGo back to **Step 6 — Build '
+                    + 'Your Plot Outline** and bring your beats to life first; this lesson will be waiting.');
                 chipBar(['Got it — I’ll finish Step 6 first'], onCw8GuardAck);
                 resetSend();
             }
@@ -25742,9 +25716,8 @@
                 resetSend();
             }
 
-            // ── DATA — the roster from the primed context (sync, the normal case) or the
-            // artifact (fetch); the beats always from the LIVE document. §5d: the primed-message
-            // tag comes from _cwDepTag, the one producer the priming path itself uses.
+            // ── DATA — roster from the primed context (sync, normal case) or the artifact;
+            // beats always from the LIVE document. §5d: the tag comes from _cwDepTag.
             function loadRoster() {
                 world = _cw8EnumerateBeats(canvasEditor);
                 if (roster) return Promise.resolve();
@@ -25774,7 +25747,7 @@
                     if (!roster.length) { serveNoAudit(); return; }
                     ensureRows();
                     active = true;
-                    console.log('WML CW8: trait-first values-update walk start — ' + roster.length
+                    console.log('WML CW8: trait-first values walk start — ' + roster.length
                         + ' flagged trait(s), ' + world.beats.length + ' beats on the page');
                     serveCurrent();
                 }).catch(function (e) {
@@ -25800,14 +25773,19 @@
                 userTurn(clean);
                 try {
                     if (slot.data && slot.data.kind === 'beat') {
-                        // APPEND under the beat, labelled so the student can see what arrived and
-                        // amalgamate it (§29 — the merge is theirs, never automated).
-                        _writeOutlineRowField(slot.fid, 'Values (' + slot.data.traits + '): ' + clean);
-                        ledger(_cw8LedgerLine({ stageLabel: slot.data.stageLabel, label: slot.data.label }, 'revised'));
-                    } else {
-                        _writeOutlineRowField(slot.fid, clean, { replace: true });
+                        // APPEND under the beat, labelled — the label is what the student sees to
+                        // amalgamate (§29) AND the walk's own footprint for this trait.
+                        _writeOutlineRowField(slot.fid, _cw8AppendLine(slot.data.traitLabel, clean));
                         save();
+                        const p = posOf();
+                        const r = (_revisit != null) ? roster[_revisit]
+                            : (roster || []).filter(function (x) { return _cw7TraitLabel(x.trait) === slot.data.traitLabel; })[0];
+                        if (r) { serveAfterAppend(r, slot.data.seg); return; }
+                        advance();
+                        return;
                     }
+                    _writeOutlineRowField(slot.fid, clean, { replace: true });
+                    save();
                 } catch (e) { console.warn('WML CW8: write failed (non-fatal) for ' + slot.fid + ' —', e && e.message); }
                 advance();
             }
@@ -25818,13 +25796,14 @@
                 if (!/@CW8_START/.test(norm)) return;
                 startWalk();
             }
-            function reset() { active = false; pending = false; done = false; roster = null; world = null; stageQueue = []; pickedBeats = []; }
+            function reset() { active = false; pending = false; done = false; roster = null; world = null; _pendingStage = null; _revisit = null; }
             function tryResume() {
                 try {
                     if (!canvasEditor) return false;
-                    // The map rows ARE the sidecar (document-derived, reload-proof). No rows in
-                    // the doc = the walk has never started: fresh start, let the greeting hand over.
-                    if (!rowExists(CW8_LEDGER_FID)) return false;
+                    // The walk rows ARE the sidecar. No continuity row in the doc = never started:
+                    // fresh start, let the greeting hand over. (.491 docs have it too, and the
+                    // resume path's ensureRows drops their Values Map on arrival.)
+                    if (!rowExists(CW8_CONTINUITY_FID)) return false;
                     const mark = emitted;
                     active = true; pending = false;
                     loadRoster().then(function () {
@@ -49731,11 +49710,21 @@
     // ⭐ ONE PRODUCER per id (§5d): the map-row fid derives from _cw7TraitCtlId — the same slug
     // maker Step 7's controls use — so a trait added to CW7_VALUES needs no second edit here.
     // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⚠️ v7.20.492 (FIXLIST #364) — THE VALUES MAP TABLE IS GONE. Neil, on .491: *"the students
+    // are supposed to add to the beats that are already there… not a separate table in the
+    // document, that doesn't make any sense."* The student's writing now lands ONLY in the beats
+    // (labelled `Values (Trait): …` appends), and those appends ARE the walk's footprints.
+    // `_cw8MapRowFieldId` survives solely so the drop-heal can find and REMOVE the .491 rows
+    // from documents that already got them.
     function _cw8MapRowFieldId(trait) {
         return 'cw-step-8-map-' + _cw7TraitCtlId(trait);
     }
-    const CW8_LEDGER_FID = 'cw-step-8-beats-worked';
+    const CW8_LEDGER_FID = 'cw-step-8-beats-worked';       // retired at .492 — drop-heal target only
     const CW8_CONTINUITY_FID = 'cw-step-8-continuity';
+    // The ONE row that stays, and why (forced, disclosed): a "doesn't show anywhere yet" answer
+    // has no beat to live in, and an answer with no document footprint is re-asked forever
+    // (the .421 law). It is the build-list shape Neil approved in #249, one slim row.
+    const CW8_NOTYET_FID = 'cw-step-8-notyet';
     const CW8_NO_SHOW = 'It doesn’t show anywhere yet';
 
     // ── The Step-7 audit, read from the `universal_values` artifact HTML. PURE (string in,
@@ -49773,6 +49762,16 @@
             ? decode(rows[fid].inner.replace(/<br\s*\/?>/g, '\n').replace(/<[^>]+>/g, '')).trim()
             : '';
         const real = (x) => CW7_STATES.indexOf(x) !== -1;
+        // The student's OWN Step-7 explanation for one trait — CW7's handleTurn files it as a
+        // labelled line ('{Label} — {State}: {their words}', byte-pair with that writer), one
+        // line per trait accumulated in the value row. Neil, #364: *"it should actually show me
+        // what I wrote"* — this is what gets shown.
+        const saidIn = (fid, trait) => {
+            const label = _cw7TraitLabel(trait) + ' — ';
+            const hit = textOf(fid).split('\n').map(function (l) { return l.trim(); })
+                .filter(function (l) { return l.indexOf(label) === 0; })[0] || '';
+            return hit ? hit.slice(label.length).replace(/^[^:]*:\s*/, '') : '';
+        };
         const out = [];
         CW7_VALUES.forEach(function (v) {
             const wantText = textOf(_cw7AddRowFieldId(v.id));
@@ -49788,6 +49787,11 @@
                     // else where they start; a wanted-only trait is In deficit by applyWant's
                     // own write, so the fallback matches the document.
                     cond: real(e) ? e : (real(b) ? b : 'In deficit'),
+                    // Their own words — end pass preferred (the later thinking), begin as
+                    // fallback, the build-list line for a wanted-only trait.
+                    said: saidIn(_cw7RowFieldId('end', v.id), trait)
+                        || saidIn(_cw7RowFieldId('begin', v.id), trait)
+                        || (wanted ? 'they do not have it yet, and you want them to gain it' : ''),
                 });
             });
         });
@@ -49827,33 +49831,25 @@
         return { arch: k, beats: beats, stages: stages };
     }
 
-    // ── The map-row entry: ONE composer + ONE parser, adjacent, byte-paired (§5d — the walk
-    // WRITES this line and later READS it back to know which beats reach amalgamation; a drifted
-    // format silently empties the CDO phase). Beats are matched by EXACT segment equality against
-    // the enumerated list, never by substring, so one label containing another cannot mis-tag.
+    // ── THE FOOTPRINTS, v7.20.492 (#364): the student's writing lands IN THE BEATS, so the
+    // beats themselves carry the walk's state. ONE composer + ONE reader per line shape,
+    // adjacent, byte-paired (§5d — the walk writes these and reads them back to derive its
+    // position; a drifted format silently rewinds it).
     function _cw8BeatSegment(beat) { return beat.stageLabel + ' · ' + beat.label; }
-    function _cw8ComposeMapEntry(traitLabel, cond, beats) {
-        const head = traitLabel + ' (' + cond.toLowerCase() + ')';
-        if (!beats || !beats.length) return head + ' — doesn’t show anywhere yet.';
-        return head + ' — shows in: ' + beats.map(_cw8BeatSegment).join('; ');
+    // The labelled append that goes UNDER a beat. The label is what makes the addition visible
+    // to the student for amalgamation (§29) AND machine-readable as "this trait was worked here".
+    function _cw8AppendLine(traitLabel, text) { return 'Values (' + traitLabel + '): ' + text; }
+    function _cw8BeatHasTrait(beatText, traitLabel) {
+        return String(beatText || '').split('\n').some(function (l) {
+            const m = l.trim().match(/^Values \(([^)]+)\):/);
+            return !!m && m[1].split(',').map(function (x) { return x.trim(); }).indexOf(traitLabel) !== -1;
+        });
     }
-    function _cw8ParseMapEntry(text, allBeats) {
-        const t = String(text || '').trim();
-        if (!t) return { answered: false, noShow: false, beats: [] };
-        if (t.indexOf('doesn’t show anywhere yet') !== -1) return { answered: true, noShow: true, beats: [] };
-        const at = t.indexOf(' — shows in: ');
-        if (at === -1) return { answered: true, noShow: false, beats: [] };   // hand-edited — honest: answered, nothing machine-taggable
-        const segs = t.slice(at + ' — shows in: '.length).split('; ').map(function (x) { return x.trim(); });
-        return {
-            answered: true, noShow: false,
-            beats: (allBeats || []).filter(function (b) { return segs.indexOf(_cw8BeatSegment(b)) !== -1; }),
-        };
-    }
-    // The ledger line for one worked beat — same byte-pair rule as the map entry.
-    function _cw8LedgerLine(beat, how) { return _cw8BeatSegment(beat) + ' — ' + how; }
-    function _cw8LedgerHas(ledgerText, beat) {
-        return String(ledgerText || '').split('\n').some(function (l) {
-            return l.trim().indexOf(_cw8BeatSegment(beat) + ' — ') === 0;
+    // The no-show line in the one surviving row (see CW8_NOTYET_FID's comment).
+    function _cw8NoShowLine(traitLabel) { return traitLabel + ' — doesn’t show anywhere yet.'; }
+    function _cw8NoShowHas(rowText, traitLabel) {
+        return String(rowText || '').split('\n').some(function (l) {
+            return l.trim().indexOf(traitLabel + ' — ') === 0;
         });
     }
 

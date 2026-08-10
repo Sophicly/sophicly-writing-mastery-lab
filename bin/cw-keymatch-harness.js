@@ -196,15 +196,16 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onValuesRecallPick:   { kind: 'flow', note: 'Step 7 wrap: which answer to change — the REWRITE that follows is what is filed' },
         onSelfAssessTicks:    { kind: 'scaffold', note: 'the criteria tick list — the claim is fed to the end-of-set review, never to a document row' },
         onSelfAssessFollowUp: { kind: 'flow', note: 'add-a-line / it is fine — steers the walk, must stay ephemeral' },
-        // v7.20.491 — STEP 8 (Update Plot: Values), trait-first (PEDAGOGY §30). The tag picks
-        // are CONTENT: stages + beats together become the trait's map-row entry, written through
-        // _cw8MapRowFieldId (the one producer) with replace semantics — a pick that lived only
-        // in closure state would die on reload, which is why the map rows exist at all.
-        onCw8StagesDone:  { kind: 'content', note: 'Step 8 stage multi-select (incl. the one-tap no-show) → the trait’s map row via fileMap' },
-        onCw8BeatsDone:   { kind: 'content', note: 'Step 8 beat multi-select per stage → the trait’s map row via fileMap' },
-        onCw8KeepAsIs:    { kind: 'content', note: 'Step 8 “keep as is” → a ledger line in cw-step-8-beats-worked (the CDO footprint, so resume cannot re-ask)' },
-        onCw8Recall:      { kind: 'flow', note: 'Step 8 wrap: open the re-tag picker — the way back into an answered trait' },
-        onCw8RecallPick:  { kind: 'flow', note: 'Step 8 wrap: which trait to re-tag — the re-tag that follows is what is filed' },
+        // v7.20.492 (#364) — STEP 8 (Update Plot: Values), Neil's corrected shape: the writing
+        // lands IN THE BEATS ("not a separate table in the document"). The stage/beat picks are
+        // SCAFFOLD — they choose WHERE; the typed line that follows is what is filed (appended
+        // under the beat, labelled `Values (Trait):`, which is also the walk's own footprint).
+        onCw8StagePick:   { kind: 'content', note: 'Step 8 stage pick — scaffold for the beat pick, EXCEPT the one-tap no-show branch, which files a line to cw-step-8-notyet (the build list; an answer with no footprint is re-asked forever, .421)' },
+        onCw8BeatPick:    { kind: 'scaffold', note: 'Step 8 beat pick — chooses WHERE; the typed line that follows is appended under that beat and is what is filed' },
+        onCw8BeatBack:    { kind: 'flow', note: 'Step 8 “pick a different beat” — clears the armed write slot, files nothing' },
+        onCw8MoreOrNext:  { kind: 'flow', note: 'Step 8 “another beat for X / next” — steers the walk; the appends already landed' },
+        onCw8Recall:      { kind: 'flow', note: 'Step 8 wrap: open the add-more picker — the way back into a trait' },
+        onCw8RecallPick:  { kind: 'flow', note: 'Step 8 wrap: which trait to add to — the append that follows is what is filed' },
         onCw8GuardAck:    { kind: 'flow', note: 'Step 8 dead-end guard (no outline / no audit) acknowledgment — files nothing' },
         onCw8Retry:       { kind: 'flow', note: 'Step 8 audit-load failure retry — files nothing' },
     };

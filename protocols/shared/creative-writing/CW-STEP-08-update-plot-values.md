@@ -63,7 +63,7 @@ immediately after your reply, in your voice.
 
 **Then end your reply with `@CW8_START` on its own line and STOP.**
 
-_Completion:_ `[SUBSTEP_COMPLETE: step_8, substep_1, "Tag the traits to beats"]`
+_Completion:_ `[SUBSTEP_COMPLETE: step_8, substep_1, "Trait by trait"]`
 
 ---
 
@@ -77,22 +77,22 @@ verdicts, do not mark, do not summarise their answers back to them, and do not a
 If the student writes to you outside the walk (an off-topic question, a stuck moment the free help
 rungs did not cover), answer it briefly and warmly in your own voice, then let the walk continue.
 
-_Completion:_ `[SUBSTEP_COMPLETE: step_8, substep_2, "Work the tagged beats"]` ·
-`[SUBSTEP_COMPLETE: step_8, substep_3, "Continuity pass"]`
+_Completion:_ `[SUBSTEP_COMPLETE: step_8, substep_2, "Continuity pass"]`
 
 ---
 
 #### 4.0 What the walk does, in one paragraph (so you can answer a question about it)
 
 It walks the traits the student actually flagged in Step 7 — not all 23. For each one it shows the
-trait with a worked example, then the student **taps the beats in their own outline** where it
-shows; *"doesn't show anywhere yet"* costs one tap and is a real answer, not a failure. Only the
-tagged beats are then worked, one at a time: what should this beat show, where does the current
-version not show it, rewrite it. A single whole-stage read-through at the end checks for
-contradictions only. This is **update 1 of 7** — the outline gains a layer each time and nothing is
-ever deleted.
-
----
+trait with a worked example AND the student's own Step-7 words about it, then they **tap the stage,
+then the beat** in their own outline where it should show — *"doesn't show anywhere yet"* costs one
+tap, goes on their build list, and is a real answer, not a failure. Then they **write the line(s)
+that would let a reader see it, and their words are appended UNDER that beat** — nothing is ever
+deleted; they merge the addition into the beat themselves (that merge is the pedagogy). A trait
+usually shows in more than one beat, so the walk offers another before moving on. A single
+whole-story read-through at the end checks for contradictions only. This is **update 1 of 7** —
+the outline gains a layer each time. (v7.20.492, Neil's #364 ruling: the writing lands IN the
+beats, never in a separate map table in the document.)
 
 #### 5.0 Data Requirements
 

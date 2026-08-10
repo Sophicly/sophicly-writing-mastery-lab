@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.491';
+var WML_BUILD = '7.20.492';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1195,15 +1195,13 @@ window.WML = (function() {
             { step: 2, label: 'Values at End' },
             { step: 3, label: 'Reflection' },
         ],
-        // v7.20.491 — Step 8 (Update Plot: Values), TRAIT-FIRST (PEDAGOGY §30, ruled 2026-08-07):
-        // the walk iterates over the LENS's own items — one flagged trait at a time, tapping the
-        // real beats — never stage by stage (a per-stage ask is a 23-trait MENU, root §18). The
-        // old 'Stages I–II / III–IV / V–VI' labels described the retired per-stage shape and were
-        // the FOURTH stale surface of the .452 renumber (protocol · desc · Step-7 close · this).
+        // v7.20.492 (#364) — Step 8 (Update Plot: Values), TRAIT-FIRST (PEDAGOGY §30) in Neil's
+        // corrected shape: per trait — their own Step-7 words → pick the stage, then the beat →
+        // write, and it APPENDS to that beat. Tagging and writing are ONE motion now, so the old
+        // 'Tag the Traits / Work the Beats' split no longer describes anything.
         8: [
-            { step: 1, label: 'Tag the Traits' },
-            { step: 2, label: 'Work the Beats' },
-            { step: 3, label: 'Continuity Pass' },
+            { step: 1, label: 'Trait by Trait' },
+            { step: 2, label: 'Continuity Pass' },
         ],
         9: [
             { step: 1, label: 'Review Outline' },
