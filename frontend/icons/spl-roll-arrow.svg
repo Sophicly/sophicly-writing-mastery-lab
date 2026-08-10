@@ -1,0 +1,9 @@
+<!-- Sophicly SPL header navigation arrow (chevron), supplied by Neil 2026-08-10.
+     Source: .spl-nav-arrows .spl-roll-arrow in the LearnDash Focus (SPL) header.
+     Points DOWN as authored. The SPL header uses it left/right via rotation;
+     Neil's instruction: rotate 90° to serve as up/down move controls in the
+     WML Step 8 beat rows, replacing the generic ↑ ↓ glyphs.
+     Two copies exist in the header markup per button — .spl-roll-arrow--initial
+     and .spl-roll-arrow--hover — for the roll-over transition; the path is
+     identical in both. -->
+<svg class="spl-roll-arrow" viewBox="0 0 31.1 11" width="31.1" height="11" aria-hidden="true" focusable="false"><path fill="currentColor" d="M31,0.7l-0.2-0.2C30.6,0,30-0.2,29.2,0.3L16.2,8.5c-0.3,0.2-0.5,0.3-0.6,0.4c-0.1-0.1-0.3-0.3-0.6-0.5 L1.9,0.2C1.2-0.1,0.7-0.1,0.2,0.5L0.1,0.7C0,0.8,0,1,0,1.1s0.1,0.2,0.2,0.3l15,9.5c0.1,0.1,0.2,0.1,0.3,0.1h0.2c0.1,0,0.2,0,0.3-0.1 l15-9.5c0.1-0.1,0.2-0.2,0.2-0.3S31.1,0.8,31,0.7z"></path></svg>

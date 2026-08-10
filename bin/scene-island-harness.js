@@ -202,12 +202,16 @@ section('C skin: Neil\'s arrow, and no strokes on the outside');
     /* C1 — the island's inlined chevron must stay byte-identical to Neil's registered icon.
        The island declares no script deps on purpose, so it cannot call WML.icon(); a copy is
        therefore correct, but an unwatched copy rots. This is the watch. */
-    const inlined = (/const NEIL_CHEVRON_RIGHT = '([^']+)'/.exec(jsx) || [])[1];
-    const registered = (/arrowRightBare:[^}]*?body: '<path d="([^"]+)"/.exec(core) || [])[1];
-    ok(!!inlined, 'island defines NEIL_CHEVRON_RIGHT');
-    ok(!!registered, 'wml-core registers arrowRightBare (Neil\'s Right Arrow.svg)');
-    ok(inlined && registered && inlined === registered,
-        'the island\'s arrow is BYTE-IDENTICAL to Neil\'s registered glyph — not a lookalike');
+    const asset = fs.readFileSync(path.join(ROOT, 'frontend', 'icons', 'spl-roll-arrow.svg'), 'utf8');
+    const inlined = (/const SPL_ARROW_PATH = '([^']+)'/.exec(jsx) || [])[1];
+    const fromAsset = (/<path fill="currentColor" d="([^"]+)"/.exec(asset) || [])[1];
+    ok(!!inlined, 'island defines SPL_ARROW_PATH');
+    ok(!!fromAsset, 'frontend/icons/spl-roll-arrow.svg is on disk and parses (Neil supplied it — §17b)');
+    ok(inlined && fromAsset && inlined === fromAsset,
+        'the island\'s arrow is BYTE-IDENTICAL to the SPL header asset — the arrow he actually named');
+    // he asked for the SPL arrow, so the older rounded-square glyph must not linger anywhere here
+    ok(jsx.indexOf('NEIL_CHEVRON_RIGHT') === -1, 'the superseded rounded-square chevron is gone from the island');
+    void core;
 
     /* C2 — no generic arrow glyph may come back. He rejected these by name.
        Scans RENDERED source only: prose in a comment ("beats in → placements out") is not a

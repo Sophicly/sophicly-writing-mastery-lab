@@ -21,28 +21,34 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as P from './partition.js';
 
 /**
- * NEIL'S ARROW, not a generic glyph (#204 add.21: "I don't like those generic ones").
+ * THE SPL HEADER ARROW — the one Neil actually named (#204 add.21 + the dashboard-lane handoff
+ * of the same day): *"why don't we use the arrows that we've got in the SPL header? We use those
+ * for navigation at the moment. All we have to do is just flip them ninety degrees, and they can
+ * be used as up and down arrows."*
  *
- * The `d` below is the BARE CHEVRON from his own `Right Arrow.svg`, copied byte-for-byte out of
- * the icon registry (`wml-core.js` → `WML.ICONS.arrowRightBare`) rather than redrawn. It is
- * inlined instead of called through `WML.icon()` because the island script deliberately declares
- * NO dependencies (`wp_enqueue_script('swml-scene-island', …, [], …)`) and must not start
- * assuming a global that may not be loaded yet.
+ * ⚠️ CORRECTION, stated rather than silently applied (root §13): an earlier cut of this file used
+ * his rounded-square `Left Arrow.svg` / `Right Arrow.svg`. Those are a different asset. This is
+ * `.spl-nav-arrows .spl-roll-arrow` from the LearnDash Focus header, saved to the repo at
+ * `frontend/icons/spl-roll-arrow.svg` and copied byte-for-byte here.
  *
- * ⚙️ Inlining a copy is drift bait, so `bin/scene-island-harness.js` asserts this string is
- * byte-identical to the registry's. If they ever diverge, the build fails — the copy cannot rot.
+ * ⚠️ SECOND CORRECTION, also his instruction adjusted rather than obeyed literally: the source
+ * points DOWN. So DOWN is the asset untouched and UP is `rotate(180)` — not the 90° he said,
+ * which describes the SPL header's own left/right usage of this same down-pointing glyph.
  *
- * STATED DEVIATION (root §13): he supplied LEFT and RIGHT only. Up/down are the SAME path
- * rotated, never a second glyph drawn to match — so the geometry stays his.
+ * The wide, shallow box (31.1 x 11) is why only up/down are offered: rotating a 2.8:1 chevron
+ * a quarter-turn leaves its layout box lying on its side. The "Back one element" chip therefore
+ * carries no glyph at all rather than a squashed one — its label already says what it does, and
+ * no generic arrow remains anywhere in the island.
+ *
+ * ⚙️ `bin/scene-island-harness.js` asserts this path stays byte-identical to the saved asset.
  */
-const NEIL_CHEVRON_RIGHT = 'M12,23a1,1,0,0,1-.71-1.71L17.62,15,11.33,8.71a1,1,0,0,1,0-1.42,1,1,0,0,1,1.41,0l7,7a1,1,0,0,1,0,1.42l-7,7A1,1,0,0,1,12,23Z';
-const ARROW_ROTATION = { right: 0, down: 90, left: 180, up: -90 };
-function Arrow({ dir, size }) {
-    const s = size || 13;
+const SPL_ARROW_PATH = 'M31,0.7l-0.2-0.2C30.6,0,30-0.2,29.2,0.3L16.2,8.5c-0.3,0.2-0.5,0.3-0.6,0.4c-0.1-0.1-0.3-0.3-0.6-0.5 L1.9,0.2C1.2-0.1,0.7-0.1,0.2,0.5L0.1,0.7C0,0.8,0,1,0,1.1s0.1,0.2,0.2,0.3l15,9.5c0.1,0.1,0.2,0.1,0.3,0.1h0.2c0.1,0,0.2,0,0.3-0.1 l15-9.5c0.1-0.1,0.2-0.2,0.2-0.3S31.1,0.8,31,0.7z';
+function Arrow({ dir }) {
     return (
-        <svg className={'ssi-arrow ssi-arrow-' + dir} viewBox="0 0 30 30" width={s} height={s}
-            fill="currentColor" aria-hidden="true" focusable="false">
-            <path d={NEIL_CHEVRON_RIGHT} transform={`rotate(${ARROW_ROTATION[dir]} 15 15)`} />
+        <svg className={'ssi-arrow ssi-arrow-' + dir} viewBox="0 0 31.1 11" width="14" height="5"
+            aria-hidden="true" focusable="false"
+            style={dir === 'up' ? { transform: 'rotate(180deg)' } : undefined}>
+            <path fill="currentColor" d={SPL_ARROW_PATH} />
         </svg>
     );
 }
@@ -92,7 +98,7 @@ function AskPanel({ elm, ask, remaining, mapNode, onAddMoment, onBack }) {
                     ? <button type="button" className="chip-btn" onClick={() => setFormOpen(true)}>My run has no {elm.label} — I’ll add the moment now</button>
                     : null}
                 {ask > 0
-                    ? <button type="button" className="chip-btn" onClick={onBack}><Arrow dir="left" /> Back one element</button>
+                    ? <button type="button" className="chip-btn" onClick={onBack}>Back one element</button>
                     : null}
             </div>
             <AddForm show={formOpen || remaining === 0}

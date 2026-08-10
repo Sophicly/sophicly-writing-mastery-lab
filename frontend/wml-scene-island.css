@@ -202,6 +202,8 @@ body[data-swml-theme="light"] .swml-scene-island {
   font-family:ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   font-size:10px; font-weight:600; color:var(--faint);
   font-variant-numeric:tabular-nums; margin-right:6px; letter-spacing:0;
+  /* §9b: #9 and #10 must not shunt the label sideways — one column, tabular figures */
+  display:inline-block; min-width:20px;
 }
 .swml-scene-island .beat-card.is-sel .ord { color:var(--teal); }
 .swml-scene-island .beat-card.is-sel .tick { background:var(--teal); border-color:var(--teal); }
@@ -275,7 +277,22 @@ body[data-swml-theme="light"] .swml-scene-island {
   margin-left:auto; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
   color:var(--faint); white-space:nowrap;
 }
-.swml-scene-island .p3-row { display:flex; gap:12px; padding:9px 16px; border-top:1px solid var(--line); font-size:13px; align-items:baseline; }
+/* ⭐⭐ ALIGNMENT (BRAND.md §9b, Neil 2026-08-10: "they're all different lengths… it forces the
+   user to look all over the place"). The label was an inline run, so the DATA decided where each
+   beat's prose began. It is now a FIXED-WIDTH COLUMN that wraps inside itself.
+   The width is measured, not guessed: the 8 plot templates hold 881 beat rows / 239 unique
+   labels — median 43 characters, max 69 ("Protagonist comes back from dead; one last attempt to
+   destroy monster"). A one-line column for 69 tracked-caps characters would be ~480px and eat
+   the prose, so the column is 200px and the longest labels wrap to three lines. Every row's text
+   starts on the same vertical line: drag a guide down it and it never crosses a label.
+   Columns: grip · label · prose · controls. */
+.swml-scene-island .p3-row {
+  display:grid; grid-template-columns:18px 200px 1fr auto; gap:12px;
+  padding:9px 16px; border-top:1px solid var(--line); font-size:13px; align-items:baseline;
+}
+.swml-scene-island .p3-row .b-label { overflow-wrap:anywhere; }
+/* an added moment has no grip, so it starts in the LABEL column rather than sliding left */
+.swml-scene-island .p3-row.new .b-label { grid-column:2; }
 .swml-scene-island .p3-row .b-label { font-size:10px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; }
 .swml-scene-island .p3-row .b-text { display:block; color:var(--ink); }
 .swml-scene-island .p3-row.new .b-label { color:var(--teal); }
@@ -360,6 +377,8 @@ body[data-swml-theme="light"] .swml-scene-island {
 .swml-scene-island .row-move {
   background:none; border:none; border-radius:6px; color:var(--muted2);
   cursor:pointer; font:inherit; font-size:11px; line-height:1; padding:5px 9px;
+  /* iPad-first screen: never below a 28px tap target */
+  min-width:28px; min-height:28px; display:inline-flex; align-items:center; justify-content:center;
   transition:color .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
 }
 .swml-scene-island .row-move:hover { color:var(--btn-ink); background:var(--teal); }

@@ -11877,6 +11877,67 @@
         }
     }
 
+    /**
+     * v7.20.500 (#204 add.21) — SCENE OVERVIEW gains a real outline row, so every document
+     * saved before this build has to be brought up to the new shape (the baked-scaffold law:
+     * outline shape is BAKED into the saved doc, so a scaffold change needs an on-load heal).
+     *
+     * Deliberately ADDITIVE and narrow. The IUMVCC heal rebuilds whole sections because its
+     * criteria are re-baked; here exactly one row is missing, so it is inserted in place and
+     * nothing else in the document is touched — the smallest change that holds.
+     *
+     * ⭐ It CARRIES anything the student already typed into the anonymous paragraph the row
+     * replaces. That paragraph is where the old build asked for the description in prose, so
+     * on a document that used it, dropping it would delete real writing to fix a shape bug.
+     */
+    function _healCw9SceneOverviewRow(editor) {
+        try {
+            if (!editor || !editor.state || !editor.commands) return;
+            if (state.reviewMode) return;                       // tutors see the stored doc as-is
+            const html = editor.getHTML();
+            if (!html || html.indexOf('cw-step-8-plot-position') === -1) return;   // not a Step 8/9 doc
+            if (html.indexOf('cw-step-8-extract-description') !== -1) return;      // already current
+
+            const box = document.createElement('div');
+            box.innerHTML = html;
+            const posRow = box.querySelector('[data-field-id="cw-step-8-plot-position"]');
+            if (!posRow) return;
+            const sec = posRow.closest('[data-section-block], .swml-section-block') || posRow.parentElement;
+            if (!sec) return;
+
+            const fresh = outlineRowHTML({ id: 'extract-description', label: 'Scene Overview', prompt: 'Describe the extract from your story in more detail, including the dramatic situations.' }, 'cw-step-8-extract-description');
+            if (!fresh || fresh.indexOf('cw-step-8-extract-description') === -1) {
+                console.warn('[WML cw9] Scene Overview heal ABORTED — the builder produced no row. Doc untouched.');
+                return;
+            }
+
+            // Carry the old prose. The pre-.500 shape was a <strong> prompt paragraph followed by
+            // a bare <p> for the answer; anything in that <p> is the student's own writing.
+            let carried = '';
+            const ps = Array.from(sec.querySelectorAll('p'));
+            const promptIdx = ps.findIndex((p) => /Describe the extract from your story/i.test(p.textContent || ''));
+            const answerP = promptIdx >= 0 ? ps[promptIdx + 1] : null;
+            if (answerP && (answerP.textContent || '').trim()) carried = answerP.innerHTML;
+
+            const freshBox = document.createElement('div');
+            freshBox.innerHTML = fresh;
+            const freshRow = freshBox.querySelector('[data-field-id="cw-step-8-extract-description"]');
+            if (carried && freshRow) freshRow.innerHTML = carried;
+
+            posRow.insertAdjacentHTML('afterend', freshBox.innerHTML);
+            if (promptIdx >= 0) { ps[promptIdx].remove(); if (answerP) answerP.remove(); }
+
+            _migrationActive = true;
+            try { editor.commands.setContent(box.innerHTML, false); }
+            finally { _migrationActive = false; }
+            console.log('[WML cw9] SCENE-OVERVIEW HEAL: added cw-step-8-extract-description'
+                + (carried ? ' and carried the student’s existing description into it.' : '.'));
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('[WML cw9] Scene Overview heal failed (doc untouched)', e && e.message);
+        }
+    }
+
     // Orchestrator — ONE entry point so ordering is fixed: shape first (creates the
     // fields), then the additive heals, then the sibling merge (needs the fields),
     // then the poem cards. Every pass is idempotent; safe to call repeatedly.
@@ -16258,6 +16319,13 @@
             // once the walk has started.
             if (state.task === 'cw_step_8' && _cwPlotValuesCtl.active && _inboundIsAnswer) {
                 await _cwPlotValuesCtl.handleTurn(msg);
+                return;
+            }
+            // v7.20.500: CW Step 9 (Scene Selection) — the walk is zero-API except for ONE typed
+            // ask, the Scene Overview, so `active` is true ONLY while that ask is outstanding.
+            // Every other turn in this step falls through to the AI exactly as before.
+            if (state.task === 'cw_step_9' && _cw9SceneCtl.active && _inboundIsAnswer) {
+                await _cw9SceneCtl.handleTurn(msg);
                 return;
             }
 
@@ -25936,6 +26004,10 @@
             let lastSnapshot = null;
             let saveTimer = null;
             let pendingConflicts = [];
+            // v7.20.500: the walk now owns ONE typed ask (the Scene Overview), so it can no
+            // longer declare `active: false` by construction — while this is true the student's
+            // typed turn belongs to us, not to the AI.
+            let askActive = false;
 
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
@@ -25946,6 +26018,15 @@
             // Present-state notices (gates, drop warnings, conflict asks) are EPHEMERAL —
             // drawn, never stored (the v7.20.284 prereq-gate lesson): they re-derive on entry.
             function noteBubble(plain) { addChatMessage(formatAI(plain), 'ai', plain); }
+            // v7.20.500: this walk owns a typed ask now, so it needs the two send-side helpers
+            // every other walk closure defines for itself. Copied from _cwPlotValuesCtl (the
+            // sibling at :25296) rather than re-derived — same contract, same durability `why`.
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function userTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
             function rowText(fid) {
                 let out = '';
                 try {
@@ -26116,7 +26197,31 @@
             // LIVENESS (§4d): after any entry/resume/close there is ALWAYS a chip on screen.
             function ensureChip() {
                 const done = !!(lastSnapshot && lastSnapshot.transferred);
+                // v7.20.500: once the scene is filed, the walk still OWES the Scene Overview.
+                // Offering only "reopen the picker" is what let it be skipped — the way forward
+                // has to point at the thing that is actually next (§4d liveness is "a way
+                // FORWARD on screen", not merely "a button on screen").
+                if (transferDone() && !overviewDone()) {
+                    return chipBar([
+                        { label: 'Write my Scene Overview', go: serveOverviewAsk },
+                        { svg: SCENE_ICON, label: 'Reopen scene selection', go: open },
+                    ]);
+                }
                 return chipBar([{ svg: SCENE_ICON, label: done ? 'Reopen scene selection' : 'Choose my scene', go: open }]);
+            }
+            // Transfer is doc-derived, never session-derived: a reload loses lastSnapshot, and
+            // the filed rows are the honest record of whether it happened.
+            function transferDone() {
+                if (lastSnapshot && lastSnapshot.transferred) return true;
+                return ELEMENTS.some(function (e) {
+                    const fid = 'cw-step-8-' + e.id;   // built, never read as a bare prefix (§5d)
+                    return !!rowText(fid);
+                });
+            }
+            // Conflicts settled → the overview is what comes next, in order.
+            function afterConflicts() {
+                if (transferDone() && !overviewDone()) { serveOverviewAsk(); return; }
+                ensureChip();
             }
 
             // ⭐ PROGRESSIVE, ONE BUBBLE AT A TIME (Neil, 2026-08-10, on the .494 first screen:
@@ -26231,7 +26336,7 @@
                     onClose: function () {
                         opened = false;
                         if (pendingConflicts.length) serveNextConflict(pid);
-                        else ensureChip();
+                        else afterConflicts();
                     },
                 });
             }
@@ -26281,6 +26386,9 @@
                     if (filedEls.length) parts.push('I’ve filed your scene into the Scene Structure — ' + beatTotal + ' beat' + (beatTotal === 1 ? '' : 's') + (addTotal ? ' plus ' + addTotal + ' added moment' + (addTotal === 1 ? '' : 's') : '') + ', in story order, in your own words. Your plot outline is untouched.');
                     if (pendingConflicts.length) parts.push('You’ve edited ' + pendingConflicts.length + ' element' + (pendingConflicts.length === 1 ? '' : 's') + ' since the last transfer — I’ll check those with you one at a time when you close the picker, so nothing of yours is overwritten.');
                     if (parts.length) aiBubble(parts.join('\n\n'));
+                    // IN ORDER (his words): the overview follows the transfer. When elements are
+                    // contested the conflict walk runs first and hands over via afterConflicts().
+                    if (!pendingConflicts.length && !overviewDone()) setTimeout(serveOverviewAsk, 400);
                     return true;
                 } catch (e) {
                     console.error('WML CW9: transfer failed —', e && e.message);
@@ -26289,10 +26397,93 @@
                 }
             }
 
+            // ══════════════════════════════════════════════════════════════════════════════════
+            // THE SCENE OVERVIEW ASK (#204 add.21 — Neil: "somehow I've managed to skip the scene
+            // overview… the structure of the walk has allowed me to skip it. It shouldn't do
+            // that. It should go in order.")
+            //
+            // It comes AFTER the transfer because the description is OF the extract just chosen —
+            // asking first would be asking about a scene that does not exist yet.
+            //
+            // Built to the ask template (§4c): criteria upfront · ONE worked example INLINE
+            // (rung 0 of the help ladder) · more examples a free chip away · ends ON the question.
+            // Zero API: the student's words are filed verbatim, never judged — this is a capture,
+            // not a Socratic turn, so there is nothing here worth an API call.
+            // ══════════════════════════════════════════════════════════════════════════════════
+            const OVERVIEW_FID = 'cw-step-8-extract-description';
+            const OVERVIEW_ASK = 'One last thing before you write — the **Scene Overview**.\n\n'
+                + 'Your Scene Structure now holds the beats. The overview is the paragraph that says what this extract actually IS, so anyone reading your plan knows the situation before they read the beats.\n\n'
+                + 'A strong overview says:\n'
+                + '• **Where we are** — the place, and roughly when.\n'
+                + '• **Who is in it**, and what they want right now.\n'
+                + '• **The dramatic situation** — the pressure in the scene: what could go wrong, what is at stake.\n\n'
+                + 'Here’s one, for a scene where a girl walks the long way to school to avoid the asylum her mother is in:\n\n'
+                + '> *A weekday morning on the walk to school. The shortcut runs past the asylum, so she takes the long route with her hood up — she wants to get through the day unnoticed. When she sees a boy her own age being arrested by the sentinels, he looks straight at her for help, and she has to decide in a second whether to be someone who stops.*\n\n'
+                + 'Now write yours. A short paragraph is plenty — rough is fine, you can polish it later.';
+            const OVERVIEW_MORE = 'Two more, so you can see the range:\n\n'
+                + '> *Late evening, the family kitchen. Her father tries to talk to her for the first time in weeks; she wants him to stop before he says her mother’s name. Everything they have left depends on how this one conversation ends.*\n\n'
+                + '> *The school corridor at breaktime, the day after the arrest. She wants to act normal, but a friend asks her outright what she saw — and lying will cost her the one person who still trusts her.*\n\n'
+                + 'Notice both do the same three jobs: **place** · **who wants what** · **the pressure**.';
+
+            // ANSWERED is doc-derived (the row holds text); ASKED is transcript-derived. They are
+            // different questions and the resume path needs both: asked-but-unanswered is the one
+            // state where the question is already on screen and only the SLOT needs re-arming.
+            function overviewDone() { return !!rowText(OVERVIEW_FID); }
+            function _overviewAsked() {
+                const h = Array.isArray(canvasChatHistory) ? canvasChatHistory : [];
+                const sig = OVERVIEW_ASK.slice(0, 80);
+                return h.some(function (m) { return m && m.role === 'assistant' && String(m.content || '').indexOf(sig) === 0; });
+            }
+
+            function serveOverviewAsk() {
+                if (overviewDone()) { ensureChip(); return; }
+                askActive = true;
+                aiBubble(OVERVIEW_ASK);
+                _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' });
+                // The ask ends on the question; the chips are the free help rungs BELOW it, and
+                // never a way to skip past it (§4c.9 — Sophia is the last rung and this ask is
+                // zero-API, so there is no Sophia rung to reach for at all).
+                chipBar([
+                    { label: '💡 More examples', go: function () { aiBubble(OVERVIEW_MORE); _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' }); overviewChips(); } },
+                    { label: '🗂 Reopen my scene', go: open },
+                ]);
+            }
+            function overviewChips() {
+                chipBar([{ label: '🗂 Reopen my scene', go: open }]);
+            }
+
+            // A `rewrite` ask (§4c.6): the overview is ONE self-contained artefact, so a second
+            // attempt REPLACES the first — accumulating would stitch two drafts into one box,
+            // which is the .289 bug.
+            async function handleTurn(msg) {
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                const slot = _walkSlot.consume('cw9');
+                if (!slot) {
+                    _cwNoAskGuard('cw9', function () { serveOverviewAsk(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
+                userTurn(clean);
+                try {
+                    _writeOutlineRowField(slot.fid, clean, { replace: true });
+                    save();
+                } catch (e) {
+                    console.warn('WML CW9: overview write failed for ' + slot.fid + ' —', e && e.message);
+                    noteBubble('Something went wrong saving that — nothing was lost. Try sending it once more.');
+                    _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' });
+                    overviewChips();
+                    return;
+                }
+                askActive = false;
+                aiBubble('Filed into your **Scene Overview**, in your own words.\n\nYour scene is chosen, shaped and described — that is the whole plan for the piece you will write.');
+                ensureChip();
+            }
+
             // Serial keep-vs-replace (§18: one item, one decision, then the next).
             function serveNextConflict(pid) {
                 const c = pendingConflicts.shift();
-                if (!c) { ensureChip(); return; }
+                if (!c) { afterConflicts(); return; }
                 const elm = ELEMENTS.filter(function (e) { return e.id === c.id; })[0];
                 noteBubble('**' + (elm ? elm.label : c.id) + '** — you’ve edited this element in the document since the last transfer. Keep your edited version, or replace it with your new selection?');
                 chipBar([
@@ -26321,19 +26512,27 @@
                 const at = introProgress();
                 if (at === -1) { introServed = false; start(); return true; }
                 if (at < INTRO.length) return chipBar([{ label: 'Continue →', go: function () { serveIntroFrom(at); } }]);
+                // v7.20.500: an unanswered Scene Overview is re-ARMED on resume. The bubble
+                // replays from the durable transcript, but the slot is session state — without
+                // this the student sees the question and their answer goes to the AI instead of
+                // the row (the §4d "the screen responded but nothing was filed" shape).
+                if (transferDone() && !overviewDone()) {
+                    if (_overviewAsked()) { askActive = true; _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' }); return overviewChips(); }
+                    return ensureChip();
+                }
                 return ensureChip();
             }
 
             return {
-                // No typed asks — the walk never owns the send pipeline, so `active` stays
-                // false by construction and the provenance gates skip it.
-                get active() { return false; },
+                // v7.20.500: ONE typed ask (the Scene Overview). `active` is true only while it
+                // is outstanding, so every other turn in this step still goes to the AI.
+                get active() { return askActive; },
                 get pending() { return false; },
+                handleTurn: handleTurn,
                 atStart: function () { return introProgress() === -1; },
                 start: start,
                 forceStart: function () { introServed = false; start(); },
-                reset: function () { introServed = false; opened = false; lastSnapshot = null; pendingConflicts = []; try { window.WMLSceneIsland && window.WMLSceneIsland.unmount(); } catch (e) {} },
-                handleTurn: async function () { /* no typed asks — free text goes to the AI */ },
+                reset: function () { introServed = false; opened = false; lastSnapshot = null; pendingConflicts = []; askActive = false; _walkSlot.clear('cw9'); try { window.WMLSceneIsland && window.WMLSceneIsland.unmount(); } catch (e) {} },
                 onReply: function () { /* zero-API walk: no markers to detect */ },
                 nudge: function () { return ensureChip(); },
                 tryResume: tryResume,
@@ -40837,6 +41036,12 @@
                 // server setContent replacing the first-pass doc.
                 setTimeout(() => { try { _healStrayResponseProse(); } catch (_) {} }, 2000);
                 setTimeout(() => { try { _healStrayResponseProse(); } catch (_) {} }, 4000);
+                // v7.20.500 (#204 add.21): Scene Overview gains a real outline row — same
+                // staggered/idempotent shape, self-gating (no-op on any doc without the Step 8/9
+                // plot-position row, and on any doc already carrying the new row). Second pass
+                // covers the async server setContent replacing the first-pass doc.
+                setTimeout(() => { try { _healCw9SceneOverviewRow(editor); } catch (_) {} }, 1800);
+                setTimeout(() => { try { _healCw9SceneOverviewRow(editor); } catch (_) {} }, 3800);
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
@@ -45714,7 +45919,12 @@
             html += sectionHTML('plan', 'Scene Overview', true, null,
                 '<h3>Scene Overview</h3>' +
                 outlineRowHTML({ id: 'plot-position', label: 'Part of the Plot', type: 'dropdown', items: ['Beginning (Stages I\u2013II)', 'Middle (Stages III\u2013IV)', 'End (Stages V\u2013VI)'], prompt: 'This extract is from the following part of the plot:' }, 'cw-step-8-plot-position') +
-                '<p><strong>Describe the extract from your story in more detail, including dramatic situations:</strong></p><p></p>'
+                // v7.20.500 (#204 add.21): this was a bare <p> with no fieldId \u2014 which is WHY the
+                // walk could skip it (Neil: "the structure of the walk has allowed me to skip it").
+                // Nothing can gate on, file into, or resume an anonymous paragraph. As a real row it
+                // is addressable like the seven Scene Structure elements. Existing docs are brought
+                // up to this shape by _healCw9SceneOverviewRow (the baked-scaffold law).
+                outlineRowHTML({ id: 'extract-description', label: 'Scene Overview', prompt: 'Describe the extract from your story in more detail, including the dramatic situations.' }, 'cw-step-8-extract-description')
             );
             html += dividerHTML('SCENE STRUCTURE');
             html += sectionHTML('plan', 'Scene Structure', true, null,

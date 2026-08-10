@@ -280,11 +280,13 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     // All six CW arms gate on it. The quiz arms deliberately do NOT: an MSQ/FQ answer chip IS the
     // student's answer, so the flag must not reach them.
     // v7.20.491: EIGHT arms — Step 8 (_cwPlotValuesCtl, the trait-first plot update) joined.
+    // v7.20.500: NINE — Step 9 (_cw9SceneCtl) gained its first typed ask, the Scene Overview, so
+    // it now owns the send pipeline while that ask is outstanding and must gate like the rest.
     // This count is deliberately exact rather than `>= 6`: a NEW walk that forgets
     // `_inboundIsAnswer` would file its own chip taps as student answers, and an inequality
     // would let it through silently.
     const armed = (JS.match(/state\.task === 'cw_step_\d' && _cw\w+Ctl\.active && _inboundIsAnswer/g) || []).length;
-    ok(armed === 8, `expected all 8 CW walk arms to require _inboundIsAnswer, found ${armed}`);
+    ok(armed === 9, `expected all 9 CW walk arms to require _inboundIsAnswer, found ${armed}`);
     ok(/if \(_inboundIsAnswer && _cwWalkActive\(\)\) \{[\s\S]{0,160}?chatTextarea\.value = '';/.test(JS),
         'a walk turn does not clear the chat input — the six arms return before the shared clear, so '
         + 'the text stays in the box and the next dictation appends to it (v7.20.329)');
