@@ -3897,6 +3897,22 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
+/* ── My Values (v7.20.493, #365) — the student's own Step-7 audit in the shared shell.
+      Trait rows nest under the value's uppercase label; the condition sits as a quiet badge
+      (same voice as .swml-cw7-here); unexplored traits collapse to one muted line. Colours
+      inherit from the panel, so light/dark needs no second declaration. ── */
+.swml-mv-trait { margin: 0 0 10px; }
+.swml-mv-trait:last-child { margin-bottom: 0; }
+.swml-mv-trait-head { font-size: 13px; font-weight: 600; }
+.swml-mv-cond {
+    margin-left: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.65;
+}
+.swml-mv-muted { opacity: 0.55; font-style: italic; font-size: 13px; }
 /* ── Neumorphic resource link buttons inside panel (v7.13.52) ── */
 .swml-resources-panel .swml-cw-resource-btn {
     display: flex !important;

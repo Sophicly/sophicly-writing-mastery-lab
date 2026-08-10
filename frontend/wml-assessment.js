@@ -25394,6 +25394,13 @@
                         },
                     }));
                 }
+                // v7.20.493 (#365): their WHOLE audit in the rail panel — same open-the-trigger
+                // shape as Story Components below (the is-active guard stops a re-tap toggling
+                // the panel shut).
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'My values', icon: WML.icon('values', 15),
+                    onClick: function () { try { var t = document.querySelector('.swml-mv-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'Story Components', icon: WML.icon('components', 15),
                     onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
@@ -27741,6 +27748,7 @@
         let wpPanel = null, wpTrigger = null, resTrigger = null; // v7.19.474: Writer's Profile panel (forward refs for mutual-exclusivity)
         let scTrigger = null, ssTrigger = null; // v7.20.291/.292: Story Components + Story Spine — extra triggers on the SAME panel shell
         let rvTrigger = null; // v7.20.410 (#207): "Coming back to" — a FOURTH trigger on that same shell
+        let mvTrigger = null; // v7.20.493 (#365): "My Values" — the student's own Step-7 audit, a FIFTH trigger
         if (cwPanelRes && cwPanelRes.length > 0) {
             // Books, not a chain link: this trigger opens the Creative Writing Reference Guide,
             // so the icon now says what it IS rather than that it is a link.
@@ -27770,7 +27778,7 @@
                         try { toggleOutlinePanel(false); } catch (_) {}
                         if (wpPanel) {
                             wpPanel.classList.remove('swml-resources-open');
-                            [wpTrigger, scTrigger, ssTrigger, rvTrigger].forEach((t) => { if (t) t.classList.remove('is-active'); });
+                            [wpTrigger, scTrigger, ssTrigger, rvTrigger, mvTrigger].forEach((t) => { if (t) t.classList.remove('is-active'); });
                         }
                         showGuidePanel();
                         return;
@@ -27785,7 +27793,7 @@
                     // so they overlapped in the shared dock slot).
                     if (isOpen) {
                         try { toggleOutlinePanel(false); } catch (_) {}
-                        if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); if (rvTrigger) rvTrigger.classList.remove('is-active'); }
+                        if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); if (rvTrigger) rvTrigger.classList.remove('is-active'); if (mvTrigger) mvTrigger.classList.remove('is-active'); }
                         // v7.20.318: and every rail panel this scope holds no reference to
                         // (Previous Assessments). Class-based, so a future panel is covered too.
                         _closeOtherRailPanels(resPanel);
@@ -27908,6 +27916,7 @@
             const SVG_SPINE = WML.icon('spine', 16);   // v7.20.363: from the ONE icon registry (WML.ICONS) — Neil supplied the glyph.
             const SVG_COMPONENTS = WML.icon('components', 16);   // v7.20.364: Neil's puzzle glyph, from the ONE icon registry
             const SVG_REVISIT = WML.icon('revisit', 16);   // v7.20.410 (#207): the flag, same ONE registry
+            const SVG_VALUES = WML.icon('values', 16);   // v7.20.493 (#365): the heart, same ONE registry
             // Swap content with a short opacity fade-in so async loads + refreshes settle
             // smoothly rather than popping in.
             const _setWpBody = (bodyEl, html) => {
@@ -28048,6 +28057,79 @@
                 });
             };
 
+            // ⭐ v7.20.493 (#365) — MY VALUES: the student's OWN Step-7 audit, readable beside the
+            // work on every CW step (Neil, while praising .492: "a panel with the student's own
+            // traits and values from step seven… in the rail maybe"). The display side of the
+            // paste-wall law — the system already holds their audit, so keep it next to the beat
+            // they are writing. SIBLING of the #276 traitExamples mode: canon teaching cards
+            // there, THEIR audit here — separate modes, different jobs, one shell.
+            // The body: flagged traits grouped under their value — the condition they chose plus
+            // THEIR OWN words — and each value's unexplored traits collapsed to ONE muted line
+            // ("Not explored", the audit's own choice label). Deliberately NOT a full 23-row grid
+            // of every trait: the muted rows would bury the handful the student actually flagged,
+            // and their material is the point of the panel.
+            const _myValuesHTML = function (roster) {
+                const real = function (x) { return CW7_STATES.indexOf(x) !== -1; };
+                let html = '';
+                CW7_VALUES.forEach(function (v) {
+                    const mine = roster.filter(function (r) { return r.value.id === v.id; });
+                    if (!mine.length) {
+                        html += '<div class="swml-wp-item"><div class="swml-wp-item-label">' + _scEsc(v.name)
+                            + '</div><div class="swml-wp-item-text swml-mv-muted">Not explored.</div></div>';
+                        return;
+                    }
+                    const rest = v.traits.filter(function (t) {
+                        return !mine.some(function (r) { return r.trait === t; });
+                    }).map(function (t) { return _scEsc(_cw7TraitLabel(t)); });
+                    html += '<div class="swml-wp-item"><div class="swml-wp-item-label">' + _scEsc(v.name) + '</div>';
+                    mine.forEach(function (r) {
+                        // The condition line mirrors the walk's own condLine cases: a real
+                        // begin→end journey, the build list, or the single sitting they chose.
+                        const cond = (real(r.begin) && real(r.end) && r.begin !== r.end)
+                            ? r.begin + ' → ' + r.end
+                            : (r.wanted && !real(r.begin) && !real(r.end)) ? 'On your build list' : r.cond;
+                        html += '<div class="swml-mv-trait"><div class="swml-mv-trait-head">'
+                            + _scEsc(_cw7TraitLabel(r.trait))
+                            + '<span class="swml-mv-cond">' + _scEsc(cond) + '</span></div>'
+                            + (r.said ? '<div class="swml-wp-item-text">' + _scEsc(r.said) + '</div>' : '')
+                            + '</div>';
+                    });
+                    if (rest.length) html += '<div class="swml-wp-item-text swml-mv-muted">Not explored: ' + rest.join(', ') + '</div>';
+                    html += '</div>';
+                });
+                return html;
+            };
+            const _loadMyValuesPanel = function (bodyEl) {
+                const pid = state.cwProjectId;
+                if (!pid) {
+                    _setWpBody(bodyEl, '<p class="swml-wp-empty">Open a Creative Writing project to see your values audit.</p>');
+                    return;
+                }
+                if (!bodyEl._wpHasContent) _setWpBody(bodyEl, '<p class="swml-wp-empty">Loading your values…</p>');
+                const emptyState = '<p class="swml-wp-empty">Nothing recorded yet — your protagonist’s values are '
+                    + 'audited in <strong>Step 7 — Universal Human Values</strong>. Everything you record there '
+                    + 'will appear here, beside every later step.</p>';
+                // On Step 7 the audit lives in the open editor — read it live so just-ticked
+                // traits show immediately (the saved artifact lags behind autosave; the same rule
+                // as the profile panel's Step-1 live read). On later steps, the saved artifact.
+                // NOT the [CONTEXT FROM PREVIOUS STEP] prime the cw8 walk prefers: the prime is a
+                // snapshot taken at step open, the artifact is the durable source, and a panel is
+                // async-fine — the walk only prefers the prime because it needs a sync path.
+                const rawP = (state.task === 'cw_step_7' && canvasEditor)
+                    ? Promise.resolve(canvasEditor.getHTML())
+                    : WML.cwProject.loadArtifact(pid, 'universal_values').then(function (a) {
+                        return (a && a.success && typeof a.value === 'string') ? a.value : '';
+                    });
+                rawP.then(function (raw) {
+                    const roster = raw ? _cw8ParseValuesAudit(raw) : [];
+                    if (!roster.length) { _setWpBody(bodyEl, emptyState); bodyEl._wpHasContent = false; return; }
+                    _setWpBody(bodyEl, _myValuesHTML(roster));
+                    bodyEl._wpHasContent = true;
+                }).catch(function () {
+                    _setWpBody(bodyEl, '<p class="swml-wp-empty">Couldn’t load your values audit right now.</p>');
+                });
+            };
+
             wpPanel = el('div', { className: 'swml-outline-panel swml-resources-panel swml-wp-panel' });
             const wpGrip = el('div', { className: 'swml-outline-grip' });
             wpGrip.innerHTML = '<span class="swml-outline-grip-dots">⠷</span>';
@@ -28067,6 +28149,7 @@
                     if (scTrigger) scTrigger.classList.remove('is-active'); // v7.20.291/.292: all three triggers share this shell
                     if (ssTrigger) ssTrigger.classList.remove('is-active');
                     if (rvTrigger) rvTrigger.classList.remove('is-active'); // v7.20.410 (#207): four now
+                    if (mvTrigger) mvTrigger.classList.remove('is-active'); // v7.20.493 (#365): five now
                     // v7.20.319b: fade-then-dock moved into _wireRailPanel — one close for all four.
                 }
             });
@@ -28165,6 +28248,10 @@
                     _setWpBody(wpBody, _revisitListHTML());
                     wpBody._wpHasContent = true;
                 } },
+                // ⭐ v7.20.493 (#365) — My Values: the student's own Step-7 audit. Its own rail
+                // button (like revisit, not anchorOnly): "what did I say about my protagonist's
+                // values?" must be answerable from anywhere, on every CW step.
+                myValues:   { title: 'My Values',         note: false, load: function () { _loadMyValuesPanel(wpBody); } },
             };
             // Rebuilds the list IN PLACE if (and only if) it is the mode currently on screen.
             // Called after any flag change so the panel can never show a stale list; never opens
@@ -28282,6 +28369,7 @@
                 // 'examples' has no rail button of its own; anchor it where Story Spine sits so the
                 // panel opens in the place the student already knows, never off-screen.
                 if (mode === 'revisit') return rvTrigger;   // v7.20.410 (#207): its own rail button
+                if (mode === 'myValues') return mvTrigger;  // v7.20.493 (#365): its own rail button too
                 // v7.20.441 (#276): 'traitExamples' borrows the same anchor as 'examples' — it is
                 // the same gesture (open the depth panel for the thing I am working on) and the
                 // student already knows where that panel appears.
@@ -28324,7 +28412,7 @@
                 return true;
             };
             function _wpClearTriggers() {
-                [wpTrigger, scTrigger, ssTrigger, rvTrigger].forEach(function (t) { if (t) t.classList.remove('is-active'); });
+                [wpTrigger, scTrigger, ssTrigger, rvTrigger, mvTrigger].forEach(function (t) { if (t) t.classList.remove('is-active'); });
             }
             function _openWpMode(mode) {
                 const cfg = WP_MODES[mode] || WP_MODES.profile;
@@ -28387,6 +28475,17 @@
             });
             btnColumn.appendChild(ssTrigger);
 
+            // v7.20.493 (#365) — My Values: the student's own Step-7 audit. Sits after Story
+            // Spine because the rail reads in step order (components = Step 3, spine = Step 4,
+            // values = Step 7).
+            mvTrigger = el('button', {
+                className: 'swml-outline-btn swml-mv-trigger',
+                'data-tooltip': 'My Values', 'data-tooltip-pos': 'right',
+                'aria-label': 'My Values — your Step 7 audit', innerHTML: SVG_VALUES,
+                onClick: (e) => { e.stopPropagation(); _openWpMode('myValues'); }
+            });
+            btnColumn.appendChild(mvTrigger);
+
             // v7.20.410 (#207) — "Coming back to": every beat the student flagged, click to jump.
             // Its own rail button (unlike the beat-examples mode) because the question "what did I
             // flag?" has to be answerable from anywhere in the document.
@@ -28418,13 +28517,16 @@
                 // the "Coming back to" rail button counts as a click OUTSIDE the panel, so the
                 // handler closes the panel that the button had just opened — the exact defect the
                 // .291 note above records for Story Components.
-                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger, .swml-sc-trigger, .swml-ss-trigger, .swml-rv-trigger')) return;
+                // v7.20.493 (#365): `.swml-mv-trigger` MUST be in this list too — same defect
+                // class as the .291/.410 notes above.
+                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger, .swml-sc-trigger, .swml-ss-trigger, .swml-rv-trigger, .swml-mv-trigger')) return;
                 if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return; // v7.19.951: widgets live in in-flow control rows now (+ body-portaled popovers)
                 wpPanel.classList.remove('swml-resources-open');
                 wpTrigger.classList.remove('is-active');
                 if (scTrigger) scTrigger.classList.remove('is-active');
                 if (ssTrigger) ssTrigger.classList.remove('is-active');
                 if (rvTrigger) rvTrigger.classList.remove('is-active');
+                if (mvTrigger) mvTrigger.classList.remove('is-active');
             });
         }
 
@@ -28907,7 +29009,7 @@
             if (outlineOpen) {
                 // v7.19.476: mutually exclusive with the resources + Writer's Profile panels
                 if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
-                if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); if (rvTrigger) rvTrigger.classList.remove('is-active'); }
+                if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); if (scTrigger) scTrigger.classList.remove('is-active'); if (ssTrigger) ssTrigger.classList.remove('is-active'); if (rvTrigger) rvTrigger.classList.remove('is-active'); if (mvTrigger) mvTrigger.classList.remove('is-active'); }
                 // v7.20.318: + any rail panel this scope has no reference to (Previous Assessments).
                 _closeOtherRailPanels(outlinePanel);
                 outlineBtn.classList.add('is-active');   // the sweep above clears all triggers
