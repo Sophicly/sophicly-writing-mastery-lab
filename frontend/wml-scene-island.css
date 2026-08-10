@@ -23,7 +23,10 @@
 .swml-scene-island {
   /* canvas surface ladder */
   --ground:#1b1c1f; --surface:#232427; --surface2:#2b2c2f; --surface3:#333437;
-  --ink:#e0e0ee; --muted2:#9da5b4; --faint:rgba(224,224,238,.42);
+  /* --faint was .42 = 3.38:1 on the ground — below the 4.5 floor (DESIGN.md §3) at every one of
+     its 15 sites. Hierarchy is carried by SIZE/tracking/weight, never by illegibility. */
+  --ink:#e0e0ee; --muted2:#9da5b4; --faint:rgba(224,224,238,.58);
+  --halo:rgba(81,218,207,.42);
   --line:rgba(255,255,255,.07); --line-strong:rgba(255,255,255,.14);
   /* brand roles */
   --teal:#51dacf; --teal-deep:#41aaa8; --teal-tint:rgba(81,218,207,.10);
@@ -40,11 +43,26 @@
   -webkit-font-smoothing:antialiased;
   overscroll-behavior:contain;
 }
+/* ⭐ LIGHT THEME — the ACCENT tokens must be overridden too, not just the surface ladder
+   (#204 add.20, Neil: "not too much of a fan of the teal in light theme… too much clashing
+   going on with the white"). He was right and the cause was structural: this block used to
+   override only ground/ink/line, so --teal #51dacf, --done #1CD991 and --warn #F1C40F — all
+   chosen to sit on a #1b1c1f ground — were being painted as TEXT on white at 1.5–1.9:1.
+
+   DESIGN.md §ICON CHROME states the mirror: dark-surface accent #51dacf · LIGHT-SURFACE accent
+   #4D76FD. Brand blue is therefore the light accent by ruling, not by taste. It is darkened one
+   step to #2E4FC7 for the same documented reason purple steps to #a78bfa on dark ("same hue,
+   different tone for legibility") — bare #4D76FD is 3.94:1 on white and misses the floor.
+   Amber and green get the same treatment: identical hue, tone that clears 4.5:1 on white.
+   Verified by bin/island-contrast-lint.js — do not hand-tune these without re-running it. */
 body[data-swml-theme="light"] .swml-scene-island {
   --ground:#f5f5f7; --surface:#ffffff; --surface2:#e7e7ed; --surface3:#dddde1;
-  --ink:#1a1a1e; --muted2:rgba(26,26,30,.64); --faint:rgba(26,26,30,.42);
+  --ink:#1a1a1e; --muted2:rgba(26,26,30,.64); --faint:rgba(26,26,30,.62);
   --line:rgba(26,26,30,.10); --line-strong:rgba(26,26,30,.18);
-  --teal-tint:rgba(65,170,168,.10);
+  --teal:#2E4FC7; --teal-deep:#1F3FB8; --teal-tint:rgba(46,79,199,.10);
+  --done:#0A6B46; --warn:#7A5D00;
+  --btn-ink:#ffffff;                 /* white ink on the light accent fill, not the dark ink */
+  --halo:rgba(46,79,199,.28);
 }
 .swml-scene-island * { box-sizing:border-box; }
 .swml-scene-island button { font-family:inherit; }
@@ -84,9 +102,14 @@ body[data-swml-theme="light"] .swml-scene-island {
   display:flex; align-items:center; gap:8px; padding:9px 16px; border-radius:999px;
   background:var(--surface); border:none; color:var(--muted2);
   font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
-  cursor:pointer; transition:background .3s var(--ease), color .3s var(--ease);
+  cursor:pointer; transition:background .3s var(--ease), color .3s var(--ease), box-shadow .3s ease;
 }
-.swml-scene-island .step-pill:hover:not([disabled]) { color:var(--ink); background:var(--surface2); }
+/* ⚠️ the generic hover MUST exclude .is-live: `:not([disabled])` makes it (0,4,0), which beats
+   `.step-pill.is-live` (0,3,0) and swaps the teal ground for --surface2 — while `.is-live .n`
+   keeps its dark #1C1D1F numeral (built for teal), giving 1.24:1 dark-on-dark. The live pill
+   gets the HOUSE halo hover instead (§8: halo, NO lift), keeping its ground and its contrast. */
+.swml-scene-island .step-pill:hover:not([disabled]):not(.is-live) { color:var(--ink); background:var(--surface2); }
+.swml-scene-island .step-pill.is-live:hover:not([disabled]) { box-shadow:0 12px 24px var(--halo); }
 .swml-scene-island .step-pill .n {
   width:20px; height:20px; border-radius:50%; display:grid; place-items:center;
   background:var(--surface3); font-size:10px; font-weight:700; color:var(--muted2);
@@ -358,15 +381,19 @@ body[data-swml-theme="light"] .swml-scene-island {
   z-index:-1; transition:transform .5s var(--ease), opacity .5s ease;
 }
 .swml-scene-island .btn.primary:hover:not([disabled]) {
-  background:var(--teal); box-shadow:0 12px 24px rgba(81,218,207,.42);
+  background:var(--teal); box-shadow:0 12px 24px var(--halo);
 }
 .swml-scene-island .btn.primary:hover:not([disabled])::after { transform:scaleX(1.35) scaleY(1.55); opacity:0; }
 body[data-swml-theme="light"] .swml-scene-island .btn.primary {
   background:#ECF3FF; color:#4D76FD;
 }
 body[data-swml-theme="light"] .swml-scene-island .btn.primary::after { background:#ECF3FF; }
+/* ⚠️ the light hover MUST restate its own background: the generic
+   `.btn.primary:hover:not([disabled])` scores (0,5,0) and beats this block's (0,4,1), which is
+   how CONTINUE ended up rendering blue #4D76FD ink on a TEAL fill in light theme (2.31:1 —
+   Neil's screenshot, #204 add.20). Same cascade trap as the live step-pill. */
 body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disabled]) {
-  box-shadow:0 12px 24px rgba(77,118,253,.28);
+  background:#ECF3FF; box-shadow:0 12px 24px rgba(77,118,253,.28);
 }
 .swml-scene-island .btn[disabled] { opacity:.4; cursor:default; box-shadow:none; }
 .swml-scene-island .btn.primary:focus-visible { outline-color:var(--teal); }

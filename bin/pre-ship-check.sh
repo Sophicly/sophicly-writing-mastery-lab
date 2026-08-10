@@ -418,6 +418,14 @@ node bin/reach-runtime-harness.js || fail=1
 # On its first run it also found .swml-comment-modal still painting #28292b, retired four moves ago.
 node bin/palette-lint.js || fail=1
 
+# v7.20.498 (#204 add.20): palette-lint asks "is this colour retired?"; this asks "can a student
+# READ it?" — a different question, and the one Neil caught by eye ("too much clashing going on
+# with the white"). The light-theme block was overriding the surface ladder but not one accent
+# token, so teal/amber/green text sat on white at 1.5–1.9:1. It is specificity-aware because both
+# live defects were CASCADE bugs (`:hover:not([disabled])` outranking the state rule it decorated)
+# and no amount of reading the stylesheet catches those. Proven by re-injecting both real defects.
+node bin/island-contrast-lint.js || fail=1
+
 
 if [ "$fail" -ne 0 ]; then
   echo ""
