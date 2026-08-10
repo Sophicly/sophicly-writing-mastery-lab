@@ -292,8 +292,10 @@ export default function SceneSelection(props) {
         const c0 = P.bandOf(cuts, g);
         const ghost = rowEl.cloneNode(true);
         ghost.style.cssText = 'position:fixed;z-index:99999;pointer-events:none;width:' + rowEl.offsetWidth
-            + 'px;opacity:.92;background:var(--surface2);border-radius:10px;box-shadow:var(--shadow);display:flex;gap:10px;padding:8px 14px;';
-        document.body.appendChild(ghost);
+            + 'px;opacity:.92;background:var(--surface2);border-radius:10px;box-shadow:var(--shadow-lg);display:flex;gap:10px;padding:8px 14px;';
+        // append INSIDE the island root — on document.body the island's CSS vars don't resolve
+        // and the ghost renders transparent
+        (rowEl.closest('.swml-scene-island') || document.body).appendChild(ghost);
         beatDrag.current = { g, c: c0, ghost, moved: false };
         e.preventDefault();
     };
@@ -500,7 +502,7 @@ export default function SceneSelection(props) {
                     const now = !complete && i === ask;
                     const n = done ? normCuts[i] + ((added[elm.id] || []).length) : 0;
                     const st = now
-                        ? { background: elm.c, borderColor: elm.c, color: elm.dk ? '#171221' : '#fff' }
+                        ? { background: elm.c, borderColor: elm.c, color: elm.dk ? '#1C1D1F' : '#fff' }
                         : { borderColor: elm.cb, background: elm.ca, ...(done ? { color: 'var(--ink)' } : {}) };
                     return (
                         <span key={elm.id} className={'el-pill' + (done ? ' is-done' : '') + (now ? ' is-now' : '')} style={st} title={elm.prompt}>
