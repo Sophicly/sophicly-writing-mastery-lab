@@ -564,9 +564,11 @@ export default function SceneSelection(props) {
                 <div key={elm.id} data-band={i}
                     className={'band' + (empty ? ' is-empty' : '') + (isHot ? ' drop-hot' : '')
                         + (isHot && dragVis.later ? ' drop-top' : '') + (isHot && !dragVis.later ? ' drop-bottom' : '')}
-                    style={empty ? undefined : { borderColor: elm.cb }}>
-                    <div className="band-head" style={{ background: elm.ca, boxShadow: 'inset 3px 0 0 ' + elm.c }}>
-                        <span className="el"><span className="ord" style={{ color: elm.c }}>{i + 1}</span>{elm.label}</span>
+                    style={{ '--el-hue': elm.c, ...(empty ? {} : { borderColor: elm.cb }) }}>
+                    {/* the hue rides as a leading NUMBER BADGE + the header tint — never a side
+                        stripe (Neil, 2026-08-10; also a banned pattern in the design system) */}
+                    <div className="band-head" style={{ background: elm.ca }}>
+                        <span className="el"><span className="ord">{i + 1}</span>{elm.label}</span>
                         <span className="el-prompt">{elm.prompt}</span>
                         <span className="count">{empty ? 'empty — add a moment' : (chips.length + adds.length) + ' beat' + (chips.length + adds.length > 1 ? 's' : '')}</span>
                     </div>
@@ -669,7 +671,7 @@ export default function SceneSelection(props) {
                     const adds = added[elm.id] || [];
                     return (
                         <div key={elm.id} className={'summary-row' + ((chips.length + adds.length) ? '' : ' fresh')}
-                            style={{ boxShadow: 'inset 3px 0 0 ' + elm.c, paddingLeft: 12 }}>
+                            style={{ '--el-hue': elm.c }}>
                             <span className="el">{elm.label}</span>
                             <span className="what">
                                 {(chips.length + adds.length) ? (

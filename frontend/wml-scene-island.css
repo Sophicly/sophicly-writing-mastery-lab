@@ -94,8 +94,8 @@ body[data-swml-theme="light"] .swml-scene-island {
 }
 .swml-scene-island .step-pill.is-live { background:var(--teal); color:var(--btn-ink); }
 .swml-scene-island .step-pill.is-live .n { background:rgba(28,29,31,.16); color:var(--btn-ink); }
-.swml-scene-island .step-pill.is-done { color:var(--ink); box-shadow:inset 3px 0 0 var(--done); }
-.swml-scene-island .step-pill.is-done .n { background:transparent; color:var(--done); }
+.swml-scene-island .step-pill.is-done { color:var(--ink); }
+.swml-scene-island .step-pill.is-done .n { background:var(--done); color:var(--btn-ink); }
 .swml-scene-island .step-pill[disabled] { opacity:.4; cursor:default; }
 
 /* ── phases ── */
@@ -157,7 +157,8 @@ body[data-swml-theme="light"] .swml-scene-island {
 /* the run reads as ONE band: selected neighbours fuse */
 .swml-scene-island .beat-card.is-sel + .beat-card.is-sel { border-top-left-radius:0; border-top-right-radius:0; margin-top:-7px; border-top-color:rgba(81,218,207,.22); }
 .swml-scene-island .beat-card.is-sel:has(+ .beat-card.is-sel) { border-bottom-left-radius:0; border-bottom-right-radius:0; }
-.swml-scene-island .beat-card.is-end { box-shadow:inset 3px 0 0 var(--teal); }
+/* run ends: the whole card's border goes teal + the tracked TRIM label. No side stripe. */
+.swml-scene-island .beat-card.is-end { border-color:var(--teal); }
 .swml-scene-island .beat-card .b-text { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; font-size:13.5px; margin-top:3px; color:var(--ink); }
 .swml-scene-island .trim-note { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--teal-deep); margin-left:auto; align-self:center; white-space:nowrap; }
 .swml-scene-island .beat-card .tick {
@@ -228,9 +229,15 @@ body[data-swml-theme="light"] .swml-scene-island {
 }
 .swml-scene-island .chip-btn:hover { background:var(--teal); color:var(--btn-ink); }
 .swml-scene-island .band { border:1px solid var(--line); border-radius:12px; margin-bottom:10px; background:var(--surface); overflow:hidden; max-width:760px; }
-.swml-scene-island .band-head { display:flex; gap:10px; align-items:baseline; padding:10px 16px; background:var(--surface2); position:relative; }
-.swml-scene-island .band-head .el { font-weight:700; font-size:13.5px; white-space:nowrap; }
-.swml-scene-island .band-head .el .ord { font-size:11px; }
+.swml-scene-island .band-head { display:flex; gap:10px; align-items:center; padding:10px 16px; background:var(--surface2); position:relative; }
+.swml-scene-island .band-head .el { display:flex; align-items:center; gap:9px; font-weight:700; font-size:13.5px; white-space:nowrap; }
+/* the element's hue rides as a LEADING NUMBER BADGE, never a side stripe (Neil, 2026-08-10:
+   "those horrible bands around the edges" — and side stripes are a banned pattern). */
+.swml-scene-island .band-head .el .ord {
+  display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%;
+  background:var(--el-hue, var(--surface3)); color:#1C1D1F;
+  font-size:10.5px; font-weight:700; margin:0;
+}
 .swml-scene-island .band-head .el-prompt { font-size:12px; color:var(--muted2); }
 .swml-scene-island .band-head .count {
   margin-left:auto; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
@@ -274,8 +281,7 @@ body[data-swml-theme="light"] .swml-scene-island {
 }
 .swml-scene-island .reshape:hover { color:var(--ink); }
 .swml-scene-island .refine-banner {
-  background:var(--surface); border:1px solid var(--line); border-radius:12px;
-  box-shadow:inset 3px 0 0 var(--teal);
+  background:var(--surface); border:1px solid rgba(81,218,207,.34); border-radius:12px;
   padding:12px 18px; margin-bottom:14px; max-width:760px;
   display:flex; gap:12px; align-items:center; flex-wrap:wrap; font-size:13px;
 }
@@ -290,8 +296,7 @@ body[data-swml-theme="light"] .swml-scene-island {
 .swml-scene-island .band.drop-hot { border-color:var(--teal); box-shadow:var(--shadow-md); }
 .swml-scene-island .p3-row.drag-src { opacity:.35; }
 .swml-scene-island .nudge {
-  background:var(--surface); border:1px solid var(--line); border-radius:12px;
-  box-shadow:inset 3px 0 0 var(--warn);
+  background:var(--surface); border:1px solid rgba(241,196,15,.38); border-radius:12px;
   padding:12px 18px; margin-bottom:10px; max-width:760px; font-size:13px;
 }
 .swml-scene-island .nudge .n-title { font-weight:700; color:var(--warn); font-size:10px; text-transform:uppercase; letter-spacing:.1em; }
@@ -369,13 +374,20 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
 /* ── summary / done ── */
 .swml-scene-island .summary-row { display:flex; gap:14px; padding:12px 0; border-bottom:1px solid var(--line); }
 .swml-scene-island .summary-row:last-child { border-bottom:none; }
-.swml-scene-island .summary-row .el { flex:0 0 110px; font-weight:700; font-size:13px; }
+.swml-scene-island .summary-row .el {
+  flex:0 0 124px; font-weight:700; font-size:13px;
+  display:flex; align-items:center; gap:9px;
+}
+/* hue as a leading dot — same reason as the band badge: no side stripes */
+.swml-scene-island .summary-row .el::before {
+  content:''; flex:0 0 auto; width:9px; height:9px; border-radius:50%;
+  background:var(--el-hue, var(--muted2));
+}
 .swml-scene-island .summary-row .what { flex:1; font-size:13px; color:var(--muted2); }
 .swml-scene-island .summary-row .what .own { color:var(--ink); }
 .swml-scene-island .summary-row.fresh .what { font-style:italic; }
 .swml-scene-island .done-note {
-  margin-top:18px; background:var(--surface); border:1px solid var(--line);
-  box-shadow:inset 3px 0 0 var(--done);
+  margin-top:18px; background:var(--surface); border:1px solid rgba(28,217,145,.34);
   border-radius:12px; padding:14px 18px; font-size:13px; color:var(--muted2);
 }
 .swml-scene-island .done-note strong { color:var(--ink); }
