@@ -2646,7 +2646,7 @@ class SWML_REST_API {
         // student work (the doc-wipe incident class).
         if (!empty($raw)
             && !empty($request->get_param('seedFromSiblings'))
-            && array_key_exists($suffix, self::reseed_stage_config())
+            && self::reseed_signal_for($suffix) !== null
             && !$this->stage_is_frozen($user_id, $board, $text, $topic_number, $suffix, $attempt, $raw, $meta_key)) {
             $reseed_html = $this->seed_from_sibling_stage($user_id, $board, $text, $topic_number, $meta_key, $suffix, $attempt, $cw_project_id);
             if (!empty($reseed_html)) {
@@ -5499,6 +5499,59 @@ class SWML_REST_API {
     }
 
     /**
+     * v7.20.502 (#368) — THE CW RESEED SIGNAL. PEDAGOGY §29 + FIXLIST #323 (Neil, 2026-08-06):
+     * *"any change that we make in that sequence should be automatically updated in the
+     * subsequent steps — unless the one in the subsequent step is newer."* That ruling reverses
+     * the 2026-07-07 line above which kept CW out of the graph entirely.
+     *
+     * CW suffixes are DYNAMIC (`_cw_8`, `_cw_12`, …) so they cannot be static keys in
+     * reseed_stage_config(). This resolver answers the same question for both worlds.
+     *
+     * Only a step that SEEDS FROM something reseeds: index 0 of a lineage (Step 6 for plot,
+     * Step 10 for drafts) is the origin and must never be re-copied over. Anything not in a
+     * lineage — writer profile, logline, scene selection, a trial — returns null and stays
+     * frozen exactly as before.
+     */
+    private static function reseed_signal_for($suffix) {
+        $cfg = self::reseed_stage_config();
+        if (isset($cfg[$suffix])) return $cfg[$suffix];
+        if (!preg_match('/^_cw_(\d+)$/', (string) $suffix, $m)) return null;
+        $step = (int) $m[1];
+        foreach (self::cw_seed_lineages() as $chain) {
+            $i = array_search($step, $chain, true);
+            if ($i === false) continue;
+            return ($i === 0) ? null : 'typed';   // origin never reseeds; the rest until started
+        }
+        return null;
+    }
+
+    /**
+     * v7.20.502: ⚠️ THE DERIVED-CARD TRAP, named in PEDAGOGY §29 and designed out here rather
+     * than discovered later: *"the CW freeze fingerprint must IGNORE derived cards (Document
+     * Progress text changes without the student typing) or docs false-freeze."*
+     *
+     * The Document Progress / sign-off cards are rendered FROM the document (counts, ticks,
+     * percentages) and their text changes as a side effect of anything at all — including the
+     * seed itself landing. Hash them and the doc looks "typed" the moment it is served, so it
+     * freezes on arrival and the mirror never fires once. That failure is silent and looks
+     * exactly like the feature not being built.
+     *
+     * Bias is unchanged and deliberate: this only ever REMOVES noise from the comparison. If the
+     * strip fails, we fall through to the whole-text fingerprint, which errs toward FROZEN — a
+     * wrong "frozen" costs one manual pull; a wrong "unfrozen" wipes student work.
+     */
+    private static function cw_seed_fingerprint($html) {
+        $h = (string) $html;
+        // derived cards are stamped by the client; strip the whole node, not just its text
+        $stripped = preg_replace(
+            '#<div[^>]*class="[^"]*(swml-progress-card|swml-signoff-ui|swml-doc-progress)[^"]*"[\s\S]*?</div>#i',
+            ' ', $h
+        );
+        if ($stripped === null) $stripped = $h;   // pattern failure → hash everything (frozen-biased)
+        return self::canvas_seed_fingerprint($stripped);
+    }
+
+    /**
      * v7.19.943: fingerprint of a canvas doc's visible TEXT — the typed-freeze signal.
      * Whole-doc text (not just input fields) because sectionBlock is content:'block+' —
      * students type paragraphs directly into section bodies. Tags stripped + entities
@@ -5535,8 +5588,12 @@ class SWML_REST_API {
         // "mechanism-managed" marker — legacy shared docs ALSO lived under the
         // _redraft suffix (old student redraft essays; see the v249 comment in
         // load_canvas), and those must never be reseeded over. No fp → frozen.
-        if (($cfg[$suffix] ?? '') !== 'typed' && $suffix !== '_redraft') return;
-        update_user_meta($user_id, self::seed_fp_meta_key($canvas_meta_key), self::canvas_seed_fingerprint($seed_html));
+        $signal = self::reseed_signal_for($suffix);
+        if ($signal !== 'typed' && $suffix !== '_redraft') return;
+        unset($cfg);
+        $is_cw = (strpos((string) $suffix, '_cw_') === 0);
+        $fp = $is_cw ? self::cw_seed_fingerprint($seed_html) : self::canvas_seed_fingerprint($seed_html);
+        update_user_meta($user_id, self::seed_fp_meta_key($canvas_meta_key), $fp);
     }
 
     /**
@@ -5560,9 +5617,11 @@ class SWML_REST_API {
      *      complete (phase meta key).
      */
     private function stage_is_frozen($user_id, $board, $text, $topic_number, $suffix, $attempt, $raw, $canvas_meta_key = '') {
-        $cfg = self::reseed_stage_config();
-        if (!isset($cfg[$suffix])) return true; // not in the graph → frozen (e.g. CW, diagnostic)
-        $signal = $cfg[$suffix];
+        // v7.20.502: CW joins the graph (PEDAGOGY §29). Anything the resolver does not
+        // recognise — a lineage origin, a trial, a one-off doc — is still frozen.
+        $signal = self::reseed_signal_for($suffix);
+        if ($signal === null) return true; // not in the graph → frozen (diagnostic, origins, trials)
+        $is_cw = (strpos((string) $suffix, '_cw_') === 0);
         $html = '';
         if (is_array($raw)) {
             $html = isset($raw['html']) ? (string) $raw['html'] : '';
@@ -5575,7 +5634,8 @@ class SWML_REST_API {
             if ($canvas_meta_key === '') return true; // no key to look up → ambiguous → frozen
             $seed_fp = get_user_meta($user_id, self::seed_fp_meta_key($canvas_meta_key), true);
             if (empty($seed_fp)) return true; // never baselined → ambiguous → frozen
-            return self::canvas_seed_fingerprint($html) !== $seed_fp;
+            $fp = $is_cw ? self::cw_seed_fingerprint($html) : self::canvas_seed_fingerprint($html);
+            return $fp !== $seed_fp;
         }
         // 1. Content guard.
         if ($html !== '') {
