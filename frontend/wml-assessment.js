@@ -4760,6 +4760,65 @@
         // `guard` stays and is load-bearing: this runs INSIDE addChatMessage, so a throw here
         // would take the chat down for every student on every turn. It goes quiet, says so once,
         // and the chat carries on.
+        // ══════════════════════════════════════════════════════════════════════════════════
+        // v7.20.503 (#369) — THE FOOTER INSTRUMENT. `?wml_geom=1`
+        //
+        // Neil saw a too-tall footer on STUDENTS' iPads and, asked to pin it down, said the only
+        // honest thing: *"I couldn't actually say… In the emulator it doesn't actually look too
+        // bad. I actually don't know."* Chrome's emulator does not simulate the iOS keyboard or
+        // visualViewport, so a defect that disappears there is MORE likely to be viewport-driven,
+        // not less — and neither of us can read a console on a student's iPad.
+        //
+        // Root §19: for a bug we have not OBSERVED, the first action is an INSTRUMENT, not an
+        // EDIT. This prints the handful of numbers that decide the question, big enough to
+        // photograph. One screenshot from a real iPad ends the guessing.
+        //
+        // Read it as: if `visual` is much shorter than `inner`, the keyboard is open and the
+        // question is whether the shell followed it down. `gapBelowFooter` is the defect itself,
+        // measured — that is the number any fix has to move.
+        // ══════════════════════════════════════════════════════════════════════════════════
+        function _geomProbe() {
+            try {
+                if (!/[?&]wml_geom=1/.test(window.location.search)) return;
+                var box = document.getElementById('swml-geom-probe');
+                if (!box) {
+                    box = document.createElement('div');
+                    box.id = 'swml-geom-probe';
+                    box.setAttribute('style', 'position:fixed;left:8px;bottom:8px;z-index:2147483647;'
+                        + 'background:#1b1c1f;color:#51dacf;font:600 12px/1.45 ui-monospace,Menlo,monospace;'
+                        + 'padding:10px 12px;border-radius:10px;max-width:92vw;white-space:pre;'
+                        + 'box-shadow:0 8px 30px rgba(0,0,0,.5);pointer-events:none;');
+                    document.body.appendChild(box);
+                }
+                var vv = window.visualViewport;
+                var shell = document.getElementById('swml-canvas-overlay');
+                var foot = document.querySelector('#swml-canvas-overlay .swml-canvas-statusbar')
+                    || document.querySelector('#swml-canvas-overlay .swml-canvas-footer')
+                    || document.querySelector('.swml-chat-input-wrapper');
+                var r = function (el) { try { return el ? el.getBoundingClientRect() : null; } catch (e) { return null; } };
+                var sr = r(shell), fr = r(foot);
+                var visH = vv ? Math.round(vv.height) : 0;
+                var visBottom = vv ? Math.round(vv.offsetTop + vv.height) : Math.round(window.innerHeight);
+                var lines = [
+                    'inner   ' + window.innerHeight + '   visual ' + visH + '  off ' + (vv ? Math.round(vv.offsetTop) : 0),
+                    'shell   ' + (sr ? Math.round(sr.top) + '→' + Math.round(sr.bottom) + ' h' + Math.round(sr.height) : 'n/a'),
+                    'footer  ' + (fr ? Math.round(fr.top) + '→' + Math.round(fr.bottom) + ' h' + Math.round(fr.height) : 'n/a'),
+                    'gapBelowFooter ' + (fr ? Math.round(visBottom - fr.bottom) : '?') + 'px',
+                    'gapBelowShell  ' + (sr ? Math.round(visBottom - sr.bottom) : '?') + 'px',
+                    'kbd ' + (vv && window.innerHeight - visH > 80 ? 'OPEN' : 'closed') + '   ' + (window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'),
+                ];
+                box.textContent = lines.join('\n');
+            } catch (e) {}
+        }
+        try {
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', _geomProbe);
+                window.visualViewport.addEventListener('scroll', _geomProbe);
+            }
+            window.addEventListener('orientationchange', function () { setTimeout(_geomProbe, 300); });
+            setInterval(_geomProbe, 700);
+        } catch (e) {}
+
         function guard(fn) {
             return function () {
                 try { return fn.apply(null, arguments); }
