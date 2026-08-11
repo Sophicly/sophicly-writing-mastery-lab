@@ -161,10 +161,18 @@ ok(/window\.visualViewport/.test(reachBlock),
     'the band is read from window.visualViewport');
 ok(/scrollIntoView/.test(reachBlock),
     'rung 2 exists: an unreachable control is scrolled to before anything is drawn');
-ok(/showPill/.test(reachBlock) && /console\.warn\('WML reach/.test(reachBlock),
-    'rung 3 exists: if it still cannot be shown, the student is TOLD and we log it',
-    'CLAUDE.md §4d — a refusal is half a change. "Could not show the field" is a complete '
-    + 'sentence in a log and a broken page to a 14-year-old.');
+// v7.20.501: rung 3 (the visible pill) is RETIRED on Neil's instruction — its label was a
+// hardcoded '↓ … below' that never computed a direction, so it lied whenever it drew above a
+// control (#370). What must survive is the part that was actually load-bearing: the silent
+// rescue above, and a LOUD diagnostic when even that fails — a recurrence of #356 has to stay
+// findable on a student's device.
+ok(/console\.warn\('WML reach/.test(reachBlock),
+    'the unrescuable case is still reported loudly to the console (root §19: measurable, not silent)');
+ok(!/showPill/.test(reachBlock) && !/swml-reach-pill/.test(reachBlock),
+    'the lying pill is gone from the JS — no student-facing claim about where the box is',
+    'It stated "below" unconditionally. A control that misdirects is worse than no control.');
+ok(!/swml-reach-pill/.test(css),
+    'and its stylesheet rules are gone with it — no orphaned CSS for a control that no longer exists');
 ok(/__wmlReach/.test(reachBlock),
     'every pass is recorded to window.__wmlReach for the next real-device report (root §19)');
 // The one named failure mode this feature has, and the reason it is worth a gate of its own:
@@ -179,21 +187,9 @@ ok(/const safeCheck = guard\(check\)/.test(reachBlock)
     && !/setTimeout\(check\.bind/.test(reachBlock),
     'every scheduled pass goes through safeCheck, not the raw check');
 
-// ── 4. THE PILL MUST BE REACHABLE ITSELF ───────────────────────────────────────────────────
-console.log('reach-runtime: the pill');
-const pillRule = (css.match(/\.swml-reach-pill\s*\{[\s\S]*?\}/) || [''])[0];
-ok(/position:\s*fixed/.test(pillRule),
-    '.swml-reach-pill is position: fixed',
-    'It is positioned against the visual viewport by JS. In normal flow it would be stranded by '
-    + 'the same geometry as the control it exists to rescue.');
-ok(!/top:\s*[\d]/.test(pillRule),
-    'the stylesheet does not set its own `top` — JS owns that from visualViewport');
-ok(/\.swml-reach-pill\.is-light/.test(css),
-    'the light theme is a class ON the element, not a descendant selector',
-    'The pill is parented to <body>, so `.swml-canvas-light .swml-reach-pill` would compile '
-    + 'cleanly and never match — the worst kind of wrong.');
-ok(/classList\.toggle\('is-light'/.test(reachBlock),
-    'and the JS stamps it from the live canvas theme');
+// ── 4. (retired) The pill's own reachability was section 4 until v7.20.501. With the pill gone
+// there is no student-facing control here to strand — the rescue is silent and the fallback is a
+// console line, so the assertions above are the whole contract.
 
 console.log('');
 if (failures) {

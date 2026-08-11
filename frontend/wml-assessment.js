@@ -4739,51 +4739,27 @@
                 if (window.__wmlReach.length > 30) window.__wmlReach.shift();
             } catch (e) {}
         }
-        function dropPill() {
-            if (pill) { try { pill.remove(); } catch (e) {} pill = null; }
-        }
-        // §4d's other half. The screen must respond even when we cannot fix the geometry: a fixed
-        // control INSIDE the visual viewport (so it is reachable whatever the layout is doing)
-        // that names the thing the student cannot see and takes them to it.
-        function showPill(t, b) {
-            const label = t.kind === 'input'
-                ? '↓ Your answer box is below — tap to go to it'
-                : '↓ Your options are below — tap to go to them';
-            if (!pill) {
-                pill = document.createElement('button');
-                pill.type = 'button';
-                pill.className = 'swml-reach-pill';
-                pill.addEventListener('click', guard(function () {
-                    const cur = surface();
-                    if (!cur) { dropPill(); return; }
-                    try { cur.el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
-                    // Focusing is the part that actually rescues iPadOS: the browser scrolls a
-                    // focused field above its own keyboard even when our scroll could not.
-                    if (cur.kind === 'input') { try { cur.focus.focus(); } catch (e) {} }
-                    setTimeout(safeCheck.bind(null, 'pill-tap'), 400);
-                }));
-                document.body.appendChild(pill);
-            }
-            pill.textContent = label;
-            // The pill hangs off <body>, so it cannot inherit the canvas theme by selector — the
-            // class is stamped from the live canvas instead. Read every time: the student can flip
-            // the toggle while the pill is up.
-            const isLight = !!(document.querySelector('.swml-canvas.swml-canvas-light')
-                || document.querySelector('#swml-canvas-overlay[data-swml-theme="light"]'));
-            pill.classList.toggle('is-light', isLight);
-            // Anchored to the VISUAL viewport, not the layout one — the whole point is that it is
-            // visible on a screen whose layout viewport is taller than the glass.
-            pill.style.top = Math.max(8, b.bottom - 56) + 'px';
-            const pane = document.querySelector('.swml-canvas-chat');
-            const pr = vis(pane);
-            if (pr) { pill.style.left = (pr.left + pr.width / 2) + 'px'; }
-            else { pill.style.left = '50%'; }
-        }
-        // ⛔ EVERY ENTRY POINT IS WRAPPED, and this is not defensive habit — it is the one named
-        // failure mode this feature has. `afterBubble` is called from inside `addChatMessage`, so
-        // a throw in here would take the CHAT down for every student, on every turn. A check whose
-        // job is to stop students being stranded must not be able to strand them. If it breaks it
-        // goes quiet and says so once; the chat carries on.
+        // v7.20.501 (#370) — THE PILL IS GONE, on Neil's instruction (2026-08-11):
+        // *"even when the student is typing, it's got that funny little bubble which says 'your
+        // answer box is below, tap to go'. So that's not true because the answer box is ABOVE…
+        // I think we can get rid of that little bubble."*
+        //
+        // He is right, and the defect was worse than a wrong arrow: the label was a HARDCODED
+        // string beginning '↓ … below'. It never computed a direction at all, so every time it
+        // fired above a control it stated the opposite of the truth. A control that lies about
+        // where the work is costs more than the edge case it was covering.
+        //
+        // ⚠️ WHAT STAYS, because this machinery exists for a student who could not type at all
+        // (#356, Fatou Soumah on an iPad — the input was clipped, not merely below the fold):
+        //   · rung 1/2 — the SILENT rescue: an unreachable control is still scrolled into view
+        //     before anything else happens. That is what actually fixes it, and it says nothing.
+        //   · the loud console warning + window.__wmlReach, so a real recurrence is still
+        //     diagnosable from a student's device instead of invisible (root §19).
+        // Only the visible bubble is retired.
+        //
+        // `guard` stays and is load-bearing: this runs INSIDE addChatMessage, so a throw here
+        // would take the chat down for every student on every turn. It goes quiet, says so once,
+        // and the chat carries on.
         function guard(fn) {
             return function () {
                 try { return fn.apply(null, arguments); }
@@ -4796,7 +4772,7 @@
         function check(why) {
             if (document.hidden) return;
             const t = surface();
-            if (!t) { dropPill(); misses = 0; return; }        // no ask in flight — nothing to assert
+            if (!t) { misses = 0; return; }                   // no ask in flight — nothing to assert
             const b = band();
             let r = t.el.getBoundingClientRect();
             let scrolled = false;
@@ -4808,15 +4784,14 @@
             const ok = reachFully(r, b) || reachUsable(r, b);
             note({ why: why, kind: t.kind, ok: ok, scrolled: scrolled, band: b,
                 rect: { top: Math.round(r.top), bottom: Math.round(r.bottom), h: Math.round(r.height) } });
-            if (ok) { misses = 0; dropPill(); return; }
+            if (ok) { misses = 0; return; }
             // Twice in a row before we draw anything: one failure is usually a bubble still
             // animating, and a pill that flashes on every turn is a pill students stop reading.
             if (++misses < 2) return;
             console.warn('WML reach: the ' + t.kind + ' the student must answer is off screen — '
                 + 'rect ' + Math.round(r.top) + '→' + Math.round(r.bottom)
                 + ', visible band ' + Math.round(b.top) + '→' + Math.round(b.bottom)
-                + ' (' + b.src + '). Showing the jump-to control. See window.__wmlReach.');
-            showPill(t, b);
+                + ' (' + b.src + '). The silent scroll could not rescue it. See window.__wmlReach.');
         }
         const safeCheck = guard(check);
         function schedule(why) {
@@ -4841,15 +4816,6 @@
         return {
             afterBubble: guard(function (why) { install(); schedule(why || 'bubble'); }),
             check: safeCheck,
-            // The pill draws ONLY when a control genuinely cannot be shown, which on a healthy
-            // layout is never — so without this it could ship having never once been rendered, and
-            // "it has never been seen" is not a state anything student-facing may be in. Type
-            // `WML._askReach.demo()` in the console to draw it against the live theme and geometry.
-            demo: guard(function () {
-                const t = surface() || { kind: 'input' };
-                showPill(t, band());
-                return 'reach pill shown — tap it, or WML._askReach.check("manual") to clear.';
-            }),
             _band: reachBand, _fully: reachFully, _usable: reachUsable,
         };
     })();
