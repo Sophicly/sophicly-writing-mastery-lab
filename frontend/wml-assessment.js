@@ -26242,6 +26242,17 @@
                         { svg: SCENE_ICON, label: 'Reopen scene selection', go: open },
                     ]);
                 }
+                // v7.20.505: the walk no longer ENDS at the overview — the write-out and the
+                // transfer are the rest of the step, so the way forward has to point at them
+                // (§4d liveness is "a way FORWARD", not merely "a button").
+                if (transferDone() && overviewDone()) {
+                    if (draftSectionExists()) return afterDraftChips();
+                    if (writeOutServed()) return writeOutChips();
+                    return chipBar([
+                        { label: 'What do I do now? →', go: serveWriteOut },
+                        { svg: SCENE_ICON, label: 'Reopen scene selection', go: open },
+                    ]);
+                }
                 return chipBar([{ svg: SCENE_ICON, label: done ? 'Reopen scene selection' : 'Choose my scene', go: open }]);
             }
             // Transfer is doc-derived, never session-derived: a reload loses lastSnapshot, and
@@ -26512,7 +26523,196 @@
                 }
                 askActive = false;
                 aiBubble('Filed into your **Scene Overview**, in your own words.\n\nYour scene is chosen, shaped and described — that is the whole plan for the piece you will write.');
-                ensureChip();
+                serveWriteOut();
+            }
+
+            // ══════════════════════════════════════════════════════════════════════════════════
+            // MOVEMENTS 2 + 3 — WRITE IT OUT, THEN TRANSFER (v7.20.505, #204 add.15 / #366).
+            //
+            // Neil restated the mechanism in full, 2026-08-13: *"the beats that they select are
+            // gonna be autofiled into the scene elements… What we probably need to do in the walk
+            // is just advise them just to fill out the scenes… they can just fill them out, like,
+            // just write them out, you know, try and polish them a little bit. And then what I was
+            // thinking is we have a transfer button from those scene elements. They click the
+            // transfer button once they're happy, and it transfers all of it as just prose with no
+            // labels into some sort of area that the student can check. Um, and then that area will
+            // then seed step ten."*
+            //
+            // TWO THINGS THAT ARE DELIBERATE AND EASY TO GET WRONG NEXT TIME:
+            //  1. The writing happens IN THE SEVEN ELEMENT ROWS the island already filled — there
+            //     is no second set of prose boxes. His instruction is to fill out the elements.
+            //  2. The walk here ADVISES; it does not run seven typed asks. Long-form prose belongs
+            //     in the document, and the student decides when it is ready — the transfer button
+            //     IS the completion signal, so nothing has to guess at "is this prose yet?".
+            //
+            // Zero API throughout (#219): advice is code-served, the join is code, the seed is code.
+            // ══════════════════════════════════════════════════════════════════════════════════
+            const DRAFT_KEY = 'scene_draft';        // ⛔ NOT `scene_selection` — that key receives
+                                                    // the step DOCUMENT via CW_ARTIFACT_MAP[9].
+            const DRAFT_LABEL = 'Your Scene';
+            function elFid(id) { return 'cw-step-8-' + id; }   // built, never read as a bare prefix (§5d)
+
+            // Style guidance is DERIVED from the Step-10 protocol's own stylistic principles
+            // (protocols/shared/creative-writing/CW-STEP-10-draft-1-prose-style.md §1.3) — its
+            // worked contrasts, not invented ones (§5c: student content derives from the protocols).
+            const WRITEOUT = [
+                'Your scene is filed. Every beat you chose is sitting in the seven elements above, in story order, in your own words.\n\nWhat is in those boxes right now is shorthand — the plan. **Those seven elements are your scene**, and the next job is to turn each one into real sentences.',
+                '**Write each element out, in the document above.**\n\nWork down the seven boxes and expand what is in each one into proper prose:\n\n- **Concrete nouns, dynamic verbs.** *She darted across the kitchen* — not *she went quickly across the room*.\n- **Show it happening**, rather than reporting it. *His fist tightened around the strap of his bag* — not *he was angry*.\n- **Around 450–600 words** across the whole scene.\n\nRough is fine. Getting it down beats getting it perfect — polishing is exactly what Step 10 is for.',
+                '**When you are happy with all seven, tap Transfer my scene.**\n\nI will join them into one continuous piece of prose — no labels, no headings, just your story — and put it at the bottom of this document so you can read it the way a reader would.\n\nThat is what **Step 10** opens with, waiting for you to polish.',
+            ];
+
+            // Transcript probes. Both phases resume from the DURABLE transcript, so a reload lands
+            // on the exact chunk rather than replaying the advice from the top (§4c.8b).
+            function _txHas(sig, len) {
+                const h = Array.isArray(canvasChatHistory) ? canvasChatHistory : [];
+                const probe = String(sig).slice(0, len || 60);
+                return h.some(function (m) { return m && m.role === 'assistant' && String(m.content || '').indexOf(probe) !== -1; });
+            }
+            function writeOutProgress() {
+                let n = 0;
+                while (n < WRITEOUT.length && _txHas(WRITEOUT[n], 60)) n++;
+                return n;
+            }
+            function writeOutServed() { return writeOutProgress() > 0; }
+
+            function serveWriteOut() {
+                const at = writeOutProgress();
+                if (at >= WRITEOUT.length) { writeOutChips(); return; }
+                serveCwChunks(WRITEOUT, { emit: aiBubble, startAt: at, onDone: writeOutChips });
+            }
+            function writeOutChips() {
+                return chipBar([
+                    { label: 'Transfer my scene →', go: onTransferTap },
+                    { svg: SCENE_ICON, label: 'Reopen scene selection', go: open },
+                ]);
+            }
+            function afterDraftChips() {
+                return chipBar([
+                    { label: 'Transfer again (I’ve edited it)', go: onTransferTap },
+                    { svg: SCENE_ICON, label: 'Reopen scene selection', go: open },
+                ]);
+            }
+
+            // ── THE JOIN ──────────────────────────────────────────────────────────────────────
+            // One paragraph per LINE, in element order. Per-line (not per-element) because each
+            // transferred beat arrived on its own line, so the student's own paragraphing survives
+            // the join; merging an element's lines into one block would run separate moments
+            // together. Labels are dropped entirely — his words: "as just prose with no labels".
+            function missingElements() {
+                return ELEMENTS.filter(function (e) { return !rowText(elFid(e.id)); });
+            }
+            function composeDraft() {
+                const paras = [];
+                ELEMENTS.forEach(function (e) {
+                    const t = rowText(elFid(e.id));
+                    if (!t) return;
+                    t.split('\n').forEach(function (line) {
+                        const s = line.trim();
+                        if (s) paras.push(s);
+                    });
+                });
+                return paras;
+            }
+            function draftParasHTML(paras) {
+                return paras.map(function (p) { return '<p>' + escapeHTML(p) + '</p>'; }).join('');
+            }
+            // LOCKED (`editable: false`) on purpose, and it is doing two jobs at once: it is the
+            // area he asked the student to CHECK, and — because `editable:false` stamps
+            // `data-readonly` + `data-editable="false"` — it is invisible to the word counter, so
+            // this copy of their own writing cannot be counted a second time inside Step 9.
+            // Changing it means editing the elements and transferring again, which keeps the
+            // elements and the scene from silently diverging.
+            function draftSectionHTML(paras) {
+                return sectionHTML('response', DRAFT_LABEL, false, null,
+                    '<h3>Your Scene</h3>'
+                    + '<p><em>Your seven elements, joined in story order — no labels, just the story. Read it the way a reader would. This is exactly what Step 10 opens with. To change it, edit the elements above and tap Transfer again.</em></p>'
+                    + draftParasHTML(paras));
+            }
+            function draftSectionExists() {
+                try {
+                    return String(canvasEditor ? canvasEditor.getHTML() : '').indexOf('data-section-label="' + DRAFT_LABEL + '"') !== -1;
+                } catch (e) { return false; }
+            }
+            function writeDraftSection(paras) {
+                if (!canvasEditor) return false;
+                try {
+                    const box = document.createElement('div');
+                    box.innerHTML = canvasEditor.getHTML();
+                    const fresh = draftSectionHTML(paras);
+                    const existing = box.querySelector('[data-section-label="' + DRAFT_LABEL + '"]');
+                    if (existing) existing.outerHTML = fresh;
+                    else box.insertAdjacentHTML('beforeend', fresh);
+                    // setContent under _migrationActive: the onTransaction section-guard reverts any
+                    // transaction that lowers the section count, and a replace briefly does
+                    // (v7.19.445's lesson). The guard RE-BASELINES ITSELF while the flag is up
+                    // (onTransaction: `if (_migrationActive) { _sectionCount = countSections(…); return; }`),
+                    // so this closure neither can nor needs to touch that counter — it is a
+                    // closure-local of the editor scope, and eslint no-undef caught the attempt.
+                    const _was = _migrationActive;
+                    _migrationActive = true;
+                    try { canvasEditor.commands.setContent(box.innerHTML, false); }
+                    finally { _migrationActive = _was; }
+                    save();
+                    return draftSectionExists();
+                } catch (e) {
+                    console.error('WML CW9: writing the joined scene into the document failed —', e && e.message);
+                    return false;
+                }
+            }
+            async function persistDraft(pid, paras) {
+                const words = paras.join(' ').split(/\s+/).filter(Boolean).length;
+                const res = await WML.cwProject.saveArtifact(pid, DRAFT_KEY, draftParasHTML(paras));
+                if (!res || res.success === false) throw new Error('saveArtifact reported failure');
+                // Provenance for the word counter: Step 10 opens with these words ALREADY WRITTEN
+                // in Step 9, so whatever counts Step 10 must not bill them again (#366's named
+                // landmine; the dashboard lane owns the counter — see the handoff).
+                try {
+                    const st = await loadState(pid);
+                    st.draftSeed = { words: words, at: new Date().toISOString(), from: 'cw_step_9' };
+                    persistState(pid, st);
+                } catch (e) { console.warn('WML CW9: draft-seed provenance not recorded —', e && e.message); }
+                return words;
+            }
+            async function onTransferTap() {
+                userTurn('Transfer my scene');
+                const missing = missingElements();
+                if (missing.length) {
+                    // §4d: a refusal states what the student sees instead, and the way forward stays.
+                    noteBubble('Before I join it up — ' + missing.length + ' element'
+                        + (missing.length === 1 ? ' is' : 's are') + ' still empty: **'
+                        + missing.map(function (m) { return m.label; }).join('**, **') + '**.\n\n'
+                        + 'Write ' + (missing.length === 1 ? 'it' : 'them') + ' in the document above, then tap Transfer again.');
+                    writeOutChips();
+                    return;
+                }
+                const paras = composeDraft();
+                if (!paras.length) {
+                    noteBubble('Your seven elements look empty to me, so there is nothing to join yet. Write the scene out in the boxes above, then tap Transfer again.');
+                    writeOutChips();
+                    return;
+                }
+                if (!writeDraftSection(paras)) {
+                    noteBubble('Something went wrong joining your scene — **nothing was lost**, every word is still in the seven elements. Tap Transfer again in a moment.');
+                    writeOutChips();
+                    return;
+                }
+                const pid = state.cwProjectId;
+                let words = paras.join(' ').split(/\s+/).filter(Boolean).length;
+                let sent = false;
+                if (pid) {
+                    try { words = await persistDraft(pid, paras); sent = true; }
+                    catch (e) { console.error('WML CW9: scene_draft artifact save failed —', e && e.message); }
+                } else {
+                    console.warn('WML CW9: no cwProjectId — the joined scene was written to the document but not saved as an artifact.');
+                }
+                if (sent) {
+                    aiBubble('**Transferred — ' + words + ' words.**\n\nYour scene is joined at the bottom of this document under **Your Scene**. Read it once, the way a reader would: does it flow from one moment to the next?\n\nIt is saved, and **Step 10 will open with it already written in**, ready for you to polish.');
+                } else {
+                    // FAIL LOUD: the document has it, the next step will not — say so plainly
+                    // rather than let a student find an empty Step 10.
+                    noteBubble('**Your scene is joined** at the bottom of this document — but I could not save it to your story, so Step 10 will not open with it yet. Tap **Transfer again** in a moment; if it keeps failing, tell your tutor.');
+                }
+                afterDraftChips();
             }
 
             // Serial keep-vs-replace (§18: one item, one decision, then the next).
@@ -26554,6 +26754,15 @@
                 if (transferDone() && !overviewDone()) {
                     if (_overviewAsked()) { askActive = true; _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' }); return overviewChips(); }
                     return ensureChip();
+                }
+                // v7.20.505: mid-advice resume continues from the exact chunk (the advice turns are
+                // durable, so they have already replayed above); every other position falls through
+                // to ensureChip, which now knows the write-out and transfer phases.
+                if (transferDone() && overviewDone() && !draftSectionExists()) {
+                    const at = writeOutProgress();
+                    if (at > 0 && at < WRITEOUT.length) {
+                        return chipBar([{ label: 'Continue →', go: serveWriteOut }]);
+                    }
                 }
                 return ensureChip();
             }
@@ -30654,8 +30863,16 @@
         const exerciseConfig = WML.getExerciseConfig(state.task);
         const isCwTask = state.task && state.task.startsWith('cw_');
         const cwStepDef = isCwTask ? WML.getCwStepDef(state.task) : null;
+        // ⚠️ v7.20.505 (#366) — `isCwSi` STAYS TIER-BASED ON PURPOSE. It reads like "this step has
+        // a walk", but it is also the gate on the Mark-Complete path that saves the step's artifact
+        // (CW_ARTIFACT_MAP) and writes its completion. Narrowing it for Step 10 would have stopped
+        // `draft_1` ever being saved — silently, and Step 13 seeds from `draft_1`. The environment
+        // is what removes the chat (see `useTrainingEnv` below: cw_diagnostic is `free`, so the
+        // training panels — chat, walk sidebar, greeting emitters — are never built at all).
         const isCwSi = isCwTask && cwStepDef?.tier === 'si';
-        const isCwWorkbook = isCwTask && cwStepDef?.tier === 'workbook';
+        // v7.20.505: DOC-ONLY is a capability, not a tier. A diagnostic CW step renders through the
+        // proven workbook path (document + guidance, no chat) rather than a new branch of its own.
+        const isCwWorkbook = isCwTask && (cwStepDef?.tier === 'workbook' || cwStepDef?.env === 'diagnostic');
         const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz', 'mastery_codex'];
         const isExamPrep = EXAM_PREP_TASKS.includes(state.task);
         // v7.14.37: Environment detection from manifest (free/training/flexible)
@@ -37134,6 +37351,21 @@
                         parseHTML: el => parseInt(el.getAttribute('data-edit-ts') || '0', 10) || 0,
                         renderHTML: attrs => attrs.editTs ? { 'data-edit-ts': String(attrs.editTs) } : {},
                     },
+                    // v7.20.505 (#366): "this section is the student's own composition."
+                    // ⚠️ IT MUST BE A SCHEMA ATTR OR IT DOES NOT EXIST. The template emits
+                    // data-student-composition="true", but section attrs are an ALLOW-LIST — an
+                    // unlisted data-* is silently dropped on the first ProseMirror round-trip, so
+                    // the flag would sit in the template, be absent from every SAVED document, and
+                    // read to the counter as missing (the §5d silent-key class).
+                    // Consumer: student-data's CW word counter — `response` is Sophia's voice in
+                    // the CW walk and the student's in an essay, so counting the CW draft needs an
+                    // opt-in marker. Two-sided contract: never rename without a handoff the same session.
+                    // Declared on BOTH canvases deliberately (the "same-fix-shipped-twice" note above).
+                    studentComposition: {
+                        default: null,
+                        parseHTML: el => el.getAttribute('data-student-composition') || null,
+                        renderHTML: attrs => attrs.studentComposition ? { 'data-student-composition': String(attrs.studentComposition) } : {},
+                    },
                 };
             },
 
@@ -37199,6 +37431,10 @@
                         if (node.attrs.partNumber) out['data-part'] = String(node.attrs.partNumber);
                         // v7.19.255: surface stageReveal attr to NodeView dom (mirror renderHTML)
                         if (node.attrs.stageReveal) out['data-stage-reveal'] = node.attrs.stageReveal;
+                        // v7.20.505: same mirror for the composition flag, so the live DOM and the
+                        // serialised document agree (a flag visible in one and not the other is how
+                        // a "why can't I see it?" hour gets spent).
+                        if (node.attrs.studentComposition) out['data-student-composition'] = String(node.attrs.studentComposition);
                         return out;
                     },
                 });
@@ -37246,6 +37482,21 @@
                         default: 0,
                         parseHTML: el => parseInt(el.getAttribute('data-edit-ts') || '0', 10) || 0,
                         renderHTML: attrs => attrs.editTs ? { 'data-edit-ts': String(attrs.editTs) } : {},
+                    },
+                    // v7.20.505 (#366): "this section is the student's own composition."
+                    // ⚠️ IT MUST BE A SCHEMA ATTR OR IT DOES NOT EXIST. The template emits
+                    // data-student-composition="true", but section attrs are an ALLOW-LIST — an
+                    // unlisted data-* is silently dropped on the first ProseMirror round-trip, so
+                    // the flag would sit in the template, be absent from every SAVED document, and
+                    // read to the counter as missing (the §5d silent-key class).
+                    // Consumer: student-data's CW word counter — `response` is Sophia's voice in
+                    // the CW walk and the student's in an essay, so counting the CW draft needs an
+                    // opt-in marker. Two-sided contract: never rename without a handoff the same session.
+                    // Declared on BOTH canvases deliberately (the "same-fix-shipped-twice" note above).
+                    studentComposition: {
+                        default: null,
+                        parseHTML: el => el.getAttribute('data-student-composition') || null,
+                        renderHTML: attrs => attrs.studentComposition ? { 'data-student-composition': String(attrs.studentComposition) } : {},
                     },
                 };
             },
@@ -41193,6 +41444,80 @@
                 }
             } catch (e) { console.log('WML CW Workbook: No artifact to pre-populate'); }
         };
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        // v7.20.505 (#366) — SEED THE DRAFT BOX FROM THE PREVIOUS STEP'S TRANSFERRED PROSE.
+        //
+        // Step 10 opens with the scene the student wrote out and transferred in Step 9, already in
+        // the writing box, so the lesson is "polish this", not "start again". Neil: *"when they go
+        // to step ten, they've already got all their writing there and they can just try and polish
+        // that off."*
+        //
+        // WHAT IT WILL NOT DO, in order of how expensive the mistake would be:
+        //  · never writes over a box that already holds text — a student's own polishing always
+        //    wins, and a reload can never rewind them;
+        //  · never invents a target — if the template's own draft box is missing it warns and
+        //    stops, rather than dropping 600 words somewhere arbitrary;
+        //  · never fails silently — a missing seed says so in the console with the key it looked for.
+        //
+        // Source ladder, because a single point of failure here means an empty Step 10 for a
+        // student who did everything right: the `scene_draft` artifact first, then the Step-9
+        // DOCUMENT's own locked "Your Scene" section (same words, different home).
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        const tryCwSeedFromPrevious = async () => {
+            if (!isCwTask || !canvasEditor || state.reviewMode) return;
+            const seedKey = (WML.CW_SEED_FROM || {})[cwStepDef?.step];
+            if (!seedKey) return;
+            if (!state.cwProjectId) { console.warn('WML CW seed: no cwProjectId on this page — nothing to seed from.'); return; }
+            try {
+                const html = canvasEditor.getHTML();
+                const box = document.createElement('div');
+                box.innerHTML = html;
+                // The draft box is THIS step's own template section (label 'Draft'), matched on the
+                // opt-in composition flag so it can never be confused with a teaching block.
+                const target = box.querySelector('[data-student-composition="true"]')
+                    || box.querySelector('[data-section-label="Draft"]');
+                if (!target) { console.warn('WML CW seed: no draft section in this document — not seeding ' + seedKey + '.'); return; }
+                if ((target.textContent || '').trim().length > 0) return;   // already started — leave it alone
+
+                let seed = '';
+                try {
+                    const art = await WML.cwProject.loadArtifact(state.cwProjectId, seedKey);
+                    if (art?.success && art.value) seed = String(art.value);
+                } catch (e) {}
+                if (!seed) {
+                    // Fallback: the same prose still lives in the Step-9 document's locked section.
+                    try {
+                        const doc = await WML.cwProject.loadArtifact(state.cwProjectId, 'scene_selection');
+                        if (doc?.success && doc.value) {
+                            const tmp = document.createElement('div');
+                            tmp.innerHTML = String(doc.value);
+                            const locked = tmp.querySelector('[data-section-label="Your Scene"]');
+                            if (locked) {
+                                const paras = Array.from(locked.querySelectorAll('p'))
+                                    .filter((p) => !p.querySelector('em'))       // drop the "read it as a reader would" note
+                                    .map((p) => p.innerHTML).filter(Boolean);
+                                if (paras.length) {
+                                    seed = paras.map((p) => '<p>' + p + '</p>').join('');
+                                    console.log('WML CW seed: ' + seedKey + ' artifact was empty — recovered the scene from the Step-9 document instead.');
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                }
+                if (!seed) { console.warn('WML CW seed: nothing found under "' + seedKey + '" for project ' + state.cwProjectId + ' — Step ' + cwStepDef?.step + ' opens empty.'); return; }
+
+                target.innerHTML = seed;
+                const _was = _migrationActive;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(box.innerHTML, false); }
+                finally { _migrationActive = _was; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW seed: Step ' + cwStepDef?.step + ' seeded from ' + seedKey + '.');
+            } catch (e) {
+                console.warn('WML CW seed failed (document untouched) —', e && e.message);
+            }
+        };
         // v7.13.60: Load plot structure template from server for Step 6 (and plot update steps)
         const tryLoadPlotTemplate = async () => {
             if (!isCwTask || !canvasEditor) return;
@@ -42559,7 +42884,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -45978,7 +46303,11 @@
         // ── Draft steps (9, 12, 15, 18, 21, 24, 27) ──
         if (stepDef.draft) {
             const draftInfo = {
-                1: { layer: 'basic prose style', journey: 'Writing Your First Draft', desc: 'This is where your scene comes to life as actual writing. Stephen King says in <em>On Writing</em>: \u201cThe first draft is just you telling yourself the story.\u201d Focus on strong nouns, dynamic verbs, and well-chosen techniques. Every word choice needs to serve your story\u2019s goals.' },
+                // v7.20.505 (#366): Step 10 is now a DIAGNOSTIC \u2014 the scene arrives already written
+                // from Step 9's transfer, and there is no Sophia here by design. The page had to
+                // stop promising a workshop it no longer runs (a screen that describes a different
+                // lesson than the one you are in reads to a student as their own mistake).
+                1: { layer: 'basic prose style', journey: 'Writing Your First Draft', desc: 'Your scene is below, exactly as you transferred it at the end of Step 9. This lesson is <strong>yours alone</strong> \u2014 no Sophia, no walk. Read it through and polish it as well as you can, then mark the lesson complete and take it into your assessment. Stephen King says in <em>On Writing</em>: \u201cThe first draft is just you telling yourself the story.\u201d Work on strong nouns and dynamic verbs, show rather than tell, and aim for around 450\u2013600 words.' },
                 2: { layer: 'character goals and needs', journey: 'The Road of Trials intensifies', desc: 'In your first draft you focused on prose style. Now add your protagonist\u2019s <strong>character arc</strong>. Robert McKee writes that the reader should <em>feel</em> the protagonist\u2019s internal struggle driving the external action. Every element of your scene should connect to this arc.' },
                 3: { layer: 'archetypes', journey: 'Making Character Transformation Visible', desc: 'In Steps 13 and 14, you defined the archetypal masks your protagonist wears. Now make that transformation visible in your prose. Christopher Vogler teaches that archetype shifts are the visible evidence of character change.' },
                 4: { layer: 'empathy techniques', journey: 'Making Readers Care Deeply', desc: 'This is the draft where we make your reader <em>care</em>. Karl Iglesias writes in <em>Writing for Emotional Impact</em> that empathy is the most important emotion a writer can generate. Weave victim, virtue, and desirable quality techniques into your prose.' },
@@ -45993,7 +46322,14 @@
                 `<p>${info.desc}</p>`
             );
             html += dividerHTML('YOUR WRITING');
-            html += sectionHTML('response', 'Draft', true, null, '<p></p>');
+            // v7.20.505 (#366): `data-student-composition="true"` is an OPT-IN provenance flag for
+            // the word counter, not decoration. In an essay `response` is where the student writes;
+            // in the CW walk `response` is where Sophia writes, so student-data drops it wholesale
+            // and this draft — the one piece of writing that matters most — would count ZERO
+            // (dashboard-to-wml-CW-WORD-PROVENANCE, measured on prod). The flag lets that lane
+            // count THIS section without re-counting Sophia's generated blocks in Steps 1–2.
+            // ⚠️ Two-sided contract: never rename it without a handoff in the same session.
+            html += sectionHTML('response', 'Draft', true, null, '<p></p>', { 'student-composition': 'true' });
             return html;
         }
 

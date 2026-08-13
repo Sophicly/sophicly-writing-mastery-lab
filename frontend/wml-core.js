@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.504';
+var WML_BUILD = '7.20.505';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1087,7 +1087,14 @@ window.WML = (function() {
         { step: 8,  label: 'Update Plot: Values',       tier: 'si', phase: 'planning' },
         // Drafting Cycle
         { step: 9,  label: 'Scene Selection',           tier: 'si', phase: 'drafting' },
-        { step: 10, label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1 },
+        // ⭐⭐ v7.20.505 (#366, Neil 2026-08-10) — STEP 10 IS A DIAGNOSTIC, NOT A WALK. His words:
+        // *"Step ten is meant to basically be a little bit like a test — it can actually just be
+        // like a diagnostic environment. So no walk there. They just write it out and try and
+        // polish it to the best of their abilities, then they do their assessment."*
+        // `env` is a CAPABILITY, never a `step === 10` literal (canvas task-scoping rule #2):
+        // getExerciseConfig reads it, so a future step opts in by adding the word, and no sibling
+        // step can inherit this environment by accident.
+        { step: 10, label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1, env: 'diagnostic' },
         { id: 'trial_1', label: 'Trial 1: Story Coherence', tier: 'si', phase: 'drafting', trial: 1 },
         { step: 11, label: 'Character Profile',         tier: 'workbook', phase: 'drafting' },
         { step: 12, label: 'Update Plot: Goals',        tier: 'workbook', phase: 'drafting' },
@@ -1269,6 +1276,15 @@ window.WML = (function() {
         13: 'draft_1', 16: 'draft_2', 19: 'draft_3', 22: 'draft_4',
         25: 'draft_5', 28: 'draft_6', 29: 'draft_7',
     };
+
+    // ⭐ v7.20.505 (#366) — WHICH ARTIFACT SEEDS A STEP'S WRITING BOX, and it is deliberately a
+    // DIFFERENT mechanism from CW_DRAFT_PREDECESSOR above. That map replaces the WHOLE document
+    // with the previous draft's document; this one drops prose INTO the draft box of this step's
+    // own template, leaving the teaching and the box's provenance flag intact.
+    // Step 10 receives the scene the student wrote out and transferred in Step 9 — Neil, 2026-08-13:
+    // *"it transfers all of it as just prose with no labels into some sort of area that the student
+    // can check. And then that area will then seed step ten."*
+    const CW_SEED_FROM = { 10: 'scene_draft' };
 
     // ── EXERCISE MANIFEST — single source of truth for all exercise types (v7.13.11) ──
     // Each entry defines what panels render, which protocol loads, how completion is detected,
@@ -1711,6 +1727,28 @@ window.WML = (function() {
             chatHeaderLabel: 'Sophia',
             sidebarSteps: null,
         },
+        // ── Creative Writing: DIAGNOSTIC draft steps (v7.20.505, #366) ──
+        // The student's scene arrives already written (seeded from Step 9's locked section); this
+        // step is where they polish it alone and hand it to the assessment. No chat, no walk, no
+        // sidebar — the same shape as the essay `diagnostic` above, which is what Neil asked for.
+        // ⚠️ `protocolSource: null` on purpose: CW-STEP-10-draft-1-prose-style.md still describes
+        // the OLD Socratic workshop and would contradict this ruling if it were ever loaded.
+        // ⚠️ The panel shape is cw_workbook's, byte for byte, because that is a SHIPPED, proven
+        // doc-only rendering path (`isCwWorkbook` now admits this env). Inventing a fourth panel
+        // combination would have sent Step 10 down a branch nothing has ever rendered.
+        cw_diagnostic: {
+            label: 'Creative Writing',
+            environment: 'free',
+            panels: { sidebar: false, chat: false, guidance: true, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: null,
+            protocolTask: null,
+            completionType: 'manual',
+            storageSuffix: '_cw',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+        },
         // ── Creative Writing: Workbook Steps (v7.13.34) ──
         cw_workbook: {
             label: 'Creative Writing',
@@ -1860,15 +1898,24 @@ window.WML = (function() {
         if (task.startsWith('cw_')) {
             const stepDef = getCwStepDef(task);
             if (stepDef) {
-                const base = stepDef.tier === 'si' ? EXERCISE_MANIFEST.cw_si : EXERCISE_MANIFEST.cw_workbook;
+                // v7.20.505 (#366): `env` wins over `tier` — a step that declares a diagnostic
+                // environment gets it whatever its tier says. Capability first, never a literal.
+                const base = stepDef.env === 'diagnostic' ? EXERCISE_MANIFEST.cw_diagnostic
+                    : stepDef.tier === 'si' ? EXERCISE_MANIFEST.cw_si
+                    : EXERCISE_MANIFEST.cw_workbook;
                 const stepKey = stepDef.step || stepDef.id;
+                // Scoped to the diagnostic env ONLY — workbook steps keep the fields they have
+                // always been given, so this change cannot reach a step it was not written for.
+                const noChat = stepDef.env === 'diagnostic';
                 return {
                     ...base,
                     label: stepDef.label,
                     protocolTask: task,
                     storageSuffix: '_cw_' + stepKey,
-                    sidebarSteps: CW_SIDEBAR_STEPS[stepKey] || null,
-                    chatHeaderLabel: 'Step ' + stepKey + ': ' + stepDef.label,
+                    // A step with no chat has no walk, so a walk sidebar would be a list of
+                    // sub-steps nothing can ever tick — the §4d "screen that lies" shape.
+                    sidebarSteps: noChat ? null : (CW_SIDEBAR_STEPS[stepKey] || null),
+                    chatHeaderLabel: noChat ? null : ('Step ' + stepKey + ': ' + stepDef.label),
                 };
             }
         }
@@ -4912,7 +4959,7 @@ window.WML = (function() {
         // Exercise manifest
         EXERCISE_MANIFEST,
         // Creative Writing
-        CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SIDEBAR_STEPS,
+        CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SEED_FROM, CW_SIDEBAR_STEPS,
         // Revision map
         REVISION_MAP,
         // Utilities
