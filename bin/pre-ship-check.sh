@@ -344,6 +344,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw8-sim-harness.js || fail=1
 fi
 
+# v7.20.505 (#366): CW9 TRANSFER → CW10 SEED. The chain "write the elements → tap Transfer →
+# Step 10 opens with the prose" crosses two lessons, three artifact keys and the exercise manifest,
+# and every way it can break is SILENT (blank Step 10, a chat panel creeping back onto the test, a
+# join that keeps its labels, a draft the word counter reads as zero). Runs the real manifest
+# resolver and the real join; asserts the rest against the shipped source.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|cw9-transfer-gate\.js'; then
+  node bin/cw9-transfer-gate.js || fail=1
+fi
+
 # v7.20.413: CW STEP-7 DOCUMENT GATE. The document half of Step 7 — the fifteen rows, their
 # completion rule and Neil's teaching prose. (The walk that fills them is gated by cw7-sim above.)
 # It runs the REAL builder and
