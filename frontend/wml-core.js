@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.505';
+var WML_BUILD = '7.20.506';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1087,7 +1087,7 @@ window.WML = (function() {
         { step: 8,  label: 'Update Plot: Values',       tier: 'si', phase: 'planning' },
         // Drafting Cycle
         { step: 9,  label: 'Scene Selection',           tier: 'si', phase: 'drafting' },
-        // ⭐⭐ v7.20.505 (#366, Neil 2026-08-10) — STEP 10 IS A DIAGNOSTIC, NOT A WALK. His words:
+        // ⭐⭐ v7.20.506 (#366, Neil 2026-08-10) — STEP 10 IS A DIAGNOSTIC, NOT A WALK. His words:
         // *"Step ten is meant to basically be a little bit like a test — it can actually just be
         // like a diagnostic environment. So no walk there. They just write it out and try and
         // polish it to the best of their abilities, then they do their assessment."*
@@ -1277,7 +1277,7 @@ window.WML = (function() {
         25: 'draft_5', 28: 'draft_6', 29: 'draft_7',
     };
 
-    // ⭐ v7.20.505 (#366) — WHICH ARTIFACT SEEDS A STEP'S WRITING BOX, and it is deliberately a
+    // ⭐ v7.20.506 (#366) — WHICH ARTIFACT SEEDS A STEP'S WRITING BOX, and it is deliberately a
     // DIFFERENT mechanism from CW_DRAFT_PREDECESSOR above. That map replaces the WHOLE document
     // with the previous draft's document; this one drops prose INTO the draft box of this step's
     // own template, leaving the teaching and the box's provenance flag intact.
@@ -1727,7 +1727,7 @@ window.WML = (function() {
             chatHeaderLabel: 'Sophia',
             sidebarSteps: null,
         },
-        // ── Creative Writing: DIAGNOSTIC draft steps (v7.20.505, #366) ──
+        // ── Creative Writing: DIAGNOSTIC draft steps (v7.20.506, #366) ──
         // The student's scene arrives already written (seeded from Step 9's locked section); this
         // step is where they polish it alone and hand it to the assessment. No chat, no walk, no
         // sidebar — the same shape as the essay `diagnostic` above, which is what Neil asked for.
@@ -1898,7 +1898,7 @@ window.WML = (function() {
         if (task.startsWith('cw_')) {
             const stepDef = getCwStepDef(task);
             if (stepDef) {
-                // v7.20.505 (#366): `env` wins over `tier` — a step that declares a diagnostic
+                // v7.20.506 (#366): `env` wins over `tier` — a step that declares a diagnostic
                 // environment gets it whatever its tier says. Capability first, never a literal.
                 const base = stepDef.env === 'diagnostic' ? EXERCISE_MANIFEST.cw_diagnostic
                     : stepDef.tier === 'si' ? EXERCISE_MANIFEST.cw_si
@@ -3996,6 +3996,19 @@ window.WML = (function() {
         lineSquare: 'xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.91" stroke-linecap="square" stroke-miterlimit="10"',
     };
     const ICONS = {
+        // ⭐ v7.20.506 — four glyphs Neil supplied 2026-08-13 to replace emoji on buttons.
+        // Bodies extracted PROGRAMMATICALLY from frontend/icons/*.svg, never retyped (the rule at
+        // the top of this table). ⚠️ THREE DIFFERENT GRIDS — 24, 48 and 64 — which is exactly why
+        // `vb` is per ROW: a 64-grid glyph emitted on the default 24 viewBox renders as a corner
+        // fragment magnified ~3x, which reads as a broken icon rather than as a wrong number.
+        // Only `reopenScene` has a button so far; the other three are registered and waiting for
+        // Neil to say which buttons they dress (his names are TECHNIQUES, not button names).
+        foreshadowing: { kind: 'filled', vb: '0 0 24 24', src: 'foreshadowing.svg', body: '<path d="M4.00001 20V14C4.00001 9.58172 7.58173 6 12 6C16.4183 6 20 9.58172 20 14V20H21V22H3.00001V20H4.00001ZM6.00001 14H8.00001C8.00001 11.7909 9.79087 10 12 10V8C8.6863 8 6.00001 10.6863 6.00001 14ZM11 2H13V5H11V2ZM19.7782 4.80761L21.1924 6.22183L19.0711 8.34315L17.6569 6.92893L19.7782 4.80761ZM2.80762 6.22183L4.22183 4.80761L6.34315 6.92893L4.92894 8.34315L2.80762 6.22183Z"/>' },
+        // The door-with-chevron. Named by Neil for the "Reopen my scene" chip. The tabler filled
+        // export ships a transparent 24x24 backing plate; dropped here (it paints nothing).
+        reopenScene: { kind: 'filled', vb: '0 0 24 24', src: 'reopen-my-scene.svg', body: '<path d="M18 3a3 3 0 0 1 2.995 2.824l.005 .176v12a3 3 0 0 1 -2.824 2.995l-.176 .005h-12a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-12a3 3 0 0 1 2.824 -2.995l.176 -.005h12zm0 2h-9v14h9a1 1 0 0 0 .993 -.883l.007 -.117v-12a1 1 0 0 0 -.883 -.993l-.117 -.007zm-4.387 4.21l.094 .083l2 2a1 1 0 0 1 .083 1.32l-.083 .094l-2 2a1 1 0 0 1 -1.497 -1.32l.083 -.094l1.292 -1.293l-1.292 -1.293a1 1 0 0 1 -.083 -1.32l.083 -.094a1 1 0 0 1 1.32 -.083z" />' },
+        subplot: { kind: 'filled', vb: '0 0 48 48', src: 'subplot.svg', body: '<path d="M27.3177,35.9142c-.7659-.4966-1.8427-.9142-3.3177-.9142s-2.5518.4177-3.3177.9142c-.8898-2.8441-3.5491-4.9142-6.6823-4.9142-3.8594,0-7,3.1406-7,7s3.1406,7,7,7c3.7529,0,6.8173-2.9719,6.984-6.6844.2583-.3636,1.1115-1.3156,3.016-1.3156,1.9133,0,2.7659.9611,3.0159,1.3134.1656,3.7135,3.2305,6.6866,6.9841,6.6866,3.8594,0,7-3.1406,7-7s-3.1406-7-7-7c-3.1332,0-5.7925,2.0702-6.6823,4.9142ZM14,43c-2.7568,0-5-2.2432-5-5s2.2432-5,5-5,5,2.2432,5,5-2.2432,5-5,5ZM39,38c0,2.7568-2.2432,5-5,5s-5-2.2432-5-5,2.2432-5,5-5,5,2.2432,5,5ZM41.5928,15.8145c-.8464-.381-1.763-.5062-2.6531-.3792-4.3094-8.4137-6.7807-12.4353-8.9396-12.4353-1.3574,0-2.833.4971-4.3867,1.4785-.9961.627-2.2314.627-3.2256,0-1.5547-.9814-3.0303-1.4785-4.3877-1.4785-2.1599,0-4.6305,4.0214-8.9398,12.4343-.8903-.1268-1.8066-.0009-2.653.3802-1.3545.6104-2.3379,1.7881-2.6992,3.2314-.5352,2.1377.4551,4.3711,2.4072,5.4287,3.1182,1.6904,9.5879,4.5254,17.8848,4.5254s14.7666-2.835,17.8848-4.5254c1.9521-1.0576,2.9424-3.291,2.4072-5.4287v-.001c-.3613-1.4424-1.3447-2.6201-2.6992-3.2305ZM18,5c.96,0,2.1074.4043,3.3203,1.1699,1.6523,1.043,3.7061,1.043,5.3604,0,1.2119-.7656,2.3594-1.1699,3.2979-1.1709,1.4244.27,5.201,7.4777,7.0585,11.107-2.7214,1.36-7.0927,2.894-13.037,2.894s-10.3167-1.5343-13.038-2.8953c1.8548-3.6207,5.632-10.8354,7.038-11.1047ZM40.9316,22.7168c-2.9512,1.5996-9.0762,4.2832-16.9316,4.2832s-13.9805-2.6836-16.9316-4.2832c-1.1494-.623-1.7334-1.9336-1.4209-3.1855.2119-.8457.7881-1.5361,1.5811-1.8926.3701-.167.7646-.251,1.1582-.251.4463,0,.8916.1074,1.3027.3203,2.8867,1.502,7.7139,3.292,14.3105,3.292s11.4238-1.79,14.3105-3.291c.7715-.4023,1.6699-.4277,2.4609-.0703.793.3564,1.3691,1.0469,1.5811,1.8926.3125,1.252-.2715,2.5625-1.4209,3.1855Z"/>' },
+        mcguffin: { kind: 'filled', vb: '0 0 64 64', src: 'mcguffin.svg', body: '<!-- Generator: Adobe Illustrator 29.5.1, SVG Export Plug-In . SVG Version: 2.1.0 Build 141) --> <path d="M46,21h-28c-.55,0-1,.45-1,1v6c0,.55.45,1,1,1h1v11c0,1.65,1.35,3,3,3h20c1.65,0,3-1.35,3-3v-11h1c.55,0,1-.45,1-1v-6c0-.55-.45-1-1-1ZM30,23h4v4h-4v-4ZM25,41h-3c-.55,0-1-.45-1-1v-11h4v12ZM19,27v-4h9v4h-9ZM37,41h-10v-12h10v12ZM43,40c0,.55-.45,1-1,1h-3v-12h4v11ZM45,27h-9v-4h9v4Z"/> <path d="M32,7c-5.234,0-10.246,1.603-14.491,4.637-.45.321-.554.945-.232,1.395.319.45.945.553,1.395.232,3.905-2.789,8.514-4.264,13.329-4.264,12.682,0,23,10.318,23,23s-10.318,23-23,23-23-10.318-23-23c0-4.815,1.475-9.424,4.264-13.329.321-.449.217-1.074-.232-1.395-.449-.322-1.075-.218-1.395.232-3.034,4.246-4.637,9.257-4.637,14.491,0,13.785,11.215,25,25,25s25-11.215,25-25S45.785,7,32,7Z"/> <path d="M18.708,15.745c-.539.441-1.062.915-1.556,1.408-.391.391-.391,1.023,0,1.414.387.387,1.029.385,1.414,0,.446-.446.92-.875,1.408-1.274.427-.35.49-.98.141-1.407-.35-.428-.979-.49-1.407-.141Z"/> <path d="M30.134,13.09c1.226-.12,2.489-.12,3.716-.001.548.06,1.039-.349,1.091-.899.053-.549-.349-1.038-.899-1.091-1.354-.131-2.75-.13-4.103.001-.55.054-.952.542-.898,1.092.05.517.485.903.994.903.032,0,.065-.001.098-.005Z"/> <path d="M40.924,15.224c.482.257,1.096.07,1.353-.412.26-.487.076-1.093-.412-1.353-1.208-.645-2.485-1.172-3.794-1.567-.526-.159-1.086.14-1.247.668-.16.529.14,1.087.668,1.247,1.184.357,2.338.834,3.431,1.417Z"/> <path d="M23.063,15.23c1.093-.584,2.247-1.062,3.43-1.419.529-.16.828-.718.667-1.247-.16-.529-.719-.829-1.247-.667-1.308.395-2.584.924-3.793,1.57-.88.47-.536,1.882.472,1.882.159,0,.32-.038.47-.118Z"/> <path d="M46.847,18.567c.391-.391.391-1.023,0-1.414-.493-.493-1.017-.967-1.556-1.408-.428-.349-1.058-.287-1.407.141-.35.427-.287,1.058.141,1.407.488.399.962.828,1.408,1.274.366.366,1.027.387,1.414,0Z"/> <path d="M45.433,45.433c-.446.446-.92.875-1.408,1.274-.691.565-.303,1.774.634,1.774.223,0,.447-.074.633-.226.539-.441,1.062-.915,1.556-1.408.391-.391.391-1.023,0-1.414s-1.023-.391-1.414,0Z"/> <path d="M23.076,48.776c-.488-.261-1.094-.076-1.353.412-.26.487-.076,1.093.412,1.353,1.208.644,2.485,1.172,3.794,1.567.499.151,1.088-.143,1.247-.668.16-.529-.14-1.087-.668-1.247-1.184-.357-2.338-.834-3.431-1.417Z"/> <path d="M40.937,48.77c-1.093.584-2.247,1.062-3.43,1.419-.529.16-.828.718-.668,1.246.158.522.727.825,1.247.668,1.308-.396,2.584-.924,3.793-1.57.487-.26.671-.866.411-1.353-.26-.487-.864-.67-1.353-.411Z"/> <path d="M30.149,50.911c-.551-.055-1.038.349-1.091.899-.053.549.349,1.038.899,1.091.674.065,1.362.099,2.043.099.688,0,1.38-.034,2.06-.1.55-.054.952-.542.898-1.092-.054-.549-.53-.952-1.092-.898-1.225.12-2.489.12-3.716.001Z"/> <path d="M18.708,48.255c.395.323,1.065.278,1.407-.141.35-.427.287-1.058-.141-1.407-.488-.399-.962-.828-1.408-1.274-.391-.391-1.023-.391-1.414,0s-.391,1.023,0,1.414c.493.493,1.017.967,1.556,1.408Z"/> <path d="M15.737,15.737c.391-.391.391-1.024,0-1.414s-1.024-.391-1.414,0c-.391.391-.391,1.024,0,1.414.391.391,1.024.391,1.414,0Z"/>' },
         // ⭐ v7.20.398 (Neil, on the "Both still right →" chip): "you can use a different check icon
         // there — one similar to the ones we use in the protocol progress sidebar."
         // This IS that tick, ported byte-for-byte rather than substituted with a lookalike: it is the

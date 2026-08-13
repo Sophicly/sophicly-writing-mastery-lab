@@ -18938,6 +18938,10 @@
                     const gateBtn = el('button', {
                         className: 'swml-quick-btn',
                         textContent: gate.label,
+                        // v7.20.506: gates may carry a registry glyph instead of a leading emoji.
+                        // `el()` applies `icon` AFTER textContent (wml-core.js ~2724), so the two
+                        // cannot fight; a gate without one is unchanged.
+                        icon: gate.icon || null,
                         onClick: function () {
                             try { if (typeof gate.onOpen === 'function') gate.onOpen(); }
                             catch (e) { console.warn('WML: resource gate open failed (fail-open) —', e && e.message); }
@@ -19707,7 +19711,9 @@
                 try { if (typeof showGuidePanel === 'function') showGuidePanel('Story Sparks'); } catch (e) { /* fail-open */ }
             }
             const OPENER_GATES = {
-                0: { label: '📖 See how writers turn moments into ideas', onOpen: openGuide },
+                // v7.20.506: 📖 → the registry's own `guide` glyph, the same one the guide rail
+                // button uses, so the button and the thing it opens now carry one mark.
+                0: { label: 'See how writers turn moments into ideas', icon: WML.icon('guide', 15), onOpen: openGuide },
                 1: { label: '▶ Watch 5 real scenes that can become stories', onOpen: openVideo },
             };
 
@@ -26489,13 +26495,16 @@
                 // The ask ends on the question; the chips are the free help rungs BELOW it, and
                 // never a way to skip past it (§4c.9 — Sophia is the last rung and this ask is
                 // zero-API, so there is no Sophia rung to reach for at all).
+                // v7.20.506: emoji → registry glyphs. `examples` is the bulb the OTHER walks'
+                // help bars already use, so "More examples" now looks the same everywhere it
+                // appears; `reopenScene` is Neil's own door-with-chevron (frontend/icons/).
                 chipBar([
-                    { label: '💡 More examples', go: function () { aiBubble(OVERVIEW_MORE); _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' }); overviewChips(); } },
-                    { label: '🗂 Reopen my scene', go: open },
+                    { svg: WML.icon('examples', 15), label: 'More examples', go: function () { aiBubble(OVERVIEW_MORE); _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' }); overviewChips(); } },
+                    { svg: WML.icon('reopenScene', 15), label: 'Reopen my scene', go: open },
                 ]);
             }
             function overviewChips() {
-                chipBar([{ label: '🗂 Reopen my scene', go: open }]);
+                chipBar([{ svg: WML.icon('reopenScene', 15), label: 'Reopen my scene', go: open }]);
             }
 
             // A `rewrite` ask (§4c.6): the overview is ONE self-contained artefact, so a second
