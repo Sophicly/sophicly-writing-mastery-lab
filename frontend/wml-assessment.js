@@ -4779,7 +4779,17 @@
         // ══════════════════════════════════════════════════════════════════════════════════
         function _geomProbe() {
             try {
-                if (!/[?&]wml_geom=1/.test(window.location.search)) return;
+                // v7.20.504: Neil opened this on staging on an iPad and saw nothing. The gate
+                // was `location.search`, and Focus is an SPA — navigating to the lesson rewrites
+                // the URL and the query is gone before the canvas ever mounts. Match the WHOLE
+                // href (covers the hash form too) and LATCH it for the tab, so once armed it
+                // survives every SPA navigation. Nothing to re-type on a device with no console.
+                try {
+                    if (/wml_geom=1/.test(window.location.href)) sessionStorage.setItem('swmlGeom', '1');
+                } catch (e) {}
+                var armed = false;
+                try { armed = sessionStorage.getItem('swmlGeom') === '1'; } catch (e) {}
+                if (!armed && !/wml_geom=1/.test(window.location.href) && !window.WML_GEOM) return;
                 var box = document.getElementById('swml-geom-probe');
                 if (!box) {
                     box = document.createElement('div');
