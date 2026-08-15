@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.521
+ * Version: 7.20.522
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.521');
+define('SWML_VERSION', '7.20.522');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -565,6 +565,9 @@ class Sophicly_Writing_Mastery_Lab {
             // onto session_records rows by student-data listeners. Empty on the
             // standalone /writing-mastery-lab/ page (no host lesson).
             'lessonUrl'        => get_queried_object_id() ? get_permalink(get_queried_object_id()) : '',
+            // v7.20.522 (#381): CW step → lesson permalink, so a rail panel can offer a
+            // way back to the lesson its content was written in. Derived, never hardcoded.
+            'cwStepUrls'       => $this->get_cw_step_urls($this->resolve_current_course_id(get_queried_object_id())),
             'covers'           => get_option('swml_cover_images', []),
             'urlParams'  => [
                 'mode'    => sanitize_text_field($_GET['mode'] ?? ''),
@@ -1123,6 +1126,9 @@ class Sophicly_Writing_Mastery_Lab {
                 // lesson-scoped sophicly/v1/deadlines/current the focus-mode sidebar uses.
                 'courseId'       => $this->resolve_current_course_id(get_queried_object_id()),
                 'lessonId'       => get_queried_object_id(),
+                // v7.20.522 (#381): same map on the embed path — both localise sites or the
+                // panel link is present on one route and silently absent on the other.
+                'cwStepUrls'     => $this->get_cw_step_urls($this->resolve_current_course_id(get_queried_object_id())),
                 'covers'         => get_option('swml_cover_images', []),
                 'urlParams'      => [
                     'mode' => 'guided', 'board' => '', 'subject' => '', 'text' => '',
@@ -1318,6 +1324,39 @@ class Sophicly_Writing_Mastery_Lab {
         if (!$br || !method_exists($br, 'get_course_deadline_window')) return null;
         $win = $br->get_course_deadline_window($uid, $course_id);
         return is_array($win) ? $win : null;
+    }
+
+    /**
+     * CW step number → its LearnDash lesson permalink (v7.20.522, #381).
+     *
+     * DERIVED FROM THE BRIDGE, never a constant map. The bridge option is already the
+     * one place a lesson is bound to a `cw_step_N` task, so reading it means the links
+     * cannot drift from the course. That matters here more than usual: Neil renumbered
+     * the course at v7.20.451 (a new Step 8 pushed every later step up by one), and a
+     * hardcoded table would have kept pointing at the OLD lessons in silence — a link
+     * that opens the wrong lesson is worse than no link, because nothing looks broken.
+     *
+     * @param int $course_id LD course the lesson is being viewed through.
+     * @return array<int,string> step number → permalink, for the steps that resolve.
+     */
+    private function get_cw_step_urls($course_id) {
+        $course_id = absint($course_id);
+        if (!$course_id) return [];
+        $bridge = get_option('sophicly_ld_bridge_' . $course_id, []);
+        if (!is_array($bridge) || !$bridge) return [];
+        $urls = [];
+        foreach ($bridge as $post_id => $entry) {
+            // ⛔ Bridge entries are ARRAYS and must stay arrays — read, never cast.
+            if (!is_array($entry) || empty($entry['wml_task'])) continue;
+            if (!preg_match('/^cw_step_(\d+)$/', (string) $entry['wml_task'], $m)) continue;
+            $url = '';
+            if (function_exists('learndash_get_step_permalink')) {
+                $url = learndash_get_step_permalink(absint($post_id), $course_id);
+            }
+            if (!$url) $url = get_permalink(absint($post_id)) ?: '';
+            if ($url) $urls[(int) $m[1]] = $url;
+        }
+        return $urls;
     }
 
     private function resolve_current_course_id($post_id) {

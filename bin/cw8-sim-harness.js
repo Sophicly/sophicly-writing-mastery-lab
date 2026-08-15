@@ -464,12 +464,54 @@ async function main() {
         ok(before !== after, 'the write actually landed');
     }
 
+    // ── #380: THE WAY BACK IN, on every screen of the walk ────────────────────────────────
+    // Neil's first end-to-end run: one trait, one beat, and then no door back to the
+    // interface. The cause was the PHASE MACHINE — posOf() only returns `phase:'port'`
+    // while `!anyWorked()`, so after the very first port the branch that offers the
+    // interface is unreachable, and its own "Open my plot again →" label was written for
+    // a state that could no longer occur. These assertions fail on that build.
+    ok(chipNamed(w, 'Open my plot again →'),
+        '⭐ #380: the refine screen offers the way back into the interface — a student who ported ONE '
+        + 'beat must not be locked out of adding another until the whole refine queue is finished');
+    if (chipNamed(w, 'Open my plot again →')) {
+        // …and taking it must NOT settle the beat currently being refined: re-entry is not
+        // an answer, and banking one would record "I refined it" for a line untouched.
+        // (Guarded so the negative control REPORTS the missing door instead of crashing on
+        // a tap with nothing to tap — a harness that dies mid-run hides the assertions after it.)
+        // The beat the walk is asking about RIGHT NOW — captured from the ask itself, because
+        // the check that matters is "is this same beat still owed a refine after I come back",
+        // and that lives in the LEDGER, not in any row's text. An earlier draft of this block
+        // compared row text instead and passed happily against an injected markDone() — a check
+        // that duplicated its subject and therefore tested nothing.
+        const askBefore = w.bubbles.slice(-1)[0] || '';
+        const rowsBefore = BEAT_FIDS.map((f) => w.rows.get(f)).join(' ');
+        const mountsBefore = island.mounted;
+        w.tap(chipNamed(w, 'Open my plot again →'));
+        await settle();
+        ok(island.mounted === mountsBefore + 1 && !!island.props,
+            '#380: tapping it actually re-mounts the interface (mounts ' + mountsBefore + ' → ' + island.mounted + ')');
+        ok(BEAT_FIDS.map((f) => w.rows.get(f)).join(' ') === rowsBefore,
+            '#380: re-entry files nothing and rewrites nothing');
+        ok(w.sends.length === 0, '#380: and it costs no API call');
+        island.close();
+        await settle();
+        ok(w.chips().length > 0, '§4d: closing it lands on a live screen, never a dead one');
+        ok((w.bubbles.slice(-1)[0] || '') === askBefore,
+            '⭐ #380: the SAME beat is still owed its refine — re-entry defers the question, it never '
+            + 'banks it. Marking it done here would record "I refined this" for a line never touched.');
+    }
+
     // ── the rest of the refine queue, then continuity, then the wrap ──
     for (let i = 0; i < 6 && w.chips().some((c) => /Leave as is/.test(String(c.textContent))); i++) {
         w.tap(w.chips().filter((c) => /Leave as is/.test(String(c.textContent)))[0]);
         await settle();
     }
     ok(/read-through|contradictions/.test(w.bubbles.slice(-2).join('\n')), 'the continuity pass is asked once, at the end');
+    // #380: the continuity read-through is the screen most likely to surface "I should add
+    // another trait" — reading the six stages in order is exactly what exposes the gap. The
+    // typed ask stays armed alongside it, so this is an extra door, not a replacement.
+    ok(chipNamed(w, 'Open my plot again →'),
+        '#380: the continuity screen also offers the way back into the interface');
     w.say('Nothing — it holds together.');
     ok((w.rows.get(CW8_CONTINUITY_FID) || '').indexOf('holds together') !== -1, 'the continuity answer filed');
     const wrap = w.bubbles.slice(-2).join('\n');

@@ -25954,6 +25954,27 @@
             // lesson: liveness is a way FORWARD, not merely a button on screen).
             function afterPort() { advance(); }
 
+            // ⭐ v7.20.522 (#380, Neil 2026-08-15) — THE WAY BACK IN, on every screen of the walk.
+            // His first end-to-end run: *"I only chose one trait, and I appended it to one beat,
+            // but it didn't give me the opportunity to go back and then try again."*
+            //
+            // ROOT, and it is the PHASE MACHINE, not a missing button. `posOf()` returns
+            // `{ phase: 'port' }` only `if (!anyWorked())` — so the moment the FIRST beat carries
+            // a trait, the walk can never be in the port phase again, and `ensureChip()` (the only
+            // caller that offers the interface) is never reached. Its own `opened ? 'Open my plot
+            // again →' : …` label was written for a state the machine had already made
+            // unreachable: a re-entry that existed in the text and not in the flow.
+            //
+            // The fix is NOT to loosen that guard — `anyWorked()` is what stops the walk looping
+            // back to a fresh port ask forever. It is that OPENING THE INTERFACE IS AN ACTION, NOT
+            // A PHASE: it is offered alongside whatever the walk is currently asking, and the
+            // ledger-derived `posOf()` already absorbs whatever comes back (new ports simply
+            // surface as new `refine` positions). ONE label for that door at every point INSIDE
+            // the walk, so a student meets the same button twice and the sim can assert on it.
+            // (The wrap keeps its own wording — "Add more traits or beats →" — because there the
+            // walk is finished and the invitation genuinely means something different.)
+            const CW8_REOPEN = 'Open my plot again →';
+
             // ── PHASE 2: REFINE — ONE ported line at a time (§18 serial), deliberately LIGHT.
             // Neil, #374a: *"what I mean by update is they can just refine it a little bit if they
             // want. But they have to also remember that they'll be doing more refinement in step
@@ -25973,7 +25994,7 @@
                 };
                 _cwReplay(emit);   // quotes the live beat — drawn, never stored (§4c.7)
                 _walkSlot.arm('cw8', p.fid, { cycle: 'rewrite', data: { kind: 'refine', key: p.key, traitLabel: p.traitLabel, seg: seg } });
-                chipBar(['Leave as is →', 'Leave them all as they are →'], onCw8RefineChip);
+                chipBar(['Leave as is →', 'Leave them all as they are →', CW8_REOPEN], onCw8RefineChip);
                 helpBar((roster || []).filter(function (x) { return _cw7TraitLabel(x.trait) === p.traitLabel; })[0] || null);
                 resetSend();
             }
@@ -25985,6 +26006,10 @@
             function onCw8RefineChip(pick) {
                 userTurn(pick);
                 _walkSlot.clear('cw8');
+                // #380: back into the interface WITHOUT settling this beat — a re-entry that
+                // marked the current line done would quietly bank "I refined it" for a beat the
+                // student only walked past on their way to add another trait.
+                if (pick === CW8_REOPEN) { openIsland(); return; }
                 if (pick.indexOf('Leave them all') === 0) {
                     // The durable footprint for "I kept them" — an answer with no footprint is
                     // re-asked for ever (the .421 law).
@@ -26029,8 +26054,21 @@
                         + '**What did you find?** “Nothing — it holds together” is a real answer.');
                 });
                 _walkSlot.arm('cw8', CW8_CONTINUITY_FID, { cycle: 'rewrite', data: { kind: 'continuity' } });
+                // #380: the last screen before the wrap, and the one where "I want to add another
+                // trait" is most likely — reading the six stages through is exactly what surfaces
+                // the gap. The typed ask stays armed; the chip is an alternative, not a
+                // replacement, so liveness (§4d) holds either way.
+                chipBar([CW8_REOPEN], onCw8ContinuityReopen);
                 helpBar(null);
                 resetSend();
+            }
+            function onCw8ContinuityReopen(pick) {
+                userTurn(pick);
+                // Drop the continuity slot so a later answer cannot file against a question the
+                // student left to go elsewhere. `posOf()` re-serves it on close while the row is
+                // still empty, so the ask is deferred, never skipped.
+                _walkSlot.clear('cw8');
+                openIsland();
             }
 
             // ── WRAP — the process goal (§29: "Lens 1 of 7 built in") ─────────────────────
@@ -26089,7 +26127,7 @@
             // and it points at the thing that is actually next, never merely at a button.
             function ensureChip() {
                 const opened = !!(ledger && ledger.ports && Object.keys(ledger.ports).length);
-                chipBar([opened ? 'Open my plot again →' : 'Choose my traits and beats →'], onCw8OpenChip);
+                chipBar([opened ? CW8_REOPEN : 'Choose my traits and beats →'], onCw8OpenChip);
                 helpBar(null);
                 resetSend();
             }
@@ -29453,11 +29491,36 @@
             });
             wpHeader.appendChild(wpClose);
             wpPanel.appendChild(wpHeader);
-            // Persistent reminder + link to the real Step-1 lesson (prod URL)
+            // ⭐ v7.20.522 (#381, Neil 2026-08-15) — EVERY PANEL THAT ORIGINATES IN A LESSON GETS
+            // A WAY BACK TO IT. His words: *"whenever a panel originates from a specific lesson,
+            // it needs to have a button in the panel so I can go back and update it if I want to."*
+            // Writer's Profile was the only one that had this, and it had it as a hardcoded prod
+            // URL — so Story Components, Story Spine and My Values were read-only dead ends.
+            //
+            // Built as DATA on the mode row (`origin` in WP_MODES), not as four more branches:
+            // this shell already serves seven modes, and the whole point of that table is that a
+            // new source is a ROW. A mode with no originating lesson simply declares none and the
+            // note hides — which is exactly the old `note: true/false` flag, now carrying the
+            // information it was already standing in for.
             const wpNote = el('div', { className: 'swml-wp-note' });
-            wpNote.innerHTML = '<span class="swml-wp-note-text">Your Writer’s Profile is built in Step 1 — to change it, edit it there.</span>' +
-                '<a class="swml-wp-step1-btn" href="https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/2-step-1-questions-for-story-ideas/">Open Step 1 →</a>';
             wpPanel.appendChild(wpNote);
+            // The URL is resolved from the bridge server-side (swmlConfig.cwStepUrls) so it can
+            // never point at the pre-renumber lesson. A step we cannot resolve renders the
+            // sentence WITHOUT a link and warns — a button that goes nowhere is worse than none.
+            function _renderWpNote(cfg) {
+                const o = cfg && cfg.origin;
+                if (!o) { wpNote.style.display = 'none'; wpNote.innerHTML = ''; return; }
+                const urls = (WML.cfg && WML.cfg.cwStepUrls) || {};
+                const href = urls[o.step] || urls[String(o.step)] || '';
+                const txt = 'Your ' + o.noun + ' is built in Step ' + o.step + ' — to change it, edit it there.';
+                if (!href) {
+                    console.warn('WML rail panel: no lesson URL for CW Step ' + o.step
+                        + ' — the "Open Step" button is hidden. Is this course bridged?');
+                }
+                wpNote.innerHTML = '<span class="swml-wp-note-text">' + txt + '</span>'
+                    + (href ? '<a class="swml-wp-step1-btn" href="' + href + '">Open Step ' + o.step + ' →</a>' : '');
+                wpNote.style.display = '';
+            }
             const wpBody = el('div', { className: 'swml-outline-list swml-wp-body' });
             wpBody.innerHTML = '<p class="swml-wp-empty">Loading your Writer’s Profile…</p>';
             wpBody.addEventListener('wheel', (e) => { e.stopPropagation(); }, { passive: true });
@@ -29513,10 +29576,13 @@
             let _wpTraitValueId = null;
             let _wpTraitFocus = null;
             const WP_MODES = {
-                profile:    { title: 'Writer’s Profile',  note: true,  load: function () { _loadWriterProfilePanel(wpBody); } },
-                components: { title: 'Story Components',  note: false, load: function () { _loadStoryComponentsPanel(wpBody); } },
-                spine:      { title: 'Story Spine',       note: false, load: function () { _loadStorySpinePanel(wpBody); } },
-                examples:   { title: 'Beat examples',     note: false, anchorOnly: true, load: function () {
+                // `origin` (v7.20.522, #381) = the lesson this panel's content was WRITTEN in.
+                // Declaring it is what earns the "Open Step N →" button; a mode with no
+                // originating lesson (beat/trait examples, the flagged-beats list) declares none.
+                profile:    { title: 'Writer’s Profile',  origin: { step: 1, noun: 'Writer’s Profile' }, load: function () { _loadWriterProfilePanel(wpBody); } },
+                components: { title: 'Story Components',  origin: { step: 3, noun: 'Story Components' }, load: function () { _loadStoryComponentsPanel(wpBody); } },
+                spine:      { title: 'Story Spine',       origin: { step: 4, noun: 'Story Spine' },      load: function () { _loadStorySpinePanel(wpBody); } },
+                examples:   { title: 'Beat examples',     anchorOnly: true, load: function () {
                     if (!_wpBeatConcept) {
                         _setWpBody(wpBody, '<p class="swml-wp-empty">Open a beat’s <strong>Examples</strong> button to see what a strong version of it looks like.</p>');
                         return;
@@ -29528,7 +29594,7 @@
                 // note above gives: a new source is a row, not another branch. `anchorOnly` like
                 // `examples`, because it is opened from the walk's help bar and from the value
                 // row's own button, never from a rail icon the student would then see lit.
-                traitExamples: { title: 'Trait examples', note: false, anchorOnly: true, load: function () {
+                traitExamples: { title: 'Trait examples', anchorOnly: true, load: function () {
                     if (!_wpTraitValueId) {
                         _setWpBody(wpBody, '<p class="swml-wp-empty">Press <strong>Trait examples</strong> on a value — in the chat or on the row — to see all of its traits in balance, in excess and in deficit.</p>');
                         return;
@@ -29542,14 +29608,14 @@
                 // sync in five places. Unlike `examples` this one HAS its own rail button, because
                 // the student must be able to ask "what did I flag?" from anywhere in the
                 // document, not only from a row that happens to be flagged.
-                revisit:    { title: 'Coming back to',    note: false, load: function () {
+                revisit:    { title: 'Coming back to',    load: function () {
                     _setWpBody(wpBody, _revisitListHTML());
                     wpBody._wpHasContent = true;
                 } },
                 // ⭐ v7.20.493 (#365) — My Values: the student's own Step-7 audit. Its own rail
                 // button (like revisit, not anchorOnly): "what did I say about my protagonist's
                 // values?" must be answerable from anywhere, on every CW step.
-                myValues:   { title: 'My Values',         note: false, load: function () { _loadMyValuesPanel(wpBody); } },
+                myValues:   { title: 'My Values',         origin: { step: 7, noun: 'values audit' }, load: function () { _loadMyValuesPanel(wpBody); } },
             };
             // Rebuilds the list IN PLACE if (and only if) it is the mode currently on screen.
             // Called after any flag change so the panel can never show a stale list; never opens
@@ -29723,7 +29789,7 @@
                 if (wpMode !== mode) { wpBody._wpHasContent = false; }  // content is not interchangeable
                 wpMode = mode;
                 if (_wpTitle) _wpTitle.textContent = cfg.title;
-                wpNote.style.display = cfg.note ? '' : 'none';
+                _renderWpNote(cfg);
                 // v7.20.311: this ONE shell serves three different rail buttons, so the anchor has
                 // to follow whichever trigger opened it — including when switching mode while the
                 // panel is already open (the panel should slide to the new button, not sit at the

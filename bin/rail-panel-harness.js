@@ -410,6 +410,47 @@ console.log('RAIL PANELS — CSS');
         'the panel body has min-height:0 — without it a flex child grows past an explicit panel height instead of scrolling');
 }
 
+// ── #381 (v7.20.522) — A PANEL SHOWING ANOTHER STEP'S WORK MUST OFFER THE WAY BACK TO IT ──
+// Neil: *"whenever a panel originates from a specific lesson, it needs to have a button in the
+// panel so I can go back and update it if I want to."* Writer's Profile was the only one that
+// had it, and it had it as a hardcoded prod URL — so the rule needs a gate, not a sweep, or the
+// NEXT panel ships as another read-only dead end.
+//
+// The discriminator is DERIVED, not a list to maintain: a mode that renders the student's own
+// work from elsewhere loads it through a `_load…Panel(` helper (profile · components · spine ·
+// values). Reference cards and the flagged-beats list build their HTML inline and legitimately
+// have no originating lesson. So: load through a panel loader ⇒ declare an `origin`.
+{
+    const modes = JS.match(/const WP_MODES = \{[\s\S]*?\n {12}\};/);
+    ok(!!modes, 'WP_MODES is still one table (the rail panel shell has ONE source of modes)');
+    if (modes) {
+        const body = modes[0];
+        // Row-by-row regex is unreliable across multi-line loaders, so split on the mode keys.
+        const keys = [...body.matchAll(/\n {16}(\w+):\s*\{/g)].map(m => ({ key: m[1], at: m.index }));
+        ok(keys.length >= 7, `every mode row is seen (found ${keys.length})`);
+        keys.forEach((k, i) => {
+            const slice = body.slice(k.at, i + 1 < keys.length ? keys[i + 1].at : body.length);
+            const showsOtherWork = /_load\w+Panel\(/.test(slice);
+            const hasOrigin = /origin:\s*\{\s*step:\s*\d+/.test(slice);
+            if (showsOtherWork) {
+                ok(hasOrigin,
+                    `#381: rail mode "${k.key}" renders the student's work from another step, so it MUST `
+                    + `declare origin:{step,noun} — without it the panel is a read-only dead end`);
+                ok(/noun:\s*'[^']+'/.test(slice), `#381: "${k.key}" names itself for the sentence (origin.noun)`);
+            } else {
+                ok(!hasOrigin,
+                    `#381: "${k.key}" has no originating lesson and correctly declares no origin`);
+            }
+        });
+        ok(!/https:\/\/www\.sophicly\.com\/courses\/[^']*lessons/.test(body),
+            '#381: no hardcoded lesson URL survives in the mode table — the link resolves from the '
+            + 'bridge (swmlConfig.cwStepUrls), so the +1 step renumber cannot leave it pointing at the old lesson');
+    }
+    ok(/_renderWpNote\(cfg\)/.test(JS),
+        '#381: the note is rendered FROM the mode config on every open — a new row cannot bypass it');
+    ok(/cwStepUrls/.test(JS), '#381: the panel reads the derived step→lesson map');
+}
+
 console.log(`   ${asserts.pass} assertions passed`);
 if (fail) {
     console.error(`❌ rail-panel-harness FAILED (${asserts.fail} assertion(s)).`);
