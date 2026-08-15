@@ -344,6 +344,15 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw8-sim-harness.js || fail=1
 fi
 
+# v7.20.520 (#379): THE SELECTION TOOLBAR STAYS ATTACHED TO THE TEXT. Pure geometry, so it has
+# no UI to eyeball and no existing gate has an opinion about it — and it has now been got wrong
+# twice on the same component. Drives the shipped placer on synthetic geometry; proven RED by
+# restoring the old clamp-instead-of-flip and the missing degenerate-rect guard.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-app\.js|sel-toolbar-place-gate\.js'; then
+  node bin/sel-toolbar-place-gate.js || fail=1
+fi
+
 # v7.20.519 (#374): THE STEP-8 INTERFACE RENDERS. The sim above drives the BRIDGE with the island
 # modelled, so a JSX runtime error inside the real component would pass every gate and reach a
 # student as a blank full-screen overlay. This renders the shipped component in all three phases.

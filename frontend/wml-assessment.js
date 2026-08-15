@@ -3604,6 +3604,117 @@
         return true;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ THE SELECTION-TOOLBAR PLACER — ONE implementation, THREE toolbars (v7.20.520, #379)
+    // ───────────────────────────────────────────────────────────────────────────────────────
+    // Neil, on staging: *"I resized the screen and then took it back to its normal size, and you
+    // can see that the toolbar has just become detached… what I want it to do is to stay attached
+    // to the word or the text that's been highlighted."*
+    //
+    // THE CAUSE WAS MEASURED, from the DOM he pasted (root §19): `top: 1044.6px; left: 4px` — BOTH
+    // axes sitting exactly on their clamp limits. That is not drift, it is the signature of a
+    // DEGENERATE selection rect (empty / zero-area), which drives both expressions past their
+    // bounds at once. The old code checked `rects.length > 0` but never that the rect had any AREA,
+    // and a browser mid-reflow hands back exactly that.
+    //
+    // ⭐ WHY THIS IS EXTRACTED RATHER THAN FIXED IN PLACE: there were THREE copies of this
+    // arithmetic — the document toolbar and the two chat builders — and only the document one had
+    // ever been taught to re-place itself (v7.20.465). So the same defect was sitting unfixed in
+    // the two chat toolbars, which additionally position ONCE and never re-run at all. Fixing one
+    // copy and leaving two is how this comes back (§7: surface the conflict, don't average it).
+    //
+    // THREE RULES, and they are the whole behaviour:
+    //   1. REFUSE a degenerate measurement and return false — a position written from a zero rect
+    //      MOVES the toolbar away from the text, and nothing later corrects it. Caller retries.
+    //   2. ABOVE, ELSE BELOW, ELSE CLAMP. Clamping to the top of the scroller is what "detached"
+    //      looked like: the bar parks at the top of the visible area while the text sits far below.
+    //      Flipping below the same line keeps it ON the words — what macOS/iOS do with a selection
+    //      popover, and what Neil asked for.
+    //   3. It RE-ANCHORS; it never resizes. (His question: *"if I resize the screen, does it have
+    //      to resize as well?"* No — a popover keeps its size; only its own contents scroll.)
+    //
+    // `host` is the positioned scroller the toolbar is a child of (the canvas wrap, or chatMessages).
+    function _swmlPlaceSelToolbar(tb, host) {
+        if (!tb || !tb.isConnected || !host) return false;
+        const s = window.getSelection();
+        if (!s || s.rangeCount === 0 || s.isCollapsed) return false;
+        const r = s.getRangeAt(0);
+        const rects = r.getClientRects();
+        const first = rects.length > 0 ? rects[0] : null;
+        const bound = r.getBoundingClientRect();
+        const zero = (b) => !b || (!b.width && !b.height);
+        if (zero(bound) && zero(first)) {
+            console.warn('WML selToolbar: refused a degenerate selection rect (mid-reflow?) — position left unchanged, will retry');
+            return false;
+        }
+        // Hybrid, unchanged from v7.19.73: FIRST client rect for the vertical anchor (a bounding
+        // rect over many blocks is oversized and throws the toolbar off-screen), BOUNDING rect for
+        // horizontal centring so it centres over the whole selection, not just its first line.
+        const rc = first && (first.width || first.height)
+            ? { top: first.top, bottom: first.bottom, left: bound.left, width: bound.width }
+            : { top: bound.top, bottom: bound.bottom, left: bound.left, width: bound.width };
+        const hr = host.getBoundingClientRect();
+        const tbW = tb.offsetWidth;
+        const tbH = tb.offsetHeight;
+        const minTop = host.scrollTop + 8;
+        const maxTop = host.scrollTop + host.clientHeight - tbH - 8;
+        const above = rc.top - hr.top + host.scrollTop - tbH - 8;
+        const below = rc.bottom - hr.top + host.scrollTop + 8;
+        let top;
+        if (above >= minTop) top = above;
+        else if (below <= maxTop) top = below;
+        else top = Math.max(minTop, Math.min(above, maxTop));
+        tb.style.top = top + 'px';
+        tb.style.left = Math.max(4, Math.min(
+            rc.left - hr.left + rc.width / 2 - tbW / 2,
+            hr.width - tbW - 4
+        )) + 'px';
+        return true;
+    }
+    // Place now, and again once layout has SETTLED. A `resize` fires many times and the LAST one
+    // can still land before the document has reflowed — that final stale measurement is the one the
+    // student is left looking at. The immediate call keeps the bar travelling with the text (which
+    // is what makes a sidebar animation look right); the trailing frame guarantees the final
+    // position is measured against finished layout. Handles park on the element so teardown can
+    // release them.
+    function _swmlPlaceSelToolbarSettled(tb, host) {
+        if (!tb) return;
+        try { cancelAnimationFrame(tb._swmlPlaceRaf); } catch (_) {}
+        clearTimeout(tb._swmlPlaceTimer);
+        tb._swmlPlaceRaf = requestAnimationFrame(() => { _swmlPlaceSelToolbar(tb, host); });
+        tb._swmlPlaceTimer = setTimeout(() => { _swmlPlaceSelToolbar(tb, host); }, 120);
+        tb._swmlPlaceCancel = () => {
+            try { cancelAnimationFrame(tb._swmlPlaceRaf); } catch (_) {}
+            clearTimeout(tb._swmlPlaceTimer);
+        };
+    }
+    // Wire a toolbar to re-anchor for its whole life: on host resize (the sidebars animating) and
+    // on window resize. Returns nothing; teardown reads `_swmlPlaceRO` / `_swmlPlaceOnResize` /
+    // `_swmlPlaceCancel`, which every removal path already releases.
+    function _swmlTrackSelToolbar(tb, host) {
+        const run = () => { _swmlPlaceSelToolbar(tb, host); _swmlPlaceSelToolbarSettled(tb, host); };
+        try {
+            const ro = new ResizeObserver(run);
+            ro.observe(host);
+            tb._swmlPlaceRO = ro;
+        } catch (_) { /* no ResizeObserver → the window listener still covers resize */ }
+        tb._swmlPlaceOnResize = run;
+        window.addEventListener('resize', tb._swmlPlaceOnResize);
+        if (!_swmlPlaceSelToolbar(tb, host)) _swmlPlaceSelToolbarSettled(tb, host);
+        // ⚠️ MUST return truthy: wml-app.js calls this as `if (!WML.trackSelToolbar?.(…)) { …old
+        // math… }`, so an undefined return would run the fallback ON TOP of the correct placement
+        // and put the toolbar straight back where the bug had it.
+        return true;
+    }
+    /* ⭐ EXPOSED, because the LIVE chat selection toolbar lives in wml-app.js (`setupSelectionReply`,
+       which serves every chat panel) and had the identical defect plus no re-place at all.
+       ⚠️ AND THIS IS WHY THE SWEEP MATTERED: two of the three toolbars in THIS file turned out to be
+       reachable-looking but dead — the builder at ~15982 sits behind a bare `return` left by
+       v7.19.195. Wiring those and stopping would have "fixed" the chat toolbar without touching the
+       one students actually use (§14b: finding something named after the thing is not finding it).
+       Optional-chained at the call site, so load order cannot break the chat. */
+    try { window.WML = window.WML || {}; window.WML.trackSelToolbar = _swmlTrackSelToolbar; } catch (_) {}
+
     // ── MULTI-LINE ROW WRITE (v7.20.518) — replace a row's content with one line per entry,
     // hardBreak-separated (the proven multi-line inline shape, see _planLinesContent).
     // `_writeOutlineRowField` cannot carry \n on its replace path, hence this sibling with the
@@ -15877,16 +15988,10 @@
                     }
                 }));
 
-                const range = sel.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
-                const msgsRect = chatMessages.getBoundingClientRect();
                 chatMessages.appendChild(tb);
-                const tbW = tb.offsetWidth;
-                tb.style.top = (rect.top - msgsRect.top + chatMessages.scrollTop - tb.offsetHeight - 8) + 'px';
-                tb.style.left = Math.max(4, Math.min(
-                    rect.left - msgsRect.left + (rect.width / 2) - (tbW / 2),
-                    msgsRect.width - tbW - 4
-                )) + 'px';
+                // v7.20.520 (#379): ONE placer, and it now TRACKS — this toolbar used to be
+                // positioned exactly once, so any resize left it stranded where the text used to be.
+                _swmlTrackSelToolbar(tb, chatMessages);
             }, 10);
         });
 
@@ -35627,17 +35732,10 @@
                                     }
                                 }));
 
-                                // Position above selection
-                                const range = sel.getRangeAt(0);
-                                const rect = range.getBoundingClientRect();
-                                const msgsRect = chatMessages.getBoundingClientRect();
                                 chatMessages.appendChild(tb);
-                                const tbW = tb.offsetWidth;
-                                tb.style.top = (rect.top - msgsRect.top + chatMessages.scrollTop - tb.offsetHeight - 8) + 'px';
-                                tb.style.left = Math.max(4, Math.min(
-                                    rect.left - msgsRect.left + (rect.width / 2) - (tbW / 2),
-                                    msgsRect.width - tbW - 4
-                                )) + 'px';
+                                // v7.20.520 (#379): ONE placer, and it now TRACKS — see the twin in
+                                // the other chat pipeline. Positioned once = stranded on any resize.
+                                _swmlTrackSelToolbar(tb, chatMessages);
                             }, 10);
                         });
 
@@ -40144,6 +40242,8 @@
                ResizeObserver on `wrap` would fire for the rest of the session. */
             if (canvasSelToolbar) {
                 try { canvasSelToolbar._swmlPlaceRO?.disconnect(); } catch (_) {}
+                // #379: a pending settle-frame must not outlive the toolbar it was measuring for.
+                try { canvasSelToolbar._swmlPlaceCancel?.(); } catch (_) {}
                 if (canvasSelToolbar._swmlPlaceOnResize) {
                     try { window.removeEventListener('resize', canvasSelToolbar._swmlPlaceOnResize); } catch (_) {}
                 }
@@ -40253,6 +40353,7 @@
                         // removeCanvasSelToolbar, so it must release the placement handles itself
                         // or an orphan's ResizeObserver outlives it for the rest of the session.
                         try { old._swmlPlaceRO?.disconnect(); } catch (_) {}
+                        try { old._swmlPlaceCancel?.(); } catch (_) {}
                         if (old._swmlPlaceOnResize) {
                             try { window.removeEventListener('resize', old._swmlPlaceOnResize); } catch (_) {}
                         }
@@ -40472,52 +40573,19 @@
                        ⛔ It re-POSITIONS, it never rebuilds: rebuilding this element is the
                        v7.20.121 blink. It also no-ops the moment the toolbar is unmounted or the
                        selection has gone, so a late observer callback cannot resurrect anything. */
-                    const _placeTb = () => {
-                        if (!tb.isConnected) return;
-                        const s = window.getSelection();
-                        if (!s || s.rangeCount === 0 || s.isCollapsed) return;
-                        const r = s.getRangeAt(0);
-                        // Same hybrid as the initial measure: first client rect for the VERTICAL
-                        // anchor (a bounding rect over many blocks is oversized and throws the
-                        // toolbar off-screen), bounding rect for HORIZONTAL centring so it centres
-                        // over the whole selection rather than just its first line.
-                        const rects = r.getClientRects();
-                        const first = rects.length > 0 ? rects[0] : null;
-                        const bound = r.getBoundingClientRect();
-                        const rc = first
-                            ? { top: first.top, left: bound.left, width: bound.width }
-                            : bound;
-                        const wr = wrap.getBoundingClientRect();
-                        const tbW = tb.offsetWidth;
-                        const tbH = tb.offsetHeight;
-                        // v7.19.71: clamp top so the toolbar never mounts above the visible
-                        // canvas top — protects against very-tall selections (or selections
-                        // starting above the current scroll position) where the raw rect-top
-                        // would place the toolbar offscreen and Neil sees nothing.
-                        const desiredTop = rc.top - wr.top + wrap.scrollTop - tbH - 8;
-                        const minTop = wrap.scrollTop + 8;
-                        tb.style.top = Math.max(minTop, desiredTop) + 'px';
-                        // v7.17.77: clamp BOTH edges so toolbar never bleeds off the right
-                        // of the canvas wrap (was only clamping left at 0).
-                        tb.style.left = Math.max(4, Math.min(
-                            rc.left - wr.left + rc.width / 2 - tbW / 2,
-                            wr.width - tbW - 4
-                        )) + 'px';
-                    };
-                    _placeTb();
-                    /* The layout changes that matter are the two sidebars collapsing and the window
-                       resizing. Both change `wrap`'s box, so a ResizeObserver on `wrap` catches
-                       them — and because the sidebar ANIMATES, the observer fires throughout the
-                       transition and the toolbar travels with the text instead of jumping at the
-                       end. Handles are parked on the element so the teardown can release them;
-                       `removeCanvasSelToolbar` is the one place that happens. */
-                    try {
-                        const _ro = new ResizeObserver(() => _placeTb());
-                        _ro.observe(wrap);
-                        tb._swmlPlaceRO = _ro;
-                    } catch (_) { /* no ResizeObserver → the window listener still covers resize */ }
-                    tb._swmlPlaceOnResize = () => _placeTb();
-                    window.addEventListener('resize', tb._swmlPlaceOnResize);
+                    /* ⭐⭐ v7.20.520 (FIXLIST #379) — the placement is now the SHARED placer
+                       (`_swmlPlaceSelToolbar` / `_swmlTrackSelToolbar`, module scope). Read its
+                       header for the measured cause and the three rules; the short version is that
+                       Neil's DOM paste showed BOTH axes sitting exactly on their clamp limits,
+                       which is the signature of a degenerate selection rect rather than drift.
+                       ⭐ EXTRACTED RATHER THAN FIXED HERE, because the same arithmetic existed in
+                       THREE places and only this one had ever learnt to re-place itself — so the
+                       two chat toolbars carried the identical defect plus a worse one (positioned
+                       once, never re-run). One implementation now serves all three.
+                       ⛔ Still re-POSITIONS, never rebuilds: rebuilding this element is the
+                       v7.20.121 blink. It no-ops the moment the toolbar is unmounted or the
+                       selection has gone, so a late observer callback cannot resurrect anything. */
+                    _swmlTrackSelToolbar(tb, wrap);
                 }
             }
 

@@ -3344,6 +3344,16 @@
         function removeToolbar(_why) {
             // v7.20.434 instrument (#267) — see the header block in wml-core.js. Measures only.
             if (toolbar) window.__swmlSelDiagLog?.('destroy', 'app.js:removeToolbar (CHAT)', _why || 'unlabelled');
+            // v7.20.520 (#379): the shared placer parks a ResizeObserver, a window listener and a
+            // pending settle-frame on the element — all three must be released here, or every
+            // selection in a long session leaves an observer behind measuring a detached node.
+            if (toolbar) {
+                try { toolbar._swmlPlaceRO?.disconnect(); } catch (_) {}
+                if (toolbar._swmlPlaceOnResize) {
+                    try { window.removeEventListener('resize', toolbar._swmlPlaceOnResize); } catch (_) {}
+                }
+                try { toolbar._swmlPlaceCancel?.(); } catch (_) {}
+            }
             if (toolbar) { toolbar.remove(); toolbar = null; }
             toolbarSelKey = null;
         }
@@ -3607,8 +3617,21 @@
                 // hard-coded 100px = half a 200px-wide bar, but the neumorphic
                 // toolbar's actual width depends on chip count + padding).
                 msgs.appendChild(toolbar);
-                toolbar.style.top = (rect.top - msgsRect.top + msgs.scrollTop - 44) + 'px';
-                toolbar.style.left = Math.max(0, (rect.left - msgsRect.left + rect.width / 2 - toolbar.offsetWidth / 2)) + 'px';
+                /* ⭐⭐ v7.20.520 (FIXLIST #379) — THE SHARED PLACER, and this is the toolbar
+                   students actually use (`setupSelectionReply` serves every chat panel).
+                   It had the same defect Neil reported on the document toolbar — a position
+                   written ONCE, from a rect that may be degenerate mid-reflow, with nothing to
+                   re-run afterwards — so any window resize left it stranded where the text used
+                   to be. The shared placer refuses a zero-area rect and retries, flips BELOW the
+                   line when there is no room above rather than clamping to the top of the
+                   scroller, and re-anchors for the toolbar's whole life.
+                   ⚠️ Optional-chained with the old arithmetic as the fallback: this file and
+                   wml-assessment.js are separate bundles, and a chat toolbar that positions
+                   badly is far better than one that throws. */
+                if (!window.WML?.trackSelToolbar?.(toolbar, msgs)) {
+                    toolbar.style.top = (rect.top - msgsRect.top + msgs.scrollTop - 44) + 'px';
+                    toolbar.style.left = Math.max(0, (rect.left - msgsRect.left + rect.width / 2 - toolbar.offsetWidth / 2)) + 'px';
+                }
             }, 10);
         });
 
