@@ -2734,7 +2734,9 @@ body.swml-page {
    stroke, halo + text roll. Only geometry is set here. Cancel is FULLY GHOST per §8's general rule
    ("solid filled OR fully ghost — never a hairline on a coloured fill"). */
 .swml-confirm-overlay {
-    position: fixed; inset: 0; z-index: 10000;
+    /* v7.20.509: body-mounted (see showConfirm) so `fixed` genuinely means the viewport, and
+       z-index clears the canvas shell in BOTH its modes — 9985 windowed, 99999 fullscreen. */
+    position: fixed; inset: 0; z-index: 100000;
     background: oklch(0.12 0.03 300 / 0.62);
     -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
     display: flex; align-items: center; justify-content: center; padding: 24px;
@@ -2809,6 +2811,14 @@ body.swml-page {
 [data-swml-theme="light"] .swml-confirm-danger .swml-confirm-icon svg { color: #E67E22; }
 [data-swml-theme="light"] .swml-confirm-cancel { color: oklch(0.52 0.02 260); }
 [data-swml-theme="light"] .swml-confirm-cancel:hover { color: #1c1c2e; }
+/* The danger fill must survive light mode. `[data-swml-theme="light"] .swml-halo-btn` is 0-2-0 —
+   the SAME specificity as `.swml-confirm-ok.danger` and later in the file, so without this the pale
+   blue would win and a destructive confirm would render as an ordinary button. */
+[data-swml-theme="light"] .swml-confirm-ok.danger,
+[data-swml-theme="light"] .swml-confirm-ok.danger::after { background: #d63638; }
+[data-swml-theme="light"] .swml-confirm-ok.danger { color: #fff; }
+[data-swml-theme="light"] .swml-confirm-ok.danger:hover { box-shadow: 0 12px 24px rgba(214,54,56,0.32); }
+[data-swml-theme="light"] .swml-confirm-ok.danger:focus-visible { outline-color: #d63638; }
 @keyframes swml-scaleIn {
     from { transform: scale(0.96) translateY(6px); opacity: 0; }
     to { transform: scale(1) translateY(0); opacity: 1; }

@@ -15468,7 +15468,7 @@
                         } // end else (non-CW)
                         console.log('WML Canvas: Chat cleared');
                     },
-                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat' }
+                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat', iconName: 'del' }
                 );
             }
         });
@@ -26909,7 +26909,7 @@
                         messagesHost.appendChild(buildCoachEmptyState());
                         console.log('WML Coach: chat cleared');
                     },
-                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat' }
+                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat', iconName: 'del' }
                 );
             }
         });
@@ -34972,7 +34972,7 @@
                                         } // end else (non-CW)
                                         console.log('WML Canvas: Chat cleared');
                                     },
-                                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat' }
+                                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat', iconName: 'del' }
                                 );
                             }
                         });

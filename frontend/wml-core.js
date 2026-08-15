@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.508';
+var WML_BUILD = '7.20.509';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -2332,13 +2332,16 @@ window.WML = (function() {
            Pull it through / Skip for now — five live callers) and on the confirm otherwise. A
            destructive default that is pre-focused is one Return away from firing. */
     let _confirmSeq = 0;
-    function showConfirm(message, onConfirm, { confirmText = 'Continue', cancelText = 'Cancel', danger = false } = {}) {
+    function showConfirm(message, onConfirm, { confirmText = 'Continue', cancelText = 'Cancel', danger = false, iconName = '' } = {}) {
         const overlay = el('div', { className: 'swml-confirm-overlay' });
         const modal = el('div', { className: 'swml-confirm-modal' + (danger ? ' swml-confirm-danger' : '') });
         modal.setAttribute('role', 'alertdialog');
         modal.setAttribute('aria-modal', 'true');
         const ico = el('div', { className: 'swml-confirm-icon' });
-        ico.innerHTML = icon(danger ? 'alert' : 'chat', 30);
+        // `iconName` lets a caller name the ACTION rather than the surface — the clear-chat callers
+        // pass 'del' (Neil's bin glyph, 2026-08-15). Default stays chat/alert because showConfirm is
+        // generic: a bin on "Resume your session?" would be a lie.
+        ico.innerHTML = icon(iconName || (danger ? 'alert' : 'chat'), 30);
         modal.appendChild(ico);
         const msg = el('p', { className: 'swml-confirm-msg', textContent: message });
         msg.id = 'swml-confirm-msg-' + (++_confirmSeq);
@@ -2371,13 +2374,65 @@ window.WML = (function() {
         const eatScroll = (e) => { if (!modal.contains(e.target)) e.preventDefault(); };
         overlay.addEventListener('wheel', eatScroll, { passive: false });
         overlay.addEventListener('touchmove', eatScroll, { passive: false });
-        // Append inside canvas overlay if open (stacking context), otherwise body
-        const canvasOv = document.getElementById('swml-canvas-overlay');
-        (canvasOv || document.body).appendChild(overlay);
+        /* ⭐⭐ v7.20.509 (Neil): "it needs to be centered in the middle of the viewport rather than
+           the blurred overlay, because otherwise it looks weird."
+
+           He is describing a CONTAINING-BLOCK capture, and the file already documents the class one
+           screen up (wml-canvas.css ~L140): "LD's will-change:transform on .spl-entry creates a
+           containing block that breaks position:fixed on detached panels". A `position: fixed`
+           element resolves against the VIEWPORT only while no ancestor carries transform / filter /
+           backdrop-filter / perspective / contain / will-change; the first one that does becomes its
+           viewport. Mounted inside #swml-canvas-overlay, this modal inherited whichever LD ancestor
+           still does that, so `inset: 0` meant "the canvas pane" — the region right of the sidebar
+           and below the header. Centred in that pane, it sits right and low of true centre, which is
+           exactly the "positioned strangely" he saw.
+
+           FIX = remove every one of those ancestors from the chain: mount on <body>. Nothing about
+           the modal needed the canvas host — the old comment cited stacking, and z-index 100000
+           clears the canvas in both of its modes (9985 windowed, 99999 fullscreen). This also makes
+           it cause-independent: we do not have to identify WHICH LD ancestor is transformed, and a
+           new one appearing later cannot recapture us.
+           ⚠️ Body-mounting drops the [data-swml-theme] on #swml-canvas-overlay — which is why the
+           light rules are keyed on the attribute rather than a class, and why body carries it too
+           (wml-assessment.js ~28049). Same reason .swml-outline-panel mirrors the theme when it
+           detaches to body. */
+        document.body.appendChild(overlay);
         requestAnimationFrame(() => {
             const first = (danger && cancelText) ? modal.querySelector('.swml-confirm-cancel') : okBtn;
             first?.focus();
+            _assertConfirmIsViewportCentred(overlay);
         });
+    }
+    /* Root §19 (measure, never guess): body-mount is only correct while <body>/<html> themselves are
+       untransformed. Rather than assume that for ever, this ASSERTS it and, on a miss, NAMES the
+       ancestor responsible — so a recurrence arrives as a console line with a selector in it instead
+       of as another of Neil's test cycles. Costs one getBoundingClientRect per modal. */
+    function _assertConfirmIsViewportCentred(overlay) {
+        try {
+            const r = overlay.getBoundingClientRect();
+            const off = Math.max(Math.abs(r.top), Math.abs(r.left),
+                                 Math.abs(r.width - window.innerWidth));
+            if (off <= 1) return;
+            const TRAP = (cs) => (cs.transform && cs.transform !== 'none')
+                || (cs.filter && cs.filter !== 'none')
+                || (cs.backdropFilter && cs.backdropFilter !== 'none')
+                || (cs.perspective && cs.perspective !== 'none')
+                || /paint|layout|strict|content/.test(cs.contain || '')
+                || /transform|filter|perspective/.test(cs.willChange || '');
+            let culprit = null;
+            for (let n = overlay.parentElement; n && n !== document.documentElement; n = n.parentElement) {
+                if (TRAP(getComputedStyle(n))) { culprit = n; break; }
+            }
+            const where = culprit
+                ? (culprit.tagName.toLowerCase() + (culprit.id ? '#' + culprit.id : '')
+                   + (culprit.className && typeof culprit.className === 'string'
+                      ? '.' + culprit.className.trim().split(/\s+/).join('.') : ''))
+                : '(none found — check html/body)';
+            console.warn('WML v7.20.509: the confirm overlay is NOT viewport-aligned (off by '
+                + Math.round(off) + 'px). A transformed/contained ancestor captured position:fixed: '
+                + where);
+            (window.__wmlConfirmGeom = window.__wmlConfirmGeom || []).push({ off, where, rect: r });
+        } catch (_) {}
     }
 
     // ── Toast Notifications ──
@@ -4333,6 +4388,9 @@ window.WML = (function() {
         //           the ONE disclosed deviation from the source (a data-URI background cannot
         //           inherit colour, which is exactly why it could not be reused as-is).
         chat:  { kind: 'filled', vb: '0 0 24 24', src: 'remix-question-answer-fill.svg', body: '<path d="M8 18H18.2372L20 19.3851V9H21C21.5523 9 22 9.44772 22 10V23.5L17.5455 20H9C8.44772 20 8 19.5523 8 19V18ZM5.45455 16L1 19.5V4C1 3.44772 1.44772 3 2 3H17C17.5523 3 18 3.44772 18 4V16H5.45455Z"/>' },
+        // Neil's, supplied 2026-08-15 for the clear-chat confirm ("can use this icon"). Bin with an
+        // ✕ on the body — it names the ACTION, which the chat bubble did not.
+        del:   { kind: 'filled', vb: '0 0 24 24', src: 'delete.svg', body: '<path d="M7 6V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7ZM13.4142 13.9997L15.182 12.232L13.7678 10.8178L12 12.5855L10.2322 10.8178L8.81802 12.232L10.5858 13.9997L8.81802 15.7675L10.2322 17.1817L12 15.4139L13.7678 17.1817L15.182 15.7675L13.4142 13.9997ZM9 4V6H15V4H9Z"/>' },
         alert: { kind: 'line',   vb: '0 0 24 24', src: 'Iconoir warning-triangle (= .swml-fb-warn)', body: '<path d="M20.043 21H3.957c-1.538 0-2.5-1.664-1.734-2.997l8.043-13.988c.77-1.337 2.699-1.337 3.468 0l8.043 13.988C22.543 19.336 21.58 21 20.043 21Z"/><path d="M12 9v4"/><path d="M12 17.01l.01-.011"/>' },
     };
     // ⭐ v7.20.404 (#177) — WHICH ARROW SHIPS. One switch, so the answer lives in ONE place and
