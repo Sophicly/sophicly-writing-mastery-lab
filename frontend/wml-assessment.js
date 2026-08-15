@@ -3604,6 +3604,39 @@
         return true;
     }
 
+    // ── MULTI-LINE ROW WRITE (v7.20.518) — replace a row's content with one line per entry,
+    // hardBreak-separated (the proven multi-line inline shape, see _planLinesContent).
+    // `_writeOutlineRowField` cannot carry \n on its replace path, hence this sibling with the
+    // SAME row walk.
+    //
+    // ⚠️ HOISTED FROM THE CW9 CLOSURE, deliberately: Step 8's refine pass needs exactly this
+    // write, and a second copy of a row writer is how two callers drift apart (§7 — surface the
+    // conflict, don't average it). `_cw9ReplaceRowLines` is now a delegate, so there is ONE
+    // implementation and Step 9's behaviour is byte-identical.
+    function _cwWriteOutlineRowLines(fid, lines) {
+        if (!canvasEditor || !fid || !lines || !lines.length) return false;
+        let targetPos = null, targetNode = null;
+        canvasEditor.state.doc.descendants(function (node, pos) {
+            if (targetPos !== null) return false;
+            if ((node.type.name === 'outlineRow' || node.type.name === 'inputField') && node.attrs && node.attrs.fieldId === fid) {
+                targetPos = pos; targetNode = node; return false;
+            }
+            return true;
+        });
+        if (targetPos === null) {
+            console.warn('WML rowLines: no row for field', fid, '— nothing written');
+            return false;
+        }
+        const hasBr = !!(canvasEditor.schema.nodes && canvasEditor.schema.nodes.hardBreak);
+        const content = [];
+        lines.forEach(function (t, i) {
+            if (i && hasBr) content.push({ type: 'hardBreak' });
+            content.push({ type: 'text', text: (i && !hasBr ? ' | ' : '') + t });
+        });
+        canvasEditor.commands.insertContentAt({ from: targetPos + 1, to: targetPos + targetNode.nodeSize - 1 }, content);
+        return true;
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════════════════
     // AUTO-TICK AN OUTLINE ROW'S CHECKBOX (v7.20.296)
     // ───────────────────────────────────────────────────────────────────────────────────────
@@ -25367,6 +25400,11 @@
                 addChatMessage(text, 'user');
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
+            // Present-state notices (a missing bundle, a failed write) are EPHEMERAL — DRAWN,
+            // never stored (the .284 prereq-gate lesson): they re-derive on entry, and a stored
+            // copy becomes a lie the moment the condition clears. Twin of CW9's own noteBubble;
+            // each closure defines its own because they cannot see each other.
+            function noteBubble(plain) { addChatMessage(formatAI(plain), 'ai', plain); }
             function rowText(fid) {
                 let out = '';
                 try {
@@ -25395,17 +25433,40 @@
                 if (_cw8NoShowHas(rowText(CW8_NOTYET_FID), label)) return true;
                 return (world ? world.beats : []).some(function (b) { return _cw8BeatHasTrait(rowText(b.fid), label); });
             }
+            function anyWorked() { return (roster || []).some(covered); }
+            // ⭐ THE STEP-9 ROOT-A LESSON, applied: every "have they done this?" test here reads
+            // PROVENANCE — our own `Values (Trait):` line, or a ledger record — never "does the
+            // row hold text". These beats legitimately hold the student's OWN words, so a
+            // presence check would read TRUE before they had done anything at all.
+            //
+            // The next ported line the student has not yet refined or explicitly kept. Ledger
+            // order IS port order, so the refine pass walks their beats in the order they chose
+            // them; a line they have already edited away needs no refining and is skipped.
+            function nextUnrefined() {
+                const ports = (ledger && ledger.ports) || {};
+                const keys = Object.keys(ports);
+                for (let i = 0; i < keys.length; i++) {
+                    const p = ports[keys[i]];
+                    if (!p || p.done) continue;
+                    if (!_cw8BeatHasTrait(rowText(p.fid), p.traitLabel)) continue;
+                    return Object.assign({ key: keys[i] }, p);
+                }
+                return null;
+            }
             function posOf() {
                 if (!roster || !world) return null;
-                for (let n = 0; n < roster.length; n++) if (!covered(roster[n])) return { phase: 'trait', n: n };
+                const next = nextUnrefined();
+                if (next) return { phase: 'refine', port: next };
+                if (!anyWorked()) return { phase: 'port' };
                 if (!rowText(CW8_CONTINUITY_FID)) return { phase: 'continuity' };
                 return null;
             }
             function substepFor(p) {
                 try {
                     if (!p) return;
-                    if (p.phase === 'trait') applyCwSubstepProgress({ stepNum: 8, substepNum: 1, name: 'Trait by Trait' });
-                    else applyCwSubstepProgress({ stepNum: 8, substepNum: 2, name: 'Continuity Pass' });
+                    if (p.phase === 'port') applyCwSubstepProgress({ stepNum: 8, substepNum: 1, name: 'Choose Your Beats' });
+                    else if (p.phase === 'refine') applyCwSubstepProgress({ stepNum: 8, substepNum: 2, name: 'Bring Them to Life' });
+                    else applyCwSubstepProgress({ stepNum: 8, substepNum: 3, name: 'Continuity Pass' });
                 } catch (e) {}
             }
 
@@ -25570,7 +25631,232 @@
                 resetSend();
             }
 
-            // ── PHASE 1: ONE TRAIT AT A TIME — their words, then stage → beat → write ─────
+            // ══════════════════════════════════════════════════════════════════════════════════
+            // PHASE 1 — THE INTERFACE (#374 / #374a / #374b, v7.20.519)
+            // ──────────────────────────────────────────────────────────────────────────────────
+            // The stage→beat CHIP MAZE is retired. Neil, 2026-08-13: *"there's so many beats in
+            // each stage that it's actually quite overwhelming. Can we not have some sort of an
+            // interface instead?"* — measured: 97–108 askable beats per template, 16–18 per stage.
+            //
+            // The student picks TRAITS, then BEATS, and their Step-7 words are PORTED straight in
+            // with no typing. This module owns the bridge; the island owns the interaction.
+            // ══════════════════════════════════════════════════════════════════════════════════
+            const LEDGER_KEY = 'cw8_values_state';
+            let ledger = null;          // { ports: { key: {fid, traitLabel, text, at, machine, done} } }
+            let islandOpen = false;
+            let islandSnap = null;
+            let saveTimer = null;
+
+            async function loadLedger(pid) {
+                try {
+                    const art = await WML.cwProject.loadArtifact(pid, LEDGER_KEY);
+                    if (art && art.success && art.value) {
+                        const v = typeof art.value === 'string' ? JSON.parse(art.value) : art.value;
+                        if (v && typeof v === 'object') return v;
+                    }
+                } catch (e) {}
+                return {};
+            }
+            function persistLedger(pid, obj) {
+                try { WML.cwProject.saveArtifact(pid, LEDGER_KEY, JSON.stringify(obj)); } catch (e) {}
+            }
+
+            // ── THE ISLAND'S DATA, built from the roster + the LIVE document ──────────────────
+            function traitCards() {
+                return (roster || []).map(function (r) {
+                    const label = _cw7TraitLabel(r.trait);
+                    const worked = (world ? world.beats : []).filter(function (b) {
+                        return _cw8BeatHasTrait(rowText(b.fid), label);
+                    }).length;
+                    return {
+                        id: _cw7TraitCtlId(r.trait),
+                        trait: r.trait,
+                        label: label,
+                        valueName: r.value.name,
+                        cond: r.wanted && CW7_STATES.indexOf(r.begin) === -1 && CW7_STATES.indexOf(r.end) === -1
+                            ? 'On your build list' : r.cond,
+                        said: r.said || '',
+                        portText: _cw8PortText(r),
+                        bands: _cw8BandsFor(r),
+                        workedIn: worked,
+                    };
+                });
+            }
+            function stageModel() {
+                const out = [];
+                let ord = 0;
+                (world ? world.stages : []).forEach(function (s) {
+                    const beats = (world.beats).filter(function (b) { return b.stage === s.si; }).map(function (b) {
+                        ord++;
+                        const live = rowText(b.fid);
+                        const worked = {};
+                        (roster || []).forEach(function (r) {
+                            if (_cw8BeatHasTrait(live, _cw7TraitLabel(r.trait))) worked[_cw7TraitCtlId(r.trait)] = true;
+                        });
+                        return { id: b.fid, ord: ord, label: b.label, text: live, worked: worked };
+                    });
+                    if (beats.length) out.push({ id: s.label + '#' + s.si, si: s.si, roman: s.roman, name: stageName(s.label), band: s.band, beats: beats });
+                });
+                return out;
+            }
+            // 'STAGE II: DREAM STAGE - GLIMPSE…' → 'DREAM STAGE - GLIMPSE…' (the roman travels
+            // separately, so repeating it in the name would read twice on one line).
+            function stageName(label) {
+                const m = /^STAGE\s+[IVXLC]+\s*[:;]\s*(.+)$/i.exec(String(label || ''));
+                return m ? m[1].trim() : String(label || '');
+            }
+
+            async function openIsland() {
+                if (islandOpen) return;
+                if (!window.WMLPlotIsland) {
+                    noteBubble('The beat picker didn’t load on this page. Refresh and try again — if it keeps happening, tell your tutor.');
+                    ensureChip();
+                    console.error('WML CW8: window.WMLPlotIsland missing — is wml-scene-island.min.js enqueued?');
+                    return;
+                }
+                // EVERY open re-reads the LIVE document — Step-6 edits made since appear at once,
+                // which is the normal case now that most students are still finishing Step 6.
+                world = _cw8EnumerateBeats(canvasEditor);
+                if (!world.beats.length) { serveNoOutline(); return; }
+                if (!(roster || []).length) { serveNoAudit(); return; }
+                const pid = state.cwProjectId;
+                if (pid && !ledger) ledger = await loadLedger(pid);
+                islandOpen = true;
+                window.WMLPlotIsland.mount({
+                    traits: traitCards(),
+                    stages: stageModel(),
+                    bands: CW8_BANDS,
+                    initial: (ledger && ledger.picker) || null,
+                    onStateChange: function (snap) {
+                        islandSnap = snap;
+                        if (!pid) return;
+                        clearTimeout(saveTimer);
+                        saveTimer = setTimeout(function () {
+                            ledger = ledger || {};
+                            ledger.picker = { selected: snap.selected, picks: snap.picks, noShow: snap.noShow };
+                            persistLedger(pid, ledger);
+                        }, 800);
+                    },
+                    onPort: function (payload) { return port(pid, payload); },
+                    onClose: function () { islandOpen = false; afterPort(); },
+                });
+            }
+
+            // ⭐⭐ THE PORT — APPENDS, NEVER REPLACES (#374b). Neil: *"remember that some of the
+            // beats will already have text in them. So step eight will need to append to the end
+            // of what the students already got in there."*
+            //
+            // A beat holding the student's words is the NORMAL case, so this uses
+            // `_writeOutlineRowField`'s DEFAULT (append) path — never `{replace:true}`, never the
+            // row-lines writer, which owns the whole row. IDEMPOTENT by provenance: a beat that
+            // already carries this trait is skipped, so a second tap cannot file the same line
+            // twice even after the student has edited around it.
+            async function port(pid, payload) {
+                try {
+                    if (pid && !ledger) ledger = await loadLedger(pid);
+                    ledger = ledger || {};
+                    const ports = ledger.ports || {};
+                    let filed = 0, already = 0, missed = 0, empties = 0;
+                    (payload.picks || []).forEach(function (p) {
+                        (p.fids || []).forEach(function (fid) {
+                            const key = _cw8PortKey(fid, p.trait);
+                            const before = rowText(fid);
+                            if (_cw8BeatHasTrait(before, p.label)) { already++; return; }
+                            if (!before) empties++;
+                            if (_writeOutlineRowField(fid, _cw8AppendLine(p.label, p.portText))) {
+                                ports[key] = {
+                                    fid: fid, traitId: p.traitId, trait: p.trait, traitLabel: p.label,
+                                    text: p.portText, at: new Date().toISOString(), machine: true, done: false,
+                                };
+                                filed++;
+                            } else {
+                                missed++;
+                                console.warn('WML CW8: port did not land for', fid, '— beat row missing from the document');
+                            }
+                        });
+                    });
+                    (payload.noShow || []).forEach(function (traitId) {
+                        const r = (roster || []).filter(function (x) { return _cw7TraitCtlId(x.trait) === traitId; })[0];
+                        if (!r) return;
+                        const label = _cw7TraitLabel(r.trait);
+                        if (_cw8NoShowHas(rowText(CW8_NOTYET_FID), label)) return;
+                        if (!_writeOutlineRowField(CW8_NOTYET_FID, _cw8NoShowLine(label))) {
+                            console.warn('WML CW8: the no-show line did not land for', r.trait);
+                        }
+                    });
+                    save();
+                    ledger.ports = ports;
+                    if (islandSnap) ledger.picker = { selected: islandSnap.selected, picks: islandSnap.picks, noShow: islandSnap.noShow };
+                    if (pid) persistLedger(pid, ledger);
+                    // ONE durable transcript turn — a PAST-EVENT report, so freezing it is correct
+                    // (§4c.7: the discriminator is tense, not interpolation).
+                    const parts = [];
+                    if (filed) {
+                        parts.push('Filed **' + filed + ' line' + (filed === 1 ? '' : 's') + '** underneath your beats, in your own words from Step 7'
+                            + (empties ? ' — including ' + empties + ' beat' + (empties === 1 ? '' : 's') + ' that had nothing in ' + (empties === 1 ? 'it' : 'them') + ' yet' : '')
+                            + '. Nothing you had written was replaced.');
+                    }
+                    if (already) parts.push('**' + already + '** beat' + (already === 1 ? ' already carried' : 's already carried') + ' the trait you picked, so ' + (already === 1 ? 'it was' : 'they were') + ' left exactly as ' + (already === 1 ? 'it is' : 'they are') + '.');
+                    if (missed) parts.push('⚠️ **' + missed + '** didn’t land because the beat isn’t in your document any more — pick a different beat for ' + (missed === 1 ? 'it' : 'those') + '.');
+                    if (parts.length) aiBubble(parts.join('\n\n'));
+                    return true;
+                } catch (e) {
+                    console.error('WML CW8: port failed —', e && e.message);
+                    noteBubble('Something went wrong adding those — nothing was lost. Close the picker and try again.');
+                    return false;
+                }
+            }
+
+            // Closing the picker hands straight over to the refine pass, in order (the .500
+            // lesson: liveness is a way FORWARD, not merely a button on screen).
+            function afterPort() { advance(); }
+
+            // ── PHASE 2: REFINE — ONE ported line at a time (§18 serial), deliberately LIGHT.
+            // Neil, #374a: *"what I mean by update is they can just refine it a little bit if they
+            // want. But they have to also remember that they'll be doing more refinement in step
+            // nine and then step ten."* So this never demands polish, and leaving a line exactly
+            // as it is costs one tap.
+            function serveRefine(p) {
+                const beat = (world.beats || []).filter(function (b) { return b.fid === p.fid; })[0];
+                const seg = beat ? _cw8BeatSegment(beat) : p.traitLabel;
+                const emit = function () {
+                    const live = rowText(p.fid);
+                    const own = live.split('\n').filter(function (l) { return l.trim().indexOf('Values (') !== 0; }).join('\n').trim();
+                    aiBubble('**' + seg + '**\n\n'
+                        + (own ? 'Your beat says:\n\n> ' + own + '\n\n' : 'This beat was empty, and now it starts with:\n\n')
+                        + 'I added underneath:\n\n> ' + _cw8AppendLine(p.traitLabel, p.text) + '\n\n'
+                        + '**Turn that into one line of story: what does your protagonist actually DO here that a reader could see?**\n\n'
+                        + 'Rough is fine — you sharpen everything in Steps 9 and 10. Or leave it exactly as it is.');
+                };
+                _cwReplay(emit);   // quotes the live beat — drawn, never stored (§4c.7)
+                _walkSlot.arm('cw8', p.fid, { cycle: 'rewrite', data: { kind: 'refine', key: p.key, traitLabel: p.traitLabel, seg: seg } });
+                chipBar(['Leave as is →', 'Leave them all as they are →'], onCw8RefineChip);
+                helpBar((roster || []).filter(function (x) { return _cw7TraitLabel(x.trait) === p.traitLabel; })[0] || null);
+                resetSend();
+            }
+            function markDone(keys) {
+                if (!ledger || !ledger.ports) return;
+                keys.forEach(function (k) { if (ledger.ports[k]) ledger.ports[k].done = true; });
+                if (state.cwProjectId) persistLedger(state.cwProjectId, ledger);
+            }
+            function onCw8RefineChip(pick) {
+                userTurn(pick);
+                _walkSlot.clear('cw8');
+                if (pick.indexOf('Leave them all') === 0) {
+                    // The durable footprint for "I kept them" — an answer with no footprint is
+                    // re-asked for ever (the .421 law).
+                    markDone(Object.keys((ledger && ledger.ports) || {}));
+                    advance();
+                    return;
+                }
+                const p = nextUnrefined();
+                if (p) markDone([p.key]);
+                advance();
+            }
+
+            // ── (retired at .519) the stage → beat chip maze. Its teaching text now lives in the
+            // interface, and `condLine` still composes the one-line condition summary the
+            // orientation uses.
             function condLine(r) {
                 const label = _cw7TraitLabel(r.trait).toLowerCase();
                 const real = function (x) { return CW7_STATES.indexOf(x) !== -1; };
@@ -25584,152 +25870,11 @@
                 }
                 return 'In Step 7 you marked their ' + label + ' as **' + r.cond.toLowerCase() + '**.';
             }
-            function tagBar(n, heading) { return cwProgressBar(n + 1, roster.length, 'Update: Values', heading, 'trait'); }
-            function stageChipLabels(withNoShow) {
-                const out = world.stages.map(function (s) { return s.label; });
-                if (withNoShow) out.push(CW8_NO_SHOW);
-                return out;
-            }
-            function serveTraitAsk(n, opts) {
-                const r = roster[n];
-                const t = traitCard(r.trait);
-                const label = _cw7TraitLabel(r.trait);
-                const ex = r.cond === 'In excess' ? t.excess : r.cond === 'In deficit' ? t.deficit : t.balance;
-                const emit = function () {
-                    aiBubble(tagBar(n, label)
-                        + '**' + label + '** — trait ' + (n + 1) + ' of ' + roster.length + ' you flagged.\n\n'
-                        + t.what + '\n\n' + condLine(r)
-                        + (r.said ? '\n\n**Your own words from Step 7:**\n\n> ' + r.said : '')
-                        + '\n\nA trait **shows** in a beat when:\n\n'
-                        + '- the protagonist **does** something that could only be done by someone with (or without) it\n'
-                        + '- a reader who was told nothing could point at the beat and name it\n'
-                        + '- it is visible in action — not in the narrator explaining the character\n\n'
-                        + 'Example — ' + ex + '\n\n'
-                        + '**Tap the stage where a reader could actually SEE their '
-                        + label.toLowerCase() + '** — or tell me it doesn’t show anywhere yet.');
-                };
-                _walkSlot.clear('cw8');   // this ask is answered by TAP, nothing typed may file
-                const attach = function () {
-                    chipBar(stageChipLabels(true), onCw8StagePick);
-                    helpBar(r);
-                    resetSend();
-                };
-                // DRAWN, both passes (§4c.7): it quotes the Step-7 condition and their own words,
-                // both of which change if they revisit Step 7 — a stored copy becomes a lie.
-                if (opts && opts.defer) {
-                    serveCwChunks(['(the first trait)'], { emit: function () { _cwReplay(emit); }, onDone: attach, deferFirst: true });
-                    return;
-                }
-                _cwReplay(emit);
-                attach();
-            }
-            function onCw8StagePick(pick) {
-                if (pick === 'Back to the wrap →') { _revisit = null; advance(); return; }
-                if (pick === 'No more — next →') { userTurn(pick); _revisit = null; advance(); return; }
-                const p = posOf();
-                const r = p && p.phase === 'trait' ? roster[p.n] : (_revisit != null ? roster[_revisit] : null);
-                if (!r) { advance(); return; }
-                if (pick === CW8_NO_SHOW) {
-                    userTurn(pick);
-                    if (!_writeOutlineRowField(CW8_NOTYET_FID, _cw8NoShowLine(_cw7TraitLabel(r.trait)))) {
-                        console.warn('WML CW8: the no-show line did not land for ' + r.trait);
-                    }
-                    save();
-                    _revisit = null;
-                    advance();
-                    return;
-                }
-                const stage = world.stages.filter(function (s) { return s.label === pick; })[0];
-                if (!stage) { console.warn('WML CW8: stage chip did not resolve —', pick); serveCurrent(); return; }
-                userTurn(pick);
-                serveBeatPick(r, stage.si);
-            }
-            function serveBeatPick(r, si) {
-                const inStage = world.beats.filter(function (b) { return b.stage === si; });
-                if (!inStage.length) {
-                    aiBubble('That stage has no beats on the page — pick another.');
-                    chipBar(stageChipLabels(!covered(r)), onCw8StagePick);
-                    helpBar(r);
-                    resetSend();
-                    return;
-                }
-                _pendingStage = si;
-                aiBubble('**' + inStage[0].stageLabel + '** — which beat should carry their **'
-                    + _cw7TraitLabel(r.trait).toLowerCase() + '**?');
-                chipBar(inStage.map(function (b) { return b.label; }).concat(['← Different stage']), onCw8BeatPick);
-                helpBar(r);
-                resetSend();
-            }
-            let _pendingStage = null;   // transient — a reload mid-pick re-asks the trait (honest, one tap)
-            let _revisit = null;        // wrap's revisit route: roster index being re-opened
-            function onCw8BeatPick(pick) {
-                const p = posOf();
-                const r = p && p.phase === 'trait' ? roster[p.n] : (_revisit != null ? roster[_revisit] : null);
-                if (!r) { advance(); return; }
-                if (pick === '← Different stage') {
-                    chipBar(stageChipLabels(!covered(r)), onCw8StagePick);
-                    helpBar(r);
-                    resetSend();
-                    return;
-                }
-                const beat = world.beats.filter(function (b) { return b.stage === _pendingStage && b.label === pick; })[0];
-                if (!beat) { console.warn('WML CW8: beat chip did not resolve —', pick); serveCurrent(); return; }
-                userTurn(pick);
-                serveWrite(r, beat);
-            }
-            // The write ask — Neil's own sketch, mechanised: quote THEIR beat, ask for the
-            // lines, append underneath (§29 — the merge stays theirs, never automated).
-            function serveWrite(r, beat) {
-                const label = _cw7TraitLabel(r.trait);
-                const emit = function () {
-                    aiBubble('**' + _cw8BeatSegment(beat) + '**\n\n'
-                        + 'Your beat says:\n\n> ' + (rowText(beat.fid) || '*(blank so far)*') + '\n\n'
-                        + '**Write the line(s) that would let a reader SEE their ' + label.toLowerCase()
-                        + ' here.** What do they DO — and what does it cost or win them?\n\n'
-                        + 'Your words are added **underneath the beat** — nothing is deleted — and then you '
-                        + 'merge them into the beat however you think reads best.');
-                };
-                _cwReplay(emit);   // quotes the live beat text — drawn, never stored (§4c.7)
-                _walkSlot.arm('cw8', beat.fid, { cycle: 'accumulate', data: { kind: 'beat', traitLabel: label, seg: _cw8BeatSegment(beat) } });
-                chipBar(['← Pick a different beat'], onCw8BeatBack);
-                helpBar(r);
-                resetSend();
-            }
-            function onCw8BeatBack(pick) {
-                const p = posOf();
-                const r = p && p.phase === 'trait' ? roster[p.n] : (_revisit != null ? roster[_revisit] : null);
-                _walkSlot.clear('cw8');   // the write ask is dead — nothing typed may file to it
-                if (!r) { advance(); return; }
-                if (_pendingStage != null) { serveBeatPick(r, _pendingStage); return; }
-                chipBar(stageChipLabels(!covered(r)), onCw8StagePick);
-                helpBar(r);
-                resetSend();
-            }
-            function serveAfterAppend(r, seg) {
-                const label = _cw7TraitLabel(r.trait);
-                aiBubble('Added under **' + seg + '** — merge it into the beat whenever you like.\n\n'
-                    + 'A trait usually shows in **more than one beat**. Another beat for their '
-                    + label.toLowerCase() + '?');
-                chipBar(['Another beat for ' + label, 'Next →'], onCw8MoreOrNext);
-                helpBar(r);
-                resetSend();
-            }
-            function onCw8MoreOrNext(pick) {
-                userTurn(pick);
-                const p = posOf();
-                const r = (_revisit != null) ? roster[_revisit]
-                    : (p && p.phase === 'trait' ? roster[p.n] : null);
-                if (pick.indexOf('Another beat') === 0 && r) {
-                    // §4d: every list carries its own way OUT — a student who changes their mind
-                    // mid-"another" must not have to fake a beat pick to escape.
-                    chipBar(stageChipLabels(false).concat(_revisit != null ? ['Back to the wrap →'] : ['No more — next →']), onCw8StagePick);
-                    helpBar(r);
-                    resetSend();
-                    return;
-                }
-                _revisit = null;
-                advance();
-            }
+            // ── (retired at v7.20.519) tagBar · stageChipLabels · serveTraitAsk · onCw8StagePick ·
+            // serveBeatPick · onCw8BeatPick · serveWrite · onCw8BeatBack · serveAfterAppend ·
+            // onCw8MoreOrNext — the stage→beat CHIP MAZE, 146 lines, replaced by the interface
+            // above. Deleted rather than left inert: a dead second route into the same writes is
+            // exactly how a walk regains a path nobody tests (the .491 Values-Map lesson).
 
             // ── PHASE 2: CONTINUITY ────────────────────────────────────────────────────────
             function serveContinuity() {
@@ -25774,39 +25919,21 @@
                 serveWrapRecall();
                 resetSend();
             }
-            function serveWrapRecall() { chipBar(['Add more to a trait →'], onCw8Recall); }
+            function serveWrapRecall() { chipBar(['Add more traits or beats →'], onCw8Recall); }
             function onCw8Recall(pick) {
                 userTurn(pick);
-                aiBubble('**Which trait?** You can add to more beats, or move one off the *Not in the '
-                    + 'story yet* list by finally giving it a beat.');
-                chipBar((roster || []).map(function (r) { return _cw7TraitLabel(r.trait); })
-                    .concat(['Nothing — I’m done →']), onCw8RecallPick);
-                resetSend();
-            }
-            function onCw8RecallPick(pick) {
-                userTurn(pick);
-                if (pick.indexOf('Nothing') === 0) { serveWrapRecall(); resetSend(); return; }
-                const n = (roster || []).map(function (r) { return _cw7TraitLabel(r.trait); }).indexOf(pick);
-                if (n === -1) {
-                    console.warn('WML CW8: recall chip did not resolve —', pick);
-                    serveWrapRecall(); resetSend(); return;
-                }
                 active = true; done = false;
-                _revisit = n;
-                const r = roster[n];
-                aiBubble('**' + _cw7TraitLabel(r.trait) + '** — pick the stage, then the beat.');
-                chipBar(stageChipLabels(false).concat(['Back to the wrap →']), onCw8StagePick);
-                helpBar(r);
-                resetSend();
+                openIsland();
             }
 
             // ── FLOW ───────────────────────────────────────────────────────────────────────
-            function serveCurrent(opts) {
+            function serveCurrent() {
                 const p = posOf();
                 if (!p) { serveWrap(); return; }
                 substepFor(p);
-                if (p.phase === 'trait' && needsOrientation()) { serveOrientation(); return; }
-                if (p.phase === 'trait') { serveTraitAsk(p.n, opts); return; }
+                if (needsOrientation()) { serveOrientation(); return; }
+                if (p.phase === 'port') { ensureChip(); return; }
+                if (p.phase === 'refine') { serveRefine(p.port); return; }
                 serveContinuity();
             }
             function advance() {
@@ -25815,8 +25942,20 @@
                 if (!p) { active = false; serveWrap(); return; }
                 serveCurrent();
             }
+            // LIVENESS (§4d): the way FORWARD is on screen after every entry, close and refusal —
+            // and it points at the thing that is actually next, never merely at a button.
+            function ensureChip() {
+                const opened = !!(ledger && ledger.ports && Object.keys(ledger.ports).length);
+                chipBar([opened ? 'Open my plot again →' : 'Choose my traits and beats →'], onCw8OpenChip);
+                helpBar(null);
+                resetSend();
+            }
+            function onCw8OpenChip(pick) { userTurn(pick); openIsland(); }
 
             // ── ORIENTATION — derived from the transcript, marker in chunk 1 (the CW7 law).
+            // ⚠️ v7.20.519: the MARK changed with the walk. A student part-way through the old
+            // chip maze re-orients once — correct, not a regression: the previous orientation
+            // described a stage→beat flow that no longer exists.
             const ORIENT_MARK = 'does your story actually SHOW it';
             function oriented() {
                 try {
@@ -25827,7 +25966,7 @@
             }
             function needsOrientation() {
                 const p = posOf();
-                return !!(p && p.phase === 'trait' && p.n === 0 && !oriented());
+                return !!(p && p.phase === 'port' && !oriented());
             }
             function serveOrientation() {
                 serveCwChunks([
@@ -25835,18 +25974,20 @@
                         + 'is in balance, in excess or in deficit. That was about who they ARE. This step '
                         + 'asks a harder question: **' + ORIENT_MARK + '?**',
                     'A trait you named but never dramatised is invisible to a reader. They cannot see '
-                        + 'your notes — they only see the beats. So we take the traits you flagged, **one '
-                        + 'at a time**, and write them INTO the outline you built.',
-                    'For each trait I will show you what you wrote about it in Step 7, you pick the '
-                        + 'stage and the beat where it should show, and you write the line(s) that would '
-                        + 'let a reader see it. **Your words are added underneath that beat** — nothing is '
-                        + 'ever deleted — and you merge them in however you think reads best.\n\n'
-                        + 'And “it doesn’t show anywhere yet” is a real answer, often the most useful one: '
-                        + 'it goes on your build list, and it costs you one tap.',
-                    'Your outline is open beside the chat, and everything here is instant — no waiting '
-                        + 'on me. **Don’t overthink it**: rough lines now, you will sharpen them in the '
-                        + 'drafts. Here is the first trait.',
-                ], { emit: aiBubble, onDone: function () { serveCurrent({ defer: true }); } });
+                        + 'your notes — they only see the beats. So we are going to put what you wrote in '
+                        + 'Step 7 straight INTO the plot you built.',
+                    'You do it on your own plot, not in here. **Pick the traits** you want to work on, '
+                        + 'then **tap the beats** where each one shows — the beginning of your story '
+                        + '(Stages I–III) or the end (Stages IV–VI), depending on where you marked it. '
+                        + 'Your Step-7 words are added **underneath** each beat you pick.\n\n'
+                        + '**You don’t type anything to do it, and nothing you have written is replaced** — '
+                        + 'the new line sits under your own words and you merge them however reads best.',
+                    'Beats you have not written yet are fine to pick too — filling those in is part of '
+                        + 'this step. And “it doesn’t show anywhere yet” is a real answer that costs one '
+                        + 'tap: it goes on your build list for the next draft.\n\n'
+                        + 'Afterwards I will take you through the beats you chose, one at a time, so you '
+                        + 'can sharpen them. **Don’t overthink it** — rough now, sharper in Steps 9 and 10.',
+                ], { emit: aiBubble, onDone: function () { serveCurrent(); } });
             }
 
             // ── DEAD-END GUARDS — refused, with a way forward, by construction (§4d).
@@ -25877,21 +26018,29 @@
             // beats always from the LIVE document. §5d: the tag comes from _cwDepTag.
             function loadRoster() {
                 world = _cw8EnumerateBeats(canvasEditor);
-                if (roster) return Promise.resolve();
+                // The LEDGER rides with the roster: `posOf` cannot tell a ported-but-unrefined
+                // beat from a finished one without it, so a resume that skipped this load would
+                // walk straight past the refine pass (the Step-9 ROOT-A shape, one layer up).
+                const withLedger = function (p) {
+                    if (ledger || !state.cwProjectId) return p;
+                    return p.then(function () { return loadLedger(state.cwProjectId); })
+                        .then(function (l) { ledger = l || {}; });
+                };
+                if (roster) return withLedger(Promise.resolve());
                 try {
                     const tag = _cwDepTag('universal_values');
                     const primed = (canvasChatHistory || []).filter(function (m) {
                         return m && m.role === 'user' && typeof m.content === 'string' && m.content.indexOf(tag) === 0;
                     })[0];
-                    if (primed) { roster = _cw8ParseValuesAudit(primed.content); return Promise.resolve(); }
+                    if (primed) { roster = _cw8ParseValuesAudit(primed.content); return withLedger(Promise.resolve()); }
                 } catch (e) {}
                 if (!(state.cwProjectId && WML.cwProject && WML.cwProject.loadArtifact)) {
                     roster = [];
                     return Promise.resolve();
                 }
-                return WML.cwProject.loadArtifact(state.cwProjectId, 'universal_values').then(function (a) {
+                return withLedger(WML.cwProject.loadArtifact(state.cwProjectId, 'universal_values').then(function (a) {
                     roster = _cw8ParseValuesAudit((a && a.success && a.value) || '');
-                });
+                }));
             }
 
             function startWalk() {
@@ -25904,8 +26053,9 @@
                     if (!roster.length) { serveNoAudit(); return; }
                     ensureRows();
                     active = true;
-                    console.log('WML CW8: trait-first values walk start — ' + roster.length
-                        + ' flagged trait(s), ' + world.beats.length + ' beats on the page');
+                    console.log('WML CW8: values walk start (interface, v7.20.519) — ' + roster.length
+                        + ' flagged trait(s), ' + world.beats.length + ' beats on the page, '
+                        + Object.keys((ledger && ledger.ports) || {}).length + ' line(s) already ported');
                     serveCurrent();
                 }).catch(function (e) {
                     pending = false; active = false;
@@ -25929,15 +26079,23 @@
                 }
                 userTurn(clean);
                 try {
-                    if (slot.data && slot.data.kind === 'beat') {
-                        // APPEND under the beat, labelled — the label is what the student sees to
-                        // amalgamate (§29) AND the walk's own footprint for this trait.
-                        _writeOutlineRowField(slot.fid, _cw8AppendLine(slot.data.traitLabel, clean));
+                    if (slot.data && slot.data.kind === 'refine') {
+                        // ⭐ THE ONE PLACE A LINE IS REPLACED, and read the distinction (#374b):
+                        // the port never touches the STUDENT'S prose — but this replaces OUR OWN
+                        // machine line with their sentence, so the beat does not end up holding a
+                        // ported line AND its rewrite (the .289 stitching bug).
+                        const live = rowText(slot.fid);
+                        const res = _cw8ReplaceTraitLines(live, slot.data.traitLabel, clean);
+                        if (res.replaced) {
+                            _cwWriteOutlineRowLines(slot.fid, res.text.split('\n'));
+                        } else {
+                            // The ported line is gone (they deleted or rewrote it themselves).
+                            // Their words still belong in the beat, so append rather than lose them.
+                            console.warn('WML CW8: no ported line to replace in ' + slot.fid + ' — appending instead');
+                            _writeOutlineRowField(slot.fid, _cw8AppendLine(slot.data.traitLabel, clean));
+                        }
                         save();
-                        const p = posOf();
-                        const r = (_revisit != null) ? roster[_revisit]
-                            : (roster || []).filter(function (x) { return _cw7TraitLabel(x.trait) === slot.data.traitLabel; })[0];
-                        if (r) { serveAfterAppend(r, slot.data.seg); return; }
+                        markDone([slot.data.key]);
                         advance();
                         return;
                     }
@@ -25953,7 +26111,15 @@
                 if (!/@CW8_START/.test(norm)) return;
                 startWalk();
             }
-            function reset() { active = false; pending = false; done = false; roster = null; world = null; _pendingStage = null; _revisit = null; }
+            function reset() {
+                active = false; pending = false; done = false; roster = null; world = null;
+                // ⚠️ The LEDGER is not reset — it is durable state about the DOCUMENT (which lines
+                // were ported, which were kept), not about this chat. A chat clear must not make
+                // the walk re-offer beats the student already has (the .421 footprint law).
+                ledger = null;          // dropped from MEMORY only; reloaded from the artifact
+                islandOpen = false; islandSnap = null;
+                try { if (window.WMLPlotIsland) window.WMLPlotIsland.unmount(); } catch (e) {}
+            }
             function tryResume() {
                 try {
                     if (!canvasEditor) return false;
@@ -26132,28 +26298,14 @@
             // Replace an element row's content with one line per beat (hardBreak-separated —
             // the proven multi-line inline shape, see _planLinesContent). _writeOutlineRowField
             // cannot carry \n on its replace path, hence this sibling with the SAME row walk.
+            // v7.20.518: ONE implementation, at module scope (`_cwWriteOutlineRowLines`) — Step 8's
+            // refine pass needs the identical write and two copies drift. Behaviour unchanged; the
+            // only difference is that a miss now warns generically, so the CW9-specific
+            // consequence is stated here instead.
             function _cw9ReplaceRowLines(fid, lines) {
-                if (!canvasEditor || !fid || !lines || !lines.length) return false;
-                let targetPos = null, targetNode = null;
-                canvasEditor.state.doc.descendants(function (node, pos) {
-                    if (targetPos !== null) return false;
-                    if ((node.type.name === 'outlineRow' || node.type.name === 'inputField') && node.attrs && node.attrs.fieldId === fid) {
-                        targetPos = pos; targetNode = node; return false;
-                    }
-                    return true;
-                });
-                if (targetPos === null) {
-                    console.warn('WML CW9: no row for field', fid, '— transfer for this element NOT filed');
-                    return false;
-                }
-                const hasBr = !!(canvasEditor.schema.nodes && canvasEditor.schema.nodes.hardBreak);
-                const content = [];
-                lines.forEach(function (t, i) {
-                    if (i && hasBr) content.push({ type: 'hardBreak' });
-                    content.push({ type: 'text', text: (i && !hasBr ? ' | ' : '') + t });
-                });
-                canvasEditor.commands.insertContentAt({ from: targetPos + 1, to: targetPos + targetNode.nodeSize - 1 }, content);
-                return true;
+                const ok = _cwWriteOutlineRowLines(fid, lines);
+                if (!ok) console.warn('WML CW9: transfer for this element NOT filed —', fid);
+                return ok;
             }
 
             function stagePresentation(sec, si) {
@@ -51171,12 +51323,78 @@
                 const fid = _cw6RowFieldId(k, sec.id, c.id);
                 if (!present.has(fid)) return;
                 any = true;
-                beats.push({ fid: fid, stage: si, stageLabel: sec.label, label: c.label || c.id });
+                // v7.20.517 (#374): `text` rides along so the INTERFACE can show the student
+                // their own beat — and show an EMPTY one as empty, which is the whole of the
+                // gap-filling half of the step. ⭐ Membership is still `present.has(fid)` (the
+                // ROW exists), never `text` — an empty beat is selectable BY DESIGN, and a
+                // presence check standing in for content is the Step-9 ROOT-A defect.
+                beats.push({
+                    fid: fid, stage: si, stageLabel: sec.label, label: c.label || c.id,
+                    text: present.get(fid) || '',
+                });
             });
-            if (any) stages.push({ si: si, label: sec.label });
+            if (any) stages.push({ si: si, label: sec.label, roman: _cw8StageRoman(sec.label, si), band: null });
         });
-        return { arch: k, beats: beats, stages: stages };
+        // The band is derived from the stage's POSITION in the real template, never from its
+        // wording — an archetype that renames Stage IV must still land in the END half.
+        const total = arch.sections.length;
+        stages.forEach(function (s) { s.band = _cw8BandOf(s.si, total); });
+        beats.forEach(function (b) { b.band = _cw8BandOf(b.stage, total); });
+        return { arch: k, beats: beats, stages: stages, stageTotal: total };
     }
+
+    // ⭐⭐ THE BAND SPLIT (#374, Neil's correction, stated twice): *"it has to be clearly
+    // labelled, because it's beginning and end — the beginning will be stage one two three, the
+    // end will be stage four five six."*
+    //
+    // WHY IT IS LOAD-BEARING AND NOT DECORATION: Step 7 records each trait TWICE — a condition at
+    // the BEGINNING and a condition at the END. So a trait the student only marked at the
+    // beginning has no business offering Stages IV–VI, and halving the plot before they pick
+    // anything is the actual cure for the measured overwhelm (97–108 beats, 16–18 per stage).
+    //
+    // Derived from position over the template's OWN section count, so it holds for an archetype
+    // with a different number of stages; `bin/cw8-port-gate.js` asserts all eight ship six.
+    const CW8_BANDS = {
+        begin: { id: 'begin', label: 'Beginning', sub: 'Stages I–III' },
+        end: { id: 'end', label: 'End', sub: 'Stages IV–VI' },
+    };
+    function _cw8BandOf(si, total) { return (si < Math.ceil((total || 6) / 2)) ? 'begin' : 'end'; }
+    // Presentation twin of CW9's stagePresentation — 'STAGE IV: NIGHTMARE…' → 'IV'.
+    function _cw8StageRoman(label, si) {
+        const m = /^STAGE\s+([IVXLC]+)\s*:/i.exec(String(label || ''));
+        return m ? m[1].toUpperCase() : String(si + 1);
+    }
+    // Which half of the plot a flagged trait may be worked in — read off the STUDENT'S OWN Step-7
+    // record, never asked again (WML §3: never ask for what the system already holds).
+    //   condition at begin only → the beginning half · at end only → the end half
+    //   both (a journey) → both halves, labelled · build-list only → both (they choose where it
+    //   is EARNED, which is the whole point of a wanted trait).
+    function _cw8BandsFor(r) {
+        const real = function (x) { return CW7_STATES.indexOf(x) !== -1; };
+        const b = real(r && r.begin), e = real(r && r.end);
+        if (b && e) return ['begin', 'end'];
+        if (b) return ['begin'];
+        if (e) return ['end'];
+        return ['begin', 'end'];
+    }
+
+    // ⭐⭐ THE PORTED TEXT (#374a): *"they will already have traits from step seven… do they wanna
+    // just port those straight into certain beats? Why don't we do that?"* — so the line that
+    // lands in the beat is THE STUDENT'S OWN STEP-7 WORDS, verbatim, with no typing.
+    //
+    // ⚠️ THE ONE CASE THAT IS NOT THEIR WORDS, disclosed rather than invented: a trait can be
+    // flagged by CONDITION with nothing written about it (they ticked "in deficit" and moved on).
+    // Inventing prose for them would be authoring the student's story (§5c). So the port files an
+    // honest CONDITION MARKER instead, and the refine pass is what turns it into their sentence.
+    function _cw8PortText(r) {
+        const said = String((r && r.said) || '').trim();
+        if (said) return said;
+        const cond = String((r && r.cond) || '').trim().toLowerCase();
+        return (cond ? cond : 'flagged in Step 7') + ' — this is where it should show.';
+    }
+    // The ledger key for one port. ONE producer (§5d): the beat's fid + the trait's canonical
+    // control id, which is the same slug maker Step 7's controls use.
+    function _cw8PortKey(fid, trait) { return fid + '::' + _cw7TraitCtlId(trait); }
 
     // ── THE FOOTPRINTS, v7.20.492 (#364): the student's writing lands IN THE BEATS, so the
     // beats themselves carry the walk's state. ONE composer + ONE reader per line shape,
@@ -51191,6 +51409,27 @@
             const m = l.trim().match(/^Values \(([^)]+)\):/);
             return !!m && m[1].split(',').map(function (x) { return x.trim(); }).indexOf(traitLabel) !== -1;
         });
+    }
+    // ⭐ THE REFINE REWRITE (v7.20.517, #374a) — and read the distinction, because it is exactly
+    // the place "the port APPENDS, never replaces" (#374b) is easiest to misapply:
+    //   · #374b protects the STUDENT'S OWN PROSE. A port lands underneath it, never over it.
+    //   · This replaces OUR OWN machine line — the `Values (Trait): …` we filed — with the
+    //     sentence the student writes in the refine pass. Their prose is not touched, and the
+    //     beat does not accumulate a machine line AND its replacement (the .289 stitching bug).
+    // PURE (lines in, lines out) so the gate drives the shipped function, not a copy.
+    function _cw8ReplaceTraitLines(beatText, traitLabel, replacement) {
+        const lines = String(beatText || '').split('\n');
+        let hit = false;
+        const out = [];
+        lines.forEach(function (l) {
+            const m = l.trim().match(/^Values \(([^)]+)\):/);
+            const owns = !!m && m[1].split(',').map(function (x) { return x.trim(); }).indexOf(traitLabel) !== -1;
+            if (!owns) { out.push(l); return; }
+            if (hit) return;                       // a second machine line for the same trait collapses
+            hit = true;
+            if (replacement) out.push(_cw8AppendLine(traitLabel, replacement));
+        });
+        return { text: out.join('\n'), replaced: hit };
     }
     // The no-show line in the one surviving row (see CW8_NOTYET_FID's comment).
     function _cw8NoShowLine(traitLabel) { return traitLabel + ' — doesn’t show anywhere yet.'; }

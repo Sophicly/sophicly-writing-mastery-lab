@@ -451,3 +451,90 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
   border-radius:12px; padding:14px 18px; font-size:13px; color:var(--muted2);
 }
 .swml-scene-island .done-note strong { color:var(--ink); }
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   STEP 8 — THE VALUES MODE (#374 / #374a / #374b, v7.20.518).
+
+   The SAME island in a second mode, per Neil's instruction ("a shared plot-picker with a
+   Step-8 mode", not a second interface). The host carries `swml-scene-island swml-plot-island`,
+   so every token, the shell, the buttons, the beat cards and both themes are inherited — this
+   block only adds the parts Step 9 has no equivalent for: the trait cards, the BEGINNING/END
+   band headers, the empty-beat state, and the review rows that show the port landing
+   UNDERNEATH the student's own words.
+
+   ⛔ NO RAW COLOURS. Every value here is a token, so light theme and bin/island-contrast-lint.js
+   both hold without a second hand-tuned palette.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+
+/* ── phase 1: the trait cards ── */
+.swml-plot-island .pv-trait-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:12px; }
+.swml-plot-island .pv-trait-card {
+  display:flex; gap:11px; align-items:flex-start; text-align:left;
+  background:var(--surface); border:1px solid var(--line); border-radius:12px;
+  padding:14px 16px; color:var(--ink); cursor:pointer;
+  transition:background .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease);
+}
+.swml-plot-island .pv-trait-card:hover { background:var(--surface2); box-shadow:var(--shadow-md); }
+.swml-plot-island .pv-trait-card.is-sel { border-color:var(--teal); background:linear-gradient(0deg,var(--teal-tint),var(--teal-tint)),var(--surface); }
+.swml-plot-island .pv-trait-card .tick {
+  flex:0 0 18px; width:18px; height:18px; border-radius:6px; margin-top:2px;
+  border:1.5px solid var(--line-strong); display:grid; place-items:center; font-size:11px; color:var(--btn-ink);
+  transition:background .25s var(--ease), border-color .25s var(--ease);
+}
+.swml-plot-island .pv-trait-card.is-sel .tick { background:var(--teal); border-color:var(--teal); }
+.swml-plot-island .pv-t-main { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.swml-plot-island .pv-t-label { font-weight:700; font-size:14.5px; }
+.swml-plot-island .pv-t-value { font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted2); }
+.swml-plot-island .pv-t-cond { font-size:12.5px; color:var(--teal); font-weight:600; }
+.swml-plot-island .pv-t-said { font-size:13px; color:var(--ink); font-style:italic; margin-top:4px; }
+.swml-plot-island .pv-t-said.is-none { color:var(--muted2); font-style:normal; font-size:12.5px; }
+.swml-plot-island .pv-t-worked { font-size:11.5px; color:var(--done); font-weight:600; margin-top:4px; }
+.swml-plot-island .pv-inline-trait { color:var(--teal); }
+
+/* ── phase 2: the BEGINNING / END bands (the labelling Neil called load-bearing) ── */
+.swml-plot-island .pv-band-note {
+  background:linear-gradient(0deg,var(--teal-tint),var(--teal-tint)),var(--surface);
+  border-radius:12px; padding:12px 16px; font-size:13px; color:var(--muted2); margin-bottom:14px;
+}
+.swml-plot-island .pv-band-note strong { color:var(--ink); }
+.swml-plot-island .pv-tools { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px; }
+.swml-plot-island .pv-tools .chip-btn.is-on { background:var(--teal); color:var(--btn-ink); border-color:var(--teal); }
+.swml-plot-island .pv-tools-note { font-size:12px; color:var(--muted2); }
+.swml-plot-island .pv-band { margin-bottom:26px; }
+.swml-plot-island .pv-band-head { display:flex; align-items:baseline; gap:10px; margin:0 0 10px; }
+.swml-plot-island .pv-band-label {
+  font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--ink);
+  background:var(--surface2); border-radius:8px; padding:5px 10px;
+}
+.swml-plot-island .pv-band-sub { font-size:12px; color:var(--muted2); }
+
+/* an EMPTY beat is a first-class choice here — gap-filling is half of what this step is for */
+.swml-plot-island .beat-card.pv-empty .b-text { color:var(--muted2); }
+.swml-plot-island .pv-empty-note { font-style:italic; }
+.swml-plot-island .beat-card.pv-worked { opacity:.72; }
+.swml-plot-island .pv-worked-note { display:block; font-size:11.5px; color:var(--done); font-weight:600; margin-top:4px; }
+
+/* ── phase 3: review — the port lands UNDER the student's own words, and it must LOOK it ── */
+.swml-plot-island .pv-review-row { padding:14px 0; border-bottom:1px solid var(--line); }
+.swml-plot-island .pv-review-row:last-child { border-bottom:none; }
+.swml-plot-island .pv-r-head { font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted2); margin-bottom:7px; }
+.swml-plot-island .pv-r-head strong { color:var(--ink); }
+.swml-plot-island .pv-r-existing { font-size:13.5px; color:var(--ink); }
+.swml-plot-island .pv-r-existing.is-empty { color:var(--muted2); font-style:italic; }
+.swml-plot-island .pv-r-add {
+  display:flex; gap:9px; align-items:flex-start; margin-top:7px;
+  background:linear-gradient(0deg,var(--teal-tint),var(--teal-tint)),var(--surface2);
+  border-radius:10px; padding:9px 12px;
+}
+.swml-plot-island .pv-r-plus { color:var(--teal); font-weight:700; font-size:13px; line-height:1.45; }
+.swml-plot-island .pv-r-line { font-size:13px; color:var(--ink); }
+.swml-plot-island .pv-noshow {
+  margin-top:16px; background:linear-gradient(0deg,var(--warn-tint),var(--warn-tint)),var(--surface);
+  border-radius:12px; padding:14px 18px; font-size:13px; color:var(--muted2);
+  display:flex; flex-direction:column; gap:4px;
+}
+.swml-plot-island .pv-noshow strong { color:var(--ink); }
+
+@media (max-width:700px) {
+  .swml-plot-island .pv-trait-grid { grid-template-columns:1fr; }
+}

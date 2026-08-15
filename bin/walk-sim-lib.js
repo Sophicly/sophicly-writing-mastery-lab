@@ -550,6 +550,9 @@ function makeWorld(ctl, opts) {
     // swallowed a tap reached a live lesson. Pass `ok` via opts.ok to enable (every sim does).
     function autoLive(label, bubblesBefore) {
         if (!opts.ok || !world.ctl.active) return;
+        // A walk that just handed the student to a full-screen surface is live BY that surface
+        // (see world.live) — the chat is not the only screen the product has.
+        if (typeof opts.externalSurface === 'function' && opts.externalSurface()) return;
         opts.ok(world.bubbles.length > bubblesBefore || world.chips().length > 0,
             'DEAD END after ' + label + ': the walk is active but said NOTHING and left no chip — '
             + 'the student has no question to answer and nothing to press. Refusing an input is only '
@@ -578,7 +581,17 @@ function makeWorld(ctl, opts) {
     // The student can act iff EITHER the slot is armed (typing will be accepted and filed) OR a
     // chip is on screen (tapping does something). Anything else is a dead end, whatever the
     // document looks like. `finished` is the one legitimate way to have neither.
+    // ⭐ v7.20.519 — THE FULL-SCREEN SURFACE (Step 8's plot interface, Step 9's scene island).
+    // A walk may legitimately hand the student to a surface OUTSIDE the chat, and while that is
+    // mounted the chat having no chip is CORRECT, not a dead end. `opts.externalSurface` is a
+    // predicate the rig calls to ask "is such a surface up right now?".
+    //
+    // ⚠️ IT IS AN ESCAPE HATCH, SO IT IS DELIBERATELY NARROW: it does not weaken the invariant,
+    // it MOVES it. A rig that declares one owes the assertion that CLOSING the surface puts the
+    // student back on a live chat screen — which is exactly where the handover can break, and is
+    // where Step 9's .500 defect actually lived (the walk offered a button, but not the way ON).
     world.live = function () {
+        if (typeof opts.externalSurface === 'function' && opts.externalSurface()) return true;
         const armed = !!(deps._walkSlot && deps._walkSlot.armed);
         return armed || world.chips().length > 0;
     };
@@ -649,6 +662,12 @@ function makeWorld(ctl, opts) {
         if (add) world.tap(add);
         return !!add;
     };
+    // v7.20.519: the dep bag, exposed. A rig sometimes has to wire a stub that needs the world's
+    // own rows (an artifact store, an island mount), and those cannot be built before makeWorld
+    // returns. ⚠️ Only OBJECT properties can be added this way (`deps.WML.cwProject`,
+    // `deps.window.X`) — the controller closes over the BINDINGS, so replacing a whole dep here
+    // is invisible to it and must still go through opts.extraDeps.
+    world.deps = deps;
     return world;
 }
 

@@ -344,6 +344,19 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw8-sim-harness.js || fail=1
 fi
 
+# v7.20.519 (#374): THE STEP-8 INTERFACE RENDERS. The sim above drives the BRIDGE with the island
+# modelled, so a JSX runtime error inside the real component would pass every gate and reach a
+# student as a blank full-screen overlay. This renders the shipped component in all three phases.
+# Skipped (loudly) when island/node_modules is absent — it needs the same tree `npm run build` uses.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'island/src/|wml-scene-island\.(css|min\.js)|cw8-island-smoke\.mjs'; then
+  if [ -d island/node_modules/esbuild ]; then
+    node bin/cw8-island-smoke.mjs || fail=1
+  else
+    echo "⚠️  cw8-island-smoke SKIPPED — island/node_modules missing (run: cd island && npm install)"
+  fi
+fi
+
 # v7.20.505 (#366): CW9 TRANSFER → CW10 SEED. The chain "write the elements → tap Transfer →
 # Step 10 opens with the prose" crosses two lessons, three artifact keys and the exercise manifest,
 # and every way it can break is SILENT (blank Step 10, a chat panel creeping back onto the test, a

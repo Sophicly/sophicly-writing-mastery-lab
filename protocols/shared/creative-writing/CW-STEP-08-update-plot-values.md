@@ -14,11 +14,17 @@
 >
 > **Your job:** greet them in two or three sentences and hand over. That is all.
 >
-> ⚠️ **THE SHAPE OF THIS STEP CHANGED AT v7.20.487.** It used to walk the six STAGES, asking "which
-> of your values are visible in this stage?" — a menu of 23 traits, which root CLAUDE.md §18 rules
-> against because a student names one and skips the rest. It now walks the **TRAITS**, one at a
-> time. If you are reasoning from an older copy of this file, discard it; PEDAGOGY.md §30 is the
-> ruling.
+> ⚠️ **THE SHAPE OF THIS STEP CHANGED AGAIN AT v7.20.519 (FIXLIST #374).** The student now does the
+> choosing in an **INTERFACE**, on their own plot — not in chat chips. Neil, 2026-08-13: *"there's
+> so many beats in each stage that it's actually quite overwhelming. Can we not have some sort of an
+> interface instead?"* (measured: 97–108 beats per plot template, 16–18 per stage). They pick their
+> traits, tap the beats, and **their Step-7 words are ported straight in with no typing**; the chat
+> then walks them through refining those beats, lightly. If you are reasoning from an older copy of
+> this file that mentions stage chips and beat chips, discard it.
+>
+> (It had already stopped walking the six STAGES at v7.20.487 — that version asked "which of your
+> values are visible in this stage?", a menu of 23 traits, which root CLAUDE.md §18 rules against
+> because a student names one and skips the rest. PEDAGOGY.md §30 is the ruling.)
 
 #### 1.0 Core System Instructions
 
@@ -83,16 +89,22 @@ _Completion:_ `[SUBSTEP_COMPLETE: step_8, substep_2, "Continuity pass"]`
 
 #### 4.0 What the walk does, in one paragraph (so you can answer a question about it)
 
-It walks the traits the student actually flagged in Step 7 — not all 23. For each one it shows the
-trait with a worked example AND the student's own Step-7 words about it, then they **tap the stage,
-then the beat** in their own outline where it should show — *"doesn't show anywhere yet"* costs one
-tap, goes on their build list, and is a real answer, not a failure. Then they **write the line(s)
-that would let a reader see it, and their words are appended UNDER that beat** — nothing is ever
-deleted; they merge the addition into the beat themselves (that merge is the pedagogy). A trait
-usually shows in more than one beat, so the walk offers another before moving on. A single
-whole-story read-through at the end checks for contradictions only. This is **update 1 of 7** —
-the outline gains a layer each time. (v7.20.492, Neil's #364 ruling: the writing lands IN the
-beats, never in a separate map table in the document.)
+An **interface opens on their own plot**. They pick which of the traits they flagged in Step 7 they
+want to work on — not all 23, only the ones they themselves marked. Then, one trait at a time, they
+tap the beats where it shows: the plot is banded **Beginning (Stages I–III)** and **End (Stages
+IV–VI)**, and a trait is only offered the half where Step 7 recorded it, which halves what is on
+screen. Beats they have not written yet are shown as empty and are fine to pick — filling those in
+is part of this step now, because most students are still finishing Step 6. *"It doesn't show
+anywhere yet"* costs one tap, goes on their build list, and is a real answer, not a failure.
+
+**Their Step-7 words are then ported straight into the beats they chose — they type nothing to do
+it — and every ported line is APPENDED underneath whatever is already there.** Nothing is ever
+deleted or replaced; they merge the addition into the beat themselves (that merge is the pedagogy).
+Afterwards the chat takes them through the beats they chose, one at a time, to turn each ported line
+into a line of story — **lightly**, because Steps 9 and 10 carry the real polish, and "leave it as
+it is" costs one tap. A single whole-story read-through at the end checks for contradictions only.
+This is **update 1 of 7** — the outline gains a layer each time. (v7.20.519, Neil's #374/#374a/#374b
+ruling; the writing lands IN the beats, never in a separate map table in the document.)
 
 #### 5.0 Data Requirements
 

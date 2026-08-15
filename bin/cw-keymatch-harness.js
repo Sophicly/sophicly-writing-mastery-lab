@@ -200,12 +200,14 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         // lands IN THE BEATS ("not a separate table in the document"). The stage/beat picks are
         // SCAFFOLD — they choose WHERE; the typed line that follows is what is filed (appended
         // under the beat, labelled `Values (Trait):`, which is also the walk's own footprint).
-        onCw8StagePick:   { kind: 'content', note: 'Step 8 stage pick — scaffold for the beat pick, EXCEPT the one-tap no-show branch, which files a line to cw-step-8-notyet (the build list; an answer with no footprint is re-asked forever, .421)' },
-        onCw8BeatPick:    { kind: 'scaffold', note: 'Step 8 beat pick — chooses WHERE; the typed line that follows is appended under that beat and is what is filed' },
-        onCw8BeatBack:    { kind: 'flow', note: 'Step 8 “pick a different beat” — clears the armed write slot, files nothing' },
-        onCw8MoreOrNext:  { kind: 'flow', note: 'Step 8 “another beat for X / next” — steers the walk; the appends already landed' },
-        onCw8Recall:      { kind: 'flow', note: 'Step 8 wrap: open the add-more picker — the way back into a trait' },
-        onCw8RecallPick:  { kind: 'flow', note: 'Step 8 wrap: which trait to add to — the append that follows is what is filed' },
+        // ⚠️ v7.20.519 (#374): the stage→beat CHIP MAZE is GONE — the traits, the stages and the
+        // beats are all chosen in the interface now, so onCw8StagePick / onCw8BeatPick /
+        // onCw8BeatBack / onCw8MoreOrNext / onCw8RecallPick no longer exist. What the CHAT still
+        // owns is the light refine pass, and both of its menus are FLOW: the port already filed
+        // its line into the beat before either chip is on screen, and a refinement is TYPED.
+        onCw8RefineChip:  { kind: 'flow', note: 'Step 8 refine: “leave as is” / “leave them all as they are” — steers the walk; the ported line is already in the beat, and the KEEP is recorded durably in the cw8_values_state ledger (an answer with no footprint is re-asked forever, .421)' },
+        onCw8OpenChip:    { kind: 'flow', note: 'Step 8: open the plot interface — files nothing; the PORT inside the island is what writes' },
+        onCw8Recall:      { kind: 'flow', note: 'Step 8 wrap: reopen the interface to add more traits or beats' },
         onCw8GuardAck:    { kind: 'flow', note: 'Step 8 dead-end guard (no outline / no audit) acknowledgment — files nothing' },
         onCw8Retry:       { kind: 'flow', note: 'Step 8 audit-load failure retry — files nothing' },
     };
