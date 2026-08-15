@@ -9030,32 +9030,36 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     padding-left: 0;
     min-height: 0;
 }
-/* v7.20.513 (Neil, on the Step-9 plot row): "centre it so it is balanced". With the text column
-   gone the row has no second column to align against, so a left-hugged label + a full-bleed
-   control read as the leftovers of a two-column layout rather than as a deliberate one. Centring
-   the stack, and letting the control size to its content instead of stretching, makes it read as
-   its own thing. `max-width` keeps a long option from spanning the whole page. */
+/* ⭐ v7.20.514 — ONE ROW, TWO COLUMNS. Neil corrected his own earlier answer: "I made a mistake…
+   I said centre it, but I wasn't considering that it would essentially become one column with two
+   rows. Actually it's better if it's one row with two columns. In the left column you'll have Part
+   of the Plot, and the right column you have the dropdown… they don't really look nice when it's
+   stacked." He is right, and the reason is alignment (BRAND.md §9b): every OTHER row in the
+   document is label-left / content-right, so a stacked control-only row breaks the column the eye
+   is already tracking down the page.
+   Label column is 180px to match `.swml-outline-criteria`'s own chip width, so this row's label
+   starts and ends on the same verticals as Scene Overview, Hook, Setup and the rest.
+   Collapses back to stacked under 700px, where the sibling rows stack too. */
 .swml-outline-row-controlonly .swml-outline-criteria {
     position: relative;
     width: 100%;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
     align-items: center;
-    text-align: center;
-    gap: 2px;
+    column-gap: 12px;
 }
 .swml-outline-row-controlonly .swml-outline-ctl {
-    width: auto;
-    max-width: min(100%, 320px);
+    width: 100%;
+    min-width: 0;
 }
 .swml-outline-row-controlonly .swml-outline-select {
-    width: auto;
-    min-width: 210px;
-    max-width: 100%;
-    text-align: center;
-    /* the drawn chevron sits in the right pad; mirror it on the left so the label is optically
-       centred in the control rather than pushed left by the asymmetric padding */
-    padding-left: 26px;
+    margin-top: 0;   /* the 4px stack gap is wrong once the control sits beside its label */
+}
+@media (max-width: 700px) {
+    .swml-outline-row-controlonly .swml-outline-criteria {
+        grid-template-columns: 1fr;
+        row-gap: 4px;
+    }
 }
 .swml-outline-input.swml-outline-controlonly {
     display: none;
