@@ -34602,16 +34602,27 @@
                     // Show confirmation modal
                     const modalOverlay = el('div', { className: 'swml-confirm-overlay' });
                     const modal = el('div', { className: 'swml-confirm-modal' });
+                    // v7.20.508: house buttons (BRAND.md §8 .swml-halo-btn + .swml-roll), so this
+                    // modal and showConfirm()'s are ONE component. The old `.swml-confirm-submit`
+                    // 3D skin lived in wml-canvas.css and is deleted — see the note at its old
+                    // position. Labels are shortened because the house pill is 12px/700/ls-2
+                    // UPPERCASE and `white-space: nowrap`: "YES, SUBMIT FOR ASSESSMENT" measures
+                    // ~240px inside a ~173px half, so it would have overflowed the card. The h3
+                    // already asks the question; the button only has to answer it.
                     modal.innerHTML = `
-                        <div class="swml-confirm-icon">${SVG_ICON_SAVE.replace('width="14"', 'width="32"').replace('height="14"', 'height="32"')}</div>
+                        <div class="swml-confirm-icon">${SVG_ICON_SAVE.replace('width="14"', 'width="30"').replace('height="14"', 'height="30"')}</div>
                         <h3>Ready to submit?</h3>
                         <p>Your essay will be saved${WML.isEmbedded ? ' and marked as complete.' : ' and you\'ll move on to the <strong>assessment phase</strong>, where Sophia will walk you through detailed feedback on your writing.'}</p>
-                        <p style="font-size:12px;opacity:0.6;">You won't be able to edit your essay after this point.</p>
+                        <p style="font-size:13px;opacity:0.62;">You won't be able to edit your essay after this point.</p>
                         <div class="swml-confirm-actions">
-                            <button class="swml-confirm-cancel">← Keep writing</button>
-                            <button class="swml-confirm-submit">Yes, submit for assessment</button>
+                            <button type="button" class="swml-confirm-cancel"></button>
+                            <button type="button" class="swml-halo-btn swml-confirm-submit"></button>
                         </div>
                     `;
+                    // Labels through the ONE producer — cw-keymatch-harness fails the build on
+                    // hand-written .swml-roll markup, and rightly: two copies must always agree.
+                    WML.setHaloLabel(modal.querySelector('.swml-confirm-cancel'), 'Keep writing');
+                    WML.setHaloLabel(modal.querySelector('.swml-confirm-submit'), 'Submit');
                     modal.querySelector('.swml-confirm-cancel').addEventListener('click', () => modalOverlay.remove());
                     modal.querySelector('.swml-confirm-submit').addEventListener('click', () => {
                         if (canvasEditor) saveCanvasContent();

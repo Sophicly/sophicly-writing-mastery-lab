@@ -182,7 +182,7 @@
     position: relative;
     width: 52px; height: 52px; padding: 0; flex: 0 0 auto;
     display: inline-flex; align-items: center; justify-content: center;
-    color: #0e1214; background: #51dacf;
+    color: #1C1D1F; background: #51dacf;
     border: none; border-radius: 50%;
     isolation: isolate; cursor: pointer;
     box-shadow: 0 6px 20px rgba(0,0,0,0.35);

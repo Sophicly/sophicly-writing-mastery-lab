@@ -2717,46 +2717,104 @@ body.swml-page {
     max-width: 300px;
 }
 
-/* ── Branded Confirm Modal ── */
+/* ── Branded Confirm Modal — THE canonical block (v7.20.508) ────────────────────────────────────
+   ⭐ ONE definition, here. wml-canvas.css used to carry a SECOND, competing `.swml-confirm-*` block
+   and, being enqueued after this file, won every shared property — so the modal rendered as two
+   design systems spliced together (see the root-cause note above showConfirm in wml-core.js). That
+   block is gone; canvas.css now only carries what is genuinely canvas-specific.
+
+   Surface reuses the house popover Neil already ruled on rather than inventing a third:
+   `.swml-outline-panel` — #232427 dark / #ffffff light, and BORDERLESS ("v7.20.181 (Neil):
+   outline-panel border removed — cleaner edge (borderless chrome)"). That single decision answers
+   both halves of his note: the strokes were the border plus the old cancel button's stacked ring
+   shadows, and the "colour's not great" was a PURE-BLACK shadow (BRAND.md §6: tint shadows with
+   brand purple, NEVER pure black) sitting on a purple canvas, where it reads muddy grey.
+
+   Buttons are the BRAND.md §8 house standard `.swml-halo-btn` (defined once, ~L3601) — no lift, no
+   stroke, halo + text roll. Only geometry is set here. Cancel is FULLY GHOST per §8's general rule
+   ("solid filled OR fully ghost — never a hairline on a coloured fill"). */
 .swml-confirm-overlay {
     position: fixed; inset: 0; z-index: 10000;
-    background: rgba(0,0,0,0.6);
-    display: flex; align-items: center; justify-content: center;
+    background: oklch(0.12 0.03 300 / 0.62);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
     animation: swml-fadeIn 0.2s ease;
 }
 .swml-confirm-modal {
-    background: oklch(0.30 0.015 280); border: 1px solid rgba(81,218,207,0.2);
-    border-radius: 16px; padding: 28px 32px; max-width: 380px; width: 90%;
-    text-align: center; box-shadow: 0 16px 48px rgba(0,0,0,0.4);
-    animation: swml-scaleIn 0.25s ease;
+    background: #232427;
+    border: none;
+    border-radius: 12px;                    /* BRAND §5: no radius above `lg` on a rectangle */
+    padding: 30px 32px 26px;
+    max-width: 420px; width: 100%;
+    max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px);
+    overflow-y: auto; overscroll-behavior: contain;   /* root §CONTENT MUST SCROLL: long copy (the
+                                                        mid-round quiz warnings run ~90 words) must
+                                                        never push the buttons out of reach */
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(44,0,62,0.55);       /* BRAND §6 `lg`, purple-tinted */
+    animation: swml-scaleIn 0.28s cubic-bezier(.22,1,.36,1);
 }
-.swml-confirm-icon { font-size: 28px; margin-bottom: 14px; line-height: 1; }
-.swml-confirm-msg {
-    font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.5;
-    margin-bottom: 20px;
+.swml-confirm-icon { margin-bottom: 16px; line-height: 0; }
+.swml-confirm-icon svg { display: block; margin: 0 auto; color: #51dacf; }
+.swml-confirm-danger .swml-confirm-icon svg { color: #F1C40F; }  /* canonical status ramp */
+.swml-confirm-modal h3 {
     font-family: 'Proxima Soft Complete', sans-serif;
+    font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 10px;
 }
-.swml-confirm-actions { display: flex; gap: 10px; justify-content: center; }
-.swml-confirm-cancel, .swml-confirm-ok {
-    padding: 8px 24px; border-radius: 8px; font-size: 13px; font-weight: 600;
-    cursor: pointer; font-family: inherit; transition: all 0.2s; border: none;
+.swml-confirm-msg,
+.swml-confirm-modal p {
+    font-family: 'Proxima Soft Complete', sans-serif;
+    font-size: 15px; color: rgba(255,255,255,0.78); line-height: 1.55;
+    margin: 0 auto 22px; max-width: 46ch;   /* impeccable: cap the measure, centre the block */
 }
+.swml-confirm-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+/* Ghost cancel — no fill, no border. Carries its own roll because the roll transitions are keyed
+   on .swml-halo-btn, which a ghost button deliberately does not wear. */
 .swml-confirm-cancel {
-    background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
-    border: 1px solid rgba(255,255,255,0.12);
+    position: relative;
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: 'Proxima Soft Complete', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    white-space: nowrap;
+    background: none; border: none; border-radius: 14px;
+    padding: 12px 18px; cursor: pointer;
+    color: rgba(255,255,255,0.55);
+    transition: color .35s ease;
 }
-.swml-confirm-cancel:hover { background: rgba(255,255,255,0.12); color: #fff; }
-.swml-confirm-ok {
-    background: var(--swml-teal-gradient); color: var(--swml-deep-purple);
+.swml-confirm-cancel:hover { color: #fff; }
+.swml-confirm-cancel:hover .swml-roll span:first-child { transform: translateY(-100%); }
+.swml-confirm-cancel:hover .swml-roll span:last-child  { transform: translateY(0); }
+.swml-confirm-cancel:focus-visible { outline: 2px solid #51dacf; outline-offset: 3px; }
+/* Destructive confirm: brand red from the canonical status ramp (BRAND §11.6), not a red gradient. */
+.swml-confirm-ok.danger,
+.swml-confirm-ok.danger::after { background: #d63638; }
+.swml-confirm-ok.danger { color: #fff; }
+.swml-confirm-ok.danger:hover { box-shadow: 0 12px 24px rgba(214,54,56,0.42); }
+.swml-confirm-ok.danger:focus-visible { outline-color: #d63638; }
+
+/* Light theme. ⚠️ v7.20.508 — the old light rules were keyed on `.swml-canvas-light`, which CANNOT
+   match: showConfirm appends the overlay to #swml-canvas-overlay, and `.swml-canvas-light` is set on
+   `.swml-canvas`, its CHILD. Every light rule for this modal was dead, so it rendered fully dark on
+   a light page. [data-swml-theme] lives on #swml-canvas-overlay itself (and on body/#swml-root), so
+   it is the selector that actually reaches — the same one .swml-halo-btn already uses. */
+[data-swml-theme="light"] .swml-confirm-overlay { background: oklch(0.96 0.005 300 / 0.66); }
+[data-swml-theme="light"] .swml-confirm-modal {
+    background: #ffffff;
+    box-shadow: 0 12px 40px rgba(44,0,62,0.18);
 }
-.swml-confirm-ok:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(81,218,207,0.3); }
-.swml-confirm-ok.danger {
-    background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff;
-}
-.swml-confirm-ok.danger:hover { box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
+[data-swml-theme="light"] .swml-confirm-modal h3 { color: #1c1c2e; }
+[data-swml-theme="light"] .swml-confirm-msg,
+[data-swml-theme="light"] .swml-confirm-modal p { color: oklch(0.45 0.02 260); }
+[data-swml-theme="light"] .swml-confirm-icon svg { color: #5333ed; }
+[data-swml-theme="light"] .swml-confirm-danger .swml-confirm-icon svg { color: #E67E22; }
+[data-swml-theme="light"] .swml-confirm-cancel { color: oklch(0.52 0.02 260); }
+[data-swml-theme="light"] .swml-confirm-cancel:hover { color: #1c1c2e; }
 @keyframes swml-scaleIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from { transform: scale(0.96) translateY(6px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-confirm-overlay, .swml-confirm-modal { animation: none; }
 }
 
 /* ── Workspace Entrance Animation ── */
@@ -3616,7 +3674,9 @@ html[data-theme="light"] .swml-tooltip[data-placement="right"]::after {
     padding: 12px 22px;
     cursor: pointer;
     background: #51dacf;
-    color: #0e1214;
+    /* v7.20.508: #1C1D1F, not #0e1214 — BRAND.md §8, Neil 2026-07-31: "#1C1D1F must become
+       canonical." He flagged the old near-black twice as "not actually one of our brand colours". */
+    color: #1C1D1F;
     transition: box-shadow .5s ease, opacity .15s ease;
 }
 .swml-halo-btn::after {                      /* the radiating halo (scales + fades on hover) */
@@ -3665,7 +3725,7 @@ html[data-theme="light"] .swml-tooltip[data-placement="right"]::after {
     font-size: 11px;
     letter-spacing: 1.4px;
 }
-[data-swml-theme="light"] .swml-guide-library-btn { background: #51dacf; color: #0e1214; }
+[data-swml-theme="light"] .swml-guide-library-btn { background: #51dacf; color: #1C1D1F; }
 [data-swml-theme="light"] .swml-guide-library-btn::after { background: #51dacf; }
 [data-swml-theme="light"] .swml-guide-library-btn:hover { box-shadow: 0 12px 24px rgba(81, 218, 207, .42); }
 [data-swml-theme="light"] .swml-guide-library-btn:focus-visible { outline-color: #51dacf; }

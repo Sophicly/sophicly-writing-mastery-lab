@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.507';
+var WML_BUILD = '7.20.508';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -2304,25 +2304,80 @@ window.WML = (function() {
     function $$(sel, ctx) { return [...(ctx || document).querySelectorAll(sel)]; }
     function ucfirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ') : ''; }
 
-    // ── Branded Confirm Modal ──
+    /* ── Branded Confirm Modal ─────────────────────────────────────────────────────────────────
+       ⭐ v7.20.508 (Neil, 2026-08-15): "this overlay has still got, like, strokes and the colour's
+       not great… we've got an emoji as well instead of an SVG."
+
+       ROOT, and it was a CASCADE COLLISION rather than taste. TWO stylesheets both claimed
+       `.swml-confirm-*` — wml-styles.css (this modal) and wml-canvas.css (the Mark-Complete
+       "Ready to submit?" modal) — and canvas.css is enqueued SECOND, so it won every shared
+       property. The result on screen was one modal wearing two design systems:
+         · Keep Chat  → canvas.css `.swml-confirm-cancel`: flex:1, radius 10, a 3D radial-gradient
+           face and `0 2px 0 3px rgba(0,0,0,.9), 0 2px 0 4px rgba(255,255,255,.04)` — THE STROKES.
+         · Clear Chat → styles.css `.swml-confirm-ok` ONLY, because canvas.css styles
+           `.swml-confirm-submit`, a class THIS modal never emits: no flex:1 (hence the narrower
+           button), radius 8, padding 8/22, a flat teal gradient with deep-purple text.
+       Two radii, two paddings, two widths, two vocabularies, in one 420px box.
+
+       THE FIX IS REUSE, NOT RE-TUNING (root CLAUDE.md §14c GATE 0). WML already ships the BRAND.md
+       §8 house button — `.swml-halo-btn` + `.swml-roll`, built by setHaloLabel(): correct in both
+       themes, halo + text roll, no stroke, no lift. Sign Off and Add-comment in the very same
+       document use it. Both confirm modals now use it too, so the third system is deleted rather
+       than restyled.
+
+       Also fixed here, each a defect rather than a preference:
+         · cancelText:'' (wml-app.js ~4220) rendered an EMPTY button. It is now omitted.
+         · Escape closes. The only dismissal was a backdrop click — no keyboard route out.
+         · Initial focus lands on CANCEL for a `danger:true` modal (Delete / Reset / Replace plan /
+           Pull it through / Skip for now — five live callers) and on the confirm otherwise. A
+           destructive default that is pre-focused is one Return away from firing. */
+    let _confirmSeq = 0;
     function showConfirm(message, onConfirm, { confirmText = 'Continue', cancelText = 'Cancel', danger = false } = {}) {
         const overlay = el('div', { className: 'swml-confirm-overlay' });
-        const modal = el('div', { className: 'swml-confirm-modal' });
-        modal.appendChild(el('div', { className: 'swml-confirm-icon', textContent: danger ? '⚠️' : '💬' }));
-        modal.appendChild(el('p', { className: 'swml-confirm-msg', textContent: message }));
+        const modal = el('div', { className: 'swml-confirm-modal' + (danger ? ' swml-confirm-danger' : '') });
+        modal.setAttribute('role', 'alertdialog');
+        modal.setAttribute('aria-modal', 'true');
+        const ico = el('div', { className: 'swml-confirm-icon' });
+        ico.innerHTML = icon(danger ? 'alert' : 'chat', 30);
+        modal.appendChild(ico);
+        const msg = el('p', { className: 'swml-confirm-msg', textContent: message });
+        msg.id = 'swml-confirm-msg-' + (++_confirmSeq);
+        modal.setAttribute('aria-describedby', msg.id);
+        modal.appendChild(msg);
+        const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey, true); };
+        const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
         const actions = el('div', { className: 'swml-confirm-actions' });
-        actions.appendChild(el('button', { className: 'swml-confirm-cancel', textContent: cancelText,
-            onClick: () => overlay.remove() }));
-        actions.appendChild(el('button', { className: `swml-confirm-ok ${danger ? 'danger' : ''}`, textContent: confirmText,
-            onClick: () => { overlay.remove(); onConfirm(); } }));
+        // An empty cancelText means "there is nothing to cancel" (the info-only callers) — draw no
+        // button rather than an unlabelled one.
+        if (cancelText) {
+            const cancelBtn = el('button', { className: 'swml-confirm-cancel', type: 'button', onClick: close });
+            setHaloLabel(cancelBtn, cancelText);
+            actions.appendChild(cancelBtn);
+        }
+        const okBtn = el('button', { className: 'swml-halo-btn swml-confirm-ok' + (danger ? ' danger' : ''), type: 'button',
+            onClick: () => { close(); onConfirm(); } });
+        setHaloLabel(okBtn, confirmText);
+        actions.appendChild(okBtn);
         modal.appendChild(actions);
         overlay.appendChild(modal);
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        document.addEventListener('keydown', onKey, true);
+        // Scroll isolation (root CLAUDE.md §OVERLAY / MODAL SCROLL ISOLATION). Layer 1 is CSS on
+        // the card (overflow-y:auto + overscroll-behavior:contain); layer 2 is here — swallow wheel
+        // and touchmove that START ON THE BACKDROP, so a scroll gesture over the dimmed area cannot
+        // move the document behind. Inside the card the events pass through, so the long
+        // mid-round-quiz copy still scrolls. Layer 3 (locking the host's overflow) is not needed:
+        // the backdrop is `inset: 0`, so there is no un-covered region left to catch a gesture.
+        const eatScroll = (e) => { if (!modal.contains(e.target)) e.preventDefault(); };
+        overlay.addEventListener('wheel', eatScroll, { passive: false });
+        overlay.addEventListener('touchmove', eatScroll, { passive: false });
         // Append inside canvas overlay if open (stacking context), otherwise body
         const canvasOv = document.getElementById('swml-canvas-overlay');
         (canvasOv || document.body).appendChild(overlay);
-        // Focus confirm button
-        requestAnimationFrame(() => modal.querySelector('.swml-confirm-ok')?.focus());
+        requestAnimationFrame(() => {
+            const first = (danger && cancelText) ? modal.querySelector('.swml-confirm-cancel') : okBtn;
+            first?.focus();
+        });
     }
 
     // ── Toast Notifications ──
@@ -4266,6 +4321,19 @@ window.WML = (function() {
         arrowLeft:      { kind: 'filled', vb: '0 0 30 30', src: 'neil-arrow-left.svg',  body: '<path d="M24,30H6a6,6,0,0,1-6-6V6A6,6,0,0,1,6,0H24a6,6,0,0,1,6,6V24A6,6,0,0,1,24,30ZM6,2A4,4,0,0,0,2,6V24a4,4,0,0,0,4,4H24a4,4,0,0,0,4-4V6a4,4,0,0,0-4-4Z"/><path d="M18,23a1,1,0,0,1-.7-.29l-7-7a1,1,0,0,1,0-1.42l7-7a1,1,0,0,1,1.41,0,1,1,0,0,1,0,1.42L12.38,15l6.29,6.29A1,1,0,0,1,18,23Z"/>' },
         arrowRightBare: { kind: 'filled', vb: '0 0 30 30', src: 'neil-arrow-right.svg (chevron only)', body: '<path d="M12,23a1,1,0,0,1-.71-1.71L17.62,15,11.33,8.71a1,1,0,0,1,0-1.42,1,1,0,0,1,1.41,0l7,7a1,1,0,0,1,0,1.42l-7,7A1,1,0,0,1,12,23Z"/>' },
         arrowLeftBare:  { kind: 'filled', vb: '0 0 30 30', src: 'neil-arrow-left.svg (chevron only)',  body: '<path d="M18,23a1,1,0,0,1-.7-.29l-7-7a1,1,0,0,1,0-1.42l7-7a1,1,0,0,1,1.41,0,1,1,0,0,1,0,1.42L12.38,15l6.29,6.29A1,1,0,0,1,18,23Z"/>' },
+        // ⭐ v7.20.508 (Neil, 2026-08-15) — the two glyphs the confirm modal was showing as EMOJI
+        // (💬 / ⚠️). `.swml-confirm-icon svg { color: … }` had ALREADY been authored in
+        // wml-canvas.css for an inline SVG that never arrived, so this is the treatment the CSS
+        // was written for, not a new one.
+        //   chat  ← frontend/icons/remix-question-answer-fill.svg, on disk and previously unused.
+        //   alert ← the SAME Iconoir warning-triangle already shipping as `.swml-fb-warn`
+        //           (wml-styles.css ~3889), so the modal's warning and the per-statement feedback
+        //           warning are one drawing. Ported to `line` (stroke-width 2) rather than the
+        //           data-URI's 1.9 so it inherits currentColor and matches the house icon weight —
+        //           the ONE disclosed deviation from the source (a data-URI background cannot
+        //           inherit colour, which is exactly why it could not be reused as-is).
+        chat:  { kind: 'filled', vb: '0 0 24 24', src: 'remix-question-answer-fill.svg', body: '<path d="M8 18H18.2372L20 19.3851V9H21C21.5523 9 22 9.44772 22 10V23.5L17.5455 20H9C8.44772 20 8 19.5523 8 19V18ZM5.45455 16L1 19.5V4C1 3.44772 1.44772 3 2 3H17C17.5523 3 18 3.44772 18 4V16H5.45455Z"/>' },
+        alert: { kind: 'line',   vb: '0 0 24 24', src: 'Iconoir warning-triangle (= .swml-fb-warn)', body: '<path d="M20.043 21H3.957c-1.538 0-2.5-1.664-1.734-2.997l8.043-13.988c.77-1.337 2.699-1.337 3.468 0l8.043 13.988C22.543 19.336 21.58 21 20.043 21Z"/><path d="M12 9v4"/><path d="M12 17.01l.01-.011"/>' },
     };
     // ⭐ v7.20.404 (#177) — WHICH ARROW SHIPS. One switch, so the answer lives in ONE place and
     // Neil can be shown both without a code hunt. `bare` = chevron only; `boxed` = his frame too.

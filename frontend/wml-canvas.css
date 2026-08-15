@@ -5754,150 +5754,26 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Confirmation Modal ── */
-.swml-confirm-overlay {
-    position: absolute;
-    inset: 0;
-    background: oklch(0.05 0.02 270 / 0.75);
-    backdrop-filter: blur(6px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    animation: canvasStatusFade 0.2s ease;
-}
-.swml-confirm-modal {
-    background: oklch(0.14 0.02 270);
-    border: 1px solid oklch(0.25 0.03 270);
-    border-radius: 16px;
-    padding: 32px;
-    max-width: 420px;
-    width: 90%;
-    box-shadow: 0 20px 60px oklch(0 0 0 / 0.5);
-    text-align: center;
-}
-.swml-confirm-modal h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: #fff;
-    margin: 0 0 12px;
-}
-.swml-confirm-modal p {
-    font-size: 13px;
-    color: oklch(0.7 0.02 260);
-    line-height: 1.6;
-    margin: 0 0 10px;
-}
-.swml-confirm-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-.swml-confirm-cancel {
-    flex: 1;
-    padding: 12px 16px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 13px;
-    --btn-inner: hsla(252deg 20% 20% / 50%);
-    --btn-outer: hsla(252deg 20% 15% / 40%);
-    --btn-glow: hsla(252deg 70% 60% / 0%);
-    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
-                radial-gradient(var(--btn-inner), var(--btn-outer));
-    color: rgba(255,255,255,0.65);
-    box-shadow:
-        inset 0 4px 1px -3px rgba(255,255,255,0.1),
-        inset 0 4px 8px 5px rgba(9,11,10,0.16),
-        0 2px 0 1px #1a1e1c,
-        0 2px 0 3px rgba(0,0,0,0.9),
-        0 2px 0 4px rgba(255,255,255,0.04);
-    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 300ms,
-                box-shadow 200ms, transform 200ms, color 200ms;
-}
-.swml-confirm-cancel:hover {
-    --btn-glow: hsla(252deg 70% 60% / 15%);
-    --btn-inner: hsla(252deg 50% 35% / 100%);
-    --btn-outer: hsla(252deg 60% 30% / 100%);
-    color: white;
-    box-shadow:
-        inset 0 -1px 2px 1px rgba(255,255,255,0.3),
-        inset 0 0 24px rgba(44,0,62,0.3),
-        0 3px 0 1px rgba(83,51,237,0.7),
-        inset 0 -1px 2px 1px rgba(255,255,255,0.5),
-        0 1px 2px rgba(255,255,255,0.8),
-        0 2px 16px rgba(255,255,255,0.15),
-        0 4px 32px 2px rgba(83,51,237,0.35),
-        0 3px 0 3px rgba(0,0,0,0.8),
-        0 3px 0 4px rgba(83,51,237,0.4);
-    transform: translateY(-2px);
-}
-.swml-confirm-cancel:active { transform: translateY(1px); }
-.swml-confirm-submit {
-    flex: 1;
-    padding: 12px 16px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: #fff;
-    --btn-inner: hsla(174deg 60% 45% / 100%);
-    --btn-outer: hsla(174deg 50% 35% / 100%);
-    --btn-glow: hsla(174deg 70% 60% / 10%);
-    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
-                radial-gradient(var(--btn-inner), var(--btn-outer));
-    box-shadow:
-        inset 0 4px 1px -3px rgba(81,218,207,0.15),
-        inset 0 4px 8px 5px rgba(9,11,10,0.16),
-        0 2px 0 1px rgba(0,0,0,0.4),
-        0 2px 0 3px rgba(81,218,207,0.2),
-        0 2px 0 4px rgba(81,218,207,0.06);
-    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 300ms,
-                box-shadow 200ms, transform 200ms;
-}
-.swml-confirm-submit:hover {
-    --btn-glow: hsla(174deg 70% 60% / 20%);
-    --btn-inner: hsla(174deg 70% 52% / 100%);
-    --btn-outer: hsla(174deg 60% 40% / 100%);
-    transform: translateY(-2px);
-    box-shadow:
-        inset 0 -1px 2px 1px rgba(255,255,255,0.3),
-        inset 0 0 16px rgba(81,218,207,0.3),
-        0 3px 0 1px rgba(81,218,207,0.7),
-        0 1px 2px rgba(255,255,255,0.8),
-        0 4px 24px 2px rgba(81,218,207,0.3),
-        0 3px 0 3px rgba(0,0,0,0.8);
-}
-.swml-confirm-submit:active { transform: translateY(1px); }
-.swml-confirm-icon svg { color: #51dacf; display: block; margin: 0 auto; }
+/* ── Confirmation Modal ────────────────────────────────────────────────────────────────────────
+   ⭐⭐ v7.20.508 — THIS BLOCK IS GONE ON PURPOSE. Do not restore it, and do not add a
+   `.swml-confirm-*` rule to this file.
 
-/* Light mode modal */
-.swml-canvas-light .swml-confirm-overlay { background: oklch(0.95 0 0 / 0.7); }
-.swml-canvas-light .swml-confirm-modal { background: #fff; border-color: oklch(0.88 0.01 260); box-shadow: 0 20px 60px oklch(0 0 0 / 0.12); }
-.swml-canvas-light .swml-confirm-modal h3 { color: #1c1c2e; }
-.swml-canvas-light .swml-confirm-modal p { color: oklch(0.45 0.02 260); }
-.swml-canvas-light .swml-confirm-cancel {
-    --btn-inner: hsla(252deg 80% 96% / 100%);
-    --btn-outer: hsla(252deg 60% 90% / 100%);
-    color: #4D76FD;
-    box-shadow: inset 0 2px 1px rgba(255,255,255,0.8), 0 1px 0 0 #c8d4f0;
-}
-.swml-canvas-light .swml-confirm-cancel:hover {
-    --btn-inner: hsla(252deg 83% 56% / 100%); --btn-outer: hsla(252deg 70% 50% / 100%); color: #fff;
-    box-shadow: inset 0 -1px 2px rgba(255,255,255,0.4), 0 2px 8px rgba(77,118,253,0.3), 0 1px 0 0 rgba(77,118,253,0.5);
-}
-.swml-canvas-light .swml-confirm-submit {
-    --btn-inner: hsla(174deg 60% 48% / 100%);
-    --btn-outer: hsla(174deg 50% 38% / 100%);
-    box-shadow: inset 0 2px 1px rgba(255,255,255,0.3), 0 1px 0 0 rgba(81,218,207,0.3);
-}
-.swml-canvas-light .swml-confirm-submit:hover {
-    box-shadow: inset 0 -1px 2px rgba(255,255,255,0.4), 0 2px 8px rgba(81,218,207,0.3), 0 1px 0 0 rgba(81,218,207,0.5);
-}
-.swml-canvas-light .swml-confirm-icon svg { color: #5333ed; }
+   It defined a SECOND, competing skin for classes that wml-styles.css already owned. Because this
+   file is enqueued after wml-styles.css (`wp_enqueue_style('swml-canvas', …, ['swml-styles'])`,
+   sophicly-writing-mastery-lab.php ~L1036), it silently won every shared property — but only for
+   the classes it actually named. It styled `.swml-confirm-cancel` and `.swml-confirm-submit`;
+   showConfirm() emits `.swml-confirm-cancel` and `.swml-confirm-ok`. So ONE modal drew its cancel
+   from here (flex:1, radius 10, a 3D face with stacked `0 2px 0 3px rgba(0,0,0,.9)` ring shadows =
+   the "strokes" Neil reported) and its confirm from there (auto width, radius 8, flat teal). Two
+   systems, one box, and no single file you could read to see it.
+
+   Everything now lives in ONE place: wml-styles.css, "Branded Confirm Modal — THE canonical block".
+   Both modals — showConfirm() and the Mark-Complete "Ready to submit?" — use the BRAND.md §8 house
+   button from there.
+
+   The light rules that were here were dead in any case: they were keyed on `.swml-canvas-light`,
+   but the overlay is appended to #swml-canvas-overlay, whose CHILD carries that class. The
+   canonical block keys on [data-swml-theme="light"], which does reach it. */
 
 /* ── Plan Panel (right) ── */
 .swml-canvas-plan {
@@ -7142,7 +7018,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-phase-coach-text { font-size: 12.5px; line-height: 1.55; color: rgba(233,233,238,0.72); margin-bottom: 12px; }
 /* HOUSE STANDARD button (BRAND.md §8). Was a purple gradient — superseded as a default
    by Neil, 2026-07-23: "instead of making them purple gradient, because purple signifies
-   grade 9". Dark pair = teal fill #51dacf on ink #0e1214. The translateY hover LIFT was
+   grade 9". Dark pair = teal fill #51dacf on ink #1C1D1F (v7.20.508: #0e1214 retired, BRAND.md §8). The translateY hover LIFT was
    retired site-wide 2026-07-26 ("the halo effect and the rollover is enough… that's how I
    want it across the whole website"), so the hover state is halo + shadow only.
    NOTE: the full house button also carries a two-span text ROLL, which needs a markup
