@@ -26694,8 +26694,27 @@
                     box.innerHTML = canvasEditor.getHTML();
                     const fresh = draftSectionHTML(paras);
                     const existing = box.querySelector('[data-section-label="' + DRAFT_LABEL + '"]');
-                    if (existing) existing.outerHTML = fresh;
-                    else box.insertAdjacentHTML('beforeend', fresh);
+                    // Removed rather than replaced in situ, so a re-transfer NORMALISES the
+                    // position: docs written before .512 already carry this section below the
+                    // sign-off, and `outerHTML = fresh` would have politely rewritten it in the
+                    // wrong place for ever. One tap of "Transfer again" now moves it.
+                    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+                    {
+                        /* ⭐ v7.20.512 (Neil): "you've put that below the tutor sign-off area — it
+                           should end up just below the scene structure and above the document
+                           progress bar." He is right, and it explains why he could not find it
+                           earlier: `beforeend` appends to the END of the document, which is past
+                           BOTH the progress card and the sign-off block, so the student's finished
+                           scene landed after the admin furniture instead of after their work.
+                           Anchor on the PROGRESS section and insert before it — progress and
+                           sign-off are the document's tail by construction, so this places the
+                           scene last among the CONTENT sections without hard-coding a position.
+                           `beforeend` stays as the fallback for any doc with no progress card. */
+                        const tail = box.querySelector('[data-section-type="progress"]')
+                            || box.querySelector('[data-section-type="signoff"]');
+                        if (tail) tail.insertAdjacentHTML('beforebegin', fresh);
+                        else box.insertAdjacentHTML('beforeend', fresh);
+                    }
                     // setContent under _migrationActive: the onTransaction section-guard reverts any
                     // transaction that lowers the section count, and a replace briefly does
                     // (v7.19.445's lesson). The guard RE-BASELINES ITSELF while the flag is up
@@ -43120,6 +43139,38 @@
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 console.log('WML CW: Step 5 archetype row healed to dropdown-only (migration)');
             });
+            // ⭐ v7.20.512 (Neil): the SAME heal for Step 9's "Part of the Plot" row — he pointed at
+            // Step 5 himself as the precedent. Identical reasoning: the row's shape is BAKED into
+            // the saved doc, so the template change above reaches new projects only, and his own
+            // document (plus every student's) would keep the redundant text box. That box is worse
+            // here than it was at Step 5, because this dropdown is set BY THE MACHINE from the
+            // stages picked in the island — so the text column asked the student to restate a fact
+            // the system had just chosen for them (WML §3, the paste-wall law).
+            // Text is hidden, never deleted — same as .348.
+            _migrateStep('migrateStep9PlotPositionControlOnly', () => {
+                if (!canvasEditor || state.task !== 'cw_step_9') return;
+                const tmp = document.createElement('div');
+                tmp.innerHTML = canvasEditor.getHTML();
+                let changed = false;
+                tmp.querySelectorAll('[data-outline-row]').forEach(r => {
+                    if (r.getAttribute('data-field-id') !== 'cw-step-8-plot-position') return;
+                    let crit = {};
+                    try { crit = JSON.parse(r.getAttribute('data-criteria') || '{}'); } catch (_) { return; }
+                    if (crit.controlOnly === true && !crit.prompt) return;   // already healed
+                    crit.controlOnly = true;
+                    delete crit.prompt;
+                    r.setAttribute('data-criteria', JSON.stringify(crit));
+                    r.setAttribute('data-prompt', crit.label || 'Part of the Plot');
+                    changed = true;
+                });
+                if (!changed) return;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 9 plot-position row healed to dropdown-only (migration)');
+            });
             // ⭐ v7.20.383: Step-2 ideas 2 and 3 become GENUINELY optional in EXISTING projects.
             // The outline row's shape is BAKED into the saved doc (the same law as the .348 heal
             // above), so stamping `optional` on the template reaches new projects only — every
@@ -46359,7 +46410,15 @@
             html += dividerHTML('SCENE OVERVIEW');
             html += sectionHTML('plan', 'Scene Overview', true, null,
                 '<h3>Scene Overview</h3>' +
-                outlineRowHTML({ id: 'plot-position', label: 'Part of the Plot', type: 'dropdown', items: ['Beginning (Stages I\u2013II)', 'Middle (Stages III\u2013IV)', 'End (Stages V\u2013VI)'], prompt: 'This extract is from the following part of the plot:' }, 'cw-step-8-plot-position') +
+                // v7.20.512 (Neil): DROPDOWN-ONLY, the Step-5 archetype shape he remembered \u2014
+                // "there's no need for the input area\u2026 just one row where we select the part of
+                // the plot". The dropdown IS the whole answer here, and it is machine-set from the
+                // stages picked in the island (derivePlotPosition \u2192 _setOutlineDropdown), so the
+                // text column was a box the student could never usefully fill AND one that kept
+                // the row from ticking. `controlOnly` + no `prompt` is the existing, tested
+                // idiom (CTL.controlOnly, wml-core.js ~5071); existing docs are brought to this
+                // shape by migrateStep9PlotPositionControlOnly (the baked-scaffold law).
+                outlineRowHTML({ id: 'plot-position', label: 'Part of the Plot', type: 'dropdown', items: ['Beginning (Stages I\u2013II)', 'Middle (Stages III\u2013IV)', 'End (Stages V\u2013VI)'], controlOnly: true }, 'cw-step-8-plot-position') +
                 // v7.20.500 (#204 add.21): this was a bare <p> with no fieldId \u2014 which is WHY the
                 // walk could skip it (Neil: "the structure of the walk has allowed me to skip it").
                 // Nothing can gate on, file into, or resume an anonymous paragraph. As a real row it
