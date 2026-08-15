@@ -9,9 +9,17 @@
  * student as a BLANK FULL-SCREEN OVERLAY with no way back. Neil would find it; that is the cycle
  * this file exists to spend instead (root §12).
  *
- * So this renders the SHIPPED component to a string, in all three phases, with the SHAPE of props
- * the bridge really sends — including the awkward ones: a trait with no Step-7 words, a trait
- * offered one band only, and an EMPTY beat.
+ * So this renders the SHIPPED component to a string with the SHAPE of props the bridge really
+ * sends — including the awkward ones: a trait with no Step-7 words, a trait offered one band
+ * only, and an EMPTY beat.
+ *
+ * ⚠️ CORRECTED v7.20.523: this header used to claim "in all three phases", and two blocks below
+ * were labelled phase 2 and phase 3. They were not. `phase` is `useState(1)` and is never read
+ * from `initial`, so every render here is the LANDING phase with state restored — and both of
+ * those blocks asserted only `html.length > 0`, which cannot fail. They now assert the landing
+ * they actually get. The beat-picking screen is not reachable from renderToString at all, so
+ * anything specific to it (the #383 pinned bar) is gated structurally against the BUILT bundle
+ * and named as such, rather than dressed up as a behavioural check.
  *
  * ⚠️ It proves the component RENDERS and that certain load-bearing strings are on the screen. It
  * does NOT prove it looks right, and it never can — that is Neil's eye at a real viewport (§14c
@@ -20,6 +28,7 @@
  * Usage: node bin/cw8-island-smoke.mjs   (needs island/node_modules — the same tree `npm run build` uses)
  */
 import { createRequire } from 'node:module';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from '../island/node_modules/esbuild/lib/main.js';
@@ -111,12 +120,47 @@ console.log('CW STEP-8 ISLAND — render smoke (the real component, the real pro
 // ── phase 2, mid-walk: one trait selected, so the component opens on placing it ──
 {
     const html = render({ selected: ['creativity'], picks: {}, noShow: [] }, 'phase 2');
-    ok(html.length > 0, 'phase 2 renders with a selection restored');
+    ok(html.length > 0, 'the component renders with a selection restored');
+    // ⚠️ TRUTH IN LABELLING (v7.20.523). This block was called "phase 2" and asserted only
+    // `html.length > 0` — but `phase` is useState(1) and is NOT read from `initial`, so what
+    // renders here is PHASE 1 with the selection restored. The old assertion could not fail:
+    // it was a test that passed by doing less. Assert what is actually true instead, so that
+    // an accidental change to the landing phase is caught rather than hidden.
+    ok(/Which of your traits/.test(html),
+        're-opening with a saved selection lands on PICK YOUR TRAITS — the deliberate landing for '
+        + '#380 re-entry ("add more traits"), not a resume into the middle of the beat list');
+    ok(!/Where does their/.test(html),
+        '…and it is NOT the beat-picking screen (the fact the old "phase 2" assertion hid)');
 }
 // ── phase 3: a selection AND picks, which is what the review screen reads ──
 {
     const html = render({ selected: ['bravery'], picks: { bravery: ['b1-1', 'b2-2'] }, noShow: ['kindness'] }, 'phase 3');
-    ok(html.length > 0, 'phase 3 renders with picks restored');
+    ok(html.length > 0, 'the component renders with picks AND a no-show restored');
+    ok(/Which of your traits/.test(html), 'same landing with picks restored — nothing throws on the richer state');
+}
+
+// ── #383: THE PINNED TRAIT BAR ───────────────────────────────────────────────────────────────
+// ⚠️ STRUCTURAL, NOT BEHAVIOURAL, AND LABELLED AS SUCH (root CLAUDE.md §14b: a presence check
+// proves PLUMBING, never BEHAVIOUR). renderToString cannot reach phase 2 — `phase` is local
+// state with no prop seam, and adding one purely for a test would change the shipped resume
+// landing that #380 depends on. So what is gated here is that the bar EXISTS in the shipped
+// bundle and that its CSS actually pins; whether it looks right when stuck is Neil's eye.
+{
+    const bundle = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-scene-island.min.js'), 'utf8');
+    const css = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-scene-island.css'), 'utf8');
+    ok(/pv-pin-trait/.test(bundle) && /pv-pin-count/.test(bundle),
+        '#383: the pinned bar is in the BUILT bundle — the island has a build step and the server '
+        + 'never builds, so source-only would ship nothing');
+    ok(/pv-pin-said-btn/.test(bundle), '#383: the "my words" disclosure ships with it');
+    const block = (css.match(/\.pv-pin \{[^}]*\}/) || [''])[0];
+    ok(/position:\s*sticky/.test(block) && /top:\s*0/.test(block),
+        '#383: the bar is position:sticky pinned to the top of the scroller');
+    ok(/z-index:\s*[1-9]/.test(block), '#383: …and sits above the beat cards that scroll under it');
+    ok(/background:var\(--surface\)/.test(block),
+        '#383: …on an OPAQUE fill — beat text scrolls underneath, so a translucent bar would smear');
+    ok(!/backdrop-filter/.test(block),
+        '#383: no backdrop-filter (it breaks border-radius under a transformed ancestor — the '
+        + 'takeover-modal landmine, and the prototype lies about it)');
 }
 // ── the empty-state: no flagged traits at all (the guard path) ──
 {
@@ -135,4 +179,4 @@ console.log('CW STEP-8 ISLAND — render smoke (the real component, the real pro
 
 console.log('   ' + asserts.pass + ' assertions passed');
 if (fail) { console.error('❌ cw8-island-smoke FAILED'); process.exit(1); }
-console.log('✅ cw8-island-smoke passed (the component renders in every phase, including the awkward props).');
+console.log('✅ cw8-island-smoke passed (renders on the landing phase across restored states + awkward props; the pinned bar is checked structurally in the BUILT bundle — phase 2 is unreachable from renderToString, so its look when stuck is verified by eye).');

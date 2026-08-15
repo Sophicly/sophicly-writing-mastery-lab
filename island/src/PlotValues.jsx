@@ -47,6 +47,9 @@ export default function PlotValues(props) {
     const [busy, setBusy] = useState(false);
     const [ported, setPorted] = useState(false);
     const [hint, setHint] = useState('');
+    // #383: the pinned bar's "my words" disclosure. Collapsed by default so the bar stays the
+    // ~44px it promises on an iPad in landscape, where vertical room is scarcest.
+    const [saidOpen, setSaidOpen] = useState(false);
     const scrollRef = useRef(null);
 
     const chosen = useMemo(
@@ -196,6 +199,47 @@ export default function PlotValues(props) {
                         {emptyOnly ? '✓ Showing empty beats only' : 'Show empty beats only'}
                     </button>
                     <span className="pv-tools-note">Empty beats are fine to pick — filling them in is part of this step.</span>
+                </div>
+                {/* ⭐ #383 — THE TRAIT STAYS ON SCREEN. Neil, mid-run: *"we need a way to make it
+                    visible, you know, the trait, because as soon as I scroll down I can't see it
+                    anymore… how would Apple deal with this?"* The ask above it runs ~600px before
+                    the first beat card, and a stage holds 8+ beats, so by beat #4 the trait, its
+                    condition and his own Step-7 words were all gone.
+
+                    WWAD = the condensing navigation bar: full context at rest, and once you are
+                    working the bar keeps only the identity, pinned. So this sits BELOW the full
+                    ask and ABOVE the beats — read the long version on arrival, and from the moment
+                    you scroll into the list it is stuck to the top of the scroller.
+
+                    ⚠️ Deliberately pure CSS `position: sticky`, no scroll listener: a per-frame
+                    layout read inside a scrolling list is the exact shape that has cost this
+                    canvas a tab hang before. The browser does it for free.
+
+                    THE COUNT IS NOT DECORATION — it answers his second question without a word of
+                    instruction. He asked *"what if I want that trait to appear in multiple beats?"*
+                    about a control that already supports it; watching the number climb as he taps
+                    is what makes the multi-select legible. */}
+                <div className="pv-pin">
+                    <div className="pv-pin-main">
+                        <span className="pv-pin-trait">{t.label}</span>
+                        <span className="pv-pin-cond">{t.cond.toLowerCase()}</span>
+                        <span className="pv-pin-of">Trait {cursor + 1} of {chosen.length}</span>
+                    </div>
+                    <div className="pv-pin-right">
+                        <span className={'pv-pin-count' + (pickCount(t.id) ? ' is-on' : '')}>
+                            {pickCount(t.id)
+                                ? <>{pickCount(t.id)} beat{pickCount(t.id) > 1 ? 's' : ''} picked</>
+                                : <>none picked yet</>}
+                        </span>
+                        {t.said
+                            ? <button type="button" className={'pv-pin-said-btn' + (saidOpen ? ' is-on' : '')}
+                                aria-expanded={saidOpen ? 'true' : 'false'}
+                                onClick={() => setSaidOpen(!saidOpen)}>
+                                my words {saidOpen ? '▴' : '▾'}
+                            </button>
+                            : null}
+                    </div>
+                    {saidOpen && t.said ? <p className="pv-pin-said">“{t.said}”</p> : null}
                 </div>
                 {myBands.map((band) => {
                     const inBand = stagesInBand(band);

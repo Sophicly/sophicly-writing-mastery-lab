@@ -535,6 +535,46 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
 }
 .swml-plot-island .pv-noshow strong { color:var(--ink); }
 
+/* ⭐ #383 — THE PINNED TRAIT BAR (v7.20.523).
+   Sits below the full ask and above the beat list, so the long version is read on arrival and
+   the identity stays put from the moment the student scrolls into the beats. Pure `sticky`:
+   no scroll listener, no per-frame layout read (the shape that hung this canvas once).
+   Opaque --surface on purpose — beat cards scroll UNDER it, so a translucent fill would smear
+   text through it, and backdrop-filter is banned here anyway (it breaks radius under a
+   transformed ancestor, root CLAUDE.md §takeover-modal landmine 1). */
+.swml-plot-island .pv-pin {
+  position:sticky; top:0; z-index:5;
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px;
+  background:var(--surface); border:1px solid var(--line-strong); border-radius:12px;
+  padding:9px 14px; margin:0 0 14px;
+  box-shadow:0 6px 18px -12px rgba(0,0,0,.55);
+}
+.swml-plot-island .pv-pin-main { display:flex; align-items:baseline; gap:10px; flex:1; min-width:0; }
+.swml-plot-island .pv-pin-right { display:flex; align-items:center; gap:10px; }
+.swml-plot-island .pv-pin-trait { font-size:14px; font-weight:700; color:var(--ink); letter-spacing:-.01em; }
+.swml-plot-island .pv-pin-cond {
+  font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--teal-deep);
+}
+.swml-plot-island .pv-pin-of { font-size:12px; color:var(--muted2); }
+/* The count is the quiet answer to "can a trait go in more than one beat?" — it climbs as they
+   tap, which teaches the multi-select without a line of instruction. */
+.swml-plot-island .pv-pin-count { font-size:12px; color:var(--muted2); }
+.swml-plot-island .pv-pin-count.is-on { color:var(--ink); font-weight:600; }
+.swml-plot-island .pv-pin-said-btn {
+  background:var(--surface2); border:none; border-radius:999px; padding:5px 11px;
+  font:inherit; font-size:12px; color:var(--muted2); cursor:pointer;
+}
+.swml-plot-island .pv-pin-said-btn:hover,
+.swml-plot-island .pv-pin-said-btn.is-on { color:var(--ink); background:var(--surface3); }
+.swml-plot-island .pv-pin-said {
+  flex-basis:100%; margin:2px 0 0; font-size:13px; font-style:italic;
+  color:var(--muted2); max-width:68ch;
+}
+
 @media (max-width:700px) {
   .swml-plot-island .pv-trait-grid { grid-template-columns:1fr; }
+  /* The bar must stay a BAR on a phone — its whole value is costing almost no vertical room. */
+  .swml-plot-island .pv-pin { gap:4px 10px; padding:8px 12px; }
+  .swml-plot-island .pv-pin-of { display:none; }   /* the stepper above already says trait N of M */
 }
