@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.506';
+var WML_BUILD = '7.20.507';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1086,15 +1086,22 @@ window.WML = (function() {
         // we need students to do things a specific way, we need them to do a walk."*
         { step: 8,  label: 'Update Plot: Values',       tier: 'si', phase: 'planning' },
         // Drafting Cycle
-        { step: 9,  label: 'Scene Selection',           tier: 'si', phase: 'drafting' },
-        // ⭐⭐ v7.20.506 (#366, Neil 2026-08-10) — STEP 10 IS A DIAGNOSTIC, NOT A WALK. His words:
+        // ⭐ v7.20.507 (Neil, 2026-08-13) — STRIP THE TOOLS ON 9 AND 10. His words: *"the notes tab
+        // shouldn't be available. It shouldn't be available in step ten either. And the resources
+        // button in the rail shouldn't be available either. And I would say neither should be the
+        // majority of them — you know, the story spine button and all that kind of stuff."*
+        // Step 9 is the unaided write-out and Step 10 is the test, so the reference panels (other
+        // people's work, other steps' work) and the notes scratchpad both come off. `tools` is a
+        // CAPABILITY — a step opts in by declaring it, and no sibling inherits it by accident.
+        { step: 9,  label: 'Scene Selection',           tier: 'si', phase: 'drafting', tools: 'minimal' },
+        // ⭐⭐ v7.20.507 (#366, Neil 2026-08-10) — STEP 10 IS A DIAGNOSTIC, NOT A WALK. His words:
         // *"Step ten is meant to basically be a little bit like a test — it can actually just be
         // like a diagnostic environment. So no walk there. They just write it out and try and
         // polish it to the best of their abilities, then they do their assessment."*
         // `env` is a CAPABILITY, never a `step === 10` literal (canvas task-scoping rule #2):
         // getExerciseConfig reads it, so a future step opts in by adding the word, and no sibling
         // step can inherit this environment by accident.
-        { step: 10, label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1, env: 'diagnostic' },
+        { step: 10, label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1, env: 'diagnostic', tools: 'minimal' },
         { id: 'trial_1', label: 'Trial 1: Story Coherence', tier: 'si', phase: 'drafting', trial: 1 },
         { step: 11, label: 'Character Profile',         tier: 'workbook', phase: 'drafting' },
         { step: 12, label: 'Update Plot: Goals',        tier: 'workbook', phase: 'drafting' },
@@ -1123,6 +1130,14 @@ window.WML = (function() {
         { step: 29, label: 'Final Draft — SPAG',        tier: 'si', phase: 'polish' },
         { step: 30, label: 'Metacognitive Reflection',  tier: 'workbook', phase: 'polish' },
     ];
+
+    // v7.20.507: "does this step run with the tools stripped?" ONE predicate, so the rail and the
+    // notes tab can never disagree about which steps are unaided — two deny-lists drifting apart
+    // is how a student ends up with the notes tab in a lesson whose rail says it is a test.
+    function cwToolsMinimal(task) {
+        const d = getCwStepDef(task);
+        return !!(d && d.tools === 'minimal');
+    }
 
     // Lookup helper: task string → CW_STEPS entry
     function getCwStepDef(task) {
@@ -1277,7 +1292,7 @@ window.WML = (function() {
         25: 'draft_5', 28: 'draft_6', 29: 'draft_7',
     };
 
-    // ⭐ v7.20.506 (#366) — WHICH ARTIFACT SEEDS A STEP'S WRITING BOX, and it is deliberately a
+    // ⭐ v7.20.507 (#366) — WHICH ARTIFACT SEEDS A STEP'S WRITING BOX, and it is deliberately a
     // DIFFERENT mechanism from CW_DRAFT_PREDECESSOR above. That map replaces the WHOLE document
     // with the previous draft's document; this one drops prose INTO the draft box of this step's
     // own template, leaving the teaching and the box's provenance flag intact.
@@ -1727,7 +1742,7 @@ window.WML = (function() {
             chatHeaderLabel: 'Sophia',
             sidebarSteps: null,
         },
-        // ── Creative Writing: DIAGNOSTIC draft steps (v7.20.506, #366) ──
+        // ── Creative Writing: DIAGNOSTIC draft steps (v7.20.507, #366) ──
         // The student's scene arrives already written (seeded from Step 9's locked section); this
         // step is where they polish it alone and hand it to the assessment. No chat, no walk, no
         // sidebar — the same shape as the essay `diagnostic` above, which is what Neil asked for.
@@ -1898,7 +1913,7 @@ window.WML = (function() {
         if (task.startsWith('cw_')) {
             const stepDef = getCwStepDef(task);
             if (stepDef) {
-                // v7.20.506 (#366): `env` wins over `tier` — a step that declares a diagnostic
+                // v7.20.507 (#366): `env` wins over `tier` — a step that declares a diagnostic
                 // environment gets it whatever its tier says. Capability first, never a literal.
                 const base = stepDef.env === 'diagnostic' ? EXERCISE_MANIFEST.cw_diagnostic
                     : stepDef.tier === 'si' ? EXERCISE_MANIFEST.cw_si
@@ -3996,7 +4011,7 @@ window.WML = (function() {
         lineSquare: 'xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.91" stroke-linecap="square" stroke-miterlimit="10"',
     };
     const ICONS = {
-        // ⭐ v7.20.506 — four glyphs Neil supplied 2026-08-13 to replace emoji on buttons.
+        // ⭐ v7.20.507 — four glyphs Neil supplied 2026-08-13 to replace emoji on buttons.
         // Bodies extracted PROGRAMMATICALLY from frontend/icons/*.svg, never retyped (the rule at
         // the top of this table). ⚠️ THREE DIFFERENT GRIDS — 24, 48 and 64 — which is exactly why
         // `vb` is per ROW: a 64-grid glyph emitted on the default 24 viewBox renders as a corner
@@ -4968,7 +4983,7 @@ window.WML = (function() {
         // CN family registry (v7.20.15)
         CN_FAMILIES, LIT_CN_SPINE, NONFICTION_CN_SPINE, PROSE_CN_SPINE, cnFamily, cnFieldRe,
         CN_STAGE_SPLITS, cnStageSplitFor, cnStageCountFor,
-        getSteps, getElements, getExerciseConfig, getCwStepDef, resolveStorageSuffix, resolveCanvasSuffix, canvasDocScope,
+        getSteps, getElements, getExerciseConfig, getCwStepDef, cwToolsMinimal, resolveStorageSuffix, resolveCanvasSuffix, canvasDocScope,
         // Exercise manifest
         EXERCISE_MANIFEST,
         // Creative Writing

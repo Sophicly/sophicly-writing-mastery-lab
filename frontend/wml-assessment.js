@@ -28687,7 +28687,8 @@
         let scTrigger = null, ssTrigger = null; // v7.20.291/.292: Story Components + Story Spine — extra triggers on the SAME panel shell
         let rvTrigger = null; // v7.20.410 (#207): "Coming back to" — a FOURTH trigger on that same shell
         let mvTrigger = null; // v7.20.493 (#365): "My Values" — the student's own Step-7 audit, a FIFTH trigger
-        if (cwPanelRes && cwPanelRes.length > 0) {
+        // v7.20.507: Resources is OFF on a tools-minimal step (Neil named this button explicitly).
+        if (cwPanelRes && cwPanelRes.length > 0 && !(WML.cwToolsMinimal && WML.cwToolsMinimal(state.task))) {
             // Books, not a chain link: this trigger opens the Creative Writing Reference Guide,
             // so the icon now says what it IS rather than that it is a link.
             const SVG_LINK = WML.icon('resources', 16);   // v7.20.363: Neil's Resources glyph, from the ONE icon registry
@@ -29385,13 +29386,24 @@
                 cfg.load();   // refresh on every open so upstream edits show (v7.19.480)
             }
 
+            // ⭐ v7.20.507 (Neil, 2026-08-13) — TOOLS-MINIMAL STEPS SHOW NONE OF THESE FIVE.
+            // Writer's Profile · Story Components · Story Spine · My Values · Coming back to are
+            // all REFERENCE panels — other steps' work, read while you write. Step 9's write-out
+            // is unaided by design and Step 10 is the test, so they come off both.
+            // ⚠️ The buttons are still BUILT and only the rail insert is skipped. Several call
+            // sites reach these by `document.querySelector('.swml-xx-trigger')` and the panel's
+            // own `_wpTriggerFor(mode)` anchors to them; never creating them would turn each of
+            // those into a null path to chase. Not appending is the smallest change that holds.
+            const _toolsMin = !!(WML.cwToolsMinimal && WML.cwToolsMinimal(state.task));
+            const _railAdd = (btn) => { if (!_toolsMin) btnColumn.appendChild(btn); };
+
             wpTrigger = el('button', {
                 className: 'swml-outline-btn swml-wp-trigger',
                 'data-tooltip': 'Writer’s Profile', 'data-tooltip-pos': 'right',
                 'aria-label': 'Writer’s Profile', innerHTML: SVG_PROFILE_RAIL,
                 onClick: (e) => { e.stopPropagation(); _openWpMode('profile'); }
             });
-            btnColumn.appendChild(wpTrigger);
+            _railAdd(wpTrigger);
 
             // Story Components — the student's Step-3 protagonist/flaw/wound/incident/goal/
             // obstacle/stakes + chosen logline, readable from any later step (Neil: planning
@@ -29402,7 +29414,7 @@
                 'aria-label': 'Story Components', innerHTML: SVG_COMPONENTS,
                 onClick: (e) => { e.stopPropagation(); _openWpMode('components'); }
             });
-            btnColumn.appendChild(scTrigger);
+            _railAdd(scTrigger);
 
             // Story Spine — the Step-4 beats, readable from every later step (Neil, 2026-07-25).
             ssTrigger = el('button', {
@@ -29411,7 +29423,7 @@
                 'aria-label': 'Story Spine', innerHTML: SVG_SPINE,
                 onClick: (e) => { e.stopPropagation(); _openWpMode('spine'); }
             });
-            btnColumn.appendChild(ssTrigger);
+            _railAdd(ssTrigger);
 
             // v7.20.493 (#365) — My Values: the student's own Step-7 audit. Sits after Story
             // Spine because the rail reads in step order (components = Step 3, spine = Step 4,
@@ -29422,7 +29434,7 @@
                 'aria-label': 'My Values — your Step 7 audit', innerHTML: SVG_VALUES,
                 onClick: (e) => { e.stopPropagation(); _openWpMode('myValues'); }
             });
-            btnColumn.appendChild(mvTrigger);
+            _railAdd(mvTrigger);
 
             // v7.20.410 (#207) — "Coming back to": every beat the student flagged, click to jump.
             // Its own rail button (unlike the beat-examples mode) because the question "what did I
@@ -29433,7 +29445,7 @@
                 'aria-label': 'Beats you flagged to come back to', innerHTML: SVG_REVISIT,
                 onClick: (e) => { e.stopPropagation(); _openWpMode('revisit'); }
             });
-            btnColumn.appendChild(rvTrigger);
+            _railAdd(rvTrigger);
 
             // ── float / dock / drag / resize — v7.20.319: the ONE shared rail-panel layer ──
             // This shell serves three rail buttons, so the dock re-anchor resolves through the
@@ -37032,7 +37044,11 @@
         // v7.19.719: hide notes ONLY on the test lessons {diagnostic, mark_scheme}. Diagnostic,
         // outlining and polishing SHARE the free env, so the old env-based condition wrongly hid
         // notes on outline + polish. Gate on TASK (the deny-list), matching the notes plugin.
-        if (['diagnostic', 'mark_scheme'].includes(state.task)) {
+        // v7.20.507 (Neil, 2026-08-13): CW steps that declare `tools: 'minimal'` join the deny-list.
+        // Steps 9 and 10 are the unaided write-out and the test, so the scratchpad comes off there
+        // for the same reason it comes off a diagnostic. Capability, not a step literal — and it
+        // reads through the SAME predicate the rail uses, so the two cannot drift apart.
+        if (['diagnostic', 'mark_scheme'].includes(state.task) || (WML.cwToolsMinimal && WML.cwToolsMinimal(state.task))) {
             if (snFab) snFab.style.display = 'none';
             if (snPanel) snPanel.style.display = 'none';
             document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger, [class*="sticky-note-tab"], [class*="notes-tab"]').forEach(t => t.style.display = 'none');

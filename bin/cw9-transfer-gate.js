@@ -153,6 +153,27 @@ ok('the write-out advice is paced one bubble at a time (§4b), not a wall',
 ok('Step 10 tells the truth when the box is empty, on a page with no chat to ask in',
     /If the box below is empty, go back to Step 9/.test(SRC));
 
+// ── 4. TOOLS-MINIMAL — the unaided steps stay unaided (v7.20.507) ─────────────────────────────
+console.log('\nSteps 9 and 10 run with the tools stripped:');
+ok('Step 9 declares tools: minimal', WML.cwToolsMinimal('cw_step_9'));
+ok('Step 10 declares it too', WML.cwToolsMinimal('cw_step_10'));
+ok('and NOTHING else does — no sibling inherits an unaided rail by accident',
+    JSON.stringify(WML.CW_STEPS.filter(s => s.tools === 'minimal').map(s => s.step)) === '[9,10]',
+    WML.CW_STEPS.filter(s => s.tools === 'minimal').map(s => s.step));
+ok('Step 8 (the walk before) keeps its tools', !WML.cwToolsMinimal('cw_step_8'));
+ok('Trial 1 (the assessment after) keeps its tools', !WML.cwToolsMinimal('cw_trial_1'));
+ok('the notes scratchpad reads the SAME predicate as the rail (one source, cannot drift)',
+    /cwToolsMinimal\(state\.task\)\)\) \{\s*\n\s*if \(snFab\)/.test(SRC));
+ok('all five reference panels route through the rail gate, not a bare appendChild',
+    (SRC.match(/_railAdd\((?:wp|sc|ss|mv|rv)Trigger\);/g) || []).length === 5,
+    (SRC.match(/_railAdd\((?:wp|sc|ss|mv|rv)Trigger\);/g) || []).length);
+ok('…and none of the five is still appended directly',
+    !/btnColumn\.appendChild\((?:wp|sc|ss|mv|rv)Trigger\)/.test(SRC));
+ok('Resources is gated too (Neil named that button)',
+    /cwPanelRes\.length > 0 && !\(WML\.cwToolsMinimal/.test(SRC));
+ok('the buttons are still BUILT — only the rail insert is skipped, so no querySelector path goes null',
+    /_railAdd = \(btn\) => \{ if \(!_toolsMin\) btnColumn\.appendChild\(btn\); \}/.test(SRC));
+
 console.log(fails
     ? '\n❌ cw9-transfer-gate FAILED (' + fails + ')'
     : '\n✅ cw9-transfer-gate passed (Step 9 joins and sends; Step 10 receives it walk-free).');
