@@ -3671,28 +3671,65 @@
         )) + 'px';
         return true;
     }
-    // Place now, and again once layout has SETTLED. A `resize` fires many times and the LAST one
-    // can still land before the document has reflowed — that final stale measurement is the one the
-    // student is left looking at. The immediate call keeps the bar travelling with the text (which
-    // is what makes a sidebar animation look right); the trailing frame guarantees the final
-    // position is measured against finished layout. Handles park on the element so teardown can
-    // release them.
-    function _swmlPlaceSelToolbarSettled(tb, host) {
+    /* ⭐⭐ v7.20.521 (#379 round 2) — THE ANCHOR WATCHER, and why the event-driven version was
+       never going to be enough.
+
+       Neil, on .520: *"you've almost got it… if I make the screen smaller and then bigger, it's
+       also the page size that decreases and increases. So when the page increases again, the gap
+       between the toolbar and the text that it's spawned from increases."*
+
+       THE MECHANISM, and it is structural rather than a missed event: the toolbar is ABSOLUTELY
+       POSITIONED in the scroller, so its `top` is a DOCUMENT coordinate. The text's document
+       coordinate changes on any reflow — a wider column rewraps the paragraphs above it and every
+       line below moves. Nothing about that is an event we are listening for: `resize` fires while
+       the window is being dragged, but the document's own re-layout (ProseMirror re-rendering,
+       fonts settling, a section expanding) lands AFTER the last resize event. So a placement made
+       on the final `resize` is measured against a layout that is still about to change, and the
+       gap it leaves is exactly the amount the text moved afterwards.
+
+       ⛔ CHASING "WHICH REFLOW WAS LAST" IS THE WRONG GAME — that is a timing guess, and .520's
+       120ms backstop was one. This watches the ANCHOR ITSELF: one rect read per frame while the
+       toolbar is on screen, and it only WRITES when the rect actually moved. Timing stops
+       mattering, because there is no longer a "final" measurement to get wrong.
+
+       COST, measured against what it replaces: one `getClientRects()` on a single Range per frame.
+       That is the same call the old code already made on every resize event (which fires far more
+       often than 60Hz during a drag), and it stops dead the moment the toolbar is removed — which
+       is within a click or two, since any click-away tears the toolbar down. It never writes on a
+       still frame, so it produces no style recalculation when nothing has moved. */
+    function _swmlWatchSelAnchor(tb, host) {
         if (!tb) return;
+        let last = '';
+        const tick = () => {
+            if (!tb.isConnected) { tb._swmlPlaceRaf = 0; return; }   // stops itself; no leak
+            const s = window.getSelection();
+            if (s && s.rangeCount && !s.isCollapsed) {
+                const b = s.getRangeAt(0).getBoundingClientRect();
+                // Round to a whole pixel: sub-pixel jitter during a smooth animation would
+                // otherwise write a style every frame for no visible change.
+                const key = Math.round(b.top) + ':' + Math.round(b.left) + ':' + Math.round(b.width)
+                    + ':' + Math.round(host.scrollTop) + ':' + Math.round(host.clientHeight);
+                if (key !== last && (b.width || b.height)) {
+                    last = key;
+                    _swmlPlaceSelToolbar(tb, host);
+                }
+            }
+            tb._swmlPlaceRaf = requestAnimationFrame(tick);
+        };
         try { cancelAnimationFrame(tb._swmlPlaceRaf); } catch (_) {}
-        clearTimeout(tb._swmlPlaceTimer);
-        tb._swmlPlaceRaf = requestAnimationFrame(() => { _swmlPlaceSelToolbar(tb, host); });
-        tb._swmlPlaceTimer = setTimeout(() => { _swmlPlaceSelToolbar(tb, host); }, 120);
+        tb._swmlPlaceRaf = requestAnimationFrame(tick);
         tb._swmlPlaceCancel = () => {
             try { cancelAnimationFrame(tb._swmlPlaceRaf); } catch (_) {}
-            clearTimeout(tb._swmlPlaceTimer);
+            tb._swmlPlaceRaf = 0;
         };
     }
-    // Wire a toolbar to re-anchor for its whole life: on host resize (the sidebars animating) and
-    // on window resize. Returns nothing; teardown reads `_swmlPlaceRO` / `_swmlPlaceOnResize` /
-    // `_swmlPlaceCancel`, which every removal path already releases.
+    // Wire a toolbar to re-anchor for its whole life. The watcher is the mechanism; the resize
+    // handlers stay as a belt-and-braces first response (they fire before the next frame, so the
+    // bar starts moving immediately rather than one frame late during a sidebar animation).
+    // Teardown reads `_swmlPlaceRO` / `_swmlPlaceOnResize` / `_swmlPlaceCancel` — every removal
+    // path releases all three.
     function _swmlTrackSelToolbar(tb, host) {
-        const run = () => { _swmlPlaceSelToolbar(tb, host); _swmlPlaceSelToolbarSettled(tb, host); };
+        const run = () => { _swmlPlaceSelToolbar(tb, host); };
         try {
             const ro = new ResizeObserver(run);
             ro.observe(host);
@@ -3700,7 +3737,8 @@
         } catch (_) { /* no ResizeObserver → the window listener still covers resize */ }
         tb._swmlPlaceOnResize = run;
         window.addEventListener('resize', tb._swmlPlaceOnResize);
-        if (!_swmlPlaceSelToolbar(tb, host)) _swmlPlaceSelToolbarSettled(tb, host);
+        _swmlPlaceSelToolbar(tb, host);
+        _swmlWatchSelAnchor(tb, host);   // a refused first measure is picked up by the next frame
         // ⚠️ MUST return truthy: wml-app.js calls this as `if (!WML.trackSelToolbar?.(…)) { …old
         // math… }`, so an undefined return would run the fallback ON TOP of the correct placement
         // and put the toolbar straight back where the bug had it.

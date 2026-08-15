@@ -144,6 +144,61 @@ console.log('SELECTION TOOLBAR PLACEMENT — the real placer, on synthetic geome
     ok(trackCalls === 3, 'all three builders in wml-assessment.js track (got ' + trackCalls + ')');
 }
 
+// ── 6. THE ANCHOR WATCHER (#379 round 2) ────────────────────────────────────────────────────
+// Neil on the event-driven v7.20.520: *"you've almost got it… when the page increases again, the
+// gap between the toolbar and the text increases."* The toolbar's `top` is a DOCUMENT coordinate,
+// so any reflow after the last `resize` event moves the text out from under it. Watching the
+// anchor every frame removes the timing question entirely — there is no "final" measurement to miss.
+{
+    const wi = SRC.indexOf('function _swmlWatchSelAnchor(tb, host) {');
+    ok(wi >= 0, 'the anchor watcher exists');
+    if (wi >= 0) {
+        const wbody = SRC.slice(wi, braceSliceFrom(SRC, wi, '{', '}').end).replace(/^function\s+\w+/, 'function');
+        let frames = 0;
+        let placed = 0;
+        const raf = (fn) => { frames++; if (frames < 6) setTimeoutImmediate(fn); return frames; };
+        const pending = [];
+        function setTimeoutImmediate(fn) { pending.push(fn); }
+        // eslint-disable-next-line no-new-func
+        const watch = new Function('window', 'requestAnimationFrame', 'cancelAnimationFrame', '_swmlPlaceSelToolbar',
+            'return ' + wbody + ';')(
+            { getSelection: () => SEL },
+            raf,
+            () => {},
+            () => { placed++; return true; }
+        );
+        const drain = () => { while (pending.length) pending.shift()(); };
+
+        // A STILL anchor must not write every frame — that would be a style recalculation per
+        // frame for no visible change, which is how a "smooth" fix becomes a performance defect.
+        SEL = sel({ top: 500, bottom: 520, left: 300, width: 60, height: 20 });
+        const tb1 = newTb();
+        watch(tb1, host);
+        drain();
+        ok(placed === 1, 'a STILL anchor places once and then stays quiet (got ' + placed + ' writes)');
+
+        // A MOVED anchor re-places — this is the reported bug: the text reflowed under the bar.
+        placed = 0; frames = 0;
+        const tb2 = newTb();
+        watch(tb2, host);
+        pending.length && pending.shift()();          // frame 1: initial measurement
+        SEL = sel({ top: 640, bottom: 660, left: 300, width: 60, height: 20 });   // the reflow
+        drain();
+        ok(placed >= 2, 'a MOVED anchor re-places — the gap closes itself (got ' + placed + ')');
+
+        // And it STOPS when the toolbar goes, or every selection in a session leaves a live loop.
+        placed = 0; frames = 0;
+        const tb3 = newTb();
+        watch(tb3, host);
+        tb3.isConnected = false;
+        drain();
+        ok(tb3._swmlPlaceRaf === 0, 'the watcher stops itself once the toolbar is disconnected');
+    }
+    ok(/_swmlWatchSelAnchor\(tb, host\)/.test(SRC), 'the tracker starts the watcher');
+    ok(!/_swmlPlaceSelToolbarSettled/.test(SRC),
+        'the 120ms timing backstop is GONE — it was a guess at which reflow lands last');
+}
+
 console.log('   ' + pass + ' assertions passed');
 if (fail) { console.error('❌ sel-toolbar-place-gate FAILED'); process.exit(1); }
 console.log('✅ sel-toolbar-place-gate passed (degenerate rects refused · flips below · one placer, every surface).');
