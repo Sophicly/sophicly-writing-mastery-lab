@@ -26070,15 +26070,40 @@
             // typed turn belongs to us, not to the AI.
             let askActive = false;
 
+            /* ⭐⭐ v7.20.511 (Neil, live on staging): "it's the three purple chips that actually
+               confused me. They shouldn't actually be there."
+
+               He is right, and they were never chips we wrote. `1. Pick your stage(s)` /
+               `2. Pick your beats` / `3. Shape the scene` exist ONLY inside INTRO[2]'s teaching
+               text — grep finds them nowhere else. The generic quick-action detector, which is
+               built to turn an AI reply's options into buttons, ran over OUR OWN code-served
+               bubble and read its numbered explanation as a three-item menu. A SEQUENCE rendered
+               as ALTERNATIVES: tap "3. Shape the scene" and, because the walk was not holding a
+               typed ask, the literal text went to the API as an ordinary chat turn.
+
+               WHY THE EXISTING GUARD MISSED IT, because this is the part worth remembering:
+               `_walkOwnsChips = _cwWalkActive()` reads each controller's `.active`. Every other CW
+               walk returns a WALK-level flag, so detection is suppressed for their whole run.
+               Step 9 alone returns `askActive` — narrowed at .500 so that non-ask turns still
+               reach the AI (deliberate, and still right). But `.active` was quietly doing two
+               jobs — "route typed input to me" AND "I own the chips" — so narrowing the first
+               switched off the second for the rest of the step. One flag, two meanings (§5e).
+
+               THE FIX IS SCOPED TO THE BUBBLE, NOT THE WALK, and that is the point: suppressing
+               detection for all of Step 9 would ALSO kill chips on the genuine AI replies the
+               student can still get here. These two emitters carry only text WE authored, and the
+               walk already serves its own chips explicitly via chipBar(). Detection scanning our
+               own prose is the category error; `suppressActions` is the existing, correct opt-out
+               (wml-assessment.js ~14903 and ~35196 both honour it). */
             function aiBubble(plain) {
-                addChatMessage(formatAI(plain), 'ai', plain);
+                addChatMessage(formatAI(plain), 'ai', plain, { suppressActions: true });
                 if (_cwIsReplay()) return;   // a re-serve is DRAWN, never saved (§4c.7)
                 WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
             // Present-state notices (gates, drop warnings, conflict asks) are EPHEMERAL —
             // drawn, never stored (the v7.20.284 prereq-gate lesson): they re-derive on entry.
-            function noteBubble(plain) { addChatMessage(formatAI(plain), 'ai', plain); }
+            function noteBubble(plain) { addChatMessage(formatAI(plain), 'ai', plain, { suppressActions: true }); }
             // v7.20.500: this walk owns a typed ask now, so it needs the two send-side helpers
             // every other walk closure defines for itself. Copied from _cwPlotValuesCtl (the
             // sibling at :25296) rather than re-derived — same contract, same durability `why`.
