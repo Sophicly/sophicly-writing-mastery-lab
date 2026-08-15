@@ -9030,9 +9030,32 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     padding-left: 0;
     min-height: 0;
 }
+/* v7.20.513 (Neil, on the Step-9 plot row): "centre it so it is balanced". With the text column
+   gone the row has no second column to align against, so a left-hugged label + a full-bleed
+   control read as the leftovers of a two-column layout rather than as a deliberate one. Centring
+   the stack, and letting the control size to its content instead of stretching, makes it read as
+   its own thing. `max-width` keeps a long option from spanning the whole page. */
 .swml-outline-row-controlonly .swml-outline-criteria {
     position: relative;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+}
+.swml-outline-row-controlonly .swml-outline-ctl {
+    width: auto;
+    max-width: min(100%, 320px);
+}
+.swml-outline-row-controlonly .swml-outline-select {
+    width: auto;
+    min-width: 210px;
+    max-width: 100%;
+    text-align: center;
+    /* the drawn chevron sits in the right pad; mirror it on the left so the label is optically
+       centred in the control rather than pushed left by the asymmetric padding */
+    padding-left: 26px;
 }
 .swml-outline-input.swml-outline-controlonly {
     display: none;
@@ -9620,13 +9643,35 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-outline-input.swml-input-filled {
     background: rgba(28, 217, 145, 0.08);
 }
-/* Row complete: both criteria AND input filled — unified green border around entire row */
+/* ⭐⭐ v7.20.513 — THE ROW RING IS GONE. Neil, on the Step-9 plot row: "it has got a green band
+   around the outside… it is a telltale sign of AI generated work. Is there another way we can
+   indicate that? I was thinking of a check mark, but we already have several on the page." Asked
+   which way to go, he answered "wwad".
+
+   WHAT APPLE DOES: it never rings a settled control. The VALUE is the signal — a chosen field
+   reads as chosen because it holds a real value in confident type, while an empty one holds grey
+   placeholder. Affirmation lives at the SUMMARY level (the section), never on every row. A green
+   ring is the system congratulating itself, and it is the single most recognisable tell of
+   generated UI.
+
+   AND THIS FILE HAD ALREADY RULED IT, TWICE — the ring survived only because nobody swept one
+   level up:
+     · v7.20.97, on this very control: "the old green stroke re-boxed the control (house rule: no
+       strokes)". The stroke was removed from the SELECT and left on the ROW.
+     · THE DONE-SURFACE TOKEN at the top of this file: a completed surface is signalled by
+       ELEVATION and a green EDGE, never by decoration laid over it.
+     · BRAND.md §8: "No thin hairline outline borders." A 1px ring is exactly that.
+
+   WHAT STILL SIGNALS DONE, so nothing is lost: the control itself takes the done surface
+   (`--swml-surface-done-strong` + its green inset left edge), a filled input takes
+   `.swml-input-filled`, and the section header keeps its tick. That was already three signals for
+   one fact; it is now two, and no new check mark was added.
+
+   ⚠️ BLAST RADIUS, stated rather than discovered: `.swml-row-complete` is on EVERY outline row in
+   the product — planning, assessment, every board — so this changes the look of every document,
+   which is the point (the tell was everywhere). Reversible by restoring this one rule. */
 .swml-outline-row.swml-row-complete {
-    box-shadow: 0 0 0 1px rgba(28, 217, 145, 0.35);
     border-radius: 6px;
-}
-[data-swml-theme="light"] .swml-outline-row.swml-row-complete {
-    box-shadow: 0 0 0 1px rgba(28, 217, 145, 0.3);
 }
 /* Plan/response InputField has text — v7.19.436: fill tint, not a resting border */
 .swml-input-field.swml-input-filled {
