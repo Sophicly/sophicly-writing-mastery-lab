@@ -15196,6 +15196,26 @@
                 const _ctlNoun = _ctlMsaInProgress ? 'assessment' : 'round';
                 const _ctlLabel = _fqDeterministic() ? 'Foundational Quiz'
                     : (_ctlMsaInProgress ? 'Mark Scheme Assessment' : 'Mark Scheme Quiz');
+                /* ⭐ v7.20.510 (Neil asked: "should the bin be red as a warning?").
+                   Not always — but this button is NOT one thing, and that is the real finding.
+                   The same call picks between six messages, and three of them DESTROY WORK:
+                     · planning        → _wipeAllPlanningFields() + _wipePlanningLocalState().
+                                         Its own copy already says "this cannot be undone."
+                     · FQ mid-round    → records the round as 0 against their grade.
+                     · _ctlRecord      → records the in-flight attempt at its projected score.
+                     · mark_scheme_unit step 1 → same, an AI-path round that counts.
+                   Those rendered in friendly teal AND pre-focused the destructive button — the
+                   same defect as the danger-focus one fixed in .508, missed only because these
+                   branches were never flagged. Painting every clear-chat red would have hidden it
+                   instead of fixing it, AND spent the signal: red already means "irreversible" on
+                   five callers (Delete project · Reset · Replace plan · Pull it through · Skip for
+                   now). A colour that fires every time carries no information.
+                   The branch Neil is looking at — document and essay preserved, only messages go —
+                   stays teal, because it is genuinely safe. Colour follows consequence. */
+                const _clearDestroysWork = _ctlRecord
+                    || state.task === 'planning'
+                    || (state.task === 'foundational_quiz' && !_fqDeterministic() && _fqIsMidRound(canvasChatHistory))
+                    || (state.task === 'mark_scheme_unit' && (state.step === 1 || state.bridgeStep === 1));
                 showConfirm(
                     _ctlRecord
                         ? 'You\u2019re mid-' + _ctlNoun + ' on the ' + _ctlLabel + ' (' + _quizCtl.answered + ' of ' + _quizCtl.roundSize + ' answered). Clearing now ENDS this ' + _ctlNoun + ' \u2014 unanswered questions score 0, so this attempt will be recorded as ' + _proj.score + '/' + _proj.max + ' (' + _proj.pct + '% \u00b7 Grade ' + _proj.grade + ') and it counts toward your average grade. You\u2019ll usually score higher by finishing first \u2014 every attempt counts, so just see it through. Clear anyway?'
@@ -15219,7 +15239,7 @@
                             ? (_poetryPlanActive()
                                 ? 'Start your whole plan over? Poetry planning is long and demanding \u2014 we strongly recommend finishing this one rather than restarting. Every element you have filed will be cleared and you will begin again from the top; this cannot be undone, and it means redoing all of that work. To compare a different poem, finish here and start a fresh attempt instead. Restart anyway?'
                                 : 'Start your whole plan over? Planning is long and demanding \u2014 we recommend finishing rather than restarting. Every element you have filed will be cleared and you will begin again from the top; this cannot be undone. Restart anyway?')
-                            : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
+                            : 'Clear this chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
                     async () => {
                         // v7.20.221 (Neil): planning clear-chat wipes the whole plan (fields +
                         // per-run localStorage) before the existing .218 restart runs from step 1.
@@ -15468,7 +15488,7 @@
                         } // end else (non-CW)
                         console.log('WML Canvas: Chat cleared');
                     },
-                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat', iconName: 'del' }
+                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat', iconName: 'del', danger: _clearDestroysWork }
                 );
             }
         });
@@ -34879,7 +34899,7 @@
                                     // training-env fork — dual-pipeline law). Polishing keeps the doc.
                                     state.task === 'planning'
                                         ? 'Clear this chat and start your plan fresh? Your whole plan — every element you have filed — will be cleared, and you will begin again from the top. This cannot be undone.'
-                                        : 'Clear this assessment chat and start fresh? Your document and essay are preserved — only the chat messages will be removed.',
+                                        : 'Clear this chat and start fresh? Your document and essay are preserved — only the chat messages will be removed.',
                                     async () => {
                                         // v7.20.221: wipe gates on PLANNING only — polishing shares this branch.
                                         if (state.task === 'planning') { _wipeAllPlanningFields(); _wipePlanningLocalState(); }
@@ -34972,7 +34992,7 @@
                                         } // end else (non-CW)
                                         console.log('WML Canvas: Chat cleared');
                                     },
-                                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat', iconName: 'del' }
+                                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat', iconName: 'del', danger: state.task === 'planning' }
                                 );
                             }
                         });
