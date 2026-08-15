@@ -47,9 +47,6 @@ export default function PlotValues(props) {
     const [busy, setBusy] = useState(false);
     const [ported, setPorted] = useState(false);
     const [hint, setHint] = useState('');
-    // #383: the pinned bar's "my words" disclosure. Collapsed by default so the bar stays the
-    // ~44px it promises on an iPad in landscape, where vertical room is scarcest.
-    const [saidOpen, setSaidOpen] = useState(false);
     const scrollRef = useRef(null);
 
     const chosen = useMemo(
@@ -77,6 +74,14 @@ export default function PlotValues(props) {
 
     /* ── phase 2: which beats, one trait at a time (§18 serial) ── */
     const bandsOf = (t) => BAND_ORDER.filter((b) => (t.bands || BAND_ORDER).indexOf(b) !== -1);
+    // id → beat, for the rail's running list of picks (#383).
+    const beatById = (id) => {
+        for (let i = 0; i < stages.length; i++) {
+            const hit = (stages[i].beats || []).filter((b) => b.id === id)[0];
+            if (hit) return hit;
+        }
+        return null;
+    };
     const stagesInBand = (band) => stages.filter((s) => s.band === band);
     const toggleBeat = (t, beat) => {
         if (beat.worked && beat.worked[t.id]) {
@@ -174,6 +179,68 @@ export default function PlotValues(props) {
         </section>
     );
 
+    /* ⭐⭐ #383 — THE TRAIT RAIL. Neil asked for this twice; the second time carried the argument
+       that settles it: *"what's key as well is that the student's gonna have to READ the beats
+       they're trying to place these into."* The beats are 2–4 lines of their own prose and must
+       be read to be judged, so VERTICAL ROOM is the scarce resource on this screen — and a top
+       bar spends exactly the resource the task needs. A side rail spends none of it.
+
+       ⚠️ DELIBERATELY NOT `position: sticky`, and that is the whole point of the rewrite. The
+       v7.20.523 bar was a sticky child INSIDE the scroller, and on Neil's screen it did not stay
+       put. No ancestor carries an overflow/transform/contain that would explain it, so the cause
+       was never established — and building a second thing on an unexplained mechanism is how you
+       ship the same defect twice. This rail is a LAYOUT SIBLING of the scroller (see .pv-cols),
+       so it is not in the scrolling box at all and cannot scroll away by construction. No sticky,
+       no scroll listener, nothing to measure per frame.
+
+       Narrow widths collapse it to a bar ABOVE the scroller — same element, same content, still
+       outside the scroll box. That is the iPad-landscape case my earlier objection was really
+       about, and it is a responsive fallback, not a second mechanism. */
+    const renderRail = () => {
+        const t = current;
+        if (!t) return null;
+        const n = pickCount(t.id);
+        return (
+            <aside className="pv-rail" aria-label="The trait you are placing">
+                <p className="pv-rail-eyebrow">Placing · trait {cursor + 1} of {chosen.length}</p>
+                <h3 className="pv-rail-trait">{t.label}</h3>
+                <p className="pv-rail-cond">{t.cond}</p>
+                {t.said
+                    ? <p className="pv-rail-said">“{t.said}”</p>
+                    : <p className="pv-rail-said is-none">You didn’t write about this one in Step 7 — pick the beats where it should show.</p>}
+                {/* The count climbs as they tap, which is what teaches the multi-select — he asked
+                    whether a trait could go in more than one beat about a control that already
+                    allowed it. */}
+                <p className={'pv-rail-count' + (n ? ' is-on' : '')}>
+                    {n ? <>{n} beat{n > 1 ? 's' : ''} picked</> : <>No beats picked yet</>}
+                </p>
+                {/* The running list — the other half of "I can't see what I'm doing". Once the
+                    student has scrolled past a beat they tapped, the tick is gone from view too,
+                    so the rail names them back. Tapping one removes it, which is the only place
+                    a pick can be undone without hunting for the card again. */}
+                {n
+                    ? <ul className="pv-rail-picked">
+                        {(picks[t.id] || []).map((id) => {
+                            const b = beatById(id);
+                            return (
+                                <li key={id}>
+                                    <button type="button" onClick={() => b && toggleBeat(t, b)}
+                                        title="Remove this beat">
+                                        <span className="pv-rail-x">✕</span>
+                                        <span className="pv-rail-picked-label">
+                                            {b ? <>#{b.ord} {b.label}</> : id}
+                                        </span>
+                                    </button>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    : null}
+                <p className="pv-rail-hint">A trait usually shows in more than one beat.</p>
+            </aside>
+        );
+    };
+
     const renderPlace = () => {
         const t = current;
         if (!t) return null;
@@ -200,47 +267,9 @@ export default function PlotValues(props) {
                     </button>
                     <span className="pv-tools-note">Empty beats are fine to pick — filling them in is part of this step.</span>
                 </div>
-                {/* ⭐ #383 — THE TRAIT STAYS ON SCREEN. Neil, mid-run: *"we need a way to make it
-                    visible, you know, the trait, because as soon as I scroll down I can't see it
-                    anymore… how would Apple deal with this?"* The ask above it runs ~600px before
-                    the first beat card, and a stage holds 8+ beats, so by beat #4 the trait, its
-                    condition and his own Step-7 words were all gone.
-
-                    WWAD = the condensing navigation bar: full context at rest, and once you are
-                    working the bar keeps only the identity, pinned. So this sits BELOW the full
-                    ask and ABOVE the beats — read the long version on arrival, and from the moment
-                    you scroll into the list it is stuck to the top of the scroller.
-
-                    ⚠️ Deliberately pure CSS `position: sticky`, no scroll listener: a per-frame
-                    layout read inside a scrolling list is the exact shape that has cost this
-                    canvas a tab hang before. The browser does it for free.
-
-                    THE COUNT IS NOT DECORATION — it answers his second question without a word of
-                    instruction. He asked *"what if I want that trait to appear in multiple beats?"*
-                    about a control that already supports it; watching the number climb as he taps
-                    is what makes the multi-select legible. */}
-                <div className="pv-pin">
-                    <div className="pv-pin-main">
-                        <span className="pv-pin-trait">{t.label}</span>
-                        <span className="pv-pin-cond">{t.cond.toLowerCase()}</span>
-                        <span className="pv-pin-of">Trait {cursor + 1} of {chosen.length}</span>
-                    </div>
-                    <div className="pv-pin-right">
-                        <span className={'pv-pin-count' + (pickCount(t.id) ? ' is-on' : '')}>
-                            {pickCount(t.id)
-                                ? <>{pickCount(t.id)} beat{pickCount(t.id) > 1 ? 's' : ''} picked</>
-                                : <>none picked yet</>}
-                        </span>
-                        {t.said
-                            ? <button type="button" className={'pv-pin-said-btn' + (saidOpen ? ' is-on' : '')}
-                                aria-expanded={saidOpen ? 'true' : 'false'}
-                                onClick={() => setSaidOpen(!saidOpen)}>
-                                my words {saidOpen ? '▴' : '▾'}
-                            </button>
-                            : null}
-                    </div>
-                    {saidOpen && t.said ? <p className="pv-pin-said">“{t.said}”</p> : null}
-                </div>
+                {/* #383: the trait now lives in the RAIL beside this list (see renderRail), which
+                    is outside the scroller entirely — so it cannot scroll away and nothing here
+                    needs to repeat it. */}
                 {myBands.map((band) => {
                     const inBand = stagesInBand(band);
                     return (
@@ -356,6 +385,9 @@ export default function PlotValues(props) {
 
     return (
         <div className="ssi-frame">
+            {/* #383: the scroller and the trait rail are SIBLINGS in a row. The rail is outside
+                the scrolling box, so it cannot scroll away — no sticky involved. */}
+            <div className="pv-cols">
             <div className="ssi-scroll" ref={scrollRef}>
                 <div className="wrap">
                     <div className="ssi-head">
@@ -384,6 +416,8 @@ export default function PlotValues(props) {
                     {phase === 2 ? renderPlace() : null}
                     {phase === 3 ? renderReview() : null}
                 </div>
+            </div>
+            {phase === 2 ? renderRail() : null}
             </div>
             <div className="actionbar">
                 <div className="actionbar-in">

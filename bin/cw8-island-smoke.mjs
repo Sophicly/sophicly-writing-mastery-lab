@@ -139,7 +139,7 @@ console.log('CW STEP-8 ISLAND — render smoke (the real component, the real pro
     ok(/Which of your traits/.test(html), 'same landing with picks restored — nothing throws on the richer state');
 }
 
-// ── #383: THE PINNED TRAIT BAR ───────────────────────────────────────────────────────────────
+// ── #383: THE TRAIT RAIL ───────────────────────────────────────────────────────────────
 // ⚠️ STRUCTURAL, NOT BEHAVIOURAL, AND LABELLED AS SUCH (root CLAUDE.md §14b: a presence check
 // proves PLUMBING, never BEHAVIOUR). renderToString cannot reach phase 2 — `phase` is local
 // state with no prop seam, and adding one purely for a test would change the shipped resume
@@ -148,19 +148,51 @@ console.log('CW STEP-8 ISLAND — render smoke (the real component, the real pro
 {
     const bundle = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-scene-island.min.js'), 'utf8');
     const css = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-scene-island.css'), 'utf8');
-    ok(/pv-pin-trait/.test(bundle) && /pv-pin-count/.test(bundle),
-        '#383: the pinned bar is in the BUILT bundle — the island has a build step and the server '
+    ok(/pv-rail-trait/.test(bundle) && /pv-rail-count/.test(bundle),
+        '#383: the trait rail is in the BUILT bundle — the island has a build step and the server '
         + 'never builds, so source-only would ship nothing');
-    ok(/pv-pin-said-btn/.test(bundle), '#383: the "my words" disclosure ships with it');
-    const block = (css.match(/\.pv-pin \{[^}]*\}/) || [''])[0];
-    ok(/position:\s*sticky/.test(block) && /top:\s*0/.test(block),
-        '#383: the bar is position:sticky pinned to the top of the scroller');
-    ok(/z-index:\s*[1-9]/.test(block), '#383: …and sits above the beat cards that scroll under it');
-    ok(/background:var\(--surface\)/.test(block),
-        '#383: …on an OPAQUE fill — beat text scrolls underneath, so a translucent bar would smear');
-    ok(!/backdrop-filter/.test(block),
-        '#383: no backdrop-filter (it breaks border-radius under a transformed ancestor — the '
-        + 'takeover-modal landmine, and the prototype lies about it)');
+    ok(/pv-rail-said/.test(bundle), '#383: the rail carries the student’s own Step-7 words');
+    // ⭐ THE LOAD-BEARING ONE. The rail must be a SIBLING of the scroller, not a child of it.
+    // A child cannot be kept on screen without sticky, and sticky is the mechanism that failed
+    // unexplained at .523 — so this asserts the structure that makes the question moot.
+    const src = fs.readFileSync(path.join(ROOT, 'island', 'src', 'PlotValues.jsx'), 'utf8');
+    const cols = src.indexOf('className="pv-cols"');
+    const scrollOpen = src.indexOf('className="ssi-scroll"');
+    const rail = src.indexOf('renderRail()', scrollOpen);
+    // ⚠️ AN ORDER CHECK IS NOT A NESTING CHECK. The first cut of this assertion compared source
+    // INDEXES (rail after scroller) and passed happily when the rail was moved INSIDE the
+    // scroller — the exact defect it exists to catch, since a child cannot stay on screen
+    // without the sticky that failed at .523. Walk the div depth instead: find where the
+    // scroller actually CLOSES, and require the rail to come after it.
+    // Start at the `<div` that OPENS the scroller, not at its className — starting mid-tag makes
+    // the scan one level too shallow, so it finds .wrap's close and every nesting bug passes.
+    // (That was this check's own first bug, caught by the injection it exists for.)
+    const scrollTag = src.lastIndexOf('<div', scrollOpen);
+    let depth = 0, scrollClose = -1;
+    for (let i = scrollTag; i < src.length; i++) {
+        if (src.startsWith('<div', i)) depth++;
+        else if (src.startsWith('</div>', i)) {
+            depth--;
+            if (depth === 0) { scrollClose = i; break; }
+        }
+    }
+    ok(cols !== -1 && cols < scrollOpen && scrollClose !== -1 && rail > scrollClose,
+        '#383: the rail is a SIBLING of .ssi-scroll inside .pv-cols — it sits AFTER the scroller '
+        + 'closes, so it is outside the scrolling box, cannot scroll away, and needs no sticky');
+    ok(!/\.pv-rail[^{]*\{[^}]*position:\s*sticky/.test(css) && !/\.pv-pin\b/.test(css),
+        '#383: NO sticky anywhere in the rail, and the retired .523 sticky bar is gone from the '
+        + 'CSS — a dead second mechanism is how a layout regains a path nobody tests');
+    ok(!/pv-pin/.test(bundle), '#383: …and the retired bar is gone from the bundle too');
+    const colsBlock = (css.match(/\.pv-cols \{[^}]*\}/) || [''])[0];
+    ok(/display:flex/.test(colsBlock) && /min-height:0/.test(colsBlock),
+        '#383: the column row is a flex row with min-height:0 — without it the scroller grows '
+        + 'past the viewport instead of scrolling (the reachability trap)');
+    const railBlock = (css.match(/\.pv-rail \{[^}]*\}/) || [''])[0];
+    ok(/min-height:0/.test(railBlock) && /overflow-y:auto/.test(railBlock),
+        '#383: a long Step-7 quote scrolls INSIDE the rail rather than stretching it');
+    ok(/max-width:1024px/.test(css),
+        '#383: there is a narrow fallback — the rail becomes a bar above the scroller where there '
+        + 'is no room for a column (iPad landscape), still outside the scroll box');
 }
 // ── the empty-state: no flagged traits at all (the guard path) ──
 {
@@ -179,4 +211,4 @@ console.log('CW STEP-8 ISLAND — render smoke (the real component, the real pro
 
 console.log('   ' + asserts.pass + ' assertions passed');
 if (fail) { console.error('❌ cw8-island-smoke FAILED'); process.exit(1); }
-console.log('✅ cw8-island-smoke passed (renders on the landing phase across restored states + awkward props; the pinned bar is checked structurally in the BUILT bundle — phase 2 is unreachable from renderToString, so its look when stuck is verified by eye).');
+console.log('✅ cw8-island-smoke passed (renders on the landing phase across restored states + awkward props; the trait RAIL is checked structurally in the BUILT bundle (sibling of the scroller, no sticky) — phase 2 is unreachable from renderToString, so its look is verified by eye).');
