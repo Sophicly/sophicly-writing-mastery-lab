@@ -62,10 +62,32 @@ not a words-per-minute problem.
 ⚠️ **Labelled honestly:** the cliff is measured; the *explanation* for it is my inference from the
 shape. I cannot prove causation from stored documents. The one cheap way to test it is in §5.
 
-**A second, separate problem the numbers exposed:** **three of the nine (Rifat, Pareshay, Hafsa) have
-never started at all** — zero beats, and no edit timestamps anywhere in the document. Their first and
-last beats were never even poured in from the spine exercise. That is not "Step 6 is slow", that is
-"Step 6 was never entered", and no redesign of the beat flow will fix it. It wants its own look.
+**A second, separate problem the numbers exposed — and it is THREE different problems, not one.**
+I first wrote this up as "three students never started". That was wrong; interrogating the documents
+themselves shows three distinct states:
+
+| student | archetype resolved? | rows in doc | filled | edit stamps | reading |
+|---|---|---|---|---|---|
+| Rifat Miah (1386) | ✅ Hero's Journey | 104 | 0 | none | **reached Step 6, picked a plot, wrote nothing** |
+| Pareshay Khan (1134) | ❌ none | 98 | 0 | none | never picked a plot structure |
+| Hafsa Humayun (1309) | ❌ none | 98 | 0 | none | never picked a plot structure |
+
+- **Rifat is the real Step-6 casualty.** His document carries *his* resolved archetype and a full
+  104-row scaffold built for it. He got in, the workshop built itself around his story, and he wrote
+  nothing at all. That is the cliff in its purest form — the wall was the *first* thing he saw.
+- **Pareshay and Hafsa look programmatic, not human.** Their documents are **byte-identical**
+  (58,095 bytes each), carry **no plot structure section**, and hold the default 98-row scaffold —
+  six rows short of everyone else's, one per stage. Two students independently producing identical
+  files to the byte is what a template backfill looks like, not two visits.
+- ⚠️ **They may not even be in this cohort.** Pareshay registered 2024-11-21 and Hafsa 2025-09-05,
+  where the summer intake (Rifat, Adam, Yusra) all registered 2026-07-22. Memory records the clean
+  summer CW cohort as **Adam 1387 / Yusra 1389 / Rifat 1386**. So the "9 students" figure in §1
+  mixes cohorts, and the older accounts should probably be excluded from any judgement about how the
+  summer group went.
+- 🔴 **And one straight defect, independent of all the above:** LearnDash records **Pareshay as
+  having COMPLETED topic 55270 (Step 6) on 2026-05-20** — a completion against a document with zero
+  words in it. Worth a look on its own; a step that can be marked complete while empty will
+  mis-report progress for everyone.
 
 ---
 
@@ -149,9 +171,11 @@ your call on the option first, and the key-beat definition is a design job in it
 ## 6. OPEN QUESTIONS FOR YOU
 
 1. **Option A, B, C or D?**
-2. **The three who never started** — do you know from the room whether they opened Step 6 at all?
-   That is the one fact the database cannot hold, and it decides whether that is an onboarding
-   problem or a bug.
+2. **Which of these nine were actually in the summer group you were watching?** The documents say
+   Pareshay and Hafsa are older accounts with untouched, byte-identical default files, and memory
+   records the clean CW cohort as Adam / Yusra / Rifat. If the summer group is really 3–4 students
+   rather than 9, the headline changes from "1 in 9 finished" to something sharper. This is the one
+   thing the database genuinely cannot settle — the rest I have answered above rather than asking.
 3. **Does a stalled student restart, or continue?** Everyone who stalled has real work banked. A
    redesign that resets them to a new flow would throw that away; one that carries it forward has to
    ask "what changed?" rather than re-asking from zero (§4c.8b).
