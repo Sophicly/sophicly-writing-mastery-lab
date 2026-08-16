@@ -107,15 +107,56 @@ P1 (`4EA1/01`, 90 marks) is a genuine multi-question paper: Q1 2m · Q2 3m · Q3
 **SKIP** — pure retrieval, no structure taught) · **Q4** 12m AO2 body-only ×3 · **Q5** 22m AO3
 comparative full essay ×3 · **Q6** 45m AO4+AO5 IUMVCC.
 
-Expected to need **no new rows** either, but two things want checking before its markers are authored:
+Expected to need **no new rows**. The suffix question is now **DERIVED, not open** — I traced it
+rather than asking, and the trace turned up two genuine defects that a bare "which one is suffixed?"
+answer would have hidden.
 
-1. **Q4 + Q5 in ONE document ⇒ suffix collision.** `:50498-50502` is explicit: body-only outlines
-   carry a question suffix precisely because "a P1 doc holds Q2, Q3 AND Q4 outlines, and the legacy
-   body ids are NOT question-scoped". An IGCSE P1 doc holding Q4 **and** Q5 hits the same trap.
-   Confirm which of the two takes the unsuffixed ids before I write a single `@FIELD_COMMIT` —
-   this is the #1 recurring bug class and I will not guess it.
-2. **Q6 IUMVCC** should reuse `iumvcc-{intro,urgency,method,vision,counter,conclusion}` verbatim
-   (AQA P2 Q5 precedent). Please confirm those rows render for `edexcel-igcse` + `language_p1`.
+### 4a. The suffix answer (settled by reading, 2026-08-16)
+
+| path | taken by | body ids | intro ids | conclusion ids |
+|---|---|---|---|---|
+| body-only (`:50503-50509`) | **Q4** (12m, analysis, 3 bodies) | `outline-body-{i}-{el}`**`-q4`** | — | — |
+| full essay (`:50525-50547`) | **Q5** (22m, ≥20) | `outline-body-{i}-{el}` **unsuffixed** (`:50538` passes `''`) | `outline-intro-{id}`**`-q5`** (`:50530`) | `outline-conclusion-{id}` **unsuffixed** (`:50545`) |
+
+**No collision** — Q4 suffixed, Q5 unsuffixed, exactly the arrangement AQA P1 already ships and the
+`:50498-50502` comment describes. Nothing to decide.
+
+### 4b. ⛔ BUT THE PLAN→OUTLINE FAN-OUT HAS NO ROUTE FOR EITHER OF THEM
+
+`_planOutlineTargets` only knows two body shapes:
+
+```js
+/^plan-Q([23])-para-([123])$/          // → outline-body-{p}-{el}-q{q}   ← Q2/Q3 ONLY
+/^plan-(?:Q4-)?body-([123])$/          // → outline-body-{b}-{el}        ← UNSUFFIXED
+```
+
+1. **Q4 (suffixed `-q4`) has no fan-out route.** The suffixed regex stops at Q3; the `plan-Q4-body-`
+   form maps to *unsuffixed* ids (correct for AQA P2, where Q4 is the full-essay question — wrong for
+   IGCSE P1, where Q4 is the body-only one). **Asked change:** widen to
+   `/^plan-Q([234])-para-([123])$/` and let IGCSE P1 Q4 file as `plan-Q4-para-{i}`. One character,
+   but it must not disturb AQA P2's `plan-Q4-body-{i}` — the two forms stay distinct (`-para-` vs
+   `-body-`), so widening is safe.
+2. **Q5's intro fan-out misses.** The intro branch probes `has('outline-intro-hook')` — unsuffixed —
+   but a full-essay outline inside a multi-question doc renders **`outline-intro-hook-q5`**. The
+   probe fails, and the fallback is `{ mode:'whole', target:'outline-intro-thesis-q4' }`, a row that
+   does not exist on this paper. Result: the intro plan silently files nowhere. **Asked change:**
+   make the probe suffix-aware (probe `outline-intro-hook{sfx}` derived from the plan field's own
+   question), or have the full-essay path render intro rows unsuffixed like its bodies and
+   conclusion — the inconsistency at `:50530` vs `:50538`/`:50545` is arguably the root defect.
+
+⚠️ **This is a live AQA bug too, not only an IGCSE one** — any full-essay question rendered with a
+`partLabel` in a multi-question doc has the same silently-dead intro fan-out. Worth checking AQA P1
+Q5 / P2 Q4 against it before assuming IGCSE is the only victim.
+
+I have NOT authored P1's markers, because they would file into these dead routes. P1 is unblocked
+the moment 4b lands.
+
+### 4c. Q6 IUMVCC
+
+Should reuse `iumvcc-{intro,urgency,method,vision,counter,conclusion}` verbatim (AQA P2 Q5
+precedent, `buildIUMVCCOutlineSection`). ⚠️ Its call site at `:52133-52138` is gated
+`board === 'aqa' && _isLangPaper2()` for the non-`isPersuasive` route — check whether an IGCSE P1 Q6
+resolves `isPersuasive` on its own, or the outline falls through to the generic essay branch.
 
 **⛔ And the reason P1 is not urgent:** it has **no planning lesson on prod at all** — see the
 bridge-lane handoff filed alongside this doc. A P1 port would load in nothing until its LearnDash
