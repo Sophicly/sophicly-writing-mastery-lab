@@ -76,6 +76,28 @@ the literal the protocol now emits. All 30 markers JSON-parse.
 No `context` marker is emitted anywhere on this paper (fenced with a ⛔ line in each filing block),
 because the row is not rendered when AO3 is absent.
 
+### 2b. ⭐ VERIFIED AGAINST REAL PROD DOCUMENTS (2026-08-16) — half proven, half not
+
+I checked every `swml_canvas_edexcel-igcse*` document on prod (9 of them) for the ids my markers
+target. Result splits cleanly, and I am reporting both halves:
+
+**✅ The PLAN side is PROVEN.** The real IGCSE P2 document
+(`swml_canvas_edexcel-igcse_edexcel_igcse_lang_a_paper_2_t1`, 2 users) carries exactly:
+`plan-intro` · `plan-body-1` · `plan-body-2` · `plan-body-3` · `plan-conclusion`, under sections
+`PLAN — Q1` / `Plan: Introduction — Q1` / `Plan: Body Paragraph 1–3 — Q1` / `Plan: Conclusion — Q1`.
+**Those are byte-identical to the five `@FIELD_SET` fields the port emits.** No drift.
+
+**⚠️ The OUTLINE side is NOT observed — derived only.** **Zero `outline-*` rows exist in any current
+IGCSE P2 document.** That is expected rather than alarming: the outline block is gated
+`mode === 'redraft'` (`:52105`), and **no IGCSE P2 planning/redraft document exists on prod yet** —
+the planning lesson (topic 42570) has never been opened by anyone. So the 25 `@FIELD_COMMIT` targets
+rest on the capability-trace in §1 and the hand-trace in §2, and have **not** been confirmed against
+a rendered document.
+
+⇒ **The first real planning drive on this paper is the check that matters.** Until then, treat the
+outline filing as engineered-but-unwitnessed. Nothing about it is known to be wrong; it is simply
+not yet proven, and this doc should not be read as though it were.
+
 ---
 
 ## 3. LOW — HELPER-TEXT DELTA ON THE INTRO `building` ROW (no fieldId change)
@@ -136,6 +158,15 @@ answer would have hidden.
    `/^plan-Q([234])-para-([123])$/` and let IGCSE P1 Q4 file as `plan-Q4-para-{i}`. One character,
    but it must not disturb AQA P2's `plan-Q4-body-{i}` — the two forms stay distinct (`-para-` vs
    `-body-`), so widening is safe.
+
+   ⭐ **CONFIRMED AGAINST A REAL DOCUMENT, 2026-08-16 — this is observed, not inferred.** The live
+   IGCSE **Paper 1** doc (`swml_canvas_edexcel-igcse_edexcel_igcse_lang_a_t1`) carries these plan
+   ids: `plan-Q3-para-1` · `plan-Q3-para-2` · **`plan-Q4-para-1`** · **`plan-Q4-para-2`** ·
+   **`plan-Q4-para-3`** · `plan-intro` · `plan-body-1..3` · `plan-conclusion`.
+   So the paper really does render `plan-Q4-para-{i}` (Q4 body-only ×3) alongside the unsuffixed
+   full-essay set for Q5 — exactly the split predicted in §4a — and `_planOutlineTargets`' regex
+   `/^plan-Q([23])-para-([123])$/` really does **fail to match all three of them**. The dead route is
+   a fact about production, not a reading of the source.
 2. **Q5's intro fan-out misses.** The intro branch probes `has('outline-intro-hook')` — unsuffixed —
    but a full-essay outline inside a multi-question doc renders **`outline-intro-hook-q5`**. The
    probe fails, and the fallback is `{ mode:'whole', target:'outline-intro-thesis-q4' }`, a row that
@@ -168,6 +199,29 @@ resolves `isPersuasive` on its own, or the outline falls through to the generic 
 **⛔ And the reason P1 is not urgent:** it has **no planning lesson on prod at all** — see the
 bridge-lane handoff filed alongside this doc. A P1 port would load in nothing until its LearnDash
 lessons are wired.
+
+---
+
+## 4d. 🔴 SEPARATE FINDING — THREE TEXT SLUGS FOR ONE PAPER ARE LIVE ON PROD
+
+Surfaced while checking the documents above. Spec A Language Paper 2 exists on prod under **three
+different text slugs**, each with its own canvas records:
+
+| slug in the meta key | records |
+|---|---|
+| `edexcel_igcse_lang_a_paper_2` | the canonical one — carries the real `_t1` / `_ms` / `_msu` docs |
+| `edexcel_igcse_spec_a_english_language_paper_2` | 1 `_msu` doc, 1,159 bytes |
+| `edexcel-igcse-spec-a-english-language-paper-2` | 1 `_msu` doc, 1,159 bytes (dash form of the above) |
+
+Two of the three are byte-identical orphans — work saved under a key nothing else reads. This is the
+§5d write-key/read-key class exactly, and the dash-vs-underscore pair is the classic form of it.
+Both orphans belong to uid 1 so no student's work is currently stranded, **but the slugs are clearly
+reachable**, which means a student lesson emitting either form would strand theirs silently.
+
+Fix direction is the registry, not a code fork: add both to `$SLUG_ALIASES` in
+`includes/class-rest-api.php` so they normalise to `edexcel_igcse_lang_a_paper_2`. ⛔ Per that
+file's own rules, never flip the canonical — normalisation drives meta-key construction, so changing
+which form is canonical would silently re-key existing student data.
 
 ---
 
