@@ -252,12 +252,41 @@ ASK: "Does this capture your analysis accurately, or would you like to adjust an
 
 **\[AI\_INTERNAL\]:**
 
-- **If A:** Proceed to B.5.4.  
-- **If B:** ASK: "Which element would you like to revisit?" Return to the relevant step.
+- **If A (the approved-structure filing):** I file the plan for them — never ask them to copy it out. Emit ONE @FIELD\_SET marker filing the approved structure into the Body Paragraph 3 PLAN box (see the filing block at the end of this file), then proceed to B.5.4.  
+- **If B:** ASK: "Which element would you like to revisit?" Return to the relevant step (a refined element also re-files its OUTLINE box; the fresh A re-emits the @FIELD\_SET, which supersedes the earlier fill).
 
-SAY: "Your Body 3 plan is locked in. You've now completed all three body paragraph plans.
+SAY: "Your Body 3 plan is locked in — I've written it into your plan. You've now completed all three body paragraph plans.
 
 Type '**ready**' to see your complete body paragraph summary and move to the Working Thesis."
+
+---
+
+### b5-body3 filing — OUTLINE box per element; PLAN box at the plan approval (two content grades)
+
+As the student's answer to EACH element is accepted, emit that element's OUTLINE marker on its own line
+in the SAME accepting reply (verbatim capture — I file the student's own words into the box). The
+paragraph PLAN box is NOT filed per element — it fills ONCE, at the Step 7 approval. The
+Terminology/Technique question and the Evidence confirmation file NOTHING on their own — both are
+absorbed into the TEI sentence, which files the `evidence` box. Effects file as TWO turns (Effect 1 →
+`effects`, Effect 2 → `effects2`).
+
+⛔ Edexcel IGCSE Language Paper 2 Section A assesses **AO1 + AO2 only — there is NO context element**.
+Never emit an `outline-body-3-context` marker on this paper; that row is not rendered.
+
+Use exactly these literal fieldIds:
+
+**Body Paragraph 3** (Language):
+@FIELD_COMMIT{"field":"outline-body-3-topic"}
+@FIELD_COMMIT{"field":"outline-body-3-evidence"}
+@FIELD_COMMIT{"field":"outline-body-3-analysis"}
+@FIELD_COMMIT{"field":"outline-body-3-effects"}
+@FIELD_COMMIT{"field":"outline-body-3-effects2"}
+@FIELD_COMMIT{"field":"outline-body-3-purpose"}
+
+**At the Step 7 approval (A) — ONE marker.** Labelled elements on one line, separated by " | ",
+condensed to the paragraph's chosen plan mode, built ONLY from the student's own words. No double-quote
+characters inside the value:
+@FIELD_SET{"field":"plan-body-3","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: …"}
 
 ---
 

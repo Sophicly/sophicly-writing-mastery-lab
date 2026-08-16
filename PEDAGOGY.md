@@ -234,12 +234,27 @@ derived from `protocols/shared/language-paper-specs.json` — **never accumulate
 read the specs — that is the proof the capability approach works; copy it, don't invent it.
 
 **⚠️ STILL GENUINELY OPEN (§0 applied — these are not re-asks; the protocol does not settle them):**
-- **How GRANULAR should an outline row be?** The governing law is that the outline mirrors the
-  planning protocol — but the AQA P2 Q5 IUMVCC outline renders **12 rows against ~30 taught
-  elements** (the Methodology section, 250–350 words and the piece's engine, gets 2). Mirroring
-  literally means ~30 rows; mirroring usefully may mean fewer. **This is the one real design
-  question in the arc** and it recurs on every question of every paper, so it wants answering once.
-  Weigh against PACE (`feedback_deep_but_never_dragging_pace_principle`).
+- ~~**How GRANULAR should an outline row be?**~~ — **⭐⭐ RULED, 2026-08-16. CLOSED. Do not re-ask,
+  do not re-derive it per paper.** The question was put to Neil on the Edexcel IGCSE port, where a
+  mark scheme itemises **8** criteria for a paragraph the outline renders in **6** boxes (IGCSE
+  Lang P1 Q4 splits technique / quote / inference into three half-marks where TTECEA fuses them
+  into one box; IGCSE Lang P2 Q1 itemises **10**). **The ruling: the student fills the SAME SIX
+  BOXES on every paper, every board** — Topic Sentence · Technique + Evidence + Inference · Close
+  Analysis · Effect 1 · Effect 2 · Author's Purpose (+ Context where the question assesses AO3).
+  **A MARK-SCHEME CRITERION IS A MARKING GRANULARITY, NOT A WRITING ONE.** The paper is still
+  marked against all 8 (or 10) of its own criteria — what does not change is the set of boxes the
+  student fills in while planning.
+  **THE REASON, and it is why this generalises past IGCSE:** the boxes are the unit of TRANSFER.
+  A student who has learned one six-sentence paragraph shape carries it into every paper they sit;
+  re-cutting the boxes per board teaches the mark scheme's filing system instead of the skill
+  (`feedback_teach_to_the_mark_scheme_not_in_its_language`). It also keeps ONE shared row set
+  (`OUTLINE_CRITERIA.literature`) rather than a per-paper set that drifts — the exact failure the
+  shared spine exists to prevent. Consistent with §3c (a comparative body is TTECEA; the
+  comparison lives in the HELPER TEXT, not in extra rows) and with all five shipped ports, which
+  already do this. **Where a paper's mark scheme names something the six boxes do not** (IGCSE P2
+  Q1's "technique interplay", "strategic selection of quotes"), it is taught in the box's HELPER
+  TEXT and marked in assessment — never given a box of its own. Weigh against PACE
+  (`feedback_deep_but_never_dragging_pace_principle`), which the ruling also serves.
 - ~~**`comparison` BODY rows**~~ — **RULED, 2026-07-15. NOT open, and never was the design question
   this doc called it.** See §3c.
 - **Multi-AO questions** (IGCSE P1 Q3 = AO1+AO2) — the machinery stamps ONE AO onto every row, so

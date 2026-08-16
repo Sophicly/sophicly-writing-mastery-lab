@@ -79,9 +79,31 @@ Which technique suits your argument best? Type 1, 2, 3, or 4."
 
 **Confirm:** "Review this plan. Happy with it meeting Level \[4/5\] standards? Type Y or N."
 
-**If N:** Refine via Socratic dialogue → loop until Y
+**If N:** Refine via Socratic dialogue → loop until Y (a refined element also re-files its OUTLINE box; the fresh Y re-emits the @FIELD\_SET below, which supersedes the earlier fill)
 
-**If Y:** "Copy this into the **'Introduction' section** of your workbook."
+**If Y (the approved-structure filing):** I file the plan for them — never ask them to copy it out. Emit ONE @FIELD\_SET marker filing the approved introduction into the PLAN box (see the filing block below), then SAY: "I've written that into your Introduction plan."
 
 **Proceed to B.8 Conclusion**.
+
+---
+
+### B.7 filing — OUTLINE box per element; PLAN box at the plan approval (two content grades)
+
+As the student's answer to EACH introduction element is accepted, emit that element's OUTLINE marker on
+its own line in the SAME accepting reply (verbatim capture — I file the student's own words into the
+box). The PLAN box is NOT filed per element — it fills ONCE, at the Y approval above.
+
+The working thesis drafted at B.6 is the SAME element as the introduction's thesis — it files once, to
+`outline-intro-thesis`, and the B.7 refinement re-files that same box. Never open a second thesis box.
+
+Use exactly these literal fieldIds:
+
+**Introduction:**
+@FIELD_COMMIT{"field":"outline-intro-hook"}
+@FIELD_COMMIT{"field":"outline-intro-building"}
+@FIELD_COMMIT{"field":"outline-intro-thesis"}
+
+**At the Y approval — ONE marker.** Labelled elements on one line, separated by " | ", condensed to the
+chosen plan mode, built ONLY from the student's own words. No double-quote characters inside the value:
+@FIELD_SET{"field":"plan-intro","value":"Hook: … | Building: … | Thesis: …"}
 

@@ -303,9 +303,9 @@ ASK: "Review this plan. Are you happy with it?
 
 **Y** — Yes, I'm satisfied **N** — No, I'd like to refine something"
 
-**If the student chooses N:** Ask "Which part would you like to refine?" Then use Socratic dialogue to help them revise. Repeat until they confirm satisfaction.
+**If the student chooses N:** Ask "Which part would you like to refine?" Then use Socratic dialogue to help them revise. Repeat until they confirm satisfaction (a refined element also re-files its OUTLINE box; the fresh Y re-emits the @FIELD\_SET below, which supersedes the earlier fill).
 
-**If the student chooses Y:** SAY: "Excellent\! Copy this plan into the 'Body Paragraph 1' section of your workbook.
+**If the student chooses Y (the approved-structure filing):** I file the plan for them — never ask them to copy it out. Emit ONE @FIELD\_SET marker filing the approved structure into that paragraph's PLAN box (see the filing block at the end of this file), then SAY: "Excellent — I've written that into your Body Paragraph 1 plan.
 
 Type '**ready**' when you're ready to plan Body Paragraph 2 (Structure)."
 
@@ -562,12 +562,43 @@ ASK: "Does this capture your analysis accurately, or would you like to adjust an
 
 **\[AI\_INTERNAL\]:**
 
-- **If A:** Proceed to confirmation.  
-- **If B:** ASK: "Which element would you like to revisit?" Return to the relevant step.
+- **If A (the approved-structure filing):** I file the plan for them — never ask them to copy it out. Emit ONE @FIELD\_SET marker filing the approved structure into the Body Paragraph 1 PLAN box (see the filing block at the end of this file), then proceed to confirmation.  
+- **If B:** ASK: "Which element would you like to revisit?" Return to the relevant step (a refined element also re-files its OUTLINE box; the fresh A re-emits the @FIELD\_SET, which supersedes the earlier fill).
 
-SAY: "Your Body 1 plan is locked in.
+SAY: "Your Body 1 plan is locked in — I've written it into your plan.
 
 Type '**ready**' when you're ready to plan Body Paragraph 2 (Structure)."
+
+---
+
+### b5-body1 filing — OUTLINE box per element; PLAN box at the plan approval (two content grades)
+
+Applies to BOTH pathways above (Form/poetry and Genre/prose) — each plans the SAME Body Paragraph 1, so
+both file the same literal fieldIds. As the student's answer to EACH element is accepted, emit that
+element's OUTLINE marker on its own line in the SAME accepting reply (verbatim capture — I file the
+student's own words into the box). The paragraph PLAN box is NOT filed per element — it fills ONCE, at
+the plan approval in Step 7. The Terminology/Technique question and the Evidence confirmation file
+NOTHING on their own — both are absorbed into the TEI sentence, which files the `evidence` box. Effects
+file as TWO turns (Effect 1 → `effects`, Effect 2 → `effects2`).
+
+⛔ Edexcel IGCSE Language Paper 2 Section A assesses **AO1 + AO2 only — there is NO context element**.
+Never emit an `outline-body-1-context` marker on this paper; that row is not rendered.
+
+Use exactly these literal fieldIds:
+
+**Body Paragraph 1** (Form / Genre):
+@FIELD_COMMIT{"field":"outline-body-1-topic"}
+@FIELD_COMMIT{"field":"outline-body-1-evidence"}
+@FIELD_COMMIT{"field":"outline-body-1-analysis"}
+@FIELD_COMMIT{"field":"outline-body-1-effects"}
+@FIELD_COMMIT{"field":"outline-body-1-effects2"}
+@FIELD_COMMIT{"field":"outline-body-1-purpose"}
+
+**At the Step 7 approval (Y / A) — ONE marker.** Labelled elements on one line, separated by " | ",
+condensed to the paragraph's chosen plan mode (Advanced = keywords only; Standard = key phrases), built
+ONLY from the student's own words (the approval click is the ownership checkpoint). No double-quote
+characters inside the value:
+@FIELD_SET{"field":"plan-body-1","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: …"}
 
 ---
 
