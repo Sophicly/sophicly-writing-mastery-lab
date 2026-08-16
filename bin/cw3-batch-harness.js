@@ -121,8 +121,33 @@ if (!CTL) { console.error('  ❌ could not slice _cwLoglineCtl'); process.exit(1
         'picking a logline files it into the Chosen Logline row, REPLACING what was there');
     ok(/const CHOSEN_FID = 'cw-step-3-chosen'/.test(CTL),
         'and it writes the id the rest of the app reads (cw-step-3-chosen)');
-    ok(/if \(!opts\.length\) \{ resetSend\(\); return; \}/.test(CTL),
-        'no dead menu: the picker refuses to render when nothing was written');
+    // v7.20.525 (#377): the old "no dead menu" guard is superseded. Hiding a blank logline from
+    // the chip list WAS the defect — the student saw two chips and no sign a third was missing.
+    // A blank row now re-serves its own ask instead.
+    ok(/function firstBlankFormula/.test(CTL) && /serveBlankLoglineGate\(blank\); return;/.test(CTL),
+        'no incomplete choice: a blank logline re-serves its ask instead of being hidden from the picker');
+    ok(!/if \(!txt\) return;[\s\S]{0,400}chipBar\(opts, onLoglinePick/.test(CTL)
+        || /const blank = firstBlankFormula\(\);/.test(CTL),
+        'the picker still silently drops a blank logline');
+}
+
+// ── 4b. #377 — the review must SEND what it built, and the choice must be a DECISION ──────────
+{
+    // The whole of #377: `ctx` was assembled — marker contract, the student's ten sentences,
+    // their self-assessment claims — and then dropped, with a friendly one-liner sent instead.
+    // Behavioural twin: cw3-sim-harness I12, which reads the actual payload.
+    const fire = CTL.slice(CTL.indexOf('function sendReview'), CTL.indexOf('function onReviewReply'));
+    ok(/chatTextarea\.value = ctx;/.test(fire),
+        'the review builds a payload and sends something ELSE — the marker contract never reaches '
+        + 'the model, @WEAK: never parses, and the walk fails open every time (#377)');
+    ok(/@ALL_OK/.test(CTL) && /if \(!reviewRetried\)/.test(CTL),
+        'an unreadable review is not distinguished from a pass — retry once, then say so (root §10)');
+    ok(/function serveChoiceDecision/.test(CTL) && /function verdictLine/.test(CTL),
+        'the chosen logline is committed with no verdict shown — #377 part 4 is a forced DECISION '
+        + '(see it, then sharpen / keep / re-pick), never a silent commit');
+    ok(/_cwReplay\(function \(\) \{\s*\n?\s*aiBubble\('\*\*' \+ labelOf\(fid\)/.test(CTL),
+        'the decision bubble is PERSISTED — it asserts current state (the row text and my verdict '
+        + 'on it), so it must be drawn and re-derived on resume, never stored (§4c.7 fossil law)');
 }
 
 // ── 5. resume ─────────────────────────────────────────────────────────────────────────────────

@@ -133,7 +133,8 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onSecondaryNeedsDone:  { kind: 'content', fid: 'NEEDS_FID', note: 'the "any others?" multi-select' },
         onThroughlinePick:     { kind: 'content', fid: 'THROUGHLINE_FID', note: 'the dramatic throughline' },
         onPick:                { kind: 'content', note: 'Step 5 plot archetype → _setOutlineDropdown' },
-        onLoglinePick:         { kind: 'content', note: 'Step 3 chosen logline → cw-step-3-chosen (v7.20.325)' },
+        onLoglinePick:         { kind: 'flow', note: 'Step 3 (v7.20.525, #377): which of the three to CONSIDER. FLOW now — it files nothing; it opens the forced DECISION (verdict → sharpen / keep / re-pick), and onLoglineDecision is what writes on "Keep". Was content up to .524, when the pick filed straight into cw-step-3-chosen with no verdict shown.' },
+        onLoglineDecision:     { kind: 'content', note: 'Step 3 chosen logline → cw-step-3-chosen (v7.20.525, #377). "Keep it" files the SENTENCE (not the label) and ticks the row; "Sharpen" arms a rewrite; "Choose a different one" reopens the picker.' },
         // v7.20.337 — Step 1 seed picker. CONTENT: each pick ticks a real cw-step-1-logline-N
         // row via _tickRowLikeAStudent, and _syncCwStep1LikedSeeds derives the `liked_seeds`
         // artifact from those ticks. No fid here because it ticks EXISTING rows rather than

@@ -20314,7 +20314,13 @@
             // v7.20.333: `sa` (where the student is inside a tick list) and `sat` (what they
             // claimed) ride the sidecar too — chip bars are DOM-only, so without this a reload
             // during a self-assessment leaves the tick list on screen with no buttons.
-            function persist() { try { const _s = _walkSlot.peek('cw3'); localStorage.setItem(lsKey(), JSON.stringify({ idx, active, draft, rc: reviewedComponents, rl: reviewedLoglines, weak: weakFids, rev: revisingFid, sa: sa, sat: saTicks, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
+            // v7.20.525 (#377): the CHOICE state rides the sidecar too. `ch` is where the student
+            // is inside the chosen-logline decision (picker → decide → sharpen), `wl`/`lrk` are
+            // what the review actually concluded about the three, and `un` names the ones I have
+            // NOT seen in their current form (sharpened, or written after the review ran). All
+            // four are needed because the decision bubble is DRAWN, never stored (§4c.7) — the
+            // resume path re-derives it, and it can only be honest if it knows these.
+            function persist() { try { const _s = _walkSlot.peek('cw3'); localStorage.setItem(lsKey(), JSON.stringify({ idx, active, draft, rc: reviewedComponents, rl: reviewedLoglines, weak: weakFids, rev: revisingFid, sa: sa, sat: saTicks, ch: choose, wl: weakLoglines, un: unseenLoglines, lrk: loglineReviewKnown, slot: _s ? { fid: _s.fid, cycle: _s.cycle } : null })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
@@ -20483,6 +20489,18 @@
             const COMP_N = COMPONENTS.length;                     // 7 components, then 3 loglines
             let reviewedComponents = false, reviewedLoglines = false;
             let weakFids = [], revisingFid = '';
+            // v7.20.525 (#377). `weakLoglines` is what the LOGLINE review concluded, kept after
+            // weakFids is consumed, because the chosen-logline decision has to report it back.
+            // `loglineReviewKnown` is false when that review never produced a readable verdict —
+            // "I could not check these" and "these are fine" must never look the same to the
+            // student (root §10). `unseenLoglines` are the ones whose CURRENT text I have not
+            // read: sharpened after the review, or written after it ran.
+            // `choose` is the walk's position inside the chosen-logline decision:
+            //   { stage: 'picker' }             — the three chips are on screen
+            //   { stage: 'decide', fid }        — the verdict + sharpen/keep/re-pick chips
+            //   { stage: 'sharpen', fid }       — they are rewriting that logline before choosing
+            let weakLoglines = [], unseenLoglines = [], loglineReviewKnown = false, choose = null;
+            let reviewRetried = false;
 
             function userTurn(text) {
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
@@ -20585,11 +20603,41 @@
                 // Group boundaries: seven components written → ONE review; three loglines → ONE.
                 if (idx >= COMP_N && !reviewedComponents) { fireReview('components'); return; }
                 if (idx >= STEPS.length) {
+                    // v7.20.525 (#377 part 3): COMPLETENESS, before anything reads the three.
+                    // A blank logline used to be silently omitted from the picker's chip list, so
+                    // a student who wrote two saw two chips and no signal that a third was missing
+                    // (uid 1334 on prod: Logline 3 blank, the section stuck at 50%, and she chose
+                    // from what she was shown). It also reached the review as the literal string
+                    // "(blank)" under a prompt saying "Be generous". Pure code, no judgment, so
+                    // PEDAGOGY §1 is untroubled — this is not a quality bar, it is a missing box.
+                    const blank = firstBlankFormula();
+                    if (blank) { serveBlankLoglineGate(blank); return; }
                     if (!reviewedLoglines) { fireReview('loglines'); return; }
                     finish(); return;
                 }
                 active = true;
                 serveCurrent();
+            }
+            // ⚠️ Returns the STEPS row, not the FORMULAS one. STEPS is built by Object.assign
+            // COPIES (see its construction), so a FORMULAS object is not identity-equal to
+            // anything in STEPS: `STEPS.indexOf(FORMULAS[2])` is -1, which sent appendStepButtons
+            // into COMPONENTS[-1] and threw, and armed the slot with `cycle: undefined` so the
+            // rewrite would have APPENDED. Caught by the sim, not by reading (§4c.6).
+            function firstBlankFormula() {
+                for (let i = 0; i < FORMULAS.length; i++) if (!rowText(FORMULAS[i].fid)) return stepByFid(FORMULAS[i].fid);
+                return null;
+            }
+            // ONE bubble: why we are back here, then the ask itself — never a bare refusal, and
+            // never two bubbles in a row (§4b pacing, §4d liveness).
+            function serveBlankLoglineGate(st) {
+                const i = STEPS.indexOf(st);
+                idx = i; active = true;
+                _walkSlot.arm('cw3', st.fid, { cycle: st.cycle });
+                aiBubble('Before you choose — your **' + st.label + '** box is still empty, and all three matter: '
+                    + 'each lens shows you something different about the same story, and in a moment you choose between them.\n\n'
+                    + '---\n\n' + st.ask);
+                appendStepButtons(i);
+                persist(); resetSend();
             }
 
             // ── THE DUPLICATE GUARD (v7.20.333) ──────────────────────────────────────────────
@@ -20613,6 +20661,16 @@
             }
 
             // ONE call. Reads all seven components together and names the weak ones.
+            //
+            // ⚠️ v7.20.525 (#377) — THIS PAYLOAD WAS BUILT AND NEVER SENT. `ctx` below was
+            // assigned and dropped; a friendly student-voice one-liner went to the model instead.
+            // So the marker contract, the student's own ten sentences and the v7.20.333
+            // self-assessment policing have never reached the model once since v7.20.325
+            // (2026-07-28). The model therefore rarely emitted `@WEAK:`, the parse returned null,
+            // and the fail-open branch advanced the walk silently — the "Sharpen my …" chips have
+            // never been served to anybody (checked on prod: uid 1334's 36 KB Step-3 chat contains
+            // zero occurrences of "Sharpen"). Found by A/B against its own twin: CW2's
+            // fireIdeasReview builds the identical structure and DOES send it.
             function fireReview(kind) {
                 const isComp = (kind === 'components');
                 // v7.20.333: the student's OWN self-assessment rides the same prompt. Policing the
@@ -20648,30 +20706,65 @@
                       + '(2-3 sentences), then name any that is genuinely unclear in ONE sentence. Be generous. End with "@WEAK:" and a '
                       + 'comma-separated list from this exact set (logline-1, logline-2, logline-3), or "@ALL_OK". Never explain the marker.'
                       + saNote + ']\n\n' + list;
+                reviewRetried = false;
+                sendReview(kind, ctx);
+            }
+            // The send, on its own, so the ONE retry below re-sends the SAME payload rather than
+            // rebuilding it from rows the student may meanwhile have edited.
+            function sendReview(kind, ctx) {
                 active = false; pending = true;
-                armWalkResume('cw3-review-' + kind, function (reply, meta) {
-                    pending = false;
-                    if (isComp) reviewedComponents = true; else reviewedLoglines = true;
-                    const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
-                    const m = (!reply || (meta && meta.timedOut)) ? null : /@WEAK:\s*([a-z0-9,\s-]+)/i.exec(norm);
-                    weakFids = [];
-                    if (m) {
-                        const names = m[1].split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean);
-                        (isComp ? COMPONENTS : FORMULAS).forEach(function (st) {
-                            const tail = st.fid.replace('cw-step-3-', '');
-                            if (names.indexOf(tail) !== -1) weakFids.push(st.fid);
-                        });
-                    }
-                    // FAIL-OPEN: a dropped marker or a failed call must never strand the student.
+                armWalkResume('cw3-review-' + kind, function (reply, meta) { onReviewReply(kind, ctx, reply, meta); }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = ctx;   // THE line CW2 has at fireIdeasReview and CW3 dropped (#377)
+                sendCanvasMessage();
+            }
+            function onReviewReply(kind, ctx, reply, meta) {
+                const isComp = (kind === 'components');
+                pending = false;
+                const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                const dead = (!reply || (meta && meta.timedOut));
+                const m = dead ? null : /@WEAK:\s*([a-z0-9,\s-]+)/i.exec(norm);
+                const allOk = !dead && /@ALL_OK/i.test(norm);
+                weakFids = [];
+                if (m) {
+                    const names = m[1].split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean);
+                    (isComp ? COMPONENTS : FORMULAS).forEach(function (st) {
+                        const tail = st.fid.replace('cw-step-3-', '');
+                        if (names.indexOf(tail) !== -1) weakFids.push(st.fid);
+                    });
+                }
+                // A READABLE verdict \u2014 weak names, or @ALL_OK \u2014 settles the group.
+                if (weakFids.length || allOk) {
+                    if (isComp) { reviewedComponents = true; }
+                    else { reviewedLoglines = true; loglineReviewKnown = true; weakLoglines = weakFids.slice(); }
                     if (!weakFids.length) { active = false; persist(); afterReview(kind); return; }
                     active = true; persist();
                     serveReviewChips(kind);
-                }, { timeoutMs: 60000 });
-                canvasSilentSend = true;
-                chatTextarea.value = isComp
-                    ? 'That\u2019s all seven building blocks \u2014 please read them together and tell me where my story is strong and where it is still fuzzy.'
-                    : 'That\u2019s all three loglines \u2014 which is strongest, and is any of them unclear?';
-                sendCanvasMessage();
+                    return;
+                }
+                // v7.20.525 (#377 part 2): NOTHING PARSED. "@ALL_OK" and "the check never ran"
+                // used to take the identical silent path, so a review that failed was
+                // indistinguishable from one that passed \u2014 and the walk advanced as though the
+                // student's work had been checked (root \u00a710 fail-loud). Retry once, then say so.
+                if (!reviewRetried) {
+                    reviewRetried = true;
+                    console.warn('WML CW3: ' + kind + ' review carried no @WEAK:/@ALL_OK marker \u2014 retrying once.');
+                    sendReview(kind, ctx);
+                    return;
+                }
+                console.warn('WML CW3: ' + kind + ' review unreadable twice \u2014 handing the choice to the student.');
+                if (isComp) { reviewedComponents = true; }
+                else { reviewedLoglines = true; loglineReviewKnown = false; weakLoglines = []; }
+                // \u00a74d \u2014 a refusal is HALF a change. Offer every written row, so the student ends
+                // this turn with a question and chips rather than a silent advance.
+                weakFids = (isComp ? COMPONENTS : FORMULAS)
+                    .map(function (st) { return st.fid; })
+                    .filter(function (f) { return rowText(f); });
+                active = true; persist();
+                aiBubble('I couldn\u2019t read my own check on ' + (isComp ? 'your seven building blocks' : 'your three loglines')
+                    + ' just then \u2014 that is my end, not yours, and nothing you wrote is affected.\n\n'
+                    + '**Would you like to sharpen any of them before we move on?**');
+                serveReviewChips(kind);
             }
             // v7.20.325 (Neil): ONE message at a time. The chips ride the review reply itself
             // rather than arriving as a second bubble underneath it — the chip labels already say
@@ -20708,29 +20801,112 @@
             // call: the student's own three sentences are already in the document.
             const CHOSEN_FID = 'cw-step-3-chosen';
             function serveLoglinePicker() {
-                const opts = [], map = {}, fidByLabel = {};
+                // v7.20.525 (#377): completeness FIRST. A blank logline is no longer hidden from
+                // the chip list — it is the reason the walk has not reached the choice yet.
+                const blank = firstBlankFormula();
+                if (blank) { serveBlankLoglineGate(blank); return; }
+                const opts = [], fidByLabel = {};
                 FORMULAS.forEach(function (st, n) {
                     const txt = rowText(st.fid);
                     if (!txt) return;
                     const short = txt.length > 90 ? txt.slice(0, 88).replace(/\s+\S*$/, '') + '\u2026' : txt;
                     const label = (n + 1) + '. ' + short;
-                    opts.push(label); map[label] = txt; fidByLabel[label] = st.fid;
+                    opts.push(label); fidByLabel[label] = st.fid;
                 });
-                if (!opts.length) { resetSend(); return; }   // nothing written — never a dead menu
-                chipBar(opts, onLoglinePick(map, fidByLabel));
+                choose = { stage: 'picker' }; persist();
+                if (!chipBar(opts, onLoglinePick(fidByLabel))) {
+                    // LIVENESS BACKSTOP (§4d): chips that cannot attach would leave the student on
+                    // a wrap message with nothing to press.
+                    _cwReplay(function () { aiBubble('**Which of your three loglines do you want to develop?**'); });
+                    chipBar(opts, onLoglinePick(fidByLabel));
+                }
                 resetSend();
             }
-            function onLoglinePick(map, fidByLabel) {
+            function onLoglinePick(fidByLabel) {
                 return function (pick) {
                     userTurn(pick);
-                    const full = map[pick] || '';
+                    const fid = fidByLabel[pick];
+                    if (!fid) { serveLoglinePicker(); return; }   // never a dead end (§4d)
+                    serveChoiceDecision(fid);
+                };
+            }
+
+            // ── v7.20.525 (#377 part 4) — THE FORCED DECISION ────────────────────────────────
+            // Neil's instinct was an unskippable sharpening pass. Half of that is ruled against by
+            // his own PEDAGOGY §19: Step 3 already runs a self-assessment tick list on every ask,
+            // and a quality gate stacked on top turns it into a compliance test — "a tick list
+            // that gates progress becomes a lying game". A forced REVISION is gameable too: its
+            // cheapest escape is to type anything (Baker et al. on gaming the system).
+            //
+            // So — forced DECISION, not forced revision. The student must SEE the verdict on the
+            // sentence they are about to commit to, and choose: sharpen · keep · re-pick. Not
+            // gameable, still unskippable, and one tap when the logline is fine.
+            //
+            // And PLACEMENT beats mechanism. A weak logline among three is PRACTICE (§12 protects
+            // the three-lens repetition); the damage is CARRYING a weak one into Steps 4→10. So
+            // the single intervention sits exactly here, at the pick, and nowhere else.
+            function verdictLine(fid) {
+                if (unseenLoglines.indexOf(fid) !== -1)
+                    return 'You rewrote this one after my check, so this version is yours alone — I have not read it. Give it one more read before you commit.';
+                if (!loglineReviewKnown)
+                    return 'My check on your three didn’t come back, so this one is your call alone — read it once more and be honest about whether it is clear.';
+                if (weakLoglines.indexOf(fid) !== -1)
+                    return '⚠️ When I read your three together, **this is the one I flagged as still fuzzy.**';
+                return '✅ This one held up when I read your three together.';
+            }
+            const CHOOSE_OPTS = ['Sharpen it first →', 'Keep it — this is my logline →', 'Choose a different one →'];
+            function serveChoiceDecision(fid) {
+                choose = { stage: 'decide', fid: fid };
+                active = false; persist();
+                // §4c.7 FOSSIL LAW: this bubble asserts CURRENT state — the row's text and my
+                // verdict on it — and both change the moment they sharpen. DRAWN, never stored;
+                // tryResume re-derives it on entry. (The durable:false case, by construction.)
+                _cwReplay(function () {
+                    aiBubble('**' + labelOf(fid) + '**\n\n> ' + (rowText(fid) || '*(blank)*') + '\n\n'
+                        + verdictLine(fid) + '\n\n'
+                        + 'Everything from here is built on the sentence you choose: Step 4 turns it into your '
+                        + 'six-beat spine, and Steps 5–10 turn that spine into your story. A fuzzy logline stays '
+                        + 'fuzzy the whole way through — which is why it is worth thirty seconds now.\n\n'
+                        + '**What would you like to do?**');
+                });
+                if (!chipBar(CHOOSE_OPTS, onLoglineDecision(fid))) {
+                    _cwReplay(function () { aiBubble('**Sharpen this one, keep it, or choose a different one?**'); });
+                    chipBar(CHOOSE_OPTS, onLoglineDecision(fid));
+                }
+                resetSend();
+            }
+            function onLoglineDecision(fid) {
+                return function (pick) {
+                    userTurn(pick);
+                    if (pick.indexOf('Sharpen') === 0) {
+                        choose = { stage: 'sharpen', fid: fid };
+                        active = true;
+                        _walkSlot.arm('cw3', fid, { cycle: 'rewrite' });   // ONE self-contained sentence (§4c.6)
+                        persist();
+                        const st = stepByFid(fid);
+                        aiBubble('**Sharpening your ' + labelOf(fid) + '**\n\nWrite the **whole logline again**, not just the part you are changing — your new version replaces the old one in your document.\n\nHere is what you have now:\n\n> ' + (rowText(fid) || '*(blank)*'));
+                        if (st) appendStepButtons(STEPS.indexOf(st));
+                        resetSend();
+                        return;
+                    }
+                    if (pick.indexOf('Choose a different') === 0) {
+                        choose = null; persist();
+                        _cwReplay(function () { aiBubble('**Which one do you want to develop?**'); });
+                        serveLoglinePicker();
+                        return;
+                    }
+                    fileChosenLogline(fid);
+                };
+            }
+            function fileChosenLogline(fid) {
+                    const full = rowText(fid);
                     // v7.20.336 (Neil, 2026-07-29): TICK THE REAL BOX TOO. The picker filed the
                     // text but left the logline row unticked, so Document Progress never reached
                     // 100% and, in his words, students "don't even notice". Going through the
                     // student's own click path also radio-clears the sibling drafts, so the doc
                     // can never show two chosen loglines. Ticked immediately and said out loud —
                     // his ruling: no confirm step, it is reversible and the doc is open beside them.
-                    const ticked = _tickRowLikeAStudent(fidByLabel && fidByLabel[pick]);
+                    const ticked = _tickRowLikeAStudent(fid);
                     try {
                         // v7.20.332: REPLACE. The box holds ONE sentence; appending glued the pick
                         // onto whatever was there from an earlier run — Neil's staging run filed
@@ -20743,12 +20919,17 @@
                         + 'still change which one is ticked in the document yourself at any time.'
                         + cwEndpointLine());   // v7.20.337: endpoint after the choice
                     resetSend();
-                };
             }
 
             function finish() {
                 active = false; pending = false;
-                clearPersist();
+                // v7.20.525 (#377): the wrap says "that's all three" — so it must not run while
+                // one is still empty. The gate re-serves the missing ask instead.
+                const blank = firstBlankFormula();
+                if (blank) { serveBlankLoglineGate(blank); return; }
+                // v7.20.525: the sidecar used to be cleared HERE, but the walk no longer ends at
+                // finish() — the chosen-logline DECISION comes after it, and clearing early lost
+                // a reload mid-decision. Cleared in fileChosenLogline, the last thing this walk owns.
                 aiBubble(SEG.wrap);
                 serveLoglinePicker();   // chips ride the wrap bubble — still one message
                 try { applyCwSubstepProgress({ stepNum: 3, substepNum: 4, name: 'Review and Save' }); } catch (e) {}
@@ -20773,8 +20954,34 @@
                 if (!slot) {
                     // v7.20.339: RE-SERVE, never point. `serveCurrent(false)` redraws THIS step's
                     // ask (no intro re-narration) — see the registry note beside _walkSlot.
-                    _cwNoAskGuard('cw3', function () { serveCurrent(false); }, aiBubble);
+                    // v7.20.525: past the last ask the walk is on the CHOICE, and serveCurrent()
+                    // there falls straight through to finish() — which would re-emit the wrap and
+                    // throw away the decision the student was standing on. Re-serve what they are
+                    // actually looking at.
+                    _cwNoAskGuard('cw3', function () {
+                        if (choose && choose.stage === 'decide' && choose.fid) { serveChoiceDecision(choose.fid); return; }
+                        if (choose && choose.stage === 'picker') { serveLoglinePicker(); return; }
+                        serveCurrent(false);
+                    }, aiBubble);
                     resetSend();
+                    return;
+                }
+
+                // v7.20.525 (#377 part 4): sharpening the logline they are about to CHOOSE. A
+                // `rewrite` cycle (§4c.6) — the whole sentence again, replacing the old one — and
+                // it returns to the PICKER, not to the review chips.
+                if (choose && choose.stage === 'sharpen') {
+                    const sfid = slot.fid;
+                    try {
+                        if (_writeOutlineRowField(sfid, clean, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    } catch (e) { console.warn('WML CW3: sharpen write failed (non-fatal)', e && e.message); }
+                    // It is a NEW sentence I have not read, so it is neither "weak" nor "held up"
+                    // any more — the decision must say so rather than quote a verdict on the old one.
+                    weakLoglines = weakLoglines.filter(function (f) { return f !== sfid; });
+                    if (unseenLoglines.indexOf(sfid) === -1) unseenLoglines.push(sfid);
+                    choose = null; active = false; persist();
+                    aiBubble('Filed — that is your **' + labelOf(sfid) + '** rewritten.\n\n**Now choose the one you want to develop.**');
+                    serveLoglinePicker();
                     return;
                 }
 
@@ -20789,6 +20996,10 @@
                         if (_writeOutlineRowField(fid, clean, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
                     } catch (e) { console.warn('WML CW3: revision write failed (non-fatal)', e && e.message); }
                     weakFids = weakFids.filter(function (f) { return f !== fid; });
+                    // v7.20.525: same as the sharpen path — a rewritten logline is a sentence I
+                    // have not read, so the chosen-logline decision must not quote the old verdict.
+                    weakLoglines = weakLoglines.filter(function (f) { return f !== fid; });
+                    if (FORMULAS.some(function (s) { return s.fid === fid; }) && unseenLoglines.indexOf(fid) === -1) unseenLoglines.push(fid);
                     persist();
                     if (weakFids.length) { serveReviewChips(reviewedLoglines ? 'loglines' : 'components'); return; }
                     active = false; persist();
@@ -20810,6 +21021,10 @@
                 try {
                     if (_writeOutlineRowField(step.fid, clean, { replace: step.cycle === 'rewrite' }) && typeof saveCanvasContent === 'function') saveCanvasContent();
                 } catch (e) { console.warn('WML CW3: write failed (non-fatal)', e && e.message); }
+                // v7.20.525: a logline WRITTEN AFTER the review has not been read either (the
+                // completeness gate re-opens a blank one late). Same honesty as a sharpened row.
+                if (reviewedLoglines && FORMULAS.some(function (s) { return s.fid === step.fid; })
+                    && unseenLoglines.indexOf(step.fid) === -1) unseenLoglines.push(step.fid);
                 draft = '';
                 if (wasAdding) { sa = null; persist(); advanceAfter(step); return; }
                 // The answer is filed. Now the student marks it against this ask's own criteria,
@@ -20833,7 +21048,7 @@
                 startWalk();
             }
 
-            function reset() { active = false; pending = false; idx = 0; draft = ''; sa = null; saTicks = {}; clearPersist(); }
+            function reset() { active = false; pending = false; idx = 0; draft = ''; sa = null; saTicks = {}; choose = null; weakLoglines = []; unseenLoglines = []; loglineReviewKnown = false; reviewRetried = false; clearPersist(); }
             function tryResume() {
                 try {
                     // v7.20.298: a MISSING sidecar is no longer fatal — firstEmptyIndex() already
@@ -20860,6 +21075,11 @@
                     revisingFid = (typeof d.rev === 'string') ? d.rev : '';
                     saTicks = (d.sat && typeof d.sat === 'object') ? d.sat : {};
                     sa = (d.sa && d.sa.fid && stepByFid(d.sa.fid)) ? d.sa : null;
+                    // v7.20.525 (#377): the chosen-logline decision and what the review concluded.
+                    choose = (d.ch && d.ch.stage) ? d.ch : null;
+                    weakLoglines = Array.isArray(d.wl) ? d.wl : [];
+                    unseenLoglines = Array.isArray(d.un) ? d.un : [];
+                    loglineReviewKnown = !!d.lrk;
                     idx = firstEmptyIndex();
                     // v7.20.325: a reload mid-review. Re-attach what they were actually looking at,
                     // rather than the next ask — resuming to the wrong surface is how a walk eats a
@@ -20909,6 +21129,24 @@
                         setTimeout(function () { try { serveReviewChips(reviewedLoglines ? 'loglines' : 'components'); } catch (e) {} }, 400);
                         return true;
                     }
+                    // v7.20.525 (#377): a reload DURING the chosen-logline decision. The verdict
+                    // bubble is deliberately never stored (§4c.7 — it asserts current state), so
+                    // resume must RE-DERIVE it; without this the student comes back to a wrap
+                    // message with no chips and no question (§4d).
+                    if (choose && choose.stage === 'sharpen' && choose.fid) {
+                        active = true;
+                        _walkSlot.arm('cw3', choose.fid, { cycle: 'rewrite' });
+                        console.log('WML CW3: resumed mid-sharpen of ' + choose.fid + ' (chosen-logline decision)');
+                        const _cs = stepByFid(choose.fid);
+                        if (_cs) setTimeout(function () { try { appendStepButtons(STEPS.indexOf(_cs)); } catch (e) {} }, 400);
+                        return true;
+                    }
+                    if (choose && choose.stage === 'decide' && choose.fid && !rowText('cw-step-3-chosen')) {
+                        active = false;
+                        console.log('WML CW3: resumed on the chosen-logline decision for ' + choose.fid);
+                        setTimeout(function () { try { serveChoiceDecision(choose.fid); } catch (e) {} }, 500);
+                        return false;
+                    }
                     if (idx >= STEPS.length && reviewedLoglines && !rowText('cw-step-3-chosen')) {
                         active = false;
                         console.log('WML CW3: resumed after the review — re-serving the logline picker');
@@ -20935,6 +21173,11 @@
             // v7.20.330: re-serve the current ask (no filing, no API call). Used when a stale
             // generic chip tap arrives — the tap means "let's continue", so show them where we are.
             function nudge() {
+                // v7.20.525 (#377): the chosen-logline decision runs with active=false (the
+                // student taps, they never type), so it must be answered BEFORE the active guard
+                // or a stale tap there produces no response at all (§4d).
+                if (!pending && choose && choose.stage === 'decide' && choose.fid) { serveChoiceDecision(choose.fid); return true; }
+                if (!pending && choose && choose.stage === 'picker') { serveLoglinePicker(); return true; }
                 if (!active || pending) return false;
                 // v7.20.333: mid self-assessment, "let's carry on" means the surface they are
                 // actually on — the tick list or the add-a-line ask, not the question again.

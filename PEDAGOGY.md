@@ -1668,3 +1668,55 @@ item lists get pruned hardest.
 the per-stage menu and must be rewritten to the trait-first shape in the same batch as the walk —
 it is the source of truth (WML `CLAUDE.md` §1: protocol files are content) and a walk that
 contradicts it will be re-derived wrongly by the next model.
+
+---
+
+## §31. ⭐⭐ FORCED **DECISION**, NEVER FORCED **REVISION** — and the intervention goes at the COMMIT POINT, not at every draft (Neil, ruled 2026-08-16)
+
+**THE QUESTION.** Step 3 asks a student to write three loglines and choose one. What should happen
+when the review judges one of them weak? Neil's instinct: *"my instinct is to say an unskippable
+sharpened pass, but you might wanna do some research on that because I don't really know what would
+be the best solution."* He delegated the judgment and then confirmed the answer below.
+
+**THE RULING, in two halves.**
+
+**1. A quality bar may force a DECISION. It may never force a REVISION.**
+- *Forced revision* — "you may not continue until you rewrite this" — is **gameable**, and its
+  cheapest escape is to type anything (Baker et al. on gaming the system, summarised in
+  `research/2026-07-29-habits-of-mastery-surface-vs-deep-and-gaming.md` ⚠️ *named, not quoted — the
+  abstracts are not held; pull the papers before citing any number*). It also collides head-on with
+  **§19**: the student already self-assesses against stated criteria on every Step-3 ask, an
+  unticked box buys ONE follow-up, and *"an unticked box costs nothing, and the follow-up is an
+  OFFER. **A tick list that gates progress becomes a lying game.**"* Stack a hard gate on top of a
+  tick list and you have taught the student that the honest tick is the expensive one.
+- *Forced decision* — "you must SEE the verdict and choose: sharpen · keep · pick another" — is
+  **not gameable and still unskippable.** There is no cheap escape because there is nothing to fake:
+  every branch is a legitimate answer. It respects **§12** (a decline is final) and **§26**
+  (momentum): one tap when the work is fine.
+- The counter-authority is real and stated so nobody re-derives it as settled: Lemov, *Teach Like a
+  Champion* Tech. 2 — *"Do not accept partially or almost right answers; hold out for all the way."*
+  That governs a **live teacher** reading a **single** answer. It does not license a machine gate
+  over a student's own three drafts.
+
+**2. PLACEMENT BEATS MECHANISM — put the one intervention at the point of COMMITMENT.**
+A weak draft among several is **practice** (§12 protects the three-lens repetition, and the whole
+point of writing three loglines is that two of them are worse). **The damage is CARRYING a weak one
+forward** — in Step 3's case into Steps 4→10, where the chosen logline becomes the spine and then
+the story. So the intervention belongs at the **choice**, not at each draft: show the verdict on the
+sentence they are about to commit to, name what it will cost downstream, and offer sharpen / keep /
+re-pick. One decision, at the only moment it changes anything.
+
+**GENERALISES.** Any walk with *N drafts → pick one*, or *N attempts → submit one*, or a step whose
+output every later step is built on. Ask: **where does a weakness stop being practice and start
+being load-bearing?** That point, and only that point, earns the gate — and the gate is a decision.
+
+**AND A VERDICT MUST BE HONEST ABOUT ITS OWN ABSENCE.** "I checked and it holds", "I checked and it
+is fuzzy", "I could not check", and "you rewrote it after I checked, so I have not read this
+version" are FOUR different statements, and a student must never be shown one when another is true.
+A check that silently fails open and a check that passed look identical from the outside — that is
+what #377 was (the Step-3 review payload was built and never sent for three weeks, so the quality
+check never ran once and the walk waved every student through). Root §10 fail-loud, in pedagogy
+clothes: *never tell a student their work was checked when it was not.*
+
+**Shipped:** v7.20.525, `_cwLoglineCtl` (`serveChoiceDecision` / `verdictLine`); gated behaviourally
+by `bin/cw3-sim-harness.js` I12–I15, statically by `bin/cw3-batch-harness.js` §4b.

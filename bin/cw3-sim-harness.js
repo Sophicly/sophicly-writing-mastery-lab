@@ -333,8 +333,20 @@ console.log('I9 · the chosen logline replaces; every sharpen chip names its own
     ok(picks.length > 0, 'setup: the logline picker offered no choices — the pick path is untested');
     if (picks.length) {
         w.tap(picks[0]);
+        // v7.20.525 (#377 part 4): the pick no longer FILES. It opens the forced DECISION —
+        // the verdict on that sentence, then sharpen / keep / re-pick — because the damage a
+        // weak logline does is carrying it into Steps 4→10, and this is the last moment before
+        // that happens.
+        ok(String(w.rows.get('cw-step-3-chosen') || '') === 'LEFTOVER-FROM-AN-EARLIER-RUN',
+            'tapping a logline FILED it straight away — the student never saw the verdict on the '
+            + 'sentence every later step is built from (forced DECISION, not a silent commit)');
+        const keep = w.chips().filter((c) => /Keep it/i.test(String(c.textContent)))[0];
+        ok(!!keep, 'the decision offered no way to KEEP the logline — the student cannot get past it');
+        if (keep) w.tap(keep);
         const chosen = String(w.rows.get('cw-step-3-chosen') || '');
         ok(chosen.length > 0, 'the pick filed nothing into the Chosen Logline box');
+        ok(!/Keep it/i.test(chosen),
+            'the CHIP LABEL was filed instead of the logline — the decision must file the SENTENCE');
         ok(chosen.indexOf('LEFTOVER-FROM-AN-EARLIER-RUN') === -1,
             'the chosen logline was APPENDED to what the box already held — it must REPLACE, or the '
             + 'student files two sentences glued together (Neil, staging .331: '
@@ -352,17 +364,9 @@ console.log('I9 · the chosen logline replaces; every sharpen chip names its own
             + 'defect Neil reported — or it ticked without radio-clearing the siblings, which shows the '
             + 'student two chosen loglines.');
 
-        // ...and a SECOND pick must move the tick, not add one. This is what breaks if a future
-        // edit routes the chip around the student's own click path.
-        const picks2 = w.chips();
-        if (picks2.length > 1) {
-            w.tap(picks2[1]);
-            const after = Array.from(w.ticked).filter((f) => f.indexOf('cw-step-3-logline-') === 0);
-            ok(after.length === 1,
-                'changing the pick left ' + after.length + ' logline rows ticked — the tick must MOVE, '
-                + 'never accumulate (radio behaviour lives in the checkbox click handler; a chip that '
-                + 'bypasses it silently stacks ticks)');
-        }
+        // (The second-pick radio-clear — the tick must MOVE, never accumulate — is exercised in
+        // I15 via the decision's "Choose a different one" route, which is the only way back to
+        // the picker since v7.20.525.)
     }
 }
 
@@ -563,6 +567,199 @@ console.log('I11 · a word-for-word repeat is refused — and the ask is re-serv
     w.say('Her old coach, who benched her once and would rather she never played again.');
     ok(stepWrites(w, b2).length === 1,
         'the guard REFUSED a legitimate answer that merely shares subject matter with another row');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════
+// #377 (v7.20.525) — THE QUALITY CHECK THAT HAD NEVER RUN.
+// fireReview built the whole review payload into a local `ctx` — the marker contract, the
+// student's own ten sentences, their self-assessment claims — and then sent a friendly
+// one-liner instead. Every existing assertion here stayed green: a send DID happen, a reply
+// DID come back, rows WERE filed. Nothing looked at what was actually sent.
+// ══════════════════════════════════════════════════════════════════════════════════════════
+
+// ── I12 · THE REVIEW PAYLOAD REACHES THE MODEL ────────────────────────────────────────────
+console.log('I12 · the review sends the payload it built, not a friendly one-liner');
+{
+    const pre = {};
+    COMPONENTS.slice(0, 6).forEach((f, n) => { pre[f] = 'component answer ' + (n + 1); });
+    const w = world({ prefill: pre });
+    w.ctl.tryResume();
+    await settle();
+    w.toAsk();
+    ok(!!w.deps._walkSlot.armed && w.deps._walkSlot.peek('cw3').fid === COMPONENTS[6],
+        'setup: the walk did not resume onto the last component');
+
+    const nSends = w.sends.length;
+    w.say('THE-STAKES-SENTENCE-THE-REVIEW-MUST-READ');
+    w.tickAll();                       // finishing the last tick list fires the components review
+    ok(w.sends.length > nSends, 'the components review never sent anything at all');
+    const payload = String((w.sends[w.sends.length - 1] || {}).text || '');
+
+    ok(/@WEAK:/.test(payload) && /@ALL_OK/.test(payload),
+        'the review payload carries NO marker contract, so the model has no way to name a weak '
+        + 'component, the @WEAK: parse returns null, and the walk fails open every single time — '
+        + 'which is why "Sharpen my …" has never been served to a student (#377).');
+    ok(/protagonist, flaw, wound, incident, goal, obstacle, stakes/.test(payload),
+        'the payload does not carry the EXACT name set the parser matches on — a model naming '
+        + '"the flaw" instead of "flaw" parses to nothing, silently');
+    ok(payload.indexOf('THE-STAKES-SENTENCE-THE-REVIEW-MUST-READ') !== -1,
+        'the payload does not contain the student’s own sentences — the model is being asked to '
+        + 'review work it cannot see');
+    ok(/ticked/.test(payload),
+        'the payload drops the student’s own self-assessment claims (v7.20.333), so the policing '
+        + 'that stops the tick list becoming mindless clicking never reaches the model');
+}
+
+// ── I13 · AN UNREADABLE REVIEW IS NOT A PASS ──────────────────────────────────────────────
+// @ALL_OK and "nothing came back" used to take the identical silent path, so a check that never
+// ran was indistinguishable from one that passed — and the walk advanced as though the student's
+// work had been checked (root §10 fail-loud).
+console.log('I13 · a review with no marker retries once, then says so — it never advances silently');
+{
+    const pre = {};
+    COMPONENTS.slice(0, 6).forEach((f, n) => { pre[f] = 'component answer ' + (n + 1); });
+    const w = world({ prefill: pre });
+    w.ctl.tryResume();
+    await settle();
+    w.toAsk();
+    w.say('a stakes answer');
+    const nSends = w.sends.length;
+    w.tickAll();                       // fires the components review
+    ok(w.sends.length === nSends + 1, 'setup: the components review did not fire');
+
+    // Reply 1 — warm prose, no marker at all. The single commonest real failure.
+    w.resolveApi('Lovely work, these hang together nicely and I can see the story taking shape.');
+    ok(w.sends.length === nSends + 2,
+        'an unreadable review did NOT retry — a dropped marker is indistinguishable from a pass, '
+        + 'so the student’s work is waved through unchecked');
+
+    // Reply 2 — unreadable again. Now it must be honest, and leave a way forward (§4d).
+    const bubblesBefore = w.bubbles.length;
+    w.resolveApi('Still lovely, no notes.');
+    ok(w.sends.length === nSends + 2, 'the review retried MORE than once — one retry, then honesty');
+    ok(w.bubbles.length > bubblesBefore,
+        'after two unreadable replies the walk said NOTHING and moved on as though the check had '
+        + 'passed — the exact silent fail-open #377 is about');
+    const said = String(w.bubbles[w.bubbles.length - 1] || '');
+    ok(/couldn’t read|could not read/i.test(said),
+        'the walk did not tell the student the check failed: "' + said.slice(0, 90) + '"');
+    ok(w.chips().length > 0,
+        'the honest message left no chips — a refusal with nothing on screen is the .329 dead end (§4d)');
+}
+
+// ── I14 · A BLANK LOGLINE BLOCKS THE CHOICE ───────────────────────────────────────────────
+// uid 1334 on prod: Logline 3 blank, the section stuck at 50%, and the picker showed her two
+// chips with no signal a third was missing. serveLoglinePicker's `if (!txt) return` HID it.
+console.log('I14 · a blank logline re-serves its ask instead of being hidden from the picker');
+{
+    const pre = {};
+    COMPONENTS.forEach((f, n) => { pre[f] = 'component answer ' + (n + 1); });
+    pre[FORMULAS[0]] = 'logline one'; pre[FORMULAS[1]] = 'logline two';
+    // The components review already ran in the session being resumed — seed the sidecar under
+    // the controller's own key rather than guessing at it.
+    const probe = world();
+    probe.ctl.forceStart();
+    await settle();
+    const lsKey = Array.from(probe.ls.keys())[0];
+    ok(!!lsKey, 'setup: the walk persisted no sidecar, so this reload cannot be staged');
+    const w = world({ prefill: pre, ls: new Map([[lsKey, JSON.stringify({ idx: 9, active: true, rc: true, rl: false })]]) });
+    w.ctl.tryResume();
+    await settle();
+    w.toAsk();
+    ok(!!w.deps._walkSlot.armed && w.deps._walkSlot.peek('cw3').fid === FORMULAS[2],
+        'setup: the walk did not resume onto the third logline');
+
+    w.say('a third logline that is about to be lost');
+    w.tickAll();                       // fires the loglines review
+    // The document is open beside the chat and editable: the student clears the box while the
+    // review is in flight. (The same end state a failed write produces, which is how a row can
+    // be blank when the walk has already moved past its ask.)
+    w.rows.set(FORMULAS[2], '');
+    w.resolveApi('@ALL_OK');
+
+    const chips = w.chips().map((c) => String(c.textContent));
+    ok(!chips.some((t) => /^1\. |^2\. /.test(t)),
+        'the picker rendered with a blank logline hidden from it — the student chooses from two '
+        + 'and is never told the third is missing (chips: ' + chips.join(' | ') + ')');
+    ok(!!w.deps._walkSlot.armed && w.deps._walkSlot.peek('cw3').fid === FORMULAS[2],
+        'the blank logline’s ask was not re-served — the walk let an empty box through to the choice');
+    ok(/still empty/i.test(String(w.bubbles[w.bubbles.length - 1] || '')),
+        'the student is not told WHY they are back on this question');
+}
+
+// ── I15 · THE FORCED DECISION (#377 part 4) ───────────────────────────────────────────────
+// Neil's ruling: forced DECISION, never forced revision. A forced rewrite is gameable (type
+// anything) and fights PEDAGOGY §19 — "a tick list that gates progress becomes a lying game".
+// Seeing the verdict and choosing is not gameable, and is still unskippable.
+console.log('I15 · choosing a logline shows its verdict first, and sharpen returns to the choice');
+{
+    const w = world();
+    w.ctl.forceStart();
+    await settle();
+    w.toAsk();
+    let guard = 0;
+    while (guard++ < 80) {
+        if (w.chips().some((c) => /Sharpen my|Move on/i.test(String(c.textContent)))) break;
+        const reply = STEP_FIDS.every((f) => w.rows.get(f)) ? '@WEAK: logline-1' : '@ALL_OK';
+        if (clearMenus(w, reply)) continue;
+        w.say('answer ' + guard, reply);
+    }
+    const moveOn = w.chips().filter((c) => /Move on/i.test(String(c.textContent)))[0];
+    ok(!!moveOn, 'setup: the logline review offered no "Move on" chip');
+    if (moveOn) w.tap(moveOn);
+
+    // THE FLAGGED ONE — the verdict must say so, in words, before they can commit to it.
+    const picks = w.chips().filter((c) => /^1\. /.test(String(c.textContent)));
+    ok(picks.length === 1, 'setup: the picker did not offer logline 1');
+    if (picks.length) {
+        w.tap(picks[0]);
+        const said = String(w.bubbles[w.bubbles.length - 1] || '');
+        ok(/flagged/i.test(said),
+            'the decision did not report that THIS is the logline the review flagged — a verdict the '
+            + 'student never sees cannot change what they carry into Step 4: "' + said.slice(0, 90) + '"');
+        ok(/Step 4/.test(said),
+            'the decision does not say what choosing this sentence COSTS downstream');
+        const opts = w.chips().map((c) => String(c.textContent));
+        ok(opts.length === 3, 'the decision offered ' + opts.length + ' options, expected sharpen / keep / re-pick');
+
+        // SHARPEN — a rewrite, replacing, and it comes back to the CHOICE (not to Step 4).
+        const sharpen = w.chips().filter((c) => /Sharpen it first/i.test(String(c.textContent)))[0];
+        ok(!!sharpen, 'the decision offered no way to sharpen: ' + opts.join(' | '));
+        if (sharpen) {
+            w.tap(sharpen);
+            ok(!!w.deps._walkSlot.armed && w.deps._walkSlot.peek('cw3').fid === FORMULAS[0],
+                'the sharpen did not arm the logline being sharpened — the student’s rewrite would '
+                + 'land on the wrong row, or nowhere');
+            const b4 = w.writes.length;
+            w.say('a sharpened first logline, rewritten whole');
+            const wr = stepWrites(w, b4)[0];
+            ok(!!wr && wr.fid === FORMULAS[0] && wr.replace === true,
+                'the sharpened logline did not REPLACE its row — a logline is one self-contained '
+                + 'sentence, so both drafts end up stitched together (§4c.6)');
+            ok(w.chips().some((c) => /^1\. /.test(String(c.textContent))),
+                'after sharpening, the student was not returned to the choice — the whole point of '
+                + 'sharpening here is that they then pick with it fixed');
+        }
+
+        // RE-PICK — and the tick must MOVE, never accumulate.
+        const p2 = w.chips().filter((c) => /^2\. /.test(String(c.textContent)))[0];
+        if (p2) {
+            w.tap(p2);
+            const said2 = String(w.bubbles[w.bubbles.length - 1] || '');
+            ok(/held up|flagged|not read|your call alone/i.test(said2),
+                'the second decision carried no verdict at all: "' + said2.slice(0, 90) + '"');
+            const keep = w.chips().filter((c) => /Keep it/i.test(String(c.textContent)))[0];
+            if (keep) {
+                w.tap(keep);
+                const chosen = String(w.rows.get('cw-step-3-chosen') || '');
+                ok(chosen.indexOf('answer') !== -1 || chosen.length > 0, 'keeping filed nothing');
+                const ticked = Array.from(w.ticked).filter((f) => f.indexOf('cw-step-3-logline-') === 0);
+                ok(ticked.length === 1,
+                    'after re-picking, ' + ticked.length + ' logline rows are ticked — the tick must '
+                    + 'MOVE, never accumulate (' + (ticked.join(', ') || 'none') + ')');
+            }
+        }
+    }
 }
 
 console.log('\n' + (fail ? '❌ CW3 SIM FAILED' : '✅ CW3 sim passed')

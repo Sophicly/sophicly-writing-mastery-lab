@@ -413,7 +413,12 @@ function makeWorld(ctl, opts) {
         // landed with help buttons and no way forward, and every gate was green).
         serveCwChunks: null,   // replaced below, once `el` and the kinds exist
         armWalkResume: function (id, fn) { armed = { id: id, fn: fn }; },
-        sendCanvasMessage: function () { sends.push({ id: armed ? armed.id : '(none)' }); deps.canvasSilentSend = false; },
+        // v7.20.525: the PAYLOAD is recorded, not just the fact of a send. Without it a walk can
+        // build a whole review prompt — marker contract, the student's own sentences, their
+        // self-assessment claims — assign it to a local, drop it, and send a friendly one-liner
+        // instead, and every harness stays green because a send happened. That is #377 exactly:
+        // CW3's fireReview never sent its `ctx` from v7.20.325 to .524.
+        sendCanvasMessage: function () { sends.push({ id: armed ? armed.id : '(none)', text: String(deps.chatTextarea.value || '') }); deps.canvasSilentSend = false; },
         canvasSilentSend: false,
         applyCwSubstepProgress: function () {},
         showGuidePanel: function () {},
