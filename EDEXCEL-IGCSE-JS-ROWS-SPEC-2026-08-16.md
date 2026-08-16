@@ -144,9 +144,16 @@ answer would have hidden.
    question), or have the full-essay path render intro rows unsuffixed like its bodies and
    conclusion — the inconsistency at `:50530` vs `:50538`/`:50545` is arguably the root defect.
 
-⚠️ **This is a live AQA bug too, not only an IGCSE one** — any full-essay question rendered with a
-`partLabel` in a multi-question doc has the same silently-dead intro fan-out. Worth checking AQA P1
-Q5 / P2 Q4 against it before assuming IGCSE is the only victim.
+✅ **AQA is NOT affected — I checked before claiming it.** (An earlier revision of this doc said it
+was; that was wrong, corrected same session.) AQA's only full-essay-with-`partLabel` question is
+P2 Q4, whose spec is `thesis_only`, so it renders exactly ONE intro row —
+`outline-intro-thesis-q4` — which is *precisely* what the whole-mode fallback targets. It matches by
+construction. AQA P1 Q5 is creative writing and never takes this path.
+
+So the defect is narrow and specific: **a full-essay question with a MULTI-element (`standard`)
+intro that carries a question label**. IGCSE P1 Q5 (22m, hook + comparative thesis) is the first
+such question in the codebase, which is why the fallback has held until now. Fix it for IGCSE
+without disturbing the P2 Q4 path that currently works.
 
 I have NOT authored P1's markers, because they would file into these dead routes. P1 is unblocked
 the moment 4b lands.
