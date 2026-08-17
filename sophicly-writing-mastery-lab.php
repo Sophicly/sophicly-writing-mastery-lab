@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.526
+ * Version: 7.20.527
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.526');
+define('SWML_VERSION', '7.20.527');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -341,7 +341,7 @@ class Sophicly_Writing_Mastery_Lab {
             SWML_VERSION
         );
 
-        // v7.20.526 — SHADER RETIRED (Neil, 2026-08-17): "We were gonna do the WML with a
+        // v7.20.527 — SHADER RETIRED (Neil, 2026-08-17): "We were gonna do the WML with a
         // different style… But you know what? We don't need that anymore. We can remove that
         // from the WML or at least stop enqueuing it." Taking the stop-enqueuing option: the
         // file stays on disk (frontend/wml-shader.js), so this is reversible in one commit.
@@ -1046,7 +1046,7 @@ class Sophicly_Writing_Mastery_Lab {
         wp_enqueue_style('swml-canvas', SWML_URL . 'frontend/wml-canvas.css', ['swml-styles'], SWML_VERSION);
 
         // Scripts
-                // v7.20.526: shader retired (see enqueue_assets above for the full note + the dependency landmine).
+                // v7.20.527: shader retired (see enqueue_assets above for the full note + the dependency landmine).
         wp_enqueue_script('swml-tiptap', SWML_URL . 'frontend/wml-tiptap.min.js', [], SWML_VERSION, true);
         wp_enqueue_script('swml-core', SWML_URL . 'frontend/wml-core.js', [], SWML_VERSION, true);
         // v7.19.78: shared SectionBlock NodeView factory — load before wml-assessment.

@@ -243,15 +243,14 @@
         if (!shaderInitialized) {
             root.innerHTML = '';
             if (isEntrance) root.classList.add('swml-entrance-active');
+            // v7.20.527 (Neil, 2026-08-17): plain, not painted. The shader was retired at .526
+            // and the brand-purple gradient was only ever its FALLBACK — with the shader gone it
+            // became the actual look of a screen Neil is retiring anyway ("the setup screen we're
+            // not gonna need anymore… just make it plain"). Deleting the override lets
+            // `.swml-shader-bg`'s own `background: #050208` (wml-styles.css:171) paint it, which
+            // is the near-black floor that was always underneath. One less style write per mount.
             const shaderBg = el('div', { className: 'swml-shader-bg', id: 'swml-shader-bg' });
             root.appendChild(shaderBg);
-            let shaderOk = false;
-            if (window.swmlShader) {
-                try { shaderOk = window.swmlShader.init(shaderBg); } catch(e) { console.warn('Shader init failed:', e); }
-            }
-            if (!shaderOk) {
-                shaderBg.style.background = 'linear-gradient(135deg, #5333ed, #2c003e)';
-            }
             shaderInitialized = true;
 
             // Remove anti-FOUC style injected by PHP (dark background + hidden content)
