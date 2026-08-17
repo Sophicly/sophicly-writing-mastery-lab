@@ -1720,3 +1720,69 @@ clothes: *never tell a student their work was checked when it was not.*
 
 **Shipped:** v7.20.525, `_cwLoglineCtl` (`serveChoiceDecision` / `verdictLine`); gated behaviourally
 by `bin/cw3-sim-harness.js` I12–I15, statically by `bin/cw3-batch-harness.js` §4b.
+
+---
+
+## §32. ⭐⭐ THE TEACHING ORDER STARTS WITH THE CRITERIA — assessment literacy BEFORE structure (Neil, ruled 2026-08-15)
+
+**⚠️ THIS RULING WAS LOST FOR TWO DAYS.** Two lanes wrote it up on 2026-08-15 — the assessment lane
+and the forms lane — and both handoffs said, correctly, *"PEDAGOGY.md is the rulings register and it
+is your file."* Both were filed. Neither was read, because an inbound ask had no delivery path: the
+session-start hook prints 128 handoffs for this lane and nobody reads 128 lines. Recorded here on
+2026-08-17 after a probe found **zero** occurrences of "assessment literacy" in this file. The
+process failure is logged because it is the exact thing root `CLAUDE.md` §SESSION HANDOFF exists to
+prevent, and it still happened.
+
+**HIS WORDS, and the load-bearing part is the ARGUMENT, not the list:**
+
+> *"We do teach in a certain order. We teach the students about understanding the mark scheme first,
+> which means understanding the criteria. Because the problem with most of these students is a lot
+> of them don't even really understand what they're even being assessed on. **So they've actually
+> got nothing to aim for.** And what's happening is they're either writing in a random way just to
+> get it done, or they're just following the teacher's instruction just because they've been told to
+> do that, without really understanding why the teacher says do it like this. And so what we want
+> them to do is actually understand the criteria themselves."*
+
+He named the concept himself, unprompted: **assessment literacy**, placed under metacognition, and
+attributed to **Hattie**.
+
+**THE ORDER, all six steps:**
+
+| # | step | note |
+|---|---|---|
+| 1 | **Understand the criteria / mark scheme** — assessment literacy | *"they'll need to just keep on coming back to it"* — RECURRING, not a one-off |
+| 2 | **Practise the structure** (five-paragraph essay, 20+ mark questions) | *"once they've done that, then they'll understand WHY a five-paragraph structure is really important"* |
+| 3 | **Identify strengths and weaknesses** | |
+| 4 | **Redraft**, targeting a 7, 8 or 9 each time | |
+| 5 | **Portfolio** — every draft/redraft reaching 7/8/9 is stored | *"when the exam comes, you then use those for revision"* |
+| 6 | **Structure and routine**, never crammed | *"cannot afford to leave it to the night before the exam, or even one week before, even two weeks before… it's essentially a gamble at that point"* |
+
+**⭐ THE ORDER OF 1 AND 2 IS THE RULING, AND IT IS COUNTER-INTUITIVE.** The instinct — and what the
+assessment report actually shipped — is to lead with STRUCTURE, because structure is the single
+biggest lever on marks. He rules the opposite, and the reason is causal rather than tidy: **structure
+taught before the criteria is a formula the student follows without knowing why**, which is precisely
+the failure he is describing. Step 2 only *means* anything once step 1 is in place. Do not "optimise"
+this back to structure-first on lever size; that is the mistake it was written to stop.
+
+**PROOF IT WAS LIVE, not hypothetical.** `Forms/Sophicly Assessment Form/index.html:830` carried
+`LEVER_ORDER=['structure','analysis','assessment',…]` — structure first, assessment **third**, the
+reverse of the ruling — and `sfFocusPick()` sorted the report's "Start here" recommendation by it, so
+a student whose weakest area WAS assessment literacy could be told to start with structure. Fixed in
+the assessment lane (v1.2.3, `ec5fe95`), now `['assessment','structure',…]`, gated by
+`sophicly-assessment/bin/regress-preview.mjs` — proved by injecting the reversal and watching it fail.
+
+**WHAT IT BINDS IN WML.** Any surface that decides **what a student is told to work on FIRST**:
+anything ranking weaknesses into a "start here", the planning protocols' opening moves (does the
+student meet the criteria before the structure, or after?), and sidebar/step ordering where a student
+picks what to do next. ⚠️ **An exception is allowed but must be WRITTEN DOWN.** If a WML surface
+deliberately orders it differently for a good reason, record it as a stated exception under this
+ruling — never as a silent divergence. The ruling is about the TEACHING sequence; it is not
+automatically a claim about every UI ordering.
+
+**⚠️ A PROSE/CODE DRIFT THIS SURFACED, now fixed.** WML `CLAUDE.md` summarised the intro as
+"Hook · Context · Thesis". The real element in `OUTLINE_CRITERIA.literature`
+(`frontend/wml-assessment.js:49262`) is **`Building Sentences`** (AO3, "contextual backdrop"), and
+there is a separate `Context` element in the BODY set — so a model authoring a student-facing
+"Context" intro line from the prose would name an element that does not exist. Verified against the
+code and corrected in `CLAUDE.md` the same day. Conclusion elements are as documented: Restated
+Thesis · Controlling Concept · Author's Central Purpose · Universal Message.

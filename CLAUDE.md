@@ -514,7 +514,7 @@ cite it — do not fill the gap with the marks rule.
   `OUTLINE_CRITERIA.literature` in wml-assessment.js): 1. Topic Sentence (AO1) · 2. Technique+Evidence+
   Inference (AO2/AO1, one row) · 3. Close Analysis (AO2) · 4. Effect 1 on Reader (AO2) · 5. Effect 2 on
   Reader (AO2) · 6. Author's Purpose (AO1/AO3) · 7. Context (AO3 — **only if the Q assesses AO3**).
-  Whole-essay/evaluation adds intro (Hook·Context·Thesis) + conclusion (Restated Thesis·Controlling
+  Whole-essay/evaluation adds intro (Hook·Building Sentences·Thesis) + conclusion (Restated Thesis·Controlling
   Concept·Central Purpose·Universal Message); evaluation Qs often use a SHORT intro (thesis only) + SHORT
   conclusion (restated thesis). Single-AO Qs stamp EVERY element to that AO (AQA Lang P1 Q2/Q3 = AO2; Q4 =
   AO4 evaluation). TTECEA is the bedrock; other questions ADAPT it (AO restriction, short intro/conc) —

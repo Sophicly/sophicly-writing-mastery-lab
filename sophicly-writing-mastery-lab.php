@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.525
+ * Version: 7.20.526
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.525');
+define('SWML_VERSION', '7.20.526');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -341,14 +341,21 @@ class Sophicly_Writing_Mastery_Lab {
             SWML_VERSION
         );
 
-        // Shader background (pure WebGL, no dependencies)
-        wp_enqueue_script(
-            'swml-shader',
-            SWML_URL . 'frontend/wml-shader.js',
-            [],
-            SWML_VERSION,
-            true
-        );
+        // v7.20.526 — SHADER RETIRED (Neil, 2026-08-17): "We were gonna do the WML with a
+        // different style… But you know what? We don't need that anymore. We can remove that
+        // from the WML or at least stop enqueuing it." Taking the stop-enqueuing option: the
+        // file stays on disk (frontend/wml-shader.js), so this is reversible in one commit.
+        // The background it drew is vestigial — it existed for a STANDALONE WML look, from
+        // before the lab was embedded in LearnDash.
+        // ⛔ THE LANDMINE, and it is why this is FOUR edits and not one: 'swml-shader' was a
+        // declared DEPENDENCY of 'swml-app' in BOTH enqueue paths (this one and
+        // enqueue_embed_assets). WordPress refuses to enqueue a script whose dependency is not
+        // registered — so dropping this block alone would stop wml-app.js loading, and
+        // wml-app.js IS the boot sequence: the whole lab goes blank with no console error
+        // naming the shader. Both halves, in both paths, or neither.
+        // Nothing else is needed: every call site is already guarded by `if (window.swmlShader)`
+        // (wml-app.js:249/7225, wml-assessment.js:14530) and falls back to the brand purple
+        // gradient, with #swml-root's #111114 underneath it as a floor.
 
         // TipTap rich text editor bundle (exposes window.TipTap)
         wp_enqueue_script(
@@ -458,7 +465,7 @@ class Sophicly_Writing_Mastery_Lab {
         wp_enqueue_script(
             'swml-app',
             SWML_URL . 'frontend/wml-app.js',
-            ['swml-core', 'swml-assessment', 'swml-shader'],
+            ['swml-core', 'swml-assessment'],
             SWML_VERSION,
             true
         );
@@ -1039,7 +1046,7 @@ class Sophicly_Writing_Mastery_Lab {
         wp_enqueue_style('swml-canvas', SWML_URL . 'frontend/wml-canvas.css', ['swml-styles'], SWML_VERSION);
 
         // Scripts
-        wp_enqueue_script('swml-shader', SWML_URL . 'frontend/wml-shader.js', [], SWML_VERSION, true);
+                // v7.20.526: shader retired (see enqueue_assets above for the full note + the dependency landmine).
         wp_enqueue_script('swml-tiptap', SWML_URL . 'frontend/wml-tiptap.min.js', [], SWML_VERSION, true);
         wp_enqueue_script('swml-core', SWML_URL . 'frontend/wml-core.js', [], SWML_VERSION, true);
         // v7.19.78: shared SectionBlock NodeView factory — load before wml-assessment.
@@ -1070,7 +1077,7 @@ class Sophicly_Writing_Mastery_Lab {
         wp_enqueue_script('swml-assessment', SWML_URL . 'frontend/wml-assessment.js', ['swml-core', 'swml-section-block', 'swml-techniques-index', 'swml-cw6-concepts', 'swml-tiptap'], SWML_VERSION, true);
         wp_enqueue_script('swml-selection-chip', SWML_URL . 'frontend/wml-selection-chip.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
         wp_enqueue_script('swml-pull-overlay', SWML_URL . 'frontend/wml-pull-overlay.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
-        wp_enqueue_script('swml-app', SWML_URL . 'frontend/wml-app.js', ['swml-core', 'swml-assessment', 'swml-shader'], SWML_VERSION, true);
+        wp_enqueue_script('swml-app', SWML_URL . 'frontend/wml-app.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
 
         // Video player
         wp_enqueue_script('hls-js', 'https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js', [], null, true);
