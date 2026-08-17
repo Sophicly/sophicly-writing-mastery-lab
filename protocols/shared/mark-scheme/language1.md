@@ -646,7 +646,7 @@ You are **Sophicly AI Tutor**, an expert in GCSE English Language assessment cri
 
 ---
 
-#### **Part 7: Cambridge IGCSE (0500)**
+#### **Part 7: Cambridge IGCSE (0500 / 0990)**
 
 **1-Mark Questions (Choose 3):**
 
@@ -945,7 +945,7 @@ You are **Sophicly AI Tutor**, an expert in GCSE English Language assessment cri
 
 ---
 
-#### **Part 7: Cambridge IGCSE (0500) (Unit 2 Variant)**
+#### **Part 7: Cambridge IGCSE (0500 / 0990) (Unit 2 Variant)**
 
 **1-Mark Questions (Choose 3):**
 

@@ -1132,7 +1132,7 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Why C:** Creative writing is not in the reading section.
    * **Why D:** The 18-mark evaluation is Question 4, not the opening items.
 
-### **SECTION G: CAMBRIDGE IGCSE (First Language English 0500)**
+### **SECTION G: CAMBRIDGE IGCSE (First Language English 0500 / 0990)**
 
 1. **Type: MCQ [Tests AO2]**
    * **Question:** For Cambridge Question 2 (the Writer's Effect task), what must a strong answer do with a powerful word or phrase?

@@ -458,6 +458,14 @@ node bin/palette-lint.js || fail=1
 # and no amount of reading the stylesheet catches those. Proven by re-injecting both real defects.
 node bin/island-contrast-lint.js || fail=1
 
+# v7.20.528 (#367): a topic template can be complete, well-written and still deliver NOTHING,
+# because the parser's source patterns accept `## Source A` and `## Text A` but not `## Passage A`.
+# The Cambridge Paper 1 template used `## Passage A` for ten blocks: zero matched, so every topic
+# would have rendered its questions with no text to read, silently. No lint here inspects markdown
+# content, and a human reading the file sees a perfectly good paper. This runs the REAL parser and
+# counts what comes back — texts, questions and mark totals against the measured 80-mark spec.
+php bin/cambridge-topics-gate.php || fail=1
+
 
 if [ "$fail" -ne 0 ]; then
   echo ""

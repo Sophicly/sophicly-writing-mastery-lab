@@ -1,14 +1,32 @@
-# Cambridge IGCSE Language Paper 2 — Fiction Mastery Pathway (46 Topics)
+# ⛔⛔ DO NOT IMPORT — ITS TEN PRACTICE-PAPER TOPICS TEACH A PAPER THAT DOES NOT EXIST
+# (flagged 2026-08-17, FIXLIST #367. The 36 creative-writing topics are unaffected.)
+#
+# Every `**Marks:** 50` topic below describes Cambridge Paper 2 as "two writing tasks,
+# 50 marks, no source texts — a pure writing paper". Measured over 40/40 real papers,
+# every element of that is wrong. The real paper is 80 marks: Section A is directed
+# writing [40] answered FROM a two-text insert (15 of those 40 are READING marks), and
+# Section B is one composition [40] chosen from four. See CAMBRIDGE-PAPER-SPEC.md.
+#
+# The standalone file `cambridge-igcse-language-p2.md` HAS been rebuilt correctly (six
+# gate-verified papers, `php bin/cambridge-topics-gate.php` proves it). This pathway was
+# NOT rebuilt, because its ten paper topics are interleaved with 36 creative-writing
+# topics and regenerating the interleave is a separate job. It is left wrong-but-labelled
+# rather than half-corrected: bumping "50" to "80" without replacing the tasks and adding
+# the insert would produce a topic that claims the right total and still teaches the wrong
+# paper, which is harder to spot than an obvious stub.
+#
+# TO FIX: regenerate from `_audit/build-cambridge-p2-topics.py` in the Cambridge folder
+# (it emits the six correct papers) and re-interleave with creative-writing-standalone.md.
+#
+# ── original header follows ──
 #
 # This is the interleaved sequence for Cambridge IGCSE Language Paper 2 (Writing) combined
 # with the Creative Writing course. It alternates between practice papers and creative writing
 # steps, following the architecture defined in Session 26.
 #
-# Note: Cambridge IGCSE Paper 2 is a pure writing paper — no source texts. Practice papers
-# are themed writing tasks (descriptive/narrative + argumentative/discursive).
-#
 # Topic sources:
-# - Practice papers: cambridge-igcse-language-p2.md (existing 10-topic file)
+# - Practice papers: cambridge-igcse-language-p2.md (⚠️ now SIX correct papers, not the ten
+#   listed below — the mapping in this file is stale as well as wrong-shaped)
 # - Creative writing: creative-writing-standalone.md (36-topic file)
 # - CW protocols: Sophicly Writing Mastery Creative Writing Workbook/CW-STEP-*.md
 # - CW trials: Sophicly Writing Mastery Creative Writing Workbook/CW-TRIAL-*.md

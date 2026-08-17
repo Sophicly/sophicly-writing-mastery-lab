@@ -1,856 +1,1288 @@
-# Topic 1: Diagnostic Paper — The Death Zone / London Snow
+# Topic 1: Diagnostic Paper — Ballooning
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Cambridge IGCSE Language Paper 1 Diagnostic — Reading. Two non-fiction passages, three questions, 80 marks total. Q1 tests short-answer comprehension, Q2 tests summary writing, Q3 tests extended response (language analysis or directed writing). Phase 1 (first draft) establishes your baseline; Phase 2 (redraft) targets specific improvements identified in assessment.
+**Teaching Point:** Cambridge IGCSE First Language English Paper 1 (0500 / 0990) — Reading. Theme: travel and unusual journeys. THREE texts, 80 marks, 2 hours. Q1 [30] = short-answer comprehension on Text A plus a summary of Text B (120 words maximum, 10 reading + 5 writing). Q2 [25] = short language items on Text C plus the Writer's Effect analysis [15], 200-300 words. Q3 [25] = extended response in role from Text C, 250-350 words, 15 reading + 10 writing; this paper's form is the journal. Phase 1 (first draft) establishes the baseline; Phase 2 (redraft) targets the improvements identified in assessment.
 **Marks:** 80
 **AOs:** AO1, AO2, AO3
 
-## Passage A
-**Title:** The Death Zone
-**Author:** Matt Dickinson (1997)
-**Context:** 20th Century non-fiction. An extract from a book by British climber Matt Dickinson, published in 1997. Dickinson and his team are attempting to scale Mount Everest when a devastating storm strikes.
+## Text A
+**Title:** The oldest way to fly
+**Context:** Factual / informative. Paragraphs are numbered; questions cite them by number.
 
-British climber, Matt Dickinson, together with his team, is attempting to scale Mount Everest. At base camp, a thousand feet below them, his colleague, Audrey Salkeld is the first to see the approaching storm.
+**1** Long before aeroplanes, human beings first left the ground under a bag of hot air. In 1783,
+in Paris, the Montgolfier brothers launched the world's first passenger flight — although the
+passengers on that occasion were a sheep, a duck and a cockerel. Within months, people had taken
+their place, and the age of flight had quietly begun.
 
-1  At 5,360 metres, base camp is a cheerless place at the best of times, but once the sun has dipped
-2  beneath the surrounding ridges, it is like living in a freezer. Shivering with the cold, Salkeld left the
-3  mess tent and walked across the ice of the Khumbu glacier towards her tent to find some extra
-4  clothing.
-5  Glancing into the sky to the south, she became one of the first people, and probably the very first,
-6  to see what was sweeping up from the lower valleys of the Himalayas towards Everest. It was a
-7  sight which fixed her to the spot, all thoughts of seeking out a few more layers of clothing
-8  momentarily forgotten.
-9  Sudden squalls are common in the afternoon on Everest but Salkeld had never seen anything like
-10 this before. She later described it as looking like a tyre dump fire, great billowing lilac clouds
-11 racing up from the south. She called out other members of the team from our tents, and they
-12 stood watching in awe as the apocalyptic vision crept silently and swiftly towards them.
-13 At speeds touching 80 to 100 kilometres an hour, the storm whipped into the camp just minutes
-14 later, plunging the temperature down by ten to fifteen degrees in as many seconds, ripping into
-15 the tents in a blinding fury of driving snow. The storm swept up the southern flanks of Everest
-16 engulfing the ice-clad slopes effortlessly in a swirling mantle of hurricane-force winds. Within
-17 minutes it had the northern side in its grip and then it rose to take the summit. The mightiest
-18 mountain in the world disappeared from view as the storm took control.
-19 If Shiva, the Hindu god of destruction, and Nemesis, the Greek goddess of retribution, had joined
-20 forces they could not have done a better job of devastation than nature itself did on that day. The
-21 timing was uncanny, as bad as it was possible to be. If the storm had struck in winter then no one
-22 would have been hurt. But as chance would have it, the tempest arrived on the busiest day of the
-23 Everest calendar, right in the middle of the pre-monsoon climbing season.
-24 Our expedition, a British attempt on the North Face via the North-East Ridge, was at camp three
-25 when the storm thundered in.
-26 We immediately knew that this was something far more dangerous than any other storm that had
-27 hit us in the eight weeks we had been there. The temperature fell to ten degrees below freezing,
-28 then twenty, then thirty degrees below. The wind became a constant, bullying force, pulling guy
-29 ropes from the glacier ice, tumbling fully-laden equipment barrels into crevasses and demolishing
-30 our canvas mess tent with frightening ease. The dome tents, built to withstand hurricane-force
-31 winds, creaked and groaned under the beating, distorted into shapes they were never designed
-32 for and straining the tent poles to their limits.
-33 We could have been in the Antarctic, on the Greenland ice cap, or at the North Pole, so complete
-34 was the blanket of driving snow which obscured every feature around us. Not a single landmark,
-35 not even the huge North Ridge, was visible through the raging white-out of the blizzard.
-36 Through the white wall of snow, and rising across the tempestuous roar of the wind across the
-37 glacier was another sound: a sinister howl which told of even greater powers at play in the
-38 altitudes above us; the scream of the storm as it whirled across the North Face at 8,000 metres
-39 and above.
-40 There, in the 'Death Zone', more than thirty climbers were fighting for their lives. On the northern
-41 side three Indian climbers were stranded, exhausted and with their oxygen supplies running out,
-42 high on the North-East Ridge. On the southern side, two commercial expeditions were strung out
-43 between the South Col and the summit.
-44 The night that faced them was a night from hell. By the end of the following day, the three Indian
-45 climbers on the north side and five of the climbers on the south were dead. The total of eight
-46 fatalities made this the greatest loss of life in any twenty-four hour period on the peak.
+**2** A hot-air balloon has three parts: the envelope, which is the great coloured bag itself; the
+burner, which heats the air inside it; and the basket in which the passengers stand. Because hot
+air is lighter than cold air, the balloon rises when the burner fires and sinks as the air cools.
+What a balloon cannot do is steer. Once airborne, pilot and passengers are at the mercy of the
+wind, and a skilled pilot 'steers' only by climbing or descending to find a current moving in a
+more useful direction.
 
-## Passage B
-**Title:** London Snow
-**Author:** Arthur Munby (1867)
-**Context:** 19th Century literary non-fiction. Extracts from a diary kept by Arthur Munby in the 1800s. In these entries from January 1867, he describes London in the snow.
+**3** The earliest flights were genuinely dangerous. Balloons were lifted by unpredictable gases
+that could catch fire without warning, the equipment was crude and often home-made, and there were
+no weather forecasts to warn a pilot of approaching storms. Many pioneering flights ended in
+treetops, rivers or the open sea.
 
-1  Wednesday, 2 January. Since midnight, snow had silently fallen, to the depth of six to eight
-2  inches; by breakfast time it was all over except a slight flaky dropping, and the day was
-3  calm and very cold. Nothing could be more beautiful; no change more complete and
-4  charming. The trees around the fountain near Garden Court were loaded with snow: an
-5  exquisite tracery of white branches, relieved against the dark red house fronts.
-6  But in the streets the transformation was greatest. All traffic, except afoot, was stopped; no
-7  cabs, no omnibuses, no wagons. The snow lay in heaps in the road; men were scraping
-8  and shovelling the footways; and people in thick coats and wrappers stepped noiselessly
-9  along. The Strand was as quiet and empty as a village street at nightfall; even the foot
-10 passengers were far fewer than usual.
-11 Here in the heart of London, and at midday, there was absolute cleanliness and brightness,
-12 absolute silence: instead of the roar and rush of wheels, the selfish hurry, the dirt and the
-13 cloudy fog, we had the loveliness and utter purity of new-fallen snow. It fell without force or
-14 sound; and all things huge and hasty and noisy were paralyzed in a moment. I walked
-15 along enjoying the wondrous lovely scene, the long perspective of houses, all grown
-16 picturesque and antique; their gable roofs white against a clear sky, and every overhanging
-17 joint and beam in their outline picked out in brilliant white; and beneath them, the tumbled
-18 and peopleless pavement of snow. It was like the quaint still London of old; one might have
-19 been arm in arm with Mr. Pepys, or even Mr. W. Shakespeare. And this state of things
-20 lasted all day.
-21 There were many crossing sweepers about: I noticed one near Saint Clement Danes, a girl
-22 of seventeen or so, in ragged but warm shawl, and a bit of an old bonnet, whose dark rough
-23 hair was covered with snow, and hung in a tangled white mass, like the foam of a waterfall,
-24 over her brown bonny face, as she stood with her broom under her arm, stamping and
-25 blowing her fingers.
-26 Friday, 4 January. The cold out of doors at ten this morning was more intense, to my
-27 apprehension, than I ever remember. My beard froze, and the nape of my neck, and my
-28 heart seemed paralyzed. A headache came on, and by the end of the short walk from here
-29 to Whitehall I was almost helpless.
-30 At 4pm I walked westward, thinking to call on my friends, the Thackerays. The Horseguards
-31 Parade and the Mall were one sheet of snow, with paths trodden but not swept: a thick
-32 brown fog brooded over it, deepening the twilight; and muffled spectral figures hurried to
-33 and fro across the slippery ground. In Victoria Street a girl begged of me: a ragged tall girl
-34 of nineteen, by name Caroline Randall, by trade an ironer; who has no home; who slept last
-35 night on a step in a sheltered corner, and felt 'as cold as a frog', she said.
+**4** Modern balloon tourism is a different world. Flights leave at dawn, when the air is calm,
+and drift for around an hour above rivers, vineyards or grazing herds. Landings are followed, by
+long tradition, with a celebration breakfast, and the view makes even an ordinary neighbourhood
+look extraordinary. Even so, a balloon flight is not for everyone: passengers must wake long
+before sunrise, flights are cancelled whenever the wind is unsuitable, tickets are expensive, and
+the basket's open sides can feel alarming to anyone nervous of heights.
+
+**5** For a few, ballooning has remained the sport of record-breakers. In 1999, the Breitling
+Orbiter 3 carried two pilots around the entire world without landing, a journey of nineteen days
+and more than 40,000 kilometres. Others have crossed oceans, mountain ranges and even the polar
+regions, riding winds that no aircraft engine could imitate.
+
+**6** For everyone else, there are the festivals. Every autumn, hundreds of balloons rise together
+over Albuquerque in the United States, and similar gatherings fill the skies from Bristol to
+Cappadocia. Families arrive before dawn to watch the mass launches and stay for the evening
+'night glows', when tethered balloons light up like enormous lanterns. For many visitors, seeing
+one — or flying in one — has become a bucket-list favourite.
+
+## Text B
+**Title:** The slowest way to fly — and why it is worth it
+**Context:** Opinion / experience / career. Paragraphs are numbered; questions cite them by number.
+
+The travel writer Priya Shah considers the appeal of balloon flight.
+
+Every year I am asked the same question: with so many faster, cheaper ways to see the world, why
+would anyone choose a balloon? My answer is that the balloon's weaknesses are exactly its charms.
+
+Consider what you actually get. A balloon is silent between burns, so you hear dogs barking in
+farmyards half a kilometre below. It travels at walking pace, so the landscape unrolls slowly
+enough to be truly seen, not glimpsed. It flies at dawn, so passengers watch the sun rise twice —
+once from the ground and once from the air. No window seat on any aircraft offers that.
+
+The perspective is unrepeatable. From a few hundred metres, you are high enough to see the shape
+of the land — the curve of a river, the pattern of the fields — yet low enough to see a deer
+startle beneath you. Wildlife is not frightened by a balloon as it is by engines; you drift over
+grazing animals without disturbing them, which is why photographers and film-makers pay so
+handsomely for balloon time.
+
+It is also, perhaps surprisingly, a flight for everybody. No training, no fitness, no minimum age
+beyond being tall enough to see over the basket. I have shared baskets with a nine-year-old and
+with a woman celebrating her ninetieth birthday, both equally delighted. And because a balloon
+carries so few people, a flight feels like an occasion — a small ceremony, complete with the
+traditional toast after landing — rather than a queue with a view.
+
+There is a quieter argument too. A balloon burns a little gas but has no engine; it is among the
+gentlest ways of putting human beings into the sky. And ballooning supports the places it flies
+from: pilots, ground crews, drivers and farmhands are hired locally, and every launch field earns
+its keep.
+
+Is it perfect? Of course not. You will wake at four in the morning. You may arrive to find the
+flight cancelled because of a wind you can barely feel. It is expensive — a hundred pounds or
+more for an hour aloft — and you cannot choose exactly where you will land. My advice is to treat
+these not as flaws but as the price of something increasingly rare: a journey that cannot be
+hurried, repeated or fully planned.
+
+## Text C
+**Title:** Chasing the dawn
+**Context:** Narrative or personal account. Paragraphs are numbered; questions cite them by number.
+
+Marta Osei describes her first flight as a trainee balloon pilot.
+
+**1** The alarm went off at ten past four, and for a long minute I lay in the dark wondering what
+had ever made me sign up. Six months of theory lessons, and now, finally, the morning of my first
+flight.
+
+**2** By five we were in a field silvered with dew. The crew unrolled the envelope across the wet
+grass, and two roaring fans forced it full of cold air until it **billowed** into a trembling
+hill of red and gold fabric. Then Karl, my instructor, opened the burner, and the hill stood up.
+
+**3** I climbed in **tentatively**, one leg at a time, the wicker creaking under my boots. The
+basket seemed suddenly very small and the balloon above it impossibly large, straining at its
+tether as if it were eager to leave without us.
+
+**4** 'Whenever you're ready,' said Karl, as calmly as a man ordering tea. He was utterly
+unruffled, and I would learn that he was unruffled by everything.
+
+**5** He nodded at the burner handle. I squeezed it. There was a deafening blast of flame and
+heat, and the ground simply let go of us. My stomach dropped as the field fell away, and my
+knuckles whitened on the rim of the basket.
+
+**6** 'Look down,' Karl said. I made myself look. The launch field was already a green postage
+stamp, the crew's van a toy beside it, the countryside a patchwork of pocket-handkerchief fields
+stitched together with hedges.
+
+**7** We climbed to three hundred metres and found a current drifting east. Karl talked me through
+the instruments — the altimeter, the temperature gauge, the rate of climb — but mostly he taught
+me to feel the balloon, the way it answered the burner a slow moment after each burn, like a
+great animal deciding whether to obey.
+
+**8** It was the quiet that undid me. In the pauses between burns there was no engine, no wind in
+my ears — because we moved *with* the wind — only a silence so deep it felt like a held breath.
+The world beneath us was still asleep: a heron ghosted along a river the colour of pewter, and
+the first smoke rose from a farmhouse chimney, straight as a pencil line. I felt we were not
+flying over the landscape so much as floating inside the morning itself.
+
+**9** Then Karl gave me the flight. For twenty minutes I held our height on my own, burning,
+waiting, burning again, learning the balloon's slow rhythm. When I finally got three level
+minutes, he nodded once, and I felt as though I had been handed a medal. 'Smooth,' he said,
+which I already knew was as close as Karl ever came to applause, and I grinned at the gauges
+like an idiot.
+
+**10** The landing was another lesson entirely. The wind freshened as we descended, and the
+ground, so gentle from three hundred metres, came up at us surprisingly fast. 'Knees bent, hold
+the rope, don't get out until I say,' said Karl. The basket touched, leapt, touched again,
+dragged half its length through the grass and tipped us to a stop against a hedge, the envelope
+sighing down beside us like something falling asleep.
+
+**11** That night I could not stop writing. My logbook asked only for times, heights and wind
+speeds, but I filled two extra pages. What I remember is not the fear, though there was fear, and
+not even the view. It is the moment the ground let go — the moment a thing I had studied for six
+months on paper became a live animal under my hands, and I understood that I would spend the rest
+of my life chasing that feeling. My hands smelled of propane. I was perfectly happy.
+
+**12** I fly solo next month. The alarm is already set.
+
+
+
+*Words printed **bold** in Text C are the 'underlined' words referred to in Question 2(b).*
 
 ## Q1
-**Marks:** 15
-**AOs:** AO1
+**Marks:** 30
+**AOs:** AO1, AO2
+**Mark Split:** 1(a)-(e) reading 15 + 1(f) summary 15 (10 reading + 5 writing)
 
-According to Passage A, answer the following questions using short answers. You do not need to write in full sentences.
+**(a)** Give the three parts of a hot-air balloon according to the text. **[1]**
 
-(a) What was the temperature at base camp before the storm? [1]
-(b) What did Salkeld compare the approaching storm to? [1]
-(c) At what speed did the storm arrive? [1]
-(d) What happened to the temperature when the storm hit the camp? [2]
-(e) Give two examples of damage caused by the wind at the camp. [2]
-(f) What made the timing of the storm particularly dangerous? [2]
-(g) How many climbers were in the Death Zone when the storm struck? [1]
-(h) What was the final death toll from the storm? [1]
-(i) According to the passage, what record did this storm set? [2]
-(j) Explain in your own words why the writer says they "could have been in the Antarctic" (line 33). [2]
+**(b)** Using your own words, explain what the text means by:
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** 'at the mercy of the wind' (paragraph 2) **[2]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** 'a bucket-list favourite' (paragraph 6) **[2]**
+
+**(c)** Re-read paragraph 3 ('The earliest flights … the open sea.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;Give **two** reasons why the earliest balloon flights were dangerous. **[2]**
+
+**(d)** Re-read paragraph 4 ('Modern balloon tourism … nervous of heights.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** Identify **two** features of a modern balloon flight that might particularly appeal
+to tourists. **[2]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** Explain why a balloon flight might be of concern to more cautious tourists. **[3]**
+
+**(e)** Re-read paragraphs 5 and 6 ('For a few … bucket-list favourite.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;Using your own words, explain how people who never fly in a balloon can still enjoy
+ballooning. **[3]**
+
+Read **Text B**, *The slowest way to fly — and why it is worth it*, in the insert and then answer
+Question 1(f).
+
+**(f)** According to Text B, what might supporters of balloon flight consider to be its advantages
+and appeal?
+
+You must use continuous writing (not note form) and use your own words as far as possible.
+
+Your summary should not be more than 120 words.
+
+Up to 10 marks are available for the content of your answer and up to 5 marks for the quality of
+your writing. **[15]**
 
 ## Q2
 **Marks:** 25
-**AOs:** AO1, AO2
+**AOs:** AO2
+**Mark Split:** 2(a)-(c) reading 10 + 2(d) writer's effect 15 (content only)
 
-Using Passage A and Passage B, summarise the different effects that extreme weather has on the people described in each passage.
+**(a)** Identify a word or phrase from the text which suggests the same idea as the words
+underlined:
 
-You should write a summary using your own words as far as possible.
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** The balloon seemed <u>determined to take off before the crew was ready</u>. **[1]**
 
-You should include:
-- the physical effects of the weather on the people
-- how the people respond to the weather conditions.
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** From the air, the countryside below looked like <u>small pieces of fabric sewn
+together</u>. **[1]**
 
-Write no more than 250 words.
+&nbsp;&nbsp;&nbsp;&nbsp;**(iii)** The noise of the burner was <u>extremely loud</u>. **[1]**
 
-Up to 15 marks are available for the content of your answer, and up to 10 marks for the quality of your writing.
+&nbsp;&nbsp;&nbsp;&nbsp;**(iv)** Karl <u>remained completely calm</u>, whatever happened. **[1]**
+
+**(b)** Using your own words, explain what the writer means by each of the words underlined
+(printed **bold** in the insert):
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** billowed (paragraph 2) **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** tentatively (paragraph 3) **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iii)** unruffled (paragraph 4) **[1]**
+
+**(c)** Use **one** example from the text below to explain how the writer suggests her feelings as
+the balloon leaves the ground:
+
+> 'There was a deafening blast of flame and heat, and the ground simply let go of us. My stomach
+> dropped as the field fell away, and my knuckles whitened on the rim of the basket.' **[3]**
+
+**(d)** Re-read paragraphs 8 and 10.
+
+- Paragraph 8 begins 'It was the quiet …' and is about the experience of flying high above the
+  countryside.
+- Paragraph 10 begins 'The landing was …' and is about the balloon returning to the ground.
+
+Explain how the writer uses language to convey meaning and to create effect in these paragraphs.
+Choose **three** examples of words or phrases from each paragraph to support your answer. Your
+choices should include the use of imagery.
+
+Write about 200 to 300 words.
+
+Up to 15 marks are available for the content of your answer. **[15]**
 
 ## Q3
-**Marks:** 40
-**AOs:** AO2, AO3
+**Marks:** 25
+**AOs:** AO1, AO2, AO3
+**Mark Split:** 15 reading + 10 writing
 
-Re-read Passage B, lines 11 to 25, from "Here in the heart of London..." to "...stamping and blowing her fingers."
+You are **Karl**, the instructor in Text C. On the evening after the flight, you write your
+**journal** for that day.
 
-Imagine you are Munby. You have returned home after your walk through snowy London on 2 January 1867 and are writing a letter to a friend describing what you saw.
+In your journal you should:
+
+- describe what happened during the flight and the landing from your point of view as the
+  instructor
+- explain your thoughts about how Marta responded to the challenges of her first flight
+- reflect on what days like this one show you about why people learn to fly balloons.
+
+Write the words of the journal.
+
+Write about 250 to 350 words.
+
+Up to 15 marks are available for the content of your answer and up to 10 marks for the quality of
+your writing. **[25]**
+
+---
+
+# Topic 2: Practice Paper 2 — Sea Turtles
+**Type:** language_paper
+**Format:** multi_question
+**Teaching Point:** Cambridge IGCSE First Language English Paper 1 (0500 / 0990) — Reading. Theme: animals and wildlife. THREE texts, 80 marks, 2 hours. Q1 [30] = short-answer comprehension on Text A plus a summary of Text B (120 words maximum, 10 reading + 5 writing). Q2 [25] = short language items on Text C plus the Writer's Effect analysis [15], 200-300 words. Q3 [25] = extended response in role from Text C, 250-350 words, 15 reading + 10 writing; this paper's form is the interview. Phase 1 (first draft) establishes the baseline; Phase 2 (redraft) targets the improvements identified in assessment.
+**Marks:** 80
+**AOs:** AO1, AO2, AO3
+
+## Text A
+**Title:** The oldest travellers
+**Context:** Factual / informative. Paragraphs are numbered; questions cite them by number.
+
+**1** Sea turtles were swimming in the world's oceans before there were flowers on land. They have
+survived for over a hundred million years, outlasting the dinosaurs, and today seven species
+remain — from the modest olive ridley to the leatherback, which can weigh more than a small car
+and dive deeper than most whales.
+
+**2** Almost everything about a turtle's life happens at sea, with one enormous exception. Females
+must return to land to lay their eggs, and they return to the very beach on which they themselves
+hatched, sometimes after crossing an entire ocean to get there. How they manage this is still
+being argued about; the leading explanation is that hatchlings memorise the magnetic signature of
+their birthplace and navigate back to it decades later, reading the earth itself like a map.
+
+**3** A nesting female hauls herself up the sand at night, digs a chamber with her back flippers,
+lays around a hundred soft eggs, covers them and returns to the water. She will never see her
+young. The temperature of the sand decides their sex — warmer nests produce females, cooler ones
+males — which is why a heating climate worries biologists so much: some beaches now produce almost
+no males at all.
+
+**4** Two months later the hatchlings emerge together, usually after dark, and make the most
+dangerous journey of their lives: a scramble of perhaps thirty metres to the sea. They find it by
+moving towards the brightest horizon, which for a hundred million years meant the moonlit water.
+Crabs, gulls and dogs wait along the route. Of every thousand hatchlings that reach the waves,
+roughly one survives to adulthood.
+
+**5** Modern hazards have been added to the ancient ones. Plastic bags drifting in the current
+resemble jellyfish, a favourite food, and a turtle that swallows one may starve with a full
+stomach. Fishing nets drown them. Nesting beaches have been built on, dug up and lit — and a
+hatchling that turns towards a hotel car park instead of the sea will not survive the morning.
+
+**6** There is, however, some good news, and it is the kind that arrives slowly. Protected
+beaches, patrolled hatcheries and simple changes such as shielded lighting have brought several
+populations back from the edge. Because turtles take twenty to thirty years to mature, nobody
+who protects a nest today will know for certain whether it worked. Conservationists describe the
+work as planting trees whose shade you will never sit in.
+
+## Text B
+**Title:** A life measured in nesting seasons
+**Context:** Opinion / experience / career. Paragraphs are numbered; questions cite them by number.
+
+The marine biologist Dr Amara Nkemelu on a career spent on beaches at night.
+
+People assume my job is glamorous because it involves tropical beaches, and I have stopped
+correcting them, because the truth takes too long. Here is the truth anyway. I have spent
+nineteen years working nights on sand, and I would choose it again tomorrow.
+
+Begin with what the work actually is. From dusk until dawn we walk a stretch of beach, over and
+over, looking for tracks. When we find a nesting female we wait — quietly, at a distance, without
+white light — while she does something she has done alone for a hundred million years, and then
+we count, measure, tag and record. In the hatching season we do the same in reverse, watching for
+the sand to shiver as a nest boils up, then keeping the crabs and the dogs off while a hundred
+hatchlings make their run.
+
+I will not pretend it is comfortable. It is hot, it is sleepless, the insects are relentless, and
+the pay would embarrass you. Every volunteer arrives imagining turtles and discovers spreadsheets:
+the data is the point, and unrecorded work helps nobody. And you must make peace, early, with
+arithmetic — one in a thousand. You will protect a nest, celebrate a hundred scrambling
+hatchlings, and understand that statistically you have saved a fraction of one animal.
+
+So why do it? Three reasons, and I offer them to anyone considering this life. First, the science
+is genuinely unfinished — we still do not fully know how they navigate, and I have colleagues who
+have changed the textbook. Second, the work is unusually *doable*: shield a light, move a nest,
+patrol a beach, and the outcome improves measurably. Very few environmental problems answer that
+directly. Third — and this is the one that keeps people — you are present at something enormous.
+A female hauling up a beach in the dark is doing what her ancestors did before there were birds.
+Standing three metres away from that, at two in the morning, does not become ordinary. Mine was
+season nineteen last year, and it still did not.
+
+My advice to anyone drawn to it: volunteer for one full season before you commit, learn to love
+the recording as much as the animals, and accept that you are planting shade for someone else.
+
+## Text C
+**Title:** Nest 114
+**Context:** Narrative or personal account. Paragraphs are numbered; questions cite them by number.
+
+Priya Raman describes her first night as a hatchery volunteer.
+
+**1** They gave me a red torch, a clipboard and a stretch of beach nine hundred metres long, and
+by ten o'clock I had convinced myself I was going to ruin everything.
+
+**2** The red light was the first surprise. White light disorients turtles, so the whole hatchery
+works by torches the colour of a warning lamp, and the effect is that you spend the night inside
+a dim scarlet world where the sand looks like the surface of another planet. Beyond the reach of
+my torch there was nothing but the sound of the sea, patiently **grinding** the shore.
+
+**3** My instructor for the night was Ruth, who has done this for eleven seasons and walks at a
+speed I could not maintain while carrying a clipboard. 'You're looking for tractor tracks,' she
+said. 'Once you've seen them you'll never miss one.'
+
+**4** She was right. At twenty to twelve we found them: two broad furrows climbing the beach in
+parallel, as though something had **hauled** a machine out of the water. We followed them up to a
+patch of disturbed sand and, above it, a female olive ridley the size of a coffee table, breathing
+in slow gusts, throwing sand behind her with her back flippers in a rhythm as regular as a
+metronome.
+
+**5** 'Sit,' Ruth whispered. 'Behind her. Don't speak until she's finished.'
+
+**6** So I sat on cooling sand three metres from an animal older in her lineage than every bird
+alive, and did nothing. That was the hardest instruction of the night. She dug for forty minutes.
+She laid for twenty. Twice she stopped completely, and my chest went tight in case something was
+wrong; Ruth simply raised one finger, meaning *wait*, and each time the turtle resumed. When at
+last she began covering the nest, throwing sand with a wide sweep, Ruth handed me the clipboard
+and mouthed, 'One hundred and fourteen.'
+
+**7** We measured her shell, checked her flippers for a tag, and found one — a small metal band,
+worn thin, stamped with a number that told us she had been recorded on this same beach nine years
+earlier. I asked Ruth whether that was unusual. She said it happened perhaps a dozen times a
+season, and that each one was a small piece of proof that the beach was working. Then she wrote
+the number down without any ceremony at all, and I understood that this was the job: not the
+wonder, the number.
+
+**8** Then the turtle turned and went back down her own tracks. She never once looked at the nest
+she had left, and I found that harder to watch than anything else. She had crossed an ocean to
+reach this specific sand, dug for an hour, and left a hundred eggs behind her with no more
+attention than someone posting a letter. The sea took her in four movements and she was gone.
+
+**9** At three in the morning we walked the beach again, and I asked Ruth the question every new
+volunteer apparently asks: whether it is **futile**, protecting one nest when only one hatchling
+in a thousand survives. She thought about it for a while.
+
+**10** 'A thousand is the number without us,' she said. 'Our job is to make it a smaller number.
+You won't see it. She' — nodding at the water — 'was somebody's paperwork nine years ago.'
+
+**11** We walked the rest of the stretch without speaking. The tide had turned, and the tractor
+tracks we had followed at midnight were already half erased, softened at the edges like something
+remembered rather than seen.
+
+**12** I have been turning that sentence over ever since. Nest 114 will hatch in about sixty days,
+long after I have gone home. Somebody else will be there with a red torch, keeping the dogs off,
+writing a number on a clipboard, and none of us will ever know which of those hundred hatchlings
+made it. I signed up for the next season before I had unpacked.
+
+
+
+*Words printed **bold** in Text C are the 'underlined' words referred to in Question 2(b).*
+
+## Q1
+**Marks:** 30
+**AOs:** AO1, AO2
+**Mark Split:** 1(a)-(e) reading 15 + 1(f) summary 15 (10 reading + 5 writing)
+
+**(a)** Give the number of sea turtle species that remain today. **[1]**
+
+**(b)** Using your own words, explain what the text means by:
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** 'reading the earth itself like a map' (paragraph 2) **[2]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** 'planting trees whose shade you will never sit in' (paragraph 6) **[2]**
+
+**(c)** Re-read paragraph 3 ('A nesting female … no males at all.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;Give **two** things that decide what happens to a turtle's eggs. **[2]**
+
+**(d)** Re-read paragraph 4 ('Two months later … survives to adulthood.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** Identify **two** dangers hatchlings face on their journey to the sea. **[2]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** Explain why hatchlings move towards the brightest horizon, and why this
+behaviour can now put them at risk. **[3]**
+
+**(e)** Re-read paragraphs 5 and 6 ('Modern hazards … never sit in.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;Using your own words, explain why the results of conservation work are so
+difficult to measure. **[3]**
+
+Read **Text B**, *A life measured in nesting seasons*, in the insert and then answer Question 1(f).
+
+**(f)** According to Text B, what might attract someone to a career in turtle conservation, and
+what might they find difficult about it?
+
+You must use continuous writing (not note form) and use your own words as far as possible.
+
+Your summary should not be more than 120 words.
+
+Up to 10 marks are available for the content of your answer and up to 5 marks for the quality of
+your writing. **[15]**
+
+## Q2
+**Marks:** 25
+**AOs:** AO2
+**Mark Split:** 2(a)-(c) reading 10 + 2(d) writer's effect 15 (content only)
+
+**(a)** Identify a word or phrase from the text which suggests the same idea as the words
+underlined:
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** The marks left by the turtle looked as though <u>heavy machinery had been
+dragged up the beach</u>. **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** The turtle threw sand <u>with perfectly regular timing</u>. **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iii)** Ruth recorded the tag number <u>without treating it as a special
+moment</u>. **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iv)** The writer felt <u>a sudden anxiety</u> when the turtle stopped
+digging. **[1]**
+
+**(b)** Using your own words, explain what the writer means by each of the words underlined
+(printed **bold** in the insert):
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** grinding (paragraph 2) **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** hauled (paragraph 4) **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iii)** futile (paragraph 9) **[1]**
+
+**(c)** Use **one** example from the text below to explain how the writer suggests her feelings as
+she sat beside the nesting turtle:
+
+> 'So I sat on cooling sand three metres from an animal older in her lineage than every bird
+> alive, and did nothing. That was the hardest instruction of the night.' **[3]**
+
+**(d)** Re-read paragraphs 2 and 8.
+
+- Paragraph 2 begins 'The red light was …' and is about the strangeness of working by red torchlight.
+- Paragraph 8 begins 'Then the turtle turned …' and is about the turtle leaving her nest.
+
+Explain how the writer uses language to convey meaning and to create effect in these paragraphs.
+Choose **three** examples of words or phrases from each paragraph to support your answer. Your
+choices should include the use of imagery.
+
+Write about 200 to 300 words.
+
+Up to 15 marks are available for the content of your answer. **[15]**
+
+## Q3
+**Marks:** 25
+**AOs:** AO1, AO2, AO3
+**Mark Split:** 15 reading + 10 writing
+
+You are **Ruth**, the experienced volunteer in Text C. Some months later you are **interviewed**
+for a podcast about unusual voluntary work. The interviewer asks you the following three questions
+only:
+
+- What actually happens on a night patrol, and what do new volunteers find hardest about it?
+- Nest 114's mother had been recorded on the same beach nine years earlier — why does that matter
+  so much to you?
+- Only one hatchling in a thousand survives. How do you answer volunteers who ask whether the work
+  is worth doing?
+
+Write the words of the interview.
+
+Write about 250 to 350 words.
+
+Up to 15 marks are available for the content of your answer and up to 10 marks for the quality of
+your writing. **[25]**
+
+---
+
+# Topic 3: Practice Paper 3 — The Forge
+**Type:** language_paper
+**Format:** multi_question
+**Teaching Point:** Cambridge IGCSE First Language English Paper 1 (0500 / 0990) — Reading. Theme: work and career. THREE texts, 80 marks, 2 hours. Q1 [30] = short-answer comprehension on Text A plus a summary of Text B (120 words maximum, 10 reading + 5 writing). Q2 [25] = short language items on Text C plus the Writer's Effect analysis [15], 200-300 words. Q3 [25] = extended response in role from Text C, 250-350 words, 15 reading + 10 writing; this paper's form is the speech. Phase 1 (first draft) establishes the baseline; Phase 2 (redraft) targets the improvements identified in assessment.
+**Marks:** 80
+**AOs:** AO1, AO2, AO3
+
+## Text A
+**Title:** The trades that refused to die
+**Context:** Factual / informative. Paragraphs are numbered; questions cite them by number.
+
+**1** Thirty years ago the forge was written off. Machines could stamp out in seconds what a
+blacksmith took an hour to shape, and the trade seemed destined to become a museum exhibit —
+something demonstrated at country fairs by men in leather aprons for the benefit of visiting
+schoolchildren.
+
+**2** It did not happen. Across Europe, applications for blacksmithing apprenticeships are now
+several times what they were in the 1990s, and the waiting lists at the better schools run to two
+years. The same is true of thatching, stonemasonry, bookbinding, wheelwrighting and a dozen other
+trades that were quietly declared finished.
+
+**3** The reasons are partly economic. A machine is unbeatable at making ten thousand identical
+gates, but useless when a single gate must fit a wall built in 1780. Restoration work — historic
+buildings, heritage railways, conservation projects — needs people who can make one of something,
+by hand, to match what was there before. That work cannot be outsourced or automated, and it pays.
+
+**4** But the newer reason is about the workers themselves. Craft schools report that a growing
+share of their applicants are career-changers in their late twenties and thirties, leaving
+office work for the workshop. They speak, over and over, about wanting to finish a day and be
+able to point at something. Psychologists call this 'completion' — the satisfaction of a task
+with a visible end — and note that a great deal of modern work is deliberately designed without
+it.
+
+**5** The training is not short. A blacksmith's apprenticeship runs three to four years; a
+stonemason's can run five. Apprentices earn very little at first, spend months on repetitive
+fundamentals before touching anything interesting, and must accept that their early work will be
+scrapped in front of them. Burns, blisters and ruined pieces are described by every training
+school as part of the curriculum rather than accidents.
+
+**6** What the trades offer in return is unusual in modern employment: work that cannot be done
+remotely, cannot be automated, and improves for forty years. Master smiths in their sixties are
+routinely described as being at the height of their powers — a sentence that would sound strange
+in almost any other industry today.
+
+## Text B
+**Title:** I gave up a good job to hit metal with a hammer
+**Context:** Opinion / experience / career. Paragraphs are numbered; questions cite them by number.
+
+Daniel Okonjo on leaving an office career at thirty-one.
+
+Let me deal with the obvious question first, because everybody asks it: yes, I took a pay cut, and
+yes, it was enormous. I earned more in my final year in logistics than I have earned in any two
+years since. I have never once wanted it back.
+
+The job I left was not a bad one. Good colleagues, a decent salary, a chair that cost more than my
+first car. What it did not have — and I could not have explained this at the time — was an end. I
+would work for a week and produce a document that fed into a process that informed a decision that
+was taken somewhere else. On my last Friday I tried to describe to my father what I had actually
+made that year, and I could not do it.
+
+Now I can. There is a gate on a farm eleven miles from here that I made, and it will be there
+after I am gone. That is not a small thing to be able to say.
+
+I want to be honest about the other side. The first year of my apprenticeship was the hardest of
+my life. I was thirty-one and the youngest apprentice was seventeen and better than me at
+everything. I spent four months making nothing but hooks — hundreds of hooks, most of which were
+thrown into the scrap bin in front of me. My hands blistered, then split, then hardened. I was
+tired in a way office tiredness had not prepared me for, and I was earning less than a third of
+my old salary.
+
+But here is what I would say to anyone considering it. The learning never stops, which sounds
+like a slogan until you meet a man of sixty-five who is still visibly improving. The work is
+physical, so you sleep. Nobody can do your job from another country, or automate it, or reorganise
+you out of it. And every single evening, without exception, you can point at something that did
+not exist that morning.
+
+If you are thinking about it: go and spend a week in a forge before you resign from anything.
+Half the people who try it discover they only liked the idea. The other half never go back.
+
+## Text C
+**Title:** Four hundred hooks
+**Context:** Narrative or personal account. Paragraphs are numbered; questions cite them by number.
+
+Beatrix Halloran describes her first month as an apprentice blacksmith.
+
+**1** The forge is hotter than you imagine, and then hotter again. On my first morning I stepped
+through the doors at seven and the heat met me like a wall — not the pleasant warmth of a fire but
+something with weight to it, pressing on my face, drying my eyes.
+
+**2** Master Ferris did not shake my hand. He pointed at a bucket of steel rod, then at the anvil,
+then at a finished hook hanging on a nail above the bench. 'Make that,' he said. 'When it's right,
+make another one.'
+
+**3** He walked away. That was the whole of my induction.
+
+**4** My first hook took forty minutes and looked, when I finally set it down, like something
+recovered from a shipwreck: **buckled** at the neck, thick where it should have tapered, and bent
+very slightly out of the plane, so that it would not have hung straight on any wall in the world.
+Ferris picked it up, turned it once, and dropped it into the scrap bin without a word.
+
+**5** This continued for four months.
+
+**6** I want to be accurate about the tedium, because it is the part nobody mentions. I made hooks
+in October, and in November, and in December. I made them while the yard froze and the water
+barrel grew a lid of ice. There were mornings when I could not feel my fingers until the ninth or
+tenth heat, and afternoons when the ring of the hammer became so ordinary that I stopped hearing
+it altogether. Twice I decided, silently and completely, to leave at the end of the week. Both
+times I came back on the Monday and said nothing about it to anyone. I made four hundred and
+eleven of them, and Ferris kept nine.
+
+**7** What I could not see at the time was that the hooks were not the point. Somewhere in the
+second month my arm stopped aching. In the third, I noticed that I had begun to hear the
+difference between steel that was ready and steel that was merely hot — a **duller** ring under
+the hammer, a change in the way the surface moved. Nobody taught me that. It arrived on its own,
+the way a language does.
+
+**8** The morning it happened I did not realise anything had. I drew the neck down, turned the
+curve, set it on the bench and reached for the next rod. Ferris came past, stopped, and picked the
+hook up. He held it at arm's length. He turned it over. Then he walked to the far wall and hung it
+on the nail, next to the one I had been copying since October, and stood back so I could see them
+both.
+
+**9** They were identical. Same taper, same curve, same clean turn at the neck. I looked at them
+for a long moment, and I could not tell you now which was his and which was mine. Neither, I
+suspect, could he.
+
+**10** 'Right,' he said. 'Now you can learn something.' And he handed me a drawing of a hinge.
+
+**11** I went home that night and could not settle. My hands were black to the wrist, one knuckle
+was **weeping** where a scale had caught it, and I had spent four months making an object worth
+about two pounds. I have three degrees' worth of friends who think I have lost my mind, and that
+evening I could not have argued with them.
+
+**12** But I keep thinking about the wall. Somewhere in those four hundred and eleven failures my
+hands learned something my head still cannot explain, and it is mine now, and nobody can take it
+back off me. I start on hinges tomorrow. I expect to make four hundred of those, too.
+
+
+
+*Words printed **bold** in Text C are the 'underlined' words referred to in Question 2(b).*
+
+## Q1
+**Marks:** 30
+**AOs:** AO1, AO2
+**Mark Split:** 1(a)-(e) reading 15 + 1(f) summary 15 (10 reading + 5 writing)
+
+**(a)** Give the length of a blacksmith's apprenticeship according to the text. **[1]**
+
+**(b)** Using your own words, explain what the text means by:
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** 'quietly declared finished' (paragraph 2) **[2]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** 'part of the curriculum rather than accidents' (paragraph 5) **[2]**
+
+**(c)** Re-read paragraph 3 ('The reasons are partly economic … and it pays.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;Give **two** reasons why restoration work cannot be done by machine. **[2]**
+
+**(d)** Re-read paragraph 4 ('But the newer reason … designed without it.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** Identify **two** facts the text gives about the people now applying to
+craft schools. **[2]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** Explain what 'completion' means and why the text suggests modern
+office work often lacks it. **[3]**
+
+**(e)** Re-read paragraphs 5 and 6 ('The training is not short … industry today.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;Using your own words, explain what an apprentice must accept during training
+and what they gain in the long term. **[3]**
+
+Read **Text B**, *I gave up a good job to hit metal with a hammer*, in the insert and then answer
+Question 1(f).
+
+**(f)** According to Text B, what does Daniel Okonjo believe are the rewards of leaving office work
+for a craft?
+
+You must use continuous writing (not note form) and use your own words as far as possible.
+
+Your summary should not be more than 120 words.
+
+Up to 10 marks are available for the content of your answer and up to 5 marks for the quality of
+your writing. **[15]**
+
+## Q2
+**Marks:** 25
+**AOs:** AO2
+**Mark Split:** 2(a)-(c) reading 10 + 2(d) writer's effect 15 (content only)
+
+**(a)** Identify a word or phrase from the text which suggests the same idea as the words
+underlined:
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** The heat <u>seemed solid and physical as she entered</u>. **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** Her first attempt looked <u>like an object salvaged from a wreck</u>.
+**[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iii)** The cold weather formed <u>a covering of ice on the water</u>. **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iv)** Her hands were <u>completely blackened up to her wrists</u>. **[1]**
+
+**(b)** Using your own words, explain what the writer means by each of the words underlined
+(printed **bold** in the insert):
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** buckled (paragraph 4) **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** duller (paragraph 7) **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iii)** weeping (paragraph 11) **[1]**
+
+**(c)** Use **one** example from the text below to explain how the writer suggests her feelings on
+her first morning:
+
+> 'Master Ferris did not shake my hand. He pointed at a bucket of steel rod, then at the anvil,
+> then at a finished hook hanging on a nail above the bench. "Make that," he said. "When it's
+> right, make another one." He walked away. That was the whole of my induction.' **[3]**
+
+**(d)** Re-read paragraphs 7 and 8.
+
+- Paragraph 7 begins 'What I could not see …' and is about the skill arriving without her noticing.
+- Paragraph 8 begins 'The morning it happened …' and is about Ferris hanging her hook on the wall.
+
+Explain how the writer uses language to convey meaning and to create effect in these paragraphs.
+Choose **three** examples of words or phrases from each paragraph to support your answer. Your
+choices should include the use of imagery.
+
+Write about 200 to 300 words.
+
+Up to 15 marks are available for the content of your answer. **[15]**
+
+## Q3
+**Marks:** 25
+**AOs:** AO1, AO2, AO3
+**Mark Split:** 15 reading + 10 writing
+
+You are **Master Ferris**, the blacksmith in Text C. You have been invited to give a **speech** at
+a careers event for school leavers who are considering an apprenticeship.
+
+In your speech you should:
+
+- explain what the first months of an apprenticeship actually involve and why the work is
+  repetitive at the start
+- describe how you know when an apprentice has begun to learn, using what you have observed
+- persuade your audience why a trade of this kind is worth the years it takes.
+
+Write the words of the speech.
+
+Write about 250 to 350 words.
+
+Up to 15 marks are available for the content of your answer and up to 10 marks for the quality of
+your writing. **[25]**
+
+---
+
+# Topic 4: Practice Paper 4 — Cold-Water Swimming
+**Type:** language_paper
+**Format:** multi_question
+**Teaching Point:** Cambridge IGCSE First Language English Paper 1 (0500 / 0990) — Reading. Theme: outdoor pursuits and endurance. THREE texts, 80 marks, 2 hours. Q1 [30] = short-answer comprehension on Text A plus a summary of Text B (120 words maximum, 10 reading + 5 writing). Q2 [25] = short language items on Text C plus the Writer's Effect analysis [15], 200-300 words. Q3 [25] = extended response in role from Text C, 250-350 words, 15 reading + 10 writing; this paper's form is the letter. Phase 1 (first draft) establishes the baseline; Phase 2 (redraft) targets the improvements identified in assessment.
+**Marks:** 80
+**AOs:** AO1, AO2, AO3
+
+## Text A
+**Title:** Swimming in winter
+**Context:** Factual / informative. Paragraphs are numbered; questions cite them by number.
+
+**1** Every year, on the first of January, tens of thousands of people across the northern
+hemisphere walk into water cold enough to hurt. Some do it once, for charity or a photograph.
+A surprising number keep going, and swim outdoors through the whole winter — a habit that has
+grown from an eccentricity into one of the fastest-expanding outdoor pursuits in Europe.
+
+**2** The body's reaction to cold water is dramatic and entirely automatic. Below about fifteen
+degrees, immersion triggers what physiologists call the cold shock response: an involuntary gasp,
+a racing heart and, for perhaps ninety seconds, breathing that cannot be controlled. This is the
+genuinely dangerous phase, and it is the reason experienced swimmers enter slowly, never dive,
+and never swim alone. After a minute or two the panic subsides, the breathing steadies, and most
+swimmers report an almost immediate sense of calm.
+
+**3** What happens next is what regular swimmers describe as the point of it. Cold water floods
+the body with adrenaline and endorphins, and the effect on mood can last for hours. Small studies
+suggest cold immersion may reduce inflammation and improve the body's response to stress; larger
+trials are still under way, and researchers are careful to say that the evidence for long-term
+health benefits remains thin.
+
+**4** The risks, however, are not in doubt. Cold shock can cause a swimmer to inhale water in the
+first seconds. Muscles lose power quickly, so a person who swims out feeling strong may be unable
+to swim back. Afterdrop — the continued fall in core temperature after leaving the water — means
+the most dangerous minutes are often those on the shore, ten minutes later, wrapped in a towel and
+feeling fine. Every reputable club teaches the same rules: acclimatise over weeks, enter gradually,
+stay within your depth, get out earlier than you want to, and dress immediately.
+
+**5** The growth of the sport has been driven partly by community. Groups now meet before dawn on
+lakes, harbours and reservoirs, and the swim is often shorter than the conversation afterwards.
+Organisers report that a striking proportion of members joined during difficult periods of their
+lives — after illness, bereavement or loss of work — and stayed.
+
+**6** It is, in the end, an odd sort of pleasure: brief, uncomfortable, faintly ridiculous, and
+almost impossible to explain to anyone who has not tried it. Its participants tend not to try very
+hard. They simply invite you to come along on Saturday, and bring a towel.
+
+## Text B
+**Title:** What the cold gives back
+**Context:** Opinion / experience / career. Paragraphs are numbered; questions cite them by number.
+
+The open-water coach Sinéad Feeney on twenty winters of outdoor swimming.
+
+I coach beginners, and I have learned to start with the disappointing truth: for the first ninety
+seconds it is horrible. Everyone hopes I am going to tell them otherwise. I am not. Your breath
+goes, your chest tightens, your hands burn, and some part of your brain begins shouting at you to
+get out. If a coach promises you that the cold is pleasant, find a different coach.
+
+Ninety seconds later, it is one of the best feelings available to a human being, and it is free.
+
+Here is what I think is actually happening, beyond the physiology. Cold water demands your entire
+attention. You cannot worry about an exam, or a bill, or an argument, while your body is dealing
+with fifty-degree water — there is simply no capacity left over. People come out of the sea
+describing a quiet in their heads that they have not had for months. I have watched it happen to
+teenagers before exams, to parents of small children, to a man who had not slept properly in a
+year.
+
+The second gift is company, and I would rank it higher. My Saturday group has thirty regulars: a
+retired teacher, two nurses coming off nights, three teenagers, a bus driver. They have nothing in
+common except the water and the flask of tea afterwards, and several have told me privately that
+the group arrived at the point in their lives when they needed it most.
+
+The third is a kind of proof. On a January morning your whole body tells you not to do this, and
+you do it anyway, and you are back at your desk by nine. That is a small, repeatable act of
+courage, and it transfers — I have seen quiet swimmers become the sort of people who apply for
+the job.
+
+None of which means it is safe to be casual about. Learn in summer and build through autumn.
+Never swim alone, never dive in, and get out while you are still enjoying it — the cold takes
+your judgement before it takes your strength. Respect it, and it will give you the best twenty
+minutes of your week for the next thirty years.
+
+## Text C
+**Title:** The first Saturday
+**Context:** Narrative or personal account. Paragraphs are numbered; questions cite them by number.
+
+Tomas Bergström describes his first winter swim.
+
+**1** I had been putting it off since September, which is how I came to be standing on a shingle
+beach in the dark on the second Saturday in January, holding a towel I already knew would not be
+enough.
+
+**2** The group had told me to arrive at half past six. Nobody had mentioned that it would still
+be night, or that the temperature on the noticeboard by the slipway would read four degrees, or
+that the water — a flat, oily black, moving very slightly — would look so entirely unwilling to be
+swum in.
+
+**3** There were about twenty of them, and they were **infuriatingly** cheerful. A woman called
+Bridie, who I later learned was seventy-one, was already in a swimming costume and woolly hat,
+talking about a dog. Nobody made a fuss of me. Somebody handed me a numbered wristband, told me to
+stay between the two buoys, and asked whether I had a hot drink in the car. I said I did not.
+Three people offered me theirs.
+
+**4** 'Walk in,' Bridie said. 'Don't stop, don't dive, and don't be a hero. Two minutes today.'
+
+**5** The first step was a shock in the ordinary sense — cold ankles, an intake of breath, a
+regrettable decision. The third step was something else entirely. The water reached my thighs and
+my lungs simply **shut**. I could not draw breath. My heart went off like an alarm, my shoulders
+climbed towards my ears, and every rational thought I had was replaced by one very loud instruction
+to leave.
+
+**6** 'That's normal,' Bridie said, from somewhere to my left, in the voice of a woman commenting
+on the weather. 'Keep walking. Long breath out.'
+
+**7** So I walked, and I breathed out, and somewhere around my ribs the panic — which had felt
+enormous and permanent — began, unbelievably, to loosen. My breathing came back. My shoulders
+came down. I found I was standing chest-deep in the North Sea in January, and that I was, somehow,
+completely fine.
+
+**8** Then the strangest part. For about ninety seconds I experienced a silence in my head that I
+had not known since I was a child: no work, no lists, no low background hum of things I had failed
+to do. Just black water, a lightening sky, and Bridie's woolly hat bobbing along ten metres away.
+I remember thinking, very clearly, *so this is what they meant* — and then thinking nothing at
+all, for the first time in about four years.
+
+**9** They made me get out after two minutes, which felt absurd, because I could have stayed for
+twenty. I said so, twice. Bridie was firm, and she gave me the reason rather than the order: the
+cold takes your judgement first and your strength second, so a beginner who feels wonderful is
+exactly the person about to make a mistake. Every rule they gave me that morning, I later realised,
+came with its reason attached — walk, don't dive, because of the first gasp; stay between the
+buoys, because your arms will fail before you notice; get dressed at once, because the cold keeps
+falling after you leave the water. On the beach my hands became **useless** — I could not manage
+the zip on my own bag — and a nurse called Ade did it for me without comment, the way you would
+for a child.
+
+**10** Ten minutes later, holding somebody else's tea and shaking hard, I understood the other
+half of it. Twenty people were standing in a car park at half past seven in the morning, laughing,
+in weather nobody would choose. Nobody was on a phone.
+
+**11** I go on Saturdays now. I have a proper flask, two hats, and a great many opinions about
+gloves. When people ask me why, I tell them what Bridie told me on the beach that first morning:
+that it is two minutes of feeling terrible, in exchange for a whole week of feeling like yourself.
+
+
+
+*Words printed **bold** in Text C are the 'underlined' words referred to in Question 2(b).*
+
+## Q1
+**Marks:** 30
+**AOs:** AO1, AO2
+**Mark Split:** 1(a)-(e) reading 15 + 1(f) summary 15 (10 reading + 5 writing)
+
+**(a)** Give the water temperature below which the cold shock response is triggered. **[1]**
+
+**(b)** Using your own words, explain what the text means by:
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** 'grown from an eccentricity' (paragraph 1) **[2]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** 'the evidence for long-term health benefits remains thin'
+(paragraph 3) **[2]**
+
+**(c)** Re-read paragraph 2 ('The body's reaction … sense of calm.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;Give **two** rules experienced swimmers follow because of the cold shock
+response. **[2]**
+
+**(d)** Re-read paragraph 4 ('The risks, however … dress immediately.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** Identify **two** dangers of cold water described in this paragraph.
+**[2]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** Explain what 'afterdrop' is and why it makes the time after a swim
+particularly dangerous. **[3]**
+
+**(e)** Re-read paragraphs 5 and 6 ('The growth of the sport … bring a towel.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;Using your own words, explain what the text suggests about why people stay
+in these swimming groups. **[3]**
+
+Read **Text B**, *What the cold gives back*, in the insert and then answer Question 1(f).
+
+**(f)** According to Text B, what does Sinéad Feeney believe outdoor swimming gives to the people
+who do it?
+
+You must use continuous writing (not note form) and use your own words as far as possible.
+
+Your summary should not be more than 120 words.
+
+Up to 10 marks are available for the content of your answer and up to 5 marks for the quality of
+your writing. **[15]**
+
+## Q2
+**Marks:** 25
+**AOs:** AO2
+**Mark Split:** 2(a)-(c) reading 10 + 2(d) writer's effect 15 (content only)
+
+**(a)** Identify a word or phrase from the text which suggests the same idea as the words
+underlined:
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** The sea looked <u>completely unsuited to swimming in</u>. **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** His heart <u>began beating very rapidly and loudly</u>. **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iii)** Bridie spoke <u>as calmly as if she were discussing something
+ordinary</u>. **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iv)** The nurse helped him <u>without saying anything about it</u>. **[1]**
+
+**(b)** Using your own words, explain what the writer means by each of the words underlined
+(printed **bold** in the insert):
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** infuriatingly (paragraph 3) **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** shut (paragraph 5) **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iii)** useless (paragraph 9) **[1]**
+
+**(c)** Use **one** example from the text below to explain how the writer suggests his feelings as
+he entered the water:
+
+> 'The water reached my thighs and my lungs simply shut. I could not draw breath. My heart went off
+> like an alarm, my shoulders climbed towards my ears, and every rational thought I had was
+> replaced by one very loud instruction to leave.' **[3]**
+
+**(d)** Re-read paragraphs 8 and 10.
+
+- Paragraph 8 begins 'Then the strangest part …' and is about the quiet he experienced in the water.
+- Paragraph 10 begins 'Ten minutes later …' and is about the group on the beach afterwards.
+
+Explain how the writer uses language to convey meaning and to create effect in these paragraphs.
+Choose **three** examples of words or phrases from each paragraph to support your answer. Your
+choices should include the use of imagery.
+
+Write about 200 to 300 words.
+
+Up to 15 marks are available for the content of your answer. **[15]**
+
+## Q3
+**Marks:** 25
+**AOs:** AO1, AO2, AO3
+**Mark Split:** 15 reading + 10 writing
+
+You are **Bridie**, the experienced swimmer in Text C. A few days after that Saturday, you write a
+**letter** to your niece, who has told you she is thinking of trying winter swimming but is
+frightened of the cold.
 
 In your letter you should:
-- describe the transformation of London under the snow
-- explain how the snow changed the atmosphere of the city
-- convey your feelings about what you witnessed.
 
-Base your letter on what you have read in Passage B. Be careful to use your own words. Address each of the three bullet points.
+- describe what actually happens to a beginner in the first minutes, using what you saw happen to
+  Tomas
+- explain the safety rules you insist on and why each one matters
+- encourage your niece by describing what you believe people gain from swimming in winter.
 
-Write between 250 and 350 words.
+Write the words of the letter.
 
-Up to 25 marks are available for the content and structure of your answer, and up to 15 marks for the quality of your writing.
+Write about 250 to 350 words.
 
----
-
-# Topic 2: Conceptual Notes
-**Type:** conceptual-notes
-**Teaching Point:** Key concepts for Cambridge IGCSE Language Paper 1 — reading skills including short-answer comprehension, summary writing (selecting and organising relevant points), and extended response (directed writing or language analysis). These notes support both Phase 1 (first draft) and Phase 2 (redraft) across all practice papers.
-**Marks:** 0
-**AOs:** none
-
-## Question
-N/A — Conceptual Notes topic.
+Up to 15 marks are available for the content of your answer and up to 10 marks for the quality of
+your writing. **[25]**
 
 ---
 
-# Topic 3: Transactional Writing — Article
+# Topic 5: Practice Paper 5 — Backstage
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Standalone transactional writing exercise — Article form. Although Paper 1 is primarily reading, this exercise practises the directed writing skills needed for Q3. Phase 1 (first draft) focuses on voice and perspective; Phase 2 (redraft) refines style and accuracy.
-**Marks:** 40
-**AOs:** AO2, AO3
-
-## Q1
-**Marks:** 40 (25 content + 15 quality of writing)
-**AOs:** AO2, AO3
-
-"Young people today have more opportunities than ever before, yet seem less satisfied." Write an article for a broadsheet newspaper in which you argue for or against this view.
-
----
-
-# Topic 4: Practice Paper 2 — The Crossing / Idle Days in Patagonia
-**Type:** language_paper
-**Format:** multi_question
-**Teaching Point:** Cambridge IGCSE Language Paper 1 Practice — Reading. Two non-fiction passages about perilous sea voyages, three questions, 80 marks total. Q1 tests short-answer comprehension, Q2 tests summary writing, Q3 tests extended response. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
+**Teaching Point:** Cambridge IGCSE First Language English Paper 1 (0500 / 0990) — Reading. Theme: the arts and performance. THREE texts, 80 marks, 2 hours. Q1 [30] = short-answer comprehension on Text A plus a summary of Text B (120 words maximum, 10 reading + 5 writing). Q2 [25] = short language items on Text C plus the Writer's Effect analysis [15], 200-300 words. Q3 [25] = extended response in role from Text C, 250-350 words, 15 reading + 10 writing; this paper's form is the article. Phase 1 (first draft) establishes the baseline; Phase 2 (redraft) targets the improvements identified in assessment.
 **Marks:** 80
 **AOs:** AO1, AO2, AO3
 
-## Passage A
-**Title:** The Crossing
-**Author:** James Cracknell and Ben Fogle (2006)
-**Context:** 21st Century non-fiction. An extract from the autobiographical account of James Cracknell and Ben Fogle crossing the Atlantic in a rowing boat, published in 2006. Ben describes what happened one night as he rowed and James slept.
+## Text A
+**Title:** The people you are not supposed to see
+**Context:** Factual / informative. Paragraphs are numbered; questions cite them by number.
 
-In 2005, Ben Fogle and James Cracknell set off together in a seven week race across the Atlantic Ocean in a rowing boat called 'Spirit'. In their book The Crossing, Ben describes what happened one night.
+**1** For every performer on a stage there are, on average, four people working out of sight to
+keep them there. A mid-scale touring production travels with electricians, carpenters, sound
+engineers, wardrobe staff, a company manager and a stage-management team — none of whom will be
+recognised in the street, and all of whom would be missed within about ninety seconds if they
+stopped.
 
-1  It was still dark. We had at least three hours of darkness to go before daybreak and, as
-2  always, I had the sunrise shift. The ocean had continued to build, with an ever-increasing
-3  wind that was gusting at 40 knots. The swell had grown and conditions were becoming
-4  increasingly frenzied. I began to feel vulnerable again. If we can just make it to daybreak, I
-5  thought, it will be easier to read the waves and prepare for the breakers.
-6  Our boat was brand spanking new and bought straight from the race organisers. It had coped
-7  with the seas we had experienced thus far incredibly well. I rowed on, worried by the
-8  deteriorating weather, and I thought of my wife, back at home. I longed to be with her and away
-9  from this intimidating ocean. As I rowed, a barely perceptible blue hue appeared on the skyline.
-10 The swell was gathering, and the breaking waves were becoming more frequent. 'Come on,
-11 sun,' I thought, willing the day to break. Something wasn't right.
-12 I watched as a vast wave gathered behind the boat, soaring above the cabin, a wall of white
-13 water towering over our tiny boat. Once again I dug the oars in to propel us forward, but the
-14 wave was too big. For a moment it felt like we were moving backwards as we were sucked
-15 into the belly of the wave, the horizon disappearing as the churning surf enveloped the stern
-16 of the boat. I felt it lift, as a torrent of water crashed over the boat and I felt myself falling
-17 backwards. I was aware of the boat collapsing on top of me. I struggled to pull my feet from
-18 the stirrups to no avail. The world went black. I felt a weight on top of me and then a rush of
-19 cold water as my body was brutally submerged into the bottomless Atlantic Ocean. My feet
-20 were sucked from my shoes as I clung on to the oars for dear life, but then they too were
-21 dragged from my clasp. My mind went blank as I tumbled through the surf, spun around
-22 roughly like clothes in a washing machine.
-23 I was somewhere underwater, but which way was up? Everything was midnight black. I
-24 panicked as I grabbed the water, desperate for something to clutch on to. There was
-25 nothing. No boat, just inky cold water.
-26 I had been underwater for a seeming eternity and had started to panic. It felt as though my
-27 lungs were collapsing and I struggled to find which way to swim. I felt my hand break the
-28 surface as my body burst from the depths of the ocean. 'Paaaaaaah,' I gasped as my body
-29 screamed for air.
-30 'James!' I cried. There was no sign of him, nor the boat. I was in the middle of the ocean
-31 without a life jacket, being tossed around in the surf like a rag doll. I spun around in the
-32 water, gripped by panic.
-33 There was the boat, a black upturned hull. 'James!' I screamed again. Nothing. Nothing in
-34 life had prepared me for this. No amount of planning could have readied me. What the hell
-35 now? Who would ever find me out here, hundreds of miles from the nearest boat, let alone
-36 land? I had to get back on to that boat.
-37 My mind was numb with shock, but somehow I made it back to the upturned hull, and clung
-38 on. There was still no sign of James. Why wasn't the Spirit righting herself? I fretted as I
-39 hauled myself up on to her keel.
-40 I could feel the boat listing. Slowly but surely the boat began to turn on top of me. I clutched
-41 on to the grab line as I collapsed back into the water, the boat springing upright. I clung on,
-42 silent and in shock.
-43 'Ben!' I heard James's cry. He was alive. Thank god.
-44 'I'm here, I'm here!' I squeaked, still clutching the grab line.
-45 All around us the ocean was strewn with debris, loose equipment from the deck. After five
-46 weeks at sea we had become complacent and had long stopped lashing things down; we
-47 could only watch as all our worldly possessions drifted away into the rolling ocean.
+**2** The work is precisely timed. A scene change in a large musical may involve twenty people
+moving several tonnes of scenery in under forty seconds, in near-darkness, to cues counted in
+beats of music. Crew members learn their movements as choreography, because that is what they
+are: a sequence of steps performed in a set order, in a confined space, alongside colleagues
+carrying heavy objects at speed.
 
-## Passage B
-**Title:** Idle Days in Patagonia
-**Author:** W H Hudson (1893)
-**Context:** 19th Century literary non-fiction. An extract from W H Hudson's travel writing, published in 1893. Hudson travelled by sea to Patagonia, a remote area in South America, to study birds. He describes the perilous journey to get there.
+**3** At the centre of it sits the deputy stage manager, who 'calls' the show from a desk in the
+wings. Every lighting state, sound effect, flying piece and scene change is triggered by a spoken
+cue from that desk, read from a marked-up script known as the book. A three-hour performance may
+contain six hundred cues. The same person calls the same show, in the same order, eight times a
+week, and is judged entirely by whether the audience notices nothing.
 
-1  The wind had blown a gale all night, and I had been hourly expecting that the tumbling storm-
-2  shaken old steamship, in which I had taken passage to Patagonia, would turn over once and
-3  for all and settle down beneath the tremendous tumult of waters. For the groaning sound of its
-4  straining timbers, and the engine throbbing like an over-worked human heart, had made the
-5  ship seem like a living thing to me; and it was tired of the struggle, and under the tumult was
-6  peace. But at about three o'clock in the morning the wind began to drop and, taking off coat
-7  and boots, I threw myself in to my bunk for a little sleep.
-8  Ours was a very curious boat, ancient and much damaged; long and narrow in shape, with the
-9  passengers' cabins ranged like a row of small wooden cottages on the deck; it was as ugly to
-10 look at as it was unsafe to voyage in. To make matters worse our Captain, a man over eighty
-11 years of age, was lying in his cabin sick; our one Mate was asleep, leaving only the men to
-12 navigate the steamship on that perilous coast, and in the darkest hour of a tempestuous night.
-13 I was just dropping into a doze when a succession of bumps, accompanied by strange grating
-14 and grinding noises, and shuddering motions of the ship, caused me to start up again and rush
-15 to the cabin door. The night was still black and starless, with wind and rain, but for acres round
-16 us the sea was whiter than milk. I did not step out, as close to me, where our only lifeboat was
-17 fastened, three of the sailors were standing together talking in low tones. 'We are lost,' I heard
-18 one say; and another answer, 'Ay, lost forever!' Just then the Mate, roused from sleep, came
-19 running to them. 'What have you done?' he exclaimed sharply; then dropping his voice, he
-20 added, 'Lower the lifeboat - quick!'
-21 I crept out and stood unseen by them in the dark. Not a thought of the wicked act they were
-22 about to engage in entered my mind at the time - for it was their intention to save themselves
-23 and leave us to our fate in that awful white surf. My only thought was that at the last moment, I
-24 would spring with them into the boat and save myself. But one other person, more experienced
-25 than myself, and whose courage took a better form, was also near and listening. He was the
-26 First Engineer. Seeing the men making for the lifeboat, he slipped out of the engine room,
-27 revolver in hand, and secretly followed them; and when the Mate gave the order to board, he
-28 stepped forward with the weapon raised and said in a quiet but determined voice that he would
-29 shoot the first man who should attempt to obey it. The men slunk away and disappeared in the
-30 gloom.
-31 In a few moments more the passengers began streaming out on to the deck in a great state of
-32 alarm. Last of all, the old Captain, white and hollow-eyed, appeared like a ghost among us. We
-33 had not been standing there long when, by some freak chance, the steamship got off the rocks
-34 and plunged on through the seething, milky surf; then very suddenly passed out of it into black
-35 and comparatively calm water. For ten minutes she sped rapidly and smoothly on, then it was
-36 said that we were stuck fast in the sand of the shore, although no shore was visible in the
-37 darkness.
-38 There was no longer any wind, but through the fast-breaking clouds ahead of us appeared the
-39 first welcome signs of dawn. It was true enough that we were stuck fast in the sand; but
-40 although this was a safer bed for the steamship than the jagged rocks, our position was still a
-41 perilous one and I at once determined to land.
+**4** Training routes vary. Some crew take technical theatre courses; a great many begin as
+volunteers or casuals at a local venue and learn by doing. The hours are unsociable — evenings,
+weekends, and the get-out, when a set is dismantled and loaded into lorries overnight after the
+final performance. Pay at entry level is modest, and the work is physically demanding.
+
+**5** What the industry offers in exchange is unusual. Technical theatre is one of the few
+skilled trades that can still be entered without a degree, on the strength of reliability and a
+willingness to learn. Skills transfer internationally, since a lighting desk is a lighting desk
+in any language. And there is the peculiar satisfaction described by almost everyone in it: an
+audience of a thousand people gasping at something that you, invisibly, made happen.
+
+**6** The industry does have a problem, and it is a shortage. Venues across Europe report
+difficulty recruiting technicians, and several have begun paid apprenticeships for the first time
+in decades. If you want a career in the arts, the crowded door is the stage door. The other one
+is standing open.
+
+## Text B
+**Title:** Eight shows a week, and nobody knows your name
+**Context:** Opinion / experience / career. Paragraphs are numbered; questions cite them by number.
+
+Yusuf Demir has been a deputy stage manager for fifteen years.
+
+Somebody once asked me, kindly, whether I minded that nobody claps for the crew. I have thought
+about it a great deal since, and the honest answer is that being invisible is the job, not a
+disappointment attached to it. The measure of my work is that you did not notice it. There is a
+strange, private pleasure in that which I have never been able to explain at a dinner party.
+
+Let me describe an ordinary Tuesday. I arrive four hours before the audience. I check that
+everything that must move can move, that everything that must not move cannot, and that the people
+operating it are present and awake. Then, from the desk, I call the show: six hundred cues in three
+hours, each one a word into a headset, each one arriving at a moment decided months ago in
+rehearsal. If I am half a second late on cue two hundred and twelve, a wall arrives while an actor
+is still standing where the wall goes.
+
+I will not romanticise the conditions. The hours are antisocial — I have missed most family
+birthdays for fifteen years. Get-outs run through the night. Entry pay is poor, and touring means
+living out of a bag. Nobody outside the building understands what you do; my own mother, after a
+decade, described my job as 'something with curtains'.
+
+But consider what you get. You are paid to be part of a thing that could not exist without you,
+and the proof arrives nightly: a thousand people gasp in the dark at a moment you have engineered.
+The team is unlike any other workplace I know, because you cannot fake competence in it — everyone
+sees, within one show, whether you can be relied upon, and that makes for an unusually honest kind
+of respect.
+
+And you can start on Monday. That is the part I most want young people to hear. You do not need a
+degree; you need to be punctual, calm and willing to lift things. Volunteer at a local venue,
+learn one department properly, be the person who is never late. In this industry that is enough to
+build a career on — I have watched it happen a dozen times, and I began exactly that way myself.
+
+## Text C
+**Title:** Cue two hundred and twelve
+**Context:** Narrative or personal account. Paragraphs are numbered; questions cite them by number.
+
+Nell Abara describes her first performance as a member of the stage crew.
+
+**1** They put me on the trucks, which is what you call the wheeled sections of scenery, and they
+put me there because it is the job that is hardest to get wrong. This turned out to be optimistic.
+
+**2** By the interval on my first night I had learned that a theatre in performance is two
+entirely separate places. Out front there is a warm room full of people watching a French
+farmhouse in 1918. Six metres behind it there is a **cramped** black corridor where nine of us
+stood pressed against a wall in the dark, breathing quietly, waiting to move a farmhouse.
+
+**3** My cue was a line of dialogue: *'Then we shall have to burn it.'* On that line, four of us
+walked the left truck three metres downstage, stopped it dead on a strip of glow tape, and walked
+back. We had rehearsed it eleven times. Marek, who had done the show for two years, told me the
+only thing I needed to know: 'Don't watch the actors. Watch the tape.'
+
+**4** For the first act I did exactly that, and it was fine. It was better than fine. There is
+something I had not expected in doing a small precise job perfectly in the dark while, a few
+metres away, a thousand people believe in a farmhouse. Between cues we stood in a row against the
+wall, and I began to notice how much of the evening was made of waiting: forty seconds of work in
+every twenty minutes, and the twenty minutes mattered just as much, because the work only counted
+if you were in exactly the right place when it arrived.
+
+**5** Marek had a rule about that, too. 'Nobody is impressed by a fast truck,' he said. 'They are
+impressed by a truck that is in the right place. Those are different skills, and only one of them
+is yours tonight.'
+
+**6** Then, in the second act, the show **stumbled**.
+
+**7** An actor dropped a line — skipped four pages, by accident, in front of nine hundred people
+— and the entire machinery of the evening went out of order. The lighting change came early. The
+sound cue did not come at all. In my headset I heard Yusuf, the deputy stage manager, say two
+words I have never forgotten: 'Standby. Hold.'
+
+**8** Nothing in his voice had changed. That was the remarkable thing. He sounded exactly as he
+had at the tea break, and because he sounded like that, nine people in a black corridor did not
+panic. We stood absolutely still, holding a farmhouse, while out front two actors improvised their
+way back to a line that made sense.
+
+**9** It took forty seconds. It felt considerably longer.
+
+**10** Then: 'Trucks — go.' We moved. The farmhouse arrived on its tape, dead on, and the play
+carried on as though nothing had happened, because as far as nine hundred people were concerned
+nothing had. The lighting caught up. The sound cue found its place. Somewhere in the dark, three
+departments had **improvised** a repair in real time without one word of discussion, and the
+audience applauded a farce.
+
+**11** Afterwards, in the corridor, nobody made a speech about it. Marek said, 'Good hold.' Yusuf
+made a note in his book. Someone put the kettle on.
+
+**12** I went home on the last bus and could not sit still. I had not been seen by anybody. I had
+said nothing, invented nothing and performed nothing. I had walked three metres, stopped on a
+piece of tape, waited forty seconds in the dark and walked back — and I had never in my life felt
+so completely necessary.
+
+**13** I am on the trucks again tomorrow. Eleven more rehearsals of a three-metre walk, and I
+would not swap it.
+
+
+
+*Words printed **bold** in Text C are the 'underlined' words referred to in Question 2(b).*
 
 ## Q1
-**Marks:** 15
-**AOs:** AO1
+**Marks:** 30
+**AOs:** AO1, AO2
+**Mark Split:** 1(a)-(e) reading 15 + 1(f) summary 15 (10 reading + 5 writing)
 
-According to Passage A, answer the following questions using short answers. You do not need to write in full sentences.
+**(a)** Give the number of cues a three-hour performance may contain. **[1]**
 
-(a) What time of day was it when the events began? [1]
-(b) How fast was the wind gusting? [1]
-(c) What was Ben thinking about as he rowed? [2]
-(d) What happened when the large wave hit the boat? [2]
-(e) What did Ben compare the experience of tumbling underwater to? [1]
-(f) How did Ben know which way was up when underwater? [1]
-(g) In what condition did Ben find the boat when he resurfaced? [1]
-(h) How did Ben and James eventually reunite? [2]
-(i) What had the crew become complacent about after five weeks? [2]
-(j) Explain in your own words what Ben means by "Nothing in life had prepared me for this" (lines 33-34). [2]
+**(b)** Using your own words, explain what the text means by:
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** 'learn their movements as choreography' (paragraph 2) **[2]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** 'the crowded door is the stage door' (paragraph 6) **[2]**
+
+**(c)** Re-read paragraph 3 ('At the centre of it … notices nothing.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;Give **two** things that are triggered by a cue from the deputy stage
+manager's desk. **[2]**
+
+**(d)** Re-read paragraph 4 ('Training routes vary … physically demanding.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** Identify **two** ways people begin working in technical theatre.
+**[2]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** Explain what the 'get-out' is and why the text suggests the hours
+of this work are difficult. **[3]**
+
+**(e)** Re-read paragraphs 5 and 6 ('What the industry offers … standing open.').
+
+&nbsp;&nbsp;&nbsp;&nbsp;Using your own words, explain why the text suggests technical theatre is
+an unusually accessible career. **[3]**
+
+Read **Text B**, *Eight shows a week, and nobody knows your name*, in the insert and then answer
+Question 1(f).
+
+**(f)** According to Text B, what does Yusuf Demir find rewarding about working backstage?
+
+You must use continuous writing (not note form) and use your own words as far as possible.
+
+Your summary should not be more than 120 words.
+
+Up to 10 marks are available for the content of your answer and up to 5 marks for the quality of
+your writing. **[15]**
 
 ## Q2
 **Marks:** 25
-**AOs:** AO1, AO2
+**AOs:** AO2
+**Mark Split:** 2(a)-(c) reading 10 + 2(d) writer's effect 15 (content only)
 
-Using Passage A and Passage B, summarise the different ways the two writers respond to the dangers they face at sea.
+**(a)** Identify a word or phrase from the text which suggests the same idea as the words
+underlined:
 
-You should write a summary using your own words as far as possible.
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** The crew stopped the scenery <u>exactly on its marked position</u>.
+**[1]**
 
-You should include:
-- how each writer describes the physical dangers
-- how each writer conveys their emotional response.
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** The stage manager's voice was <u>completely unaltered by the
+crisis</u>. **[1]**
 
-Write no more than 250 words.
+&nbsp;&nbsp;&nbsp;&nbsp;**(iii)** The actor <u>missed out a large section of the script</u>. **[1]**
 
-Up to 15 marks are available for the content of your answer, and up to 10 marks for the quality of your writing.
+&nbsp;&nbsp;&nbsp;&nbsp;**(iv)** Afterwards the crew treated it as <u>an entirely ordinary
+event</u>. **[1]**
+
+**(b)** Using your own words, explain what the writer means by each of the words underlined
+(printed **bold** in the insert):
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(i)** cramped (paragraph 2) **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(ii)** stumbled (paragraph 6) **[1]**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**(iii)** improvised (paragraph 10) **[1]**
+
+**(c)** Use **one** example from the text below to explain how the writer suggests her feelings
+during the forty-second hold:
+
+> 'Nothing in his voice had changed. That was the remarkable thing. He sounded exactly as he had at
+> the tea break, and because he sounded like that, nine people in a black corridor did not panic.'
+> **[3]**
+
+**(d)** Re-read paragraphs 2 and 12.
+
+- Paragraph 2 begins 'By the interval …' and is about the two separate worlds of a theatre in
+  performance.
+- Paragraph 12 begins 'I went home …' and is about how she felt after the show.
+
+Explain how the writer uses language to convey meaning and to create effect in these paragraphs.
+Choose **three** examples of words or phrases from each paragraph to support your answer. Your
+choices should include the use of imagery.
+
+Write about 200 to 300 words.
+
+Up to 15 marks are available for the content of your answer. **[15]**
 
 ## Q3
-**Marks:** 40
-**AOs:** AO2, AO3
-
-Re-read Passage B, lines 13 to 30, from "I was just dropping into a doze..." to "...disappeared in the gloom."
-
-Imagine you are Hudson. After arriving safely in Patagonia, you are writing an account of the night's events for a travel magazine.
-
-In your account you should:
-- describe the moment you realised the ship was in danger
-- explain what the crew tried to do and how they were stopped
-- convey your feelings during the crisis.
-
-Base your account on what you have read in Passage B. Be careful to use your own words. Address each of the three bullet points.
-
-Write between 250 and 350 words.
-
-Up to 25 marks are available for the content and structure of your answer, and up to 15 marks for the quality of your writing.
-
----
-
-# Topic 5: Transactional Writing — Speech
-**Type:** language_paper
-**Format:** multi_question
-**Teaching Point:** Standalone transactional writing exercise — Speech form. Practises the directed writing and voice skills needed for Cambridge IGCSE Paper 1 Q3. Phase 1 (first draft) focuses on voice and perspective; Phase 2 (redraft) refines persuasive techniques and accuracy.
-**Marks:** 40
-**AOs:** AO2, AO3
-
-## Q1
-**Marks:** 40 (25 content + 15 quality of writing)
-**AOs:** AO2, AO3
-
-"Technology has made our lives easier, but at what cost?" Write the text of a speech to be delivered at a school assembly in which you give your views on this topic.
-
----
-
-# Topic 6: Practice Paper 3 — London Riots / Eastern Penitentiary
-**Type:** language_paper
-**Format:** multi_question
-**Teaching Point:** Cambridge IGCSE Language Paper 1 Practice — Reading. Two non-fiction passages about social injustice, three questions, 80 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 80
+**Marks:** 25
 **AOs:** AO1, AO2, AO3
+**Mark Split:** 15 reading + 10 writing
 
-## Passage A
-**Title:** Riots Reveal London's Two Disparate Worlds
-**Author:** Martin Fletcher (c. 2011)
-**Context:** 21st Century non-fiction. An extract from an article by NBC News correspondent Martin Fletcher, published around 2011. Fletcher reports on the London riots and the sharp socio-economic divides they exposed.
+You are a **journalist** writing a magazine **article** about the people who work backstage, after
+spending an evening with the crew described in Text C.
 
-1  LONDON - You really don't have to look very far for the reasons for London's rioting, looting
-2  and generally thuggish frenzy of violence, located mostly in poorer, peripheral communities.
-3  The lives of most rioters are so far removed from those of the country's leaders it's like they
-4  occupy different planets.
-5  Think about this: To cope with the violence, London's Mayor Boris Johnson interrupted his
-6  family vacation in North America.
-7  Prime Minister David Cameron returned from his vacation in a (shared) ten thousand pounds a
-8  week villa in Italy where he was reportedly taking tennis lessons with a coach flown out from
-9  Britain.
-10 Home Secretary Theresa May cut short her vacation in Switzerland.
-11 Deputy Prime Minister Nick Clegg returned from his vacation in France.
-12 I was wondering as I watched, from a safe distance, a mob of young men, running, looting and
-13 throwing bottles, when the last time was that one of them had a vacation. Probably never. I
-14 thought, this is their vacation. It's a break from their routine of hanging around street-corners.
-15 It's fun, for them. They were laughing as police chased them.
-16 Don't get me wrong; they should arrest every last person who broke the law and terrified
-17 innocent residents. But is it really surprising that under-educated, jobless youths go on the
-18 rampage, faced with the inconceivable gap between the rich and the poor and their sense of
-19 utter hopelessness and disenfranchisement?
-20 They feel they deserve a slice of the cake too. Their sense of entitlement is this: We are
-21 entitled to steal what we can.
-22 Violence and lawlessness spread across London as the capital's most senior police officer
-23 urged the public to clear the streets in affected communities. Property and vehicles have
-24 been set on fire in several areas, some burning out of control.
-25 As the young and poor loot, burn and destroy, how about this: It was reported this week that
-26 106 Bond Street, one of London's most prestigious shopping addresses, was sold for 28.5
-27 million pounds (around $47 million). Cash. To the son of an entrepreneur. Mind-bogglingly,
-28 there were 22 other cash buyers bidding for the property.
-29 It was also reported this week that an average-wage earner who wants to buy a London
-30 house would have to save his/her entire salary for 31 years.
-31 A jobless youth in Peckham or Hackney may as well live on Mars for all his chances of legally
-32 obtaining a flatscreen TV or a laptop computer. So egged on by their buddies, jazzed up by
-33 the screaming mob, they're having a ball. Carpe diem. Seize the moment, and grab what you
-34 can.
-35 Anger. Hopelessness. A complete lack of social values. All this is true. But the word on the
-36 street does not mention any of the above. The word that spread among youth and children as
-37 young as eight is much simpler: Go to the shops, grab what you can, while you can.
-38 But where are the parents? As youngsters aged 8 to 18 and older go home with their stolen
-39 booty, what are their parents saying? So far there isn't one report of goods being returned to
-40 their rightful owners.
-41 A final thought. One reporter pointed out that in Clapham where the shopping area had been
-42 picked clean, the only shop left unlooted and untouched was the book shop.
+In your article you should:
 
-## Passage B
-**Title:** American Notes
-**Author:** Charles Dickens (1842)
-**Context:** 19th Century literary non-fiction. An extract from American Notes by Charles Dickens, published in 1842. Dickens visits the Eastern Penitentiary in Pennsylvania and describes the conditions and psychological effects of solitary confinement.
+- explain what the crew's work actually involves and how precisely it must be timed
+- describe what happened on the night the performance went wrong, and how the crew responded
+- suggest why this work appeals to the people who do it, and why young people might consider it.
 
-1  In the outskirts, stands a great prison, called the Eastern Penitentiary: conducted on a plan
-2  peculiar to the state of Pennsylvania. The system here, is rigid, strict, and hopeless solitary
-3  confinement. I believe it, in its effects, to be cruel and wrong.
-4  In its intention, I am well convinced that it is kind, humane, and meant for reformation; but I am
-5  persuaded that those who devised this system of Prison Discipline, and those benevolent
-6  gentlemen who carry it into execution, do not know what it is that they are doing. I believe
-7  that very few men are capable of estimating the immense amount of torture and agony which
-8  this dreadful punishment, prolonged for years, inflicts upon the sufferers; and in guessing at it
-9  myself, and in reasoning from what I have seen written upon their faces, and what to my
-10 certain knowledge they feel within, I am only the more convinced that there is a depth of
-11 terrible endurance in it which none but the sufferers themselves can fathom, and which no
-12 man has a right to inflict upon his fellow-creature. I hold this slow and daily tampering with the
-13 mysteries of the brain, to be immeasurably worse than any torture of the body: and because
-14 its ghastly signs and tokens are not so palpable to the eye and sense of touch as scars upon
-15 the flesh; because its wounds are not upon the surface, and it extorts few cries that human
-16 ears can hear; therefore I the more denounce it, as a secret punishment which slumbering
-17 humanity is not roused up to stay. I hesitated once, debating with myself, whether, if I had the
-18 power of saying 'Yes' or 'No,' I would allow it to be tried in certain cases, where the terms of
-19 imprisonment were short; but now, I solemnly declare, that with no rewards or honours could I
-20 walk a happy man beneath the open sky by day, or lie me down upon my bed at night, with
-21 the consciousness that one human creature, for any length of time, no matter what, lay
-22 suffering this unknown punishment in his silent cell, and I the cause, or I consenting to it in the
-23 least degree.
-24 I was accompanied to this prison by two gentlemen officially connected with its management,
-25 and passed the day in going from cell to cell, and talking with the inmates. Every facility was
-26 afforded me, that the utmost courtesy could suggest. Nothing was concealed or hidden from
-27 my view, and every piece of information that I sought, was openly and frankly given. The
-28 perfect order of the building cannot be praised too highly, and of the excellent motives of all
-29 who are immediately concerned in the administration of the system, there can be no kind of
-30 question.
-31 Between the body of the prison and the outer wall, there is a spacious garden. Entering it, by
-32 a wicket in the massive gate, we pursued the path before us to its other termination, and
-33 passed into a large chamber, from which seven long passages radiate. On either side of each,
-34 is a long, long row of low cell doors, with a certain number over every one. Above, a gallery of
-35 cells like those below, except that they have no narrow yard attached (as those in the ground
-36 tier have), and are somewhat smaller. The possession of two of these, is supposed to
-37 compensate for the absence of so much air and exercise as can be had in the dull strip
-38 attached to each of the others, in an hour's time every day; and therefore every prisoner in
-39 this upper story has two cells, adjoining and communicating with, each other.
-40 Standing at the central point, and looking down these dreary passages, the dull
-41 repose and quiet that prevails, is awful. Occasionally, there is a drowsy sound from
-42 some lone weaver's shuttle, or shoemaker's last, but it is stifled by the thick walls and
-43 heavy dungeon-door, and only serves to make the general stillness more profound.
-44 Over the head and face of every prisoner who comes into this melancholy house, a
-45 black hood is drawn; and in this dark shroud, an emblem of the curtain dropped
-46 between him and the living world, he is led to the cell from which he never again
-47 comes forth, until his whole term of imprisonment has expired. He never hears of wife
-48 and children; home or friends; the life or death of any single creature. He sees the
-49 prison-officers, but with that exception he never looks upon a human countenance, or
-50 hears a human voice. He is a man buried alive; to be dug out in the slow round of
-51 years; and in the meantime dead to everything but torturing anxieties and horrible
-52 despair.
+Write the words of the article.
 
-## Q1
-**Marks:** 15
-**AOs:** AO1
+Write about 250 to 350 words.
 
-According to Passage A, answer the following questions using short answers. You do not need to write in full sentences.
-
-(a) Where were the riots mainly located? [1]
-(b) Which four politicians had their holidays interrupted? [2]
-(c) What does Fletcher think the riots represent for the young people involved? [2]
-(d) What was the price paid for a property on Bond Street? [1]
-(e) How long would an average earner need to save to buy a London house? [1]
-(f) What ages were the rioters? [1]
-(g) What was the only shop left untouched in Clapham? [1]
-(h) What question does Fletcher ask about the parents? [2]
-(i) Explain in your own words what Fletcher means by "they occupy different planets" (line 4). [2]
-(j) According to Fletcher, what is the "word on the street" (lines 35-37)? [2]
-
-## Q2
-**Marks:** 25
-**AOs:** AO1, AO2
-
-Using Passage A and Passage B, summarise the different ways the two writers present injustice and its effects on people.
-
-You should write a summary using your own words as far as possible.
-
-You should include:
-- the types of injustice each writer describes
-- the effects of injustice on the people involved.
-
-Write no more than 250 words.
-
-Up to 15 marks are available for the content of your answer, and up to 10 marks for the quality of your writing.
-
-## Q3
-**Marks:** 40
-**AOs:** AO2, AO3
-
-Re-read Passage B, lines 40 to 52, from "Standing at the central point..." to "...horrible despair."
-
-Imagine you are a prisoner in the Eastern Penitentiary. You have been allowed to write one letter to your family after spending a year in solitary confinement.
-
-In your letter you should:
-- describe what daily life is like in your cell
-- explain how the isolation has affected you
-- convey your feelings about your situation.
-
-Base your letter on what you have read in Passage B. Be careful to use your own words. Address each of the three bullet points.
-
-Write between 250 and 350 words.
-
-Up to 25 marks are available for the content and structure of your answer, and up to 15 marks for the quality of your writing.
-
----
-
-# Topic 7: Transactional Writing — Letter
-**Type:** language_paper
-**Format:** multi_question
-**Teaching Point:** Standalone transactional writing exercise — Letter form. Practises the directed writing and voice skills needed for Cambridge IGCSE Paper 1 Q3. Phase 1 (first draft) focuses on tone and register; Phase 2 (redraft) strengthens argument and accuracy.
-**Marks:** 40
-**AOs:** AO2, AO3
-
-## Q1
-**Marks:** 40 (25 content + 15 quality of writing)
-**AOs:** AO2, AO3
-
-"Our high streets are dying and nobody seems to care." Write a letter to your local council in which you argue that more should be done to support local businesses.
-
----
-
-# Topic 8: Practice Paper 4 — Cosmetics / Arts of Beauty
-**Type:** language_paper
-**Format:** multi_question
-**Teaching Point:** Cambridge IGCSE Language Paper 1 Practice — Reading. Two non-fiction passages about cosmetics and beauty standards, three questions, 80 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 80
-**AOs:** AO1, AO2, AO3
-
-## Passage A
-**Title:** Minimal Scents Smell of Nothing But Hypocrisy
-**Author:** David Mitchell (21st Century)
-**Context:** 21st Century non-fiction. An extract from an article by David Mitchell discussing the nuances of cosmetic choices and the changing trend in perfumes. He humorously navigates various cosmetic items, highlighting society's lean towards subtle vanity and understated personal grooming.
-
-1  The trend for undetectable perfume and no-makeup makeup conceals a minefield of vanity
-2  and self-delusion.
-3  There are two types of cosmetics, in my analysis. Lipstick and mascara. Oh, and blusher. Hang
-4  on: and powder and eyeliner and moisturiser and perfume and hairspray. Blimey, there are
-5  loads. And styling mousse and hair dye and spray tan and unnecessary surgery. Do shaving
-6  products count? Maybe. Hats? No. Even tiny, sparkly impractical hats that don't keep the rain
-7  off? Fascinators and tiaras and coronets and the like? No, I think we're entering the realm of
-8  clothes and jewellery. What about stick-on sequins? And moustache wax? I'm thinking of
-9  changing my look.
-10 But there are, I still think, two types of cosmetics. You can remember it like diabetes: type one
-11 is naturally occurring and type two is something you've clearly done to yourself. Except,
-12 obviously, nothing is naturally occurring in the field of cosmetics. So type one is what appears
-13 to be naturally occurring (ie a lie) and type two is the open truth. Concealer on the one hand,
-14 painted nails on the other. Or actually on both, as a rule.
-15 Lipstick is generally type two: a lipsticked person is not usually claiming that's their natural lip
-16 shade. If they were, people wouldn't buy different lipsticks to go with different outfits, which
-17 I'm pretty sure they do. And no one thinks they're implying that, after some nuclear mutation
-18 incident involving a chameleon in a lab, they now have the power to change their own skin
-19 pigmentation. No one impishly asks if they can also swivel their eyes independently of one
-20 another or pick up snacks with a rapidly emerging mega-tongue. Everyone accepts it's
-21 lipstick. They might say "Nice lipstick".
-22 Cosmetic surgery, meanwhile, is obviously type one. No one's going to say "Nice surgery". It's
-23 not a sign of taste and self-respect to have gone under general anaesthetic and been
-24 selectively carved to reverse what our culture considers to be the uglifying effects of getting
-25 older. It's supposed to look like nothing has happened, even though it's often obvious
-26 something has. So it's rude to mention.
-27 People who get facelifts just want to look like they haven't aged. They've secretly paid money
-28 to look lucky. Then again, they were lucky to have the money. But that's why bad cosmetic
-29 surgery can make someone seem so ridiculous. The spurious claim they're making about their
-30 biological good fortune is further undermined by the indisputable evidence that they didn't
-31 even catch a break in their choice of surgeon.
-32 The reason I've been musing along these lines is that, according to a recent news report,
-33 perfume is changing cosmetic types. You'd think it was pretty solidly type two: deodorant
-34 might be type one, a denial of our inherent BO, but people who smell of perfume or
-35 aftershave aren't seriously claiming it's exuded organically. Ambulances would be called.
-36 Nevertheless, the latest fashion in perfumes is for them to be hardly detectable by the human
-37 nose. As Ben Gorham, one of the creators of "Elevator Music", a minimalist scent launching
-38 this month, put it: "The idea is that its wearer is noticed, not the perfume." Perhaps it comes
-39 with a free comedy hat.
-
-## Passage B
-**Title:** The Arts of Beauty, or The Secrets of a Lady's Toilet
-**Author:** Madame Lola Montez (19th Century)
-**Context:** 19th Century literary non-fiction. An excerpt from a work by the famous dancer and courtesan Madame Lola Montez, published in the 19th century. She discusses historical views on beauty, ancient cosmetics practices, and warns against the dangers and exorbitant prices of modern products.
-
-1  When Aristotle was asked why everybody was so fond of beauty, he replied, "It is the
-2  question of a blind man." Socrates described it as "a short-lived tyranny;" and Theophrastus
-3  called it "a silent fraud." Most of these old philosophers spoke in great scorn and derision of
-4  the arts employed by the females of their time for the display and preservation of their beauty.
-5  And it would seem that the ladies of those days carried these arts to greater extremes than
-6  even our modern belles. Juvenal bitterly satirises the women's faces as being "bedaubed and
-7  lacquered o'er." The Roman belles used chalk and paint in a most extravagant profusion, as
-8  we must infer from Martial, who tells us that "Fabula was afraid of the rain, on account of the
-9  chalk on her face; and Lobelia of the sun, because of the ceruse with which her face was
-10 painted; and the famous Poppea, the first mistress, and afterwards the wife of Nero, made use
-11 of an unctuous paint, which hardened upon her face, and entirely changed the original
-12 features."
-13 A history of all the arts which my sex have employed, since her creation, to set off and
-14 preserve her charms, would not only far exceed the limits of this volume, but it would be a
-15 tedious and useless book when written. I shall confine myself mainly to the modern arts which
-16 have fallen within my own observation during an experience which has extended to nearly all
-17 the courts and fashionable cities of the principal nations of the earth. The recipes which I shall
-18 give for the various cosmetics, washes, pastes, creams, powders, etc., are such as are in use
-19 among the fashionable belles of the various capitols of the Old World. I give them as
-20 curiosities, desiring that they may pass for what they are worth, and no more. If, however, a
-21 lady wishes to use such helps to beauty, I must advise her, by all means, to become her own
-22 manufacturer — not only as a matter of economy, but of safety — many of the patent
-23 cosmetics have ruined the finest complexions, and induced diseases of the skin and of the
-24 nervous system, which have embittered the life, and prematurely ended the days of their
-25 victims. For a few shillings, and with a little pains, any lady can provide herself with a bountiful
-26 supply of all such things, composed of materials, which, at any rate, are harmless, and which
-27 are far superior to the expensive patent compounds which she buys of druggists. Some years
-28 ago, there was an amusing controversy and lawsuit in England about a famous lotion for
-29 'improving and beautifying the complexion.' A Mr. Dickinson, Mrs. Vincent, and a Mr.
-30 MacDonald, each claimed to be the inventor of the popular and profitable cosmetic, which
-31 sold for seven shillings and sixpence the pint bottle. The lawsuit disclosed both the materials
-32 and the cost of the compound, which were as follows:
-33 One and a half ounce of bitter almonds
-34 Fifteen grains of corrosive sublimate
-35 One quart of water
-36 So that this fashionable lotion, which sold for seven shillings and sixpence a pint, cost only
-37 five pence a quart, being a profit of seventeen hundred per cent. And it will be readily
-38 admitted that any lady who wished to treat her face to a dose of corrosive sublimate, could
-39 buy the ingredients and compound them herself, as easily as Mr. Dickinson and Mrs. Vincent.
-
-## Q1
-**Marks:** 15
-**AOs:** AO1
-
-According to Passage A, answer the following questions using short answers. You do not need to write in full sentences.
-
-(a) What are Mitchell's "two types" of cosmetics? [2]
-(b) Give two examples of "type two" cosmetics from the passage. [2]
-(c) Why does Mitchell say cosmetic surgery is "type one"? [2]
-(d) Why does Mitchell say bad cosmetic surgery makes people seem ridiculous? [2]
-(e) What new trend in perfume does Mitchell describe? [2]
-(f) What quote from Ben Gorham does Mitchell include? [1]
-(g) Explain in your own words what Mitchell means by "They've secretly paid money to look lucky" (lines 27-28). [2]
-(h) What is Mitchell's overall attitude towards cosmetics? [2]
-
-## Q2
-**Marks:** 25
-**AOs:** AO1, AO2
-
-Using Passage A and Passage B, summarise the different attitudes to cosmetics and beauty presented by the two writers.
-
-You should write a summary using your own words as far as possible.
-
-You should include:
-- how each writer views cosmetics and the beauty industry
-- the different concerns each writer raises.
-
-Write no more than 250 words.
-
-Up to 15 marks are available for the content of your answer, and up to 10 marks for the quality of your writing.
-
-## Q3
-**Marks:** 40
-**AOs:** AO2, AO3
-
-Re-read Passage B, lines 13 to 39, from "A history of all the arts..." to "...as easily as Mr. Dickinson and Mrs. Vincent."
-
-Imagine you are Madame Lola Montez. You have been invited to give a talk at a ladies' social club about the cosmetics industry.
-
-In your talk you should:
-- explain why ladies should be cautious about commercial cosmetics
-- describe the dangers and dishonesty of the cosmetics trade
-- persuade your audience to make their own beauty products.
-
-Base your talk on what you have read in Passage B. Be careful to use your own words. Address each of the three bullet points.
-
-Write between 250 and 350 words.
-
-Up to 25 marks are available for the content and structure of your answer, and up to 15 marks for the quality of your writing.
-
----
-
-# Topic 9: Transactional Writing — Leaflet
-**Type:** language_paper
-**Format:** multi_question
-**Teaching Point:** Standalone transactional writing exercise — Leaflet form. Practises the directed writing and voice skills needed for Cambridge IGCSE Paper 1 Q3. Phase 1 (first draft) focuses on layout-awareness and persuasive content; Phase 2 (redraft) refines tone and accuracy.
-**Marks:** 40
-**AOs:** AO2, AO3
-
-## Q1
-**Marks:** 40 (25 content + 15 quality of writing)
-**AOs:** AO2, AO3
-
-"Everyone should volunteer at least once in their life." Write a leaflet for young people in which you persuade them to take up volunteering.
-
----
-
-# Topic 10: Practice Paper 5 — Scientific Proof / Humane Understanding
-**Type:** language_paper
-**Format:** multi_question
-**Teaching Point:** Cambridge IGCSE Language Paper 1 Practice — Reading. Two non-fiction passages about the nature of knowledge and understanding, three questions, 80 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 80
-**AOs:** AO1, AO2, AO3
-
-## Passage A
-**Title:** Scientific Proof is a Myth
-**Author:** Ben Siegel (21st Century)
-**Context:** 21st Century non-fiction. An analysis challenging the widely-held perception of scientific "proofs" in the context of key scientific theories. Siegel emphasises the constraints of human observation and the distinction between strong evidence and definitive proof.
-
-1  You've heard of our greatest scientific theories: the theory of evolution, the Big Bang theory,
-2  the theory of gravity. You've also heard of the concept of a proof, and the claims that certain
-3  pieces of evidence prove the validities of these theories. Fossils, genetic inheritance, and
-4  DNA prove the theory of evolution. The Hubble expansion of the Universe, the evolution of
-5  stars, galaxies, and heavy elements, and the existence of the cosmic microwave background
-6  prove the Big Bang theory. And falling objects, GPS clocks, planetary motion, and the
-7  deflection of starlight prove the theory of gravity.
-8  Except that's a complete lie. While they provide very strong evidence for those theories, they
-9  aren't proof. In fact, when it comes to science, proving anything is an impossibility.
-10 Reality is a complicated place. All we have to guide us, from an empirical point of view, are
-11 the quantities we can measure and observe. Even at that, those quantities are only as good
-12 as the tools and equipment we use to make those observations and measurements.
-13 Distances and sizes are only as good as the measuring sticks you have access to; brightness
-14 measurements are only as good as your ability to count and quantify photons; even time
-15 itself is only known as well as the clock you have to measure its passage. No matter how
-16 good our measurements and observations are, there's a limit to how good they are.
-17 We also can't observe or measure everything. Even if the Universe weren't subject to the
-18 fundamental quantum rules that govern it, along with all its inherent uncertainty, it wouldn't
-19 be possible to measure every state of every particle under every condition all the time. At
-20 some point, we have to extrapolate. This is incredibly powerful and incredibly useful, but it's
-21 also incredibly limiting.
-22 In order to come up with a model capable of predicting what will happen under a variety of
-23 conditions, we need to understand a few things.
-24 1. What we're capable of measuring, and to what precision.
-25 2. What's been measured thus far, under specific initial conditions.
-26 3. What laws hold for these phenomena, i.e., what observed relationships exist between
-27 specific quantities.
-28 4. And what the limits are for the things we presently know.
-29 If you understand these things, you have the right ingredients to formulate a scientific theory:
-30 a framework for explaining what we already know happens as well as predicting what will
-31 happen under new, untested circumstances.
-32 Our best theories, like the aforementioned theory of evolution, the Big Bang theory, and
-33 Einstein's General Relativity, cover all of these bases. They have an underlying quantitative
-34 framework, enabling us to predict what will happen under a variety of situations, and to then
-35 go out and test those predictions empirically. So far, these theories have demonstrated
-36 themselves to be eminently valid. Where their predictions can be described by mathematical
-37 expressions, we can tell not only what should happen, but by how much. For these theories in
-38 particular, among many others, measurements and observations that have been performed to
-39 test these theories have been supremely successful.
-40 But as validating as that is — and as powerful as it is to falsify alternatives — it's completely
-41 impossible to prove anything in science.
-
-## Passage B
-**Title:** An Essay Concerning Humane Understanding
-**Author:** John Locke (17th Century)
-**Context:** 17th Century literary non-fiction. John Locke's philosophical exploration into the origins and nature of human understanding, published in 1689. Locke argues that the mind begins as a blank slate and gains knowledge through experience.
-
-1  Let us then suppose the mind to be, as we say, white paper, void of all characters, without any
-2  ideas: — How comes it to be furnished? Whence comes it by that vast store which the busy and
-3  boundless fancy of man has painted on it with an almost endless variety? Whence has it all
-4  the MATERIALS of reason and knowledge? To this I answer, in one word, from EXPERIENCE.
-5  In that all our knowledge is founded; and from that it ultimately derives itself. Our observation
-6  employed either, about external sensible objects, or about the internal operations of our
-7  minds perceived and reflected on by ourselves, is that which supplies our understandings
-8  with all the MATERIALS of thinking. These two are the fountains of knowledge, from whence
-9  all the ideas we have, or can naturally have, do spring.
-10 First, our Senses, conversant about particular sensible objects, do convey into the mind
-11 several distinct perceptions of things, according to those various ways wherein those objects
-12 do affect them. And thus we come by those IDEAS we have of yellow, white, heat, cold, soft,
-13 hard, bitter, sweet, and all those which we call sensible qualities; which when I say the senses
-14 convey into the mind, I mean, they from external objects convey into the mind what produces
-15 there those perceptions. This great source of most of the ideas we have, depending wholly
-16 upon our senses, and derived by them to the understanding, I call SENSATION.
-17 Secondly, the other fountain from which experience furnisheth the understanding with ideas
-18 is, — the perception of the operations of our own mind within us, as it is employed about the
-19 ideas it has got; — which operations, when the soul comes to reflect on and consider, do
-20 furnish the understanding with another set of ideas, which could not be had from things
-21 without. And such are perception, thinking, doubting, believing, reasoning, knowing, willing,
-22 and all the different actings of our own minds; — which we being conscious of, and observing
-23 in ourselves, do from these receive into our understandings as distinct ideas as we do from
-24 bodies affecting our senses. This source of ideas every man has wholly in himself; and though
-25 it be not sense, as having nothing to do with external objects, yet it is very like it, and might
-26 properly enough be called INTERNAL SENSE. But as I call the other Sensation, so I call this
-27 REFLECTION, the ideas it affords being such only as the mind gets by reflecting on its own
-28 operations within itself. By reflection then, in the following part of this discourse, I would be
-29 understood to mean, that notice which the mind takes of its own operations, and the manner
-30 of them, by reason whereof there come to be ideas of these operations in the understanding.
-31 These two, I say, viz. external material things, as the objects of SENSATION, and the
-32 operations of our own minds within, as the objects of REFLECTION, are to me the only
-33 originals from whence all our ideas take their beginnings. The term OPERATIONS here I use
-34 in a large sense, as comprehending not barely the actions of the mind about its ideas, but
-35 some sort of passions arising sometimes from them, such as is the satisfaction or uneasiness
-36 arising from any thought.
-37 The understanding seems to me not to have the least glimmering of any ideas which it doth
-38 not receive from one of these two. EXTERNAL OBJECTS furnish the mind with the ideas of
-39 sensible qualities, which are all those different perceptions they produce in us; and THE MIND
-40 furnishes the understanding with ideas of its own operations.
-
-## Q1
-**Marks:** 15
-**AOs:** AO1
-
-According to Passage A, answer the following questions using short answers. You do not need to write in full sentences.
-
-(a) Name three scientific theories mentioned in the passage. [3]
-(b) What does Siegel say is "a complete lie"? [1]
-(c) According to Siegel, why are measurements limited? [2]
-(d) What four things does Siegel say we need to understand to create a scientific theory? [4]
-(e) What does Siegel say is "completely impossible" in science? [1]
-(f) Explain in your own words what Siegel means by "we have to extrapolate" (line 20). [2]
-(g) According to the passage, what makes our best theories "eminently valid"? [2]
-
-## Q2
-**Marks:** 25
-**AOs:** AO1, AO2
-
-Using Passage A and Passage B, summarise the different ways the two writers explain how humans gain and verify knowledge.
-
-You should write a summary using your own words as far as possible.
-
-You should include:
-- what each writer says about the sources of knowledge
-- the limitations or conditions each writer places on knowledge.
-
-Write no more than 250 words.
-
-Up to 15 marks are available for the content of your answer, and up to 10 marks for the quality of your writing.
-
-## Q3
-**Marks:** 40
-**AOs:** AO2, AO3
-
-Re-read Passage B, lines 1 to 16, from "Let us then suppose the mind to be..." to "...I call SENSATION."
-
-Imagine you are a teacher who has been inspired by Locke's ideas. You are writing a blog post for your school website explaining to students how we learn and gain knowledge.
-
-In your blog post you should:
-- explain Locke's idea that the mind starts as a "blank slate"
-- describe how our senses help us build knowledge
-- make these ideas relevant and interesting for young people today.
-
-Base your blog post on what you have read in Passage B. Be careful to use your own words. Address each of the three bullet points.
-
-Write between 250 and 350 words.
-
-Up to 25 marks are available for the content and structure of your answer, and up to 15 marks for the quality of your writing.
+Up to 15 marks are available for the content of your answer and up to 10 marks for the quality of
+your writing. **[25]**
 
 ---

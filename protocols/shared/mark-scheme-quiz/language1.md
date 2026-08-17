@@ -1247,7 +1247,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **AO:** AO3
     * **WhyWrong:** Answering "three" or "both fiction" misreads the task; it compares the two non-fiction sources on the paper.
 
-### **SECTION G: CAMBRIDGE IGCSE (First Language English 0500\)**
+### **SECTION G: CAMBRIDGE IGCSE (First Language English 0500 / 0990)**
 
 1. **Type: MCQ \[Tests Directed Writing\]**  
    * **Question:** In the Directed Writing task (Q3), what is the most common pitfall?  

@@ -124,9 +124,9 @@ WAIT for the student's reason. Only after they reply, fire Step 3 (Breakdown).
   * "This shows **Perceptive** engagement (Level 5). It analyses the writer's craft rather than retelling what happens."  
   * "It meets the **AO2** criterion for analysing how language is used to create effects."
 
-* **Cambridge IGCSE (0500 / 0990 — Reading Q1(d)):**  
-  * "This shows a **Sensitive** and **Convincing** response to language (Band 5). The candidate reads for effect, not just content."  
-  * "The analysis of selected words and phrases is precise and connects back to the reader's experience."
+* **Cambridge IGCSE (0500 / 0990 — Paper 1 Question 2(d), the Writer's Effect, 15 marks):**  
+  * "This reaches **Level 5 (13–15)**: a **wide-ranging discussion of judiciously selected language**, with comments that add meaning and associations to the words chosen and show the writer's reasons for using them."  
+  * "It **tackles imagery with precision and imagination**, and — the criterion candidates most often miss — it works **in both parts of the text**, rather than addressing one half better than the other."
 
 * **SQA (National 5 — Critical Reading / Close Reading):**  
   * "This demonstrates **Detailed** and **Insightful** analysis. It goes beyond decoding technique to evaluating the writer's purpose."  

@@ -625,7 +625,7 @@ Q1B (A/B Question \- Comparison Scope):** AO3 comparison in Paper 2 only tests s
 
 ---
 
-#### **Part 7: Cambridge IGCSE (0500)**
+#### **Part 7: Cambridge IGCSE (0500 / 0990)**
 
 **1-Mark Questions (Choose 3):**
 
@@ -914,7 +914,7 @@ Q1B (A/B Question \- Synthesis):** AO1 requires you to 'synthesise evidence from
 
 ---
 
-#### **Part 7: Cambridge IGCSE (0500) (Unit 2 Variant)**
+#### **Part 7: Cambridge IGCSE (0500 / 0990) (Unit 2 Variant)**
 
 **1-Mark Questions (Choose 3):**
 
@@ -975,7 +975,7 @@ C. Edexcel IGCSE (Spec A)
 D. Edexcel IGCSE (Spec B)  
 E. Eduqas  
 F. OCR  
-G. Cambridge IGCSE (0500)"
+G. Cambridge IGCSE (0500 / 0990)"
 
 **Accept:** "A", "AQA", "aqa" → normalize to "AQA" (and similarly for other boards)
 
@@ -1993,7 +1993,7 @@ Eduqas uses **bands** rather than levels, with distinctive descriptor language.
 
 ---
 
-#### **Cambridge IGCSE (0500) Paper 2**
+#### **Cambridge IGCSE (0500 / 0990) Paper 2**
 
 **Assessment Objectives:**
 
