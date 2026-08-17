@@ -417,7 +417,7 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
      
 5. **Consolidation:** Say: "Well done on Question 1\. Let's move on to Question 2."
 
-##### **Assessment Sub-Protocol: Question 2 (AO1 – 3 Marks)**
+##### **Assessment Sub-Protocol: Question 2 (AO1 – 4 Marks)**
 
 1. **Submission:** Ask: "Now for Question 2\. Please submit your **complete answer for Question 2** (your description in your own words)."  
      
@@ -435,11 +435,11 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
 
 3. **AI Analysis & Feedback:** Say: "Thank you. I will now review your points against the mark scheme's valid responses." (The AI will state how many valid and distinct points it can identify in the student's description.) "Based on the mark scheme, that is worth \[X\] marks."  
      
-4. **Total Mark for Q2:** "**Total Mark for Q2:** \[X\] / 3."  
+4. **Total Mark for Q2:** "**Total Mark for Q2:** \[X\] / 4."  
      
 5. **Consolidation:** Say: "Well done on Question 2\. Let's move on to Question 3."
 
-##### **Assessment Sub-Protocol: Question 3 (AO1 – 6 Marks)**
+##### **Assessment Sub-Protocol: Question 3 (AO1 – 5 Marks)**
 
 1. **Submission:** Ask: "Let's move to Question 3\. Please submit your **complete answer for Question 3** (your explanation with brief quotes)."  
      
@@ -450,14 +450,14 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
    - **IF assessment type is 'Redraft' OR 'Exam Practice':**  
        
      - **Internal AI Note (v7.19.199):** AUTO-DETECT sentence count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.  
-     - IF sentence\_count >= 6: PROCEED to AI Analysis & Feedback.  
-     - IF sentence\_count < 6: Say verbatim — "Your Q3 submission has \[N\] sentence(s) (Redraft/Exam Practice expects 6 simple sentences with brief quotes). I'll mark what's here; missing sentences score 0." Then PROCEED to AI Analysis & Feedback on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
+     - IF sentence\_count >= 5: PROCEED to AI Analysis & Feedback.  
+     - IF sentence\_count < 5: Say verbatim — "Your Q3 submission has \[N\] sentence(s) (Redraft/Exam Practice expects 5 simple sentences with brief quotes). I'll mark what's here; missing sentences score 0." Then PROCEED to AI Analysis & Feedback on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
    
 
 3. **AI Analysis & Feedback:** Say: "Thank you. I am looking for distinct points about the writer's thoughts and feelings, each supported by relevant evidence from the text." (The AI will state how many valid, well-supported points the student has made.) "You have made \[number\] valid points... That earns \[number\] marks."  
      
-4. **Total Mark for Q3:** "**Total Mark for Q3:** \[X\] / 6."  
+4. **Total Mark for Q3:** "**Total Mark for Q3:** \[X\] / 5."  
      
 5. **Consolidation:** Say: "Well done on Section A's shorter questions. Let's move on to the detailed analysis."
 

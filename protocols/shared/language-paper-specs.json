@@ -357,7 +357,7 @@
           "questions": [
             { "id": "Q1", "marks": 2, "aos": ["AO1"], "type": "retrieval", "description": "Select two words or phrases that describe X" },
             { "id": "Q2", "marks": 4, "aos": ["AO1"], "type": "retrieval", "description": "In your own words, describe what happens" },
-            { "id": "Q3", "marks": 5, "aos": ["AO1", "AO2"], "type": "short_analysis", "description": "Explain the writer's thoughts and feelings" },
+            { "id": "Q3", "marks": 5, "aos": ["AO1"], "type": "short_analysis", "description": "Explain the writer's thoughts and feelings" },
             { "id": "Q4", "marks": 12, "aos": ["AO2"], "type": "analysis", "description": "How does the writer use language and structure to interest and engage?" },
             { "id": "Q5", "marks": 22, "aos": ["AO3"], "type": "comparison", "description": "Compare how the writers present their ideas and perspectives" }
           ]

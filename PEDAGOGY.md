@@ -233,6 +233,46 @@ derived from `protocols/shared/language-paper-specs.json` — **never accumulate
 (CLAUDE.md canvas rule 2). Literature and Section B outlines are ALREADY board-agnostic because they
 read the specs — that is the proof the capability approach works; copy it, don't invent it.
 
+**⭐⭐ THE MARK SCHEME IS THE AUTHORITY ON MARKS AND OBJECTIVES — NOT the spec file, NOT the
+protocol, NOT the structure map (Neil, 2026-08-16).** Verbatim: *"it's not really about what the spec
+file says. It's what the mark scheme says. If you don't know that, you've got it documented
+somewhere. Right? If the spec file says something about assessment objectives, but the mark scheme
+says something else, we have to go with the mark scheme, and we have to adjust accordingly. We can't
+make up the rules."*
+
+**THE ORDER OF AUTHORITY, and it is not negotiable:** the board's own **mark scheme PDF** → the real
+past paper → everything we have written about it. Our spec JSON, our protocol files and our
+structure map are all *claims about* the mark scheme; when a claim disagrees with the source, the
+source wins and OUR FILE IS THE DEFECT. (This overrides, for marks and AOs specifically, the older
+"protocol-a-assessment.md is canonical" line — that rule settles what we TEACH, never what the board
+AWARDS.)
+
+**AND THE MARK SCHEMES ARE ON THE SYSTEM — FIND THEM, NEVER ASK AND NEVER ASSUME.**
+`mdfind -name "<paper code>"` locates them in seconds; the Sophicly copies live under
+`sophicly-etchwp-package v2.6/Sophicly Etch Mark Scheme Resources/`, and `pdftotext -layout` reads
+them. ([[reference_source_texts_and_extracts_on_system_search_never_ask]],
+[[feedback_mdfind_first_and_a_killed_search_is_not_a_zero]].)
+
+**⭐ THE PROOF, and it is why this needed a ruling rather than a preference.** On Edexcel IGCSE Lang
+P1 (4EA1/01) our two internal sources disagreed, and **each was half wrong** — so believing either
+one alone gave a broken paper:
+
+| | Q2 marks | Q3 marks | Q3 objectives |
+|---|---|---|---|
+| **Mark scheme (June 2022, authority)** | **4** | **5** | **AO1 only** |
+| our spec JSON | ✅ 4 | ✅ 5 | ❌ AO1+AO2 |
+| our live protocol | ❌ 3 | ❌ 6 | ✅ AO1 only |
+
+⚠️ **A TOTALS CHECK CANNOT CATCH THIS** — 2+3+6+12+22 and 2+4+5+12+22 both sum to 45, which is
+exactly why an earlier audit accepted the wrong tariffs and recorded them as canonical. Only the
+mark scheme discriminates. **Never validate a tariff set by checking that it adds up.**
+(Fixed 2026-08-16: protocol Q2 → /4, Q3 → /5 with its sentence-count gate, spec JSON Q3 → AO1.)
+
+**⚠️ THE QUESTION WORDING ROTATES BETWEEN SITTINGS — THE TARIFFS AND OBJECTIVES DO NOT.** June 2022's
+Q2 asks for thoughts and feelings and Q3 for a description of an argument; June 2024's Q2 asks "in
+your own words, describe what happens" and Q3 for thoughts and feelings. **Never key a protocol on
+the wording of one paper** — key it on the question NUMBER, its tariff and its objective.
+
 **⚠️ STILL GENUINELY OPEN (§0 applied — these are not re-asks; the protocol does not settle them):**
 - ~~**How GRANULAR should an outline row be?**~~ — **⭐⭐ RULED, 2026-08-16. CLOSED. Do not re-ask,
   do not re-derive it per paper.** The question was put to Neil on the Edexcel IGCSE port, where a
