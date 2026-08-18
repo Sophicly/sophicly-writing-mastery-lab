@@ -291,6 +291,84 @@ ONE change — which is what `.470` finally did. Root §12: work the whole list,
 
 ---
 
+## ⭐⭐ PARALLEL LANES — WHO SHIPS, AND WHERE CRITERIA COME FROM (Neil, 2026-08-18)
+
+WML often runs **several chats at once**: one ENGINE lane and one or more CONTENT lanes (Cambridge,
+Edexcel IGCSE, …). Neil's model, verbatim: *"they're supposed to create material… but not actually
+push any versions. They coordinate back with you, and then you push everything when they're ready."*
+That is the rule. It lives HERE, always loaded, because it previously lived only in one lane's
+handoff — so the lane that happened to be told obeyed it and the lane that wasn't told bumped a
+version (`.528`) without ever knowing a rule existed. **A rule that only reaches the lane whose
+handoff remembered to state it is not a rule.**
+
+### 1. ONLY THE ENGINE LANE DEPLOYS OR BUMPS A VERSION
+
+| lane | may edit | may bump version | may deploy |
+|---|---|---|---|
+| **ENGINE** | `frontend/*.js`, `island/src/*`, `bin/*`, everything | ✅ **yes — it owns all three version sites** | ✅ **yes, and only it** |
+| **CONTENT** (Cambridge, Edexcel IGCSE, any board port) | protocol `.md`, banks, datasets, its own `.md` docs, its own `bin/` gate | ⛔ **no** | ⛔ **no** |
+
+- ⛔ A content lane **never** runs `deploy-staging.sh` / `deploy-production.sh`, and **never** edits
+  the plugin header `Version:`, `SWML_VERSION`, or `WML_BUILD`. It **commits** its work and stops.
+  The universal "bump for each piece of work" rule (root `CLAUDE.md` §3) is **suspended for content
+  lanes** precisely so two chats cannot claim the same number or ship an untested half-batch.
+- ⛔ A content lane **does not edit `.js`.** Where a JS change is needed it **writes the spec** and
+  the engine lane applies it (precedent: `EDEXCEL-IGCSE-JS-ROWS-SPEC-2026-08-16.md`).
+- ✅ It hands back a handoff carrying a **`done_when:`** probe; the ENGINE lane folds those commits
+  into the next batch, bumps once, and ships **one** deploy after Neil's test pass (root §12).
+- **Engine lane's duty in return:** check `git log` for unshipped content commits before every
+  deploy, and say in the test-pass note which content changes are riding along. A content commit
+  sitting unshipped is the engine lane's miss, not the content lane's.
+
+### 2. ⭐⭐ WHERE THE CRITERIA COME FROM — NEVER FROM GENERAL GCSE KNOWLEDGE
+
+Neil, 2026-08-18: *"I'm not sure where they're getting the criteria from… they need to get it from
+the mark schemes, the official mark schemes, and then plan the protocols against the principles
+we've already established."* Both halves are already law; this is the single place that names them
+together, so a lane needs one pointer rather than three.
+
+**(a) MARKS, AOs AND BAND DESCRIPTORS — from the board's own mark scheme, quoted, never paraphrased.**
+Order of authority (`PEDAGOGY.md` §"THE MARK SCHEME IS THE AUTHORITY", Neil 2026-08-16):
+**mark scheme PDF → the real past paper → anything we have written.** Our spec JSON, protocol files
+and `PROTOCOL-QUESTION-STRUCTURE-MAP.md` are *claims about* the mark scheme — when a claim disagrees
+with the source, **our file is the defect.** ⚠️ **A totals check cannot catch a wrong tariff set**
+(2+3+6+12+22 and 2+4+5+12+22 both sum to 45 — that is how a wrong set was once recorded as
+canonical). Never validate tariffs by checking they add up.
+
+**The PDFs are on the drive** — `sophicly-etchwp-package v2.6/Sophicly Etch Mark Scheme Resources/`,
+by board: AQA Lang (+ 2026 spec papers/inserts) · AQA Literature · **CAIE GCSE English Language
+(Cambridge) 11 PDFs · CAIE Literature 6** · Edexcel GCSE Lang P1/P2 · **Edexcel IGCSE Component A 70
+· Spec B 23** · Edexcel IGCSE Literature 16 · EDUQAS 70 · OCR Literature · SQA National 5. ⭐ `mdfind`
+first, always (root §17c) — never tell Neil a mark scheme is missing without a completed search.
+
+**(b) THE SHAPE OF THE PROTOCOL — from the established anchors, not from a sibling port.**
+`PROTOCOL-STANDARD.md` is the acceptance bar and names **two gold anchors**; every port copies from
+the **nearer** one, *"never from memory, never from an older port"*:
+
+| anchor | file | covers |
+|---|---|---|
+| **LANGUAGE** | `protocols/aqa/language1/modules/protocol-a-assessment.md` | multi-question papers — unit = QUESTION, sub-unit = paragraph |
+| **LIT** | `protocols/aqa/literature/modules/protocol-a-assessment.md` | single-essay papers — unit = SECTION, TTECEA+C |
+
+⚠️ **THE LIT ANCHOR IS DEMOTED (Neil, 2026-07-07) and the re-audit is still QUEUED.** AQA **Language
+Paper 1 is THE gold standard**; the lit protocol predates the v900→v934 hardening, so a port may
+take its essay SHAPE but **every element must be verified against the P1 anchor** — never copied on
+trust. State which anchor you used and that you verified against P1.
+Planning protocols: `PROTOCOL-STANDARD.md` Part C + **C-LADDER**, ported via
+`PLANNING-LADDER-PORT-RECIPE.md`. Pedagogy rulings that constrain either: `PEDAGOGY.md` (its §0 is a
+MANDATORY search before asking Neil anything).
+
+**(c) NEVER AUTHOR CRITERIA FROM GENERAL GCSE KNOWLEDGE.** Root `CLAUDE.md` §5c already forbids it
+for student-facing content; it binds protocols the same way. If the mark scheme is silent, say so
+and ask — do not fill the gap from the marks rule or from what the shape "usually" is.
+
+**THE TWO-LINE PROVENANCE HEADER — every content lane's handoff states, for each paper it touched:**
+`mark scheme: <exact PDF path + sitting>` and `anchor: <which of the two + verified against P1? y/n>`.
+Unstated provenance is treated as unverified, and the engine lane does not ship it.
+
+---
+
+
 ## FILE STRUCTURE
 
 - `sophicly-writing-mastery-lab.php` — main, hooks, asset enqueue
