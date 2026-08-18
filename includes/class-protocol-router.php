@@ -365,6 +365,13 @@ class SWML_Protocol_Router {
             $bits = [];
             if (!empty($q['content_marks'])) $bits[] = "content={$q['content_marks']}";
             if (!empty($q['spag_marks']))    $bits[] = "SPaG={$q['spag_marks']}";
+            // Cambridge (and any board splitting a question by SKILL rather than by
+            // content-vs-technical-accuracy) records reading/writing marks. These were previously
+            // squeezed into content_marks/spag_marks, so this line announced "SPaG=25" for Cambridge
+            // P2 Section A — 25 marks that are all five writing AOs, not spelling and punctuation.
+            // Telling Sophia a quarter of the paper is technical accuracy mismarks every candidate.
+            if (!empty($q['reading_marks'])) $bits[] = "reading={$q['reading_marks']}";
+            if (!empty($q['writing_marks'])) $bits[] = "writing={$q['writing_marks']}";
             if ($bits) $notes = trim($notes . ' (' . implode(', ', $bits) . ')');
             $out .= "| {$id} | {$marks} | {$aos} | {$type} | {$notes} |\n";
             foreach ((array) ($q['aos'] ?? []) as $ao) $aos_used[$ao] = true;

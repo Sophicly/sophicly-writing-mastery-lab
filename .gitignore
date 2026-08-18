@@ -28,3 +28,4 @@ CleanShot*.jpg
 # Step 9 island build deps (the built bundle in frontend/ is committed; deps are not)
 island/node_modules/
 island/package-lock.json
+protocols/_marks/.pdftext-cache/

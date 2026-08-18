@@ -1,0 +1,113 @@
+{
+  "board": "edexcel-igcse",
+  "paper": "language_p1",
+  "title": "Pearson Edexcel International GCSE English Language A (4EA1) — Paper 1",
+  "authority": {
+    "file": "MSR/EDEXCEL IGCSE English Language Component A/Mark Scheme for Edexcel IGCSE English Language Component A P1/4ea1-01-rms-20220825.pdf",
+    "kind": "mark scheme",
+    "sitting": "June 2022 (published 25 Aug 2022, Publications Code 4EA1_01_2206_MS)",
+    "why_this_source": "The board's own published mark scheme — the top of the authority order (PEDAGOGY.md, Neil 2026-08-16). This is the paper whose tariffs our protocol got wrong: it marked Q2 out of 3 (real 4) and Q3 out of 6 (real 5) from 2026-04-08 until 2026-08-17, four months live. This file exists so that cannot recur silently.",
+    "note_on_wording": "Question WORDING rotates between sittings (June 2022 Q2 asks thoughts/feelings; June 2024 asks 'in your own words describe what happens'). TARIFFS AND OBJECTIVES DO NOT. Never key a protocol on one paper's wording."
+  },
+  "total": {
+    "marks": 90,
+    "marks_from": "questions",
+    "why": "The mark scheme never states the paper total — it states each question's tariff. 90 is the sum of the six quoted questions (check C), cross-checked against language-paper-specs.json (check D)."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 2,
+      "aos": [
+        "AO1"
+      ],
+      "quote": "up to a maximum of two"
+    },
+    {
+      "id": "Q2",
+      "marks": 4,
+      "aos": [
+        "AO1"
+      ],
+      "quote": "up to a maximum of four marks.",
+      "was_wrong": "Our protocol marked this out of 3 until v7.20.528 (fixed 2026-08-17)."
+    },
+    {
+      "id": "Q3",
+      "marks": 5,
+      "aos": [
+        "AO1"
+      ],
+      "quote": "up to a maximum of five marks.",
+      "was_wrong": "Our protocol marked this out of 6, and demanded 6 sentences where the task wants 5, until v7.20.528."
+    },
+    {
+      "id": "Q4",
+      "marks": 12,
+      "aos": [
+        "AO2"
+      ],
+      "quote": "Question 4",
+      "marks_quote": "Level 5   11–12",
+      "note": "Tariff stated only as the top level band of the AO2 grid, not in the question stem."
+    },
+    {
+      "id": "Q5",
+      "marks": 22,
+      "aos": [
+        "AO3"
+      ],
+      "quote": "Question 5",
+      "marks_quote": "Level 5   19–22",
+      "note": "AO3 comparison. NB the mark scheme caps a one-text response at the top of Level 2."
+    },
+    {
+      "id": "Q6",
+      "marks": 45,
+      "aos": [
+        "AO4",
+        "AO5"
+      ],
+      "quote": "Writing assessment grids for Questions 6 and 7",
+      "note": "Section B: the candidate answers ONE of Q6/Q7; both are marked on the same two grids.",
+      "components": [
+        {
+          "label": "communication",
+          "marks": 27,
+          "kind": "content",
+          "aos": [
+            "AO4"
+          ],
+          "spec_field": "content_marks",
+          "quote": "Level 5   23–27"
+        },
+        {
+          "label": "technical_accuracy",
+          "marks": 18,
+          "kind": "spag",
+          "aos": [
+            "AO5"
+          ],
+          "spec_field": "spag_marks",
+          "quote": "Level 5   16–18"
+        }
+      ],
+      "marks_from": "components",
+      "why_no_marks_quote": "The mark scheme gives Section B as two grids (AO4 max 27, AO5 max 18) and never prints 45. It is the sum of two quoted maxima."
+    }
+  ],
+  "spec": {
+    "file": "language",
+    "key": "edexcel-igcse.language_p1",
+    "field_kinds": {
+      "content_marks": "content",
+      "spag_marks": "spag"
+    }
+  },
+  "protocols": [
+    {
+      "file": "protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md",
+      "role": "assessment protocol"
+    }
+  ]
+}

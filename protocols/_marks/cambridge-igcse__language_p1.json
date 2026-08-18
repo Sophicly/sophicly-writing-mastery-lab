@@ -1,0 +1,130 @@
+{
+  "board": "cambridge-igcse",
+  "paper": "language_p1",
+  "title": "Cambridge IGCSE First Language English 0500/0990 — Paper 1 Reading",
+  "authority": {
+    "file": "research/cambridge-igcse/0500-syllabus-2024-2026.pdf",
+    "kind": "syllabus",
+    "sitting": "0500 syllabus for 2024, 2025 and 2026",
+    "why_this_source": "NO official Cambridge mark scheme for this syllabus era is on disk for Paper 1. The only P1 mark scheme we hold is 718838-2027-specimen, which belongs to the 2027-2029 syllabus — a DIFFERENT paper, and wrong for a candidate sitting Oct/Nov 2026. The syllabus states every tariff explicitly and is the board's own document, so it is the authority here. ⚠️ REPLACE THIS with the June 2024 (or any 2024-2026 series) Paper 1 mark scheme the moment one is on disk.",
+    "checked_2026_08_18": "160 PDFs in 'Cambridge IGCSE English 0500-0990/Past Papers (mirror 2020-2026)' — 80 question papers + 80 inserts, ZERO mark schemes."
+  },
+  "total": {
+    "marks": 80,
+    "quote": "Paper 1 Reading\n         Written paper, 2 hours, 80 marks"
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 30,
+      "quote": "Question 1 Comprehension and summary task (30 marks)",
+      "components": [
+        {
+          "label": "comprehension_reading",
+          "marks": 15,
+          "kind": "reading",
+          "aos": [
+            "R1",
+            "R2",
+            "R5"
+          ],
+          "quote": "This question tests the following reading assessment objectives (15 marks):"
+        },
+        {
+          "label": "summary_reading",
+          "marks": 10,
+          "kind": "reading",
+          "aos": [
+            "R1",
+            "R2",
+            "R5"
+          ],
+          "quote": "This question tests the following reading assessment objectives (10 marks):"
+        },
+        {
+          "label": "summary_writing",
+          "marks": 5,
+          "kind": "writing",
+          "aos": [
+            "W2",
+            "W3"
+          ],
+          "quote": "This question also tests the following writing assessment objectives (5 marks):"
+        }
+      ]
+    },
+    {
+      "id": "Q2",
+      "marks": 25,
+      "quote": "Question 2 Short-answer questions and language task (25 marks)",
+      "components": [
+        {
+          "label": "short_answer_reading",
+          "marks": 10,
+          "kind": "reading",
+          "aos": [
+            "R1",
+            "R2",
+            "R4"
+          ],
+          "quote": "This question tests the following reading assessment objectives (10 marks):"
+        },
+        {
+          "label": "language_task_reading",
+          "marks": 15,
+          "kind": "reading",
+          "aos": [
+            "R1",
+            "R2",
+            "R4"
+          ],
+          "quote": "This question tests the following reading assessment objectives (15 marks):"
+        }
+      ]
+    },
+    {
+      "id": "Q3",
+      "marks": 25,
+      "quote": "Question 3 Extended response to reading (25 marks)",
+      "components": [
+        {
+          "label": "reading",
+          "marks": 15,
+          "kind": "reading",
+          "aos": [
+            "R1",
+            "R2",
+            "R3"
+          ],
+          "spec_field": "reading_marks",
+          "quote": "This question tests the following reading assessment objectives (15 marks):"
+        },
+        {
+          "label": "writing",
+          "marks": 10,
+          "kind": "writing",
+          "aos": [
+            "W1",
+            "W2",
+            "W3",
+            "W4"
+          ],
+          "spec_field": "writing_marks",
+          "note": "⚠️ These 10 marks are W1-W4 — articulate / organise / vocabulary / register. W5 (spelling, punctuation and grammar) is NOT among them, so recording them as spag_marks is wrong in kind, not just in name.",
+          "quote": "This question also tests the following writing assessment objectives (10 marks):"
+        }
+      ]
+    }
+  ],
+  "spec": {
+    "file": "language",
+    "key": "cambridge-igcse.language_p1",
+    "field_kinds": {
+      "content_marks": "content",
+      "spag_marks": "spag",
+      "reading_marks": "reading",
+      "writing_marks": "writing"
+    }
+  },
+  "protocols_note": "Cambridge has NO protocol-a-assessment.md — it is served through topic templates (protocols/shared/templates/topics/cambridge-igcse-language-p1.md), which carry no 'Assessment Sub-Protocol: Question N' sections, so check E cannot read them. The chain is covered in two hops instead: this file proves BOARD PDF -> language-paper-specs.json (check D), and bin/cambridge-topics-gate.php runs the real SWML_Topic_Parser and proves TEMPLATE -> that same 80-mark spec. Do not add a protocols[] entry here expecting it to check the template; extend the Cambridge gate instead."
+}

@@ -466,6 +466,20 @@ node bin/island-contrast-lint.js || fail=1
 # counts what comes back — texts, questions and mark totals against the measured 80-mark spec.
 php bin/cambridge-topics-gate.php || fail=1
 
+# 2026-08-18 (Neil): "where are they getting the criteria from? They need to get it from the
+# official mark schemes." Every mark a student is scored against must be QUOTED from the board's
+# own PDF, and this re-opens that PDF and looks for the quote. Proof it was needed: Edexcel IGCSE
+# Lang P1 marked Q2 out of 3 (real 4) and Q3 out of 6 (real 5) — authored 2026-04-08, live four
+# months, invisible to every other check because our files agreed with each other. A gate that only
+# diffs our own files is a check that duplicates its subject; the CITATION is what cannot be faked.
+# ⚠️ Needs poppler (`brew install poppler`); it EXITS 2 rather than skipping, because a skipped
+# check reads as a pass. Papers with no protocols/_marks source are listed as UNGATED, never silent.
+if command -v pdftotext >/dev/null 2>&1; then
+  node bin/tariff-gate.js || fail=1
+else
+  echo "  ⚠️  tariff-gate SKIPPED — pdftotext not installed (brew install poppler). Tariffs UNVERIFIED."
+fi
+
 
 if [ "$fail" -ne 0 ]; then
   echo ""

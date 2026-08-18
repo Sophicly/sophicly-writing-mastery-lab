@@ -1,0 +1,85 @@
+{
+  "board": "cambridge-igcse",
+  "paper": "language_p2",
+  "title": "Cambridge IGCSE First Language English 0500/0990 — Paper 2 Directed Writing and Composition",
+  "authority": {
+    "file": "research/cambridge-igcse/0500-syllabus-2024-2026.pdf",
+    "kind": "syllabus",
+    "sitting": "0500 syllabus for 2024, 2025 and 2026",
+    "why_this_source": "The syllabus states every tariff explicitly and covers the era our candidates sit. A June 2024 Paper 2 mark scheme IS on disk ('Sophicly Etch Mark Scheme Resources/CAIE GCSE English Language/CAIE English Language Paper 2/521329-june-2024-mark-scheme-paper-21.pdf') and should be added as a second authority when per-level descriptors are gated; for the TARIFFS the syllabus is the cleaner citation because it states them in words.",
+    "do_not_use": "718839-2027-specimen-paper-2-mark-scheme.pdf — that is the 2027-2029 syllabus, a different paper."
+  },
+  "total": {
+    "marks": 80,
+    "quote": "Paper 2 Directed Writing and Composition\n         Written paper, 2 hours, 80 marks"
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 40,
+      "quote": "Section A Directed Writing (40 marks)",
+      "components": [
+        {
+          "label": "writing",
+          "marks": 25,
+          "kind": "writing",
+          "aos": [
+            "W1",
+            "W2",
+            "W3",
+            "W4",
+            "W5"
+          ],
+          "spec_field": "writing_marks",
+          "note": "⚠️ These 25 marks are ALL FIVE writing AOs. W5 (spelling, punctuation and grammar) is one of five, not the whole. Recording them as spag_marks makes the protocol router preamble emit 'SPaG=25' (class-protocol-router.php:367), telling Sophia that a quarter of the paper is technical accuracy.",
+          "quote": "This question tests the following writing assessment objectives (25 marks):"
+        },
+        {
+          "label": "reading",
+          "marks": 15,
+          "kind": "reading",
+          "aos": [
+            "R1",
+            "R2",
+            "R3",
+            "R5"
+          ],
+          "spec_field": "reading_marks",
+          "note": "⚠️ These 15 marks are READING, recorded in the spec as content_marks.",
+          "quote": "This question also tests the following reading assessment objectives (15 marks):"
+        }
+      ]
+    },
+    {
+      "id": "Q2",
+      "marks": 40,
+      "quote": "Section B Composition (40 marks)",
+      "components": [
+        {
+          "label": "writing",
+          "marks": 40,
+          "kind": "writing",
+          "aos": [
+            "W1",
+            "W2",
+            "W3",
+            "W4",
+            "W5"
+          ],
+          "quote": "This question tests the following writing assessment objectives (40 marks):"
+        }
+      ]
+    }
+  ],
+  "spec": {
+    "file": "language",
+    "key": "cambridge-igcse.language_p2",
+    "field_kinds": {
+      "content_marks": "content",
+      "spag_marks": "spag",
+      "reading_marks": "reading",
+      "writing_marks": "writing"
+    }
+  },
+  "protocols_note": "Cambridge has NO protocol-a-assessment.md — it is served through topic templates (protocols/shared/templates/topics/cambridge-igcse-language-p2.md), which carry no 'Assessment Sub-Protocol: Question N' sections, so check E cannot read them. The chain is covered in two hops instead: this file proves BOARD PDF -> language-paper-specs.json (check D), and bin/cambridge-topics-gate.php runs the real SWML_Topic_Parser and proves TEMPLATE -> that same 80-mark spec. Do not add a protocols[] entry here expecting it to check the template; extend the Cambridge gate instead."
+}
