@@ -24993,6 +24993,21 @@
                     className: 'swml-quick-btn', textContent: 'Guidance', icon: WML.icon('guide', 15),
                     onClick: function () { try { if (typeof showGuidePanel === 'function') showGuidePanel(GUIDE); } catch (e) {} },
                 }));
+                // ⭐ v7.20.535 (#396) — the quick action Neil asked for by name: *"we'd probably
+                // need a quick action button somewhere in the protocol to make it clear."* A rail
+                // button nobody is told about is a button nobody presses. Same open-the-trigger
+                // shape as the chips beside it; §4d liveness — a miss SAYS so rather than being a
+                // chip that silently does nothing.
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'My Plot', icon: WML.icon('plot', 15),
+                    onClick: function () {
+                        try {
+                            var t = document.querySelector('.swml-mp-trigger');
+                            if (t) { if (!t.classList.contains('is-active')) t.click(); return; }
+                        } catch (e) {}
+                        console.warn('WML: the My Plot rail panel is not on this step — the plot cannot be opened from here.');
+                    },
+                }));
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'Story Components', icon: WML.icon('components', 15),
                     onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
@@ -25416,14 +25431,46 @@
                             + 'once someone finally sees her.*\n\n'
                             + '**Does the shift you just named line up with your theme and your character arc?**');
                     } else {
+                        /* ⭐ v7.20.535 (FIXLIST #397) — REWRITTEN. Neil, 2026-08-18: *"one of the
+                           questions in the protocol was a bit unclear, for the last section in step
+                           seven. It was talking about putting pressure on the values."* Three real
+                           defects, all fixed here:
+                           1. **“that value” was an orphan reference** — it pointed at a shift named
+                              two stations earlier and off the top of the screen. Their own moved
+                              values are now printed here, DRAWN not stored (this whole run is inside
+                              _cwReplay), so the referent is on the page with the question.
+                           2. **“pressure” was never defined** and carried no worked example — the
+                              exact blank space root CLAUDE.md §5c-ii(a) forbids. It now has a
+                              one-line definition, criteria, and two examples from set texts.
+                           3. **it asked them to name beats from a document they could not open** —
+                              that was #396, and the My Plot panel this build ships is the answer;
+                              the ask points straight at it (§4c.3, point at the help).
+                           And “nothing does” is now stated as a legitimate answer: on this step it
+                           is the most useful one a student can give, because it names their next beat. */
+                        const pressureMoved = shiftLines();
                         aiBubble(bar(n, stationTitle(st))
-                            + 'Last one, and it is the practical one. A value only changes if the PLOT forces it to. '
-                            + 'If nothing in your Step-6 outline puts that value under real pressure, the change will '
-                            + 'read as something you announced rather than something that happened.\n\n'
-                            + 'A strong answer names **specific beats** — “the argument in stage three”, “the moment '
-                            + 'she finds the letter” — not “the middle of the story”.\n\n'
-                            + '**Does your Step-6 plot outline put enough pressure on that value? Name the beats that '
-                            + 'test it.**');
+                            + 'Last one, and it is the practical one.\n\n'
+                            + '**Pressure means the story makes a value COST something.** A value only changes when a '
+                            + 'scene puts your protagonist somewhere that holding on to it hurts — or where letting it '
+                            + 'go would be the easy way out. If no beat does that, the change reads as something you '
+                            + 'announced rather than something that happened.\n\n'
+                            + '**A beat puts a value under pressure when:**\n'
+                            + '- holding on to it COSTS them something they want, or dropping it would be easier\n'
+                            + '- it happens ON THE PAGE — a scene we watch, not a line of summary\n'
+                            + '- it sits in the MIDDLE, while the change is still in doubt\n\n'
+                            + 'Example — *Macbeth*, loyalty: Duncan makes him Thane of Cawdor and then sleeps under his '
+                            + 'roof. Staying loyal costs him the crown; taking the crown costs him himself.\n\n'
+                            + 'Example — *An Inspector Calls*, honesty: Sheila can admit what she did to Eva Smith, or '
+                            + 'keep quiet and keep her engagement. Telling the truth is the expensive option.\n\n'
+                            + (pressureMoved.length
+                                ? 'Your own map says these values move:\n\n' + pressureMoved.join('\n') + '\n\n'
+                                : '')
+                            + 'Your beats are in **My Plot** below — the ones you have written and the ones still '
+                            + 'blank.\n\n'
+                            + '**Which beats put the shift you just named under that kind of pressure?** Name them the '
+                            + 'way your outline does — “the argument in Stage III”, “the moment she finds the letter” '
+                            + '— not “the middle of the story”. **If nothing does, say so** — that is the useful '
+                            + 'answer, and it tells you exactly which beat to write next.');
                     }
                 });
                 _walkSlot.arm('cw7', st.fid, { cycle: 'rewrite' });
@@ -25997,6 +26044,21 @@
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'My values', icon: WML.icon('values', 15),
                     onClick: function () { try { var t = document.querySelector('.swml-mv-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
+                // ⭐ v7.20.535 (#396) — the quick action Neil asked for by name: *"we'd probably
+                // need a quick action button somewhere in the protocol to make it clear."* A rail
+                // button nobody is told about is a button nobody presses. Same open-the-trigger
+                // shape as the chips beside it; §4d liveness — a miss SAYS so rather than being a
+                // chip that silently does nothing.
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'My Plot', icon: WML.icon('plot', 15),
+                    onClick: function () {
+                        try {
+                            var t = document.querySelector('.swml-mp-trigger');
+                            if (t) { if (!t.classList.contains('is-active')) t.click(); return; }
+                        } catch (e) {}
+                        console.warn('WML: the My Plot rail panel is not on this step — the plot cannot be opened from here.');
+                    },
                 }));
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn', textContent: 'Story Components', icon: WML.icon('components', 15),
@@ -29347,6 +29409,7 @@
         let scTrigger = null, ssTrigger = null; // v7.20.291/.292: Story Components + Story Spine — extra triggers on the SAME panel shell
         let rvTrigger = null; // v7.20.410 (#207): "Coming back to" — a FOURTH trigger on that same shell
         let mvTrigger = null; // v7.20.493 (#365): "My Values" — the student's own Step-7 audit, a FIFTH trigger
+        let mpTrigger = null; // v7.20.535 (#396): "My Plot" — the Step-6 outline, a SIXTH trigger on that shell
         // v7.20.507: Resources is OFF on a tools-minimal step (Neil named this button explicitly).
         if (cwPanelRes && cwPanelRes.length > 0 && !(WML.cwToolsMinimal && WML.cwToolsMinimal(state.task))) {
             // Books, not a chain link: this trigger opens the Creative Writing Reference Guide,
@@ -29516,6 +29579,7 @@
             const SVG_COMPONENTS = WML.icon('components', 16);   // v7.20.364: Neil's puzzle glyph, from the ONE icon registry
             const SVG_REVISIT = WML.icon('revisit', 16);   // v7.20.410 (#207): the flag, same ONE registry
             const SVG_VALUES = WML.icon('values', 16);   // v7.20.493 (#365): the heart, same ONE registry
+            const SVG_PLOT = WML.icon('plot', 16);   // v7.20.535 (#396): the checklist, same ONE registry
             // Swap content with a short opacity fade-in so async loads + refreshes settle
             // smoothly rather than popping in.
             const _setWpBody = (bodyEl, html) => {
@@ -29729,6 +29793,73 @@
                 });
             };
 
+            /* ⭐⭐ v7.20.535 (#396) — MY PLOT: the student's own Step-6 outline, readable beside the
+               work on every later step. Neil, 2026-08-18: *"in the creative writing, step seven
+               onwards, there's no way for the students to pull in the plot that they did if they
+               wanna review it… and see what the students have written there, and even what they
+               haven't written."*
+               BOTH HALVES ARE HIS, and the second is the one a naive build drops: an EMPTY beat is
+               rendered as empty, not omitted. From Step 7 the work IS the plot — placing traits into
+               beats in Step 8, polishing beats in Step 9 — so the gaps are the pedagogically
+               interesting rows, and a panel that hides them answers the easy half of the question.
+               The eighth row on this shell, for the reason the table's own note gives: a new source
+               is a ROW. Zero new CSS — a stage is a value card, a beat is a trait row, the band is
+               the condition badge; the shapes already exist and already theme correctly. */
+            const _myPlotHTML = function (world) {
+                const arch = OUTLINE_CRITERIA.cwPlotArchetypes[world.arch] || {};
+                const written = world.beats.filter(function (b) { return !!b.text; }).length;
+                let html = '<div class="swml-wp-item"><div class="swml-wp-item-label">'
+                    + _scEsc(arch.label || 'Your plot') + '</div>'
+                    + '<div class="swml-wp-item-text swml-mv-muted">' + written + ' of ' + world.beats.length
+                    + ' beats written. The blank ones are not a failure — they are your next job.</div></div>';
+                world.stages.forEach(function (st) {
+                    const mine = world.beats.filter(function (b) { return b.stage === st.si; });
+                    if (!mine.length) return;
+                    html += '<div class="swml-wp-item"><div class="swml-wp-item-label">' + _scEsc(st.label)
+                        + '<span class="swml-mv-cond">' + _scEsc(CW8_BANDS[st.band].label) + '</span></div>';
+                    mine.forEach(function (b) {
+                        html += '<div class="swml-mv-trait"><div class="swml-mv-trait-head">' + _scEsc(b.label) + '</div>'
+                            + (b.text
+                                ? '<div class="swml-wp-item-text">' + _scEsc(b.text) + '</div>'
+                                : '<div class="swml-wp-item-text swml-mv-muted">Not written yet.</div>')
+                            + '</div>';
+                    });
+                    html += '</div>';
+                });
+                return html;
+            };
+            const _loadMyPlotPanel = function (bodyEl) {
+                const pid = state.cwProjectId;
+                if (!pid) {
+                    _setWpBody(bodyEl, '<p class="swml-wp-empty">Open a Creative Writing project to see your plot outline.</p>');
+                    return;
+                }
+                if (!bodyEl._wpHasContent) _setWpBody(bodyEl, '<p class="swml-wp-empty">Loading your plot…</p>');
+                const emptyState = '<p class="swml-wp-empty">Nothing here yet — your plot outline is built in '
+                    + '<strong>Step 6 — Build Your Plot Outline</strong>. Every beat you write there will appear '
+                    + 'here, beside every later step.</p>';
+                /* WHERE THE BEATS COME FROM is a CAPABILITY question, never a step number: does the
+                   document currently open already hold the outline? On Step 6 and on every Update
+                   Plot step it does, and reading it LIVE means an edit made a second ago is in the
+                   panel. On Step 7, 11 and the rest it does not, so the saved artifact answers.
+                   Keying this on a task literal is the canvas task-scoping bug class (§1/§2) — a new
+                   plot-update step would silently read a stale artifact instead. */
+                const live = (canvasEditor && detectBuiltPlotSlug(canvasEditor))
+                    ? _cw8EnumerateBeats(canvasEditor) : null;
+                const worldP = live
+                    ? Promise.resolve(live)
+                    : WML.cwProject.loadArtifact(pid, 'plot_outline').then(function (a) {
+                        return _cwPlotFromHTML((a && a.success && typeof a.value === 'string') ? a.value : '');
+                    });
+                worldP.then(function (world) {
+                    if (!world || !world.beats.length) { _setWpBody(bodyEl, emptyState); bodyEl._wpHasContent = false; return; }
+                    _setWpBody(bodyEl, _myPlotHTML(world));
+                    bodyEl._wpHasContent = true;
+                }).catch(function () {
+                    _setWpBody(bodyEl, '<p class="swml-wp-empty">Couldn’t load your plot outline right now.</p>');
+                });
+            };
+
             wpPanel = el('div', { className: 'swml-outline-panel swml-resources-panel swml-wp-panel' });
             const wpGrip = el('div', { className: 'swml-outline-grip' });
             wpGrip.innerHTML = '<span class="swml-outline-grip-dots">⠷</span>';
@@ -29749,6 +29880,7 @@
                     if (ssTrigger) ssTrigger.classList.remove('is-active');
                     if (rvTrigger) rvTrigger.classList.remove('is-active'); // v7.20.410 (#207): four now
                     if (mvTrigger) mvTrigger.classList.remove('is-active'); // v7.20.493 (#365): five now
+                    if (mpTrigger) mpTrigger.classList.remove('is-active'); // v7.20.535 (#396): six now
                     // v7.20.319b: fade-then-dock moved into _wireRailPanel — one close for all four.
                 }
             });
@@ -29879,6 +30011,10 @@
                 // button (like revisit, not anchorOnly): "what did I say about my protagonist's
                 // values?" must be answerable from anywhere, on every CW step.
                 myValues:   { title: 'My Values',         origin: { step: 7, noun: 'values audit' }, load: function () { _loadMyValuesPanel(wpBody); } },
+                // ⭐ v7.20.535 (#396) — My Plot: the Step-6 outline, written beats AND blank ones.
+                // Its own rail button (like revisit and myValues, not anchorOnly): from Step 7 on,
+                // "what did I actually plan?" must be answerable from anywhere in the document.
+                myPlot:     { title: 'My Plot',           origin: { step: 6, noun: 'plot outline' },  load: function () { _loadMyPlotPanel(wpBody); } },
             };
             // Rebuilds the list IN PLACE if (and only if) it is the mode currently on screen.
             // Called after any flag change so the panel can never show a stale list; never opens
@@ -29997,6 +30133,7 @@
                 // panel opens in the place the student already knows, never off-screen.
                 if (mode === 'revisit') return rvTrigger;   // v7.20.410 (#207): its own rail button
                 if (mode === 'myValues') return mvTrigger;  // v7.20.493 (#365): its own rail button too
+                if (mode === 'myPlot') return mpTrigger;    // v7.20.535 (#396): and so does My Plot
                 // v7.20.441 (#276): 'traitExamples' borrows the same anchor as 'examples' — it is
                 // the same gesture (open the depth panel for the thing I am working on) and the
                 // student already knows where that panel appears.
@@ -30124,6 +30261,16 @@
             });
             _railAdd(mvTrigger);
 
+            // ⭐ v7.20.535 (#396) — My Plot. Placed here because the rail reads in STEP order and
+            // this shell's other origins are 1, 3, 4 and 7; the plot is Step 6.
+            mpTrigger = el('button', {
+                className: 'swml-outline-btn swml-mp-trigger',
+                'data-tooltip': 'My Plot', 'data-tooltip-pos': 'right',
+                'aria-label': 'My Plot — your Step 6 outline', innerHTML: SVG_PLOT,
+                onClick: (e) => { e.stopPropagation(); _openWpMode('myPlot'); }
+            });
+            _railAdd(mpTrigger);
+
             // v7.20.410 (#207) — "Coming back to": every beat the student flagged, click to jump.
             // Its own rail button (unlike the beat-examples mode) because the question "what did I
             // flag?" has to be answerable from anywhere in the document.
@@ -30157,7 +30304,8 @@
                 // .291 note above records for Story Components.
                 // v7.20.493 (#365): `.swml-mv-trigger` MUST be in this list too — same defect
                 // class as the .291/.410 notes above.
-                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger, .swml-sc-trigger, .swml-ss-trigger, .swml-rv-trigger, .swml-mv-trigger')) return;
+                // v7.20.535 (#396): `.swml-mp-trigger` MUST be here too — same defect class as .291/.410/.493.
+                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger, .swml-sc-trigger, .swml-ss-trigger, .swml-rv-trigger, .swml-mv-trigger, .swml-mp-trigger')) return;
                 if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return; // v7.19.951: widgets live in in-flow control rows now (+ body-portaled popovers)
                 wpPanel.classList.remove('swml-resources-open');
                 wpTrigger.classList.remove('is-active');
@@ -30165,6 +30313,7 @@
                 if (ssTrigger) ssTrigger.classList.remove('is-active');
                 if (rvTrigger) rvTrigger.classList.remove('is-active');
                 if (mvTrigger) mvTrigger.classList.remove('is-active');
+                if (mpTrigger) mpTrigger.classList.remove('is-active');
             });
         }
 
@@ -51753,10 +51902,9 @@
     // archetype, every criterion row present in the doc is a beat; frame rows and turning-point /
     // marker headings are not (same exclusions as the Step-6 walk's buildAsks).
     function _cw8EnumerateBeats(editor) {
-        const k = detectBuiltPlotSlug(editor);
-        const arch = k && OUTLINE_CRITERIA.cwPlotArchetypes[k];
-        if (!arch || !Array.isArray(arch.sections)) return { arch: null, beats: [], stages: [] };
         const present = new Map();
+        const k = detectBuiltPlotSlug(editor);
+        if (!k) return _cwPlotAssemble(null, present);
         try {
             editor.state.doc.descendants(function (n) {
                 if (n.type && n.type.name === 'outlineRow' && n.attrs && n.attrs.fieldId
@@ -51764,6 +51912,46 @@
                 return true;
             });
         } catch (e) {}
+        return _cwPlotAssemble(k, present);
+    }
+
+    /* ⭐ v7.20.535 (#396) — THE SAME PLOT, READ FROM SAVED HTML.
+       The plot panel has to show the outline on steps whose OWN document is not the outline
+       (Step 7's is the values audit, Step 11's the character profile), so the beats come from the
+       saved `plot_outline` artifact there. Both collectors hand the identical fieldId -> text map
+       to ONE template walk below: a second walk is precisely the drift this file already carries
+       scars from, and it would be the walk that decides which beats exist.
+       ⚠️ Unlike CW9's closure-local `enumerateFromArtifact`, an EMPTY beat is kept. Neil, #396:
+       *"see what the students have written there, and even what they haven't written."* The empty
+       beats are the pedagogically interesting ones — dropping them would answer the wrong half of
+       the question. */
+    function _cwPlotFromHTML(html) {
+        const present = new Map();
+        if (!html || typeof DOMParser === 'undefined') return _cwPlotAssemble(null, present);
+        try {
+            const doc = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html');
+            doc.querySelectorAll('[data-outline-row][data-field-id]').forEach(function (d) {
+                const fid = d.getAttribute('data-field-id');
+                if (fid && !present.has(fid)) present.set(fid, (d.textContent || '').trim());
+            });
+        } catch (e) { return _cwPlotAssemble(null, present); }
+        // The archetype is read off the fieldIds with the SAME prefix test detectBuiltPlotSlug
+        // uses on the live doc — the slug is baked into every row id, so HTML and doc agree.
+        let k = null;
+        const keys = Object.keys(OUTLINE_CRITERIA.cwPlotArchetypes || {});
+        present.forEach(function (_v, fid) {
+            if (k) return;
+            for (let i = 0; i < keys.length; i++) {
+                if (fid.indexOf('outline-cw-' + keys[i] + '-') === 0) { k = keys[i]; break; }
+            }
+        });
+        return _cwPlotAssemble(k, present);
+    }
+
+    // The ONE template walk. `present` = fieldId -> the student's text ('' for an untouched row).
+    function _cwPlotAssemble(k, present) {
+        const arch = k && OUTLINE_CRITERIA.cwPlotArchetypes[k];
+        if (!arch || !Array.isArray(arch.sections)) return { arch: null, beats: [], stages: [] };
         const beats = [];
         const stages = [];
         arch.sections.forEach(function (sec, si) {

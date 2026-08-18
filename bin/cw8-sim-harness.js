@@ -104,8 +104,14 @@ const _cw8ParseValuesAudit = fnFrom('_cw8ParseValuesAudit', {
 });
 const _cw8BandOf = fnFrom('_cw8BandOf');
 const _cw8StageRoman = fnFrom('_cw8StageRoman');
+// v7.20.535 (#396): the template walk moved into _cwPlotAssemble so the plot panel could read the
+// SAME beats from saved HTML. Sliced separately here for the same reason everything else is —
+// re-typing it would make this gate test its own memory (§14c).
+const _cwPlotAssemble = fnFrom('_cwPlotAssemble', {
+    OUTLINE_CRITERIA, _cw6RowFieldId, _cw8BandOf, _cw8StageRoman,
+});
 const _cw8EnumerateBeats = fnFrom('_cw8EnumerateBeats', {
-    detectBuiltPlotSlug, OUTLINE_CRITERIA, _cwNodeText, _cw6RowFieldId, _cw8BandOf, _cw8StageRoman,
+    detectBuiltPlotSlug, _cwNodeText, _cwPlotAssemble,
 });
 const _cw8BeatSegment = fnFrom('_cw8BeatSegment');
 const _cw8AppendLine = fnFrom('_cw8AppendLine');

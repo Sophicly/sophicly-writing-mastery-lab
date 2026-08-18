@@ -344,6 +344,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw8-sim-harness.js || fail=1
 fi
 
+# v7.20.535 (#396): THE MY PLOT PANEL SHOWS THE BLANK BEATS. Neil asked for what the student HAS
+# written *"and even what they haven't written"*, and the opposite rule ships ten thousand lines
+# away in CW9's enumerator — so which beats survive enumeration is asserted, not remembered.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|cw-plot-panel-gate\.js|walk-sim-lib\.js'; then
+  node bin/cw-plot-panel-gate.js || fail=1
+fi
+
 # v7.20.520 (#379): THE SELECTION TOOLBAR STAYS ATTACHED TO THE TEXT. Pure geometry, so it has
 # no UI to eyeball and no existing gate has an opinion about it — and it has now been got wrong
 # twice on the same component. Drives the shipped placer on synthetic geometry; proven RED by
