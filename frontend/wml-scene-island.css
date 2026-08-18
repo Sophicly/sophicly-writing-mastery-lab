@@ -597,6 +597,20 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
   padding-left:12px; border-left:2px solid var(--line-strong);
 }
 .swml-plot-island .pv-rail-said.is-none { font-style:normal; }
+
+/* A trait recorded at BOTH ends of the story is a journey, and the two states are shown together
+   so the student can see it as one (2026-08-18). */
+.swml-plot-island .pv-rail-journey { margin:0 0 14px; }
+.swml-plot-island .pv-rail-half + .pv-rail-half { margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+.swml-plot-island .pv-rail-halflabel {
+  margin:0; font-size:9.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--faint);
+}
+.swml-plot-island .pv-rail-journey .pv-rail-cond { margin:2px 0 5px; }
+.swml-plot-island .pv-rail-journey .pv-rail-said { margin:0; font-size:12.5px; }
+/* the half's own condition, beside the beats it applies to */
+.swml-plot-island .pv-band-cond {
+  font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--teal-deep);
+}
 .swml-plot-island .pv-rail-count { margin:0 0 6px; font-size:13px; color:var(--muted2); }
 .swml-plot-island .pv-rail-count.is-on { color:var(--ink); font-weight:700; }
 /* The running list of picks — tapping one removes it, which is the only way to undo a pick

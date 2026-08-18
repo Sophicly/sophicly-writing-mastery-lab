@@ -26063,6 +26063,12 @@
                             ? 'On your build list' : r.cond,
                         said: r.said || '',
                         portText: _cw8PortText(r),
+                        /* Both halves, so the interface can show the student the condition and the
+                           words they wrote for the half of the plot they are actually looking at. */
+                        byBand: {
+                            begin: { cond: String(r.condBegin || r.cond || ''), said: _cw8PortText(r, 'begin') },
+                            end: { cond: String(r.condEnd || r.cond || ''), said: _cw8PortText(r, 'end') },
+                        },
                         bands: _cw8BandsFor(r),
                         workedIn: worked,
                     };
@@ -26143,16 +26149,30 @@
                     ledger = ledger || {};
                     const ports = ledger.ports || {};
                     let filed = 0, already = 0, missed = 0, empties = 0;
+                    /* ⭐ THE TEXT IS RESOLVED PER BEAT, NOT PER TRAIT (2026-08-18). A trait marked
+                       at both ends of the story carries two different explanations, and the beat
+                       decides which one belongs: a beginning beat gets the beginning words. The
+                       island still sends one `portText` as a fallback for the whole trait, but the
+                       ENGINE owns the choice, because only the engine knows every beat's band. */
+                    const _rosterOf = function (traitId) {
+                        return (roster || []).filter(function (x) { return _cw7TraitCtlId(x.trait) === traitId; })[0] || null;
+                    };
+                    const _beatBand = function (fid) {
+                        const b = (world ? world.beats : []).filter(function (x) { return x.fid === fid; })[0];
+                        return b ? b.band : null;
+                    };
                     (payload.picks || []).forEach(function (p) {
+                        const r = _rosterOf(p.traitId);
                         (p.fids || []).forEach(function (fid) {
                             const key = _cw8PortKey(fid, p.trait);
                             const before = rowText(fid);
                             if (_cw8BeatHasTrait(before, p.label)) { already++; return; }
                             if (!before) empties++;
-                            if (_writeOutlineRowField(fid, _cw8AppendLine(p.label, p.portText))) {
+                            const text = r ? _cw8PortText(r, _beatBand(fid)) : p.portText;
+                            if (_writeOutlineRowField(fid, _cw8AppendLine(p.label, text))) {
                                 ports[key] = {
                                     fid: fid, traitId: p.traitId, trait: p.trait, traitLabel: p.label,
-                                    text: p.portText, at: new Date().toISOString(), machine: true, done: false,
+                                    text: text, at: new Date().toISOString(), machine: true, done: false,
                                 };
                                 filed++;
                             } else {
@@ -51695,16 +51715,31 @@
                 // Byte-pair with applyWant's build-list line ('{Label} — they do not have it…').
                 const wanted = wantText.indexOf(_cw7TraitLabel(trait) + ' — ') !== -1;
                 if (!real(b) && !real(e) && !wanted) return;
+                const saidB = saidIn(_cw7RowFieldId('begin', v.id), trait);
+                const saidE = saidIn(_cw7RowFieldId('end', v.id), trait);
                 out.push({
                     value: v, trait: trait, begin: b, end: e, wanted: wanted,
+                    /* ⭐⭐ BOTH PASSES, KEPT APART (Neil, 2026-08-18, watching uid 1389 on Step 8:
+                       *"it's asking her to update the beats at the beginning, but it's only showing
+                       her her traits from the end in step seven"*).
+                       Step 7 records every trait TWICE — a condition and an explanation at the
+                       BEGINNING and again at the END — and this builder used to collapse the pair
+                       into one `cond`/`said`, both preferring the END pass. Measured on her own
+                       document: Creativity is `checked[2]` (In deficit) at the beginning and
+                       `checked[0]` (In balance) at the end, so Step 8 showed her "In balance" and
+                       her end-of-story words while asking her to tap BEGINNING beats — and
+                       _cw8PortText then wrote those end words into a beginning beat.
+                       The collapsed fields stay for callers that legitimately want "where they
+                       finish"; anything band-aware reads the per-band pair. */
+                    condBegin: real(b) ? b : '', condEnd: real(e) ? e : '',
+                    saidBegin: saidB, saidEnd: saidE,
                     // The condition the walk teaches against: where they FINISH if that is real,
                     // else where they start; a wanted-only trait is In deficit by applyWant's
                     // own write, so the fallback matches the document.
                     cond: real(e) ? e : (real(b) ? b : 'In deficit'),
                     // Their own words — end pass preferred (the later thinking), begin as
                     // fallback, the build-list line for a wanted-only trait.
-                    said: saidIn(_cw7RowFieldId('end', v.id), trait)
-                        || saidIn(_cw7RowFieldId('begin', v.id), trait)
+                    said: saidE || saidB
                         || (wanted ? 'they do not have it yet, and you want them to gain it' : ''),
                 });
             });
@@ -51801,12 +51836,31 @@
     // flagged by CONDITION with nothing written about it (they ticked "in deficit" and moved on).
     // Inventing prose for them would be authoring the student's story (§5c). So the port files an
     // honest CONDITION MARKER instead, and the refine pass is what turns it into their sentence.
-    function _cw8PortText(r) {
+    /* The line that lands in a beat, for the HALF OF THE PLOT that beat sits in. Passing no band
+       keeps the old whole-trait behaviour (the collapsed, end-preferred text) for callers that
+       have no beat in hand.
+       ⚠️ A trait marked at BOTH ends carries two different explanations, and writing the end one
+       into a beginning beat files a sentence about who the protagonist BECOMES under a beat about
+       who they ARE. Falls back to the other pass only when the student wrote nothing for this one —
+       and says so, rather than silently presenting the wrong half as if it were written for here. */
+    function _cw8PortText(r, band) {
+        const own = band === 'begin' ? String((r && r.saidBegin) || '').trim()
+                  : band === 'end' ? String((r && r.saidEnd) || '').trim()
+                  : '';
+        if (own) return own;
+        const other = band === 'begin' ? String((r && r.saidEnd) || '').trim()
+                    : band === 'end' ? String((r && r.saidBegin) || '').trim()
+                    : '';
+        if (band && other) {
+            return other + ' (your words from the ' + (band === 'begin' ? 'end' : 'beginning')
+                + ' of the story — adjust them for this beat)';
+        }
         const said = String((r && r.said) || '').trim();
         if (said) return said;
         const cond = String((r && r.cond) || '').trim().toLowerCase();
         return (cond ? cond : 'flagged in Step 7') + ' — this is where it should show.';
     }
+
     // The ledger key for one port. ONE producer (§5d): the beat's fid + the trait's canonical
     // control id, which is the same slug maker Step 7's controls use.
     function _cw8PortKey(fid, trait) { return fid + '::' + _cw7TraitCtlId(trait); }

@@ -228,10 +228,31 @@ export default function PlotValues(props) {
                 <h3 className="pv-rail-ask">Where does their <span className="pv-inline-trait">{t.label.toLowerCase()}</span> show?</h3>
                 <p className="pv-rail-do">Tap <strong>every beat</strong> where a reader could actually SEE it. Your Step-7 words go <strong>underneath</strong> the beat — nothing you wrote is replaced.</p>
                 <h3 className="pv-rail-trait">{t.label}</h3>
-                <p className="pv-rail-cond">{t.cond}</p>
-                {t.said
-                    ? <p className="pv-rail-said">“{t.said}”</p>
-                    : <p className="pv-rail-said is-none">You didn’t write about this one in Step 7 — pick the beats where it should show.</p>}
+                {/* ⭐⭐ BOTH HALVES, LABELLED (Neil, 2026-08-18, watching a real student): Step 7
+                    records a trait at the BEGINNING and again at the END, often at different
+                    conditions and always in different words. This rail used to show one collapsed
+                    state — the END pass — while the list below asked for BEGINNING beats, so the
+                    student was matching her end-of-story description against her opening scenes.
+                    A trait recorded at both ends is a JOURNEY, and showing the two states next to
+                    each other is what makes that visible. */}
+                {bandsOf(t).length === 2 && t.byBand
+                    ? <div className="pv-rail-journey">
+                        {['begin', 'end'].map((b) => (
+                            <div className="pv-rail-half" key={b}>
+                                <p className="pv-rail-halflabel">{b === 'begin' ? 'At the beginning' : 'At the end'}</p>
+                                <p className="pv-rail-cond">{(t.byBand[b] && t.byBand[b].cond) || t.cond}</p>
+                                {t.byBand[b] && t.byBand[b].said
+                                    ? <p className="pv-rail-said">“{t.byBand[b].said}”</p>
+                                    : <p className="pv-rail-said is-none">You didn’t write about this half in Step 7.</p>}
+                            </div>
+                        ))}
+                    </div>
+                    : <>
+                        <p className="pv-rail-cond">{(t.byBand && t.byBand[bandsOf(t)[0]] && t.byBand[bandsOf(t)[0]].cond) || t.cond}</p>
+                        {t.said
+                            ? <p className="pv-rail-said">“{t.said}”</p>
+                            : <p className="pv-rail-said is-none">You didn’t write about this one in Step 7 — pick the beats where it should show.</p>}
+                    </>}
                 {/* The count climbs as they tap, which is what teaches the multi-select — he asked
                     whether a trait could go in more than one beat about a control that already
                     allowed it. */}
@@ -299,6 +320,12 @@ export default function PlotValues(props) {
                             <div className="pv-band-head">
                                 <span className="pv-band-label">{bands[band].label}</span>
                                 <span className="pv-band-sub">{bands[band].sub}</span>
+                                {/* The words that will actually be written into a beat in THIS half,
+                                    beside the beats themselves — the rail can be scrolled past on a
+                                    narrow screen, and this is the text that lands in the document. */}
+                                {t.byBand && t.byBand[band] && t.byBand[band].cond
+                                    ? <span className="pv-band-cond">{t.byBand[band].cond}</span>
+                                    : null}
                             </div>
                             {inBand.map((s) => {
                                 const list = s.beats.filter((b) => (!emptyOnly || !b.text));
@@ -375,7 +402,16 @@ export default function PlotValues(props) {
                         {ts.map((t) => (
                             <div className="pv-r-add" key={t.id}>
                                 <span className="pv-r-plus">＋</span>
-                                <span className="pv-r-line">Values ({t.label}): {t.portText}</span>
+                                <span className="pv-r-line">Values ({t.label}): {
+                                    /* per BEAT, because a journey trait files different words into
+                                       each half — the review must show what will really land. */
+                                    (() => {
+                                        /* the BAND lives on the stage, which is what this row is
+                                           grouped by — a beat card carries no band of its own. */
+                                        const bb = t.byBand && t.byBand[stage.band];
+                                        return (bb && bb.said) || t.portText;
+                                    })()
+                                }</span>
                             </div>
                         ))}
                     </div>

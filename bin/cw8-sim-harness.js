@@ -402,11 +402,21 @@ async function main() {
         const after = w.rows.get(beatFid);
         ok(after.indexOf(beatBefore) === 0,
             '⭐ THE PORT APPENDS — the student’s existing words are still there, at the start, untouched (#374b)');
-        ok(/Values \(Bravery\): she speaks in the hall/.test(after),
-            'the ported line is filed underneath, labelled, so the student can see what to merge (§29)');
+        /* ⭐⭐ THE BAND DECIDES THE WORDS (Neil, 2026-08-18, watching uid 1389). Bravery is a
+           JOURNEY in this fixture — In deficit at the beginning ("she watches her brother take the
+           blame and says nothing"), In balance at the end ("she speaks in the hall"). beatFid is an
+           opening beat, so the BEGINNING words belong in it.
+           ⚠️ This assertion used to demand the END words here, i.e. it CODIFIED the defect: Step 8
+           collapsed the two Step-7 passes into one, end-preferred, and filed a sentence about who
+           the protagonist BECOMES underneath a beat about who she IS. A check written from the
+           behaviour rather than from the intent will happily lock the bug in. */
+        ok(/Values \(Bravery\): she watches her brother take the blame and says nothing/.test(after),
+            '⭐ a BEGINNING beat gets the student’s BEGINNING words, not the end-of-story ones');
+        ok(!/she speaks in the hall/.test(after),
+            '…and the end-of-story words are NOT in an opening beat');
         ok(!writesWithReplace(w).length,
             'NOT ONE write used {replace:true} — a port that replaces is the #374b defect (' + JSON.stringify(writesWithReplace(w)) + ')');
-        ok(w.rows.get(EMPTY_FID) === _cw8AppendLine('Bravery', 'she speaks in the hall'),
+        ok(w.rows.get(EMPTY_FID) === _cw8AppendLine('Bravery', 'she watches her brother take the blame and says nothing.'),
             'an EMPTY beat is simply started by the port — gap-filling needs no special case');
         ok(_cw8NoShowHas(w.rows.get(CW8_NOTYET_FID), 'Creativity'),
             'the one-tap “doesn’t show anywhere yet” left its footprint on the build list (.421)');
