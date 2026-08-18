@@ -1,0 +1,144 @@
+{
+  "board": "edexcel",
+  "paper": "language_p2",
+  "title": "Pearson Edexcel GCSE (9-1) English Language (1EN0) — Paper 2: Non-fiction and Transactional Writing",
+  "authority": {
+    "file": "MSR/Edexcel GCSE English Language Makr Schemes/June 2024 MS - Paper 2 Edexcel English Language GCSE.pdf",
+    "kind": "mark scheme",
+    "sitting": "June 2024",
+    "why_this_source": "The board's own published mark scheme, and the most recent Paper 2 sitting on disk. Preferred over the older 1EN0_02_rms_20180111.pdf in the courses tree, and over the .md transcriptions beside it — the gate re-opens PDFs, so a markdown transcription can never be the authority.",
+    "folder_note": "The folder name 'Makr Schemes' is misspelt on the drive. Kept verbatim — the path must resolve.",
+    "numbering_note": "⚠️ The board numbers the both-texts questions 7(a) and 7(b), and offers Section B as 'Question 8 or 9'. An earlier cut of this file invented Q7/Q8/Q9 as three separate questions; our spec's Q7a/Q7b/Q8 was right and the invention was wrong. Corrected against the board's own summary grid."
+  },
+  "spec": {
+    "file": "language",
+    "key": "edexcel.language_p2",
+    "field_kinds": {
+      "content_marks": "content",
+      "spag_marks": "spag"
+    }
+  },
+  "total": {
+    "marks": 96,
+    "marks_from": "questions",
+    "why": "The mark scheme states each tariff in a per-question summary grid. 2+2+15+1+1+15+6+14 = 56 (Section A) + 40 (Section B) = 96, matching language-paper-specs.json."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 2,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading, Text 1",
+      "quote": "Question 1 2",
+      "quote_note": "Anchored to the board's own per-question summary grid, which states every tariff in one table."
+    },
+    {
+      "id": "Q2",
+      "marks": 2,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading, Text 1",
+      "quote": "Question 2 2",
+      "quote_note": "Anchored to the board's own per-question summary grid, which states every tariff in one table."
+    },
+    {
+      "id": "Q3",
+      "marks": 15,
+      "aos": [
+        "AO2"
+      ],
+      "section": "A — Reading, Text 1",
+      "quote": "Question 3 15",
+      "quote_note": "Anchored to the board's own per-question summary grid, which states every tariff in one table."
+    },
+    {
+      "id": "Q4",
+      "marks": 1,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading, Text 2",
+      "quote": "Question 4 1",
+      "quote_note": "Anchored to the board's own per-question summary grid, which states every tariff in one table."
+    },
+    {
+      "id": "Q5",
+      "marks": 1,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading, Text 2",
+      "quote": "Question 5 1",
+      "quote_note": "Anchored to the board's own per-question summary grid, which states every tariff in one table."
+    },
+    {
+      "id": "Q6",
+      "marks": 15,
+      "aos": [
+        "AO4"
+      ],
+      "section": "A — Reading, Text 2",
+      "quote": "Question 6 15",
+      "quote_note": "Anchored to the board's own per-question summary grid, which states every tariff in one table."
+    },
+    {
+      "id": "Q7a",
+      "marks": 6,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading, Both Texts",
+      "quote": "Question 7a 6",
+      "quote_note": "Anchored to the board's own per-question summary grid, which states every tariff in one table.",
+      "note": "Synthesis across both texts. The grid header reads 'AO1: Select and synthesise evidence from different texts' — AO1, not AO3."
+    },
+    {
+      "id": "Q7b",
+      "marks": 14,
+      "aos": [
+        "AO3"
+      ],
+      "section": "A — Reading, Both Texts",
+      "quote": "Question 7b 14",
+      "quote_note": "Anchored to the board's own per-question summary grid, which states every tariff in one table.",
+      "note": "Comparison. On this board AO3 is comparison, never context."
+    },
+    {
+      "id": "Q8",
+      "marks": 40,
+      "aos": [
+        "AO5",
+        "AO6"
+      ],
+      "section": "B — Transactional Writing",
+      "marks_from": "components",
+      "quote": "Question 8 or 9 24 16 40",
+      "quote_note": "The summary grid states the split and the total on one line.",
+      "note": "Section B is a CHOICE — the board prints 'Question 8 and Question 9' grids. Our spec models it as a single Q8; same 40 marks either way.",
+      "components": [
+        {
+          "label": "content and organisation",
+          "marks": 24,
+          "kind": "writing",
+          "aos": [
+            "AO5"
+          ],
+          "quote": "Question 8 or 9 24 16 40",
+          "quote_note": "24 is stated by the board in the summary grid — no longer derived by subtraction."
+        },
+        {
+          "label": "technical accuracy",
+          "marks": 16,
+          "kind": "writing",
+          "aos": [
+            "AO6"
+          ],
+          "quote": "(includes 16 marks for the range of vocabulary and sentence"
+        }
+      ]
+    }
+  ]
+}

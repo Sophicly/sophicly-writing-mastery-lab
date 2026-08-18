@@ -1,0 +1,99 @@
+{
+  "board": "edexcel",
+  "paper": "language_p1",
+  "title": "Pearson Edexcel GCSE (9-1) English Language (1EN0) — Paper 1: Fiction and Imaginative Writing",
+  "authority": {
+    "file": "MSR/Edexcel GCSE English Language Paper 1/Edexcel GCSE English Language Paper 1 Mark Scheme/June 2024 MS - Paper 1 Edexcel English Language GCSE.pdf",
+    "kind": "mark scheme",
+    "sitting": "June 2024",
+    "why_this_source": "The board's own published mark scheme — top of the authority order (PEDAGOGY.md, Neil 2026-08-16). Our spec's provenance line for this paper read 'verified by Neil 2026-04-02', a human check rather than a citation, which is exactly the shape of claim that was wrong on Edexcel IGCSE P1 for four months. Now cited.",
+    "path_note": "⚠️ A prior handoff reported that MSR held a Paper 1 .md but NO Paper 1 PDF, and proposed a new GEC/ alias pointing at 'My Drive/GCSE English Courses' so the older 1EN0_01_msc_20190117.pdf could be cited. That is NOT needed: a June 2024 Paper 1 PDF does exist inside MSR, in 'Edexcel GCSE English Language Paper 1/…Mark Scheme/' rather than in the 'Makr Schemes' folder that was checked. Both papers resolve under the existing MSR alias, so no engine change is required."
+  },
+  "spec": {
+    "file": "language",
+    "key": "edexcel.language_p1",
+    "field_kinds": {
+      "content_marks": "content",
+      "spag_marks": "spag"
+    }
+  },
+  "total": {
+    "marks": 64,
+    "marks_from": "questions",
+    "why": "The mark scheme states each question's tariff, not a paper total. 1+2+6+15 = 24 (Section A) + 40 (Section B) = 64, which matches language-paper-specs.json."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 1,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading",
+      "quote": "Accept the following from lines 1–3: (1)",
+      "quote_note": "Anchored to the mark-column value on the question's own line. The earlier anchor stated no tariff at all and passed the gate only because the phrase happened to contain the digit 1 — evidence by coincidence is not evidence."
+    },
+    {
+      "id": "Q2",
+      "marks": 2,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading",
+      "quote": "maximum of 2 marks."
+    },
+    {
+      "id": "Q3",
+      "marks": 6,
+      "aos": [
+        "AO2"
+      ],
+      "section": "A — Reading",
+      "quote": "(6 marks)"
+    },
+    {
+      "id": "Q4",
+      "marks": 15,
+      "aos": [
+        "AO4"
+      ],
+      "section": "A — Reading",
+      "quote": "(15 marks)"
+    },
+    {
+      "id": "Q5",
+      "marks": 40,
+      "aos": [
+        "AO5",
+        "AO6"
+      ],
+      "section": "B — Imaginative Writing",
+      "marks_from": "components",
+      "quote": "(40 marks)",
+      "quote_occurrence": "last",
+      "quote_note": "Anchored to the LAST occurrence: Section B offers a choice of two tasks and the document prints '(40 marks)' once per option.",
+      "components": [
+        {
+          "label": "content and organisation",
+          "marks": 24,
+          "kind": "writing",
+          "aos": [
+            "AO5"
+          ],
+          "marks_from": "derived",
+          "why": "40 total minus the 16 the board states for vocabulary and sentence structures."
+        },
+        {
+          "label": "technical accuracy",
+          "marks": 16,
+          "kind": "writing",
+          "aos": [
+            "AO6"
+          ],
+          "quote": "(includes 16 marks for the range of vocabulary and sentence structures"
+        }
+      ],
+      "note": "Section B is a CHOICE of two tasks — the board's grids are headed 'Writing assessment grids for Question 5 and Question 6'. Our spec models the choice as a single Q5, which is the same 40 marks either way."
+    }
+  ]
+}
