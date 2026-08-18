@@ -93,7 +93,8 @@
         }
       ],
       "marks_from": "components",
-      "why_no_marks_quote": "The mark scheme gives Section B as two grids (AO4 max 27, AO5 max 18) and never prints 45. It is the sum of two quoted maxima."
+      "why_no_marks_quote": "The mark scheme gives Section B as two grids (AO4 max 27, AO5 max 18) and never prints 45. It is the sum of two quoted maxima.",
+      "protocol_note": "The protocol heads this 'Assessment Sub-Protocol: Section B (AO4/AO5 – 45 Marks)' — the tariff IS stated (45) and matches the board; check E keys on 'Question N' headings so it cannot see a section-named one. Verified by hand 2026-08-18."
     }
   ],
   "spec": {
@@ -107,7 +108,19 @@
   "protocols": [
     {
       "file": "protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md",
-      "role": "assessment protocol"
+      "role": "assessment protocol",
+      "questions": [
+        "Q1",
+        "Q2",
+        "Q3",
+        "Q4",
+        "Q5"
+      ]
+    },
+    {
+      "file": "protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md",
+      "role": "Section B (Q6/Q7) — headed 'Assessment Sub-Protocol: Section B (AO4/AO5 – 45 Marks)', not 'Question 6', which is why check E reported it unverified",
+      "questions": []
     }
   ]
 }

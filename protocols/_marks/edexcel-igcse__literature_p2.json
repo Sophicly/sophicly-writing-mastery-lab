@@ -1,0 +1,95 @@
+{
+  "board": "edexcel-igcse",
+  "paper": "literature_p2",
+  "title": "Pearson Edexcel International GCSE English Literature (4ET1/02) — Paper 2: Modern Drama and Literary Heritage Texts",
+  "authority": {
+    "file": "MSR/Edexcel iGCSE English Literature/Mark Scheme for Edexcel iGCSE English Literature/65b89bdc-6b2f-48c8-a204-1c50831fef35.pdf",
+    "kind": "sample assessment materials (question papers + full mark grids)",
+    "sitting": "Pearson Edexcel International GCSE in English Literature (4ET1), SAMs Issue 2, first examination June 2018",
+    "why_this_source": "The board's own complete document for 4ET1 — it carries both papers, every question's AO allocation and every section total, and it extracts cleanly. The per-text mark schemes on disk (Modern Drama June 2023, Modern Prose June 2024, Shakespeare June 2024) are single-topic extracts; this is the whole specification of the assessment.",
+    "extraction_note": "⚠️ A NOTE ON EVIDENCE, worth keeping. The first cut of this file recorded the quotes as 'AO2 (20 mark )' and 'Un een Poetry' and explained it as a font-mapping quirk in the PDF. That was wrong: the corruption came from MY OWN pipeline — BSD sed does not support \\s, so `sed -E 's/\\s+/ /g'` was deleting every letter 's' from the output I was reading. The PDF extracts perfectly. Root CLAUDE.md §19: the instrument is part of the measurement, and a mangled reading looks exactly like a mangled source.",
+    "paper": "4ET1/02"
+  },
+  "total": {
+    "marks": 60,
+    "quote": "TOTAL FOR PAPER = 60 MARKS"
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 30,
+      "section": "A — Modern Drama",
+      "spec_key": "edexcel-igcse.modern",
+      "marks_from": "components",
+      "quote": "SECTION A: Modern Drama",
+      "note": "Questions 1-10, one per set play, all on the same two grids.",
+      "components": [
+        {
+          "label": "understanding",
+          "marks": 15,
+          "kind": "reading",
+          "aos": [
+            "AO1"
+          ],
+          "quote": "AO1 (15 marks), AO2 (15 marks)"
+        },
+        {
+          "label": "language_and_structure",
+          "marks": 15,
+          "kind": "reading",
+          "aos": [
+            "AO2"
+          ],
+          "quote": "AO1 (15 marks), AO2 (15 marks)"
+        }
+      ],
+      "quote_occurrence": "last",
+      "quote_note": "Anchored to the LAST occurrence: this document prints both question papers before the mark grids, so the first hit would scope the region over the question paper, where no tariff is stated."
+    },
+    {
+      "id": "Q11",
+      "marks": 30,
+      "section": "B — Literary Heritage Texts",
+      "spec_key": "edexcel-igcse.heritage",
+      "marks_from": "components",
+      "quote": "SECTION B: Literary Heritage Texts",
+      "note": "Questions 11-17. THREE grids of 10 here, not two of 15 — the heritage section is the only one on this paper that assesses context.",
+      "components": [
+        {
+          "label": "understanding",
+          "marks": 10,
+          "kind": "reading",
+          "aos": [
+            "AO1"
+          ],
+          "quote": "AO1 (10 marks), AO2 (10 marks), AO4 (10 marks)"
+        },
+        {
+          "label": "language_and_structure",
+          "marks": 10,
+          "kind": "reading",
+          "aos": [
+            "AO2"
+          ],
+          "quote": "AO1 (10 marks), AO2 (10 marks), AO4 (10 marks)"
+        },
+        {
+          "label": "context",
+          "marks": 10,
+          "kind": "reading",
+          "aos": [
+            "AO4"
+          ],
+          "note": "AO4 = CONTEXT on this qualification, not SPaG.",
+          "quote": "AO1 (10 marks), AO2 (10 marks), AO4 (10 marks)"
+        }
+      ],
+      "quote_occurrence": "last",
+      "quote_note": "Anchored to the LAST occurrence: this document prints both question papers before the mark grids, so the first hit would scope the region over the question paper, where no tariff is stated."
+    }
+  ],
+  "spec": {
+    "file": "literature"
+  },
+  "protocols_note": "protocols/edexcel-igcse/modern/ serves Modern Drama and protocols/edexcel-igcse/heritage/ serves the Literary Heritage section; both carry a protocol-a-assessment.md."
+}

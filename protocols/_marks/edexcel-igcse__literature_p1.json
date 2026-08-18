@@ -1,0 +1,108 @@
+{
+  "board": "edexcel-igcse",
+  "paper": "literature_p1",
+  "title": "Pearson Edexcel International GCSE English Literature (4ET1/01) — Paper 1: Poetry and Modern Prose",
+  "authority": {
+    "file": "MSR/Edexcel iGCSE English Literature/Mark Scheme for Edexcel iGCSE English Literature/65b89bdc-6b2f-48c8-a204-1c50831fef35.pdf",
+    "kind": "sample assessment materials (question papers + full mark grids)",
+    "sitting": "Pearson Edexcel International GCSE in English Literature (4ET1), SAMs Issue 2, first examination June 2018",
+    "why_this_source": "The board's own complete document for 4ET1 — it carries both papers, every question's AO allocation and every section total, and it extracts cleanly. The per-text mark schemes on disk (Modern Drama June 2023, Modern Prose June 2024, Shakespeare June 2024) are single-topic extracts; this is the whole specification of the assessment.",
+    "extraction_note": "⚠️ A NOTE ON EVIDENCE, worth keeping. The first cut of this file recorded the quotes as 'AO2 (20 mark )' and 'Un een Poetry' and explained it as a font-mapping quirk in the PDF. That was wrong: the corruption came from MY OWN pipeline — BSD sed does not support \\s, so `sed -E 's/\\s+/ /g'` was deleting every letter 's' from the output I was reading. The PDF extracts perfectly. Root CLAUDE.md §19: the instrument is part of the measurement, and a mangled reading looks exactly like a mangled source.",
+    "paper": "4ET1/01"
+  },
+  "total": {
+    "marks": 90,
+    "quote": "TOTAL FOR PAPER = 90 MARKS"
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 20,
+      "section": "A — Unseen Poetry",
+      "spec_key": "edexcel-igcse.unseen_poetry",
+      "quote": "SECTION A: Unseen Poetry",
+      "note": "⚠️ The spec records unseen_poetry with marks: null — never filled in — and aos AO1+AO2. The board's grid is AO2 ONLY, 20 marks.",
+      "components": [
+        {
+          "label": "analysis",
+          "marks": 20,
+          "kind": "reading",
+          "aos": [
+            "AO2"
+          ],
+          "quote": "AO2 (20 marks)"
+        }
+      ],
+      "quote_occurrence": "last",
+      "quote_note": "Anchored to the LAST occurrence: this document prints both question papers before the mark grids, so the first hit would scope the region over the question paper, where no tariff is stated.",
+      "marks_from": "components"
+    },
+    {
+      "id": "Q2",
+      "marks": 30,
+      "section": "B — Anthology Poetry",
+      "spec_key": "edexcel-igcse.anthology_poetry",
+      "marks_from": "components",
+      "quote": "SECTION B: Anthology Poetry",
+      "note": "⚠️ The spec records anthology_poetry with marks: null and aos AO1+AO2+AO3. The board's grids are AO2 + AO3, 15 each.",
+      "components": [
+        {
+          "label": "analysis",
+          "marks": 15,
+          "kind": "reading",
+          "aos": [
+            "AO2"
+          ],
+          "quote": "AO2 (15 marks), AO3 (15 marks)"
+        },
+        {
+          "label": "comparison",
+          "marks": 15,
+          "kind": "reading",
+          "aos": [
+            "AO3"
+          ],
+          "quote": "AO2 (15 marks), AO3 (15 marks)"
+        }
+      ],
+      "quote_occurrence": "last",
+      "quote_note": "Anchored to the LAST occurrence: this document prints both question papers before the mark grids, so the first hit would scope the region over the question paper, where no tariff is stated."
+    },
+    {
+      "id": "Q4",
+      "marks": 40,
+      "section": "C — Modern Prose",
+      "spec_key": "edexcel-igcse.modern-prose",
+      "marks_from": "components",
+      "quote": "SECTION C: Modern Prose",
+      "note": "Questions 4-13, one per set text; every one is marked on the same two grids.",
+      "components": [
+        {
+          "label": "understanding",
+          "marks": 20,
+          "kind": "reading",
+          "aos": [
+            "AO1"
+          ],
+          "quote": "AO1 (20 marks), AO4 (20 marks)"
+        },
+        {
+          "label": "context",
+          "marks": 20,
+          "kind": "reading",
+          "aos": [
+            "AO4"
+          ],
+          "note": "⚠️ On Edexcel IGCSE, AO4 is CONTEXT — the opposite of GCSE, where AO4 is SPaG. This is a documented WML landmine.",
+          "quote": "AO1 (20 marks), AO4 (20 marks)"
+        }
+      ],
+      "quote_occurrence": "last",
+      "quote_note": "Anchored to the LAST occurrence: this document prints both question papers before the mark grids, so the first hit would scope the region over the question paper, where no tariff is stated."
+    }
+  ],
+  "spec": {
+    "file": "literature"
+  },
+  "protocols_note": "protocols/edexcel-igcse/modern-prose/modules/protocol-a-assessment.md serves Section C. Sections A and B (unseen + anthology poetry) have no protocol directory of their own under edexcel-igcse — check whether they are served by the shared poetry modules before assuming they are covered."
+}

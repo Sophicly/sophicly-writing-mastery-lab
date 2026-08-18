@@ -152,7 +152,16 @@ function checkPaper(src, file) {
      * question — which is precisely the mistake the gate exists to catch. */
     const qPos = new Map();
     for (const q of src.questions) {
-        if (q.quote) { const i = hay.indexOf(norm(q.quote)); if (i >= 0) qPos.set(q.id, i); }
+        if (!q.quote) continue;
+        /* `quote_occurrence: "last"` — a Sample Assessment Materials document prints the QUESTION
+         * PAPERS first and the MARK GRIDS after, so a section heading appears twice and the first
+         * hit anchors the region over the question paper, where no tariff lives. Explicit, per
+         * question, and stated in the source file: better than quietly widening the search to the
+         * whole document, which is the check this gate exists to make. */
+        const i = q.quote_occurrence === 'last'
+            ? hay.lastIndexOf(norm(q.quote))
+            : hay.indexOf(norm(q.quote));
+        if (i >= 0) qPos.set(q.id, i);
     }
     const sortedPos = [...qPos.values()].sort((a, b) => a - b);
     const regionEnd = (start) => {
@@ -239,8 +248,10 @@ function checkPaper(src, file) {
         fail(id, 'C ARITHMETIC', `questions sum to ${qSum} but the paper total is ${src.total.marks}`);
     }
 
-    /* ── D. SPEC JSON ── */
-    if (src.spec) {
+    /* ── D. SPEC JSON (language shape: one paper key, sections → questions) ──
+     * A literature source has no `spec.key` — it declares a spec_key PER QUESTION instead, because
+     * literature-paper-specs.json is keyed by text type, not by paper. That path is D-LIT below. */
+    if (src.spec && src.spec.key) {
         const specPath = SPEC_FILES[src.spec.file] || path.resolve(ROOT, src.spec.file);
         if (!fs.existsSync(specPath)) {
             fail(id, 'D SPEC', `spec file not found: ${src.spec.file}`);
@@ -285,6 +296,55 @@ function checkPaper(src, file) {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    /* ── D-LIT. THE LITERATURE SPEC HAS A DIFFERENT SHAPE ──
+     * language-paper-specs.json is per PAPER (sections → questions). literature-paper-specs.json
+     * is per TEXT TYPE (heritage, modern, modern-prose, anthology_poetry, unseen_poetry), flat,
+     * with the marks, the AO set and OUR teaching split on each. So a literature source declares
+     * a spec_key per question instead of one per paper.
+     *
+     * ⭐ AND THIS IS WHERE THE ELEMENT-SUM CHECK IS FREE (FIXLIST #393). That spec stores the split
+     * as DATA — {intro, body, body_count, conclusion} — so asserting intro + body×count +
+     * conclusion === the board's tariff costs one line here, and it is exactly the class that has
+     * bitten us: PROTOCOL-QUESTION-STRUCTURE-MAP.md records edexcel/modern totalling 36.5/37
+     * against a stated 40, poetry's intro header saying 3 while its parts sum to 2, and unseen Q12
+     * summing to 25 against a stated 20. This catches that shape wherever the split is structured;
+     * the prose-only protocols still need the parser #393 describes. */
+    for (const q of src.questions) {
+        if (!q.spec_key) continue;
+        const specPath = SPEC_FILES[(src.spec && src.spec.file) || 'literature'];
+        if (!fs.existsSync(specPath)) { fail(id, 'D SPEC', `spec file not found for ${q.id}`); continue; }
+        const spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
+        const entry = q.spec_key.split('.').reduce((o, k) => (o == null ? o : o[k]), spec);
+        if (!entry) { fail(id, 'D SPEC', `${q.id}: spec key not found — ${q.spec_key}`); continue; }
+
+        checksRun++;
+        if (entry.marks !== q.marks) {
+            fail(id, 'D SPEC', `${q.id}: spec ${q.spec_key}.marks = ${entry.marks == null ? 'null (never recorded)' : entry.marks}, ` +
+                `the board says ${q.marks}`);
+        }
+        /* The AO SET, not just the total — a question marked against the wrong objectives is
+         * marked on the wrong thing even when the number is right. */
+        if (Array.isArray(entry.aos) && (q.components || []).some((c) => c.aos)) {
+            checksRun++;
+            const want = [...new Set((q.components || []).flatMap((c) => c.aos || []))].sort().join('+');
+            const got = [...entry.aos].sort().join('+');
+            if (want !== got) {
+                fail(id, 'D SPEC', `${q.id}: spec ${q.spec_key}.aos = ${got}, the board's grids are ${want}`);
+            }
+        }
+        /* OUR teaching split must add up to THEIR tariff. */
+        const sp = entry.split;
+        if (sp && typeof sp.intro === 'number') {
+            checksRun++;
+            const sum = sp.intro + (sp.body * (sp.body_count || 0)) + (sp.conclusion || 0);
+            if (sum !== q.marks) {
+                fail(id, 'D SPEC', `${q.id}: our element split sums to ${sum} but the board awards ${q.marks} ` +
+                    `(intro ${sp.intro} + ${sp.body_count}×body ${sp.body} + conclusion ${sp.conclusion}) — ` +
+                    `a student is marked out of a total the protocol itself contradicts`);
             }
         }
     }

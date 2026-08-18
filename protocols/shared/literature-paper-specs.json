@@ -1,16 +1,14 @@
 {
   "_version": "0.2.0-RELEASE_B",
   "_description": "Single source of truth for Literature paper marks. Every per-paper TOTAL here is cross-checked against the official mark-scheme PDFs (AQA/OCR/Edexcel/Edexcel-iGCSE/Eduqas/CCEA/SQA, June 2024 unless noted). Each entry carries a `split` (the per-section mark allocation the assessment scaffold uses) so the protocol headers, the frontend MARK_SPLITS, and these numbers cannot drift apart. `tools/protocol-consistency-check.js` validates every protocol's section-sum against the `split`/`marks` here. NEVER estimate — confirmed rows reference real mark schemes; anything not yet eyeballed against the official MS carries verified:false + a _verify note.",
-
   "_shape_enum": {
     "lit-extract-single": "1 extract + 1 question (AQA Shakespeare, 19th C; Edexcel; EDUQAS)",
     "lit-extract-paired": "2 extracts + 1 question (OCR Literature paired-extract format)",
-    "lit-no-extract":     "0 extracts + 1 whole-text question (AQA Modern Text, possibly Edexcel IGCSE Modern Drama / Shakespeare)",
+    "lit-no-extract": "0 extracts + 1 whole-text question (AQA Modern Text, possibly Edexcel IGCSE Modern Drama / Shakespeare)",
     "poetry-single-named": "1 named anthology poem printed in full + 1 question",
-    "poetry-comparison":  "Named poem A + student-chosen poem B + 1 comparison question",
-    "poetry-unseen":      "1 unseen poem (Q1) or 2 unseen poems (Q2 comparison), printed in full"
+    "poetry-comparison": "Named poem A + student-chosen poem B + 1 comparison question",
+    "poetry-unseen": "1 unseen poem (Q1) or 2 unseen poems (Q2 comparison), printed in full"
   },
-
   "_schema": {
     "shape": "one of _shape_enum",
     "marks": "integer — total marks for the question (content + SPaG where applicable)",
@@ -19,9 +17,9 @@
     "split": {
       "_doc": "How the scaffold breaks `marks` into assessable sections. Discriminated by `shape`. Must reconcile with the protocol's section headers + frontend MARK_SPLITS.",
       "shape:standard": "{ shape:'standard', intro, body, body_count, conclusion } — invariant: intro + body*body_count + conclusion === marks",
-      "shape:custom":   "{ shape:'custom', sections:[{label, marks}, ...] } — multi-question / 2-box / non-TTECEA papers; sections sum to marks",
+      "shape:custom": "{ shape:'custom', sections:[{label, marks}, ...] } — multi-question / 2-box / non-TTECEA papers; sections sum to marks",
       "shape:holistic": "{ shape:'holistic', marks } — band-marked whole-piece, no paragraph split (e.g. SQA critical essay)",
-      "null":           "split not yet defined (sibling paper with no dedicated protocol, or pending verification)"
+      "null": "split not yet defined (sibling paper with no dedicated protocol, or pending verification)"
     },
     "extract": {
       "count": "integer — number of extracts/poems printed (1 or 2)",
@@ -32,15 +30,32 @@
     },
     "question_prefix": "string | null — canonical opening phrase (for preamble guidance + parser hint)"
   },
-
   "aqa": {
     "shakespeare": {
       "shape": "lit-extract-single",
       "marks": 34,
       "spag_marks": 4,
-      "aos": ["AO1", "AO2", "AO3", "AO4"],
-      "split": { "shape": "standard", "intro": 3, "body": 8, "body_count": 3, "conclusion": 7 },
-      "extract": { "count": 1, "lines_min": 25, "lines_max": 40, "typical": 30, "verified": false, "source": "AQA 87021 Jun23/Jun22/Specimen QPs — estimate, needs spot-check against 3 papers" },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3",
+        "AO4"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 3,
+        "body": 8,
+        "body_count": 3,
+        "conclusion": 7
+      },
+      "extract": {
+        "count": 1,
+        "lines_min": 25,
+        "lines_max": 40,
+        "typical": 30,
+        "verified": false,
+        "source": "AQA 87021 Jun23/Jun22/Specimen QPs — estimate, needs spot-check against 3 papers"
+      },
       "question_prefix": "Starting with this extract, how does...",
       "_note": "Total 34 = 30 content (AO1 12 / AO2 12 / AO3 6) + 4 SPaG (AO4). Verified vs AQA Literature Paper 1 June 2024 MS. Marked by aqa/literature protocol (3/8×3/7)."
     },
@@ -48,10 +63,21 @@
       "shape": "lit-extract-single",
       "marks": 30,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3"],
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3"
+      ],
       "split": null,
       "_split_note": "SIBLING (Phase 2): no dedicated protocol — currently marked by aqa/literature's 34-shape, which over-marks a 30 paper. Needs own 30-split (or template substitution). Tracked separately.",
-      "extract": { "count": 1, "lines_min": 20, "lines_max": 35, "typical": 28, "verified": false, "source": "AQA 87021 Jun23/Specimen QPs" },
+      "extract": {
+        "count": 1,
+        "lines_min": 20,
+        "lines_max": 35,
+        "typical": 28,
+        "verified": false,
+        "source": "AQA 87021 Jun23/Specimen QPs"
+      },
       "question_prefix": "Starting with this extract, how does...",
       "_note": "v7.19.702 FIX: AQA Paper 1 Sec B 19th-century novel = 30 marks, AO1-3, NO AO4 (AO4/SPaG is Paper 1 Sec A Shakespeare only). Was wrongly 34+AO4 — mis-marked grades."
     },
@@ -59,8 +85,19 @@
       "shape": "lit-no-extract",
       "marks": 34,
       "spag_marks": 4,
-      "aos": ["AO1", "AO2", "AO3", "AO4"],
-      "split": { "shape": "standard", "intro": 3, "body": 8, "body_count": 3, "conclusion": 7 },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3",
+        "AO4"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 3,
+        "body": 8,
+        "body_count": 3,
+        "conclusion": 7
+      },
       "extract": null,
       "question_prefix": "How does [author] use the character of X to explore...",
       "_note": "Confirmed closed-book essay — choice of 2 per set text. Total 34 = 30 content + 4 SPaG. AQA 87022 Jun24 MS. Marked by aqa/literature protocol (3/8×3/7)."
@@ -69,42 +106,101 @@
       "shape": "poetry-single-named",
       "marks": 30,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3"],
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3"
+      ],
       "split": null,
       "_split_note": "SIBLING (Phase 2): comparison poetry, 30 marks, no dedicated assessment protocol split yet.",
-      "extract": { "count": 1, "lines_min": 8, "lines_max": 40, "typical": 20, "verified": true, "source": "AQA 87022 — named poem printed in full; student compares with second anthology poem from memory (second poem NOT printed)" },
+      "extract": {
+        "count": 1,
+        "lines_min": 8,
+        "lines_max": 40,
+        "typical": 20,
+        "verified": true,
+        "source": "AQA 87022 — named poem printed in full; student compares with second anthology poem from memory (second poem NOT printed)"
+      },
       "question_prefix": "Compare how poets present..."
     },
     "unseen_poetry_q1": {
       "shape": "poetry-unseen",
       "marks": 24,
       "spag_marks": null,
-      "aos": ["AO1", "AO2"],
+      "aos": [
+        "AO1",
+        "AO2"
+      ],
       "split": null,
       "_split_note": "CUSTOM (Phase 2): single unseen poem, 24 marks; build per unseen-poetry layout, not the 3-body essay scaffold.",
-      "extract": { "count": 1, "lines_min": 10, "lines_max": 40, "typical": 20, "verified": true, "source": "AQA 87022 Section C Q27.1 — single unseen poem printed" },
+      "extract": {
+        "count": 1,
+        "lines_min": 10,
+        "lines_max": 40,
+        "typical": 20,
+        "verified": true,
+        "source": "AQA 87022 Section C Q27.1 — single unseen poem printed"
+      },
       "question_prefix": "In [poem title], how does the poet present..."
     },
     "unseen_poetry_q2": {
       "shape": "poetry-unseen",
       "marks": 8,
       "spag_marks": null,
-      "aos": ["AO2"],
-      "split": { "shape": "custom", "sections": [{ "label": "TTECEA box 1", "marks": 4 }, { "label": "TTECEA box 2", "marks": 4 }] },
+      "aos": [
+        "AO2"
+      ],
+      "split": {
+        "shape": "custom",
+        "sections": [
+          {
+            "label": "TTECEA box 1",
+            "marks": 4
+          },
+          {
+            "label": "TTECEA box 2",
+            "marks": 4
+          }
+        ]
+      },
       "_split_note": "2-box comparison layout (4+4=8), NOT the 5-paragraph essay scaffold. See reference_aqa_lit_8702_ao4_mark_allocation.",
-      "extract": { "count": 2, "lines_min_each": 10, "lines_max_each": 40, "typical_each": 20, "verified": true, "source": "AQA 87022 Section C Q27.2 — both unseen poems printed" },
+      "extract": {
+        "count": 2,
+        "lines_min_each": 10,
+        "lines_max_each": 40,
+        "typical_each": 20,
+        "verified": true,
+        "source": "AQA 87022 Section C Q27.2 — both unseen poems printed"
+      },
       "question_prefix": "In both [poem A] and [poem B], the poets present... Compare the methods..."
     }
   },
-
   "ocr": {
     "shakespeare": {
       "shape": "lit-extract-paired",
       "marks": 40,
       "spag_marks": 4,
-      "aos": ["AO1", "AO2", "AO3", "AO4"],
-      "split": { "shape": "standard", "intro": 5, "body": 9, "body_count": 3, "conclusion": 8 },
-      "extract": { "count": 2, "lines_min_each": 25, "lines_max_each": 45, "typical_each": 30, "verified": false, "source": "OCR J352/02 Section B — set-text extract (25-40) + unseen comparison extract (20-40); needs PDF count" },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3",
+        "AO4"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 5,
+        "body": 9,
+        "body_count": 3,
+        "conclusion": 8
+      },
+      "extract": {
+        "count": 2,
+        "lines_min_each": 25,
+        "lines_max_each": 45,
+        "typical_each": 30,
+        "verified": false,
+        "source": "OCR J352/02 Section B — set-text extract (25-40) + unseen comparison extract (20-40); needs PDF count"
+      },
       "question_prefix": "Explore how [author] presents... Refer to both extracts in your answer.",
       "_note": "Per-essay total 40 (component AO weighting AO1 32 / AO2 36 / AO3 8 / AO4 4 across the whole component = 80; each text response = 40). Verified vs OCR Component 2 June 2024 MS. ocr/literature protocol corrected 30→40 (5/9×3/8) v7.19.71x."
     },
@@ -112,18 +208,53 @@
       "shape": "lit-extract-paired",
       "marks": 40,
       "spag_marks": 4,
-      "aos": ["AO1", "AO2", "AO3", "AO4"],
-      "split": { "shape": "standard", "intro": 5, "body": 9, "body_count": 3, "conclusion": 8 },
-      "extract": { "count": 2, "lines_min_each": 25, "lines_max_each": 45, "typical_each": 30, "verified": false, "source": "OCR J352/01 — paired-extract format (set text + unseen)" },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3",
+        "AO4"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 5,
+        "body": 9,
+        "body_count": 3,
+        "conclusion": 8
+      },
+      "extract": {
+        "count": 2,
+        "lines_min_each": 25,
+        "lines_max_each": 45,
+        "typical_each": 30,
+        "verified": false,
+        "source": "OCR J352/01 — paired-extract format (set text + unseen)"
+      },
       "question_prefix": "Explore how [author] presents..."
     },
     "modern_text": {
       "shape": "lit-extract-paired",
       "marks": 40,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3"],
-      "split": { "shape": "standard", "intro": 5, "body": 9, "body_count": 3, "conclusion": 8 },
-      "extract": { "count": 2, "lines_min_each": 25, "lines_max_each": 45, "typical_each": 30, "verified": false, "source": "OCR J352/01 — paired-extract format" },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 5,
+        "body": 9,
+        "body_count": 3,
+        "conclusion": 8
+      },
+      "extract": {
+        "count": 2,
+        "lines_min_each": 25,
+        "lines_max_each": 45,
+        "typical_each": 30,
+        "verified": false,
+        "source": "OCR J352/01 — paired-extract format"
+      },
       "question_prefix": "Explore how [author] presents...",
       "_note": "v7.19.703 FIX: OCR J352/01 Sec A modern prose/drama = AO1+AO2+AO3, NO AO4 (AO4/SPaG is Sec B 19th-century only). Verified vs official June 2024 MS AO grid (Sec A modern = AO1 5 + AO2 2.5 + AO3 5; no AO4)."
     },
@@ -131,24 +262,62 @@
       "shape": "poetry-comparison",
       "marks": 20,
       "spag_marks": null,
-      "aos": ["AO1", "AO2"],
+      "aos": [
+        "AO1",
+        "AO2"
+      ],
       "split": null,
       "_split_note": "SIBLING/CUSTOM (Phase 2): 20-mark poetry comparison; no dedicated split yet.",
-      "extract": { "count": 2, "lines_min_each": 8, "lines_max_each": 40, "verified": false, "source": "OCR J352/02 Section A — named anthology poem + unseen poem for comparison" },
+      "extract": {
+        "count": 2,
+        "lines_min_each": 8,
+        "lines_max_each": 40,
+        "verified": false,
+        "source": "OCR J352/02 Section A — named anthology poem + unseen poem for comparison"
+      },
       "question_prefix": null,
       "_note": "v7.19.703 FIX: OCR J352/02 Sec A 'poetry across time' = 20 marks, AO1+AO2 (no AO3, no AO4; AO3/AO4 sit on Sec B Shakespeare). Verified vs official June 2024 MS."
     }
   },
-
   "edexcel": {
     "shakespeare": {
       "shape": "lit-extract-single",
       "marks": 40,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3"],
-      "split": { "shape": "custom", "sections": [{ "label": "(a) extract close analysis", "marks": 20, "aos": ["AO2"] }, { "label": "(b) whole-play essay", "marks": 20, "aos": ["AO1", "AO3"] }] },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3"
+      ],
+      "split": {
+        "shape": "custom",
+        "sections": [
+          {
+            "label": "(a) extract close analysis",
+            "marks": 20,
+            "aos": [
+              "AO2"
+            ]
+          },
+          {
+            "label": "(b) whole-play essay",
+            "marks": 20,
+            "aos": [
+              "AO1",
+              "AO3"
+            ]
+          }
+        ]
+      },
       "_split_note": "Two-part question — NOT the 3-body scaffold. (a)=AO2/20, (b)=AO1 15 + AO3 5 = 20. Verified vs Edexcel 1ET0/01 Paper 1 June 2024 MS.",
-      "extract": { "count": 1, "lines_min": 25, "lines_max": 40, "typical": 30, "verified": false, "source": "Edexcel 1ET0/01 — two-part question (a) extract close analysis (b) whole-play; May 2023 QP" },
+      "extract": {
+        "count": 1,
+        "lines_min": 25,
+        "lines_max": 40,
+        "typical": 30,
+        "verified": false,
+        "source": "Edexcel 1ET0/01 — two-part question (a) extract close analysis (b) whole-play; May 2023 QP"
+      },
       "question_prefix": "Explore how...",
       "_note": "v7.19.703 FIX: Edexcel 1ET0 Paper 1 Sec A Shakespeare = AO1+AO2+AO3, NO AO4 (a=AO2/20, b=AO1 15+AO3 5). Verified vs official June 2024 MS AO grid. Section A Shakespeare uses two-part format: (a) extract-based (b) whole-play."
     },
@@ -156,10 +325,38 @@
       "shape": "lit-extract-single",
       "marks": 40,
       "spag_marks": null,
-      "aos": ["AO1", "AO2"],
-      "split": { "shape": "custom", "sections": [{ "label": "(a) extract close analysis", "marks": 20, "aos": ["AO2"] }, { "label": "(b) whole-text essay", "marks": 20, "aos": ["AO1"] }] },
+      "aos": [
+        "AO1",
+        "AO2"
+      ],
+      "split": {
+        "shape": "custom",
+        "sections": [
+          {
+            "label": "(a) extract close analysis",
+            "marks": 20,
+            "aos": [
+              "AO2"
+            ]
+          },
+          {
+            "label": "(b) whole-text essay",
+            "marks": 20,
+            "aos": [
+              "AO1"
+            ]
+          }
+        ]
+      },
       "_split_note": "Two-part question. (a)=AO2/20, (b)=AO1/20. Verified vs Edexcel 1ET0/02 Paper 2 June 2024 MS.",
-      "extract": { "count": 1, "lines_min": 22, "lines_max": 32, "typical": 27, "verified": true, "source": "Edexcel 1ET0/02 Section A — Pearson spec explicitly states 'approximately 400 words' for extract" },
+      "extract": {
+        "count": 1,
+        "lines_min": 22,
+        "lines_max": 32,
+        "typical": 27,
+        "verified": true,
+        "source": "Edexcel 1ET0/02 Section A — Pearson spec explicitly states 'approximately 400 words' for extract"
+      },
       "question_prefix": "Explore how...",
       "_note": "v7.19.703 FIX: Edexcel 1ET0 Paper 2 Sec A 19th-century novel = AO1+AO2 ONLY (a=AO2/20, b=AO1/20), NO AO3, NO AO4. Verified vs official June 2024 MS AO grid."
     },
@@ -167,10 +364,33 @@
       "shape": "lit-extract-single",
       "marks": 40,
       "spag_marks": 8,
-      "aos": ["AO1", "AO3", "AO4"],
-      "split": { "shape": "custom", "sections": [{ "label": "extended response", "marks": 40, "aos": ["AO1", "AO3", "AO4"] }] },
+      "aos": [
+        "AO1",
+        "AO3",
+        "AO4"
+      ],
+      "split": {
+        "shape": "custom",
+        "sections": [
+          {
+            "label": "extended response",
+            "marks": 40,
+            "aos": [
+              "AO1",
+              "AO3",
+              "AO4"
+            ]
+          }
+        ]
+      },
       "_split_note": "Single extended response, AO1 16 + AO3 16 + AO4 8 = 40 (no AO2). Custom: protocol's intro/body/conclusion split needs reconciling to 40 — flagged.",
-      "extract": { "count": 1, "lines_min": 20, "lines_max": 40, "verified": false, "source": "Edexcel 1ET0/01 post-1914 — varies by set text/year; some papers use whole-text question without extract — verify per paper" },
+      "extract": {
+        "count": 1,
+        "lines_min": 20,
+        "lines_max": 40,
+        "verified": false,
+        "source": "Edexcel 1ET0/01 post-1914 — varies by set text/year; some papers use whole-text question without extract — verify per paper"
+      },
       "question_prefix": "Explore how...",
       "_note": "v7.19.703 FIX: Edexcel 1ET0 Paper 1 Sec B post-1914 modern = AO1(16)+AO3(16)+AO4(8) = 40, NO AO2. Verified vs official June 2024 MS AO grid."
     },
@@ -178,10 +398,32 @@
       "shape": "poetry-single-named",
       "marks": 20,
       "spag_marks": null,
-      "aos": ["AO1", "AO3"],
-      "split": { "shape": "custom", "sections": [{ "label": "comparison essay", "marks": 20, "aos": ["AO1", "AO3"] }] },
+      "aos": [
+        "AO1",
+        "AO3"
+      ],
+      "split": {
+        "shape": "custom",
+        "sections": [
+          {
+            "label": "comparison essay",
+            "marks": 20,
+            "aos": [
+              "AO1",
+              "AO3"
+            ]
+          }
+        ]
+      },
       "_split_note": "AO1 15 + AO3 5 = 20. Protocol currently 5-section summing 21 — reconcile to 20 (Phase 2).",
-      "extract": { "count": 1, "lines_min": 8, "lines_max": 40, "typical": 20, "verified": true, "source": "Edexcel 1ET0/02 Section B Part 1 — one anthology poem printed; student compares with second anthology poem" },
+      "extract": {
+        "count": 1,
+        "lines_min": 8,
+        "lines_max": 40,
+        "typical": 20,
+        "verified": true,
+        "source": "Edexcel 1ET0/02 Section B Part 1 — one anthology poem printed; student compares with second anthology poem"
+      },
       "question_prefix": "Compare the ways...",
       "_note": "v7.19.703 FIX: Edexcel 1ET0 Paper 2 Sec B Part 1 anthology poetry = AO1(15)+AO3(5) = 20, NO AO2. Verified vs official June 2024 MS AO grid."
     },
@@ -189,32 +431,102 @@
       "shape": "poetry-unseen",
       "marks": 20,
       "spag_marks": null,
-      "aos": ["AO1", "AO2"],
-      "split": { "shape": "custom", "sections": [{ "label": "unseen comparison", "marks": 20, "aos": ["AO1", "AO2"] }] },
+      "aos": [
+        "AO1",
+        "AO2"
+      ],
+      "split": {
+        "shape": "custom",
+        "sections": [
+          {
+            "label": "unseen comparison",
+            "marks": 20,
+            "aos": [
+              "AO1",
+              "AO2"
+            ]
+          }
+        ]
+      },
       "_split_note": "AO1 8 + AO2 12 = 20, comparison of two unseen poems. Protocol currently 2-box summing 40 — reconcile to 20 (Phase 2).",
-      "extract": { "count": 2, "lines_min_each": 10, "lines_max_each": 40, "typical_each": 18, "verified": true, "source": "Edexcel 1ET0/02 Section B Part 2 — two unseen poems printed for comparison" },
+      "extract": {
+        "count": 2,
+        "lines_min_each": 10,
+        "lines_max_each": 40,
+        "typical_each": 18,
+        "verified": true,
+        "source": "Edexcel 1ET0/02 Section B Part 2 — two unseen poems printed for comparison"
+      },
       "question_prefix": null
     }
   },
-
   "eduqas": {
     "shakespeare": {
       "shape": "lit-extract-single",
       "marks": 40,
       "spag_marks": 5,
-      "aos": ["AO1", "AO2", "AO4"],
-      "split": { "shape": "custom", "sections": [{ "label": "(a) extract", "marks": 15, "aos": ["AO1", "AO2"] }, { "label": "(b) whole-play essay (incl 5 SPaG)", "marks": 25, "aos": ["AO1", "AO2", "AO4"] }] },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO4"
+      ],
+      "split": {
+        "shape": "custom",
+        "sections": [
+          {
+            "label": "(a) extract",
+            "marks": 15,
+            "aos": [
+              "AO1",
+              "AO2"
+            ]
+          },
+          {
+            "label": "(b) whole-play essay (incl 5 SPaG)",
+            "marks": 25,
+            "aos": [
+              "AO1",
+              "AO2",
+              "AO4"
+            ]
+          }
+        ]
+      },
       "_split_note": "Component 1 Section A = part(a) extract 15 + part(b) essay 20+5 SPaG = 25, total 40. Verified vs Eduqas Component 1 June 2024 MS ('Total 15 marks' / 'Total marks 20+5').",
-      "extract": { "count": 1, "lines_min": 25, "lines_max": 40, "typical": 30, "verified": false, "source": "EDUQAS C720U10 Section A — two-part question (a) extract (b) whole-play; verify from PDFs" },
+      "extract": {
+        "count": 1,
+        "lines_min": 25,
+        "lines_max": 40,
+        "typical": 30,
+        "verified": false,
+        "source": "EDUQAS C720U10 Section A — two-part question (a) extract (b) whole-play; verify from PDFs"
+      },
       "question_prefix": null
     },
     "19th_century": {
       "shape": "lit-extract-single",
       "marks": 40,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3"],
-      "split": { "shape": "standard", "intro": 5, "body": 9, "body_count": 3, "conclusion": 8 },
-      "extract": { "count": 1, "lines_min": 20, "lines_max": 40, "typical": 30, "verified": false, "source": "EDUQAS C720U20 Section B — single 19th-c prose extract" },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 5,
+        "body": 9,
+        "body_count": 3,
+        "conclusion": 8
+      },
+      "extract": {
+        "count": 1,
+        "lines_min": 20,
+        "lines_max": 40,
+        "typical": 30,
+        "verified": false,
+        "source": "EDUQAS C720U20 Section B — single 19th-c prose extract"
+      },
       "_note": "v7.19.703 FIX: Eduqas Component 2 Sec B 19th-century prose = AO1+AO2+AO3 (equally weighted), Total 40, NO AO4/SPaG. Verified vs official June 2024 MS. Marked by eduqas/literature protocol (5/9×3/8).",
       "question_prefix": null
     },
@@ -222,8 +534,18 @@
       "shape": "lit-no-extract",
       "marks": 40,
       "spag_marks": 5,
-      "aos": ["AO1", "AO2", "AO4"],
-      "split": { "shape": "standard", "intro": 5, "body": 9, "body_count": 3, "conclusion": 8 },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO4"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 5,
+        "body": 9,
+        "body_count": 3,
+        "conclusion": 8
+      },
       "extract": null,
       "question_prefix": null,
       "_note": "v7.19.703: Eduqas Component 2 Sec A post-1914 prose/drama = AO1+AO2+AO4, Total 35+5 (5 SPaG) = 40. Verified vs official June 2024 MS. Marked by eduqas/modern protocol (5/9×3/8)."
@@ -232,31 +554,71 @@
       "shape": "poetry-single-named",
       "marks": 25,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3"],
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3"
+      ],
       "split": null,
       "_split_note": "CUSTOM (Phase 2): Component 1 Section B = 25 marks (AO1+AO2+AO3). Verified vs Eduqas Component 1 June 2024 MS. No dedicated 25-split yet.",
-      "extract": { "count": 1, "lines_min": 8, "lines_max": 40, "typical": 20, "verified": false, "source": "EDUQAS C720U10 Section B — one anthology poem printed + comparison" },
+      "extract": {
+        "count": 1,
+        "lines_min": 8,
+        "lines_max": 40,
+        "typical": 20,
+        "verified": false,
+        "source": "EDUQAS C720U10 Section B — one anthology poem printed + comparison"
+      },
       "question_prefix": null
     },
     "unseen": {
       "shape": "poetry-unseen",
       "marks": 20,
       "spag_marks": null,
-      "aos": ["AO1", "AO2"],
-      "split": { "shape": "custom", "sections": [{ "label": "unseen single + comparison", "marks": 20, "aos": ["AO1", "AO2"] }] },
+      "aos": [
+        "AO1",
+        "AO2"
+      ],
+      "split": {
+        "shape": "custom",
+        "sections": [
+          {
+            "label": "unseen single + comparison",
+            "marks": 20,
+            "aos": [
+              "AO1",
+              "AO2"
+            ]
+          }
+        ]
+      },
       "_split_note": "2-box/comparison layout. Protocol currently sums 40 — reconcile to 20 (Phase 2).",
-      "extract": { "count": 2, "lines_min_each": 10, "lines_max_each": 40, "verified": false, "source": "EDUQAS C720U20 Section C — two unseen poems: single + comparison questions" },
+      "extract": {
+        "count": 2,
+        "lines_min_each": 10,
+        "lines_max_each": 40,
+        "verified": false,
+        "source": "EDUQAS C720U20 Section C — two unseen poems: single + comparison questions"
+      },
       "question_prefix": null
     }
   },
-
   "ccea": {
     "prose": {
       "shape": "lit-no-extract",
       "marks": 40,
       "spag_marks": null,
-      "aos": ["AO1", "AO2"],
-      "split": { "shape": "standard", "intro": 5, "body": 9, "body_count": 3, "conclusion": 8 },
+      "aos": [
+        "AO1",
+        "AO2"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 5,
+        "body": 9,
+        "body_count": 3,
+        "conclusion": 8
+      },
       "extract": null,
       "question_prefix": null,
       "_note": "v7.19.71x VERIFY+FIX: CCEA GCSE Eng Lit Unit 1 Section A (novel set text) = 40 marks (AO1+AO2, band-holistic, Band 5 = [35]-[40]). Verified vs Summer 2025 MS + QP ('Section A is worth 40 marks'). ccea/prose protocol corrected 30→40 (5/9×3/8)."
@@ -265,14 +627,29 @@
       "shape": "lit-extract-single",
       "marks": 20,
       "spag_marks": null,
-      "aos": ["AO1", "AO2"],
-      "split": { "shape": "standard", "intro": 2, "body": 5, "body_count": 3, "conclusion": 3 },
-      "extract": { "count": 1, "lines_min": 30, "lines_max": 55, "typical": 40, "verified": false, "source": "CCEA GEL11 Section B — single unseen 19th-c prose extract (often longest of any board); verify from PDFs" },
+      "aos": [
+        "AO1",
+        "AO2"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 2,
+        "body": 5,
+        "body_count": 3,
+        "conclusion": 3
+      },
+      "extract": {
+        "count": 1,
+        "lines_min": 30,
+        "lines_max": 55,
+        "typical": 40,
+        "verified": false,
+        "source": "CCEA GEL11 Section B — single unseen 19th-c prose extract (often longest of any board); verify from PDFs"
+      },
       "question_prefix": null,
       "_note": "v7.19.71x VERIFY: CCEA Unit 1 Section B (unseen prose) = 20 marks (AO1+AO2, Band 5 = [18]-[20]). Verified vs Summer 2025 MS (60 paper total = 40 Sec A + 20 Sec B). ccea/unseen-prose protocol already 2/5×3/3=20 ✓."
     }
   },
-
   "sqa": {
     "critical_reading_section_1": {
       "shape": "lit-extract-single",
@@ -281,7 +658,14 @@
       "aos": null,
       "split": null,
       "_split_note": "CUSTOM (Phase 2): Scottish-text question set (multiple sub-questions on a printed extract + wider text), 20 marks total — NOT a single essay. No TTECEA split.",
-      "extract": { "count": 1, "lines_min": 20, "lines_max": 45, "typical": 30, "verified": false, "source": "SQA N5 Critical Reading Section 1 — single printed extract from Scottish set text (prose/drama/poetry); questions reference extract + wider text" },
+      "extract": {
+        "count": 1,
+        "lines_min": 20,
+        "lines_max": 45,
+        "typical": 30,
+        "verified": false,
+        "source": "SQA N5 Critical Reading Section 1 — single printed extract from Scottish set text (prose/drama/poetry); questions reference extract + wider text"
+      },
       "question_prefix": null,
       "_note": "v7.19.71x: SQA N5 Critical Reading Section 1 = 20 marks. Verified vs N5 Critical Reading 2025 MS."
     },
@@ -290,21 +674,36 @@
       "marks": 20,
       "spag_marks": null,
       "aos": null,
-      "split": { "shape": "standard", "intro": 2, "body": 5, "body_count": 3, "conclusion": 3 },
+      "split": {
+        "shape": "standard",
+        "intro": 2,
+        "body": 5,
+        "body_count": 3,
+        "conclusion": 3
+      },
       "_split_note": "Critical essay /20, marked on the Sophicly TTECEA scaffold rescaled from 30→20 (2/5×3/3). SQA's own MS is band-holistic, but Sophicly keeps the granular per-paragraph scaffold for teaching (per granular-marking rule). sqa/critical-reading protocol rescaled 3/7×3/6 → 2/5×3/3.",
       "extract": null,
       "question_prefix": null,
       "_note": "Confirmed: SQA N5 Critical Reading Section 2 — critical essay on previously-studied text; choice of questions; no extract. 20 marks, band-holistic. Verified vs N5 Critical Reading 2025 MS."
     }
   },
-
   "edexcel-igcse": {
     "heritage": {
       "shape": "lit-no-extract",
       "marks": 30,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO4"],
-      "split": { "shape": "standard", "intro": 3, "body": 7, "body_count": 3, "conclusion": 6 },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO4"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 3,
+        "body": 7,
+        "body_count": 3,
+        "conclusion": 6
+      },
       "extract": null,
       "question_prefix": null,
       "_note": "Edexcel IGCSE 4ET1/02 literary-heritage essay (Shakespeare/heritage text) — whole-text, OPEN BOOK. 30 marks = AO1 10 + AO2 10 + AO4 10 (AO4 = CONTEXT in iGCSE, NOT SPaG). Verified DIRECTLY vs official 'Edexcel IGCSE Shakespeare June 2024 MS' AO grid. edexcel-igcse/heritage protocol 3/7×3/6=30 ✓."
@@ -313,8 +712,17 @@
       "shape": "lit-no-extract",
       "marks": 30,
       "spag_marks": null,
-      "aos": ["AO1", "AO2"],
-      "split": { "shape": "standard", "intro": 3, "body": 7, "body_count": 3, "conclusion": 6 },
+      "aos": [
+        "AO1",
+        "AO2"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 3,
+        "body": 7,
+        "body_count": 3,
+        "conclusion": 6
+      },
       "extract": null,
       "question_prefix": null,
       "_note": "Edexcel IGCSE 4ET1/02 modern drama — whole-text open-book essay. 30 marks = AO1 15 + AO2 15 (no AO4). Verified DIRECTLY vs official 'Edexcel IGCSE Modern Drama June 2023 MS' + 'Modern Lit June 2024 MS' AO grids. edexcel-igcse/modern protocol 3/7×3/6=30 ✓."
@@ -323,8 +731,17 @@
       "shape": "lit-no-extract",
       "marks": 40,
       "spag_marks": null,
-      "aos": ["AO1", "AO4"],
-      "split": { "shape": "standard", "intro": 5, "body": 10, "body_count": 3, "conclusion": 5 },
+      "aos": [
+        "AO1",
+        "AO4"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 5,
+        "body": 10,
+        "body_count": 3,
+        "conclusion": 5
+      },
       "extract": null,
       "question_prefix": null,
       "_note": "Edexcel IGCSE 4ET1/01 Section C modern prose — whole-text essay, closed book. 40 marks = AO1 20 + AO4 20 (AO4 = CONTEXT in iGCSE, NOT SPaG; NO AO2). Verified DIRECTLY vs official 'Edexcel IGCSE Modern Prose June 2024 MS' AO grid. edexcel-igcse/modern-prose protocol 5/10×3/5=40 ✓."
@@ -333,31 +750,62 @@
       "shape": "lit-no-extract",
       "marks": 30,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3", "AO4"],
-      "split": { "shape": "standard", "intro": 3, "body": 7, "body_count": 3, "conclusion": 6 },
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3",
+        "AO4"
+      ],
+      "split": {
+        "shape": "standard",
+        "intro": 3,
+        "body": 7,
+        "body_count": 3,
+        "conclusion": 6
+      },
       "extract": null,
       "question_prefix": null,
       "_note": "Catch-all for Edexcel IGCSE Spec A Literature 4ET1 — generic 30-mark essay fallback (real papers split: heritage/modern-drama 30, modern-prose 40). Prefer the specific paper keys over this catch-all. edexcel-igcse/literature protocol 3/7×3/6=30."
     },
     "anthology_poetry": {
       "shape": "poetry-comparison",
-      "marks": null,
+      "marks": 30,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3"],
+      "aos": [
+        "AO2",
+        "AO3"
+      ],
       "split": null,
       "_split_note": "CUSTOM (Phase 2): two anthology poems comparison; total unverified.",
-      "extract": { "count": 2, "lines_min_each": 8, "lines_max_each": 40, "verified": true, "source": "Edexcel IGCSE 4ET1/01 Section B — two anthology poems printed (closed book, anthology reprinted)" },
-      "question_prefix": null
+      "extract": {
+        "count": 2,
+        "lines_min_each": 8,
+        "lines_max_each": 40,
+        "verified": true,
+        "source": "Edexcel IGCSE 4ET1/01 Section B — two anthology poems printed (closed book, anthology reprinted)"
+      },
+      "question_prefix": null,
+      "_marks_note": "4ET1/01 Section B. Board authority: SAMs 'AO2 (15 marks), AO3 (15 marks)' under SECTION B: Anthology Poetry, confirmed by the June 2024 QP '(Total for Question 2 = 30 marks)'. Corrected 2026-08-18: marks was NULL and aos claimed AO1+AO2+AO3 — there is no AO1 grid on this section."
     },
     "unseen_poetry": {
       "shape": "poetry-unseen",
-      "marks": null,
+      "marks": 20,
       "spag_marks": null,
-      "aos": ["AO1", "AO2"],
+      "aos": [
+        "AO2"
+      ],
       "split": null,
       "_split_note": "CUSTOM (Phase 2): single unseen poem; total unverified.",
-      "extract": { "count": 1, "lines_min": 10, "lines_max": 40, "typical": 20, "verified": false, "source": "Edexcel IGCSE 4ET1/01 Section A — one unseen poem printed" },
-      "question_prefix": null
+      "extract": {
+        "count": 1,
+        "lines_min": 10,
+        "lines_max": 40,
+        "typical": 20,
+        "verified": false,
+        "source": "Edexcel IGCSE 4ET1/01 Section A — one unseen poem printed"
+      },
+      "question_prefix": null,
+      "_marks_note": "4ET1/01 Section A. Board authority: SAMs 'AO2 (20 marks)' + 'TOTAL FOR SECTION A = 20 MARKS', confirmed unchanged by the June 2024 QP '(Total for Question 1 = 20 marks)'. Corrected 2026-08-18: marks was NULL (never recorded) and aos claimed AO1+AO2 — the board's grid is AO2 alone, so AO1 was being asserted on a question that does not assess it."
     }
   }
 }
