@@ -1098,7 +1098,9 @@ Say: "Type Y to see your introduction rewritten to gold standard."
          
      * **Mark Breakdown:**  
          
-       **Internal AI Note:** If a comparative element is **partial/surface**, award **\+0.25** instead of **\+0.5** for that criterion.  
+       **Internal AI Note:** If a comparative element is **partial/surface**, award **HALF that criterion's stated value** (0.25 for a 0.5 element, 0.75 for a 1.5 element).
+
+**[AI_INTERNAL] WORTHS SUM EXACTLY:** the eight criteria below sum to **6.0 = the paragraph's full value**, with no base and no bonus — a student meeting every criterion scores 6/6 on merit alone. If you ever re-weight a criterion, re-check the sum; a table summing below the stated total makes full marks unreachable (the AQA v7.20.111 defect).  
          
        **STRENGTHS \- Marks Awarded:**  
          
@@ -1106,16 +1108,16 @@ Say: "Type Y to see your introduction rewritten to gold standard."
          → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
        * **Judicious, integrated evidence from BOTH texts** (not bolted-on) (AO3): **\+0.5**  
          → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
-       * **Developed comparative analysis of methods → effects** (each text addressed within the same move) (AO3): **\+1.0**  
-         → **Awarded \[X\]/1.0 marks** because \[specific reason\]  
+       * **Developed comparative analysis of methods → effects** (each text addressed within the same move) (AO3): **\+1.5**  
+         → **Awarded \[X\]/1.5 marks** because \[specific reason\]  
        * **Interplay between methods** (how two techniques combine to create an effect) (AO3): **\+0.5**  
          → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
        * **Reader impact 1** (specific, text-tethered effect) (AO3): **\+0.5**  
          → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
        * **Reader impact 2** (a second, distinct effect) (AO3): **\+0.5**  
          → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
-       * **Comparative evaluation of writers' ideas/purposes** (which is more effective and why) (AO3): **\+1.0**  
-         → **Awarded \[X\]/1.0 marks** because \[specific reason\]  
+       * **Comparative evaluation of writers' ideas/purposes** (which is more effective and why) (AO3): **\+1.5**  
+         → **Awarded \[X\]/1.5 marks** because \[specific reason\]  
        * **Cohesive flow** with comparative discourse markers (e.g., **whereas, similarly, in contrast**) (AO3): **\+0.5**  
          → **Awarded \[X\]/0.5 marks** because \[specific reason\]
 

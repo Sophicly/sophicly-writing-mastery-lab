@@ -871,7 +871,14 @@ CB4 — Missing comparative language (-0.5) Detection: No explicit comparison si
 
 ---
 
-**1. Comparative Introduction Assessment (3 marks)**
+**1. Comparative Introduction Assessment (1 mark)**
+
+**[AI_INTERNAL] WORTHS SUM EXACTLY:** Q12 totals **20** = intro **1** + bodies **6 x 3 = 18** +
+conclusion **1**. This is the SHORT-intro / SHORT-conclusion shape (thesis only, restated thesis
+only) the Final Summary already scores and the board total requires. The three-element intro below
+previously scored out of 3, which made the mid-protocol marks disagree with the Final Summary and
+pushed the question to 25. Elements 2 and 3 are still TAUGHT and still receive feedback — they are
+not scored.
 
 **STEP 1: Metacognitive Reflection**
 
@@ -885,13 +892,15 @@ WAIT → STORE → ASK AO Targeting question → WAIT → STORE
 
 **STEP 2: AI Assessment**
 
-**Mark Breakdown:**
-1. Comparative hook establishing shared theme and signalling comparison (AO1) — [X]/1.0
-2. Comparative theme sentence showing how BOTH poets approach the theme differently (AO1) — [X]/1.0
-3. Comparative thesis with clear three-point argument covering both poems (AO1) — [X]/1.0
+**Mark Breakdown (SCORED — 1.0 total):**
+1. Comparative thesis with clear three-point argument covering both poems (AO1) — [X]/1.0
+
+**Also assessed for FEEDBACK ONLY (not scored — comment on each, award no marks):**
+- Comparative hook establishing shared theme and signalling comparison (AO1)
+- Comparative theme sentence showing how BOTH poets approach the theme differently (AO1)
 
 **Penalties:** Max 2 from standard + comparison codes.
-**Total:** [Sum minus penalties] out of 3
+**Total:** [Sum minus penalties] out of 1
 
 **STEP 3:** Calibration Moment (same format as Q12 — self-rating vs actual, AO targeting reflection).
 
@@ -975,7 +984,7 @@ WAIT → STORE → ASK AO Targeting question → WAIT → STORE
 
 ---
 
-**3. Comparative Conclusion Assessment (4 marks)**
+**3. Comparative Conclusion Assessment (1 mark)**
 
 **STEP 1: Metacognitive Reflection**
 
@@ -987,14 +996,16 @@ WAIT → STORE → ASK AO Targeting → WAIT → STORE
 
 **STEP 2: AI Assessment**
 
-**Mark Breakdown:**
+**Mark Breakdown (SCORED — 1.0 total):**
 1. Restated comparative thesis — rephrased comparison in fresh language (AO1) — [X]/1.0
-2. Controlling comparative concept — what the comparison ultimately reveals (AO1) — [X]/1.0
-3. Comparative poets' purposes — what each poet ultimately achieves and how comparison deepens understanding (AO1/AO2) — [X]/1.0
-4. Universal comparative message — timeless insight from comparing these approaches (AO1) — [X]/1.0
+
+**Also assessed for FEEDBACK ONLY (not scored — comment on each, award no marks):**
+- Controlling comparative concept — what the comparison ultimately reveals (AO1)
+- Comparative poets' purposes — what each poet ultimately achieves and how comparison deepens understanding (AO1/AO2)
+- Universal comparative message — timeless insight from comparing these approaches (AO1)
 
 **Penalties:** Max 2 from standard + comparison codes.
-**Total:** [Sum minus penalties] out of 4
+**Total:** [Sum minus penalties] out of 1
 
 **STEP 3:** Calibration Moment.
 

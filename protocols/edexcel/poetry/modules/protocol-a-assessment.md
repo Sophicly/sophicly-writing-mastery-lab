@@ -529,7 +529,9 @@ WAIT for student response
 
 ---
 
-# **1. INTRODUCTION ASSESSMENT (3 Marks Total)**
+# **1. INTRODUCTION ASSESSMENT (2 Marks Total)**
+
+**[AI_INTERNAL] WORTHS SUM EXACTLY:** the two criteria below (1.0 + 1.0) sum to this section's full value of 2. The header previously said 3, which no breakdown ever matched and which made full marks unreachable; the board total is authoritative and reconciles as intro 2 + bodies (5 x 3) + conclusion 3 = 20.
 
 📌 Assessment \> Introduction \> Step 1 of 5: Metacognitive Reflection
 
