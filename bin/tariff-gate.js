@@ -306,10 +306,16 @@ function checkPaper(src, file) {
          * question in one sentence ("ELIF current_question == Q4: EXECUTE Assessment Sub-Protocol:
          * Question 4 …"); matching that gave six "sections" a few characters long, and every
          * question then reported as having no tariff. Anchor to start-of-line + heading marks. */
-        const heads = [...body.matchAll(/^#{1,6}\s*\**\s*Assessment Sub-?Protocol:?\s*\**\s*Question\s*(\d+)/gim)]
+        /* "Questions 2, 3 and 4" — Edexcel IGCSE P2 Section B marks a CHOICE of three questions on
+         * one pair of grids, so the heading is plural and the first number is the one we key on. */
+        const heads = [...body.matchAll(/^#{1,6}\s*\**\s*Assessment Sub-?Protocol:?\s*\**\s*Questions?\s*(\d+)/gim)]
             .map(m => ({ num: +m[1], at: m.index }));
 
         for (const q of src.questions) {
+            /* A protocol may cover only some questions (Edexcel IGCSE P2 splits Section A and
+             * Section B into separate module files). Scope it, so the unverified list reports
+             * genuine gaps rather than every question against every file. */
+            if (Array.isArray(p.questions) && !p.questions.includes(q.id)) continue;
             const num = +((q.id.match(/\d+/) || [])[0]);
             if (!num) continue;
             const h = heads.find(x => x.num === num);

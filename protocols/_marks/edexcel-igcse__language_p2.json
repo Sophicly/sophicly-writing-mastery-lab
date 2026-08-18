@@ -1,0 +1,104 @@
+{
+  "board": "edexcel-igcse",
+  "paper": "language_p2",
+  "title": "Pearson Edexcel International GCSE English Language A (4EA1/02) — Paper 2: Poetry and Prose Texts and Imaginative Writing",
+  "authority": {
+    "file": "MSR/EDEXCEL IGCSE English Language Component A/Edexcel IGCSE Spec A Language Paper 2/Edexcel IGCSE Language Paper 2 Spec A June 2024 MS.pdf",
+    "kind": "mark scheme",
+    "sitting": "June 2024",
+    "why_this_source": "The board's own published mark scheme. A full series is on disk for this paper (January 2019 through June 2024, including the (R) resits) — June 2024 is the most recent.",
+    "note_on_tariffs": "Neither section's total is printed in the mark scheme; both are the sum of two AO grids, so each is declared marks_from: components with the grid maxima quoted."
+  },
+  "total": {
+    "marks": 60,
+    "marks_from": "questions",
+    "why": "The mark scheme states no paper total. 60 = Section A 30 + Section B 30, cross-checked against language-paper-specs.json."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 30,
+      "marks_from": "components",
+      "aos": [
+        "AO1",
+        "AO2"
+      ],
+      "quote": "SECTION A: Reading",
+      "note": "One compulsory question on an anthology text, marked on two grids.",
+      "components": [
+        {
+          "label": "understanding",
+          "marks": 12,
+          "kind": "reading",
+          "aos": [
+            "AO1"
+          ],
+          "quote": "Level 4         10-12"
+        },
+        {
+          "label": "language_and_structure",
+          "marks": 18,
+          "kind": "reading",
+          "aos": [
+            "AO2"
+          ],
+          "note": "⚠️ The AO1 grid tops out at Level 4; only the AO2 grid has a Level 5. Do not assume a uniform five-level ladder across both.",
+          "quote": "Level 5          15-18"
+        }
+      ]
+    },
+    {
+      "id": "Q2",
+      "marks": 30,
+      "marks_from": "components",
+      "aos": [
+        "AO4",
+        "AO5"
+      ],
+      "quote": "Section B: Imaginative Writing",
+      "note": "The candidate answers ONE of Questions 2, 3 or 4; all three are marked on the same pair of grids.",
+      "components": [
+        {
+          "label": "communication",
+          "marks": 18,
+          "kind": "content",
+          "aos": [
+            "AO4"
+          ],
+          "spec_field": "content_marks",
+          "quote": "Level 5   16–18"
+        },
+        {
+          "label": "technical_accuracy",
+          "marks": 12,
+          "kind": "spag",
+          "aos": [
+            "AO5"
+          ],
+          "spec_field": "spag_marks",
+          "quote": "Level 5     11–12"
+        }
+      ]
+    }
+  ],
+  "spec": {
+    "file": "language",
+    "key": "edexcel-igcse.language_p2",
+    "field_kinds": {
+      "content_marks": "content",
+      "spag_marks": "spag",
+      "reading_marks": "reading",
+      "writing_marks": "writing"
+    }
+  },
+  "protocols": [
+    {
+      "file": "protocols/edexcel-igcse/language2/modules/assessment-section-b.md",
+      "role": "Section B assessment",
+      "questions": [
+        "Q2"
+      ]
+    }
+  ],
+  "protocols_note": "Section A is decomposed in assessment-section-a.md as our own teaching split — introduction out of 3, each body paragraph out of 7, conclusion out of 6 (3 + 3x7 + 6 = 30). That is a Sophicly structure, not a board one, so it carries no 'Assessment Sub-Protocol: Question 1' heading and check E cannot read it. ⭐ FOLLOW-UP WORTH DOING: a per-part check that a protocol's element marks SUM to the board tariff — PROTOCOL-QUESTION-STRUCTURE-MAP.md already records three Edexcel protocols where they do not (modern totals 36.5/37 against a stated 40; poetry's intro header says 3 but its breakdown sums to 2; unseen Q12 sums to 25 against a stated 20)."
+}
