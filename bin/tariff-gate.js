@@ -91,9 +91,11 @@ function pdfText(absPdf) {
  * renamed — and the gate says WHERE it looked when it cannot find it, instead of just "missing".
  */
 const MSR_ROOT = path.resolve(ROOT, '..', '..', 'Sophicly Etch Mark Scheme Resources');
+const CAM_ROOT = path.resolve(ROOT, '..', '..', '..', 'Cambridge IGCSE English 0500-0990');
 function resolveAuthority(rel) {
     if (path.isAbsolute(rel)) return rel;
     if (rel.startsWith('MSR/')) return path.join(MSR_ROOT, rel.slice(4));
+    if (rel.startsWith('CAM/')) return path.join(CAM_ROOT, rel.slice(4));
     return path.resolve(ROOT, rel);
 }
 

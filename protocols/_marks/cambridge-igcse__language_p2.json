@@ -1,23 +1,26 @@
 {
   "board": "cambridge-igcse",
   "paper": "language_p2",
-  "title": "Cambridge IGCSE First Language English 0500/0990 — Paper 2 Directed Writing and Composition",
+  "title": "Cambridge IGCSE First Language English 0990/0500 — Paper 2 Directed Writing and Composition",
   "authority": {
-    "file": "research/cambridge-igcse/0500-syllabus-2024-2026.pdf",
-    "kind": "syllabus",
-    "sitting": "0500 syllabus for 2024, 2025 and 2026",
-    "why_this_source": "The syllabus states every tariff explicitly and covers the era our candidates sit. A June 2024 Paper 2 mark scheme IS on disk ('Sophicly Etch Mark Scheme Resources/CAIE GCSE English Language/CAIE English Language Paper 2/521329-june-2024-mark-scheme-paper-21.pdf') and should be added as a second authority when per-level descriptors are gated; for the TARIFFS the syllabus is the cleaner citation because it states them in words.",
-    "do_not_use": "718839-2027-specimen-paper-2-mark-scheme.pdf — that is the 2027-2029 syllabus, a different paper."
+    "file": "CAM/June 2024 (real past papers)/0990-P2-MARK-SCHEME.pdf",
+    "kind": "mark scheme",
+    "sitting": "0990/21 May/June 2024 — Cambridge IGCSE (9–1) First Language English, Maximum Mark 80",
+    "why_this_source": "The board's own published mark scheme for a real series, in the code the student sits. Supersedes the 0500 syllabus citation this file carried on 2026-08-18 — see the P1 source for why that first search wrongly reported no mark schemes on disk.",
+    "0990_vs_0500": "MEASURED (2026-08-18): the 0500 and 0990 June 2024 Paper 2 mark schemes state identical splits — 25 writing, 15 reading, 16 content and structure, 24 style and accuracy.",
+    "do_not_use": "718839-2027-specimen-paper-2-mark-scheme.pdf — the 2027-2029 syllabus, a different paper."
   },
   "total": {
     "marks": 80,
-    "quote": "Paper 2 Directed Writing and Composition\n         Written paper, 2 hours, 80 marks"
+    "quote": "Maximum Mark: 80"
   },
   "questions": [
     {
       "id": "Q1",
       "marks": 40,
-      "quote": "Section A Directed Writing (40 marks)",
+      "marks_from": "components",
+      "why_no_marks_quote": "Section A is stated as writing (25) plus reading (15); the mark scheme never prints 40.",
+      "quote": "Question 1",
       "components": [
         {
           "label": "writing",
@@ -31,8 +34,8 @@
             "W5"
           ],
           "spec_field": "writing_marks",
-          "note": "⚠️ These 25 marks are ALL FIVE writing AOs. W5 (spelling, punctuation and grammar) is one of five, not the whole. Recording them as spag_marks makes the protocol router preamble emit 'SPaG=25' (class-protocol-router.php:367), telling Sophia that a quarter of the paper is technical accuracy.",
-          "quote": "This question tests the following writing assessment objectives (25 marks):"
+          "note": "⚠️ All five writing AOs. W5 (spelling, punctuation and grammar) is ONE of the five. Until v7.20.529 these sat in spag_marks, so the router preamble announced 'SPaG=25' — telling Sophia a quarter of the paper is technical accuracy.",
+          "quote": "This question tests the following writing assessment objectives (25 marks)"
         },
         {
           "label": "reading",
@@ -45,28 +48,39 @@
             "R5"
           ],
           "spec_field": "reading_marks",
-          "note": "⚠️ These 15 marks are READING, recorded in the spec as content_marks.",
-          "quote": "This question also tests the following reading assessment objectives (15 marks):"
+          "quote": "and reading assessment objectives (15 marks)"
         }
       ]
     },
     {
       "id": "Q2",
       "marks": 40,
-      "quote": "Section B Composition (40 marks)",
+      "marks_from": "components",
+      "why_no_marks_quote": "Composition is marked on two tables — 16 for content and structure, 24 for style and accuracy. The 40 is their sum; the AO line quotes it too but the split is what the marking actually uses.",
+      "quote": "The question tests the following writing objectives (40 marks)",
+      "note": "⭐ NOT CURRENTLY IN THE SPEC: language-paper-specs.json records Section B as a flat 40 with no component split. The mark scheme marks it as two separate table scores. Worth carrying into the spec + the topic template so a student sees where the 40 comes from.",
       "components": [
         {
-          "label": "writing",
-          "marks": 40,
-          "kind": "writing",
+          "label": "content_and_structure",
+          "marks": 16,
+          "kind": "content",
           "aos": [
             "W1",
-            "W2",
+            "W2"
+          ],
+          "quote": "Use Table A to give a mark out of 16 for content and structure"
+        },
+        {
+          "label": "style_and_accuracy",
+          "marks": 24,
+          "kind": "writing",
+          "aos": [
             "W3",
             "W4",
             "W5"
           ],
-          "quote": "This question tests the following writing assessment objectives (40 marks):"
+          "note": "W5 (SPaG) lives INSIDE this 24 alongside vocabulary, sentence structure and register — it is not a standalone SPaG allocation.",
+          "quote": "give a mark out of 24 for style and accuracy"
         }
       ]
     }
@@ -81,5 +95,5 @@
       "writing_marks": "writing"
     }
   },
-  "protocols_note": "Cambridge has NO protocol-a-assessment.md — it is served through topic templates (protocols/shared/templates/topics/cambridge-igcse-language-p2.md), which carry no 'Assessment Sub-Protocol: Question N' sections, so check E cannot read them. The chain is covered in two hops instead: this file proves BOARD PDF -> language-paper-specs.json (check D), and bin/cambridge-topics-gate.php runs the real SWML_Topic_Parser and proves TEMPLATE -> that same 80-mark spec. Do not add a protocols[] entry here expecting it to check the template; extend the Cambridge gate instead."
+  "protocols_note": "Cambridge has NO protocol-a-assessment.md — served through protocols/shared/templates/topics/cambridge-igcse-language-p2.md, gated separately by bin/cambridge-topics-gate.php against the same 80-mark spec."
 }

@@ -1,91 +1,69 @@
 {
   "board": "cambridge-igcse",
   "paper": "language_p1",
-  "title": "Cambridge IGCSE First Language English 0500/0990 — Paper 1 Reading",
+  "title": "Cambridge IGCSE First Language English 0990/0500 — Paper 1 Reading",
   "authority": {
-    "file": "research/cambridge-igcse/0500-syllabus-2024-2026.pdf",
-    "kind": "syllabus",
-    "sitting": "0500 syllabus for 2024, 2025 and 2026",
-    "why_this_source": "NO official Cambridge mark scheme for this syllabus era is on disk for Paper 1. The only P1 mark scheme we hold is 718838-2027-specimen, which belongs to the 2027-2029 syllabus — a DIFFERENT paper, and wrong for a candidate sitting Oct/Nov 2026. The syllabus states every tariff explicitly and is the board's own document, so it is the authority here. ⚠️ REPLACE THIS with the June 2024 (or any 2024-2026 series) Paper 1 mark scheme the moment one is on disk.",
-    "checked_2026_08_18": "160 PDFs in 'Cambridge IGCSE English 0500-0990/Past Papers (mirror 2020-2026)' — 80 question papers + 80 inserts, ZERO mark schemes."
+    "file": "CAM/June 2024 (real past papers)/0990-P1-MARK-SCHEME.pdf",
+    "kind": "mark scheme",
+    "sitting": "0990/11 May/June 2024 — Cambridge IGCSE (9–1) First Language English, Maximum Mark 80",
+    "why_this_source": "The board's own published mark scheme for a REAL series, in the code our student actually sits (0990, the 9–1 graded version). Top of the authority order (PEDAGOGY.md, Neil 2026-08-16).",
+    "correction_2026_08_18": "The first version of this file claimed no Cambridge P1 mark scheme existed for this syllabus era and cited the 0500 syllabus instead. That was WRONG, and the cause is worth recording: the search was `ls | grep _ms_` against the 160-file 'Past Papers (mirror 2020-2026)' folder — which really does hold only question papers and inserts — plus an `mdfind` whose output was read to 20 lines and no further. The real mark schemes sit in a SEPARATE folder under a different naming convention. Root CLAUDE.md §17c: a truncated search is not a zero.",
+    "0990_vs_0500": "MEASURED, not assumed (2026-08-18): the 0500 and 0990 June 2024 Paper 1 mark schemes state identical AO tariffs — R1/R2/R5 (25), R1/R2/R4 (25), R1/R2/R3 (15), W2/W3 (5). The two syllabuses differ in grading scale (A*–G vs 9–1), not in assessment. Either may be cited for tariffs; 0990 is cited because it is the code the student is entered for.",
+    "secondary": "research/cambridge-igcse/0500-syllabus-2024-2026.pdf splits Q1 into comprehension (15) + summary (10) and Q2 into short-answer (10) + language task (15). The mark scheme aggregates each to 25, so that finer split is syllabus-only and is not gated here."
   },
   "total": {
     "marks": 80,
-    "quote": "Paper 1 Reading\n         Written paper, 2 hours, 80 marks"
+    "quote": "Maximum Mark: 80"
   },
   "questions": [
     {
       "id": "Q1",
       "marks": 30,
-      "quote": "Question 1 Comprehension and summary task (30 marks)",
+      "marks_from": "components",
+      "why_no_marks_quote": "The mark scheme states Q1's reading and writing allocations separately and never prints 30. It is the sum of two quoted parts.",
+      "quote": "Question 1",
       "components": [
         {
-          "label": "comprehension_reading",
-          "marks": 15,
+          "label": "reading",
+          "marks": 25,
           "kind": "reading",
           "aos": [
             "R1",
             "R2",
             "R5"
           ],
-          "quote": "This question tests the following reading assessment objectives (15 marks):"
+          "quote": "This question tests reading assessment objectives R1, R2 and R5 (25 marks):"
         },
         {
-          "label": "summary_reading",
-          "marks": 10,
-          "kind": "reading",
-          "aos": [
-            "R1",
-            "R2",
-            "R5"
-          ],
-          "quote": "This question tests the following reading assessment objectives (10 marks):"
-        },
-        {
-          "label": "summary_writing",
+          "label": "writing",
           "marks": 5,
           "kind": "writing",
           "aos": [
             "W2",
             "W3"
           ],
-          "quote": "This question also tests the following writing assessment objectives (5 marks):"
+          "note": "Q1(f) — the 120-word summary — is the only writing-assessed item in Question 1.",
+          "quote": "and Question 1(f) only tests writing assessment objectives W2 and W3 (5 marks):"
         }
       ]
     },
     {
       "id": "Q2",
       "marks": 25,
-      "quote": "Question 2 Short-answer questions and language task (25 marks)",
-      "components": [
-        {
-          "label": "short_answer_reading",
-          "marks": 10,
-          "kind": "reading",
-          "aos": [
-            "R1",
-            "R2",
-            "R4"
-          ],
-          "quote": "This question tests the following reading assessment objectives (10 marks):"
-        },
-        {
-          "label": "language_task_reading",
-          "marks": 15,
-          "kind": "reading",
-          "aos": [
-            "R1",
-            "R2",
-            "R4"
-          ],
-          "quote": "This question tests the following reading assessment objectives (15 marks):"
-        }
-      ]
+      "aos": [
+        "R1",
+        "R2",
+        "R4"
+      ],
+      "quote": "Question 2",
+      "marks_quote": "This question tests reading assessment objectives R1, R2 and R4 (25 marks):"
     },
     {
       "id": "Q3",
       "marks": 25,
-      "quote": "Question 3 Extended response to reading (25 marks)",
+      "marks_from": "components",
+      "why_no_marks_quote": "Stated as reading (15) plus writing (10); the mark scheme never prints 25 for Q3.",
+      "quote": "Question 3",
       "components": [
         {
           "label": "reading",
@@ -97,7 +75,7 @@
             "R3"
           ],
           "spec_field": "reading_marks",
-          "quote": "This question tests the following reading assessment objectives (15 marks):"
+          "quote": "This question tests reading assessment objectives R1, R2 and R3 (15 marks):"
         },
         {
           "label": "writing",
@@ -110,8 +88,8 @@
             "W4"
           ],
           "spec_field": "writing_marks",
-          "note": "⚠️ These 10 marks are W1-W4 — articulate / organise / vocabulary / register. W5 (spelling, punctuation and grammar) is NOT among them, so recording them as spag_marks is wrong in kind, not just in name.",
-          "quote": "This question also tests the following writing assessment objectives (10 marks):"
+          "note": "⚠️ W5 (spelling, punctuation and grammar) is NOT among these AOs, so recording them as spag_marks — as the spec did until v7.20.529 — was wrong in kind, not merely in name.",
+          "quote": "and writing assessment objectives W1, W2, W3 and W4 (10 marks):"
         }
       ]
     }
@@ -126,5 +104,5 @@
       "writing_marks": "writing"
     }
   },
-  "protocols_note": "Cambridge has NO protocol-a-assessment.md — it is served through topic templates (protocols/shared/templates/topics/cambridge-igcse-language-p1.md), which carry no 'Assessment Sub-Protocol: Question N' sections, so check E cannot read them. The chain is covered in two hops instead: this file proves BOARD PDF -> language-paper-specs.json (check D), and bin/cambridge-topics-gate.php runs the real SWML_Topic_Parser and proves TEMPLATE -> that same 80-mark spec. Do not add a protocols[] entry here expecting it to check the template; extend the Cambridge gate instead."
+  "protocols_note": "Cambridge has NO protocol-a-assessment.md — it is served through topic templates (protocols/shared/templates/topics/cambridge-igcse-language-p1.md), which carry no 'Assessment Sub-Protocol: Question N' sections, so check E cannot read them. The chain is covered in two hops: this file proves BOARD PDF -> language-paper-specs.json (check D), and bin/cambridge-topics-gate.php runs the real SWML_Topic_Parser and proves TEMPLATE -> that same 80-mark spec."
 }
