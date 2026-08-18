@@ -441,6 +441,13 @@ console.log('RAIL PANELS — CSS');
                 ok(!hasOrigin,
                     `#381: "${k.key}" has no originating lesson and correctly declares no origin`);
             }
+            // ⭐ v7.20.536 (#399) — EVERY MODE DECLARES ITS OWN GLYPH. Neil opened My Plot and got
+            // the Writer's Profile icon; so did the other six, for months, because the header icon
+            // was written once at build time while only the title was re-pointed. A row without an
+            // `icon` silently inherits whatever was on screen before it.
+            ok(/icon:\s*'[^']+'/.test(slice),
+                `#399: rail mode "${k.key}" must declare icon:'<registry name>' — without it the `
+                + `header keeps the previous mode's glyph and the panel lies about what it is showing`);
         });
         ok(!/https:\/\/www\.sophicly\.com\/courses\/[^']*lessons/.test(body),
             '#381: no hardcoded lesson URL survives in the mode table — the link resolves from the '
@@ -449,6 +456,27 @@ console.log('RAIL PANELS — CSS');
     ok(/_renderWpNote\(cfg\)/.test(JS),
         '#381: the note is rendered FROM the mode config on every open — a new row cannot bypass it');
     ok(/cwStepUrls/.test(JS), '#381: the panel reads the derived step→lesson map');
+    // ⭐⭐ v7.20.536 (#398) — THE ACCESSOR EXISTS. Neil, live on .535: *"there's no button to go
+    // back to the actual lesson where you edit it... and that should be the same for all of them."*
+    // MEASURED, not guessed: the bridge holds all 30 cw_step entries and every one resolves to a
+    // permalink server-side, and both localise sites emit the map. The reader was the defect —
+    // `WML.cfg` is not a thing. The namespace exports `config`, so `(WML.cfg && …) || fallback`
+    // took the fallback EVERY time, at eight call sites, silently. That is the ghost-property
+    // shape of the ghost-function bug class: optional-chained onto a name nobody ever defined, so
+    // it degrades instead of throwing and reads as "the data isn't there".
+    // ⚠️ This gate is repo-wide on purpose. Five of the eight sites were `lesson_url` stamping on
+    // session_records, which means those rows were written with an empty lesson URL — the panel
+    // was just the first place a human could SEE it.
+    ok(!/\bWML\.cfg\b/.test(JS), '#398: no WML.cfg survives in wml-assessment.js (the property does not exist — it is WML.config)');
+    {
+        const NS = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
+        ok(/\n {8}config, API, headers,/.test(NS) || /\bconfig,/.test(NS),
+            '#398: wml-core still exports `config` on the WML namespace (the name WML.config reads)');
+        ['wml-app.js', 'wml-assessment.js', 'wml-core.js'].forEach((f) => {
+            const src = fs.readFileSync(path.join(ROOT, 'frontend', f), 'utf8');
+            ok(!/\bWML\.cfg\b/.test(src), `#398: ${f} carries no WML.cfg`);
+        });
+    }
 }
 
 console.log(`   ${asserts.pass} assertions passed`);

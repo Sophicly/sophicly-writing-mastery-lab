@@ -2632,6 +2632,17 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     letter-spacing: 0.3px;
 }
 .swml-outline-header span { flex: 1; }
+/* v7.20.536 (#399) — the per-mode glyph slot. An <i>, not a <span>, so the `flex: 1` rule
+   above cannot stretch it and shove the title off its baseline. The 0.5 opacity is the
+   treatment the profile glyph carried inline before the slot existed; it lives here now so a
+   FILLED icon gets it too (the old inline patch keyed on stroke-width, which filled glyphs
+   do not have — it would have silently done nothing for half the set). */
+.swml-outline-header .swml-wp-head-icon {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    opacity: 0.5;
+}
 .swml-outline-close {
     width: 24px; height: 24px;
     border: none; border-radius: 6px; cursor: pointer;

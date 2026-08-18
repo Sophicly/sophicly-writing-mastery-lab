@@ -5712,7 +5712,7 @@
                     target_1: getVal(p.target_1),
                     target_2: getVal(p.target_2),
                     // v7.17.36: LD topic permalink for student-data lesson_url stamping
-                    lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '',
+                    lesson_url: (WML.config && WML.config.lessonUrl) || '',
                 };
                 const res = await apiPost(API.phaseComplete, payload);
                 if (res.success) {
@@ -5750,7 +5750,7 @@
                     const isCoreSkills = state.board === 'core_skills'
                         || /core_skills/.test(state.text || '');
                     if (payload.phase === 'redraft' && !isCoreSkills) {
-                        const dashUrl = (WML.cfg && WML.cfg.dashboardUrl) || '/my-dashboard/';
+                        const dashUrl = (WML.config && WML.config.dashboardUrl) || '/my-dashboard/';
                         showToast(
                             '🔄 <strong>Topic ' + (state.topicNumber || 1) + ' cycle complete.</strong> '
                             + 'Time to switch texts — open <a href="' + dashUrl + '">your dashboard</a>’s '
@@ -7181,7 +7181,7 @@ Before marking the introduction, ask the student to confirm their essay structur
                 is_manual: isManual,
                 attempt: state.attempt || 1,
                 // v7.17.36: LD topic permalink for student-data lesson_url stamping
-                lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '',
+                lesson_url: (WML.config && WML.config.lessonUrl) || '',
                 context: {
                     board: state.board, subject: state.subject, text: state.text,
                     text_name: state.textName, task: state.task, question: state.question,

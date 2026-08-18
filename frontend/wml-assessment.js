@@ -9713,7 +9713,7 @@
                         board: state.board, text: _naScope.text,
                         topicNumber: _naScope.topic || null,
                         suffix: _attemptSuffixFor(opts.suffix || ''),
-                        lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '', // v7.17.36
+                        lesson_url: (WML.config && WML.config.lessonUrl) || '', // v7.17.36
                     })
                 }).then(r => r.json());
                 if (res.success) {
@@ -9911,7 +9911,7 @@
                             text: state.text,
                             topicNumber: state.topicNumber || null,
                             suffix: _attemptSuffixFor(suffix || ''),
-                            lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '', // v7.17.36
+                            lesson_url: (WML.config && WML.config.lessonUrl) || '', // v7.17.36
                         })
                     }).then(r => r.json());
                     if (res && res.success) {
@@ -29865,7 +29865,17 @@
             wpGrip.innerHTML = '<span class="swml-outline-grip-dots">⠷</span>';
             wpPanel.appendChild(wpGrip);
             const wpHeader = el('div', { className: 'swml-outline-header' });
-            wpHeader.innerHTML = SVG_PROFILE.replace('width="16"', 'width="12"').replace('height="16"', 'height="12"').replace('stroke-width="2"', 'stroke-width="2" style="opacity:0.5"') + '<span>Writer’s Profile</span>';
+            /* ⭐ v7.20.536 (#399, Neil 2026-08-18) — THE HEADER GLYPH IS PER MODE.
+               His words, opening My Plot: *"it uses the writer's profile icon, which is not
+               correct, obviously. Uh, same thing for all of them seemingly."* Correct, and it was
+               never noticed because the icon was written ONCE, at build time, while only the title
+               was re-pointed on a mode switch — so seven modes wore the profile glyph. Now the
+               icon is a SLOT filled from the mode row, which is the same table-driven rule the
+               title and the origin note already follow: a new source is a ROW, and it cannot ship
+               half-dressed because `icon` is asserted by bin/rail-panel-harness.js.
+               ⚠️ `<i>` not `<span>`: `.swml-outline-header span { flex: 1 }` would stretch a span
+               slot and push the title off its baseline. */
+            wpHeader.innerHTML = '<i class="swml-wp-head-icon">' + WML.icon('profile', 12) + '</i><span>Writer’s Profile</span>';
             const wpDetachBtn = el('button', {
                 className: 'swml-outline-detach-btn', title: 'Detach panel', innerHTML: SVG_DETACH,
                 onClick: (e) => { e.stopPropagation(); toggleWpFloat(); }
@@ -29905,7 +29915,7 @@
             function _renderWpNote(cfg) {
                 const o = cfg && cfg.origin;
                 if (!o) { wpNote.style.display = 'none'; wpNote.innerHTML = ''; return; }
-                const urls = (WML.cfg && WML.cfg.cwStepUrls) || {};
+                const urls = (WML.config && WML.config.cwStepUrls) || {};
                 const href = urls[o.step] || urls[String(o.step)] || '';
                 const txt = 'Your ' + o.noun + ' is built in Step ' + o.step + ' — to change it, edit it there.';
                 if (!href) {
@@ -29959,6 +29969,18 @@
             // closes, if the same mode's trigger is tapped again). Switching mode while open
             // swaps content rather than closing — tapping the other button should just show it.
             const _wpTitle = wpHeader.querySelector('span');
+            const _wpHeadIcon = wpHeader.querySelector('.swml-wp-head-icon');
+            // ONE place the header is re-pointed. Every mode switch goes through it, so a mode
+            // cannot update its title and forget its glyph — the .535 defect, by construction.
+            function _setWpHead(cfg) {
+                _setWpHead(cfg);
+                if (!_wpHeadIcon) return;
+                if (!cfg.icon) {
+                    console.warn('WML rail panel: mode "' + cfg.title + '" declares no icon — the header keeps the previous glyph.');
+                    return;
+                }
+                _wpHeadIcon.innerHTML = WML.icon(cfg.icon, 12);
+            }
             // v7.20.292: THREE modes on the one shell. Table-driven so a fourth source is a row,
             // not another branch to keep in sync in five places.
             // v7.20.406 (#201): the FOURTH row is the beat-examples panel, opened from a button on
@@ -29974,10 +29996,10 @@
                 // `origin` (v7.20.522, #381) = the lesson this panel's content was WRITTEN in.
                 // Declaring it is what earns the "Open Step N →" button; a mode with no
                 // originating lesson (beat/trait examples, the flagged-beats list) declares none.
-                profile:    { title: 'Writer’s Profile',  origin: { step: 1, noun: 'Writer’s Profile' }, load: function () { _loadWriterProfilePanel(wpBody); } },
-                components: { title: 'Story Components',  origin: { step: 3, noun: 'Story Components' }, load: function () { _loadStoryComponentsPanel(wpBody); } },
-                spine:      { title: 'Story Spine',       origin: { step: 4, noun: 'Story Spine' },      load: function () { _loadStorySpinePanel(wpBody); } },
-                examples:   { title: 'Beat examples',     anchorOnly: true, load: function () {
+                profile:    { title: 'Writer’s Profile',  icon: 'profile',    origin: { step: 1, noun: 'Writer’s Profile' }, load: function () { _loadWriterProfilePanel(wpBody); } },
+                components: { title: 'Story Components',  icon: 'components', origin: { step: 3, noun: 'Story Components' }, load: function () { _loadStoryComponentsPanel(wpBody); } },
+                spine:      { title: 'Story Spine',       icon: 'spine',      origin: { step: 4, noun: 'Story Spine' },      load: function () { _loadStorySpinePanel(wpBody); } },
+                examples:   { title: 'Beat examples',     icon: 'examples',   anchorOnly: true, load: function () {
                     if (!_wpBeatConcept) {
                         _setWpBody(wpBody, '<p class="swml-wp-empty">Open a beat’s <strong>Examples</strong> button to see what a strong version of it looks like.</p>');
                         return;
@@ -29989,7 +30011,7 @@
                 // note above gives: a new source is a row, not another branch. `anchorOnly` like
                 // `examples`, because it is opened from the walk's help bar and from the value
                 // row's own button, never from a rail icon the student would then see lit.
-                traitExamples: { title: 'Trait examples', anchorOnly: true, load: function () {
+                traitExamples: { title: 'Trait examples', icon: 'examples',   anchorOnly: true, load: function () {
                     if (!_wpTraitValueId) {
                         _setWpBody(wpBody, '<p class="swml-wp-empty">Press <strong>Trait examples</strong> on a value — in the chat or on the row — to see all of its traits in balance, in excess and in deficit.</p>');
                         return;
@@ -30003,18 +30025,18 @@
                 // sync in five places. Unlike `examples` this one HAS its own rail button, because
                 // the student must be able to ask "what did I flag?" from anywhere in the
                 // document, not only from a row that happens to be flagged.
-                revisit:    { title: 'Coming back to',    load: function () {
+                revisit:    { title: 'Coming back to',    icon: 'revisit',    load: function () {
                     _setWpBody(wpBody, _revisitListHTML());
                     wpBody._wpHasContent = true;
                 } },
                 // ⭐ v7.20.493 (#365) — My Values: the student's own Step-7 audit. Its own rail
                 // button (like revisit, not anchorOnly): "what did I say about my protagonist's
                 // values?" must be answerable from anywhere, on every CW step.
-                myValues:   { title: 'My Values',         origin: { step: 7, noun: 'values audit' }, load: function () { _loadMyValuesPanel(wpBody); } },
+                myValues:   { title: 'My Values',         icon: 'values',     origin: { step: 7, noun: 'values audit' }, load: function () { _loadMyValuesPanel(wpBody); } },
                 // ⭐ v7.20.535 (#396) — My Plot: the Step-6 outline, written beats AND blank ones.
                 // Its own rail button (like revisit and myValues, not anchorOnly): from Step 7 on,
                 // "what did I actually plan?" must be answerable from anywhere in the document.
-                myPlot:     { title: 'My Plot',           origin: { step: 6, noun: 'plot outline' },  load: function () { _loadMyPlotPanel(wpBody); } },
+                myPlot:     { title: 'My Plot',           icon: 'plot',       origin: { step: 6, noun: 'plot outline' },  load: function () { _loadMyPlotPanel(wpBody); } },
             };
             // Rebuilds the list IN PLACE if (and only if) it is the mode currently on screen.
             // Called after any flag change so the panel can never show a stale list; never opens
@@ -30151,7 +30173,7 @@
                 if (wpMode === 'examples' && wpPanel.classList.contains('swml-resources-open') && !same) {
                     wpBody._wpHasContent = false;
                     WP_MODES.examples.load();
-                    if (_wpTitle) _wpTitle.textContent = WP_MODES.examples.title;
+                    _setWpHead(WP_MODES.examples);
                     return true;
                 }
                 _openWpMode('examples');
@@ -30169,7 +30191,7 @@
                 if (wpMode === 'traitExamples' && wpPanel.classList.contains('swml-resources-open') && !same) {
                     wpBody._wpHasContent = false;
                     WP_MODES.traitExamples.load();
-                    if (_wpTitle) _wpTitle.textContent = WP_MODES.traitExamples.title;
+                    _setWpHead(WP_MODES.traitExamples);
                     return true;
                 }
                 _openWpMode('traitExamples');
@@ -33713,7 +33735,7 @@
                                     topicNumber: _anScope.topic || null,
                                     suffix: _attemptSuffixFor(suffix),
                                     planningMode: state.planningMode || '',
-                                    lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '', // v7.17.36
+                                    lesson_url: (WML.config && WML.config.lessonUrl) || '', // v7.17.36
                                 })
                             }).then(r => r.json());
                             if (res.success) {
@@ -46066,7 +46088,7 @@
                     target_1: getVal(p.target_1) || _firstActionPriorityFromDoc(),
                     target_2: getVal(p.target_2),
                     attempt_number: (state.attempt || 1),     // on_phase_complete keys the row by this → additive, never overwrites a prior attempt
-                    lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '',
+                    lesson_url: (WML.config && WML.config.lessonUrl) || '',
                 };
                 // v7.20.113: granular analytics capture. Additive — a null breakdown leaves the
                 // commit exactly as it was, so this can never regress the grade write.
