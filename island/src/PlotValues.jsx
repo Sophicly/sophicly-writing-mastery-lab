@@ -55,6 +55,20 @@ export default function PlotValues(props) {
     );
     const current = chosen[Math.min(cursor, Math.max(0, chosen.length - 1))] || null;
 
+    /* ⭐ Neil, 2026-08-18: *"if we've placed other traits, it should be highlighted in the beats."*
+       A ported trait lands as a line of prose inside the beat ("Values (Creativity): I would say at
+       the start…"), so once two or three are in, the beat reads as a wall and the student cannot
+       see at a glance what is already there — or which of their eight traits they have spent. The
+       `worked` map already carries EVERY roster trait per beat (wml-assessment.js builds it by
+       scanning the live row text), so the data was there and only the display was missing.
+       Chips name the VALUE and the TRAIT separately because that is the real hierarchy: the broad
+       category is the value, the specific quality is the trait (Neil, same message). */
+    const traitById = useMemo(() => {
+        const m = {};
+        (traits || []).forEach((t) => { m[t.id] = t; });
+        return m;
+    }, [traits]);
+
     useEffect(() => {
         if (!onStateChange) return;
         onStateChange({ selected, picks, noShow, phase, cursor, ported });
@@ -203,6 +217,16 @@ export default function PlotValues(props) {
         return (
             <aside className="pv-rail" aria-label="The trait you are placing">
                 <p className="pv-rail-eyebrow">Placing · trait {cursor + 1} of {chosen.length}</p>
+                {/* ⭐ Neil, 2026-08-18: *"that explanation needs to be pinned as well, so just above
+                    the trait."* The question and the instruction lived only at the top of the
+                    SCROLLER, so by the time a student had scrolled to beat #12 — which is exactly
+                    when the task gets hard — the thing telling them what to do was off screen and
+                    only the trait name remained. Same defect the rail was built to fix (#383), one
+                    element higher up. Kept SHORT on purpose: at narrow widths this rail collapses
+                    to a bar above the scroller, where every line costs the vertical room the beats
+                    need to be readable. The body no longer repeats it. */}
+                <h3 className="pv-rail-ask">Where does their <span className="pv-inline-trait">{t.label.toLowerCase()}</span> show?</h3>
+                <p className="pv-rail-do">Tap <strong>every beat</strong> where a reader could actually SEE it. Your Step-7 words go <strong>underneath</strong> the beat — nothing you wrote is replaced.</p>
                 <h3 className="pv-rail-trait">{t.label}</h3>
                 <p className="pv-rail-cond">{t.cond}</p>
                 {t.said
@@ -248,11 +272,9 @@ export default function PlotValues(props) {
         return (
             <section className="phase is-live">
                 <p className="eyebrow">Step 2 of 3 — trait {cursor + 1} of {chosen.length}</p>
-                <h2>Where does their <span className="pv-inline-trait">{t.label.toLowerCase()}</span> show?</h2>
-                <p className="lead">
-                    In Step 7 you marked it <strong>{t.cond.toLowerCase()}</strong>
-                    {t.said ? <> and wrote: <em>“{t.said}”</em></> : null}. Tap <strong>every beat</strong> where a reader could actually SEE it. Your Step-7 words are added <strong>underneath</strong> each beat you pick — nothing you have written is replaced, and you don’t have to type anything here.
-                </p>
+                {/* The question, the Step-7 quote and the instruction are all in the RAIL now, which
+                    never scrolls away. Repeating them here would say everything twice and push the
+                    beats — the thing being read — further down. */}
                 <div className="pv-band-note">
                     {myBands.length === 2
                         ? <>You marked this trait at the <strong>beginning</strong> and at the <strong>end</strong>, so both halves of your plot are open — the beats should carry that journey.</>
@@ -288,6 +310,9 @@ export default function PlotValues(props) {
                                             {list.map((b) => {
                                                 const on = (picks[t.id] || []).indexOf(b.id) !== -1;
                                                 const already = !!(b.worked && b.worked[t.id]);
+                                                const placed = Object.keys(b.worked || {})
+                                                    .map((id) => traitById[id])
+                                                    .filter(Boolean);
                                                 return (
                                                     <button type="button" key={b.id}
                                                         className={'beat-card' + (on ? ' is-sel' : '') + (already ? ' pv-worked' : '') + (b.text ? '' : ' pv-empty')}
@@ -298,7 +323,18 @@ export default function PlotValues(props) {
                                                             <span className="b-text" style={{ display: 'block' }}>
                                                                 {b.text || <em className="pv-empty-note">Empty — nothing written here yet. Pick it and your Step-7 words start it off.</em>}
                                                             </span>
-                                                            {already ? <span className="pv-worked-note">Already carries this trait</span> : null}
+                                                            {placed.length
+                                                                ? <span className="pv-placed">
+                                                                    {placed.map((m) => (
+                                                                        <span key={m.id}
+                                                                            className={'pv-placed-chip' + (m.id === t.id ? ' is-current' : '')}>
+                                                                            <span className="pv-placed-value">{m.valueName}</span>
+                                                                            <span className="pv-placed-trait">{m.label}</span>
+                                                                            <span className="pv-placed-cond">{String(m.cond || '').toLowerCase()}</span>
+                                                                        </span>
+                                                                    ))}
+                                                                </span>
+                                                                : null}
                                                         </span>
                                                     </button>
                                                 );

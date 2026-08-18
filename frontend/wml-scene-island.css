@@ -514,6 +514,29 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
 .swml-plot-island .beat-card.pv-worked { opacity:.72; }
 .swml-plot-island .pv-worked-note { display:block; font-size:11.5px; color:var(--done); font-weight:600; margin-top:4px; }
 
+/* ⭐ WHICH TRAITS ARE ALREADY IN THIS BEAT (Neil 2026-08-18). A ported trait lands as a line of
+   prose inside the beat, so after two or three the card reads as a wall. These chips lift the
+   same information out of the prose: the VALUE (broad category), the TRAIT (the specific
+   quality), and the condition the student marked it at. The chip for the trait being placed
+   right now is filled, so "this beat already has THIS one" still reads at a glance — that was
+   the old pv-worked-note, now folded into the same row instead of a second message. */
+.swml-plot-island .pv-placed { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+.swml-plot-island .pv-placed-chip {
+  display:inline-flex; align-items:baseline; gap:5px;
+  border:1px solid var(--line-strong); border-radius:999px; padding:2px 9px;
+  font-size:10.5px; line-height:1.6; background:var(--surface);
+}
+.swml-plot-island .pv-placed-value {
+  font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); font-size:9.5px;
+}
+.swml-plot-island .pv-placed-trait { font-weight:700; color:var(--ink); }
+.swml-plot-island .pv-placed-cond { color:var(--muted2); }
+.swml-plot-island .pv-placed-chip.is-current {
+  background:var(--teal-wash, var(--surface2)); border-color:var(--teal-deep);
+}
+.swml-plot-island .pv-placed-chip.is-current .pv-placed-trait,
+.swml-plot-island .pv-placed-chip.is-current .pv-placed-cond { color:var(--teal-deep); }
+
 /* ── phase 3: review — the port lands UNDER the student's own words, and it must LOOK it ── */
 .swml-plot-island .pv-review-row { padding:14px 0; border-bottom:1px solid var(--line); }
 .swml-plot-island .pv-review-row:last-child { border-bottom:none; }
@@ -555,6 +578,15 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
   margin:0 0 10px; font-size:10px; font-weight:700; letter-spacing:.1em;
   text-transform:uppercase; color:var(--faint);
 }
+/* ⭐ The ASK, pinned (Neil 2026-08-18). It sits ABOVE the trait, deliberately quieter than the
+   trait name: the trait is what you are looking for, the ask is what you are doing with it. */
+.swml-plot-island .pv-rail-ask {
+  margin:0 0 6px; font-size:14px; font-weight:700; line-height:1.35; color:var(--ink);
+}
+.swml-plot-island .pv-rail-do {
+  margin:0 0 16px; font-size:12px; line-height:1.5; color:var(--muted2);
+}
+.swml-plot-island .pv-rail-do strong { color:var(--ink); font-weight:700; }
 .swml-plot-island .pv-rail-trait { margin:0; font-size:20px; font-weight:700; color:var(--ink); letter-spacing:-.01em; }
 .swml-plot-island .pv-rail-cond {
   margin:4px 0 14px; font-size:11px; font-weight:700; letter-spacing:.07em;
@@ -597,7 +629,15 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
   .swml-plot-island .pv-rail-eyebrow { margin:0; order:3; }
   .swml-plot-island .pv-rail-trait { font-size:15px; }
   .swml-plot-island .pv-rail-cond { margin:0; }
-  .swml-plot-island .pv-rail-said,
+  /* The ask and the instruction take a full row of the bar rather than dropping out. Before
+     v7.20.532 the body copy carried them at narrow widths; it no longer does, so hiding them
+     here would leave an iPad-landscape student with a trait name and no task. */
+  .swml-plot-island .pv-rail-ask { flex:1 0 100%; margin:0 0 2px; font-size:13px; }
+  .swml-plot-island .pv-rail-do { flex:1 0 100%; margin:0 0 4px; font-size:11px; }
+  .swml-plot-island .pv-rail-said {
+    flex:1 0 100%; margin:0 0 4px; font-size:11.5px; padding-left:9px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
   .swml-plot-island .pv-rail-picked,
   .swml-plot-island .pv-rail-hint { display:none; }
   .swml-plot-island .pv-rail-count { margin:0 0 0 auto; font-size:12px; }
