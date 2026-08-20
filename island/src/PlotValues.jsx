@@ -414,16 +414,38 @@ export default function PlotValues(props) {
                                                             <span className="b-text" style={{ display: 'block' }}>
                                                                 {b.text || <em className="pv-empty-note">Empty — nothing written here yet. Pick it and your Step-7 words start it off.</em>}
                                                             </span>
-                                                            {placed.length
+                                                            {/* ⭐ v7.20.538 (Neil, 2026-08-19): *"can we have a clear
+                                                                indication that a trait has actually been placed in a
+                                                                beat?"* THREE states now say themselves in words, because
+                                                                a tick alone does not distinguish them:
+                                                                  · ALREADY IN — filed by a previous run, the words are
+                                                                    literally in the beat text above.
+                                                                  · WILL BE ADDED — picked in this session, not yet
+                                                                    written (the port happens at the end).
+                                                                  · nothing — untouched.
+                                                                ⚠️ The chip's condition is BAND-SCOPED. It read `m.cond`,
+                                                                the collapsed value, so a beat in Stages I–III could
+                                                                display "Curiosity in balance" while the rail beside it
+                                                                said "IN DEFICIT" for the same trait — the .534 band
+                                                                collapse surviving in one last place. */}
+                                                            {already || on || placed.length
                                                                 ? <span className="pv-placed">
-                                                                    {placed.map((m) => (
-                                                                        <span key={m.id}
-                                                                            className={'pv-placed-chip' + (m.id === t.id ? ' is-current' : '')}>
-                                                                            <span className="pv-placed-value">{m.valueName}</span>
-                                                                            <span className="pv-placed-trait">{m.label}</span>
-                                                                            <span className="pv-placed-cond">{String(m.cond || '').toLowerCase()}</span>
-                                                                        </span>
-                                                                    ))}
+                                                                    {already
+                                                                        ? <span className="pv-placed-state is-in">✓ {t.label} is already in this beat</span>
+                                                                        : on
+                                                                            ? <span className="pv-placed-state is-add">＋ {t.label} will be added here</span>
+                                                                            : null}
+                                                                    {placed.map((m) => {
+                                                                        const mb = (m.byBand && m.byBand[band]) || null;
+                                                                        return (
+                                                                            <span key={m.id}
+                                                                                className={'pv-placed-chip' + (m.id === t.id ? ' is-current' : '')}>
+                                                                                <span className="pv-placed-value">{m.valueName}</span>
+                                                                                <span className="pv-placed-trait">{m.label}</span>
+                                                                                <span className="pv-placed-cond">{String((mb && mb.cond) || m.cond || '').toLowerCase()}</span>
+                                                                            </span>
+                                                                        );
+                                                                    })}
                                                                 </span>
                                                                 : null}
                                                         </span>
