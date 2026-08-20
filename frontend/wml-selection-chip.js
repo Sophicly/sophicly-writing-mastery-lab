@@ -840,7 +840,7 @@
             e.preventDefault();
             e.stopPropagation();
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) { alert('Voice input is not supported in this browser.'); return; }
+            if (!SR) { WML.micNotify('selection-chip', 'unsupported'); return; }   // v7.20.541 (#341)
             if (coachListening && coachRecognition) { coachRecognition.stop(); return; }
             coachMicRetries = 0;
             if (!coachRecognition) {
@@ -876,10 +876,12 @@
                         coachMicRetries++;
                         setTimeout(() => {
                             try { coachRecognition.start(); }
-                            catch (_) {
+                            catch (retryErr) {
                                 coachListening = false;
                                 micBtn.innerHTML = SVG_MIC;
                                 micBtn.classList.remove('swml-mic-active');
+                                // v7.20.541 (#341): the failed retry spoke to nobody.
+                                WML.micNotify('selection-chip-retry', (retryErr && retryErr.name) || 'retry-failed');
                             }
                         }, 200);
                         return;
@@ -887,16 +889,29 @@
                     coachListening = false;
                     micBtn.innerHTML = SVG_MIC;
                     micBtn.classList.remove('swml-mic-active');
-                    if (ev.error === 'network' || ev.error === 'not-allowed') {
-                        const isHTTP = window.location.protocol === 'http:';
-                        alert(isHTTP
-                            ? 'Voice input requires a secure (HTTPS) connection.'
-                            : 'Voice input failed — check microphone permissions.');
+                    // v7.20.541 (#341): spoke for two codes only, in a voice of its own, and told
+                    // an iPad student to "check microphone permissions" without saying where.
+                    // One shared helper now, so this surface cannot drift from the chat's wording.
+                    if (WML.micIsSilentCode(ev && ev.error)) { WML.micRecordFailure('selection-chip', ev && ev.error); return; }
+                    const isHTTP = window.location.protocol === 'http:';
+                    if (isHTTP) {
+                        WML.micRecordFailure('selection-chip', 'insecure-origin');
+                        alert('Voice typing needs a secure connection and this page does not have one. Type your answer for now. (mic: insecure-origin)');
+                    } else {
+                        WML.micNotify('selection-chip', ev && ev.error);
                     }
                 };
             }
+            // v7.20.541 (#341): a throw here was console-only — the tap did nothing at all.
             try { coachRecognition.start(); }
-            catch (err) { console.warn('WML SelectionChip mic start failed', err); }
+            catch (err) {
+                coachListening = false;
+                micBtn.innerHTML = SVG_MIC;
+                micBtn.classList.remove('swml-mic-active');
+                if (!/InvalidState/i.test(err && (err.name || err.message) || '')) {
+                    WML.micNotify('selection-chip-start', (err && err.name) || 'start-failed');
+                }
+            }
         });
 
         const sendBtn = el('button', {

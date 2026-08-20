@@ -10451,7 +10451,20 @@
             baseText = textarea.value ? textarea.value.trim() + ' ' : '';
             finalText = '';
             rec.onstart = setLive;
-            rec.onend = setIdle; rec.onerror = setIdle;
+            rec.onend = setIdle;
+            // v7.20.541 (#341): `onerror = setIdle` restored the button and said NOTHING — the
+            // student watched the red pulse stop and had no idea why. The textarea's own
+            // placeholder is this surface's voice (there is no chat here to speak into), so the
+            // reason lands exactly where they are already looking, and stays until they type.
+            rec.onerror = (ev) => {
+                setIdle();
+                if (WML.micIsSilentCode(ev && ev.error)) { WML.micRecordFailure('panel-mic', ev && ev.error); return; }
+                WML.micNotify('panel-mic', ev && ev.error, (msg) => {
+                    textarea.setAttribute('placeholder', msg);
+                    const restore = () => { textarea.setAttribute('placeholder', basePlaceholder); textarea.removeEventListener('input', restore); };
+                    textarea.addEventListener('input', restore);
+                });
+            };
             rec.onresult = (ev) => {
                 let interim = '';
                 for (let i = ev.resultIndex; i < ev.results.length; i++) {
@@ -10463,7 +10476,19 @@
                 textarea.value = (baseText + finalText + interim).replace(/\s+/g, ' ').replace(/^\s+/, '');
                 if (onChange) onChange();
             };
-            rec.start();
+            // v7.20.541 (#341): an unguarded start() threw straight into the click handler —
+            // the button did nothing and the exception died in the console.
+            try { rec.start(); }
+            catch (err) {
+                setIdle();
+                if (!/InvalidState/i.test(err && (err.name || err.message) || '')) {
+                    WML.micNotify('panel-mic-start', (err && err.name) || 'start-failed', (msg) => {
+                        textarea.setAttribute('placeholder', msg);
+                        const restore = () => { textarea.setAttribute('placeholder', basePlaceholder); textarea.removeEventListener('input', restore); };
+                        textarea.addEventListener('input', restore);
+                    });
+                }
+            }
         });
         // v7.19.617: let callers (e.g. Submit reflection) stop an in-flight dictation so the
         // mic closes immediately instead of staying live until the next message lands (Neil).
@@ -15749,7 +15774,13 @@
         const chatMicBtn = el('button', { className: 'swml-mic-btn', innerHTML: SVG_MIC, title: 'Voice input',
             onClick: () => {
                 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SR) { alert('Voice input is not supported in this browser.'); return; }
+                // v7.20.541 (#341): names what WORKS (Safari on an iPad) instead of what failed.
+                if (!SR) {
+                    WML.micNotify('canvas-chat', 'unsupported', (msg) => {
+                        addChatMessage('<p>' + escapeHTML(msg) + '</p>', 'ai', msg, { suppressActions: true });
+                    });
+                    return;
+                }
                 if (canvasListening && canvasRecognition) { canvasRecognition.stop(); return; }
                 _micNoSpeechRetries = 0;
                 if (!canvasRecognition) {
@@ -15838,6 +15869,11 @@
                                     canvasListening = false;
                                     /* v7.20.57: morph reverts as .swml-mic-active is removed */
                                     chatMicBtn.classList.remove('swml-mic-active');
+                                    // v7.20.541 (#341): a FAILED RETRY is the quietest death of all —
+                                    // the student saw the mic go live, pause, and stop, with no word.
+                                    WML.micNotify('canvas-chat-retry', (ex && ex.name) || 'retry-failed', (msg) => {
+                                        addChatMessage('<p>' + escapeHTML(msg) + '</p>', 'ai', msg, { suppressActions: true });
+                                    });
                                 }
                             }, 200);
                             return;
@@ -15845,12 +15881,20 @@
                         canvasListening = false;
                         /* v7.20.57: morph reverts as .swml-mic-active is removed */
                         chatMicBtn.classList.remove('swml-mic-active');
-                        // v7.15.22: User-facing feedback for different error types
-                        if (e.error === 'network' || e.error === 'not-allowed') {
+                        // ⭐ v7.20.541 (#341) — WAS: a message for `network`/`not-allowed` ONLY, and
+                        // it told the student to "check your microphone permissions in CHROME
+                        // settings". On an iPad — the device this bug is actually about — that is
+                        // advice for a browser they are not using, pointing at a settings screen
+                        // that does not exist. Every code now speaks, in one shared voice, and the
+                        // Apple wording names the real path (Settings → Safari → Microphone).
+                        // `no-speech` after its retry is a REAL dead end for the student, so it
+                        // speaks too rather than logging to a console nobody has open on a tablet.
+                        if (!WML.micIsSilentCode(e.error)) {
                             const isHTTP = window.location.protocol === 'http:';
                             const msg = isHTTP
-                                ? 'Voice input requires a secure (HTTPS) connection. Please use the production site or type your response instead.'
-                                : 'Voice input failed — please check your microphone permissions in Chrome settings.';
+                                ? 'Voice typing needs a secure connection and this page does not have one. Type your answer for now. (mic: insecure-origin)'
+                                : WML.micFailureMessage(e.error);
+                            WML.micRecordFailure('canvas-chat', e.error);
                             // v7.20.298: was role 'system' — the ONLY 'system' call in the file.
                             // addChatMessage renders every non-'ai' role through
                             // `el('p', { textContent: text })`, so the markup printed LITERALLY
@@ -15858,12 +15902,23 @@
                             // bubble that looks like the STUDENT said it. Rendered HTML needs the
                             // 'ai' role; matches the sibling error notices below.
                             addChatMessage('<p>' + escapeHTML(msg) + '</p>', 'ai', msg, { suppressActions: true });
-                        } else if (e.error === 'no-speech') {
-                            console.warn('WML Mic: no speech detected after', MIC_MAX_RETRIES, 'retries');
+                        } else {
+                            WML.micRecordFailure('canvas-chat', e.error);
                         }
                     };
                 }
-                try { canvasRecognition.start(); } catch(e) { console.warn('Canvas voice start error:', e); }
+                // v7.20.541 (#341): a throw from start() was the second silent path — the tap
+                // did nothing visible and nothing was written anywhere a student could see.
+                try { canvasRecognition.start(); }
+                catch (e) {
+                    canvasListening = false;
+                    chatMicBtn.classList.remove('swml-mic-active');
+                    if (!/InvalidState/i.test(e && (e.name || e.message) || '')) {
+                        WML.micNotify('canvas-chat-start', (e && e.name) || 'start-failed', (msg) => {
+                            addChatMessage('<p>' + escapeHTML(msg) + '</p>', 'ai', msg, { suppressActions: true });
+                        });
+                    }
+                }
             }
         });
         chatInputInner.appendChild(chatMicBtn);
@@ -28319,7 +28374,7 @@
         let dictListening = false;
         function toggleDictation() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) { alert('Voice dictation is not supported in this browser.'); return; }
+            if (!SR) { WML.micNotify('doc-dictation', 'unsupported'); return; }   // v7.20.541 (#341)
 
             if (dictListening && dictRecognition) {
                 dictRecognition.stop();
@@ -28407,14 +28462,41 @@
                     dictBubble.innerHTML = '<span class="swml-dict-dot"></span><span class="swml-dict-dot"></span><span class="swml-dict-dot"></span> <span style="color:rgba(255,255,255,0.4);font-size:11px;">Listening...</span>';
                 }
             };
-            dictRecognition.onerror = () => {
+            dictRecognition.onerror = (ev) => {
                 dictListening = false;
                 syncDictBtns('is-active', false);
                 syncDictBtns('swml-dictating', false);
                 window.removeEventListener('resize', _dictResize);
-                if (document.getElementById('swml-dict-bubble')) document.getElementById('swml-dict-bubble').style.display = 'none';
+                const bub = document.getElementById('swml-dict-bubble');
+                // v7.20.541 (#341): the listening bubble simply DISAPPEARED on any error, which
+                // is indistinguishable from a mic that finished normally. The bubble is this
+                // surface's only voice, so it now says why and fades after six seconds.
+                if (WML.micIsSilentCode(ev && ev.error)) {
+                    WML.micRecordFailure('doc-dictation', ev && ev.error);
+                    if (bub) bub.style.display = 'none';
+                    return;
+                }
+                WML.micNotify('doc-dictation', ev && ev.error, (msg) => {
+                    if (!bub) throw new Error('no bubble');   // falls back to alert(), never silence
+                    bub.innerHTML = '';
+                    bub.appendChild(el('span', { className: 'swml-dict-error', textContent: msg,
+                        style: { fontSize: '12px', lineHeight: '1.45', maxWidth: '320px', display: 'block' } }));
+                    bub.style.display = '';
+                    setTimeout(() => { try { bub.style.display = 'none'; } catch (_) {} }, 6000);
+                });
             };
-            dictRecognition.start();
+            // v7.20.541 (#341): unguarded — a throw here left the bubble on screen for ever.
+            try { dictRecognition.start(); }
+            catch (err) {
+                dictListening = false;
+                syncDictBtns('is-active', false);
+                syncDictBtns('swml-dictating', false);
+                const bub0 = document.getElementById('swml-dict-bubble');
+                if (bub0) bub0.style.display = 'none';
+                if (!/InvalidState/i.test(err && (err.name || err.message) || '')) {
+                    WML.micNotify('doc-dictation-start', (err && err.name) || 'start-failed');
+                }
+            }
         }
 
         // ── Carousel physics (vanilla — no GSAP dependency) ──
@@ -35905,7 +35987,13 @@
                         const chatMicBtn = el('button', { className: 'swml-mic-btn', innerHTML: SVG_MIC, title: 'Voice input',
                             onClick: () => {
                                 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-                                if (!SR) { alert('Voice input is not supported in this browser.'); return; }
+                                // v7.20.541 (#341): says WHAT WORKS (Safari on an iPad), not what failed.
+                                if (!SR) {
+                                    WML.micNotify('canvas-chat-twin', 'unsupported', (msg) => {
+                                        addChatMessage('<p>' + escapeHTML(msg) + '</p>', 'ai', msg, { suppressActions: true });
+                                    });
+                                    return;
+                                }
                                 if (canvasListening && canvasRecognition) { canvasRecognition.stop(); return; }
                                 if (!canvasRecognition) {
                                     canvasRecognition = new SR();
@@ -35944,13 +36032,33 @@
                                         }
                                     };
                                     canvasRecognition.onerror = (e) => {
-                                        console.warn('Canvas voice error:', e.error);
                                         canvasListening = false;
                                         /* v7.20.57: morph reverts as .swml-mic-active is removed */
                                         chatMicBtn.classList.remove('swml-mic-active');
+                                        // v7.20.541 (#341): this handler was `console.warn` ONLY — the student
+                                        // saw NOTHING, for every error code, for ever. That is Neil's "tapping
+                                        // it does nothing at all" and it is why nobody uses the mic. The words
+                                        // come from the ONE shared helper so this twin cannot drift from its
+                                        // sibling pipeline again (WML CLAUDE.md §DUAL CHAT PIPELINE).
+                                        if (WML.micIsSilentCode(e.error)) { WML.micRecordFailure('canvas-chat-twin', e.error); return; }
+                                        WML.micNotify('canvas-chat-twin', e.error, (msg) => {
+                                            addChatMessage('<p>' + escapeHTML(msg) + '</p>', 'ai', msg, { suppressActions: true });
+                                        });
                                     };
                                 }
-                                try { canvasRecognition.start(); } catch(e) { console.warn('Canvas voice start error:', e); }
+                                // A throw here is the OTHER silent path: `start()` rejects (no permission
+                                // yet, or the engine is already running) and the tap did nothing visible.
+                                try { canvasRecognition.start(); }
+                                catch (e) {
+                                    canvasListening = false;
+                                    chatMicBtn.classList.remove('swml-mic-active');
+                                    // InvalidStateError = already listening. Not a failure; say nothing.
+                                    if (!/InvalidState/i.test(e && (e.name || e.message) || '')) {
+                                        WML.micNotify('canvas-chat-twin-start', (e && e.name) || 'start-failed', (msg) => {
+                                            addChatMessage('<p>' + escapeHTML(msg) + '</p>', 'ai', msg, { suppressActions: true });
+                                        });
+                                    }
+                                }
                             }
                         });
                         chatInputInner.appendChild(chatMicBtn);

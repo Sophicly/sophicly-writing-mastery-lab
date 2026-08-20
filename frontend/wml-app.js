@@ -5603,13 +5603,23 @@
         };
 
         rec.onerror = (event) => {
-            console.warn('Speech recognition error:', event.error);
-            if (event.error === 'not-allowed') {
-                alert('Microphone access was denied. Please allow microphone access in your browser settings to use voice input.');
-            }
             isListening = false;
             const btn = $('#swml-mic-btn');
             if (btn) { btn.classList.remove('swml-mic-active'); btn.title = 'Voice input'; }
+            const input = $('#swml-input');
+            if (input) input.placeholder = 'Type your response...';
+            // v7.20.541 (#341): spoke for `not-allowed` only — every other code (the microphone
+            // held by another app, the network dropping, the engine refusing) was console-only,
+            // so the student saw the listening state end and nothing else. The message goes in
+            // the INPUT's placeholder, where they are already looking, not an alert() that
+            // interrupts and then leaves no trace of what to do.
+            if (WML.micIsSilentCode(event.error)) { WML.micRecordFailure('main-chat', event.error); return; }
+            WML.micNotify('main-chat', event.error, (msg) => {
+                if (!input) throw new Error('no input');   // falls back to alert(), never silence
+                input.placeholder = msg;
+                const restore = () => { input.placeholder = 'Type your response...'; input.removeEventListener('input', restore); };
+                input.addEventListener('input', restore);
+            });
         };
 
         return rec;
@@ -5619,7 +5629,11 @@
         // Check browser support
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            alert('Voice input is not supported in this browser. Please use Chrome, Edge, or Safari.');
+            // ⭐ v7.20.541 (#341) — WAS: "Please use Chrome, Edge, or Safari." On an iPad that is
+            // advice pointing AWAY from the browser that actually works: Safari on iOS 14.5+ is
+            // confirmed to support this API, and what third-party iOS browsers expose is NOT
+            // confirmed, so the copy now NAMES SAFARI rather than asserting what fails.
+            WML.micNotify('main-chat', 'unsupported');
             return;
         }
 
@@ -5637,7 +5651,15 @@
                 // Auto-start timer when mic is pressed (if timer is waiting)
                 triggerTimerFromMic();
             }
-            catch (e) { console.warn('Speech start error:', e); }
+            catch (e) {
+                // v7.20.541 (#341): the second silent path — start() throws, the tap does nothing.
+                isListening = false;
+                const btn = $('#swml-mic-btn');
+                if (btn) btn.classList.remove('swml-mic-active');
+                if (!/InvalidState/i.test(e && (e.name || e.message) || '')) {
+                    WML.micNotify('main-chat-start', (e && e.name) || 'start-failed');
+                }
+            }
         }
     }
 

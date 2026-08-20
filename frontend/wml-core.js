@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.540';
+var WML_BUILD = '7.20.541';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -5100,6 +5100,111 @@ window.WML = (function() {
         },
     };
 
+    // ══════════════════════════════════════════════════════════════════════════════════════
+    // v7.20.541 (#341) — THE MICROPHONE MUST NEVER FAIL SILENTLY. ONE VOICE, SIX SURFACES.
+    // ──────────────────────────────────────────────────────────────────────────────────────
+    // Neil, 2026-08-08: "I don't see any students actually using it, which is weird… some of
+    // them, like, who use iPads… it doesn't seem to allow them to use the microphone." He
+    // confirmed on 2026-08-20 that on an iPad, tapping the mic does NOTHING AT ALL.
+    //
+    // ⭐ MEASURED FIRST (root §19), and the measurement corrected the FIXLIST row: WML's
+    // dictation is the WEB SPEECH API (`webkitSpeechRecognition`), NOT `MediaRecorder` —
+    // `grep -rn MediaRecorder frontend/ includes/` returns ZERO. The documented
+    // hardcoded-mimeType landmine belongs to a different plugin and cannot be this bug.
+    //
+    // WHAT IS ACTUALLY WRONG, read from the source, six surfaces:
+    //   · canvas chat TWIN pipeline  — `onerror` was `console.warn` ONLY. Nothing on screen,
+    //     ever, for any error. This is the one that matches "nothing at all happens".
+    //   · canvas chat PRIMARY        — spoke for `network`/`not-allowed` only, and told an
+    //     iPad student to "check your microphone permissions in CHROME settings".
+    //   · main chat                  — alert() for `not-allowed` only; the unsupported branch
+    //     said "Please use Chrome, Edge, or Safari", i.e. it advised the one thing that is
+    //     least likely to work on an iPad.
+    //   · document dictation         — the listening bubble just vanished.
+    //   · panel mic / selection chip — `onerror` restored the idle state and said nothing.
+    // The dual-pipeline drift this file's CLAUDE.md warns about, in its purest form: a fix
+    // applied to one copy and not its twin. Hence ONE helper that every surface calls.
+    //
+    // ⚠️ THE COPY IS A MEASUREMENT AS WELL AS A FIX. Each message carries the raw engine code
+    // in brackets, so the next student who taps it TELLS US THE CAUSE without needing a device
+    // in our hands — an instrument, not a guess (root §19). `window.__wmlMicDiag` keeps the
+    // last 20 for a console read.
+    //
+    // ⛔ WHAT THE COPY DOES NOT CLAIM: that Chrome on iPad cannot do this. Safari on iOS 14.5+
+    // is confirmed to support the API; what third-party iOS browsers expose is NOT confirmed,
+    // so the message NAMES SAFARI as the thing that works rather than asserting what fails.
+    // ══════════════════════════════════════════════════════════════════════════════════════
+    function _micIsApple() {
+        try {
+            const ua = navigator.userAgent || '';
+            // iPadOS 13+ reports itself as a Mac; the touch-point count is the discriminator.
+            return /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1);
+        } catch (_) { return false; }
+    }
+
+    // The words a student sees. Plain, British, and never naming a thing they cannot see
+    // (root §BRAND: no insider words, no orphan references, one idea per sentence).
+    function micFailureMessage(code) {
+        const apple = _micIsApple();
+        const c = String(code || 'unknown');
+        let msg;
+        switch (c) {
+            case 'not-allowed':
+            case 'service-not-allowed':
+                msg = apple
+                    ? 'Your iPad is not letting this page use the microphone. Open Settings, tap Safari, tap Microphone and choose Allow — then come back and reload this lesson.'
+                    : 'Your browser is blocking the microphone for this page. Look for the microphone icon near the web address and choose Allow, then try again.';
+                break;
+            case 'audio-capture':
+                msg = 'Your device cannot reach the microphone. If Zoom or another app is using it, close that app and tap the mic again.';
+                break;
+            case 'network':
+                msg = 'Voice typing needs the internet, and the connection dropped. Type your answer for now and try the mic again in a moment.';
+                break;
+            case 'no-speech':
+                msg = 'I did not hear anything. Tap the mic and speak, or just type your answer.';
+                break;
+            case 'unsupported':
+                msg = apple
+                    ? 'Voice typing does not work in this browser. On an iPad, open your lesson in Safari and the mic will work.'
+                    : 'Voice typing does not work in this browser. Chrome, Edge or Safari will work — or just type your answer.';
+                break;
+            default:
+                msg = 'Voice typing stopped and I could not tell why. Type your answer for now.';
+        }
+        // The bracketed code is the instrument: a student can read it out, and it names the
+        // cause exactly. Never shown for 'unsupported' (nothing failed — it was never there).
+        return c === 'unsupported' ? msg : msg + ' (mic: ' + c + ')';
+    }
+
+    // Record every failure so a cause can be read off a console without a device in hand.
+    function micRecordFailure(surface, code) {
+        try {
+            window.__wmlMicDiag = window.__wmlMicDiag || [];
+            window.__wmlMicDiag.push({ surface: surface, code: String(code || 'unknown'), at: new Date().toISOString() });
+            if (window.__wmlMicDiag.length > 20) window.__wmlMicDiag.shift();
+            console.warn('WML mic [' + surface + '] failed:', code);
+        } catch (_) {}
+    }
+
+    // ⭐ LIVENESS (WML CLAUDE.md §4d): a refusal MUST put something on the screen. `render` is
+    // the surface's own way of speaking (a chat bubble, a placeholder); if it is missing or
+    // throws, we fall back to alert() rather than let the failure be silent. There is no path
+    // through this function that shows the student nothing — that is the whole point.
+    function micNotify(surface, code, render) {
+        const msg = micFailureMessage(code);
+        micRecordFailure(surface, code);
+        let shown = false;
+        try { if (typeof render === 'function') { render(msg); shown = true; } } catch (_) { shown = false; }
+        if (!shown) { try { alert(msg); } catch (_) {} }
+        return msg;
+    }
+
+    // `aborted` is what the browser reports when the STUDENT stopped it (or we called stop()).
+    // Nothing failed, so nothing is said — but it is still recorded, so a flood of them in
+    // __wmlMicDiag is visible rather than invisible.
+    function micIsSilentCode(code) { return String(code || '') === 'aborted'; }
+
     // ── Module Exports ──
     // All core functions/constants available to consuming modules via window.WML
     return {
@@ -5121,6 +5226,7 @@ window.WML = (function() {
         CONCEPTUAL_NOTES_ELEMENTS, POETRY_CN_ELEMENTS, NONFICTION_CN_ELEMENTS,
         QUOTE_ANALYSIS_ELEMENTS, MODEL_ANSWER_ELEMENTS, PLAN_ELEMENTS,
         // Helpers
+        micFailureMessage, micNotify, micRecordFailure, micIsSilentCode,
         isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject, isPoetryCnDoc,
         anthologyPoemsFor, cnRosterSlug, isPoetryAnthologyDoc,
         // CN family registry (v7.20.15)
