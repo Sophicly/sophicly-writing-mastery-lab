@@ -69,15 +69,22 @@ const BANDS = {
 const TRAITS = [
     { id: 'creativity', trait: 'creativity', label: 'Creativity', valueName: 'Wisdom and Knowledge',
       cond: 'In excess', said: 'she invents to the point of destruction',
-      portText: 'she invents to the point of destruction', bands: ['begin'], workedIn: 0 },
+      portText: 'she invents to the point of destruction', bands: ['begin'], workedIn: 0,
+      byBand: { begin: { cond: 'In excess', said: 'she invents to the point of destruction' },
+                end: { cond: '', said: '' } } },
     { id: 'bravery', trait: 'bravery', label: 'Bravery', valueName: 'Courage',
       cond: 'In balance', said: 'she speaks in the hall', portText: 'she speaks in the hall',
-      bands: ['begin', 'end'], workedIn: 2 },
+      bands: ['begin', 'end'], workedIn: 2,
+      // the JOURNEY case: different condition and different words at each end. #401's two passes
+      // exist for exactly this trait, so the fixture must carry it or the gate is blind to the point.
+      byBand: { begin: { cond: 'In deficit', said: 'she says nothing in the hall' },
+                end: { cond: 'In balance', said: 'she speaks in the hall' } } },
     // ⚠️ THE AWKWARD ONE: flagged by condition with NOTHING written about it. The component must
     // render the "you didn't write about this one" line rather than an empty quote.
     { id: 'kindness', trait: 'kindness', label: 'Kindness', valueName: 'Humanity',
       cond: 'On your build list', said: '', portText: 'in deficit — this is where it should show.',
-      bands: ['begin', 'end'], workedIn: 0 },
+      bands: ['begin', 'end'], workedIn: 0,
+      byBand: { begin: { cond: 'On your build list', said: '' }, end: { cond: 'On your build list', said: '' } } },
 ];
 const STAGES = [1, 2, 3, 4, 5, 6].map((n, i) => ({
     id: 'stage' + n, si: i, roman: ['I', 'II', 'III', 'IV', 'V', 'VI'][i],
@@ -111,9 +118,22 @@ console.log('CW STEP-8 ISLAND — render smoke (the real component, the real pro
 // ── phase 1 ──
 {
     const html = render(null, 'phase 1');
-    ok(/Which of your traits/.test(html), 'phase 1 asks which traits to work on');
-    TRAITS.forEach((t) => ok(html.indexOf(t.label) !== -1, 'phase 1 lists "' + t.label + '"'));
-    ok(/she speaks in the hall/.test(html), 'a trait shows the student their OWN Step-7 words');
+    /* ⭐⭐ #401 (v7.20.537) — THE FIRST SCREEN IS A PASS INTRO, NOT A CHOICE. Neil: *"it shouldn't
+       give the students an option to choose the traits that they want… they actually have to seed
+       all of them. What they can choose is WHERE."* These assertions were written from the OLD
+       behaviour and passed for months; they are re-pointed to the INTENT, not deleted. */
+    ok(/Your traits at the/.test(html) && /beginning/.test(html),
+        '#401: pass 1 SHOWS the beginning traits — it does not ask which to work on');
+    ok(!/Which of your traits/.test(html),
+        '#401: the "which traits will you work on?" chooser is GONE (every trait gets placed)');
+    ok(!/pv-trait-card is-sel"[^>]*><span class="tick"/.test(html) && html.indexOf('class="tick"') === -1,
+        '#401: no tick controls on the intro — the cards are statements, not toggles');
+    TRAITS.forEach((t) => ok(html.indexOf(t.label) !== -1, 'pass 1 lists "' + t.label + '"'));
+    ok(/she says nothing in the hall/.test(html),
+        '#401: a journey trait shows its BEGINNING words in the beginning pass, not its end words');
+    ok(!/she speaks in the hall/.test(html),
+        '#401: …and NOT its end words — showing the end state over beginning beats is the defect '
+        + 'Neil watched a real student hit (the .534 band collapse, one layer up)');
     ok(/didn’t write about this one/.test(html), 'a trait with NO Step-7 words says so, instead of an empty quote');
     ok(/Already in 2 beats/.test(html), 'a trait already worked into beats says how many');
 }
@@ -126,17 +146,17 @@ console.log('CW STEP-8 ISLAND — render smoke (the real component, the real pro
     // renders here is PHASE 1 with the selection restored. The old assertion could not fail:
     // it was a test that passed by doing less. Assert what is actually true instead, so that
     // an accidental change to the landing phase is caught rather than hidden.
-    ok(/Which of your traits/.test(html),
-        're-opening with a saved selection lands on PICK YOUR TRAITS — the deliberate landing for '
-        + '#380 re-entry ("add more traits"), not a resume into the middle of the beat list');
+    ok(/Your traits at the/.test(html),
+        '#401: re-opening lands on the PASS INTRO for the saved band — the #380 re-entry landing, '
+        + 'now band-aware, not a resume into the middle of the beat list');
     ok(!/Where does their/.test(html),
         '…and it is NOT the beat-picking screen (the fact the old "phase 2" assertion hid)');
 }
 // ── phase 3: a selection AND picks, which is what the review screen reads ──
 {
-    const html = render({ selected: ['bravery'], picks: { bravery: ['b1-1', 'b2-2'] }, noShow: ['kindness'] }, 'phase 3');
+    const html = render({ band: 'begin', picks: { bravery: ['b1-1', 'b2-2'] }, noShow: ['kindness|begin'] }, 'phase 3');
     ok(html.length > 0, 'the component renders with picks AND a no-show restored');
-    ok(/Which of your traits/.test(html), 'same landing with picks restored — nothing throws on the richer state');
+    ok(/Your traits at the/.test(html), 'same landing with picks restored — nothing throws on the richer state');
 }
 
 // ── #383: THE TRAIT RAIL ───────────────────────────────────────────────────────────────

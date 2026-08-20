@@ -20,7 +20,8 @@
  *   traits   [{id, trait, label, valueName, cond, said, portText, bands:['begin'|'end'], workedIn}]
  *   stages   [{id, si, roman, name, band, beats:[{id, ord, label, text, worked:{traitId:true}}]}]
  *   bands    {begin:{label,sub}, end:{label,sub}}
- *   initial  optional saved {selected:[traitId], picks:{traitId:[fid]}, noShow:[traitId]}
+ *   initial  optional saved {picks:{traitId:[fid]}, noShow:['traitId|band'], band, phase, cursor}
+ *            (v7.20.537: `selected` is gone — a pass places EVERY trait of its band, #401)
  *   onStateChange (snapshot) => void   — bridge persists (resume-to-the-exact-item law)
  *   onPort        (payload) => Promise<boolean>  — bridge APPENDS verbatim; true = filed
  *   onClose       () => void
@@ -38,20 +39,40 @@ const BAND_ORDER = ['begin', 'end'];
 export default function PlotValues(props) {
     const { traits, stages, bands, onStateChange, onPort, onClose } = props;
 
-    const [phase, setPhase] = useState(1);
-    const [selected, setSelected] = useState(() => (props.initial && props.initial.selected) || []);
+    /* ⭐⭐ v7.20.537 (FIXLIST #401, Neil 2026-08-19) — TWO PASSES, AND NO CHOOSING.
+       His words: *"it shouldn't give the students an option to choose the traits that they want…
+       they actually have to seed all of them. What they can choose is WHERE they seed them."* And
+       the order: *"here are your traits for the beginning, and then… these are the beginning
+       stages and beats, place those in. And then once you're done with that, here are your traits
+       for the end, here are your end stages and beats."*
+       WHY IT WAS WRONG BEFORE, and it is not cosmetic: one screen offered EVERY trait — beginning
+       and end together, each collapsed to a single condition — and then let the student drop an
+       END trait into a BEGINNING beat. A trait's beginning state and its end state are different
+       facts about the character (18 of 22 differ on the real staging document), so mixing them
+       makes the placement meaningless. Splitting by band makes the wrong placement unreachable
+       rather than merely discouraged.
+       `selected` is GONE. A pass runs every trait carrying a condition for that band. */
+    const [phase, setPhase] = useState(1);          // 1 = this band's traits · 2 = place them · 3 = review
+    const [band, setBand] = useState(() => ((props.initial && props.initial.band) === 'end' ? 'end' : 'begin'));
     const [picks, setPicks] = useState(() => (props.initial && props.initial.picks) || {});
     const [noShow, setNoShow] = useState(() => (props.initial && props.initial.noShow) || []);
-    const [cursor, setCursor] = useState(0);        // which SELECTED trait phase 2 is on (serial)
+    const [cursor, setCursor] = useState(0);        // which trait of THIS BAND phase 2 is on (serial)
     const [emptyOnly, setEmptyOnly] = useState(false);
     const [busy, setBusy] = useState(false);
     const [ported, setPorted] = useState(false);
     const [hint, setHint] = useState('');
     const scrollRef = useRef(null);
 
-    const chosen = useMemo(
-        () => selected.map((id) => traits.filter((t) => t.id === id)[0]).filter(Boolean),
-        [selected, traits]
+    /* Which traits belong to a pass: the ones the student gave a condition for at THAT end of the
+       story. `bands` is computed engine-side from their Step-7 record (_cw8BandsFor), so a trait
+       marked at both ends is legitimately in both passes — carrying that half's own condition and
+       that half's own words, which is exactly the journey the step is teaching. */
+    const traitsInBand = (b) => (traits || []).filter((t) => (t.bands || BAND_ORDER).indexOf(b) !== -1);
+    const chosen = useMemo(() => traitsInBand(band), [traits, band]);
+    // A band with nothing in it is SKIPPED, never shown as an empty screen (§4d liveness).
+    const bandsWithTraits = useMemo(
+        () => BAND_ORDER.filter((b) => traitsInBand(b).length > 0),
+        [traits]
     );
     const current = chosen[Math.min(cursor, Math.max(0, chosen.length - 1))] || null;
 
@@ -71,20 +92,28 @@ export default function PlotValues(props) {
 
     useEffect(() => {
         if (!onStateChange) return;
-        onStateChange({ selected, picks, noShow, phase, cursor, ported });
-    }, [selected, picks, noShow, phase, cursor, ported]);   // eslint-disable-line react-hooks/exhaustive-deps
+        onStateChange({ picks, noShow, phase, band, cursor, ported });
+    }, [picks, noShow, phase, band, cursor, ported]);   // eslint-disable-line react-hooks/exhaustive-deps
 
-    const pickCount = (id) => ((picks[id] || []).length);
-    const placedCount = chosen.filter((t) => pickCount(t.id) > 0 || noShow.indexOf(t.id) !== -1).length;
-    const totalPicked = chosen.reduce((n, t) => n + pickCount(t.id), 0);
+    /* ⭐ EVERY COUNT IS BAND-SCOPED. `picks` stays keyed by traitId — the ENGINE resolves which
+       half's words to file from the BEAT's own band (see port() in wml-assessment.js), so the
+       payload contract is unchanged — but the SCREEN must never tell a student that a trait is
+       done in the end pass because they placed it at the beginning. The band of a pick is derived
+       from the stage that owns the beat; nothing new is stored. */
+    const bandOfBeat = (fid) => {
+        for (let i = 0; i < stages.length; i++) {
+            if ((stages[i].beats || []).some((b) => b.id === fid)) return stages[i].band;
+        }
+        return null;
+    };
+    const picksIn = (id, b) => (picks[id] || []).filter((fid) => bandOfBeat(fid) === b);
+    const noShowKey = (id, b) => id + '|' + b;
+    const isNoShow = (id, b) => noShow.indexOf(noShowKey(id, b)) !== -1 || noShow.indexOf(id) !== -1;
+    const pickCount = (id) => picksIn(id, band).length;
+    const placedCount = chosen.filter((t) => pickCount(t.id) > 0 || isNoShow(t.id, band)).length;
+    const totalPicked = (traits || []).reduce((n, t) => n + ((picks[t.id] || []).length), 0);
 
     /* ── phase 1: which traits ── */
-    const toggleTrait = (t) => {
-        setSelected((prev) => (prev.indexOf(t.id) !== -1
-            ? prev.filter((x) => x !== t.id)
-            : prev.concat([t.id])));
-        setHint('');
-    };
 
     /* ── phase 2: which beats, one trait at a time (§18 serial) ── */
     const bandsOf = (t) => BAND_ORDER.filter((b) => (t.bands || BAND_ORDER).indexOf(b) !== -1);
@@ -112,14 +141,30 @@ export default function PlotValues(props) {
             return out;
         });
     };
+    /* "It doesn't show anywhere yet" is now PER HALF: a trait can be absent at the beginning and
+       land squarely at the end — that IS the shape of a character arc, so a single trait-level
+       flag would have been a lie in one of the two passes. Only THIS band's picks are cleared. */
     const sayNoShow = (t) => {
-        setPicks((prev) => { const out = Object.assign({}, prev); delete out[t.id]; return out; });
-        setNoShow((prev) => (prev.indexOf(t.id) !== -1 ? prev : prev.concat([t.id])));
+        setPicks((prev) => {
+            const out = Object.assign({}, prev);
+            const keep = (prev[t.id] || []).filter((fid) => bandOfBeat(fid) !== band);
+            if (keep.length) out[t.id] = keep; else delete out[t.id];
+            return out;
+        });
+        setNoShow((prev) => (prev.indexOf(noShowKey(t.id, band)) !== -1 ? prev : prev.concat([noShowKey(t.id, band)])));
         setHint('');
         nextTrait();
     };
+    // The hand-over Neil described in as many words: finish the beginning, then be SHOWN the end
+    // traits before placing them. A band nobody has traits for is skipped entirely.
+    const nextBandAfter = (b) => {
+        const i = bandsWithTraits.indexOf(b);
+        return i !== -1 && i + 1 < bandsWithTraits.length ? bandsWithTraits[i + 1] : null;
+    };
     const nextTrait = () => {
         if (cursor + 1 < chosen.length) { setCursor(cursor + 1); scrollTop(); return; }
+        const nb = nextBandAfter(band);
+        if (nb) { setBand(nb); setCursor(0); goPhase(1); return; }
         goPhase(3);
     };
     const scrollTop = () => { if (scrollRef.current) scrollRef.current.scrollTo({ top: 0 }); };
@@ -130,7 +175,8 @@ export default function PlotValues(props) {
     // landing in the same beat must read as one change to that beat, not two unrelated rows.
     const review = useMemo(() => {
         const byBeat = new Map();
-        chosen.forEach((t) => {
+        // ALL traits, not `chosen` — `chosen` is one PASS now, and the review is the whole run.
+        (traits || []).forEach((t) => {
             (picks[t.id] || []).forEach((fid) => {
                 if (!byBeat.has(fid)) byBeat.set(fid, []);
                 byBeat.get(fid).push(t);
@@ -141,17 +187,26 @@ export default function PlotValues(props) {
             if (byBeat.has(b.id)) out.push({ stage: s, beat: b, traits: byBeat.get(b.id) });
         }));
         return out;
-    }, [chosen, picks, stages]);
+    }, [traits, picks, stages]);
 
     const doPort = async () => {
         if (busy) return;
         setBusy(true);
         try {
+            /* ALL traits across BOTH passes. The engine resolves which half's words to file from
+               each BEAT's own band, so the payload shape is unchanged (port() in
+               wml-assessment.js) — one entry per trait, every fid it landed in.
+               `noShow` is band-scoped INTERNALLY (`id|band`), but the engine's build list is
+               per TRAIT, so only a trait absent in every pass it appeared in is reported. */
+            const allNoShow = (traits || [])
+                .filter((t) => !((picks[t.id] || []).length)
+                    && (t.bands || BAND_ORDER).every((b) => isNoShow(t.id, b)))
+                .map((t) => t.id);
             const payload = {
-                picks: chosen
-                    .filter((t) => pickCount(t.id) > 0)
+                picks: (traits || [])
+                    .filter((t) => (picks[t.id] || []).length > 0)
                     .map((t) => ({ traitId: t.id, trait: t.trait, label: t.label, portText: t.portText, fids: picks[t.id].slice() })),
-                noShow: noShow.slice(),
+                noShow: allNoShow,
             };
             const ok = await onPort(payload);
             if (ok) setPorted(true);
@@ -159,39 +214,58 @@ export default function PlotValues(props) {
     };
 
     /* ── renderers ── */
-    const renderTraits = () => (
-        <section className="phase is-live">
-            <p className="eyebrow">Step 1 of 3</p>
-            <h2>Which of your traits will you work on?</h2>
-            <p className="lead">These are the traits you flagged in Step 7 — the ones you said are <strong>in balance, in excess or in deficit</strong>, plus anything on your build list. Pick the ones you want to write into your plot now. <strong>You don’t have to do them all</strong>; you can come back and add more at any time.</p>
-            <div className="pv-trait-grid">
-                {traits.map((t) => {
-                    const on = selected.indexOf(t.id) !== -1;
-                    return (
-                        <button type="button" key={t.id}
-                            className={'pv-trait-card' + (on ? ' is-sel' : '')}
-                            onClick={() => toggleTrait(t)}>
-                            <span className="tick">{on ? '✓' : ''}</span>
-                            <span className="pv-t-main">
-                                <span className="pv-t-label">{t.label}</span>
-                                <span className="pv-t-value">{t.valueName}</span>
-                                <span className="pv-t-cond">{t.cond}</span>
-                                {t.said
-                                    ? <span className="pv-t-said">“{t.said}”</span>
-                                    : <span className="pv-t-said is-none">You didn’t write about this one in Step 7 — we’ll mark the beat and you can write it in the chat.</span>}
-                                {t.workedIn
-                                    ? <span className="pv-t-worked">Already in {t.workedIn} beat{t.workedIn === 1 ? '' : 's'}</span>
-                                    : null}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-            {!traits.length
-                ? <p className="hint">No flagged traits came through from Step 7 — go back and finish the values audit first.</p>
-                : null}
-        </section>
-    );
+    /* ⭐⭐ PASS INTRO (#401) — "here are your traits for the beginning". It REPLACES the old
+       "which of your traits will you work on?" grid: the student is not choosing any more, they
+       are being SHOWN what this half of the story has to carry, then taken through it one at a
+       time. So every card here is a statement, not a control — no ticks, nothing to toggle, and
+       nothing that can be left behind by accident (which is what the old screen quietly allowed:
+       tap one, skip the rest, §18's whole argument). */
+    const renderBandIntro = () => {
+        const isBegin = band === 'begin';
+        const n = chosen.length;
+        const second = bandsWithTraits.length > 1 && bandsWithTraits.indexOf(band) > 0;
+        return (
+            <section className="phase is-live">
+                <p className="eyebrow">{second ? 'Second half' : 'First half'} · {bands[band].sub}</p>
+                <h2>{isBegin
+                    ? <>Your traits at the <span className="pv-inline-trait">beginning</span></>
+                    : <>Your traits at the <span className="pv-inline-trait">end</span></>}</h2>
+                <p className="lead">
+                    {isBegin
+                        ? <>These are the {n} trait{n === 1 ? '' : 's'} you described at the <strong>START</strong> of your story in Step 7. You will place each one into the beats of <strong>{bands.begin.sub}</strong> — the opening half of your plot. <strong>Every one gets placed</strong>; if a trait genuinely does not show yet, you say so and it goes on your build list.</>
+                        : <>Now the <strong>END</strong> of the story. These are the {n} trait{n === 1 ? '' : 's'} you described at the finish, and they go into <strong>{bands.end.sub}</strong> — the closing half of your plot. A trait you have already placed at the beginning appears again here, because <strong>how it ends is a different fact about your character</strong> from how it started.</>}
+                </p>
+                <div className="pv-trait-grid">
+                    {chosen.map((t) => {
+                        const bb = (t.byBand && t.byBand[band]) || null;
+                        const placedHere = picksIn(t.id, band).length;
+                        return (
+                            <div key={t.id} className={'pv-trait-card is-static' + (placedHere ? ' is-sel' : '')}>
+                                <span className="pv-t-main">
+                                    <span className="pv-t-label">{t.label}</span>
+                                    <span className="pv-t-value">{t.valueName}</span>
+                                    <span className="pv-t-cond">{(bb && bb.cond) || t.cond}</span>
+                                    {bb && bb.said
+                                        ? <span className="pv-t-said">“{bb.said}”</span>
+                                        : <span className="pv-t-said is-none">You didn’t write about this one at the {isBegin ? 'beginning' : 'end'} in Step 7 — we’ll mark the beat and you can write it in the chat.</span>}
+                                    {placedHere
+                                        ? <span className="pv-t-worked">Placed in {placedHere} beat{placedHere === 1 ? '' : 's'}</span>
+                                        : t.workedIn
+                                            ? <span className="pv-t-worked">Already in {t.workedIn} beat{t.workedIn === 1 ? '' : 's'}</span>
+                                            : null}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+                {!chosen.length
+                    ? <p className="hint">{(traits || []).length
+                        ? <>Nothing came through from Step 7 for this half of the story — the other half is next.</>
+                        : <>No flagged traits came through from Step 7 — go back and finish the values audit first.</>}</p>
+                    : null}
+            </section>
+        );
+    };
 
     /* ⭐⭐ #383 — THE TRAIT RAIL. Neil asked for this twice; the second time carried the argument
        that settles it: *"what's key as well is that the student's gonna have to READ the beats
@@ -235,24 +309,16 @@ export default function PlotValues(props) {
                     student was matching her end-of-story description against her opening scenes.
                     A trait recorded at both ends is a JOURNEY, and showing the two states next to
                     each other is what makes that visible. */}
-                {bandsOf(t).length === 2 && t.byBand
-                    ? <div className="pv-rail-journey">
-                        {['begin', 'end'].map((b) => (
-                            <div className="pv-rail-half" key={b}>
-                                <p className="pv-rail-halflabel">{b === 'begin' ? 'At the beginning' : 'At the end'}</p>
-                                <p className="pv-rail-cond">{(t.byBand[b] && t.byBand[b].cond) || t.cond}</p>
-                                {t.byBand[b] && t.byBand[b].said
-                                    ? <p className="pv-rail-said">“{t.byBand[b].said}”</p>
-                                    : <p className="pv-rail-said is-none">You didn’t write about this half in Step 7.</p>}
-                            </div>
-                        ))}
-                    </div>
-                    : <>
-                        <p className="pv-rail-cond">{(t.byBand && t.byBand[bandsOf(t)[0]] && t.byBand[bandsOf(t)[0]].cond) || t.cond}</p>
-                        {t.said
-                            ? <p className="pv-rail-said">“{t.said}”</p>
-                            : <p className="pv-rail-said is-none">You didn’t write about this one in Step 7 — pick the beats where it should show.</p>}
-                    </>}
+                {/* ⭐ v7.20.537 (#401): ONE HALF, because the pass is now one half. The rail used
+                    to show the beginning and the end side by side, which was right when a single
+                    screen mixed both — it is noise now, and worse, it re-invites the exact
+                    confusion the two-pass split exists to remove. The other half gets its own
+                    pass, with its own condition and its own words. */}
+                <p className="pv-rail-halflabel">{band === 'begin' ? 'At the beginning' : 'At the end'}</p>
+                <p className="pv-rail-cond">{(t.byBand && t.byBand[band] && t.byBand[band].cond) || t.cond}</p>
+                {t.byBand && t.byBand[band] && t.byBand[band].said
+                    ? <p className="pv-rail-said">“{t.byBand[band].said}”</p>
+                    : <p className="pv-rail-said is-none">You didn’t write about this one at the {band === 'begin' ? 'beginning' : 'end'} in Step 7 — pick the beats where it should show.</p>}
                 {/* The count climbs as they tap, which is what teaches the multi-select — he asked
                     whether a trait could go in more than one beat about a control that already
                     allowed it. */}
@@ -289,19 +355,17 @@ export default function PlotValues(props) {
     const renderPlace = () => {
         const t = current;
         if (!t) return null;
-        const myBands = bandsOf(t);
+        const myBands = [band];   // #401: a pass places into ONE half of the plot, never both
         return (
             <section className="phase is-live">
-                <p className="eyebrow">Step 2 of 3 — trait {cursor + 1} of {chosen.length}</p>
+                <p className="eyebrow">{band === 'begin' ? 'Beginning' : 'End'} · trait {cursor + 1} of {chosen.length}</p>
                 {/* The question, the Step-7 quote and the instruction are all in the RAIL now, which
                     never scrolls away. Repeating them here would say everything twice and push the
                     beats — the thing being read — further down. */}
                 <div className="pv-band-note">
-                    {myBands.length === 2
-                        ? <>You marked this trait at the <strong>beginning</strong> and at the <strong>end</strong>, so both halves of your plot are open — the beats should carry that journey.</>
-                        : myBands[0] === 'begin'
-                            ? <>You marked this one at the <strong>beginning</strong> of the story, so these are the stages that matter for it.</>
-                            : <>You marked this one at the <strong>end</strong> of the story, so these are the stages that matter for it.</>}
+                    {band === 'begin'
+                        ? <>You are placing the <strong>beginning</strong> of the story, so only <strong>{bands.begin.sub}</strong> are open. The end of your story gets its own pass after this one.</>
+                        : <>You are placing the <strong>end</strong> of the story, so only <strong>{bands.end.sub}</strong> are open.{(t.bands || []).indexOf('begin') !== -1 ? <> You placed this trait at the beginning too — this is where it ends up.</> : null}</>}
                 </div>
                 <div className="pv-tools">
                     <button type="button" className={'chip-btn' + (emptyOnly ? ' is-on' : '')}
@@ -422,7 +486,8 @@ export default function PlotValues(props) {
             {noShow.length ? (
                 <div className="pv-noshow">
                     <strong>On your build list</strong>
-                    <span>{noShow.map((id) => (traits.filter((t) => t.id === id)[0] || {}).label).filter(Boolean).join(' · ')} — not in the story yet. That is not a failure: it names exactly what your next drafts have to add.</span>
+                    <span>{Array.from(new Set(noShow.map((k) => String(k).split('|')[0])))
+                        .map((id) => (traits.filter((t) => t.id === id)[0] || {}).label).filter(Boolean).join(' · ')} — not in the story yet. That is not a failure: it names exactly what your next drafts have to add.</span>
                 </div>
             ) : null}
             {ported ? (
@@ -436,21 +501,26 @@ export default function PlotValues(props) {
     /* ── footer status (liveness: there is ALWAYS a live button here) ── */
     let statusNode, nextLabel, nextDisabled;
     if (phase === 1) {
-        statusNode = selected.length
-            ? <><strong>{selected.length} trait{selected.length > 1 ? 's' : ''}</strong> selected — you’ll place them one at a time.</>
-            : 'Choose at least one trait to work on.';
-        nextLabel = 'Continue'; nextDisabled = !selected.length;
+        statusNode = chosen.length
+            ? <><strong>{chosen.length} trait{chosen.length > 1 ? 's' : ''}</strong> at the {band === 'begin' ? 'beginning' : 'end'} — you’ll place them one at a time.</>
+            : 'Nothing came through from Step 7 for this half.';
+        nextLabel = chosen.length
+            ? (band === 'begin' ? 'Place these in the beginning' : 'Place these in the end')
+            : 'Continue';
+        nextDisabled = !chosen.length;
     } else if (phase === 2) {
         const n = pickCount(current ? current.id : '');
         statusNode = n
             ? <><strong>{n} beat{n > 1 ? 's' : ''}</strong> for {current.label} — a trait usually shows in more than one.</>
             : <>Tap the beats where a reader could see their {current ? current.label.toLowerCase() : 'trait'} — or say it doesn’t show yet.</>;
-        nextLabel = cursor + 1 < chosen.length ? 'Next trait' : 'Check it over';
+        nextLabel = cursor + 1 < chosen.length
+            ? 'Next trait'
+            : (nextBandAfter(band) ? 'Now the end of your story' : 'Check it over');
         nextDisabled = false;
     } else {
         statusNode = ported
             ? <>Done — <strong>{totalPicked} line{totalPicked === 1 ? '' : 's'}</strong> filed under your beats.</>
-            : <><strong>{placedCount} of {chosen.length}</strong> traits placed · {totalPicked} beat{totalPicked === 1 ? '' : 's'} to add to.</>;
+            : <><strong>{totalPicked}</strong> beat{totalPicked === 1 ? '' : 's'} to add to, across both halves of your plot.</>;
         nextLabel = ported ? 'Back to my lesson' : 'Add to my beats';
         nextDisabled = busy || (!ported && !review.length && !noShow.length);
     }
@@ -470,11 +540,13 @@ export default function PlotValues(props) {
                         <button type="button" className="ssi-close" aria-label="Close" onClick={onClose}>✕</button>
                     </div>
                     <div className="stepper">
-                        {[['1', 'Pick your traits'], ['2', 'Pick your beats'], ['3', 'Check it over']].map(([n, label]) => {
+                        {[['1', band === 'begin' ? 'Beginning traits' : 'End traits'],
+                          ['2', band === 'begin' ? 'Beginning beats' : 'End beats'],
+                          ['3', 'Check it over']].map(([n, label]) => {
                             const k = +n;
                             const live = k === phase;
                             const done = k < phase;
-                            const disabled = (k === 2 && !selected.length) || (k === 3 && !chosen.length);
+                            const disabled = (k === 2 && !chosen.length);
                             return (
                                 <button type="button" key={k} disabled={disabled && k > phase}
                                     className={'step-pill' + (live ? ' is-live' : '') + (done ? ' is-done' : '')}
@@ -484,7 +556,7 @@ export default function PlotValues(props) {
                             );
                         })}
                     </div>
-                    {phase === 1 ? renderTraits() : null}
+                    {phase === 1 ? renderBandIntro() : null}
                     {phase === 2 ? renderPlace() : null}
                     {phase === 3 ? renderReview() : null}
                 </div>
@@ -496,14 +568,34 @@ export default function PlotValues(props) {
                     <span className="status">{statusNode}</span>
                     {phase > 1 && !ported
                         ? <button type="button" className="btn" onClick={() => {
-                            if (phase === 3) { setCursor(Math.max(0, chosen.length - 1)); goPhase(2); return; }
+                            if (phase === 3) {
+                                const last = bandsWithTraits[bandsWithTraits.length - 1] || band;
+                                setBand(last);
+                                setCursor(Math.max(0, traitsInBand(last).length - 1));
+                                goPhase(2); return;
+                            }
                             if (cursor > 0) { setCursor(cursor - 1); scrollTop(); return; }
-                            goPhase(1);
+                            if (phase === 2) { goPhase(1); return; }
+                            // phase 1 of the SECOND pass steps back into the first pass's last trait
+                            const i = bandsWithTraits.indexOf(band);
+                            if (i > 0) {
+                                const prev = bandsWithTraits[i - 1];
+                                setBand(prev);
+                                setCursor(Math.max(0, traitsInBand(prev).length - 1));
+                                goPhase(2);
+                            }
                         }}>Back</button>
                         : null}
                     <button type="button" className="btn primary" disabled={nextDisabled}
                         onClick={() => {
-                            if (phase === 1) { goPhase(2); setCursor(0); return; }
+                            if (phase === 1) {
+                                if (!chosen.length) {   // an empty half is skipped, never a dead screen
+                                    const nb = nextBandAfter(band);
+                                    if (nb) { setBand(nb); setCursor(0); goPhase(1); return; }
+                                    goPhase(3); return;
+                                }
+                                goPhase(2); setCursor(0); return;
+                            }
                             if (phase === 2) { nextTrait(); return; }
                             if (ported) { onClose(); return; }
                             doPort();
