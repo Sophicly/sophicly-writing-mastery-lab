@@ -433,7 +433,15 @@ export default function PlotValues(props) {
                                                                     {already
                                                                         ? <span className="pv-placed-state is-in">✓ {t.label} is already in this beat</span>
                                                                         : on
-                                                                            ? <span className="pv-placed-state is-add">＋ {t.label} will be added here</span>
+                                                                            ? <span className="pv-placed-state is-add">＋ {t.label} will be added here
+                                                                                {/* ⭐ v7.20.539 (Neil, 2026-08-19, mid-run): *"I was adding them
+                                                                                    in, but it wasn't updating the actual beats."* The write
+                                                                                    happens once, at "Add to my beats" — that is the append-law,
+                                                                                    not a bug — so the ONLY honest mid-run display is a preview
+                                                                                    of the exact line this beat will receive. Same band-scoped
+                                                                                    resolution the engine uses at port time. */}
+                                                                                <em className="pv-placed-preview">Values ({t.label}): {(t.byBand && t.byBand[band] && t.byBand[band].said) || t.portText}</em>
+                                                                            </span>
                                                                             : null}
                                                                     {placed.map((m) => {
                                                                         const mb = (m.byBand && m.byBand[band]) || null;
