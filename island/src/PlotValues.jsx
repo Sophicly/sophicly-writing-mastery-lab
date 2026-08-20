@@ -239,8 +239,17 @@ export default function PlotValues(props) {
                     {chosen.map((t) => {
                         const bb = (t.byBand && t.byBand[band]) || null;
                         const placedHere = picksIn(t.id, band).length;
+                        /* ⭐ v7.20.540 (Neil, 2026-08-19, on the intro screen): *"curiosity…
+                           why is it grayed out? That was a beat from the beginning."* The
+                           highlight keyed on THIS SESSION's picks alone, so a trait whose words
+                           were already ported into six beats — the most finished card on the
+                           screen — wore the plain style, which next to eight teal cards reads as
+                           DISABLED. Inverted semantics. Same colour law as the beat markers
+                           (.538): GREEN = already in the document, TEAL = picked this session,
+                           plain = not yet touched. */
                         return (
-                            <div key={t.id} className={'pv-trait-card is-static' + (placedHere ? ' is-sel' : '')}>
+                            <div key={t.id} className={'pv-trait-card is-static'
+                                + (placedHere ? ' is-sel' : t.workedIn ? ' is-done' : '')}>
                                 <span className="pv-t-main">
                                     <span className="pv-t-label">{t.label}</span>
                                     <span className="pv-t-value">{t.valueName}</span>

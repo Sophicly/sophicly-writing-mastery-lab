@@ -476,6 +476,10 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
 }
 .swml-plot-island .pv-trait-card:hover { background:var(--surface2); box-shadow:var(--shadow-md); }
 .swml-plot-island .pv-trait-card.is-sel { border-color:var(--teal); background:linear-gradient(0deg,var(--teal-tint),var(--teal-tint)),var(--surface); }
+/* v7.20.540: a trait whose words are ALREADY in beats (a previous run ported them) is the most
+   done state a card can have — it must never read flatter than a mere this-session pick. Green,
+   per the .538 colour law: green = in the document, teal = picked now. */
+.swml-plot-island .pv-trait-card.is-done { border-color:var(--done); background:linear-gradient(0deg,var(--done-tint),var(--done-tint)),var(--surface); }
 .swml-plot-island .pv-trait-card .tick {
   flex:0 0 18px; width:18px; height:18px; border-radius:6px; margin-top:2px;
   border:1.5px solid var(--line-strong); display:grid; place-items:center; font-size:11px; color:var(--btn-ink);
