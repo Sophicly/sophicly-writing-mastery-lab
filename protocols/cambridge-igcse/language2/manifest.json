@@ -1,0 +1,15 @@
+{
+    "board": "cambridge-igcse",
+    "group": "language2",
+    "version": "1.0.0",
+    "base_path": "protocols/cambridge-igcse/language2",
+    "assessment": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-mark-scheme.md",
+            "modules/assessment-section-a.md",
+            "modules/assessment-section-b.md",
+            "mark-scheme/marking-fairness-universal.md"
+        ]
+    }
+}

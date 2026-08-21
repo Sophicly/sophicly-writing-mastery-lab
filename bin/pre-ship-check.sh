@@ -450,6 +450,10 @@ node bin/reachability-lint.js || fail=1   # v7.20.474 (#343): unreachable-contro
 # died into console.warn, two of them after a sibling had already been given a message — so a
 # rule in prose had demonstrably lost to `console.warn` as the default (§4d liveness).
 node bin/mic-liveness-lint.js || fail=1
+# v7.20.542: the protocol-group map's IGCSE keys were HYPHENATED while the lookup builds the
+# UNDERSCORE form, so both IGCSE boards' entries were unreachable and 8 of 10 Edexcel IGCSE
+# subjects resolved to a directory that does not exist (assessment returned NULL). §5d.
+php bin/protocol-group-map-gate.php || fail=1
 # v7.20.482 (#356): the RUNTIME half of the same defect. The lint above rules out two CSS traps and
 # is blind to whether a control is on a real screen — which is how Fatou Soumah's Step 3 stopped at
 # ask 4 of 7 with a perfectly correct walk. This guards the runtime check (`_askReach`): the

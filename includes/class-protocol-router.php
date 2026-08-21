@@ -2960,7 +2960,7 @@ TEMPLATE;
                 'language1'             => 'language1',
                 'language2'             => 'language2',
             ],
-            'edexcel-igcse' => [
+            'edexcel_igcse' => [
                 'shakespeare'           => 'heritage',
                 'modern_text'           => 'modern',
                 'modern_prose'          => 'modern-prose',
@@ -2972,7 +2972,7 @@ TEMPLATE;
                 'language1'             => 'language1',
                 'language2'             => 'language2',
             ],
-            'cambridge-igcse' => [
+            'cambridge_igcse' => [
                 'shakespeare'           => 'shakespeare',
                 'modern_text'           => 'modern',
                 '19th_century'          => '19th_century',
@@ -3003,6 +3003,31 @@ TEMPLATE;
                 'language2'             => 'language2',
             ],
         ];
+
+        // ⭐⭐ v7.20.542 — THE KEY-MISMATCH DEFECT (§5d), FOUND BY THE CAMBRIDGE LANE, MEASURED HERE.
+        // The lookup key is built as str_replace('-', '_', $board) — so `edexcel_igcse` — but the
+        // map's own top-level keys were written HYPHENATED (`'edexcel-igcse'`). Every other board
+        // key (aqa, ocr, eduqas, edexcel, sqa, ccea) contains no hyphen, so the mismatch was
+        // invisible for them and the two IGCSE boards' entries were UNREACHABLE: the lookup missed
+        // and fell through to `return sanitize_key($subject)`, i.e. it returned the SUBJECT where
+        // the map says the GROUP.
+        //
+        // MEASURED on staging by reflection against the real method, before the fix — 8 of the 10
+        // Edexcel IGCSE subjects resolved to a directory that does not exist:
+        //     shakespeare → "shakespeare" (map says heritage) → protocols/edexcel-igcse/shakespeare  MISSING
+        //     modern_text → "modern_text" (map says modern)   → MISSING     19th_century → MISSING
+        //     poetry_anthology · prose_anthology · nonfiction_anthology · modern_prose · unseen_poetry
+        // Only language1/language2 survived, because for those two the map VALUE happens to equal
+        // the SUBJECT — which is exactly why this never surfaced. Consequence for the missing eight:
+        // `assessment`/`exam_question` returned NULL (the board could not be marked at all) and
+        // planning/polishing fell back to an AQA path built from the wrong group.
+        //
+        // The fold below makes the key FORM irrelevant, so a future board added in hyphen form
+        // cannot reintroduce this silently. Gated by bin/protocol-group-map-gate.php.
+        foreach ($map as $mk => $mv) {
+            $nk = str_replace('-', '_', $mk);
+            if ($nk !== $mk) { $map[$nk] = $mv; unset($map[$mk]); }
+        }
 
         // Look up the group, with fallbacks
         if (isset($map[$board_key][$subject])) {
