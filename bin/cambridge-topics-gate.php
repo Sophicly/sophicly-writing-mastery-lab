@@ -48,20 +48,35 @@ $dir = dirname(__DIR__) . '/protocols/shared/templates/topics/';
 
 $specs = [
     [
-        'file'      => 'cambridge-igcse-language-p1.md',
-        'paper'     => 'Paper 1 — Reading',
-        'topics'    => 5,
-        'sources'   => 3,
-        'questions' => 3,
-        'marks'     => [30, 25, 25],
+        'file'   => 'cambridge-igcse-language-p1.md',
+        'paper'  => 'Paper 1 — Reading',
+        // ⭐ NO LONGER UNIFORM. Neil ruled the course shape on 2026-08-22: alternate a whole paper
+        // with a long-question topic, because Q3's FORM changes between papers and four papers
+        // cannot cover five untested forms. So each topic declares its OWN shape, and a gate that
+        // asserted "every topic has 3 texts and 80 marks" would now pass on a template that had
+        // silently lost a text from a focus topic.
+        'topics' => [
+            1 => ['texts'=>3,'qs'=>['Q1'=>30,'Q2'=>25,'Q3'=>25],'total'=>80],
+            2 => ['texts'=>1,'qs'=>['Q3'=>25],                    'total'=>25],
+            3 => ['texts'=>3,'qs'=>['Q1'=>30,'Q2'=>25,'Q3'=>25],'total'=>80],
+            4 => ['texts'=>2,'qs'=>['Q1'=>30,'Q2'=>25],          'total'=>55],
+            5 => ['texts'=>3,'qs'=>['Q1'=>30,'Q2'=>25,'Q3'=>25],'total'=>80],
+            6 => ['texts'=>1,'qs'=>['Q3'=>25],                    'total'=>25],
+            7 => ['texts'=>3,'qs'=>['Q1'=>30,'Q2'=>25,'Q3'=>25],'total'=>80],
+            8 => ['texts'=>2,'qs'=>['Q1'=>30,'Q2'=>25],          'total'=>55],
+        ],
     ],
     [
-        'file'      => 'cambridge-igcse-language-p2.md',
-        'paper'     => 'Paper 2 — Directed Writing and Composition',
-        'topics'    => 6,
-        'sources'   => 2,
-        'questions' => 2,
-        'marks'     => [40, 40],
+        'file'   => 'cambridge-igcse-language-p2.md',
+        'paper'  => 'Paper 2 — Directed Writing and Composition',
+        'topics' => [
+            1 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
+            2 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
+            3 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
+            4 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
+            5 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
+            6 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
+        ],
     ],
 ];
 
@@ -70,52 +85,46 @@ $fail = [];
 foreach ($specs as $spec) {
     $path = $dir . $spec['file'];
     echo "\n=== {$spec['paper']} ({$spec['file']}) ===\n";
-    if (!file_exists($path)) {
-        $fail[] = "{$spec['file']}: missing";
-        echo "  MISSING\n";
-        continue;
-    }
+    if (!file_exists($path)) { $fail[] = "{$spec['file']}: missing"; echo "  MISSING\n"; continue; }
 
     $topics = SWML_Topic_Parser::parse(file_get_contents($path));
-    printf("  topics parsed: %d (expect %d)\n", count($topics), $spec['topics']);
-    if (count($topics) !== $spec['topics']) {
-        $fail[] = "{$spec['file']}: " . count($topics) . " topics, expected {$spec['topics']}";
+    $want_n = count($spec['topics']);
+    printf("  topics parsed: %d (expect %d)\n", count($topics), $want_n);
+    if (count($topics) !== $want_n) {
+        $fail[] = "{$spec['file']}: " . count($topics) . " topics, expected $want_n";
     }
 
     foreach ($topics as $t) {
         $meta = $t['metadata'] ?? [];
         if (is_string($meta)) $meta = json_decode($meta, true) ?: [];
-        $srcs = $meta['sources']   ?? [];
+        $srcs = $meta['sources'] ?? [];
         $qs   = $meta['questions'] ?? [];
-        $num  = $t['topic_number'];
+        $num  = (int) $t['topic_number'];
+        $want = $spec['topics'][$num] ?? null;
 
         $marks = 0;
         foreach ($qs as $q) $marks += (int) $q['marks'];
+        printf("  T%-2s %-34s texts=%d questions=%d marks=%d\n",
+            $num, substr($t['label'], 0, 34), count($srcs), count($qs), $marks);
 
-        printf("  T%-2s %-28s texts=%d questions=%d marks=%d\n",
-            $num, substr($t['label'], 0, 28), count($srcs), count($qs), $marks);
-
-        if (count($srcs) !== $spec['sources']) {
-            $fail[] = "{$spec['file']} T$num: " . count($srcs) . " texts, expected {$spec['sources']}";
+        if ($want === null) { $fail[] = "{$spec['file']} T$num: unexpected topic number"; continue; }
+        if (count($srcs) !== $want['texts'])
+            $fail[] = "{$spec['file']} T$num: " . count($srcs) . " texts, expected {$want['texts']}";
+        if (count($qs) !== count($want['qs']))
+            $fail[] = "{$spec['file']} T$num: " . count($qs) . " questions, expected " . count($want['qs']);
+        if ($marks !== $want['total'])
+            $fail[] = "{$spec['file']} T$num: marks total $marks, expected {$want['total']}";
+        foreach ($qs as $q) {
+            $id = $q['id'];
+            if (!isset($want['qs'][$id])) { $fail[] = "{$spec['file']} T$num: unexpected question $id"; continue; }
+            if ((int) $q['marks'] !== $want['qs'][$id])
+                $fail[] = "{$spec['file']} T$num $id: {$q['marks']} marks, expected {$want['qs'][$id]}";
         }
-        if (count($qs) !== $spec['questions']) {
-            $fail[] = "{$spec['file']} T$num: " . count($qs) . " questions, expected {$spec['questions']}";
-        }
-        if ($marks !== 80) {
-            $fail[] = "{$spec['file']} T$num: marks total $marks, expected 80";
-        }
-        foreach (array_values($qs) as $i => $q) {
-            $want = $spec['marks'][$i] ?? null;
-            if ($want !== null && (int) $q['marks'] !== $want) {
-                $fail[] = "{$spec['file']} T$num {$q['id']}: {$q['marks']} marks, expected $want";
-            }
-        }
-        // A text block that parsed but is nearly empty means the body did not
-        // travel with its header — the failure mode a header-only check misses.
-        foreach ($srcs as $s) {
-            if (strlen($s['text']) < 800) {
-                $fail[] = "{$spec['file']} T$num {$s['label']}: only " . strlen($s['text']) . " chars";
-            }
+        // A text block that parsed but is nearly empty means the body did not travel with its
+        // header — the failure mode a header-only check misses.
+        foreach ($srcs as $s2) {
+            if (strlen($s2['text']) < 800)
+                $fail[] = "{$spec['file']} T$num {$s2['label']}: only " . strlen($s2['text']) . " chars";
         }
     }
 }
