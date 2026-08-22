@@ -454,6 +454,11 @@ node bin/mic-liveness-lint.js || fail=1
 # UNDERSCORE form, so both IGCSE boards' entries were unreachable and 8 of 10 Edexcel IGCSE
 # subjects resolved to a directory that does not exist (assessment returned NULL). §5d.
 php bin/protocol-group-map-gate.php || fail=1
+# v7.20.544 (CW trials slice 1): the examiner-ladder dataset is GENERATED from the Q5 sections of
+# knowledge-mark-scheme-lang1.md. Two copies of a mark scheme is the drift class; this fails the
+# ship when they diverge (verbatim + completeness + band arithmetic + staleness). Proven RED on a
+# drifted descriptor, a dropped bullet, and a stale dataset before being trusted green.
+node bin/markscheme-gate.js || fail=1
 # v7.20.482 (#356): the RUNTIME half of the same defect. The lint above rules out two CSS traps and
 # is blind to whether a control is on a real screen — which is how Fatou Soumah's Step 3 stopped at
 # ask 4 of 7 with a perfectly correct walk. This guards the runtime check (`_askReach`): the

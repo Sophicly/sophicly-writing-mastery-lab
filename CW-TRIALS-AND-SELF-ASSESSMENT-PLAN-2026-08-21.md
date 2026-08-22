@@ -257,16 +257,22 @@ reflection — is an **open question for Neil** (see §6).
 
 ---
 
-## 6 · ASK NEIL — the four things only he can answer
+## 6 · ASK NEIL — all four now ANSWERED (updated 2026-08-22)
 
-1. **Seven drafts, six trials.** Draft 6 (Genre, step 25) has no trial and Trial 6 assesses Draft 7.
-   Deliberate, or a gap to fill?
-2. **Where does the final 40-mark assessment sit?** After Trial 6 as its own step, folded into
-   Step 29, or inside Step 30's reflection?
-3. **Do the trials feed the student's grade**, or are they explicitly outside it? (This decides
-   whether a diagnostic trial can be gradeless without breaking the dashboard ring.)
-4. **Which board's mark scheme does a non-AQA student see** in the final assessment, given that
-   every student does Creative Writing over the summer?
+1. **Seven drafts, six trials — RULED (2026-08-22, delegated by Neil to engineering judgment):**
+   Trial 6 moves to follow Draft 6 (Genre, step 25) as a genre-focused trial; the full 40-mark
+   assessment becomes the finale. Every draft gets its trial and "comprehensive final feedback"
+   stops being duplicated between Trial 6's stub and the finale.
+2. **Final 40-mark assessment placement — RULED (same delegation): after Step 29 (SPAG polish),
+   before Step 30 (reflection).** AO6 IS technical accuracy — marking before the SPAG step scores
+   errors the student is about to fix; after Step 29 the mark is of the finished piece and Step 30
+   has something real to reflect on.
+3. **Trials feed the grade ring — Neil ruled "definitely" (2026-08-21).** So a trial cannot be
+   gradeless; the diagnostic verdicts must convert to a mark the ring can aggregate (design task
+   inside slice 4, #409).
+4. **No board label on the criteria — Neil ruled (2026-08-21):** descriptors still lifted verbatim
+   from AQA's document and gated, but the student-facing surface carries no board name, so every
+   summer CW student sees the same criteria regardless of their own board.
 
 ---
 

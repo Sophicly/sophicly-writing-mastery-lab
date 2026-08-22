@@ -1826,3 +1826,34 @@ there is a separate `Context` element in the BODY set — so a model authoring a
 "Context" intro line from the prose would name an element that does not exist. Verified against the
 code and corrected in `CLAUDE.md` the same day. Conclusion elements are as documented: Restated
 Thesis · Controlling Concept · Author's Central Purpose · Universal Message.
+
+## §33. ⭐⭐ THE CW TRIALS + EXAMINER-LADDER SELF-ASSESSMENT — the rulings the build stands on (Neil, ruled 2026-08-21; placements delegated and settled 2026-08-22)
+
+Full feature plan: `CW-TRIALS-AND-SELF-ASSESSMENT-PLAN-2026-08-21.md` (plugin root). The rulings,
+so no lane re-asks:
+
+1. **A trial is a FOCUSED DIAGNOSTIC on its own dimension** (Neil, 2026-08-21). The full AQA
+   40-mark AO5+AO6 assessment runs ONCE, at the end. Trials do not re-mark one another (§27's
+   different-dimensions premise holds).
+2. **Trials FEED THE GRADE RING — "definitely"** (Neil, 2026-08-21). A trial cannot be gradeless;
+   its diagnostic verdicts must convert to a mark the ring can aggregate (#409).
+3. **The criteria carry NO BOARD LABEL** (Neil, 2026-08-21): *"we're not gonna label it AQA even
+   though we use the criteria… we don't have to give it a label."* Descriptors are still lifted
+   VERBATIM from AQA's document and gated (`bin/markscheme-gate.js`); only the student-facing
+   label goes. This is what lets every summer CW student, whatever their board, see one criteria set.
+4. **The examiner ladder is BOTTOM-UP** (Neil, 2026-08-21, from his own 1:1 teaching — supersedes
+   FIXLIST #221 step (1)'s top-down pick): read Level 1, prove every criterion, climb; on the first
+   level not fully met, place top/middle/bottom of it. The student marks their own work (§19); the
+   mark arithmetic is CODE from band + placement, never a number the model (or the student) invents.
+   The rest of #221 survives: reason banked verbatim · re-openable · model answer auto-filed ·
+   reuse the existing sign-off machinery.
+5. **Scope is language and literature too, not just CW** (Neil, 2026-08-21) — so the ladder is
+   AO-generic over (AO, levels, descriptors, band edges) and a new paper is a DATA job. The data
+   pipeline (one source md → generated dataset → divergence gate) shipped as slice 1, v7.20.544.
+6. **The final 40-mark assessment sits after Step 29 (SPAG polish), before Step 30 (reflection)**
+   (suggested 2026-08-21; Neil delegated the call 2026-08-22 — "wwad"). AO6 IS technical accuracy:
+   marking before the SPAG step scores errors the student is about to fix; after Step 29 the mark
+   is of the finished piece and Step 30 has something real to reflect on.
+7. **Trial 6 moves to follow Draft 6 (Genre, step 25) as a genre-focused trial** (same delegation),
+   so all seven drafts get assessment coverage and "comprehensive final feedback" lives only in the
+   finale — Trial 6's old stub duplicated the final assessment's job.
