@@ -465,6 +465,11 @@ node bin/markscheme-gate.js || fail=1
 # Neil measured it: Sophia called a two-paragraph answer "one continuous piece". Proven RED
 # against the pre-fix routing before being trusted green.
 node bin/response-text-harness.js || fail=1
+# v7.20.546 (CW trials slice 2a): the examiner ladder's ENGINE — the climb runs bottom-up (the
+# real examiner procedure, #407), stops where the student stops, and every mark is derived from
+# AQA's own printed ranges rather than typed by student or model. Proven RED against a top-down
+# climb, a lenient rounding direction, and an invented AO6 Upper/Lower split.
+node bin/examiner-ladder-harness.js || fail=1
 # v7.20.482 (#356): the RUNTIME half of the same defect. The lint above rules out two CSS traps and
 # is blind to whether a control is on a real screen — which is how Fatou Soumah's Step 3 stopped at
 # ask 4 of 7 with a perfectly correct walk. This guards the runtime check (`_askReach`): the
