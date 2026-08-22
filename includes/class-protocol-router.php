@@ -570,6 +570,13 @@ class SWML_Protocol_Router {
     private function __construct() {
         // Note: mwai_ai_query passes 1 arg in some AI Engine versions, 2 in others
         add_filter('mwai_ai_query', [$this, 'inject_session_context'], 10, 2);
+        // v7.20.543: Claude 5 family rejects any `temperature` param outright
+        // ("temperature is deprecated for this model"), but AI Engine's Query
+        // object defaults it and anthropic.php sends it whenever non-empty —
+        // the catalogue's 'no-temperature' tag has NO consumer in 3.7.2. Strip
+        // it here (update-safe, never edits AI Engine). Runs at 20, after
+        // inject_session_context.
+        add_filter('mwai_ai_query', [$this, 'strip_temperature_for_claude5'], 20, 2);
         // Route embeddings to the correct vector store based on subject
         add_filter('mwai_context_search', [$this, 'route_vector_store'], 10, 2);
         // Lock-discipline gate: strip/swap ban-list phrasings from retrieved chunks
@@ -861,6 +868,21 @@ class SWML_Protocol_Router {
      * simpleTextQuery doesn't load them automatically — only simpleChatbotQuery does,
      * and that method may not be available/working in all AI Engine versions.
      */
+
+    /**
+     * v7.20.543: the Claude 5 family (claude-sonnet-5, claude-opus-5, claude-fable-5)
+     * rejects any temperature param — adaptive thinking is always on. AI Engine's
+     * Query object defaults temperature and its Anthropic engine sends it whenever
+     * non-empty, so every claude-5 call would 400 without this.
+     */
+    public function strip_temperature_for_claude5($query, $params = null) {
+        if (is_object($query) && !empty($query->model)
+            && preg_match('/^claude-[a-z]+-5(?:[.-]|$)/', (string) $query->model)) {
+            $query->temperature = null;
+        }
+        return $query;
+    }
+
     public function inject_session_context($query, $params = null) {
         // v7.14.45: Trace logging for protocol routing debugging
         global $swml_request_context;
