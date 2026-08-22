@@ -644,9 +644,9 @@ The derivation rules (para-count-by-marks, skip-list, TTECEA bedrock) live in `C
 - _Note:_ AO4 = Content/Organisation (27 marks) + AO5 = Technical Accuracy (18 marks) = 45. Marked holistically per IUMVCC section via Level-based bands (AO4 Levels 1-5, AO5 Levels 1-5), not itemised sub-marks per element the way TTECEA papers are. 6 paragraphs of ~110-120 words each, 700+ words minimum.
 - _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 1422-1921); protocols/shared/language-paper-specs.json (edexcel-igcse.language_p1.Q6)`
 
-### language2 — Language Paper 2 (4EA1/02) — Section A: Reading (Poetry)
+### language2 — Language Paper 2 (4EA1/02) — Section A: Reading (Anthology Part 2 — poetry OR prose)
 
-#### Q1 — Q1 — Single anthology poem analysis
+#### Q1 — Q1 — Single anthology text analysis (poetry OR prose)
 - **30 marks** · AOs: AO1, AO2 · structure: **full-essay** · paragraphs: **3**
 - **Intro:** Compelling hook establishing an intriguing concept/thematic question (AO1) — 1.0 · Building sentence(s) establishing pertinent authorial techniques (form, structure, language) (AO2) — 0.5 · Building sentence(s) evaluating how techniques create meaning/effects (AO1/AO2) — 0.5 · Clear, precise three-point thesis about the author's methods (AO1) — 1.0
 - **Body paragraph elements:**
