@@ -48790,8 +48790,38 @@
         // Function now works from live DOM regardless of closure validity.
         console.log('WML getResponseText: called — editor=' + (!!editor) + ', editor.getJSON=' + (editor && typeof editor.getJSON === 'function'));
 
-        // 1. PRIMARY — ProseMirror state extraction (best fidelity, requires valid editor)
-        if (editor && typeof editor.getJSON === 'function') {
+        // v7.20.545 (#416): the PM-state path is a FALLBACK, not the primary. It was
+        // written first (v7.17.52) as "best fidelity"; it is in fact the LOWEST fidelity
+        // reader we have — it joins block nodes with a single space and then runs
+        // `.replace(/\s+/g,' ')`, so EVERY paragraph break the student typed is deleted
+        // before the payload is built. Because it returned early on any result over 50
+        // chars, it silently shadowed both DOM branches below and with them everything
+        // v7.19.826/.808/.841/.944 added: per-question paragraph pre-labels
+        // ("--- Q2 PARAGRAPH 1 of 2 ---"), the literature paragraph map, the code-counted
+        // word totals, and `_lastQWordCounts` (the Q5 word-ceiling auditor's only source,
+        // left empty). Measured symptom, Neil 2026-08-22 on a real Lang P1 Q2: Sophia
+        // reported a plainly two-paragraph answer as "one continuous piece" and inferred
+        // the split from content — truthfully, because that is what it received.
+        // So: use PM state ONLY when the live DOM cannot serve the text.
+        const _domRootForResponses = document.getElementById('swml-tiptap-editor')
+            || (editor && editor.options && editor.options.element)
+            || null;
+        // ⚠️ "the DOM can serve" means it HAS THE TEXT, not merely that the sections exist.
+        // A half-mounted / mid-reload editor can present empty response sections while PM
+        // state still holds the student's essay; preferring an empty DOM there would tell
+        // the model "NOT ATTEMPTED" about work that exists (the .421 fabrication class in
+        // reverse). Require real content before we route away from PM state.
+        let _domCanServe = false;
+        try {
+            const _rs = _domRootForResponses
+                ? _domRootForResponses.querySelectorAll('[data-section-type="response"]') : [];
+            for (let i = 0; i < _rs.length; i++) {
+                if (((_rs[i].textContent || '').trim().length) > 50) { _domCanServe = true; break; }
+            }
+        } catch (_) { _domCanServe = false; }
+
+        // 1. FALLBACK — ProseMirror state extraction (paragraph-flattening; DOM-independent)
+        if (!_domCanServe && editor && typeof editor.getJSON === 'function') {
             try {
                 const json = editor.getJSON();
                 if (json && typeof json === 'object') {
