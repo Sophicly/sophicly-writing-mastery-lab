@@ -69,13 +69,16 @@ $specs = [
     [
         'file'   => 'cambridge-igcse-language-p2.md',
         'paper'  => 'Paper 2 — Directed Writing and Composition',
+        // Same alternating shape as Paper 1. Topic 4 is a Section B focus and carries NO insert —
+        // Cambridge's composition section is written from the candidate's own invention, so zero
+        // texts is correct here and a uniform "every topic has 2 texts" assertion would be wrong.
         'topics' => [
             1 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
-            2 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
+            2 => ['texts'=>2,'qs'=>['Q1'=>40],          'total'=>40],
             3 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
-            4 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
+            4 => ['texts'=>0,'qs'=>['Q2'=>40],          'total'=>40],
             5 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
-            6 => ['texts'=>2,'qs'=>['Q1'=>40,'Q2'=>40],'total'=>80],
+            6 => ['texts'=>2,'qs'=>['Q1'=>40],          'total'=>40],
         ],
     ],
 ];
