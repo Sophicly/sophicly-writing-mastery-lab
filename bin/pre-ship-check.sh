@@ -470,6 +470,14 @@ node bin/response-text-harness.js || fail=1
 # AQA's own printed ranges rather than typed by student or model. Proven RED against a top-down
 # climb, a lenient rounding direction, and an invented AO6 Upper/Lower split.
 node bin/examiner-ladder-harness.js || fail=1
+# v7.20.547 (CW trials slice 2b): the examiner-ladder WALK, driven on the real rig with the real
+# engine and the real generated mark scheme under it. Liveness is checked automatically inside
+# say()/tap() (§4d, no opt-out). Proven RED against a top-down climb, an accumulate cycle on the
+# reason (the .289 stitch), and a missing scheme going active silently.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-examiner-ladder\.js|wml-markscheme-data\.js|examiner-ladder-sim-harness\.js|walk-sim-lib\.js'; then
+  node bin/examiner-ladder-sim-harness.js || fail=1
+fi
 # v7.20.482 (#356): the RUNTIME half of the same defect. The lint above rules out two CSS traps and
 # is blind to whether a control is on a real screen — which is how Fatou Soumah's Step 3 stopped at
 # ask 4 of 7 with a perfectly correct walk. This guards the runtime check (`_askReach`): the
