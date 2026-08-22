@@ -2,7 +2,7 @@
 ## Extended response in role, from Text C · 15 reading + 10 writing · 250–350 words
 
 The task names a **role**, an **audience**, a **form** and **three bullets**. Forms observed across
-40 papers: speech 8 · letter 8 · journal 7 · interview 6 · article 5 · report 2.
+40 papers: speech/talk 11 · letter 8 · journal 7 · interview 7 · article 5 · report 2.
 
 ## THE TWO TABLES, AND WHAT ACTUALLY MOVES THEM
 
