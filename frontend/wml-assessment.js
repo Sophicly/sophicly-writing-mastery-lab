@@ -49414,25 +49414,43 @@
             // Paragraph-faithful text extraction: InputField content separates
             // paragraphs with <br>/block boundaries that textContent flattens —
             // convert them to newlines BEFORE reading text.
+            // ⭐⭐ v7.20.548 (#418, Neil: *"it mustn't falsely detect them"*). A HARD break and a
+            // SOFT break are different intentions and must stop being flattened into the same
+            // newline. Enter closes a block (</p>, </div>, </h*>, </li>) and IS a new paragraph;
+            // Shift+Enter emits a <br> INSIDE one and is not. The old rule turned both into
+            // newlines and then used "is this line 20+ words?" as a PROXY for which the student
+            // meant — and a proxy is wrong in both directions, both measured on real shapes in
+            // bin/paragraph-count-harness.js BEFORE this change:
+            //   • FALSE SPLIT — a soft-wrapped paragraph whose halves are each 20+ words became
+            //     TWO paragraphs, so the marker marked a paragraph the student never wrote and
+            //     told them their structure was wrong when it was not.
+            //   • MISS — a deliberate short paragraph (a one-line dramatic beat, a two-sentence
+            //     conclusion) was glued onto its neighbour and vanished as a unit, so the
+            //     universal per-paragraph rule silently under-delivered.
+            // The student's own block break is now the authority. The only thing still merged is
+            // a fragment of three words or fewer, which is a stray line rather than a paragraph —
+            // and it is MERGED, never dropped, because the old rule DELETED such a line from the
+            // payload outright (a three-word answer arrived at the marker as "NOT ATTEMPTED").
             const _mqParas = (section) => {
                 const clone = section.cloneNode(true);
                 clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
                 clone.querySelectorAll('em').forEach(el => el.remove());
-                const h = clone.innerHTML
-                    .replace(/<br\s*\/?>/gi, '\n')
-                    .replace(/<\/(p|div|h[1-6]|li)>/gi, '\n');
+                const raw = clone.innerHTML || '';
+                const hasBlocks = /<\/(p|div|h[1-6]|li)>/i.test(raw);
+                // An inputField holds plain text whose ONLY separator is <br>, so there the soft
+                // break is all the student has and it stays a paragraph boundary.
+                const h = hasBlocks
+                    ? raw.replace(/<br\s*\/?>/gi, ' ').replace(/<\/(p|div|h[1-6]|li)>/gi, '\n')
+                    : raw.replace(/<br\s*\/?>/gi, '\n');
                 const tmp = document.createElement('div');
                 tmp.innerHTML = h;
                 const text = (tmp.textContent || '').replace(/ /g, ' ');
                 const paras = [];
-                let lead = '';
                 text.split(/\n+/).map(s => s.trim()).filter(Boolean).forEach(line => {
-                    const wc = line.split(/\s+/).length;
-                    if (wc >= 20) { paras.push(lead ? lead + ' ' + line : line); lead = ''; }
-                    else if (paras.length > 0 && wc > 3) { paras[paras.length - 1] += ' ' + line; }
-                    else if (wc > 3) { lead += (lead ? ' ' : '') + line; }
+                    const wc = line.split(/\s+/).filter(Boolean).length;
+                    if (wc > 3 || !paras.length) paras.push(line);
+                    else paras[paras.length - 1] += ' ' + line;
                 });
-                if (lead) { if (paras.length) { paras[paras.length - 1] += ' ' + lead; } else { paras.push(lead); } }
                 return paras;
             };
             const parts = [];

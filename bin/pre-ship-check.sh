@@ -465,6 +465,10 @@ node bin/markscheme-gate.js || fail=1
 # Neil measured it: Sophia called a two-paragraph answer "one continuous piece". Proven RED
 # against the pre-fix routing before being trusted green.
 node bin/response-text-harness.js || fail=1
+# v7.20.548 (#418, Neil: "it mustn't falsely detect them"): the paragraph SPLITTER, both
+# directions. A miss under-marks; a false split marks a paragraph the student never wrote. Drives
+# the real _mqParas over the shapes that occur across the paper. Proven RED on the pre-fix rule.
+node bin/paragraph-count-harness.js || fail=1
 # v7.20.546 (CW trials slice 2a): the examiner ladder's ENGINE — the climb runs bottom-up (the
 # real examiner procedure, #407), stops where the student stops, and every mark is derived from
 # AQA's own printed ranges rather than typed by student or model. Proven RED against a top-down
