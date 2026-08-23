@@ -395,6 +395,18 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw-trial-seed-gate.js || fail=1
 fi
 
+# v7.20.551 (CW trials slice 4): TRIAL 1 — the focused diagnostic. Two gates, because they answer
+# different questions and neither can answer the other's: the SIM drives the real controller (does
+# the student judge first? is it serial? does one missing marker file a partial mark?), while the
+# GATE holds the contracts no walk can see (are the criteria still the words Step 9 taught? does
+# the loaded protocol retain teaching text the model would narrate? are all seven wiring points
+# present?). A walk missing a wiring point ships dead, and it ships dead silently.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|cw-trial1-(gate|sim-harness)\.js|CW-TRIAL-01-story-coherence\.md'; then
+  node bin/cw-trial1-gate.js || fail=1
+  node bin/cw-trial1-sim-harness.js || fail=1
+fi
+
 # v7.20.413: CW STEP-7 DOCUMENT GATE. The document half of Step 7 — the fifteen rows, their
 # completion rule and Neil's teaching prose. (The walk that fills them is gated by cw7-sim above.)
 # It runs the REAL builder and

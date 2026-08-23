@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.550';
+var WML_BUILD = '7.20.551';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1273,17 +1273,129 @@ window.WML = (function() {
     };
 
     // Trial sidebar steps (assessment format)
+    // v7.20.551 (slice 4): Trial 1's rows are the trial it actually runs — read the draft, judge
+    // the seven parts, hear Sophia's verdict. The old four ('Plot Fidelity · Prose Quality') named
+    // criteria no trial ever assessed, and the same four rows were shared by all six trials, which
+    // is why six differently-named trials looked identical. Trials 2-6 keep the generic list until
+    // slice 5 gives each its own dimension.
     CW_SIDEBAR_STEPS['trial_1'] = [
+        { step: 1, label: 'Read Your Draft' },
+        { step: 2, label: 'Judge the Seven Parts' },
+        { step: 3, label: 'Sophia’s Verdict' },
+    ];
+    CW_SIDEBAR_STEPS['trial_generic'] = [
         { step: 1, label: 'Read Draft' },
         { step: 2, label: 'Plot Fidelity' },
         { step: 3, label: 'Prose Quality' },
         { step: 4, label: 'Feedback' },
     ];
-    CW_SIDEBAR_STEPS['trial_2'] = CW_SIDEBAR_STEPS['trial_1'];
-    CW_SIDEBAR_STEPS['trial_3'] = CW_SIDEBAR_STEPS['trial_1'];
-    CW_SIDEBAR_STEPS['trial_4'] = CW_SIDEBAR_STEPS['trial_1'];
-    CW_SIDEBAR_STEPS['trial_5'] = CW_SIDEBAR_STEPS['trial_1'];
-    CW_SIDEBAR_STEPS['trial_6'] = CW_SIDEBAR_STEPS['trial_1'];
+    CW_SIDEBAR_STEPS['trial_2'] = CW_SIDEBAR_STEPS['trial_generic'];
+    CW_SIDEBAR_STEPS['trial_3'] = CW_SIDEBAR_STEPS['trial_generic'];
+    CW_SIDEBAR_STEPS['trial_4'] = CW_SIDEBAR_STEPS['trial_generic'];
+    CW_SIDEBAR_STEPS['trial_5'] = CW_SIDEBAR_STEPS['trial_generic'];
+    CW_SIDEBAR_STEPS['trial_6'] = CW_SIDEBAR_STEPS['trial_generic'];
+
+    // ══════════════════════════════════════════════════════════════════════════════════════════
+    // ⭐ v7.20.551 (CW trials slice 4) — THE SEVEN SCENE ELEMENTS, AS TRIAL 1 ASSESSES THEM.
+    //
+    // `prompt` is BYTE-IDENTICAL to the row prompt the student met in Step 9 — it is the
+    // definition they were actually taught, not a restatement of it (root §5c: student-facing
+    // content derives from what we teach). `bin/cw-trial1-gate.js` diffs these seven strings
+    // against the Step-9 template and FAILS on any divergence, so the copy cannot drift.
+    // ⚠️ KNOWN DUPLICATION, flagged not fixed (root §7): the same seven definitions are also
+    // inlined at three shipped sites in wml-assessment.js (the scene island's element list, the
+    // Step-9 template, and buildScenePlanSection). Folding those into this list is a clean-up
+    // worth doing, but it is three working features and belongs in its own change; the gate binds
+    // this copy to the Step-9 one in the meantime.
+    //
+    // `planFid` is the Step-9 document row this element's plan lives in — written out in full
+    // rather than built as `'cw-step-8-' + id`, because a key assembled at runtime is invisible to
+    // `cw-keymatch-harness` and `key-lint`, and an unreadable key is how a read that lands nowhere
+    // survives review (§5d). (The `-8-` is a fossil of the step renumber, not a mistake: Step 9's
+    // rows kept their original ids so no student's saved document had to be re-keyed.)
+    //
+    // `strong` is what a strong version of the element DOES — the criterion the student judges
+    // their own draft against. `example` is the one worked example that rides in the ask itself
+    // (help ladder rung 0), `more` the two that the [💡 More examples] chip serves (rung 1), so
+    // a stuck student never has to spend an API call to understand the question. The examples are
+    // story BEATS, deliberately never quotations: a beat can be described accurately, whereas a
+    // quotation would have to be verified word for word against the edition (§5c-i), and the
+    // structural point does not need the words. Set texts carry the exam-facing weight; the film
+    // and fairy-tale beats are there because a student who already knows the moment learns the
+    // technique from it instead of decoding an unfamiliar extract first.
+    // ══════════════════════════════════════════════════════════════════════════════════════════
+    const CW_SCENE_ELEMENTS = [
+        {
+            id: 'hook', planFid: 'cw-step-8-hook', label: 'Hook',
+            prompt: 'Grab your reader\u2019s attention.',
+            strong: 'A strong hook starts in the middle of something, not at the beginning of everything \u2014 a moment already under way, so the reader has to keep reading to find out what is going on.',
+            example: 'Macbeth opens on a blasted heath with three witches planning to meet a man we have not met yet. Shakespeare does not begin with Macbeth\u2019s biography; he begins with a plan already in motion, and we read on to find out who it is about.',
+            more: [
+                'A Christmas Carol opens by insisting Marley is dead \u2014 "dead as a door-nail" \u2014 and then refuses to explain why that matters. Dickens hands you a fact and withholds its purpose, which is exactly what makes you turn the page.',
+                'Jaws opens underwater, at night, with a swimmer who does not know she is being watched. The reader knows more than the character does, and that gap is the hook.',
+            ],
+        },
+        {
+            id: 'setup', planFid: 'cw-step-8-setup', label: 'Setup',
+            prompt: 'Introduce the problem and the characters around it.',
+            strong: 'A strong setup makes the reader understand what is at stake and who it is at stake for \u2014 the problem is not just described, it is attached to a person we can already picture.',
+            example: 'In A Christmas Carol, the clerk shivering in his cell of an office and the nephew turned away at the door do the setup in a page: we know Scrooge\u2019s problem, and we know exactly who is hurt by it.',
+            more: [
+                'In Of Mice and Men, the setup is two men and one dream of a small farm. The problem (they own nothing and are always moving on) is inseparable from the two people it belongs to.',
+                'In Finding Nemo, the setup is a father who has already lost almost everything and a son who wants to swim out further. The whole story is contained in that disagreement.',
+            ],
+        },
+        {
+            id: 'reaction', planFid: 'cw-step-8-reaction', label: 'Reaction',
+            prompt: 'The protagonist deals with the problems the best they can: coping and not coping.',
+            strong: 'A strong reaction shows the protagonist doing what they would naturally do \u2014 and it not being enough. The reader should see them coping in the way that has always worked for them, and see it failing this time.',
+            example: 'Macbeth\u2019s first reaction to the witches is to do nothing and hope the crown arrives on its own \u2014 "chance may crown me". Waiting is his instinct, and the story exists because waiting does not work.',
+            more: [
+                'In An Inspector Calls, Birling\u2019s reaction to the first question is to reach for his authority \u2014 name-dropping, bluster, a reminder that he was Lord Mayor. It is what has always worked for him, and the Inspector is unmoved by it.',
+                'In Frozen, Elsa reacts to being found out by running away and building a palace of ice. Running has kept her safe her whole life; here it freezes an entire kingdom.',
+            ],
+        },
+        {
+            id: 'epiphany', planFid: 'cw-step-8-epiphany', label: 'Epiphany',
+            prompt: 'The protagonist begins to understand what\u2019s really going on and what to do.',
+            strong: 'A strong epiphany is a change in what the protagonist UNDERSTANDS, and the reader should be able to point at the moment it happens \u2014 a line, an image, something they notice that they could not see before.',
+            example: 'Scrooge\u2019s epiphany is standing at his own neglected grave. Nothing new is explained to him; he simply sees where his life is going, and from that second he behaves differently.',
+            more: [
+                'In Romeo and Juliet, the Friar\u2019s epiphany is realising the feud will only stop if the families are made to look at what it costs them. His plan follows from the understanding, not the other way round.',
+                'In The Lion King, Simba\u2019s epiphany is being told his father lives on in him. He does not learn a new fact about Scar \u2014 he changes what he thinks he is allowed to be.',
+            ],
+        },
+        {
+            id: 'proaction', planFid: 'cw-step-8-proaction', label: 'Proaction',
+            prompt: 'The protagonist implements a plan. It fails.',
+            strong: 'A strong proaction is a real plan with real thought behind it, and the failure comes from something the plan could not account for \u2014 not from the protagonist suddenly being stupid.',
+            example: 'Juliet\u2019s plan \u2014 the sleeping potion, the letter, the tomb \u2014 is careful and it is sound. It fails because a letter does not arrive, which is exactly the kind of thing no plan can control.',
+            more: [
+                'In Jekyll and Hyde, Jekyll\u2019s plan is to separate the two halves of himself so the respectable half stays clean. It works perfectly, and that is why it destroys him.',
+                'In Toy Story, Woody\u2019s plan to nudge Buzz behind the desk is a plan; knocking him out of the window is the part he did not intend, and it costs him everything.',
+            ],
+        },
+        {
+            id: 'climax', planFid: 'cw-step-8-climax', label: 'Climax',
+            prompt: 'The forces of good and evil collide.',
+            strong: 'A strong climax puts the protagonist face to face with the thing that has been opposing them, and the outcome turns on the change they made at the epiphany \u2014 so the ending is earned rather than lucky.',
+            example: 'Macbeth meets Macduff knowing the prophecy that protected him has run out. He fights anyway, and the collision settles the question the whole play has been asking about him.',
+            more: [
+                'In An Inspector Calls, the climax is not a fight but the Inspector\u2019s final speech \u2014 the moment the family can no longer hold their version of events together.',
+                'In Star Wars, Luke switches off the targeting computer at the climax. He wins with the thing he learned, which is what makes the trench run feel earned instead of lucky.',
+            ],
+        },
+        {
+            id: 'denouement', planFid: 'cw-step-8-denouement', label: 'Denouement',
+            prompt: 'You write an unforgettable ending.',
+            strong: 'A strong denouement shows the world after the collision and lets the reader feel what has changed \u2014 usually in an image rather than an explanation, and never by telling them what to think.',
+            example: 'A Christmas Carol ends with Scrooge as a second father to Tiny Tim and the words "God bless us, every one" given to the child. Dickens shows the changed world instead of announcing the moral.',
+            more: [
+                'Of Mice and Men ends with two men who saw what happened and cannot explain it to the others. The quietness of the last page is what makes it land.',
+                'In Blood Brothers, the ending returns to the narrator and the same question it opened with. Nothing is explained; the frame simply closes.',
+            ],
+        },
+    ];
 
     // ⭐ v7.20.550 (CW trials slice 3) — WHICH DRAFT DOES A TRIAL ASSESS?
     // DERIVED from CW_STEPS, never a hand-written trial→draft map. A trial assesses the draft
@@ -5259,7 +5371,7 @@ window.WML = (function() {
         EXERCISE_MANIFEST,
         // Creative Writing
         CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SEED_FROM, CW_SIDEBAR_STEPS,
-        cwTrialSource,
+        cwTrialSource, CW_SCENE_ELEMENTS,
         // Revision map
         REVISION_MAP,
         // Utilities

@@ -229,11 +229,15 @@ reflection — is an **open question for Neil** (see §6).
 
 ## 4 · WHAT I COULD NOT SETTLE FROM THE CODE — flagged, not guessed
 
-1. **Do trials need to produce a SCORE for the dashboard?** Trials are `tier: 'si'`, and the grade
-   ring aggregates every attempt (root §GRADE AGGREGATION). If a diagnostic trial returns no mark,
-   it must be *deliberately* outside that aggregation rather than accidentally counted as zero.
-   **Needs measuring against the grade endpoints before build** — I have not traced it, and I am not
-   going to assume it.
+1. ~~**Do trials need to produce a SCORE for the dashboard?**~~ **MEASURED 2026-08-23, and the
+   answer is worse than "no": there is no path at all.** `sophicly_cw_trial_saved` fires from
+   `class-session-manager.php:585` and **has zero consumers anywhere in the monorepo**; CW's only
+   `session_records` row is one *ungraded* progress row per project (`session_id =
+   cw_project:{id}`, written by student-data's `class-wml-listener.php`), so a trial cannot reach
+   the ring today however it is marked. Neil ruled the ring gets **Sophia's** mark (PEDAGOGY §33.8),
+   and WML now saves the whole result — both judgments, marks, percent, grade — with every finished
+   trial, so the data is there the day a consumer exists. **The consumer is the dashboard lane's
+   work**, handed over 2026-08-23; it is not a WML change and does not block slices 5–6.
 2. **Seven drafts, six trials** (§1) — ruling needed.
 3. **Does a Cambridge or Edexcel student do this course?** The mark scheme served must match the
    student's own board, and the CW course is currently AQA-shaped. Summer rule says *all* students
@@ -243,6 +247,14 @@ reflection — is an **open question for Neil** (see §6).
 ---
 
 ## 5 · SCOPE AND SEQUENCE — what to build, in what order, and how each is proven
+
+> **STATUS 2026-08-23 — slices 1, 2, 3 and 4 are BUILT and gated.** 1 (`.544` mark-scheme data +
+> gate) · 2 (`.546/.547` the examiner ladder, engine + walk) · 3 (`.550` a trial shows the draft it
+> assesses, fresh, read-only, and speaks when it is missing) · 4 (`.551` Trial 1 as a focused
+> diagnostic: the seven taught scene elements walked serially, the student judging first, one API
+> call, Sophia's verdicts turned into a mark by code). Slices 1–4 are ONE test cycle. **Next: slice
+> 5** (Trials 2–6, each deriving its criteria from its own draft's teaching) and **slice 6** (the
+> final 40-mark assessment, the ladder's first real host).
 
 | # | slice | why this order | proven by |
 |---|---|---|---|

@@ -1854,6 +1854,22 @@ so no lane re-asks:
    (suggested 2026-08-21; Neil delegated the call 2026-08-22 — "wwad"). AO6 IS technical accuracy:
    marking before the SPAG step scores errors the student is about to fix; after Step 29 the mark
    is of the finished piece and Step 30 has something real to reflect on.
+8. ⭐⭐ **THE RING GETS SOPHIA'S MARK, NOT THE SELF-MARK** (Neil, 2026-08-23, deciding the open
+   question left by plan §4/#409). The order is fixed and it is the whole design: the student
+   judges every criterion FIRST and their verdicts are banked before Sophia is asked anything
+   (§19 — a judgment formed after hearing hers is not theirs); she then marks the same piece; and
+   **the gap between the two is the teaching**. The ring aggregates HER number, because a
+   self-reported grade that a parent reads as attainment is gameable in seven taps. Her job is the
+   per-criterion VERDICT (judgment, which is a model's work); the arithmetic on top of it is CODE
+   through the one canonical ladder — she is explicitly forbidden from stating a number, and a
+   grade she writes in prose is ignored. Shipped for Trial 1 at v7.20.551; the same shape carries
+   to Trials 2–6.
+   ⚠️ **The filing path does not exist yet, and it is the dashboard lane's, not ours.** Measured
+   2026-08-23: `sophicly_cw_trial_saved` has **zero consumers** anywhere in the monorepo, and CW
+   writes one *ungraded* progress row per project (`session_id = cw_project:{id}`). WML now saves
+   the full result (both judgments, marks, percent, grade) with every finished trial, so the ring
+   has real data the day the consumer lands. Handoff: `wml-to-dashboard-cw-trial-grades-*`.
+
 7. **Trial 6 moves to follow Draft 6 (Genre, step 25) as a genre-focused trial** (same delegation),
    so all seven drafts get assessment coverage and "comprehensive final feedback" lives only in the
    finale — Trial 6's old stub duplicated the final assessment's job.

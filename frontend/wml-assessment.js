@@ -15510,6 +15510,12 @@
                             // must not have a stale mid-walk judgment fire into the fresh session.
                             clearWalkResume();
                             setTimeout(() => { _cwProfileCtl.reset(); _cwProfileCtl.start(); }, 200);
+                        } else if (state.task === 'cw_trial_1') {
+                            // v7.20.551: Trial 1's walk owns chat-clear too — the generic CW
+                            // "Welcome back … hit the button below" would summon an API round the
+                            // trial never needs and leave the seven asks unserved.
+                            clearWalkResume();
+                            setTimeout(() => { _cwTrial1Ctl.reset(); _cwTrial1Ctl.forceStart(); }, 200);
                         } else if (state.task === 'cw_step_9') {
                             // v7.20.495 (#204): Step 9's zero-API walk owns chat-clear too — the
                             // generic "Welcome back … hit the button below" re-greet would summon
@@ -16392,6 +16398,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
+                cw_trial_1: _cwTrial1Ctl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -16405,6 +16412,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
+                cw_trial_1: _cwTrial1Ctl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -16503,6 +16511,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
+                    cw_trial_1: _cwTrial1Ctl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -16607,6 +16616,12 @@
             // wrap, so it can never claim a turn it does not own.
             if (_examinerLadderCtl.active && _inboundIsAnswer) {
                 await _examinerLadderCtl.handleTurn(msg);
+                return;
+            }
+            // v7.20.551 (slice 4): Trial 1's self-assessment owns the turn while it is running.
+            // Task-keyed, unlike the ladder above — this walk is Trial 1's, not a shared host.
+            if (state.task === 'cw_trial_1' && _cwTrial1Ctl.active && _inboundIsAnswer) {
+                await _cwTrial1Ctl.handleTurn(msg);
                 return;
             }
             if (state.task === 'cw_step_7' && _cwValuesCtl.active && _inboundIsAnswer) {
@@ -28075,7 +28090,609 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _examinerLadderCtl]);
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        // ⭐⭐ v7.20.551 (CW trials slice 4) — TRIAL 1: STORY COHERENCE, as a focused diagnostic.
+        //
+        // WHAT IT REPLACES. `CW-TRIAL-01-story-coherence.md` was a pre-law stub that broke three
+        // current laws at once: it told Sophia to ASK THE STUDENT FOR THEIR DRAFT (the paste-wall
+        // law, WML §3 — the draft is in the document and now sits beside the chat, slice 3), it
+        // invented a 1–5 scale over four made-up criteria (root §5c — a 20-point scale belonging
+        // to no mark scheme on earth), and it handed the whole judgment to the model (PEDAGOGY
+        // §19 — the student marks their own work; an AI check outsources the judgment we are
+        // trying to build). None of that is extended here. It is replaced.
+        //
+        // THE SHAPE, and every part of it is a rule rather than a preference:
+        //  · SERIAL (root §18). Seven elements, one at a time, one verdict each. A menu of seven
+        //    would collect one judgement and six skips.
+        //  · THE CRITERIA ARE WHAT WE TAUGHT (root §5c). Each element's `prompt` is byte-identical
+        //    to the row the student filled in Step 9 — the gate diffs the two — and `strong` says
+        //    what a strong one does. Nothing here is invented for the trial.
+        //  · THEIR OWN PLAN IS ON THE PAGE, never asked for (§3). The Step-9 line for this element
+        //    is read out of their `scene_selection` document, fresh.
+        //  · THE HELP LADDER (§4c.9). Criteria + one worked example inline · More examples · their
+        //    plan · and only then Sophia. Six of the seven asks should cost nothing.
+        //  · THE STUDENT JUDGES FIRST, SOPHIA SECOND (PEDAGOGY §19). Their seven verdicts are
+        //    banked BEFORE she says a word, and the gap between the two marks is the teaching.
+        //  · ONE API CALL for the whole trial — the closing marking turn. Everything else is code.
+        //
+        // THE MARK (Neil, 2026-08-23, deciding the open question in plan §4/#409): **the ring gets
+        // SOPHIA'S mark, not the self-mark.** The student's own verdicts are the lesson, not the
+        // grade — a self-reported number that a parent reads as attainment is gameable in seven
+        // taps. Her per-element verdicts are JUDGMENT (a model's job); the arithmetic on top of
+        // them is CODE (never the model's, §33 ruling 4): met=2 · partly=1 · not yet=0, out of 14,
+        // through the ONE canonical ladder `_ladderGrade` — no second grade table is created here.
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        const _cwTrial1Ctl = (function () {
+            let active = false, pending = false, done = false;
+            let emitted = 0;
+            let st = null;
+
+            const WALK = 'trial1';
+            const YES = 'Yes, it does';
+            const PARTLY = 'Partly';
+            const NOT = 'Not yet';
+            const VERDICT_KEY = {};
+            VERDICT_KEY[YES] = 'met'; VERDICT_KEY[PARTLY] = 'partly'; VERDICT_KEY[NOT] = 'not';
+            const POINTS = { met: 2, partly: 1, not: 0 };
+            const VERDICT_WORD = { met: 'Yes', partly: 'Partly', not: 'Not yet' };
+
+            function els() { return (WML && WML.CW_SCENE_ELEMENTS) || []; }
+            function fid(id) { return 'cw-trial-1-' + id; }
+
+            const lsKey = () => {
+                try {
+                    const base = (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'trial1');
+                    return base + '_trial1';
+                } catch (e) { return 'swml_trial1'; }
+            };
+            function persist() {
+                try { localStorage.setItem(lsKey(), JSON.stringify({ st: st, active: active, done: done })); } catch (e) {}
+            }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+
+            function aiBubble(plain) {
+                emitted++;
+                addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;   // a resume re-serve is DRAWN, never saved (§4c.7)
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function userTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function pickTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function writeRow(f, text, opts) {
+                if (!f) return false;
+                try {
+                    const wrote = _writeOutlineRowField(f, text, opts || { replace: true });
+                    if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    return wrote;
+                } catch (e) {
+                    console.warn('WML trial1: write failed (non-fatal) for ' + f + ' —', e && e.message);
+                    return false;
+                }
+            }
+
+            // ── chips (a PRIVATE copy per controller, per the walk contract) ───────────────
+            let _t1ReArm = null;
+            function chipBar(options, onPick) { return _t1BuildChips(options, onPick); }
+            function _t1BuildChips(options, onPick) {
+                _t1ReArm = function () { return _t1BuildChips(options, onPick); };
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice });
+                options.forEach(function (opt) {
+                    const label = (opt && typeof opt === 'object') ? opt.label : opt;
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: label,
+                        onClick: function () { _t1ReArm = null; bar.remove(); onPick(label); },
+                    }));
+                });
+                bc.appendChild(bar);
+                return true;
+            }
+            function chipBarOrRetry(options, onPick, retryText) {
+                if (chipBar(options, onPick)) return true;
+                _cwReplay(function () { aiBubble(retryText); });
+                return chipBar(options, onPick);
+            }
+
+            // ── the help ladder (§4c.9). Only the last rung costs anything. ────────────────
+            function helpBar(e) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help });
+                const spent = (st && st.moreSpent && st.moreSpent[e.id]) || 0;
+                if (spent < (e.more || []).length) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: 'More examples', icon: WML.icon('examples', 15),
+                        onClick: function () { serveMoreExample(e); },
+                    }));
+                }
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'My Plot', icon: WML.icon('spine', 15),
+                    onClick: function () {
+                        try { const t = document.querySelector('.swml-mv-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (err) {}
+                    },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn swml-cw-help-last', textContent: 'Still stuck — ask Sophia', icon: WML.phoenixIconHTML(16),
+                    onClick: function () { askSophia(e); },
+                }));
+                bc.appendChild(bar);
+            }
+            // Rung 1 — ONE further example per tap (the #200 lesson: a rung that spends its whole
+            // pool on the first press lasts exactly one press).
+            function serveMoreExample(e) {
+                const pool = e.more || [];
+                st.moreSpent = st.moreSpent || {};
+                const spent = st.moreSpent[e.id] || 0;
+                if (spent >= pool.length) return;
+                st.moreSpent[e.id] = spent + 1;
+                persist();
+                aiBubble('**Another ' + e.label.toLowerCase() + ':**\n\n' + pool[spent]);
+                // The question is still the one above; re-offer the rungs and the verdict chips so
+                // the student is never left with an example and nowhere to answer (§4d).
+                reAttachAsk(e);
+            }
+            // Rung 3 — the only API call in the item loop.
+            function askSophia(e) {
+                if (pending) return;
+                userTurn('Still stuck — what would a strong ' + e.label.toLowerCase() + ' look like in MY story?');
+                const planned = planLine(e.id);
+                const ctx = '[THE STUDENT IS ASSESSING THEIR OWN DRAFT for Trial 1 (story coherence) and is stuck on '
+                    + 'ONE element of the seven-part scene structure. Explain what a strong ' + e.label + ' would look '
+                    + 'like IN THEIR OWN STORY, in two or three sentences, using what they planned. Then hand it '
+                    + 'straight back — ask them to look at their own draft and decide. Do NOT judge their draft for '
+                    + 'them, do NOT give a mark, do NOT move to another element, and do NOT emit any marker.]'
+                    + '\n\nTHE ELEMENT: ' + e.label + ' — ' + e.prompt
+                    + '\nWHAT A STRONG ONE DOES: ' + e.strong
+                    + '\nWHAT THEY PLANNED FOR IT IN STEP 9: ' + (planned || '(they did not write a plan for this one)');
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                active = false; pending = true;
+                armWalkResume('trial1-help-' + e.id, function (reply, meta) {
+                    pending = false; active = true; persist();
+                    // Degraded mode (§4d + the .405 contract): a tap that does nothing is how a
+                    // 14-year-old decides the page is broken. Say it plainly, re-offer the free rungs.
+                    if (!reply || (meta && meta.timedOut)) {
+                        console.warn('WML trial1: ask-Sophia failed/timed out for ' + e.id + ' — degraded honest message served.');
+                        aiBubble('I can’t think this through with you right now — I couldn’t reach my own thinking. '
+                            + 'Try **More examples**, or open **My Plot** to see what you planned. Your question is '
+                            + 'saved here so your tutor can see where you got stuck.');
+                    }
+                    setTimeout(function () { try { reAttachAsk(e); } catch (err) {} }, 400);
+                    resetSend();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'I’m stuck on this one — what would a strong ' + e.label.toLowerCase() + ' look like in my story?';
+                sendCanvasMessage();
+            }
+
+            // ── their own Step-9 plan for this element — read, never requested (§3) ────────
+            function planLine(id) {
+                const e = els().filter(function (x) { return x.id === id; })[0];
+                if (!e || !e.planFid) return '';
+                try { return _cwDocValue('scene_selection', e.planFid) || ''; } catch (err) { return ''; }
+            }
+
+            // ── serving ───────────────────────────────────────────────────────────────────
+            function orientationChunks() {
+                return [
+                    'Time to see how your first draft holds together as a **story**. Not the spelling, not the '
+                        + 'word choices — those come later. Just this: does it work as a piece of storytelling?',
+                    'You are going to judge it yourself, one part at a time. Your draft is on the page beside this '
+                        + 'chat, and we will walk the **seven parts of a scene** you planned back in Step 9 — hook, '
+                        + 'setup, reaction, epiphany, proaction, climax, denouement.\n\nFor each one I will remind you '
+                        + 'what a strong version does and show you an example, and you decide whether your draft does '
+                        + 'it. Seven quick decisions.',
+                    'Be honest rather than kind. An honest **Not yet** tells you exactly what to fix in Draft 2; a '
+                        + 'hopeful **Yes** tells you nothing.\n\nWhen you have judged all seven, I will read your draft '
+                        + 'and give you my own verdict on each part — and the places where we disagree are the most '
+                        + 'useful thing in this lesson.',
+                ];
+            }
+
+            function askText(e, i) {
+                const planned = planLine(e.id);
+                let t = '**' + e.label + '** *(' + (i + 1) + ' of ' + els().length + ')*\n\n'
+                    + '*What it is for:* ' + e.prompt + '\n\n'
+                    + '**A strong ' + e.label.toLowerCase() + ':** ' + e.strong + '\n\n'
+                    + '*For example:* ' + e.example;
+                if (planned) t += '\n\n**What you planned in Step 9:** “' + planned + '”';
+                t += '\n\n**Read that part of your draft. Does your ' + e.label.toLowerCase() + ' do that?**';
+                return t;
+            }
+
+            function serveItem(opts) {
+                const list = els();
+                const i = st.i;
+                if (i >= list.length) { serveMarking(); return; }
+                const e = list[i];
+                _walkSlot.clear(WALK);      // a chip is a TAP — nothing typed may file here
+                const attach = function () {
+                    chipBarOrRetry([YES, PARTLY, NOT], function (pick) { onVerdict(e, pick); },
+                        '**Does your ' + e.label.toLowerCase() + ' do that?**');
+                    helpBar(e);
+                    resetSend();
+                };
+                if (opts && opts.defer) { serveCwChunks([askText(e, i)], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(askText(e, i));
+                attach();
+            }
+            // Re-offer the verdict chips after a help bubble — the ask is still live, and a student
+            // must never be left with an answer and nowhere to give a verdict (§4d).
+            function reAttachAsk(e) {
+                chipBarOrRetry([YES, PARTLY, NOT], function (pick) { onVerdict(e, pick); },
+                    '**Back to it — does your ' + e.label.toLowerCase() + ' do that?**');
+                helpBar(e);
+                resetSend();
+            }
+
+            function serveNote(e, verdict, opts) {
+                const word = verdict === 'partly' ? 'not fully there yet' : 'missing';
+                const text = '**In one sentence — what is ' + word + '?**\n\nSay what your ' + e.label.toLowerCase()
+                    + ' does at the moment and what it would need to do instead. This sentence becomes your target '
+                    + 'for Draft 2, so make it something you could actually act on.';
+                // A note is one self-contained sentence, so a second attempt REPLACES the first
+                // rather than stacking onto it (§4c.6 `rewrite`).
+                _walkSlot.arm(WALK, fid(e.id), { cycle: 'rewrite' });
+                const attach = function () { resetSend(); };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+
+            function bankVerdict(e, verdict, note) {
+                const label = VERDICT_WORD[verdict] || verdict;
+                writeRow(fid(e.id), note ? (label + ' — ' + note) : label, { replace: true });
+            }
+
+            function onVerdict(e, pick) {
+                pickTurn(pick);
+                const v = VERDICT_KEY[pick] || 'partly';
+                st.verdicts = st.verdicts || {};
+                st.verdicts[e.id] = v;
+                persist();
+                if (v === 'met') {
+                    bankVerdict(e, v, '');
+                    st.i++;
+                    persist();
+                    serveItem();
+                    return;
+                }
+                st.awaitNote = e.id;
+                persist();
+                serveNote(e, v);
+            }
+
+            // ── the ONE API turn: Sophia marks what they have just judged ─────────────────
+            function selfSummary() {
+                return els().map(function (e) {
+                    const v = (st.verdicts || {})[e.id] || 'not';
+                    const n = (st.notes || {})[e.id] || '';
+                    return '- ' + e.label + ': ' + (VERDICT_WORD[v] || v) + (n ? ' — ' + n : '');
+                }).join('\n');
+            }
+
+            function serveMarking() {
+                _walkSlot.clear(WALK);
+                st.phase = 'marking';
+                persist();
+                aiBubble('That is all seven. Here is what you decided:\n\n' + selfSummary()
+                    + '\n\nNow let me read your draft and give you my own verdict on each part. One moment.');
+                const ctx = '[TRIAL 1 — STORY COHERENCE. The student has just self-assessed their Draft 1 against the '
+                    + 'seven elements of scene structure. Their draft is in the document above. Do THREE things, in '
+                    + 'this order and nothing else:\n'
+                    + '1. Give YOUR OWN verdict on each of the seven elements, in order, one short paragraph each: '
+                    + 'point at the actual place in their draft (quote a few of their own words) and say whether that '
+                    + 'element does its job.\n'
+                    + '2. Name the ONE element that would improve the story most in Draft 2, and say what to do to it.\n'
+                    + '3. End your reply with exactly seven marker lines, one per element, in this format and nothing '
+                    + 'else on those lines:\n'
+                    + '@TRIAL_VERDICT[hook=met|partly|not]\n@TRIAL_VERDICT[setup=…]\n@TRIAL_VERDICT[reaction=…]\n'
+                    + '@TRIAL_VERDICT[epiphany=…]\n@TRIAL_VERDICT[proaction=…]\n@TRIAL_VERDICT[climax=…]\n'
+                    + '@TRIAL_VERDICT[denouement=…]\n'
+                    + 'Do NOT give a mark, a score, a percentage or a grade anywhere in your reply — the marks are '
+                    + 'worked out from your seven verdicts by the system, not by you. Do NOT rewrite their draft. '
+                    + 'Judge only story coherence: not spelling, not punctuation.]'
+                    + '\n\nWHAT THE STUDENT DECIDED ABOUT THEIR OWN DRAFT:\n' + selfSummary()
+                    + '\n\nWHAT EACH ELEMENT IS FOR:\n'
+                    + els().map(function (e) { return '- ' + e.label + ': ' + e.prompt + ' A strong one: ' + e.strong; }).join('\n');
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                active = false; pending = true;
+                armWalkResume('trial1-marking', function (reply, meta) {
+                    pending = false;
+                    onMarkingReply(reply, meta);
+                }, { timeoutMs: 90000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'I have judged all seven parts — please read my draft and give me your verdict.';
+                sendCanvasMessage();
+            }
+
+            // The model omitting or mangling a marker is a NAMED failure mode, so it is engineered
+            // out rather than disclaimed (§11): a mark is filed only when all seven verdicts parse.
+            // Anything less says so plainly and offers the student a retry — it never files a
+            // partial mark and never leaves the screen dead.
+            function parseVerdicts(reply) {
+                const out = {};
+                const re = /@TRIAL_VERDICT\s*\[\s*([a-zA-Z]+)\s*=\s*(met|partly|not)\s*\]/g;
+                let m;
+                while ((m = re.exec(String(reply || ''))) !== null) {
+                    const id = m[1].toLowerCase();
+                    if (els().some(function (e) { return e.id === id; })) out[id] = m[2].toLowerCase();
+                }
+                return out;
+            }
+            function markFrom(verdicts) {
+                const list = els();
+                let got = 0;
+                list.forEach(function (e) { got += POINTS[verdicts[e.id]] || 0; });
+                const max = list.length * 2;
+                const pct = max ? Math.round((got / max) * 100) : 0;
+                return { got: got, max: max, pct: pct, grade: _ladderGrade(pct) };
+            }
+            function agreementLine(mine) {
+                const rows = [];
+                els().forEach(function (e) {
+                    const a = (st.verdicts || {})[e.id], b = mine[e.id];
+                    if (!b || a === b) return;
+                    rows.push('- **' + e.label + '** — you said *' + (VERDICT_WORD[a] || a) + '*, I said *'
+                        + (VERDICT_WORD[b] || b) + '*.');
+                });
+                return rows;
+            }
+
+            function onMarkingReply(reply, meta) {
+                if (!reply || (meta && meta.timedOut)) {
+                    console.warn('WML trial1: marking call failed/timed out — honest message + retry chip served.');
+                    active = true; persist();
+                    _cwReplay(function () {
+                        aiBubble('I could not read your draft just now — that is my end, not yours. **Your seven '
+                            + 'judgements are saved** in your document, so nothing is lost. Try again when you are '
+                            + 'ready, or carry on to Step 11 and come back to this.');
+                    });
+                    chipBarOrRetry(['Try again →'], function () { pickTurn('Try again →'); serveMarking(); },
+                        '**Your seven judgements are saved.**');
+                    resetSend();
+                    return;
+                }
+                const mine = parseVerdicts(reply);
+                const complete = els().every(function (e) { return !!mine[e.id]; });
+                if (!complete) {
+                    // FAIL LOUD, to the student, and never file half a mark.
+                    console.warn('WML trial1: only ' + Object.keys(mine).length + '/' + els().length
+                        + ' verdict markers parsed — no mark filed.');
+                    active = true; persist();
+                    chipBarOrRetry(['Give me my marks →'], function () { pickTurn('Give me my marks →'); serveMarking(); },
+                        '**I gave you my thoughts, but I did not finish the marking properly — tap below and I will '
+                        + 'do the marks again.**');
+                    resetSend();
+                    return;
+                }
+                st.sophia = mine;
+                const m = markFrom(mine);
+                st.mark = m;
+                st.phase = 'done';
+                done = true; active = false;
+                persist();
+                writeRow('cw-trial-1-mark', 'Grade ' + m.grade + ' (' + m.got + '/' + m.max + ' · ' + m.pct + '%) for story coherence', { replace: true });
+                const gaps = agreementLine(mine);
+                writeRow('cw-trial-1-gap', gaps.length
+                    ? gaps.map(function (g) { return g.replace(/\*\*/g, '').replace(/^- /, ''); }).join(' | ')
+                    : 'You and Sophia agreed on all seven.', { replace: true });
+                _cwReplay(function () {
+                    aiBubble('**Your story coherence grade: ' + m.grade + '** *(' + m.got + ' out of ' + m.max + ')*\n\n'
+                        + (gaps.length
+                            ? 'Where we saw it differently:\n\n' + gaps.join('\n')
+                                + '\n\nThose are the parts worth looking at again — not because I am right, but '
+                                + 'because two readers disagreeing about your story is exactly where the useful '
+                                + 'question is.'
+                            : 'We agreed on all seven, which means you are already reading your own writing the way '
+                                + 'a reader does. That is the harder half of this.')
+                        + '\n\nIt is all in your document. Mark the lesson complete when you are ready.');
+                });
+                chipBarOrRetry(['Change my answers →'], onChangeAnswers, '**Your grade is filed.**');
+                resetSend();
+                // WML's own store keeps the result; the dashboard's grade ring cannot read it yet
+                // (there is no consumer of `sophicly_cw_trial_saved` — handed to the dashboard lane
+                // 2026-08-23). Saving it now means the ring has real data the day that lands.
+                try {
+                    if (state.cwProjectId && WML.cwProject && WML.cwProject.saveTrial) {
+                        WML.cwProject.saveTrial(state.cwProjectId, {
+                            trial: 1, dimension: 'story_coherence',
+                            self: st.verdicts, sophia: mine, notes: st.notes || {},
+                            marks: m.got, out_of: m.max, percent: m.pct, grade: m.grade,
+                            timestamp: new Date().toISOString(),
+                        }, 1).catch(function (e) { console.warn('WML trial1: saveTrial failed —', e && e.message); });
+                    }
+                } catch (e) { console.warn('WML trial1: saveTrial threw —', e && e.message); }
+            }
+
+            function onChangeAnswers() {
+                pickTurn('Change my answers →');
+                st = { i: 0, verdicts: {}, notes: {}, moreSpent: {}, phase: 'items' };
+                done = false; active = true;
+                persist();
+                serveItem();
+            }
+
+            // ── the turn ──────────────────────────────────────────────────────────────────
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                const slot = _walkSlot.consume(WALK);
+                if (!slot) {
+                    _cwNoAskGuard(WALK, function () { serveCurrent(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
+                userTurn(clean);
+                const id = st.awaitNote;
+                const e = els().filter(function (x) { return x.id === id; })[0];
+                st.notes = st.notes || {};
+                if (e) {
+                    st.notes[e.id] = clean;
+                    bankVerdict(e, (st.verdicts || {})[e.id] || 'partly', clean);
+                }
+                st.awaitNote = null;
+                st.i++;
+                persist();
+                serveItem();
+            }
+
+            // ── position, derived from the DOCUMENT first ──────────────────────────────────
+            // The rows survive a reload; a counter does not. On resume the walk lands on the exact
+            // element the student was on (§4c.8b), not the top of the list.
+            function deriveFromDoc() {
+                const list = els();
+                const verdicts = {}, notes = {};
+                let i = 0;
+                for (let k = 0; k < list.length; k++) {
+                    const raw = (function () {
+                        let out = '';
+                        try {
+                            if (canvasEditor) {
+                                canvasEditor.state.doc.descendants(function (node) {
+                                    if (out) return false;
+                                    if ((node.type.name === 'outlineRow' || node.type.name === 'inputField')
+                                        && node.attrs && node.attrs.fieldId === fid(list[k].id)) out = (node.textContent || '').trim();
+                                    return true;
+                                });
+                            }
+                        } catch (err) {}
+                        return out;
+                    })();
+                    if (!raw) break;
+                    const head = raw.split('—')[0].trim().toLowerCase();
+                    verdicts[list[k].id] = head.indexOf('yes') === 0 ? 'met' : head.indexOf('partly') === 0 ? 'partly' : 'not';
+                    const tail = raw.indexOf('—') >= 0 ? raw.slice(raw.indexOf('—') + 1).trim() : '';
+                    if (tail) notes[list[k].id] = tail;
+                    i = k + 1;
+                }
+                return { i: i, verdicts: verdicts, notes: notes };
+            }
+
+            function serveCurrent(opts) {
+                if (!st) st = { i: 0, verdicts: {}, notes: {}, moreSpent: {}, phase: 'items' };
+                if (st.phase === 'done') { serveWrap(); return; }
+                if (st.awaitNote) {
+                    const e = els().filter(function (x) { return x.id === st.awaitNote; })[0];
+                    if (e) { serveNote(e, (st.verdicts || {})[e.id] || 'partly', opts); return; }
+                    st.awaitNote = null;
+                }
+                if (st.i >= els().length) { serveMarking(); return; }
+                serveItem(opts);
+            }
+
+            function serveWrap() {
+                _walkSlot.clear(WALK);
+                const m = st && st.mark;
+                _cwReplay(function () {
+                    aiBubble(m
+                        ? '**Your story coherence grade: ' + m.grade + '** *(' + m.got + ' out of ' + m.max + ')*. '
+                            + 'It is in your document, and you can go through the seven parts again whenever you want.'
+                        : 'Your seven judgements are in your document. You can go through them again whenever you want.');
+                });
+                chipBarOrRetry(['Change my answers →'], onChangeAnswers, '**This trial is finished.**');
+                resetSend();
+            }
+
+            function advance() { serveCurrent(); }
+
+            // ── lifecycle ─────────────────────────────────────────────────────────────────
+            function forceStart() {
+                if (!els().length) {
+                    console.warn('WML trial1: no scene elements — refusing to open.');
+                    return false;
+                }
+                st = { i: 0, verdicts: {}, notes: {}, moreSpent: {}, phase: 'items' };
+                active = true; pending = false; done = false;
+                persist();
+                // Their Step-9 plan, read FRESH (never a cached snapshot — #402), then the walk
+                // starts whether or not it arrived: a missing plan costs a line on the page, it
+                // never costs the student the lesson.
+                const go = function () {
+                    serveCwChunks(orientationChunks(), {
+                        emit: aiBubble,
+                        onDone: function () { serveCurrent({ defer: true }); },
+                    });
+                };
+                try {
+                    if (state.cwProjectId && typeof _cwLoadDocValues === 'function') {
+                        _cwLoadDocValues(state.cwProjectId, 'scene_selection', true).then(go).catch(go);
+                    } else { go(); }
+                } catch (e) { go(); }
+                return true;
+            }
+
+            function reset() {
+                active = false; pending = false; done = false;
+                st = null;
+                _walkSlot.clear(WALK);
+                clearPersist();
+            }
+
+            function tryResume() {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    const d = raw ? JSON.parse(raw) : null;
+                    if (!d || !d.st) return false;
+                    st = d.st;
+                    done = !!d.done;
+                    // The document is the authority on how far they got — the sidecar only carries
+                    // what the document cannot (which element is awaiting a sentence).
+                    const fromDoc = deriveFromDoc();
+                    if (fromDoc.i > (st.i || 0)) { st.i = fromDoc.i; st.verdicts = fromDoc.verdicts; st.notes = fromDoc.notes; }
+                    const mark = emitted;
+                    const standDown = function (what) {
+                        if (emitted === mark) return false;
+                        console.log('WML trial1: another route already served — skipping the deferred ' + what + '.');
+                        return true;
+                    };
+                    if (done || st.phase === 'done') {
+                        active = false; pending = false; done = true;
+                        setTimeout(function () { if (standDown('wrap')) return; _cwReplay(serveWrap); }, 500);
+                        return false;
+                    }
+                    active = true; pending = false;
+                    console.log('WML trial1: resumed on element ' + (st.i + 1) + ' of ' + els().length
+                        + (st.awaitNote ? ' (awaiting the sentence for "' + st.awaitNote + '")' : ''));
+                    try {
+                        if (state.cwProjectId && typeof _cwLoadDocValues === 'function') _cwLoadDocValues(state.cwProjectId, 'scene_selection', true);
+                    } catch (e) {}
+                    setTimeout(function () { if (standDown('reattach')) return; _cwReplay(function () { serveCurrent(); }); }, 400);
+                    return true;
+                } catch (e) { return false; }
+            }
+
+            function nudge() {
+                if (!active || pending) return false;
+                serveCurrent();
+                return true;
+            }
+
+            return {
+                handleTurn, onReply: function () { /* the marking reply arrives through armWalkResume */ },
+                reset, tryResume, nudge, forceStart, advance,
+                atStart: function () { return !!st && (st.i || 0) === 0 && !done; },
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _examinerLadderCtl, _cwTrial1Ctl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
@@ -28089,6 +28706,7 @@
             _cwValuesCtl.onReply(reply);
             _cwPlotValuesCtl.onReply(reply);
             _cw9SceneCtl.onReply(reply);
+            _cwTrial1Ctl.onReply(reply);
 
             const t = (state && state.task) || '';
             // ⚠️ Every walk task needs its arm HERE as well as in onReply above — the .490
@@ -28102,7 +28720,11 @@
                 : t === 'cw_step_6' ? _cwOutlineCtl
                 : t === 'cw_step_7' ? _cwValuesCtl
                 : t === 'cw_step_8' ? _cwPlotValuesCtl
-                : t === 'cw_step_9' ? _cw9SceneCtl : null;
+                : t === 'cw_step_9' ? _cw9SceneCtl
+                // Trial 1 is code-started (no protocol start marker to miss), but it belongs in
+                // this map anyway — the .490 incident's second finding was that an UNLISTED task
+                // makes the start-miss guard inert for exactly the step that has no controller.
+                : t === 'cw_trial_1' ? _cwTrial1Ctl : null;
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
             if (ctl.active || ctl.pending || !ctl.atStart()) { _cwStartMisses = 0; return; }
@@ -28146,6 +28768,7 @@
             cwPlotValuesCtl: _cwPlotValuesCtl, // v7.20.491 — boot resume calls tryResume() on this
             examinerLadderCtl: _examinerLadderCtl, // v7.20.547 — boot resume calls tryResume() on this
             cw9SceneCtl: _cw9SceneCtl,         // v7.20.494 (#204) — fresh-entry intercept calls start() on this
+            cwTrial1Ctl: _cwTrial1Ctl,         // v7.20.551 — fresh entry calls forceStart(), boot resume tryResume()
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
             set canvasChatId(v) { canvasChatId = v; },
@@ -34935,6 +35558,10 @@
                     // v7.20.547: the ladder is host-agnostic, so boot resume asks IT, not the
                     // task — its sidecar carries the host config that opened it.
                     if (tp.examinerLadderCtl) tp.examinerLadderCtl.tryResume();
+                    // v7.20.551: Trial 1's chips are DOM-only like every other walk's, so a reload
+                    // mid-trial must re-serve the element the student was on — not the top of the
+                    // seven (§4c.8b).
+                    if (state.task === 'cw_trial_1' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
                     // (student types on); only re-surface the programmatic picker when NO poem is
                     // active (last poem finished, or none picked yet). The picker bubble is DOM-only
@@ -35110,6 +35737,15 @@
                     if (state.task === 'cw_step_9' && !state.reviewMode && tp.cw9SceneCtl) {
                         console.log('WML v7.20.494: CW Step 9 — deterministic scene-selection start (isCwSi entry)');
                         tp.cw9SceneCtl.start();
+                        return;
+                    }
+
+                    // v7.20.551 (slice 4): Trial 1 owns its own fresh entry — the whole trial is
+                    // code-served except the closing marking turn, so there is no AI greeting to
+                    // wait for and no start marker that could go missing.
+                    if (state.task === 'cw_trial_1' && !state.reviewMode && tp.cwTrial1Ctl) {
+                        console.log('WML v7.20.551: CW Trial 1 — deterministic self-assessment start (isCwSi entry)');
+                        tp.cwTrial1Ctl.forceStart();
                         return;
                     }
 
@@ -48260,6 +48896,31 @@
             const _trialSrc = (window.WML && WML.cwTrialSource) ? WML.cwTrialSource('cw_trial_' + stepDef.trial) : null;
             html += dividerHTML('YOUR DRAFT');
             html += sectionHTML('response', CW_TRIAL_DRAFT_LABEL, false, null, _cwTrialDraftInner(_trialSrc, ''));
+            // v7.20.551 (slice 4): Trial 1 is a self-assessment, so its document holds the
+            // student's OWN seven verdicts — one row per scene element, filled by the walk as they
+            // decide, which is also how a reload lands them back on the element they were on
+            // (§4c.8b). The mark rows below are LOCKED: Sophia's verdict is hers, and a mark a
+            // student can retype is not a mark. Rows come from the ONE element list
+            // (WML.CW_SCENE_ELEMENTS), so the document and the walk cannot list different parts.
+            if (stepDef.trial === 1) {
+                const _els = (window.WML && WML.CW_SCENE_ELEMENTS) || [];
+                html += dividerHTML('YOUR JUDGEMENT');
+                html += sectionHTML('plan', 'Your Judgement', true, null,
+                    '<h3>What you decided about your own draft</h3>' +
+                    '<p><em>One line per part of your scene: does your draft do the job that part is for? Where it does not yet, your own sentence says what is missing — that sentence is your target for Draft 2.</em></p>' +
+                    _els.map(function (e) {
+                        return outlineRowHTML({ id: e.id, label: e.label, prompt: 'Yes · Partly · Not yet — and, where it is not there yet, what is missing.' }, 'cw-trial-1-' + e.id);
+                    }).join('')
+                );
+                html += dividerHTML('SOPHIA’S MARK');
+                html += sectionHTML('response', 'Story Coherence Mark', false, null,
+                    '<h3>Sophia’s mark, and where you two disagreed</h3>' +
+                    '<p><em>You judge your draft first; Sophia reads it afterwards and gives her own verdict on each part. The places where you saw it differently are the most useful thing on this page.</em></p>' +
+                    outlineRowHTML({ id: 'mark', label: 'Mark', prompt: 'Filled in once Sophia has read your draft.', locked: true }, 'cw-trial-1-mark') +
+                    outlineRowHTML({ id: 'gap', label: 'Where you differed', prompt: 'Filled in once Sophia has read your draft.', locked: true }, 'cw-trial-1-gap')
+                );
+                return html;
+            }
             html += dividerHTML('ASSESSMENT');
             html += sectionHTML('feedback', 'Assessment', true, null, '<p><em>Your draft will be assessed here.</em></p>');
             return html;
