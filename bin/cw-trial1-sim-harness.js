@@ -70,13 +70,21 @@ const FIDS = ELEMENTS.map((e) => 'cw-trial-1-' + e.id)
 const PLAN = { hook: 'A dog barks at nothing and the lights go out.', epiphany: 'She sees her own reflection in the sentinel’s visor.' };
 
 let planLoaded = false;   // set by the stateful loader stub below; reset per world
+let ladder = null;        // the live ladder-card model, published by the walk (#426)
 function world(opts) {
     opts = opts || {};
     planLoaded = false;
+    ladder = null;
     const w = makeWorld(CTL_SRC, Object.assign({
         task: 'cw_trial_1',
         fids: FIDS,
         ok: ok,
+        // §4d: a walk that has handed the student a live surface is live BY that surface. The
+        // ladder card counts only while it actually offers a decision — never as a blanket
+        // excuse for a dead screen.
+        externalSurface: function () {
+            return !!(ladder && (ladder.levels || []).some((lv) => lv.shown && !lv.verdict));
+        },
         extraDeps: {
             _ladderGrade: LADDER_GRADE,
             // STATEFUL, like the real cache: _cwDocValue answers from what a completed load put
@@ -91,10 +99,16 @@ function world(opts) {
             _cwLoadDocValues: function () {
                 return new Promise((res) => setImmediate(() => { planLoaded = true; res({}); }));
             },
+            // ⭐ #426: the ladder card is the climb's control surface, so the sim holds the REAL
+            // model the walk publishes and taps it like a student would. A card that never
+            // publishes, or publishes a stale element, fails every assertion below.
+            setTrialLadderModel: function (m) { ladder = m; },
+            _swmlScrollToTop: function () {},
         },
     }, opts));
     // The rig's WML shim is the REAL recordTurn (it throws on a durability breach), so it is
     // extended in place rather than replaced — replacing it would switch that contract off.
+    _pickWorld = w;
     w.saved = [];
     Object.assign(w.deps.WML, {
         CW_SCENE_ELEMENTS: ELEMENTS,
@@ -125,24 +139,42 @@ async function toFirstAsk(w) {
     }
     await settle();
 }
+/** Tap a level on the ladder CARD, the way a student does (#426).
+ *  ⭐ LIVENESS IS CHECKED HERE, AUTOMATICALLY. The rig checks it inside say()/tap() and there is
+ *  deliberately no opt-out (§4d) — moving the level decision onto the card would otherwise move
+ *  it OUT of that net, which is exactly how a guard that leaves a dead screen ships. So every
+ *  card tap asserts the same invariant: after it, the student has a question, a chip, or a live
+ *  level to judge. Never zero. */
+let _pickWorld = null;
+async function pickLevel(n, verdict) {
+    if (!ladder || typeof ladder.onPick !== 'function') return false;
+    const lv = (ladder.levels || []).filter((x) => x.n === n)[0];
+    if (!lv || !lv.shown || lv.verdict) return false;
+    const w = _pickWorld;
+    const before = w ? w.bubbles.length : 0;
+    ladder.onPick(n, verdict);
+    await settle();
+    if (w && w.ctl.active) {
+        const liveLevel = !!(ladder && (ladder.levels || []).some((x) => x.shown && !x.verdict));
+        ok(w.bubbles.length > before || w.chips().length > 0 || liveLevel,
+            'DEAD END after tapping Level ' + n + ' "' + verdict + '": the walk is active but said '
+            + 'NOTHING, left no chip, and the card offers no next decision.');
+    }
+    return true;
+}
 /** Drive the CURRENT element to the given 0–4 mark, then supply the sentence.
+ *  The MARK IS THE CLIMB: 0 = no Level 1 · 1 = some of Level 1 · 2 = all of Level 1 and no
+ *  more · 3 = some of Level 2 · 4 = all of Level 2.
  *  opts.last: the sentence that completes the set arms the MARKING call, and the rig's say()
  *  auto-resolves any armed call with `undefined` — so the last sentence goes through handleTurn
  *  directly, leaving the armed call for the test to answer (reply / timeout) deliberately. */
 async function score(w, mark, note, opts) {
-    const tapNamed = async (re) => {
-        const c = chipNamed(w, re);
-        if (!c) return false;
-        w.tap(c);
-        await settle();
-        return true;
-    };
     let okTaps = true;
-    if (mark === 0) okTaps = await tapNamed(/^Not yet$/);
-    else if (mark === 1) okTaps = (await tapNamed(/^Some of it$/)) && (await tapNamed(/Bottom of Level 1/));
-    else if (mark === 2) okTaps = (await tapNamed(/Yes — all of it/)) && (await tapNamed(/Level 1 is my level/));
-    else if (mark === 3) okTaps = (await tapNamed(/Yes — all of it/)) && (await tapNamed(/^Some of it$/));
-    else okTaps = (await tapNamed(/Yes — all of it/)) && (await tapNamed(/Yes — all of it/));
+    if (mark === 0) okTaps = await pickLevel(1, 'not');
+    else if (mark === 1) okTaps = await pickLevel(1, 'some');
+    else if (mark === 2) okTaps = (await pickLevel(1, 'all')) && (await pickLevel(2, 'not'));
+    else if (mark === 3) okTaps = (await pickLevel(1, 'all')) && (await pickLevel(2, 'some'));
+    else okTaps = (await pickLevel(1, 'all')) && (await pickLevel(2, 'all'));
     if (!okTaps) return false;
     const sentence = note || 'The moment the lights go out proves it.';
     if (opts && opts.last) { w.ctl.handleTurn(sentence); } else { await w.say(sentence); }
@@ -187,9 +219,16 @@ async function main() {
         ok(/Hook/.test(t), '1 · the first ask is the FIRST element, Hook');
         ok(t.indexOf(ELEMENTS[0].prompt) !== -1, '1 · it carries the definition the student was taught in Step 9, verbatim');
         ok(t.indexOf(ELEMENTS[0].example) !== -1, '1 · …and a worked example inside the ask itself (§4c.2, ladder rung 0)');
-        ok(/Level 1 — 1 to 2 marks/.test(t), '1 · …and Level 1’s descriptor — the criterion of THIS question (§4c.1)');
-        ok(t.indexOf(ELEMENTS[0].strong) === -1, '1 · Level 2 is NOT shown yet — levels are revealed serially, like a real climb');
-        ok(/does it do all of level 1\?\*\*\s*$/i.test(t.trim()), '1 · the ask ENDS on the question (§4c.4)');
+        ok(/Your Marking/.test(t) && /card on the page/i.test(t),
+            '1 · …and it hands the student to the LADDER CARD, where the levels live (#426)');
+        ok(!!ladder && ladder.title === 'Hook' && ladder.index === 0 && ladder.total === 7,
+            '1 · ⭐ the card is published for THIS element the moment the ask lands');
+        const l1 = (ladder.levels || []).filter((lv) => lv.n === 1)[0];
+        const l2 = (ladder.levels || []).filter((lv) => lv.n === 2)[0];
+        ok(!!l1 && l1.shown && !l1.verdict, '1 · Level 1 is on the card, awaiting a decision');
+        ok(l1.text.indexOf(ELEMENTS[0].prompt) !== -1, '1 · …carrying the criterion the course taught, verbatim (§4c.1)');
+        ok(!!l2 && !l2.shown, '1 · ⭐ Level 2 is NOT on the card yet — you climb to it, exactly as an examiner does');
+        ok(typeof ladder.onOpenDraft === 'function', '1 · the card offers the draggable draft pad (Neil, 2026-08-23)');
         ok(/1 of 7/.test(t), '1 · the student can see how long this is');
         ok(t.indexOf(PLAN.hook) !== -1, '1 · their OWN Step-9 plan is shown to them…');
         ok(!/paste|type it out|share your draft|copy your/i.test(allText(w)),
@@ -205,21 +244,25 @@ async function main() {
         const first = lastBubble(w);
         const named = ELEMENTS.filter((e) => first.indexOf('**' + e.label + '**') !== -1);
         ok(named.length === 1, '2 · exactly ONE element is on screen at a time (root §18 — a menu collects six skips)');
-        w.tap(chipNamed(w, /Yes — all of it/));
-        await settle();
-        const l2 = lastBubble(w);
-        ok(l2.indexOf(ELEMENTS[0].strong) !== -1, '2 · clearing Level 1 reveals Level 2 — which IS the taught "strong" criterion');
-        ok(/stays on the record/i.test(l2), '2 · …and says Level 1 stays on the record (a presented level is never removed, #424)');
-        ok(!!chipNamed(w, /Level 1 isn/), '2 · …with a way back down if the climb was hopeful');
-        w.tap(chipNamed(w, /Yes — all of it/));
-        await settle();
+        await pickLevel(1, 'all');
+        const lv1 = (ladder.levels || []).filter((lv) => lv.n === 1)[0];
+        const lv2 = (ladder.levels || []).filter((lv) => lv.n === 2)[0];
+        ok(lv2.shown && !lv2.verdict, '2 · clearing Level 1 puts Level 2 on the card');
+        ok(lv2.text === ELEMENTS[0].strong, '2 · …and Level 2 IS the taught "strong" criterion, not an invented one');
+        ok(lv1.shown && lv1.verdict === 'all',
+            '2 · ⭐⭐ LEVEL 1 IS STILL ON THE CARD — the whole point of #426: both levels comparable at once');
+        ok(ladder.mark == null, '2 · no mark yet — the climb is unfinished');
+        await pickLevel(2, 'all');
         ok(/4 out of 4/.test(lastBubble(w)), '2 · all of Level 2 = 4/4');
         ok(/prove it/i.test(lastBubble(w)), '2 · ⭐ a Level-2 claim demands EVIDENCE — "show me the line that proves it" (§33.10)');
+        ok(ladder.mark === 4, '2 · …and the card shows the running mark');
         await w.say('The dog barking at nothing is the moment.');
         await settle();
         const row = w.rows.get('cw-trial-1-hook') || '';
         ok(/^4\/4 — The dog barking/.test(row), '2 · the row carries the mark AND their evidence, verbatim');
         ok(/Setup/.test(lastBubble(w)), '2 · and the walk moves straight to element 2');
+        ok(ladder.title === 'Setup' && (ladder.levels || []).filter((lv) => lv.n === 2)[0].shown === false,
+            '2 · …and the card follows it, freshly climbed from Level 1');
         ok(w.sends.length === 0, '2 · still zero API calls');
     }
 
@@ -228,12 +271,8 @@ async function main() {
         const w = world();
         w.ctl.forceStart();
         await toFirstAsk(w);
-        w.tap(chipNamed(w, /^Some of it$/));
-        await settle();
-        ok(/where in the level/i.test(lastBubble(w)), '3 · "some of it" asks the examiner’s placement question');
-        w.tap(chipNamed(w, /Bottom of Level 1/));
-        await settle();
-        ok(/1 out of 4/.test(lastBubble(w)), '3 · bottom of Level 1 = 1/4');
+        await pickLevel(1, 'some');
+        ok(/1 out of 4/.test(lastBubble(w)), '3 · some of Level 1 = 1/4 — the placement IS how far the climb got');
         ok(/what is missing/i.test(lastBubble(w)), '3 · …and a stopped climb asks what is missing (the Draft-2 target)');
         await w.say('It starts with the weather instead of the moment.');
         await settle();
@@ -243,22 +282,72 @@ async function main() {
         ok(/Setup/.test(lastBubble(w)), '3 · then it moves on');
     }
 
-    // ── 3b · THE WAY BACK DOWN — a hopeful climb can be corrected (#424) ─────────────────
+    // ── 3b · ⭐⭐ CHANGE YOUR MIND — the whole reason #426 exists ─────────────────────────
     {
         const w = world();
         w.ctl.forceStart();
         await toFirstAsk(w);
-        w.tap(chipNamed(w, /Yes — all of it/));
+        await pickLevel(1, 'all');
+        await pickLevel(2, 'all');
+        await w.say('First read: it is all there.');
         await settle();
-        w.tap(chipNamed(w, /Level 1 isn/));
+        ok(/^4\/4/.test(w.rows.get('cw-trial-1-hook') || ''), '3b · 4/4 banked on the first pass');
+        // …then they look again. Re-open the element and re-judge Level 1 downwards.
+        const w2 = world({ ls: w.ls, prefill: Object.fromEntries(w.rows) });
+        w2.ctl.tryResume();
         await settle();
-        ok(/back down/i.test(lastBubble(w)), '3b · climbing back down is named as the examiner’s own move');
-        ok(!!chipNamed(w, /Top of Level 1/), '3b · …and lands on the placement question, not a dead screen');
-        w.tap(chipNamed(w, /Top of Level 1/));
+        // Walk back to the Hook by re-opening the whole trial (the student's own route).
+        w2.ctl.reset();
+        w2.ctl.forceStart();
+        await toFirstAsk(w2);
+        await pickLevel(1, 'all');
+        ok((ladder.levels || []).filter((lv) => lv.n === 1)[0].verdict === 'all', '3b · Level 1 judged');
+        ok(typeof ladder.onRevise === 'function', '3b · every judged level carries a way to change it');
+        ladder.onRevise(1);
         await settle();
-        await w.say('Nearly all there, the barking needs a reason.');
+        ok(/Re-judging/i.test(lastBubble(w2)), '3b · re-judging is named as the examiner’s own move');
+        const back1 = (ladder.levels || []).filter((lv) => lv.n === 1)[0];
+        const back2 = (ladder.levels || []).filter((lv) => lv.n === 2)[0];
+        ok(back1.shown && !back1.verdict, '3b · ⭐ Level 1 is open again, awaiting a fresh decision');
+        ok(!back2.shown, '3b · ⭐ …and Level 2 is dropped — a re-judged rung re-opens the whole climb above it');
+        ok(ladder.mark == null, '3b · …and the mark is taken back, never silently kept');
+        await pickLevel(1, 'some');
+        await w2.say('Nearly all there, the barking needs a reason.');
         await settle();
-        ok(/^2\/4 — /.test(w.rows.get('cw-trial-1-hook') || ''), '3b · top of Level 1 = 2/4, banked');
+        ok(/^1\/4 — /.test(w2.rows.get('cw-trial-1-hook') || ''), '3b · the revised mark replaces the old one in the document');
+    }
+
+    // ── 3b2 · THE CLIMB IS GATED, THE MARK MATCHES HOW FAR IT GOT, AND A REVISE TAKES
+    //          THE MARK BACK. (The three defects the first cut of this gate did not catch —
+    //          each injected and proved RED before this block was written.) ─────────────────
+    {
+        const w = world();
+        w.ctl.forceStart();
+        await toFirstAsk(w);
+        // (a) a stopped climb must NOT reveal the level above it.
+        await pickLevel(1, 'some');
+        ok(!(ladder.levels || []).filter((lv) => lv.n === 2)[0].shown,
+            '3b2 · ⭐ stopping inside Level 1 never reveals Level 2 — you climb only by meeting ALL of a level');
+        await w.say('Only just there.');
+        await settle();
+        // (b) all of Level 1 and no more = 2/4 — the top of the level, by how far the climb got.
+        await pickLevel(1, 'all');
+        ok((ladder.levels || []).filter((lv) => lv.n === 2)[0].shown, '3b2 · meeting all of Level 1 reveals Level 2');
+        await pickLevel(2, 'not');
+        ok(/2 out of 4/.test(lastBubble(w)), '3b2 · ⭐ all of Level 1 and none of Level 2 = 2/4 (the top of Level 1)');
+        ok(ladder.mark === 2, '3b2 · …and the card agrees');
+        // (c) re-judging takes the mark BACK — never silently keeps a number the student has
+        //     just withdrawn the basis for.
+        ladder.onRevise(1);
+        await settle();
+        ok(ladder.mark == null, '3b2 · ⭐⭐ re-judging a level takes back the mark it produced');
+        ok(!(ladder.levels || []).filter((lv) => lv.n === 2)[0].shown, '3b2 · …and drops every level above it');
+        await pickLevel(1, 'all');
+        await pickLevel(2, 'some');
+        ok(/3 out of 4/.test(lastBubble(w)), '3b2 · some of Level 2 = 3/4');
+        await w.say('The barking earns it.');
+        await settle();
+        ok(/^3\/4 — /.test(w.rows.get('cw-trial-1-setup') || ''), '3b2 · the re-judged mark is what reaches the document');
     }
 
     // ── 3c · A PASTED-BACK MARK PREFIX IS NOT DOUBLED (#421’s class, new format) ────
@@ -266,8 +355,7 @@ async function main() {
         const w = world();
         w.ctl.forceStart();
         await toFirstAsk(w);
-        w.tap(chipNamed(w, /^Not yet$/));
-        await settle();
+        await pickLevel(1, 'not');
         await w.say('0/4 — it’s not very descriptive and attention grabbing');
         await settle();
         const row = w.rows.get('cw-trial-1-hook') || '';
@@ -281,8 +369,7 @@ async function main() {
         const w = world();
         w.ctl.forceStart();
         await toFirstAsk(w);
-        w.tap(chipNamed(w, /^Not yet$/));
-        await settle();
+        await pickLevel(1, 'not');
         await w.say('First try.');
         await settle();
         const row = w.rows.get('cw-trial-1-hook') || '';
@@ -307,7 +394,8 @@ async function main() {
         w.tap(more);
         await settle();
         ok(lastBubble(w).indexOf(ELEMENTS[0].more[0]) !== -1, '5 · it serves ONE further example (not the whole pool — the #200 lesson)');
-        ok(!!chipNamed(w, /Yes — all of it/), '5 · ⭐ and the level chips are still there afterwards — the ask survives the help');
+        ok(!!ladder && (ladder.levels || []).some((lv) => lv.shown && !lv.verdict),
+            '5 · ⭐ and the ladder card still offers the live level afterwards — the ask survives the help');
         ok(w.sends.length === 0, '5 · a free rung spends nothing');
         // second tap serves the SECOND example, then the rung retires
         w.tap(w.helpChipNamed(/More examples/));
@@ -319,11 +407,12 @@ async function main() {
         const wc = world();
         wc.ctl.forceStart();
         await toFirstAsk(wc);
-        wc.tap(chipNamed(wc, /Yes — all of it/));
-        await settle();
+        await pickLevel(1, 'all');
         wc.tap(wc.helpChipNamed(/More examples/));
         await settle();
-        ok(!!chipNamed(wc, /Level 1 is my level/), '5 · ⭐ help mid-climb re-offers LEVEL 2’s chips — the stage survives the detour');
+        const mid = (ladder.levels || []).filter((lv) => lv.n === 2)[0];
+        ok(!!mid && mid.shown && !mid.verdict,
+            '5 · ⭐ help mid-climb leaves LEVEL 2 live on the card — the climb survives the detour');
     }
 
     // ── 6 · THE SEVEN ASKS COST NOTHING; THE MARKING TURN IS THE ONE CALL ────────────────
@@ -492,7 +581,8 @@ async function main() {
         // that does not wait reads an empty cache and this fails.
         ok(w2.bubbles.some((b) => /Epiphany/.test(b) && b.indexOf('What you planned in Step 9') !== -1),
             '11 · ⭐ the resumed ask still carries their own Step-9 plan (#422 — the re-serve waits for the load)');
-        ok(!!chipNamed(w2, /Yes — all of it/), '11 · …with its chips back, so the page is not dead after a reload');
+        ok(!!ladder && ladder.title === 'Epiphany' && (ladder.levels || []).some((lv) => lv.shown && !lv.verdict),
+            '11 · …with the ladder card republished for that element, so the page is not dead after a reload');
     }
 
     // ── 11b · RESUME MID-CLIMB LANDS ON THE EXACT LEVEL, NOT THE ELEMENT'S TOP ───────────
@@ -500,14 +590,15 @@ async function main() {
         const w = world();
         w.ctl.forceStart();
         await toFirstAsk(w);
-        w.tap(chipNamed(w, /Yes — all of it/));   // hook: Level 1 cleared, Level 2 on screen
-        await settle();
+        await pickLevel(1, 'all');               // hook: Level 1 cleared, Level 2 on the card
         const w2 = reload(w);
         w2.ctl.tryResume();
         await settle();
-        ok(lastBubble(w2).indexOf(ELEMENTS[0].strong) !== -1,
-            '11b · ⭐ a reload mid-climb re-serves LEVEL 2 — the level they were on, not Level 1 again');
-        ok(!!chipNamed(w2, /Level 1 is my level/), '11b · …with Level 2’s chips live');
+        const r1 = (ladder.levels || []).filter((lv) => lv.n === 1)[0];
+        const r2 = (ladder.levels || []).filter((lv) => lv.n === 2)[0];
+        ok(!!r1 && r1.verdict === 'all',
+            '11b · ⭐ a reload mid-climb REMEMBERS the level already judged — it is still on the card');
+        ok(!!r2 && r2.shown && !r2.verdict, '11b · …and Level 2 is still the live question, not Level 1 again');
     }
 
     // ── 12 · RESUME MID-SENTENCE RE-ASKS FOR THE SENTENCE, NOT THE LEVEL ─────────────────
@@ -515,8 +606,7 @@ async function main() {
         const w = world();
         w.ctl.forceStart();
         await toFirstAsk(w);
-        w.tap(chipNamed(w, /^Not yet$/));
-        await settle();
+        await pickLevel(1, 'not');
         const w2 = reload(w);
         w2.ctl.tryResume();
         await settle();
@@ -558,7 +648,8 @@ async function main() {
         w.tap(again);
         await settle();
         ok(/Hook/.test(lastBubble(w)), '13 · …and it starts again at the first element');
-        ok(!!chipNamed(w, /Yes — all of it/), '13 · …live, with chips');
+        ok(!!ladder && ladder.title === 'Hook' && (ladder.levels || []).filter((lv) => lv.n === 1)[0].verdict === null,
+            '13 · …live, with a fresh ladder card');
     }
 
     console.log('\n' + (fail ? '❌ cw-trial1-sim FAILED' : '✅ cw-trial1-sim passed')

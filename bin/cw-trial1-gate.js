@@ -148,8 +148,8 @@ ok('it scopes the judgment to story coherence, not SPaG (that is the final asses
 // ── 3. THE DOCUMENT — the essay-doc architecture, scaled to the trial (#419) ──────────────────
 console.log('\nThe trial document carries the essay-doc architecture, and everything of Sophia\'s is locked:');
 ok('ONE producer builds the judgement block, called by the TEMPLATE and the HEAL — healed docs cannot drift from born docs',
-    (SRC.match(/_cwTrial1JudgementBlock\(\)/g) || []).length >= 3 && /function _cwTrial1JudgementBlock\(\)/.test(SRC),
-    (SRC.match(/_cwTrial1JudgementBlock\(\)/g) || []).length);
+    (SRC.match(/_cwTrial1JudgementBlock\(/g) || []).length >= 3 && /function _cwTrial1JudgementBlock\(/.test(SRC),
+    (SRC.match(/_cwTrial1JudgementBlock\(/g) || []).length);
 ok('…and one for Sophia\'s block', (SRC.match(/_cwTrial1SophiaBlock\(\)/g) || []).length >= 3 && /function _cwTrial1SophiaBlock\(\)/.test(SRC),
     (SRC.match(/_cwTrial1SophiaBlock\(\)/g) || []).length);
 ok('the seven verdict rows are BUILT FROM the element list, never hand-typed beside it',
@@ -246,7 +246,51 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length);
     // v7.20.555 (#425): the ask says "read that part of your draft" — the document must go there.
     ok('every element ask scrolls the document to the draft (#425), on the ONE scroll convention',
-        /attachStage\(e\); scrollToDraft\(\);/.test(CTL) && /_swmlScrollToTop\(target\)/.test(CTL));
+        /scrollToDraft\(\);/.test(CTL) && /_swmlScrollToTop\(target\)/.test(CTL));
+}
+
+// ── 7. THE LADDER CARD (#426) — the levels are a CARD, never chat bubbles ─────────────────────
+console.log('\nThe levels live on a card in the document, all visible at once:');
+{
+    const ctlIdx2 = SRC.indexOf('const _cwTrial1Ctl = (function () {');
+    const CTL2 = ctlIdx2 < 0 ? '' : braceSliceFrom(SRC, ctlIdx2, '(', ')').text;
+    const SB = fs.readFileSync(path.join(ROOT, 'frontend/wml-section-block.js'), 'utf8');
+    ok('a `ladder` section type exists as a real nodeView', /if \(type === 'ladder'\)/.test(SB));
+    ok('…its card is FIREWALLED from ProseMirror\'s observer, wrapper attrs included (§PM law)',
+        /ui === mutation\.target \|\| ui\.contains\(mutation\.target\)/.test(SB)
+        && /mutation\.type === 'attributes' && mutation\.target === dom/.test(SB));
+    ok('⭐ …and stopEvent hands its BUTTONS their own events — PM owns keydown/mousedown for the '
+        + 'editable view, which is how the tutor-comment box became untypable (v7.20.197)',
+        /stopEvent: \(event\) => \{[\s\S]{0,160}ui\.contains\(t\)/.test(SB));
+    ok('the card is filled on every (re)mount, like the sign-off UI',
+        /window\.WML\.renderTrialLadderUI/.test(SB) && /window\.WML\.renderTrialLadderUI = renderTrialLadderInline/.test(SRC));
+    ok('…breaker-guarded like every other derived card (PM law rule 5)',
+        /_derivedCardFillOk\('ladder'\)/.test(SRC));
+    ok('⭐⭐ every level the student has judged STAYS ON THE CARD — Neil\'s actual complaint (#426)',
+        /shown: show/.test(CTL2) && /show = show && verdict === 'all';/.test(CTL2));
+    ok('…rendered NEWEST ON TOP, his words ("it\'ll sit above the criteria for the first level")',
+        /shown\)[\s\S]{0,40}\.reverse\(\)/.test(SRC) || /\.slice\(\)\.reverse\(\)/.test(SRC));
+    ok('…and every judged level can be re-judged', /onRevise: function/.test(CTL2) && /Change my answer/.test(SRC));
+    ok('⭐ re-judging DROPS every level above it and takes back the mark',
+        /if \(L\.n >= n\) delete st\.levels\[e\.id\]\[L\.n\]/.test(CTL2) && /delete st\.marks\[e\.id\]/.test(CTL2));
+    ok('⛔ the level chips are GONE from the chat — one control surface, not two',
+        !/CH_ALL|CH_BACK|CH_L1TOP/.test(CTL2));
+    ok('N LEVELS BY CONSTRUCTION — the card renders whatever it is handed, so literature\'s six '
+        + 'need no second card (PEDAGOGY §33.13)',
+        /LEVEL_DEFS\.forEach/.test(CTL2) && !/levels\[2\]|levels\[1\]/.test(SRC.slice(SRC.indexOf('function renderTrialLadderInline'), SRC.indexOf('function renderTrialLadderInline') + 6000)));
+    ok('the card is DERIVED, never baked into the saved document (no fossil — §4c.7)',
+        /sectionHTML\('ladder', 'Your Marking'/.test(SRC)
+        && !/cw-trial-1-level/.test(SRC));
+    ok('…and the heal gives existing documents the card', /data-section-type="ladder"/.test(HEAL || ''));
+    ok('the student\'s draft opens in a DRAGGABLE pad (Neil: "like the extract button")',
+        /_openTrialDraftPadHook/.test(SRC) && /swml-extract-panel swml-trial-draft-pad/.test(SRC)
+        && /_makePanelInteractive\(panel\)/.test(SRC));
+    ok('⛔ …on the FLOATING pad shell, never the docked rail shell (two shells, two jobs)',
+        !/swml-outline-panel[^']*swml-trial-draft/.test(SRC));
+    const CSS = fs.readFileSync(path.join(ROOT, 'frontend/wml-canvas.css'), 'utf8');
+    ok('the card has styles, in both themes', /\.swml-ladder-level/.test(CSS) && /swml-theme-light \.swml-ladder-level/.test(CSS));
+    ok('⛔ …and declares no vars on :root (root CLAUDE.md — a plugin clobbering the host page)',
+        !/:root\s*\{[^}]*--swml-ladder/.test(CSS));
 }
 
 // ── 6. THE MACHINE LINES NEVER REACH A HUMAN (#420, root §14) ─────────────────────────────────

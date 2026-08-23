@@ -7598,6 +7598,9 @@
     // for the module-scope walk to call (the v7.19.898 lesson: closure-locals never
     // referenced directly across scopes). Null until the canvas mounts.
     let _openEssayPadHook = null;
+    // v7.20.556 (#426): the CW trial's draft pad — same hook shape as the essay pad above,
+    // because the pads live in the canvas closure and the trial walk is module-scope.
+    let _openTrialDraftPadHook = null;
     function _saWalkEligible() {
         if (state.task !== 'assessment' || state.reviewMode) return false;
         return String(state.board || '').toLowerCase() === 'aqa';   // AQA P1 / P2 / Literature = the 3 anchors
@@ -13915,7 +13918,7 @@
             // v7.19.869: exclude the progress card ITSELF — it is a section-block with
             // data-section-complete, so without this it counted itself as a trackable
             // section ("8 of 9 · Still to do: Document Progress"). Same in _computeCwProgress.
-            if (type === 'question' || type === 'scores' || type === 'signoff' || type === 'progress') return;
+            if (type === 'question' || type === 'scores' || type === 'signoff' || type === 'progress' || type === 'ladder') return;
             if (label === 'Overall Feedback') return;
             // v7.20.122 (Neil: "why is it saying two? I don't think that's correct").
             // ROOT: `response` used to be an unconditional skip here, so a DIAGNOSTIC — where
@@ -14233,6 +14236,181 @@
             return true;
         } catch (_) { return true; }
     }
+    // ══════════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.556 (#426) — THE EXAMINER-LADDER MARKING CARD.
+    //
+    // Neil, 2026-08-23, marking his own draft on .555: *"I chose all of the criteria for level
+    // one. So now it's presenting level two, but the problem is I can't see level one to compare
+    // it because I might change my mind… what if, for example, for literature, there's six
+    // levels? That's not gonna be practical."*
+    //
+    // THE ROOT, and it is structural rather than cosmetic: a chat is a TRANSCRIPT — it appends.
+    // Every level therefore arrives as a new bubble that pushes the previous one up and away, so
+    // comparing Level 1 against Level 2 means holding Level 1 in your head, and revising it means
+    // scrolling back to a bubble whose chips are spent. That does not scale to a literature
+    // scheme's six levels, and it is not how anyone marks: an examiner has the whole ladder in
+    // front of them at once.
+    //
+    // So the ladder is a CARD IN THE DOCUMENT that REDRAWS IN PLACE (his pick between the two
+    // options put to him): every level reached stays on screen, newest ON TOP, each one still
+    // tappable to change your mind — which re-opens the climb from that rung and drops anything
+    // above it, exactly as re-judging a level would for a real examiner.
+    //
+    // N LEVELS BY CONSTRUCTION. The card renders whatever `levels` it is handed — two for a CW
+    // trial's taught-element bars, six for a literature mark scheme — so the lit/lang adoption
+    // (PEDAGOGY §33.13) needs no second card.
+    //
+    // The model is published by whichever walk owns the marking; the card knows nothing about
+    // trials. Filled on every NodeView (re)mount via window.WML.renderTrialLadderUI, exactly like
+    // the sign-off UI, and breaker-guarded like every other derived card (§PM law rule 5).
+    // ══════════════════════════════════════════════════════════════════════════════════════════
+    let _trialLadderModel = null;
+    function setTrialLadderModel(model) {
+        _trialLadderModel = model || null;
+        renderTrialLadderInline();
+    }
+    function renderTrialLadderInline() {
+        if (!_derivedCardFillOk('ladder')) return;
+        const editor = document.getElementById('swml-tiptap-editor');
+        if (!editor) return;
+        const sec = editor.querySelector('[data-section-type="ladder"]');
+        if (!sec) return;
+        const ui = sec.querySelector('.swml-ladder-ui');
+        if (!ui) return;   // nodeView not mounted yet; its own rAF/250/800 fills will call us
+        const m = _trialLadderModel;
+        ui.innerHTML = '';
+        if (!m || !Array.isArray(m.levels) || !m.levels.length) {
+            // Not marking yet (fresh doc, or a finished trial re-opened for reading). Say what
+            // the card is FOR — a blank panel reads as broken (§4d).
+            const idle = document.createElement('p');
+            idle.className = 'swml-ladder-idle';
+            idle.textContent = m && m.idleText
+                ? m.idleText
+                : 'When you start marking in the chat, each level of the mark scheme appears here — and every level you have judged stays on screen so you can compare them and change your mind.';
+            ui.appendChild(idle);
+            return;
+        }
+
+        const head = document.createElement('div');
+        head.className = 'swml-ladder-head';
+        const title = document.createElement('div');
+        title.className = 'swml-ladder-title';
+        title.textContent = m.title + (m.total ? '  ·  ' + ((m.index || 0) + 1) + ' of ' + m.total : '');
+        head.appendChild(title);
+        if (m.prompt) {
+            const sub = document.createElement('div');
+            sub.className = 'swml-ladder-sub';
+            sub.textContent = m.prompt;
+            head.appendChild(sub);
+        }
+        const tools = document.createElement('div');
+        tools.className = 'swml-ladder-tools';
+        if (typeof m.onOpenDraft === 'function') {
+            const draftBtn = document.createElement('button');
+            draftBtn.type = 'button';
+            draftBtn.className = 'swml-ladder-toolbtn';
+            draftBtn.textContent = 'Show my draft';
+            draftBtn.title = 'Open your writing in a pad you can drag anywhere on screen';
+            draftBtn.addEventListener('click', () => { try { m.onOpenDraft(); } catch (_) {} });
+            tools.appendChild(draftBtn);
+        }
+        if (m.mark != null) {
+            const markPill = document.createElement('span');
+            markPill.className = 'swml-ladder-mark';
+            markPill.textContent = m.mark + ' / ' + (m.outOf || 4);
+            tools.appendChild(markPill);
+        }
+        head.appendChild(tools);
+        ui.appendChild(head);
+
+        // NEWEST ON TOP — his words: the next level "will sit above the criteria for the first
+        // level so they can see all of it". Rendered by walking the levels in reverse, so the
+        // model stays in the natural bottom-up order the climb uses.
+        const stack = document.createElement('div');
+        stack.className = 'swml-ladder-stack';
+        const shown = m.levels.filter((lv) => lv && lv.shown);
+        shown.slice().reverse().forEach((lv) => {
+            const card = document.createElement('div');
+            card.className = 'swml-ladder-level'
+                + (lv.verdict ? ' swml-ladder-judged' : ' swml-ladder-live')
+                + (lv.verdict === 'all' ? ' swml-ladder-all' : '')
+                + (lv.verdict === 'some' ? ' swml-ladder-some' : '')
+                + (lv.verdict === 'not' ? ' swml-ladder-not' : '');
+
+            const lhead = document.createElement('div');
+            lhead.className = 'swml-ladder-lhead';
+            const lname = document.createElement('span');
+            lname.className = 'swml-ladder-lname';
+            lname.textContent = lv.label || ('Level ' + lv.n);
+            lhead.appendChild(lname);
+            if (lv.range) {
+                const lrange = document.createElement('span');
+                lrange.className = 'swml-ladder-lrange';
+                lrange.textContent = lv.range;
+                lhead.appendChild(lrange);
+            }
+            if (lv.verdict) {
+                const badge = document.createElement('span');
+                badge.className = 'swml-ladder-verdict';
+                badge.textContent = lv.verdict === 'all' ? 'All of it'
+                    : lv.verdict === 'some' ? 'Some of it' : 'Not yet';
+                lhead.appendChild(badge);
+            }
+            card.appendChild(lhead);
+
+            // The criteria themselves — the thing the student must be able to COMPARE.
+            const body = document.createElement('div');
+            body.className = 'swml-ladder-lbody';
+            if (Array.isArray(lv.descriptors) && lv.descriptors.length) {
+                const list = document.createElement('ul');
+                list.className = 'swml-ladder-descriptors';
+                lv.descriptors.forEach((d) => {
+                    const li = document.createElement('li');
+                    li.textContent = d;
+                    list.appendChild(li);
+                });
+                body.appendChild(list);
+            } else if (lv.text) {
+                const p = document.createElement('p');
+                p.textContent = lv.text;
+                body.appendChild(p);
+            }
+            card.appendChild(body);
+
+            const acts = document.createElement('div');
+            acts.className = 'swml-ladder-acts';
+            if (!lv.verdict && typeof m.onPick === 'function') {
+                [['all', 'Yes — all of it'], ['some', 'Some of it'], ['not', 'Not yet']].forEach((pair) => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'swml-ladder-btn swml-ladder-btn-' + pair[0];
+                    b.textContent = pair[1];
+                    b.addEventListener('click', () => { try { m.onPick(lv.n, pair[0]); } catch (_) {} });
+                    acts.appendChild(b);
+                });
+            } else if (lv.verdict && typeof m.onRevise === 'function' && !m.locked) {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'swml-ladder-btn swml-ladder-btn-revise';
+                b.textContent = 'Change my answer';
+                b.title = 'Re-judge this level — anything above it is re-opened, the way an examiner would';
+                b.addEventListener('click', () => { try { m.onRevise(lv.n); } catch (_) {} });
+                acts.appendChild(b);
+            }
+            if (acts.childNodes.length) card.appendChild(acts);
+            stack.appendChild(card);
+        });
+        ui.appendChild(stack);
+
+        if (m.foot) {
+            const foot = document.createElement('p');
+            foot.className = 'swml-ladder-foot';
+            foot.textContent = m.foot;
+            ui.appendChild(foot);
+        }
+    }
+    try { window.WML = window.WML || {}; window.WML.renderTrialLadderUI = renderTrialLadderInline; } catch (_) { /* ignore */ }
+
     function _updateProgressSummary() {
         try {
             if (!_derivedCardFillOk('progress')) return;
@@ -28142,21 +28320,16 @@
                 3: '3/4 (into Level 2)',
                 4: '4/4 (top of Level 2)',
             };
-            const CH_ALL = 'Yes — all of it';
-            const CH_SOME = 'Some of it';
-            const CH_NOT = 'Not yet';
-            const CH_L1TOP = 'Top of Level 1 — 2 marks';
-            const CH_L1LOW = 'Bottom of Level 1 — 1 mark';
-            const CH_L2NO = 'No — Level 1 is my level';
-            const CH_BACK = 'Wait — Level 1 isn’t all there';
-            // The two level descriptors are the TAUGHT content at two grades — Level 1 derives
-            // from the element's purpose (e.prompt, the Step-9 row), Level 2 IS what a strong one
-            // does (e.strong). Nothing here is authored beside the taught criteria (§33.10).
-            function l1Text(e) {
-                return '**Level 1 — 1 to 2 marks:** there is a ' + e.label.toLowerCase()
-                    + ', and it makes a real attempt at its job: ' + e.prompt;
-            }
-            function l2Text(e) { return '**Level 2 — 3 to 4 marks:** ' + e.strong; }
+            // ⭐ v7.20.556 (#426): the LEVEL calls moved out of the chat and into the ladder card
+            // in the document, because a chat cannot show two levels at once — let alone the six
+            // a literature scheme prints. The chat keeps the teaching, the worked examples, the
+            // help ladder and the evidence sentence; the card owns the climb.
+            // THE MARK, unchanged: L1 bottom 1 · L1 top 2 · L2 partly 3 · L2 fully 4 (#424).
+            const LEVEL_DEFS = [
+                { n: 1, label: 'Level 1', range: '1 to 2 marks' },
+                { n: 2, label: 'Level 2', range: '3 to 4 marks' },
+            ];
+
 
             function els() { return (WML && WML.CW_SCENE_ELEMENTS) || []; }
             function fid(id) { return 'cw-trial-1-' + id; }
@@ -28340,39 +28513,18 @@
                     + '*What it is for:* ' + e.prompt + '\n\n'
                     + '*For example:* ' + e.example;
                 if (planned) t += '\n\n**What you planned in Step 9:** “' + planned + '”';
-                t += '\n\n' + l1Text(e)
-                    + '\n\n**Be the examiner: read that part of your draft. Does it do ALL of Level 1?**';
+                // The LEVELS are on the card in the document, where they can all be seen at once
+                // and re-judged (#426) — so the chat points there rather than reprinting them.
+                t += '\n\n**Be the examiner: read that part of your draft, then judge it on the '
+                    + '**Your Marking** card on the page.** Level 1 is waiting there. Climb to Level 2 only '
+                    + 'if every part of Level 1 is true — and every level you judge stays on the card, so you '
+                    + 'can compare them and change your mind.';
                 return t;
             }
 
-            // The chips and their handler both derive from st.stage, so a help bubble or a resume
-            // can re-offer the RIGHT question without knowing how it got there (§4c.8b).
-            function stageChips() {
-                if (st.stage === 'l2') return [CH_ALL, CH_SOME, CH_L2NO, CH_BACK];
-                if (st.stage === 'l1place') return [CH_L1TOP, CH_L1LOW];
-                return [CH_ALL, CH_SOME, CH_NOT];
-            }
-            function stageQuestion(e) {
-                if (st.stage === 'l2') return '**Does your ' + e.label.toLowerCase() + ' do ALL of Level 2?**';
-                if (st.stage === 'l1place') return '**Top of Level 1, or bottom?**';
-                return '**Does your ' + e.label.toLowerCase() + ' do ALL of Level 1?**';
-            }
-            function onStagePick(e, pick) {
-                if (st.stage === 'l2') return onL2(e, pick);
-                if (st.stage === 'l1place') return onL1Place(e, pick);
-                return onL1(e, pick);
-            }
-            function attachStage(e) {
-                chipBarOrRetry(stageChips(), function (pick) { onStagePick(e, pick); }, stageQuestion(e));
-                helpBar(e);
-                resetSend();
-            }
-
-            // ⭐ v7.20.555 (#425, Neil live on .554): every element ask says "read that part of
-            // your draft" — so the DOCUMENT scrolls to the draft as the ask lands, instead of
-            // sitting wherever it was (his screen: the Table of Contents, draft out of view).
-            // Rides the ONE scroll convention (_swmlScrollToTop, v7.19.615); a missing or
-            // hidden draft section is a silent no-op, never an error.
+            // ⭐ v7.20.555 (#425): every element ask says "read that part of your draft" — so the
+            // DOCUMENT scrolls to the draft as the ask lands. Rides the ONE scroll convention
+            // (_swmlScrollToTop, v7.19.615); a missing or hidden draft section is a silent no-op.
             function scrollToDraft() {
                 try {
                     const editor = document.getElementById('swml-tiptap-editor');
@@ -28391,67 +28543,28 @@
                 const i = st.i;
                 if (i >= list.length) { serveMarking(); return; }
                 const e = list[i];
-                st.stage = 'l1';
+                _walkSlot.clear(WALK);      // a card tap is a TAP — nothing typed may file here
+                st.levels = st.levels || {};
                 persist();
-                _walkSlot.clear(WALK);      // a chip is a TAP — nothing typed may file here
-                const attach = function () { attachStage(e); scrollToDraft(); };
+                const attach = function () {
+                    publishLadder();
+                    // The chat carries no level chips any more — the card owns the climb — but it
+                    // MUST still leave something to press (§4d liveness), and the help ladder is
+                    // exactly that: free rungs first, Sophia last.
+                    helpBar(e);
+                    resetSend();
+                    scrollToDraft();
+                };
                 if (opts && opts.defer) { serveCwChunks([askText(e, i)], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
                 aiBubble(askText(e, i));
                 attach();
             }
-            // Re-offer the live question's chips after a help bubble — the ask is still live, and a
-            // student must never be left with an answer and nowhere to give a verdict (§4d).
-            function reAttachAsk(e) { attachStage(e); }
-
-            // ── the climb (PEDAGOGY §33.10) ──────────────────────────────────────────────
-            function onL1(e, pick) {
-                pickTurn(pick);
-                if (pick === CH_ALL) { serveL2(e); return; }
-                if (pick === CH_SOME) { serveL1Place(e); return; }
-                setMark(e, 0);
-                serveNote(e, 0);
-            }
-            function serveL1Place(e, opts) {
-                st.stage = 'l1place';
-                persist();
-                _walkSlot.clear(WALK);
-                const lead = (opts && opts.lead) ? opts.lead + '\n\n' : '';
-                const text = lead + 'Inside Level 1, then. The examiner’s last call is **where in the level** it sits:\n\n'
-                    + '- **Top of the level — 2 marks:** nearly all of Level 1 is there.\n'
-                    + '- **Bottom of the level — 1 mark:** it has started, but only just.';
-                const attach = function () { attachStage(e); };
-                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
-                aiBubble(text);
-                attach();
-            }
-            function onL1Place(e, pick) {
-                pickTurn(pick);
-                setMark(e, pick === CH_L1TOP ? 2 : 1);
-                serveNote(e, st.marks[e.id]);
-            }
-            function serveL2(e, opts) {
-                st.stage = 'l2';
-                persist();
-                _walkSlot.clear(WALK);
-                // Level 1 STAYS on the record above (Neil, #424: a presented level is never
-                // removed) — and the back chip is the way down when the climb was hopeful.
-                const text = 'That clears Level 1 — climb, exactly as an examiner does. Level 1 stays on the '
-                    + 'record above; if you look again and it isn’t all there, you can come back down.\n\n'
-                    + l2Text(e)
-                    + '\n\n**Does your ' + e.label.toLowerCase() + ' do ALL of that?**';
-                const attach = function () { attachStage(e); };
-                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
-                aiBubble(text);
-                attach();
-            }
-            function onL2(e, pick) {
-                pickTurn(pick);
-                if (pick === CH_BACK) {
-                    serveL1Place(e, { lead: 'Climbing back down is exactly what a real examiner does when a level stops holding.' });
-                    return;
-                }
-                setMark(e, pick === CH_ALL ? 4 : pick === CH_SOME ? 3 : 2);
-                serveNote(e, st.marks[e.id]);
+            // Re-offer the help rungs after a help bubble, and re-publish the card, so a student
+            // is never left with an answer and nowhere to act (§4d).
+            function reAttachAsk(e) {
+                publishLadder();
+                helpBar(e);
+                resetSend();
             }
             function setMark(e, m) {
                 st.marks = st.marks || {};
@@ -28476,11 +28589,116 @@
                 _walkSlot.arm(WALK, fid(e.id), { cycle: 'rewrite' });
                 st.awaitNote = e.id;
                 persist();
-                const attach = function () { resetSend(); };
+                const attach = function () { publishLadder(); resetSend(); };
                 if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
                 aiBubble(text);
                 attach();
             }
+
+            // ── THE LADDER CARD IS THE CLIMB'S CONTROL SURFACE (#426) ────────────────────
+            // The card is DERIVED from st on every publish — there is no second copy of the
+            // student's answers to drift (the §5d lesson applied to UI state).
+            function levelsModel(e) {
+                const picked = (st.levels || {})[e.id] || {};
+                const out = [];
+                let show = true;
+                LEVEL_DEFS.forEach(function (L) {
+                    const verdict = picked[L.n] || null;
+                    out.push({
+                        n: L.n, label: L.label, range: L.range,
+                        text: L.n === 1 ? l1Body(e) : l2Body(e),
+                        verdict: verdict, shown: show,
+                    });
+                    // The NEXT level is only on screen once this one was fully met — the climb.
+                    show = show && verdict === 'all';
+                });
+                return out;
+            }
+            function publishLadder(opts) {
+                const list = els();
+                const e = list[st.i];
+                if (!e) { setTrialLadderModel(null); return; }
+                const picked = (st.levels || {})[e.id] || {};
+                setTrialLadderModel({
+                    title: e.label, index: st.i, total: list.length,
+                    prompt: e.prompt,
+                    levels: levelsModel(e),
+                    mark: (st.marks || {})[e.id] != null ? st.marks[e.id] : null,
+                    outOf: 4,
+                    locked: !!(opts && opts.locked),
+                    foot: (opts && opts.foot) || (st.awaitNote
+                        ? 'Answer in the chat to bank this mark and move on — or change a level above first.'
+                        : (picked[1] ? null : 'Read your draft, then judge Level 1. Climb only when every part of it is true.')),
+                    onPick: function (n, verdict) { onLevelPick(e, n, verdict); },
+                    onRevise: function (n) { onLevelRevise(e, n); },
+                    onOpenDraft: function () { openTrialDraftPad(); },
+                });
+            }
+            // The student's own draft, in a pad they can drag anywhere (Neil, 2026-08-23:
+            // *"like in the literature documents, you've got an extract button… you click a
+            // button and it has like a scratch pad with the student's story in there"*). The pad
+            // itself lives with the other floating pads; this is the module-scope hook.
+            function openTrialDraftPad() {
+                try {
+                    if (typeof _openTrialDraftPadHook === 'function' && _openTrialDraftPadHook) {
+                        _openTrialDraftPadHook();
+                        return;
+                    }
+                } catch (err) {}
+                // No pad on this surface — say so rather than making a button that does nothing.
+                aiBubble('I can’t open the draft pad on this screen — your draft is on the page, just above your marking.');
+            }
+
+            function onLevelPick(e, n, verdict) {
+                st.levels = st.levels || {};
+                st.levels[e.id] = st.levels[e.id] || {};
+                st.levels[e.id][n] = verdict;
+                // Judging a level DROPS everything above it — a climb re-decided from this rung.
+                LEVEL_DEFS.forEach(function (L) { if (L.n > n) delete st.levels[e.id][L.n]; });
+                persist();
+                const mark = markFromLevels(e);
+                if (mark == null) { publishLadder(); return; }   // climbed: the next level is now on screen
+                setMark(e, mark);
+                pickTurn(levelPickWords(n, verdict, mark));
+                publishLadder();
+                serveNote(e, mark);
+            }
+            // Changing your mind: re-open that rung, drop its verdict and everything above it,
+            // and take back the mark + the pending sentence. Nothing is silently kept.
+            function onLevelRevise(e, n) {
+                st.levels = st.levels || {};
+                st.levels[e.id] = st.levels[e.id] || {};
+                LEVEL_DEFS.forEach(function (L) { if (L.n >= n) delete st.levels[e.id][L.n]; });
+                if (st.marks) delete st.marks[e.id];
+                st.awaitNote = null;
+                _walkSlot.clear(WALK);
+                persist();
+                publishLadder();
+                aiBubble('Re-judging **' + e.label + ' — Level ' + n + '**. That is exactly what a real examiner does '
+                    + 'when a level stops holding. Make your call again on the page, and anything above it is open again too.');
+                resetSend();
+            }
+            function markFromLevels(e) {
+                const picked = (st.levels || {})[e.id] || {};
+                if (picked[1] === 'not') return 0;
+                if (picked[1] === 'some') return 1;
+                if (picked[1] !== 'all') return null;      // Level 1 not yet judged
+                if (picked[2] === 'all') return 4;
+                if (picked[2] === 'some') return 3;
+                if (picked[2] === 'not') return 2;         // all of L1 and no more
+                return null;                               // Level 2 on screen, not yet judged
+            }
+            function levelPickWords(n, verdict, mark) {
+                const v = verdict === 'all' ? 'all of it' : verdict === 'some' ? 'some of it' : 'not yet';
+                return 'Level ' + n + ': ' + v + ' — ' + mark + '/4';
+            }
+            // The two level descriptors are the TAUGHT content at two grades — Level 1 derives
+            // from the element's purpose (e.prompt, the Step-9 row), Level 2 IS what a strong one
+            // does (e.strong). Nothing here is authored beside the taught criteria (§33.10).
+            function l1Body(e) {
+                return 'There is a ' + e.label.toLowerCase() + ', and it makes a real attempt at its job: ' + e.prompt;
+            }
+            function l2Body(e) { return e.strong; }
 
             function bankMark(e, mark, note) {
                 writeRow(fid(e.id), mark + '/4' + (note ? ' — ' + note : ''), { replace: true });
@@ -28739,7 +28957,7 @@
 
             function onChangeAnswers() {
                 pickTurn('Change my answers →');
-                st = { i: 0, stage: null, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
+                st = { i: 0, levels: {}, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
                 done = false; active = true;
                 persist();
                 serveItem();
@@ -28777,7 +28995,6 @@
                     bankMark(e, (st.marks || {})[e.id] || 0, note);
                 }
                 st.awaitNote = null;
-                st.stage = null;
                 st.i++;
                 persist();
                 serveItem();
@@ -28821,7 +29038,7 @@
             }
 
             function serveCurrent(opts) {
-                if (!st) st = { i: 0, stage: null, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
+                if (!st) st = { i: 0, levels: {}, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
                 if (st.phase === 'done') { serveWrap(); return; }
                 if (st.phase === 'target') { serveTargetAsk(opts); return; }
                 if (st.awaitNote) {
@@ -28830,9 +29047,6 @@
                     st.awaitNote = null;
                 }
                 if (st.i >= els().length) { serveMarking(); return; }
-                const cur = els()[st.i];
-                if (st.stage === 'l2' && cur) { serveL2(cur, opts); return; }
-                if (st.stage === 'l1place' && cur) { serveL1Place(cur, opts); return; }
                 serveItem(opts);
             }
 
@@ -28859,7 +29073,7 @@
                     console.warn('WML trial1: no scene elements — refusing to open.');
                     return false;
                 }
-                st = { i: 0, stage: null, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
+                st = { i: 0, levels: {}, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
                 active = true; pending = false; done = false;
                 persist();
                 // Their Step-9 plan, read FRESH (never a cached snapshot — #402), then the walk
@@ -28884,6 +29098,7 @@
                 st = null;
                 _walkSlot.clear(WALK);
                 clearPersist();
+                setTrialLadderModel(null);   // a stale ladder must never outlive its walk
             }
 
             function tryResume() {
@@ -28899,14 +29114,18 @@
                     // legacy run keeps its wrap (st.mark carries its own max, so /14 displays
                     // truthfully).
                     if (st && st.phase === 'items' && st.verdicts && !st.marks) {
-                        st = { i: 0, stage: null, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
+                        st = { i: 0, levels: {}, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
                         done = false;
                         persist();
                     }
+                    // v7.20.556: a .554/.555 sidecar has marks but no per-level record, so the
+                    // card cannot rebuild the climb for the element in flight. Everything already
+                    // BANKED is kept (the document holds it); only the live element re-climbs.
+                    if (st && !st.levels) { st.levels = {}; persist(); }
                     // The document is the authority on how far they got — the sidecar only carries
                     // what the document cannot (which element is awaiting a sentence).
                     const fromDoc = deriveFromDoc();
-                    if (fromDoc.i > (st.i || 0)) { st.i = fromDoc.i; st.marks = fromDoc.marks; st.notes = fromDoc.notes; st.stage = null; }
+                    if (fromDoc.i > (st.i || 0)) { st.i = fromDoc.i; st.marks = fromDoc.marks; st.notes = fromDoc.notes; }
                     const mark = emitted;
                     const standDown = function (what) {
                         if (emitted === mark) return false;
@@ -34017,6 +34236,55 @@
         // no-op when the essay pad is already open.
         _openEssayPadHook = () => {
             if (!extractPanels['essay']) spawnExtractPanel([], 'essay', { top: '110px', right: '48px' });
+        };
+
+        // ⭐ v7.20.556 (#426) — THE TRIAL DRAFT PAD. Neil, 2026-08-23: *"like in the literature
+        // documents, you've got an extract button. You click that and you can pull out the
+        // extract, and you can drag it around the screen to any position you want. Well, we do
+        // something like that. So you click a button and it has like a scratch pad with the
+        // student's story in there."*
+        //
+        // It is the SAME shell as every other floating pad (`.swml-extract-panel`, portalled to
+        // <body> so it escapes the canvas's transformed stacking context, drag + 8-way resize
+        // from the shared `_makePanelInteractive`) — never the rail-panel shell, which is docked
+        // and cannot be dragged over the page (reference_wml_rail_panel_default_shell).
+        //
+        // The content is the trial document's OWN read-only draft section, cloned — so there is
+        // one source of the student's writing on this page, not a second copy that can drift.
+        let _trialDraftPad = null;
+        _openTrialDraftPadHook = () => {
+            if (_trialDraftPad && _trialDraftPad.parentNode) {
+                _trialDraftPad.remove(); _trialDraftPad = null; return;   // toggle, like every pad
+            }
+            const editorEl = document.getElementById('swml-tiptap-editor');
+            const draftSec = editorEl && editorEl.querySelector('[data-section-label="' + CW_TRIAL_DRAFT_LABEL + '"]');
+            const panel = el('div', { className: 'swml-extract-panel swml-trial-draft-pad' });
+            const header = el('div', { className: 'swml-extract-panel-header' });
+            header.appendChild(el('span', { className: 'swml-prior-pad-title', textContent: 'Your draft' }));
+            header.appendChild(el('button', {
+                className: 'swml-extract-panel-close', textContent: '✕',
+                onClick: () => { panel.remove(); _trialDraftPad = null; },
+            }));
+            panel.appendChild(header);
+            const body = el('div', { className: 'swml-extract-panel-body' });
+            if (draftSec) {
+                const clone = draftSec.cloneNode(true);
+                clone.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
+                clone.querySelectorAll('button, select, textarea, input').forEach(n => { n.disabled = true; });
+                body.appendChild(clone);
+            } else {
+                // FAIL LOUD to the student, never an empty pad (§4d).
+                body.appendChild(el('p', {
+                    textContent: 'Your draft has not arrived on this page yet — go back to the drafting lesson, '
+                        + 'check your writing is in the box there, then reload this page.',
+                }));
+            }
+            panel.appendChild(body);
+            panel.style.top = '110px';
+            panel.style.right = '48px';
+            document.body.appendChild(panel);
+            _makePanelInteractive(panel);   // drag + 8-way resize (shared, v7.20.59)
+            _trialDraftPad = panel;
         };
 
         // ── v7.20.56: PREVIOUS ASSESSMENTS — prior-attempt viewer (Neil) ──
@@ -44125,6 +44393,15 @@
                     }
                 }
 
+                // (1b2) v7.20.556 (#426) — the marking card. Anchored ABOVE the judgement
+                // section so the ladder sits where the marking happens; same producer as the
+                // template, so a healed doc cannot drift from a born one.
+                if (!box.querySelector('[data-section-type="ladder"]')) {
+                    const judgeRow = box.querySelector('[data-field-id="cw-trial-1-hook"]');
+                    const judgeSec = judgeRow ? judgeRow.closest('[data-section-label="Your Judgement"]') : null;
+                    if (judgeSec) { judgeSec.insertAdjacentHTML('beforebegin', _cwTrial1LadderBlock()); changed = true; }
+                }
+
                 // (1c) v7.20.554 — the closing-target section (#424/§33.9), same producer as
                 // the template. Anchored after the mark section when it exists, else appended.
                 if (!hasRow('cw-trial-1-target')) {
@@ -49377,7 +49654,9 @@
                 html += sectionHTML('question', 'Assessment Focus', false, null, _cwTrial1AboutHTML());
                 html += dividerHTML('YOUR DRAFT');
                 html += sectionHTML('response', CW_TRIAL_DRAFT_LABEL, false, null, _cwTrialDraftInner(_trialSrc, ''));
-                html += _cwTrial1JudgementBlock();
+                html += dividerHTML('YOUR JUDGEMENT');
+                html += _cwTrial1LadderBlock();
+                html += _cwTrial1JudgementBlock({ divider: false });
                 html += _cwTrial1SophiaBlock();
                 html += _cwTrial1TargetBlock();
                 return html;
@@ -51065,9 +51344,19 @@
             + '<p>In the chat you will mark the seven parts of your scene yourself, <strong>the way a real examiner marks</strong> — climbing the levels, part by part — then Sophia reads your draft and makes her own level calls. Your marking and hers are both recorded here, and the places where you disagree are the most useful thing in this lesson.</p>';
     }
 
-    function _cwTrial1JudgementBlock() {
+    // ⭐ v7.20.556 (#426): the marking card's home in the document. The section carries only its
+    // heading prose; the LADDER itself is the firewalled `.swml-ladder-ui` the nodeView renders
+    // and the walk fills (renderTrialLadderInline) — it is DERIVED state, so it is never baked
+    // into the saved document where it could fossilise (§4c.7 applied to a card).
+    function _cwTrial1LadderBlock() {
+        return sectionHTML('ladder', 'Your Marking', false, null,
+            '<h3>Your marking, level by level</h3>'
+            + '<p><em>Judge each part of your scene the way an examiner does: prove every line of Level 1 before you climb to Level 2. Every level you judge stays on this card, so you can compare them — and change your mind.</em></p>');
+    }
+
+    function _cwTrial1JudgementBlock(opts) {
         const _els = (window.WML && WML.CW_SCENE_ELEMENTS) || [];
-        return dividerHTML('YOUR JUDGEMENT')
+        return ((opts && opts.divider === false) ? '' : dividerHTML('YOUR JUDGEMENT'))
             + sectionHTML('plan', 'Your Judgement', true, null,
                 '<h3>Your marking, the way an examiner marks</h3>'
                 + '<p><em>One line per part of your scene, out of 4: Level 1 (the part is there and attempts its job) is 1–2 marks, Level 2 (it does what a strong one does) is 3–4. Your own sentence proves the mark — or names what is missing for Draft 2.</em></p>'

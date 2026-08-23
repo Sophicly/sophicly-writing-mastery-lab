@@ -674,6 +674,52 @@
                 };
             }
 
+            // ⭐ v7.20.556 (#426) — LADDER section: the examiner-ladder marking card.
+            // Neil, 2026-08-23: *"I can't see level one to compare it because I might change my
+            // mind… what if for literature there's six levels? That's not gonna be practical."*
+            // A chat appends, so each level pushes the last off screen; this card REDRAWS IN
+            // PLACE, stacking every level the student has reached newest-on-top, each one still
+            // tappable. Exactly the signoff technique: PM owns the section's prose (contentDOM),
+            // and a firewalled, interactive footer is filled by wml-assessment on every
+            // (re)mount — so it survives pagination remounts and never fights the DOMObserver.
+            if (type === 'ladder') {
+                const contentDOM = document.createElement('div');
+                contentDOM.className = 'swml-section-content';
+                dom.appendChild(contentDOM);
+                const ui = document.createElement('div');
+                ui.className = 'swml-ladder-ui';
+                ui.setAttribute('contenteditable', 'false');
+                dom.appendChild(ui);
+                const _fill = () => {
+                    try {
+                        if (window.WML && typeof window.WML.renderTrialLadderUI === 'function') {
+                            window.WML.renderTrialLadderUI();
+                        }
+                    } catch (_) { /* ignore */ }
+                };
+                requestAnimationFrame(_fill);
+                setTimeout(_fill, 250);
+                setTimeout(_fill, 800);
+                return {
+                    dom,
+                    contentDOM,
+                    ignoreMutation: (mutation) => {
+                        if (!mutation || !mutation.target) return false;
+                        // Same wrapper-attr firewall as the progress + signoff cards (§PM law):
+                        // every write we make here is display-only, never a doc change.
+                        if (mutation.type === 'attributes' && mutation.target === dom) return true;
+                        return ui === mutation.target || ui.contains(mutation.target);
+                    },
+                    // The card is BUTTONS — PM owns keydown/mousedown for the editable view, so
+                    // without this a tap inside the card can be swallowed (the v7.20.197 lesson
+                    // that made the tutor-comment textarea untypable).
+                    stopEvent: (event) => {
+                        const t = event && event.target;
+                        return !!(t && ui.contains(t));
+                    },
+                };
+            }
+
             // v7.19.828: Sign-off section — the interactive UI (disclaimer/checkbox/
             // Sign Off button, or the signed badge) renders IN-FLOW inside the section
             // (the progress-card technique) instead of the old absolutely-positioned
