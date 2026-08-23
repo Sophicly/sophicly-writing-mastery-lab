@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.553';
+var WML_BUILD = '7.20.554';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1415,6 +1415,25 @@ window.WML = (function() {
             const key = CW_ARTIFACT_MAP[s.step];
             if (!key) return null;
             return { artifactKey: key, draftStep: s.step, draftNumber: s.draft, draftLabel: s.label };
+        }
+        return null;
+    }
+
+    // ⭐ v7.20.554 (#424 / PEDAGOGY §33.9) — WHICH TRIAL FEEDS A DRAFT ITS TARGET?
+    // The mirror of cwTrialSource, DERIVED the same way: a draft opens on the target the student
+    // wrote at the end of the trial immediately before it, so the answer is "walk back to the
+    // nearest trial entry, stopping at any earlier draft" — and it survives §33.7's Trial-6 move
+    // with no edit, for the same reason cwTrialSource does.
+    // Returns { trial, trialStep, trialLabel } or null (Draft 1 has no trial before it).
+    function cwDraftTrialSource(task) {
+        const def = getCwStepDef(task);
+        if (!def || !def.draft) return null;
+        const idx = CW_STEPS.indexOf(def);
+        if (idx < 0) return null;
+        for (let i = idx - 1; i >= 0; i--) {
+            const s = CW_STEPS[i];
+            if (s.draft) return null;
+            if (s.trial) return { trial: s.trial, trialStep: s.step, trialLabel: s.label };
         }
         return null;
     }
@@ -5378,7 +5397,7 @@ window.WML = (function() {
         EXERCISE_MANIFEST,
         // Creative Writing
         CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SEED_FROM, CW_SIDEBAR_STEPS,
-        cwTrialSource, CW_SCENE_ELEMENTS,
+        cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS,
         // Revision map
         REVISION_MAP,
         // Utilities

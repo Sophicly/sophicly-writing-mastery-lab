@@ -113,6 +113,8 @@ ok('…and the model is forbidden from stating a mark, because the arithmetic is
     && /arithmetic\s+the system does|worked out from your/i.test(PROTO));
 ok('the marker contract is stated, all seven lines',
     ELEMENTS.every(e => PROTO.indexOf('@TRIAL_VERDICT[' + e.id + '=') !== -1));
+ok('…in the examiner-ladder tokens (#424), with the legacy met|partly|not contract gone',
+    /none\|l1_low\|l1_top\|l2_low\|l2_top/.test(PROTO) && !/met\|partly\|not/.test(PROTO));
 ok('…and it says all seven verdict lines are required', /All seven verdict lines must be present/i.test(PROTO));
 ok('…and carries the strength + priority markers the document rows read (#419)',
     /@TRIAL_STRENGTH\[/.test(PROTO) && /@TRIAL_PRIORITY\[/.test(PROTO));
@@ -171,6 +173,20 @@ ok('⛔ every Sophia section is response-typed, never feedback-typed — the fee
     && /sectionHTML\('response', 'Story Coherence Mark', false, null/.test(SRC));
 ok('the walk writes the mark to the row the template builds (one key, both sides — §5d)',
     /writeRow\('cw-trial-1-mark'/.test(SRC) && /writeRow\('cw-trial-1-gap'/.test(SRC));
+// v7.20.554 (#424 / PEDAGOGY §33.9) — the closing-target section.
+ok('the closing-target row exists, from ONE producer used by template AND heal',
+    /function _cwTrial1TargetBlock\(\)/.test(SRC) && (SRC.match(/_cwTrial1TargetBlock\(\)/g) || []).length >= 4,
+    (SRC.match(/_cwTrial1TargetBlock\(\)/g) || []).length);
+ok('…EDITABLE (it is the student\'s sentence, never Sophia\'s) — no locked flag on the target row',
+    /outlineRowHTML\(\{ id: 'target', label: 'My Target', prompt: [^}]*\}, 'cw-trial-1-target'\)/.test(SRC)
+    && !/locked: true \}, 'cw-trial-1-target'\)/.test(SRC));
+ok('…the walk banks the student\'s target into it', /writeRow\('cw-trial-1-target'/.test(SRC));
+ok('…and the heal inserts it into existing docs', /hasRow\('cw-trial-1-target'\)/.test(HEAL || ''));
+ok('the NEXT draft pins the target at the top of its page (tryFillCwDraftTarget in the load chain)',
+    /const tryFillCwDraftTarget = async/.test(SRC)
+    && /tryHealCwTrial1Doc\(\)\)\.then\(\(\) => tryFillCwDraftTarget\(\)\)/.test(SRC));
+ok('…derived from CW_STEPS like cwTrialSource — never a hand-written draft→trial map',
+    /function cwDraftTrialSource\(task\)/.test(CORE) && /if \(s\.draft\) return null;/.test(CORE));
 ok('…and fills the per-element + overall rows from the marking reply',
     /writeRow\('cw-trial-1-fb-' \+ e\.id/.test(SRC)
     && /writeRow\('cw-trial-1-strength'/.test(SRC) && /writeRow\('cw-trial-1-priority'/.test(SRC));
@@ -221,8 +237,10 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
     const CTL = ctlIdx < 0 ? '' : braceSliceFrom(SRC, ctlIdx, '(', ')').text;
     ok('⛔ …and defines no grade table of its own (two ladders is how they drift)',
         !/\bpct >= 85\b|\bGRADE_BOUNDARIES\b|85 \? 9/.test(CTL));
-    ok('the points are the stated ones: met=2 · partly=1 · not=0',
-        /POINTS = \{ met: 2, partly: 1, not: 0 \}/.test(CTL));
+    ok('the marks are the examiner ladder\'s (#424): none=0 · l1_low=1 · l1_top=2 · l2_low=3 · l2_top=4',
+        /MARKS = \{ none: 0, l1_low: 1, l1_top: 2, l2_low: 3, l2_top: 4 \}/.test(CTL));
+    ok('…summed over els().length * 4 — /28 comes from the element count, never a hardcoded 28',
+        /list\.length \* 4/.test(CTL) && !/\/ 28\b/.test(CTL));
     ok('the walk spends ONE call on marking and one only on an explicit ask for help',
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length === 2,
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length);
@@ -240,7 +258,7 @@ console.log('\nThe marker lines are stripped at the one display renderer:');
     if (m) {
         // eslint-disable-next-line no-eval
         const re = eval(m[1]);
-        const sample = 'Great work.\n\n@TRIAL_VERDICT[hook=met] Your opening line does the job.\n@TRIAL_STRENGTH[proaction] Real cost.\n@TRIAL_PRIORITY[epiphany] One concrete moment.';
+        const sample = 'Great work.\n\n@TRIAL_VERDICT[hook=l2_top] Your opening line does the job.\n@TRIAL_STRENGTH[proaction] Real cost.\n@TRIAL_PRIORITY[epiphany] One concrete moment.';
         const out = sample.replace(re, '').trim();
         ok('…it removes every machine line from a real marking tail', !/@TRIAL_/.test(out), out);
         ok('…and keeps the prose', /Great work\./.test(out));
