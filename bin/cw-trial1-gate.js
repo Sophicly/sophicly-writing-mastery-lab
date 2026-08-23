@@ -36,6 +36,10 @@ if (elIdx < 0) { console.log('cw-trial1-gate: CW_SCENE_ELEMENTS not found in wml
 // eslint-disable-next-line no-eval
 const ELEMENTS = eval(braceSliceFrom(CORE, elIdx, '[', ']').text);
 
+// The heal's source, sliced once — used by two sections below.
+const healIdx = SRC.indexOf('const tryHealCwTrial1Doc = async () => {');
+const HEAL = healIdx === -1 ? '' : braceSliceFrom(SRC, healIdx, '{', '}').text;
+
 // ── 1. THE CRITERIA ARE WHAT THE COURSE TAUGHT ────────────────────────────────────────────────
 console.log('\nThe trial asks about the seven elements Step 9 taught, in Step 9\'s own words:');
 ok('there are seven of them', ELEMENTS.length === 7, ELEMENTS.length);
@@ -109,9 +113,22 @@ ok('…and the model is forbidden from stating a mark, because the arithmetic is
     && /arithmetic\s+the system does|worked out from your/i.test(PROTO));
 ok('the marker contract is stated, all seven lines',
     ELEMENTS.every(e => PROTO.indexOf('@TRIAL_VERDICT[' + e.id + '=') !== -1));
-ok('…and it says all seven are required', /All seven must be present/i.test(PROTO));
+ok('…and it says all seven verdict lines are required', /All seven verdict lines must be present/i.test(PROTO));
+ok('…and carries the strength + priority markers the document rows read (#419)',
+    /@TRIAL_STRENGTH\[/.test(PROTO) && /@TRIAL_PRIORITY\[/.test(PROTO));
 ok('it scopes the judgment to story coherence, not SPaG (that is the final assessment\'s job)',
     /Not spelling, not punctuation|story coherence only/i.test(PROTO));
+{
+    // The generic trial About text promises "Sophia will analyse your writing" — the lesson
+    // Trial 1 no longer is. Its template branch must carry its own About, and the heal must
+    // rewrite the old sentence in existing docs.
+    const t1Idx = SRC.indexOf("if (stepDef.trial === 1) {");
+    const genIdx = SRC.indexOf('Sophia will analyse your writing', t1Idx);
+    ok('Trial 1\'s About text is its own — the generic "Sophia will analyse" line sits AFTER its branch returns',
+        t1Idx > 0 && genIdx > t1Idx);
+    ok('…and the heal rewrites the superseded sentence in existing docs',
+        /Sophia will analyse your writing/.test(HEAL || ''));
+}
 {
     // ⭐ THE RETAINED-SOURCE LAW (WML §5). The manifest loads this file WHOLE into the model's
     // context, and a model that can see the teaching text will narrate it — which is exactly how
@@ -126,19 +143,54 @@ ok('it scopes the judgment to story coherence, not SPaG (that is the final asses
     ok('⭐ NO code-served teaching text is retained in the loaded protocol (WML §5)', leaked.length === 0, leaked);
 }
 
-// ── 3. THE DOCUMENT ───────────────────────────────────────────────────────────────────────────
-console.log('\nThe trial document holds the student\'s own judgement, and Sophia\'s mark is locked:');
+// ── 3. THE DOCUMENT — the essay-doc architecture, scaled to the trial (#419) ──────────────────
+console.log('\nThe trial document carries the essay-doc architecture, and everything of Sophia\'s is locked:');
+ok('ONE producer builds the judgement block, called by the TEMPLATE and the HEAL — healed docs cannot drift from born docs',
+    (SRC.match(/_cwTrial1JudgementBlock\(\)/g) || []).length >= 3 && /function _cwTrial1JudgementBlock\(\)/.test(SRC),
+    (SRC.match(/_cwTrial1JudgementBlock\(\)/g) || []).length);
+ok('…and one for Sophia\'s block', (SRC.match(/_cwTrial1SophiaBlock\(\)/g) || []).length >= 3 && /function _cwTrial1SophiaBlock\(\)/.test(SRC),
+    (SRC.match(/_cwTrial1SophiaBlock\(\)/g) || []).length);
 ok('the seven verdict rows are BUILT FROM the element list, never hand-typed beside it',
     /_els\.map\(function \(e\) \{[\s\S]{0,200}'cw-trial-1-' \+ e\.id/.test(SRC));
+ok('her PER-ELEMENT verdict rows exist — the per-question-feedback analogue (#419)',
+    /'cw-trial-1-fb-' \+ e\.id/.test(SRC));
+ok('…locked, and derived from the same element list',
+    /locked: true \}, 'cw-trial-1-fb-' \+ e\.id\)/.test(SRC));
+ok('Overall Feedback carries Key Strength + Priority for Draft 2, both locked',
+    /label: 'Key Strength'[^)]*locked: true[^)]*\}, 'cw-trial-1-strength'\)/.test(SRC)
+    && /label: 'Priority for Draft 2'[^)]*locked: true[^)]*\}, 'cw-trial-1-priority'\)/.test(SRC));
 ok('the mark row exists', /'cw-trial-1-mark'/.test(SRC));
 ok('the gap row exists', /'cw-trial-1-gap'/.test(SRC));
 ok('⭐ both are LOCKED — a mark a student can retype is not a mark',
     /label: 'Mark'[^)]*locked: true[^)]*\}, 'cw-trial-1-mark'\)/.test(SRC)
     && /label: 'Where you differed'[^)]*locked: true[^)]*\}, 'cw-trial-1-gap'\)/.test(SRC));
-ok('the mark section itself is read-only',
-    /sectionHTML\('response', 'Story Coherence Mark', false, null/.test(SRC));
+ok('⛔ every Sophia section is response-typed, never feedback-typed — the feedback type recomputes '
+    + 'readonly from _feedbackEditable() at render and would UNLOCK her verdicts in edit mode',
+    /sectionHTML\('response', 'Sophia’s Verdict', false, null/.test(SRC)
+    && /sectionHTML\('response', 'Overall Feedback', false, null/.test(SRC)
+    && /sectionHTML\('response', 'Story Coherence Mark', false, null/.test(SRC));
 ok('the walk writes the mark to the row the template builds (one key, both sides — §5d)',
     /writeRow\('cw-trial-1-mark'/.test(SRC) && /writeRow\('cw-trial-1-gap'/.test(SRC));
+ok('…and fills the per-element + overall rows from the marking reply',
+    /writeRow\('cw-trial-1-fb-' \+ e\.id/.test(SRC)
+    && /writeRow\('cw-trial-1-strength'/.test(SRC) && /writeRow\('cw-trial-1-priority'/.test(SRC));
+
+console.log('\nExisting documents are HEALED to this shape (the baked-scaffold law — Neil\'s doc predated .551):');
+ok('the heal exists', !!HEAL);
+ok('…and is wired into the load chain AFTER the draft filler',
+    /tryFillCwTrialDraft\(\)\)\.then\(\(\) => tryHealCwTrial1Doc\(\)\)/.test(SRC));
+ok('…gated to trial 1 only, and never in review mode',
+    /cwStepDef\?\.trial !== 1/.test(HEAL) && /state\.reviewMode/.test(HEAL));
+ok('…anchored on data-field-id, which survives every round-trip',
+    /data-field-id="cw-trial-1-hook"/.test(HEAL) || /hasRow\('cw-trial-1-hook'\)/.test(HEAL));
+ok('…it calls the SAME two producers the template uses',
+    /_cwTrial1JudgementBlock\(\) \+ _cwTrial1SophiaBlock\(\)/.test(HEAL));
+ok('…the old placeholder section is removed only when UNTOUCHED — a student\'s typing is never deleted',
+    /placeholderOnly/.test(HEAL) && /Your draft will be assessed here/.test(HEAL));
+ok('…the write runs under _migrationActive', /_migrationActive = true;/.test(HEAL));
+ok('⭐ …and it BACKFILLS verdicts from the walk sidecar into EMPTY rows only — work given while the '
+    + 'rows did not exist arrives; a hand-edited row is never clobbered',
+    /backfilled/.test(HEAL) && /if \(cur\) return;/.test(HEAL));
 ok('Trial 1\'s sidebar names what this trial actually does',
     /CW_SIDEBAR_STEPS\['trial_1'\] = \[[\s\S]{0,300}Judge the Seven Parts/.test(CORE));
 ok('…and trials 2–6 no longer share it (six trials looked identical because they did)',

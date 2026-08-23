@@ -61,7 +61,9 @@ const ctlIdx = SRC.indexOf('const _cwTrial1Ctl = (function () {');
 if (ctlIdx < 0) { console.error('❌ _cwTrial1Ctl not found in wml-assessment.js'); process.exit(1); }
 const CTL_SRC = { src: braceSliceFrom(SRC, ctlIdx, '(', ')').text + '()' };
 
-const FIDS = ELEMENTS.map((e) => 'cw-trial-1-' + e.id).concat(['cw-trial-1-mark', 'cw-trial-1-gap']);
+const FIDS = ELEMENTS.map((e) => 'cw-trial-1-' + e.id)
+    .concat(ELEMENTS.map((e) => 'cw-trial-1-fb-' + e.id))
+    .concat(['cw-trial-1-mark', 'cw-trial-1-gap', 'cw-trial-1-strength', 'cw-trial-1-priority']);
 const PLAN = { hook: 'A dog barks at nothing and the lights go out.' };
 
 function world(opts) {
@@ -130,8 +132,15 @@ async function answerAll(w, re, note) {
     await settle();
     return ELEMENTS.length;
 }
-function markerBlock(map) {
-    return ELEMENTS.map((e) => '@TRIAL_VERDICT[' + e.id + '=' + (map[e.id] || 'met') + ']').join('\n');
+function markerBlock(map, opts) {
+    opts = opts || {};
+    const lines = ELEMENTS.map((e) => '@TRIAL_VERDICT[' + e.id + '=' + (map[e.id] || 'met') + ']'
+        + (opts.comments === false ? '' : ' Her sentence on the ' + e.id + ', quoting "their words".'));
+    if (opts.tail !== false) {
+        lines.push('@TRIAL_STRENGTH[hook] The opening image carries the whole premise.');
+        lines.push('@TRIAL_PRIORITY[denouement] Give the last line an image instead of an explanation.');
+    }
+    return lines.join('\n');
 }
 
 async function main() {
@@ -270,6 +279,33 @@ async function main() {
         ok(w.saved.length === 1 && w.saved[0].grade === expected && w.saved[0].marks === 10,
             '7 · the result is saved to the project with its verdicts, marks and grade', w.saved[0]);
         ok(w.saved[0].self && w.saved[0].sophia, '7 · …carrying BOTH judgments, so the dashboard can show the gap');
+        // #419 — the document carries the essay-doc architecture, scaled to the trial:
+        ELEMENTS.forEach((e) => {
+            const row = w.rows.get('cw-trial-1-fb-' + e.id) || '';
+            ok(row.length > 0, '7 · her verdict on the ' + e.id + ' is IN THE DOCUMENT, not only the chat (#419)');
+            ok(/quoting/.test(row) || /—/.test(row), '7 · …with her sentence attached', row);
+        });
+        ok(/Hook — The opening image/.test(w.rows.get('cw-trial-1-strength') || ''),
+            '7 · Key Strength is filed from her marker, named by ELEMENT LABEL not id (root §14)', w.rows.get('cw-trial-1-strength'));
+        ok(/Denouement — Give the last line/.test(w.rows.get('cw-trial-1-priority') || ''),
+            '7 · Priority for Draft 2 is filed from her marker', w.rows.get('cw-trial-1-priority'));
+    }
+
+    // ── 7b · COMMENTS AND TAIL MARKERS ARE BEST-EFFORT — the MARK never depends on them ──
+    {
+        const w = world();
+        w.ctl.forceStart();
+        await toFirstAsk(w);
+        await answerAll(w, /Yes, it does/);
+        const verdicts = { climax: 'partly' };
+        reply(w, 'Bare verdicts only.\n\n' + markerBlock(verdicts, { comments: false, tail: false }));
+        await settle();
+        ok(/^Grade /.test(w.rows.get('cw-trial-1-mark') || ''), '7b · bare verdict lines still file the mark — comments are never load-bearing');
+        ok((w.rows.get('cw-trial-1-fb-hook') || '') === 'Yes', '7b · a comment-less element row holds the verdict word alone');
+        ok((w.rows.get('cw-trial-1-strength') || '').length > 0, '7b · a missing @TRIAL_STRENGTH derives from her verdicts rather than leaving a blank locked row');
+        ok(/Climax/.test(w.rows.get('cw-trial-1-priority') || ''), '7b · a missing @TRIAL_PRIORITY derives from her WORST verdict (partly climax)', w.rows.get('cw-trial-1-priority'));
+        ok((w.warns || []).some((m) => /TRIAL_STRENGTH/.test(m)) && (w.warns || []).some((m) => /TRIAL_PRIORITY/.test(m)),
+            '7b · …and both misses are loud in the console');
     }
 
     // ── 8 · THE GAP BETWEEN THE TWO JUDGMENTS IS THE TEACHING ────────────────────────────

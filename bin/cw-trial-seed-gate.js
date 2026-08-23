@@ -237,15 +237,20 @@ ok('…it re-writes only when the content actually CHANGED, so a reload is not a
     /if \(sec\.innerHTML === inner\) return;/.test(FILL));
 ok('the section is built READ-ONLY (PEDAGOGY §6 — the trial is not where you fix the writing)',
     /sectionHTML\('response', CW_TRIAL_DRAFT_LABEL, false, null/.test(SRC));
-ok('…in the template AND in the heal, so no project gets an editable copy',
-    (SRC.match(/sectionHTML\('response', CW_TRIAL_DRAFT_LABEL, false, null/g) || []).length === 2,
-    (SRC.match(/sectionHTML\('response', CW_TRIAL_DRAFT_LABEL, false, null/g) || []).length);
+ok('…at EVERY site that builds it (trial-1 branch · generic branch · the heal), so no project gets an editable copy',
+    (function () {
+        const n = (SRC.match(/sectionHTML\('response', CW_TRIAL_DRAFT_LABEL, false, null/g) || []).length;
+        const any = (SRC.match(/sectionHTML\('response', CW_TRIAL_DRAFT_LABEL,/g) || []).length;
+        return n >= 3 && n === any;   // every occurrence is the read-only form — no editable variant anywhere
+    })(),
+    (SRC.match(/sectionHTML\('response', CW_TRIAL_DRAFT_LABEL,/g) || []).length);
 ok('⛔ the copy is NOT flagged as the student\'s own composition — it would double-count their words',
     !/CW_TRIAL_DRAFT_LABEL[^\n]*student-composition/.test(SRC));
 ok('older trial documents are HEALED — the section is inserted, not silently absent',
     /insertAdjacentHTML\('beforebegin', block\)/.test(FILL) && /insertAdjacentHTML\('afterbegin', block\)/.test(FILL));
-ok('…anchored on the divider\'s TEXT, which a save→reload round-trip cannot change',
-    /toUpperCase\(\) === 'ASSESSMENT'/.test(FILL));
+ok('…anchored on the divider\'s TEXT, which a save→reload round-trip cannot change — and it knows '
+    + 'both doc generations (pre-.552 ASSESSMENT, .552 YOUR JUDGEMENT)',
+    /\['ASSESSMENT', 'YOUR JUDGEMENT'\]\.indexOf\(\(d\.textContent \|\| ''\)\.trim\(\)\.toUpperCase\(\)\) !== -1/.test(FILL));
 ok('the document write runs under _migrationActive (or the section guard reverts it)',
     /_migrationActive = true;/.test(FILL) && /_migrationActive = _was;/.test(FILL));
 ok('a missing draft is NAMED in the console with the key that was looked for, never swallowed',

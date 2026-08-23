@@ -41,20 +41,26 @@ things, in order, and nothing else:
    few of the student's own words so they can see exactly which part of their draft you mean, and
    say whether that element does its job.
 2. **The one element that would improve the story most in Draft 2**, and what to do to it.
-3. **Exactly seven marker lines at the very end**, one per element, nothing else on those lines:
+3. **Exactly nine marker lines at the very end**, nothing else on those lines. Each verdict line
+   carries your verdict AND, after the bracket, one sentence on that element for the student's
+   document — quote two or three of their own words in it:
 
 ```
-@TRIAL_VERDICT[hook=met|partly|not]
-@TRIAL_VERDICT[setup=met|partly|not]
-@TRIAL_VERDICT[reaction=met|partly|not]
-@TRIAL_VERDICT[epiphany=met|partly|not]
-@TRIAL_VERDICT[proaction=met|partly|not]
-@TRIAL_VERDICT[climax=met|partly|not]
-@TRIAL_VERDICT[denouement=met|partly|not]
+@TRIAL_VERDICT[hook=met|partly|not] your one-sentence comment on their hook
+@TRIAL_VERDICT[setup=met|partly|not] …
+@TRIAL_VERDICT[reaction=met|partly|not] …
+@TRIAL_VERDICT[epiphany=met|partly|not] …
+@TRIAL_VERDICT[proaction=met|partly|not] …
+@TRIAL_VERDICT[climax=met|partly|not] …
+@TRIAL_VERDICT[denouement=met|partly|not] …
+@TRIAL_STRENGTH[element_id] one line — the element working hardest for this story, and why
+@TRIAL_PRIORITY[element_id] one line — what to do to that element in Draft 2
 ```
 
-**All seven must be present.** The system files a mark only when all seven parse; a missing one
-means the student is asked to sit through the marking again, which costs them their time.
+**All seven verdict lines must be present.** The system files a mark only when all seven parse; a
+missing one means the student is asked to sit through the marking again, which costs them their
+time. The comments and the strength/priority lines fill the student's document — dropping one
+loses a document line, never the mark.
 
 ## What you are judging, and what you are not
 
