@@ -1,7 +1,7 @@
 # Topic 1: Practice Paper — food waste
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Cambridge IGCSE First Language English Paper 2 (0500 / 0990) — Directed Writing and Composition. Real past paper s24/21. Theme: food waste. Section A Question 1 [40] = directed writing, 250–350 words, 15 reading + 25 writing; this paper's form is the article. The 15 reading marks are earned by EVALUATING the ideas in both texts, not by reproducing them. Section B [40] = one composition from four, 350–450 words, 16 content and structure + 24 style and accuracy.
+**Teaching Point:** Cambridge IGCSE First Language English Paper 2 — Directed Writing and Composition. A real Cambridge past paper. Theme: food waste. Section A Question 1 [40] = directed writing, 250–350 words, 15 reading + 25 writing; this paper's form is the article. The 15 reading marks are earned by EVALUATING the ideas in both texts, not by reproducing them. Section B [40] = one composition from four, 350–450 words, 16 content and structure + 24 style and accuracy.
 **Marks:** 80
 **AOs:** AO1, AO2, AO3
 
@@ -80,42 +80,54 @@ Write about 350 to 450 words. Up to 16 marks are available for the content and s
 
 ---
 
-# Topic 2: Section A Focus (speech) — a school study-exchange programme
+# Topic 2: Section A Focus (speech) — handwriting lessons in schools
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Cambridge IGCSE First Language English Paper 2 (0500 / 0990) — Section A focus. Real past paper s20/22. Theme: a school study-exchange programme. Question 1 [40] = directed writing in the form of a speech, 250–350 words, 15 reading + 25 writing. Section A carries the only reading marks on this paper, and they are awarded for evaluating the ideas, attitudes and opinions in BOTH texts — weighing them, not listing them.
+**Teaching Point:** Cambridge IGCSE First Language English Paper 2 — Section A focus, from a real Cambridge past paper. Theme: handwriting lessons in schools. Question 1 [40] = directed writing in the form of a speech, 250–350 words, 15 reading + 25 writing. Section A carries the only reading marks on this paper, and they are awarded for evaluating the ideas, attitudes and opinions in BOTH texts — weighing them, not listing them.
 **Marks:** 40
 **AOs:** AO1, AO2, AO3
 
 ## Text A
+**Context:** Writing wars: pens or keyboards?
 
-**1** The post below is from an online education forum in which a Headteacher argues for study exchange visits to different countries by teenagers.
+**1** This text is an article that explores the changing ways in which we write.
 
-**2** Many people in my country believe that study exchange visits by students to other countries have limited educational value and offer little more than brief holidays subsidised by parents and their often cash-strapped schools. Some say that older students need every minute in their own schools to give them a chance of success in higher education and a competitive workplace in the future.
+**2** This past week you may well have scribbled down a quick shopping list or stuck a note on your desk. But when did you last draft a long text by hand, or write a ‘proper’ letter, using a pen and paper?
 
-**3** In my school, however, we’ve recently instigated an ambitious programme of exchange visits where students in the second term of their course can spend a few weeks living and studying in a different country, while keeping up with some of their home school’s work online. It’s proving incredibly popular. Students apply to spend four weeks studying in a partner school overseas. They have to show enough maturity and sense of responsibility to represent their school and their country, as well as benefit from the experience personally.
+**3** No one can say precisely how much handwriting has declined, but surveys give some indication of the extent of the damage. According to one study by a printing company, one in three respondents hadn’t written anything by hand in the previous six months! True or not, one thing is certain: faster technology means that handwriting is disappearing in the workplace.
 
-**4** If we choose carefully, our students return from their exchange visits enriched by exposure to new cultures and different educational methods and principles. One of our brightest 14-year-olds recently returned from a four-week visit to study in a school overseas where the resources available reflected the country’s struggling economy. She learned that the teacher, not the shiny gadgetry, is the key to effective learning. Other students have returned with aspirations to work in the countries they visited, fuelling their ambition and drive to succeed.
+**4** In the United States, schools already make allowances for this. Given that email and texting have replaced conventional ‘snail mail’, and that students take notes on their laptops, ‘cursive’ writing – in which the pen is not raised between each character – has been dropped from the common school curriculum. Since 2013, American children have been required to learn how to use a keyboard and are allowed to stick with the easier non-cursive handwriting style. They no longer need to worry about the up-and-down strokes involved in ‘grown-up’ cursive handwriting.
 
-**5** There is more to educating our students than stuffing their heads with facts and knowledge. The opportunities provided by study exchange visits – to develop young people’s personalities, resilience and sense of adventure – cannot be replicated in the classroom. We’ve had young people return from studying in other countries with renewed motivation and enthusiasm, more tolerant and open-minded about the wider world. Now, that’s what I call education!
+**5** Unsurprisingly, this reform prompted controversy. Everyone needs to be able to write without computers, to read birthday cards from grandparents and decipher comments by teachers on assignments. Indeed, France has taken the opposite course from the USA. In the early 2000s, schools started teaching cursive writing as soon as pupils entered primary school (aged six). Meanwhile in China, millions every week watch ‘Character Hero’, a TV spelling challenge, where young contestants must write by hand. ‘The ability to write characters is part of Chinese tradition and culture,’ explains one bespectacled calligraphy teacher in the audience.
+
+**6** Since writing was first invented, the tools and media used have changed many times. Why worry whether something is handwritten or typed?
+
+**7** Experts argue that handwriting is a better workout for your brain. ‘Handwriting’s a more complex task than typing. It requires various skills – feeling the pen and paper, moving the writing implement, and directing movement by thought,’ explains Professor Edouard Diaz. ‘Paper creates a visual, tactile record of your work and its creative stage – draft ideas crossed out or corrected, scribbles in the margin and later additions – and handwriting has always been seen as expressing our personality.’
+
+**8** Despite omnipresent technology, Diaz believes handwriting will persist. ‘Touchscreens are taking us back to handwriting,’ he argues. ‘From school examinations to labels for jam jars, handwriting’s an important part of everyday life.’
 
 ## Text B
+**Context:** Putting pen to paper: the schools nurturing a love of writing by hand
 
-**1** This post was written by another Headteacher in response to the Headteacher in Text A.
+**1** This text is an article about the value of handwritten communication.
 
-**2** It’s said that travel broadens the mind and maybe it does. I don’t believe, however, that a school should compromise on its primary role which is to equip students with the skills and knowledge to do well for themselves, their families and their communities in later life.
+**2** At a primary school in Wales, students are writing letters to residents of a local care home. The initiative sees young children and their elderly ‘pen friends’ exchange updates about their lives, helping to build relationships between generations while also giving the children an understanding of the value of writing letters by hand – an activity that’s becoming less and less common.
 
-**3** A lot of learning happens in four weeks, and the huge time and effort involved in vetting host families, planning and preparing for a lengthy exchange visit is very costly in teacher time. It’s also a very rare 14-year-old, in my experience, who can leave their family, school and country for four weeks and cope well. Adolescence, especially these days, can be a traumatic enough time without such dubious ‘experiences’, and the school will be left to pick up the pieces.
+**3** The project was started by the care home as a way to create community links, whilst the school stresses ‘the importance of taking time to write letters with pen and paper, making good handwriting meaningful and real for the children’.
 
-**4** Having taught in schools in different countries in the past, I know that educational practices and principles vary widely across the globe. Students returning from four weeks studying abroad may have some superficial views about the relative value of other ways of learning but their real education happens in their own schools. How are 14-year-olds meant to judge what they see elsewhere? A snapshot of a less challenging school environment could limit students’ expectations of themselves while a visit to a school with small classes, plush surroundings and all manner of electronics may well induce resentment in young minds. For some, that resentment may eventually drive them away from their own communities where their education can do most good for others.
+**4** Teacher Lisa Johnston says she’s seen her students develop a real sense of empathy and understanding of elderly people. ‘The pen friend scheme has made writing a more enjoyable and exciting task. They love sharing their news. There’s something about a handwritten letter that gives you a positive buzz – knowing that person has actually sat down and written it just for you, and only you. Letter writing is a big part of what we do at school. All of our writing is for a purpose. Knowing that someone out there is going to be reading it, there’s always the real sense of pride.’
 
-**5** As for overseas students coming here to my school on an exchange visit, I would struggle to persuade teachers to adapt lessons for someone whose progress, especially in examinations, is not their responsibility. I wonder how the parents of students in my school would view the teacher time expended on students who are temporary visitors. We have no way to measure what tangible benefits our students would gain from a study exchange visit, but we might be measuring the disadvantages in poorer grades. We already have close links with several foreign schools with whom our students correspond regularly, developing their language skills and broadening their horizons.
+**5** That sense of pride in writing created by hand can be instilled in children from a young age. In Abacus nursery, Sydney, children are given a letter of the alphabet each week to form in creative ways, using finger-painting, sand or clay.
 
-**6** reasonable effort has been made by the publisher (UCLES) to trace copyright holders, but if any items requiring clearance have unwittingly been included, the publisher will be pleased to make amends at the earliest possible opportunity.
+**6** The school has created something called the pen licence. It allows younger children to move from using a pencil to a pen once they’ve reached a certain standard. ‘There’s a lot of excitement about reaching that pen licence stage,’ says headteacher Warren Handy.
 
-**7** Assessment International Education Copyright Acknowledgements Booklet. This is produced for each series of examinations and is freely available to download at www.cambridgeinternational.org after the live examination series.
+**7** He adds that developing students’ writing in this way matters for their life after school: ‘It’s important we create citizens of the future with the life skills that can make them successful.’
 
-**8** Cambridge Local Examinations Syndicate (UCLES), which itself is a department of the University of Cambridge.
+**8** reasonable effort has been made by the publisher (UCLES) to trace copyright holders, but if any items requiring clearance have unwittingly been included, the publisher will be pleased to make amends at the earliest possible opportunity.
+
+**9** Assessment International Education Copyright Acknowledgements Booklet. This is produced for each series of examinations and is freely available to download at www.cambridgeinternational.org after the live examination series.
+
+**10** Local Examinations Syndicate (UCLES), which is a department of the University of Cambridge.
 
 ## Q1
 **Marks:** 40
@@ -123,19 +135,19 @@ Write about 350 to 450 words. Up to 16 marks are available for the content and s
 
 *Section A: Directed Writing*
 
-Imagine you are the parent of a student who attends a school that is considering a study exchange
+Imagine that schools in your area are considering either introducing or abandoning handwriting
 
-programme.
+lessons for all younger students. You have been invited to speak at a meeting of teachers and
 
-Write the speech you give at a meeting for parents and teachers about whether it is a good idea
+parents to discuss the idea.
 
-for the school to run a study exchange programme.
+Write the words of your speech.
 
 In your speech you should:
 
-• evaluate the ideas and opinions given in both texts
+• evaluate the ideas, attitudes and opinions given in both texts about handwriting and keyboard skills
 
-• give your own views, based on what you have read, about whether your child would benefit from a study exchange visit.
+• give your own views, based on what you have read, about whether or not handwriting lessons in school are a good idea.
 
 Base your speech on what you have read in both texts, but be careful to use your own words.
 
@@ -147,7 +159,7 @@ Up to 15 marks are available for the content of your answer, and up to 25 marks 
 
 quality of your writing.
 
-[Total: 40]
+**[40]**
 
 
 ---
@@ -155,7 +167,7 @@ quality of your writing.
 # Topic 3: Practice Paper — apologising at work
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Cambridge IGCSE First Language English Paper 2 (0500 / 0990) — Directed Writing and Composition. Real past paper s23/22. Theme: apologising at work. Section A Question 1 [40] = directed writing, 250–350 words, 15 reading + 25 writing; this paper's form is the letter. The 15 reading marks are earned by EVALUATING the ideas in both texts, not by reproducing them. Section B [40] = one composition from four, 350–450 words, 16 content and structure + 24 style and accuracy.
+**Teaching Point:** Cambridge IGCSE First Language English Paper 2 — Directed Writing and Composition. A real Cambridge past paper. Theme: apologising at work. Section A Question 1 [40] = directed writing, 250–350 words, 15 reading + 25 writing; this paper's form is the letter. The 15 reading marks are earned by EVALUATING the ideas in both texts, not by reproducing them. Section B [40] = one composition from four, 350–450 words, 16 content and structure + 24 style and accuracy.
 **Marks:** 80
 **AOs:** AO1, AO2, AO3
 
@@ -245,7 +257,7 @@ Write about 350 to 450 words. Up to 16 marks are available for the content and s
 # Topic 4: Section B Focus — Composition
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Cambridge IGCSE First Language English Paper 2 (0500 / 0990) — Section B focus. Composition titles from real past paper w24/21. One question from four, 350–450 words [40] = 16 content and structure + 24 style and accuracy. Always two descriptive and two narrative. No insert is used: Section B is written from the candidate's own invention.
+**Teaching Point:** Cambridge IGCSE First Language English Paper 2 — Section B focus. Composition titles from a real Cambridge past paper. One question from four, 350–450 words [40] = 16 content and structure + 24 style and accuracy. Always two descriptive and two narrative. No insert is used: Section B is written from the candidate's own invention.
 **Marks:** 40
 **AOs:** AO1, AO2, AO3
 
@@ -257,13 +269,13 @@ Write about 350 to 450 words. Up to 16 marks are available for the content and s
 
 Write about 350 to 450 words. Up to 16 marks are available for the content and structure of your answer, and up to 24 marks for the style and accuracy of your writing. **[40]**
 
-**2** *(Descriptive Writing)* Write a description with the title, ‘The family’.
+**2** *(Descriptive Writing)* Describe a busy road before and after it rains.
 
-**3** *(Descriptive Writing)* Write a description of a box full of items you no longer need or use.
+**3** *(Descriptive Writing)* Describe moving something heavy.
 
-**4** *(Narrative Writing)* Write a story with the title, ‘The message’.
+**4** *(Narrative Writing)* Write a story including the words ‘… I saw the light …’.
 
-**5** *(Narrative Writing)* Write a story which includes the words ‘… it had to be now …’.
+**5** *(Narrative Writing)* Write a story with the title, ‘The island’.
 
 
 ---
@@ -271,7 +283,7 @@ Write about 350 to 450 words. Up to 16 marks are available for the content and s
 # Topic 5: Practice Paper — a volunteer scheme for older students
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Cambridge IGCSE First Language English Paper 2 (0500 / 0990) — Directed Writing and Composition. Real past paper s25/21. Theme: a volunteer scheme for older students. Section A Question 1 [40] = directed writing, 250–350 words, 15 reading + 25 writing; this paper's form is the article. The 15 reading marks are earned by EVALUATING the ideas in both texts, not by reproducing them. Section B [40] = one composition from four, 350–450 words, 16 content and structure + 24 style and accuracy.
+**Teaching Point:** Cambridge IGCSE First Language English Paper 2 — Directed Writing and Composition. A real Cambridge past paper. Theme: a volunteer scheme for older students. Section A Question 1 [40] = directed writing, 250–350 words, 15 reading + 25 writing; this paper's form is the article. The 15 reading marks are earned by EVALUATING the ideas in both texts, not by reproducing them. Section B [40] = one composition from four, 350–450 words, 16 content and structure + 24 style and accuracy.
 **Marks:** 80
 **AOs:** AO1, AO2, AO3
 
@@ -315,8 +327,6 @@ older students would be a good idea.
 
 In your article you should:
 
-DO NOT WRITE IN THIS MARGIN
-
 • evaluate the ideas, attitudes and opinions about volunteering in both texts
 
 • consider the effects a compulsory volunteering scheme in school would have on students, teachers and the wider community.
@@ -331,77 +341,7 @@ Up to 15 marks are available for the content of your answer and up to 25 marks f
 
 quality of your writing.
 
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
-ĬÕú¾Ġ´íÈõÏĪÅĊàú·þ×
-
-ĥĥĕÕõµąÕååĕąąõÅĕµÕ
-
-* 0000800000003 *
-
-DO NOT WRITE IN THIS MARGIN
-
-, ,
-
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
-Ĭ×ú¾Ġ´íÈõÏĪÅĊàü·þ×
-
-ĥĥĥĕµÕĥµµÕÅąąĕåÕåÕ
-
-* 0000800000004 *
-
-DO NOT WRITE IN THIS MARGIN
-
-, ,
-
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
 **[40]**
-
-ĬÕú¾Ġ´íÈõÏĪÅĊÞú·Ā×
-
-ĥÕµĕõÕĥĕÕõµąÅĕąÕµÕ
-
-* 0000800000005 *
-
-DO NOT WRITE IN THIS MARGIN
-
-, ,
-
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
-DO NOT WRITE IN THIS MARGIN
-
-Ĭ×ú¾Ġ´íÈõÏĪÅĊÞü·Ā×
-
-ĥÕÅÕµµąõÅąĥąÅõĥĕåÕ
-
-* 0000800000006 *
-
-DO NOT WRITE IN THIS MARGIN
-
-, ,
 
 ## Q2
 **Marks:** 40
@@ -425,7 +365,7 @@ Write about 350 to 450 words. Up to 16 marks are available for the content and s
 # Topic 6: Section A Focus (letter) — learning a new language
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Cambridge IGCSE First Language English Paper 2 (0500 / 0990) — Section A focus. Real past paper s22/21. Theme: learning a new language. Question 1 [40] = directed writing in the form of a letter, 250–350 words, 15 reading + 25 writing. Section A carries the only reading marks on this paper, and they are awarded for evaluating the ideas, attitudes and opinions in BOTH texts — weighing them, not listing them.
+**Teaching Point:** Cambridge IGCSE First Language English Paper 2 — Section A focus, from a real Cambridge past paper. Theme: learning a new language. Question 1 [40] = directed writing in the form of a letter, 250–350 words, 15 reading + 25 writing. Section A carries the only reading marks on this paper, and they are awarded for evaluating the ideas, attitudes and opinions in BOTH texts — weighing them, not listing them.
 **Marks:** 40
 **AOs:** AO1, AO2, AO3
 
@@ -494,6 +434,4 @@ Write about 250 to 350 words.
 Up to 15 marks are available for the content of your answer, and up to 25 marks for the
 
 quality of your writing.
-
-[Total: 40]
 
