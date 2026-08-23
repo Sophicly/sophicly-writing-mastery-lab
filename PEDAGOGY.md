@@ -1931,8 +1931,11 @@ BUILDERS** — Step 9 auto-loads `plot_outline` from Step 6 (not 8), `primary_ar
    what we have to be careful of is do not change the current step 10, but we'd maybe duplicate
    it… and then just add a contextual chat, like a polishing lesson basically."* So this is NOT a
    reversal of the 2026-08-10 ruling (#366: Step 10 = a test, no walk, `tools:'minimal'`) — that
-   ruling still governs the full project. The emergency unit gets a DUPLICATED draft-1 lesson with
+   ruling still governs the full project. The emergency unit gets a draft-1 lesson with
    guidance + contextual chat (polishing-lesson shape), under its own sequence number.
+   Confirmed 2026-08-23: Neil thinks of it as **a VARIATION of Step 10** — engineered as ONE
+   protocol source + a variant switch (his "duplicate it, or whatever you think is the best
+   solution" allows this), never a copied file, so the two cannot drift.
 2. **WORD TARGETS ARE BOARD-KEYED — one map, engine-resolved, never duplicated protocol files.**
    Neil's constraint: *"350 to 450 is fine for Cambridge IGCSE, but I don't think it's
    recommendable for other exam boards because those are out of 40 marks."* Ruling: ONE
@@ -1940,6 +1943,10 @@ BUILDERS** — Step 9 auto-loads `plot_outline` from Step 6 (not 8), `primary_ar
    into the draft lessons. Cambridge = **350–450** (the Paper 2 Section B instruction on all 40
    past papers); AQA/Edexcel keep the current 450–600 → ~700 → 650–750 ladder until their lanes
    rule otherwise. Never hardcode a board's number into shared protocol text again.
+   ⚠️ Assessments (Neil, same day: *"we just need to think about how the assessments play
+   out"*): trials mark the taught elements and are length-agnostic, so shorter Cambridge drafts
+   mark on the same criteria — but any assessment surface that MENTIONS a word count resolves
+   it from the same map.
 3. **STEP 12 SURVIVES AS THE ONE PLOT-UPDATE — renumbered for the unit.** Neil: *"Keep step 12
    but renumber it for the emergency unit."* With 8 and 15 dropped, 12 (character goals) is the
    one update kept so the outline the drafting cycle is built on still moves (§29 living-document

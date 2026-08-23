@@ -26,7 +26,7 @@ lives here only (Neil: *"it wouldn't even be called step 10 anyway"*).
 | 8 | **NEW — Guided Draft 1** (duplicate of Step 10, see §2) | Neil's ruling 1 |
 | 9 | Trial 1 | assesses Draft 1 |
 | 10 | CW Step 11 | Neil's inclusion |
-| 11 | CW Step 12 — plot update (character goals) | the ONE update kept (ruling 3) |
+| 11 | CW Step 12 — plot update (character goals) | the ONE update kept (ruling 3). Its object is REAL: lesson 6 creates the six-stage plot outline, so 12 has a plot to update — the seven-element SCENE structure is a different object (the draft's shape) and 12 does not touch it |
 | 12 | CW Step 13 — Draft 2 | loads outline updated in 12 |
 | 13 | Trial 2 | assesses Draft 2 |
 | 14 | CW Step 14 — archetype builder | `archetype_*` required by 16 |
@@ -38,13 +38,18 @@ everything past 16. Rule: **skip the updates, keep the builders.**
 
 ## 2 · THE GUIDED DRAFT-1 LESSON (unit lesson 8)
 
-Neil, verbatim: *"do not change the current step 10, but we'd maybe duplicate it… and then just
-add a contextual chat, like a polishing lesson basically."*
+Neil, verbatim: *"do not change the current step 10, but we'd maybe duplicate it, or whatever you
+think is the best solution… and then just add a contextual chat, like a polishing lesson
+basically."* Confirmed 2026-08-23: he thinks of it as **a VARIATION of Step 10**.
 
 - **Full-project Step 10 is UNTOUCHED.** #366 (test, no walk, `tools:'minimal'`) still governs it.
-- The unit lesson is a **duplicate** with **guidance + contextual chat** — the polishing-lesson
-  shape (student writes in the document, Sophia contextual chat alongside), NOT a full
-  ask-by-ask walk. Help ladder applies (CLAUDE.md §4c.9): criteria + examples free, Sophia last.
+- **Mechanism: VARIANT, not a copied file.** ONE protocol source; the unit context switches on
+  the differences (contextual chat enabled, board word target injected). Never a duplicated
+  protocol text — two copies of the same teaching drift (root CLAUDE.md §7). Engine decides the
+  switch (unit/lesson context flag), content lane adds no second `.md`.
+- The variant delivers **guidance + contextual chat** — the polishing-lesson shape (student
+  writes in the document, Sophia contextual chat alongside), NOT a full ask-by-ask walk. Help
+  ladder applies (CLAUDE.md §4c.9): criteria + examples free, Sophia last.
 - Reuses Step 10's auto-loads (`plot_outline`, `writer_profile`, scene selection from lesson 7)
   and its 7-element scene shape.
 - Word target from the board map (§3), never hardcoded.
@@ -65,6 +70,12 @@ Current hardcoded sites (all in `protocols/shared/creative-writing/`, found 2026
 (router-injected token à la live-value resolvers, or preamble line); shared text then says
 "your exam's target: {resolved}". ⚠️ Drafts are cumulative (Draft 3 starts as a copy of
 Draft 2), so a board's three targets must be consistent as a set.
+
+⚠️ **Assessments (Neil, 2026-08-23: "we just need to think about how the assessments play
+out"):** trials mark the seven TAUGHT elements (0–4 each, PEDAGOGY §33) — length-agnostic by
+design, so a 350–450 Cambridge draft marks on the same criteria as a 650-word AQA one. But any
+trial/assessment surface that MENTIONS a word count must resolve it from this same map, never
+a literal. Same key-match bar as everything else.
 
 ## 4 · ENGINE-LANE BUILD ITEMS
 
