@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.549';
+var WML_BUILD = '7.20.550';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1284,6 +1284,28 @@ window.WML = (function() {
     CW_SIDEBAR_STEPS['trial_4'] = CW_SIDEBAR_STEPS['trial_1'];
     CW_SIDEBAR_STEPS['trial_5'] = CW_SIDEBAR_STEPS['trial_1'];
     CW_SIDEBAR_STEPS['trial_6'] = CW_SIDEBAR_STEPS['trial_1'];
+
+    // ⭐ v7.20.550 (CW trials slice 3) — WHICH DRAFT DOES A TRIAL ASSESS?
+    // DERIVED from CW_STEPS, never a hand-written trial→draft map. A trial assesses the draft
+    // written immediately before it, so the answer is "walk back to the nearest entry that
+    // declares a `draft`" — and it stays correct on its own when a trial MOVES (PEDAGOGY §33
+    // ruling 1 moves Trial 6 to follow Draft 6). A literal map would have to be remembered at
+    // that moment; this cannot be forgotten, because there is nothing to remember.
+    // Returns { artifactKey, draftStep, draftNumber, draftLabel } or null.
+    function cwTrialSource(task) {
+        const def = getCwStepDef(task);
+        if (!def || !def.trial) return null;
+        const idx = CW_STEPS.indexOf(def);
+        if (idx < 0) return null;
+        for (let i = idx - 1; i >= 0; i--) {
+            const s = CW_STEPS[i];
+            if (!s.draft) continue;
+            const key = CW_ARTIFACT_MAP[s.step];
+            if (!key) return null;
+            return { artifactKey: key, draftStep: s.step, draftNumber: s.draft, draftLabel: s.label };
+        }
+        return null;
+    }
 
     // Map draft steps to the artifact key of their predecessor (for pre-population)
     // v7.20.451: every key here is a DRAFT step, so every one shifted +1 with the renumber.
@@ -5237,6 +5259,7 @@ window.WML = (function() {
         EXERCISE_MANIFEST,
         // Creative Writing
         CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SEED_FROM, CW_SIDEBAR_STEPS,
+        cwTrialSource,
         // Revision map
         REVISION_MAP,
         // Utilities

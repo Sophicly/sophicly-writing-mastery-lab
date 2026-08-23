@@ -42993,6 +42993,73 @@
                 console.warn('WML CW seed failed (document untouched) —', e && e.message);
             }
         };
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        // v7.20.550 (CW trials slice 3) — SHOW THE TRIAL THE DRAFT IT IS ASSESSING.
+        //
+        // A trial marks a draft the student wrote in an EARLIER lesson, so the draft has to be on
+        // this page to be read. Three properties, and each one is a defect we have already paid
+        // for somewhere else:
+        //
+        //  · FRESH AT EVERY MOUNT, never a cached copy. This deliberately does NOT skip because
+        //    the section already holds text — that skip is FIXLIST #402 exactly (Step 8's roster
+        //    came from a snapshot taken while the upstream step was half-finished, so editing the
+        //    source changed nothing and the student was marking a draft they no longer had). A
+        //    copy that can go stale must be re-derived, not preserved.
+        //  · READ-ONLY (PEDAGOGY §6 section-freeze). A trial is not where you fix the writing —
+        //    the next draft step is. The section is built editable:false, and the words say so.
+        //  · IT SPEAKS WHEN THE DRAFT IS MISSING (§4d). A blank box on an assessment page reads
+        //    to a student as their own mistake; this names the lesson the writing comes from and
+        //    what to do about it.
+        //
+        // It also HEALS: trial documents created before this build have no draft section at all,
+        // so one is inserted above the ASSESSMENT divider rather than leaving those projects on a
+        // page that assesses writing it never shows.
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        const tryFillCwTrialDraft = async () => {
+            if (!isCwTask || !canvasEditor || !cwStepDef?.trial || state.reviewMode) return;
+            const src = (WML.cwTrialSource && WML.cwTrialSource(state.task)) || null;
+            if (!src) { console.warn('WML CW trial: no draft step precedes trial ' + cwStepDef.trial + ' — nothing to show.'); return; }
+            try {
+                let docHTML = '';
+                if (!state.cwProjectId) {
+                    console.warn('WML CW trial: no cwProjectId on this page — cannot read ' + src.artifactKey + '.');
+                } else {
+                    try {
+                        const art = await WML.cwProject.loadArtifact(state.cwProjectId, src.artifactKey);
+                        if (art?.success && art.value) docHTML = String(art.value);
+                    } catch (e) { console.warn('WML CW trial: loading ' + src.artifactKey + ' failed —', e && e.message); }
+                }
+                const prose = _cwDraftProseFromDoc(docHTML);
+                if (!prose) console.warn('WML CW trial ' + cwStepDef.trial + ': no writing under "' + src.artifactKey + '" — the page says so and points back to Step ' + src.draftStep + '.');
+                const inner = _cwTrialDraftInner(src, prose);
+
+                const box = document.createElement('div');
+                box.innerHTML = canvasEditor.getHTML();
+                const sec = box.querySelector('[data-section-label="' + CW_TRIAL_DRAFT_LABEL + '"]');
+                if (sec) {
+                    if (sec.innerHTML === inner) return;      // already current — no churn, no save
+                    sec.innerHTML = inner;
+                } else {
+                    const block = dividerHTML('YOUR DRAFT')
+                        + sectionHTML('response', CW_TRIAL_DRAFT_LABEL, false, null, inner);
+                    // Anchor on the divider's own TEXT, not an attr — it is the one thing a
+                    // save→reload round-trip cannot change.
+                    const marker = Array.from(box.querySelectorAll('[data-section-type="divider"]'))
+                        .find((d) => (d.textContent || '').trim().toUpperCase() === 'ASSESSMENT');
+                    if (marker) marker.insertAdjacentHTML('beforebegin', block);
+                    else box.insertAdjacentHTML('afterbegin', block);
+                }
+                const _was = _migrationActive;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(box.innerHTML, false); }
+                finally { _migrationActive = _was; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW trial ' + cwStepDef.trial + ': draft section refreshed from ' + src.artifactKey + (prose ? '' : ' (empty — missing-draft message shown)') + '.');
+            } catch (e) {
+                console.warn('WML CW trial draft refresh failed (document untouched) —', e && e.message);
+            }
+        };
         // v7.13.60: Load plot structure template from server for Step 6 (and plot update steps)
         const tryLoadPlotTemplate = async () => {
             if (!isCwTask || !canvasEditor) return;
@@ -44359,7 +44426,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -48186,6 +48253,13 @@
                 `<h2>Trial ${stepDef.trial} Assessment</h2>` +
                 `<p>This trial assesses your draft for <strong>${focus}</strong>. Sophia will analyse your writing and provide structured feedback.</p>`
             );
+            // v7.20.550 (slice 3): the draft under assessment, read-only, above the marking —
+            // you read it before you judge it. Filled at MOUNT from the artifact
+            // (tryFillCwTrialDraft); this placeholder is what a document is BORN with and is
+            // replaced on the first mount, in both directions (draft present / draft missing).
+            const _trialSrc = (window.WML && WML.cwTrialSource) ? WML.cwTrialSource('cw_trial_' + stepDef.trial) : null;
+            html += dividerHTML('YOUR DRAFT');
+            html += sectionHTML('response', CW_TRIAL_DRAFT_LABEL, false, null, _cwTrialDraftInner(_trialSrc, ''));
             html += dividerHTML('ASSESSMENT');
             html += sectionHTML('feedback', 'Assessment', true, null, '<p><em>Your draft will be assessed here.</em></p>');
             return html;
@@ -49825,6 +49899,51 @@
     // saved document cannot drift from the current styling.
     function figureHTML(kind) {
         return `<div data-swml-figure="${escapeHTML(kind)}"></div>`;
+    }
+
+    // ── CW TRIAL — THE DRAFT UNDER ASSESSMENT (v7.20.550, plan slice 3) ────────────────────────
+    // ONE producer for the read-only copy of the draft a trial assesses. The document template
+    // and the mount-time filler both call it, so the two states of this section can never drift
+    // into two different wordings.
+    //
+    // `src` is WML.cwTrialSource(task) — { artifactKey, draftStep, draftNumber, draftLabel }.
+    // `proseHTML` is the student's own paragraphs, or '' when the draft has not arrived.
+    //   ''            → the MISSING state: says so in words and gives the way back (§4d liveness).
+    //   non-empty     → the draft, read-only.
+    // ⛔ No `student-composition` flag on this section. It is a COPY — flagging it would count the
+    //    same words twice in the CW word total (the flag's only consumer, dashboard lane).
+    const CW_TRIAL_DRAFT_LABEL = 'Your Draft';
+    function _cwTrialDraftInner(src, proseHTML) {
+        const stepNo = src ? src.draftStep : null;
+        const title = src ? src.draftLabel : 'Your draft';
+        const where = stepNo ? ('Step ' + stepNo) : 'the drafting lesson before this one';
+        if (!proseHTML) {
+            return '<h3>Your writing has not arrived here yet</h3>' +
+                '<p>This page shows the writing you did in <strong>' + escapeHTML(where) + ' (' + escapeHTML(title) + ')</strong> so you can read it while you assess it. Nothing has come through from that lesson — either it has not been written yet, or it did not save.</p>' +
+                '<p>Go back to <strong>' + escapeHTML(where) + '</strong>, check your writing is in the box there, then come back to this page and reload it.</p>';
+        }
+        return '<h3>' + escapeHTML(title) + '</h3>' +
+            '<p><em>This is your writing from ' + escapeHTML(where) + ', copied here so you can read it as you assess it. You cannot edit it on this page \u2014 to change your story, go back to ' + escapeHTML(where) + '.</em></p>' +
+            proseHTML;
+    }
+    // Pull the student's own paragraphs out of a saved draft-step DOCUMENT. The artifact holds the
+    // WHOLE Step-N canvas (the artifact mirror saves getHTML()), so the teaching sections must be
+    // left behind: the draft box is the section carrying the composition flag, which is the same
+    // anchor the Step-9 -> Step-10 seed uses. Returns '' when there is no writing in it.
+    function _cwDraftProseFromDoc(docHTML) {
+        if (!docHTML) return '';
+        try {
+            const box = document.createElement('div');
+            box.innerHTML = String(docHTML);
+            const draft = box.querySelector('[data-student-composition="true"]')
+                || box.querySelector('[data-section-label="Draft"]');
+            if (!draft) return '';
+            if ((draft.textContent || '').trim().length === 0) return '';
+            const paras = Array.from(draft.children)
+                .filter((n) => (n.textContent || '').trim().length > 0)
+                .map((n) => n.outerHTML);
+            return paras.length ? paras.join('') : '';
+        } catch (e) { return ''; }
     }
 
     function dividerHTML(label, extraDataAttrs) {

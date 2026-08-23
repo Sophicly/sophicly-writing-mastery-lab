@@ -384,6 +384,17 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw9-transfer-gate.js || fail=1
 fi
 
+# v7.20.550 (CW trials slice 3): A TRIAL SHOWS THE DRAFT IT ASSESSES. The sibling of the gate
+# above, one lesson later — the draft written in Step N has to reach the trial that marks it, and
+# every failure is silent: a cached copy (a student assessing writing they have since rewritten,
+# #402), an editable copy (the one lesson that must not fix the writing), a blank box with no
+# explanation, or a copy the word counter counts twice. Runs the real resolver — including after
+# MOVING a trial in the course order — and the real document helpers.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|cw-trial-seed-gate\.js'; then
+  node bin/cw-trial-seed-gate.js || fail=1
+fi
+
 # v7.20.413: CW STEP-7 DOCUMENT GATE. The document half of Step 7 — the fifteen rows, their
 # completion rule and Neil's teaching prose. (The walk that fills them is gated by cw7-sim above.)
 # It runs the REAL builder and
