@@ -244,6 +244,9 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
     ok('the walk spends ONE call on marking and one only on an explicit ask for help',
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length === 2,
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length);
+    // v7.20.555 (#425): the ask says "read that part of your draft" — the document must go there.
+    ok('every element ask scrolls the document to the draft (#425), on the ONE scroll convention',
+        /attachStage\(e\); scrollToDraft\(\);/.test(CTL) && /_swmlScrollToTop\(target\)/.test(CTL));
 }
 
 // ── 6. THE MACHINE LINES NEVER REACH A HUMAN (#420, root §14) ─────────────────────────────────

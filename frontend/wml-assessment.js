@@ -28368,6 +28368,24 @@
                 resetSend();
             }
 
+            // ⭐ v7.20.555 (#425, Neil live on .554): every element ask says "read that part of
+            // your draft" — so the DOCUMENT scrolls to the draft as the ask lands, instead of
+            // sitting wherever it was (his screen: the Table of Contents, draft out of view).
+            // Rides the ONE scroll convention (_swmlScrollToTop, v7.19.615); a missing or
+            // hidden draft section is a silent no-op, never an error.
+            function scrollToDraft() {
+                try {
+                    const editor = document.getElementById('swml-tiptap-editor');
+                    if (!editor) return;
+                    const label = (typeof CW_TRIAL_DRAFT_LABEL !== 'undefined') ? CW_TRIAL_DRAFT_LABEL : 'Your Draft';
+                    let target = null;
+                    editor.querySelectorAll('[data-section-label]').forEach(function (el2) {
+                        if (!target && el2.getAttribute('data-section-label') === label) target = el2;
+                    });
+                    if (target && target.offsetParent !== null) _swmlScrollToTop(target);
+                } catch (e) {}
+            }
+
             function serveItem(opts) {
                 const list = els();
                 const i = st.i;
@@ -28376,7 +28394,7 @@
                 st.stage = 'l1';
                 persist();
                 _walkSlot.clear(WALK);      // a chip is a TAP — nothing typed may file here
-                const attach = function () { attachStage(e); };
+                const attach = function () { attachStage(e); scrollToDraft(); };
                 if (opts && opts.defer) { serveCwChunks([askText(e, i)], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
                 aiBubble(askText(e, i));
                 attach();
