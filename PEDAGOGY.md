@@ -1873,3 +1873,78 @@ so no lane re-asks:
 7. **Trial 6 moves to follow Draft 6 (Genre, step 25) as a genre-focused trial** (same delegation),
    so all seven drafts get assessment coverage and "comprehensive final feedback" lives only in the
    finale — Trial 6's old stub duplicated the final assessment's job.
+
+9. ⭐⭐ **FEEDBACK ORDER: GRADE LAST AND QUIET, END ON THE STUDENT'S ACTION** (Neil, ruled
+   2026-08-23, on the research `research/2026-08-23-trial-feedback-shape-and-ao-anchoring.md` —
+   Butler 1988 / EEF 2021: a leading grade swallows the comments). The marking turn leads with the
+   per-element verdicts → the disagreements → the priority for the next draft; the grade is a plain
+   closing line, never the headline. The turn ENDS on a closing ask — *"your one target for
+   Draft 2, in your own words"* — banked verbatim and seeded into the next draft step's opener
+   (EEF rec 3 / Wiliam: feedback must be USED).
+10. ⭐⭐ **THE TRIAL SELF-MARK IS AN EXAMINER WALK — the student marks the way a real examiner
+   marks** (Neil, ruled 2026-08-23, superseding the same-day /14 met·partly·not confirmation;
+   his words: *"I want them to learn how the examiners mark. I think that's really, really,
+   really important"*). Per element: levels presented BOTTOM-UP, one at a time; *"meet all of
+   this?"* → climb; stop at the level not fully met and place BOTTOM or TOP within it. Mechanics,
+   all ruled the same session:
+   - **Minimum 2 marks per level** (his check against the real schemes is correct — AQA's
+     8-markers run 4 levels × 2 marks; no published GCSE scheme has 1-mark levels). So each
+     element = 2 levels × 2 marks = **0–4** (nothing creditable 0 · Level 1 = 1–2 · Level 2 =
+     3–4), seven elements → **/28**. Arithmetic stays CODE through the one canonical ladder.
+   - **A level once presented is NEVER removed from the screen** — the student may climb, then
+     realise they had not met the lower level, and come back down. Judgement revisable until the
+     element is confirmed.
+   - **Defend the mark**: an evidence sentence is required when claiming Level 2 (*"show me the
+     line that proves it"*) and when stopping at a lower level (Panadero/Boud — self-assessment
+     works when justified against criteria).
+   - Level descriptors are the TAUGHT-element bars (derived from the teaching steps), NOT board
+     descriptors — ruling 1 (focused diagnostic) and the finale-only verbatim-ladder rule stand.
+     This amends the MECHANIC of the trial self-mark, not its content.
+   - Sophia marks on the SAME 0–4 scale per element; ruling 8 (her mark feeds the ring, code
+     arithmetic, no model-stated numbers) is unchanged. The calibration gap compares like-for-like.
+11. **AO ANCHORING AS FRAMING** (Neil, ruled 2026-08-23): every trial badges its dimension under
+   its AO family, plain words FIRST, code attached — *"everything in this trial is what the exam
+   calls AO5: Content and Organisation"*. Trials 1–5 = AO5-family; Trial 6 + the finale's SPaG
+   strand = AO6-family. Criteria stay the taught elements; verbatim descriptors stay in the
+   finale's examiner ladder. ⚠️ AO5/AO6 are AQA + Edexcel GCSE codes (Edexcel IGCSE: AO4/AO5;
+   Cambridge: W-codes) — lead with the NAME, attach the code, per ruling 3's one-surface premise.
+12. **PROGRESS REPORTS CARRY THE TRIAL GRADE AND THE CALIBRATION GAP** (Neil, ruled 2026-08-23):
+   how close the self-judgement ran to Sophia's — a real metacognitive metric (Panadero/Boud)
+   that should shrink as the student learns what quality looks like. Specified in the dashboard
+   handoff's payload.
+13. ⭐ **ALL OTHER ASSESSMENTS ADAPT TO THE EXAMINER-WALK METHOD over time** (Neil, 2026-08-23:
+   *"even for literature and language and stuff like that, we need to start adapting it to this
+   method"* — there, with the boards' real level counts). Direction recorded, NOT built: trials
+   are the proving ground first; the lit/lang adaptation is a roadmap item, not part of the CW
+   slices.
+
+## §34. ⭐⭐ THE EMERGENCY CREATIVE-WRITING UNIT — the three rulings it stands on (Neil, ruled 2026-08-23)
+
+A short unit taking a subset of the 30-step CW project so a student can *"get a story on the board
+ASAP."* Dependency analysis (Cambridge lane, 2026-08-22): **skip the plot-UPDATE steps, keep the
+BUILDERS** — Step 9 auto-loads `plot_outline` from Step 6 (not 8), `primary_archetype` from Step 5,
+`writer_profile` from Step 1; steps 8/15 only update what 6 built. Three rulings settle the design:
+
+1. **THE UNIT'S DRAFT-1 LESSON IS A NEW GUIDED LESSON — the full project's Step 10 is UNTOUCHED
+   and #366 STANDS.** Neil, verbatim: *"in the emergency unit, step 10 would become basically a
+   different exercise, where they provide guidance… it wouldn't even be called step 10 anyway…
+   what we have to be careful of is do not change the current step 10, but we'd maybe duplicate
+   it… and then just add a contextual chat, like a polishing lesson basically."* So this is NOT a
+   reversal of the 2026-08-10 ruling (#366: Step 10 = a test, no walk, `tools:'minimal'`) — that
+   ruling still governs the full project. The emergency unit gets a DUPLICATED draft-1 lesson with
+   guidance + contextual chat (polishing-lesson shape), under its own sequence number.
+2. **WORD TARGETS ARE BOARD-KEYED — one map, engine-resolved, never duplicated protocol files.**
+   Neil's constraint: *"350 to 450 is fine for Cambridge IGCSE, but I don't think it's
+   recommendable for other exam boards because those are out of 40 marks."* Ruling: ONE
+   board→word-target map as the single source; the engine injects the student's board's target
+   into the draft lessons. Cambridge = **350–450** (the Paper 2 Section B instruction on all 40
+   past papers); AQA/Edexcel keep the current 450–600 → ~700 → 650–750 ladder until their lanes
+   rule otherwise. Never hardcode a board's number into shared protocol text again.
+3. **STEP 12 SURVIVES AS THE ONE PLOT-UPDATE — renumbered for the unit.** Neil: *"Keep step 12
+   but renumber it for the emergency unit."* With 8 and 15 dropped, 12 (character goals) is the
+   one update kept so the outline the drafting cycle is built on still moves (§29 living-document
+   law). ALL unit lessons carry their own 1–16 numbering; source-step provenance lives in the
+   spec, never on the student's screen.
+
+**The unit (16 lessons):** CW 1·2·3·4·5·6 → 9 → guided Draft 1 (new, from 10) → Trial 1 → 11 →
+12 → 13 → Trial 2 → 14 → 16 → Trial 3. Spec: `EMERGENCY-CW-UNIT-SPEC.md` (plugin root).
