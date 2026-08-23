@@ -64,22 +64,30 @@ const CTL_SRC = { src: braceSliceFrom(SRC, ctlIdx, '(', ')').text + '()' };
 const FIDS = ELEMENTS.map((e) => 'cw-trial-1-' + e.id)
     .concat(ELEMENTS.map((e) => 'cw-trial-1-fb-' + e.id))
     .concat(['cw-trial-1-mark', 'cw-trial-1-gap', 'cw-trial-1-strength', 'cw-trial-1-priority']);
-const PLAN = { hook: 'A dog barks at nothing and the lights go out.' };
+const PLAN = { hook: 'A dog barks at nothing and the lights go out.', epiphany: 'She sees her own reflection in the sentinel\u2019s visor.' };
 
+let planLoaded = false;   // set by the stateful loader stub below; reset per world
 function world(opts) {
     opts = opts || {};
+    planLoaded = false;
     const w = makeWorld(CTL_SRC, Object.assign({
         task: 'cw_trial_1',
         fids: FIDS,
         ok: ok,
         extraDeps: {
             _ladderGrade: LADDER_GRADE,
+            // STATEFUL, like the real cache: _cwDocValue answers from what a completed load put
+            // there, and the load lands on a LATER tick. A serve that does not wait for the load
+            // reads an empty cache — which is the .552 race (#422) — so the plan-echo assertions
+            // below can actually fail on code that forgets to wait.
             _cwDocValue: function (key, fid) {
-                if (key !== 'scene_selection') return '';
+                if (!planLoaded || key !== 'scene_selection') return '';
                 const el = ELEMENTS.filter((e) => e.planFid === fid)[0];
                 return (el && PLAN[el.id]) || '';
             },
-            _cwLoadDocValues: function () { return Promise.resolve({}); },
+            _cwLoadDocValues: function () {
+                return new Promise((res) => setImmediate(() => { planLoaded = true; res({}); }));
+            },
         },
     }, opts));
     // The rig's WML shim is the REAL recordTurn (it throws on a durability breach), so it is
@@ -198,6 +206,21 @@ async function main() {
         ok(/^Partly/.test(row), '3 · the row carries the verdict…');
         ok(/weather instead of the moment/.test(row), '3 · …and their own sentence, verbatim');
         ok(/Setup/.test(lastBubble(w)), '3 · then it moves on');
+    }
+
+    // ── 3b · A PASTED-BACK VERDICT PREFIX IS NOT DOUBLED (#421, Neil's live transcript) ──
+    {
+        const w = world();
+        w.ctl.forceStart();
+        await toFirstAsk(w);
+        w.tap(chipNamed(w, /Partly/));
+        await settle();
+        await w.say('Partly — it\u2019s not very descriptive and attention grabbing');
+        await settle();
+        const row = w.rows.get('cw-trial-1-hook') || '';
+        ok(!/Partly\s*[—–-]\s*Partly/i.test(row), '3b · "Partly — Partly —" never appears in the banked row', row);
+        ok(/^Partly — it/.test(row), '3b · …the verdict word appears exactly once, then their sentence', row);
+        ok(/descriptive and attention grabbing/.test(row), '3b · …and the sentence itself is intact');
     }
 
     // ── 4 · A RE-ANSWER REPLACES, IT NEVER STITCHES (§4c.6 `rewrite`) ────────────────────
@@ -381,6 +404,11 @@ async function main() {
         await settle();
         ok(resumed, '11 · the walk resumes');
         ok(/Epiphany/.test(lastBubble(w2)), '11 · ⭐ …on the EXACT element they were on, not the top of the seven');
+        // #422 — the .552 re-serve raced _cwLoadDocValues and served the ask WITHOUT the
+        // student's own Step-9 plan. The loader stub resolves on a LATER tick, so a re-serve
+        // that does not wait reads an empty cache and this fails.
+        ok(w2.bubbles.some((b) => /Epiphany/.test(b) && b.indexOf('What you planned in Step 9') !== -1),
+            '11 · ⭐ the resumed ask still carries their own Step-9 plan (#422 — the re-serve waits for the load)');
         ok(!!chipNamed(w2, /Yes, it does/), '11 · …with its chips back, so the page is not dead after a reload');
     }
 

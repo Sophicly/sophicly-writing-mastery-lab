@@ -228,6 +228,26 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length);
 }
 
+// ── 6. THE MACHINE LINES NEVER REACH A HUMAN (#420, root §14) ─────────────────────────────────
+console.log('\nThe marker lines are stripped at the one display renderer:');
+{
+    const faIdx = CORE.indexOf('function formatAI(text)');
+    const FA = faIdx === -1 ? '' : CORE.slice(faIdx, faIdx + 2000);
+    ok('formatAI strips @TRIAL_* machine lines before any transform', /@TRIAL_\[A-Z\]\+/.test(FA.replace(/\\/g, '')) || /@TRIAL_/.test(FA));
+    // …and behaviourally: run the real strip line against Neil's actual transcript tail.
+    const m = /text = String\(text\)\.replace\((\/[^;]+\/gm), ''\)\.trim\(\);/.exec(FA);
+    ok('…the strip expression is present and extractable', !!m, FA.slice(0, 200));
+    if (m) {
+        // eslint-disable-next-line no-eval
+        const re = eval(m[1]);
+        const sample = 'Great work.\n\n@TRIAL_VERDICT[hook=met] Your opening line does the job.\n@TRIAL_STRENGTH[proaction] Real cost.\n@TRIAL_PRIORITY[epiphany] One concrete moment.';
+        const out = sample.replace(re, '').trim();
+        ok('…it removes every machine line from a real marking tail', !/@TRIAL_/.test(out), out);
+        ok('…and keeps the prose', /Great work\./.test(out));
+        ok('…and does not touch an @ in ordinary prose', 'email sophia@sophicly.com'.replace(re, '') === 'email sophia@sophicly.com');
+    }
+}
+
 console.log(fails
     ? '\n❌ cw-trial1-gate FAILED (' + fails + ')'
     : '\n✅ cw-trial1-gate passed (Trial 1 asks what the course taught, in the words it taught them).');

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.552';
+var WML_BUILD = '7.20.553';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -3975,6 +3975,13 @@ window.WML = (function() {
         // value sits inside the surrounding markdown (**[SWML_LIVE:…]** → **Tragedy**)
         // and is escaped by the same rules as the rest of the turn. See the block above.
         text = resolveLiveValues(text);
+        // v7.20.553 (#420, root §14): the trial marking contract ends the model's reply with
+        // machine lines (@TRIAL_VERDICT[…] · @TRIAL_STRENGTH[…] · @TRIAL_PRIORITY[…]). They are
+        // read by the parser from the RAW reply and filed into the document — a human must never
+        // see them. Stripped here, at the ONE display renderer, so both pipelines and every
+        // replay of saved history are clean; raw chatHistory keeps them (the parser and the
+        // resume path re-read the raw turn).
+        text = String(text).replace(/^[ \t]*@TRIAL_[A-Z]+\s*\[[^\]]*\][^\n]*$\n?/gm, '').trim();
         // v7.19.922 (Neil): tag marking-penalty lines with "Learn →" chip tokens BEFORE any
         // transform — detection reuses the ledger's raw-text codeRe shape. Tokens are added to
         // this local copy only; raw chatHistory and every raw-text consumer stay untouched.

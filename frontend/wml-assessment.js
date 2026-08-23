@@ -28591,8 +28591,18 @@
                 const e = els().filter(function (x) { return x.id === id; })[0];
                 st.notes = st.notes || {};
                 if (e) {
-                    st.notes[e.id] = clean;
-                    bankVerdict(e, (st.verdicts || {})[e.id] || 'partly', clean);
+                    // v7.20.553 (#421): a student who pastes their earlier BANKED row back as the
+                    // answer hands us "Partly — it's not…", and banking prefixes the verdict again
+                    // ("Partly — Partly — …", Neil's live transcript). Strip any leading verdict
+                    // words before storing; their transcript turn above keeps what they typed.
+                    let note = clean;
+                    for (let g = 0; g < 3; g++) {
+                        const n2 = note.replace(/^(?:yes|partly|not yet)\s*[—–-]\s*/i, '');
+                        if (n2 === note) break;
+                        note = n2;
+                    }
+                    st.notes[e.id] = note;
+                    bankVerdict(e, (st.verdicts || {})[e.id] || 'partly', note);
                 }
                 st.awaitNote = null;
                 st.i++;
@@ -28717,10 +28727,19 @@
                     active = true; pending = false;
                     console.log('WML trial1: resumed on element ' + (st.i + 1) + ' of ' + els().length
                         + (st.awaitNote ? ' (awaiting the sentence for "' + st.awaitNote + '")' : ''));
+                    // v7.20.553 (#422): WAIT for the Step-9 plan values before re-serving — the
+                    // .552 re-serve raced the load and served the ask without the "What you
+                    // planned" echo (Neil's transcript: Setup twice, second copy planless). The
+                    // re-serve rides the load's resolution, with the same stand-down guard; a
+                    // failed load still serves (the echo is an enrichment, never a gate).
+                    const reServe = function () {
+                        setTimeout(function () { if (standDown('reattach')) return; _cwReplay(function () { serveCurrent(); }); }, 400);
+                    };
                     try {
-                        if (state.cwProjectId && typeof _cwLoadDocValues === 'function') _cwLoadDocValues(state.cwProjectId, 'scene_selection', true);
-                    } catch (e) {}
-                    setTimeout(function () { if (standDown('reattach')) return; _cwReplay(function () { serveCurrent(); }); }, 400);
+                        if (state.cwProjectId && typeof _cwLoadDocValues === 'function') {
+                            _cwLoadDocValues(state.cwProjectId, 'scene_selection', true).then(reServe, reServe);
+                        } else { reServe(); }
+                    } catch (e) { reServe(); }
                     return true;
                 } catch (e) { return false; }
             }
