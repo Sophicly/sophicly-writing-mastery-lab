@@ -1947,22 +1947,96 @@ BUILDERS** — Step 9 auto-loads `plot_outline` from Step 6 (not 8), `primary_ar
    out"*): trials mark the taught elements and are length-agnostic, so shorter Cambridge drafts
    mark on the same criteria — but any assessment surface that MENTIONS a word count resolves
    it from the same map.
-3. ⭐ **THE EMERGENCY UNIT HAS NO PLOT OUTLINE — keep the profile/builder lessons, drop every
-   plot-outline lesson** (Neil, **revised 2026-08-24**, superseding his own 08-23 "keep Step 12,
-   renumbered"): *"we're not having a plot… the students basically just need to focus on
-   developing the story."* Measured, not assumed: **Step 6 asks ~100 questions**
-   (`CW-STEP-06:3`) — the single biggest cost in the unit and the opposite of *ASAP*. Dropping it
-   removes the object every plot-UPDATE step annotates, so **6, 8, 12 and 15 go together as one
-   rule, not four judgements.** Nothing is lost from the drafting cycle: Step 12 only annotates
-   the outline (`CW-STEP-12:129-137` — it never touches the draft); the character-arc layer
-   Draft 2 integrates comes from **Step 11**, which stays.
+3. ⭐ **THE EMERGENCY UNIT DOES NO PLOT WORK AT ALL — keep the story and character builders,
+   drop every plot lesson (5, 6, 7, 8, 12, 15)** (Neil, **revised 2026-08-24**, walking the step
+   list himself and superseding his own 08-23 "keep Step 12, renumbered"): *"we're not having a
+   plot… the students basically just need to focus on developing the story."*
+   Measured, not assumed: **Step 6 asks ~100 questions** (`CW-STEP-06:3`) — the biggest cost in
+   the unit and the opposite of *ASAP*. It writes `plot_outline`, *"the ONE master document"*
+   (`:183`), so removing it also removes the object every plot-UPDATE step annotates: **6, 8, 12
+   and 15 go together as one rule, not four judgements.** Nothing is lost from the drafting
+   cycle — `CW-STEP-12:129-137` only annotates the outline and **never touches the draft**; the
+   character-arc layer Draft 2 integrates comes from **Step 11**, which stays.
+   **Step 7 goes too, and for its own reason:** its output is read by nothing the unit keeps
+   (Draft 1 and Draft 2 have zero hits for either values key); its consumers are Step 8 and
+   Steps 20/21/22, all outside the unit. It is taken **later**, if the student continues to
+   Step 20 — that is where it belongs. **Step 3 STAYS** (Neil was unsure): nine later steps read
+   its `chosen_logline` / `story_components`.
    **The story plan becomes Step 4's six-beat spine** — the student's own words, one lesson
-   instead of a hundred questions. ⚠️ Five lessons declare `plot_outline` as an auto-load and
-   must degrade to `story_spine`; lesson 6 (Step 9) is load-bearing because its first move is
-   choosing which beat to dramatise (spec §5). ALL unit lessons carry their own 1–14 numbering;
-   source-step provenance lives in the spec, never on the student's screen.
+   instead of a hundred questions.
+   ⚠️ **The cost of also dropping Step 5, accepted knowingly:** four kept lessons (9, 10, 13, 16)
+   read `primary_archetype` and `authorial_intent` "from Step 5". With 5 and 6 both gone, **three
+   keys are never written and six kept lessons read them** — they must fall back (`plot_outline`
+   → `story_spine`; `authorial_intent` → Step 4's `dramatic_throughline`; `primary_archetype` →
+   nothing). Unit lesson 5 (Step 9) is load-bearing: its first move is choosing which beat to
+   dramatise, so a wrong fallback is a dead screen (§4d liveness). Spec §5 carries the table.
+4. **THE UNIT STOPS AT TRIAL 3** (Neil, 2026-08-24): *"after a couple of drafts, it should be
+   more or less a grade nine level anyway."* Three drafts, three trials, then the student
+   continues into the full project if they want more. The plot-free continuation
+   (17·19·20·22·23·25·26·28·29·30) is explicitly **not** in scope.
 
-**The unit (14 lessons):** CW 1·2·3·4·5 → 9 → guided Draft 1 (new, from 10) → Trial 1 → 11 → 13
-→ Trial 2 → 14 → 16 → Trial 3. Plan a story · choose one moment of it · write that moment three
-times, each pass adding a layer and each pass marked.
+**The unit (13 lessons):** CW 1·2·3·4 → 9 → guided Draft 1 (new, from 10) → Trial 1 → 11 → 13 →
+Trial 2 → 14 → 16 → Trial 3. Plan a story · choose one moment of it · write that moment three
+times, each pass adding a layer and each pass marked. ALL lessons carry their own 1–13
+numbering; source-step provenance lives in the spec, never on the student's screen.
+⚠️ Trials 2 and 3 still need rebuilding to Trial 1's architecture before the unit can ship them.
 Spec: `EMERGENCY-CW-UNIT-SPEC.md` (plugin root).
+
+5. ⭐ **THE UNIT STOPS AT TRIAL 3, BUT TRIAL 3 NAMES WHAT THE STORY STILL NEEDS** (Neil, ruled
+   2026-08-24): *"they would be missing a lot of stuff from the later units — how to build
+   empathy, theme and tone and genre and structural elements… we need to sort of help to remind
+   them about those."* Mechanism ruled: **Trial 3's priority names the ONE of the four layers
+   that this student's story would gain most from** — their own draft, at the moment they care,
+   never a generic list — and a short closing lesson then shows all four with one worked example
+   each so they know what is waiting in the full project. A checklist alone was rejected as
+   teaching-by-listing. (§27 examples-on-demand and §4c.2 both apply: the closing lesson's four
+   examples are PULL, not push.)
+
+## §35. ⭐⭐ MARKING IS BEST FIT, NOT HURDLES — and the examiner-marking component must teach the real thing (Neil, ruled 2026-08-24; his own described method corrected against the source)
+
+Neil proposed a component where the student marks a real answer against the real mark scheme, as
+an examiner does, and — correctly — asked for his description to be checked. It was, against
+`0500-P1-MARK-SCHEME.pdf` (June 2024, subject-specific general marking principles).
+
+**THE CORRECTION, and it is one joint in an otherwise right procedure.** He described: read the
+lowest level, check the student *"has met ALL the criteria there"*, and only then move up.
+Cambridge's own words forbid exactly that reading:
+
+> *"Level descriptors are a means of general guidance and **should not be interpreted as hurdle
+> statements**."*
+
+- ✅ **Climbing from the bottom until the descriptor stops fitting** is legitimate — it is a normal
+  way to LOCATE the best-fit level.
+- ⛔ **Requiring every criterion of level N before entering level N+1** is hurdle marking. It caps
+  a strong answer that happens to miss one lower-level detail, which is the precise error the rule
+  exists to prevent.
+- ✅ **His ending is exactly right:** decide which criteria are actually met, then place within the
+  level's mark range. That IS best-fit placement.
+
+⚠️ **So the component teaches BEST FIT, and must never tell a student that examiners work through
+hurdles** — that would hand them a false model of the exam in the one unit built to teach the
+exam. Two further Cambridge principles belong in it, both verbatim from the same page: indicative
+content *"is not a prescription of required content"*, and examiners *"must always be prepared to
+meet candidates on their chosen ground, provided it is relevant ground."*
+
+**THE DESIGN, ruled the same day:**
+1. **One question, THREE answers per unit — weak · strong · MID, in that order.** Weak and strong
+   calibrate the range; **the mid-range answer is where marking judgement actually lives** and is
+   the point of the exercise. ~20 minutes. Coverage builds across units by varying the question,
+   not by lengthening the sitting. A whole paper was rejected: its retrieval questions have no
+   levels to judge.
+2. **Against the REAL Cambridge descriptors, verbatim**, with a plain-English gloss beside them —
+   not our taught elements. This is the mark-scheme-literacy unit; §32 puts the criteria first,
+   and teaching our language here would defeat its purpose. (The CW trials keep taught-element
+   bars per §33 — different job, and the distinction is deliberate.)
+3. **The justification is the assessed act, not the number.** The student states the level, the
+   criteria they judged met and unmet, and why that mark within the range — mirroring §19
+   (self-assessment against stated criteria) and §33's *"defend the mark"*.
+
+This is the first build of the direction recorded at §33.13 (*"all other assessments adapt to the
+examiner-walk method"*) — there it was a roadmap note; here it becomes a component, and it starts
+on Cambridge because that is where the student is. **Built by the COMPONENTS lane** (Neil,
+2026-08-24: *"we actually have a components chat so you can hand off to that"*) — build brief:
+`~/.claude/handoffs/open/wml-CAMBRIDGE-to-components-BUILD-THE-EXAMINER-MARKING-COMPONENT-best-fit-not-hurdles-2026-08-24.md`.
+Board-agnostic by construction: descriptors, answers and question are DATA, so a second board is
+a data file and never a fork.
