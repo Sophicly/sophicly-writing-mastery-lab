@@ -33,8 +33,8 @@ reader"* means here.
 
 Sophicly teaches this as **Take it · Own it · WEIGH it · Aim it**, once per bullet — the same engine
 as Paper 1 Q3 with *Grow* replaced by *Weigh*, because this table ladders on evaluation rather than
-development (`TOGA-one-technique-for-every-form.md`). **Weigh** = judge the claim and say which text
-is more convincing and why.
+development (`protocols/cambridge-igcse/method/TOGA-one-technique-for-every-form.md`). **Weigh** =
+judge the claim and say which text is more convincing and why.
 
 ## WHAT TO GIVE BACK, EVERY TIME
 

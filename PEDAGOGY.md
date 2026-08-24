@@ -1947,11 +1947,22 @@ BUILDERS** — Step 9 auto-loads `plot_outline` from Step 6 (not 8), `primary_ar
    out"*): trials mark the taught elements and are length-agnostic, so shorter Cambridge drafts
    mark on the same criteria — but any assessment surface that MENTIONS a word count resolves
    it from the same map.
-3. **STEP 12 SURVIVES AS THE ONE PLOT-UPDATE — renumbered for the unit.** Neil: *"Keep step 12
-   but renumber it for the emergency unit."* With 8 and 15 dropped, 12 (character goals) is the
-   one update kept so the outline the drafting cycle is built on still moves (§29 living-document
-   law). ALL unit lessons carry their own 1–16 numbering; source-step provenance lives in the
-   spec, never on the student's screen.
+3. ⭐ **THE EMERGENCY UNIT HAS NO PLOT OUTLINE — keep the profile/builder lessons, drop every
+   plot-outline lesson** (Neil, **revised 2026-08-24**, superseding his own 08-23 "keep Step 12,
+   renumbered"): *"we're not having a plot… the students basically just need to focus on
+   developing the story."* Measured, not assumed: **Step 6 asks ~100 questions**
+   (`CW-STEP-06:3`) — the single biggest cost in the unit and the opposite of *ASAP*. Dropping it
+   removes the object every plot-UPDATE step annotates, so **6, 8, 12 and 15 go together as one
+   rule, not four judgements.** Nothing is lost from the drafting cycle: Step 12 only annotates
+   the outline (`CW-STEP-12:129-137` — it never touches the draft); the character-arc layer
+   Draft 2 integrates comes from **Step 11**, which stays.
+   **The story plan becomes Step 4's six-beat spine** — the student's own words, one lesson
+   instead of a hundred questions. ⚠️ Five lessons declare `plot_outline` as an auto-load and
+   must degrade to `story_spine`; lesson 6 (Step 9) is load-bearing because its first move is
+   choosing which beat to dramatise (spec §5). ALL unit lessons carry their own 1–14 numbering;
+   source-step provenance lives in the spec, never on the student's screen.
 
-**The unit (16 lessons):** CW 1·2·3·4·5·6 → 9 → guided Draft 1 (new, from 10) → Trial 1 → 11 →
-12 → 13 → Trial 2 → 14 → 16 → Trial 3. Spec: `EMERGENCY-CW-UNIT-SPEC.md` (plugin root).
+**The unit (14 lessons):** CW 1·2·3·4·5 → 9 → guided Draft 1 (new, from 10) → Trial 1 → 11 → 13
+→ Trial 2 → 14 → 16 → Trial 3. Plan a story · choose one moment of it · write that moment three
+times, each pass adding a layer and each pass marked.
+Spec: `EMERGENCY-CW-UNIT-SPEC.md` (plugin root).

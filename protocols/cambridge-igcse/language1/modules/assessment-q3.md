@@ -25,7 +25,8 @@ from the text."*
 ## MARK AGAINST TOGA — the four moves, once per bullet
 
 Sophicly teaches this question as **Take it · Own it · Grow it · Aim it**, run once per bullet
-(`TOGA-one-technique-for-every-form.md`). Mark against it, because each move maps to a descriptor:
+(`protocols/cambridge-igcse/method/TOGA-one-technique-for-every-form.md`). Mark against it,
+because each move maps to a descriptor:
 
 | move | what to check | descriptor |
 |---|---|---|
