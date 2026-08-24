@@ -190,6 +190,17 @@
       already holds. **Judgment is NOT a rung** — the ladder governs the HELP direction only.
       A turn that READS the student's free text is still judgment (4b watch-it) and is never
       stripped to save a call.
+   10. ⭐⭐ **CHAT POINTS → DOCUMENT SCROLLS. Standard, not a feature (Neil, 2026-08-24, ruled
+      as such: *"if the chat is talking about something that's in the document, it should
+      scroll to that automatically. That should just be standard. If you look at the rest of
+      our documents, that's pretty much how we do it most of the time."*).** Whenever a chat
+      turn asks the student to act on or read a specific document surface — a marking card, a
+      plan box, a feedback section, their draft — the document scrolls to that surface AS THE
+      TURN LANDS, via the ONE convention (`_swmlScrollToTop`, v7.19.615 — never a new scroll
+      behaviour). The failure this kills: Neil on the .556 ladder card — *"I was looking at
+      the chat and I was thinking, okay, it's telling me all this stuff, but where am I
+      supposed to do this?"* Scroll to the surface the student must ACT ON, not merely one
+      the turn mentions; a missing or hidden target is a silent no-op, never an error.
 
 4d. **⭐⭐ A REFUSAL IS HALF A CHANGE — LIVENESS IS THE OTHER HALF (Neil, 2026-07-28, emphatic).**
    Verbatim: *"how is it that we make a fundamental mistake that fundamentally destroys the user

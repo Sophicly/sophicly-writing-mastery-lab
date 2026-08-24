@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.556';
+var WML_BUILD = '7.20.557';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1328,7 +1328,12 @@ window.WML = (function() {
         {
             id: 'hook', planFid: 'cw-step-8-hook', label: 'Hook',
             prompt: 'Grab your reader\u2019s attention.',
-            strong: 'A strong hook starts in the middle of something, not at the beginning of everything \u2014 a moment already under way, so the reader has to keep reading to find out what is going on.',
+            // \u2b50 v7.20.557 (#427b, Neil): the criterion judges the JOB, never one technique. The
+            // old wording ("starts in the middle of something") mandated in medias res \u2014 one hook
+            // among many (premonition, setting, a voice\u2026 the Table of Techniques lists them), so
+            // a student with a superb premonition hook could not honestly claim Level 2. Quality
+            // words, AO5's register: convincing, compelling.
+            strong: 'A strong hook is genuinely compelling \u2014 within the first few lines the reader is holding a question they need answered, so they have to read on. There are many ways to earn that (dropping into the middle of a moment, a premonition, a striking image or setting \u2014 the Table of Techniques lists more); what earns the marks is the pull, not which technique you chose.',
             example: 'Macbeth opens on a blasted heath with three witches planning to meet a man we have not met yet. Shakespeare does not begin with Macbeth\u2019s biography; he begins with a plan already in motion, and we read on to find out who it is about.',
             more: [
                 'A Christmas Carol opens by insisting Marley is dead \u2014 "dead as a door-nail" \u2014 and then refuses to explain why that matters. Dickens hands you a fact and withholds its purpose, which is exactly what makes you turn the page.',

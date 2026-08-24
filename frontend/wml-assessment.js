@@ -14308,7 +14308,7 @@
         if (typeof m.onOpenDraft === 'function') {
             const draftBtn = document.createElement('button');
             draftBtn.type = 'button';
-            draftBtn.className = 'swml-ladder-toolbtn';
+            draftBtn.className = 'swml-quick-btn swml-ladder-toolbtn';
             draftBtn.textContent = 'Show my draft';
             draftBtn.title = 'Open your writing in a pad you can drag anywhere on screen';
             draftBtn.addEventListener('click', () => { try { m.onOpenDraft(); } catch (_) {} });
@@ -14383,7 +14383,7 @@
                 [['all', 'Yes — all of it'], ['some', 'Some of it'], ['not', 'Not yet']].forEach((pair) => {
                     const b = document.createElement('button');
                     b.type = 'button';
-                    b.className = 'swml-ladder-btn swml-ladder-btn-' + pair[0];
+                    b.className = 'swml-quick-btn swml-ladder-btn swml-ladder-btn-' + pair[0];
                     b.textContent = pair[1];
                     b.addEventListener('click', () => { try { m.onPick(lv.n, pair[0]); } catch (_) {} });
                     acts.appendChild(b);
@@ -14391,7 +14391,7 @@
             } else if (lv.verdict && typeof m.onRevise === 'function' && !m.locked) {
                 const b = document.createElement('button');
                 b.type = 'button';
-                b.className = 'swml-ladder-btn swml-ladder-btn-revise';
+                b.className = 'swml-ladder-ghostbtn';
                 b.textContent = 'Change my answer';
                 b.title = 'Re-judge this level — anything above it is re-opened, the way an examiner would';
                 b.addEventListener('click', () => { try { m.onRevise(lv.n); } catch (_) {} });
@@ -28522,18 +28522,25 @@
                 return t;
             }
 
-            // ⭐ v7.20.555 (#425): every element ask says "read that part of your draft" — so the
-            // DOCUMENT scrolls to the draft as the ask lands. Rides the ONE scroll convention
-            // (_swmlScrollToTop, v7.19.615); a missing or hidden draft section is a silent no-op.
-            function scrollToDraft() {
+            // ⭐ v7.20.557 (#427a, WML §4c.10 — CHAT POINTS → DOCUMENT SCROLLS, standard): the ask
+            // tells the student to judge the element on the MARKING CARD, so the document scrolls
+            // to the CARD as the ask lands — the surface they must ACT ON, not merely one the
+            // turn mentions. (.555 scrolled to the draft; then the levels moved onto the card and
+            // Neil sat reading the chat asking "where am I supposed to do this?". The draft is a
+            // tap away — the card's own "Show my draft" pad.) Falls back to the draft section on
+            // a doc the heal has not reached; rides the ONE convention (_swmlScrollToTop); a
+            // missing target is a silent no-op.
+            function scrollToMarkingCard() {
                 try {
                     const editor = document.getElementById('swml-tiptap-editor');
                     if (!editor) return;
-                    const label = (typeof CW_TRIAL_DRAFT_LABEL !== 'undefined') ? CW_TRIAL_DRAFT_LABEL : 'Your Draft';
-                    let target = null;
-                    editor.querySelectorAll('[data-section-label]').forEach(function (el2) {
-                        if (!target && el2.getAttribute('data-section-label') === label) target = el2;
-                    });
+                    let target = editor.querySelector('[data-section-type="ladder"]');
+                    if (!target) {
+                        const label = (typeof CW_TRIAL_DRAFT_LABEL !== 'undefined') ? CW_TRIAL_DRAFT_LABEL : 'Your Draft';
+                        editor.querySelectorAll('[data-section-label]').forEach(function (el2) {
+                            if (!target && el2.getAttribute('data-section-label') === label) target = el2;
+                        });
+                    }
                     if (target && target.offsetParent !== null) _swmlScrollToTop(target);
                 } catch (e) {}
             }
@@ -28553,7 +28560,7 @@
                     // exactly that: free rungs first, Sophia last.
                     helpBar(e);
                     resetSend();
-                    scrollToDraft();
+                    scrollToMarkingCard();
                 };
                 if (opts && opts.defer) { serveCwChunks([askText(e, i)], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
                 aiBubble(askText(e, i));
@@ -34268,10 +34275,23 @@
             panel.appendChild(header);
             const body = el('div', { className: 'swml-extract-panel-body' });
             if (draftSec) {
+                // Prose only (#427c): the section clone drags its NodeView chrome (label pill,
+                // collapse chevron) and its provenance note into the pad — the pad header
+                // already says whose writing this is. Same filter shape as _cwDraftProseFromDoc.
                 const clone = draftSec.cloneNode(true);
-                clone.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
-                clone.querySelectorAll('button, select, textarea, input').forEach(n => { n.disabled = true; });
-                body.appendChild(clone);
+                clone.querySelectorAll('button, select, textarea, input, h3, em, .swml-collapse-btn').forEach(n => n.remove());
+                const paras = Array.from(clone.querySelectorAll('p, blockquote, ul, ol'))
+                    .filter(n => (n.textContent || '').trim().length > 0);
+                if (paras.length) {
+                    paras.forEach(n => {
+                        const copy = n.cloneNode(true);
+                        copy.removeAttribute('contenteditable');
+                        body.appendChild(copy);
+                    });
+                } else {
+                    clone.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
+                    body.appendChild(clone);
+                }
             } else {
                 // FAIL LOUD to the student, never an empty pad (§4d).
                 body.appendChild(el('p', {

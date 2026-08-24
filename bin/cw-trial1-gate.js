@@ -244,9 +244,11 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
     ok('the walk spends ONE call on marking and one only on an explicit ask for help',
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length === 2,
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length);
-    // v7.20.555 (#425): the ask says "read that part of your draft" — the document must go there.
-    ok('every element ask scrolls the document to the draft (#425), on the ONE scroll convention',
-        /scrollToDraft\(\);/.test(CTL) && /_swmlScrollToTop\(target\)/.test(CTL));
+    // v7.20.557 (#427a, WML §4c.10): chat points → document scrolls, to the surface the student
+    // must ACT ON — the marking card (draft-section fallback for an unhealed doc).
+    ok('every element ask scrolls the document to the MARKING CARD (§4c.10), on the ONE scroll convention',
+        /scrollToMarkingCard\(\);/.test(CTL) && /_swmlScrollToTop\(target\)/.test(CTL)
+        && /querySelector\('\[data-section-type="ladder"\]'\)/.test(CTL));
 }
 
 // ── 7. THE LADDER CARD (#426) — the levels are a CARD, never chat bubbles ─────────────────────

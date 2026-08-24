@@ -16206,135 +16206,166 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════════════
-   ⭐⭐ v7.20.556 (#426) — THE EXAMINER-LADDER MARKING CARD.
+   ⭐⭐ v7.20.556 (#426) — THE EXAMINER-LADDER MARKING CARD. Brand pass v7.20.557 (#427c).
 
    Neil, 2026-08-23: *"I can't see level one to compare it because I might change my mind…
-   what if, for example, for literature, there's six levels? That's not gonna be practical."*
-   The card stacks every level the student has reached, NEWEST ON TOP, all on screen at once.
+   what if, for example, for literature, there's six levels?"* The card stacks every level
+   the student has reached, NEWEST ON TOP, all on screen at once.
 
-   Surface + edge follow the house tokens declared at the top of this file — no new palette,
-   and nothing declared on :root (root CLAUDE.md). The judged/live distinction is carried by
-   the EDGE, like every other "done" state in the canvas, never by a green wash over purple
-   (reference_green_wash_surface_reads_brown_on_dark_purple).
+   THE BRAND RULES THIS OBEYS (BRAND.md, his 2026-08-24 note "clearly hasn't gone through a
+   brand pass" — it hadn't):
+   · NO hairline borders on cards or buttons — surfaces separate by BACKGROUND CONTRAST on
+     the canvas ladder (recessed #1b1c1f · base #232427 · raised #2b2c2f · raised-2 #333437),
+     never a 1px outline ("no borders around things… it looks so much cleaner").
+   · The decision buttons ARE the house quick-action chip (.swml-quick-btn, flat, #4F378B +
+     white since v7.20.450) — one chip component, not a second one that drifts. Only layout
+     is set here, never their colour.
+   · Quieter actions (Change my answer / Show my draft) are FULLY GHOST — solid or ghost,
+     never outline.
+   · The judged/live distinction rides the EDGE + elevation, and the semantic left edge
+     keeps the house meanings (done-green edge, amber, red) — no green washes over purple
+     (reference_green_wash_surface_reads_brown_on_dark_purple).
+   · 10px spacing grid.
    ═══════════════════════════════════════════════════════════════════════════════════════ */
-.swml-ladder-ui { margin-top: 12px; }
+.swml-ladder-ui { margin-top: 10px; }
 .swml-ladder-ui:empty { display: none !important; }
 .swml-ladder-idle {
     margin: 0;
     font-size: 13px;
-    line-height: 1.55;
-    opacity: 0.72;
+    line-height: 1.6;
+    opacity: 0.68;
     font-style: italic;
 }
 .swml-ladder-head {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: 8px 14px;
-    padding-bottom: 10px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
 }
-.swml-ladder-title { font-weight: 700; font-size: 15px; letter-spacing: 0.01em; }
-.swml-ladder-sub { font-size: 13px; opacity: 0.72; flex: 1 1 240px; min-width: 0; }
-.swml-ladder-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-.swml-ladder-toolbtn {
-    font: inherit;
-    font-size: 12px;
-    padding: 5px 11px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: var(--swml-surface-done, rgba(255, 255, 255, 0.055));
-    color: inherit;
-    cursor: pointer;
-    transition: background 140ms ease, border-color 140ms ease;
+.swml-ladder-title {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
 }
-.swml-ladder-toolbtn:hover { background: var(--swml-surface-done-strong, rgba(255, 255, 255, 0.08)); border-color: rgba(255, 255, 255, 0.3); }
+.swml-ladder-sub {
+    font-size: 13px;
+    opacity: 0.68;
+    flex: 1 1 200px;
+    min-width: 0;
+}
+.swml-ladder-tools { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+/* The house chip supplies the surface; only geometry lives here. */
+.swml-quick-btn.swml-ladder-toolbtn { white-space: nowrap; }
 .swml-ladder-mark {
     font-weight: 700;
     font-size: 13px;
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 999px;
-    background: var(--swml-surface-done-strong, rgba(255, 255, 255, 0.08));
-    border: 1px solid var(--swml-edge-done, rgba(28, 217, 145, 0.45));
+    background: #333437;                                  /* raised — elevation, no outline */
+    box-shadow: inset 0 0 0 1.5px var(--swml-edge-done, rgba(28, 217, 145, 0.45));
     white-space: nowrap;
 }
 
-/* The stack. Newest level first in DOM order — the renderer reverses, so the CSS stays
-   a plain column and nothing depends on flex-direction to be read correctly. */
+/* The stack. Newest level first in DOM order — the renderer reverses, so the CSS stays a
+   plain column and nothing depends on flex-direction to be read correctly. */
 .swml-ladder-stack { display: flex; flex-direction: column; gap: 10px; }
 .swml-ladder-level {
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 12px;
-    padding: 12px 14px;
-    background: var(--swml-surface-done, rgba(255, 255, 255, 0.055));
+    border-radius: 14px;
+    padding: 14px 16px 14px 18px;
+    background: #333437;                                  /* raised (the post-.428 rung) */
+    position: relative;
+    overflow: hidden;
 }
-/* The level awaiting a decision is the one with presence; judged levels stay legible but
-   recede, so the eye lands on the live question without the others disappearing. */
+.swml-ladder-level::before {                              /* the semantic edge, house pattern */
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: transparent;
+}
+/* The level awaiting a decision carries ELEVATION (shadow); judged levels sit flat on the same
+   rung and recede slightly — contrast by elevation, never a hand-tuned extra grey. */
 .swml-ladder-live {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: var(--swml-surface-done-strong, rgba(255, 255, 255, 0.08));
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
 }
-.swml-ladder-judged { opacity: 0.9; }
-.swml-ladder-all { border-left: 3px solid var(--swml-edge-done, rgba(28, 217, 145, 0.45)); }
-.swml-ladder-some { border-left: 3px solid rgba(241, 196, 15, 0.5); }
-.swml-ladder-not { border-left: 3px solid rgba(255, 84, 112, 0.5); }
+.swml-ladder-judged { opacity: 0.88; }
+.swml-ladder-all::before { background: #1CD991; }      /* opaque signals — never a wash */
+.swml-ladder-some::before { background: #F1C40F; }
+.swml-ladder-not::before { background: #ff5470; }
 
 .swml-ladder-lhead { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .swml-ladder-lname { font-weight: 700; font-size: 14px; }
-.swml-ladder-lrange { font-size: 12px; opacity: 0.62; }
+.swml-ladder-lrange {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.55;
+}
 .swml-ladder-verdict {
     margin-left: auto;
-    font-size: 11px;
-    letter-spacing: 0.04em;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 3px 9px;
+    padding: 4px 10px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.1);
+    background: #1b1c1f;                                  /* recessed — a stamp, not a button */
     white-space: nowrap;
 }
-.swml-ladder-lbody { margin-top: 7px; font-size: 13.5px; line-height: 1.6; }
+.swml-ladder-lbody { margin-top: 8px; font-size: 13.5px; line-height: 1.65; opacity: 0.92; }
 .swml-ladder-lbody p { margin: 0; }
 .swml-ladder-descriptors { margin: 0; padding-left: 18px; }
-.swml-ladder-descriptors li { margin: 3px 0; }
+.swml-ladder-descriptors li { margin: 4px 0; }
 
-.swml-ladder-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
-.swml-ladder-btn {
+.swml-ladder-acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+/* Decision chips are .swml-quick-btn — the card only sizes them up to a comfortable target. */
+.swml-quick-btn.swml-ladder-btn { font-size: 13px; padding: 8px 16px; }
+/* Fully ghost (BRAND: solid or ghost, never outline): quiet until hovered, then a surface. */
+.swml-ladder-ghostbtn {
     font: inherit;
-    font-size: 13px;
-    padding: 7px 14px;
-    border-radius: 9px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.07);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
     color: inherit;
+    opacity: 0.6;
     cursor: pointer;
-    transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+    transition: opacity 140ms ease, background 140ms ease;
 }
-.swml-ladder-btn:hover { background: rgba(255, 255, 255, 0.13); border-color: rgba(255, 255, 255, 0.32); }
-.swml-ladder-btn:active { transform: translateY(1px); }
-.swml-ladder-btn-all { border-color: var(--swml-edge-done, rgba(28, 217, 145, 0.45)); }
-.swml-ladder-btn-revise { font-size: 12px; padding: 5px 11px; opacity: 0.82; }
-.swml-ladder-foot { margin: 12px 0 0; font-size: 12.5px; opacity: 0.68; font-style: italic; }
+.swml-ladder-ghostbtn:hover { opacity: 1; background: #1b1c1f; }
+.swml-ladder-foot { margin: 12px 0 0; font-size: 12.5px; opacity: 0.62; font-style: italic; }
 
-/* Light theme: the same structure, inverted alphas. */
-.swml-canvas-content.swml-theme-light .swml-ladder-level,
-.swml-theme-light .swml-ladder-level { border-color: rgba(0, 0, 0, 0.12); background: rgba(0, 0, 0, 0.03); }
-.swml-theme-light .swml-ladder-live { border-color: rgba(0, 0, 0, 0.28); background: rgba(0, 0, 0, 0.055); }
-.swml-theme-light .swml-ladder-head { border-bottom-color: rgba(0, 0, 0, 0.1); }
-.swml-theme-light .swml-ladder-btn,
-.swml-theme-light .swml-ladder-toolbtn { border-color: rgba(0, 0, 0, 0.18); background: rgba(0, 0, 0, 0.04); }
-.swml-theme-light .swml-ladder-btn:hover,
-.swml-theme-light .swml-ladder-toolbtn:hover { background: rgba(0, 0, 0, 0.08); }
-.swml-theme-light .swml-ladder-verdict { background: rgba(0, 0, 0, 0.08); }
+/* Light theme: same structure on the light surface ladder — contrast by darkening. */
+.swml-theme-light .swml-ladder-level,
+[data-swml-theme="light"] .swml-ladder-level { background: rgba(0, 0, 0, 0.045); box-shadow: none; }
+.swml-theme-light .swml-ladder-live,
+[data-swml-theme="light"] .swml-ladder-live { background: rgba(0, 0, 0, 0.08); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1); }
+.swml-theme-light .swml-ladder-verdict,
+[data-swml-theme="light"] .swml-ladder-verdict { background: rgba(0, 0, 0, 0.08); }
+.swml-theme-light .swml-ladder-ghostbtn:hover,
+[data-swml-theme="light"] .swml-ladder-ghostbtn:hover { background: rgba(0, 0, 0, 0.07); }
+.swml-theme-light .swml-ladder-mark,
+[data-swml-theme="light"] .swml-ladder-mark { background: rgba(0, 0, 0, 0.06); }
 
 /* The trial's floating draft pad — the shared `.swml-extract-panel` shell (portalled to
-   <body>, dragged by _makePanelInteractive); only the reading measure is set here. */
-.swml-trial-draft-pad { width: 460px; max-height: 68vh; max-height: 68dvh; }
-.swml-trial-draft-pad .swml-extract-panel-body { font-size: 14px; line-height: 1.7; }
-.swml-trial-draft-pad .swml-section-block { border: none; padding: 0; background: none; }
+   <body>, dragged by _makePanelInteractive). The body is a READING surface: prose measure,
+   book-ish line height, honest paragraph rhythm. vh keeps its dvh companion in the same
+   rule (reachability-lint check B — iOS bars). */
+.swml-trial-draft-pad { width: 500px; max-height: 68vh; max-height: 68dvh; display: flex; flex-direction: column; }
+.swml-trial-draft-pad .swml-extract-panel-body {
+    padding: 18px 22px 22px;
+    font-size: 14px;
+    line-height: 1.75;
+}
+.swml-trial-draft-pad .swml-extract-panel-body p { margin: 0 0 12px; }
+.swml-trial-draft-pad .swml-extract-panel-body p:last-child { margin-bottom: 0; }
 
 @media (max-width: 720px) {
     .swml-ladder-tools { margin-left: 0; width: 100%; }
     .swml-ladder-acts .swml-ladder-btn { flex: 1 1 auto; }
-    .swml-trial-draft-pad { width: min(92vw, 460px); }
+    .swml-trial-draft-pad { width: min(92vw, 500px); }
 }
