@@ -2005,13 +2005,31 @@ Cambridge's own words forbid exactly that reading:
 > *"Level descriptors are a means of general guidance and **should not be interpreted as hurdle
 > statements**."*
 
-- ✅ **Climbing from the bottom until the descriptor stops fitting** is legitimate — it is a normal
-  way to LOCATE the best-fit level.
+- ✅ **Climbing from the bottom, reading every level** — legitimate, and **re-ruled by Neil the
+  same day as the component's pedagogical spine** (see the sub-ruling below).
 - ⛔ **Requiring every criterion of level N before entering level N+1** is hurdle marking. It caps
   a strong answer that happens to miss one lower-level detail, which is the precise error the rule
   exists to prevent.
 - ✅ **His ending is exactly right:** decide which criteria are actually met, then place within the
   level's mark range. That IS best-fit placement.
+
+**⭐⭐ THE SUB-RULING — the walk stays, the RUNG QUESTION changes** (Neil, pushing back the same
+day: *"I still think they should still go through the process of reading from the bottom level and
+working their way up, so that they understand what the criteria actually is… just for the sake of
+being conscious of it"*). He is right, and the reason is structural. **Cambridge's level
+descriptors are PARALLEL, not cumulative** — measured on Table B, Q3 (`0500-P1-MARK-SCHEME.pdf`
+p.24): the same four dimensions (register · language · range · structure) restated at five
+qualities. So reading all five bottom-to-top shows a student **the same four dimensions five times
+at rising quality**, which is precisely how you learn what is being judged. That is real
+calibration and it is lost if they jump to a number.
+⚠️ **But it also refutes his stated premise.** He reasoned *"if they're at the high levels, they
+should really be meeting the lower levels anyway."* That holds for cumulative criteria and **not
+here: the lower levels describe WEAKNESS.** Level 1 says *"frequent copying from the original"* — a
+Level 5 answer cannot "meet" it; the two are mutually exclusive descriptions of one dimension.
+**⇒ THE BUILD RULE:** at each rung ask *"is this answer still better than this description?"* and
+climb while the answer is; stop where the description **starts to match**; then place within that
+range. Never *"have they met everything at this level?"* Copy must never use **hurdle · unlock ·
+pass this level · before you can move up**. Same climb, every criterion seen, no false cap.
 
 ⚠️ **So the component teaches BEST FIT, and must never tell a student that examiners work through
 hurdles** — that would hand them a false model of the exam in the one unit built to teach the
