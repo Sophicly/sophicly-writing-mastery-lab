@@ -219,8 +219,8 @@ async function main() {
         ok(/Hook/.test(t), '1 · the first ask is the FIRST element, Hook');
         ok(t.indexOf(ELEMENTS[0].prompt) !== -1, '1 · it carries the definition the student was taught in Step 9, verbatim');
         ok(t.indexOf(ELEMENTS[0].example) !== -1, '1 · …and a worked example inside the ask itself (§4c.2, ladder rung 0)');
-        ok(/Your Marking/.test(t) && /card on the page/i.test(t),
-            '1 · …and it hands the student to the LADDER CARD, where the levels live (#426)');
+        ok(/Your Marking/.test(t) && /pad — it floats over the page/i.test(t),
+            '1 · …and it hands the student to the floating LADDER PAD, where the levels live (#426 → #430)');
         ok(!!ladder && ladder.title === 'Hook' && ladder.index === 0 && ladder.total === 7,
             '1 · ⭐ the card is published for THIS element the moment the ask lands');
         const l1 = (ladder.levels || []).filter((lv) => lv.n === 1)[0];

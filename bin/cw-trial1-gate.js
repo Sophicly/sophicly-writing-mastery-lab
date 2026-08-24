@@ -246,13 +246,17 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length);
     // v7.20.557 (#427a, WML §4c.10): chat points → document scrolls, to the surface the student
     // must ACT ON — the marking card (draft-section fallback for an unhealed doc).
-    ok('every element ask scrolls the document to the MARKING CARD (§4c.10), on the ONE scroll convention',
-        /scrollToMarkingCard\(\);/.test(CTL) && /_swmlScrollToTop\(target\)/.test(CTL)
-        && /querySelector\('\[data-section-type="ladder"\]'\)/.test(CTL));
+    // v7.20.558 (#430): the levels left the document, so the surface the student ACTS ON in the
+    // document is the JUDGEMENT ROW — ask and sentence both scroll there (walk/pad/doc in sync).
+    ok('every element ask scrolls the document to the JUDGEMENT ROW of the current element (§4c.10), on the ONE scroll convention',
+        /scrollToJudgementRow\(e\);/.test(CTL) && /_swmlScrollToTop\(target\)/.test(CTL)
+        && /querySelector\('\[data-field-id="' \+ fid\(e\.id\) \+ '"\]'\)/.test(CTL));
+    ok('…and the banked-sentence ask scrolls there too, so the walk, the pad and the document scroll in sync (Neil #430)',
+        (CTL.match(/scrollToJudgementRow\(e\);/g) || []).length >= 2);
 }
 
-// ── 7. THE LADDER CARD (#426) — the levels are a CARD, never chat bubbles ─────────────────────
-console.log('\nThe levels live on a card in the document, all visible at once:');
+// ── 7. THE LADDER PAD (#426 → #430) — the levels are a floating PAD, never chat bubbles ──────
+console.log('\nThe levels live on a floating pad, all visible at once:');
 {
     const ctlIdx2 = SRC.indexOf('const _cwTrial1Ctl = (function () {');
     const CTL2 = ctlIdx2 < 0 ? '' : braceSliceFrom(SRC, ctlIdx2, '(', ')').text;
@@ -280,10 +284,27 @@ console.log('\nThe levels live on a card in the document, all visible at once:')
     ok('N LEVELS BY CONSTRUCTION — the card renders whatever it is handed, so literature\'s six '
         + 'need no second card (PEDAGOGY §33.13)',
         /LEVEL_DEFS\.forEach/.test(CTL2) && !/levels\[2\]|levels\[1\]/.test(SRC.slice(SRC.indexOf('function renderTrialLadderInline'), SRC.indexOf('function renderTrialLadderInline') + 6000)));
-    ok('the card is DERIVED, never baked into the saved document (no fossil — §4c.7)',
-        /sectionHTML\('ladder', 'Your Marking'/.test(SRC)
-        && !/cw-trial-1-level/.test(SRC));
-    ok('…and the heal gives existing documents the card', /data-section-type="ladder"/.test(HEAL || ''));
+    ok('the levels are DERIVED, never baked into the saved document (no fossil — §4c.7)',
+        !/cw-trial-1-level/.test(SRC));
+    // v7.20.558 (#430): the levels moved OUT of the document into a floating pad.
+    ok('⛔ the template no longer bakes a `ladder` section (#430 — the card left the document)',
+        !/sectionHTML\('ladder'/.test(SRC) && !/_cwTrial1LadderBlock/.test(SRC));
+    ok('…and the heal REMOVES the ladder section a .556/.557 document still carries',
+        /querySelectorAll\('\[data-section-type="ladder"\]'\)\.forEach\(\(sec\) => \{ sec\.remove\(\)/.test(HEAL || ''));
+    ok('the renderer targets the PAD first, the document section only as the un-healed fallback',
+        /document\.querySelector\('\.swml-ladder-pad \.swml-ladder-ui'\)/.test(SRC));
+    ok('the pad rides the FLOATING shell + the shared drag/resize, with an open hook AND a close hook',
+        /swml-extract-panel swml-ladder-pad/.test(SRC) && /_openLadderPadHook = \(\) =>/.test(SRC)
+        && /_closeLadderPadHook = \(\) =>/.test(SRC));
+    ok('every element ask OPENS the pad (idempotent)', /openLadderPad\(\);\s*publishLadder\(\);/.test(CTL2));
+    ok('⭐ the pad is EPHEMERAL: the marking turn, the target ask and reset all CLOSE it',
+        /st\.phase = 'marking';[\s\S]{0,80}closeLadderPad\(\);/.test(CTL2)
+        && /st\.phase = 'target';[\s\S]{0,60}closeLadderPad\(\);/.test(CTL2)
+        && /setTrialLadderModel\(null\);[^\n]*\n\s*closeLadderPad\(\);/.test(CTL2));
+    ok('⭐ a student who closes the pad mid-element is never dead: the help bar\'s FIRST chip reopens it (§4d)',
+        /textContent: 'Marking levels'[\s\S]{0,120}openLadderPad\(\)/.test(CTL2));
+    ok('the pad has its size in vh AND dvh in the same rule (reachability-lint B)',
+        /\.swml-ladder-pad \{[^}]*max-height: 74vh; max-height: 74dvh/.test(fs.readFileSync(path.join(ROOT, 'frontend/wml-canvas.css'), 'utf8')));
     ok('the student\'s draft opens in a DRAGGABLE pad (Neil: "like the extract button")',
         /_openTrialDraftPadHook/.test(SRC) && /swml-extract-panel swml-trial-draft-pad/.test(SRC)
         && /_makePanelInteractive\(panel\)/.test(SRC));

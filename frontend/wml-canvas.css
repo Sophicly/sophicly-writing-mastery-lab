@@ -16364,8 +16364,17 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-trial-draft-pad .swml-extract-panel-body p { margin: 0 0 12px; }
 .swml-trial-draft-pad .swml-extract-panel-body p:last-child { margin-bottom: 0; }
 
+/* ⭐ v7.20.558 (#430) — THE MARKING LEVELS PAD. The ladder card left the document (one scroll
+   position could not show card + judgement row + draft) for the same floating shell as the
+   draft pad. Every `.swml-ladder-*` style carries over untouched — only the container moved.
+   vh keeps its dvh companion in the same rule (reachability-lint check B). */
+.swml-ladder-pad { width: 480px; max-height: 74vh; max-height: 74dvh; display: flex; flex-direction: column; }
+.swml-ladder-pad .swml-extract-panel-body { padding: 14px 18px 18px; }
+.swml-ladder-pad .swml-ladder-ui { margin-top: 0; }
+
 @media (max-width: 720px) {
     .swml-ladder-tools { margin-left: 0; width: 100%; }
     .swml-ladder-acts .swml-ladder-btn { flex: 1 1 auto; }
     .swml-trial-draft-pad { width: min(92vw, 500px); }
+    .swml-ladder-pad { width: min(92vw, 480px); }
 }

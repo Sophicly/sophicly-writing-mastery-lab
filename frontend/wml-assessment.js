@@ -7601,6 +7601,10 @@
     // v7.20.556 (#426): the CW trial's draft pad — same hook shape as the essay pad above,
     // because the pads live in the canvas closure and the trial walk is module-scope.
     let _openTrialDraftPadHook = null;
+    // ⭐ v7.20.558 (#430) — the marking LEVELS pad. Same hook shape; a close hook too, because
+    // the pad is ephemeral: it exists only while an element is being judged.
+    let _openLadderPadHook = null;
+    let _closeLadderPadHook = null;
     function _saWalkEligible() {
         if (state.task !== 'assessment' || state.reviewMode) return false;
         return String(state.board || '').toLowerCase() === 'aqa';   // AQA P1 / P2 / Literature = the 3 anchors
@@ -14271,12 +14275,17 @@
     }
     function renderTrialLadderInline() {
         if (!_derivedCardFillOk('ladder')) return;
-        const editor = document.getElementById('swml-tiptap-editor');
-        if (!editor) return;
-        const sec = editor.querySelector('[data-section-type="ladder"]');
-        if (!sec) return;
-        const ui = sec.querySelector('.swml-ladder-ui');
-        if (!ui) return;   // nodeView not mounted yet; its own rAF/250/800 fills will call us
+        // ⭐ v7.20.558 (#430): the levels live on a FLOATING PAD (Neil: one scroll position cannot
+        // show card + judgement row + draft; "it's ephemeral anyway"). The pad's own
+        // `.swml-ladder-ui` is the target; the in-document `ladder` section is only the fallback
+        // for the instant before the heal has removed it from an older document.
+        let ui = document.querySelector('.swml-ladder-pad .swml-ladder-ui');
+        if (!ui) {
+            const editor = document.getElementById('swml-tiptap-editor');
+            const sec = editor && editor.querySelector('[data-section-type="ladder"]');
+            ui = sec ? sec.querySelector('.swml-ladder-ui') : null;
+        }
+        if (!ui) return;   // pad not open / nodeView not mounted yet; the opener re-fills on mount
         const m = _trialLadderModel;
         ui.innerHTML = '';
         if (!m || !Array.isArray(m.levels) || !m.levels.length) {
@@ -28408,6 +28417,12 @@
                 if (!bc) return;
                 if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help });
+                // ⭐ v7.20.558 (#430): the levels are on a pad the student can close — so the FIRST
+                // chip always brings them back (§4d: a closed pad mid-element is never a dead end).
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Marking levels', icon: WML.icon('outline', 15),
+                    onClick: function () { openLadderPad(); publishLadder(); },
+                }));
                 const spent = (st && st.moreSpent && st.moreSpent[e.id]) || 0;
                 if (spent < (e.more || []).length) {
                     bar.appendChild(el('button', {
@@ -28513,12 +28528,12 @@
                     + '*What it is for:* ' + e.prompt + '\n\n'
                     + '*For example:* ' + e.example;
                 if (planned) t += '\n\n**What you planned in Step 9:** “' + planned + '”';
-                // The LEVELS are on the card in the document, where they can all be seen at once
-                // and re-judged (#426) — so the chat points there rather than reprinting them.
+                // The LEVELS are on the floating pad, where they can all be seen at once and
+                // re-judged (#426 → #430) — so the chat points there rather than reprinting them.
                 t += '\n\n**Be the examiner: read that part of your draft, then judge it on the '
-                    + '**Your Marking** card on the page.** Level 1 is waiting there. Climb to Level 2 only '
-                    + 'if every part of Level 1 is true — and every level you judge stays on the card, so you '
-                    + 'can compare them and change your mind.';
+                    + '**Your Marking** pad — it floats over the page; drag it wherever you like.** Level 1 is '
+                    + 'waiting there. Climb to Level 2 only if every part of Level 1 is true — and every level '
+                    + 'you judge stays on the pad, so you can compare them and change your mind.';
                 return t;
             }
 
@@ -28530,11 +28545,20 @@
             // tap away — the card's own "Show my draft" pad.) Falls back to the draft section on
             // a doc the heal has not reached; rides the ONE convention (_swmlScrollToTop); a
             // missing target is a silent no-op.
-            function scrollToMarkingCard() {
+            // ⭐ v7.20.558 (#430): the levels left the document for a floating pad, so the surface
+            // the student ACTS ON in the document is the JUDGEMENT ROW their sentence lands in —
+            // the ask and every banked sentence scroll there, and the walk, the pad and the
+            // document "scroll in sync" (his words). Fallbacks: judgement section → draft.
+            function scrollToJudgementRow(e) {
                 try {
                     const editor = document.getElementById('swml-tiptap-editor');
                     if (!editor) return;
-                    let target = editor.querySelector('[data-section-type="ladder"]');
+                    let target = e ? editor.querySelector('[data-field-id="' + fid(e.id) + '"]') : null;
+                    if (!target) {
+                        editor.querySelectorAll('[data-section-label]').forEach(function (el2) {
+                            if (!target && el2.getAttribute('data-section-label') === 'Your Judgement') target = el2;
+                        });
+                    }
                     if (!target) {
                         const label = (typeof CW_TRIAL_DRAFT_LABEL !== 'undefined') ? CW_TRIAL_DRAFT_LABEL : 'Your Draft';
                         editor.querySelectorAll('[data-section-label]').forEach(function (el2) {
@@ -28542,7 +28566,21 @@
                         });
                     }
                     if (target && target.offsetParent !== null) _swmlScrollToTop(target);
-                } catch (e) {}
+                } catch (err) {}
+            }
+            // The pad is opened idempotently on every ask (a closed pad reopens; an open one is
+            // re-filled) and CLOSED the moment the marking is over — ephemeral, like the state
+            // it shows. No pad on this surface is never silent: the levels fall back to the
+            // document section on an un-healed doc, and the help bar's first chip reopens.
+            function openLadderPad() {
+                try {
+                    if (typeof _openLadderPadHook === 'function' && _openLadderPadHook) _openLadderPadHook();
+                } catch (err) {}
+            }
+            function closeLadderPad() {
+                try {
+                    if (typeof _closeLadderPadHook === 'function' && _closeLadderPadHook) _closeLadderPadHook();
+                } catch (err) {}
             }
 
             function serveItem(opts) {
@@ -28554,13 +28592,14 @@
                 st.levels = st.levels || {};
                 persist();
                 const attach = function () {
+                    openLadderPad();
                     publishLadder();
-                    // The chat carries no level chips any more — the card owns the climb — but it
+                    // The chat carries no level chips any more — the pad owns the climb — but it
                     // MUST still leave something to press (§4d liveness), and the help ladder is
                     // exactly that: free rungs first, Sophia last.
                     helpBar(e);
                     resetSend();
-                    scrollToMarkingCard();
+                    scrollToJudgementRow(e);
                 };
                 if (opts && opts.defer) { serveCwChunks([askText(e, i)], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
                 aiBubble(askText(e, i));
@@ -28569,6 +28608,7 @@
             // Re-offer the help rungs after a help bubble, and re-publish the card, so a student
             // is never left with an answer and nowhere to act (§4d).
             function reAttachAsk(e) {
+                openLadderPad();
                 publishLadder();
                 helpBar(e);
                 resetSend();
@@ -28596,13 +28636,13 @@
                 _walkSlot.arm(WALK, fid(e.id), { cycle: 'rewrite' });
                 st.awaitNote = e.id;
                 persist();
-                const attach = function () { publishLadder(); resetSend(); };
+                const attach = function () { openLadderPad(); publishLadder(); resetSend(); scrollToJudgementRow(e); };
                 if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
                 aiBubble(text);
                 attach();
             }
 
-            // ── THE LADDER CARD IS THE CLIMB'S CONTROL SURFACE (#426) ────────────────────
+            // ── THE LADDER PAD IS THE CLIMB'S CONTROL SURFACE (#426 → #430) ──────────────
             // The card is DERIVED from st on every publish — there is no second copy of the
             // student's answers to drift (the §5d lesson applied to UI state).
             function levelsModel(e) {
@@ -28724,6 +28764,8 @@
                 _walkSlot.clear(WALK);
                 st.phase = 'marking';
                 persist();
+                closeLadderPad();            // ephemeral: gone when the marking is (#430)
+                setTrialLadderModel(null);
                 aiBubble('That is all seven. Here is your marking:\n\n' + selfSummary()
                     + '\n\nNow let me read your draft and make my own level calls on each part. One moment.');
                 const ctx = '[TRIAL 1 — STORY COHERENCE. The student has just marked their own Draft 1 the way an '
@@ -28939,6 +28981,7 @@
             function serveTargetAsk(opts) {
                 st.phase = 'target';
                 persist();
+                closeLadderPad();
                 _walkSlot.arm(WALK, 'cw-trial-1-target', { cycle: 'rewrite' });
                 const text = '**Last thing, and it matters most: your one target for Draft 2, in your own words.**\n\n'
                     + 'Look at what we both found. In one sentence, say the single thing Draft 2 must do that '
@@ -29106,6 +29149,7 @@
                 _walkSlot.clear(WALK);
                 clearPersist();
                 setTrialLadderModel(null);   // a stale ladder must never outlive its walk
+                closeLadderPad();
             }
 
             function tryResume() {
@@ -34305,6 +34349,43 @@
             document.body.appendChild(panel);
             _makePanelInteractive(panel);   // drag + 8-way resize (shared, v7.20.59)
             _trialDraftPad = panel;
+        };
+
+        // ⭐ v7.20.558 (#430) — THE MARKING LEVELS PAD. Neil, 2026-08-24, testing .557: *"you can't
+        // have all of that on the screen at the same time… the marking levels should be like an
+        // extract pad… that floats on top… because the thing is it's ephemeral anyway."* The
+        // ladder is DERIVED state that never persists in the document (§4c.7), so a transient
+        // control surface now lives in a transient surface. Same shell as the draft pad above
+        // (⛔ never the docked rail shell); its body holds ONE `.swml-ladder-ui`, which the
+        // module-scope renderer (renderTrialLadderInline) targets FIRST. Open is idempotent —
+        // the walk calls it on every ask; close is what serveMarking / the target ask / reset do.
+        let _ladderPad = null;
+        _openLadderPadHook = () => {
+            if (_ladderPad && _ladderPad.parentNode) {
+                try { window.WML.renderTrialLadderUI(); } catch (_) {}
+                return;
+            }
+            const panel = el('div', { className: 'swml-extract-panel swml-ladder-pad' });
+            const header = el('div', { className: 'swml-extract-panel-header' });
+            header.appendChild(el('span', { className: 'swml-prior-pad-title', textContent: 'Your Marking' }));
+            header.appendChild(el('button', {
+                className: 'swml-extract-panel-close', textContent: '✕',
+                onClick: () => { panel.remove(); _ladderPad = null; },
+            }));
+            panel.appendChild(header);
+            const body = el('div', { className: 'swml-extract-panel-body' });
+            body.appendChild(el('div', { className: 'swml-ladder-ui' }));
+            panel.appendChild(body);
+            panel.style.top = '110px';
+            panel.style.right = '48px';
+            document.body.appendChild(panel);
+            _makePanelInteractive(panel);
+            _ladderPad = panel;
+            try { window.WML.renderTrialLadderUI(); } catch (_) {}
+        };
+        _closeLadderPadHook = () => {
+            if (_ladderPad && _ladderPad.parentNode) _ladderPad.remove();
+            _ladderPad = null;
         };
 
         // ── v7.20.56: PREVIOUS ASSESSMENTS — prior-attempt viewer (Neil) ──
@@ -44413,14 +44494,11 @@
                     }
                 }
 
-                // (1b2) v7.20.556 (#426) — the marking card. Anchored ABOVE the judgement
-                // section so the ladder sits where the marking happens; same producer as the
-                // template, so a healed doc cannot drift from a born one.
-                if (!box.querySelector('[data-section-type="ladder"]')) {
-                    const judgeRow = box.querySelector('[data-field-id="cw-trial-1-hook"]');
-                    const judgeSec = judgeRow ? judgeRow.closest('[data-section-label="Your Judgement"]') : null;
-                    if (judgeSec) { judgeSec.insertAdjacentHTML('beforebegin', _cwTrial1LadderBlock()); changed = true; }
-                }
+                // (1b2) v7.20.558 (#430) — the marking card LEFT the document for a floating pad.
+                // A .556/.557 document carries the `ladder` section the old heal inserted; it is a
+                // DERIVED card holding no student content, so removing it is safe. The nodeView
+                // type stays registered so the un-healed instant renders, never errors.
+                box.querySelectorAll('[data-section-type="ladder"]').forEach((sec) => { sec.remove(); changed = true; });
 
                 // (1c) v7.20.554 — the closing-target section (#424/§33.9), same producer as
                 // the template. Anchored after the mark section when it exists, else appended.
@@ -49674,9 +49752,7 @@
                 html += sectionHTML('question', 'Assessment Focus', false, null, _cwTrial1AboutHTML());
                 html += dividerHTML('YOUR DRAFT');
                 html += sectionHTML('response', CW_TRIAL_DRAFT_LABEL, false, null, _cwTrialDraftInner(_trialSrc, ''));
-                html += dividerHTML('YOUR JUDGEMENT');
-                html += _cwTrial1LadderBlock();
-                html += _cwTrial1JudgementBlock({ divider: false });
+                html += _cwTrial1JudgementBlock();
                 html += _cwTrial1SophiaBlock();
                 html += _cwTrial1TargetBlock();
                 return html;
@@ -51364,15 +51440,9 @@
             + '<p>In the chat you will mark the seven parts of your scene yourself, <strong>the way a real examiner marks</strong> — climbing the levels, part by part — then Sophia reads your draft and makes her own level calls. Your marking and hers are both recorded here, and the places where you disagree are the most useful thing in this lesson.</p>';
     }
 
-    // ⭐ v7.20.556 (#426): the marking card's home in the document. The section carries only its
-    // heading prose; the LADDER itself is the firewalled `.swml-ladder-ui` the nodeView renders
-    // and the walk fills (renderTrialLadderInline) — it is DERIVED state, so it is never baked
-    // into the saved document where it could fossilise (§4c.7 applied to a card).
-    function _cwTrial1LadderBlock() {
-        return sectionHTML('ladder', 'Your Marking', false, null,
-            '<h3>Your marking, level by level</h3>'
-            + '<p><em>Judge each part of your scene the way an examiner does: prove every line of Level 1 before you climb to Level 2. Every level you judge stays on this card, so you can compare them — and change your mind.</em></p>');
-    }
+    // v7.20.558 (#430): the marking card no longer has a home in the document — the levels live
+    // on the floating `.swml-ladder-pad` (canvas closure, `_openLadderPadHook`). The heal removes
+    // any `ladder` section a .556/.557 document still carries.
 
     function _cwTrial1JudgementBlock(opts) {
         const _els = (window.WML && WML.CW_SCENE_ELEMENTS) || [];
