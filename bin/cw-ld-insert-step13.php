@@ -45,9 +45,25 @@ $byTitle = [];
 foreach ($topics as $t) { $byTitle[$t->ID] = $t->post_title; }
 
 // ── 0. idempotence ────────────────────────────────────────────────────────────────────────────
+// The WML embed is the SHORTCODE in the lesson's post_content (the bridge option only OVERRIDES its
+// task); Step 12's is copied with the task swapped, so the new lesson renders like its siblings.
+$shortcodeFor = function ($fromContent) {
+    $c = (string) $fromContent;
+    return preg_match('/\[writing_mastery_lab[^\]]*\]/', $c, $m)
+        ? preg_replace('/task="cw_step_\d+"/', 'task="cw_step_13"', $m[0])
+        : '[writing_mastery_lab task="cw_step_13" board="all" text="creative_writing" subject="skills"]';
+};
 foreach ($topics as $t) {
     if (strpos($t->post_title, 'STEP 13: Scene Selection') !== false) {
-        printf("✅ already inserted: #%d \"%s\" — nothing to do.\n", $t->ID, $t->post_title);
+        printf("✅ already inserted: #%d \"%s\"", $t->ID, $t->post_title);
+        $content = (string) get_post_field('post_content', $t->ID);
+        if (trim($content) === '') {
+            $src = null;
+            foreach ($topics as $x) { if (strpos($x->post_title, 'STEP 12: Update Your Plot') !== false) { $src = $x; break; } }
+            $sc = $shortcodeFor($src ? get_post_field('post_content', $src->ID) : '');
+            if ($APPLY) { wp_update_post(['ID' => $t->ID, 'post_content' => $sc]); printf(" — its content was EMPTY; filled with the embed shortcode: %s\n", $sc); }
+            else { printf(" — its content is EMPTY (no WML embed renders); `apply` fills it with: %s\n", $sc); }
+        } else { echo " — nothing to do.\n"; }
         exit(0);
     }
 }
@@ -127,7 +143,7 @@ echo "titles renumbered: " . count($plan) . "\n";
 // the new topic
 $newId = wp_insert_post([
     'post_type' => 'sfwd-topic', 'post_status' => 'publish', 'post_title' => $newTitle,
-    'post_content' => '', 'post_author' => 1,
+    'post_content' => $shortcodeFor(get_post_field('post_content', $step12->ID)), 'post_author' => 1,
 ], true);
 if (is_wp_error($newId)) { echo "⛔ insert failed: " . $newId->get_error_message() . "\n"; exit(1); }
 update_post_meta($newId, 'course_id', $COURSE_ID);
