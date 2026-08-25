@@ -36,8 +36,27 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 const BAND_ORDER = ['begin', 'end'];
 
+/* ⭐ v7.20.567 (#440) — THE SAME PLACER, A SECOND LENS. Step 12 ports the protagonist's GOALS,
+   NEED and STAKES (Step 11) into the beats exactly the way Step 8 ports the values (Step 7):
+   beginning items into Stages I–III, end items into Stages IV–VI, the student's own words filed
+   UNDERNEATH the beat. Neil's Step-8 ruling stands ("a shared plot-picker … not a second
+   interface"), so the lens is a COPY contract, not a fork: every sentence that named a trait or
+   Step 7 now reads its noun and its source from here. Defaults = Step 8, byte for byte. */
+const DEFAULT_COPY = {
+    prefix: 'Values',                 // the label the ported line carries: `Values (Trait): …`
+    noun: 'trait', nounPlural: 'traits',
+    source: 'Step 7',
+    title: 'Write your values into your plot',
+    sub: <>Step 7 worked out who your protagonist <strong>is</strong>. This step puts it where a reader can actually see it — in the beats you have already written.</>,
+    whyEnd: <>A trait you have already placed at the beginning appears again here, because <strong>how it ends is a different fact about your character</strong> from how it started.</>,
+    noneCame: 'No flagged traits came through from Step 7 — go back and finish the values audit first.',
+    afterPort: 'Close this and Sophia will take you through them one at a time.',
+};
+
 export default function PlotValues(props) {
     const { traits, stages, bands, onStateChange, onPort, onClose } = props;
+    const C = Object.assign({}, DEFAULT_COPY, props.copy || {});
+    const N = C.noun, NS = C.nounPlural;
 
     /* ⭐⭐ v7.20.537 (FIXLIST #401, Neil 2026-08-19) — TWO PASSES, AND NO CHOOSING.
        His words: *"it shouldn't give the students an option to choose the traits that they want…
@@ -128,7 +147,7 @@ export default function PlotValues(props) {
     const stagesInBand = (band) => stages.filter((s) => s.band === band);
     const toggleBeat = (t, beat) => {
         if (beat.worked && beat.worked[t.id]) {
-            setHint('That beat already carries this trait — pick another, or move on.');
+            setHint('That beat already carries this ' + N + ' — pick another, or move on.');
             return;
         }
         setHint('');
@@ -228,12 +247,12 @@ export default function PlotValues(props) {
             <section className="phase is-live">
                 <p className="eyebrow">{second ? 'Second half' : 'First half'} · {bands[band].sub}</p>
                 <h2>{isBegin
-                    ? <>Your traits at the <span className="pv-inline-trait">beginning</span></>
-                    : <>Your traits at the <span className="pv-inline-trait">end</span></>}</h2>
+                    ? <>Your {NS} at the <span className="pv-inline-trait">beginning</span></>
+                    : <>Your {NS} at the <span className="pv-inline-trait">end</span></>}</h2>
                 <p className="lead">
                     {isBegin
-                        ? <>These are the {n} trait{n === 1 ? '' : 's'} you described at the <strong>START</strong> of your story in Step 7. You will place each one into the beats of <strong>{bands.begin.sub}</strong> — the opening half of your plot. <strong>Every one gets placed</strong>; if a trait genuinely does not show yet, you say so and it goes on your build list.</>
-                        : <>Now the <strong>END</strong> of the story. These are the {n} trait{n === 1 ? '' : 's'} you described at the finish, and they go into <strong>{bands.end.sub}</strong> — the closing half of your plot. A trait you have already placed at the beginning appears again here, because <strong>how it ends is a different fact about your character</strong> from how it started.</>}
+                        ? <>These are the {n} {n === 1 ? N : NS} you described at the <strong>START</strong> of your story in {C.source}. You will place each one into the beats of <strong>{bands.begin.sub}</strong> — the opening half of your plot. <strong>Every one gets placed</strong>; if a {N} genuinely does not show yet, you say so and it goes on your build list.</>
+                        : <>Now the <strong>END</strong> of the story. These are the {n} {n === 1 ? N : NS} you described at the finish, and they go into <strong>{bands.end.sub}</strong> — the closing half of your plot. {C.whyEnd}</>}
                 </p>
                 <div className="pv-trait-grid">
                     {chosen.map((t) => {
@@ -256,7 +275,7 @@ export default function PlotValues(props) {
                                     <span className="pv-t-cond">{(bb && bb.cond) || t.cond}</span>
                                     {bb && bb.said
                                         ? <span className="pv-t-said">“{bb.said}”</span>
-                                        : <span className="pv-t-said is-none">You didn’t write about this one at the {isBegin ? 'beginning' : 'end'} in Step 7 — we’ll mark the beat and you can write it in the chat.</span>}
+                                        : <span className="pv-t-said is-none">You didn’t write about this one at the {isBegin ? 'beginning' : 'end'} in {C.source} — we’ll mark the beat and you can write it in the chat.</span>}
                                     {placedHere
                                         ? <span className="pv-t-worked">Placed in {placedHere} beat{placedHere === 1 ? '' : 's'}</span>
                                         : t.workedIn
@@ -269,8 +288,8 @@ export default function PlotValues(props) {
                 </div>
                 {!chosen.length
                     ? <p className="hint">{(traits || []).length
-                        ? <>Nothing came through from Step 7 for this half of the story — the other half is next.</>
-                        : <>No flagged traits came through from Step 7 — go back and finish the values audit first.</>}</p>
+                        ? <>Nothing came through from {C.source} for this half of the story — the other half is next.</>
+                        : <>{C.noneCame}</>}</p>
                     : null}
             </section>
         );
@@ -298,8 +317,8 @@ export default function PlotValues(props) {
         if (!t) return null;
         const n = pickCount(t.id);
         return (
-            <aside className="pv-rail" aria-label="The trait you are placing">
-                <p className="pv-rail-eyebrow">Placing · trait {cursor + 1} of {chosen.length}</p>
+            <aside className="pv-rail" aria-label={'The ' + N + ' you are placing'}>
+                <p className="pv-rail-eyebrow">Placing · {N} {cursor + 1} of {chosen.length}</p>
                 {/* ⭐ Neil, 2026-08-18: *"that explanation needs to be pinned as well, so just above
                     the trait."* The question and the instruction lived only at the top of the
                     SCROLLER, so by the time a student had scrolled to beat #12 — which is exactly
@@ -309,7 +328,7 @@ export default function PlotValues(props) {
                     to a bar above the scroller, where every line costs the vertical room the beats
                     need to be readable. The body no longer repeats it. */}
                 <h3 className="pv-rail-ask">Where does their <span className="pv-inline-trait">{t.label.toLowerCase()}</span> show?</h3>
-                <p className="pv-rail-do">Tap <strong>every beat</strong> where a reader could actually SEE it. Your Step-7 words go <strong>underneath</strong> the beat — nothing you wrote is replaced.</p>
+                <p className="pv-rail-do">Tap <strong>every beat</strong> where a reader could actually SEE it. Your {C.source} words go <strong>underneath</strong> the beat — nothing you wrote is replaced.</p>
                 <h3 className="pv-rail-trait">{t.label}</h3>
                 {/* ⭐⭐ BOTH HALVES, LABELLED (Neil, 2026-08-18, watching a real student): Step 7
                     records a trait at the BEGINNING and again at the END, often at different
@@ -327,7 +346,7 @@ export default function PlotValues(props) {
                 <p className="pv-rail-cond">{(t.byBand && t.byBand[band] && t.byBand[band].cond) || t.cond}</p>
                 {t.byBand && t.byBand[band] && t.byBand[band].said
                     ? <p className="pv-rail-said">“{t.byBand[band].said}”</p>
-                    : <p className="pv-rail-said is-none">You didn’t write about this one at the {band === 'begin' ? 'beginning' : 'end'} in Step 7 — pick the beats where it should show.</p>}
+                    : <p className="pv-rail-said is-none">You didn’t write about this one at the {band === 'begin' ? 'beginning' : 'end'} in {C.source} — pick the beats where it should show.</p>}
                 {/* The count climbs as they tap, which is what teaches the multi-select — he asked
                     whether a trait could go in more than one beat about a control that already
                     allowed it. */}
@@ -356,7 +375,7 @@ export default function PlotValues(props) {
                         })}
                     </ul>
                     : null}
-                <p className="pv-rail-hint">A trait usually shows in more than one beat.</p>
+                <p className="pv-rail-hint">A {N} usually shows in more than one beat.</p>
             </aside>
         );
     };
@@ -367,14 +386,14 @@ export default function PlotValues(props) {
         const myBands = [band];   // #401: a pass places into ONE half of the plot, never both
         return (
             <section className="phase is-live">
-                <p className="eyebrow">{band === 'begin' ? 'Beginning' : 'End'} · trait {cursor + 1} of {chosen.length}</p>
+                <p className="eyebrow">{band === 'begin' ? 'Beginning' : 'End'} · {N} {cursor + 1} of {chosen.length}</p>
                 {/* The question, the Step-7 quote and the instruction are all in the RAIL now, which
                     never scrolls away. Repeating them here would say everything twice and push the
                     beats — the thing being read — further down. */}
                 <div className="pv-band-note">
                     {band === 'begin'
                         ? <>You are placing the <strong>beginning</strong> of the story, so only <strong>{bands.begin.sub}</strong> are open. The end of your story gets its own pass after this one.</>
-                        : <>You are placing the <strong>end</strong> of the story, so only <strong>{bands.end.sub}</strong> are open.{(t.bands || []).indexOf('begin') !== -1 ? <> You placed this trait at the beginning too — this is where it ends up.</> : null}</>}
+                        : <>You are placing the <strong>end</strong> of the story, so only <strong>{bands.end.sub}</strong> are open.{(t.bands || []).indexOf('begin') !== -1 ? <> You placed this {N} at the beginning too — this is where it ends up.</> : null}</>}
                 </div>
                 <div className="pv-tools">
                     <button type="button" className={'chip-btn' + (emptyOnly ? ' is-on' : '')}
@@ -421,7 +440,7 @@ export default function PlotValues(props) {
                                                         <span>
                                                             <span className="b-label"><span className="ord">#{b.ord}</span>{b.label}</span>
                                                             <span className="b-text" style={{ display: 'block' }}>
-                                                                {b.text || <em className="pv-empty-note">Empty — nothing written here yet. Pick it and your Step-7 words start it off.</em>}
+                                                                {b.text || <em className="pv-empty-note">Empty — nothing written here yet. Pick it and your {C.source} words start it off.</em>}
                                                             </span>
                                                             {/* ⭐ v7.20.538 (Neil, 2026-08-19): *"can we have a clear
                                                                 indication that a trait has actually been placed in a
@@ -449,7 +468,7 @@ export default function PlotValues(props) {
                                                                                     not a bug — so the ONLY honest mid-run display is a preview
                                                                                     of the exact line this beat will receive. Same band-scoped
                                                                                     resolution the engine uses at port time. */}
-                                                                                <em className="pv-placed-preview">Values ({t.label}): {(t.byBand && t.byBand[band] && t.byBand[band].said) || t.portText}</em>
+                                                                                <em className="pv-placed-preview">{C.prefix} ({t.label}): {(t.byBand && t.byBand[band] && t.byBand[band].said) || t.portText}</em>
                                                                             </span>
                                                                             : null}
                                                                     {placed.map((m) => {
@@ -483,7 +502,7 @@ export default function PlotValues(props) {
                         It doesn’t show anywhere yet — put it on my build list
                     </button>
                     {cursor > 0
-                        ? <button type="button" className="chip-btn" onClick={() => { setCursor(cursor - 1); scrollTop(); }}>Back one trait</button>
+                        ? <button type="button" className="chip-btn" onClick={() => { setCursor(cursor - 1); scrollTop(); }}>Back one {N}</button>
                         : null}
                 </div>
             </section>
@@ -494,7 +513,7 @@ export default function PlotValues(props) {
         <section className="phase is-live">
             <p className="eyebrow">Check it over</p>
             <h2>What’s about to be added to your plot</h2>
-            <p className="lead">Your own words from Step 7, filed <strong>underneath</strong> the beats you chose. <strong>Nothing you have written is deleted or replaced</strong> — you merge the new line into the beat however reads best, and Sophia will help you do that next.</p>
+            <p className="lead">Your own words from {C.source}, filed <strong>underneath</strong> the beats you chose. <strong>Nothing you have written is deleted or replaced</strong> — you merge the new line into the beat however reads best.</p>
             <div className="panel">
                 {review.length ? review.map(({ stage, beat, traits: ts }) => (
                     <div className="pv-review-row" key={beat.id}>
@@ -505,7 +524,7 @@ export default function PlotValues(props) {
                         {ts.map((t) => (
                             <div className="pv-r-add" key={t.id}>
                                 <span className="pv-r-plus">＋</span>
-                                <span className="pv-r-line">Values ({t.label}): {
+                                <span className="pv-r-line">{C.prefix} ({t.label}): {
                                     /* per BEAT, because a journey trait files different words into
                                        each half — the review must show what will really land. */
                                     (() => {
@@ -519,7 +538,7 @@ export default function PlotValues(props) {
                         ))}
                     </div>
                 )) : (
-                    <p className="hint">You haven’t picked any beats yet — go back to step 2, or leave the traits on your build list.</p>
+                    <p className="hint">You haven’t picked any beats yet — go back to step 2, or leave the {NS} on your build list.</p>
                 )}
             </div>
             {noShow.length ? (
@@ -531,7 +550,7 @@ export default function PlotValues(props) {
             ) : null}
             {ported ? (
                 <div className="done-note">
-                    <strong style={{ color: 'var(--ink)' }}>Added.</strong> Every line is filed underneath its beat, in your own words — nothing was overwritten. Close this and Sophia will take you through them one at a time.
+                    <strong style={{ color: 'var(--ink)' }}>Added.</strong> Every line is filed underneath its beat, in your own words — nothing was overwritten. {C.afterPort}
                 </div>
             ) : null}
         </section>
@@ -541,8 +560,8 @@ export default function PlotValues(props) {
     let statusNode, nextLabel, nextDisabled;
     if (phase === 1) {
         statusNode = chosen.length
-            ? <><strong>{chosen.length} trait{chosen.length > 1 ? 's' : ''}</strong> at the {band === 'begin' ? 'beginning' : 'end'} — you’ll place them one at a time.</>
-            : 'Nothing came through from Step 7 for this half.';
+            ? <><strong>{chosen.length} {chosen.length > 1 ? NS : N}</strong> at the {band === 'begin' ? 'beginning' : 'end'} — you’ll place them one at a time.</>
+            : 'Nothing came through from ' + C.source + ' for this half.';
         nextLabel = chosen.length
             ? (band === 'begin' ? 'Place these in the beginning' : 'Place these in the end')
             : 'Continue';
@@ -550,10 +569,10 @@ export default function PlotValues(props) {
     } else if (phase === 2) {
         const n = pickCount(current ? current.id : '');
         statusNode = n
-            ? <><strong>{n} beat{n > 1 ? 's' : ''}</strong> for {current.label} — a trait usually shows in more than one.</>
-            : <>Tap the beats where a reader could see their {current ? current.label.toLowerCase() : 'trait'} — or say it doesn’t show yet.</>;
+            ? <><strong>{n} beat{n > 1 ? 's' : ''}</strong> for {current.label} — a {N} usually shows in more than one.</>
+            : <>Tap the beats where a reader could see their {current ? current.label.toLowerCase() : N} — or say it doesn’t show yet.</>;
         nextLabel = cursor + 1 < chosen.length
-            ? 'Next trait'
+            ? 'Next ' + N
             : (nextBandAfter(band) ? 'Now the end of your story' : 'Check it over');
         nextDisabled = false;
     } else {
@@ -573,13 +592,13 @@ export default function PlotValues(props) {
                 <div className="wrap">
                     <div className="ssi-head">
                         <div>
-                            <h1>Write your values into your plot</h1>
-                            <p className="sub">Step 7 worked out who your protagonist <strong>is</strong>. This step puts it where a reader can actually see it — in the beats you have already written.</p>
+                            <h1>{C.title}</h1>
+                            <p className="sub">{C.sub}</p>
                         </div>
                         <button type="button" className="ssi-close" aria-label="Close" onClick={onClose}>✕</button>
                     </div>
                     <div className="stepper">
-                        {[['1', band === 'begin' ? 'Beginning traits' : 'End traits'],
+                        {[['1', band === 'begin' ? 'Beginning ' + NS : 'End ' + NS],
                           ['2', band === 'begin' ? 'Beginning beats' : 'End beats'],
                           ['3', 'Check it over']].map(([n, label]) => {
                             const k = +n;

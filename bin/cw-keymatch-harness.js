@@ -217,6 +217,13 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onCw11YesNo:      { kind: 'content', note: 'Step 11 Need Recognised? Yes / No → becomes the prefix of the evidence sentence filed to the row ("Yes — …")' },
         // v7.20.566 (#440): the ONE quality call at the end of Step 11 ends on Keep / Improve.
         onCw11PushChoice: { kind: 'flow', note: 'Step 11 quality check: Improve re-serves that ONE ask (the typed rewrite is what files, replacing the row); Keep files nothing and wraps' },
+        // v7.20.567 (#440) — STEP 12 (Update Plot: Goals). Both interfaces write; every chat chip is FLOW.
+        onCw12OpenGoals:  { kind: 'flow', note: 'Step 12: open the goals placer — files nothing; the PORT inside the island appends `Goals (Item):` lines' },
+        onCw12OpenDraft2: { kind: 'flow', note: 'Step 12: open the draft map (or the goals placer again) — files nothing; the MAP inside the island appends `Draft 1:` lines' },
+        onCw12ContinuityReopen: { kind: 'flow', note: 'Step 12 continuity screen: reopen either picker; clears the armed slot so a later answer cannot land on an abandoned question' },
+        onCw12Recall:     { kind: 'flow', note: 'Step 12 wrap: reopen either picker to add more' },
+        onCw12GuardAck:   { kind: 'flow', note: 'Step 12 dead-end guard (no outline / no profile) acknowledgment — files nothing' },
+        onCw12Retry:      { kind: 'flow', note: 'Step 12 profile-load failure retry — files nothing' },
         // v7.20.566: menus served ONLY through chipBarOrRetry were invisible to this gate until the
         // RETRY_RE below — the examiner ladder (v7.20.547) and Trial 1 (.551–.562) surfaced at once.
         onClimb:          { kind: 'content', note: 'examiner ladder: "met all of this level?" Yes/No → st.metAll / stoppedAt (the sidecar the level row is derived from); the per-criterion pass follows' },

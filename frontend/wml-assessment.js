@@ -5873,7 +5873,9 @@
         // stages — "which of your values are visible in this stage?" offers 23 traits at once and
         // root CLAUDE.md §18 is explicit that a student answers one and skips the rest.
         8:  { layer: 'Universal Human Values', update: '1 of 7', desc: 'We will take the traits you flagged in Step 7 one at a time, and you will tap the beats where each one actually shows. A trait usually appears in more than one beat, and should — and “it doesn’t show anywhere yet” is a real answer worth having.' },
-        12: { layer: 'Goals and Needs', update: '2 of 7', desc: 'Map your protagonist’s goals, needs, and stakes across your complete story. For each stage, identify what goal drives the protagonist and where their unconscious need surfaces.' },
+        // v7.20.567 (#440): the walk puts the Step-11 profile into the beats (the Step-8 placer, goals
+        // lens) and then places Draft 1, chunk by chunk, under the beats it grew out of.
+        12: { layer: 'Goals and Needs', update: '2 of 7', desc: 'Two passes, both on your own plot. First your protagonist’s goals, needs and stakes from Step 11 go into the beats where a reader could see them — beginning facts into Stages I–III, ending facts into IV–VI. Then your Draft 1, sentence by sentence: you decide which chunk belongs to which beat, so the plot carries what you worked out by writing it.' },
         15: { layer: 'Archetypes', update: '3 of 7', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
         18: { layer: 'Empathy', update: '4 of 7', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
         21: { layer: 'Theme and Tone', update: '5 of 7', desc: 'Map meaning and atmosphere across your complete story. For each stage, identify the dominant tone and how the theme emerges through action and image — never through explicit statement.' },
@@ -15734,6 +15736,10 @@
                             // v7.20.563 (#428): Step 11's walk owns chat-clear too.
                             clearWalkResume();
                             setTimeout(() => { _cwCharProfileCtl.reset(); _cwCharProfileCtl.start(); }, 200);
+                        } else if (state.task === 'cw_step_12') {
+                            // v7.20.567 (#440): Step 12's walk owns chat-clear too.
+                            clearWalkResume();
+                            setTimeout(() => { _cwGoalsPlotCtl.reset(); _cwGoalsPlotCtl.start(); }, 200);
                         } else if (state.task === 'cw_step_9') {
                             // v7.20.495 (#204): Step 9's zero-API walk owns chat-clear too — the
                             // generic "Welcome back … hit the button below" re-greet would summon
@@ -16616,7 +16622,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_trial_1: _cwTrial1Ctl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -16630,7 +16636,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_trial_1: _cwTrial1Ctl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -16729,7 +16735,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
-                    cw_step_11: _cwCharProfileCtl, cw_trial_1: _cwTrial1Ctl,
+                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -16845,6 +16851,11 @@
             // v7.20.563 (#428): Step 11's character-profile walk owns the turn while it runs.
             if (state.task === 'cw_step_11' && _cwCharProfileCtl.active && _inboundIsAnswer) {
                 await _cwCharProfileCtl.handleTurn(msg);
+                return;
+            }
+            // v7.20.567 (#440): Step 12's goals walk owns the turn while it runs (one typed ask).
+            if (state.task === 'cw_step_12' && _cwGoalsPlotCtl.active && _inboundIsAnswer) {
+                await _cwGoalsPlotCtl.handleTurn(msg);
                 return;
             }
             if (state.task === 'cw_step_7' && _cwValuesCtl.active && _inboundIsAnswer) {
@@ -30007,7 +30018,641 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwTrial1Ctl]);
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        // STEP 12 — UPDATE PLOT: GOALS (FIXLIST #440, v7.20.567). Neil's ruling, 2026-08-25:
+        //   (a) *"Step twelve needs to update the plot with the details from the character
+        //       profile"* → the Step-8 placer in a GOALS lens: beginning items (goal, internal
+        //       goal, need, stakes) into Stages I–III, end items (what happens to the goal,
+        //       dilemma, realisation…) into IV–VI, the student's Step-11 words appended under
+        //       the beats as `Goals (Item): …`.
+        //   (b) *"they'll need to decide where the elements from that draft fit into, which beats
+        //       they fit into"* → the draft map: Draft 1 as sentences, tap-first-tap-last a
+        //       chunk, tap its beat; the chunk is appended as `Draft 1: …` and the MAP is saved,
+        //       which is what the Draft-2 scene selection reads so a drafted beat keeps its prose.
+        //   (c) one continuity read-through, then the wrap ("Lens 2 of 7").
+        // Zero API by design (#219): the orientation, both interfaces, the port, the map and the
+        // continuity ask are all code. Step 8's `_cwPlotValuesCtl` is the mold, function for
+        // function; the interfaces are the SAME island bundle in two further modes.
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        const _cwGoalsPlotCtl = (function () {
+            const WALK = 'cw12';
+            const TASK = 'cw_step_12';
+            const LEDGER_KEY = 'cw12_goals_state';
+            let active = false, pending = false, done = false;
+            let world = null;      // { arch, beats, stages } from the LIVE document
+            let profile = null;    // CW12_ITEMS carrying the student's Step-11 text (only the answered ones)
+            let ledger = null;     // { ports, goalsDone, draftMap, draftDone, picker }
+            let draft = null;      // { sentences, sig } — null when Draft 1 is absent
+            let runFids = null;    // the Step-9 run's beat fids, story order (null = no Step-9 state)
+            let emitted = 0;
+            let islandOpen = false, islandSnap = null, saveTimer = null;
+
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                emitted++;
+                addChatMessage(formatAI(plain), 'ai', plain, { suppressActions: true });
+                if (_cwIsReplay()) return;   // a re-serve is DRAWN, never saved (§4c.7)
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function userTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            // Present-state notices are EPHEMERAL — drawn, never stored (the .284 prereq-gate lesson).
+            function noteBubble(plain) { addChatMessage(formatAI(plain), 'ai', plain, { suppressActions: true }); }
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')
+                                && n.attrs && n.attrs.fieldId === fid) { out = _cwNodeText(n).trim(); return false; }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            function save() { try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (e) {} }
+            function rowExists(fid) {
+                let found = false;
+                try {
+                    canvasEditor.state.doc.descendants(function (n) {
+                        if (found) return false;
+                        if (n.type && n.type.name === 'outlineRow' && n.attrs && n.attrs.fieldId === fid) { found = true; return false; }
+                        return true;
+                    });
+                } catch (e) {}
+                return found;
+            }
+            // The two walk rows, healed into the seeded outline on first entry (Step 8's shape).
+            function ensureRows() {
+                if (!canvasEditor) return;
+                const missing = [];
+                if (!rowExists(CW12_NOTYET_FID)) missing.push(outlineRowHTML({
+                    id: 'notyet', label: 'Not in the plot yet',
+                    prompt: 'Parts of the profile, or of Draft 1, that have no beat yet — your build list for Draft 2.',
+                }, CW12_NOTYET_FID));
+                if (!rowExists(CW12_CONTINUITY_FID)) missing.push(outlineRowHTML({
+                    id: 'continuity', label: 'Continuity check',
+                    prompt: 'One read-through of the whole outline — contradictions only.',
+                }, CW12_CONTINUITY_FID));
+                if (!missing.length) return;
+                let anchorPos = null, anchorNode = null, lastPos = null, lastNode = null;
+                canvasEditor.state.doc.descendants(function (n, pos) {
+                    if (n.type && n.type.name === 'sectionBlock') {
+                        lastPos = pos; lastNode = n;
+                        if (anchorPos === null && /update focus/i.test(String(n.attrs && n.attrs.label || ''))) { anchorPos = pos; anchorNode = n; }
+                    }
+                    return true;
+                });
+                if (anchorPos === null) { anchorPos = lastPos; anchorNode = lastNode; }
+                if (anchorPos === null) { console.warn('WML CW12: no section to hold the walk rows — not inserted.'); return; }
+                const _was = _migrationActive;
+                try {
+                    _migrationActive = true;
+                    canvasEditor.commands.insertContentAt(anchorPos + anchorNode.nodeSize - 1, missing.join(''));
+                } catch (e) { console.warn('WML CW12: row insert failed —', e && e.message); }
+                finally { _migrationActive = _was; }
+                save();
+                console.log('WML CW12: healed ' + missing.length + ' walk row(s) into the document');
+            }
+
+            // ── DATA ──────────────────────────────────────────────────────────────────────
+            async function loadLedger(pid) {
+                try {
+                    const art = await WML.cwProject.loadArtifact(pid, LEDGER_KEY);
+                    if (art && art.success && art.value) {
+                        const v = typeof art.value === 'string' ? JSON.parse(art.value) : art.value;
+                        if (v && typeof v === 'object') return v;
+                    }
+                } catch (e) {}
+                return {};
+            }
+            function persistLedger(pid, obj) {
+                try { WML.cwProject.saveArtifact(pid, LEDGER_KEY, JSON.stringify(obj)); } catch (e) {}
+            }
+            // The profile: the Step-11 rows, read from the saved `character_profile` document
+            // (the plot doc is on screen here, the profile is not). Only answered items travel.
+            function loadProfile(pid) {
+                return _cwLoadDocValues(pid, 'character_profile', true).then(function (map) {
+                    profile = CW12_ITEMS.map(function (it) {
+                        return Object.assign({}, it, { text: String((map && map[it.fid]) || '').trim() });
+                    }).filter(function (it) { return it.text; });
+                });
+            }
+            // Draft 1, as sentences. Absent draft → the draft pass is skipped, never a dead end.
+            async function loadDraft(pid) {
+                draft = null;
+                try {
+                    const art = await WML.cwProject.loadArtifact(pid, 'draft_1');
+                    const html = (art && art.success && art.value) ? String(art.value) : '';
+                    const paras = _cwDraftParagraphsText(html);
+                    const sentences = _cwSplitSentences(paras);
+                    if (sentences.length) {
+                        const all = sentences.map(function (s) { return s.text; }).join(' ');
+                        draft = { sentences: sentences, sig: all.length + ':' + all.slice(0, 40) + ':' + all.slice(-40) };
+                    }
+                } catch (e) { console.warn('WML CW12: Draft 1 could not be read —', e && e.message); }
+            }
+            // The Step-9 run — the beats the scene was chosen from (`scene_selection_state`).
+            // Story order is the beat list's own order, so the run is the slice between its ends.
+            async function loadRun(pid) {
+                runFids = null;
+                try {
+                    const art = await WML.cwProject.loadArtifact(pid, 'scene_selection_state');
+                    const v = (art && art.success && art.value) ? (typeof art.value === 'string' ? JSON.parse(art.value) : art.value) : null;
+                    if (!v || !v.runStartFid || !v.runEndFid || !world) return;
+                    const fids = world.beats.map(function (b) { return b.fid; });
+                    const a = fids.indexOf(v.runStartFid), z = fids.indexOf(v.runEndFid);
+                    if (a === -1 || z === -1 || z < a) return;
+                    runFids = fids.slice(a, z + 1);
+                } catch (e) {}
+            }
+
+            // ── THE ISLANDS' DATA, from the profile + the LIVE document ────────────────────
+            function stageName(label) {
+                const m = /^STAGE\s+[IVXLC]+\s*[:;]\s*(.+)$/i.exec(String(label || ''));
+                return m ? m[1].trim() : String(label || '');
+            }
+            function goalCards() {
+                return (profile || []).map(function (it) {
+                    const worked = (world ? world.beats : []).filter(function (b) { return _cw12BeatHasItem(rowText(b.fid), it.label); }).length;
+                    return {
+                        id: it.id, trait: it.id, label: it.label, valueName: it.part, cond: it.gloss,
+                        said: it.text, portText: it.text,
+                        byBand: { begin: { cond: it.gloss, said: it.text }, end: { cond: it.gloss, said: it.text } },
+                        bands: [it.band], workedIn: worked,
+                    };
+                });
+            }
+            function stageModel() {
+                const out = [];
+                let ord = 0;
+                (world ? world.stages : []).forEach(function (s) {
+                    const beats = world.beats.filter(function (b) { return b.stage === s.si; }).map(function (b) {
+                        ord++;
+                        const live = rowText(b.fid);
+                        const worked = {};
+                        (profile || []).forEach(function (it) { if (_cw12BeatHasItem(live, it.label)) worked[it.id] = true; });
+                        return { id: b.fid, ord: ord, label: b.label, text: live, worked: worked };
+                    });
+                    if (beats.length) out.push({ id: s.label + '#' + s.si, si: s.si, roman: s.roman, name: stageName(s.label), band: s.band, beats: beats });
+                });
+                return out;
+            }
+            function draftBeats() {
+                const run = runFids || [];
+                return (world ? world.beats : []).map(function (b, i) {
+                    return {
+                        id: b.fid, ord: i + 1, label: b.label,
+                        text: _cw12StripMachineLines(rowText(b.fid)),
+                        stageRoman: _cw8StageRoman(b.stageLabel, b.stage), stageName: stageName(b.stageLabel),
+                        inRun: run.indexOf(b.fid) !== -1,
+                    };
+                });
+            }
+            const GOALS_COPY = {
+                prefix: CW12_PREFIX, noun: 'goal', nounPlural: 'goals', source: 'Step 11',
+                title: 'Write your goals and needs into your plot',
+                noneCame: 'No goals came through from Step 11 — go back and finish the character profile first.',
+                afterPort: 'Close this and carry on.',
+            };
+
+            // ── PASS A: the profile → beats (the Step-8 placer, goals lens) ────────────────
+            async function openGoalsIsland() {
+                if (islandOpen) return;
+                if (!window.WMLPlotIsland) {
+                    noteBubble('The beat picker didn’t load on this page. Refresh and try again — if it keeps happening, tell your tutor.');
+                    ensureChip();
+                    console.error('WML CW12: window.WMLPlotIsland missing — is wml-scene-island.min.js enqueued?');
+                    return;
+                }
+                world = _cw8EnumerateBeats(canvasEditor);   // EVERY open re-reads the LIVE document
+                if (!world.beats.length) { serveNoOutline(); return; }
+                if (!(profile || []).length) { serveNoProfile(); return; }
+                const pid = state.cwProjectId;
+                if (pid && !ledger) ledger = await loadLedger(pid);
+                islandOpen = true;
+                window.WMLPlotIsland.mount({
+                    traits: goalCards(),
+                    stages: stageModel(),
+                    bands: CW8_BANDS,
+                    copy: Object.assign({}, GOALS_COPY, {
+                        sub: 'Step 11 worked out what your protagonist WANTS and what they NEED. This step puts it where a reader can actually see it — in the beats of your plot.',
+                        whyEnd: 'These are the facts about how the story ENDS — what happened to the goal, the dilemma, the realisation — so they belong in the closing half of your plot.',
+                    }),
+                    initial: (ledger && ledger.picker) || null,
+                    onStateChange: function (snap) {
+                        islandSnap = snap;
+                        if (!pid) return;
+                        clearTimeout(saveTimer);
+                        saveTimer = setTimeout(function () {
+                            ledger = ledger || {};
+                            ledger.picker = { picks: snap.picks, noShow: snap.noShow };
+                            persistLedger(pid, ledger);
+                        }, 800);
+                    },
+                    onPort: function (payload) { return port(pid, payload); },
+                    onClose: function () { islandOpen = false; advance(); },
+                });
+            }
+            // THE PORT — APPENDS, NEVER REPLACES (#374b applies unchanged). Idempotent by provenance.
+            async function port(pid, payload) {
+                try {
+                    if (pid && !ledger) ledger = await loadLedger(pid);
+                    ledger = ledger || {};
+                    const ports = ledger.ports || {};
+                    let filed = 0, already = 0, missed = 0, empties = 0;
+                    (payload.picks || []).forEach(function (p) {
+                        const it = (profile || []).filter(function (x) { return x.id === p.traitId; })[0];
+                        if (!it) return;
+                        (p.fids || []).forEach(function (fid) {
+                            const before = rowText(fid);
+                            if (_cw12BeatHasItem(before, it.label)) { already++; return; }
+                            if (!before) empties++;
+                            if (_writeOutlineRowField(fid, _cw12AppendLine(it.label, it.text))) {
+                                ports[fid + '::' + it.id] = { fid: fid, itemId: it.id, label: it.label, text: it.text, at: new Date().toISOString(), machine: true };
+                                filed++;
+                            } else {
+                                missed++;
+                                console.warn('WML CW12: port did not land for', fid, '— beat row missing from the document');
+                            }
+                        });
+                    });
+                    (payload.noShow || []).forEach(function (itemId) {
+                        const it = (profile || []).filter(function (x) { return x.id === itemId; })[0];
+                        if (!it || _cw12NoShowHas(rowText(CW12_NOTYET_FID), it.label)) return;
+                        if (!_writeOutlineRowField(CW12_NOTYET_FID, _cw12NoShowLine(it.label))) console.warn('WML CW12: the not-yet line did not land for', it.id);
+                    });
+                    save();
+                    ledger.ports = ports;
+                    ledger.goalsDone = true;   // the pass is DONE by the port, not by a row probe (the ROOT-A lesson)
+                    if (islandSnap) ledger.picker = { picks: islandSnap.picks, noShow: islandSnap.noShow };
+                    if (pid) persistLedger(pid, ledger);
+                    const parts = [];
+                    if (filed) parts.push('Filed **' + filed + ' line' + (filed === 1 ? '' : 's') + '** underneath your beats, in your own words from Step 11' + (empties ? ' — including ' + empties + ' beat' + (empties === 1 ? '' : 's') + ' that had nothing in ' + (empties === 1 ? 'it' : 'them') + ' yet' : '') + '. Nothing you had written was replaced.');
+                    if (already) parts.push('**' + already + '** beat' + (already === 1 ? ' already carried' : 's already carried') + ' what you picked, so ' + (already === 1 ? 'it was' : 'they were') + ' left exactly as ' + (already === 1 ? 'it is' : 'they are') + '.');
+                    if (missed) parts.push('⚠️ **' + missed + '** didn’t land because the beat isn’t in your document any more — pick a different beat for ' + (missed === 1 ? 'it' : 'those') + '.');
+                    if (parts.length) aiBubble(parts.join('\n\n'));   // a PAST-EVENT report — durable is correct (§4c.7)
+                    return true;
+                } catch (e) {
+                    console.error('WML CW12: port failed —', e && e.message);
+                    noteBubble('Something went wrong adding those — nothing was lost. Close the picker and try again.');
+                    return false;
+                }
+            }
+
+            // ── PASS B: Draft 1 → beats (the draft map) ────────────────────────────────────
+            async function openDraftIsland() {
+                if (islandOpen) return;
+                if (!window.WMLDraftMapIsland) {
+                    noteBubble('The draft picker didn’t load on this page. Refresh and try again — if it keeps happening, tell your tutor.');
+                    ensureChip();
+                    console.error('WML CW12: window.WMLDraftMapIsland missing — is wml-scene-island.min.js enqueued?');
+                    return;
+                }
+                world = _cw8EnumerateBeats(canvasEditor);
+                if (!world.beats.length) { serveNoOutline(); return; }
+                const pid = state.cwProjectId;
+                if (pid && !ledger) ledger = await loadLedger(pid);
+                if (!draft && pid) await loadDraft(pid);
+                if (!draft) { noteBubble('I can’t find your Draft 1 — it is written in **Step 10**. Finish it there and this pass will be waiting.'); ensureChip(); return; }
+                if (pid && runFids === null) await loadRun(pid);
+                // A saved map is restored only for the SAME draft — an edited Draft 1 re-sentences.
+                const saved = (ledger && ledger.draftMap && ledger.draftMap.sig === draft.sig) ? { chunks: (ledger.draftMap.chunks || []).map(function (c) { return { from: c.from, to: c.to, fid: c.fid || '__notyet__' }; }) } : null;
+                islandOpen = true;
+                window.WMLDraftMapIsland.mount({
+                    sentences: draft.sentences,
+                    beats: draftBeats(),
+                    initial: saved,
+                    onStateChange: function (snap) {
+                        islandSnap = snap;
+                        if (!pid) return;
+                        clearTimeout(saveTimer);
+                        saveTimer = setTimeout(function () {
+                            ledger = ledger || {};
+                            ledger.draftMap = Object.assign({}, ledger.draftMap || {}, { sig: draft.sig, chunks: (snap.chunks || []).map(function (c) { return { from: c.from, to: c.to, fid: c.fid === '__notyet__' ? null : c.fid, text: draft.sentences.slice(c.from, c.to + 1).map(function (s) { return s.text; }).join(' ') }; }) });
+                            persistLedger(pid, ledger);
+                        }, 800);
+                    },
+                    onMap: function (payload) { return mapDraft(pid, payload); },
+                    onClose: function () { islandOpen = false; advance(); },
+                });
+            }
+            // THE MAP — each chunk APPENDED under its beat as `Draft 1: …`; the map itself saved,
+            // because the Draft-2 scene selection reads it to keep a drafted beat's prose (#440 MERGE).
+            async function mapDraft(pid, payload) {
+                try {
+                    if (pid && !ledger) ledger = await loadLedger(pid);
+                    ledger = ledger || {};
+                    let filed = 0, already = 0, missed = 0, listed = 0;
+                    (payload.chunks || []).forEach(function (c) {
+                        const text = String(c.text || '').trim();
+                        if (!text) return;
+                        const fid = c.fid || CW12_NOTYET_FID;
+                        if (_cw12RowHasDraftLine(rowText(fid), text)) { already++; return; }
+                        if (_writeOutlineRowField(fid, _cw12DraftLine(text))) { if (c.fid) filed++; else listed++; }
+                        else { missed++; console.warn('WML CW12: draft chunk did not land for', fid); }
+                    });
+                    save();
+                    ledger.draftMap = { sig: draft ? draft.sig : '', chunks: (payload.chunks || []).slice(), at: new Date().toISOString() };
+                    ledger.draftDone = true;
+                    if (pid) persistLedger(pid, ledger);
+                    const parts = [];
+                    if (filed) parts.push('Filed **' + filed + ' chunk' + (filed === 1 ? '' : 's') + '** of your Draft 1 underneath the beats you chose, labelled *Draft 1:*. Your plot now carries what you worked out by writing it — nothing you had written was replaced.');
+                    if (listed) parts.push('**' + listed + '** chunk' + (listed === 1 ? '' : 's') + ' went on your *Not in the plot yet* list — that is the draft telling you your plot needs a new beat.');
+                    if (already) parts.push('**' + already + '** ' + (already === 1 ? 'was' : 'were') + ' already there, so ' + (already === 1 ? 'it was' : 'they were') + ' left alone.');
+                    if (missed) parts.push('⚠️ **' + missed + '** didn’t land because the beat isn’t in your document any more — pick a different beat for ' + (missed === 1 ? 'it' : 'those') + '.');
+                    if (parts.length) aiBubble(parts.join('\n\n'));
+                    return true;
+                } catch (e) {
+                    console.error('WML CW12: draft map failed —', e && e.message);
+                    noteBubble('Something went wrong adding those — nothing was lost. Close the picker and try again.');
+                    return false;
+                }
+            }
+
+            // ── POSITION — derived from the ledger + the rows, never a counter ─────────────
+            function goalsWorked() {
+                if (ledger && ledger.goalsDone) return true;
+                return (profile || []).some(function (it) {
+                    if (_cw12NoShowHas(rowText(CW12_NOTYET_FID), it.label)) return true;
+                    return (world ? world.beats : []).some(function (b) { return _cw12BeatHasItem(rowText(b.fid), it.label); });
+                });
+            }
+            function draftPending() { return !!(draft && draft.sentences.length) && !(ledger && ledger.draftDone); }
+            function posOf() {
+                if (!world || !profile) return null;
+                if (!goalsWorked()) return { phase: 'goals' };
+                if (draftPending()) return { phase: 'draft' };
+                if (!rowText(CW12_CONTINUITY_FID)) return { phase: 'continuity' };
+                return null;
+            }
+            function substepFor(p) {
+                try {
+                    if (!p) return;
+                    if (p.phase === 'goals') applyCwSubstepProgress({ stepNum: 12, substepNum: 1, name: 'Goals into Beats' });
+                    else if (p.phase === 'draft') applyCwSubstepProgress({ stepNum: 12, substepNum: 2, name: 'Draft 1 into Beats' });
+                    else applyCwSubstepProgress({ stepNum: 12, substepNum: 3, name: 'Continuity Pass' });
+                } catch (e) {}
+            }
+
+            // ── CHIPS — factory-named for the keymatch gate ────────────────────────────────
+            let _reArm = null, _liveBar = null;
+            function chipBar(options, onPick) { return _buildChips(options, onPick); }
+            function _buildChips(options, onPick) {
+                _reArm = function () { return _buildChips(options, onPick); };
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return null;      // no bubble to hang a chip on (a resume with nothing drawn yet)
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice + '' });
+                options.forEach(function (opt) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: function () { _reArm = null; _liveBar = null; bar.remove(); onPick(opt); },
+                    }));
+                });
+                bc.appendChild(bar);
+                _liveBar = bar;
+                return true;
+            }
+            function helpBar() {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'My Plot', icon: WML.icon('plot', 15),
+                    onClick: function () {
+                        try { var t = document.querySelector('.swml-mp-trigger'); if (t) { if (!t.classList.contains('is-active')) t.click(); return; } } catch (e) {}
+                        console.warn('WML: the My Plot rail panel is not on this step — the plot cannot be opened from here.');
+                    },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Story Components', icon: WML.icon('components', 15),
+                    onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
+                bc.appendChild(bar);
+            }
+            const OPEN_GOALS = 'Put my goals and needs into my plot →';
+            const REOPEN_GOALS = 'Open the goals picker again →';
+            const OPEN_DRAFT = 'Place my Draft 1 into my plot →';
+            const REOPEN_DRAFT = 'Open the draft picker again →';
+            function onCw12OpenGoals(pick) { userTurn(pick); openGoalsIsland(); }
+            function onCw12OpenDraft(pick) { userTurn(pick); openDraftIsland(); }
+            function onCw12ContinuityReopen(pick) {
+                userTurn(pick);
+                _walkSlot.clear(WALK);   // an abandoned question can never receive a later answer
+                if (pick === REOPEN_DRAFT) openDraftIsland(); else openGoalsIsland();
+            }
+            function onCw12Recall(pick) {
+                userTurn(pick);
+                active = true; done = false;
+                if (pick === REOPEN_DRAFT) openDraftIsland(); else openGoalsIsland();
+            }
+            function onCw12GuardAck(pick) {
+                userTurn(pick);
+                aiBubble('See you back here — everything you do there feeds straight into this step.' + cwEndpointLine());
+                resetSend();
+            }
+            function onCw12Retry(pick) { userTurn(pick); profile = null; startWalk(); }
+            // LIVENESS (§4d): the way FORWARD is on screen after every entry, close and refusal.
+            function ensureChip() {
+                const p = posOf();
+                const opened = !!(ledger && ledger.ports && Object.keys(ledger.ports).length);
+                const isDraft = !!(p && p.phase === 'draft');
+                // Two literal call sites (the keymatch gate classifies menus by handler NAME).
+                const attach = isDraft
+                    ? function () { return chipBar([OPEN_DRAFT, opened ? REOPEN_GOALS : OPEN_GOALS], onCw12OpenDraft2); }
+                    : function () { return chipBar([opened ? REOPEN_GOALS : OPEN_GOALS], onCw12OpenGoals); };
+                // A resume can land here with nothing on screen to hang the chip on (the replayed
+                // transcript is all past turns). Draw a one-line present-state note — never stored —
+                // and put the way forward under it (§4d: a question or a chip, never zero).
+                if (attach() === null) {
+                    noteBubble(isDraft ? '**Welcome back.** Next: place your Draft 1 into your plot.' : '**Welcome back.** Next: put your goals and needs into your plot.');
+                    attach();
+                }
+                helpBar();
+                resetSend();
+            }
+            function onCw12OpenDraft2(pick) { if (pick === OPEN_DRAFT) onCw12OpenDraft(pick); else onCw12OpenGoals(pick); }
+
+            // ── ORIENTATION — derived from the transcript, marker in chunk 1 (the CW7 law) ─
+            const ORIENT_MARK = 'where Draft 1 fits';
+            function oriented() {
+                try {
+                    return (canvasChatHistory || []).some(function (m) { return m && m.role === 'assistant' && String(m.content || '').indexOf(ORIENT_MARK) !== -1; });
+                } catch (e) { return false; }
+            }
+            function needsOrientation() { const p = posOf(); return !!(p && p.phase === 'goals' && !oriented()); }
+            function serveOrientation() {
+                serveCwChunks([
+                    'Step 11 worked out what your protagonist **wants** and what they **need**. This step does two things with that: it puts those facts into your plot, and it works out **' + ORIENT_MARK + '** — because your draft has moved on from the plan, and that is exactly what drafting is for.',
+                    '**First, your goals and needs.** You do it on your own plot, not in here: I show you each part of the profile — the goal, the internal goal, the need, the stakes at the start; what happens to the goal, the dilemma, the realisation at the end — and you **tap the beats** where a reader could actually see it. Beginning facts go into Stages I–III, ending facts into IV–VI. Your Step-11 words are added **underneath** each beat you pick; nothing you wrote is replaced.',
+                    '**Then your draft.** Draft 1 is one piece of prose, and by now it looks different from the beats it came from. So I show it to you sentence by sentence: you tap the first and last sentence of a chunk, then tap the beat it belongs to. That chunk goes under the beat as a *Draft 1:* line — your plot now carries the progress you made by writing.\n\nA chunk that fits no beat is a real answer: it goes on your *Not in the plot yet* list, which is your plot telling you it needs a new beat.',
+                    'Afterwards, one read-through for contradictions, and you are done. **Don’t overthink any of it** — rough now; you will sharpen the beats again when you choose your Draft 2 scene.',
+                ], { emit: aiBubble, onDone: function () { serveCurrent(); } });
+            }
+
+            // ── CONTINUITY + WRAP ─────────────────────────────────────────────────────────
+            function serveContinuity() {
+                _cwReplay(function () {
+                    aiBubble('**Last thing — one read-through.**\n\n'
+                        + (draft ? '' : 'I couldn’t find a Draft 1 to place, so we go straight to this.\n\n')
+                        + 'Read your six stages once, in order. You are looking for **contradictions only** — a goal that changes without a reason, a need that is recognised twice, a Draft 1 line that says something the beat above it denies. You are not revising the writing here.\n\n'
+                        + '**What did you find?** “Nothing — it holds together” is a real answer.');
+                });
+                _walkSlot.arm(WALK, CW12_CONTINUITY_FID, { cycle: 'rewrite', data: { kind: 'continuity' } });
+                chipBar(draft ? [REOPEN_GOALS, REOPEN_DRAFT] : [REOPEN_GOALS], onCw12ContinuityReopen);
+                helpBar();
+                resetSend();
+            }
+            function serveWrap() {
+                done = true;
+                _walkSlot.clear(WALK);
+                _cwReplay(function () {
+                    const beats = world ? world.beats : [];
+                    // String probe, not a regex: an unbalanced escaped paren in a regex literal
+                    // derails walk-sim-lib's paren-balancing controller slice (Step 8's own note).
+                    const goalBeats = beats.filter(function (b) {
+                        return rowText(b.fid).split('\n').some(function (l) { return l.trim().indexOf(CW12_PREFIX + ' (') === 0; });
+                    }).length;
+                    const draftBeats_ = beats.filter(function (b) { return rowText(b.fid).split('\n').some(function (l) { return l.trim().indexOf(CW12_DRAFT_TAG) === 0; }); }).length;
+                    const notyet = rowText(CW12_NOTYET_FID).split('\n').filter(function (l) { return l.trim(); });
+                    aiBubble('**That is Lens 2 of 7 built in.**\n\n'
+                        + 'Your goals and needs are in **' + goalBeats + '** beat' + (goalBeats === 1 ? '' : 's')
+                        + (draftBeats_ ? ', and your Draft 1 is filed under **' + draftBeats_ + '** beat' + (draftBeats_ === 1 ? '' : 's') : '') + '.'
+                        + (notyet.length ? '\n\n**Worth keeping in view:** your *Not in the plot yet* list has ' + notyet.length + ' line' + (notyet.length === 1 ? '' : 's') + ' on it. That is not a failure — it names exactly the beats your next scene selection can add.' : '')
+                        + '\n\nNext you choose the scene for **Draft 2** from this updated plot — the beats you have already drafted keep their prose, and any new beat you pick arrives ready to write.'
+                        + cwEndpointLine());
+                });
+                chipBar(draft ? [REOPEN_GOALS, REOPEN_DRAFT] : [REOPEN_GOALS], onCw12Recall);
+                resetSend();
+            }
+
+            // ── FLOW ───────────────────────────────────────────────────────────────────────
+            function serveCurrent() {
+                const p = posOf();
+                if (!p) { serveWrap(); return; }
+                substepFor(p);
+                if (needsOrientation()) { serveOrientation(); return; }
+                if (p.phase === 'goals' || p.phase === 'draft') { ensureChip(); return; }
+                serveContinuity();
+            }
+            function advance() {
+                active = true;
+                const p = posOf();
+                if (!p) { active = false; serveWrap(); return; }
+                serveCurrent();
+            }
+
+            // ── DEAD-END GUARDS — refused, with a way forward, by construction (§4d) ──────
+            function serveNoOutline() {
+                active = false; done = true;
+                aiBubble('**Your plot outline hasn’t been built yet**, and this step works by adding to it — there is nothing here to write into.\n\nGo back to **Step 6 — Plot Outline Workshop** and bring your beats to life first; this lesson will be waiting.');
+                chipBar(['Got it — I’ll finish Step 6 first'], onCw12GuardAck);
+                resetSend();
+            }
+            function serveNoProfile() {
+                active = false; done = true;
+                aiBubble('**I can’t find your character profile** — no goals or needs came through from Step 11, and this walk runs on them.\n\nGo back to **Step 11 — Character Profile** and fill it in; this lesson picks up the moment it exists.');
+                chipBar(['Got it — I’ll finish Step 11 first'], onCw12GuardAck);
+                resetSend();
+            }
+
+            function loadAll() {
+                const pid = state.cwProjectId;
+                world = _cw8EnumerateBeats(canvasEditor);
+                if (!pid) { profile = profile || []; ledger = ledger || {}; return Promise.resolve(); }
+                return Promise.all([
+                    profile ? Promise.resolve() : loadProfile(pid),
+                    ledger ? Promise.resolve() : loadLedger(pid).then(function (l) { ledger = l || {}; }),
+                    draft ? Promise.resolve() : loadDraft(pid),
+                ]).then(function () { return runFids === null ? loadRun(pid) : null; });
+            }
+            function startWalk() {
+                if (active || pending) return;
+                pending = true;
+                done = false;
+                loadAll().then(function () {
+                    pending = false;
+                    if (!world.beats.length) { serveNoOutline(); return; }
+                    if (!(profile || []).length) { serveNoProfile(); return; }
+                    ensureRows();
+                    active = true;
+                    console.log('WML CW12: goals walk start — ' + profile.length + ' profile item(s), ' + world.beats.length + ' beats on the page, '
+                        + (draft ? draft.sentences.length + ' draft sentence(s)' : 'no Draft 1') + ', ' + Object.keys((ledger && ledger.ports) || {}).length + ' line(s) already ported');
+                    serveCurrent();
+                }).catch(function (e) {
+                    pending = false; active = false;
+                    console.warn('WML CW12: could not load the profile —', e && e.message);
+                    aiBubble('I couldn’t load your Step 11 profile just now. Tap below to try again.');
+                    chipBar(['Try again'], onCw12Retry);
+                    resetSend();
+                });
+            }
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                const slot = _walkSlot.consume(WALK);
+                if (!slot) {
+                    _cwNoAskGuard(WALK, function () { serveCurrent(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
+                userTurn(clean);
+                try { _writeOutlineRowField(slot.fid, clean, { replace: true }); save(); }
+                catch (e) { console.warn('WML CW12: write failed (non-fatal) for ' + slot.fid + ' —', e && e.message); }
+                advance();
+            }
+            function reset() {
+                active = false; pending = false; done = false; profile = null; world = null; draft = null; runFids = null;
+                ledger = null;   // dropped from MEMORY only — it is durable state about the DOCUMENT
+                islandOpen = false; islandSnap = null;
+                try { if (window.WMLPlotIsland) window.WMLPlotIsland.unmount(); } catch (e) {}
+            }
+            function tryResume() {
+                try {
+                    if (!canvasEditor || state.task !== TASK) return false;
+                    // The walk rows ARE the sidecar: no continuity row = never started → fresh start.
+                    if (!rowExists(CW12_CONTINUITY_FID)) return false;
+                    const mark = emitted;
+                    active = true; pending = false;
+                    loadAll().then(function () {
+                        if (emitted !== mark) { console.log('WML CW12: another route already served — skipping the deferred reattach.'); return; }
+                        if (!(profile || []).length || !world.beats.length) { active = false; return; }
+                        ensureRows();
+                        setTimeout(function () {
+                            if (emitted !== mark) return;
+                            const p = posOf();
+                            if (!p) { active = false; done = true; _cwReplay(serveWrap); return; }
+                            console.log('WML CW12: resumed at phase "' + p.phase + '"');
+                            if (needsOrientation()) { serveOrientation(); return; }
+                            _cwReplay(function () { serveCurrent(); });
+                        }, 400);
+                    });
+                    return true;
+                } catch (e) { return false; }
+            }
+            function nudge() { if (!active || pending) return false; serveCurrent(); return true; }
+
+            return {
+                handleTurn, onReply: function () { /* code-started: no protocol marker */ },
+                reset, tryResume, nudge, start: startWalk, forceStart: startWalk,
+                atStart: function () { return !done; },
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
@@ -30023,6 +30668,7 @@
             _cw9SceneCtl.onReply(reply);
             _cwTrial1Ctl.onReply(reply);
             _cwCharProfileCtl.onReply(reply);
+            _cwGoalsPlotCtl.onReply(reply);
 
             const t = (state && state.task) || '';
             // ⚠️ Every walk task needs its arm HERE as well as in onReply above — the .490
@@ -30041,7 +30687,8 @@
                 // this map anyway — the .490 incident's second finding was that an UNLISTED task
                 // makes the start-miss guard inert for exactly the step that has no controller.
                 : t === 'cw_trial_1' ? _cwTrial1Ctl
-                : t === 'cw_step_11' ? _cwCharProfileCtl : null;
+                : t === 'cw_step_11' ? _cwCharProfileCtl
+                : t === 'cw_step_12' ? _cwGoalsPlotCtl : null;
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
             if (ctl.active || ctl.pending || !ctl.atStart()) { _cwStartMisses = 0; return; }
@@ -30087,6 +30734,7 @@
             cw9SceneCtl: _cw9SceneCtl,         // v7.20.494 (#204) — fresh-entry intercept calls start() on this
             cwTrial1Ctl: _cwTrial1Ctl,         // v7.20.551 — fresh entry calls forceStart(), boot resume tryResume()
             cwCharProfileCtl: _cwCharProfileCtl, // v7.20.563 (#428) — fresh entry calls start(), boot resume tryResume()
+            cwGoalsPlotCtl: _cwGoalsPlotCtl,     // v7.20.567 (#440) — fresh entry calls start(), boot resume tryResume()
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
             set canvasChatId(v) { canvasChatId = v; },
@@ -36980,6 +37628,7 @@
                     // seven (§4c.8b).
                     if (state.task === 'cw_trial_1' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();
                     if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
+                    if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
                     // (student types on); only re-surface the programmatic picker when NO poem is
                     // active (last poem finished, or none picked yet). The picker bubble is DOM-only
@@ -37170,6 +37819,12 @@
                     if (state.task === 'cw_step_11' && !state.reviewMode && tp.cwCharProfileCtl) {
                         console.log('WML v7.20.563: CW Step 11 — deterministic character-profile start (isCwSi entry)');
                         tp.cwCharProfileCtl.start();
+                        return;
+                    }
+                    // v7.20.567 (#440): Step 12's goals walk owns its fresh entry (zero-API, code-started).
+                    if (state.task === 'cw_step_12' && !state.reviewMode && tp.cwGoalsPlotCtl) {
+                        console.log('WML v7.20.567: CW Step 12 — deterministic goals-walk start (isCwSi entry)');
+                        tp.cwGoalsPlotCtl.start();
                         return;
                     }
 
@@ -55324,6 +55979,96 @@
         return String(rowText || '').split('\n').some(function (l) {
             return l.trim().indexOf(traitLabel + ' — ') === 0;
         });
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐ STEP 12 — UPDATE PLOT: GOALS (FIXLIST #440, v7.20.567). The footprints.
+    // Neil, 2026-08-25: *"Step twelve needs to update the plot with the details from the character
+    // profile … [and] decide where the elements from that draft fit into, which beats they fit
+    // into."* Two lenses land in the beats, each as a LABELLED line under the student's own words
+    // (PEDAGOGY §29 — append, the student amalgamates), and each label is the walk's own
+    // footprint. Same shape as Step 8's `Values (Trait):` line, byte-paired composer + reader.
+    // ══════════════════════════════════════════════════════════════════════════════════════
+    const CW12_PREFIX = 'Goals';
+    const CW12_NOTYET_FID = 'cw-step-12-notyet';
+    const CW12_CONTINUITY_FID = 'cw-step-12-continuity';
+    // The Step-11 rows that become beat lines. `fid` is the DOCUMENT's (legacy `cw-step-10-`
+    // prefix, #363: never renamed); `band` says which half of the plot the item may land in —
+    // beginning items into Stages I–III, end items into IV–VI, read off the profile's own parts,
+    // never asked again (WML §3). The arc type is control-only and not a beat fact, so it is not here.
+    const CW12_ITEMS = [
+        { id: 'ext-goal-begin', fid: 'cw-step-10-ext-goal-begin', label: 'External goal',          part: 'Part 1 · Beginning', gloss: 'What they consciously chase',                band: 'begin' },
+        { id: 'int-goal-begin', fid: 'cw-step-10-int-goal-begin', label: 'Internal goal',          part: 'Part 1 · Beginning', gloss: 'What they believe the goal will bring them', band: 'begin' },
+        { id: 'need-begin',     fid: 'cw-step-10-need-begin',     label: 'Need',                   part: 'Part 1 · Beginning', gloss: 'What they truly need and cannot yet see',   band: 'begin' },
+        { id: 'stakes-begin',   fid: 'cw-step-10-stakes-begin',   label: 'Stakes',                 part: 'Part 1 · Beginning', gloss: 'What they are most afraid of losing',       band: 'begin' },
+        { id: 'ext-goal-end',   fid: 'cw-step-10-ext-goal-end',   label: 'What happens to the goal', part: 'Part 2 · End',    gloss: 'Won, lost, dropped, or left hanging',       band: 'end' },
+        { id: 'int-goal-end',   fid: 'cw-step-10-int-goal-end',   label: 'Internal goals reached', part: 'Part 2 · End',       gloss: 'The deeper fulfilment they actually reach', band: 'end' },
+        { id: 'need-recognised', fid: 'cw-step-10-need-recognised', label: 'Need recognised',      part: 'Part 2 · End',       gloss: 'Do they come to see their need?',           band: 'end' },
+        { id: 'dilemma',        fid: 'cw-step-10-dilemma',        label: 'Dilemma',                part: 'Part 2 · End',       gloss: 'The choice between the goal and the need',  band: 'end' },
+        { id: 'realisation',    fid: 'cw-step-10-realisation',    label: 'Realisation',            part: 'Part 2 · End',       gloss: 'What they finally understand',              band: 'end' },
+        { id: 'ending-tone',    fid: 'cw-step-10-ending-tone',    label: 'Ending tone',            part: 'Part 2 · End',       gloss: 'How the ending feels to the reader',        band: 'end' },
+        { id: 'meaning',        fid: 'cw-step-10-meaning',        label: 'Universal meaning',      part: 'Part 2 · End',       gloss: 'What the story argues about life',          band: 'end' },
+    ];
+    // ONE composer + ONE reader per line shape, adjacent (§5d).
+    function _cw12AppendLine(label, text) { return CW12_PREFIX + ' (' + label + '): ' + text; }
+    function _cwBeatHasTagged(beatText, prefix, label) {
+        // The prefix is one of OUR words ("Values", "Goals") — letters only, so no escaping is
+        // needed and none is attempted (a brace-carrying regex literal here blinds walk-sim-lib's
+        // slicer, the same trap outlineRowHTML documents).
+        const re = new RegExp('^' + String(prefix).replace(/[^A-Za-z0-9 ]/g, '') + ' \\(([^)]+)\\):');
+        return String(beatText || '').split('\n').some(function (l) {
+            const m = l.trim().match(re);
+            return !!m && m[1].split(',').map(function (x) { return x.trim(); }).indexOf(label) !== -1;
+        });
+    }
+    function _cw12BeatHasItem(beatText, label) { return _cwBeatHasTagged(beatText, CW12_PREFIX, label); }
+    function _cw12NoShowLine(label) { return label + ' — not in the plot yet.'; }
+    function _cw12NoShowHas(rowText, label) {
+        return String(rowText || '').split('\n').some(function (l) { return l.trim().indexOf(label + ' — ') === 0; });
+    }
+    // The draft lens: a chunk of Draft 1 lands under its beat as `Draft 1: …`. Idempotent by a
+    // 60-char probe of the line itself (the same VERBATIM-probe class the CW dedup uses).
+    const CW12_DRAFT_TAG = 'Draft 1: ';
+    function _cw12DraftLine(text) { return CW12_DRAFT_TAG + text; }
+    function _cw12RowHasDraftLine(rowText, text) {
+        const probe = _cw12DraftLine(text).slice(0, 60);
+        return String(rowText || '').split('\n').some(function (l) { return l.trim().indexOf(probe) === 0; });
+    }
+    // The student's OWN words in a beat — every machine line (values, goals, draft) filtered out,
+    // so the draft picker shows the beat as they planned it, not the walk's own additions.
+    function _cw12StripMachineLines(text) {
+        return String(text || '').split('\n').filter(function (l) {
+            const t = l.trim();
+            return !(/^(Values|Goals) \([^)]*\):/.test(t) || t.indexOf(CW12_DRAFT_TAG) === 0);
+        }).join('\n').trim();
+    }
+    // Draft 1 → paragraphs of plain text (the draft box is the section carrying the composition
+    // flag — the same anchor the seed and the trial use). DOMParser-free fallback for the sim.
+    function _cwDraftParagraphsText(docHTML) {
+        const frag = _cwDraftProseFromDoc(docHTML);
+        if (!frag) return [];
+        const blocks = frag.split(/<\/(?:p|div|li|h[1-6])>/i);
+        return blocks.map(function (b) {
+            return b.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&rsquo;/g, '’')
+                .replace(/\s+/g, ' ').trim();
+        }).filter(Boolean);
+    }
+    // Paragraphs → sentences, in order, each remembering its paragraph (the picker draws the
+    // paragraph breaks). A terminator followed by whitespace and a capital / opening quote ends a
+    // sentence; abbreviations like "Mr." or "e.g." are not split (no capital follows the dot).
+    // (Built with `new RegExp` on purpose: a regex LITERAL carrying quote characters blinds
+    // walk-sim-lib's string scanner and the whole sim goes dark — the same trap outlineRowHTML documents.)
+    const CW_SENTENCE_SPLIT_RE = new RegExp('(?<=[.!?…]["\'’”)\\]]*)(?<!\\b(?:Mr|Mrs|Ms|Dr|St|Prof|Sr|Jr|vs|No)\\.)\\s+(?=["\'“‘(\\[]?[A-Z0-9])');
+    function _cwSplitSentences(paras) {
+        const out = [];
+        (paras || []).forEach(function (p, pi) {
+            String(p || '').split(CW_SENTENCE_SPLIT_RE).forEach(function (s) {
+                const t = s.trim();
+                if (t) out.push({ id: 's' + out.length, text: t, para: pi });
+            });
+        });
+        return out;
     }
 
     // ⭐⭐ v7.20.441 (FIXLIST #276, Neil's own idea) — THE TRAIT-EXAMPLES PANEL BODY.

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.566';
+var WML_BUILD = '7.20.567';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1105,7 +1105,9 @@ window.WML = (function() {
         { id: 'trial_1', label: 'Trial 1: Story Coherence', tier: 'si', phase: 'drafting', trial: 1 },
         // v7.20.563 (#428, Neil): Step 11 gets a code-served WALK — so the SI manifest (chat + sidebar).
         { step: 11, label: 'Character Profile',         tier: 'si', phase: 'drafting' },
-        { step: 12, label: 'Update Plot: Goals',        tier: 'workbook', phase: 'drafting' },
+        // v7.20.567 (#440, Neil): Step 12 gets a code-served WALK (goals into beats, Draft 1 into
+        // beats) — so the SI manifest (chat + sidebar), like Steps 8 and 11.
+        { step: 12, label: 'Update Plot: Goals',        tier: 'si', phase: 'drafting' },
         { step: 13, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2 },
         { id: 'trial_2', label: 'Trial 2: Character Depth', tier: 'si', phase: 'drafting', trial: 2 },
         { step: 14, label: 'Character Archetypes',      tier: 'workbook', phase: 'drafting' },
@@ -1241,6 +1243,12 @@ window.WML = (function() {
             { step: 1, label: 'Goals at Beginning' },
             { step: 2, label: 'Goals at End' },
             { step: 3, label: 'Character Arc' },
+        ],
+        // v7.20.567 (#440): the three passes of the Step-12 walk (_cwGoalsPlotCtl).
+        12: [
+            { step: 1, label: 'Goals into Beats' },
+            { step: 2, label: 'Draft 1 into Beats' },
+            { step: 3, label: 'Continuity Pass' },
         ],
         13: [
             { step: 1, label: 'Character Review' },

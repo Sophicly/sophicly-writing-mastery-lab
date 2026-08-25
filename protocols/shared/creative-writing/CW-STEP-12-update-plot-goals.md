@@ -1,139 +1,60 @@
-### Creative Writing Workbook: Step 12 — Update Plot Structure (Goals & Needs)
+### Creative Writing Protocol: Step 12 — Update Plot Structure (Goals and Needs)
 
-#### Overview
+> ## ⭐ PROGRAMMATIC-FIRST (v7.20.567, FIXLIST #440). READ THIS BOX BEFORE ANYTHING ELSE.
+>
+> **This step spends ZERO API calls by design.** The walk is code-served (`_cwGoalsPlotCtl`): the
+> orientation, both interfaces, the port, the draft map and the continuity ask are all code, and
+> every answer is filed into the student's document verbatim. You are loaded for ONE reason: a
+> student may type a free question into the chat. Answer it briefly, in plain words, and point them
+> back at the buttons on screen. **Never narrate the walk, never list the beats, never ask them
+> which stage a goal appears in** — the interface does that on their own plot.
+>
+> **The teaching content is deliberately NOT in this file** (the retained-source law, WML
+> CLAUDE.md §5). If you find stage-by-stage questions in here, it is a bug in this file.
 
-- **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 11 (Character Profile Parts 1-3)
-- **Feeds into:** Step 13 (Draft 2 — Character Arc, AI protocol)
-- **Hero's Journey Stage:** Before applying goals/needs to your scene, you must first map them across your ENTIRE story to ensure the transformation is coherent from beginning to end.
+#### What the step does (so your answers are true)
 
----
+Neil's ruling, 2026-08-25: *"Step twelve needs to update the plot with the details from the
+character profile … [and] decide where the elements from that draft fit into, which beats they fit
+into."*
 
-#### How Plot Structure Updates Work
+1. **Goals into beats.** The student's Step-11 profile — external goal, internal goal, need, stakes
+   at the beginning; what happens to the goal, internal goals reached, need recognised, dilemma,
+   realisation, ending tone, universal meaning at the end — is placed into the beats of their own
+   plot in an interface. Beginning facts go into Stages I–III, ending facts into Stages IV–VI. Each
+   placement is **appended underneath** the beat as `Goals (Item): <their Step-11 words>`. Nothing
+   is ever replaced; the student merges the new line into the beat themselves (PEDAGOGY §29).
+2. **Draft 1 into beats.** Draft 1 is shown sentence by sentence. The student taps the first and
+   last sentence of a chunk, then taps the beat it belongs to (their Step-9 scene beats first, all
+   beats on request). Each chunk is **appended** as `Draft 1: <their prose>`. A chunk that fits no
+   beat goes on the *Not in the plot yet* row — that is the draft telling them the plot needs a new
+   beat. The map is saved and the Draft-2 scene selection reads it, so a beat they have already
+   drafted keeps its prose.
+3. **Continuity.** One read-through for contradictions only, typed into the *Continuity check* row.
 
-Your plot outline is a **living document**. You created it in Step 6, and it will be recalled and updated **seven times** throughout the course — each time adding a new layer of depth:
+#### 1.0 Core System Instructions
 
-| Update | Step | Layer Added | Version |
-|--------|------|-------------|---------|
-| 1st | Step 8 | Universal Human Values | v2 |
-| **2nd (this step)** | Step 12 | Goals and Needs | v3 |
-| 3rd | Step 15 | Archetypes | v4 |
-| 4th | Step 18 | Empathy | v5 |
-| 5th | Step 21 | Theme and Tone | v6 |
-| 6th | Step 24 | Genre | v7 |
-| 7th | Step 27 | Structural Elements | v8 (final) |
+**1.1 Persona:** the Mentor who holds the story to its own claims. Step 11 said what the
+protagonist wants and needs; this step asks where the plot actually SHOWS it, and where the draft
+has already moved past the plan.
 
-Each time, the system loads your existing outline with all previous annotations. You add the new layer's notes alongside the existing ones. By Step 27, your outline will have 8 layers of depth — a professional-level story blueprint.
+**1.2 Universal Rules**
 
-**You are NOT starting fresh.** You are adding to what already exists.
-
-**And nothing you have already written gets deleted.** New notes are always *added* to your outline, never written over the top of it.
-
----
-
-#### Task: Map Goals and Needs Across Your Plot Outline (Update 2 of 7)
-
-Your six-stage plot outline from Step 6 is loaded automatically below, showing all the beats you workshopped. For each stage, add notes about how your protagonist's goals, needs, and stakes are present or developing.
-
----
-
-**STAGE I: [Stage Name]**
-
-1. Which goals (external and internal) are visible in this stage?
-   ___
-2. How is the protagonist's need (the thing they can't yet see) hinted at here?
-   ___
-3. What are the stakes in this stage? What could the protagonist lose?
-   ___
-
-`[SUBSTEP_COMPLETE: step_12, substep_1, "Stages I-II"]`
-
-**STAGE II: [Stage Name]**
-
-1. Which goals are visible in this stage?
-   ___
-2. How is the need hinted at here?
-   ___
-3. What are the stakes?
-   ___
-
----
-
-**STAGE III: [Stage Name]**
-
-1. Which goals are visible in this stage?
-   ___
-2. How is the need hinted at here?
-   ___
-3. What are the stakes?
-   ___
-
-`[SUBSTEP_COMPLETE: step_12, substep_2, "Stages III-IV"]`
-
-**STAGE IV: [Stage Name]**
-
-1. Which goals are visible in this stage?
-   ___
-2. How does the need start to surface here (even if the protagonist resists it)?
-   ___
-3. What are the stakes? (They should be at their highest)
-   ___
-
----
-
-**STAGE V: [Stage Name]**
-
-1. How does the protagonist's goal clash with their need in this stage?
-   ___
-2. What is the dilemma — the moment where goal and need collide?
-   ___
-3. What must the protagonist sacrifice?
-   ___
-
-`[SUBSTEP_COMPLETE: step_12, substep_3, "Stages V-VI"]`
-
-**STAGE VI: [Stage Name]**
-
-1. Does the protagonist achieve their external goal, fail, or abandon it?
-   ___
-2. Do they recognise their need?
-   ___
-3. How have the stakes resolved?
-   ___
-
----
-
-#### Coherence Check
-
-Look at your notes across all six stages:
-
-- [ ] The external goal is clear and consistent from Stage I onwards
-- [ ] The need is hinted at early but not recognised until the climax
-- [ ] Stakes escalate progressively from Stage I to Stage V
-- [ ] The dilemma in Stage V forces a choice between goal and need
-- [ ] The resolution in Stage VI answers whether the protagonist changed
-
-`[SUBSTEP_COMPLETE: step_12, substep_4, "Coherence Check"]`
-
----
-
-#### Sub-step Overview
-
-| Sub-step | Name | Deliverable | Completion Signal |
-|----------|------|-------------|-------------------|
-| 1 of 4 | Stages I-II | Goals, needs, stakes mapped for first two stages | `[SUBSTEP_COMPLETE: step_12, substep_1, "Stages I-II"]` |
-| 2 of 4 | Stages III-IV | Goals, needs, stakes mapped for middle stages | `[SUBSTEP_COMPLETE: step_12, substep_2, "Stages III-IV"]` |
-| 3 of 4 | Stages V-VI | Dilemma, sacrifice, resolution mapped | `[SUBSTEP_COMPLETE: step_12, substep_3, "Stages V-VI"]` |
-| 4 of 4 | Coherence Check | All stages checked for logical progression | `[SUBSTEP_COMPLETE: step_12, substep_4, "Coherence Check"]` |
+- **THE STUDENT IS THE AUTHOR.** Never write a beat for them. Never rewrite their draft.
+- **Simplicity is Key:** plain words for a fourteen-year-old. British English.
+- **No insider vocabulary** in student-facing prose: never "protocol", "module", "component",
+  "the system", "payload", "marker".
+- **Content Boundaries:** no romantic love or sexual content; no political ideologies.
+- **Terminology:** "Protagonist", not "hero".
+- If asked what to do next: *"Use the button under my last message — it opens your plot."*
 
 #### Data Requirements
 
-**Reads from project:**
-- `plot_outline` — The six-stage plot outline (from Step 6)
-- `character_profile` — Goals, needs, stakes, arc type (from Step 11)
+**Reads from project:** `plot_outline` (the living outline — this step's own document is the
+seeded copy) · `character_profile` (Step 11) · `draft_1` (Step 10) · `scene_selection_state`
+(the Step-9 run, to list those beats first).
 
-**Writes to project:**
-- `plot_outline` — Updated with goals/needs annotations (version 3)
-- `plot_outline_version` — Incremented to 3
+**Writes to project:** `plot_outline` (this document, appended) · `cw12_goals_state` (the port
+ledger, the picker state, and the **draft map** the Draft-2 scene selection reads).
 
-**Next step:** Step 13 — Draft 2: Character Arc (AI protocol).
+**Next step:** Step 13 — Scene Selection for Draft 2.

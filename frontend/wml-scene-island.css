@@ -687,3 +687,51 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
   .swml-plot-island .pv-trait-grid { grid-template-columns:1fr; }
   .swml-plot-island .pv-rail-eyebrow { display:none; }   /* the stepper already says trait N of M */
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   STEP 12 — THE DRAFT MAP (#440, v7.20.567). Third mode of the same island: "where does Draft 1
+   fit?" The draft is shown as SENTENCES the student taps first-and-last to make a chunk, then
+   places under a beat. Host carries `swml-plot-island swml-draft-island`, so the rail, the review
+   rows, the beat cards and both themes are inherited; this block adds only the sentence flow.
+   ⛔ NO RAW COLOURS — tokens only, so light theme and island-contrast-lint hold.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+.swml-draft-island .dm-draft {
+  background:var(--surface); border-radius:12px; padding:18px 20px; max-width:760px;
+  font-size:14.5px; line-height:1.75; color:var(--ink); box-shadow:var(--shadow-sm);
+}
+.swml-draft-island .dm-para-break { display:block; height:12px; }
+.swml-draft-island .dm-sent {
+  display:inline; background:none; border:none; border-radius:6px; padding:1px 3px; margin:0 1px;
+  color:var(--ink); font:inherit; line-height:inherit; text-align:left; cursor:pointer;
+  box-decoration-break:clone; -webkit-box-decoration-break:clone;
+  transition:background .2s var(--ease), color .2s var(--ease);
+}
+.swml-draft-island .dm-sent:hover { background:var(--surface2); }
+.swml-draft-island .dm-sent.is-sel { background:var(--teal-tint); box-shadow:inset 0 -2px 0 var(--teal-deep); }
+.swml-draft-island .dm-sent.is-end { background:var(--teal); color:var(--btn-ink); }
+.swml-draft-island .dm-sent.is-placed { color:var(--muted2); background:var(--done-tint); cursor:default; }
+.swml-draft-island .dm-sent-tag {
+  font-family:ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size:10px; font-weight:700;
+  color:var(--done); margin-right:5px; letter-spacing:0; font-variant-numeric:tabular-nums;
+}
+.swml-draft-island .dm-chunks { margin-top:18px; max-width:760px; }
+.swml-draft-island .dm-chunks-head {
+  font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); margin:0 0 8px;
+}
+.swml-draft-island .dm-chunk {
+  display:grid; grid-template-columns:200px 1fr auto; gap:12px; align-items:baseline;
+  background:var(--surface); border-radius:10px; padding:9px 14px; margin-bottom:6px; font-size:13px;
+}
+.swml-draft-island .dm-chunk-beat { font-size:10px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; overflow-wrap:anywhere; }
+.swml-draft-island .dm-chunk-text { color:var(--ink); display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
+.swml-draft-island .dm-chunk button { background:none; border:none; color:var(--faint); cursor:pointer; font-size:13px; padding:0 2px; }
+.swml-draft-island .dm-chunk button:hover { color:var(--warn); }
+.swml-draft-island .dm-run-tag {
+  margin-left:8px; font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--teal-deep); background:var(--teal-tint); border-radius:999px; padding:1px 7px;
+}
+.swml-draft-island .beat-card.dm-outside { opacity:.82; }
+@media (max-width:700px) {
+  .swml-draft-island .dm-chunk { grid-template-columns:1fr auto; }
+  .swml-draft-island .dm-chunk-text { grid-column:1 / span 2; }
+}

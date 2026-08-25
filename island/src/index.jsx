@@ -27,6 +27,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import SceneSelection from './SceneSelection.jsx';
 import PlotValues from './PlotValues.jsx';
+import DraftMap from './DraftMap.jsx';
 
 let _root = null;
 let _host = null;
@@ -81,6 +82,7 @@ function mountValues(opts) {
             traits={opts.traits || []}
             stages={opts.stages || []}
             bands={opts.bands}
+            copy={opts.copy || null}
             initial={opts.initial || null}
             onStateChange={opts.onStateChange}
             onPort={opts.onPort}
@@ -90,5 +92,25 @@ function mountValues(opts) {
     return { unmount };
 }
 
+// v7.20.567 (#440) — Step 12's "where does Draft 1 fit?" pass. Third mode, same bundle, same
+// stylesheet; the host carries BOTH modifier classes so the Step-8 rail/review styles are inherited.
+function mountDraftMap(opts) {
+    unmount();
+    makeHost('swml-plot-island swml-draft-island');
+    const close = () => { try { opts.onClose && opts.onClose(); } catch (_) {} unmount(); };
+    _root.render(
+        <DraftMap
+            sentences={opts.sentences || []}
+            beats={opts.beats || []}
+            initial={opts.initial || null}
+            onStateChange={opts.onStateChange}
+            onMap={opts.onMap}
+            onClose={close}
+        />
+    );
+    return { unmount };
+}
+
 window.WMLSceneIsland = { mount, unmount };
 window.WMLPlotIsland = { mount: mountValues, unmount };
+window.WMLDraftMapIsland = { mount: mountDraftMap, unmount };

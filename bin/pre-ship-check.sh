@@ -351,6 +351,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw8-sim-harness.js || fail=1
 fi
 
+# v7.20.567 (#440): CW STEP-12 GOALS WALK SIM. The Step-8 placer in a GOALS lens (profile → beats,
+# append-only, idempotent) + the DRAFT MAP (Draft 1 as sentences → beats, append-only, the map saved
+# for the Draft-2 scene selection's MERGE) + continuity, ZERO API calls; the seven wiring points.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|cw12-sim-harness\.js|walk-sim-lib\.js|CW-STEP-12-update-plot-goals\.md'; then
+  node bin/cw12-sim-harness.js || fail=1
+fi
+
 # v7.20.535 (#396): THE MY PLOT PANEL SHOWS THE BLANK BEATS. Neil asked for what the student HAS
 # written *"and even what they haven't written"*, and the opposite rule ships ten thousand lines
 # away in CW9's enumerator — so which beats survive enumeration is asserted, not remembered.
@@ -376,6 +384,7 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
      | grep -qE 'island/src/|wml-scene-island\.(css|min\.js)|cw8-island-smoke\.mjs'; then
   if [ -d island/node_modules/esbuild ]; then
     node bin/cw8-island-smoke.mjs || fail=1
+    node bin/cw12-island-smoke.mjs || fail=1   # v7.20.567 (#440): the goals lens + the draft map
   else
     echo "⚠️  cw8-island-smoke SKIPPED — island/node_modules missing (run: cd island && npm install)"
   fi
