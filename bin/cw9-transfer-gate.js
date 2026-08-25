@@ -83,7 +83,10 @@ ok('Step 9 keeps its chat + 3 walk sub-steps', WML.getExerciseConfig('cw_step_9'
     && (WML.getExerciseConfig('cw_step_9').sidebarSteps || []).length === 3);
 ok('Step 13 (Draft 2) unchanged — still a training walk', WML.getExerciseConfig('cw_step_13').environment === 'training');
 ok('Trial 1 (the assessment after Step 10) keeps its chat', WML.getExerciseConfig('cw_trial_1').panels.chat === true);
-ok('Step 11 (workbook) unchanged', WML.getExerciseConfig('cw_step_11').environment === 'free');
+// v7.20.563 (#428): Step 11 gained its own code-served walk, so it is a TRAINING step with chat now.
+ok('Step 11 (Character Profile) is a training walk with chat (v7.20.563, #428)', WML.getExerciseConfig('cw_step_11').panels.chat === true
+    && (WML.getExerciseConfig('cw_step_11').sidebarSteps || []).length === 3);
+ok('Step 12 (workbook) unchanged', WML.getExerciseConfig('cw_step_12').environment === 'free');
 
 // ── 2. THE JOIN — run the real composeDraft against a fake document ───────────────────────────
 console.log('\nThe join is prose, in story order, with no labels:');

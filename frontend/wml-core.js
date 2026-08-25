@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.562';
+var WML_BUILD = '7.20.563';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1103,7 +1103,8 @@ window.WML = (function() {
         // step can inherit this environment by accident.
         { step: 10, label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1, env: 'diagnostic', tools: 'minimal' },
         { id: 'trial_1', label: 'Trial 1: Story Coherence', tier: 'si', phase: 'drafting', trial: 1 },
-        { step: 11, label: 'Character Profile',         tier: 'workbook', phase: 'drafting' },
+        // v7.20.563 (#428, Neil): Step 11 gets a code-served WALK — so the SI manifest (chat + sidebar).
+        { step: 11, label: 'Character Profile',         tier: 'si', phase: 'drafting' },
         { step: 12, label: 'Update Plot: Goals',        tier: 'workbook', phase: 'drafting' },
         { step: 13, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2 },
         { id: 'trial_2', label: 'Trial 2: Character Depth', tier: 'si', phase: 'drafting', trial: 2 },
@@ -1234,6 +1235,12 @@ window.WML = (function() {
             { step: 1, label: 'Writing Focus' },
             { step: 2, label: 'Draft Scene' },
             { step: 3, label: 'Review & Save' },
+        ],
+        // v7.20.563 (#428): the three parts of CW-STEP-11-character-profile.md.
+        11: [
+            { step: 1, label: 'Goals at Beginning' },
+            { step: 2, label: 'Goals at End' },
+            { step: 3, label: 'Character Arc' },
         ],
         13: [
             { step: 1, label: 'Character Review' },

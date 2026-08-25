@@ -15706,6 +15706,10 @@
                             // trial never needs and leave the seven asks unserved.
                             clearWalkResume();
                             setTimeout(() => { _cwTrial1Ctl.reset(); _cwTrial1Ctl.forceStart(); }, 200);
+                        } else if (state.task === 'cw_step_11') {
+                            // v7.20.563 (#428): Step 11's walk owns chat-clear too.
+                            clearWalkResume();
+                            setTimeout(() => { _cwCharProfileCtl.reset(); _cwCharProfileCtl.start(); }, 200);
                         } else if (state.task === 'cw_step_9') {
                             // v7.20.495 (#204): Step 9's zero-API walk owns chat-clear too — the
                             // generic "Welcome back … hit the button below" re-greet would summon
@@ -16588,7 +16592,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
-                cw_trial_1: _cwTrial1Ctl,
+                cw_step_11: _cwCharProfileCtl, cw_trial_1: _cwTrial1Ctl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -16602,7 +16606,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
-                cw_trial_1: _cwTrial1Ctl,
+                cw_step_11: _cwCharProfileCtl, cw_trial_1: _cwTrial1Ctl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -16701,7 +16705,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
-                    cw_trial_1: _cwTrial1Ctl,
+                    cw_step_11: _cwCharProfileCtl, cw_trial_1: _cwTrial1Ctl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -16812,6 +16816,11 @@
             // Task-keyed, unlike the ladder above — this walk is Trial 1's, not a shared host.
             if (state.task === 'cw_trial_1' && _cwTrial1Ctl.active && _inboundIsAnswer) {
                 await _cwTrial1Ctl.handleTurn(msg);
+                return;
+            }
+            // v7.20.563 (#428): Step 11's character-profile walk owns the turn while it runs.
+            if (state.task === 'cw_step_11' && _cwCharProfileCtl.active && _inboundIsAnswer) {
+                await _cwCharProfileCtl.handleTurn(msg);
                 return;
             }
             if (state.task === 'cw_step_7' && _cwValuesCtl.active && _inboundIsAnswer) {
@@ -28281,6 +28290,461 @@
         })();
 
         // ══════════════════════════════════════════════════════════════════════════════════════
+        // ⭐⭐ v7.20.563 (#428, Neil 2026-08-24) — STEP 11: CHARACTER PROFILE, a code-served WALK.
+        // *"Step eleven, that needs a walk. Currently it uses a diagnostic environment, which is
+        // basically a very bare environment… it can probably just be a programmatic walk."*
+        // The asks ARE the document's rows (Parts 1–3 of CW-STEP-11-character-profile.md), served
+        // one at a time (§4c.8b serial) with criteria + a worked example each (§4c.1/2), banked
+        // verbatim into the row the ask named (§4c.6 rewrite), the help ladder cheapest-first
+        // (§4c.9) and the document scrolled to the row being filled (§4c.10). Dropdown rows are
+        // CHIP picks; the Character Arc row is control-only — *"they don't need to explain it,
+        // they just need to choose"* — styled like the Step-5 archetype row.
+        // ZERO judgment calls: the only API turn is rung 3 (ask Sophia), on an explicit tap.
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        const _cwCharProfileCtl = (function () {
+            let active = false, pending = false;
+            let emitted = 0;
+            let st = null;
+            const WALK = 'cw11';
+            const P = 'cw-step-10-';   // legacy fieldId prefix (pre-renumber) — the document's, so never renamed
+            const STEPS = [
+                { fid: P + 'ext-goal-begin', label: 'External Goal(s)', kind: 'text', sub: 1,
+                    body: '**Part 1 — Goals and Need at the Beginning.**\n\nThe engine of a story is the **gap between what a character wants and what they need**. We start with what they WANT.\n\n'
+                        + '*External goal* = the tangible thing your protagonist consciously chases: to **win**, **stop**, **retrieve**, **escape**, take **revenge**, **deliver**, or **maintain** something.\n\n'
+                        + '**A strong answer:**\n\n- names ONE concrete thing they are after — a person, an object, a result — not a feeling\n- uses one of those verbs, so the goal is something the plot can actually test\n\n'
+                        + 'Example: *Macbeth wants to WIN the crown — to be king, as the witches promised.*\n\n**What does your protagonist consciously pursue?**',
+                    more: ['*Scrooge wants to MAINTAIN his money — every coin kept, every claim on it refused.*', '*George and Lennie want to DELIVER themselves to a farm of their own — "live off the fatta the lan’".*', '*Romeo wants to WIN Juliet — to marry her, whatever the families say.*'] },
+                { fid: P + 'int-goal-begin', label: 'Internal Goal(s)', kind: 'text', sub: 1,
+                    body: '*Internal goal* = what they BELIEVE the external goal will give them underneath: **positive relationships**, **self-acceptance**, **personal growth**, **mastery of their world**, **autonomy**, or **purpose**.\n\n'
+                        + '**A strong answer:**\n\n- names the deeper fulfilment, not another object — "to be respected", not "to be rich"\n- says WHY they think the goal delivers it\n\n'
+                        + 'Example: *Macbeth believes the crown will bring him self-acceptance — proof that he is the great man Lady Macbeth says he could be.*\n\n**What does your protagonist believe the goal will bring them?**',
+                    more: ['*Scrooge believes money brings autonomy — nobody can touch him, need him, or make him feel anything.*', '*Lennie believes the farm brings belonging — rabbits to tend and George never leaving.*'] },
+                { fid: P + 'need-begin', label: 'Need', kind: 'text', sub: 1,
+                    body: '*Need* = the thing they GENUINELY require to become whole — usually the opposite of the goal, and usually invisible to them at the start.\n\n'
+                        + '**A strong answer:**\n\n- is something they cannot yet see about themselves\n- pulls AGAINST the goal, so the story has tension\n\n'
+                        + 'Example: *Macbeth needs honour and inner peace — the very things the crown will cost him.*\n\n**What does your protagonist truly need, that they cannot yet see?**',
+                    more: ['*Scrooge needs human connection — the one thing his money has been built to keep out.*', '*Eric Birling needs to take responsibility — the opposite of the drink and the excuses he hides in.*'] },
+                { fid: P + 'stakes-begin', label: 'Stakes / Fears', kind: 'text', sub: 1,
+                    body: '*Stakes* = what they are most afraid of LOSING at the start: survival, love, identity, freedom, justice, power, knowledge, their world, redemption, or achievement.\n\n'
+                        + '**A strong answer:**\n\n- picks the PRIMARY fear — the one they would sacrifice the others to avoid\n- says what losing it would look like in your story\n\n'
+                        + 'Example: *Macbeth fears losing power — once he has the crown, every threat to it is a threat to him.*\n\n**What is your protagonist most afraid of losing at the beginning?**',
+                    more: ['*Juliet fears losing her freedom — being married off to Paris and living her mother’s life.*', '*Scrooge fears losing his money; underneath, he fears being needed by anyone.*'] },
+                { fid: P + 'ext-goal-end', label: 'End-State of External Goal', kind: 'pickText', sub: 2,
+                    items: ['The character succeeds', 'The character is defeated', 'The character abandons the goal', 'The end-state is unclear'],
+                    body: '**Part 2 — Goals and Need at the End.**\n\nNow jump to the END of your story. Every ending answers one question first: **what happened to the goal?**\n\n'
+                        + 'Example: *Macbeth is DEFEATED — he holds the crown to the last and loses it with his life.* / *Scrooge ABANDONS his goal — he stops hoarding and gives.*\n\n**What happens to your protagonist’s external goal? Tap one.**',
+                    explain: '**Now, in a sentence or two — what actually happens?** Name the moment: where in the story the goal is won, lost, dropped or left hanging.',
+                    more: ['*Romeo’s goal ends UNCLEAR-turned-defeat — he wins Juliet and loses her in the same night.*', '*George abandons the farm the moment he pulls the trigger.*'] },
+                { fid: P + 'int-goal-end', label: 'Internal Goals Achieved', kind: 'text', sub: 2,
+                    body: 'The external goal is one thing; the deeper fulfilment is another. A character can win the goal and lose the internal one — or lose the goal and gain it.\n\n'
+                        + '**A strong answer:**\n\n- names which internal goals (relationships, self-acceptance, growth, mastery, autonomy, purpose) they actually reach — or "none"\n- shows the mismatch with the external result if there is one\n\n'
+                        + 'Example: *Macbeth achieves none of them — the crown brings him neither self-acceptance nor peace, only "a tale told by an idiot".*\n\n**Which internal goals does your protagonist reach by the end?**',
+                    more: ['*Scrooge reaches positive relationships and purpose — he loses the goal and gains everything it was standing in for.*'] },
+                { fid: P + 'need-recognised', label: 'Need Recognised?', kind: 'yesnoText', sub: 2,
+                    body: 'The whole arc turns on this: **does your protagonist come to see their need?** A "no" is a legitimate story — it is a tragedy.\n\n'
+                        + 'Example: *Scrooge — YES: he sees, at the graveside, that connection was the need all along.* / *Macbeth — NO: he dies still reaching for power.*\n\n**Does your protagonist recognise their need by the end?**',
+                    explain: '**In a sentence — how do we know?** Point at the moment (or the moment that never comes).',
+                    more: ['*Eric Birling — yes, and he is the only Birling who does; the play’s ending depends on it.*'] },
+                { fid: P + 'dilemma', label: 'Dilemma', kind: 'text', sub: 2,
+                    body: 'The **climax** is where the character is forced to CHOOSE between clinging to the goal and embracing the need. That choice is the dilemma.\n\n'
+                        + '**A strong answer:**\n\n- names BOTH sides of the choice — what they keep and what they give up\n- says what they choose, and why it is hard\n\n'
+                        + 'Example: *Scrooge must choose between the safety of his money and the risk of needing people. He chooses people — hard, because every year of his life argued the other way.*\n\n**What is the most difficult choice your protagonist must make, and what do they choose?**',
+                    more: ['*George must choose between keeping Lennie (and the dream) and sparing him a worse death. He chooses mercy, and it costs him the dream.*'] },
+                { fid: P + 'realisation', label: 'Realisation', kind: 'text', sub: 2,
+                    body: 'The **realisation** is what your character finally understands — about themselves and about the world.\n\n'
+                        + '**A strong answer:**\n\n- is a truth THEY see (or fail to see), not a moral you announce\n- connects back to the need\n\n'
+                        + 'Example: *Scrooge realises that a life spent keeping people out is a life nobody will mourn — and that it is not too late.*\n\n**What does your protagonist finally understand?**',
+                    more: ['*Juliet realises the feud is not something she can escape by hiding — only by refusing it, whatever it costs.*'] },
+                { fid: P + 'ending-tone', label: 'Ending Tone', kind: 'pickText', sub: 2,
+                    items: ['Positive', 'Negative', 'Bittersweet', 'Ambiguous'],
+                    body: 'Step back from the events: how does the ending FEEL to the reader?\n\n'
+                        + 'Example: *A Christmas Carol — positive.* / *Macbeth — negative.* / *Of Mice and Men — bittersweet: Lennie is safe from the mob, and the dream is dead.*\n\n**What tone does the end of your story have? Tap one.**',
+                    explain: '**In a sentence — what makes it feel that way?** Name the image or line the reader is left holding.',
+                    more: ['*An Inspector Calls — ambiguous: the phone rings, and we never learn what the second inspector will find.*'] },
+                { fid: P + 'meaning', label: 'Universal Meaning (Moral)', kind: 'text', sub: 2,
+                    body: 'The **universal meaning** is what your story argues about life — the idea a reader carries away that has nothing to do with your character’s name.\n\n'
+                        + '**A strong answer:**\n\n- is one sentence, true beyond this story\n- could be argued with — a claim, not a platitude\n\n'
+                        + 'Example: *A Christmas Carol argues that people can change, and that a society should be judged by whether it helps them to.*\n\n**What is the universal meaning of your story?**',
+                    more: ['*Macbeth argues that ambition without conscience destroys the very thing it reaches for.*', '*Of Mice and Men argues that in a world built on loneliness, even a small dream is a form of resistance.*'] },
+                { fid: P + 'arc-type', label: 'Arc Type', kind: 'pick', sub: 3,
+                    items: ['Positive (weakling to hero, ignorance to knowledge, etc.)', 'Negative (good to bad, strong to weak, etc.)', 'Ambiguous Positive', 'Ambiguous Negative'],
+                    body: '**Part 3 — Character Arc Type.**\n\nPut everything above together. Your protagonist starts chasing a goal and ends facing a need — which way did they travel?\n\n'
+                        + '- **Positive** — weakling to hero, ignorance to knowledge, lost to found (*Scrooge*)\n- **Negative** — good to bad, strong to weak, hero to villain (*Macbeth*)\n- **Ambiguous positive** — they grow, but the win is compromised (*Eric Birling*)\n- **Ambiguous negative** — they fall, but we understand and half-forgive it (*George*)\n\n'
+                        + '**Which type of arc does your protagonist experience? Tap one — it goes straight into your document.**',
+                    more: [] },
+            ];
+            const SUBSTEPS = { 1: 'Goals at Beginning', 2: 'Goals at End', 3: 'Character Arc' };
+            const GUIDE_ANCHOR = 'The protagonist is the story';   // a REAL heading in resources/creative-writing-reference-guide.md (cw-keymatch checks it)
+
+            const lsKey = () => {
+                try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw11') + '_cw11'; } catch (e) { return 'swml_cw11'; }
+            };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ st: st, active: active })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                emitted++;
+                addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function userTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function pickTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+
+            // ── the document is the position (§4c.8b resume lands on the exact ask) ────────
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField') && n.attrs && n.attrs.fieldId === fid) {
+                                out = (typeof _cwNodeText === 'function' ? _cwNodeText(n) : (n.textContent || '')).trim();
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            function pickValue(fid) {
+                try {
+                    if (typeof _outlineCheckState !== 'undefined' && _outlineCheckState && _outlineCheckState.get) {
+                        const live = _outlineCheckState.get(fid);
+                        if (live && live.selected) return live.selected;
+                    }
+                    let out = '';
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && n.type.name === 'outlineRow' && n.attrs && n.attrs.fieldId === fid) {
+                                try { out = (JSON.parse(n.attrs.checkState || '{}').selected) || ''; } catch (_) {}
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
+                    return out;
+                } catch (e) { return ''; }
+            }
+            function stepDone(s) {
+                if (!s) return true;
+                if (s.kind === 'pick') return !!pickValue(s.fid);
+                if (s.kind === 'pickText') return !!pickValue(s.fid) && !!rowText(s.fid);
+                return !!rowText(s.fid);
+            }
+            function firstEmpty() { for (let n = 0; n < STEPS.length; n++) if (!stepDone(STEPS[n])) return n; return STEPS.length; }
+            function cur() { return STEPS[st ? st.i : 0]; }
+
+            // ── chips (a PRIVATE copy per controller, per the walk contract) ───────────────
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice });
+                options.forEach(function (opt) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: function () { bar.remove(); onPick(opt); },
+                    }));
+                });
+                bc.appendChild(bar);
+                return true;
+            }
+            function chipBarOrRetry(options, onPick, retryText) {
+                if (chipBar(options, onPick)) return true;
+                _cwReplay(function () { aiBubble(retryText); });
+                return chipBar(options, onPick);
+            }
+            // ── the help ladder (§4c.9): free rungs first, Sophia last ──────────────────────
+            function helpBar(s) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
+                const spent = (st && st.moreSpent && st.moreSpent[s.fid]) || 0;
+                if (spent < (s.more || []).length) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: 'More examples', icon: WML.icon('examples', 15),
+                        onClick: function () { serveMore(s); },
+                    }));
+                }
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Guidance', icon: WML.icon('guide', 15),
+                    onClick: function () { try { if (typeof showGuidePanel === 'function') showGuidePanel(GUIDE_ANCHOR); } catch (e) {} },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'My Plot', icon: WML.icon('spine', 15),
+                    onClick: function () { try { const t = document.querySelector('.swml-mv-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (err) {} },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn swml-cw-help-last', textContent: 'Still stuck — ask Sophia', icon: WML.phoenixIconHTML(16),
+                    onClick: function () { askSophia(s); },
+                }));
+                bc.appendChild(bar);
+            }
+            function serveMore(s) {
+                const pool = s.more || [];
+                st.moreSpent = st.moreSpent || {};
+                const spent = st.moreSpent[s.fid] || 0;
+                if (spent >= pool.length) return;
+                st.moreSpent[s.fid] = spent + 1;
+                persist();
+                aiBubble('**Another ' + s.label.toLowerCase() + ':**\n\n' + pool[spent] + '\n\nNow yours. Rough is fine — this is thinking, not an essay.');
+                reAttach(s);
+            }
+            // Rung 3 — the only API call in the walk, on an explicit tap.
+            function askSophia(s) {
+                if (pending) return;
+                userTurn('Still stuck — what would a strong ' + s.label.toLowerCase() + ' look like for MY protagonist?');
+                let logline = '';
+                try { logline = _cwDocValue('logline', 'cw-step-3-chosen') || ''; } catch (err) {}
+                const ctx = '[THE STUDENT IS BUILDING THEIR PROTAGONIST’S CHARACTER PROFILE (Step 11, goals vs needs) and is stuck on '
+                    + 'ONE part: ' + s.label + '. In two or three sentences, explain what a strong one would look like for THEIR story, '
+                    + 'using what they have already planned. Then hand it straight back — ask them to write their own. Do NOT write it '
+                    + 'for them, do NOT move to another part, and do NOT emit any marker.]'
+                    + '\n\nTHE PART: ' + s.label
+                    + (logline ? '\nTHEIR LOGLINE: ' + logline : '');
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                active = false; pending = true;
+                armWalkResume('cw11-help-' + s.fid, function (reply, meta) {
+                    pending = false; active = true; persist();
+                    if (!reply || (meta && meta.timedOut)) {
+                        console.warn('WML CW11: ask-Sophia failed/timed out for ' + s.fid + ' — degraded honest message served.');
+                        aiBubble('I can’t think this through with you right now — I couldn’t reach my own thinking. Try **More examples**, or open **My Plot** to see what you planned.');
+                    }
+                    setTimeout(function () { try { reAttach(s); } catch (err) {} }, 400);
+                    resetSend();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'I’m stuck on this one — what would a strong ' + s.label.toLowerCase() + ' look like for my protagonist?';
+                sendCanvasMessage();
+            }
+
+            // ── §4c.10: the document scrolls to the row being filled ───────────────────────
+            function scrollToRow(s) {
+                try {
+                    const editor = document.getElementById('swml-tiptap-editor');
+                    if (!editor || !s) return;
+                    const target = editor.querySelector('[data-field-id="' + s.fid + '"]');
+                    if (target && target.offsetParent !== null) _swmlScrollToTop(target);
+                } catch (err) {}
+            }
+            function file(s, text) {
+                const clean = String(text || '').trim();
+                if (!clean) return false;
+                let wrote = false;
+                try { wrote = _writeOutlineRowField(s.fid, clean, { replace: true }); }
+                catch (e) { console.warn('WML CW11: write failed (non-fatal) for ' + s.fid + ' —', e && e.message); }
+                if (s.kind === 'text' || s.kind === 'yesnoText') { try { _tickOutlineRow(s.fid); } catch (e) {} }
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                return wrote;
+            }
+            function setDropdown(s, label) {
+                try { _setOutlineDropdown(s.fid, label); } catch (e) { console.warn('WML CW11: dropdown set failed for ' + s.fid + ' —', e && e.message); }
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            }
+
+            // ── serving ───────────────────────────────────────────────────────────────────
+            function heading(s) { return cwProgressBar(st.i + 1, STEPS.length, 'Character Profile', s.label); }
+            function reAttach(s) {
+                // The question is still the one above; re-offer its controls (§4d).
+                if (s.kind === 'pick' || (s.kind === 'pickText' && st.phase !== 'explain')) chipBar(s.items, onCw11Pick);
+                else if (s.kind === 'yesnoText' && st.phase !== 'explain') chipBar(['Yes', 'No'], onCw11YesNo);
+                else _walkSlot.arm(WALK, s.fid, { cycle: 'rewrite' });
+                helpBar(s);
+                resetSend();
+            }
+            function serveAsk(opts) {
+                const s = cur();
+                if (!s) { serveWrap(); return; }
+                st.phase = 'ask';
+                persist();
+                const text = heading(s) + s.body;
+                const attach = function () {
+                    if (s.kind === 'pick' || s.kind === 'pickText') { _walkSlot.clear(WALK); chipBarOrRetry(s.items, onCw11Pick, '**Tap one above.**'); }
+                    else if (s.kind === 'yesnoText') { _walkSlot.clear(WALK); chipBarOrRetry(['Yes', 'No'], onCw11YesNo, '**Yes or no?**'); }
+                    else _walkSlot.arm(WALK, s.fid, { cycle: 'rewrite' });
+                    helpBar(s);
+                    resetSend();
+                    scrollToRow(s);
+                };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            function serveExplain(s, opts) {
+                st.phase = 'explain';
+                persist();
+                const attach = function () { _walkSlot.arm(WALK, s.fid, { cycle: 'rewrite' }); helpBar(s); resetSend(); scrollToRow(s); };
+                if (opts && opts.defer) { serveCwChunks([s.explain], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(s.explain);
+                attach();
+            }
+            // Named so cw-keymatch can classify them: a dropdown pick is CONTENT (→ _setOutlineDropdown
+            // on the row); a Yes/No is CONTENT too — it becomes the prefix of the evidence sentence
+            // filed to the row ("Yes — …").
+            function onCw11Pick(label) { onPick(cur(), label); }
+            function onCw11YesNo(label) { onPick(cur(), label); }
+            function onPick(s, label) {
+                pickTurn(label);
+                if (s.kind === 'pick' || s.kind === 'pickText') setDropdown(s, label);
+                if (s.kind === 'pick') {
+                    aiBubble('Chosen — your document now reads **' + label + '**.');
+                    advance();
+                    return;
+                }
+                st.prefix = label;
+                persist();
+                serveExplain(s);
+            }
+            function serveCurrent(opts) {
+                if (!st) st = { i: 0, phase: 'ask', moreSpent: {} };
+                if (st.phase === 'done') { serveWrap(); return; }
+                if (st.phase === 'recall') { serveRecallPicker(opts); return; }
+                const s = cur();
+                if (!s) { serveWrap(); return; }
+                if (st.phase === 'explain' && s.explain) { serveExplain(s, opts); return; }
+                serveAsk(opts);
+            }
+            function advance() {
+                const before = cur();
+                if (before) { try { applyCwSubstepProgress({ stepNum: 11, substepNum: before.sub, name: SUBSTEPS[before.sub] }); } catch (e) {} }
+                st.i = firstEmpty();
+                st.prefix = '';
+                st.phase = 'ask';
+                persist();
+                if (st.i >= STEPS.length) { serveWrap(); return; }
+                serveAsk();
+            }
+            function serveWrap() {
+                _walkSlot.clear(WALK);
+                st.phase = 'done';
+                active = false;
+                persist();
+                const arc = pickValue(P + 'arc-type');
+                _cwReplay(function () {
+                    aiBubble('**That is your protagonist’s profile, and all of it is in your document.**\n\nThey want *' + (rowText(P + 'ext-goal-begin') || '(not set)')
+                        + '* — and need *' + (rowText(P + 'need-begin') || '(not set)') + '*. Their arc: **' + (arc || '(not set)') + '**.'
+                        + '\n\nStep 12 takes this profile back into your plot, so the goals and needs you have just named drive the beats.' + cwEndpointLine());
+                });
+                try { applyCwSubstepProgress({ stepNum: 11, substepNum: 3, name: SUBSTEPS[3] }); } catch (e) {}
+                chipBarOrRetry(['Change an answer →'], onWrapRecall, '**This step is finished.**');
+                resetSend();
+            }
+            // ⭐ THE WAY BACK IN (v7.20.340 law): a finished walk keeps a route into any answered row.
+            function onWrapRecall(label) { pickTurn(label); st.phase = 'recall'; persist(); serveRecallPicker(); }
+            function serveRecallPicker(opts) {
+                st.phase = 'recall'; active = true; persist();
+                const text = '**Which answer do you want to change?**';
+                const attach = function () { chipBarOrRetry(STEPS.map(function (s) { return s.label; }), onRecallPick, text); resetSend(); };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            function onRecallPick(label) {
+                const n = STEPS.findIndex(function (s) { return s.label === label; });
+                pickTurn(label);
+                if (n < 0) { serveWrap(); return; }
+                st.i = n; st.phase = 'ask'; st.prefix = ''; persist();
+                serveAsk();
+            }
+
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                const slot = _walkSlot.consume(WALK);
+                if (!slot) {
+                    _cwNoAskGuard(WALK, function () { serveCurrent(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
+                userTurn(clean);
+                const s = STEPS.filter(function (x) { return x.fid === slot.fid; })[0] || cur();
+                const text = (s.kind === 'yesnoText' && st.prefix) ? st.prefix + ' — ' + clean : clean;
+                file(s, text);
+                advance();
+            }
+
+            function orientationChunks() {
+                return [
+                    'Your first draft is written and judged. Now we go UNDER the plot — into your protagonist’s **goals** and **needs**, because that gap is what will turn Draft 1 into a story with a character arc.',
+                    '**Goal** = what they consciously chase (a crown, a farm, a person). **Need** = what they truly require to become whole, and usually cannot see. *Macbeth* chases power, blind to his need for peace; *Scrooge* hoards, blind to his need for people. The whole momentum of a story comes from that mismatch.',
+                    'Three parts, one question at a time: where your protagonist starts (goals, need, stakes) · where they end (what happened to the goal, the dilemma, the realisation) · which way they travelled (the arc). Every answer I file straight into your document.',
+                    '**Don’t overthink any of it.** A rough answer now beats a perfect one never — you will sharpen all of this through Draft 2. A blank box is the only wrong answer.',
+                ];
+            }
+            function start() {
+                if (active || pending) return false;
+                const go = function () {
+                    const n = firstEmpty();
+                    st = { i: n, phase: 'ask', moreSpent: {}, prefix: '' };
+                    active = true; pending = false;
+                    persist();
+                    if (n >= STEPS.length) { console.log('WML CW11: every row already filled — serving the wrap.'); serveWrap(); return; }
+                    console.log('WML CW11: code-served character-profile walk start at ask ' + (n + 1) + '/' + STEPS.length);
+                    if (n === 0) { st.phase = 'orient'; persist(); serveCwChunks(orientationChunks(), { emit: aiBubble, onDone: function () { serveAsk(); } }); return; }
+                    serveAsk();
+                };
+                try {
+                    if (state.cwProjectId && typeof _cwLoadDocValues === 'function') _cwLoadDocValues(state.cwProjectId, 'logline', true).then(go).catch(go);
+                    else go();
+                } catch (e) { go(); }
+                return true;
+            }
+            function reset() { active = false; pending = false; st = null; _walkSlot.clear(WALK); clearPersist(); }
+            function tryResume() {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    const d = raw ? JSON.parse(raw) : null;
+                    if (!d || !d.st) return false;
+                    st = d.st;
+                    st.moreSpent = st.moreSpent || {};
+                    const fromDoc = firstEmpty();
+                    // The document is the authority on position — except a recall (the student chose to go back).
+                    if (st.phase !== 'recall' && st.phase !== 'explain') st.i = fromDoc;
+                    if (st.phase === 'orient') st.phase = 'ask';
+                    const mark = emitted;
+                    if (st.phase === 'done' || (st.phase !== 'recall' && st.i >= STEPS.length)) {
+                        active = false; pending = false; st.phase = 'done';
+                        setTimeout(function () { if (emitted !== mark) return; _cwReplay(serveWrap); }, 500);
+                        return false;
+                    }
+                    active = true; pending = false;
+                    console.log('WML CW11: resumed on ask ' + (st.i + 1) + ' of ' + STEPS.length + ' (' + st.phase + ')');
+                    const reServe = function () { setTimeout(function () { if (emitted !== mark) return; _cwReplay(function () { serveCurrent(); }); }, 400); };
+                    try {
+                        if (state.cwProjectId && typeof _cwLoadDocValues === 'function') _cwLoadDocValues(state.cwProjectId, 'logline', true).then(reServe, reServe);
+                        else reServe();
+                    } catch (e) { reServe(); }
+                    return true;
+                } catch (e) { return false; }
+            }
+            function nudge() { if (!active || pending) return false; serveCurrent(); return true; }
+
+            return {
+                handleTurn, onReply: function () { /* code-started: no protocol marker */ },
+                reset, tryResume, nudge, start, forceStart: start, advance,
+                atStart: function () { return !!st && (st.i || 0) === 0 && st.phase !== 'done'; },
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+
+        // ══════════════════════════════════════════════════════════════════════════════════════
         // ⭐⭐ v7.20.551 (CW trials slice 4) — TRIAL 1: STORY COHERENCE, as a focused diagnostic.
         //
         // WHAT IT REPLACES. `CW-TRIAL-01-story-coherence.md` was a pre-law stub that broke three
@@ -29434,7 +29898,7 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _examinerLadderCtl, _cwTrial1Ctl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwTrial1Ctl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
@@ -29449,6 +29913,7 @@
             _cwPlotValuesCtl.onReply(reply);
             _cw9SceneCtl.onReply(reply);
             _cwTrial1Ctl.onReply(reply);
+            _cwCharProfileCtl.onReply(reply);
 
             const t = (state && state.task) || '';
             // ⚠️ Every walk task needs its arm HERE as well as in onReply above — the .490
@@ -29466,7 +29931,8 @@
                 // Trial 1 is code-started (no protocol start marker to miss), but it belongs in
                 // this map anyway — the .490 incident's second finding was that an UNLISTED task
                 // makes the start-miss guard inert for exactly the step that has no controller.
-                : t === 'cw_trial_1' ? _cwTrial1Ctl : null;
+                : t === 'cw_trial_1' ? _cwTrial1Ctl
+                : t === 'cw_step_11' ? _cwCharProfileCtl : null;
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
             if (ctl.active || ctl.pending || !ctl.atStart()) { _cwStartMisses = 0; return; }
@@ -29511,6 +29977,7 @@
             examinerLadderCtl: _examinerLadderCtl, // v7.20.547 — boot resume calls tryResume() on this
             cw9SceneCtl: _cw9SceneCtl,         // v7.20.494 (#204) — fresh-entry intercept calls start() on this
             cwTrial1Ctl: _cwTrial1Ctl,         // v7.20.551 — fresh entry calls forceStart(), boot resume tryResume()
+            cwCharProfileCtl: _cwCharProfileCtl, // v7.20.563 (#428) — fresh entry calls start(), boot resume tryResume()
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
             set canvasChatId(v) { canvasChatId = v; },
@@ -36403,6 +36870,7 @@
                     // mid-trial must re-serve the element the student was on — not the top of the
                     // seven (§4c.8b).
                     if (state.task === 'cw_trial_1' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();
+                    if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
                     // (student types on); only re-surface the programmatic picker when NO poem is
                     // active (last poem finished, or none picked yet). The picker bubble is DOM-only
@@ -36587,6 +37055,12 @@
                     if (state.task === 'cw_trial_1' && !state.reviewMode && tp.cwTrial1Ctl) {
                         console.log('WML v7.20.551: CW Trial 1 — deterministic self-assessment start (isCwSi entry)');
                         tp.cwTrial1Ctl.forceStart();
+                        return;
+                    }
+                    // v7.20.563 (#428): Step 11's character-profile walk owns its fresh entry.
+                    if (state.task === 'cw_step_11' && !state.reviewMode && tp.cwCharProfileCtl) {
+                        console.log('WML v7.20.563: CW Step 11 — deterministic character-profile start (isCwSi entry)');
+                        tp.cwCharProfileCtl.start();
                         return;
                     }
 
@@ -46348,6 +46822,34 @@
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 console.log('WML CW: Step 9 plot-position row healed to dropdown-only (migration)');
             });
+            // ⭐ v7.20.563 (#428, Neil 2026-08-24): the SAME heal for Step 11's Character Arc row —
+            // *"they don't need to explain it, they just need to choose"* — styled like the Step-5
+            // archetype row. Shape is BAKED, so the template change reaches new projects only.
+            // Text hidden, never deleted — same as .348.
+            _migrateStep('migrateStep11ArcControlOnly', () => {
+                if (!canvasEditor || state.task !== 'cw_step_11') return;
+                const tmp = document.createElement('div');
+                tmp.innerHTML = canvasEditor.getHTML();
+                let changed = false;
+                tmp.querySelectorAll('[data-outline-row]').forEach(r => {
+                    if (r.getAttribute('data-field-id') !== 'cw-step-10-arc-type') return;
+                    let crit = {};
+                    try { crit = JSON.parse(r.getAttribute('data-criteria') || '{}'); } catch (_) { return; }
+                    if (crit.controlOnly === true && !crit.prompt) return;   // already healed
+                    crit.controlOnly = true;
+                    delete crit.prompt;
+                    r.setAttribute('data-criteria', JSON.stringify(crit));
+                    r.setAttribute('data-prompt', crit.label || 'Arc Type');
+                    changed = true;
+                });
+                if (!changed) return;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 11 arc-type row healed to dropdown-only (migration)');
+            });
             // ⭐ v7.20.383: Step-2 ideas 2 and 3 become GENUINELY optional in EXISTING projects.
             // The outline row's shape is BAKED into the saved doc (the same law as the .348 heal
             // above), so stamping `optional` on the template reaches new projects only — every
@@ -49689,7 +50191,7 @@
             html += dividerHTML('PART 3: CHARACTER ARC TYPE');
             html += sectionHTML('plan', 'Character Arc', true, null,
                 '<h3>Which Type of Character Arc?</h3>' +
-                outlineRowHTML({ id: 'arc-type', label: 'Arc Type', type: 'dropdown', items: ['Positive (weakling to hero, ignorance to knowledge, etc.)', 'Negative (good to bad, strong to weak, etc.)', 'Ambiguous Positive', 'Ambiguous Negative'], prompt: 'Choose the type of character arc' }, 'cw-step-10-arc-type')
+                outlineRowHTML({ id: 'arc-type', label: 'Arc Type', type: 'dropdown', items: ['Positive (weakling to hero, ignorance to knowledge, etc.)', 'Negative (good to bad, strong to weak, etc.)', 'Ambiguous Positive', 'Ambiguous Negative'], controlOnly: true }, 'cw-step-10-arc-type')
             );
             return html;
         }

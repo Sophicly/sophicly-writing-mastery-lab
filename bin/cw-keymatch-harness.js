@@ -212,6 +212,9 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onCw8ContinuityReopen: { kind: 'flow', note: 'Step 8 continuity screen (#380, v7.20.522): reopen the plot interface mid-walk. FLOW — it files nothing and deliberately does NOT settle the continuity row; it clears the armed slot so a later answer cannot land on an abandoned question, and posOf() re-serves the ask on close while the row is still empty. The PORT inside the island is what writes.' },
         onCw8GuardAck:    { kind: 'flow', note: 'Step 8 dead-end guard (no outline / no audit) acknowledgment — files nothing' },
         onCw8Retry:       { kind: 'flow', note: 'Step 8 audit-load failure retry — files nothing' },
+        // v7.20.563 (#428) — STEP 11 (Character Profile) walk.
+        onCw11Pick:       { kind: 'content', note: 'Step 11 dropdown rows (end-state, ending tone, arc type) → _setOutlineDropdown on the row; the explanation that follows (not for the control-only arc) is typed and filed to the same row' },
+        onCw11YesNo:      { kind: 'content', note: 'Step 11 Need Recognised? Yes / No → becomes the prefix of the evidence sentence filed to the row ("Yes — …")' },
     };
     // Match CALL sites only. `function chipBar(options, onPick)` is a DEFINITION and its parameter
     // name would otherwise be scanned as though it were a handler — and Step 5's real handler

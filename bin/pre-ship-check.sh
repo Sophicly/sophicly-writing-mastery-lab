@@ -190,6 +190,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
      | grep -qE 'wml-assessment\.js|cw5-sim-harness\.js'; then
   node bin/cw5-sim-harness.js || fail=1
 fi
+# v7.20.563 (#428): Step 11's character-profile walk — drives the real controller through all
+# twelve asks (text, dropdown+explain, yes/no+explain, control-only pick), asserts every row
+# holds the student's words, zero API sends, the seven wiring points, resume, and recall.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|cw11-sim-harness\.js'; then
+  node bin/cw11-sim-harness.js || fail=1
+fi
 
 # v7.20.312: CW STEP-1 LOOP GATE. Rifat (uid 1386) produced 1,765 turns / 1.4 MB of chat in ONE
 # session with no student input: the walk handed off to the API, the v7.20.298 revive block treated
