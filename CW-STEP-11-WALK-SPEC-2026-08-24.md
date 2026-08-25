@@ -51,6 +51,6 @@ usual on-load heal (reference_wml_outline_scaffold_baked_needs_onload_heal).
 
 ## Status
 
-Captured 2026-08-24 (FIXLIST #428). NOT built — queued behind the Trial-1 polish batch
+✅ BUILT v7.20.563 (2026-08-25) — `_cwCharProfileCtl` + `migrateStep11ArcControlOnly` + `bin/cw11-sim-harness.js`. Originally: captured 2026-08-24 (FIXLIST #428), not built — queued behind the Trial-1 polish batch
 (v7.20.557) because the session was near its end (Neil asked for a detailed handoff instead of a
 new build).
