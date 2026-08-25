@@ -28650,9 +28650,79 @@
                 st.prefix = '';
                 st.phase = 'ask';
                 persist();
-                if (st.i >= STEPS.length) { serveWrap(); return; }
+                // v7.20.566 (#440, Neil: *"we might need a very simple API call, something very
+                // basic, just to check the quality"*): ONE light quality read of the whole profile,
+                // once, when the twelfth row is filled. `st.pushed` is the footprint — an Improve
+                // rewrite lands back here and must NOT spend a second call.
+                if (st.i >= STEPS.length) { if (!st.pushed) { firePush(); return; } serveWrap(); return; }
                 serveAsk();
             }
+
+            // ── ⭐ THE ONE API CALL — a light coherence read, on the student's own profile. ──
+            // Step-5 `firePush` is the mold (armWalkResume, fail-open on timeout, a marker that
+            // names ONE row, a Keep / Improve choice — never a mark). What it checks is the ONE
+            // thing a twelve-row profile can get wrong that no single ask can see: the rows
+            // disagreeing with each other (a need that is not the opposite of the goal, an arc
+            // type the ending does not earn, a dilemma that never touches the need).
+            function firePush() {
+                const lines = STEPS.map(function (s) {
+                    const v = s.kind === 'pick' ? pickValue(s.fid) : rowText(s.fid);
+                    return s.label + ' [' + s.fid.slice(P.length) + ']: ' + (v || '(blank)');
+                }).join('\n');
+                const keys = STEPS.map(function (s) { return s.fid.slice(P.length); }).join(' | ');
+                const ctx = '[CHARACTER-PROFILE QUALITY CHECK — the ONE judgment turn in this step. The student has'
+                    + ' just finished all twelve parts of their protagonist’s profile (goals vs needs). Read the twelve'
+                    + ' answers TOGETHER and decide whether they agree with each other: the need should pull against the'
+                    + ' goal; the dilemma should force a choice between the two; the realisation should connect to the'
+                    + ' need; the arc type should match what happened to the goal and whether the need was recognised.'
+                    + ' If the profile holds together, say in two or three sentences WHAT holds it together — name the'
+                    + ' specific link between two of their answers that proves it — and end with @PROFILE_OK.'
+                    + ' If ONE part is the weak link, name it in plain words, say in one sentence what it does not yet'
+                    + ' do (what it would need to say to fit the rest), and end with "@PROFILE_IMPROVE:<key>" where <key>'
+                    + ' is exactly one of: ' + keys + '.'
+                    + ' Never rewrite it for them, never name more than one part, never give a mark, never list the'
+                    + ' twelve parts back, do NOT mention the marker. Plain words for a fourteen-year-old. Reply ENDS at'
+                    + ' the marker.]'
+                    + '\n\nTHEIR PROFILE:\n' + lines;
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                active = false; pending = true; st.phase = 'push'; persist();
+                armWalkResume('cw11-quality', function (reply, meta) {
+                    pending = false; st.pushed = true;
+                    const norm = String(reply || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_');
+                    const m = (!reply || (meta && meta.timedOut)) ? null : /@PROFILE_IMPROVE[:\s]*([a-z-]+)/.exec(norm);
+                    const n = m ? STEPS.findIndex(function (s) { return s.fid === P + m[1]; }) : -1;
+                    // FAIL-OPEN: no marker, an unknown key, or a failed call → the profile stands.
+                    if (n < 0) {
+                        if (!reply || (meta && meta.timedOut)) console.warn('WML CW11: quality check failed/timed out — wrapping without it.');
+                        st.phase = 'done'; persist(); serveWrap(); return;
+                    }
+                    st.improve = n; st.phase = 'push-choice'; active = true; persist();
+                    servePushChoice();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'That’s all twelve parts — does my profile hold together?';
+                sendCanvasMessage();
+            }
+            function servePushChoice() {
+                _walkSlot.clear(WALK);   // a choice is a TAP
+                const s = STEPS[st.improve] || cur();
+                chipBarOrRetry(['Improve my ' + s.label + ' →', 'Keep it as it is →'], onCw11PushChoice,
+                    '**Your call** — sharpen that one part now, or keep the profile as it is and move on.');
+                resetSend();
+            }
+            // Named for cw-keymatch: FLOW — Improve re-serves that one ask (the typed rewrite is what
+            // files, and REPLACES the row, §4c.6); Keep files nothing and wraps.
+            function onCw11PushChoice(pick) {
+                pickTurn(pick);
+                if (pick.indexOf('Improve') === 0 && STEPS[st.improve]) {
+                    st.i = st.improve; st.phase = 'ask'; st.prefix = ''; persist();
+                    serveAsk();
+                    return;
+                }
+                st.phase = 'done'; persist();
+                serveWrap();
+            }
+
             function serveWrap() {
                 _walkSlot.clear(WALK);
                 st.phase = 'done';
@@ -28742,6 +28812,15 @@
                     if (st.phase !== 'recall' && st.phase !== 'explain') st.i = fromDoc;
                     if (st.phase === 'orient') st.phase = 'ask';
                     const mark = emitted;
+                    // v7.20.566: a reload while the quality call was in flight loses its reply —
+                    // treat it as spent (never re-bill the student a second call) and wrap; a
+                    // reload on the Keep / Improve choice re-offers the chips (they are DOM-only).
+                    if (st.phase === 'push') { st.pushed = true; st.phase = 'done'; persist(); }
+                    if (st.phase === 'push-choice' && STEPS[st.improve]) {
+                        active = true; pending = false;
+                        setTimeout(function () { if (emitted !== mark) return; servePushChoice(); }, 400);
+                        return true;
+                    }
                     if (st.phase === 'done' || (st.phase !== 'recall' && st.i >= STEPS.length)) {
                         active = false; pending = false; st.phase = 'done';
                         setTimeout(function () { if (emitted !== mark) return; _cwReplay(serveWrap); }, 500);

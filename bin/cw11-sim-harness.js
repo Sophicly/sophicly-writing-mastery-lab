@@ -54,7 +54,8 @@ ok(/\{ step: 11, label: 'Character Profile',\s+tier: 'si'/.test(CORE), 'Step 11 
 ok(/11: \[\s*\{ step: 1, label: 'Goals at Beginning' \}/.test(CORE), '…with a sidebar naming its three parts');
 ok(/'Ambiguous Negative'\], controlOnly: true \}, 'cw-step-10-arc-type'\)/.test(SRC), 'the Character Arc row is CONTROL-ONLY in the template (Neil: "they just need to choose")');
 ok(/migrateStep11ArcControlOnly/.test(SRC) && /'cw-step-10-arc-type'\) return;/.test(SRC), '…and the heal flips it in baked documents');
-ok((CTL_TEXT.match(/sendCanvasMessage\(\);/g) || []).length === 1, 'the walk spends an API call ONLY on rung 3 (ask Sophia)');
+ok((CTL_TEXT.match(/sendCanvasMessage\(\);/g) || []).length === 2, 'the walk spends an API call ONLY on rung 3 (ask Sophia) and the ONE end-of-walk quality check (#440)');
+ok(/if \(!st\.pushed\) \{ firePush\(\); return; \}/.test(CTL_TEXT), '…and the quality check carries a footprint (st.pushed), so an Improve rewrite cannot spend a second call');
 ok(/_swmlScrollToTop\(target\)/.test(CTL_TEXT) && /scrollToRow\(s\)/.test(CTL_TEXT), 'every ask scrolls the document to its row (§4c.10)');
 ok(/'More examples'/.test(CTL_TEXT) && /'Guidance'/.test(CTL_TEXT) && /Still stuck — ask Sophia/.test(CTL_TEXT), 'the help ladder is present, Sophia last (§4c.9)');
 
@@ -131,9 +132,24 @@ async function main() {
         w.tap(chipNamed(w, /^Positive \(/)); await settle();
         ok((w.picks.get(P + 'arc-type') || {}).selected.indexOf('Positive') === 0, '12/12 the tap sets the arc dropdown');
         ok(!w.writes.some((x) => x.fid === P + 'arc-type'), '12/12 …and writes NO text into the control-only row');
+        // ── the ONE quality call (#440) ──
+        ok(w.sends.length === 1 && w.armed && w.armed.id === 'cw11-quality', '⭐ exactly ONE API call, fired when the twelfth row is filled (#440)');
+        ok(!/all of it is in your document/.test(w.bubbles.join('\n')), '…and the wrap WAITS for it');
+        const hidden = w.deps.canvasChatHistory.filter((m) => m && m.hidden).pop();
+        ok(!!hidden && /CHARACTER-PROFILE QUALITY CHECK/.test(hidden.content) && /escape the estate/.test(hidden.content) && /Stay and be caught|Board the ship/.test(hidden.content),
+            '…with ALL twelve answers in the hidden context (the model reads the profile, not a summary of it)');
+        ok(/@PROFILE_OK/.test(hidden.content) && /@PROFILE_IMPROVE:<key>/.test(hidden.content) && /never give a mark/.test(hidden.content), '…asking for OK / IMPROVE:<key>, never a mark');
+        // the model names the dilemma as the weak link
+        w.armed.fn('Your need and your goal pull against each other well. The dilemma does not yet force a choice between them. @PROFILE_IMPROVE:dilemma');
+        await settle();
+        ok(!!chipNamed(w, /Improve my Dilemma/) && !!chipNamed(w, /Keep it as it is/), 'IMPROVE → a Keep / Improve choice (never a mark, never forced)');
+        w.tap(chipNamed(w, /Improve my Dilemma/)); await settle();
+        ok(/Dilemma/.test(lastBubble(w)) && /climax/.test(lastBubble(w)), 'Improve re-serves THAT ask');
+        await w.say('Sail and be free, or stay and face her brother. She stays — and loses the ship.');
+        ok(/^Sail and be free/.test(w.rows.get(P + 'dilemma') || ''), '…and the rewrite REPLACES the row (§4c.6)');
+        ok(w.sends.length === 1, '⭐ …and the walk does NOT spend a second call after the rewrite (footprint)');
         ok(/all of it is in your document/.test(w.bubbles.join('\n')) && /sim endpoint/.test(w.bubbles.join('\n')), 'the wrap states the profile and ends on the shared endpoint');
         ok(!!chipNamed(w, /Change an answer/), '…and offers a way back in (v7.20.340 law)');
-        ok(w.sends.length === 0, '⭐ ZERO API calls across the whole walk');
         ok(!w.lostWrite, 'no write was lost to a missing row', w.lostWrite);
         FIDS.filter((f) => f !== P + 'arc-type').forEach((f) => ok((w.rows.get(f) || '').length > 0, 'row filled: ' + f));
         // recall
@@ -162,6 +178,64 @@ async function main() {
         ok(/what actually happens/i.test(lastBubble(w2)) || /End-State/.test(lastBubble(w2)), 'a reload mid-explain re-serves the explanation ask for the SAME row (§4c.8b)', lastBubble(w2).slice(0, 80));
         await w2.say('He wins the race.');
         ok(/wins the race/.test(w2.rows.get(P + 'ext-goal-end') || ''), '…and the answer still files');
+    }
+
+    // ── 4 · THE QUALITY CALL'S OTHER TWO OUTCOMES: OK, and a failed/timed-out call ─────────
+    console.log('\nQuality check — OK and fail-open:');
+    async function fillAll(w) {
+        w.ctl.start(); await toAsk(w);
+        await w.say('a'); await w.say('b'); await w.say('c'); await w.say('d');
+        w.tap(chipNamed(w, /The character succeeds/)); await settle(); await w.say('e');
+        await w.say('f');
+        w.tap(chipNamed(w, /^No$/)); await settle(); await w.say('g');
+        await w.say('h'); await w.say('i');
+        w.tap(chipNamed(w, /Negative/)); await settle(); await w.say('j');
+        await w.say('k');
+        w.tap(chipNamed(w, /^Negative \(/)); await settle();
+    }
+    {
+        const w = world();
+        await fillAll(w);
+        ok(w.sends.length === 1, 'OK path: one call fired');
+        w.armed.fn('The goal and the need pull against each other, and the arc type matches the defeat. @PROFILE_OK');
+        await settle();
+        ok(/all of it is in your document/.test(w.bubbles.join('\n')), 'OK → straight to the wrap');
+        ok(!chipNamed(w, /Improve my/), '…with no Improve chip');
+        // a Keep on a later IMPROVE would look the same; assert Keep explicitly on a fresh world
+        const w2 = world();
+        await fillAll(w2);
+        w2.armed.fn('Fine, except the realisation. @PROFILE_IMPROVE:realisation'); await settle();
+        w2.tap(chipNamed(w2, /Keep it as it is/)); await settle();
+        ok(/all of it is in your document/.test(w2.bubbles.join('\n')) && w2.sends.length === 1, 'Keep → the wrap, no second call');
+    }
+    {
+        const w = world();
+        await fillAll(w);
+        w.armed.fn(null, { timedOut: true });
+        await settle();
+        ok(/all of it is in your document/.test(w.bubbles.join('\n')) && !!chipNamed(w, /Change an answer/), 'a timed-out call FAILS OPEN to the wrap — the student is never parked');
+        // and an unknown key is treated as OK
+        const w2 = world();
+        await fillAll(w2);
+        w2.armed.fn('Weak somewhere. @PROFILE_IMPROVE:not-a-row'); await settle();
+        ok(/all of it is in your document/.test(w2.bubbles.join('\n')), 'an unknown key fails open too');
+    }
+    {
+        // reload while the call is in flight: the reply is lost, the call is NOT re-spent
+        const w = world();
+        await fillAll(w);
+        const w2 = reload(w);
+        w2.ctl.tryResume(); await settle(); await settle();
+        for (let i = 0; i < 6; i++) { await new Promise((r) => setTimeout(r, 120)); if (w2.bubbles.length) break; }
+        ok(w2.sends.length === 0 && /all of it is in your document/.test(w2.bubbles.join('\n')), 'a reload mid-call wraps without spending a second call');
+        // reload on the choice: the chips come back
+        const w3 = world();
+        await fillAll(w3);
+        w3.armed.fn('Fix the stakes. @PROFILE_IMPROVE:stakes-begin'); await settle();
+        const w4 = reload(w3);
+        w4.ctl.tryResume(); await settle(); await settle();
+        for (let i = 0; i < 6; i++) { await new Promise((r) => setTimeout(r, 120)); if (w4.chips().length) break; }
+        ok(!!chipNamed(w4, /Improve my Stakes/), 'a reload on the Keep / Improve choice re-offers the chips (§4d)');
     }
 
     console.log('\n' + (fail ? '❌ cw11-sim FAILED' : '✅ cw11-sim passed') + '  (' + asserts.pass + ' assertions, ' + asserts.fail + ' failed)');

@@ -215,6 +215,18 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         // v7.20.563 (#428) — STEP 11 (Character Profile) walk.
         onCw11Pick:       { kind: 'content', note: 'Step 11 dropdown rows (end-state, ending tone, arc type) → _setOutlineDropdown on the row; the explanation that follows (not for the control-only arc) is typed and filed to the same row' },
         onCw11YesNo:      { kind: 'content', note: 'Step 11 Need Recognised? Yes / No → becomes the prefix of the evidence sentence filed to the row ("Yes — …")' },
+        // v7.20.566 (#440): the ONE quality call at the end of Step 11 ends on Keep / Improve.
+        onCw11PushChoice: { kind: 'flow', note: 'Step 11 quality check: Improve re-serves that ONE ask (the typed rewrite is what files, replacing the row); Keep files nothing and wraps' },
+        // v7.20.566: menus served ONLY through chipBarOrRetry were invisible to this gate until the
+        // RETRY_RE below — the examiner ladder (v7.20.547) and Trial 1 (.551–.562) surfaced at once.
+        onClimb:          { kind: 'content', note: 'examiner ladder: "met all of this level?" Yes/No → st.metAll / stoppedAt (the sidecar the level row is derived from); the per-criterion pass follows' },
+        onWhich:          { kind: 'content', note: 'examiner ladder: per-criterion Met / Not met → st.met, banked as st.partial (a document fact) before moving on' },
+        onBand:           { kind: 'content', note: 'examiner ladder: the band pick → writeRow(fid("band"))' },
+        onPlacement:      { kind: 'content', note: 'examiner ladder: top / middle / bottom of the level → writeRow(fid("level")) + writeRow(fid("mark"))' },
+        onChangeAnswer:   { kind: 'flow', note: 'examiner ladder wrap: restart the climb from the bottom (#221 — change it at any point); files nothing itself' },
+        onGoalPick:       { kind: 'content', note: 'Trial 1 grade goal 7/8/9 → writeRow("cw-trial-1-goal") (#437)' },
+        onCalibPick:      { kind: 'content', note: 'Trial 1 calibration: which element the student thinks they misjudged → st.calibPick, read back into the summary (#437)' },
+        onChangeAnswers:  { kind: 'flow', note: 'Trial 1 wrap: restart the seven asks — files nothing itself' },
     };
     // Match CALL sites only. `function chipBar(options, onPick)` is a DEFINITION and its parameter
     // name would otherwise be scanned as though it were a handler — and Step 5's real handler
@@ -222,9 +234,14 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
     // The handler may be passed bare (`onThroughlinePick`) or as a factory call
     // (`onBeatChipPick(b)`), so the trailing argument list is optional.
     const CALL_RE = /(?<!function\s)\bchipBar(?:Multi)?\(\s*[\s\S]{0,240}?,\s*([A-Za-z_$][\w$]*)\s*(?:\([^()]*\))?\s*\)/g;
+    // v7.20.566: `chipBarOrRetry(options, handler, retryText)` is a real menu producer too (Step 11,
+    // Trial 1) — its handler is the MIDDLE argument, so it needs its own shape. Without this a
+    // menu served only through OrRetry was invisible to the gate (Step 11's push choice was).
+    const RETRY_RE = /(?<!function\s)\bchipBarOrRetry\(\s*[\s\S]{0,240}?,\s*([A-Za-z_$][\w$]*)\s*,/g;
     const found = new Set();
     let c;
     while ((c = CALL_RE.exec(JS))) found.add(c[1]);
+    while ((c = RETRY_RE.exec(JS))) found.add(c[1]);
     found.forEach(fn => {
         ok(Object.prototype.hasOwnProperty.call(MENUS, fn),
             `chip menu "${fn}" is not classified — declare it 'content' (and file the pick to a ` +
