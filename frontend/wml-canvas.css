@@ -16372,6 +16372,10 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-ladder-pad .swml-extract-panel-body { padding: 14px 18px 18px; }
 .swml-ladder-pad .swml-ladder-ui { margin-top: 0; }
 
+/* v7.20.564 (#438): the "still working" line under the typing dots on a long API turn. */
+.swml-typing-note { margin-top: 8px; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.55); font-style: italic; }
+[data-swml-theme="light"] .swml-typing-note { color: rgba(0,0,0,0.5); }
+
 @media (max-width: 720px) {
     .swml-ladder-tools { margin-left: 0; width: 100%; }
     .swml-ladder-acts .swml-ladder-btn { flex: 1 1 auto; }

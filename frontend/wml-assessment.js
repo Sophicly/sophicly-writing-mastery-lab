@@ -4667,6 +4667,27 @@
     let _walkResumeSeq = 0;
     let _walkResumeTimer = null;
     const WALK_RESUME_TIMEOUT_MS = 45000;
+    // ⭐ v7.20.564 (#438): A LONG TURN SAYS IT IS STILL WORKING. Trial 1's marking call reads a whole
+    // draft (90s budget) and the student sees three dots for a minute — Neil, on the 124s outlier
+    // (#417): "it's got the placeholder animation, but it's been stuck on that for probably at
+    // least a minute now". After STILL_WORKING_MS a calm line lands under the dots; it is removed
+    // with the typing bubble. Plain words, no insider vocabulary (root §5c-ii).
+    const STILL_WORKING_MS = 20000;
+    let _walkStillTimer = null;
+    function _armStillWorkingNote() {
+        clearTimeout(_walkStillTimer);
+        _walkStillTimer = setTimeout(function () {
+            try {
+                const bc = document.querySelector('.swml-typing .swml-bubble-content');
+                if (!bc || bc.querySelector('.swml-typing-note')) return;
+                const note = document.createElement('div');
+                note.className = 'swml-typing-note';
+                note.textContent = 'Still working — reading your whole draft takes a little while. Nothing is stuck.';
+                bc.appendChild(note);
+            } catch (e) {}
+        }, STILL_WORKING_MS);
+    }
+    function _clearStillWorkingNote() { clearTimeout(_walkStillTimer); _walkStillTimer = null; }
 
     function armWalkResume(id, fn, opts) {
         if (typeof fn !== 'function') { console.warn('WML WalkResume: arm ignored — no callback for', id); return; }
@@ -4675,6 +4696,7 @@
         const seq = ++_walkResumeSeq;
         _walkResume = { id: id, fn: fn, task: (state && state.task) || '', seq: seq };
         console.log('WML WalkResume: armed', id, '(seq ' + seq + ')');
+        _armStillWorkingNote();   // v7.20.564 (#438)
         // Watchdog — an API turn that errors, is cancelled, or never returns would otherwise
         // leave a code-owned walk permanently parked with no way for the student to continue.
         // Resume anyway and let the walk carry on without that verdict (fail forward, loudly).
@@ -5764,6 +5786,7 @@
         }
         _walkResume = null;                 // disarm FIRST — a throwing or re-arming callback
         clearTimeout(_walkResumeTimer);     // must never be able to fire this same hook twice
+        _clearStillWorkingNote();
         _walkResumeTimer = null;
         try {
             console.log('WML WalkResume: firing', hook.id, (meta && meta.timedOut) ? '(timeout path)' : '');
@@ -5814,6 +5837,7 @@
         _walkResume = null;
         clearTimeout(_walkResumeTimer);
         _walkResumeTimer = null;
+        _clearStillWorkingNote();
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════════
