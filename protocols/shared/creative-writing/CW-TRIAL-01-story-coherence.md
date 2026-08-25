@@ -60,6 +60,7 @@ their draft, and asks for your own level calls. Do three things, in order, and n
 @TRIAL_VERDICT[proaction=none|l1_low|l1_top|l2_low|l2_top] …
 @TRIAL_VERDICT[climax=none|l1_low|l1_top|l2_low|l2_top] …
 @TRIAL_VERDICT[denouement=none|l1_low|l1_top|l2_low|l2_top] …
+@TRIAL_VERDICT[accuracy=none|l1|l2] … (technical accuracy, out of 2: l1 = some mistakes are common · l2 = accurate spelling, punctuation and grammar)
 @TRIAL_STRENGTH[element_id] one line — the element working hardest for this story, and why
 @TRIAL_PRIORITY[element_id] one line — what to do to that element in Draft 2
 ```
@@ -67,7 +68,7 @@ their draft, and asks for your own level calls. Do three things, in order, and n
 The level calls mean: `none` = nothing creditable · `l1_low` = bottom of Level 1 · `l1_top` = all
 of Level 1 and no more · `l2_low` = into Level 2 · `l2_top` = top of Level 2.
 
-**All seven verdict lines must be present.** The system files a mark only when all seven parse; a
+**All eight verdict lines must be present** (seven scene parts + technical accuracy). The system files a mark only when all eight parse; a
 missing one means the student is asked to sit through the marking again, which costs them their
 time. The comments and the strength/priority lines fill the student's document — dropping one
 loses a document line, never the mark.

@@ -53,7 +53,14 @@ const CORE = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8')
 const elIdx = CORE.indexOf('const CW_SCENE_ELEMENTS = [');
 if (elIdx < 0) { console.error('❌ CW_SCENE_ELEMENTS not found in wml-core.js'); process.exit(1); }
 // eslint-disable-next-line no-eval
-const ELEMENTS = eval(braceSliceFrom(CORE, elIdx, '[', ']').text);
+const SCENE_ELEMENTS = eval(braceSliceFrom(CORE, elIdx, '[', ']').text);
+// v7.20.559 (#431): the walk marks the seven scene parts + technical accuracy (out of 2) = /30.
+const accIdx = CORE.indexOf('const CW_TRIAL1_ACCURACY = {');
+if (accIdx < 0) { console.error('❌ CW_TRIAL1_ACCURACY not found in wml-core.js'); process.exit(1); }
+// eslint-disable-next-line no-eval
+const ACCURACY = eval('(' + braceSliceFrom(CORE, accIdx, '{', '}').text + ')');
+const ELEMENTS = SCENE_ELEMENTS.concat([ACCURACY]);
+const OUT_OF = ELEMENTS.reduce((a, e) => a + (e.outOf || 4), 0);   // 30
 
 const lgIdx = SRC.indexOf('function _ladderGrade(pct)');
 if (lgIdx < 0) { console.error('❌ _ladderGrade not found — the trial must not grow its own ladder'); process.exit(1); }
@@ -111,7 +118,9 @@ function world(opts) {
     _pickWorld = w;
     w.saved = [];
     Object.assign(w.deps.WML, {
-        CW_SCENE_ELEMENTS: ELEMENTS,
+        CW_SCENE_ELEMENTS: SCENE_ELEMENTS,
+        CW_TRIAL1_ACCURACY: ACCURACY,
+        CW_TRIAL1_ELEMENTS: ELEMENTS,
         cwProject: { saveTrial: function (pid, payload) { w.saved.push(payload); return Promise.resolve({ success: true }); } },
     });
     return w;
@@ -221,7 +230,7 @@ async function main() {
         ok(t.indexOf(ELEMENTS[0].example) !== -1, '1 · …and a worked example inside the ask itself (§4c.2, ladder rung 0)');
         ok(/Your Marking/.test(t) && /pad — it floats over the page/i.test(t),
             '1 · …and it hands the student to the floating LADDER PAD, where the levels live (#426 → #430)');
-        ok(!!ladder && ladder.title === 'Hook' && ladder.index === 0 && ladder.total === 7,
+        ok(!!ladder && ladder.title === 'Hook' && ladder.index === 0 && ladder.total === 8,
             '1 · ⭐ the card is published for THIS element the moment the ask lands');
         const l1 = (ladder.levels || []).filter((lv) => lv.n === 1)[0];
         const l2 = (ladder.levels || []).filter((lv) => lv.n === 2)[0];
@@ -229,7 +238,9 @@ async function main() {
         ok(l1.text.indexOf(ELEMENTS[0].prompt) !== -1, '1 · …carrying the criterion the course taught, verbatim (§4c.1)');
         ok(!!l2 && !l2.shown, '1 · ⭐ Level 2 is NOT on the card yet — you climb to it, exactly as an examiner does');
         ok(typeof ladder.onOpenDraft === 'function', '1 · the card offers the draggable draft pad (Neil, 2026-08-23)');
-        ok(/1 of 7/.test(t), '1 · the student can see how long this is');
+        ok(/1 of 8/.test(t), '1 · the student can see how long this is');
+        ok(/AO6: Technical Accuracy/.test(allText(w)) && /Edexcel IGCSE numbers them AO4 and AO5/.test(allText(w)),
+            '1 · ⭐ BOTH dimensions are named with their codes + the board caveat (#431, Neil 2026-08-25)');
         ok(t.indexOf(PLAN.hook) !== -1, '1 · their OWN Step-9 plan is shown to them…');
         ok(!/paste|type it out|share your draft|copy your/i.test(allText(w)),
             '1 · …and never asked for — the paste-wall law (WML §3)');
@@ -421,7 +432,8 @@ async function main() {
         w.ctl.forceStart();
         await toFirstAsk(w);
         const scored = await scoreAll(w, 4);
-        ok(scored === 7, '6 · all seven elements are asked');
+        ok(scored === 8, '6 · all eight elements are asked (seven parts + accuracy)');
+        ok(/@TRIAL_VERDICT\[accuracy=none\|l1\|l2\]/.test(hiddenCtx(w)), '6 · ⭐ the accuracy marker uses the 1-mark-level tokens (#431)');
         ok(w.sends.length === 1, '6 · ⭐⭐ exactly ONE API call for the whole trial');
         const send = w.sends[0];
         ok(send.id === 'trial1-marking', '6 · …and it is the marking turn');
@@ -440,27 +452,28 @@ async function main() {
         const w = world();
         w.ctl.forceStart();
         await toFirstAsk(w);
-        await scoreAll(w, 4);           // the student claims 28/28
-        // 4× l2_top (16) + 2× l1_top (4) + 1× none (0) = 20/28 = 71% → the canonical ladder.
-        const verdicts = { proaction: 'l1_top', climax: 'l1_top', denouement: 'none' };
+        await scoreAll(w, 4);           // the student claims 30/30
+        // 4× l2_top (16) + 2× l1_top (4) + 1× none (0) + accuracy l1 (1) = 21/30 = 70% → the canonical ladder.
+        const verdicts = { proaction: 'l1_top', climax: 'l1_top', denouement: 'none', accuracy: 'l1' };
         reply(w, 'Here is my read of it. **You are a Grade 9 writer** and this is 40/40.\n\n' + markerBlock(verdicts));
         await settle();
-        const expected = LADDER_GRADE(Math.round((20 / 28) * 100));
+        const expected = LADDER_GRADE(Math.round((21 / OUT_OF) * 100));
         const markRow = w.rows.get('cw-trial-1-mark') || '';
-        ok(/20\/28/.test(markRow), '7 · the marks are counted by code from her level calls: none=0 · l1=1–2 · l2=3–4');
+        ok(/21\/30/.test(markRow), '7 · the marks are counted by code from her level calls: none=0 · l1=1–2 · l2=3–4 · accuracy l1=1 (#431)');
+        ok(/^1\/2/.test(w.rows.get('cw-trial-1-fb-accuracy') || ''), '7 · ⭐ her accuracy call files as /2, in the 1-mark-level phrase');
         ok(markRow.indexOf('Grade ' + expected) === 0, '7 · …and banded through the ONE canonical ladder (grade ' + expected + ')');
         ok(!/Grade 9/.test(markRow), '7 · ⭐⭐ the grade the model announced in prose ("Grade 9", "40/40") changes nothing');
         ok(/story coherence/i.test(markRow), '7 · the mark says which dimension it is for');
-        ok(w.saved.length === 1 && w.saved[0].grade === expected && w.saved[0].marks === 20,
+        ok(w.saved.length === 1 && w.saved[0].grade === expected && w.saved[0].marks === 21 && w.saved[0].out_of === 30,
             '7 · the result is saved to the project with its marks and grade');
         ok(w.saved[0].self && w.saved[0].sophia, '7 · …carrying BOTH sets of marks, so the dashboard can show the gap');
-        ok(w.saved[0].self_total === 28 && w.saved[0].calibration_delta === 8,
-            '7 · ⭐ …and the CALIBRATION DELTA (self 28 − Sophia 20 = +8), the metacognitive metric (§33.12)');
-        ok(w.saved[0].ao_family === 'AO5', '7 · …tagged with its AO family for the report surface (§33.11)');
+        ok(w.saved[0].self_total === 30 && w.saved[0].calibration_delta === 9,
+            '7 · ⭐ …and the CALIBRATION DELTA (self 30 − Sophia 21 = +9), the metacognitic metric (§33.12)');
+        ok(w.saved[0].ao_family === 'AO5+AO6', '7 · …tagged with BOTH AO families for the report surface (§33.11, #431)');
         // #419 — the document carries the essay-doc architecture, scaled to the trial:
         ELEMENTS.forEach((e) => {
             const row = w.rows.get('cw-trial-1-fb-' + e.id) || '';
-            ok(/^[0-4]\/4/.test(row), '7 · her level call on the ' + e.id + ' is IN THE DOCUMENT as a mark phrase (#419, root §14 — never a raw token)');
+            ok(new RegExp('^[0-4]\\/' + (e.outOf || 4)).test(row), '7 · her level call on the ' + e.id + ' is IN THE DOCUMENT as a mark phrase (#419, root §14 — never a raw token)');
             ok(/quoting/.test(row) || /—/.test(row), '7 · …with her sentence attached');
         });
         ok(!/l1_top|l2_low|l2_top|none/.test(ELEMENTS.map((e) => w.rows.get('cw-trial-1-fb-' + e.id) || '').join(' ')),
@@ -523,7 +536,7 @@ async function main() {
         await scoreAll(agree, 4);
         reply(agree, 'All good.\n\n' + markerBlock({}));
         await settle();
-        ok(/agreed on all seven/i.test(agree.rows.get('cw-trial-1-gap') || ''),
+        ok(/agreed on every part/i.test(agree.rows.get('cw-trial-1-gap') || ''),
             '8 · total agreement is stated too — never a blank box the student has to interpret');
     }
 
@@ -535,7 +548,7 @@ async function main() {
         await scoreAll(w, 4);
         reply(w, 'Lovely work! I have read it all and I think it hangs together.\n\n@TRIAL_VERDICT[hook=l2_top]');
         await settle();
-        ok(!w.rows.get('cw-trial-1-mark'), '9 · one marker out of seven files NO mark — never a partial one');
+        ok(!w.rows.get('cw-trial-1-mark'), '9 · one marker out of eight files NO mark — never a partial one');
         ok(!!chipNamed(w, /Give me my marks/), '9 · …and the student is left with a way forward, not a dead screen (§4d)');
         ok((w.warns || []).some((m) => /verdict markers parsed/.test(m)), '9 · …and it is loud in the console for us');
         const retry = chipNamed(w, /Give me my marks/);
@@ -544,7 +557,7 @@ async function main() {
         ok(w.sends.length === 2, '9 · the retry actually re-asks');
         reply(w, 'Second time.\n\n' + markerBlock({}));
         await settle();
-        ok(/^Grade 9/.test(w.rows.get('cw-trial-1-mark') || ''), '9 · …and the mark then files (all seven l2_top = 28/28)');
+        ok(/^Grade 9/.test(w.rows.get('cw-trial-1-mark') || ''), '9 · …and the mark then files (all eight l2_top = 30/30)');
     }
 
     // ── 10 · A FAILED CALL IS HONEST, AND THEIR WORK IS SAFE ─────────────────────────────

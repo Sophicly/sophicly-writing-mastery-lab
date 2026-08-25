@@ -45,6 +45,24 @@ sophicly_predeploy_guard() {
             fi
         fi
     fi
+
+    # v7.20.559 (Neil, 2026-08-25): EVERY COMMIT IS PUSHED. Refuse to deploy code the remote has
+    # never seen — try the push first, so the common case self-heals; only a FAILED push blocks.
+    # Override (outage only): FORCE_UNPUSHED_DEPLOY=1.
+    if git rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1; then
+        local ahead
+        ahead=$(git rev-list --count '@{u}..HEAD' 2>/dev/null | tr -d ' ')
+        if [[ "${ahead:-0}" -gt 0 ]]; then
+            echo "↑ local is $ahead commit(s) ahead of origin — pushing before deploy…"
+            if ! git push -q origin HEAD; then
+                if [[ "${FORCE_UNPUSHED_DEPLOY:-}" != "1" ]]; then
+                    echo "❌ push failed and $ahead commit(s) are unpushed. Fix the push (or FORCE_UNPUSHED_DEPLOY=1 for an outage)."
+                    exit 1
+                fi
+                echo "⚠️  FORCE_UNPUSHED_DEPLOY=1 — deploying unpushed commits."
+            fi
+        fi
+    fi
 }
 
 sophicly_postdeploy_commit() {

@@ -1917,6 +1917,21 @@ so no lane re-asks:
    method"* — there, with the boards' real level counts). Direction recorded, NOT built: trials
    are the proving ground first; the lit/lang adaptation is a roadmap item, not part of the CW
    slices.
+14. ⭐⭐ **TRIAL 1 CARRIES A SECOND DIMENSION — TECHNICAL ACCURACY, OUT OF 2 (Neil, ruled
+   2026-08-25, testing .558; he acknowledged it overrules rulings 1, 6 and 11 above for the
+   trials).** *"With the real GCSE for creative writing there's actually two sets of criteria —
+   AO5 for content and organisation, and AO6 for technical accuracy. Once they've finished
+   assessing the seven elements, give them one more criterion, out of two: one = 'some mistakes
+   are common', two = 'accurate spelling, punctuation, grammar' — that pushes it up to thirty."*
+   So: the seven scene parts (/28) are the **Content and Organisation** dimension; **Technical
+   Accuracy** (/2) follows; the trial is /30. The two dimensions are NAMED plainly in the
+   orientation with the codes attached (AO5 / AO6), with the caveat that **Edexcel IGCSE numbers
+   them AO4 / AO5** and **Cambridge IGCSE folds accuracy into its one Writing objective (AO2,
+   W1–W5)** — framed as *"mock practice for understanding these assessment objectives"*. The
+   engine derives everything from the element's `outOf` (a 1-mark level offers Yes / Not yet
+   only; Sophia's tokens for it are `none|l1|l2`), so a third dimension is data, not code.
+   Ruling 6 still governs the FINALE (full AO5+AO6 after the SPaG step); this ruling is about the
+   trial's early exposure to both objectives. Shipped v7.20.559 (FIXLIST #431).
 
 ## §34. ⭐⭐ THE EMERGENCY CREATIVE-WRITING UNIT — the three rulings it stands on (Neil, ruled 2026-08-23)
 

@@ -330,6 +330,14 @@ handoff remembered to state it is not a rule.**
 - **Engine lane's duty in return:** check `git log` for unshipped content commits before every
   deploy, and say in the test-pass note which content changes are riding along. A content commit
   sitting unshipped is the engine lane's miss, not the content lane's.
+- ⭐⭐ **EVERY COMMIT IS PUSHED — mechanical since v7.20.559 (Neil, 2026-08-25: *"we had already
+  agreed that we would push every commit… I just assumed that was happening"*).** It was not:
+  deploy = rsync, nothing ran `git push`, and 263 commits sat local-only. Now: `.git/hooks/post-commit`
+  execs `bin/post-commit-push.sh` (pushes the branch after every commit), and
+  `.deploy/deploy-helpers.sh` pushes-or-refuses when local is ahead of origin
+  (`FORCE_UNPUSHED_DEPLOY=1` for an outage only). A fresh clone must re-wire the hook (it is a
+  regular file in `.git/hooks`, like the pre-commit one). Content lanes' commits are pushed by the
+  same hook — pushing is not deploying, so the "content lanes never deploy" rule is untouched.
 
 ### 2. ⭐⭐ WHERE THE CRITERIA COME FROM — NEVER FROM GENERAL GCSE KNOWLEDGE
 

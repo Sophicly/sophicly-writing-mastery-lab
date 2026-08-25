@@ -35,6 +35,12 @@ const elIdx = CORE.indexOf('const CW_SCENE_ELEMENTS = [');
 if (elIdx < 0) { console.log('cw-trial1-gate: CW_SCENE_ELEMENTS not found in wml-core.js'); process.exit(1); }
 // eslint-disable-next-line no-eval
 const ELEMENTS = eval(braceSliceFrom(CORE, elIdx, '[', ']').text);
+// v7.20.559 (#431): the trial marks the seven scene parts PLUS technical accuracy (out of 2).
+const accIdx = CORE.indexOf('const CW_TRIAL1_ACCURACY = {');
+if (accIdx < 0) { console.log('cw-trial1-gate: CW_TRIAL1_ACCURACY not found in wml-core.js'); process.exit(1); }
+// eslint-disable-next-line no-eval
+const ACCURACY = eval('(' + braceSliceFrom(CORE, accIdx, '{', '}').text + ')');
+const TRIAL_ELEMENTS = ELEMENTS.concat([ACCURACY]);
 
 // The heal's source, sliced once — used by two sections below.
 const healIdx = SRC.indexOf('const tryHealCwTrial1Doc = async () => {');
@@ -43,6 +49,11 @@ const HEAL = healIdx === -1 ? '' : braceSliceFrom(SRC, healIdx, '{', '}').text;
 // ── 1. THE CRITERIA ARE WHAT THE COURSE TAUGHT ────────────────────────────────────────────────
 console.log('\nThe trial asks about the seven elements Step 9 taught, in Step 9\'s own words:');
 ok('there are seven of them', ELEMENTS.length === 7, ELEMENTS.length);
+ok('⭐ …plus ONE technical-accuracy dimension out of 2, with its own Level 1 text (#431, Neil 2026-08-25) — /28 → /30',
+    ACCURACY.id === 'accuracy' && ACCURACY.outOf === 2 && ACCURACY.ao === 'AO6' && /some mistakes are common/i.test(ACCURACY.l1)
+    && /accurate/i.test(ACCURACY.strong) && TRIAL_ELEMENTS.reduce((a, e) => a + (e.outOf || 4), 0) === 30);
+ok('…and it carries a worked example + more examples like every other ask (ladder rungs 0–1)',
+    typeof ACCURACY.example === 'string' && ACCURACY.example.length > 40 && Array.isArray(ACCURACY.more) && ACCURACY.more.length >= 2);
 ok('in the order the scene runs',
     ELEMENTS.map(e => e.id).join(',') === 'hook,setup,reaction,epiphany,proaction,climax,denouement',
     ELEMENTS.map(e => e.id).join(','));
@@ -111,11 +122,11 @@ ok('⛔ it does not hand the whole judgment to the model — the student marks f
 ok('…and the model is forbidden from stating a mark, because the arithmetic is code\'s',
     /never state a mark|give a mark[^.]{0,40}grade in your own words/i.test(PROTO)
     && /arithmetic\s+the system does|worked out from your/i.test(PROTO));
-ok('the marker contract is stated, all seven lines',
-    ELEMENTS.every(e => PROTO.indexOf('@TRIAL_VERDICT[' + e.id + '=') !== -1));
+ok('the marker contract is stated, all eight lines (seven parts + accuracy)',
+    TRIAL_ELEMENTS.every(e => PROTO.indexOf('@TRIAL_VERDICT[' + e.id + '=') !== -1));
 ok('…in the examiner-ladder tokens (#424), with the legacy met|partly|not contract gone',
     /none\|l1_low\|l1_top\|l2_low\|l2_top/.test(PROTO) && !/met\|partly\|not/.test(PROTO));
-ok('…and it says all seven verdict lines are required', /All seven verdict lines must be present/i.test(PROTO));
+ok('…and it says all eight verdict lines are required', /All eight verdict lines must be present/i.test(PROTO));
 ok('…and carries the strength + priority markers the document rows read (#419)',
     /@TRIAL_STRENGTH\[/.test(PROTO) && /@TRIAL_PRIORITY\[/.test(PROTO));
 ok('it scopes the judgment to story coherence, not SPaG (that is the final assessment\'s job)',
@@ -239,8 +250,16 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
         !/\bpct >= 85\b|\bGRADE_BOUNDARIES\b|85 \? 9/.test(CTL));
     ok('the marks are the examiner ladder\'s (#424): none=0 · l1_low=1 · l1_top=2 · l2_low=3 · l2_top=4',
         /MARKS = \{ none: 0, l1_low: 1, l1_top: 2, l2_low: 3, l2_top: 4 \}/.test(CTL));
-    ok('…summed over els().length * 4 — /28 comes from the element count, never a hardcoded 28',
-        /list\.length \* 4/.test(CTL) && !/\/ 28\b/.test(CTL));
+    ok('…summed over each element\'s outOf — /30 is a SUM, never a hardcoded 28 or 30 (#431)',
+        /max \+= outOf\(e\)/.test(CTL) && !/\/ 28\b|\/ 30\b|\* 4\b/.test(CTL));
+    ok('⭐ a 1-mark level offers only Yes / Not yet — no half-marks (#431)',
+        /verdicts: perLevel\(e\) === 1 \? \['all', 'not'\] : null/.test(CTL)
+        && /if \(verdict === 'some' && perLevel\(e\) === 1\) return;/.test(CTL));
+    ok('…the marking prompt\'s marker list is DERIVED from the element list, never hand-typed (#431)',
+        /els\(\)\.map\(function \(e, k\) \{[\s\S]{0,120}@TRIAL_VERDICT\[' \+ e\.id/.test(CTL) && !/@TRIAL_VERDICT\[setup=/.test(CTL));
+    ok('…and the orientation names BOTH dimensions with their codes and the board caveat (Neil 2026-08-25)',
+        /AO5: Content and Organisation/.test(CTL) && /AO6: Technical Accuracy/.test(CTL) && /Edexcel IGCSE numbers them AO4 and AO5/.test(CTL));
+    ok('…and the heal gives a pre-.559 document both accuracy rows', /cw-trial-1-accuracy/.test(HEAL || '') && /cw-trial-1-fb-accuracy/.test(HEAL || ''));
     ok('the walk spends ONE call on marking and one only on an explicit ask for help',
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length === 2,
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length);

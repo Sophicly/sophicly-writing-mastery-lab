@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.558';
+var WML_BUILD = '7.20.559';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1401,6 +1401,26 @@ window.WML = (function() {
             ],
         },
     ];
+
+    // ⭐ v7.20.559 (#431, Neil 2026-08-25): THE TRIAL'S SECOND DIMENSION. Real GCSE creative
+    // writing is marked on TWO sets of criteria — Content and Organisation (AO5) and Technical
+    // Accuracy (AO6) — so after the seven scene parts the student judges ONE more, out of 2, in
+    // his words: 1 = "some mistakes are common", 2 = "accurate spelling, punctuation, grammar".
+    // /28 → /30. This element carries its own `outOf` and Level-1 text; everything else in the
+    // walk (ladder, arithmetic, rows, Sophia's tokens) DERIVES from those two fields, so a third
+    // dimension would be data. Supersedes PEDAGOGY §33.1/.11 for the trials (amended same day).
+    const CW_TRIAL1_ACCURACY = {
+        id: 'accuracy', label: 'Technical Accuracy', outOf: 2, ao: 'AO6',
+        prompt: 'Spelling, punctuation and grammar that let a reader read without stumbling.',
+        l1: 'Some mistakes are common — a reader notices slips in spelling, punctuation or grammar, but can still follow the writing.',
+        strong: 'Spelling, punctuation and grammar are accurate — a reader never has to re-read a sentence to work out what you meant.',
+        example: 'Read one paragraph of your draft aloud, exactly as it is written. If you stumble on a missing full stop, a run-on sentence or a misspelt word, the reader will stumble there too — that is a slip a reader notices. If you read straight through without a hitch, that paragraph is accurate.',
+        more: [
+            'The three slips examiners see most: a comma where a full stop belongs ("She ran, she did not look back"), their / there / they’re, and speech with no punctuation inside the speech marks. Check for those three first.',
+            'Accurate is not the same as simple. A long sentence with three commas and a dash can be perfectly accurate; a short one can still be missing its full stop.',
+        ],
+    };
+    const CW_TRIAL1_ELEMENTS = CW_SCENE_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
 
     // ⭐ v7.20.550 (CW trials slice 3) — WHICH DRAFT DOES A TRIAL ASSESS?
     // DERIVED from CW_STEPS, never a hand-written trial→draft map. A trial assesses the draft
@@ -5402,7 +5422,7 @@ window.WML = (function() {
         EXERCISE_MANIFEST,
         // Creative Writing
         CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SEED_FROM, CW_SIDEBAR_STEPS,
-        cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS,
+        cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
         // Revision map
         REVISION_MAP,
         // Utilities

@@ -14389,7 +14389,10 @@
             const acts = document.createElement('div');
             acts.className = 'swml-ladder-acts';
             if (!lv.verdict && typeof m.onPick === 'function') {
-                [['all', 'Yes — all of it'], ['some', 'Some of it'], ['not', 'Not yet']].forEach((pair) => {
+                const allPairs = [['all', 'Yes — all of it'], ['some', 'Some of it'], ['not', 'Not yet']];
+                // v7.20.559 (#431): a level may declare which verdicts it offers (a 1-mark level has no "some").
+                const offered = Array.isArray(lv.verdicts) ? allPairs.filter((p) => lv.verdicts.indexOf(p[0]) !== -1) : allPairs;
+                offered.forEach((pair) => {
                     const b = document.createElement('button');
                     b.type = 'button';
                     b.className = 'swml-quick-btn swml-ladder-btn swml-ladder-btn-' + pair[0];
@@ -28340,8 +28343,31 @@
             ];
 
 
-            function els() { return (WML && WML.CW_SCENE_ELEMENTS) || []; }
+            // v7.20.559 (#431): the trial's elements are the seven scene parts PLUS the technical-
+            // accuracy dimension (out of 2). Every "how many marks" question below is answered from
+            // the element (`outOf`), never from a constant — so /30 is a sum, not a number.
+            function els() { return (WML && (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS)) || []; }
             function fid(id) { return 'cw-trial-1-' + id; }
+            function outOf(e) { return (e && e.outOf) || 4; }
+            function perLevel(e) { return outOf(e) / 2; }       // marks each level is worth: 2 (of 4) or 1 (of 2)
+            function levelDefs(e) {
+                const p = perLevel(e);
+                return LEVEL_DEFS.map(function (L) {
+                    return { n: L.n, label: L.label,
+                        range: p === 1 ? (L.n === 1 ? '1 mark' : '2 marks') : L.range };
+                });
+            }
+            // Sophia's token → this element's mark. A 1-mark level has no bottom/top, so both
+            // l1 tokens are 1 and both l2 tokens are 2; bare `l1` / `l2` are accepted for it.
+            function tokenMark(e, tok) {
+                if (!tok || tok === 'none') return 0;
+                if (perLevel(e) === 1) return /^l2/.test(tok) ? 2 : 1;
+                return MARKS[tok] || 0;
+            }
+            function markPhrase(e, m) {
+                if (outOf(e) === 2) return ({ 0: '0/2 — not there yet', 1: '1/2 (Level 1 — some mistakes are common)', 2: '2/2 (Level 2 — accurate)' })[m] || '0/2';
+                return MARK_PHRASE[m] || MARK_PHRASE[0];
+            }
 
             const lsKey = () => {
                 try {
@@ -28462,7 +28488,8 @@
                 userTurn('Still stuck — what would a strong ' + e.label.toLowerCase() + ' look like in MY story?');
                 const planned = planLine(e.id);
                 const ctx = '[THE STUDENT IS ASSESSING THEIR OWN DRAFT for Trial 1 (story coherence) and is stuck on '
-                    + 'ONE element of the seven-part scene structure. Explain what a strong ' + e.label + ' would look '
+                    + (e.ao === 'AO6' ? 'the TECHNICAL ACCURACY of their draft (spelling, punctuation, grammar)' : 'ONE element of the seven-part scene structure')
+                    + '. Explain what a strong ' + e.label + ' would look '
                     + 'like IN THEIR OWN STORY, in two or three sentences, using what they planned. Then hand it '
                     + 'straight back — ask them to look at their own draft and decide. Do NOT judge their draft for '
                     + 'them, do NOT give a mark, do NOT move to another element, and do NOT emit any marker.]'
@@ -28502,9 +28529,15 @@
                     'Time to see how your first draft holds together as a **story**. Not the spelling, not the '
                         + 'word choices — those come later. Just this: does it work as a piece of storytelling?',
                     // AO framing (PEDAGOGY §33.11): plain name FIRST, exam code attached.
-                    'Everything in this trial is what the exam will call **AO5: Content and Organisation** — your '
-                        + 'ideas, and how the story is built. You will meet that name on real mark schemes later; '
-                        + 'this is the same skill, so you are already training for it.',
+                    // v7.20.559 (#431, Neil): BOTH dimensions the real exam marks, named plainly with
+                    // the codes attached — and the board caveat, because the codes differ.
+                    'Real exam mark schemes judge a story on **two** sets of criteria. The first is **Content '
+                        + 'and Organisation** — your ideas, and how the story is built. The second is **Technical '
+                        + 'Accuracy** — spelling, punctuation and grammar. Generally these are called **Assessment '
+                        + 'Objective 5** and **Assessment Objective 6** (the exam will call the first one '
+                        + '**AO5: Content and Organisation** and the second **AO6: Technical Accuracy**). One caveat: '
+                        + 'Edexcel IGCSE numbers them AO4 and AO5, and Cambridge IGCSE folds accuracy into its one '
+                        + 'Writing objective. Think of this trial as mock practice for understanding those objectives.',
                     // The examiner method itself (PEDAGOGY §33.10) — taught before it is used.
                     'And you are going to mark it **the way a real examiner marks**. Examiners climb: they read '
                         + '**Level 1** of the mark scheme and, only when ALL of it is met, look at **Level 2**. '
@@ -28514,9 +28547,10 @@
                         + 'you planned back in Step 9 — hook, setup, reaction, epiphany, proaction, climax, '
                         + 'denouement. Each part is marked out of **4**: Level 1 is 1–2 marks, Level 2 is 3–4. '
                         + 'You make the level call, then prove it in one sentence — an examiner who cannot point '
-                        + 'at the evidence does not have a verdict yet.',
+                        + 'at the evidence does not have a verdict yet.\n\nThen one last judgement, out of **2**, on '
+                        + 'technical accuracy — which takes the whole trial to **30**.',
                     'Be honest rather than kind. An honest low mark tells you exactly what to fix in Draft 2; a '
-                        + 'hopeful high one tells you nothing.\n\nWhen you have marked all seven, I will read your '
+                        + 'hopeful high one tells you nothing.\n\nWhen you have marked every part, I will read your '
                         + 'draft and make my own level calls — and the places where we disagree are the most '
                         + 'useful thing in this lesson.',
                 ];
@@ -28623,11 +28657,12 @@
             // me the line that proves it"), a TARGET where the climb stopped (#424 — defend the
             // mark, Panadero/Boud).
             function serveNote(e, mark, opts) {
-                const text = mark >= 3
-                    ? '**' + mark + ' out of 4.** Now prove it like an examiner: **in one sentence, point at the '
+                const top = outOf(e);
+                const text = mark > top / 2
+                    ? '**' + mark + ' out of ' + top + '.** Now prove it like an examiner: **in one sentence, point at the '
                         + 'exact moment in your draft that earns it** — quote a few of your own words.'
-                        + (mark === 3 ? ' Then say what is missing for the top of Level 2.' : '')
-                    : '**' + mark + ' out of 4.** **In one sentence — what is missing?**\n\nSay what your '
+                        + (mark === top - 1 && top === 4 ? ' Then say what is missing for the top of Level 2.' : '')
+                    : '**' + mark + ' out of ' + top + '.** **In one sentence — what is missing?**\n\nSay what your '
                         + e.label.toLowerCase() + ' does at the moment and what it would need to do to climb a '
                         + 'level. This sentence becomes your target for Draft 2, so make it something you could '
                         + 'actually act on.';
@@ -28649,11 +28684,13 @@
                 const picked = (st.levels || {})[e.id] || {};
                 const out = [];
                 let show = true;
-                LEVEL_DEFS.forEach(function (L) {
+                levelDefs(e).forEach(function (L) {
                     const verdict = picked[L.n] || null;
                     out.push({
                         n: L.n, label: L.label, range: L.range,
                         text: L.n === 1 ? l1Body(e) : l2Body(e),
+                        // A 1-mark level is met or not — "some of it" would be half a mark.
+                        verdicts: perLevel(e) === 1 ? ['all', 'not'] : null,
                         verdict: verdict, shown: show,
                     });
                     // The NEXT level is only on screen once this one was fully met — the climb.
@@ -28671,7 +28708,7 @@
                     prompt: e.prompt,
                     levels: levelsModel(e),
                     mark: (st.marks || {})[e.id] != null ? st.marks[e.id] : null,
-                    outOf: 4,
+                    outOf: outOf(e),
                     locked: !!(opts && opts.locked),
                     foot: (opts && opts.foot) || (st.awaitNote
                         ? 'Answer in the chat to bank this mark and move on — or change a level above first.'
@@ -28697,6 +28734,7 @@
             }
 
             function onLevelPick(e, n, verdict) {
+                if (verdict === 'some' && perLevel(e) === 1) return;   // no half-marks on a 1-mark level
                 st.levels = st.levels || {};
                 st.levels[e.id] = st.levels[e.id] || {};
                 st.levels[e.id][n] = verdict;
@@ -28706,7 +28744,7 @@
                 const mark = markFromLevels(e);
                 if (mark == null) { publishLadder(); return; }   // climbed: the next level is now on screen
                 setMark(e, mark);
-                pickTurn(levelPickWords(n, verdict, mark));
+                pickTurn(levelPickWords(n, verdict, mark, outOf(e)));
                 publishLadder();
                 serveNote(e, mark);
             }
@@ -28727,28 +28765,30 @@
             }
             function markFromLevels(e) {
                 const picked = (st.levels || {})[e.id] || {};
+                const p = perLevel(e);                     // 2 (out of 4) or 1 (out of 2)
                 if (picked[1] === 'not') return 0;
-                if (picked[1] === 'some') return 1;
+                if (picked[1] === 'some') return 1;        // only offered when p === 2
                 if (picked[1] !== 'all') return null;      // Level 1 not yet judged
-                if (picked[2] === 'all') return 4;
-                if (picked[2] === 'some') return 3;
-                if (picked[2] === 'not') return 2;         // all of L1 and no more
+                if (picked[2] === 'all') return 2 * p;
+                if (picked[2] === 'some') return p + 1;    // only offered when p === 2
+                if (picked[2] === 'not') return p;         // all of L1 and no more
                 return null;                               // Level 2 on screen, not yet judged
             }
-            function levelPickWords(n, verdict, mark) {
+            function levelPickWords(n, verdict, mark, top) {
                 const v = verdict === 'all' ? 'all of it' : verdict === 'some' ? 'some of it' : 'not yet';
-                return 'Level ' + n + ': ' + v + ' — ' + mark + '/4';
+                return 'Level ' + n + ': ' + v + ' — ' + mark + '/' + (top || 4);
             }
             // The two level descriptors are the TAUGHT content at two grades — Level 1 derives
             // from the element's purpose (e.prompt, the Step-9 row), Level 2 IS what a strong one
             // does (e.strong). Nothing here is authored beside the taught criteria (§33.10).
             function l1Body(e) {
+                if (e.l1) return e.l1;                       // a dimension that states its own Level 1 (#431)
                 return 'There is a ' + e.label.toLowerCase() + ', and it makes a real attempt at its job: ' + e.prompt;
             }
             function l2Body(e) { return e.strong; }
 
             function bankMark(e, mark, note) {
-                writeRow(fid(e.id), mark + '/4' + (note ? ' — ' + note : ''), { replace: true });
+                writeRow(fid(e.id), mark + '/' + outOf(e) + (note ? ' — ' + note : ''), { replace: true });
             }
 
             // ── the ONE API turn: Sophia marks what they have just judged ─────────────────
@@ -28756,7 +28796,7 @@
                 return els().map(function (e) {
                     const mk = (st.marks || {})[e.id];
                     const n = (st.notes || {})[e.id] || '';
-                    return '- ' + e.label + ': ' + (mk == null ? '—' : mk + '/4') + (n ? ' — ' + n : '');
+                    return '- ' + e.label + ': ' + (mk == null ? '—' : mk + '/' + outOf(e)) + (n ? ' — ' + n : '');
                 }).join('\n');
             }
 
@@ -28766,34 +28806,38 @@
                 persist();
                 closeLadderPad();            // ephemeral: gone when the marking is (#430)
                 setTrialLadderModel(null);
-                aiBubble('That is all seven. Here is your marking:\n\n' + selfSummary()
+                aiBubble('That is all of them. Here is your marking:\n\n' + selfSummary()
                     + '\n\nNow let me read your draft and make my own level calls on each part. One moment.');
                 const ctx = '[TRIAL 1 — STORY COHERENCE. The student has just marked their own Draft 1 the way an '
                     + 'examiner does: for each of the seven scene elements they climbed a two-level ladder '
                     + '(Level 1 = the element is there and attempts its job, worth 1–2 marks; Level 2 = it does '
-                    + 'what a strong one does, worth 3–4; nothing creditable = 0). Their draft is in the document '
+                    + 'what a strong one does, worth 3–4; nothing creditable = 0), and then judged TECHNICAL '
+                    + 'ACCURACY out of 2 (Level 1 = some mistakes are common, 1 mark; Level 2 = accurate spelling, '
+                    + 'punctuation and grammar, 2 marks). Their draft is in the document '
                     + 'above. Do THREE things, in this order and nothing else:\n'
-                    + '1. Make YOUR OWN level call on each of the seven elements, in order, one short paragraph '
+                    + '1. Make YOUR OWN level call on each of the ' + els().length + ' elements, in order, one short paragraph '
                     + 'each: point at the actual place in their draft (quote a few of their own words) and say, in '
                     + 'words, which level it reaches and whether it sits at the top or the bottom of it.\n'
                     + '2. Name the ONE element that would improve the story most in Draft 2, and say what to do to it.\n'
-                    + '3. End your reply with exactly NINE marker lines in this format and nothing else on those '
+                    + '3. End your reply with exactly ' + (els().length + 2) + ' marker lines in this format and nothing else on those '
                     + 'lines. Each verdict line carries your verdict AND, after the bracket, one sentence on that '
                     + 'element for the student\u2019s document — quote two or three of their own words in it:\n'
-                    + '@TRIAL_VERDICT[hook=none|l1_low|l1_top|l2_low|l2_top] your one-sentence comment\n'
-                    + '@TRIAL_VERDICT[setup=…] …\n@TRIAL_VERDICT[reaction=…] …\n@TRIAL_VERDICT[epiphany=…] …\n'
-                    + '@TRIAL_VERDICT[proaction=…] …\n@TRIAL_VERDICT[climax=…] …\n@TRIAL_VERDICT[denouement=…] …\n'
+                    + els().map(function (e, k) {
+                        return '@TRIAL_VERDICT[' + e.id + '=' + (perLevel(e) === 1 ? 'none|l1|l2' : 'none|l1_low|l1_top|l2_low|l2_top') + ']'
+                            + (k === 0 ? ' your one-sentence comment' : ' …') + '\n';
+                    }).join('')
                     + '@TRIAL_STRENGTH[element_id] one line — the element working hardest for this story, and why\n'
                     + '@TRIAL_PRIORITY[element_id] one line — what to do to that element in Draft 2\n'
                     + 'The level calls mean: none = nothing creditable · l1_low = bottom of Level 1 · l1_top = all '
-                    + 'of Level 1 and no more · l2_low = into Level 2 · l2_top = top of Level 2.\n'
-                    + 'All seven verdict lines are required. Do NOT give a mark, a score, a number out of 4 or 28, '
+                    + 'of Level 1 and no more · l2_low = into Level 2 · l2_top = top of Level 2. For accuracy: '
+                    + 'none = errors stop the reader · l1 = some mistakes are common · l2 = accurate.\n'
+                    + 'All ' + els().length + ' verdict lines are required. Do NOT give a mark, a score, a number out of 4, 2, 28 or 30, '
                     + 'a percentage or a grade anywhere in your prose — the marks are worked out from your level '
                     + 'calls by the system, not by you. Do NOT rewrite their draft. Judge only story coherence: '
                     + 'not spelling, not punctuation.]'
                     + '\n\nWHAT THE STUDENT DECIDED ABOUT THEIR OWN DRAFT (their marks out of 4, with their evidence):\n' + selfSummary()
                     + '\n\nWHAT EACH ELEMENT IS FOR, AND ITS TWO LEVELS:\n'
-                    + els().map(function (e) { return '- ' + e.label + ': ' + e.prompt + ' Level 1: it is there and attempts this. Level 2: ' + e.strong; }).join('\n');
+                    + els().map(function (e) { return '- ' + e.label + ' (out of ' + outOf(e) + '): ' + e.prompt + ' Level 1: ' + l1Body(e) + ' Level 2: ' + e.strong; }).join('\n');
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 active = false; pending = true;
                 armWalkResume('trial1-marking', function (reply, meta) {
@@ -28801,7 +28845,7 @@
                     onMarkingReply(reply, meta);
                 }, { timeoutMs: 90000 });
                 canvasSilentSend = true;
-                chatTextarea.value = 'I have marked all seven parts — please read my draft and make your own level calls.';
+                chatTextarea.value = 'I have marked every part — please read my draft and make your own level calls.';
                 sendCanvasMessage();
             }
 
@@ -28818,7 +28862,7 @@
                 // [^\S\n]* — horizontal whitespace ONLY. A bare \s* here eats the newline and
                 // swallows the NEXT marker line as this one's comment: seven bare lines parse as
                 // four, and a correct reply is refused. Caught by the sim's 7b fixture.
-                const re = /@TRIAL_VERDICT\s*\[\s*([a-zA-Z]+)\s*=\s*(none|l1_low|l1_top|l2_low|l2_top)\s*\][^\S\n]*([^\n]*)/g;
+                const re = /@TRIAL_VERDICT\s*\[\s*([a-zA-Z]+)\s*=\s*(none|l1_low|l1_top|l2_low|l2_top|l1|l2)\s*\][^\S\n]*([^\n]*)/g;
                 let m;
                 while ((m = re.exec(src)) !== null) {
                     const id = m[1].toLowerCase();
@@ -28841,14 +28885,14 @@
             function markFrom(verdicts) {
                 const list = els();
                 let got = 0;
-                list.forEach(function (e) { got += MARKS[verdicts[e.id]] || 0; });
-                const max = list.length * 4;
+                let max = 0;
+                list.forEach(function (e) { got += tokenMark(e, verdicts[e.id]); max += outOf(e); });
                 const pct = max ? Math.round((got / max) * 100) : 0;
                 return { got: got, max: max, pct: pct, grade: _ladderGrade(pct) };
             }
             function sophiaMarksOf(verdicts) {
                 const out = {};
-                els().forEach(function (e) { out[e.id] = MARKS[verdicts[e.id]] || 0; });
+                els().forEach(function (e) { out[e.id] = tokenMark(e, verdicts[e.id]); });
                 return out;
             }
             function selfTotal() {
@@ -28861,7 +28905,7 @@
                 els().forEach(function (e) {
                     const a = (st.marks || {})[e.id] || 0, b = hers[e.id];
                     if (b == null || a === b) return;
-                    rows.push('- **' + e.label + '** — you said *' + a + '/4*, I said *' + b + '/4*.');
+                    rows.push('- **' + e.label + '** — you said *' + a + '/' + outOf(e) + '*, I said *' + b + '/' + outOf(e) + '*.');
                 });
                 return rows;
             }
@@ -28871,12 +28915,12 @@
                     console.warn('WML trial1: marking call failed/timed out — honest message + retry chip served.');
                     active = true; persist();
                     _cwReplay(function () {
-                        aiBubble('I could not read your draft just now — that is my end, not yours. **Your seven '
+                        aiBubble('I could not read your draft just now — that is my end, not yours. **Your '
                             + 'judgements are saved** in your document, so nothing is lost. Try again when you are '
                             + 'ready, or carry on to Step 11 and come back to this.');
                     });
                     chipBarOrRetry(['Try again →'], function () { pickTurn('Try again →'); serveMarking(); },
-                        '**Your seven judgements are saved.**');
+                        '**Your judgements are saved.**');
                     resetSend();
                     return;
                 }
@@ -28907,7 +28951,7 @@
                 // comes from the all-or-nothing marker, so no row is ever left blank.
                 els().forEach(function (e) {
                     const c = parsed.comments[e.id] || '';
-                    writeRow('cw-trial-1-fb-' + e.id, MARK_PHRASE[st.sophia[e.id]] + (c ? ' \u2014 ' + c : ''), { replace: true });
+                    writeRow('cw-trial-1-fb-' + e.id, markPhrase(e, st.sophia[e.id]) + (c ? ' \u2014 ' + c : ''), { replace: true });
                 });
                 // Strength/priority: from her markers when they parsed; DERIVED from her own
                 // level calls when they did not (highest / lowest) — the derivation is honest
@@ -28928,7 +28972,7 @@
                 const gaps = agreementLine(st.sophia);
                 writeRow('cw-trial-1-gap', gaps.length
                     ? gaps.map(function (g) { return g.replace(/\*\*/g, '').replace(/^- /, ''); }).join(' | ')
-                    : 'You and Sophia agreed on all seven.', { replace: true });
+                    : 'You and Sophia agreed on every part.', { replace: true });
                 // ⭐ REVEAL ORDER (PEDAGOGY §33.9, Butler/EEF): the disagreements and the words
                 // lead; the grade is a quiet closing line, never the headline — and the turn does
                 // not end here: it ends on the student's own target (serveTargetAsk below).
@@ -28938,7 +28982,7 @@
                             + '\n\nThose are the parts worth looking at again — not because I am right, but '
                             + 'because two readers disagreeing about your story is exactly where the useful '
                             + 'question is.'
-                        : 'We agreed on all seven parts, which means you are already reading your own writing '
+                        : 'We agreed on every part, which means you are already reading your own writing '
                             + 'the way an examiner does. That is the harder half of this.')
                         + '\n\n*For the record, the arithmetic on my level calls: ' + m.got + ' out of ' + m.max
                         + ' — Grade ' + m.grade + ' for story coherence. It is in your document; the sentences '
@@ -28958,7 +29002,7 @@
                     if (!(state.cwProjectId && WML.cwProject && WML.cwProject.saveTrial)) return;
                     const m = st.mark || {};
                     const payload = {
-                        trial: 1, dimension: 'story_coherence', ao_family: 'AO5',
+                        trial: 1, dimension: 'story_coherence', ao_family: 'AO5+AO6',   // v7.20.559 (#431): /30 = AO5 /28 + AO6 /2
                         self: st.marks || {}, sophia: st.sophia || {}, notes: st.notes || {},
                         self_total: st.selfTotal || 0,
                         marks: m.got, out_of: m.max, percent: m.pct, grade: m.grade,
@@ -29077,8 +29121,8 @@
                     // a pre-.554 "Yes / Partly" row) is not a mark, so the derivation stops there
                     // and the walk re-asks from that element — honest, since the old verdicts do
                     // not map onto the examiner ladder.
-                    const hm = /^([0-4])\s*\/\s*4/.exec(raw);
-                    if (!hm) break;
+                    const hm = /^([0-4])\s*\/\s*([24])\b/.exec(raw);
+                    if (!hm || parseInt(hm[2], 10) !== outOf(list[k])) break;
                     marks[list[k].id] = parseInt(hm[1], 10);
                     const tail = raw.indexOf('—') >= 0 ? raw.slice(raw.indexOf('—') + 1).trim() : '';
                     if (tail) notes[list[k].id] = tail;
@@ -29108,8 +29152,8 @@
                         ? 'This trial is finished — **' + m.got + ' out of ' + m.max + ', Grade ' + m.grade
                             + '** for story coherence, all in your document'
                             + (st.target ? ', with your target for Draft 2 filed' : '')
-                            + '. You can go through the seven parts again whenever you want.'
-                        : 'Your marking is in your document. You can go through the seven parts again whenever you want.');
+                            + '. You can go through every part again whenever you want.'
+                        : 'Your marking is in your document. You can go through every part again whenever you want.');
                 });
                 chipBarOrRetry(['Change my answers →'], onChangeAnswers, '**This trial is finished.**');
                 resetSend();
@@ -44494,6 +44538,25 @@
                     }
                 }
 
+                // (1b3) v7.20.559 (#431) — the technical-accuracy dimension. A pre-.559 document has
+                // the seven scene rows and no `accuracy` row in either block; each new row is inserted
+                // after its `denouement` sibling, from the same element the template reads.
+                {
+                    const acc = (window.WML && WML.CW_TRIAL1_ACCURACY) || null;
+                    if (acc) {
+                        const lastSelf = box.querySelector('[data-field-id="cw-trial-1-denouement"]');
+                        if (lastSelf && !hasRow('cw-trial-1-accuracy')) {
+                            lastSelf.insertAdjacentHTML('afterend', outlineRowHTML({ id: acc.id, label: acc.label, prompt: 'Your mark out of ' + acc.outOf + ', and your sentence of evidence.' }, 'cw-trial-1-accuracy'));
+                            changed = true;
+                        }
+                        const lastFb = box.querySelector('[data-field-id="cw-trial-1-fb-denouement"]');
+                        if (lastFb && !hasRow('cw-trial-1-fb-accuracy')) {
+                            lastFb.insertAdjacentHTML('afterend', outlineRowHTML({ id: 'fb-' + acc.id, label: acc.label, prompt: 'Her level call on your ' + acc.label.toLowerCase() + ', after you have marked it.', locked: true }, 'cw-trial-1-fb-accuracy'));
+                            changed = true;
+                        }
+                    }
+                }
+
                 // (1b2) v7.20.558 (#430) — the marking card LEFT the document for a floating pad.
                 // A .556/.557 document carries the `ladder` section the old heal inserted; it is a
                 // DERIVED card holding no student content, so removing it is safe. The nodeView
@@ -51437,7 +51500,7 @@
     function _cwTrial1AboutHTML() {
         return '<h2>Trial 1: Story Coherence</h2>'
             + '<p>This trial asks one question of your first draft: <strong>does it hold together as a story?</strong> Your draft from Step 10 is below, exactly as you transferred it. Everything here is what the exam calls <strong>AO5: Content and Organisation</strong> — your ideas, and how the story is built.</p>'
-            + '<p>In the chat you will mark the seven parts of your scene yourself, <strong>the way a real examiner marks</strong> — climbing the levels, part by part — then Sophia reads your draft and makes her own level calls. Your marking and hers are both recorded here, and the places where you disagree are the most useful thing in this lesson.</p>';
+            + '<p>Real exam mark schemes judge a story on two sets of criteria: <strong>Content and Organisation</strong> (the seven parts of your scene) and <strong>Technical Accuracy</strong> (spelling, punctuation and grammar). In the chat you will mark all of them yourself, <strong>the way a real examiner marks</strong> — climbing the levels, part by part — then Sophia reads your draft and makes her own level calls. Your marking and hers are both recorded here, and the places where you disagree are the most useful thing in this lesson.</p>';
     }
 
     // v7.20.558 (#430): the marking card no longer has a home in the document — the levels live
@@ -51445,17 +51508,17 @@
     // any `ladder` section a .556/.557 document still carries.
 
     function _cwTrial1JudgementBlock(opts) {
-        const _els = (window.WML && WML.CW_SCENE_ELEMENTS) || [];
+        const _els = (window.WML && (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS)) || [];
         return ((opts && opts.divider === false) ? '' : dividerHTML('YOUR JUDGEMENT'))
             + sectionHTML('plan', 'Your Judgement', true, null,
                 '<h3>Your marking, the way an examiner marks</h3>'
-                + '<p><em>One line per part of your scene, out of 4: Level 1 (the part is there and attempts its job) is 1–2 marks, Level 2 (it does what a strong one does) is 3–4. Your own sentence proves the mark — or names what is missing for Draft 2.</em></p>'
+                + '<p><em>One line per part of your scene, out of 4: Level 1 (the part is there and attempts its job) is 1–2 marks, Level 2 (it does what a strong one does) is 3–4. Then technical accuracy, out of 2. Your own sentence proves the mark — or names what is missing for Draft 2.</em></p>'
                 + _els.map(function (e) {
-                    return outlineRowHTML({ id: e.id, label: e.label, prompt: 'Your mark out of 4, and your sentence of evidence.' }, 'cw-trial-1-' + e.id);
+                    return outlineRowHTML({ id: e.id, label: e.label, prompt: 'Your mark out of ' + (e.outOf || 4) + ', and your sentence of evidence.' }, 'cw-trial-1-' + e.id);
                 }).join(''));
     }
     function _cwTrial1SophiaBlock() {
-        const _els = (window.WML && WML.CW_SCENE_ELEMENTS) || [];
+        const _els = (window.WML && (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS)) || [];
         return dividerHTML('SOPHIA’S ASSESSMENT')
             + sectionHTML('response', 'Sophia’s Verdict', false, null,
                 '<h3>Her verdict on each part of your scene</h3>'
