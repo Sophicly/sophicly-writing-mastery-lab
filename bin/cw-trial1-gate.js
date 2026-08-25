@@ -50,7 +50,7 @@ const HEAL = healIdx === -1 ? '' : braceSliceFrom(SRC, healIdx, '{', '}').text;
 console.log('\nThe trial asks about the seven elements Step 9 taught, in Step 9\'s own words:');
 ok('there are seven of them', ELEMENTS.length === 7, ELEMENTS.length);
 ok('⭐ …plus ONE technical-accuracy dimension out of 2, with its own Level 1 text (#431, Neil 2026-08-25) — /28 → /30',
-    ACCURACY.id === 'accuracy' && ACCURACY.outOf === 2 && ACCURACY.ao === 'AO6' && /some mistakes are common/i.test(ACCURACY.l1)
+    ACCURACY.id === 'accuracy' && ACCURACY.outOf === 2 && ACCURACY.ao === 'AO6' && /some mistakes are common/i.test(ACCURACY.l1) && /^A reader can follow/.test(ACCURACY.l1)
     && /accurate/i.test(ACCURACY.strong) && TRIAL_ELEMENTS.reduce((a, e) => a + (e.outOf || 4), 0) === 30);
 ok('…and it carries a worked example + more examples like every other ask (ladder rungs 0–1)',
     typeof ACCURACY.example === 'string' && ACCURACY.example.length > 40 && Array.isArray(ACCURACY.more) && ACCURACY.more.length >= 2);

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.559';
+var WML_BUILD = '7.20.560';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1412,7 +1412,10 @@ window.WML = (function() {
     const CW_TRIAL1_ACCURACY = {
         id: 'accuracy', label: 'Technical Accuracy', outOf: 2, ao: 'AO6',
         prompt: 'Spelling, punctuation and grammar that let a reader read without stumbling.',
-        l1: 'Some mistakes are common — a reader notices slips in spelling, punctuation or grammar, but can still follow the writing.',
+        // v7.20.560 (#433, Neil): Level 1 must be a THRESHOLD the student can say "yes, all of it"
+        // to — the .559 wording was a deficit ("some mistakes are common"), so "Yes — all of it"
+        // read as "yes, I have all the mistakes". Positive claim first; the slips are the qualifier.
+        l1: 'A reader can follow the writing all the way through. Some mistakes are common — slips in spelling, punctuation or grammar that a reader notices — but none of them stops the meaning getting through.',
         strong: 'Spelling, punctuation and grammar are accurate — a reader never has to re-read a sentence to work out what you meant.',
         example: 'Read one paragraph of your draft aloud, exactly as it is written. If you stumble on a missing full stop, a run-on sentence or a misspelt word, the reader will stumble there too — that is a slip a reader notices. If you read straight through without a hitch, that paragraph is accurate.',
         more: [

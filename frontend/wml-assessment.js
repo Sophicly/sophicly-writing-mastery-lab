@@ -28365,7 +28365,7 @@
                 return MARKS[tok] || 0;
             }
             function markPhrase(e, m) {
-                if (outOf(e) === 2) return ({ 0: '0/2 — not there yet', 1: '1/2 (Level 1 — some mistakes are common)', 2: '2/2 (Level 2 — accurate)' })[m] || '0/2';
+                if (outOf(e) === 2) return ({ 0: '0/2 — not there yet', 1: '1/2 (Level 1 — readable, some mistakes are common)', 2: '2/2 (Level 2 — accurate)' })[m] || '0/2';
                 return MARK_PHRASE[m] || MARK_PHRASE[0];
             }
 
