@@ -1932,6 +1932,19 @@ so no lane re-asks:
    only; Sophia's tokens for it are `none|l1|l2`), so a third dimension is data, not code.
    Ruling 6 still governs the FINALE (full AO5+AO6 after the SPaG step); this ruling is about the
    trial's early exposure to both objectives. Shipped v7.20.559 (FIXLIST #431).
+15. ⭐⭐ **A TRIAL CARRIES THE FULL ASSESSMENT SHAPE — grade goal upfront · calibration question ·
+   "How am I going? / Where to next?" — THEN the target (Neil, ruled 2026-08-25, overruling the
+   engine lane's "skip it for a 20-minute trial").** His reason, verbatim: *"it's very possible for
+   some of these students this may be the only assessment that they do for creative writing
+   because some of them will work so slowly."* So the trial mirrors the Lang P1 protocol's spine
+   (2a grade goal · the Calibration Check with its direction-adaptive question · the Final
+   Summary's two questions), all CODE-served (§4 programmatic-first — still one API call): goal
+   chips 7/8/9 banked to `cw-trial-1-goal`; after the reveal, self − Sophia over /30 with a ±2
+   tolerance → a statement when within it, otherwise "which part drove the gap?" with the three
+   largest gaps as chips, answered from her verdict + example + the over/under-marking habit;
+   then How am I going? (grade vs goal, AO5/AO6 split, strength, calibration verdict) · Where
+   to next? (her priority) · the target ask. §33.9 still holds: the trial ENDS on the target.
+   Shipped v7.20.562 (FIXLIST #437).
 
 ## §34. ⭐⭐ THE EMERGENCY CREATIVE-WRITING UNIT — the three rulings it stands on (Neil, ruled 2026-08-23)
 

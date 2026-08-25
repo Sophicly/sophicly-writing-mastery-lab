@@ -264,6 +264,14 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
         /function publishTrialScore\(\)/.test(CTL) && /state\.cwTrialScore = \{ task: 'cw_trial_1', projectId/.test(CTL)
         && /snap\.task\.startsWith\('cw_trial_'\) && state\.cwTrialScore/.test(SRC)
         && /state\.cwTrialScore\.projectId === \(state\.cwProjectId \|\| ''\)/.test(SRC));
+    ok('⭐ #437 the P1 shape: grade goal upfront (7/8/9, banked) · calibration question (±tolerance, gap parts as chips) · How am I going? / Where to next? · THEN the target',
+        /function serveGoalAsk/.test(CTL) && /GRADE_GOALS = \[7, 8, 9\]/.test(CTL) && /writeRow\('cw-trial-1-goal'/.test(CTL)
+        && /function serveCalibration/.test(CTL) && /CALIB_TOLERANCE = 2/.test(CTL) && /Something else/.test(CTL)
+        && /How am I going\?/.test(CTL) && /Where to next\?/.test(CTL)
+        && /onDone: function \(\) \{ serveTargetAsk\(\); \}/.test(CTL) && /saveTrialResult\(\{ withDelta: true \}\);\s*serveCalibration\(\);/.test(CTL));
+    ok('…every one of those turns is CODE-served — still exactly one API call (#437, §4 programmatic-first)',
+        (CTL.match(/sendCanvasMessage\(\);/g) || []).length === 2);
+    ok('…and the goal row is in the template AND the heal', /'cw-trial-1-goal'\)/.test(SRC) && /cw-trial-1-goal/.test(HEAL || ''));
     ok('…and the orientation names BOTH dimensions with their codes and the board caveat (Neil 2026-08-25)',
         /AO5: Content and Organisation/.test(CTL) && /AO6: Technical Accuracy/.test(CTL) && /Edexcel IGCSE numbers them AO4 and AO5/.test(CTL));
     ok('…and the heal gives a pre-.559 document both accuracy rows', /cw-trial-1-accuracy/.test(HEAL || '') && /cw-trial-1-fb-accuracy/.test(HEAL || ''));

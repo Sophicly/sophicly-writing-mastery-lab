@@ -28985,16 +28985,16 @@
                 // (it is her judgment either way) and the miss is loud in the console.
                 const label = function (id) { const e = els().filter(function (x) { return x.id === id; })[0]; return e ? e.label : id; };
                 const byMark = els().slice().sort(function (a, b) { return st.sophia[b.id] - st.sophia[a.id]; });
-                if (parsed.strength) writeRow('cw-trial-1-strength', label(parsed.strength.id) + (parsed.strength.text ? ' \u2014 ' + parsed.strength.text : ''), { replace: true });
-                else {
-                    console.warn('WML trial1: no @TRIAL_STRENGTH marker — derived from her level calls.');
-                    writeRow('cw-trial-1-strength', label(byMark[0].id) + ' \u2014 her full note is in the chat.', { replace: true });
-                }
-                if (parsed.priority) writeRow('cw-trial-1-priority', label(parsed.priority.id) + (parsed.priority.text ? ' \u2014 ' + parsed.priority.text : ''), { replace: true });
-                else {
-                    console.warn('WML trial1: no @TRIAL_PRIORITY marker — derived from her level calls.');
-                    writeRow('cw-trial-1-priority', label(byMark[byMark.length - 1].id) + ' \u2014 her full note is in the chat.', { replace: true });
-                }
+                st.strengthLine = parsed.strength
+                    ? label(parsed.strength.id) + (parsed.strength.text ? ' \u2014 ' + parsed.strength.text : '')
+                    : label(byMark[0].id) + ' \u2014 her full note is in the chat.';
+                st.priorityLine = parsed.priority
+                    ? label(parsed.priority.id) + (parsed.priority.text ? ' \u2014 ' + parsed.priority.text : '')
+                    : label(byMark[byMark.length - 1].id) + ' \u2014 her full note is in the chat.';
+                if (!parsed.strength) console.warn('WML trial1: no @TRIAL_STRENGTH marker — derived from her level calls.');
+                if (!parsed.priority) console.warn('WML trial1: no @TRIAL_PRIORITY marker — derived from her level calls.');
+                writeRow('cw-trial-1-strength', st.strengthLine, { replace: true });
+                writeRow('cw-trial-1-priority', st.priorityLine, { replace: true });
                 writeRow('cw-trial-1-mark', 'Grade ' + m.grade + ' (' + m.got + '/' + m.max + ' \u00b7 ' + m.pct + '%) for story coherence', { replace: true });
                 const gaps = agreementLine(st.sophia);
                 writeRow('cw-trial-1-gap', gaps.length
@@ -29021,7 +29021,125 @@
                 // student's closing target is saved by a SECOND entry once they write it (the
                 // consumer contract: take the LAST entry per trial number).
                 saveTrialResult({ withDelta: true });
-                serveTargetAsk();
+                serveCalibration();
+            }
+
+            // ══ #437 (Neil, 2026-08-25): THE FULL P1 SHAPE, code-served — grade goal upfront ·
+            // calibration question · "How am I going? / Where to next?" — because for a slow
+            // student this may be the ONLY creative-writing assessment they ever complete.
+            // Mirrors protocol-a-assessment.md (AQA Lang P1): 2a grade goal · the Calibration
+            // Check with its direction-adaptive question (±tolerance) · the Final Summary's two
+            // questions. No API call in any of it (§4 programmatic-first).
+            const GRADE_GOALS = [7, 8, 9];
+            const CALIB_TOLERANCE = 2;           // P1 uses ±3 on /40; /30 → ±2
+            function serveGoalAsk(opts) {
+                st.phase = 'goal';
+                persist();
+                _walkSlot.clear(WALK);             // a chip pick, never typed
+                const text = '**Before we begin: what grade are you aiming for in creative writing?**\n\n'
+                    + 'Say it honestly — it shapes how I talk to you at the end, and it goes in your document.';
+                const attach = function () {
+                    chipBarOrRetry(GRADE_GOALS.map(function (g) { return 'Grade ' + g; }), onGoalPick, '**Which grade are you aiming for?**');
+                    resetSend();
+                };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            function onGoalPick(label) {
+                const g = parseInt(String(label).replace(/\D/g, ''), 10);
+                if (!GRADE_GOALS.some(function (x) { return x === g; })) return;
+                st.gradeGoal = g;
+                st.phase = 'items';
+                persist();
+                pickTurn('Grade ' + g);
+                writeRow('cw-trial-1-goal', 'Grade ' + g, { replace: true });
+                serveItem();
+            }
+            // Self − Sophia, over the whole /30. Positive = the student marked higher than she did.
+            function calibDelta() { return (st.selfTotal || 0) - ((st.mark && st.mark.got) || 0); }
+            function gapElements() {
+                return els().map(function (e) {
+                    const a = (st.marks || {})[e.id] || 0, b = (st.sophia || {})[e.id] || 0;
+                    return { e: e, a: a, b: b, gap: Math.abs(a - b) };
+                }).filter(function (x) { return x.gap > 0; })
+                    .sort(function (x, y) { return y.gap - x.gap; });
+            }
+            function serveCalibration(opts) {
+                st.phase = 'calib';
+                persist();
+                _walkSlot.clear(WALK);
+                const d = calibDelta();
+                const self = st.selfTotal || 0, hers = (st.mark && st.mark.got) || 0;
+                if (Math.abs(d) <= CALIB_TOLERANCE || !gapElements().length) {
+                    const text = '**Calibration check.** You marked yourself **' + self + ' out of 30**; I marked **' + hers
+                        + '** — within ' + CALIB_TOLERANCE + ' marks of each other. That is a well-calibrated examiner\u2019s eye, '
+                        + 'and it is a skill in itself: you can already see your own writing the way a marker will.';
+                    serveCwChunks([text], { emit: aiBubble, onDone: function () { serveSummary(); }, deferFirst: !!(opts && opts.defer) });
+                    return;
+                }
+                const dir = d > 0 ? 'higher' : 'lower';
+                const text = '**Calibration check.** You marked yourself **' + self + ' out of 30**; I marked **' + hers + '** — '
+                    + '**' + Math.abs(d) + ' marks ' + dir + '** than me. Examiners call that ' + (d > 0 ? 'over' : 'under') + '-marking, and '
+                    + 'the useful question is not who is right but **which part drove the gap**. Looking at the parts where we '
+                    + 'differed most, which one do you think it was?';
+                const top = gapElements().slice(0, 3);
+                const attach = function () {
+                    chipBarOrRetry(top.map(function (x) { return x.e.label; }).concat(['Something else']), onCalibPick, '**Which part drove the gap?**');
+                    resetSend();
+                };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            function onCalibPick(label) {
+                pickTurn(label);
+                st.calibPick = label;
+                const d = calibDelta();
+                const habit = d > 0
+                    ? 'claim a level only when you can point at the line in your draft that proves it'
+                    : 'give yourself the mark the evidence earns — modesty is not accuracy';
+                const hit = gapElements().filter(function (x) { return x.e.label === label; })[0];
+                let text;
+                if (hit) {
+                    const c = (st.sophiaComments || {})[hit.e.id] || '';
+                    const x = (st.sophiaExamples || {})[hit.e.id] || '';
+                    text = '**' + hit.e.label + '** — you said *' + hit.a + '/' + outOf(hit.e) + '*, I said *' + hit.b + '/' + outOf(hit.e) + '*.'
+                        + (c ? '\n\n' + c : '')
+                        + (x ? '\n\n*At Level 2 it could read:* \u201c' + x + '\u201d' : '')
+                        + '\n\nThe habit to carry into Draft 2: **' + habit + '.**';
+                } else {
+                    text = 'Fair — the gap does not always sit in one part. The habit to carry into Draft 2 is still the same: **' + habit + '.**';
+                }
+                persist();
+                serveCwChunks([text], { emit: aiBubble, onDone: function () { serveSummary(); } });
+            }
+            function serveSummary(opts) {
+                st.phase = 'summary';
+                persist();
+                _walkSlot.clear(WALK);
+                const m = st.mark || {};
+                const goal = st.gradeGoal;
+                const d = calibDelta();
+                let ao5 = 0, ao6 = 0, ao5max = 0, ao6max = 0;
+                els().forEach(function (e) {
+                    const v = (st.sophia || {})[e.id] || 0;
+                    if (e.ao === 'AO6') { ao6 += v; ao6max += outOf(e); } else { ao5 += v; ao5max += outOf(e); }
+                });
+                let going = '**How am I going?**\n\n**Grade ' + m.grade + '** for story coherence — ' + m.got + ' out of ' + m.max
+                    + ' (content and organisation ' + ao5 + '/' + ao5max + ', technical accuracy ' + ao6 + '/' + ao6max + ').';
+                if (goal) {
+                    going += m.grade >= goal
+                        ? ' Against your goal of **Grade ' + goal + '**: you are there on this dimension — hold it in Draft 2.'
+                        : ' Against your goal of **Grade ' + goal + '**: the gap is ' + (goal - m.grade) + ' grade' + (goal - m.grade === 1 ? '' : 's') + ', and this trial shows exactly where it lives.';
+                }
+                if (st.strengthLine) going += '\n\n**Working hardest for you:** ' + st.strengthLine;
+                going += '\n\n**Your marking:** ' + (Math.abs(d) <= CALIB_TOLERANCE
+                    ? 'within ' + CALIB_TOLERANCE + ' marks of mine — well calibrated.'
+                    : Math.abs(d) + ' marks ' + (d > 0 ? 'above' : 'below') + ' mine' + (st.calibPick ? ' — you put that down to ' + st.calibPick.toLowerCase() : '') + '.');
+                let next = '**Where to next?**\n\n' + (st.priorityLine ? st.priorityLine : 'Take the part we disagreed on most and rewrite it first.')
+                    + '\n\nDraft 2 is where this counts — and it opens with your own target at the top of the page.';
+                serveCwChunks([going, next], { emit: aiBubble, onDone: function () { serveTargetAsk(); }, deferFirst: !!(opts && opts.defer) });
             }
 
             // ⭐ v7.20.561 (#435, Neil: "does the grade feed student data / the course-average
@@ -29053,6 +29171,8 @@
                     };
                     if (st.sophiaComments) payload.sophia_comments = st.sophiaComments;
                     if (st.sophiaExamples) payload.sophia_examples = st.sophiaExamples;
+                    if (st.gradeGoal) payload.grade_goal = st.gradeGoal;          // #437
+                    if (st.calibPick) payload.calibration_pick = st.calibPick;
                     // The delta rides ONE entry per run (the server appends each save to a
                     // calibration trend — a second copy would double-count the same run).
                     if (opts && opts.withDelta) payload.calibration_delta = (st.selfTotal || 0) - (m.got || 0);
@@ -29177,6 +29297,9 @@
             function serveCurrent(opts) {
                 if (!st) st = { i: 0, levels: {}, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
                 if (st.phase === 'done') { serveWrap(); return; }
+                if (st.phase === 'goal') { serveGoalAsk(opts); return; }
+                if (st.phase === 'calib') { serveCalibration(opts); return; }
+                if (st.phase === 'summary') { serveSummary(opts); return; }
                 if (st.phase === 'target') { serveTargetAsk(opts); return; }
                 if (st.awaitNote) {
                     const e = els().filter(function (x) { return x.id === st.awaitNote; })[0];
@@ -29210,7 +29333,7 @@
                     console.warn('WML trial1: no scene elements — refusing to open.');
                     return false;
                 }
-                st = { i: 0, levels: {}, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
+                st = { i: 0, levels: {}, marks: {}, notes: {}, moreSpent: {}, phase: 'goal' };
                 active = true; pending = false; done = false;
                 persist();
                 // Their Step-9 plan, read FRESH (never a cached snapshot — #402), then the walk
@@ -44582,6 +44705,15 @@
                     }
                 }
 
+                // (1b4) v7.20.562 (#437) — the grade-goal row, first in the judgement block.
+                {
+                    const hookRow = box.querySelector('[data-field-id="cw-trial-1-hook"]');
+                    if (hookRow && !hasRow('cw-trial-1-goal')) {
+                        hookRow.insertAdjacentHTML('beforebegin', outlineRowHTML({ id: 'goal', label: 'Grade goal', prompt: 'The grade you are aiming for in creative writing.' }, 'cw-trial-1-goal'));
+                        changed = true;
+                    }
+                }
+
                 // (1b3) v7.20.559 (#431) — the technical-accuracy dimension. A pre-.559 document has
                 // the seven scene rows and no `accuracy` row in either block; each new row is inserted
                 // after its `denouement` sibling, from the same element the template reads.
@@ -51557,6 +51689,7 @@
             + sectionHTML('plan', 'Your Judgement', true, null,
                 '<h3>Your marking, the way an examiner marks</h3>'
                 + '<p><em>One line per part of your scene, out of 4: Level 1 (the part is there and attempts its job) is 1–2 marks, Level 2 (it does what a strong one does) is 3–4. Then technical accuracy, out of 2. Your own sentence proves the mark — or names what is missing for Draft 2.</em></p>'
+                + outlineRowHTML({ id: 'goal', label: 'Grade goal', prompt: 'The grade you are aiming for in creative writing.' }, 'cw-trial-1-goal')
                 + _els.map(function (e) {
                     return outlineRowHTML({ id: e.id, label: e.label, prompt: 'Your mark out of ' + (e.outOf || 4) + ', and your sentence of evidence.' }, 'cw-trial-1-' + e.id);
                 }).join(''));

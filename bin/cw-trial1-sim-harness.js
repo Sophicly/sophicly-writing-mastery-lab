@@ -73,7 +73,7 @@ const CTL_SRC = { src: braceSliceFrom(SRC, ctlIdx, '(', ')').text + '()' };
 
 const FIDS = ELEMENTS.map((e) => 'cw-trial-1-' + e.id)
     .concat(ELEMENTS.map((e) => 'cw-trial-1-fb-' + e.id))
-    .concat(['cw-trial-1-mark', 'cw-trial-1-gap', 'cw-trial-1-strength', 'cw-trial-1-priority', 'cw-trial-1-target']);
+    .concat(['cw-trial-1-mark', 'cw-trial-1-gap', 'cw-trial-1-strength', 'cw-trial-1-priority', 'cw-trial-1-target', 'cw-trial-1-goal']);
 const PLAN = { hook: 'A dog barks at nothing and the lights go out.', epiphany: 'She sees her own reflection in the sentinel’s visor.' };
 
 let planLoaded = false;   // set by the stateful loader stub below; reset per world
@@ -139,12 +139,26 @@ const allText = (w) => w.bubbles.join('\n');
 const chipNamed = (w, re) => w.chips().filter((c) => re.test(String(c.textContent)))[0] || null;
 
 /** Tap through the paced orientation to the first real ask. */
-async function toFirstAsk(w) {
+async function toFirstAsk(w, goal) {
     for (let i = 0; i < 12; i++) {
         await settle();
         const cont = chipNamed(w, /Continue/);
         if (!cont) break;
         w.tap(cont);
+    }
+    await settle();
+    // #437: the grade-goal chips come before the first ask.
+    const g = chipNamed(w, goal === null ? /never/ : new RegExp('Grade ' + (goal || 8)));
+    if (g) { w.tap(g); await settle(); }
+}
+/** #437: after the reveal — the calibration question (chip), then the paced summary — to the target ask. */
+async function toTarget(w) {
+    for (let i = 0; i < 10; i++) {
+        await settle();
+        if (/your one target for Draft 2/i.test(lastBubble(w))) return;
+        const c = chipNamed(w, /Continue/) || w.chips().filter((x) => !/Change my answers|Give me my marks|Try again/.test(String(x.textContent)))[0];
+        if (!c) break;
+        w.tap(c);
     }
     await settle();
 }
@@ -527,8 +541,23 @@ async function main() {
         ok(reveal.indexOf('Grade') > reveal.indexOf('worth looking at again'),
             '8 · …and the grade is a quiet closing line AFTER the substance');
         ok(/Climax/.test(w.rows.get('cw-trial-1-gap') || ''), '8 · …and filed in the document for the tutor');
+        // #437 — self 30 vs Sophia 26: 4 marks higher → the calibration QUESTION, with the gap parts as chips.
+        ok(/Calibration check/.test(lastBubble(w)) && /4 marks higher/.test(lastBubble(w)),
+            '8 · ⭐ the calibration check names the direction and size of the gap (#437, P1 Calibration Check)');
+        ok(!!chipNamed(w, /^Climax$/) && !!chipNamed(w, /Something else/), '8 · …and asks WHICH PART drove it — the largest gaps as chips');
+        w.tap(chipNamed(w, /^Climax$/)); await settle();
+        ok(w.bubbles.some((b) => /you said \*4\/4\*, I said \*0\/4\*/.test(b) && /habit to carry into Draft 2/.test(b)),
+            '8 · the pick is answered from her verdict + the over-marking habit, code-served');
+        ok(/How am I going\?/.test(lastBubble(w)) && /Grade 8/.test(lastBubble(w)) && /goal of \*\*Grade 8\*\*/.test(lastBubble(w)),
+            '8 · ⭐ "How am I going?" — grade against the goal they set at the start (#437)');
+        ok(/Your marking:\*\* 4 marks above mine — you put that down to climax/.test(lastBubble(w)), '8 · …with their own calibration verdict threaded in');
+        w.tap(chipNamed(w, /Continue/)); await settle();
+        ok(w.bubbles.some((b) => /Where to next\?/.test(b) && /Give the last line an image/.test(b)), '8 · "Where to next?" carries her priority');
+        await toTarget(w);
         ok(/your one target for Draft 2/i.test(lastBubble(w)),
             '8 · ⭐⭐ the trial does not end on the grade — it ends on the student’s own ACTION (§33.9, Wiliam)');
+        ok(/^Grade 8$/.test(w.rows.get('cw-trial-1-goal') || ''), '8 · the grade goal is banked in the document (#437)');
+        ok(w.saved[0].grade_goal === 8, '8 · …and saved with the result');
         await w.say('Give the climax a real collision instead of a summary.');
         await settle();
         ok(/real collision/.test(w.rows.get('cw-trial-1-target') || ''), '8 · the target is banked into the document, verbatim');
@@ -543,6 +572,9 @@ async function main() {
         await scoreAll(agree, 4);
         reply(agree, 'All good.\n\n' + markerBlock({}));
         await settle();
+        ok(agree.bubbles.some((b) => /within 2 marks of each other/.test(b)) && !chipNamed(agree, /Something else/),
+            '8 · ⭐ agreement within tolerance → a calibration STATEMENT, no question (#437)');
+        await toTarget(agree);
         ok(/agreed on every part/i.test(agree.rows.get('cw-trial-1-gap') || ''),
             '8 · total agreement is stated too — never a blank box the student has to interpret');
     }
@@ -644,6 +676,7 @@ async function main() {
         await scoreAll(w, 4);
         reply(w, 'Done.\n\n' + markerBlock({}));
         await settle();
+        await toTarget(w);
         const w2 = reload(w);
         w2.ctl.tryResume();
         await settle();
@@ -661,12 +694,14 @@ async function main() {
         await scoreAll(w, 4);
         reply(w, 'Done.\n\n' + markerBlock({}));
         await settle();
+        await toTarget(w);
         await w.say('Make the ending an image.');
         await settle();
         const again = chipNamed(w, /Change my answers/);
         ok(!!again, '13 · the finished trial offers "Change my answers"');
         w.tap(again);
         await settle();
+        { const g = chipNamed(w, /Grade 8/); if (g) { w.tap(g); await settle(); } }   // #437: a re-run re-asks the goal
         ok(/Hook/.test(lastBubble(w)), '13 · …and it starts again at the first element');
         ok(!!ladder && ladder.title === 'Hook' && (ladder.levels || []).filter((lv) => lv.n === 1)[0].verdict === null,
             '13 · …live, with a fresh ladder card');
