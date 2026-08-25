@@ -202,7 +202,8 @@ async function scoreAll(w, mark, note) {
 function markerBlock(map, opts) {
     opts = opts || {};
     const lines = ELEMENTS.map((e) => '@TRIAL_VERDICT[' + e.id + '=' + (map[e.id] || 'l2_top') + ']'
-        + (opts.comments === false ? '' : ' Her sentence on the ' + e.id + ', quoting "their words".'));
+        + (opts.comments === false ? '' : ' Her sentence on the ' + e.id + ', quoting "their words".')
+        + (opts.examples === false ? '' : '\n@TRIAL_EXAMPLE[' + e.id + '] Rewritten ' + e.id + ' at Level 2, in their voice.'));
     if (opts.tail !== false) {
         lines.push('@TRIAL_STRENGTH[hook] The opening image carries the whole premise.');
         lines.push('@TRIAL_PRIORITY[denouement] Give the last line an image instead of an explanation.');
@@ -461,6 +462,12 @@ async function main() {
         const markRow = w.rows.get('cw-trial-1-mark') || '';
         ok(/21\/30/.test(markRow), '7 · the marks are counted by code from her level calls: none=0 · l1=1–2 · l2=3–4 · accuracy l1=1 (#431)');
         ok(/^1\/2/.test(w.rows.get('cw-trial-1-fb-accuracy') || ''), '7 · ⭐ her accuracy call files as /2, in the 1-mark-level phrase');
+        ok(/For example: “Rewritten hook at Level 2/.test(w.rows.get('cw-trial-1-fb-hook') || ''),
+            '7 · ⭐ her row carries the REWRITE EXAMPLE — their own moment at Level 2 (#434)');
+        ok(/At Level 2 it could read:/.test(allText(w)), '7 · …and the reveal shows the example under each disagreement');
+        ok(w.deps.state.cwTrialScore && w.deps.state.cwTrialScore.score === 21 && w.deps.state.cwTrialScore.total === 30
+            && w.deps.state.cwTrialScore.grade === expected && w.deps.state.cwTrialScore.projectId === 'cwp_sim',
+            '7 · ⭐ the mark is PUBLISHED for the canvas-save piggyback → student-data → course average (#435)');
         ok(markRow.indexOf('Grade ' + expected) === 0, '7 · …and banded through the ONE canonical ladder (grade ' + expected + ')');
         ok(!/Grade 9/.test(markRow), '7 · ⭐⭐ the grade the model announced in prose ("Grade 9", "40/40") changes nothing');
         ok(/story coherence/i.test(markRow), '7 · the mark says which dimension it is for');

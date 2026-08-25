@@ -28819,12 +28819,20 @@
                     + 'each: point at the actual place in their draft (quote a few of their own words) and say, in '
                     + 'words, which level it reaches and whether it sits at the top or the bottom of it.\n'
                     + '2. Name the ONE element that would improve the story most in Draft 2, and say what to do to it.\n'
-                    + '3. End your reply with exactly ' + (els().length + 2) + ' marker lines in this format and nothing else on those '
+                    + '3. End your reply with exactly ' + (els().length * 2 + 2) + ' marker lines in this format and nothing else on those '
                     + 'lines. Each verdict line carries your verdict AND, after the bracket, one sentence on that '
-                    + 'element for the student\u2019s document — quote two or three of their own words in it:\n'
+                    + 'element for the student\u2019s document — quote two or three of their own words in it. '
+                    // #434 (Neil, 2026-08-25): feedback without an example is a description, not a
+                    // lesson — every element gets the student's OWN moment rewritten at Level 2, the
+                    // way the essay assessments hand back "their paragraph elevated".
+                    + 'Directly under each verdict line, an EXAMPLE line: two or three sentences showing what THAT '
+                    + 'part of THEIR draft would read like at the top of Level 2 — rewrite their own moment, keep their '
+                    + 'names, setting and voice, never invent a new story. For accuracy, correct two of their actual '
+                    + 'sentences:\n'
                     + els().map(function (e, k) {
                         return '@TRIAL_VERDICT[' + e.id + '=' + (perLevel(e) === 1 ? 'none|l1|l2' : 'none|l1_low|l1_top|l2_low|l2_top') + ']'
-                            + (k === 0 ? ' your one-sentence comment' : ' …') + '\n';
+                            + (k === 0 ? ' your one-sentence comment' : ' …') + '\n'
+                            + '@TRIAL_EXAMPLE[' + e.id + ']' + (k === 0 ? ' two or three sentences of their moment, rewritten at Level 2' : ' …') + '\n';
                     }).join('')
                     + '@TRIAL_STRENGTH[element_id] one line — the element working hardest for this story, and why\n'
                     + '@TRIAL_PRIORITY[element_id] one line — what to do to that element in Draft 2\n'
@@ -28857,7 +28865,7 @@
                 // Verdicts are ALL-OR-NOTHING (no partial mark is ever filed); the per-element
                 // comments and the strength/priority lines are BEST-EFFORT — a model that drops
                 // one loses a document line, never the mark, and the full prose is in the chat.
-                const out = { verdicts: {}, comments: {}, strength: null, priority: null };
+                const out = { verdicts: {}, comments: {}, examples: {}, strength: null, priority: null };
                 const src = String(reply || '');
                 // [^\S\n]* — horizontal whitespace ONLY. A bare \s* here eats the newline and
                 // swallows the NEXT marker line as this one's comment: seven bare lines parse as
@@ -28870,6 +28878,15 @@
                     out.verdicts[id] = m[2].toLowerCase();
                     const c = (m[3] || '').trim();
                     if (c) out.comments[id] = c;
+                }
+                // #434: the rewrite examples — best-effort like the comments (a missing one is a
+                // loud console line, never a refused mark).
+                const rx = /@TRIAL_EXAMPLE\s*\[\s*([a-zA-Z]+)\s*\][^\S\n]*([^\n]*)/g;
+                while ((m = rx.exec(src)) !== null) {
+                    const id = m[1].toLowerCase();
+                    if (!els().some(function (e) { return e.id === id; })) continue;
+                    const x = (m[2] || '').trim();
+                    if (x) out.examples[id] = x;
                 }
                 const one = function (name) {
                     const mm = new RegExp('@TRIAL_' + name + '\\s*\\[\\s*([a-zA-Z]+)\\s*\\][^\\S\\n]*([^\\n]*)').exec(src);
@@ -28905,7 +28922,9 @@
                 els().forEach(function (e) {
                     const a = (st.marks || {})[e.id] || 0, b = hers[e.id];
                     if (b == null || a === b) return;
-                    rows.push('- **' + e.label + '** — you said *' + a + '/' + outOf(e) + '*, I said *' + b + '/' + outOf(e) + '*.');
+                    const x = (st.sophiaExamples || {})[e.id];
+                    rows.push('- **' + e.label + '** — you said *' + a + '/' + outOf(e) + '*, I said *' + b + '/' + outOf(e) + '*.'
+                        + (x ? '\n  ↳ *At Level 2 it could read:* “' + x + '”' : ''));
                 });
                 return rows;
             }
@@ -28940,18 +28959,26 @@
                 }
                 st.sophia = sophiaMarksOf(mine);
                 st.sophiaComments = parsed.comments;
+                st.sophiaExamples = parsed.examples || {};
+                {
+                    const missing = els().filter(function (e) { return !st.sophiaExamples[e.id]; }).map(function (e) { return e.id; });
+                    if (missing.length) console.warn('WML trial1: no @TRIAL_EXAMPLE for ' + missing.join(', ') + ' — rows filed without a rewrite example (#434).');
+                }
                 const m = markFrom(mine);
                 st.mark = m;
                 st.selfTotal = selfTotal();
                 done = false; active = true;
                 persist();
+                publishTrialScore();
                 // v7.20.552 (#419): her level calls land in the DOCUMENT, per element — the essay
                 // docs' per-question feedback boxes, scaled to the trial. Comments are
                 // best-effort (the full prose is always in the chat); the mark phrase itself
                 // comes from the all-or-nothing marker, so no row is ever left blank.
                 els().forEach(function (e) {
                     const c = parsed.comments[e.id] || '';
-                    writeRow('cw-trial-1-fb-' + e.id, markPhrase(e, st.sophia[e.id]) + (c ? ' \u2014 ' + c : ''), { replace: true });
+                    const x = st.sophiaExamples[e.id] || '';
+                    writeRow('cw-trial-1-fb-' + e.id, markPhrase(e, st.sophia[e.id]) + (c ? ' \u2014 ' + c : '')
+                        + (x ? ' For example: \u201c' + x + '\u201d' : ''), { replace: true });
                 });
                 // Strength/priority: from her markers when they parsed; DERIVED from her own
                 // level calls when they did not (highest / lowest) — the derivation is honest
@@ -28997,6 +29024,21 @@
                 serveTargetAsk();
             }
 
+            // ⭐ v7.20.561 (#435, Neil: "does the grade feed student data / the course-average
+            // card?" — measured: NO; `sophicly_cw_trial_saved` has zero listeners). The path
+            // that DOES reach student-data's session_records.grade — and therefore the course
+            // average, the unit chips and the ring — is the canvas-save score piggyback
+            // (score_raw/score_max/score_percentage/grade_equivalent on the save body; listener
+            // v2.29.7+). So Sophia's mark is published here and the save body spreads it in
+            // while this document is the trial's. Re-armed on resume from the sidecar.
+            function publishTrialScore() {
+                try {
+                    const m = st && st.mark;
+                    if (!m || m.max == null) { state.cwTrialScore = null; return; }
+                    state.cwTrialScore = { task: 'cw_trial_1', projectId: state.cwProjectId || '', score: m.got, total: m.max, percentage: m.pct, grade: m.grade };
+                    if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                } catch (err) {}
+            }
             function saveTrialResult(opts) {
                 try {
                     if (!(state.cwProjectId && WML.cwProject && WML.cwProject.saveTrial)) return;
@@ -29010,6 +29052,7 @@
                         timestamp: new Date().toISOString(),
                     };
                     if (st.sophiaComments) payload.sophia_comments = st.sophiaComments;
+                    if (st.sophiaExamples) payload.sophia_examples = st.sophiaExamples;
                     // The delta rides ONE entry per run (the server appends each save to a
                     // calibration trend — a second copy would double-count the same run).
                     if (opts && opts.withDelta) payload.calibration_delta = (st.selfTotal || 0) - (m.got || 0);
@@ -29217,6 +29260,7 @@
                     // card cannot rebuild the climb for the element in flight. Everything already
                     // BANKED is kept (the document holds it); only the live element re-climbs.
                     if (st && !st.levels) { st.levels = {}; persist(); }
+                    if (st && st.mark) publishTrialScore();   // #435: later autosaves keep carrying the grade
                     // The document is the authority on how far they got — the sidecar only carries
                     // what the document cannot (which element is awaiting a sentence).
                     const fromDoc = deriveFromDoc();
@@ -57257,6 +57301,15 @@
                 score_max:        state.lastQuizScore.total,
                 score_percentage: state.lastQuizScore.percentage,
                 grade_equivalent: state.lastQuizScore.grade,
+            } : {}),
+            // v7.20.561 (#435): a CW trial's mark rides the same piggyback, gated to THIS task
+            // and THIS project so a score can never leak onto a sibling lesson's row.
+            ...((snap.task && snap.task.startsWith('cw_trial_') && state.cwTrialScore
+                    && state.cwTrialScore.task === snap.task && state.cwTrialScore.projectId === (state.cwProjectId || '')) ? {
+                score_raw:        state.cwTrialScore.score,
+                score_max:        state.cwTrialScore.total,
+                score_percentage: state.cwTrialScore.percentage,
+                grade_equivalent: state.cwTrialScore.grade,
             } : {}),
         };
         canvasSaveToServerTimer = setTimeout(() => {

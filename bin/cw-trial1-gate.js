@@ -257,6 +257,13 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
         && /if \(verdict === 'some' && perLevel\(e\) === 1\) return;/.test(CTL));
     ok('…the marking prompt\'s marker list is DERIVED from the element list, never hand-typed (#431)',
         /els\(\)\.map\(function \(e, k\) \{[\s\S]{0,120}@TRIAL_VERDICT\[' \+ e\.id/.test(CTL) && !/@TRIAL_VERDICT\[setup=/.test(CTL));
+    ok('⭐ every verdict carries a REWRITE EXAMPLE — their own moment at Level 2 (#434; root: every penalty carries a fix-example)',
+        /@TRIAL_EXAMPLE\[' \+ e\.id \+ '\]/.test(CTL) && /examples\[id\] = x/.test(CTL) && /For example: /.test(CTL)
+        && /@TRIAL_EXAMPLE\[hook\]/.test(PROTO));
+    ok('⭐ the mark reaches STUDENT-DATA via the canvas-save score piggyback, gated to this task + project (#435)',
+        /function publishTrialScore\(\)/.test(CTL) && /state\.cwTrialScore = \{ task: 'cw_trial_1', projectId/.test(CTL)
+        && /snap\.task\.startsWith\('cw_trial_'\) && state\.cwTrialScore/.test(SRC)
+        && /state\.cwTrialScore\.projectId === \(state\.cwProjectId \|\| ''\)/.test(SRC));
     ok('…and the orientation names BOTH dimensions with their codes and the board caveat (Neil 2026-08-25)',
         /AO5: Content and Organisation/.test(CTL) && /AO6: Technical Accuracy/.test(CTL) && /Edexcel IGCSE numbers them AO4 and AO5/.test(CTL));
     ok('…and the heal gives a pre-.559 document both accuracy rows', /cw-trial-1-accuracy/.test(HEAL || '') && /cw-trial-1-fb-accuracy/.test(HEAL || ''));
