@@ -63,9 +63,9 @@ printf("anchor: #%d \"%s\" in unit #%d \"%s\"\n", $step12->ID, $step12->post_tit
 $stepsObj = LDLMS_Factory_Post::course_steps($COURSE_ID);
 $h = $stepsObj->get_steps('h');
 $unitTopics = $h['sfwd-lessons'][$unitId]['sfwd-topic'] ?? null;
-if (!is_array($unitTopics) || !array_key_exists($step12->ID, $unitTopics)) { echo "⛔ the course tree does not list Step 12 under unit $unitId.\n"; exit(1); }
+if (!is_array($unitTopics) || !array_key_exists((int) $step12->ID, $unitTopics)) { echo "⛔ the course tree does not list Step 12 under unit $unitId.\n"; exit(1); }
 $order = array_keys($unitTopics);
-$slot = array_search($step12->ID, $order, true) + 1;   // Step 12's 1-based position in the unit
+$slot = array_search((int) $step12->ID, array_map('intval', $order), true) + 1;   // Step 12's 1-based position in the unit (wpdb IDs are strings; the tree's keys are ints)
 printf("unit order now: %s\n", implode(' · ', array_map(fn($id) => "#$id \"{$byTitle[$id]}\"", $order)));
 
 $sectionsBefore = function_exists('learndash_30_get_course_sections') ? learndash_30_get_course_sections($COURSE_ID) : [];
