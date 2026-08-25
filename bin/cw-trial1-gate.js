@@ -272,6 +272,10 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
     ok('…every one of those turns is CODE-served — still exactly one API call (#437, §4 programmatic-first)',
         (CTL.match(/sendCanvasMessage\(\);/g) || []).length === 2);
     ok('…and the goal row is in the template AND the heal', /'cw-trial-1-goal'\)/.test(SRC) && /cw-trial-1-goal/.test(HEAL || ''));
+    ok('⭐ the piggyback also carries strength_1 / target_1 / target_2 + cw_project_id, so the Feedback section, Portfolio and Report can show the words, not just the number (#439)',
+        /strength_1: st\.strengthLine/.test(CTL) && /target_2: st\.target/.test(CTL)
+        && /strength_1:\s+state\.cwTrialScore\.strength_1/.test(SRC) && /cw_project_id:\s+state\.cwTrialScore\.projectId/.test(SRC)
+        && /publishTrialScore\(\);\s*\/\/ v7\.20\.565/.test(CTL));
     ok('…and the orientation names BOTH dimensions with their codes and the board caveat (Neil 2026-08-25)',
         /AO5: Content and Organisation/.test(CTL) && /AO6: Technical Accuracy/.test(CTL) && /Edexcel IGCSE numbers them AO4 and AO5/.test(CTL));
     ok('…and the heal gives a pre-.559 document both accuracy rows', /cw-trial-1-accuracy/.test(HEAL || '') && /cw-trial-1-fb-accuracy/.test(HEAL || ''));

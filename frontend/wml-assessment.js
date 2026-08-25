@@ -29483,6 +29483,7 @@
                 if (!parsed.priority) console.warn('WML trial1: no @TRIAL_PRIORITY marker — derived from her level calls.');
                 writeRow('cw-trial-1-strength', st.strengthLine, { replace: true });
                 writeRow('cw-trial-1-priority', st.priorityLine, { replace: true });
+                publishTrialScore();   // v7.20.565 (#439): re-publish now the strength/priority lines exist
                 writeRow('cw-trial-1-mark', 'Grade ' + m.grade + ' (' + m.got + '/' + m.max + ' \u00b7 ' + m.pct + '%) for story coherence', { replace: true });
                 const gaps = agreementLine(st.sophia);
                 writeRow('cw-trial-1-gap', gaps.length
@@ -29641,7 +29642,11 @@
                 try {
                     const m = st && st.mark;
                     if (!m || m.max == null) { state.cwTrialScore = null; return; }
-                    state.cwTrialScore = { task: 'cw_trial_1', projectId: state.cwProjectId || '', score: m.got, total: m.max, percentage: m.pct, grade: m.grade };
+                    state.cwTrialScore = { task: 'cw_trial_1', projectId: state.cwProjectId || '', score: m.got, total: m.max, percentage: m.pct, grade: m.grade,
+                        // v7.20.565 (#439, Neil: "at least some of the main feedback needs to surface in the
+                        // progress report"): the SAME piggyback carries strength_1 / target_1 / target_2 —
+                        // the columns the dashboard's Feedback section, Portfolio and Report already read.
+                        strength_1: st.strengthLine || '', target_1: st.priorityLine || '', target_2: st.target || '' };
                     if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 } catch (err) {}
             }
@@ -29693,6 +29698,7 @@
                 st.phase = 'done';
                 done = true; active = false;
                 persist();
+                publishTrialScore();   // v7.20.565 (#439): target_2 = the student's own target, now written
                 saveTrialResult({ withDelta: false });
                 aiBubble('That is your opening move for Draft 2 — it is in your document, and it will be at the '
                     + 'top of the page when Draft 2 opens. Mark the lesson complete when you are ready.');
@@ -57969,6 +57975,13 @@
                 score_max:        state.cwTrialScore.total,
                 score_percentage: state.cwTrialScore.percentage,
                 grade_equivalent: state.cwTrialScore.grade,
+                // v7.20.565 (#439): the feedback columns student-data already whitelists
+                // (strength_1 / target_1 / target_2), plus the project id so student-data can
+                // address the CW canvas doc (`__p{id}`) for the Feedback section's full view.
+                strength_1:       state.cwTrialScore.strength_1 || '',
+                target_1:         state.cwTrialScore.target_1 || '',
+                target_2:         state.cwTrialScore.target_2 || '',
+                cw_project_id:    state.cwTrialScore.projectId || '',
             } : {}),
         };
         canvasSaveToServerTimer = setTimeout(() => {

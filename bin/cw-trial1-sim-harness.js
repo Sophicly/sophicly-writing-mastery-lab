@@ -482,6 +482,8 @@ async function main() {
         ok(w.deps.state.cwTrialScore && w.deps.state.cwTrialScore.score === 21 && w.deps.state.cwTrialScore.total === 30
             && w.deps.state.cwTrialScore.grade === expected && w.deps.state.cwTrialScore.projectId === 'cwp_sim',
             '7 · ⭐ the mark is PUBLISHED for the canvas-save piggyback → student-data → course average (#435)');
+        ok(/The opening image carries the whole premise/.test(w.deps.state.cwTrialScore.strength_1 || '') && /Give the last line an image/.test(w.deps.state.cwTrialScore.target_1 || ''),
+            '7 · ⭐ …with her Key Strength and Priority as strength_1 / target_1 for the dashboard\'s Feedback + Report (#439)');
         ok(markRow.indexOf('Grade ' + expected) === 0, '7 · …and banded through the ONE canonical ladder (grade ' + expected + ')');
         ok(!/Grade 9/.test(markRow), '7 · ⭐⭐ the grade the model announced in prose ("Grade 9", "40/40") changes nothing');
         ok(/story coherence/i.test(markRow), '7 · the mark says which dimension it is for');
