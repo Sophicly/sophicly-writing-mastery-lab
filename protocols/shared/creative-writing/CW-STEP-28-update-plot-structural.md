@@ -1,10 +1,10 @@
-### Creative Writing Workbook: Step 27 — Update Plot Structure (Structural Elements)
+### Creative Writing Workbook: Step 28 — Update Plot Structure (Structural Elements)
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 26 (Key Structural Elements)
-- **Feeds into:** Step 28 (Draft 7 — Structural Elements, AI protocol)
+- **Prerequisite:** Step 27 (Key Structural Elements)
+- **Feeds into:** Step 29 (Draft 7 — Structural Elements, AI protocol)
 - **Hero's Journey Stage:** Map advanced structural techniques across your complete story. This is the FINAL update to your plot outline.
 
 ---
@@ -41,7 +41,7 @@ Your plot outline is loaded automatically with ALL previous annotations (beats, 
 5. Suspense?
    ___
 
-`[SUBSTEP_COMPLETE: step_27, substep_1, "Stages I-II"]`
+`[SUBSTEP_COMPLETE: step_28, substep_1, "Stages I-II"]`
 
 **STAGE III: [Stage Name]**
 
@@ -69,7 +69,7 @@ Your plot outline is loaded automatically with ALL previous annotations (beats, 
 5. Suspense? (Maximum stakes)
    ___
 
-`[SUBSTEP_COMPLETE: step_27, substep_2, "Stages III-IV"]`
+`[SUBSTEP_COMPLETE: step_28, substep_2, "Stages III-IV"]`
 
 **STAGE V: [Stage Name]**
 
@@ -97,7 +97,7 @@ Your plot outline is loaded automatically with ALL previous annotations (beats, 
 5. Denouement technique? (Cyclical, twist, ambiguous, resolved?)
    ___
 
-`[SUBSTEP_COMPLETE: step_27, substep_3, "Stages V-VI"]`
+`[SUBSTEP_COMPLETE: step_28, substep_3, "Stages V-VI"]`
 
 ---
 
@@ -107,15 +107,15 @@ You now have a **COMPLETE story architecture** mapped from beginning to end. You
 
 1. Stage-by-stage beats (Step 6)
 2. Goals and needs (Step 12)
-3. Archetypes (Step 15)
-4. Empathy (Step 18)
-5. Theme and tone (Step 21)
-6. Genre (Step 24)
-7. Structural elements (Step 27) -- this step
+3. Archetypes (Step 16)
+4. Empathy (Step 19)
+5. Theme and tone (Step 22)
+6. Genre (Step 25)
+7. Structural elements (Step 28) -- this step
 
 This is a professional-level story blueprint. Everything from here is execution.
 
-`[SUBSTEP_COMPLETE: step_27, substep_4, "Complete"]`
+`[SUBSTEP_COMPLETE: step_28, substep_4, "Complete"]`
 
 ---
 
@@ -123,19 +123,19 @@ This is a professional-level story blueprint. Everything from here is execution.
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 4 | Stages I-II | Structural techniques mapped for opening | `[SUBSTEP_COMPLETE: step_27, substep_1, "Stages I-II"]` |
-| 2 of 4 | Stages III-IV | Peak techniques mapped (irony, suspense, pacing) | `[SUBSTEP_COMPLETE: step_27, substep_2, "Stages III-IV"]` |
-| 3 of 4 | Stages V-VI | Resolution techniques and denouement mapped | `[SUBSTEP_COMPLETE: step_27, substep_3, "Stages V-VI"]` |
-| 4 of 4 | Complete | Final plot outline with all 7 layers verified | `[SUBSTEP_COMPLETE: step_27, substep_4, "Complete"]` |
+| 1 of 4 | Stages I-II | Structural techniques mapped for opening | `[SUBSTEP_COMPLETE: step_28, substep_1, "Stages I-II"]` |
+| 2 of 4 | Stages III-IV | Peak techniques mapped (irony, suspense, pacing) | `[SUBSTEP_COMPLETE: step_28, substep_2, "Stages III-IV"]` |
+| 3 of 4 | Stages V-VI | Resolution techniques and denouement mapped | `[SUBSTEP_COMPLETE: step_28, substep_3, "Stages V-VI"]` |
+| 4 of 4 | Complete | Final plot outline with all 7 layers verified | `[SUBSTEP_COMPLETE: step_28, substep_4, "Complete"]` |
 
 #### Data Requirements
 
 **Reads from project:**
-- `plot_outline` — Six-stage plot outline (version 7 from Step 24)
-- `structural_elements_plan` — Chosen techniques (from Step 26)
+- `plot_outline` — Six-stage plot outline (version 7 from Step 25)
+- `structural_elements_plan` — Chosen techniques (from Step 27)
 
 **Writes to project:**
 - `plot_outline` — FINAL version with all annotations (version 8)
 - `plot_outline_structural` — Structural element annotations
 
-**Next step:** Step 28 — Draft 7: Structural Elements (AI protocol).
+**Next step:** Step 29 — Draft 7: Structural Elements (AI protocol).

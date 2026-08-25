@@ -4,7 +4,7 @@
 
 - **Type:** Workbook (self-paced, no AI)
 - **Prerequisite:** Step 10 (Draft 1) + Trial 1
-- **Feeds into:** Step 12 (Update Plot Structure) then Step 13 (Draft 2 — Character Arc)
+- **Feeds into:** Step 12 (Update Plot Structure) then Step 14 (Draft 2 — Character Arc)
 - **Hero's Journey Stage:** The Road of Trials continues. Now you must understand your protagonist's deeper psychology — their GOALS vs. NEEDS.
 
 ---
@@ -200,4 +200,4 @@ Explain your choice: ___
 - `character_realisation` — What they ultimately learn
 - `character_profile` — Complete profile data (all of the above)
 
-**Next step:** Step 12 — Update Plot Structure (Goals & Needs), then Step 13 — Draft 2 (AI protocol).
+**Next step:** Step 12 — Update Plot Structure (Goals & Needs), then Step 14 — Draft 2 (AI protocol).

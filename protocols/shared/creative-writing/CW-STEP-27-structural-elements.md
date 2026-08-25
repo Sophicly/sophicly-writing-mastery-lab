@@ -1,10 +1,10 @@
-### Creative Writing Workbook: Step 26 — Key Structural Elements
+### Creative Writing Workbook: Step 27 — Key Structural Elements
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 25 (Draft 6) + Trial 6 (if applicable)
-- **Feeds into:** Step 27 (Update Plot Structure) then Step 28 (Draft 7 — Structural Elements)
+- **Prerequisite:** Step 26 (Draft 6) + Trial 6 (if applicable)
+- **Feeds into:** Step 28 (Update Plot Structure) then Step 29 (Draft 7 — Structural Elements)
 - **Hero's Journey Stage:** The Final Trial begins. These advanced structural techniques will elevate your writing to professional level.
 
 ---
@@ -88,7 +88,7 @@ For each technique, decide whether and how you will incorporate it. **Irony is c
 | **Suspense** | [ ] Yes [ ] No | | Techniques: |
 | **Pacing** | [ ] Yes [ ] No | | Fast moments: ___ Slow moments: ___ |
 
-`[SUBSTEP_COMPLETE: step_26, substep_1, "Techniques Planned"]`
+`[SUBSTEP_COMPLETE: step_27, substep_1, "Techniques Planned"]`
 
 ---
 
@@ -101,7 +101,7 @@ Count your selected techniques: ___
 - [ ] All 5 senses are accounted for
 - [ ] Denouement technique is chosen
 
-`[SUBSTEP_COMPLETE: step_26, substep_2, "Count Verified"]`
+`[SUBSTEP_COMPLETE: step_27, substep_2, "Count Verified"]`
 
 ---
 
@@ -109,13 +109,13 @@ Count your selected techniques: ___
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 2 | Techniques Planned | All techniques reviewed; selections made with placement notes | `[SUBSTEP_COMPLETE: step_26, substep_1, "Techniques Planned"]` |
-| 2 of 2 | Count Verified | At least 4 techniques (inc. irony) confirmed | `[SUBSTEP_COMPLETE: step_26, substep_2, "Count Verified"]` |
+| 1 of 2 | Techniques Planned | All techniques reviewed; selections made with placement notes | `[SUBSTEP_COMPLETE: step_27, substep_1, "Techniques Planned"]` |
+| 2 of 2 | Count Verified | At least 4 techniques (inc. irony) confirmed | `[SUBSTEP_COMPLETE: step_27, substep_2, "Count Verified"]` |
 
 #### Data Requirements
 
 **Reads from project:**
-- `draft_6` — Draft 6 prose (from Step 25)
+- `draft_6` — Draft 6 prose (from Step 26)
 - `scene_pov` — Chosen POV (from Step 9)
 - `scene_tense` — Chosen tense (from Step 9)
 - `plot_outline` — Six-stage plot outline (version 6)
@@ -123,4 +123,4 @@ Count your selected techniques: ___
 **Writes to project:**
 - `structural_elements_plan` — Complete technique selections with placement notes
 
-**Next step:** Step 27 — Update Plot Structure (Structural Elements), then Step 28 — Draft 7 (AI protocol).
+**Next step:** Step 28 — Update Plot Structure (Structural Elements), then Step 29 — Draft 7 (AI protocol).

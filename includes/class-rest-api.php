@@ -5757,8 +5757,9 @@ class SWML_REST_API {
      */
     private static function cw_seed_lineages() {
         return [
-            'plot'  => [6, 8, 12, 15, 18, 21, 24, 27],
-            'draft' => [10, 13, 16, 19, 22, 25, 28, 29],
+            // v7.20.568 (#440): +1 from the old 13 upward (new Step 13 = Scene Selection for Draft 2).
+            'plot'  => [6, 8, 12, 16, 19, 22, 25, 28],
+            'draft' => [10, 14, 17, 20, 23, 26, 29, 30],
         ];
     }
 

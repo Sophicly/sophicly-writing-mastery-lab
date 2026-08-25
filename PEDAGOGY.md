@@ -1870,7 +1870,7 @@ so no lane re-asks:
    the full result (both judgments, marks, percent, grade) with every finished trial, so the ring
    has real data the day the consumer lands. Handoff: `wml-to-dashboard-cw-trial-grades-*`.
 
-7. **Trial 6 moves to follow Draft 6 (Genre, step 25) as a genre-focused trial** (same delegation),
+7. **Trial 6 moves to follow Draft 6 (Genre, step 26 — was 25 before the v7.20.568 renumber) as a genre-focused trial** (same delegation),
    so all seven drafts get assessment coverage and "comprehensive final feedback" lives only in the
    finale — Trial 6's old stub duplicated the final assessment's job.
 
@@ -1945,6 +1945,28 @@ so no lane re-asks:
    then How am I going? (grade vs goal, AO5/AO6 split, strength, calibration verdict) · Where
    to next? (her priority) · the target ask. §33.9 still holds: the trial ENDS on the target.
    Shipped v7.20.562 (FIXLIST #437).
+16. ⭐⭐ **THE DRAFT DRIFTS FROM THE PLAN — SO THE PLAN IS RE-MAPPED BEFORE THE NEXT DRAFT IS
+   PLANNED (Neil, ruled 2026-08-25, FIXLIST #440; overruling the engine lane's "no new step").**
+   His reasoning, verbatim in substance: *"in step nine they selected the beats, but then they
+   polished that off, so by the time it reaches draft one it's gonna look quite different to what
+   it was in the scene selection and the plot outline. By the time they get to step twelve they'll
+   need to decide where the elements from that draft fit into, which beats they fit into. And then
+   they'll need to decide again for draft two which beats they're going to write about."* Three
+   consequences, all built (v7.20.567/.568):
+   - **Step 12 does two things, both on the student's own plot, both APPEND-only (§29):** the
+     Step-11 profile (goals · need · stakes at the beginning; what happens to the goal · dilemma ·
+     realisation · meaning at the end) placed into the beats in Step 8's own placer, banded I–III /
+     IV–VI; then **Draft 1 as sentences** — the student taps the first and last sentence of a chunk
+     and the beat it belongs to, and the chunk lands under that beat as a `Draft 1:` line. *"It's up
+     to the student to amalgamate."* A chunk that fits no beat goes on the *Not in the plot yet*
+     list — the draft telling the plot it needs a new beat. The map (beat → prose) is saved.
+   - **A NEW Step 13 — Scene Selection for Draft 2 — sits before Draft 2** (old 13–30 → 14–31).
+     Same walk as Step 9, over the updated plot. **THE MERGE:** a beat the student already drafted
+     transfers as its Draft-1 prose; a beat picked for the first time transfers as its plan line.
+     Draft 2 is therefore *"an updated draft one"* by construction — nothing written is lost, and
+     widening the scene to a new beat costs nothing but writing that beat.
+   - **The draft's progress feeds the living outline**, not only the next draft: beats grow longer;
+     that is the amalgamation §29 already rules is the student's job, not the walk's.
 
 ## §34. ⭐⭐ THE EMERGENCY CREATIVE-WRITING UNIT — the three rulings it stands on (Neil, ruled 2026-08-23)
 

@@ -27,19 +27,21 @@ LOCAL_PATH="$(cd "$(dirname "$0")" && pwd)/"
 #
 # The check is the renumber's own fingerprint: the new Step 8 topic in course 41165. It is queried
 # on the target, not assumed. Escape hatch is deliberate and loud.
-if grep -q "'cw_step_30'" "$LOCAL_PATH/includes/class-protocol-router.php" 2>/dev/null; then
-    echo "Checking the production course is renumbered before shipping the renumbered map..."
+# v7.20.568 (#440): the SECOND renumber has its own fingerprint — the new "STEP 13: Scene Selection"
+# lesson. Router maps cw_step_31 only once that insert has happened, so the probe is keyed on it.
+if grep -q "'cw_step_31'" "$LOCAL_PATH/includes/class-protocol-router.php" 2>/dev/null; then
+    echo "Checking the production course carries BOTH renumbers (Step 8 + Step 13) before shipping the map..."
     _cw_step8=$(ssh -i "$SSH_KEY" -o ConnectTimeout=20 "$REMOTE_USER@$REMOTE_HOST" \
         "cd /home/runcloud/webapps/SophiclyMain && wp --skip-plugins --skip-themes db query \
          \"SELECT COUNT(*) FROM wp_posts p JOIN wp_postmeta m ON m.post_id=p.ID AND m.meta_key='course_id' AND m.meta_value='41165' \
-           WHERE p.post_type='sfwd-topic' AND p.post_status='publish' AND p.post_title LIKE '%STEP 8: Update Your Plot%'\" \
+           WHERE p.post_type='sfwd-topic' AND p.post_status='publish' AND (p.post_title LIKE '%STEP 8: Update Your Plot%' OR p.post_title LIKE '%STEP 13: Scene Selection%')\" \
          --skip-column-names 2>/dev/null" | tr -d '[:space:]')
-    if [ "$_cw_step8" != "1" ]; then
+    if [ "$_cw_step8" != "2" ]; then
         echo ""
         echo "❌ REFUSING TO DEPLOY — the production Creative Writing course is NOT renumbered."
-        echo "   Local router maps cw_step_8..30 (post-renumber); prod course 41165 has no"
-        echo "   'STEP 8: Update Your Plot' lesson (query returned: '${_cw_step8:-nothing}')."
-        echo "   Shipping now would serve the WRONG protocol for every CW step from 8 upward."
+        echo "   Local router maps cw_step_8..31 (both renumbers); prod course 41165 does not carry"
+        echo "   BOTH 'STEP 8: Update Your Plot' and 'STEP 13: Scene Selection' (query returned: '${_cw_step8:-nothing}', expected 2)."
+        echo "   Shipping now would serve the WRONG protocol for every CW step from the missing insert upward."
         echo ""
         echo "   Fix: the LearnDash lane renumbers the prod course FIRST, then deploy."
         echo "   Handoff: ~/.claude/handoffs/open/learndash-FROM-wml-cw-renumber-*.md"
@@ -47,7 +49,7 @@ if grep -q "'cw_step_30'" "$LOCAL_PATH/includes/class-protocol-router.php" 2>/de
         [ "$CW_RENUMBER_OK" = "1" ] || exit 1
         echo "   ⚠️  CW_RENUMBER_OK=1 set — proceeding anyway."
     else
-        echo "✅ Production course is renumbered (STEP 8: Update Your Plot present). Safe to ship."
+        echo "✅ Production course carries both renumbers (STEP 8 + STEP 13 present). Safe to ship."
     fi
 fi
 

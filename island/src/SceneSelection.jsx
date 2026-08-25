@@ -7,7 +7,8 @@
  * overlay instead of reloading a demo).
  *
  * PROPS (the whole bridge contract — beats in, placements out):
- *   stages        [{id, roman, name, beats:[{id, ord, label, text}]}]  (only written beats)
+ *   stages        [{id, roman, name, beats:[{id, ord, label, text, prose?}]}]  (only written beats;
+ *                 `prose` = the beat's Draft-1 prose when the bridge merges — v7.20.568 #440)
  *   elements      the 7 scene elements [{id,label,prompt,c,ca,cb,dk}] — byte-matched to the
  *                 shipped Scene Structure section
  *   nudgeRules    [{re, el}] derived from the archetype's canon beat labels
@@ -510,7 +511,7 @@ export default function SceneSelection(props) {
                                             className={'beat-card' + (inRun ? ' is-sel' : '') + (isEnd ? ' is-end' : '')}>
                                             <span className="tick">{inRun ? '✓' : ''}</span>
                                             <span>
-                                                <span className="b-label"><span className="ord">#{b.ord}</span>{b.label}</span>
+                                                <span className="b-label"><span className="ord">#{b.ord}</span>{b.label}{b.prose ? <span className="dm-run-tag">Draft 1 written</span> : null}</span>
                                                 <span className="b-text" style={{ display: 'block' }}>{b.text}</span>
                                             </span>
                                             {isEnd ? <span className="trim-note">tap to trim</span> : null}
@@ -621,7 +622,7 @@ export default function SceneSelection(props) {
                                 className={'p3-row' + (b.id === landedBeatId ? ' just-landed' : '') + (dragVis && dragVis.src === g ? ' drag-src' : '')}>
                                 <span className="row-grip" title="Drag this beat to another element"
                                     onPointerDown={(e) => startBeatDrag(e, g, e.target.closest('.p3-row'))}>⠿</span>
-                                <span className="b-label"><span className="ord">#{b.ord}</span>{b.label}</span>
+                                <span className="b-label"><span className="ord">#{b.ord}</span>{b.label}{b.prose ? <span className="dm-run-tag">Draft 1 written</span> : null}</span>
                                 <span className="b-text">{b.text}</span>
                                 {ctl.length ? <span className="row-ctl">{ctl}</span> : null}
                             </div>
@@ -711,7 +712,7 @@ export default function SceneSelection(props) {
                                     <>
                                         {chips.map((b, k) => (
                                             <React.Fragment key={b.id}>{k > 0 ? <br /> : null}
-                                                <span className="own"><span className="ord">#{b.ord}</span>{b.text}</span>
+                                                <span className="own"><span className="ord">#{b.ord}</span>{b.prose || b.text}{b.prose ? <em> (your Draft 1 prose)</em> : null}</span>
                                             </React.Fragment>
                                         ))}
                                         {adds.map((a) => (

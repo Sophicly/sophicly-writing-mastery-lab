@@ -1,10 +1,10 @@
-### Creative Writing Workbook: Step 24 — Update Plot Structure (Genre)
+### Creative Writing Workbook: Step 25 — Update Plot Structure (Genre)
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 23 (Genre)
-- **Feeds into:** Step 25 (Draft 6 — Genre, AI protocol)
+- **Prerequisite:** Step 24 (Genre)
+- **Feeds into:** Step 26 (Draft 6 — Genre, AI protocol)
 - **Hero's Journey Stage:** Map genre elements across your story before applying to your scene.
 
 ---
@@ -37,7 +37,7 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 4. How do they reinforce transformation?
    ___
 
-`[SUBSTEP_COMPLETE: step_24, substep_1, "Stages I-II"]`
+`[SUBSTEP_COMPLETE: step_25, substep_1, "Stages I-II"]`
 
 **STAGE III: [Stage Name]**
 
@@ -61,7 +61,7 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 4. How do they reinforce transformation?
    ___
 
-`[SUBSTEP_COMPLETE: step_24, substep_2, "Stages III-IV"]`
+`[SUBSTEP_COMPLETE: step_25, substep_2, "Stages III-IV"]`
 
 **STAGE V: [Stage Name]**
 
@@ -85,7 +85,7 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 4. How do they reinforce the completed transformation?
    ___
 
-`[SUBSTEP_COMPLETE: step_24, substep_3, "Stages V-VI"]`
+`[SUBSTEP_COMPLETE: step_25, substep_3, "Stages V-VI"]`
 
 ---
 
@@ -97,7 +97,7 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 - [ ] Genre conventions amplify existing layers (empathy, theme, archetypes) rather than replacing them
 - [ ] The reader's emotional experience matches the genre contract
 
-`[SUBSTEP_COMPLETE: step_24, substep_4, "Coherence Check"]`
+`[SUBSTEP_COMPLETE: step_25, substep_4, "Coherence Check"]`
 
 ---
 
@@ -105,20 +105,20 @@ Your plot outline is loaded automatically with all previous annotations (beats, 
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 4 | Stages I-II | Genre conventions mapped for opening stages | `[SUBSTEP_COMPLETE: step_24, substep_1, "Stages I-II"]` |
-| 2 of 4 | Stages III-IV | Genre intensity and blending mapped | `[SUBSTEP_COMPLETE: step_24, substep_2, "Stages III-IV"]` |
-| 3 of 4 | Stages V-VI | Climactic conventions and resolution mapped | `[SUBSTEP_COMPLETE: step_24, substep_3, "Stages V-VI"]` |
-| 4 of 4 | Coherence Check | Genre-character balance verified | `[SUBSTEP_COMPLETE: step_24, substep_4, "Coherence Check"]` |
+| 1 of 4 | Stages I-II | Genre conventions mapped for opening stages | `[SUBSTEP_COMPLETE: step_25, substep_1, "Stages I-II"]` |
+| 2 of 4 | Stages III-IV | Genre intensity and blending mapped | `[SUBSTEP_COMPLETE: step_25, substep_2, "Stages III-IV"]` |
+| 3 of 4 | Stages V-VI | Climactic conventions and resolution mapped | `[SUBSTEP_COMPLETE: step_25, substep_3, "Stages V-VI"]` |
+| 4 of 4 | Coherence Check | Genre-character balance verified | `[SUBSTEP_COMPLETE: step_25, substep_4, "Coherence Check"]` |
 
 #### Data Requirements
 
 **Reads from project:**
-- `plot_outline` — Six-stage plot outline (version 6 from Step 21)
-- `genre_choices` — Primary and secondary genres (from Step 23)
-- `genre_conventions` — Specific conventions (from Step 23)
+- `plot_outline` — Six-stage plot outline (version 6 from Step 22)
+- `genre_choices` — Primary and secondary genres (from Step 24)
+- `genre_conventions` — Specific conventions (from Step 24)
 
 **Writes to project:**
 - `plot_outline` — Updated with genre annotations (version 7)
 - `plot_outline_genre` — Genre-specific annotations
 
-**Next step:** Step 25 — Draft 6: Genre (AI protocol).
+**Next step:** Step 26 — Draft 6: Genre (AI protocol).

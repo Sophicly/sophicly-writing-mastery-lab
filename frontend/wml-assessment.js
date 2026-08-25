@@ -5876,11 +5876,11 @@
         // v7.20.567 (#440): the walk puts the Step-11 profile into the beats (the Step-8 placer, goals
         // lens) and then places Draft 1, chunk by chunk, under the beats it grew out of.
         12: { layer: 'Goals and Needs', update: '2 of 7', desc: 'Two passes, both on your own plot. First your protagonist’s goals, needs and stakes from Step 11 go into the beats where a reader could see them — beginning facts into Stages I–III, ending facts into IV–VI. Then your Draft 1, sentence by sentence: you decide which chunk belongs to which beat, so the plot carries what you worked out by writing it.' },
-        15: { layer: 'Archetypes', update: '3 of 7', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
-        18: { layer: 'Empathy', update: '4 of 7', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
-        21: { layer: 'Theme and Tone', update: '5 of 7', desc: 'Map meaning and atmosphere across your complete story. For each stage, identify the dominant tone and how the theme emerges through action and image — never through explicit statement.' },
-        24: { layer: 'Genre', update: '6 of 7', desc: 'Map genre across your plot outline. For each stage, identify which genre(s) dominate, what conventions appear, and what emotion readers should feel.' },
-        27: { layer: 'Structural Elements', update: '7 of 7 (FINAL)', desc: 'This is the <strong>final update</strong>. Map advanced structural techniques (irony, symbols, senses, pacing, suspense) across your complete story. You now have a <strong>complete 8-layer story architecture</strong> — a professional-level blueprint.' },
+        16: { layer: 'Archetypes', update: '3 of 7', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
+        19: { layer: 'Empathy', update: '4 of 7', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
+        22: { layer: 'Theme and Tone', update: '5 of 7', desc: 'Map meaning and atmosphere across your complete story. For each stage, identify the dominant tone and how the theme emerges through action and image — never through explicit statement.' },
+        25: { layer: 'Genre', update: '6 of 7', desc: 'Map genre across your plot outline. For each stage, identify which genre(s) dominate, what conventions appear, and what emotion readers should feel.' },
+        28: { layer: 'Structural Elements', update: '7 of 7 (FINAL)', desc: 'This is the <strong>final update</strong>. Map advanced structural techniques (irony, symbols, senses, pacing, suspense) across your complete story. You now have a <strong>complete 8-layer story architecture</strong> — a professional-level blueprint.' },
     };
 
     // ⭐ v7.20.455 — the ONE predicate for "is this a plot-update step?", derived from the
@@ -5915,6 +5915,7 @@
         // plus the Step-7 values audit it maps in; 9 is Scene Selection; 10 is Draft 1.
         8: ['plot_outline', 'universal_values'],
         9: ['plot_outline'], 10: ['plot_outline', 'scene_selection'],
+        13: ['plot_outline'],   // v7.20.568 (#440): the Draft-2 scene selection
     };
     function _cwDepLabel(key) { return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
     function _cwDepTag(key) { return '[CONTEXT FROM PREVIOUS STEP] ' + _cwDepLabel(key) + ':'; }
@@ -15746,6 +15747,10 @@
                             // the detector chip and an API round the step never needs.
                             clearWalkResume();
                             setTimeout(() => { _cw9SceneCtl.reset(); _cw9SceneCtl.start(); }, 200);
+                        } else if (state.task === 'cw_step_13') {
+                            // v7.20.568 (#440): the Draft-2 scene selection owns chat-clear the same way.
+                            clearWalkResume();
+                            setTimeout(() => { _cw13SceneCtl.reset(); _cw13SceneCtl.start(); }, 200);
                         } else if (isCwTask && cwStepDef) {
                             const stepLabel = cwStepDef.label || 'this step';
                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
@@ -16621,7 +16626,7 @@
             const m = {
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
-                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
+                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
                 cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl,
             };
             if (_examinerLadderCtl.active) {
@@ -16635,7 +16640,7 @@
             const m = {
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
-                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
+                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
                 cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl,
             };
             if (_examinerLadderCtl.active) return true;
@@ -16734,7 +16739,7 @@
                 const _cwCtls = {
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
-                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl,
+                cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
                     cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl,
                 };
                 const _cwCtl = _cwCtls[state.task];
@@ -16874,6 +16879,11 @@
             // Every other turn in this step falls through to the AI exactly as before.
             if (state.task === 'cw_step_9' && _cw9SceneCtl.active && _inboundIsAnswer) {
                 await _cw9SceneCtl.handleTurn(msg);
+                return;
+            }
+            // v7.20.568 (#440): Step 13 is the same walk over the updated plot (one typed ask).
+            if (state.task === 'cw_step_13' && _cw13SceneCtl.active && _inboundIsAnswer) {
+                await _cw13SceneCtl.handleTurn(msg);
                 return;
             }
 
@@ -27024,7 +27034,12 @@
         //                — CW_ARTIFACT_MAP[9] saves the step DOC into that key (proven on
         //                prod: it held a Draft-1 document).
         // ═══════════════════════════════════════════════════════════════════════════════
-        const _cw9SceneCtl = (function () {
+        // ⭐ v7.20.568 (#440): ONE scene-selection walk, TWO steps. Step 13 ("Scene Selection for
+        // Draft 2") is Step 9 over the UPDATED plot with a MERGE: a beat the student already drafted
+        // arrives carrying its Draft-1 prose (from Step 12's draft map), a new beat arrives as the
+        // plan line. Everything step-specific rides on `cfg`; the body is Step 9's, unchanged.
+        function makeCwSceneCtl(cfg) {
+            const WALK = cfg.walk;
             // The 7 elements — labels/prompts byte-matched to the Scene Structure doc builder
             // (the outlineRowHTML rows above); hues are Neil's element→colour ruling (#204
             // addendum 10; a brand pass may re-pitch hexes, the MAPPING stays).
@@ -27047,8 +27062,32 @@
                 { re: /final image|closing image/i, el: 'denouement' },
                 { re: /nightmare battle|climax/i, el: 'climax' },
             ];
-            const STATE_KEY = 'scene_selection_state';
+            const STATE_KEY = cfg.stateKey;
             let world = null;          // { arch, stages } from the last open()
+            // ⭐ v7.20.568 (#440 MERGE): fid → the student's Draft-1 prose for that beat, read from
+            // Step 12's draft map when `cfg.mergeFrom` names it. A drafted beat transfers as its
+            // prose, never as the plan line, so Draft 2 keeps everything Draft 1 wrote.
+            let proseMap = null;
+            function proseFor(fid) { return (proseMap && proseMap[fid]) ? proseMap[fid] : ''; }
+            async function loadProseMap(pid) {
+                proseMap = null;
+                if (!cfg.mergeFrom || !pid) return;
+                try {
+                    const art = await WML.cwProject.loadArtifact(pid, cfg.mergeFrom);
+                    const v = (art && art.success && art.value) ? (typeof art.value === 'string' ? JSON.parse(art.value) : art.value) : null;
+                    const chunks = (v && v.draftMap && Array.isArray(v.draftMap.chunks)) ? v.draftMap.chunks : [];
+                    const m = {};
+                    chunks.forEach(function (c) {
+                        if (!c || !c.fid || !String(c.text || '').trim()) return;
+                        m[c.fid] = (m[c.fid] ? m[c.fid] + ' ' : '') + String(c.text).trim();
+                    });
+                    proseMap = m;
+                } catch (e) { console.warn('WML CW9: draft map could not be read —', e && e.message); }
+            }
+            function stampProse(w) {
+                ((w && w.stages) || []).forEach(function (s) { s.beats.forEach(function (b) { b.prose = proseFor(b.id); }); });
+                return w;
+            }
             let opened = false;
             let introServed = false;   // per page-load idempotence (the #240 double-draw class)
             let lastSnapshot = null;
@@ -27168,7 +27207,7 @@
                         const text = present.get(fid);
                         if (!text) return;
                         ord++;
-                        beats.push({ id: fid, ord: ord, label: c.label || c.id, text: text });
+                        beats.push({ id: fid, ord: ord, label: c.label || c.id, text: cfg.displayText ? cfg.displayText(text) : text });
                     });
                     if (beats.length) {
                         const p = stagePresentation(sec, si);
@@ -27286,7 +27325,7 @@
             function transferDone() {
                 if (lastSnapshot && lastSnapshot.transferred) return true;
                 return ELEMENTS.some(function (e) {
-                    const fid = 'cw-step-8-' + e.id;   // built, never read as a bare prefix (§5d)
+                    const fid = cfg.fidPrefix + e.id;   // built, never read as a bare prefix (§5d)
                     return !!rowText(fid);
                 });
             }
@@ -27303,12 +27342,8 @@
             // ⚠️ The greeting must NOT match the launch-prompt detector (wml-app.js:
             // /hit the button below|let's get started|let's begin|ready to (begin|start|…)/i)
             // or the detector adds a SECOND "▶ Let's go" — the exact double Neil saw.
-            const GREETING = 'Welcome to Step 9: **Scene Selection**\n\nYour plot now carries your values. Now we choose the part of it your exam story will actually tell.';
-            const INTRO = [
-                'Here’s why we pick a scene instead of writing the whole story. Examiners have seen that when students try to tell a full story in the exam, the writing goes shallow — there are simply too many plot points to cover. We’ve seen exactly the same thing.\n\nA full story really needs about 5,000–10,000 words (novels run 50,000–100,000). In the exam you can only write about 650–700.',
-                'What a lot of students don’t realise is that a **scene is a mini story**. It has the same structure — its own hook, its own setup, reaction, epiphany, proaction, climax and denouement. So one well-chosen scene can do everything a whole story does, at a depth the examiner rewards.\n\nThat’s why we select a scene.',
-                'Here’s how it works:\n\n1. **Pick your stage(s)** — one or two that sit next to each other.\n2. **Pick your beats** — one continuous run: tap the first, tap the last, everything between comes with it.\n3. **Shape the scene** — element by element, decide where each part of your run belongs.\n\nAnd from the moment shaping starts, you can **drag any beat by its ⠿ handle** to change where it goes — nothing is final as you go, and your beats never leave story order. Rough is fine; you can reopen this and change everything later.',
-            ];
+            const GREETING = cfg.greeting;
+            const INTRO = cfg.intro;
             // How far through the intro is the TRANSCRIPT? Durable turns replay, so position is
             // doc-derived — a reload resumes at the exact next chunk, never from the top (§4c.8b).
             function introProgress() {
@@ -27343,7 +27378,7 @@
                     }
                     if (!w.arch || !w.stages.length) {
                         // EPHEMERAL gate (the .284 rule) — re-derives on every entry, never persisted.
-                        noteBubble('Welcome to Step 9: **Scene Selection**\n\nI can’t find any written beats in your plot outline yet — this step selects a scene FROM that outline, so it needs Step 6 (and ideally Steps 7–8) done first.\n\nPlease go back and write your plot outline, then come back here.');
+                        noteBubble(cfg.stepTitle + '\n\nI can’t find any written beats in your plot outline yet — this step selects a scene FROM that outline, so it needs Step 6 (and ideally Steps 7–8) done first.\n\nPlease go back and write your plot outline, then come back here.');
                         chipBar([{ label: 'Back to Steps', go: function () { try { closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); } catch (e) {} } }]);
                         return;
                     }
@@ -27380,6 +27415,8 @@
                     return;
                 }
                 world = w;
+                await loadProseMap(pid);
+                stampProse(w);
                 const saved = await loadState(pid);
                 const ini = restoreInitial(w, saved);
                 if (ini.dropped) noteBubble('Heads up — some beats from your previous selection have changed upstream, so your run needs re-picking. Your shaping starts fresh from the current outline.');
@@ -27425,8 +27462,9 @@
                     const filedEls = [];
                     let beatTotal = 0, addTotal = 0;
                     payload.elements.forEach(function (pe) {
-                        const fid = 'cw-step-8-' + pe.id;   // byte-traced stored fids (§5d)
-                        const lines = pe.beats.map(function (b) { return b.text; }).concat(pe.added || []);
+                        const fid = cfg.fidPrefix + pe.id;   // byte-traced stored fids (§5d)
+                        // THE MERGE (#440): a drafted beat transfers as its Draft-1 prose; a new beat as its plan line.
+                        const lines = pe.beats.map(function (b) { return proseFor(b.id) || b.text; }).concat(pe.added || []);
                         if (!lines.length) return;
                         beatTotal += pe.beats.length; addTotal += (pe.added || []).length;
                         const current = rowText(fid);
@@ -27441,7 +27479,7 @@
                         }
                     });
                     const posLabel = derivePlotPosition(payload.stageIds);
-                    if (posLabel) { try { _setOutlineDropdown('cw-step-8-plot-position', posLabel); } catch (e) {} }
+                    if (posLabel) { try { _setOutlineDropdown(cfg.fidPrefix + 'plot-position', posLabel); } catch (e) {} }
                     save();
                     saved.arch = world && world.arch;
                     saved.transfers = transfers;
@@ -27455,7 +27493,10 @@
                     persistState(pid, saved);
                     // ONE durable transcript turn — a past-event report (fossil-safe §4c.7).
                     const parts = [];
-                    if (filedEls.length) parts.push('I’ve filed your scene into the Scene Structure — ' + beatTotal + ' beat' + (beatTotal === 1 ? '' : 's') + (addTotal ? ' plus ' + addTotal + ' added moment' + (addTotal === 1 ? '' : 's') : '') + ', in story order, in your own words. Your plot outline is untouched.');
+                    const merged = cfg.mergeFrom ? payload.elements.reduce(function (n, pe) { return n + pe.beats.filter(function (b) { return !!proseFor(b.id); }).length; }, 0) : 0;
+                    if (filedEls.length) parts.push('I’ve filed your scene into the Scene Structure — ' + beatTotal + ' beat' + (beatTotal === 1 ? '' : 's') + (addTotal ? ' plus ' + addTotal + ' added moment' + (addTotal === 1 ? '' : 's') : '') + ', in story order, in your own words.'
+                        + (merged ? ' **' + merged + ' of them arrived with your Draft 1 prose already in** — nothing you wrote is lost; only the new beats are still your plan lines.' : '')
+                        + ' Your plot outline is untouched.');
                     if (pendingConflicts.length) parts.push('You’ve edited ' + pendingConflicts.length + ' element' + (pendingConflicts.length === 1 ? '' : 's') + ' since the last transfer — I’ll check those with you one at a time when you close the picker, so nothing of yours is overwritten.');
                     if (parts.length) aiBubble(parts.join('\n\n'));
                     // IN ORDER (his words): the overview follows the transfer. When elements are
@@ -27482,7 +27523,7 @@
             // Zero API: the student's words are filed verbatim, never judged — this is a capture,
             // not a Socratic turn, so there is nothing here worth an API call.
             // ══════════════════════════════════════════════════════════════════════════════════
-            const OVERVIEW_FID = 'cw-step-8-extract-description';
+            const OVERVIEW_FID = cfg.fidPrefix + 'extract-description';
             const OVERVIEW_ASK = 'One last thing before you write — the **Scene Overview**.\n\n'
                 + 'Your Scene Structure now holds the beats. The overview is the paragraph that says what this extract actually IS, so anyone reading your plan knows the situation before they read the beats.\n\n'
                 + 'A strong overview says:\n'
@@ -27511,7 +27552,7 @@
                 if (overviewDone()) { ensureChip(); return; }
                 askActive = true;
                 aiBubble(OVERVIEW_ASK);
-                _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' });
+                _walkSlot.arm(WALK, OVERVIEW_FID, { cycle: 'rewrite' });
                 // The ask ends on the question; the chips are the free help rungs BELOW it, and
                 // never a way to skip past it (§4c.9 — Sophia is the last rung and this ask is
                 // zero-API, so there is no Sophia rung to reach for at all).
@@ -27519,7 +27560,7 @@
                 // help bars already use, so "More examples" now looks the same everywhere it
                 // appears; `reopenScene` is Neil's own door-with-chevron (frontend/icons/).
                 chipBar([
-                    { svg: WML.icon('examples', 15), label: 'More examples', go: function () { aiBubble(OVERVIEW_MORE); _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' }); overviewChips(); } },
+                    { svg: WML.icon('examples', 15), label: 'More examples', go: function () { aiBubble(OVERVIEW_MORE); _walkSlot.arm(WALK, OVERVIEW_FID, { cycle: 'rewrite' }); overviewChips(); } },
                     { svg: WML.icon('reopenScene', 15), label: 'Reopen my scene', go: open },
                 ]);
             }
@@ -27533,9 +27574,9 @@
             async function handleTurn(msg) {
                 const clean = (msg || '').trim();
                 if (!clean) { resetSend(); return; }
-                const slot = _walkSlot.consume('cw9');
+                const slot = _walkSlot.consume(WALK);
                 if (!slot) {
-                    _cwNoAskGuard('cw9', function () { serveOverviewAsk(); }, aiBubble);
+                    _cwNoAskGuard(WALK, function () { serveOverviewAsk(); }, aiBubble);
                     resetSend();
                     return;
                 }
@@ -27546,7 +27587,7 @@
                 } catch (e) {
                     console.warn('WML CW9: overview write failed for ' + slot.fid + ' —', e && e.message);
                     noteBubble('Something went wrong saving that — nothing was lost. Try sending it once more.');
-                    _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' });
+                    _walkSlot.arm(WALK, OVERVIEW_FID, { cycle: 'rewrite' });
                     overviewChips();
                     return;
                 }
@@ -27576,18 +27617,18 @@
             //
             // Zero API throughout (#219): advice is code-served, the join is code, the seed is code.
             // ══════════════════════════════════════════════════════════════════════════════════
-            const DRAFT_KEY = 'scene_draft';        // ⛔ NOT `scene_selection` — that key receives
+            const DRAFT_KEY = cfg.draftKey;         // ⛔ NOT `scene_selection` — that key receives
                                                     // the step DOCUMENT via CW_ARTIFACT_MAP[9].
             const DRAFT_LABEL = 'Your Scene';
-            function elFid(id) { return 'cw-step-8-' + id; }   // built, never read as a bare prefix (§5d)
+            function elFid(id) { return cfg.fidPrefix + id; }   // built, never read as a bare prefix (§5d)
 
             // Style guidance is DERIVED from the Step-10 protocol's own stylistic principles
             // (protocols/shared/creative-writing/CW-STEP-10-draft-1-prose-style.md §1.3) — its
             // worked contrasts, not invented ones (§5c: student content derives from the protocols).
             const WRITEOUT = [
                 'Your scene is filed. Every beat you chose is sitting in the seven elements above, in story order, in your own words.\n\nWhat is in those boxes right now is shorthand — the plan. **Those seven elements are your scene**, and the next job is to turn each one into real sentences.',
-                '**Write each element out, in the document above.**\n\nWork down the seven boxes and expand what is in each one into proper prose:\n\n- **Concrete nouns, dynamic verbs.** *She darted across the kitchen* — not *she went quickly across the room*.\n- **Show it happening**, rather than reporting it. *His fist tightened around the strap of his bag* — not *he was angry*.\n- **Around 450–600 words** across the whole scene.\n\nRough is fine. Getting it down beats getting it perfect — polishing is exactly what Step 10 is for.',
-                '**When you are happy with all seven, tap Transfer my scene.**\n\nI will join them into one continuous piece of prose — no labels, no headings, just your story — and put it at the bottom of this document so you can read it the way a reader would.\n\nThat is what **Step 10** opens with, waiting for you to polish.',
+                '**Write each element out, in the document above.**\n\nWork down the seven boxes and expand what is in each one into proper prose:\n\n- **Concrete nouns, dynamic verbs.** *She darted across the kitchen* — not *she went quickly across the room*.\n- **Show it happening**, rather than reporting it. *His fist tightened around the strap of his bag* — not *he was angry*.\n- **Around 450–600 words** across the whole scene.\n\nRough is fine. Getting it down beats getting it perfect — polishing is exactly what ' + cfg.nextStep + ' is for.',
+                '**When you are happy with all seven, tap Transfer my scene.**\n\nI will join them into one continuous piece of prose — no labels, no headings, just your story — and put it at the bottom of this document so you can read it the way a reader would.\n\nThat is what **' + cfg.nextStep + '** opens with, waiting for you to polish.',
             ];
 
             // Transcript probes. Both phases resume from the DURABLE transcript, so a reload lands
@@ -27654,7 +27695,7 @@
             function draftSectionHTML(paras) {
                 return sectionHTML('response', DRAFT_LABEL, false, null,
                     '<h3>Your Scene</h3>'
-                    + '<p><em>Your seven elements, joined in story order — no labels, just the story. Read it the way a reader would. This is exactly what Step 10 opens with. To change it, edit the elements above and tap Transfer again.</em></p>'
+                    + '<p><em>Your seven elements, joined in story order — no labels, just the story. Read it the way a reader would. This is exactly what ' + cfg.nextStep + ' opens with. To change it, edit the elements above and tap Transfer again.</em></p>'
                     + draftParasHTML(paras));
             }
             function draftSectionExists() {
@@ -27716,7 +27757,7 @@
                 // landmine; the dashboard lane owns the counter — see the handoff).
                 try {
                     const st = await loadState(pid);
-                    st.draftSeed = { words: words, at: new Date().toISOString(), from: 'cw_step_9' };
+                    st.draftSeed = { words: words, at: new Date().toISOString(), from: cfg.task };
                     persistState(pid, st);
                 } catch (e) { console.warn('WML CW9: draft-seed provenance not recorded —', e && e.message); }
                 return words;
@@ -27754,11 +27795,11 @@
                     console.warn('WML CW9: no cwProjectId — the joined scene was written to the document but not saved as an artifact.');
                 }
                 if (sent) {
-                    aiBubble('**Transferred — ' + words + ' words.**\n\nYour scene is joined at the bottom of this document under **Your Scene**. Read it once, the way a reader would: does it flow from one moment to the next?\n\nIt is saved, and **Step 10 will open with it already written in**, ready for you to polish.');
+                    aiBubble('**Transferred — ' + words + ' words.**\n\nYour scene is joined at the bottom of this document under **Your Scene**. Read it once, the way a reader would: does it flow from one moment to the next?\n\nIt is saved, and **' + cfg.nextStep + ' will open with it already written in**, ready for you to polish.');
                 } else {
                     // FAIL LOUD: the document has it, the next step will not — say so plainly
                     // rather than let a student find an empty Step 10.
-                    noteBubble('**Your scene is joined** at the bottom of this document — but I could not save it to your story, so Step 10 will not open with it yet. Tap **Transfer again** in a moment; if it keeps failing, tell your tutor.');
+                    noteBubble('**Your scene is joined** at the bottom of this document — but I could not save it to your story, so ' + cfg.nextStep + ' will not open with it yet. Tap **Transfer again** in a moment; if it keeps failing, tell your tutor.');
                 }
                 afterDraftChips();
             }
@@ -27788,7 +27829,7 @@
             }
 
             function tryResume() {
-                if (!state.task || state.task !== 'cw_step_9') return false;
+                if (!state.task || state.task !== cfg.task) return false;
                 if (opened) return true;
                 // The transcript has replayed; chips are DOM-only — re-offer the RIGHT one for
                 // the exact position (liveness §4d + resume-to-the-exact-item §4c.8b).
@@ -27800,7 +27841,7 @@
                 // this the student sees the question and their answer goes to the AI instead of
                 // the row (the §4d "the screen responded but nothing was filed" shape).
                 if (transferDone() && !overviewDone()) {
-                    if (_overviewAsked()) { askActive = true; _walkSlot.arm('cw9', OVERVIEW_FID, { cycle: 'rewrite' }); return overviewChips(); }
+                    if (_overviewAsked()) { askActive = true; _walkSlot.arm(WALK, OVERVIEW_FID, { cycle: 'rewrite' }); return overviewChips(); }
                     return ensureChip();
                 }
                 // v7.20.505: mid-advice resume continues from the exact chunk (the advice turns are
@@ -27824,13 +27865,44 @@
                 atStart: function () { return introProgress() === -1; },
                 start: start,
                 forceStart: function () { introServed = false; start(); },
-                reset: function () { introServed = false; opened = false; lastSnapshot = null; pendingConflicts = []; askActive = false; _walkSlot.clear('cw9'); try { window.WMLSceneIsland && window.WMLSceneIsland.unmount(); } catch (e) {} },
+                reset: function () { introServed = false; opened = false; lastSnapshot = null; pendingConflicts = []; askActive = false; _walkSlot.clear(WALK); try { window.WMLSceneIsland && window.WMLSceneIsland.unmount(); } catch (e) {} },
                 onReply: function () { /* zero-API walk: no markers to detect */ },
                 nudge: function () { return ensureChip(); },
                 tryResume: tryResume,
                 open: open,
             };
-        })();
+        }
+            const CW9_GREETING = 'Welcome to Step 9: **Scene Selection**\n\nYour plot now carries your values. Now we choose the part of it your exam story will actually tell.';
+            const CW9_INTRO = [
+                'Here’s why we pick a scene instead of writing the whole story. Examiners have seen that when students try to tell a full story in the exam, the writing goes shallow — there are simply too many plot points to cover. We’ve seen exactly the same thing.\n\nA full story really needs about 5,000–10,000 words (novels run 50,000–100,000). In the exam you can only write about 650–700.',
+                'What a lot of students don’t realise is that a **scene is a mini story**. It has the same structure — its own hook, its own setup, reaction, epiphany, proaction, climax and denouement. So one well-chosen scene can do everything a whole story does, at a depth the examiner rewards.\n\nThat’s why we select a scene.',
+                'Here’s how it works:\n\n1. **Pick your stage(s)** — one or two that sit next to each other.\n2. **Pick your beats** — one continuous run: tap the first, tap the last, everything between comes with it.\n3. **Shape the scene** — element by element, decide where each part of your run belongs.\n\nAnd from the moment shaping starts, you can **drag any beat by its ⠿ handle** to change where it goes — nothing is final as you go, and your beats never leave story order. Rough is fine; you can reopen this and change everything later.',
+            ];
+            const _cw9SceneCtl = makeCwSceneCtl({
+                task: 'cw_step_9', walk: 'cw9', fidPrefix: 'cw-step-8-',
+                stateKey: 'scene_selection_state', draftKey: 'scene_draft',
+                nextStep: 'Step 10', stepTitle: 'Welcome to Step 9: **Scene Selection**',
+                greeting: CW9_GREETING, intro: CW9_INTRO, mergeFrom: null, displayText: null,
+            });
+            // ⭐ v7.20.568 (#440, Neil): "they'll need to decide again for draft two which beats they're
+            // going to write about, and they'll need to see that … another exercise after step twelve,
+            // just like step nine." Same walk over the UPDATED plot; beats already drafted keep their
+            // Draft-1 prose (the MERGE), new beats arrive as plan lines; the join seeds Step 14.
+            const CW13_GREETING = 'Welcome to Step 13: **Scene Selection for Draft 2**\n\nYour plot now carries your goals and needs, and your Draft 1 is filed under the beats it grew from. Now we choose the scene Draft 2 will tell.';
+            const CW13_INTRO = [
+                'Draft 2 is an **updated Draft 1**, not a new story. Most of the time it covers the same run of beats — but your plot has moved on since Step 9, so this is the moment to check whether the scene should widen, shift, or pick up a beat you have added.',
+                'Beats you have already drafted are marked **Draft 1 written**. When you transfer, those beats arrive with your Draft 1 prose already in them — nothing you wrote is lost. A beat you pick for the first time arrives as your plan line, ready to write.',
+                'Same three moves as before:\n\n1. **Pick your stage(s)** — one or two next to each other.\n2. **Pick your beats** — one continuous run.\n3. **Shape the scene** — element by element.\n\nThen write out any new beats in the seven boxes, and tap Transfer — that is what **Step 14** opens with.',
+            ];
+            const _cw13SceneCtl = makeCwSceneCtl({
+                task: 'cw_step_13', walk: 'cw13', fidPrefix: 'cw-step-13-',
+                stateKey: 'scene_selection_2_state', draftKey: 'scene_draft_2',
+                nextStep: 'Step 14', stepTitle: 'Welcome to Step 13: **Scene Selection for Draft 2**',
+                greeting: CW13_GREETING, intro: CW13_INTRO, mergeFrom: 'cw12_goals_state',
+                // the picker shows the beat as PLANNED — the Draft-1 lines Step 12 filed under it are
+                // what the prose tag stands for, and repeating them in the card is a wall
+                displayText: function (t) { return String(t || '').split('\n').filter(function (l) { return l.trim().indexOf(CW12_DRAFT_TAG) !== 0; }).join('\n').trim() || t; },
+            });
 
 
         // ══════════════════════════════════════════════════════════════════════════════════
@@ -30652,11 +30724,12 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
         window.__swmlCw9Ctl = _cw9SceneCtl;
+        window.__swmlCw13Ctl = _cw13SceneCtl;   // v7.20.568 (#440): the twin pipeline's Step-13 handle
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
@@ -30666,6 +30739,7 @@
             _cwValuesCtl.onReply(reply);
             _cwPlotValuesCtl.onReply(reply);
             _cw9SceneCtl.onReply(reply);
+            _cw13SceneCtl.onReply(reply);
             _cwTrial1Ctl.onReply(reply);
             _cwCharProfileCtl.onReply(reply);
             _cwGoalsPlotCtl.onReply(reply);
@@ -30683,6 +30757,7 @@
                 : t === 'cw_step_7' ? _cwValuesCtl
                 : t === 'cw_step_8' ? _cwPlotValuesCtl
                 : t === 'cw_step_9' ? _cw9SceneCtl
+                : t === 'cw_step_13' ? _cw13SceneCtl
                 // Trial 1 is code-started (no protocol start marker to miss), but it belongs in
                 // this map anyway — the .490 incident's second finding was that an UNLISTED task
                 // makes the start-miss guard inert for exactly the step that has no controller.
@@ -30732,6 +30807,7 @@
             cwPlotValuesCtl: _cwPlotValuesCtl, // v7.20.491 — boot resume calls tryResume() on this
             examinerLadderCtl: _examinerLadderCtl, // v7.20.547 — boot resume calls tryResume() on this
             cw9SceneCtl: _cw9SceneCtl,         // v7.20.494 (#204) — fresh-entry intercept calls start() on this
+            cw13SceneCtl: _cw13SceneCtl,       // v7.20.568 (#440) — the same walk for Draft 2's scene
             cwTrial1Ctl: _cwTrial1Ctl,         // v7.20.551 — fresh entry calls forceStart(), boot resume tryResume()
             cwCharProfileCtl: _cwCharProfileCtl, // v7.20.563 (#428) — fresh entry calls start(), boot resume tryResume()
             cwGoalsPlotCtl: _cwGoalsPlotCtl,     // v7.20.567 (#440) — fresh entry calls start(), boot resume tryResume()
@@ -37663,6 +37739,9 @@
                     if (state.task === 'cw_step_9' && tp.cw9SceneCtl) {
                         setTimeout(() => { try { tp.cw9SceneCtl.tryResume(); } catch (_) {} }, 400);
                     }
+                    if (state.task === 'cw_step_13' && tp.cw13SceneCtl) {   // v7.20.568 (#440)
+                        setTimeout(() => { try { tp.cw13SceneCtl.tryResume(); } catch (_) {} }, 400);
+                    }
 
                     // v7.17.59: Hoisted greeting regen + grade buttons UP — was
                     // post-await (3-5s gap during which the un-styled bubble was
@@ -37804,6 +37883,11 @@
                     if (state.task === 'cw_step_9' && !state.reviewMode && tp.cw9SceneCtl) {
                         console.log('WML v7.20.494: CW Step 9 — deterministic scene-selection start (isCwSi entry)');
                         tp.cw9SceneCtl.start();
+                        return;
+                    }
+                    if (state.task === 'cw_step_13' && !state.reviewMode && tp.cw13SceneCtl) {   // v7.20.568 (#440)
+                        console.log('WML v7.20.568: CW Step 13 — deterministic scene-selection (Draft 2) start (isCwSi entry)');
+                        tp.cw13SceneCtl.start();
                         return;
                     }
 
@@ -39070,6 +39154,9 @@
                                         if (state.task === 'cw_step_9' && window.__swmlCw9Ctl) {
                                             clearWalkResume();
                                             setTimeout(() => { window.__swmlCw9Ctl.reset(); window.__swmlCw9Ctl.start(); }, 200);
+                                        } else if (state.task === 'cw_step_13' && window.__swmlCw13Ctl) {   // v7.20.568 (#440)
+                                            clearWalkResume();
+                                            setTimeout(() => { window.__swmlCw13Ctl.reset(); window.__swmlCw13Ctl.start(); }, 200);
                                         } else if (isCwTask && cwStepDef) {
                                             const stepLabel = cwStepDef.label || 'this step';
                                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
@@ -40802,6 +40889,11 @@
                                             if (state.task === 'cw_step_9' && !state.reviewMode && window.__swmlCw9Ctl) {
                                                 console.log('WML v7.20.495: CW Step 9 — deterministic scene-selection start (transition-handler entry)');
                                                 window.__swmlCw9Ctl.start();
+                                                return;
+                                            }
+                                            if (state.task === 'cw_step_13' && !state.reviewMode && window.__swmlCw13Ctl) {   // v7.20.568 (#440)
+                                                console.log('WML v7.20.568: CW Step 13 — deterministic scene-selection (Draft 2) start (transition-handler entry)');
+                                                window.__swmlCw13Ctl.start();
                                                 return;
                                             }
                                             const firstName = (config.userName || '').split(' ')[0] || 'there';
@@ -45677,7 +45769,9 @@
                 if (!seed) {
                     // Fallback: the same prose still lives in the Step-9 document's locked section.
                     try {
-                        const doc = await WML.cwProject.loadArtifact(state.cwProjectId, 'scene_selection');
+                        // v7.20.568: the doc whose locked section holds the same prose — Step 9's for
+                        // scene_draft, Step 13's for scene_draft_2 (the key names its own document).
+                        const doc = await WML.cwProject.loadArtifact(state.cwProjectId, seedKey === 'scene_draft_2' ? 'scene_selection_2' : 'scene_selection');
                         if (doc?.success && doc.value) {
                             const tmp = document.createElement('div');
                             tmp.innerHTML = String(doc.value);
@@ -50883,7 +50977,37 @@
             return html;
         }
 
-        // ── Draft steps (9, 12, 15, 18, 21, 24, 27) ──
+        // ── Step 13: Scene Selection for Draft 2 (v7.20.568, #440) — Step 9's document over the
+        // updated plot. Same Scene Overview + seven-element Scene Structure, its OWN fids
+        // (`cw-step-13-*`: this step is new, so there is no legacy prefix to keep).
+        if (step === 13) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 13: Choose the Scene for Draft 2</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials \u2014 the same scene, seen again with everything you now know.</p>' +
+                '<p>Your plot has moved on since Step 9: it carries your protagonist\u2019s goals and needs, and your Draft 1 is filed under the beats it grew from. Draft 2 is an <strong>updated Draft 1</strong>, so this step asks the same three questions as Step 9 \u2014 which stage, which run of beats, how they shape into the seven elements \u2014 against the plot as it is <em>now</em>.</p>' +
+                '<p><strong>Nothing you wrote is lost.</strong> A beat you have already drafted transfers with its Draft 1 prose already in it. A beat you pick for the first time arrives as your plan line, ready to write. Widen the scene, shift it, or keep it exactly as it was \u2014 all three are real answers.</p>'
+            );
+            html += dividerHTML('SCENE OVERVIEW');
+            html += sectionHTML('plan', 'Scene Overview', true, null,
+                '<h3>Scene Overview</h3>' +
+                outlineRowHTML({ id: 'plot-position', label: 'Part of the Plot', type: 'dropdown', items: ['Beginning (Stages I\u2013II)', 'Middle (Stages III\u2013IV)', 'End (Stages V\u2013VI)'], controlOnly: true }, 'cw-step-13-plot-position') +
+                outlineRowHTML({ id: 'extract-description', label: 'Scene Overview', prompt: 'Describe the extract from your story in more detail, including the dramatic situations.' }, 'cw-step-13-extract-description')
+            );
+            html += dividerHTML('SCENE STRUCTURE');
+            html += sectionHTML('plan', 'Scene Structure', true, null,
+                '<h3>The 7 Elements of Scene Structure</h3>' +
+                outlineRowHTML({ id: 'hook', label: 'Hook', prompt: 'Grab your reader\u2019s attention.' }, 'cw-step-13-hook') +
+                outlineRowHTML({ id: 'setup', label: 'Setup', prompt: 'Introduce the problem and the characters around it.' }, 'cw-step-13-setup') +
+                outlineRowHTML({ id: 'reaction', label: 'Reaction', prompt: 'The protagonist deals with the problems the best they can: coping and not coping.' }, 'cw-step-13-reaction') +
+                outlineRowHTML({ id: 'epiphany', label: 'Epiphany', prompt: 'The protagonist begins to understand what\u2019s really going on and what to do.' }, 'cw-step-13-epiphany') +
+                outlineRowHTML({ id: 'proaction', label: 'Proaction', prompt: 'The protagonist implements a plan. It fails.' }, 'cw-step-13-proaction') +
+                outlineRowHTML({ id: 'climax', label: 'Climax', prompt: 'The forces of good and evil collide.' }, 'cw-step-13-climax') +
+                outlineRowHTML({ id: 'denouement', label: 'Denouement', prompt: 'You write an unforgettable ending.' }, 'cw-step-13-denouement')
+            );
+            return html;
+        }
+
+        // ── Draft steps (10, 14, 17, 20, 23, 26, 29) ──
         if (stepDef.draft) {
             const draftInfo = {
                 // v7.20.505 (#366): Step 10 is now a DIAGNOSTIC \u2014 the scene arrives already written
@@ -50896,8 +51020,8 @@
                 // So it names the empty case and gives the way back (\u00a74d liveness, on a page with
                 // no chat to ask in).
                 1: { layer: 'basic prose style', journey: 'Writing Your First Draft', desc: 'Your scene from Step 9 is waiting in the box below, exactly as you transferred it. This lesson is <strong>yours alone</strong> \u2014 no Sophia, no walk. Read it through, polish it as well as you can, then mark the lesson complete and take it into your assessment. Stephen King says in <em>On Writing</em>: \u201cThe first draft is just you telling yourself the story.\u201d Work on strong nouns and dynamic verbs, show rather than tell, and aim for around 450\u2013600 words.<br><br><em>If the box below is empty, go back to Step 9 and tap \u201cTransfer my scene\u201d \u2014 that is what sends your writing here.</em>' },
-                2: { layer: 'character goals and needs', journey: 'The Road of Trials intensifies', desc: 'In your first draft you focused on prose style. Now add your protagonist\u2019s <strong>character arc</strong>. Robert McKee writes that the reader should <em>feel</em> the protagonist\u2019s internal struggle driving the external action. Every element of your scene should connect to this arc.' },
-                3: { layer: 'archetypes', journey: 'Making Character Transformation Visible', desc: 'In Steps 13 and 14, you defined the archetypal masks your protagonist wears. Now make that transformation visible in your prose. Christopher Vogler teaches that archetype shifts are the visible evidence of character change.' },
+                2: { layer: 'character goals and needs', journey: 'The Road of Trials intensifies', desc: 'Your scene from Step 13 is waiting in the box below \u2014 the beats you had already drafted arrived with your Draft 1 prose in them, the new ones as your plan lines. Now add your protagonist\u2019s <strong>character arc</strong>. Robert McKee writes that the reader should <em>feel</em> the protagonist\u2019s internal struggle driving the external action. Every element of your scene should connect to this arc.<br><br><em>If the box below is empty, go back to Step 13 and tap \u201cTransfer my scene\u201d \u2014 that is what sends your writing here.</em>' },
+                3: { layer: 'archetypes', journey: 'Making Character Transformation Visible', desc: 'In Steps 15 and 16, you defined the archetypal masks your protagonist wears. Now make that transformation visible in your prose. Christopher Vogler teaches that archetype shifts are the visible evidence of character change.' },
                 4: { layer: 'empathy techniques', journey: 'Making Readers Care Deeply', desc: 'This is the draft where we make your reader <em>care</em>. Karl Iglesias writes in <em>Writing for Emotional Impact</em> that empathy is the most important emotion a writer can generate. Weave victim, virtue, and desirable quality techniques into your prose.' },
                 5: { layer: 'theme and tone', journey: 'Making Your Story Mean Something', desc: 'Your theme must never be stated \u2014 it must emerge through what your protagonist <em>does</em>, what happens as a result, and the images you choose. John Truby calls this the \u201cmoral argument\u201d of your story. Every word choice should reinforce both theme and tone.' },
                 6: { layer: 'genre conventions', journey: 'Adding the Emotional Contract', desc: 'Genre is a <em>promise</em> to the reader about what emotional experience they will have. John Truby writes that most sophisticated stories <strong>blend genres</strong>. Your job is to deliver on that promise while keeping the character arc at the centre.' },
@@ -50961,7 +51085,7 @@
         }
 
         // ── Step 14: Character Archetypes Parts 4-6 (v7.13.74: full workbook match) ──
-        if (step === 14) {
+        if (step === 15) {
             const archetypeRef =
                 '<p><strong>The 10 Core Archetypes:</strong></p>' +
                 '<p><strong>1. The Everyman</strong> \u2014 Relatable, ordinary \u2014 creates empathy</p>' +
@@ -50975,7 +51099,7 @@
                 '<p><strong>9. The Shadow</strong> \u2014 Destructive, frightening \u2014 reflects fears and trauma</p>' +
                 '<p><strong>10. The Hero</strong> \u2014 Courageous, self-sacrificing \u2014 creates admiration and aspiration</p>';
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 14: Character Profile \u2014 Parts 4\u20136 (Archetypes)</h2>' +
+                '<h2>Step 15: Character Profile \u2014 Parts 4\u20136 (Archetypes)</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials deepens \u2014 understanding the MASKS your protagonist wears.</p>' +
                 '<p>Archetypes are universal character patterns recognised across all cultures. Your protagonist will shift between archetypes as they transform \u2014 this shift <em>is</em> the visible evidence of their change.</p>' +
                 archetypeRef
@@ -51005,9 +51129,9 @@
         }
 
         // ── Step 17: Empathy Techniques (v7.13.74: full workbook match) ──
-        if (step === 17) {
+        if (step === 18) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 17: Deepen Empathy for Your Protagonist</h2>' +
+                '<h2>Step 18: Deepen Empathy for Your Protagonist</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials continues \u2014 making readers <em>care</em>.</p>' +
                 '<p>According to Carl Iglesias in <em>Writing for Emotional Impact</em>, empathy is <strong>the</strong> most important emotion a writer can generate. Every protagonist, without exception, must produce empathy in the reader. This includes protagonists who are morally reprehensible.</p>' +
                 '<p><strong>Empathy vs Sympathy:</strong> Sympathy means feeling sorry for someone; empathy means feeling <em>with</em> them \u2014 understanding their internal world, their fears, their reasoning, even when we disagree with their choices.</p>' +
@@ -51046,9 +51170,9 @@
         }
 
         // ── Step 20: Theme & Tone (v7.13.74: full workbook match) ──
-        if (step === 20) {
+        if (step === 21) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 20: Theme and Tone</h2>' +
+                '<h2>Step 21: Theme and Tone</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials nears its end \u2014 your story\u2019s deeper meaning and emotional atmosphere.</p>' +
                 '<p><strong>Theme</strong> = your story\u2019s deeper meaning about life and humanity. Theme emerges from your protagonist\u2019s transformation, NOT from explicit statement. It\u2019s what your story is REALLY about beneath the surface plot.</p>' +
                 '<p><strong>Examples:</strong> <em>Macbeth</em>: \u201cUnchecked ambition corrupts absolutely.\u201d <em>An Inspector Calls</em>: \u201cWe are all responsible for each other.\u201d <em>A Christmas Carol</em>: \u201cGreed isolates; generosity connects.\u201d</p>' +
@@ -51073,9 +51197,9 @@
         }
 
         // ── Step 23: Genre (v7.13.74: full workbook match) ──
-        if (step === 23) {
+        if (step === 24) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 23: Give Your Story Genre(s)</h2>' +
+                '<h2>Step 24: Give Your Story Genre(s)</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Final Trial approaches \u2014 the emotional contract with your reader.</p>' +
                 '<p><strong>Genre = a promise to the reader about what emotional experience they will have.</strong> Genres are types of stories. When we understand how genres work, we can apply their styles to give our stories more depth and meaning. Most sophisticated stories <em>blend</em> genres. Your story can shift genres from beginning to middle to end.</p>'
             );
@@ -51093,9 +51217,9 @@
         }
 
         // ── Step 26: Structural Elements (v7.13.74: full workbook match) ──
-        if (step === 26) {
+        if (step === 27) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 26: Other Key Structural Elements</h2>' +
+                '<h2>Step 27: Other Key Structural Elements</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Final Trial begins \u2014 these advanced structural techniques will elevate your writing to professional level.</p>' +
                 '<p>Study these 11 sophisticated techniques, then plan where and how you will use each one in your scene.</p>'
             );
@@ -51117,8 +51241,8 @@
             return html;
         }
 
-        // ── Plot update steps (8, 12, 15, 18, 21, 24, 27) — v7.15.5: full workbook content ──
-        if ([8, 12, 15, 18, 21, 24, 27].includes(step)) {
+        // ── Plot update steps (8, 12, 16, 19, 22, 25, 28) — v7.15.5: full workbook content ──
+        if ([8, 12, 16, 19, 22, 25, 28].includes(step)) {
             // v7.20.453: the ladder + header now come from the ONE module-level source
             // (CW_PLOT_UPDATE_INFO / _cwPlotUpdateHeaderHTML) so the TEMPLATE path and the
             // SEED path cannot drift. This branch is now the FALLBACK — it only runs for a
@@ -51147,7 +51271,7 @@
                     V: '<p><strong>How does the protagonist\u2019s goal clash with their need in this stage?</strong></p><p></p><p><strong>What is the dilemma \u2014 the moment where goal and need collide?</strong></p><p></p><p><strong>What must the protagonist sacrifice?</strong></p><p></p>',
                     VI: '<p><strong>Does the protagonist achieve their external goal, fail, or abandon it?</strong></p><p></p><p><strong>Do they recognise their need?</strong></p><p></p><p><strong>How have the stakes resolved?</strong></p><p></p>',
                 },
-                15: {
+                16: {
                     I: '<p><strong>Which archetype(s) dominate in this stage?</strong></p><p></p><p><strong>Which specific traits are visible? (Physical description, behaviour, dialogue, reactions)</strong></p><p></p><p><strong>How does appearance/behaviour reflect the archetype?</strong></p><p></p><p><strong>What moments show the archetype in action?</strong></p><p></p>',
                     II: '<p><strong>Which archetype(s) dominate?</strong></p><p></p><p><strong>Which traits are visible?</strong></p><p></p><p><strong>How does appearance/behaviour reflect the archetype?</strong></p><p></p><p><strong>What moments show the archetype in action?</strong></p><p></p>',
                     III: '<p><strong>Which archetype(s) dominate?</strong></p><p></p><p><strong>Where does the protagonist start showing traits of a DIFFERENT archetype?</strong></p><p></p><p><strong>Which traits are visible?</strong></p><p></p><p><strong>What moments show the shift?</strong></p><p></p>',
@@ -51155,7 +51279,7 @@
                     V: '<p><strong>Which archetype(s) emerge?</strong></p><p></p><p><strong>How does the new archetype manifest in the climactic moment?</strong></p><p></p><p><strong>Which traits prove the transformation?</strong></p><p></p>',
                     VI: '<p><strong>Which archetype(s) does the protagonist embody at the end?</strong></p><p></p><p><strong>How is this different from Stage I?</strong></p><p></p><p><strong>What final detail proves the archetypal shift is complete?</strong></p><p></p>',
                 },
-                18: {
+                19: {
                     I: '<p><strong>Which empathy-building techniques appear in this stage? (victim, virtue, desirable quality)</strong></p><p></p><p><strong>Where are the key empathy moments?</strong></p><p></p><p><strong>What does the reader feel for the protagonist here?</strong></p><p></p>',
                     II: '<p><strong>Which empathy techniques appear?</strong></p><p></p><p><strong>Key empathy moments?</strong></p><p></p><p><strong>What does the reader feel?</strong></p><p></p>',
                     III: '<p><strong>Which empathy techniques appear?</strong></p><p></p><p><strong>Key empathy moments?</strong></p><p></p><p><strong>Does empathy intensify here? How?</strong></p><p></p>',
@@ -51163,7 +51287,7 @@
                     V: '<p><strong>Which empathy techniques appear?</strong></p><p></p><p><strong>How does the protagonist\u2019s courage (compulsory) manifest at the climax?</strong></p><p></p><p><strong>How does the reader feel about the protagonist\u2019s sacrifice?</strong></p><p></p>',
                     VI: '<p><strong>Which empathy techniques appear at the resolution?</strong></p><p></p><p><strong>How does the reader feel about the protagonist at the end?</strong></p><p></p><p><strong>Has the reader\u2019s relationship with the protagonist changed from Stage I?</strong></p><p></p>',
                 },
-                21: {
+                22: {
                     I: '<p><strong>What is the tone (mood/atmosphere) in this stage?</strong></p><p></p><p><strong>How does the theme begin to emerge? (Remember: show, never state)</strong></p><p></p><p><strong>What words/images reinforce both theme and tone?</strong></p><p></p>',
                     II: '<p><strong>What is the tone?</strong></p><p></p><p><strong>How does the theme develop?</strong></p><p></p><p><strong>Words/images?</strong></p><p></p>',
                     III: '<p><strong>Tone? (Does it shift from Stages I\u2013II?)</strong></p><p></p><p><strong>How is the theme tested or complicated here?</strong></p><p></p><p><strong>Words/images?</strong></p><p></p>',
@@ -51171,7 +51295,7 @@
                     V: '<p><strong>Tone? (Does it shift at the climax?)</strong></p><p></p><p><strong>How is the theme proven through the protagonist\u2019s climactic choice?</strong></p><p></p><p><strong>Words/images?</strong></p><p></p>',
                     VI: '<p><strong>Tone? (Final emotional atmosphere)</strong></p><p></p><p><strong>How does the theme crystallise in the resolution \u2014 through action/image, not statement?</strong></p><p></p><p><strong>What final image carries the thematic weight?</strong></p><p></p>',
                 },
-                24: {
+                25: {
                     I: '<p><strong>Which genre(s) dominate in this stage?</strong></p><p></p><p><strong>What genre conventions/tropes appear?</strong></p><p></p><p><strong>What is the dominant emotion readers should feel?</strong></p><p></p><p><strong>How do genre elements reinforce character transformation?</strong></p><p></p>',
                     II: '<p><strong>Genre(s)?</strong></p><p></p><p><strong>Conventions?</strong></p><p></p><p><strong>Dominant emotion?</strong></p><p></p><p><strong>How do they reinforce transformation?</strong></p><p></p>',
                     III: '<p><strong>Genre(s)? (Does the genre shift or blend here?)</strong></p><p></p><p><strong>Conventions?</strong></p><p></p><p><strong>Dominant emotion?</strong></p><p></p><p><strong>How do they reinforce transformation?</strong></p><p></p>',
@@ -51179,7 +51303,7 @@
                     V: '<p><strong>Genre(s)?</strong></p><p></p><p><strong>Conventions? (The final battle, the revelation, the escape)</strong></p><p></p><p><strong>Dominant emotion?</strong></p><p></p><p><strong>How do they reinforce transformation?</strong></p><p></p>',
                     VI: '<p><strong>Genre(s)? (Does the genre shift in the resolution?)</strong></p><p></p><p><strong>Conventions?</strong></p><p></p><p><strong>Final emotional note?</strong></p><p></p><p><strong>How do they reinforce the completed transformation?</strong></p><p></p>',
                 },
-                27: {
+                28: {
                     I: '<p><strong>Where do irony and duality appear?</strong></p><p></p><p><strong>What symbols are introduced (or should be)?</strong></p><p></p><p><strong>Which senses are emphasised?</strong></p><p></p><p><strong>How does pacing work in this stage? (Fast/slow/varied)</strong></p><p></p><p><strong>Where are the key suspense points?</strong></p><p></p>',
                     II: '<p><strong>Irony and duality?</strong></p><p></p><p><strong>Symbols?</strong></p><p></p><p><strong>Senses?</strong></p><p></p><p><strong>Pacing?</strong></p><p></p><p><strong>Suspense?</strong></p><p></p>',
                     III: '<p><strong>Irony and duality?</strong></p><p></p><p><strong>Symbols? (Do they develop from Stage I?)</strong></p><p></p><p><strong>Senses?</strong></p><p></p><p><strong>Pacing? (Should be building)</strong></p><p></p><p><strong>Suspense? (Mounting tension)</strong></p><p></p>',
@@ -51198,7 +51322,7 @@
                 );
             });
             // Coherence check (all except Step 27 which has celebration)
-            if (step === 27) {
+            if (step === 28) {
                 html += dividerHTML('CONGRATULATIONS');
                 html += sectionHTML('question', 'Completion', false, null,
                     '<h3>Your Story Architecture is Complete</h3>' +
@@ -51216,9 +51340,9 @@
         }
 
         // ── Step 29: Final Draft ──
-        if (step === 29) {
+        if (step === 30) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 29: Final Draft (SPAG Polish)</h2>' +
+                '<h2>Step 30: Final Draft (SPAG Polish)</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Return with the Elixir \u2014 perfecting form.</p>' +
                 '<p>You\u2019ve built this scene through seven progressive drafts, adding layer after layer of craft. Now we\u2019re going to make sure every word is exactly right. This step is <strong>SPAG</strong> \u2014 Spelling, Punctuation, and Grammar. No more creative changes. This is about polish and precision.</p>' +
                 '<p>Read your work aloud \u2014 if a sentence sounds awkward, rewrite it. Check every comma, every full stop, every apostrophe.</p>'
@@ -51229,9 +51353,9 @@
         }
 
         // ── Step 30: Metacognitive Reflection ──
-        if (step === 30) {
+        if (step === 31) {
             html += sectionHTML('question', 'About This Step', false, null,
-                '<h2>Step 30: Metacognitive Reflection</h2>' +
+                '<h2>Step 31: Metacognitive Reflection</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Return with the Elixir \u2014 understanding your transformation.</p>' +
                 '<p>The Hero\u2019s Journey concludes. You must now reflect \u2014 understanding <em>how</em> you\u2019ve been transformed. Write a short reflection (150\u2013250 words) comparing your understanding at the beginning to now.</p>' +
                 '<p>Which concept grew most? Which skill improved most dramatically? How will understanding story <em>creation</em> help you <em>analyse</em> literature? Congratulations \u2014 you\u2019ve completed the journey and returned transformed.</p>'

@@ -1,10 +1,10 @@
-### Creative Writing Workbook: Step 23 — Give Your Story Genre(s)
+### Creative Writing Workbook: Step 24 — Give Your Story Genre(s)
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 22 (Draft 5) + Trial 5
-- **Feeds into:** Step 24 (Update Plot Structure) then Step 25 (Draft 6 — Genre)
+- **Prerequisite:** Step 23 (Draft 5) + Trial 5
+- **Feeds into:** Step 25 (Update Plot Structure) then Step 26 (Draft 6 — Genre)
 - **Hero's Journey Stage:** The Final Trial approaches. Now add genre — the emotional contract with your reader.
 
 ---
@@ -54,7 +54,7 @@ Conventions present:
 - [ ] A protagonist we empathise with — Explain: ___
 - [ ] Victory over death — Explain: ___
 
-`[SUBSTEP_COMPLETE: step_23, substep_1, "Courage and Fear Genres"]`
+`[SUBSTEP_COMPLETE: step_24, substep_1, "Courage and Fear Genres"]`
 
 **Fear and Loathing Genres:**
 - [ ] Gothic  [ ] Horror  [ ] Supernatural  [ ] Dark Sci-Fi  [ ] Dystopian
@@ -81,7 +81,7 @@ Conventions present:
 - [ ] Mystical or ancient lore — Explain: ___
 - [ ] Futuristic/otherworldly elements — Explain: ___
 
-`[SUBSTEP_COMPLETE: step_23, substep_2, "Wonder and Mystery Genres"]`
+`[SUBSTEP_COMPLETE: step_24, substep_2, "Wonder and Mystery Genres"]`
 
 **Need to Know Genres:**
 - [ ] Detective  [ ] Mystery  [ ] Spy  [ ] Suspense  [ ] Thriller
@@ -103,7 +103,7 @@ Conventions present:
 - [ ] Personal growth — Explain: ___
 - [ ] Emotional conflict — Explain: ___
 
-`[SUBSTEP_COMPLETE: step_23, substep_3, "Heart Genres and Summary"]`
+`[SUBSTEP_COMPLETE: step_24, substep_3, "Heart Genres and Summary"]`
 
 ---
 
@@ -119,15 +119,15 @@ Conventions present:
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 3 | Courage and Fear Genres | Courage + Fear/Loathing genres identified with conventions | `[SUBSTEP_COMPLETE: step_23, substep_1, "Courage and Fear Genres"]` |
-| 2 of 3 | Wonder and Mystery Genres | Wonder/Awe + Need to Know genres identified with conventions | `[SUBSTEP_COMPLETE: step_23, substep_2, "Wonder and Mystery Genres"]` |
-| 3 of 3 | Heart Genres and Summary | Heart genres identified; full genre summary completed | `[SUBSTEP_COMPLETE: step_23, substep_3, "Heart Genres and Summary"]` |
+| 1 of 3 | Courage and Fear Genres | Courage + Fear/Loathing genres identified with conventions | `[SUBSTEP_COMPLETE: step_24, substep_1, "Courage and Fear Genres"]` |
+| 2 of 3 | Wonder and Mystery Genres | Wonder/Awe + Need to Know genres identified with conventions | `[SUBSTEP_COMPLETE: step_24, substep_2, "Wonder and Mystery Genres"]` |
+| 3 of 3 | Heart Genres and Summary | Heart genres identified; full genre summary completed | `[SUBSTEP_COMPLETE: step_24, substep_3, "Heart Genres and Summary"]` |
 
 #### Data Requirements
 
 **Reads from project:**
 - `plot_outline` — Six-stage plot outline (version 5)
-- `theme` — Story's theme (from Step 20)
+- `theme` — Story's theme (from Step 21)
 - `primary_archetype` — Plot structure (from Step 5)
 
 **Writes to project:**
@@ -135,4 +135,4 @@ Conventions present:
 - `genre_conventions` — Specific conventions selected
 - `genre_emotion` — Dominant emotion targeted
 
-**Next step:** Step 24 — Update Plot Structure (Genre), then Step 25 — Draft 6 (AI protocol).
+**Next step:** Step 25 — Update Plot Structure (Genre), then Step 26 — Draft 6 (AI protocol).

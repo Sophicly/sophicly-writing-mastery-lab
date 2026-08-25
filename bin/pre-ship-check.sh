@@ -359,6 +359,15 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw12-sim-harness.js || fail=1
 fi
 
+# v7.20.568 (#440): STEP 13 = STEP 9's WALK FOR DRAFT 2, WITH THE MERGE. A drafted beat must transfer
+# as its Draft-1 prose (from Step 12's draft map), a new beat as its plan line — a transfer that filed
+# the plan line for a drafted beat would silently delete Draft 1 from Draft 2's seed while every
+# structural check passed. Drives the REAL factory under both bindings; Step 9 must be unmoved.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|cw13-merge-gate\.js|walk-sim-lib\.js'; then
+  node bin/cw13-merge-gate.js || fail=1
+fi
+
 # v7.20.535 (#396): THE MY PLOT PANEL SHOWS THE BLANK BEATS. Neil asked for what the student HAS
 # written *"and even what they haven't written"*, and the opposite rule ships ten thousand lines
 # away in CW9's enumerator — so which beats survive enumeration is asserted, not remembered.

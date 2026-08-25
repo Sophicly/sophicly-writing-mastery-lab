@@ -49,9 +49,15 @@ if (!defined('ABSPATH')) { exit(1); }
 global $wpdb;
 
 $APPLY       = in_array('apply', (array) ($args ?? []), true);
-$RENUMBER_AT = '2026-08-05';   // v7.20.451 — the day the new Step 8 was inserted
-$FIRST_MOVED = 8;              // the old step 8 (Scene Selection) and everything above it
-$LAST_MOVED  = 30;
+// v7.20.568 (#440): the SECOND renumber — a new Step 13 (Scene Selection for Draft 2), old 13–30
+// → 14–31. The defaults below are that one; the v7.20.451 run (from=8, at=2026-08-05, last=30) is
+// reproducible by passing `from=8 at=2026-08-05 last=30`. `at` is compared as a FULL timestamp
+// (ISO, e.g. 2026-08-25T14:30), so a record started earlier the same day still moves.
+$argv_kv = [];
+foreach ((array) ($args ?? []) as $a) { if (strpos($a, '=') !== false) { [$k, $v] = explode('=', $a, 2); $argv_kv[$k] = $v; } }
+$RENUMBER_AT = $argv_kv['at']   ?? '2026-08-25T00:00';   // the moment the renumbered course + plugin land on THIS env
+$FIRST_MOVED = (int) ($argv_kv['from'] ?? 13);           // the old step 13 (Draft 2) and everything above it
+$LAST_MOVED  = (int) ($argv_kv['last'] ?? 30);
 
 $prefixes = [
     'swml_canvas_universal_creative_writing_cw_',
@@ -97,8 +103,11 @@ foreach ($rows as $r) {
         $skipped[] = sprintf('u%d %s — no start date to judge by (needs a human)', $r->user_id, $r->meta_key);
         continue;
     }
-    if (substr($started, 0, 10) >= $RENUMBER_AT) {
-        $skipped[] = sprintf('u%d %s — started %s, AFTER the renumber: already correct', $r->user_id, $r->meta_key, substr($started, 0, 10));
+    // Compare on the common prefix length of the two timestamps (a date-only `at` compares dates;
+    // a datetime `at` compares to the minute) — never a date-only compare of a datetime cutoff.
+    $cmpLen = min(strlen($started), strlen($RENUMBER_AT));
+    if (strcmp(substr(str_replace(' ', 'T', $started), 0, $cmpLen), substr($RENUMBER_AT, 0, $cmpLen)) >= 0) {
+        $skipped[] = sprintf('u%d %s — started %s, AFTER the renumber: already correct', $r->user_id, $r->meta_key, substr($started, 0, 16));
         continue;
     }
     $plan[] = [

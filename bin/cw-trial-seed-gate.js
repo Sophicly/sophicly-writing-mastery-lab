@@ -71,19 +71,19 @@ console.log('\nEvery trial resolves to the draft written before it:');
 const seen = [1, 2, 3, 4, 5, 6].map(n => WML.cwTrialSource('cw_trial_' + n));
 ok('Trial 1 assesses draft_1, written in Step 10',
     seen[0] && seen[0].artifactKey === 'draft_1' && seen[0].draftStep === 10, seen[0]);
-ok('Trial 2 → draft_2 (Step 13)', seen[1] && seen[1].artifactKey === 'draft_2' && seen[1].draftStep === 13, seen[1]);
-ok('Trial 3 → draft_3 (Step 16)', seen[2] && seen[2].artifactKey === 'draft_3' && seen[2].draftStep === 16, seen[2]);
-ok('Trial 4 → draft_4 (Step 19)', seen[3] && seen[3].artifactKey === 'draft_4' && seen[3].draftStep === 19, seen[3]);
-ok('Trial 5 → draft_5 (Step 22)', seen[4] && seen[4].artifactKey === 'draft_5' && seen[4].draftStep === 22, seen[4]);
-ok('Trial 6 → draft_7 (Step 28) — today it follows Draft 7, and the map is not asked to remember that',
-    seen[5] && seen[5].artifactKey === 'draft_7' && seen[5].draftStep === 28, seen[5]);
+ok('Trial 2 → draft_2 (Step 14)', seen[1] && seen[1].artifactKey === 'draft_2' && seen[1].draftStep === 14, seen[1]);
+ok('Trial 3 → draft_3 (Step 17)', seen[2] && seen[2].artifactKey === 'draft_3' && seen[2].draftStep === 17, seen[2]);
+ok('Trial 4 → draft_4 (Step 20)', seen[3] && seen[3].artifactKey === 'draft_4' && seen[3].draftStep === 20, seen[3]);
+ok('Trial 5 → draft_5 (Step 23)', seen[4] && seen[4].artifactKey === 'draft_5' && seen[4].draftStep === 23, seen[4]);
+ok('Trial 6 → draft_7 (Step 29) — today it follows Draft 7, and the map is not asked to remember that',
+    seen[5] && seen[5].artifactKey === 'draft_7' && seen[5].draftStep === 29, seen[5]);
 ok('every trial carries the draft step\'s own LABEL, so the page can name where the writing came from',
     seen.every(s => s && /^Draft \d/.test(s.draftLabel)), seen.map(s => s && s.draftLabel));
 ok('a step that is not a trial resolves to nothing', WML.cwTrialSource('cw_step_10') === null);
 
 console.log('\n…and it DERIVES that, so a trial that MOVES stays correct with no edit here:');
 {
-    // PEDAGOGY §33 ruling 1 moves Trial 6 to follow Draft 6 (Step 25). Perform that move against
+    // PEDAGOGY §33 ruling 1 moves Trial 6 to follow Draft 6 (Step 26). Perform that move against
     // the live course order and re-ask — a hand-written map would still answer draft_7.
     const steps = WML.CW_STEPS;
     const t6 = steps.findIndex(s => s.trial === 6);
@@ -92,8 +92,8 @@ console.log('\n…and it DERIVES that, so a trial that MOVES stays correct with 
     const entry = steps.splice(t6, 1)[0];
     steps.splice(d6 + 1, 0, entry);                       // now: … Draft 6 (25) · Trial 6 · Step 26 …
     const moved = WML.cwTrialSource('cw_trial_6');
-    ok('moved behind Draft 6, Trial 6 now assesses draft_6 (Step 25)',
-        moved && moved.artifactKey === 'draft_6' && moved.draftStep === 25, moved);
+    ok('moved behind Draft 6, Trial 6 now assesses draft_6 (Step 26)',
+        moved && moved.artifactKey === 'draft_6' && moved.draftStep === 26, moved);
     steps.splice(steps.indexOf(entry), 1);
     steps.splice(t6, 0, entry);                           // put the course back
     ok('the course order is restored for the checks below',

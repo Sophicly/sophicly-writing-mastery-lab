@@ -10,7 +10,7 @@ Evaluate Draft 3 for archetype integration — do character archetypes enhance t
 4. **Story Enhancement** — Do archetypes strengthen the plot and theme?
 
 ## Procedure
-1. Review Draft 3 alongside the archetype selections from Steps 14-15
+1. Review Draft 3 alongside the archetype selections from Steps 15-16
 2. Score each criterion on a scale of 1-5
 3. Identify where archetypes work well and where they feel forced
 4. Suggest ways to deepen or subvert archetypal patterns

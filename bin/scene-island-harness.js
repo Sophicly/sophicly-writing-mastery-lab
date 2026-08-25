@@ -179,9 +179,10 @@ section('B bridge wiring in wml-assessment.js');
         // B2: files through the row-walking writers + persists provenance.
         // _cw9ReplaceRowLines is the multi-line sibling of _writeOutlineRowField (whose replace
         // path cannot carry newlines); _setOutlineDropdown is the proven dropdown setter.
-        const bridgeSeg = src.slice(src.indexOf('const _cw9SceneCtl'));
+        // v7.20.568: the bridge body is the FACTORY (one walk, two steps) — slice from there.
+        const bridgeSeg = src.slice(src.indexOf('function makeCwSceneCtl(cfg)'));
         ok(/_cw9ReplaceRowLines\(/.test(bridgeSeg), 'element rows file through _cw9ReplaceRowLines (hardBreak multi-line writer)');
-        ok(/_setOutlineDropdown\(\s*'cw-step-8-plot-position'/.test(bridgeSeg), 'plot-position files through _setOutlineDropdown');
+        ok(/_setOutlineDropdown\(cfg\.fidPrefix \+ 'plot-position'/.test(bridgeSeg) && /fidPrefix: 'cw-step-8-'/.test(bridgeSeg), 'plot-position files through _setOutlineDropdown (Step 9 bound to the cw-step-8- prefix)');
         ok(bridgeSeg.indexOf('scene_selection_state') !== -1, 'persists selection/provenance to scene_selection_state');
         // B3: never the clobbered key for state (the step-doc save writes doc HTML into
         // scene_selection — proven on prod: it held a Draft-1 document)

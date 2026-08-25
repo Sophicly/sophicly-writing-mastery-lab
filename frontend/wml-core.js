@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.567';
+var WML_BUILD = '7.20.568';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1108,30 +1108,37 @@ window.WML = (function() {
         // v7.20.567 (#440, Neil): Step 12 gets a code-served WALK (goals into beats, Draft 1 into
         // beats) — so the SI manifest (chat + sidebar), like Steps 8 and 11.
         { step: 12, label: 'Update Plot: Goals',        tier: 'si', phase: 'drafting' },
-        { step: 13, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2 },
+        // ⭐⭐ v7.20.568 (Neil, 2026-08-25, #440) — THE SECOND +1 RENUMBER. A new Step 13 ("Scene
+        // Selection for Draft 2") sits between Update Plot: Goals and Draft 2, so every step from
+        // the old 13 upward moved +1 (old 13–30 → 14–31). Same law as the v7.20.451 insert: this
+        // table selects the ENVIRONMENT, the LearnDash course (41165) is renumbered to match on
+        // each env before this ships, and `_cw_<N>` storage keys are migrated by
+        // bin/cw-renumber-migrate-step-keyed-meta.php (from=13).
+        { step: 13, label: 'Scene Selection: Draft 2',  tier: 'si', phase: 'drafting', tools: 'minimal' },
+        { step: 14, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2 },
         { id: 'trial_2', label: 'Trial 2: Character Depth', tier: 'si', phase: 'drafting', trial: 2 },
-        { step: 14, label: 'Character Archetypes',      tier: 'workbook', phase: 'drafting' },
-        { step: 15, label: 'Update Plot: Archetypes',   tier: 'workbook', phase: 'drafting' },
-        { step: 16, label: 'Draft 3: Archetypes',       tier: 'si', phase: 'drafting', draft: 3 },
+        { step: 15, label: 'Character Archetypes',      tier: 'workbook', phase: 'drafting' },
+        { step: 16, label: 'Update Plot: Archetypes',   tier: 'workbook', phase: 'drafting' },
+        { step: 17, label: 'Draft 3: Archetypes',       tier: 'si', phase: 'drafting', draft: 3 },
         { id: 'trial_3', label: 'Trial 3: Archetype Coherence', tier: 'si', phase: 'drafting', trial: 3 },
-        { step: 17, label: 'Deepen Empathy',            tier: 'workbook', phase: 'drafting' },
-        { step: 18, label: 'Update Plot: Empathy',      tier: 'workbook', phase: 'drafting' },
-        { step: 19, label: 'Draft 4: Empathy',          tier: 'si', phase: 'drafting', draft: 4 },
+        { step: 18, label: 'Deepen Empathy',            tier: 'workbook', phase: 'drafting' },
+        { step: 19, label: 'Update Plot: Empathy',      tier: 'workbook', phase: 'drafting' },
+        { step: 20, label: 'Draft 4: Empathy',          tier: 'si', phase: 'drafting', draft: 4 },
         { id: 'trial_4', label: 'Trial 4: Emotional Impact', tier: 'si', phase: 'drafting', trial: 4 },
-        { step: 20, label: 'Theme & Tone',              tier: 'workbook', phase: 'drafting' },
-        { step: 21, label: 'Update Plot: Theme',        tier: 'workbook', phase: 'drafting' },
-        { step: 22, label: 'Draft 5: Theme & Tone',     tier: 'si', phase: 'drafting', draft: 5 },
+        { step: 21, label: 'Theme & Tone',              tier: 'workbook', phase: 'drafting' },
+        { step: 22, label: 'Update Plot: Theme',        tier: 'workbook', phase: 'drafting' },
+        { step: 23, label: 'Draft 5: Theme & Tone',     tier: 'si', phase: 'drafting', draft: 5 },
         { id: 'trial_5', label: 'Trial 5: Thematic Clarity', tier: 'si', phase: 'drafting', trial: 5 },
-        { step: 23, label: 'Genre',                      tier: 'workbook', phase: 'drafting' },
-        { step: 24, label: 'Update Plot: Genre',        tier: 'workbook', phase: 'drafting' },
-        { step: 25, label: 'Draft 6: Genre',            tier: 'si', phase: 'drafting', draft: 6 },
-        { step: 26, label: 'Structural Elements',       tier: 'workbook', phase: 'drafting' },
-        { step: 27, label: 'Update Plot: Structural',   tier: 'workbook', phase: 'drafting' },
-        { step: 28, label: 'Draft 7: Structural',       tier: 'si', phase: 'drafting', draft: 7 },
+        { step: 24, label: 'Genre',                      tier: 'workbook', phase: 'drafting' },
+        { step: 25, label: 'Update Plot: Genre',        tier: 'workbook', phase: 'drafting' },
+        { step: 26, label: 'Draft 6: Genre',            tier: 'si', phase: 'drafting', draft: 6 },
+        { step: 27, label: 'Structural Elements',       tier: 'workbook', phase: 'drafting' },
+        { step: 28, label: 'Update Plot: Structural',   tier: 'workbook', phase: 'drafting' },
+        { step: 29, label: 'Draft 7: Structural',       tier: 'si', phase: 'drafting', draft: 7 },
         { id: 'trial_6', label: 'Trial 6: Technical Proficiency', tier: 'si', phase: 'drafting', trial: 6 },
         // Polish Phase
-        { step: 29, label: 'Final Draft — SPAG',        tier: 'si', phase: 'polish' },
-        { step: 30, label: 'Metacognitive Reflection',  tier: 'workbook', phase: 'polish' },
+        { step: 30, label: 'Final Draft — SPAG',        tier: 'si', phase: 'polish' },
+        { step: 31, label: 'Metacognitive Reflection',  tier: 'workbook', phase: 'polish' },
     ];
 
     // v7.20.507: "does this step run with the tools stripped?" ONE predicate, so the rail and the
@@ -1158,19 +1165,22 @@ window.WML = (function() {
         1: 'writer_profile', 2: 'story_ideas', 3: 'logline', 4: 'brief_outline',
         5: 'plot_structure_choice', 6: 'plot_outline', 7: 'universal_values',
         9: 'scene_selection',
-        10: 'draft_1', 13: 'draft_2', 16: 'draft_3', 19: 'draft_4',
-        22: 'draft_5', 25: 'draft_6', 28: 'draft_7', 29: 'final_draft',
-        11: 'character_profile', 14: 'character_archetypes',
-        17: 'empathy_plan', 20: 'theme_tone', 23: 'genre',
-        26: 'structural_elements', 30: 'reflection',
+        // v7.20.568 (#440): Step 13 saves its document into its OWN key — never `scene_selection`
+        // (Step 9's); its island state lives in `scene_selection_2_state`, its join in `scene_draft_2`.
+        13: 'scene_selection_2',
+        10: 'draft_1', 14: 'draft_2', 17: 'draft_3', 20: 'draft_4',
+        23: 'draft_5', 26: 'draft_6', 29: 'draft_7', 30: 'final_draft',
+        11: 'character_profile', 15: 'character_archetypes',
+        18: 'empathy_plan', 21: 'theme_tone', 24: 'genre',
+        27: 'structural_elements', 31: 'reflection',
         // Plot updates save back to plot_outline. v7.20.451: step 8 (Values) is the FIRST of these
         // — Neil's new step — so there are now SEVEN plot updates, not six, and every later one
         // shifted +1. It writes to plot_outline like its siblings because it APPENDS a layer to the
         // living outline (his ruling, 2026-08-05: *"we don't want to overwrite it. We want to just
         // append and add to it"*).
         8:  'plot_outline',
-        12: 'plot_outline', 15: 'plot_outline', 18: 'plot_outline',
-        21: 'plot_outline', 24: 'plot_outline', 27: 'plot_outline',
+        12: 'plot_outline', 16: 'plot_outline', 19: 'plot_outline',
+        22: 'plot_outline', 25: 'plot_outline', 28: 'plot_outline',
     };
 
     // Sidebar sub-steps for each CW SI exercise (from protocol sub-step tables)
@@ -1250,37 +1260,43 @@ window.WML = (function() {
             { step: 2, label: 'Draft 1 into Beats' },
             { step: 3, label: 'Continuity Pass' },
         ],
+        // v7.20.568 (#440): Step 13 = Step 9's walk over the updated plot.
         13: [
+            { step: 1, label: 'Review Outline' },
+            { step: 2, label: 'Choose Scene(s)' },
+            { step: 3, label: 'Scene Plan' },
+        ],
+        14: [
             { step: 1, label: 'Character Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        16: [
+        17: [
             { step: 1, label: 'Archetype Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        19: [
+        20: [
             { step: 1, label: 'Empathy Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        22: [
+        23: [
             { step: 1, label: 'Theme Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        25: [
+        26: [
             { step: 1, label: 'Genre Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        28: [
+        29: [
             { step: 1, label: 'Structure Review' },
             { step: 2, label: 'Revise Draft' },
             { step: 3, label: 'Review & Save' },
         ],
-        29: [
+        30: [
             { step: 1, label: 'SPAG Review' },
             { step: 2, label: 'Final Polish' },
             { step: 3, label: 'Submit Final Draft' },
@@ -1483,9 +1499,12 @@ window.WML = (function() {
 
     // Map draft steps to the artifact key of their predecessor (for pre-population)
     // v7.20.451: every key here is a DRAFT step, so every one shifted +1 with the renumber.
+    // v7.20.568 (#440): Draft 2 (step 14) is NOT here any more — it is SEEDED from Step 13's
+    // transfer (CW_SEED_FROM below), exactly as Draft 1 is seeded from Step 9's, so the merged
+    // scene lands in its draft box instead of the whole Draft-1 document being copied over.
     const CW_DRAFT_PREDECESSOR = {
-        13: 'draft_1', 16: 'draft_2', 19: 'draft_3', 22: 'draft_4',
-        25: 'draft_5', 28: 'draft_6', 29: 'draft_7',
+        17: 'draft_2', 20: 'draft_3', 23: 'draft_4',
+        26: 'draft_5', 29: 'draft_6', 30: 'draft_7',
     };
 
     // ⭐ v7.20.507 (#366) — WHICH ARTIFACT SEEDS A STEP'S WRITING BOX, and it is deliberately a
@@ -1495,7 +1514,7 @@ window.WML = (function() {
     // Step 10 receives the scene the student wrote out and transferred in Step 9 — Neil, 2026-08-13:
     // *"it transfers all of it as just prose with no labels into some sort of area that the student
     // can check. And then that area will then seed step ten."*
-    const CW_SEED_FROM = { 10: 'scene_draft' };
+    const CW_SEED_FROM = { 10: 'scene_draft', 14: 'scene_draft_2' };   // v7.20.568 (#440): Step 13 → Draft 2
 
     // ── EXERCISE MANIFEST — single source of truth for all exercise types (v7.13.11) ──
     // Each entry defines what panels render, which protocol loads, how completion is detected,

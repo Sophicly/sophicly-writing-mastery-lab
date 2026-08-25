@@ -1,6 +1,11 @@
 # EMERGENCY CREATIVE-WRITING UNIT — SPEC
 **Neil ruled 2026-08-23; revised 2026-08-24 (twice — he walked the step list himself). 13 lessons.**
 
+> ⚠️ **SOURCE NUMBERING SHIFTED on 2026-08-25 (v7.20.568, FIXLIST #440):** a new full-project Step 13
+> (Scene Selection for Draft 2) was inserted, so every full-project step this document cites from the
+> old 13 upward is now **+1** (old Step 13 Draft 2 → 14 · 14 Archetypes → 15 · 16 Draft 3 → 17 · …).
+> The unit's OWN 1–13 numbering is unaffected. Re-read the source column with that offset.
+
 **Purpose:** a short unit taking a subset of the 30-step CW project so a student can
 *"get a story on the board ASAP."* Rulings recorded in `PEDAGOGY.md` §34 — read that first.
 

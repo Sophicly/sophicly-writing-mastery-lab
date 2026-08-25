@@ -4,7 +4,7 @@
 
 The student has written Draft 1 (Step 10). This trial is a **focused diagnostic on one dimension
 only — does the draft hold together as a story?** It is not the full 40-mark assessment; that runs
-once, at the end of the course, after Step 29.
+once, at the end of the course, after Step 30.
 
 The student marks their own draft first, **the way a real examiner marks**: for each of the seven
 scene elements they climb a two-level ladder — Level 1 (the element is there and attempts its job,
@@ -78,7 +78,7 @@ loses a document line, never the mark.
 
 Judge **story coherence only**: whether each part of the scene does the job that part is for, and
 whether the parts connect. Not spelling, not punctuation, not sentence variety — those belong to
-the final assessment after Step 29, and raising them here tells a student to fix something the
+the final assessment after Step 30, and raising them here tells a student to fix something the
 course has not asked them to fix yet.
 
 This is their **first** draft of seven. Be honest about what is not there — an honest low level

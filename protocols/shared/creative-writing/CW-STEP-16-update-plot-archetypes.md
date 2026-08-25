@@ -1,10 +1,10 @@
-### Creative Writing Workbook: Step 15 — Update Plot Structure (Archetypes)
+### Creative Writing Workbook: Step 16 — Update Plot Structure (Archetypes)
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 14 (Character Profile Parts 4-6: Archetypes)
-- **Feeds into:** Step 16 (Draft 3 — Archetypes, AI protocol)
+- **Prerequisite:** Step 15 (Character Profile Parts 4-6: Archetypes)
+- **Feeds into:** Step 17 (Draft 3 — Archetypes, AI protocol)
 - **Hero's Journey Stage:** Before layering archetypes into your scene, map them across your entire story to ensure the transformation is visible.
 
 ---
@@ -37,7 +37,7 @@ Your plot outline is loaded automatically with your Step 6 beats and Step 12 goa
 4. What moments show it in action?
    ___
 
-`[SUBSTEP_COMPLETE: step_15, substep_1, "Stages I-II"]`
+`[SUBSTEP_COMPLETE: step_16, substep_1, "Stages I-II"]`
 
 **STAGE III: [Stage Name]**
 
@@ -61,7 +61,7 @@ Your plot outline is loaded automatically with your Step 6 beats and Step 12 goa
 4. What moments show the archetype?
    ___
 
-`[SUBSTEP_COMPLETE: step_15, substep_2, "Stages III-IV"]`
+`[SUBSTEP_COMPLETE: step_16, substep_2, "Stages III-IV"]`
 
 **STAGE V: [Stage Name]**
 
@@ -81,7 +81,7 @@ Your plot outline is loaded automatically with your Step 6 beats and Step 12 goa
 3. What final detail proves the archetypal shift is complete?
    ___
 
-`[SUBSTEP_COMPLETE: step_15, substep_3, "Stages V-VI"]`
+`[SUBSTEP_COMPLETE: step_16, substep_3, "Stages V-VI"]`
 
 ---
 
@@ -93,7 +93,7 @@ Your plot outline is loaded automatically with your Step 6 beats and Step 12 goa
 - [ ] Physical appearance changes reflect the archetypal shift
 - [ ] The transformation aligns with the character arc (Step 11)
 
-`[SUBSTEP_COMPLETE: step_15, substep_4, "Coherence Check"]`
+`[SUBSTEP_COMPLETE: step_16, substep_4, "Coherence Check"]`
 
 ---
 
@@ -101,20 +101,20 @@ Your plot outline is loaded automatically with your Step 6 beats and Step 12 goa
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 4 | Stages I-II | Archetypes mapped for first two stages | `[SUBSTEP_COMPLETE: step_15, substep_1, "Stages I-II"]` |
-| 2 of 4 | Stages III-IV | Archetypal shift identified in middle stages | `[SUBSTEP_COMPLETE: step_15, substep_2, "Stages III-IV"]` |
-| 3 of 4 | Stages V-VI | Final archetype and transformation proof mapped | `[SUBSTEP_COMPLETE: step_15, substep_3, "Stages V-VI"]` |
-| 4 of 4 | Coherence Check | Archetypal progression verified | `[SUBSTEP_COMPLETE: step_15, substep_4, "Coherence Check"]` |
+| 1 of 4 | Stages I-II | Archetypes mapped for first two stages | `[SUBSTEP_COMPLETE: step_16, substep_1, "Stages I-II"]` |
+| 2 of 4 | Stages III-IV | Archetypal shift identified in middle stages | `[SUBSTEP_COMPLETE: step_16, substep_2, "Stages III-IV"]` |
+| 3 of 4 | Stages V-VI | Final archetype and transformation proof mapped | `[SUBSTEP_COMPLETE: step_16, substep_3, "Stages V-VI"]` |
+| 4 of 4 | Coherence Check | Archetypal progression verified | `[SUBSTEP_COMPLETE: step_16, substep_4, "Coherence Check"]` |
 
 #### Data Requirements
 
 **Reads from project:**
 - `plot_outline` — Six-stage plot outline with goals/needs (version 3 from Step 12)
-- `archetype_beginning` / `archetype_middle` / `archetype_end` — From Step 14
-- `archetype_physical` — Physical presentation at each stage (from Step 14)
+- `archetype_beginning` / `archetype_middle` / `archetype_end` — From Step 15
+- `archetype_physical` — Physical presentation at each stage (from Step 15)
 
 **Writes to project:**
 - `plot_outline` — Updated with archetype annotations (version 4)
 - `plot_outline_archetypes` — Archetype-specific annotations
 
-**Next step:** Step 16 — Draft 3: Archetypes (AI protocol).
+**Next step:** Step 17 — Draft 3: Archetypes (AI protocol).

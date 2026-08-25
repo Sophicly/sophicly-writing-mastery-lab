@@ -321,4 +321,4 @@ _Completion: When the student approves the final draft, emit:_ `[SUBSTEP_COMPLET
 
 **Canvas document:** Draft 1 should be rendered as a formatted document in the canvas. This becomes the base document for Draft 2.
 
-**Triggers:** On completion, mark Step 10 as complete in the exercise manifest. Draft 1 should be accessible for retrieval in Step 13 (Draft 2).
+**Triggers:** On completion, mark Step 10 as complete in the exercise manifest. Draft 1 should be accessible for retrieval in Step 14 (Draft 2).

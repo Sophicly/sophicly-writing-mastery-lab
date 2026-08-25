@@ -1,10 +1,10 @@
-### Creative Writing Workbook: Step 17 — Deepen Empathy for Your Protagonist
+### Creative Writing Workbook: Step 18 — Deepen Empathy for Your Protagonist
 
 #### Overview
 
 - **Type:** Workbook (self-paced, no AI)
-- **Prerequisite:** Step 16 (Draft 3) + Trial 3
-- **Feeds into:** Step 18 (Update Plot Structure) then Step 19 (Draft 4 — Empathy)
+- **Prerequisite:** Step 17 (Draft 3) + Trial 3
+- **Feeds into:** Step 19 (Update Plot Structure) then Step 20 (Draft 4 — Empathy)
 - **Hero's Journey Stage:** The Road of Trials continues. The most important emotional layer: making readers CARE about your protagonist.
 
 ---
@@ -37,7 +37,7 @@ Choose **at least 2 techniques from each category** to incorporate into your sto
 | **Wish for Something Universally Understood** — wishing for love, acceptance, family, self-acceptance, growth, autonomy | [ ] | | |
 | **Making Mistakes and Regretting Them** — human fallibility and remorse | [ ] | | |
 
-`[SUBSTEP_COMPLETE: step_17, substep_1, "Victim Techniques"]`
+`[SUBSTEP_COMPLETE: step_18, substep_1, "Victim Techniques"]`
 
 ---
 
@@ -51,7 +51,7 @@ Choose **at least 2 techniques from each category** to incorporate into your sto
 | **Being Important to Others** — loved and valued by people around them | [ ] | | |
 | **Being Ethical and Dependable** — moral, selfless, reliable | [ ] | | |
 
-`[SUBSTEP_COMPLETE: step_17, substep_2, "Virtue Techniques"]`
+`[SUBSTEP_COMPLETE: step_18, substep_2, "Virtue Techniques"]`
 
 ---
 
@@ -65,7 +65,7 @@ Choose **at least 2 techniques from each category** to incorporate into your sto
 | **Childlike Innocence or Enthusiasm** — openness, wonder, genuine excitement | [ ] | | |
 | **Misfit, Rebel, or Eccentric** — individuality, refusal to conform | [ ] | | |
 
-`[SUBSTEP_COMPLETE: step_17, substep_3, "Desirable Qualities"]`
+`[SUBSTEP_COMPLETE: step_18, substep_3, "Desirable Qualities"]`
 
 ---
 
@@ -73,18 +73,18 @@ Choose **at least 2 techniques from each category** to incorporate into your sto
 
 | Sub-step | Name | Deliverable | Completion Signal |
 |----------|------|-------------|-------------------|
-| 1 of 3 | Victim Techniques | At least 2 techniques chosen with explanations | `[SUBSTEP_COMPLETE: step_17, substep_1, "Victim Techniques"]` |
-| 2 of 3 | Virtue Techniques | At least 2 techniques chosen with explanations | `[SUBSTEP_COMPLETE: step_17, substep_2, "Virtue Techniques"]` |
-| 3 of 3 | Desirable Qualities | At least 2 techniques (inc. courage) chosen with explanations | `[SUBSTEP_COMPLETE: step_17, substep_3, "Desirable Qualities"]` |
+| 1 of 3 | Victim Techniques | At least 2 techniques chosen with explanations | `[SUBSTEP_COMPLETE: step_18, substep_1, "Victim Techniques"]` |
+| 2 of 3 | Virtue Techniques | At least 2 techniques chosen with explanations | `[SUBSTEP_COMPLETE: step_18, substep_2, "Virtue Techniques"]` |
+| 3 of 3 | Desirable Qualities | At least 2 techniques (inc. courage) chosen with explanations | `[SUBSTEP_COMPLETE: step_18, substep_3, "Desirable Qualities"]` |
 
 #### Data Requirements
 
 **Reads from project:**
 - `character_profile` — Goals, needs, arc type (from Step 11)
-- `archetype_beginning` / `archetype_end` — Archetypes (from Step 14)
-- `draft_3` — Draft 3 prose (from Step 16)
+- `archetype_beginning` / `archetype_end` — Archetypes (from Step 15)
+- `draft_3` — Draft 3 prose (from Step 17)
 
 **Writes to project:**
 - `empathy_techniques` — All chosen techniques with explanations
 
-**Next step:** Step 18 — Update Plot Structure (Empathy), then Step 19 — Draft 4 (AI protocol).
+**Next step:** Step 19 — Update Plot Structure (Empathy), then Step 20 — Draft 4 (AI protocol).

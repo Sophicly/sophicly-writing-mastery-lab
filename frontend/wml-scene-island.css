@@ -726,7 +726,7 @@ body[data-swml-theme="light"] .swml-scene-island .btn.primary:hover:not([disable
 .swml-draft-island .dm-chunk-text { color:var(--ink); display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
 .swml-draft-island .dm-chunk button { background:none; border:none; color:var(--faint); cursor:pointer; font-size:13px; padding:0 2px; }
 .swml-draft-island .dm-chunk button:hover { color:var(--warn); }
-.swml-draft-island .dm-run-tag {
+.swml-scene-island .dm-run-tag {
   margin-left:8px; font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
   color:var(--teal-deep); background:var(--teal-tint); border-radius:999px; padding:1px 7px;
 }

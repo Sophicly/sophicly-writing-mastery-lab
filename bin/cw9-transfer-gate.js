@@ -116,7 +116,10 @@ const elFidSrc = slice('elFid');
 ok('composeDraft exists in the shipped source', !!composeSrc);
 ok('elFid exists (one canonical key builder, never a bare prefix)', !!elFidSrc);
 if (composeSrc && elFidSrc) {
+    // v7.20.568: the walk is a FACTORY now (one body, two steps) — elFid reads cfg.fidPrefix,
+    // and this gate binds it to Step 9's, the byte-traced `cw-step-8-` prefix.
     const run = new Function('ELEMENTS', 'rowText', `
+        const cfg = { fidPrefix: 'cw-step-8-' };
         function elFid(id) ${elFidSrc}
         function composeDraft() ${composeSrc}
         return composeDraft();
@@ -136,7 +139,8 @@ if (composeSrc && elFidSrc) {
 // ── 3. THE CONTRACTS THAT ONLY SHOW UP IN THE SOURCE ──────────────────────────────────────────
 console.log('\nThe contracts a browser would be needed to see:');
 ok('the artifact is scene_draft, NOT scene_selection (which receives the step DOCUMENT)',
-    /const DRAFT_KEY = 'scene_draft'/.test(SRC) && !/saveArtifact\([^)]*'scene_selection'/.test(SRC));
+    // v7.20.568: the key rides the factory cfg — Step 9 binds `draftKey: 'scene_draft'`, Step 13 `scene_draft_2`.
+    /const DRAFT_KEY = cfg\.draftKey/.test(SRC) && /draftKey: 'scene_draft',/.test(SRC) && !/saveArtifact\([^)]*'scene_selection'/.test(SRC));
 ok('the joined section is LOCKED (editable:false → readonly, and invisible to the word counter)',
     /sectionHTML\('response', DRAFT_LABEL, false,/.test(SRC));
 ok('the seed only ever fills an EMPTY draft box — polishing is never overwritten',
@@ -144,7 +148,7 @@ ok('the seed only ever fills an EMPTY draft box — polishing is never overwritt
 ok('the seed has a fallback source, so one failed artifact write cannot empty Step 10',
     /recovered the scene from the Step-9 document instead/.test(SRC));
 ok('a failed artifact save tells the STUDENT, it does not just log',
-    /so Step 10 will not open with it yet/.test(SRC));
+    /so ' \+ cfg\.nextStep \+ ' will not open with it yet/.test(SRC) && /nextStep: 'Step 10'/.test(SRC));
 ok('empty elements are NAMED before a transfer is refused (§4d: a refusal states the way forward)',
     /still empty: \*\*/.test(SRC));
 ok('the draft box carries the composition flag for the word counter',
@@ -162,8 +166,9 @@ ok('Step 10 tells the truth when the box is empty, on a page with no chat to ask
 console.log('\nSteps 9 and 10 run with the tools stripped:');
 ok('Step 9 declares tools: minimal', WML.cwToolsMinimal('cw_step_9'));
 ok('Step 10 declares it too', WML.cwToolsMinimal('cw_step_10'));
-ok('and NOTHING else does — no sibling inherits an unaided rail by accident',
-    JSON.stringify(WML.CW_STEPS.filter(s => s.tools === 'minimal').map(s => s.step)) === '[9,10]',
+// v7.20.568 (#440): Step 13 is Step 9's walk for Draft 2, so it declares the same unaided rail.
+ok('and NOTHING else does — no sibling inherits an unaided rail by accident (9, 10 and the Draft-2 scene selection, 13)',
+    JSON.stringify(WML.CW_STEPS.filter(s => s.tools === 'minimal').map(s => s.step)) === '[9,10,13]',
     WML.CW_STEPS.filter(s => s.tools === 'minimal').map(s => s.step));
 ok('Step 8 (the walk before) keeps its tools', !WML.cwToolsMinimal('cw_step_8'));
 ok('Trial 1 (the assessment after) keeps its tools', !WML.cwToolsMinimal('cw_trial_1'));
