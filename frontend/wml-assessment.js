@@ -6624,7 +6624,7 @@
         const _titleCase = (str) => String(str || '').trim().toLowerCase()
             .replace(/\b([a-z])/g, (m, c) => c.toUpperCase());
 
-        const src = (sections || []).filter(s => s && s.type !== 'cover' && (!isVisible || isVisible(s)));
+        const src = (sections || []).filter(s => s && s.type !== 'cover' && s.type !== 'noplan' && (!isVisible || isVisible(s)));
 
         const entries = [];
         const prefixGroups = {}; // groupKey → entry (fallback path; see below)
@@ -34386,6 +34386,9 @@
             let _major = _isCodexNumbering ? -1 : 0, _minor = 0, _inDividerGroup = false, _lastPrefixGroup = null;
             const sectionNumbers = sections.map(s => {
                 if (s.type === 'cover') return '';
+                // v7.20.571: the no-plan aside is not a step the student works — numbering it would
+                // renumber every section after it (and the TOC with it).
+                if (s.type === 'noplan') return '';
                 if (s.type === 'section-header') return '';
                 if (s.type === 'divider') {
                     _major++; _minor = 0; _inDividerGroup = true; _lastPrefixGroup = null;
@@ -56513,9 +56516,26 @@
         // doesn't read as a gap. Attached by CAPABILITY (the multiple_choice + retrieval≤5 branches),
         // never a per-question hand-list. Gated to the answering env via CSS (.swml-noplan-note hides
         // outside .swml-canvas-diagnostic) — "not marked now" is true while answering, wrong at marking.
-        const NOPLAN_NOTE = '<p class="swml-noplan-note"><em>No planning stage for this one — it’s a '
+        /* ⭐⭐ v7.20.571 (FIXLIST #448, Neil 2026-08-26, live-modelling test): *"the instructions for
+           question one are actually inside the answer area… it should be outside, in a locked area."*
+           He is right, and there were TWO defects behind that one screenshot.
+           (a) THE NOTE WAS EDITABLE CONTENT. It was prepended into the response section's own inner
+               HTML, so it parsed as an ordinary paragraph sitting in the student's answering area —
+               they could type into it, delete it, or have it swept up with their answer.
+           (b) ⭐ ITS CSS GATE HAD NEVER WORKED. The note carried class="swml-noplan-note", and
+               nothing here extends TipTap's Paragraph, whose schema has no class attribute — so the
+               class was DROPPED at parse and BOTH rules (`.swml-noplan-note{display:none}` and the
+               .swml-canvas-diagnostic override) matched nothing, ever. The note therefore also
+               leaked onto the MARKING view, where "not marked now" is plainly false — the exact
+               thing the original gate was written to prevent. A class on a paragraph is not a
+               durable carrier; a section's own attributes are.
+           So it is now a sectionBlock of its own — real attributes that survive a parse round-trip,
+           `editable=false` so it cannot be typed into, emitted BEFORE the response section, and
+           gated on [data-section-type="noplan"], which the schema does keep. */
+        const NOPLAN_NOTE = sectionHTML('noplan', 'No planning stage', false, null,
+            '<p><em>No planning stage for this one — it’s a '
             + 'direct-response question. Answer it as well as you can; we don’t coach the method here, '
-            + 'and it’s assessed later, not marked now. Do your best.</em></p>';
+            + 'and it’s assessed later, not marked now. Do your best.</em></p>');
 
         // Build section divider map from specs (if available)
         const sectionMap = buildSectionMap();
@@ -56758,7 +56778,8 @@
                         checkboxes += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-stmt-${s}" class="swml-checklist-item swml-checklist-placeholder"><em>Waiting for statement ${s}...</em></div>`;
                     }
                 }
-                html += sectionHTML('response', `${qId} Statements`, true, null, NOPLAN_NOTE + checkboxes, _respStageAttrs);
+                html += NOPLAN_NOTE;
+                html += sectionHTML('response', `${qId} Statements`, true, null, checkboxes, _respStageAttrs);
 
             } else if (qType === 'retrieval' && qMarks <= 5) {
                 // Short retrieval: one InputField per point (too simple for single area)
@@ -56768,7 +56789,8 @@
                 for (let i = 1; i <= count; i++) {
                     fields += inputHTML(`Point ${i}`, `${qId}-point-${i}`);
                 }
-                html += sectionHTML('response', `${qId} Response`, true, null, NOPLAN_NOTE + fields, _respStageAttrs);
+                html += NOPLAN_NOTE;
+                html += sectionHTML('response', `${qId} Response`, true, null, fields, _respStageAttrs);
 
             } else {
                 // v7.14.61: Single InputField for ALL other question types
@@ -64556,7 +64578,7 @@
                 if (node.type.name === 'sectionBlock') {
                     const type = node.attrs.sectionType || 'response';
                     const label = node.attrs.label || '';
-                    if (type !== 'cover' && type !== 'divider') tocSections.push({ type, label });
+                    if (type !== 'cover' && type !== 'divider' && type !== 'noplan') tocSections.push({ type, label });
                 }
             });
             if (tocSections.length > 2) {

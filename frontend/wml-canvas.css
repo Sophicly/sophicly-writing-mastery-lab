@@ -6509,19 +6509,27 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    questions get no coaching BY DESIGN. Default HIDDEN; shown only in the answering env
    (.swml-canvas-diagnostic, present on the diagnostic/free doc, ABSENT at assessment marking) so
    "not marked now, assessed later" is never displayed on the marking view where it would be false. */
-.swml-noplan-note { display: none; }
-.swml-canvas-diagnostic .swml-noplan-note {
+/* ⭐⭐ v7.20.571 (#448): gated on the SECTION TYPE, not on a paragraph class. The old rules keyed
+   on `.swml-noplan-note`, a class on a <p> — and nothing extends TipTap's Paragraph, whose schema
+   has no class attribute, so the class was dropped at parse and NEITHER rule below ever matched.
+   The note was visible everywhere, including the marking view where "not marked now" is false.
+   A section's own data attributes survive the round-trip; a paragraph's class does not. */
+[data-section-type="noplan"] { display: none; }
+.swml-canvas-diagnostic [data-section-type="noplan"] {
     display: block;
     margin: 0 0 12px;
     padding: 8px 12px;
     border-left: 2px solid rgba(83, 51, 237, 0.4);
     background: rgba(83, 51, 237, 0.06);
     border-radius: 4px;
+    /* #449: the brand face, stated — this note used to inherit whatever the editor set. */
+    font-family: 'Proxima Soft Complete', 'Proxima Soft', system-ui, sans-serif;
     font-size: 13px;
     line-height: 1.5;
     opacity: 0.75;
 }
-[data-swml-theme="light"] .swml-canvas-diagnostic .swml-noplan-note {
+.swml-canvas-diagnostic [data-section-type="noplan"] p { margin: 0; }
+[data-swml-theme="light"] .swml-canvas-diagnostic [data-section-type="noplan"] {
     background: rgba(83, 51, 237, 0.05);
 }
 /* v7.14.23: hide marking widgets in diagnostic mode (v7.19.951: in-flow control rows now).
