@@ -138,7 +138,16 @@ $topic = [
     'part_a_question' => '', 'part_a_extract' => '', 'part_a_extract_location' => '', 'part_a_marks' => '', 'part_a_aos' => '',
     'part_b_question' => '', 'part_b_extract' => '', 'part_b_marks' => '', 'part_b_aos' => '',
     'context' => '', 'instruction' => '', 'intro' => '',
-    'metadata' => [
+    /* ⛔⛔ METADATA IS A JSON *STRING*, NEVER A PHP ARRAY, AND THE FAILURE IS SILENT.
+       Every topic the importer writes stores it encoded (topics 1–5 on prod: string, ~7KB each),
+       and the client does a JSON.parse on it. Hand it a decoded object and the parse yields no
+       questions, `metadata.questions` is empty, and the builder falls straight through to the
+       five-paragraph ESSAY template — with the extract still filled in, because the single-essay
+       branch reads `extract_text` too. So it looks almost right, which is exactly why it cost an
+       hour: correct paper, correct extract, wrong document, no error anywhere.
+       This is the root CLAUDE.md §5b rule in its purest form — the data was PRESENT and
+       WELL-FORMED as PHP, and still wrong, because it did not match the shape the reader expects. */
+    'metadata' => wp_json_encode([
         'questions' => [
             ['id' => 'Q1', 'label' => 'Q1', 'text' => $q1, 'marks' => 4,  'aos' => 'AO1',        'extract' => '', 'bullets' => ''],
             ['id' => 'Q2', 'label' => 'Q2', 'text' => $q2, 'marks' => 8,  'aos' => 'AO2',        'extract' => '', 'bullets' => ''],
@@ -149,7 +158,7 @@ $topic = [
         'sources' => [
             ['label' => 'Source A', 'text' => $extract],
         ],
-    ],
+    ]),
     'task'       => 'planning',
     'updated_at' => current_time('mysql'),
 ];
@@ -200,10 +209,12 @@ if ($bad) { echo "\n⛔ REFUSING TO WRITE — {$bad} line check(s) failed.\n"; r
 
 if ($mode !== 'apply') {
     echo "\nDRY RUN — would " . ($existing === null ? 'ADD' : 'REPLACE') . " topic {$TOPIC_NUMBER}:\n";
+    $meta_preview = json_decode($topic['metadata'], true);
     echo "   label:    {$topic['label']}\n";
-    echo "   questions: " . count($topic['metadata']['questions']) . " (";
-    echo implode(', ', array_map(function ($q) { return $q['id'] . '=' . $q['marks']; }, $topic['metadata']['questions']));
-    echo ") total " . array_sum(array_column($topic['metadata']['questions'], 'marks')) . " marks\n";
+    echo "   metadata: " . gettype($topic['metadata']) . " — MUST be `string`, see the note above\n";
+    echo "   questions: " . count($meta_preview['questions']) . " (";
+    echo implode(', ', array_map(function ($q) { return $q['id'] . '=' . $q['marks']; }, $meta_preview['questions']));
+    echo ") total " . array_sum(array_column($meta_preview['questions'], 'marks')) . " marks\n";
     echo "   extract:  " . strlen($extract) . " bytes, 45 numbered lines\n";
     echo "\nRe-run with `apply` to write, or `remove` to undo.\n";
     return;
@@ -220,8 +231,13 @@ $found = null;
 foreach ($back as $t) { if ((int) ($t['topic_number'] ?? 0) === $TOPIC_NUMBER) $found = $t; }
 echo "\nAFTER: " . count($back) . " topics. Topic {$TOPIC_NUMBER} " . ($found ? 'PRESENT' : 'MISSING') . "\n";
 if ($found) {
+    // The shape check that would have caught the hour this cost: metadata must come back a STRING
+    // that decodes to 5 questions. A PHP array here means the client will silently build an essay.
+    $fm = $found['metadata'] ?? null;
+    $fq = is_string($fm) ? (json_decode($fm, true)['questions'] ?? []) : [];
     echo "   label:     {$found['label']}\n";
-    echo "   questions: " . count($found['metadata']['questions'] ?? []) . "\n";
+    echo "   metadata:  " . gettype($fm) . (is_string($fm) ? " ✓" : " ⛔ MUST BE A JSON STRING — the client will fall back to the essay template") . "\n";
+    echo "   questions: " . count($fq) . (count($fq) === 5 ? " ✓" : " ⛔ expected 5") . "\n";
     echo "   extract:   " . strlen((string) $found['extract_text']) . " bytes\n";
     echo "   round-trip: " . (($found['extract_text'] === $extract) ? 'BYTE-IDENTICAL' : '⛔ DIFFERS — check wp_slash/encoding') . "\n";
 }
