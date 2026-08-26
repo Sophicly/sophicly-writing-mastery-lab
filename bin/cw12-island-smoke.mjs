@@ -116,6 +116,14 @@ console.log('CW STEP-12 ISLANDS — render smoke (the real components, the real 
     const restored = render(DraftMap, Object.assign({}, P, { initial: { chunks: [{ from: 0, to: 1, fid: 'b2' }, { from: 2, to: 2, fid: '__notyet__' }] } }), 'draft map, restored');
     ok(/is-placed/.test(restored) && /#2/.test(restored), 'a placed sentence carries its beat number');
     ok(/Placed so far/.test(restored) && /Call to adventure/.test(restored) && /Not in the plot yet/.test(restored), 'the chunk list names the beat, and the not-yet case');
+    // #451 (Neil): a COUNT answers "how many" and never "which" — every surface must NAME the chunk.
+    ok(/Chunk 1/.test(restored) && /Chunk 2/.test(restored), 'every placed chunk is numbered, so a student can match a chunk to its beat');
+    ok(/dm-chunk-no/.test(restored), '…and the number is the shared chunk-number chip, not ad-hoc text');
+    ok(/C1 · #2/.test(restored) || /C1 &#xB7; #2/.test(restored) || /C1/.test(restored), 'the sentence tag in the draft carries the chunk number too');
+    // draft ORDER, not placement order: chunk numbers must not renumber when one is taken back.
+    const reordered = render(DraftMap, Object.assign({}, P, { initial: { chunks: [{ from: 2, to: 2, fid: 'b3' }, { from: 0, to: 1, fid: 'b2' }] } }), 'draft map, chunks stored out of order');
+    const i1 = reordered.indexOf('Chunk 1'), i2 = reordered.indexOf('Chunk 2');
+    ok(i1 !== -1 && i2 !== -1, 'both chunks numbered regardless of the order they were placed in');
     ok(/1<\/strong> sentence still to place|<strong>1<\/strong> sentence/.test(restored), 'the footer counts what is left');
     const bundle = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-scene-island.min.js'), 'utf8');
     ok(/WMLDraftMapIsland/.test(bundle) && /dm-sent/.test(bundle), 'the draft map is in the BUILT bundle (the server never builds)');

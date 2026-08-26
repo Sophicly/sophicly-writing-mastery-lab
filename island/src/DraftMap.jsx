@@ -112,6 +112,25 @@ export default function DraftMap(props) {
         return out;
     }, [chunks, beats]);
     const chunkText = (c) => sentences.slice(c.from, c.to + 1).map((s) => s.text).join(' ');
+
+    /* ⭐⭐ v7.20.572 (FIXLIST #451, Neil 2026-08-26, testing Step 12): "when I place the chunks and
+       the beats, I don't know which chunks I've placed… it needs to show in the beats outline
+       where I've placed chunk one, chunk two, chunk three."
+       The beat card said "＋ 2 chunks of your draft will be added here" — a COUNT, which answers
+       "how many" and never "which". With several chunks in flight a student cannot match a chunk
+       to its beat without opening each one, so the placement they just made is invisible to them.
+       Same family as #446: the screen reported a total instead of showing the run.
+       The number comes from DRAFT ORDER (the sentence index a chunk starts at), never from the
+       order the chunks were placed in — so a chunk keeps its number when an earlier one is taken
+       back and re-placed. A number that silently renumbers mid-walk is worse than no number.
+       ONE map, used by all four surfaces (the draft, the beat cards, "Placed so far" and the
+       review) so they cannot disagree with each other. */
+    const chunkKey = (c) => c.from + '-' + c.to;
+    const chunkNo = useMemo(() => {
+        const m = {};
+        chunks.slice().sort((a, b) => a.from - b.from).forEach((c, i) => { m[c.from + '-' + c.to] = i + 1; });
+        return m;
+    }, [chunks]);
     const doMap = async () => {
         if (busy) return;
         setBusy(true);
@@ -144,9 +163,9 @@ export default function DraftMap(props) {
                             {paraStart && i > 0 ? <span className="dm-para-break" /> : null}
                             <button type="button"
                                 className={'dm-sent' + (inSel ? ' is-sel' : '') + (isEnd ? ' is-end' : '') + (c ? ' is-placed' : '')}
-                                title={b ? 'Placed in #' + b.ord + ' ' + b.label : c ? 'Not in the plot yet' : ''}
+                                title={c ? ('Chunk ' + chunkNo[chunkKey(c)] + (b ? ' — placed in #' + b.ord + ' ' + b.label : ' — not in the plot yet')) : ''}
                                 onClick={() => tapSentence(i)}>
-                                {c ? <span className="dm-sent-tag">{b ? '#' + b.ord : '—'}</span> : null}
+                                {c ? <span className="dm-sent-tag">C{chunkNo[chunkKey(c)]}{b ? ' · #' + b.ord : ' · —'}</span> : null}
                                 {s.text}
                             </button>
                         </React.Fragment>
@@ -161,7 +180,7 @@ export default function DraftMap(props) {
                         const b = c.fid && c.fid !== NOT_YET ? beatById(c.fid) : null;
                         return (
                             <div className="dm-chunk" key={c.from + '-' + c.to}>
-                                <span className="dm-chunk-beat">{b ? <><span className="ord">#{b.ord}</span>{b.label}</> : 'Not in the plot yet'}</span>
+                                <span className="dm-chunk-beat"><span className="dm-chunk-no">Chunk {chunkNo[chunkKey(c)]}</span>{b ? <><span className="ord">#{b.ord}</span>{b.label}</> : 'Not in the plot yet'}</span>
                                 <span className="dm-chunk-text">{chunkText(c)}</span>
                                 <button type="button" aria-label="Take this chunk back" title="Take this chunk back" onClick={() => unassign(k)}>✕</button>
                             </div>
@@ -190,7 +209,7 @@ export default function DraftMap(props) {
                 return listed.map((b) => {
                     const head = b.stageRoman !== lastStage;
                     lastStage = b.stageRoman;
-                    const placed = chunks.filter((c) => c.fid === b.id).length;
+                    const placedHere = chunks.filter((c) => c.fid === b.id);
                     return (
                         <React.Fragment key={b.id}>
                             {head ? <div className="stage-head">{b.stageRoman} — {b.stageName}</div> : null}
@@ -200,7 +219,19 @@ export default function DraftMap(props) {
                                     <span>
                                         <span className="b-label"><span className="ord">#{b.ord}</span>{b.label}{b.inRun ? <span className="dm-run-tag">Step 9 scene</span> : null}</span>
                                         <span className="b-text" style={{ display: 'block' }}>{b.text || <em className="pv-empty-note">Empty — nothing written here yet.</em>}</span>
-                                        {placed ? <span className="pv-placed"><span className="pv-placed-state is-add">＋ {placed} chunk{placed === 1 ? '' : 's'} of your draft will be added here</span></span> : null}
+                                        {placedHere.length ? (
+                                            <span className="pv-placed">
+                                                <span className="pv-placed-state is-add">
+                                                    ＋ {placedHere.length} chunk{placedHere.length === 1 ? '' : 's'} of your draft will be added here
+                                                </span>
+                                                {placedHere.map((c) => (
+                                                    <span key={chunkKey(c)} className="pv-placed-chip is-pending">
+                                                        <span className="pv-placed-mark">＋</span>
+                                                        <span className="pv-placed-trait">Chunk {chunkNo[chunkKey(c)]}</span>
+                                                    </span>
+                                                ))}
+                                            </span>
+                                        ) : null}
                                     </span>
                                 </button>
                             </div>
@@ -237,7 +268,7 @@ export default function DraftMap(props) {
                         {cs.map((c) => (
                             <div className="pv-r-add" key={c.from + '-' + c.to}>
                                 <span className="pv-r-plus">＋</span>
-                                <span className="pv-r-line">Draft 1: {chunkText(c)}</span>
+                                <span className="pv-r-line"><span className="dm-chunk-no">Chunk {chunkNo[chunkKey(c)]}</span>Draft 1: {chunkText(c)}</span>
                             </div>
                         ))}
                     </div>
