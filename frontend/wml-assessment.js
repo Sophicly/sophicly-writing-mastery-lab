@@ -28425,54 +28425,54 @@
                     body: '*Internal goal* = what they BELIEVE the external goal will give them underneath: **positive relationships**, **self-acceptance**, **personal growth**, **mastery of their world**, **autonomy**, or **purpose**.\n\n'
                         + '**A strong answer:**\n\n- names the deeper fulfilment, not another object — "to be respected", not "to be rich"\n- says WHY they think the goal delivers it\n\n'
                         + 'Example: *Macbeth believes the crown will bring him self-acceptance — proof that he is the great man Lady Macbeth says he could be.*\n\n**What does your protagonist believe the goal will bring them?**',
-                    more: ['*Scrooge believes money brings autonomy — nobody can touch him, need him, or make him feel anything.*', '*Lennie believes the farm brings belonging — rabbits to tend and George never leaving.*'] },
+                    more: ['*Scrooge believes money brings autonomy — nobody can touch him, need him, or make him feel anything.*', '*Lennie believes the farm brings belonging — rabbits to tend and George never leaving.*', '*Jekyll believes the potion will bring him freedom — a way to have his appetites without paying for them with his good name.*'] },
                 { fid: P + 'need-begin', label: 'Need', kind: 'text', sub: 1,
                     body: '*Need* = the thing they GENUINELY require to become whole — usually the opposite of the goal, and usually invisible to them at the start.\n\n'
                         + '**A strong answer:**\n\n- is something they cannot yet see about themselves\n- pulls AGAINST the goal, so the story has tension\n\n'
                         + 'Example: *Macbeth needs honour and inner peace — the very things the crown will cost him.*\n\n**What does your protagonist truly need, that they cannot yet see?**',
-                    more: ['*Scrooge needs human connection — the one thing his money has been built to keep out.*', '*Eric Birling needs to take responsibility — the opposite of the drink and the excuses he hides in.*'] },
+                    more: ['*Scrooge needs human connection — the one thing his money has been built to keep out.*', '*Eric Birling needs to take responsibility — the opposite of the drink and the excuses he hides in.*', '*Woody needs to accept that being loved is not the same as being the favourite — which is exactly what he is fighting to stay.*'] },
                 { fid: P + 'stakes-begin', label: 'Stakes / Fears', kind: 'text', sub: 1,
                     body: '*Stakes* = what they are most afraid of LOSING at the start: survival, love, identity, freedom, justice, power, knowledge, their world, redemption, or achievement.\n\n'
                         + '**A strong answer:**\n\n- picks the PRIMARY fear — the one they would sacrifice the others to avoid\n- says what losing it would look like in your story\n\n'
                         + 'Example: *Macbeth fears losing power — once he has the crown, every threat to it is a threat to him.*\n\n**What is your protagonist most afraid of losing at the beginning?**',
-                    more: ['*Juliet fears losing her freedom — being married off to Paris and living her mother’s life.*', '*Scrooge fears losing his money; underneath, he fears being needed by anyone.*'] },
+                    more: ['*Juliet fears losing her freedom — being married off to Paris and living her mother’s life.*', '*Scrooge fears losing his money; underneath, he fears being needed by anyone.*', '*Jekyll fears losing his reputation — the respectable name he has spent a lifetime building, and the only thing holding Hyde back.*'] },
                 { fid: P + 'ext-goal-end', label: 'End-State of External Goal', kind: 'pickText', sub: 2,
                     items: ['The character succeeds', 'The character is defeated', 'The character abandons the goal', 'The end-state is unclear'],
                     body: '**Part 2 — Goals and Need at the End.**\n\nNow jump to the END of your story. Every ending answers one question first: **what happened to the goal?**\n\n'
                         + 'Example: *Macbeth is DEFEATED — he holds the crown to the last and loses it with his life.* / *Scrooge ABANDONS his goal — he stops hoarding and gives.*\n\n**What happens to your protagonist’s external goal? Tap one.**',
                     explain: '**Now, in a sentence or two — what actually happens?** Name the moment: where in the story the goal is won, lost, dropped or left hanging.',
-                    more: ['*Romeo’s goal ends UNCLEAR-turned-defeat — he wins Juliet and loses her in the same night.*', '*George abandons the farm the moment he pulls the trigger.*'] },
+                    more: ['*Romeo’s goal ends UNCLEAR-turned-defeat — he wins Juliet and loses her in the same night.*', '*George abandons the farm the moment he pulls the trigger.*', '*Napoleon SUCCEEDS — he takes total control of the farm, and the success is what makes the ending frightening.*'] },
                 { fid: P + 'int-goal-end', label: 'Internal Goals Achieved', kind: 'text', sub: 2,
                     body: 'The external goal is one thing; the deeper fulfilment is another. A character can win the goal and lose the internal one — or lose the goal and gain it.\n\n'
                         + '**A strong answer:**\n\n- names which internal goals (relationships, self-acceptance, growth, mastery, autonomy, purpose) they actually reach — or "none"\n- shows the mismatch with the external result if there is one\n\n'
                         + 'Example: *Macbeth achieves none of them — the crown brings him neither self-acceptance nor peace, only "a tale told by an idiot".*\n\n**Which internal goals does your protagonist reach by the end?**',
-                    more: ['*Scrooge reaches positive relationships and purpose — he loses the goal and gains everything it was standing in for.*'] },
+                    more: ['*Scrooge reaches positive relationships and purpose — he loses the goal and gains everything it was standing in for.*', '*Jekyll reaches none — the freedom he chased costs him the self he was trying to set free.*', '*Mickey reaches none: he finds the brother he never knew he had, and finding him is what destroys them both.*'] },
                 { fid: P + 'need-recognised', label: 'Need Recognised?', kind: 'yesnoText', sub: 2,
                     body: 'The whole arc turns on this: **does your protagonist come to see their need?** A "no" is a legitimate story — it is a tragedy.\n\n'
                         + 'Example: *Scrooge — YES: he sees, at the graveside, that connection was the need all along.* / *Macbeth — NO: he dies still reaching for power.*\n\n**Does your protagonist recognise their need by the end?**',
                     explain: '**In a sentence — how do we know?** Point at the moment (or the moment that never comes).',
-                    more: ['*Eric Birling — yes, and he is the only Birling who does; the play’s ending depends on it.*'] },
+                    more: ['*Eric Birling — yes, and he is one of the only Birlings who does; the play’s ending depends on it.*', '*Mr Birling — NO: he ends the evening worrying about his knighthood, and that refusal is exactly the point.*', '*Simba — yes: he sees that running from what he did was never the same as escaping it.*'] },
                 { fid: P + 'dilemma', label: 'Dilemma', kind: 'text', sub: 2,
                     body: 'The **climax** is where the character is forced to CHOOSE between clinging to the goal and embracing the need. That choice is the dilemma.\n\n'
                         + '**A strong answer:**\n\n- names BOTH sides of the choice — what they keep and what they give up\n- says what they choose, and why it is hard\n\n'
                         + 'Example: *Scrooge must choose between the safety of his money and the risk of needing people. He chooses people — hard, because every year of his life argued the other way.*\n\n**What is the most difficult choice your protagonist must make, and what do they choose?**',
-                    more: ['*George must choose between keeping Lennie (and the dream) and sparing him a worse death. He chooses mercy, and it costs him the dream.*'] },
+                    more: ['*George must choose between keeping Lennie (and the dream) and sparing him a worse death. He chooses mercy, and it costs him the dream.*', '*Macbeth must choose between stopping at the crown and killing again to keep it. He keeps killing — hard, because every murder makes the next one easier and the man he was harder to find.*', '*Sheila must choose between defending her family’s version of the night and admitting her own part in it. She admits it, and it costs her the engagement and her place in the family.*'] },
                 { fid: P + 'realisation', label: 'Realisation', kind: 'text', sub: 2,
                     body: 'The **realisation** is what your character finally understands — about themselves and about the world.\n\n'
                         + '**A strong answer:**\n\n- is a truth THEY see (or fail to see), not a moral you announce\n- connects back to the need\n\n'
                         + 'Example: *Scrooge realises that a life spent keeping people out is a life nobody will mourn — and that it is not too late.*\n\n**What does your protagonist finally understand?**',
-                    more: ['*Juliet realises the feud is not something she can escape by hiding — only by refusing it, whatever it costs.*'] },
+                    more: ['*Juliet realises the feud is not something she can escape by hiding — only by refusing it, whatever it costs.*', '*Macbeth realises that everything he killed for adds up to nothing — a life that, at the end, means nothing at all.*', '*Jekyll realises too late that Hyde was never a second man; he was the part of Jekyll that was always there, finally given permission.*'] },
                 { fid: P + 'ending-tone', label: 'Ending Tone', kind: 'pickText', sub: 2,
                     items: ['Positive', 'Negative', 'Bittersweet', 'Ambiguous'],
                     body: 'Step back from the events: how does the ending FEEL to the reader?\n\n'
                         + 'Example: *A Christmas Carol — positive.* / *Macbeth — negative.* / *Of Mice and Men — bittersweet: Lennie is safe from the mob, and the dream is dead.*\n\n**What tone does the end of your story have? Tap one.**',
                     explain: '**In a sentence — what makes it feel that way?** Name the image or line the reader is left holding.',
-                    more: ['*An Inspector Calls — ambiguous: the phone rings, and we never learn what the second inspector will find.*'] },
+                    more: ['*An Inspector Calls — ambiguous: the phone rings, and we never learn what the second inspector will find.*', '*Animal Farm — negative, and quiet about it: the animals look from pig to man and can no longer tell which is which.*', '*Toy Story 3 — bittersweet: Andy gives the toys away, and the gift and the loss are the same act.*'] },
                 { fid: P + 'meaning', label: 'Universal Meaning (Moral)', kind: 'text', sub: 2,
                     body: 'The **universal meaning** is what your story argues about life — the idea a reader carries away that has nothing to do with your character’s name.\n\n'
                         + '**A strong answer:**\n\n- is one sentence, true beyond this story\n- could be argued with — a claim, not a platitude\n\n'
                         + 'Example: *A Christmas Carol argues that people can change, and that a society should be judged by whether it helps them to.*\n\n**What is the universal meaning of your story?**',
-                    more: ['*Macbeth argues that ambition without conscience destroys the very thing it reaches for.*', '*Of Mice and Men argues that in a world built on loneliness, even a small dream is a form of resistance.*'] },
+                    more: ['*Macbeth argues that ambition without conscience destroys the very thing it reaches for.*', '*Of Mice and Men argues that in a world built on loneliness, even a small dream is a form of resistance.*', '*Blood Brothers argues that two identical children can be handed opposite lives, and that we call the difference luck when it is really class.*'] },
                 { fid: P + 'arc-type', label: 'Arc Type', kind: 'pick', sub: 3,
                     items: ['Positive (weakling to hero, ignorance to knowledge, etc.)', 'Negative (good to bad, strong to weak, etc.)', 'Ambiguous Positive', 'Ambiguous Negative'],
                     body: '**Part 3 — Character Arc Type.**\n\nPut everything above together. Your protagonist starts chasing a goal and ends facing a need — which way did they travel?\n\n'
