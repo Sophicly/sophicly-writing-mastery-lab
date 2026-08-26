@@ -71,11 +71,17 @@ export default function PlotValues(props) {
        makes the placement meaningless. Splitting by band makes the wrong placement unreachable
        rather than merely discouraged.
        `selected` is GONE. A pass runs every trait carrying a condition for that band. */
-    const [phase, setPhase] = useState(1);          // 1 = this band's traits · 2 = place them · 3 = review
+    /* ⭐ v7.20.570: `phase` and `cursor` seed from `initial` like `band` already did. At RUNTIME
+       this changes nothing — the engine persists only {picks, noShow} into `ledger.picker` (see
+       wml-assessment.js ≈ 26517 / 30327), so neither key is ever supplied. It exists so
+       `bin/placer-accumulation-gate.mjs` can render the BEAT-PICKING screen, which was
+       unreachable to every gate we had: cw8-island-smoke says so in its own header. An invariant
+       nothing can render is an invariant nothing can check. */
+    const [phase, setPhase] = useState(() => ((props.initial && props.initial.phase) === 2 ? 2 : (props.initial && props.initial.phase) === 3 ? 3 : 1));   // 1 = this band's traits · 2 = place them · 3 = review
     const [band, setBand] = useState(() => ((props.initial && props.initial.band) === 'end' ? 'end' : 'begin'));
     const [picks, setPicks] = useState(() => (props.initial && props.initial.picks) || {});
     const [noShow, setNoShow] = useState(() => (props.initial && props.initial.noShow) || []);
-    const [cursor, setCursor] = useState(0);        // which trait of THIS BAND phase 2 is on (serial)
+    const [cursor, setCursor] = useState(() => Math.max(0, (props.initial && props.initial.cursor) | 0));   // which trait of THIS BAND phase 2 is on (serial)
     const [emptyOnly, setEmptyOnly] = useState(false);
     const [busy, setBusy] = useState(false);
     const [ported, setPorted] = useState(false);
@@ -432,6 +438,26 @@ export default function PlotValues(props) {
                                                 const placed = Object.keys(b.worked || {})
                                                     .map((id) => traitById[id])
                                                     .filter(Boolean);
+                                                /* ⭐⭐ v7.20.570 (FIXLIST #446, Neil 2026-08-26, testing Step 12):
+                                                   *"I've just transferred it to beat three. And then I go to the
+                                                   next goal, but now I can't see that previous one. So I can't see
+                                                   where it's transferred to."* — and, a minute later: *"we had
+                                                   exactly the same problem"* on Step 8.
+                                                   THE ROOT, and it is why the same report arrived twice: `worked`
+                                                   is built ONCE at mount by scanning the live row text, and the
+                                                   append happens ONCE at the end of the pass. So for the whole
+                                                   middle of a serial walk — every item after the first — the
+                                                   student's own placements exist ONLY in `picks` and were drawn
+                                                   nowhere. The screen showed the CURRENT item's state and the
+                                                   PREVIOUS RUN's state, and silently omitted the run they were in.
+                                                   The data was always here; only the display was missing (the same
+                                                   sentence #394 ended on, which is the tell that the rule needed a
+                                                   gate rather than another fix — bin/placer-accumulation-gate.mjs). */
+                                                const pendingHere = (traits || []).filter((m) => (
+                                                    m.id !== t.id
+                                                    && !(b.worked && b.worked[m.id])
+                                                    && (picks[m.id] || []).indexOf(b.id) !== -1
+                                                ));
                                                 return (
                                                     <button type="button" key={b.id}
                                                         className={'beat-card' + (on ? ' is-sel' : '') + (already ? ' pv-worked' : '') + (b.text ? '' : ' pv-empty')}
@@ -456,7 +482,7 @@ export default function PlotValues(props) {
                                                                 display "Curiosity in balance" while the rail beside it
                                                                 said "IN DEFICIT" for the same trait — the .534 band
                                                                 collapse surviving in one last place. */}
-                                                            {already || on || placed.length
+                                                            {already || on || placed.length || pendingHere.length
                                                                 ? <span className="pv-placed">
                                                                     {already
                                                                         ? <span className="pv-placed-state is-in">✓ {t.label} is already in this beat</span>
@@ -471,6 +497,17 @@ export default function PlotValues(props) {
                                                                                 <em className="pv-placed-preview">{C.prefix} ({t.label}): {(t.byBand && t.byBand[band] && t.byBand[band].said) || t.portText}</em>
                                                                             </span>
                                                                             : null}
+                                                                    {pendingHere.map((m) => {
+                                                                        const mb = (m.byBand && m.byBand[band]) || null;
+                                                                        return (
+                                                                            <span key={'p-' + m.id} className="pv-placed-chip is-pending">
+                                                                                <span className="pv-placed-mark">＋</span>
+                                                                                <span className="pv-placed-value">{m.valueName}</span>
+                                                                                <span className="pv-placed-trait">{m.label}</span>
+                                                                                <span className="pv-placed-cond">{String((mb && mb.cond) || m.cond || '').toLowerCase()}</span>
+                                                                            </span>
+                                                                        );
+                                                                    })}
                                                                     {placed.map((m) => {
                                                                         const mb = (m.byBand && m.byBand[band]) || null;
                                                                         return (

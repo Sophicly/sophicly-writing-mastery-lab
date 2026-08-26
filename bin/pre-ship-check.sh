@@ -394,6 +394,12 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   if [ -d island/node_modules/esbuild ]; then
     node bin/cw8-island-smoke.mjs || fail=1
     node bin/cw12-island-smoke.mjs || fail=1   # v7.20.567 (#440): the goals lens + the draft map
+    # v7.20.570 (#446): A SERIAL PLACER MUST SHOW THE WHOLE RUN. Neil reported the identical defect
+    # twice against this one component body — #394 on Step 8, #446 on Step 12 — and then refused a
+    # third fix without a gate: "it needs some sort of gate, because it's not the first time this
+    # has happened." The two smokes above render only the LANDING screen (cw8's header says the
+    # beat-picking screen is unreachable to them), which is exactly why neither ever saw it.
+    node bin/placer-accumulation-gate.mjs || fail=1
   else
     echo "⚠️  cw8-island-smoke SKIPPED — island/node_modules missing (run: cd island && npm install)"
   fi

@@ -13,6 +13,13 @@
  * sends — including the awkward ones: a trait with no Step-7 words, a trait offered one band
  * only, and an EMPTY beat.
  *
+ * ⚠️ NO LONGER TRUE AS OF v7.20.570 (#446): "the beat-picking screen is not reachable from
+ * renderToString at all" was accurate when it was written and is not any more — `phase` and
+ * `cursor` now seed from `props.initial`, so that screen renders. Believing this note is part of
+ * how the same defect reached Neil twice, so it is corrected rather than left standing. This file
+ * still only exercises the LANDING; the beat-picking screen has its own gate,
+ * `bin/placer-accumulation-gate.mjs`, which asserts the invariant that was missing there.
+ *
  * ⚠️ CORRECTED v7.20.523: this header used to claim "in all three phases", and two blocks below
  * were labelled phase 2 and phase 3. They were not. `phase` is `useState(1)` and is never read
  * from `initial`, so every render here is the LANDING phase with state restored — and both of
@@ -231,4 +238,4 @@ console.log('CW STEP-8 ISLAND — render smoke (the real component, the real pro
 
 console.log('   ' + asserts.pass + ' assertions passed');
 if (fail) { console.error('❌ cw8-island-smoke FAILED'); process.exit(1); }
-console.log('✅ cw8-island-smoke passed (renders on the landing phase across restored states + awkward props; the trait RAIL is checked structurally in the BUILT bundle (sibling of the scroller, no sticky) — phase 2 is unreachable from renderToString, so its look is verified by eye).');
+console.log('✅ cw8-island-smoke passed (renders on the landing phase across restored states + awkward props; the trait RAIL is checked structurally in the BUILT bundle (sibling of the scroller, no sticky) — phase 2 renders since v7.20.570 but its INVARIANTS live in placer-accumulation-gate.mjs; its look is verified by eye).');
