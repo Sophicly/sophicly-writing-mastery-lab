@@ -112,6 +112,16 @@ console.log('CW STEP-12 ISLANDS — render smoke (the real components, the real 
     ok((html.match(/class="dm-sent"/g) || []).length === 4, 'every sentence is a tappable button (4)');
     ok(/dm-para-break/.test(html), 'the paragraph break is drawn between paragraphs');
     ok(/Tap the first, then the last/.test(html), 'the footer tells them what to do');
+    // #452 (Neil, 2026-08-26): trimming a selection ALREADY worked — applyTap shrinks the run when
+    // you tap either end — but nothing on screen said so, which from the student's side is
+    // indistinguishable from the feature not existing. So the way out has to be ASSERTED, not
+    // assumed, and the control below proves the assertion can fail.
+    const selected = render(DraftMap, Object.assign({}, P, { initial: { sel: { start: 0, end: 3 } } }), 'draft map, mid-selection');
+    ok(/4<\/strong> sentences selected|4 sentences selected/.test(selected), 'mid-selection: the count is on screen');
+    ok(/Start this chunk again/.test(selected), 'mid-selection: a VISIBLE way to clear the selection exists');
+    ok(/make the chunk smaller/.test(selected) && /make it bigger/.test(selected), 'mid-selection: the screen says HOW to resize, in words');
+    const unselected = render(DraftMap, P, 'draft map, nothing selected');
+    ok(!/Start this chunk again/.test(unselected), 'control: with nothing selected that control is absent — so the assertion above can fail');
     // restored chunks: placed sentences show their beat tag and the chunk list
     const restored = render(DraftMap, Object.assign({}, P, { initial: { chunks: [{ from: 0, to: 1, fid: 'b2' }, { from: 2, to: 2, fid: '__notyet__' }] } }), 'draft map, restored');
     ok(/is-placed/.test(restored) && /#2/.test(restored), 'a placed sentence carries its beat number');

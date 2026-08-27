@@ -36,7 +36,14 @@ const NOT_YET = '__notyet__';
 export default function DraftMap(props) {
     const { sentences, beats, onStateChange, onMap, onClose } = props;
     const [chunks, setChunks] = useState(() => (props.initial && Array.isArray(props.initial.chunks)) ? props.initial.chunks.slice() : []);
-    const [sel, setSel] = useState({ start: null, end: null });
+    /* `sel` seeds from `initial` so the MID-SELECTION screen is renderable to the smoke test —
+       the state #452 is about. At runtime this changes nothing: the engine persists chunks, never
+       an in-flight selection, so the key is never supplied. Same reasoning as PlotValues' phase /
+       cursor seeding in v7.20.570 — an invariant on a screen nothing can render is unverifiable. */
+    const [sel, setSel] = useState(() => {
+        const s = props.initial && props.initial.sel;
+        return s && s.start != null ? { start: s.start, end: s.end == null ? s.start : s.end } : { start: null, end: null };
+    });
     const [phase, setPhase] = useState(1);        // 1 = pick a chunk · 2 = pick its beat · 3 = check it over
     const [showAll, setShowAll] = useState(false);
     const [hint, setHint] = useState('');
@@ -173,6 +180,29 @@ export default function DraftMap(props) {
                 })}
             </div>
             <p className="hint">{hint}</p>
+            {/* ⭐⭐ v7.20.573 (FIXLIST #452, Neil 2026-08-26, testing Step 12): "I selected four.
+                And then if I wanted to change it back to three, there's no option for me to do
+                that. I can't actually do it."
+                MEASURED FIRST (root §19): trimming already worked — applyTap() shrinks the run
+                when you tap either END of it (3..6 tap 6 → 3..5), and tapping a single-sentence
+                selection clears it. Nothing was broken. But NOTHING ON SCREEN SAID SO: the
+                instruction taught "tap the first, tap the last" and then went silent, so once a
+                selection existed the student had a stretch of highlighted text and no visible way
+                back. An affordance nobody can find is not an affordance — from the student's side
+                it is identical to a missing feature, which is exactly how Neil reported it.
+                So the way out is now WRITTEN DOWN and one tap away, rather than something you
+                have to guess. */}
+            {selCount ? (
+                <div className="ask-chips dm-sel-tools">
+                    <span className="dm-sel-note">
+                        <strong>{selCount} sentence{selCount === 1 ? '' : 's'} selected.</strong>{' '}
+                        Tap the first or last one again to make the chunk smaller, or a sentence outside it to make it bigger.
+                    </span>
+                    <button type="button" className="chip-btn" onClick={() => { setSel({ start: null, end: null }); setHint(''); }}>
+                        Start this chunk again
+                    </button>
+                </div>
+            ) : null}
             {chunks.length ? (
                 <div className="dm-chunks">
                     <div className="dm-chunks-head">Placed so far</div>
@@ -292,7 +322,7 @@ export default function DraftMap(props) {
     let statusNode, nextLabel, nextDisabled, onNext;
     if (phase === 1) {
         statusNode = selCount
-            ? <><strong>{selCount} sentence{selCount === 1 ? '' : 's'}</strong> selected — now choose its beat.</>
+            ? <><strong>{selCount} sentence{selCount === 1 ? '' : 's'}</strong> selected — now choose its beat, or tap either end to change it.</>
             : unassigned
                 ? <>{chunks.length ? <><strong>{chunks.length} chunk{chunks.length === 1 ? '' : 's'}</strong> placed · </> : null}<strong>{unassigned}</strong> sentence{unassigned === 1 ? '' : 's'} still to place. Tap the first, then the last.</>
                 : <>Every sentence is placed.</>;
