@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.576';
+var WML_BUILD = '7.20.577';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1120,7 +1120,13 @@ window.WML = (function() {
         // take notes tab visible and useable as they are not test lessons. Only steps 9 and 10 are
         // test lessons"* — which is what the predicate's own comment already said it meant.
         { step: 13, label: 'Scene Selection: Draft 2',  tier: 'si', phase: 'drafting' },
-        { step: 14, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2 },
+        // v7.20.577 (Neil, 2026-08-27): a POLISHING environment, not a teaching walk. *"It's meant
+        // to be a polishing environment… the students select the writing that they want to edit,
+        // and then they get a contextual chat."* Steps 11-13 teach the arc and choose the scenes;
+        // Step 14 is where the student applies it to Draft 1, by selecting prose and improving it.
+        // `lens` names WHICH polish this draft is for — the same engine serves Drafts 3-7, so the
+        // lens is data, never a per-step clone.
+        { step: 14, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2, env: 'polishing', lens: 'character_arc' },
         { id: 'trial_2', label: 'Trial 2: Character Depth', tier: 'si', phase: 'drafting', trial: 2 },
         { step: 15, label: 'Character Archetypes',      tier: 'workbook', phase: 'drafting' },
         { step: 16, label: 'Update Plot: Archetypes',   tier: 'workbook', phase: 'drafting' },
@@ -1984,6 +1990,30 @@ window.WML = (function() {
             chatHeaderLabel: null,
             sidebarSteps: null,
         },
+        // ── Creative Writing: POLISHING draft steps (v7.20.577) ──
+        // Neil, 2026-08-27: Draft 2 onward is a polishing environment — the student SELECTS the
+        // prose they want to work on and gets a contextual chat about that selection, instead of
+        // being walked through a teaching chat they have already had in Steps 11-13.
+        // Panel shape and environment are the SHIPPED `polishing` entry's, byte for byte, so this
+        // rides a rendering path that already works rather than inventing a new combination.
+        // ⚠️ `protocolSource: null` for now, on the `cw_diagnostic` precedent: the step's own
+        // CW-STEP-14 markdown is the OLD Socratic walk and would be narrated at the student if it
+        // were loaded — the exact failure the retained-source law (§5) records. The coaching
+        // protocol (inline-coaching-core + engine + a CW rubric) is wired in the next commit; until
+        // it is, Sophia has no CW polishing rubric and this step is NOT student-ready.
+        cw_polishing: {
+            label: 'Creative Writing',
+            environment: 'inline-coaching',
+            panels: { sidebar: true, chat: false, guidance: false, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: null,
+            protocolTask: null,
+            completionType: 'manual',
+            storageSuffix: '_cw',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+        },
         // ── Creative Writing: Workbook Steps (v7.13.34) ──
         cw_workbook: {
             label: 'Creative Writing',
@@ -2136,12 +2166,18 @@ window.WML = (function() {
                 // v7.20.507 (#366): `env` wins over `tier` — a step that declares a diagnostic
                 // environment gets it whatever its tier says. Capability first, never a literal.
                 const base = stepDef.env === 'diagnostic' ? EXERCISE_MANIFEST.cw_diagnostic
+                    // v7.20.577: the polishing env joins the same `env`-wins ladder, so a draft
+                    // step opts in by declaring it — no literal step number decides this.
+                    : stepDef.env === 'polishing' ? EXERCISE_MANIFEST.cw_polishing
                     : stepDef.tier === 'si' ? EXERCISE_MANIFEST.cw_si
                     : EXERCISE_MANIFEST.cw_workbook;
                 const stepKey = stepDef.step || stepDef.id;
                 // Scoped to the diagnostic env ONLY — workbook steps keep the fields they have
                 // always been given, so this change cannot reach a step it was not written for.
-                const noChat = stepDef.env === 'diagnostic';
+                // v7.20.577: the polishing env has no chat PANEL either — Sophia is reached from a
+                // text selection, not a walk — so it takes the same no-walk-sidebar treatment. A
+                // sidebar of sub-steps nothing can ever tick is the §4d "screen that lies" shape.
+                const noChat = stepDef.env === 'diagnostic' || stepDef.env === 'polishing';
                 return {
                     ...base,
                     label: stepDef.label,
