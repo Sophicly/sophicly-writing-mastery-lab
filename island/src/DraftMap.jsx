@@ -231,7 +231,20 @@ export default function DraftMap(props) {
                     <button type="button" className={'chip-btn' + (showAll ? ' is-on' : '')} onClick={() => setShowAll(!showAll)}>
                         {showAll ? '✓ Showing all beats' : 'Show all beats'}
                     </button>
-                    <span className="pv-tools-note">{showAll ? 'Every beat of your plot.' : 'Only your Step-9 scene beats.'}</span>
+                    {/* ⭐ v7.20.574 (FIXLIST #455, Neil 2026-08-26): "it'd be useful if I also have a
+                        number somewhere which says previously I chose nine beats… then it'd be
+                        easier for me to distinguish."
+                        He is right, and it is cheap: the list is already filtered to the Step-9
+                        scene, but the filter never said HOW MANY, so there was nothing to check the
+                        list against — and he could not remember which step chose them either. The
+                        count and the step that produced it are now both stated, and the count is
+                        DERIVED from the same runBeats the filter uses, so it cannot drift from the
+                        list it describes. */}
+                    <span className="pv-tools-note">
+                        {showAll
+                            ? <>Every beat of your plot — <strong>{beats.length}</strong> in all. Your Step 9 scene is <strong>{runBeats.length}</strong> of them.</>
+                            : <>Your <strong>Step 9</strong> scene — the <strong>{runBeats.length}</strong> beat{runBeats.length === 1 ? '' : 's'} you chose for it.</>}
+                    </span>
                 </div>
             ) : null}
             {(() => {

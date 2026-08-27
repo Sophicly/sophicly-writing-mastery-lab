@@ -63,7 +63,22 @@ function applyTap(runStart, runEnd, i) {
     if (runStart === runEnd && i === runStart) return { runStart: null, runEnd: null, hint: null };
     if (i === runStart) return { runStart: runStart + 1, runEnd, hint: null };   // trim the top
     if (i === runEnd) return { runStart, runEnd: runEnd - 1, hint: null };       // trim the bottom
-    return { runStart, runEnd, hint: 'Your scene is one continuous run — trim it from either end, or tap outside it to widen it.' };
+    /* ⭐⭐ v7.20.574 (FIXLIST #454, Neil 2026-08-26). A tap INSIDE the run now makes that item the
+       new LAST one, instead of being refused with a hint.
+       His words, and he is describing the instinct exactly: "let's say I click four lines, let's
+       say I only want three. What I was doing is I went back to click the third one and nothing
+       was happening. I think that'll be the natural instinct… instead I have to click the last one
+       to unselect it. So it does work, but I don't think it's working naturally."
+       He is right. Shrinking a run by repeatedly un-picking its tail is an implementation detail
+       leaking into the gesture; "this one is where it ends" is what a person means when they tap
+       inside a highlighted stretch. The old branch refused and explained itself, which was polite
+       and still wrong.
+       ⚠️ SHARED, DELIBERATELY: this is Step 9 / Step 13 scene selection's tap as well as the
+       Step 12 draft map's, so both now behave the same way. One gesture, one mental model —
+       the alternative was two rules for the same-looking interaction (root §7: pick one, say so).
+       Trimming from either END still works exactly as before, so nothing a student already knew
+       has been taken away; this only adds the shorter route. */
+    return { runStart, runEnd: i, hint: null };
 }
 
 /**

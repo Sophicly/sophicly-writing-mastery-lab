@@ -27890,7 +27890,16 @@
             // Draft-1 prose (the MERGE), new beats arrive as plan lines; the join seeds Step 14.
             const CW13_GREETING = 'Welcome to Step 13: **Scene Selection for Draft 2**\n\nYour plot now carries your goals and needs, and your Draft 1 is filed under the beats it grew from. Now we choose the scene Draft 2 will tell.';
             const CW13_INTRO = [
-                'Draft 2 is an **updated Draft 1**, not a new story. Most of the time it covers the same run of beats — but your plot has moved on since Step 9, so this is the moment to check whether the scene should widen, shift, or pick up a beat you have added.',
+                /* ⭐ v7.20.574 (FIXLIST #456, Neil 2026-08-26, passing Step 13): "maybe we just need to
+                   remind the students that it's meant to be an updated version of Draft 1, but they
+                   might decide they want to update their ideas — they might want to use more beats,
+                   or fewer beats, or even some different beats."
+                   The old line said the scene could "widen, shift, or pick up a beat you have added",
+                   which names growing and moving but never SHRINKING or SWAPPING — so a student who
+                   wanted a tighter scene, or a different one, had no permission on the screen for it.
+                   All four moves are now said plainly, and the last sentence gives the licence
+                   explicitly, because "updated Draft 1" on its own reads as "keep what you had". */
+                'Draft 2 is an **updated Draft 1**, not a new story. Most of the time it covers the same run of beats — but your plot has moved on since Step 9, so this is the moment to think again. Your scene can take in **more** beats, drop back to **fewer**, or move to **different** ones entirely. Keeping the same run is a choice too; just make it a decision rather than a default.',
                 'Beats you have already drafted are marked **Draft 1 written**. When you transfer, those beats arrive with your Draft 1 prose already in them — nothing you wrote is lost. A beat you pick for the first time arrives as your plan line, ready to write.',
                 'Same three moves as before:\n\n1. **Pick your stage(s)** — one or two next to each other.\n2. **Pick your beats** — one continuous run.\n3. **Shape the scene** — element by element.\n\nThen write out any new beats in the seven boxes, and tap Transfer — that is what **Step 14** opens with.',
             ];

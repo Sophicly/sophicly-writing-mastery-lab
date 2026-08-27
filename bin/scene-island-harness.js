@@ -53,8 +53,19 @@ section('A1 run-tap semantics');
     ok(r.runStart === 3 && r.runEnd === 9, 'tap on start trims the top');
     r = P.applyTap(3, 9, 9);
     ok(r.runStart === 3 && r.runEnd === 8, 'tap on end trims the bottom');
+    // v7.20.574 (#454, Neil): a tap INSIDE the run makes that item the new LAST one. It used to be
+    // refused with a hint — polite, and still wrong: "this is where it ends" is what a person means
+    // when they tap inside a highlighted stretch, and shrinking by repeatedly un-picking the tail
+    // was the implementation leaking into the gesture.
     r = P.applyTap(3, 8, 5);
-    ok(r.hint && r.runStart === 3 && r.runEnd === 8, 'mid-run tap refuses WITH a hint (liveness: the screen answers)');
+    ok(!r.hint && r.runStart === 3 && r.runEnd === 5, 'mid-run tap makes that item the new END (4 selected → tap the 3rd → 3 selected)');
+    r = P.applyTap(3, 8, 4);
+    ok(!r.hint && r.runStart === 3 && r.runEnd === 4, 'mid-run tap right after the start shortens to two');
+    // the two routes that already existed must still work — this only ADDED a shorter one
+    r = P.applyTap(3, 8, 8);
+    ok(r.runStart === 3 && r.runEnd === 7, 'tapping the END still trims by one');
+    r = P.applyTap(3, 8, 3);
+    ok(r.runStart === 4 && r.runEnd === 8, 'tapping the START still trims the top');
     r = P.applyTap(4, 4, 4);
     ok(r.runStart === null && r.runEnd === null, 'tap on a 1-beat run collapses it');
 }
