@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.575';
+var WML_BUILD = '7.20.576';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1114,7 +1114,12 @@ window.WML = (function() {
         // table selects the ENVIRONMENT, the LearnDash course (41165) is renumbered to match on
         // each env before this ships, and `_cw_<N>` storage keys are migrated by
         // bin/cw-renumber-migrate-step-keyed-meta.php (from=13).
-        { step: 13, label: 'Scene Selection: Draft 2',  tier: 'si', phase: 'drafting', tools: 'minimal' },
+        // v7.20.576 (Neil, 2026-08-27): NOT tools-minimal. Step 13 was cloned from Step 9's row at
+        // .568 and inherited its `tools: 'minimal'`, which took the notes tab, the rail panels and
+        // Resources off a lesson that is not a test. Neil: *"steps 12, 13, 14 etc should have the
+        // take notes tab visible and useable as they are not test lessons. Only steps 9 and 10 are
+        // test lessons"* — which is what the predicate's own comment already said it meant.
+        { step: 13, label: 'Scene Selection: Draft 2',  tier: 'si', phase: 'drafting' },
         { step: 14, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2 },
         { id: 'trial_2', label: 'Trial 2: Character Depth', tier: 'si', phase: 'drafting', trial: 2 },
         { step: 15, label: 'Character Archetypes',      tier: 'workbook', phase: 'drafting' },

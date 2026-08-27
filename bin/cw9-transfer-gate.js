@@ -166,10 +166,18 @@ ok('Step 10 tells the truth when the box is empty, on a page with no chat to ask
 console.log('\nSteps 9 and 10 run with the tools stripped:');
 ok('Step 9 declares tools: minimal', WML.cwToolsMinimal('cw_step_9'));
 ok('Step 10 declares it too', WML.cwToolsMinimal('cw_step_10'));
-// v7.20.568 (#440): Step 13 is Step 9's walk for Draft 2, so it declares the same unaided rail.
-ok('and NOTHING else does — no sibling inherits an unaided rail by accident (9, 10 and the Draft-2 scene selection, 13)',
-    JSON.stringify(WML.CW_STEPS.filter(s => s.tools === 'minimal').map(s => s.step)) === '[9,10,13]',
+// v7.20.576 (Neil, 2026-08-27): the set is 9 and 10, and ONLY 9 and 10. Step 13 was added here at
+// .568 on the reasoning that it is Step 9's walk for Draft 2 — but Neil ruled the other way, on
+// what the lesson IS rather than what it resembles: *"steps 12, 13, 14 etc should have the take
+// notes tab visible and useable as they are not test lessons. Only steps 9 and 10 are test
+// lessons."* Step 9 is the unaided write-out and Step 10 is the test; a Draft-2 scene selection is
+// neither, so it keeps its notes tab, its rail and its Resources button.
+ok('and NOTHING else does — no sibling inherits an unaided rail by accident (9 and 10, and only those two)',
+    JSON.stringify(WML.CW_STEPS.filter(s => s.tools === 'minimal').map(s => s.step)) === '[9,10]',
     WML.CW_STEPS.filter(s => s.tools === 'minimal').map(s => s.step));
+ok('Step 13 (Draft-2 scene selection) is NOT a test lesson — it keeps its tools', !WML.cwToolsMinimal('cw_step_13'));
+ok('Step 12 keeps its tools', !WML.cwToolsMinimal('cw_step_12'));
+ok('Step 14 keeps its tools', !WML.cwToolsMinimal('cw_step_14'));
 ok('Step 8 (the walk before) keeps its tools', !WML.cwToolsMinimal('cw_step_8'));
 ok('Trial 1 (the assessment after) keeps its tools', !WML.cwToolsMinimal('cw_trial_1'));
 ok('the notes scratchpad reads the SAME predicate as the rail (one source, cannot drift)',
