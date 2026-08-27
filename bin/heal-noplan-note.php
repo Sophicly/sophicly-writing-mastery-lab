@@ -104,27 +104,59 @@ foreach ($rows as $r) {
     if (!$d || !isset($d['html'])) { $skipped++; echo "  ⚠️  {$r->user_id} {$r->meta_key} — could not decode, LEFT ALONE\n"; continue; }
     $html = (string) $d['html'];
 
-    if (strpos($html, 'data-section-type="noplan"') !== false && strpos($html, NOPLAN_MARK) !== false
-        && !preg_match('#<div[^>]*data-input-field="true"[^>]*>\s*' . preg_quote(NOPLAN_MARK, '#') . '#u', $html)) {
-        $already++; continue;   // already the v7.20.571 shape
-    }
+    // The three shapes the notice was actually found in on production. Each one is anchored on the
+    // notice's own fixed wording — it opens with NOPLAN_MARK and closes on "Do your best." — so no
+    // case has to guess where the student's writing starts.
+    //
+    //  1. WHOLE FIELD  — the notice is the entire content of an input field, the student never answered.
+    //  2. PREFIX       — the notice opens an input field the student HAS since answered in, separated
+    //                    from their writing by the <br>s it was prepended with. Only the notice and
+    //                    those breaks are removed; every word the student typed is kept.
+    //  3. PROSE        — the notice is italic prose inside a response section with no input field at
+    //                    all (the checklist questions). It was never in an answer box and never
+    //                    counted, but it sits in an editable section, so it is still moved into the
+    //                    read-only section the v7.20.571 template uses.
+    $re_whole  = '#(<div[^>]*data-input-field="true"[^>]*>)\s*(' . preg_quote(NOPLAN_MARK, '#') . '.*?Do your best\.)\s*(</div>)#us';
+    $re_prefix = '#(<div[^>]*data-input-field="true"[^>]*>)\s*(' . preg_quote(NOPLAN_MARK, '#') . '.*?Do your best\.)\s*(?:<br\s*/?>\s*)+#us';
+    $re_prose  = '#<p><em>\s*(' . preg_quote(NOPLAN_MARK, '#') . '.*?Do your best\.)\s*</em></p>#us';
 
-    // The notice as the ENTIRE content of an input field — the only case we touch.
-    $re = '#(<div[^>]*data-input-field="true"[^>]*>)\s*(' . preg_quote(NOPLAN_MARK, '#') . '.*?Do your best\.)\s*(</div>)#us';
-    if (!preg_match($re, $html, $m, PREG_OFFSET_CAPTURE)) {
-        // Present, but not as a whole field — a student may have typed around it.
+    // A notice already sitting in its own read-only noplan section is CORRECT, and its wording is
+    // identical to the broken copies — so a bare search finds it and would "heal" the fix itself,
+    // leaving an empty section and adding a second one. Blank those sections out before matching.
+    // The mask is the SAME LENGTH as what it covers, so every offset below still indexes $html.
+    $probe = preg_replace_callback('#<div[^>]*data-section-type="noplan".*?</div>#us',
+        static function ($mm) { return str_repeat(' ', strlen($mm[0])); }, $html);
+
+    if (preg_match($re_whole, $probe, $m, PREG_OFFSET_CAPTURE)) {
+        $kind = 'emptied the answer box';
+        $removed_words = swml_count_words(wp_strip_all_tags($m[2][0]));
+        $cut_at  = $m[1][1] + strlen($m[1][0]);          // just inside the field's opening tag
+        $cut_len = $m[3][1] - $cut_at;                   // …up to its closing tag
+    } elseif (preg_match($re_prefix, $probe, $m, PREG_OFFSET_CAPTURE)) {
+        $kind = 'took the notice off the front of the answer box, kept the student writing';
+        $removed_words = swml_count_words(wp_strip_all_tags($m[2][0]));
+        $cut_at  = $m[1][1] + strlen($m[1][0]);          // just inside the field's opening tag
+        $cut_len = ($m[0][1] + strlen($m[0][0])) - $cut_at;  // …notice + the <br>s, nothing after
+    } elseif (preg_match($re_prose, $probe, $m, PREG_OFFSET_CAPTURE)) {
+        $kind = 'moved the notice out of the editable section';
+        $removed_words = 0;   // never sat in an answer box, so it was never in the word count
+        $cut_at  = $m[0][1];
+        $cut_len = strlen($m[0][0]);
+    } elseif (strpos($html, 'data-section-type="noplan"') !== false) {
+        $already++; continue;   // already the v7.20.571 shape
+    } else {
+        // Present, but in a shape none of the three anchors matched — never guess at it.
         $mixed++;
-        echo "  ⚠️  {$r->user_id} {$r->meta_key} — notice present but NOT a whole field; LEFT ALONE for a human\n";
+        echo "  ⚠️  {$r->user_id} {$r->meta_key} — notice present in an unrecognised shape; LEFT ALONE for a human\n";
         continue;
     }
 
-    $removed_words = swml_count_words(wp_strip_all_tags($m[2][0]));
-    $html = preg_replace($re, '$1$3', $html, 1);
+    $html = substr($html, 0, $cut_at) . substr($html, $cut_at + $cut_len);
 
     // Put the notice back as its own read-only section, immediately before the response section
-    // that owns the field we just emptied.
-    $at  = $m[0][1];
-    $sec = strrpos(substr($html, 0, $at), '<div data-section-type="response"');
+    // that owns the field we just emptied. Everything before the cut is untouched, so the offset
+    // still points at the right place.
+    $sec = strrpos(substr($html, 0, $cut_at), '<div data-section-type="response"');
     if ($sec !== false) {
         $html = substr($html, 0, $sec) . $NOPLAN_SECTION . substr($html, $sec);
     } else {
@@ -133,7 +165,17 @@ foreach ($rows as $r) {
 
     $wc_old = (int) ($d['wordCount'] ?? 0);
     $wc_new = max(0, $wc_old - $removed_words);
-    echo sprintf("  ✔ %-5d %-58s words %d → %d  (removed %d)\n", $r->user_id, $r->meta_key, $wc_old, $wc_new, $removed_words);
+    echo sprintf("  ✔ %-5d %-58s words %d → %d  (removed %d)\n     %s\n",
+        $r->user_id, $r->meta_key, $wc_old, $wc_new, $removed_words, $kind);
+
+    // A document can carry the notice more than once. Each pass heals one, so say so out loud
+    // rather than reporting a clean run over a half-healed document. Mask again first — otherwise
+    // the section we just inserted counts itself and every document looks like it has a second one.
+    $rest = preg_replace_callback('#<div[^>]*data-section-type="noplan".*?</div>#us',
+        static function ($mm) { return str_repeat(' ', strlen($mm[0])); }, $html);
+    if (preg_match($re_whole, $rest) || preg_match($re_prefix, $rest) || preg_match($re_prose, $rest)) {
+        echo "     ⚠️  this document carries the notice more than once — re-run to heal the next one\n";
+    }
 
     if ($mode === 'apply') {
         update_user_meta($r->user_id, $r->meta_key . '_noplanheal_bak', wp_slash($raw));
