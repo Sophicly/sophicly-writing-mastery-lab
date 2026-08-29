@@ -3585,6 +3585,8 @@ class SWML_REST_API {
 
     /** G9 Core Skills = the single Mastery Codex doc. course_id confirmed staging+prod. */
     const CORE_SKILLS_COURSE_ID = 45624;
+    /** Creative Writing Masterclass. Its work is NOT canvas docs — see cw_words_for_user(). */
+    const CW_COURSE_ID = 41165;
     // The codex canvas doc is keyed board='all', text='g9_core_skills' (verified in live
     // data — NOT the legacy swml_canvas_mastery_codex key). Its words live in
     // `.swml-input-field` elements (getCodexWordCount), NOT its stored `wordCount` field
@@ -3672,8 +3674,65 @@ class SWML_REST_API {
     }
 
     /**
+     * Creative Writing words for a user, across all their CW projects.
+     *
+     * ⭐ CW WORK IS NOT A CANVAS DOCUMENT. Its artifacts live in `swml_cw_{project_id}`
+     * user meta as raw HTML strings, so the canvas reader below globs
+     * `swml_canvas_%` and finds NOTHING — and then answers `success:true, words:0`.
+     * A confident zero is what a caller believes. It is why the Summer Camp
+     * certificate told Yusra Kazi (1389) she had written 0 words while her project
+     * held 6,183 authored ones (Neil, 2026-08-29).
+     *
+     * The count is NOT re-implemented here. `Sophicly_WML_Listener::cw_project_word_count()`
+     * (sophicly-student-data) is the ONE authored-text rule — it strips the seeded
+     * `data-readonly` / `data-editable="false"` blocks that would otherwise count our
+     * own prompts as the student's writing. A second copy of that rule in this plugin
+     * would drift from it, and the two would disagree about the same student.
+     *
+     * @return array{words:int|null, projects:array, reason:string}
+     *         words === null means "cannot answer", never 0.
+     */
+    private function cw_words_for_user($user_id) {
+        if (!class_exists('Sophicly_WML_Listener')
+            || !method_exists('Sophicly_WML_Listener', 'cw_project_word_count')) {
+            return ['words' => null, 'projects' => [],
+                    'reason' => 'sophicly-student-data is not active, so the authored-text rule is unavailable'];
+        }
+        $raw  = get_user_meta($user_id, 'swml_cw_projects', true);
+        $list = is_string($raw) ? json_decode($raw, true) : $raw;
+        if (!is_array($list)) {
+            return ['words' => 0, 'projects' => [], 'reason' => 'no creative-writing projects'];
+        }
+        $total = 0; $projects = [];
+        foreach ($list as $pid => $meta) {
+            $id = is_array($meta) ? ($meta['id'] ?? $pid) : $pid;
+            if (!is_string($id) || $id === '') continue;
+            $w = Sophicly_WML_Listener::cw_project_word_count($user_id, $id);
+            if (!is_int($w) && !is_numeric($w)) continue;   // null = unreadable blob; skip, don't zero
+            $w = (int) $w;
+            $total += $w;
+            $projects[] = [
+                'id'    => $id,
+                'label' => is_array($meta) && !empty($meta['name']) ? $meta['name'] : $id,
+                'words' => $w,
+            ];
+        }
+        return ['words' => $total, 'projects' => $projects, 'reason' => ''];
+    }
+
+    /**
      * GET /words-written?course_id=X[&user_id=Y]
-     * → { success, course_id, words, documents:[{label,words,kind,topic,is_essay}], source }
+     * → { success, course_id, words, documents:[…], source,
+     *     cw_words, words_total, cw_projects:[…], cw_reason }
+     *
+     * ⚠️ `words` and `documents` stay CANVAS-ONLY on purpose. Three consumers already
+     * read them — sophicly-student-data's words_written_via_endpoint(), the components
+     * unit-recap shortcode, and the certificate recap — and student-data ALREADY folds
+     * the CW projects in from its own session_records rows. Adding CW into `words`
+     * would silently DOUBLE the dashboard's hero total for every CW student. So the
+     * CW figure arrives alongside, in `words_total`, and a consumer opts into it.
+     * (Convergence — student-data dropping its fold and reading `words_total` — is
+     * handed to the dashboard lane; it must not be done from here.)
      */
     public function get_words_written($request) {
         $course_id = absint($request->get_param('course_id'));
@@ -3682,28 +3741,47 @@ class SWML_REST_API {
         }
         $target = absint($request->get_param('user_id')) ?: get_current_user_id();
 
+        // Creative-writing projects are not tied to a course_id (a project carries
+        // course_context 'standalone'), so they are attributed to the CW course —
+        // which is the course whose certificate and recap report them.
+        $cw = ($course_id === self::CW_COURSE_ID)
+            ? $this->cw_words_for_user($target)
+            : ['words' => 0, 'projects' => [], 'reason' => ''];
+
+        /** Attach the CW figures to every response shape this endpoint can return. */
+        $with_cw = function (array $payload) use ($cw) {
+            $canvas = isset($payload['words']) ? (int) $payload['words'] : 0;
+            $payload['cw_words']    = $cw['words'];                       // null = could not answer
+            $payload['cw_projects'] = $cw['projects'];
+            $payload['cw_reason']   = $cw['reason'];
+            // words_total is what a consumer should show a student. It is null when the
+            // CW side could not be read, so nobody renders a total that quietly omits it.
+            $payload['words_total'] = (null === $cw['words']) ? null : $canvas + (int) $cw['words'];
+            return $payload;
+        };
+
         // ── Codex / Core Skills: ONE doc, count `.swml-input-field` words (getCodexWordCount).
         if ($course_id === self::CORE_SKILLS_COURSE_ID) {
             $raw  = get_user_meta($target, self::CODEX_CANVAS_KEY, true);
             $doc  = is_array($raw) ? $raw : self::decode_canvas_json($raw);
             $html = (is_array($doc) && isset($doc['html'])) ? $doc['html'] : '';
             $words = $this->codex_word_count($html);
-            return rest_ensure_response([
+            return rest_ensure_response($with_cw([
                 'success'   => true,
                 'course_id' => $course_id,
                 'words'     => $words,
                 'documents' => [['label' => 'Mastery Codex', 'words' => $words, 'kind' => 'codex', 'topic' => 0, 'is_essay' => false]],
                 'source'    => 'codex',
-            ]);
+            ]));
         }
 
         // ── Multi-doc course: sum the LATEST attempt per logical doc.
         $resolved = $this->resolve_course_to_text_board($course_id);
         if (!$resolved) {
-            return rest_ensure_response([
+            return rest_ensure_response($with_cw([
                 'success' => true, 'course_id' => $course_id, 'words' => 0,
                 'documents' => [], 'source' => 'unmapped',
-            ]);
+            ]));
         }
 
         global $wpdb;
@@ -3742,13 +3820,13 @@ class SWML_REST_API {
             ];
         }
 
-        return rest_ensure_response([
+        return rest_ensure_response($with_cw([
             'success'   => true,
             'course_id' => $course_id,
             'words'     => $total,
             'documents' => $documents,
             'source'    => 'canvas',
-        ]);
+        ]));
     }
 
     /**
