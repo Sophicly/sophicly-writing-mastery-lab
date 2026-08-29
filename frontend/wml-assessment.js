@@ -17001,6 +17001,15 @@
             // Silent SYSTEM sends (repairs, the filing directive) always reach the AI.
             if (!canvasSilentSend && _interceptClosingChain(msg)) return;
 
+            // v7.20.583 (#459): a Response box left empty while its Plan box holds the answer is
+            // caught HERE, before any turn — silent kickoffs included — can carry "NOT ATTEMPTED"
+            // to the marker. Code-served; no API call. Twin lives in the second pipeline.
+            if (_interceptMisfiledAnswers({
+                chatMessages, addChatMessage, history: canvasChatHistory,
+                resend: () => { canvasSilentSend = true; chatTextarea.value = msg; sendCanvasMessageQueued(); },
+                restoreInput: () => { chatTextarea.value = ''; chatTextarea.style.height = '40px'; },
+            })) return;
+
             // v7.19.244: Paragraph-boundary preflight. Runs once per assessment
             // chat (first user turn only) when an essay is present in the canvas.
             // Diagnostic phase = silent diagnosis only (no modal).
@@ -34927,6 +34936,7 @@
                     innerHTML: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Mark Complete',
                     title: 'Mark this lesson complete in LearnDash',
                     onClick: async () => {
+                        const _restLabel = markBtn.innerHTML;   // v7.20.583: restored verbatim if we hand the button back
                         markBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Completing\u2026';
                         markBtn.disabled = true;
                         // v7.20.308: record the completion against THIS CW project before handing
@@ -34939,6 +34949,17 @@
                         // fetch dies with the page. Raced against 2.5s so a slow or hung write can
                         // never hold LearnDash completion hostage \u2014 LD is the source of truth for
                         // completion, we are only mirroring it per-project.
+                        // v7.20.583 (#459): on a DIAGNOSTIC write, an answer left in a Plan box is
+                        // about to be frozen into the assessment snapshot as "not attempted". Ask
+                        // first. 'moved' hands the button back so they can read what moved.
+                        if ((state.task === 'diagnostic' || state.task === '') && !canvasInAssessment) {
+                            const _mf = await _confirmMisfiledBeforeComplete();
+                            if (_mf === 'moved') {
+                                markBtn.innerHTML = _restLabel;
+                                markBtn.disabled = false;
+                                return;
+                            }
+                        }
                         const _cwPid  = (window.WML && WML.state && WML.state.cwProjectId) || '';
                         const _cwStep = _cwCurrentStepNumber();
                         if (_cwPid && _cwStep) {
@@ -40145,6 +40166,13 @@
                             // v7.19.854: CLOSING CHAIN gate (mirrors primary pipeline) — code owns
                             // the turn while the engine-owned ending collects answers.
                             if (!canvasSilentSend && _interceptClosingChain(msg)) return;
+
+                            // v7.20.583 (#459) twin — DUAL CHAT PIPELINE rule: same intercept, same deps.
+                            if (_interceptMisfiledAnswers({
+                                chatMessages, addChatMessage, history: canvasChatHistory,
+                                resend: () => { canvasSilentSend = true; chatTextarea.value = msg; sendCanvasMessageQueued(); },
+                                restoreInput: () => { chatTextarea.value = ''; chatTextarea.style.height = '40px'; },
+                            })) return;
 
                             canvasChatLoading = true;
 
@@ -52035,6 +52063,202 @@
     // skip picking sections (statement label OR checklistItem child), exclude checklistItem text,
     // drop placeholder paragraphs + data-locked instruction blocks. Returns null when the model has
     // NO response sections → caller keeps the legacy DOM path (old docs without section types).
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.583 — THE MISFILED-ANSWER GUARD. FIXLIST #459 (Dwij Patel, 1215, 2026-08-29):
+    // "I wrote my response in the response plan box and the AI is not detecting anything in
+    // the response box." Neil: "we've been through this many, many, many times… find the
+    // root issue and the root solution… and make a gate for it."
+    //
+    // THE ROOT, measured on his real doc, not reconstructed: he typed his whole Q2–Q5 answers
+    // (127 · 120 · 323 · 383 words) into the PLAN boxes and left every RESPONSE box empty.
+    // Nothing is wrong with the reader — getResponseText() faithfully reports
+    // "Q2 RESPONSE — NOT ATTEMPTED (empty)", the protocol faithfully marks 0/8, and Sophia
+    // faithfully says "I go by what's logged" TWICE while he tells her where his answer is.
+    // Every part is correct and the student is stuck with 850 words nobody will mark — a
+    // refusal with no way forward, which §4d makes unreachable by construction.
+    //
+    // THE ROOT SOLUTION is deterministic and costs no API call: BEFORE any assessment turn is
+    // sent, look at the document. A question whose Response box is EMPTY while its Plan box
+    // holds PROSE is misfiled. Say so, in a code-served turn, with two chips:
+    //   [Move it into the Response box]  — one PM transaction, then scroll them to it
+    //   [It really is just a plan]       — mark as unanswered, and never re-ask
+    // The same predicate guards the SOURCE: the diagnostic's Mark Complete confirms before
+    // the answer freezes into the assessment snapshot (that freeze is why Dwij's own later
+    // fix in the diagnostic never reached the assessment — reseed-until-marked had already
+    // marked Q1).
+    //
+    // WHAT "PROSE" MEANS, so a real plan is never flagged: ≥ MISFILED_MIN_WORDS words AND at
+    // least one sentence of ≥ 12 words. Dwij's real plans were 8–50 words of notes; his
+    // answers 109–334 words of sentences. A false positive costs one tap; a miss costs a
+    // student their marks.
+    //
+    // Gate: bin/misfiled-answer-gate.js — proves the predicate on his doc shape, the move,
+    // both pipelines' intercepts, the payload note, and the diagnostic pre-check; and fails
+    // when any one of them is removed.
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    const MISFILED_MIN_WORDS = 60;
+    const MISFILED_MIN_SENTENCE = 12;
+
+    function _fieldTextFromNode(n) {
+        if (!n) return '';
+        const t = (n.textContent || '').trim();
+        if (!t || _WC_PLACEHOLDERS.indexOf(t.toLowerCase()) !== -1) return '';
+        return t;
+    }
+    function _wordsIn(t) { return t ? t.split(/\s+/).filter(Boolean).length : 0; }
+    function _looksLikeProse(t) {
+        if (_wordsIn(t) < MISFILED_MIN_WORDS) return false;
+        return t.split(/[.!?]+\s/).some(sent => _wordsIn(sent) >= MISFILED_MIN_SENTENCE);
+    }
+
+    /**
+     * Every Language question whose Response box is empty while its Plan box holds prose.
+     * Pure doc-model walk (the render DOM can double under a redraw storm — v7.20.164).
+     * @returns {{qId:string, planFieldIds:string[], responseFieldId:string, planWords:number}[]}
+     */
+    function _misfiledAnswersInDoc(editor) {
+        const out = [];
+        if (!editor || !editor.state || !editor.state.doc) return out;
+        const plans = {}, responses = {};
+        editor.state.doc.descendants(n => {
+            if (!n.type || n.type.name !== 'inputField' || !n.attrs || !n.attrs.fieldId) return true;
+            const fid = String(n.attrs.fieldId);
+            let m;
+            if ((m = fid.match(/^plan-(Q\d+)-/i))) {
+                const q = m[1].toUpperCase();
+                (plans[q] = plans[q] || { ids: [], text: '' });
+                plans[q].ids.push(fid);
+                plans[q].text += ' ' + _fieldTextFromNode(n);
+            } else if ((m = fid.match(/^(Q\d+)-response$/i))) {
+                responses[m[1].toUpperCase()] = { id: fid, text: _fieldTextFromNode(n) };
+            }
+            return false;
+        });
+        Object.keys(plans).forEach(q => {
+            const r = responses[q];
+            if (!r || _wordsIn(r.text) > 0) return;
+            const planText = plans[q].text.trim();
+            if (!_looksLikeProse(planText)) return;
+            out.push({ qId: q, planFieldIds: plans[q].ids, responseFieldId: r.id, planWords: _wordsIn(planText) });
+        });
+        return out.sort((a, b) => parseInt(a.qId.slice(1), 10) - parseInt(b.qId.slice(1), 10));
+    }
+
+    /** Move a misfiled answer: plan text → response box, plan box emptied. One undoable txn. */
+    function _moveMisfiledAnswer(hit) {
+        if (!canvasEditor || !hit) return false;
+        let text = '';
+        canvasEditor.state.doc.descendants(n => {
+            if (n.type && n.type.name === 'inputField' && n.attrs && hit.planFieldIds.indexOf(n.attrs.fieldId) !== -1) {
+                text += (text ? '\n\n' : '') + _fieldTextFromNode(n);
+                return false;
+            }
+            return true;
+        });
+        if (!text) return false;
+        if (!_setInputFieldText(hit.responseFieldId, text)) return false;
+        hit.planFieldIds.forEach(id => _setInputFieldText(id, ''));
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+        return true;
+    }
+
+    // Dismissals live per document for the session: "it really is just a plan" must not be
+    // re-asked on the next turn, and must not survive into a different attempt or lesson.
+    function _misfiledDismissKey() {
+        try { const sc = WML.canvasDocScope(); return 'swml_misfiled_ok_' + [sc.board, sc.text, sc.topic, sc.suffix || '', state.attempt || 1].join('|'); }
+        catch (_) { return 'swml_misfiled_ok_' + (state.task || ''); }
+    }
+    function _misfiledDismissed() { try { return JSON.parse(sessionStorage.getItem(_misfiledDismissKey()) || '[]'); } catch (_) { return []; } }
+    function _misfiledDismiss(qIds) {
+        try { sessionStorage.setItem(_misfiledDismissKey(), JSON.stringify(Array.from(new Set(_misfiledDismissed().concat(qIds))))); } catch (_) {}
+    }
+    function _misfiledPending(editor) {
+        const done = _misfiledDismissed();
+        return _misfiledAnswersInDoc(editor).filter(h => done.indexOf(h.qId) === -1);
+    }
+
+    /**
+     * The intercept, shared by BOTH canvas pipelines (DUAL CHAT PIPELINE rule). Returns true when
+     * it served a turn — the caller must then NOT send. Deps are the pipeline's closure-locals.
+     * The turn is durable:false — it asserts a present state of the document and must never be
+     * replayed after that state has changed (§4c.7, the fossil law).
+     */
+    function _interceptMisfiledAnswers(deps) {
+        const { chatMessages, addChatMessage, resend, restoreInput, history } = deps;
+        if (state.task !== 'assessment' || !canvasEditor) return false;
+        if (!(WML && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject())) return false;
+        const hits = _misfiledPending(canvasEditor);
+        if (!hits.length) return false;
+
+        const list = hits.map(h => `<strong>${h.qId}</strong> (${h.planWords} words)`).join(', ');
+        const many = hits.length > 1;
+        const html = `<p>Before I mark anything — your ${many ? 'answers for ' + list + ' are' : 'answer for ' + list + ' is'} sitting in the <strong>Plan</strong> box${many ? 'es' : ''}, and the <strong>Response</strong> box${many ? 'es are' : ' is'} empty.</p>`
+            + `<p>I can only mark what is in the Response box. Shall I move ${many ? 'them' : 'it'} across for you?</p>`;
+        addChatMessage(html, 'ai', html.replace(/<[^>]+>/g, ''));
+        try { if (history) WML.recordTurn(history, { role: 'assistant', content: html }, { durable: false, why: 'asserts the CURRENT state of the plan/response boxes — re-derived on every send, never replayed' }); } catch (_) {}
+
+        const bubble = chatMessages.lastElementChild;
+        const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : chatMessages;
+        const bar = el('div', { className: 'swml-quick-actions' });
+        const mk = (label, fn) => el('button', { className: 'swml-quick-btn', textContent: label, onClick: () => { bar.remove(); fn(); } });
+        bar.appendChild(mk(`✓ Move ${many ? 'them' : 'it'} into the Response box${many ? 'es' : ''}`, () => {
+            const moved = hits.filter(h => _moveMisfiledAnswer(h));
+            const first = moved[0] && document.querySelector('[data-field-id="' + moved[0].responseFieldId + '"]');
+            if (first) _swmlScrollToTop(first.closest('.swml-section-block') || first, 24);
+            const note = moved.length
+                ? `<p>Done — ${moved.map(h => h.qId).join(', ')} moved into the Response box${moved.length > 1 ? 'es' : ''}. Have a quick look, then we'll carry on.</p>`
+                : `<p>I couldn't move that automatically — cut it from the Plan box and paste it into the Response box, then send again.</p>`;
+            addChatMessage(note, 'ai', note.replace(/<[^>]+>/g, ''));
+            const go = el('div', { className: 'swml-quick-actions' });
+            go.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✓ Looks right — carry on', onClick: () => { go.remove(); resend(); } }));
+            const b2 = chatMessages.lastElementChild; (b2 ? (b2.querySelector('.swml-bubble-content') || b2) : chatMessages).appendChild(go);
+        }));
+        bar.appendChild(mk(many ? 'They really are just plans — mark as unanswered' : 'It really is just a plan — mark as unanswered', () => {
+            _misfiledDismiss(hits.map(h => h.qId));
+            resend();
+        }));
+        bc.appendChild(bar);
+        if (typeof restoreInput === 'function') restoreInput();
+        try { console.log('[WML misfiled-answer] intercepted', hits.map(h => h.qId + ':' + h.planWords + 'w').join(' ')); } catch (_) {}
+        return true;
+    }
+
+    /** Diagnostic-side confirm, before the answer freezes into the assessment snapshot. */
+    function _confirmMisfiledBeforeComplete() {
+        return new Promise(resolve => {
+            const hits = canvasEditor ? _misfiledAnswersInDoc(canvasEditor) : [];
+            if (!hits.length) { resolve('proceed'); return; }
+            const prev = document.body.style.overflow;
+            const overlay = document.createElement('div');
+            overlay.className = 'swml-structure-modal-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px;overscroll-behavior:contain;overflow:hidden;';
+            const card = document.createElement('div');
+            card.style.cssText = 'background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.4);font-family:inherit;color:#1a1a1a;overscroll-behavior:contain;';
+            const many = hits.length > 1;
+            card.innerHTML = '<h2 style="margin:0 0 14px 0;font-size:1.3em;color:#2c003e;line-height:1.3;">Your answer is in the Plan box</h2>'
+                + '<p style="margin:0 0 12px 0;line-height:1.5;">' + hits.map(h => '<strong>' + h.qId + '</strong> has ' + h.planWords + ' words in its Plan box and nothing in its Response box').join('; ') + '.</p>'
+                + '<p style="margin:0 0 18px 0;line-height:1.5;">Only the <strong>Response</strong> box gets marked. If ' + (many ? 'these are your answers' : 'this is your answer') + ', move ' + (many ? 'them' : 'it') + ' now — once you mark this complete it is sent for marking as it is.</p>'
+                + '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">'
+                + '<button data-act="plan" style="padding:10px 16px;border-radius:10px;border:none;background:#eee;cursor:pointer;">' + (many ? 'They are just plans — continue' : 'It is just a plan — continue') + '</button>'
+                + '<button data-act="move" style="padding:10px 16px;border-radius:10px;border:none;background:#5333ed;color:#fff;cursor:pointer;font-weight:600;">Move ' + (many ? 'them' : 'it') + ' into the Response box' + (many ? 'es' : '') + '</button>'
+                + '</div>';
+            const close = (v) => { overlay.remove(); document.body.style.overflow = prev; resolve(v); };
+            card.querySelector('[data-act="move"]').onclick = () => {
+                const moved = hits.filter(h => _moveMisfiledAnswer(h));
+                const first = moved[0] && document.querySelector('[data-field-id="' + moved[0].responseFieldId + '"]');
+                if (first) _swmlScrollToTop(first.closest('.swml-section-block') || first, 24);
+                close('moved');   // let them read it — the completion button is handed back untouched
+            };
+            card.querySelector('[data-act="plan"]').onclick = () => close('proceed');
+            overlay.addEventListener('wheel', e => { if (e.target === overlay) e.preventDefault(); }, { passive: false });
+            overlay.addEventListener('touchmove', e => { if (e.target === overlay) e.preventDefault(); }, { passive: false });
+            overlay.appendChild(card);
+            document.body.style.overflow = 'hidden';
+            document.body.appendChild(overlay);
+        });
+    }
+
     function _responseWordCountFromDoc(editor) {
         if (!editor || !editor.state || !editor.state.doc) return null;
         let total = 0, sawResponse = false;
@@ -52731,7 +52955,21 @@
                 const qWords = paras.length ? paras.join(' ').split(/\s+/).filter(Boolean).length : 0;
                 _lastQWordCounts[qId] = qWords;   // v7.19.841: auditor's Q5-ceiling source
                 if (!paras.length) {
-                    parts.push(`=== ${qId} RESPONSE — NOT ATTEMPTED (empty) ===`);
+                    // v7.20.583 (#459): if the answer is sitting in the PLAN box, the marker is
+                    // told so — otherwise it insists "I go by what's logged" while the student
+                    // insists they wrote it, and both are right. The intercept upstream offers
+                    // the move; this line covers the student who declined it.
+                    let _planNote = '';
+                    try {
+                        let _pw = 0;
+                        liveEditorEl.querySelectorAll('[data-section-type="plan"]').forEach(ps => {
+                            const pl = ps.getAttribute('data-section-label') || '';
+                            if (!new RegExp('\\b' + qId + '\\b', 'i').test(pl)) return;
+                            _pw += ((ps.textContent || '').trim().split(/\s+/).filter(Boolean).length);
+                        });
+                        if (_pw >= MISFILED_MIN_WORDS) _planNote = ` — NOTE: the student's PLAN box for ${qId} holds ${_pw} words; they were offered to move it into the Response box and declined, so mark ${qId} as unanswered but do NOT tell them nothing was written`;
+                    } catch (_) {}
+                    parts.push(`=== ${qId} RESPONSE — NOT ATTEMPTED (empty)${_planNote} ===`);
                     return;
                 }
                 if (isRetrievalQ) {

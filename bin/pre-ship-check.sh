@@ -144,6 +144,15 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/ladder-sim-harness.js || fail=1
 fi
 
+# v7.20.583 (#459): MISFILED-ANSWER GATE. A student's answer typed into the PLAN box (Dwij, 1215)
+# reached the marker as "NOT ATTEMPTED" and was refused twice with no way forward. The guard is
+# code-served in BOTH canvas pipelines, plus the diagnostic's completion button; this proves the
+# predicate on his real document shape, the move, both intercepts, the payload note, and liveness.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|misfiled-answer-gate\.js'; then
+  node bin/misfiled-answer-gate.js || fail=1
+fi
+
 # v7.20.296: CW STEP-6 OUTLINE WALK GATE. The walk and the doc builder must agree on every one of
 # 801 row ids (§5d key-match, §5e granularity), the technique chips must name symbols the DEPLOYED
 # table actually carries, the guide deep-links must resolve, and the concept map must cover the rows
