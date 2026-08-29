@@ -207,6 +207,29 @@ console.log('\n7 · liveness — every screen the guard leaves has a way forward
     ok(/couldn't move that automatically/.test(fn), 'a failed move says so and says what to do — never a silent no-op');
 }
 
+console.log('\n8 · the student is TOLD, live, while they type (v7.20.584 — Neil: "let them know"):');
+{
+    const paint = SRC.slice(SRC.indexOf('function _renderTransferButtons'), SRC.indexOf("// \"Transfer All\" on the PLAN / OUTLINE dividers"));
+    ok(/if \(sectionType === 'plan'\) r\.appendChild\(_mkMisfiledNote\(label\)\)/.test(paint), 'every PLAN row is painted with the notice (hidden) alongside its ↓ transfer button');
+    ok(/_refreshMisfiledNotices\(\);/.test(paint), 'and the notice state is refreshed on every control-row rebuild (mount cadence)');
+    const typing = SRC.slice(SRC.indexOf('_typingUiRefreshTimer = setTimeout('), SRC.indexOf('_typingUiRefreshTimer = setTimeout(') + 600);
+    ok(/_refreshMisfiledNotices\(\)/.test(typing), 'and on the typing-refresh cadence — it appears WHILE they type, not after they submit');
+    const mk = extractFunction('_mkMisfiledNote');
+    ok(/only the Response box below gets marked/.test(mk), 'the notice says, in plain words, that only the Response box is marked');
+    ok(/Move it into the Response box/.test(mk) && /_moveMisfiledAnswer\(hit\)/.test(mk), 'with a one-tap move that uses the SAME move as the chat intercept (one mechanism)');
+    ok(/contenteditable', 'false'/.test(mk) && /mousedown/.test(mk), 'the control cannot steal the caret or become document text');
+    const rf = extractFunction('_refreshMisfiledNotices');
+    ok(/state\.task === 'diagnostic' \|\| state\.task === '' \|\| state\.task === 'assessment'/.test(rf), 'scoped to diagnostic + assessment docs');
+    ok(!/'planning'/.test(rf), 'never a PLANNING lesson, where prose in the plan box is the point');
+    ok(/if \(note\.style\.display !== want\)/.test(rf), 'writes are idempotent (PM law rule 4) — a same-value write cannot fire a mutation record');
+    ok(/\.swml-misfiled-note/.test(rf) && !/contentDOM|\.swml-input-field/.test(rf), 'it touches only the firewalled ctl-row notice, never the editable content');
+    const css = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-canvas.css'), 'utf8');
+    ok(/\.swml-misfiled-note\s*\{/.test(css) && /\.swml-misfiled-note-btn\s*\{/.test(css), 'the notice and its button are styled');
+    ok(!/\.swml-misfiled-note\s*\{[^}]*border:\s*1px/.test(css), 'with no outline stroke (house rule)');
+    ok(/Plan only — notes and quotes\. Write your answer in the Response box below\./.test(SRC), 'the plan box prompt itself says where the answer goes');
+    ok((SRC.match(/write the paragraph itself in the Response box below/g) || []).length === 2, 'and so do both per-paragraph plan prompts');
+}
+
 console.log('\n' + (checks - fails) + '/' + checks + ' passed.');
 if (INJECT) {
     if (!fails) { console.error('\n⛔ GATE IS BLIND: removing the intercept did not fail it.'); process.exit(1); }

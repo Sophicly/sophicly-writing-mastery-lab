@@ -45521,6 +45521,7 @@
                     if (!canvasEditor) return; // canvas torn down before the pass fired
                     updateOutline();
                     updateCommentCount();
+                    try { _refreshMisfiledNotices(); } catch (_) {}   // v7.20.584 (#459): live "this is your plan" notice
                 }, 300);
             },
             onTransaction: ({ editor, transaction }) => {
@@ -48755,9 +48756,19 @@
                     if (!row) return; // NodeView not mounted yet — its mount fill re-runs this
                     const label = section.getAttribute('data-section-label') || '';
                     row.classList.add('swml-ctl-row-transfer'); // right-align the ↓
-                    _paint(row, 'transfer|' + sectionType + '|' + label, (r) => r.appendChild(_mkTransferBtn(label, sectionType)));
+                    _paint(row, 'transfer|' + sectionType + '|' + label, (r) => {
+                        // v7.20.584 (#459, Neil: "is there any way we can let them know it's gonna
+                        // mark the response area, not the planning area?"). A PLAN row carries a
+                        // live notice, hidden until the box holds prose while its Response box is
+                        // empty — the exact state Dwij typed 850 words into. Painted once with
+                        // the ↓ (same one-shot sig), toggled by _refreshMisfiledNotices. Lives in
+                        // the PM-firewalled ctl-row, so showing it is never a foreign mutation.
+                        if (sectionType === 'plan') r.appendChild(_mkMisfiledNote(label));
+                        r.appendChild(_mkTransferBtn(label, sectionType));
+                    });
                 });
             });
+            _refreshMisfiledNotices();
             // "Transfer All" on the PLAN / OUTLINE dividers (their NodeView now mounts a ctlRow).
             // v7.20.182 (Neil 4a): on an OUTLINE-bearing doc the plan→response "Transfer All" is
             // legacy — it skips the outline (element-box) step the student is meant to work. Detect
@@ -52222,6 +52233,58 @@
         if (typeof restoreInput === 'function') restoreInput();
         try { console.log('[WML misfiled-answer] intercepted', hits.map(h => h.qId + ':' + h.planWords + 'w').join(' ')); } catch (_) {}
         return true;
+    }
+
+    /** The live in-document notice for a PLAN row (built hidden; _refreshMisfiledNotices shows it). */
+    function _mkMisfiledNote(sectionLabel) {
+        const note = document.createElement('span');
+        note.className = 'swml-misfiled-note';
+        note.setAttribute('contenteditable', 'false');
+        note.dataset.planLabel = sectionLabel;
+        note.style.display = 'none';
+        const txt = document.createElement('span');
+        txt.className = 'swml-misfiled-note-text';
+        txt.textContent = 'This box is your plan — only the Response box below gets marked.';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'swml-misfiled-note-btn';
+        btn.setAttribute('contenteditable', 'false');
+        btn.textContent = 'Move it into the Response box';
+        btn.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
+        btn.addEventListener('click', e => {
+            e.preventDefault(); e.stopPropagation();
+            const hit = _misfiledAnswersInDoc(canvasEditor).find(h => h.qId === (note.dataset.qId || ''));
+            if (!hit || !_moveMisfiledAnswer(hit)) return;
+            const target = document.querySelector('[data-field-id="' + hit.responseFieldId + '"]');
+            if (target) _swmlScrollToTop(target.closest('.swml-section-block') || target, 24);
+            _refreshMisfiledNotices();
+        });
+        note.appendChild(txt); note.appendChild(btn);
+        return note;
+    }
+
+    /**
+     * Show the notice on every plan box that currently holds a misfiled answer; hide the rest.
+     * Idempotent writes only (PM law rule 4). Runs on the typing-refresh cadence and on every
+     * control-row rebuild. Diagnostic + assessment docs only — a PLANNING lesson's plan box is
+     * where prose belongs, so it is never flagged there.
+     */
+    function _refreshMisfiledNotices() {
+        const editor = document.getElementById('swml-tiptap-editor');
+        if (!editor || !canvasEditor) return;
+        const inScope = (state.task === 'diagnostic' || state.task === '' || state.task === 'assessment')
+            && WML && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject();
+        const hits = inScope ? _misfiledAnswersInDoc(canvasEditor) : [];
+        editor.querySelectorAll('.swml-misfiled-note').forEach(note => {
+            const lab = note.dataset.planLabel || '';
+            const m = lab.match(/\b(Q\d+)\b/i);
+            const hit = m ? hits.find(h => h.qId === m[1].toUpperCase()) : null;
+            const want = hit ? '' : 'none';
+            if (note.dataset.qId !== (hit ? hit.qId : '')) note.dataset.qId = hit ? hit.qId : '';
+            if (note.style.display !== want) note.style.display = want;
+            const row = note.parentElement;
+            if (row && hit && row.style.display === 'none') row.style.display = 'flex';
+        });
     }
 
     /** Diagnostic-side confirm, before the answer freezes into the assessment snapshot. */
@@ -56917,7 +56980,7 @@
                 const _isDiagnosticDoc = mode !== 'redraft';
                 if (_isDiagnosticDoc && !isCWCourse) {
                     html += sectionHTML('plan', `Plan \u2014 ${qId}`, true, null,
-                        inputHTML('Plan your response.', `plan-${qId}-para-1`));
+                        inputHTML('Plan only — notes and quotes. Write your answer in the Response box below.', `plan-${qId}-para-1`));
                 } else {
                 // v7.19.250: Language PAPER 1 Q5 (40-mark Section B fiction writing) is creative
                 // writing pedagogically, but state.subject is 'language1' / 'language_p1' (not
@@ -56958,7 +57021,7 @@
                     const planParas = Math.max(1, Math.ceil(qMarks / 5));
                     for (let i = 1; i <= planParas; i++) {
                         html += sectionHTML('plan', `Plan: Paragraph ${i} \u2014 ${qId}`, true, null,
-                            inputHTML(`Key points for paragraph ${i}`, `plan-${qId}-para-${i}`));
+                            inputHTML(`Key points for paragraph ${i} — write the paragraph itself in the Response box below`, `plan-${qId}-para-${i}`));
                     }
                 }
                 } // end REDRAFT plan builders (v7.20.110 — diagnostic took the single-area branch)
@@ -63610,7 +63673,7 @@
                 const planParas = Math.max(1, Math.ceil(qMarks / 5));
                 for (let i = 1; i <= planParas; i++) {
                     planHTML += sectionHTML('plan', `Plan: Paragraph ${i} \u2014 ${qId}`, true, null,
-                        inputHTML(`Key points for paragraph ${i}`, `plan-${qId}-para-${i}`));
+                        inputHTML(`Key points for paragraph ${i} — write the paragraph itself in the Response box below`, `plan-${qId}-para-${i}`));
                 }
             }
 
