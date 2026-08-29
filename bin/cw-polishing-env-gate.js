@@ -108,6 +108,63 @@ ok('a step with no env falls back to its tier', cfg('cw_step_11').environment ==
 ok('`env` beats `tier` — Step 14 is tier si yet is NOT the si config',
     WML.getCwStepDef('cw_step_14').tier === 'si' && cfg('cw_step_14').environment !== 'training');
 
+// ── The cross-language check. The JS decides the ENVIRONMENT, the PHP decides the PROTOCOL, and a
+// step that has one without the other is broken in a way neither side can see: flip the env with no
+// router row and Sophia opens with no rubric behind her; add the router row with no env flip and
+// the coaching protocol loads into a lesson that is still a walk. This is the §5d write-key /
+// read-key mismatch across two languages, so it is asserted, not remembered.
+console.log('\nThe JS environment and the PHP router agree about which steps polish:');
+const ROUTER = fs.readFileSync(path.join(ROOT, 'includes/class-protocol-router.php'), 'utf8');
+
+const lensBlock = ROUTER.match(/\$cw_polishing_lenses\s*=\s*\[([\s\S]*?)\];/);
+ok('the router declares a $cw_polishing_lenses map', !!lensBlock);
+const phpPolishing = lensBlock
+    ? [...lensBlock[1].matchAll(/'(cw_step_\d+)'\s*=>\s*'([a-z_]+)'/g)].map(m => ({ task: m[1], lens: m[2] }))
+    : [];
+const jsPolishing = WML.CW_STEPS.filter(s => s.env === 'polishing').map(s => ({ task: 'cw_step_' + s.step, lens: s.lens }));
+
+ok('both sides list the SAME steps',
+    JSON.stringify(phpPolishing.map(p => p.task).sort()) === JSON.stringify(jsPolishing.map(j => j.task).sort()),
+    { php: phpPolishing.map(p => p.task), js: jsPolishing.map(j => j.task) });
+
+for (const j of jsPolishing) {
+    const p = phpPolishing.find(x => x.task === j.task);
+    ok(`${j.task}: the lens matches on both sides (${j.lens})`, !!p && p.lens === j.lens,
+        { js: j.lens, php: p ? p.lens : 'MISSING' });
+}
+
+// A polishing step must NOT also be in the walk-protocol map, or its old teaching walk loads.
+const mapBlock = ROUTER.match(/\$cw_protocol_map\s*=\s*\[([\s\S]*?)\];/);
+ok('the router still declares $cw_protocol_map', !!mapBlock);
+const mapped = mapBlock ? [...mapBlock[1].matchAll(/'(cw_step_\d+|cw_trial_\d+)'\s*=>/g)].map(m => m[1]) : [];
+for (const j of jsPolishing) {
+    ok(`${j.task} is NOT in the walk-protocol map — its old walk can never be narrated (§5)`,
+        !mapped.includes(j.task), mapped.includes(j.task) ? 'still mapped' : undefined);
+}
+ok('every OTHER CW step still has a protocol file mapped',
+    WML.CW_STEPS.filter(s => s.step && s.env !== 'polishing' && s.tier !== 'workbook')
+        .every(s => mapped.includes('cw_step_' + s.step)),
+    WML.CW_STEPS.filter(s => s.step && s.env !== 'polishing' && s.tier !== 'workbook')
+        .filter(s => !mapped.includes('cw_step_' + s.step)).map(s => s.step));
+
+console.log('\nThe files the polishing protocol is assembled from all exist:');
+for (const rel of [
+    'protocols/shared/modules/inline-coaching-core.md',
+    'protocols/shared/modules/inline-coaching-engine-1.md',
+    'protocols/shared/modules/rubrics/rubric-base.md',
+    'protocols/shared/modules/rubrics/rubric-cw-narrative.md',
+]) {
+    ok(rel.split('/').pop() + ' is on disk', fs.existsSync(path.join(ROOT, rel)));
+}
+
+const RUBRIC = fs.existsSync(path.join(ROOT, 'protocols/shared/modules/rubrics/rubric-cw-narrative.md'))
+    ? fs.readFileSync(path.join(ROOT, 'protocols/shared/modules/rubrics/rubric-cw-narrative.md'), 'utf8') : '';
+ok('the CW rubric forbids marking — polishing coaches, it never grades',
+    /YOU DO NOT MARK IN THIS LESSON/.test(RUBRIC));
+ok('…and it carries a section for every lens the JS declares',
+    jsPolishing.every(j => new RegExp('Lens `' + j.lens + '`').test(RUBRIC)),
+    jsPolishing.filter(j => !new RegExp('Lens `' + j.lens + '`').test(RUBRIC)).map(j => j.lens));
+
 console.log('');
 if (fail) { console.log(`❌ cw-polishing-env-gate FAILED (${fail})`); process.exit(1); }
 console.log(`✅ cw-polishing-env-gate passed  (${pass} assertions, 0 failed)`);

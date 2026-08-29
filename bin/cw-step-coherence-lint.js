@@ -67,16 +67,28 @@ const labelBlock = slice(ROUTER, /'cw_step_1' => '/, /\];/);
 const labelMap = {};
 for (const m of labelBlock.matchAll(/'(cw_step_\d+)'\s*=>\s*'([^']+)'/g)) labelMap[m[1]] = m[2];
 
+// v7.20.578: a POLISHING step deliberately has NO protocol file. It is served by the router's
+// $cw_polishing_lenses map instead, and its own CW-STEP-NN markdown is withheld ON PURPOSE — that
+// file is the old teaching walk, and whole files reach the model's context, so leaving it mapped
+// means it gets narrated at a student who is supposed to be polishing (WML CLAUDE.md §5). So these
+// steps are exempt HERE, and asserted separately by bin/cw-polishing-env-gate.js, which checks the
+// stronger thing: that they are absent from this map AND present in the lens map, on both sides.
+const polishingBlock = slice(ROUTER, /\$cw_polishing_lenses\s*=\s*\[/, /\];/);
+const polishingTasks = [...polishingBlock.matchAll(/'(cw_step_\d+)'\s*=>/g)].map(m => m[1]);
+if (polishingTasks.length) ok(`${polishingTasks.length} polishing step(s) served by the lens map, not a walk file: [${polishingTasks}]`);
+
 let missingFile = 0, missingMap = 0;
 for (const s of steps) {
     const task = 'cw_step_' + s.n;
+    if (polishingTasks.includes(task)) continue;
     if (!fileMap[task]) { fail(`${task} (${s.label}) is in CW_STEPS but has NO protocol file mapped`); missingMap++; continue; }
     if (!fs.existsSync(path.join(PROTO_DIR, fileMap[task]))) { fail(`${task} maps to ${fileMap[task]} — FILE DOES NOT EXIST`); missingFile++; }
 }
-if (!missingMap && !missingFile) ok(`every one of the ${steps.length} steps maps to a protocol file that exists`);
+if (!missingMap && !missingFile) ok(`every non-polishing step maps to a protocol file that exists (${steps.length - polishingTasks.length} of ${steps.length})`);
 
 const fileTasks = Object.keys(fileMap).sort();
-const labelTasks = Object.keys(labelMap).sort();
+// The label map still names a polishing step — labels are display text and are wanted everywhere.
+const labelTasks = Object.keys(labelMap).filter(t => !polishingTasks.includes(t)).sort();
 const onlyFile = fileTasks.filter(t => !labelTasks.includes(t));
 const onlyLabel = labelTasks.filter(t => !fileTasks.includes(t));
 if (onlyFile.length || onlyLabel.length) {

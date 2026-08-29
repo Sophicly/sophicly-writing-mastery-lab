@@ -2040,6 +2040,57 @@ class SWML_Protocol_Router {
             return null;
         }
 
+        // ── Creative Writing: POLISHING steps (v7.20.578) ─────────────────────────────────────
+        // Neil, 2026-08-27: from Draft 2 onward a draft step is a POLISHING environment — the
+        // student selects a passage and asks about that passage — not a teaching walk.
+        //
+        // ⛔ These steps therefore do NOT load their own CW-STEP-NN markdown. That file is the old
+        // Socratic workshop, and whole files are loaded into the model's context, so leaving it
+        // loadable means it gets narrated at the student no matter what any instruction says — the
+        // retained-source law (WML CLAUDE.md §5, proved by the Piece-2 port at v7.20.250). They
+        // load the shared inline-coaching stack plus a CW rubric instead: the same shape exam_crib
+        // uses, with rubric-cw-narrative.md in place of the Literature one.
+        //
+        // ⚠️ THE LENS IS THE ONLY PER-STEP DATA. Drafts 3-7 join by adding a row HERE and removing
+        // their row from $cw_protocol_map below — a step must appear in exactly ONE of the two
+        // maps. bin/cw-polishing-env-gate.js asserts that, and asserts this list matches the steps
+        // declaring env:'polishing' in CW_STEPS on the JS side, so the two languages cannot drift.
+        $cw_polishing_lenses = [
+            'cw_step_14' => 'character_arc',
+        ];
+        if (isset($cw_polishing_lenses[$task])) {
+            $modules_dir = $plugin_dir . 'protocols/shared/modules/';
+            $rubrics_dir = $modules_dir . 'rubrics/';
+            $files_to_load = [
+                $modules_dir . 'inline-coaching-core.md',
+                $modules_dir . 'inline-coaching-engine-1.md',
+                $rubrics_dir . 'rubric-base.md',
+                $rubrics_dir . 'rubric-cw-narrative.md',
+            ];
+            $parts = [];
+            foreach ($files_to_load as $f) {
+                if (file_exists($f)) {
+                    $parts[] = file_get_contents($f);
+                } else {
+                    error_log("WML Router: CW polishing module missing at {$f}");
+                }
+            }
+            if (empty($parts)) {
+                error_log("WML Router: CW polishing loaded zero modules for '{$task}' — protocol empty");
+                return null;
+            }
+            // Name the lens explicitly, so the model coaches THIS draft's layer and not a later
+            // one. The rubric lists every lens; only the step knows which is live.
+            $lens = $cw_polishing_lenses[$task];
+            $parts[] = "## THIS LESSON'S LENS\n\nCoach the selected passage through the lens "
+                . "`{$lens}` and no other. A layer belonging to a later draft is one the student "
+                . "has not been taught yet — do not raise it.";
+            $content = implode("\n\n---\n\n", $parts);
+            error_log("WML Router: Loaded CW polishing protocol for '{$task}': " . count($parts)
+                . " parts, " . strlen($content) . " chars (lens={$lens})");
+            return !empty(trim($content)) ? $content : null;
+        }
+
         // Creative Writing: direct protocol file load — no manifest needed (v7.13.34)
         if (strpos($task, 'cw_step_') === 0 || strpos($task, 'cw_trial_') === 0) {
             $cw_protocol_map = [
@@ -2062,7 +2113,9 @@ class SWML_Protocol_Router {
                 'cw_step_11' => 'CW-STEP-11-character-profile.md',
                 'cw_step_12' => 'CW-STEP-12-update-plot-goals.md',
                 'cw_step_13' => 'CW-STEP-13-scene-selection-draft-2.md',   // v7.20.568 (#440): the new step; old 13–30 → 14–31
-                'cw_step_14' => 'CW-STEP-14-draft-2-character-arc.md',
+                // cw_step_14 is DELIBERATELY ABSENT — it is a polishing step, served by
+                // $cw_polishing_lenses above. Its CW-STEP-14 markdown stays on disk as the source
+                // the rubric was distilled from, but must never be loaded at a student again.
                 'cw_step_15' => 'CW-STEP-15-character-archetypes.md',
                 'cw_step_16' => 'CW-STEP-16-update-plot-archetypes.md',
                 'cw_step_17' => 'CW-STEP-17-draft-3-archetypes.md',
