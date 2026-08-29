@@ -189,8 +189,13 @@ console.log('\nThe prose layer is the researched one, and its landmines are guar
 ok('the verb comes FIRST — Hale\'s order, not alphabetical', /The verb is the engine — go here FIRST/.test(RUBRIC));
 ok('Clark\'s modifier test is stated (repeats = cut, changes = keep)',
     /REPEATS its word\. Keep the one that CHANGES it/.test(RUBRIC));
+// Anchored on the RULE, not on one sentence's exact wording — the first cut of this check quoted
+// the sentence verbatim and broke the moment the sentence was edited (v7.20.580 lowercased one
+// word). A check that only matches its author's phrasing tests the phrasing, not the rule.
 ok('it forbids the absolute "never use adjectives or adverbs"',
-    /Do NOT tell a student "never use adjectives or adverbs\."/.test(RUBRIC));
+    /not tell a student "never use adjectives or adverbs\."/i.test(RUBRIC));
+ok('…and it says WHY we lean hard: school taught them the opposite (Neil, 2026-08-29)',
+    /taught that creative writing means using lots of adjectives and adverbs/.test(RUBRIC));
 ok('⚠️ the salt/sugar line is NOT attributed to Le Guin (research accuracy flag 1)',
     /Never attribute the "salt and sugar/.test(RUBRIC)
     && !/salt[^\n]{0,80}—\s*(Ursula|Le Guin)/.test(RUBRIC));

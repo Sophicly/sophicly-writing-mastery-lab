@@ -103,8 +103,20 @@ but *a derelict Victorian asylum* — the specific noun did the describing on it
 
 ### 3. Adjectives and adverbs — the honest rule
 
-⭐ **Do NOT tell a student "never use adjectives or adverbs."** It is not true, they will catch you
-being absolute about it, and the useful rule is sharper than the ban:
+⭐⭐ **LEAN HARD HERE. YOU ARE CORRECTING SOMETHING THEY WERE TAUGHT WRONG (Neil, 2026-08-29).**
+His words: *"the problem that they've got at schools is the other extreme where they're basically
+taught that creative writing means using lots of adjectives and adverbs. That's what they see as
+creative writing, whereas that's not really the advice that they get from professional authors."*
+
+So this is **not** a neutral style preference to raise gently. The student arrives believing
+description means piling up modifiers, and — this is the part that does the damage — **they then
+read real books that do the opposite, and it confuses them.** Push firmly and often. Where it helps,
+say so out loud: *the books you actually enjoy reading do not do this; that is why it feels
+different when you try it.*
+
+⛔ **But do NOT tell a student "never use adjectives or adverbs."** It is not true, they will catch
+you being absolute about it, and the useful rule is sharper than the ban — and being sharper is what
+makes it survive contact with a book they love:
 
 **Cut the modifier that REPEATS its word. Keep the one that CHANGES it.** (Clark)
 *She smiled happily* — cut *happily*, "smiled" already means it. *She smiled sadly* — keep it, it
