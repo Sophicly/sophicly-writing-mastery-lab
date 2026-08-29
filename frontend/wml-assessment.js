@@ -29154,7 +29154,14 @@
                     + 'them, do NOT give a mark, do NOT move to another element, and do NOT emit any marker.]'
                     + '\n\nTHE ELEMENT: ' + e.label + ' — ' + e.prompt
                     + '\nWHAT A STRONG ONE DOES: ' + e.strong
-                    + '\nWHAT THEY PLANNED FOR IT IN STEP 9: ' + (planned || '(they did not write a plan for this one)');
+                    // v7.20.581: the plan is BACKGROUND — it says what they were aiming at, so an
+                    // example can use their own characters. It is NOT the thing under assessment,
+                    // and saying so here stops the model discussing the plan back to the student
+                    // (which is how "the trial is marking my Step 9" looked from their side).
+                    + '\nWHAT THEY ARE JUDGING: their Draft 1, which is on the page beside the chat.'
+                    + '\nBACKGROUND ONLY — what they PLANNED for this part back in Step 9, so your example can use '
+                    + 'their own story. Do not assess the plan and do not quote it back as if it were their draft: '
+                    + (planned || '(they did not write a plan for this one)');
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 active = false; pending = true;
                 armWalkResume('trial1-help-' + e.id, function (reply, meta) {
@@ -29220,7 +29227,20 @@
                 let t = '**' + e.label + '** *(' + (i + 1) + ' of ' + els().length + ')*\n\n'
                     + '*What it is for:* ' + e.prompt + '\n\n'
                     + '*For example:* ' + e.example;
-                if (planned) t += '\n\n**What you planned in Step 9:** “' + planned + '”';
+                // ⭐⭐ v7.20.581 (Neil, 2026-08-29) — THE TRIAL JUDGES THE DRAFT, NEVER THE PLAN.
+                // This line used to quote the student's Step 9 scene-selection plan under the
+                // heading "What you planned in Step 9", immediately before asking them to make a
+                // level call. A real student (Reeham, 1352) read that as the thing being marked and
+                // reported that "Trial 1 is marking my Step 9 rather than my Step 10" — and she was
+                // reading it correctly: the plan was the only writing quoted in the question.
+                // It is worse than merely confusing, because a scene-selection field holds planning
+                // notes rather than prose — hers began "Values (Integrity): Peter didn't change
+                // till the very end" — so the quoted "writing" was not even a draft to judge.
+                // Neil: "she should be marking her step 10 work." The draft is on the page beside
+                // the chat and is refreshed from the draft_1 artifact on every entry, so the ask
+                // now sends her there instead of quoting anything.
+                t += '\n\n**Find this part in your draft**, on the page beside this chat. Judge what '
+                    + 'you actually wrote — not what you meant to write.';
                 // The LEVELS are on the floating pad, where they can all be seen at once and
                 // re-judged (#426 → #430) — so the chat points there rather than reprinting them.
                 t += '\n\n**Be the examiner: read that part of your draft, then judge it on the '

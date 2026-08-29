@@ -256,7 +256,13 @@ async function main() {
         ok(/1 of 8/.test(t), '1 · the student can see how long this is');
         ok(/AO6: Technical Accuracy/.test(allText(w)) && /Edexcel IGCSE numbers them AO4 and AO5/.test(allText(w)),
             '1 · ⭐ BOTH dimensions are named with their codes + the board caveat (#431, Neil 2026-08-25)');
-        ok(t.indexOf(PLAN.hook) !== -1, '1 · their OWN Step-9 plan is shown to them…');
+        // v7.20.581 (Neil, 2026-08-29, from Reeham's report): the ask must NOT quote the Step-9
+        // plan as the thing being judged — the trial marks the DRAFT, which is on the page beside
+        // the chat. The old assertion here required the plan in the ask; the ruling reverses it.
+        ok(t.indexOf(PLAN.hook) === -1 && t.indexOf('What you planned in Step 9') === -1,
+            '1 · the ask does NOT quote the Step-9 plan as the thing to judge (v7.20.581, Reeham)');
+        ok(/Find this part in your draft/.test(t),
+            '1 · …it sends them to their DRAFT instead');
         ok(!/paste|type it out|share your draft|copy your/i.test(allText(w)),
             '1 · …and never asked for — the paste-wall law (WML §3)');
         ok(w.sends.length === 0, '1 · nothing has cost an API call yet');
@@ -633,8 +639,12 @@ async function main() {
         // #422 — the .552 re-serve raced _cwLoadDocValues and served the ask WITHOUT the
         // student's own Step-9 plan. The loader stub resolves on a LATER tick, so a re-serve
         // that does not wait reads an empty cache and this fails.
-        ok(w2.bubbles.some((b) => /Epiphany/.test(b) && b.indexOf('What you planned in Step 9') !== -1),
-            '11 · ⭐ the resumed ask still carries their own Step-9 plan (#422 — the re-serve waits for the load)');
+        // v7.20.581: the resumed ask, like the first serve, points at the draft — never the plan.
+        // (#422's real subject — the re-serve waiting for the doc load — is covered by the element
+        // and ladder assertions either side of this one.)
+        ok(w2.bubbles.some((b) => /Epiphany/.test(b) && /Find this part in your draft/.test(b))
+            && !w2.bubbles.some((b) => b.indexOf('What you planned in Step 9') !== -1),
+            '11 · ⭐ the resumed ask points at the DRAFT, and never quotes the plan (v7.20.581)');
         ok(!!ladder && ladder.title === 'Epiphany' && (ladder.levels || []).some((lv) => lv.shown && !lv.verdict),
             '11 · …with the ladder card republished for that element, so the page is not dead after a reload');
     }
