@@ -165,6 +165,38 @@ ok('…and it carries a section for every lens the JS declares',
     jsPolishing.every(j => new RegExp('Lens `' + j.lens + '`').test(RUBRIC)),
     jsPolishing.filter(j => !new RegExp('Lens `' + j.lens + '`').test(RUBRIC)).map(j => j.lens));
 
+// ── Every CW button must MEAN something. The action id is sent to the model as a bare string
+// (`**Action:** cw-verbs`) and nothing in the JS says what it is for — the meaning lives only in
+// the rubric. So a button with no rubric row is a button the model improvises an answer to, which
+// is the §5c "never author pedagogy from general knowledge" failure with a tap to trigger it.
+console.log('\nEvery Creative Writing button is defined in the rubric:');
+const CHIP = fs.readFileSync(path.join(ROOT, 'frontend/wml-selection-chip.js'), 'utf8');
+const cwGroups = ['cwScan', 'cwWordChoice', 'cwArc', 'cw'];
+let cwActions = [];
+for (const g of cwGroups) {
+    const m = CHIP.match(new RegExp(g + ":\\s*\\[([^\\]]*)\\]"));
+    if (m) cwActions.push(...[...m[1].matchAll(/'([a-z0-9-]+)'/g)].map(x => x[1]));
+}
+ok('the CW groups list actions at all', cwActions.length > 0, cwActions.length);
+const undefinedActions = cwActions.filter(a => !RUBRIC.includes('`' + a + '`'));
+ok(`all ${cwActions.length} CW actions have a rubric row`, undefinedActions.length === 0, undefinedActions);
+
+const missingLabel = cwActions.filter(a => !new RegExp("'" + a + "':").test(CHIP));
+ok('every CW action has a human label — no student sees a raw id (root §14)',
+    missingLabel.length === 0, missingLabel);
+
+console.log('\nThe prose layer is the researched one, and its landmines are guarded:');
+ok('the verb comes FIRST — Hale\'s order, not alphabetical', /The verb is the engine — go here FIRST/.test(RUBRIC));
+ok('Clark\'s modifier test is stated (repeats = cut, changes = keep)',
+    /REPEATS its word\. Keep the one that CHANGES it/.test(RUBRIC));
+ok('it forbids the absolute "never use adjectives or adverbs"',
+    /Do NOT tell a student "never use adjectives or adverbs\."/.test(RUBRIC));
+ok('⚠️ the salt/sugar line is NOT attributed to Le Guin (research accuracy flag 1)',
+    /Never attribute the "salt and sugar/.test(RUBRIC)
+    && !/salt[^\n]{0,80}—\s*(Ursula|Le Guin)/.test(RUBRIC));
+ok('the coach panel no longer hardcodes "Exam Prep Coach"',
+    !/'<svg[^']*Sophia — Exam Prep Coach'/.test(fs.readFileSync(path.join(ROOT, 'frontend/wml-assessment.js'), 'utf8')));
+
 console.log('');
 if (fail) { console.log(`❌ cw-polishing-env-gate FAILED (${fail})`); process.exit(1); }
 console.log(`✅ cw-polishing-env-gate passed  (${pass} assertions, 0 failed)`);

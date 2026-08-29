@@ -30842,7 +30842,15 @@
         // Header — same shape as training-env chat header.
         const header = el('div', { className: 'swml-canvas-chat-header swml-coach-panel-header' });
         const headerLabel = el('span', { className: 'swml-coach-panel-label' });
-        headerLabel.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Sophia — Exam Prep Coach';
+        // v7.20.579: the label was the literal 'Sophia — Exam Prep Coach', hardcoded when this
+        // panel was built for exam_crib — so EVERY inline-coaching lesson claimed to be exam prep,
+        // including literature polishing and now Creative Writing Draft 2 (Neil saw it there).
+        // It reads the exercise's own chatHeaderLabel now; the exam-prep wording survives because
+        // exam_crib still declares it, and anything else says what it actually is.
+        const _coachTitle = (ctx && ctx.exerciseConfig && ctx.exerciseConfig.coachHeaderLabel)
+            || (WML.getExerciseConfig && WML.getExerciseConfig(state.task) || {}).coachHeaderLabel
+            || 'Sophia';
+        headerLabel.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> ' + _coachTitle;
         header.appendChild(headerLabel);
 
         // v7.19.277: Clear-chat button — parity with the training-env chat

@@ -64,6 +64,21 @@
         fixSpag:      ['fix-spelling', 'fix-grammar', 'fix-punctuation'],
         reference:    ['explain', 'compare-gold-standard'],
         cw:           ['check-sensory-variety', 'check-scene-structure-beats', 'check-show-dont-tell'],
+        // ── v7.20.579 (Neil, 2026-08-29) — Creative Writing gets its OWN scans and its own word-
+        // choice group. Before this, a CW draft was offered the LITERATURE tier scans: "Scan
+        // elements" (the essay element set) and "Scan context-drive" (AO3 context) mean nothing
+        // about a story, and a student tapping them got an essay answer about their fiction.
+        cwScan:       ['cw-scan-scene', 'cw-scan-arc', 'cw-scan-prose', 'cw-scan-show'],
+        // ⭐ THE WORD-CHOICE GROUP IS THE POINT OF THE WHOLE LESSON. Neil, 2026-08-29: the students
+        // should "follow Constance Hale's advice of using… concrete nouns and dynamic verbs first",
+        // writing subtly and "avoiding excessive adjectives and adverbs". These three buttons are
+        // that instruction made tappable, in Hale's own order — verbs, then nouns, then cut what is
+        // propping them up. Defined in rubric-cw-narrative.md; sourced from
+        // research/2026-07-16-word-choice-craft-and-sentence-power.md.
+        cwWordChoice: ['cw-verbs', 'cw-nouns', 'cw-cut-modifiers'],
+        // The LENS group — what THIS draft is for. Draft 2 is the character arc; Drafts 3-7 swap
+        // this array for their own as they move to the polishing environment.
+        cwArc:        ['cw-arc-goal', 'cw-arc-flaw', 'cw-arc-stakes', 'cw-arc-need', 'cw-arc-proof'],
     };
 
     const ACTION_LABELS = {
@@ -96,6 +111,22 @@
         'check-sensory-variety':       'Sensory variety',
         'check-scene-structure-beats': 'Scene-structure beats',
         'check-show-dont-tell':        'Show-don’t-tell',
+        // CW scans (v7.20.579) — the story equivalents of the Literature tier scans
+        'cw-scan-scene':   'Scan scene structure',
+        'cw-scan-arc':     'Scan character arc',
+        'cw-scan-prose':   'Scan prose',
+        'cw-scan-show':    'Scan show-don’t-tell',
+        // CW word choice (v7.20.579) — Hale's order: the verb first, then the noun, then cut the
+        // modifier that was propping up a weak one.
+        'cw-verbs':          'Sharpen the verbs',
+        'cw-nouns':          'Sharpen the nouns',
+        'cw-cut-modifiers':  'Cut adjectives & adverbs',
+        // CW character-arc lens (v7.20.579)
+        'cw-arc-goal':   'Show the goal',
+        'cw-arc-flaw':   'Show the flaw',
+        'cw-arc-stakes': 'Show the stakes',
+        'cw-arc-need':   'Surface the need',
+        'cw-arc-proof':  'Prove the change',
         // Turn into a device (non-fiction) — v7.19.272
         'device-suggest':            'Suggest a device',
         'device-metaphor':           'Metaphor',
@@ -128,6 +159,9 @@
         fixSpag:      'Fix SPaG',
         reference:    'Reference',
         cw:           'Creative writing',
+        cwScan:       'Scan your scene',
+        cwWordChoice: 'Word choice',
+        cwArc:        'Character arc',
     };
 
     // ── Module-scoped state ──
@@ -225,6 +259,25 @@
         const NF_TEXTS = ['aqa_lang_paper_2', 'eduqas_lang_paper_2', 'edexcel_lang_paper_2', 'ocr_lang_paper_1', 'edexcel_igcse_lang_a'];
         const isNonfiction = !!(taskCtx && NF_TEXTS.includes(taskCtx.text));
 
+        // v7.20.579: Creative Writing is a STORY, not an essay, so it gets its own ladder rather
+        // than the Literature one with three CW buttons bolted on the end. The Lit tier scans
+        // ("Scan elements" = the essay element set, "Scan context-drive" = AO3 context) are
+        // meaningless about a scene, and a student who tapped one got an essay answer about their
+        // fiction. Order is the order we teach: read the scene, fix the words, work the arc.
+        const isCw = !!(taskCtx && (taskCtx.subject === 'creative_writing'
+            || (taskCtx.task && taskCtx.task.indexOf('cw_') === 0)));
+        if (isCw) {
+            return [
+                { key: 'cwScan',       actions: ACTION_MAP.cwScan },
+                { key: 'cwWordChoice', actions: ACTION_MAP.cwWordChoice },
+                { key: 'cwArc',        actions: ACTION_MAP.cwArc },
+                { key: 'polishProse',  actions: ACTION_MAP.polishProse },
+                { key: 'cw',           actions: ACTION_MAP.cw },
+                { key: 'fixSpag',      actions: ACTION_MAP.fixSpag },
+                { key: 'reference',    actions: ACTION_MAP.reference },
+            ];
+        }
+
         const groups = [];
         groups.push({ key: 'tierScans',    actions: isNonfiction ? ACTION_MAP.tierScansNonfiction : ACTION_MAP.tierScans });
         groups.push({ key: 'elementPolish',actions: ACTION_MAP.elementPolish });
@@ -234,9 +287,6 @@
         groups.push({ key: 'polishProse',  actions: ACTION_MAP.polishProse });
         groups.push({ key: 'fixSpag',      actions: ACTION_MAP.fixSpag });
         groups.push({ key: 'reference',    actions: ACTION_MAP.reference });
-        if (taskCtx && taskCtx.subject === 'creative_writing') {
-            groups.push({ key: 'cw', actions: ACTION_MAP.cw });
-        }
         return groups;
     }
 

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.578';
+var WML_BUILD = '7.20.579';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1576,6 +1576,7 @@ window.WML = (function() {
             completionType: 'manual',
             storageSuffix: '_crib',
             chatHeaderLabel: 'Sophia — Exam Prep Coach',
+            coachHeaderLabel: 'Sophia — Exam Prep Coach',
             sidebarSteps: null,
         },
         assessment: {
@@ -1804,6 +1805,8 @@ window.WML = (function() {
             // No rigid sidebar steps; no auto-greet. Resolves the long-standing "placeholder"
             // comment that anticipated this migration.
             environment: 'inline-coaching',
+            // v7.20.579: literature/language polishing said "Exam Prep Coach" too.
+            coachHeaderLabel: 'Sophia — Polishing Coach',
             panels: { sidebar: true, chat: false, guidance: false, document: true },
             steps: null,
             elements: null,
@@ -2004,6 +2007,9 @@ window.WML = (function() {
         cw_polishing: {
             label: 'Creative Writing',
             environment: 'inline-coaching',
+            // v7.20.579: the coach panel's own title. Without it every inline-coaching lesson
+            // called itself "Exam Prep Coach" — the literal this panel was born with.
+            coachHeaderLabel: 'Sophia — Writing Coach',
             panels: { sidebar: true, chat: false, guidance: false, document: true },
             steps: null,
             elements: null,
