@@ -202,6 +202,52 @@ ok('⚠️ the salt/sugar line is NOT attributed to Le Guin (research accuracy f
 ok('the coach panel no longer hardcodes "Exam Prep Coach"',
     !/'<svg[^']*Sophia — Exam Prep Coach'/.test(fs.readFileSync(path.join(ROOT, 'frontend/wml-assessment.js'), 'utf8')));
 
+// ── v7.20.585: the two deterministic word-choice buttons answer from CODE (cost lever 1).
+// The handler is PURE by contract, so this gate runs the REAL function on real prose — the scan
+// itself is under test, not just its wiring. If someone reaches for _ctx/DOM inside it, the eval
+// here throws and the build fails, which is the contract enforcing itself.
+console.log('\nThe deterministic word-choice scans are code-served (v7.20.585):');
+{
+    const fnSrc = CHIP.match(/function _codeServedWordScan\(action, text\) \{[\s\S]*?\n    \}/);
+    ok('_codeServedWordScan exists in the chip', !!fnSrc);
+    let scan = null;
+    try { scan = new Function('return ' + fnSrc[0])(); } catch (e) { ok('it evaluates in ISOLATION (pure — no DOM, no _ctx)', false, e.message); }
+    if (scan) {
+        ok('it evaluates in ISOLATION (pure — no DOM, no _ctx)', true);
+        const prose = 'She was tired and walked slowly to the door. The room was cold. He screamed loudly at the sky, '
+            + 'very angry, while his family smiled sadly in the early light of July.';
+        const v = scan('cw-verbs', prose);
+        ok('cw-verbs finds the be-verbs ("was" ×2 listed)', /is\/are\/was\/were[^(]*\(2\)/.test(v), v && v.slice(0, 120));
+        ok('…and the flat verbs (walked)', /\*\*walked\*\*/.test(v));
+        ok('…quotes the student\'s own phrase back, not a bare word list', /…|she was tired/i.test(v));
+        ok('…asks them to replace TWO (the rubric\'s ask), not all', /Pick TWO/.test(v));
+        ok('…does not decide for them ("was is sometimes the honest verb")', /sometimes the honest verb/.test(v));
+        const m = scan('cw-cut-modifiers', prose);
+        ok('cw-cut-modifiers finds the -ly adverbs (loudly, slowly, sadly)',
+            /\*\*loudly\*\*/.test(m) && /\*\*slowly\*\*/.test(m) && /\*\*sadly\*\*/.test(m));
+        ok('…and the intensifier (very)', /\*\*very\*\*/.test(m));
+        ok('…but NOT family / early / July (the -ly whitelist)', !/\*\*family\*\*|\*\*early\*\*|\*\*July\*\*/i.test(m));
+        ok('…teaches Clark\'s test with BOTH halves (cut the repeater, keep the changer)',
+            /screamed loudly[\s\S]*cut it/.test(m) && /smiled sadly[\s\S]*keep it/.test(m));
+        ok('…the STUDENT decides ("You decide"), per the rubric', /\*\*You decide\*\*/.test(m));
+        ok('…no flat ban anywhere in either reply (v7.20.580 correction)', !/never use adjectives/i.test(v + m));
+        ok('a clean passage gets praise, not an empty scan',
+            /no -ly adverbs and no intensifiers/.test(scan('cw-cut-modifiers', 'The dog bit the postman.')));
+        ok('both replies end at the help ladder — Sophia is the LAST rung, still reachable',
+            /Type the sentence below/.test(v) && /Type the sentence below/.test(m));
+        ok('an unknown action falls through to the API (null)', scan('cw-scan-arc', prose) === null);
+        ok('an empty selection falls through to the API (null)', scan('cw-verbs', '   ') === null);
+    }
+    // Wiring: the intercept must sit BEFORE the API call and keep the conversation coherent.
+    const sendSrc = CHIP.slice(CHIP.indexOf('const send = async (action, freeText)'), CHIP.indexOf('sendBtn.addEventListener'));
+    ok('send() consults the code-served scan BEFORE building the API request',
+        sendSrc.indexOf('_codeServedWordScan(') > -1 && sendSrc.indexOf('_codeServedWordScan(') < sendSrc.indexOf('apiPost(API.chat'));
+    ok('the canned reply enters _conversationHistory — a typed follow-up to Sophia has it in context',
+        /_conversationHistory\.push\(\{ role: 'assistant', content: canned \}\)/.test(sendSrc));
+    ok('the code-served branch re-enables the controls (liveness §4d — the screen must respond)',
+        /canned[\s\S]*?pending = false;[\s\S]*?sendBtn\.disabled = false;[\s\S]*?return;/.test(sendSrc));
+}
+
 console.log('');
 if (fail) { console.log(`❌ cw-polishing-env-gate FAILED (${fail})`); process.exit(1); }
 console.log(`✅ cw-polishing-env-gate passed  (${pass} assertions, 0 failed)`);

@@ -290,6 +290,91 @@
         return groups;
     }
 
+    /**
+     * v7.20.585 (Neil-approved cost lever 1, 2026-08-29): the two DETERMINISTIC word-choice
+     * buttons are served from CODE, not the API. "Circle every was/were" and "find the -ly
+     * adverbs" are regex, not judgement (root CLAUDE.md WML §4 programmatic-first) — and
+     * code-serving teaches BETTER: the student applies Clark's test to each hit themselves
+     * instead of being told the answers. Likely the most-tapped buttons in the lesson, now $0.
+     *
+     * PURE on purpose — (action, selectedText) → markdown string or null (null = not ours,
+     * fall through to the API). No DOM, no _ctx, no window: the gate evals it in isolation
+     * and feeds it real prose, so the scan itself is regression-tested, not just wired.
+     *
+     * The teaching lines mirror rubric-cw-narrative.md (the rubric IS the method — §5c):
+     *   cw-verbs         "every is/are/was/were, and the flat verbs. Ask them to replace two."
+     *   cw-cut-modifiers "Clark's test on each modifier: repeats the word (cut) or changes it
+     *                     (keep)? Ask them to decide, don't decide for them."  (v7.20.580: the
+     *                     coach leans hard on cutting, but a flat ban stays forbidden.)
+     * Sophia stays available as the LAST rung (§4c.9): the reply ends by pointing at the box.
+     */
+    function _codeServedWordScan(action, text) {
+        if (action !== 'cw-verbs' && action !== 'cw-cut-modifiers') return null;
+        const src = String(text || '');
+        if (!src.trim()) return null; // nothing selected — let the API path answer oddities
+
+        // A hit with just enough of the student's own sentence to find it again.
+        const phraseAt = (idx, len) => {
+            const from = Math.max(0, src.lastIndexOf(' ', Math.max(0, idx - 28)));
+            const to = Math.min(src.length, (src.indexOf(' ', idx + len + 28) + 1 || src.length + 1) - 1);
+            let ph = src.slice(from, to).replace(/\s+/g, ' ').trim();
+            if (from > 0) ph = '…' + ph;
+            if (to < src.length) ph = ph + '…';
+            return ph;
+        };
+        const collect = (re, guard) => {
+            const hits = []; let m;
+            while ((m = re.exec(src)) !== null) {
+                if (guard && !guard(m[0])) continue;
+                hits.push({ word: m[0], phrase: phraseAt(m.index, m[0].length).replace(m[0], '**' + m[0] + '**') });
+                if (hits.length > 40) break;
+            }
+            return hits;
+        };
+        const listOf = (hits, cap) => {
+            const shown = hits.slice(0, cap);
+            let out = shown.map(h => '- ' + h.phrase).join('\n');
+            if (hits.length > cap) out += '\n- …and ' + (hits.length - cap) + ' more.';
+            return out;
+        };
+        const RESELECT = '\n\nMake the edits in your draft, then select the passage again and tap the button to re-scan.';
+        const STUCK = '\nStuck on one? Type the sentence below and we will work it together.';
+
+        if (action === 'cw-verbs') {
+            const beVerbs = collect(/\b(?:is|are|am|was|were|be|been|being)\b/gi);
+            const flat = collect(/\b(?:went|goes|going|got|gets|getting|came|come|put|puts|looked|looks|seemed|seems|felt|feels|walked|walks|moved|moves|made|makes|did|does)\b/gi);
+            if (!beVerbs.length && !flat.length) {
+                return 'I scanned this passage and found **no is/are/was/were and none of the usual flat verbs**. '
+                    + 'Your verbs are already doing the work — that is exactly what Constance Hale asks for. '
+                    + 'Try **Sharpen the nouns** next: the same pass, for vague nouns.' + STUCK;
+            }
+            let out = '**The verb-circling pass.** A sentence comes alive at its verb — *she darted across the kitchen*, not *she was quick to cross the room*.\n\n';
+            if (beVerbs.length) out += 'Every **is/are/was/were** in your selection (' + beVerbs.length + '):\n\n' + listOf(beVerbs, 10) + '\n\n';
+            if (flat.length) out += 'And the flat, all-purpose verbs (' + flat.length + '):\n\n' + listOf(flat, 8) + '\n\n';
+            out += 'Not every one must go — *was* is sometimes the honest verb. **Pick TWO** and rewrite each sentence around a verb that shows the action happening.' + RESELECT + STUCK;
+            return out;
+        }
+
+        // cw-cut-modifiers — -ly adverbs + bare intensifiers, judged by CLARK'S TEST, by the student.
+        // The -ly net needs a whitelist: plenty of words end in -ly and are not adverbs at all.
+        const NOT_ADVERBS = /^(?:family|families|july|italy|reply|replies|supply|supplies|apply|applies|multiply|belly|bellies|jelly|bully|bullies|ally|allies|fly|flies|butterfly|firefly|holy|melancholy|assembly|monopoly|anomaly|only|early|lonely|ugly|likely|unlikely|friendly|unfriendly|elderly|lovely|deadly|lively|silly|jolly|smelly|chilly|hilly|woolly|curly|burly|surly|wobbly|crinkly|sparkly|prickly|crumbly|grisly|measly|orderly|cowardly|ghastly|ghostly|princely|miserly|motherly|fatherly|brotherly|sisterly|scholarly|leisurely|homely|comely|seemly|unseemly|sly|italy)$/i;
+        const lyAdverbs = collect(/\b[A-Za-z]{3,}ly\b/g, w => !NOT_ADVERBS.test(w));
+        const intensifiers = collect(/\b(?:very|really|quite|rather|extremely|incredibly|totally|completely|absolutely|somewhat)\b/gi);
+        if (!lyAdverbs.length && !intensifiers.length) {
+            return 'I scanned this passage and found **no -ly adverbs and no intensifiers** (very, really, quite…). '
+                + 'Subtle, unpropped prose — the thing most students never manage. '
+                + 'Try **Sharpen the verbs** on your next passage.' + STUCK;
+        }
+        let out = '**The modifier pass — and Roy Peter Clark’s test decides each one, not a ban.**\n\n'
+            + 'For every modifier below, ask: **does it REPEAT what its word already says, or does it CHANGE it?**\n'
+            + '- *screamed loudly* — screaming is already loud → the adverb repeats → **cut it**\n'
+            + '- *smiled sadly* — a smile is not usually sad → the adverb changes it → **keep it**\n\n';
+        if (lyAdverbs.length) out += 'Your **-ly adverbs** (' + lyAdverbs.length + '):\n\n' + listOf(lyAdverbs, 10) + '\n\n';
+        if (intensifiers.length) out += 'Your **intensifiers** (' + intensifiers.length + ') — these nearly always repeat:\n\n' + listOf(intensifiers, 8) + '\n\n';
+        out += 'Run the test on each. **You decide** — cut the repeaters, keep the changers, and where you cut one propping up a weak word, sharpen the word instead (*walked slowly* → *trudged*).' + RESELECT + STUCK;
+        return out;
+    }
+
     function buildPrompt(action, selection, sectionContext, taskCtx, freeText, fullDoc, sectionType) {
         const lines = [
             '## Inline Coaching Invocation',
@@ -1261,6 +1346,24 @@
             // Clear textarea + reset height so the next turn feels clean.
             textarea.value = '';
             textarea.style.height = 'auto';
+
+            // v7.20.585: deterministic word-choice scans answer from CODE — no API round-trip.
+            // The turns still enter _conversationHistory, so a follow-up typed to Sophia (the
+            // last rung) arrives with the scan she is being asked about already in context.
+            if (isAction) {
+                const canned = _codeServedWordScan(action, sel.text);
+                if (canned) {
+                    if (typingEl && typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
+                    _conversationHistory.push({ role: 'assistant', content: canned });
+                    _appendMessage('ai', canned);
+                    pending = false;
+                    sendBtn.disabled = false;
+                    textarea.disabled = false;
+                    actionsWrap.querySelectorAll('button').forEach(b => { b.disabled = false; });
+                    try { textarea.focus(); } catch (_) {}
+                    return;
+                }
+            }
 
             // v7.19.72: doc-awareness fix — re-read live section context + full
             // document per turn. Previously sel.sectionContext was the snapshot
