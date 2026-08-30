@@ -599,11 +599,11 @@ Priority order for penalties:
 2. Analysis weaknesses (M1, I1, E2)  
 3. Writing mechanics (W1, S1, S2, H1)
 
-Penalty 1: \[Name of penalty with code, for example, "Lacks clarity (C1)"\] equals minus 0.5 marks. Deducted because \[specific reason with example from student's work\]
+Penalty 1: \[Name of penalty with code, for example, "Lacks clarity (C1)"\] equals minus 0.5 marks. Deducted because \[specific reason, quoting the offending phrase VERBATIM from the student's work\]. Fix: \[a one-line worked fix of that exact phrase, e.g. "'creates the idea of' → 'crystallises'"\]
 
-Penalty 2: \[Name of penalty with code\] equals minus 0.5 marks. Deducted because \[specific reason with example\]
+Penalty 2: \[Name of penalty with code\] equals minus 0.5 marks. Deducted because \[specific reason, quoting the offending phrase verbatim\]. Fix: \[a one-line worked fix of that exact phrase\]
 
-Penalty 3: \[Name of penalty with code\] equals minus 0.5 marks. Deducted because \[specific reason with example\]
+Penalty 3: \[Name of penalty with code\] equals minus 0.5 marks. Deducted because \[specific reason, quoting the offending phrase verbatim\]. Fix: \[a one-line worked fix of that exact phrase\]
 
 ---
 
