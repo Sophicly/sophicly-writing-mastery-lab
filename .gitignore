@@ -29,3 +29,4 @@ CleanShot*.jpg
 island/node_modules/
 island/package-lock.json
 protocols/_marks/.pdftext-cache/
+node_modules/

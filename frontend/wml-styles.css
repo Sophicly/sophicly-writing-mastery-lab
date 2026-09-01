@@ -647,6 +647,20 @@ body.swml-page {
 /* ── Selection Toolbar ── */
 .swml-selection-toolbar {
     position: absolute; z-index: 100;
+    /* ⭐⭐ v7.20.587 (FIXLIST #460, Neil: "the contextual toolbar has a lower zed index than the
+       chat panel on the right"). MEASURED, and it is NOT a z-index problem: this bar is z-index
+       100 and .swml-canvas-chat is z-index 2 — it has always been fifty rungs ABOVE the panel,
+       and raising it changes nothing (proved by injection in bin/toolbar-fits-its-pane-gate.mjs).
+       THE REAL CAUSE is that this bar had NO WIDTH CAP. It is a flex row that grows to its
+       content, the placer clamps its left with Math.max(4, ...), so once the content is wider
+       than the document pane it pins at left:4 and the excess runs off the right — where
+       .swml-canvas-content's `overflow-x: hidden` CLIPS it. Cut off at the pane edge reads
+       exactly like sliding under the panel. Measured at a 380px pane: 491px wide, 90px lost.
+       The cap hands the overflow to the carousel inside, which is what it is for (.swml-tb-scroll
+       drag-track + the 54px arrow lane), so nothing becomes unreachable. 8px = the placer's own
+       4px margin on each side, so the cap and the clamp agree by construction. */
+    max-width: calc(100% - 8px);
+    box-sizing: border-box;
     display: flex; gap: 2px; padding: 3px;
     /* v7.20.397 (Neil): was rgba(20,20,40,0.95) — the same off-ladder blue-black as the zoom pill and
        the scroll buttons, and translucent, so it changed colour depending on the text under it.

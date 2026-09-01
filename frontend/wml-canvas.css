@@ -15478,6 +15478,16 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     left: auto;
     top: auto;
     transform: none;
+    /* v7.20.587 (#460): the two declarations that make the parent's max-width actually bite.
+       `min-width: 0` — a flex item defaults to min-width:auto and REFUSES to shrink below its
+       content, so without this the cap above just clips instead of compressing (the same flex
+       trap §CONTENT-MUST-SCROLL names for scrollers).
+       `max-width: none` — the base rule reserves `calc(100% - 260px)` for the canvas header's
+       badges and theme toggle. There are none in this context, and 100% now means the capped
+       BAR rather than the header, so the reservation would shrink the track for no reason.
+       Width stays 520px as the PREFERRED size; flex-shrink takes it down only when it must. */
+    min-width: 0;
+    max-width: none;
     flex: 1 1 auto;
     min-width: 0;
     width: 300px;
