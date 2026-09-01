@@ -63056,6 +63056,41 @@
             // record — nothing mirrors INTO it (the feedback family keeps its own
             // phase-completion gate below).
             const _docMarked = /data-section-label="[^"]*\(\s*\d[^"]*\/\s*\d+\s*\)/.test(canvasEditor.getHTML());
+            /* ⭐⭐ v7.20.588 (FIXLIST #461) — THE FREEZE IS PER QUESTION, NOT PER DOCUMENT.
+               Neil, relaying a student: he wrote his answers in the PLAN boxes, the assessment
+               could not read them, he went back to the diagnostic and transferred plan→response,
+               returned — "and Sophia is not picking up that change."
+               MEASURED on his doc (uid 1215, AQA Lang P1 T1): the diagnostic held all four
+               responses (887 words, saved 16:42:35); the assessment still held none (saved
+               16:40:46) and carried `Feedback: Q1 (4 / 4)` — Q1 alone had been marked, because
+               Q1 is the retrieval question that needed no prose. That ONE mark set `_docMarked`,
+               and `_docMarked` gates the WHOLE response family, so Q2-Q5 — all still `(— / N)`,
+               all unmarked — were refused with no error and no log.
+               Neil's freeze ruling was *"if it's already marked, you shouldn't be able to edit it
+               from the previous lesson"* — and "it" is the marked QUESTION, not the paper. This is
+               the key-granularity class (a gate that names a category where it should name an
+               instance): the first marked question claimed the freeze for every sibling.
+               So: a question is frozen iff ITS OWN feedback label carries a numeric mark. */
+            const _markedQs = (() => {
+                const out = new Set();
+                const re = /data-section-label="([^"]*)"/g;
+                let m;
+                while ((m = re.exec(canvasEditor.getHTML())) !== null) {
+                    const lbl = m[1];
+                    if (!/\(\s*\d[^)]*\/\s*\d+\s*\)/.test(lbl)) continue;   // no numeric mark → not frozen
+                    const q = lbl.match(/\bQ(\d+)\b/i);
+                    if (q) out.add('Q' + q[1]);
+                }
+                return out;
+            })();
+            /* Frozen iff this section's own question is marked. A section whose question cannot be
+               resolved (single-part docs labelled just "Response") falls back to the DOCUMENT flag
+               — conservative by design: when we cannot tell which mark covers it, we do not write. */
+            const _sectionFrozen = (label) => {
+                const q = String(label || '').match(/\bQ(\d+)\b/i);
+                if (!q) return _docMarked;
+                return _markedQs.has('Q' + q[1]);
+            };
             // Upstream node's edit ts: its own data-edit-ts, else its enclosing
             // section's (root-level pre-write fields have no section), else 0 (legacy).
             const _upTs = (el) => {
@@ -63241,7 +63276,7 @@
                         }
                     });
                 });
-                let n = 0, kept = 0;
+                let n = 0, kept = 0, frozen = 0;
                 Object.keys(_cands).forEach((upLabel) => {
                     const cand = _cands[upLabel];
                     let tPos = null, tNode = null;
@@ -63254,6 +63289,14 @@
                         return true;
                     });
                     if (tPos === null || !tNode) return;
+                    // v7.20.588: FREEZE, per section. A marked section is a frozen record — its
+                    // mark refers to the exact words that were marked, so nothing may flow into
+                    // it. Logged, never silent: "why didn't it flow" must be answerable from the
+                    // console (the v7.20.93 diagnosability rule).
+                    if (mOpts && typeof mOpts.frozen === 'function' && mOpts.frozen(upLabel)) {
+                        frozen++;
+                        return;
+                    }
                     const curText = (tNode.textContent || '').replace(/\s+/g, ' ').trim();
                     // v7.20.89 (§9.21): a target holding only a known placeholder IS empty —
                     // same list the word-count uses (_WC_PLACEHOLDERS, the v7.19.696 lesson).
@@ -63304,6 +63347,7 @@
                 }
                 // v7.20.93 diagnosability: a kept-local is a DECISION, not a silence.
                 if (kept) console.log('WML chain: ' + what + ' — ' + kept + ' section(s) kept (local edit newer)');
+                if (frozen) console.log('WML chain: ' + what + ' — ' + frozen + ' section(s) FROZEN (already marked, so nothing flows in)');
                 return n;
             };
             const _isRedraft = state.phase === 'redraft';
@@ -63315,10 +63359,10 @@
             // TASK-SCOPING warns about. FREEZE: a marked doc is a frozen record (Neil:
             // "if it's already marked, you shouldn't be able to edit it from the
             // previous lesson") — nothing mirrors in.
-            if (!_docMarked) {
-                _mirrorSections(_upDocs, 'response', null, 'response');
-                _mirrorSections(_upDocs, 'outline', null, 'outline', { includeChecked: true });
-            }
+            // v7.20.588: the freeze is applied PER SECTION inside the mirror (see _markedQs),
+            // so a paper with one marked question still carries the other questions forward.
+            _mirrorSections(_upDocs, 'response', null, 'response', { frozen: _sectionFrozen });
+            _mirrorSections(_upDocs, 'outline', null, 'outline', { includeChecked: true, frozen: _sectionFrozen });
             // FEEDBACK FAMILY (v7.20.85 — Neil's SA-edit repro, .78 "expected" gap):
             // Self-Assessment is student-typed and owned by the ASSESSMENT lesson;
             // the discuss doc mirrors it while the phase is still open. Marking-run
