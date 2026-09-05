@@ -514,6 +514,29 @@ class SWML_Topic_Questions {
         $parsed = SWML_Topic_Parser::parse($markdown);
         if (empty($parsed)) return [];
 
+        // v7.20.592 (#447h): a re-import MERGES — it never replaces the store wholesale. The store
+        // also holds topics the template does not know about: the live-modelling past papers
+        // installed by bin/live-model-install-papers.php (topic_number = YYYYMM, e.g. 202306) and
+        // anything an admin authored in the UI. Before this, any mtime bump on the template file
+        // (an edit, a fresh git checkout, an rsync without -t) replaced the option with the
+        // template's 1–11 and silently deleted every other topic — 106 installed papers on
+        // staging were one template edit away from vanishing with no error. Template topics still
+        // win for the numbers they define; every other stored topic is carried across unchanged.
+        $stored = get_option(self::option_key($board, $text), []);
+        if (is_array($stored) && !empty($stored)) {
+            $template_numbers = [];
+            foreach ($parsed as $t) { $template_numbers[(int) ($t['topic_number'] ?? 0)] = true; }
+            $carried = 0;
+            foreach ($stored as $t) {
+                $n = (int) ($t['topic_number'] ?? 0);
+                if ($n && !isset($template_numbers[$n])) { $parsed[] = $t; $carried++; }
+            }
+            if ($carried) {
+                usort($parsed, function ($a, $b) { return ($a['topic_number'] ?? 0) - ($b['topic_number'] ?? 0); });
+                error_log(sprintf('[WML] topics: template re-import for %s/%s kept %d non-template topic(s)', $board, $text, $carried));
+            }
+        }
+
         // v7.15.36: Track template file mtime so we can auto re-import when markdown changes
         update_option(self::option_key($board, $text) . '_mtime', filemtime($file), false);
 

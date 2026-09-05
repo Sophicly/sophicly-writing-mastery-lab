@@ -753,26 +753,33 @@
             const card = el('div', { className: 'swml-upgrade-card' });
             card.appendChild(el('div', { className: 'swml-upgrade-icon', innerHTML: WML.lockIconSVG(34) })); // v7.19.952: 🔒 → tabler lock (Neil)
             card.appendChild(el('h3', { textContent: 'Upgrade to unlock the Writing Mastery Lab', style: { margin: '12px 0 8px', fontSize: '18px' } }));
-            // ⚠️ v7.20.452 — CUSTOMER-FACING COPY. Two rules govern this card and both were broken:
-            // (1) the price ladder is Free · Silver £50 · Gold £140 · Platinum £300 (root CLAUDE.md
-            //     §SERVICE MODEL). Silver was £20 and rose to £50 to cover model costs (Neil,
-            //     2026-08-05) — this card was never updated and was quoting the retired price to
-            //     real students on a paywall.
+            // ⚠️ v7.20.452 / .590 / .592 — CUSTOMER-FACING COPY. Rules that govern this card:
+            // (1) the price ladder is Free · Bronze £20 · Silver £70 · Gold £140 · Platinum £300
+            //     (root CLAUDE.md §SERVICE MODEL, source of truth = the /programme/ price panel,
+            //     Neil's ruling 2026-09-01). Silver was quoted at the retired £50 until .590.
+            //     Bronze was missing entirely until .592 (FIXLIST #447e) — it is listed so the
+            //     ladder is honest, and marked plainly as NOT including the Lab: Bronze is the
+            //     Library + the weekly Live Modelling hour, no platform (live-modelling lessons
+            //     never show this wall at all — reviewRole 'live_modelling' is exempt, .590).
             // (2) never say "AI" in customer-facing copy — parents anchor to ChatGPT at £20/month
             //     and the value collapses. Describe by OUTCOME instead.
+            // (3) plain words for a second-language reader; no orphan references (root §WRITE FOR
+            //     A SECOND-LANGUAGE READER).
             card.appendChild(el('p', { textContent: 'Get access to guided essay planning, assessment, polishing, model answers, and exam preparation across all exam boards.', style: { fontSize: '13px', opacity: '0.7', lineHeight: '1.5', margin: '0 0 16px' } }));
 
             const features = [
+                { tier: 'Bronze', price: '£20/month', desc: 'Grade 9 Library and the weekly Live Modelling hour. Does not include the Writing Mastery Lab.', excluded: true },
                 { tier: 'Silver', price: '£70/month', desc: 'Full platform access — practise freely on any text' },
                 { tier: 'Gold', price: '£140/month', desc: 'Full mastery programme with structured topics & progress tracking', recommended: true },
             ];
             features.forEach(f => {
-                const row = el('div', { className: `swml-upgrade-tier${f.recommended ? ' recommended' : ''}`, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', margin: '6px 0', borderRadius: '10px', background: f.recommended ? 'rgba(81,218,207,0.1)' : 'rgba(255,255,255,0.03)', border: f.recommended ? '1px solid rgba(81,218,207,0.3)' : '1px solid rgba(255,255,255,0.08)' } });
+                const row = el('div', { className: `swml-upgrade-tier${f.recommended ? ' recommended' : ''}${f.excluded ? ' excluded' : ''}`, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', margin: '6px 0', borderRadius: '10px', background: f.recommended ? 'rgba(81,218,207,0.1)' : 'rgba(255,255,255,0.03)', border: f.recommended ? '1px solid rgba(81,218,207,0.3)' : '1px solid rgba(255,255,255,0.08)', opacity: f.excluded ? '0.7' : '1' } });
                 row.appendChild(el('div', {}, [
                     el('div', { textContent: `${f.tier} — ${f.price}`, style: { fontWeight: '700', fontSize: '14px' } }),
                     el('div', { textContent: f.desc, style: { fontSize: '11px', opacity: '0.6', marginTop: '2px' } }),
                 ]));
                 if (f.recommended) row.appendChild(el('span', { textContent: '⭐ Recommended', style: { fontSize: '10px', color: 'var(--swml-teal)', fontWeight: '700' } }));
+                if (f.excluded) row.appendChild(el('span', { textContent: 'Not included', style: { fontSize: '10px', opacity: '0.6', fontWeight: '700', whiteSpace: 'nowrap', marginLeft: '10px' } }));
                 card.appendChild(row);
             });
 

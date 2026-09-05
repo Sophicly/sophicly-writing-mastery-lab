@@ -257,7 +257,7 @@
     },
     "language_c2": {
       "verified": true,
-      "source": "EDUQAS C700U20 past paper (verified by Neil 2026-04-02)",
+      "source": "EDUQAS C700U20 past paper (verified by Neil 2026-04-02) · Q2/Q4 AOs corrected 2026-09-05 against the board's own mark scheme: 'November 2022 MS - Component 2 Eduqas English Language GCSE.pdf' p6 Q2 annotated '(AO2 1a, b, c and d)' (AO2 only), p9 Q4 annotated '(AO4)' (AO4 only) — Eduqas live-modelling sub-lane GATE-NOTES §3",
       "total": 80,
       "time_minutes": 120,
       "sections": [
@@ -297,8 +297,7 @@
               "id": "Q2",
               "marks": 10,
               "aos": [
-                "AO2",
-                "AO4"
+                "AO2"
               ],
               "type": "analysis",
               "description": "How does the writer try to show X? Comment on language, tone, structure."
@@ -334,7 +333,6 @@
               "id": "Q4",
               "marks": 10,
               "aos": [
-                "AO2",
                 "AO4"
               ],
               "type": "evaluation",

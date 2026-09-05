@@ -1238,6 +1238,38 @@
     {
       "section": "Fiction reading — Language Paper 1 family",
       "unit": "Edexcel IGCSE Language A Paper 2",
+      "lesson_title": "June 2023 (R) · Significant Cigarettes (from The Road Home) (Tremain)",
+      "sitting": "June 2023",
+      "board": "edexcel-igcse",
+      "text": "edexcel_igcse_lang_a_paper_2",
+      "topic_number": 2023061,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"2023061\" board=\"edexcel-igcse\" text=\"edexcel_igcse_lang_a_paper_2\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 2023061,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "qp": "June 2023 (R) QP.pdf",
+        "qp_sha1": "7b78d863d61f5f98be45b3334c48db49a8718f46",
+        "ms": "June 2023 (R) MS.pdf",
+        "ms_sha1": "b2f5164da17a3afbff7025ea52cfd695d3115e7a",
+        "exam_date": "Monday 12 June 2023",
+        "paper_code": "4EA1/02",
+        "section_b_image_page": "images/2023061-section-b-images-09.png"
+      },
+      "notes": [
+        "Author confirmed against the board's own anthology (Rose Tremain).",
+        "PRINTED-NUMBERING ERROR ON THIS PAPER: every line number the board prints beside “Significant Cigarettes (from The Road Home)” sits 1 line(s) above the line it numbers (marker 5 beside the 4th line of the text; verified uniform across all 30 markers). Neil ruled 2026-09-05: number by the TEXT, 1–149, not by the misprint — so the board's printed k is our line k−1, and line_checks in this sidecar are keyed by OUR line numbers.",
+        "Section B is emitted as one 30-mark question (Q2) carrying the board's own Q2, Q3 and Q4 as its three options — the paper is answered once, and this is the shape protocols/shared/language-paper-specs.json declares for edexcel-igcse language_p2.",
+        "Sat Monday 12 June 2023."
+      ]
+    },
+    {
+      "section": "Fiction reading — Language Paper 1 family",
+      "unit": "Edexcel IGCSE Language A Paper 2",
       "lesson_title": "January 2023 · The Necklace (Maupassant)",
       "sitting": "January 2023",
       "board": "edexcel-igcse",

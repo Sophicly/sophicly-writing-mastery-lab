@@ -240,13 +240,20 @@ def clean_block_idx(segs, idxs):
 
 
 # ─────────────────────────────────────────────── source text reconstruction ───────────────────
-def reconstruct(block, label):
+def reconstruct(block, label, lead_shift=0):
     """Turn a slice of measured segments into numbered body lines + printed-marker checks.
 
     Edexcel prints a marker every five lines in the right margin. The marker's baseline sits ~2pt
     below its line's, so it is matched to the nearest body line. The FIRST marker fixes where the
     body starts (marker 5 lands on body line 5), which is what separates the board's one-sentence
     introduction from the extract proper — and every later marker then has to agree, or we refuse.
+
+    `lead_shift` (--markers-lead N) declares a PRINTED-NUMBERING ERROR on the paper: the board's
+    marker k sits beside text line k−N, uniformly. Neil's ruling (2026-09-05, June 2023 (R) Paper 2
+    'Significant Cigarettes'): number by the TEXT, never by the misprint — so with the shift
+    declared, marker k is asserted against body line k−N and the sidecar's line_checks are keyed by
+    OUR line number (k−N), which is what the gate and installer assert against. A declared shift
+    that the page does not actually show still refuses (every marker must agree with it).
     """
     markers, body = [], []
     marker_x = None
@@ -276,13 +283,14 @@ def reconstruct(block, label):
         idx = min(range(len(body)), key=lambda i: abs(body[i]['y'] + 1.8 - m0['y'])
                   if body[i]['page'] == m0['page'] else 1e9)
         k = int(m0['text'])
-        first = idx - (k - 1)
+        first = idx - (k - 1) + lead_shift
         if first < 0:
             raise SystemExit(
                 f'{label}: the board prints marker {k} beside line {idx + 1} of its own extract, so its '
-                f'printed numbering runs {-first} line(s) ahead of the text it numbers (this paper appears '
+                f'printed numbering runs {-first + lead_shift} line(s) ahead of the text it numbers (this paper appears '
                 f'to count the extract heading as a line). REFUSING rather than renumbering the board — '
-                f'author this sitting by hand if that shift is intended.')
+                f'if the misprint is confirmed on the rendered page, re-run with --markers-lead {-first + lead_shift} '
+                f'(numbers by the TEXT; Neil 2026-09-05).')
         if first > 0:
             gap_in = body[first]['y'] - body[first - 1]['y'] if body[first]['page'] == body[first - 1]['page'] else 1e9
             if gap_in < lead * 1.4:
@@ -313,14 +321,17 @@ def reconstruct(block, label):
         if d > max(4.0, lead * 0.5):
             raise SystemExit(f'{label}: printed marker {k} sits {d:.1f}pt from any body line '
                              f'(leading {lead:.1f}pt) — refusing')
-        if j + 1 != k:
+        if j + 1 + lead_shift != k:
             raise SystemExit(f'{label}: printed marker {k} landed on reconstructed line {j + 1} — refusing '
-                             f'(text: {body[first + j]["text"][:50]!r})')
-        checks[str(k)] = body[first + j]['text'][:32]
+                             f'(text: {body[first + j]["text"][:50]!r}'
+                             + (f'; --markers-lead {lead_shift} was declared, so line {k - lead_shift} was expected' if lead_shift else '')
+                             + ')')
+        # keyed by OUR line number: identical to the printed marker unless a lead shift is declared
+        checks[str(k - lead_shift)] = body[first + j]['text'][:32]
     if not checks:
         checks = {}
     return {'intro': ' '.join(intro), 'lines': lines, 'checks': checks, 'count': n,
-            'paragraphs': sum(1 for n_, _ in lines if n_ is None) + 1}
+            'paragraphs': sum(1 for n_, _ in lines if n_ is None) + 1, 'lead_shift': lead_shift}
 
 
 def footnotes(block):
@@ -511,7 +522,7 @@ def author_p1(a, segs):
     for L in ('A', 'B'):
         blk = blocks[L]
         fn_at = next((i for i, s in enumerate(blk) if re.match(r'^[¹²³⁴⁵⁶⁷⁸⁹]\s*\S', s['text'])), len(blk))
-        rec = reconstruct(blk[:fn_at], f'Text {"One" if L == "A" else "Two"}')
+        rec = reconstruct(blk[:fn_at], f'Text {"One" if L == "A" else "Two"}', a.markers_lead)
         rec['footnotes'] = footnotes(blk[fn_at:])
         rec['title'] = titles[L]
         sources[L] = rec
@@ -640,12 +651,18 @@ def author_p2(a, segs):
     else:
         notes.append(f'{title!r} is not listed under that exact title in the anthology markdown, so the '
                      f'author is the name the question paper itself prints under the extract.')
-    rec = reconstruct(block, title)
+    rec = reconstruct(block, title, a.markers_lead)
     rec['title'] = title
     rec['footnotes'] = []
     if not rec['checks']:
         notes.append(f'The board prints no line markers on “{title}” — the line numbers in this topic are ours, '
                      f'one per printed line, so there is nothing of the board\'s to assert them against.')
+    elif a.markers_lead:
+        notes.append(f'PRINTED-NUMBERING ERROR ON THIS PAPER: every line number the board prints beside “{title}” '
+                     f'sits {a.markers_lead} line(s) above the line it numbers (marker 5 beside the {5 - a.markers_lead}th line of the '
+                     f'text; verified uniform across all {len(rec["checks"])} markers). Neil ruled 2026-09-05: number by the '
+                     f'TEXT, 1–{rec["count"]}, not by the misprint — so the board\'s printed k is our line k−{a.markers_lead}, '
+                     f'and line_checks in this sidecar are keyed by OUR line numbers.')
 
     # ── questions ──
     # an inline poem sits between the "Remind yourself of …" line and question 1; keep it out of
@@ -721,7 +738,13 @@ def main():
     ap.add_argument('--image', action='append', help='one-line description of a Section B stimulus image (Paper 2), repeatable')
     ap.add_argument('--no-dump-images', action='store_true',
                     help="don't save the Section B stimulus page as a PNG beside the topic (Paper 2)")
+    ap.add_argument('--markers-lead', type=int, default=0,
+                    help="declare a PRINTED-NUMBERING ERROR: the board's marker k sits beside text line k-N, uniformly. "
+                         "The topic then numbers by the TEXT (Neil's ruling 2026-09-05) and every marker is still asserted. "
+                         "Only after confirming the misprint on the rendered page.")
     a = ap.parse_args()
+    if a.markers_lead < 0:
+        raise SystemExit('--markers-lead must be 0 or a positive number of lines')
 
     yyyy, mm = a.sitting[:4], a.sitting[4:6]
     if mm not in SITTING_WORDS:

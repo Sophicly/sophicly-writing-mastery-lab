@@ -1,4 +1,5 @@
 # Topic 1: Diagnostic — The Danger of a Single Story (with London Riots)
+<!-- Tariff + AO provenance (2026-09-05, FIXLIST #447g): Q1–Q3 = 2 · 4 · 5 marks, all AO1; Q4 = 12 marks AO2 only; Q5 = 22 marks AO3 only; Q6 = 45 (AO4 27 + AO5 18). Source: Pearson Edexcel 4EA1/01 June 2024 mark scheme ('Edexcel IGCSE Language Paper 1 Spec A June 2024 MS.pdf', Q1 (2) p6, Q2 (4) p7, Q3 (5) p8, Q4 'AO2' p11, Q5 'AO3' p14) and the June 2023 paper; matches protocols/shared/language-paper-specs.json edexcel-igcse.language_p1. The previous 2 · 3 · 6 also summed to 45 — a totals check cannot see this class of error. -->
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** Edexcel IGCSE Spec A Paper 1 Diagnostic — Non-Fiction Texts and Transactional Writing. Section A: five reading questions across two non-fiction texts (Text One unseen, Text Two anthology), 45 marks. Q1-Q3 on Text One; Q4 analyses language and structure in Text Two; Q5 compares both texts. Section B: one transactional writing task from two options, 45 marks. Total: 90 marks. 2 hours 15 minutes. This diagnostic pairs Adichie's exploration of single narratives with Fletcher's account of the London riots — both examine how prejudice and simplified stories distort our understanding of people and communities.
@@ -147,24 +148,24 @@ List two words or phrases from Text One that suggest the rioters feel disconnect
 [2 marks]
 
 ## Q2
-**Marks:** 3
+**Marks:** 4
 **AOs:** AO1
 
 Using your own words, explain what Fletcher means in lines 25-30 when he contrasts the Bond Street property sale with the earnings of an average worker.
 
-[3 marks]
+[4 marks]
 
 ## Q3
-**Marks:** 6
+**Marks:** 5
 **AOs:** AO1
 
 Explain Fletcher's thoughts and feelings about the causes of the London riots. Use evidence from Text One to support your answer.
 
-[6 marks]
+[5 marks]
 
 ## Q4
-**Marks:** 12 (AO1 4 + AO2 8)
-**AOs:** AO1, AO2
+**Marks:** 12
+**AOs:** AO2
 
 Analyse how Adichie uses language and structure to convey the power and danger of single stories in Text Two.
 
@@ -173,8 +174,8 @@ Support your views with detailed reference to the text.
 [12 marks]
 
 ## Q5
-**Marks:** 22 (AO1 10 + AO3 12)
-**AOs:** AO1, AO3
+**Marks:** 22
+**AOs:** AO3
 
 Compare how the writers of Text One and Text Two present their ideas and perspectives about how simplified narratives shape the way people are seen and treated.
 
@@ -354,24 +355,24 @@ List two words or phrases from Text One that suggest the journalist has become e
 [2 marks]
 
 ## Q2
-**Marks:** 3
+**Marks:** 4
 **AOs:** AO1
 
 Using your own words, explain what Lamb describes seeing in lines 23-28 when she finds the woman in the overflow section of the camp.
 
-[3 marks]
+[4 marks]
 
 ## Q3
-**Marks:** 6
+**Marks:** 5
 **AOs:** AO1
 
 Explain the writer's thoughts and feelings about the role of a journalist in a crisis zone in Text One. Use evidence from the text to support your answer.
 
-[6 marks]
+[5 marks]
 
 ## Q4
-**Marks:** 12 (AO1 4 + AO2 8)
-**AOs:** AO1, AO2
+**Marks:** 12
+**AOs:** AO2
 
 Analyse how Alagiah uses language and structure to convey the emotional impact of witnessing suffering in Text Two.
 
@@ -380,8 +381,8 @@ Support your views with detailed reference to the text.
 [12 marks]
 
 ## Q5
-**Marks:** 22 (AO1 10 + AO3 12)
-**AOs:** AO1, AO3
+**Marks:** 22
+**AOs:** AO3
 
 Compare how the writers of Text One and Text Two present their ideas and perspectives about the moral challenges of reporting on human suffering.
 
@@ -540,24 +541,24 @@ List two words or phrases from Text One that suggest the elephants are aware of 
 [2 marks]
 
 ## Q2
-**Marks:** 3
+**Marks:** 4
 **AOs:** AO1
 
 Using your own words, explain what Sheldrick means in lines 28-32 when she discusses the difficulties of conservation in Africa.
 
-[3 marks]
+[4 marks]
 
 ## Q3
-**Marks:** 6
+**Marks:** 5
 **AOs:** AO1
 
 Explain the writer's thoughts and feelings about the relationship between humans and elephants in Text One. Use evidence from the text to support your answer.
 
-[6 marks]
+[5 marks]
 
 ## Q4
-**Marks:** 12 (AO1 4 + AO2 8)
-**AOs:** AO1, AO2
+**Marks:** 12
+**AOs:** AO2
 
 Analyse how Herbert uses language and structure to convey her conflicted feelings about the narwhal hunt in Text Two.
 
@@ -566,8 +567,8 @@ Support your views with detailed reference to the text.
 [12 marks]
 
 ## Q5
-**Marks:** 22 (AO1 10 + AO3 12)
-**AOs:** AO1, AO3
+**Marks:** 22
+**AOs:** AO3
 
 Compare how the writers of Text One and Text Two present their ideas and perspectives about the tensions between protecting wildlife and the needs of local communities.
 
@@ -735,24 +736,24 @@ List two words or phrases from Text One that suggest the storm was an overwhelmi
 [2 marks]
 
 ## Q2
-**Marks:** 3
+**Marks:** 4
 **AOs:** AO1
 
 Using your own words, explain what happened to the climbers in the "Death Zone" as described in lines 45-52 of Text One.
 
-[3 marks]
+[4 marks]
 
 ## Q3
-**Marks:** 6
+**Marks:** 5
 **AOs:** AO1
 
 Explain the writer's thoughts and feelings about the power and danger of the storm in Text One. Use evidence from the text to support your answer.
 
-[6 marks]
+[5 marks]
 
 ## Q4
-**Marks:** 12 (AO1 4 + AO2 8)
-**AOs:** AO1, AO2
+**Marks:** 12
+**AOs:** AO2
 
 Analyse how Morris uses language and structure to present his views on the Antarctic helicopter adventure in Text Two.
 
@@ -761,8 +762,8 @@ Support your views with detailed reference to the text.
 [12 marks]
 
 ## Q5
-**Marks:** 22 (AO1 10 + AO3 12)
-**AOs:** AO1, AO3
+**Marks:** 22
+**AOs:** AO3
 
 Compare how the writers of Text One and Text Two present their ideas and perspectives about the risks and consequences of extreme adventure.
 
@@ -912,24 +913,24 @@ List two words or phrases from Text One that suggest the ocean is a hostile, dan
 [2 marks]
 
 ## Q2
-**Marks:** 3
+**Marks:** 4
 **AOs:** AO1
 
 Using your own words, explain what happens to Ben when the wave hits the boat in lines 12-22 of Text One.
 
-[3 marks]
+[4 marks]
 
 ## Q3
-**Marks:** 6
+**Marks:** 5
 **AOs:** AO1
 
 Explain the writer's thoughts and feelings during and after the capsizing in Text One. Use evidence from the text to support your answer.
 
-[6 marks]
+[5 marks]
 
 ## Q4
-**Marks:** 12 (AO1 4 + AO2 8)
-**AOs:** AO1, AO2
+**Marks:** 12
+**AOs:** AO2
 
 Analyse how Ralston uses language and structure to build tension and convey the horror of becoming trapped in Text Two.
 
@@ -938,8 +939,8 @@ Support your views with detailed reference to the text.
 [12 marks]
 
 ## Q5
-**Marks:** 22 (AO1 10 + AO3 12)
-**AOs:** AO1, AO3
+**Marks:** 22
+**AOs:** AO3
 
 Compare how the writers of Text One and Text Two present their ideas and perspectives about survival and the human response to life-threatening danger.
 
@@ -1114,24 +1115,24 @@ List two words or phrases from Text One that suggest the limitations of scientif
 [2 marks]
 
 ## Q2
-**Marks:** 3
+**Marks:** 4
 **AOs:** AO1
 
 Using your own words, explain what Siegel means in lines 10-16 when he discusses the relationship between measurements and reality.
 
-[3 marks]
+[4 marks]
 
 ## Q3
-**Marks:** 6
+**Marks:** 5
 **AOs:** AO1
 
 Explain the writer's thoughts and feelings about the nature of scientific proof in Text One. Use evidence from the text to support your answer.
 
-[6 marks]
+[5 marks]
 
 ## Q4
-**Marks:** 12 (AO1 4 + AO2 8)
-**AOs:** AO1, AO2
+**Marks:** 12
+**AOs:** AO2
 
 Analyse how Zephaniah uses language and structure to challenge assumptions about intelligence and education in Text Two.
 
@@ -1140,8 +1141,8 @@ Support your views with detailed reference to the text.
 [12 marks]
 
 ## Q5
-**Marks:** 22 (AO1 10 + AO3 12)
-**AOs:** AO1, AO3
+**Marks:** 22
+**AOs:** AO3
 
 Compare how the writers of Text One and Text Two present their ideas and perspectives about questioning widely held assumptions.
 
@@ -1292,24 +1293,24 @@ List two words or phrases from Text One that suggest the festival was chaotic an
 [2 marks]
 
 ## Q2
-**Marks:** 3
+**Marks:** 4
 **AOs:** AO1
 
 Using your own words, explain what Palin describes seeing and experiencing in lines 25-31 of Text One during the height of the tomato fight.
 
-[3 marks]
+[4 marks]
 
 ## Q3
-**Marks:** 6
+**Marks:** 5
 **AOs:** AO1
 
 Explain the writer's thoughts and feelings about the Tomatina festival in Text One. Use evidence from the text to support your answer.
 
-[6 marks]
+[5 marks]
 
 ## Q4
-**Marks:** 12 (AO1 4 + AO2 8)
-**AOs:** AO1, AO2
+**Marks:** 12
+**AOs:** AO2
 
 Analyse how Levine uses language and structure to create excitement and convey the chaotic atmosphere of the donkey race in Text Two.
 
@@ -1318,8 +1319,8 @@ Support your views with detailed reference to the text.
 [12 marks]
 
 ## Q5
-**Marks:** 22 (AO1 10 + AO3 12)
-**AOs:** AO1, AO3
+**Marks:** 22
+**AOs:** AO3
 
 Compare how the writers of Text One and Text Two present their ideas and perspectives about experiencing unfamiliar and chaotic cultural events.
 
@@ -1480,24 +1481,24 @@ List two words or phrases from Text One that suggest the village felt remote and
 [2 marks]
 
 ## Q2
-**Marks:** 3
+**Marks:** 4
 **AOs:** AO1
 
 Using your own words, explain what Kerr discovers about the house and the way of life during his first evening, as described in lines 31-40 of Text One.
 
-[3 marks]
+[4 marks]
 
 ## Q3
-**Marks:** 6
+**Marks:** 5
 **AOs:** AO1
 
 Explain the writer's thoughts and feelings about arriving in the Japanese village in Text One. Use evidence from the text to support your answer.
 
-[6 marks]
+[5 marks]
 
 ## Q4
-**Marks:** 12 (AO1 4 + AO2 8)
-**AOs:** AO1, AO2
+**Marks:** 12
+**AOs:** AO2
 
 Analyse how Zeppa uses language and structure to convey her experience of arriving in an unfamiliar country in Text Two.
 
@@ -1506,8 +1507,8 @@ Support your views with detailed reference to the text.
 [12 marks]
 
 ## Q5
-**Marks:** 22 (AO1 10 + AO3 12)
-**AOs:** AO1, AO3
+**Marks:** 22
+**AOs:** AO3
 
 Compare how the writers of Text One and Text Two present their ideas and perspectives about the experience of arriving in a new and unfamiliar culture.
 
@@ -1670,24 +1671,24 @@ List two words or phrases from Text One that suggest the whale is a powerful and
 [2 marks]
 
 ## Q2
-**Marks:** 3
+**Marks:** 4
 **AOs:** AO1
 
 Using your own words, explain what Nestor experiences when the whale turns to look at him, as described in lines 18-28 of Text One.
 
-[3 marks]
+[4 marks]
 
 ## Q3
-**Marks:** 6
+**Marks:** 5
 **AOs:** AO1
 
 Explain the writer's thoughts and feelings about his encounter with the sperm whale in Text One. Use evidence from the text to support your answer.
 
-[6 marks]
+[5 marks]
 
 ## Q4
-**Marks:** 12 (AO1 4 + AO2 8)
-**AOs:** AO1, AO2
+**Marks:** 12
+**AOs:** AO2
 
 Analyse how Macdonald uses language and structure to convey the intensity of meeting the hawk for the first time in Text Two.
 
@@ -1696,8 +1697,8 @@ Support your views with detailed reference to the text.
 [12 marks]
 
 ## Q5
-**Marks:** 22 (AO1 10 + AO3 12)
-**AOs:** AO1, AO3
+**Marks:** 22
+**AOs:** AO3
 
 Compare how the writers of Text One and Text Two present their ideas and perspectives about the emotional impact of encountering a wild animal.
 
@@ -1871,24 +1872,24 @@ List two words or phrases from Text One that suggest the writer finds the cosmet
 [2 marks]
 
 ## Q2
-**Marks:** 3
+**Marks:** 4
 **AOs:** AO1
 
 Using your own words, explain what Mitchell means in lines 22-31 when he discusses cosmetic surgery and the impression it creates.
 
-[3 marks]
+[4 marks]
 
 ## Q3
-**Marks:** 6
+**Marks:** 5
 **AOs:** AO1
 
 Explain the writer's thoughts and feelings about how people use cosmetics to create false impressions in Text One. Use evidence from the text to support your answer.
 
-[6 marks]
+[5 marks]
 
 ## Q4
-**Marks:** 12 (AO1 4 + AO2 8)
-**AOs:** AO1, AO2
+**Marks:** 12
+**AOs:** AO2
 
 Analyse how Yen Mah uses language and structure to convey the contrast between her outward circumstances and her inner feelings in Text Two.
 
@@ -1897,8 +1898,8 @@ Support your views with detailed reference to the text.
 [12 marks]
 
 ## Q5
-**Marks:** 22 (AO1 10 + AO3 12)
-**AOs:** AO1, AO3
+**Marks:** 22
+**AOs:** AO3
 
 Compare how the writers of Text One and Text Two present their ideas and perspectives about the gap between appearance and reality, and the pressures of expectation.
 
