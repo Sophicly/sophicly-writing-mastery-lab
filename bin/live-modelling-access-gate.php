@@ -75,6 +75,12 @@ $q = ['board' => 'aqa', 'text' => 'aqa_lang_paper_1', 'topicNumber' => 11, 'suff
 $req = new WP_REST_Request('GET', '/sophicly-wml/v1/canvas/load'); foreach ($q as $k => $v) $req->set_param($k, $v);
 $res = rest_do_request($req);
 ok(!$res->is_error() && $res->get_status() === 200, "GET canvas/load student_id=author → 200 (got " . $res->get_status() . ")");
+$req = new WP_REST_Request('GET', '/sophicly-wml/v1/canvas/review'); foreach ($q as $k => $v) $req->set_param($k, $v); $req->set_param('topicNumber', 11);
+$res = rest_do_request($req);
+ok(!$res->is_error() && $res->get_status() === 200, "GET canvas/review student_id=author → 200 — the route the review UI actually uses (got " . $res->get_status() . ")");
+$req = new WP_REST_Request('GET', '/sophicly-wml/v1/canvas/review-chat'); foreach ($q as $k => $v) $req->set_param($k, $v);
+$res = rest_do_request($req);
+ok(!$res->is_error() && $res->get_status() === 200, "GET canvas/review-chat student_id=author → 200 (got " . $res->get_status() . ")");
 $req = new WP_REST_Request('POST', '/sophicly-wml/v1/canvas/save');
 $req->set_body_params(['board' => 'aqa', 'text' => 'aqa_lang_paper_1', 'topicNumber' => 11, 'student_id' => $A, 'document' => ['type' => 'doc', 'content' => []]]);
 $res = rest_do_request($req);

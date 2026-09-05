@@ -314,13 +314,16 @@ class SWML_REST_API {
         ]);
 
         // Tutor review — load student canvas/chat (v7.15.2)
+        // v7.20.591: the two READ routes authorise in the handler (verify_viewer_access: tutor/specialist/
+        // admin/self, linked parent, live-modelling audience). A tutor-only permission_callback here refused
+        // every parent and every live-modelling student before the handler could say yes.
         register_rest_route($namespace, '/canvas/review', [
             'methods' => 'GET', 'callback' => [$this, 'tutor_load_canvas'],
-            'permission_callback' => [$this, 'check_tutor_auth'],
+            'permission_callback' => [$this, 'check_auth'],
         ]);
         register_rest_route($namespace, '/canvas/review-chat', [
             'methods' => 'GET', 'callback' => [$this, 'tutor_load_canvas_chat'],
-            'permission_callback' => [$this, 'check_tutor_auth'],
+            'permission_callback' => [$this, 'check_auth'],
         ]);
 
         // Tutor comment — save comments on student's canvas (v7.15.30)
@@ -3560,6 +3563,8 @@ class SWML_REST_API {
         $sophicly_role = get_user_meta($viewer_id, 'sophicly_role', true);
         $att_role      = get_user_meta($viewer_id, 'sophicly_att_role', true);
         $is_parent_role = ($sophicly_role === 'parent') || ($att_role === 'parent');
+        // v7.20.591: LIVE MODELLING (#447) — any logged-in viewer may READ a designated author's document.
+        if (class_exists('Sophicly_Writing_Mastery_Lab') && Sophicly_Writing_Mastery_Lab::is_live_modelling_author($student_id)) return true;
         if (!$is_parent_role) return $tutor_result;
         global $wpdb;
         $table = $wpdb->prefix . 'sophicly_connections';

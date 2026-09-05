@@ -32592,7 +32592,9 @@
             const _eye = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
             const _rbName = (state.reviewStudentName || 'this student').replace(/[\s ]+/g, ' ').trim().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
             const _rbText = el('span', { className: 'swml-tutor-banner-text' });
-            _rbText.innerHTML = _eye + ' Reviewing <strong>' + _rbName + '</strong>’s progress';
+            _rbText.innerHTML = state.reviewRole === 'live_modelling'
+                ? _eye + ' Live modelling \u2014 <strong>' + _rbName + '</strong> is writing this document'
+                : _eye + ' Reviewing <strong>' + _rbName + '</strong>’s progress';
             rb.appendChild(_rbText);
             const _rbParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
             if (!_rbParent) {
@@ -32613,7 +32615,8 @@
                     .forEach((p) => _u.searchParams.delete(p));
                 _exitUrl = _u.pathname + _u.search + _u.hash;
             } catch (e) {}
-            rb.appendChild(el('a', { className: 'swml-tutor-banner-exit', href: _exitUrl, textContent: 'Exit review' }));
+            // v7.20.591: a live-modelling viewer has nothing to exit to — the lesson IS this view.
+            if (state.reviewRole !== 'live_modelling') rb.appendChild(el('a', { className: 'swml-tutor-banner-exit', href: _exitUrl, textContent: 'Exit review' }));
             rbBar.appendChild(rb);
             contentWrap.appendChild(rbBar);
         }
