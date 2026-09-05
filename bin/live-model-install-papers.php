@@ -27,7 +27,7 @@ foreach ((array) $args as $a) {
     elseif (strpos($a, 'dir=') === 0) $dir = substr($a, 4);
 }
 $files = [];
-foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir)) as $f) { if (substr((string) $f, -3) === '.md') $files[] = (string) $f; }
+foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir)) as $f) { if (preg_match('/^\\d{6,7}\\.md$/', basename((string) $f))) $files[] = (string) $f; }   // only <sitting>.md are papers (GATE-NOTES.md etc. are not)
 sort($files);
 echo "MODE: $mode · " . count($files) . " paper file(s) under $dir" . ($only ? " · only=$only" : '') . "\n";
 
