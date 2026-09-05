@@ -38,6 +38,7 @@ $argv_ = isset($args) && is_array($args) ? $args : [];
 $mode = 'dry'; $env = null; $enrol = false;
 foreach ($argv_ as $a) {
     if ($a === 'apply') $mode = 'apply';
+    elseif ($a === 'probe') $mode = 'probe';      // no writes: re-run the done_when probe against what is already there, in a FRESH process
     elseif ($a === 'enrol') $enrol = true;
     elseif (strpos($a, 'env=') === 0) $env = substr($a, 4);
 }
@@ -167,60 +168,73 @@ foreach ($sections as $st => $sec) {
     }
 }
 printf("\nunits: %d new · %d kept   lessons: %d new · %d update · %d unchanged\n", $counts['unit_new'], $counts['unit_kept'], $counts['lesson_new'], $counts['lesson_upd'], $counts['lesson_kept']);
-if (!$APPLY) { echo "\n(dry run — nothing written. Add `apply`.)\n"; exit(0); }
+if ($mode === 'dry') { echo "\n(dry run — nothing written. Add `apply`, or `probe` to re-check an existing course.)\n"; exit(0); }
+if ($mode === 'probe' && !$cid) { echo "⛔ probe: no course carries _swml_lm_course yet — run `apply` first.\n"; exit(1); }
 
-// ── the course tree + section headings ───────────────────────────────────────────────────────────────────────────
-$h = ['sfwd-lessons' => []];
-foreach ($unitOrder as $u) {
-    $topics = [];
-    foreach ($tree[$u['unit_id']] as $tid) $topics[$tid] = [];
-    $h['sfwd-lessons'][$u['unit_id']] = ['sfwd-topic' => $topics];
-}
-$stepsObj = LDLMS_Factory_Post::course_steps($cid);
-$stepsObj->set_steps($h);
-delete_transient('learndash_course_steps_' . $cid);
-$check = LDLMS_Factory_Post::course_steps($cid)->get_steps('h');
-$treeOk = 0; $treeBad = [];
-foreach ($tree as $uid => $tids) foreach ($tids as $tid) { if (isset($check['sfwd-lessons'][$uid]['sfwd-topic'][$tid])) $treeOk++; else $treeBad[] = $tid; }
-printf("course tree: %d lesson(s) placed%s\n", $treeOk, $treeBad ? ' ⛔ MISSING: #' . implode(',#', $treeBad) : '');
-
-// sections: rebuilt whole, absolute slot index across sections + units; stable IDs reused by title
-$existing = json_decode((string) get_post_meta($cid, 'course_sections', true), true);
-$idByTitle = [];
-if (is_array($existing)) foreach ($existing as $s) if (!empty($s['post_title'])) $idByTitle[$s['post_title']] = $s['ID'] ?? null;
-$secMeta = []; $slot = 0; $lastSection = null; $i = 0;
-foreach ($unitOrder as $u) {
-    if ($u['section'] !== $lastSection) {
-        $secMeta[] = ['order' => $slot, 'ID' => $idByTitle[$u['section']] ?? (int) (round(microtime(true) * 1000) + $i), 'post_title' => $u['section'], 'url' => '', 'edit_link' => '', 'tree' => [], 'expanded' => false, 'type' => 'section-heading'];
-        $slot++; $i++; $lastSection = $u['section'];
-    }
-    $slot++;
-}
-update_post_meta($cid, 'course_sections', wp_slash(wp_json_encode($secMeta)));
-$resolved = function_exists('learndash_30_get_course_sections') ? learndash_30_get_course_sections($cid) : null;
-printf("sections: wrote %d; LearnDash resolves %s\n", count($secMeta), $resolved === null ? '(fn missing)' : count($resolved) . ' → ' . json_encode(array_values(array_map(fn($x) => is_object($x) ? $x->post_title : ($x['post_title'] ?? '?'), $resolved))));
-
-// ── bridge ───────────────────────────────────────────────────────────────────────────────────────────────────────
 $bridgeKey = 'sophicly_ld_bridge_' . $cid;
-$bridge = get_option($bridgeKey, []); if (!is_array($bridge)) $bridge = [];
-foreach ($lessonRows as $tid => $row) {
-    $prev = $bridge[(string) $tid] ?? [];
-    $bridge[(string) $tid] = [
-        'wml_task'   => (string) ($row['bridge']['wml_task'] ?? 'diagnostic'),
-        'wml_topic'  => (int) ($row['bridge']['wml_topic'] ?? $row['topic_number']),
-        'wml_phase'  => (string) ($row['bridge']['wml_phase'] ?? 'initial'),
-        'wml_step'   => 0,
-        'wml_author' => $AUTHOR,
-        'bridged_at' => is_array($prev) && !empty($prev['bridged_at']) ? $prev['bridged_at'] : current_time('mysql'),
-    ];
+if ($APPLY) {
+    // ── the course tree + section headings ───────────────────────────────────────────────────────────────────────
+    $h = ['sfwd-lessons' => []];
+    foreach ($unitOrder as $u) {
+        $topics = [];
+        foreach ($tree[$u['unit_id']] as $tid) $topics[$tid] = [];
+        $h['sfwd-lessons'][$u['unit_id']] = ['sfwd-topic' => $topics];
+    }
+    $stepsObj = LDLMS_Factory_Post::course_steps($cid);
+    $stepsObj->set_steps($h);
+    delete_transient('learndash_course_steps_' . $cid);
+    $check = LDLMS_Factory_Post::course_steps($cid)->get_steps('h');
+    $treeOk = 0; $treeBad = [];
+    foreach ($tree as $uid => $tids) foreach ($tids as $tid) { if (isset($check['sfwd-lessons'][$uid]['sfwd-topic'][$tid])) $treeOk++; else $treeBad[] = $tid; }
+    printf("course tree: %d lesson(s) placed%s\n", $treeOk, $treeBad ? ' ⛔ MISSING: #' . implode(',#', $treeBad) : '');
+
+    // sections: rebuilt whole, absolute slot index across sections + units; stable IDs reused by title
+    $existing = json_decode((string) get_post_meta($cid, 'course_sections', true), true);
+    $idByTitle = [];
+    if (is_array($existing)) foreach ($existing as $s) if (!empty($s['post_title'])) $idByTitle[$s['post_title']] = $s['ID'] ?? null;
+    $secMeta = []; $slot = 0; $lastSection = null; $i = 0;
+    foreach ($unitOrder as $u) {
+        if ($u['section'] !== $lastSection) {
+            $secMeta[] = ['order' => $slot, 'ID' => $idByTitle[$u['section']] ?? (int) (round(microtime(true) * 1000) + $i), 'post_title' => $u['section'], 'url' => '', 'edit_link' => '', 'tree' => [], 'expanded' => false, 'type' => 'section-heading'];
+            $slot++; $i++; $lastSection = $u['section'];
+        }
+        $slot++;
+    }
+    update_post_meta($cid, 'course_sections', wp_slash(wp_json_encode($secMeta)));
+    printf("sections: wrote %d (%s)\n", count($secMeta), implode(' · ', array_column($secMeta, 'post_title')));
+
+    // ── bridge ───────────────────────────────────────────────────────────────────────────────────────────────────
+    $bridge = get_option($bridgeKey, []); if (!is_array($bridge)) $bridge = [];
+    foreach ($lessonRows as $tid => $row) {
+        $prev = $bridge[(string) $tid] ?? [];
+        $bridge[(string) $tid] = [
+            'wml_task'   => (string) ($row['bridge']['wml_task'] ?? 'diagnostic'),
+            'wml_topic'  => (int) ($row['bridge']['wml_topic'] ?? $row['topic_number']),
+            'wml_phase'  => (string) ($row['bridge']['wml_phase'] ?? 'initial'),
+            'wml_step'   => 0,
+            'wml_author' => $AUTHOR,
+            'bridged_at' => is_array($prev) && !empty($prev['bridged_at']) ? $prev['bridged_at'] : current_time('mysql'),
+        ];
+    }
+    foreach ($bridge as $pid => $entry) { if (!is_array($entry)) { echo "⛔ refusing to save bridge: entry $pid is not an array\n"; exit(1); } }
+    update_option($bridgeKey, $bridge, false);
+    wp_cache_delete($bridgeKey, 'options');
+    printf("bridge %s: %d entries, all arrays, wml_author=%d\n", $bridgeKey, count($bridge), $AUTHOR);
+    // LearnDash caches the steps tree + section view per request; flush so the probe below reads what was written
+    wp_cache_flush();
+    delete_transient('learndash_course_steps_' . $cid);
+} else {
+    // probe mode: read what is already there
+    $check = LDLMS_Factory_Post::course_steps($cid)->get_steps('h');
+    $h = ['sfwd-lessons' => $check['sfwd-lessons'] ?? []];
+    $bridge = get_option($bridgeKey, []); if (!is_array($bridge)) $bridge = [];
+    foreach ($h['sfwd-lessons'] as $uid => $sub) foreach (array_keys($sub['sfwd-topic'] ?? []) as $tid) $lessonRows[$tid] = true;
 }
-foreach ($bridge as $pid => $entry) { if (!is_array($entry)) { echo "⛔ refusing to save bridge: entry $pid is not an array\n"; exit(1); } }
-update_option($bridgeKey, $bridge, false);
-wp_cache_delete($bridgeKey, 'options');
-printf("bridge %s: %d entries, all arrays, wml_author=%d\n", $bridgeKey, count($bridge), $AUTHOR);
+$resolved = function_exists('learndash_30_get_course_sections') ? learndash_30_get_course_sections($cid) : null;
+printf("sections: LearnDash resolves %s\n", $resolved === null ? '(fn missing)' : count($resolved) . ' → ' . json_encode(array_values(array_map(fn($x) => is_object($x) ? $x->post_title : ($x['post_title'] ?? '?'), $resolved))));
 
 // ── enrolment (opt-in flag) ──────────────────────────────────────────────────────────────────────────────────────
-if ($enrol) {
+if ($enrol && $APPLY) {
     global $wpdb;
     $uids = $wpdb->get_col("SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key='sophicly_tier' AND meta_value IN ('bronze','silver','gold','platinum')");
     $granted = 0;
