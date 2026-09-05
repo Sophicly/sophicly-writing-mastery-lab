@@ -149,21 +149,110 @@ function targets(argv) {
     for (let i = 0; i < argv.length; i++) if (argv[i] === '--file') explicit.push(argv[++i]);
     if (explicit.length) return explicit;
     const list = [path.join(ROOT, 'frontend', 'wml-assessment.js')];
-    const protoDir = path.join(ROOT, 'protocols');
-    if (fs.existsSync(protoDir)) walk(protoDir, list);
+    for (const d of ['protocols', 'resources']) {
+        // v7.20.597: `resources/` was outside the scan, and the Creative Writing Reference Guide —
+        // the 📖 Guidance rung the walk sends a stuck student to — carried the conflated definition
+        // ("the event that shatters the protagonist's normal life") the whole time the gate was
+        // reporting the walk clean. A gate that guards one of two student-facing copies guards
+        // neither (feedback: `a_gate_guarding_one_of_two_sources_guards_nothing`).
+        const p = path.join(ROOT, d);
+        if (fs.existsSync(p)) walk(p, list);
+    }
     return list.filter((f) => fs.existsSync(f));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RULE D — PLACEMENT, in the eight plot templates. Structural, not textual.
+//
+// Rules A–C police what a sentence SAYS. D polices where the beat SITS in
+// `OUTLINE_CRITERIA.cwPlotArchetypes`, because the templates were teaching the right words in the
+// wrong order: Stunning Surprise #1 sat at Stage II beat 7–9 — roughly eighteen beats BEFORE the
+// threshold-crossing row that is our Act One curtain (Neil: "the stunning surprise only happens
+// like halfway through stage two"). Edson names SS#1 and "Crossing the First Threshold" as the
+// SAME moment, and it is what turns the general goal into a specific one — so the specific-goal
+// row that opens Stage III must come after it, in every archetype, with no exceptions.
+//
+// D is deliberately about ORDER and PRESENCE, never about position-in-the-list: §22's addendum
+// says the FUNCTION is the discriminator and the clock is only a tendency. "After X, before Y" is
+// a claim about causation the student can read off the page; "at beat 26" would not be.
+const RE_SS1_ROW = /stunning\s+surprise\s*\\?#\s*1/i;
+const RE_THRESHOLD_ROW = /crosses?\s+the\s+threshold/i;
+const RE_SPECIFIC_GOAL_ROW = /goal\s+becomes\s+much\s+more\s+specific/i;
+
+function extractArchetypes(src) {
+    const at = src.indexOf('cwPlotArchetypes:');
+    if (at < 0) return null;
+    let i = at + 'cwPlotArchetypes:'.length;
+    while (src[i] !== '{') i++;
+    let depth = 0;
+    const start = i;
+    for (; i < src.length; i++) {
+        if (src[i] === '{') depth++;
+        else if (src[i] === '}') { depth--; if (!depth) break; }
+    }
+    // eslint-disable-next-line no-new-func
+    return new Function('return ' + src.slice(start, i + 1) + ';')();
+}
+
+function ruleD(src, label, findings) {
+    const arch = extractArchetypes(src);
+    const push = (why, sentence) => findings.push({ label, rule: 'D', why, sentence, line: 0 });
+    if (!arch) { push('cwPlotArchetypes not found — rule D cannot run, so it is failing loud', label); return; }
+    Object.keys(arch).forEach((key) => {
+        const a = arch[key] || {};
+        const secs = Array.isArray(a.sections) ? a.sections : [];
+        const di = secs.findIndex((s) => s.id === 'dream');
+        if (di < 0) { push(`archetype "${key}" has no Stage II (dream) section`, key); return; }
+        const rows = secs[di].criteria || [];
+        const txt = (c) => String((c && c.label) || '') + ' ' + String((c && c.prompt) || '');
+        const ss = rows.findIndex((c) => RE_SS1_ROW.test(txt(c)));
+        const th = rows.findIndex((c) => RE_THRESHOLD_ROW.test(txt(c)));
+        if (ss < 0) { push(`archetype "${key}" has no STUNNING SURPRISE #1 row in Stage II`, key); return; }
+        if (th < 0) { push(`archetype "${key}" has no threshold-crossing row in Stage II`, key); return; }
+        if (ss < th) {
+            push(`archetype "${key}": STUNNING SURPRISE #1 sits at Stage II beat ${ss + 1}, BEFORE the `
+                + `threshold-crossing beat ${th + 1} — so the act curtain lands before the act does`,
+            String(rows[ss].label || '').slice(0, 150));
+        }
+        const later = secs.slice(di + 1);
+        const hasSpec = later.some((s) => (s.criteria || []).some((c) => RE_SPECIFIC_GOAL_ROW.test(txt(c))));
+        if (!hasSpec) {
+            push(`archetype "${key}" has no "goal becomes much more specific" row after Stage II — `
+                + `the beat that MAKES the goal specific then has nothing to hand it to`, key);
+        }
+    });
+}
+
+// Rule D's own self-test: the pre-fix shape must fail, the fixed shape must pass.
+function selfTestD() {
+    const shape = (ssFirst, withSpec) => 'cwPlotArchetypes: {'
+        + ' "x": { sections: ['
+        + '  { id: "dream", criteria: ['
+        + (ssFirst ? '   { label: "STUNNING SURPRISE #1: x", prompt: "" }, { label: "Protagonist crosses the threshold", prompt: "" }'
+            : '   { label: "Protagonist crosses the threshold", prompt: "" }, { label: "STUNNING SURPRISE #1: x", prompt: "" }')
+        + '  ] },'
+        + '  { id: "fascination", criteria: [' + (withSpec ? '{ label: "goal becomes much more specific", prompt: "" }' : '{ label: "something else", prompt: "" }') + '] }'
+        + ' ] } }';
+    const cases = [[shape(true, true), 1], [shape(false, false), 1], [shape(true, false), 2], [shape(false, true), 0]];
+    let bad = 0;
+    cases.forEach(([src, want], i) => {
+        const f = [];
+        ruleD(src, 'selftestD#' + i, f);
+        if (f.length !== want) { bad++; console.error(`  ✗ rule-D self-test ${i}: expected ${want} finding(s), got ${f.length}`); }
+    });
+    return bad;
 }
 
 // ── run ──────────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
 console.log('inciting-incident gate (PEDAGOGY.md §22 + 2026-09-05 addendum)');
 
-const selfBad = selfTest();
+const selfBad = selfTest() + selfTestD();
 if (selfBad) {
     console.error(`\n❌ inciting-incident gate: ${selfBad} SELF-TEST(S) FAILED — the gate itself is broken (a check that cannot fire is worse than none).`);
     process.exit(1);
 }
-console.log('  self-test: 8/8 ok (each rule proven to fire and to stay quiet)');
+console.log('  self-test: 8/8 text + 4/4 placement ok (each rule proven to fire and to stay quiet)');
 
 const files = targets(argv);
 const findings = [];
@@ -176,6 +265,8 @@ files.forEach((f) => {
         scanText(decode(line), rel, findings);
         for (let k = before; k < findings.length; k++) findings[k].line = i + 1;
     });
+    // D runs on whichever file carries the templates — so `--file <a copy>` checks that copy.
+    if (/wml-assessment\.js$/.test(f)) ruleD(raw, rel, findings);
 });
 
 console.log(`  scanned ${files.length} file(s)`);

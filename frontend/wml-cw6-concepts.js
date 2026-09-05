@@ -25,8 +25,13 @@
  * bin/cw6-prod-technique-symbols.txt. `Wa` (Want vs Need), `Ey` (Empathy) and `Gh` (The
  * Ghost / Wound) are NOT on prod — do not wire them here until they are.
  *
- * MATCHING: `m` is tested against the beat's `label` and its `prompt`, in template order,
- * FIRST MATCH WINS — so order the array from specific to general. A row that matches nothing
+ * MATCHING: `m` is tested against the beat's `label` and its `prompt`. ⚠️ v7.20.597 — this note
+ * used to say "in template order, FIRST MATCH WINS". It does not: `conceptFor` keeps the concept
+ * whose match is the LONGEST (ties broken by `pri`), so ARRAY ORDER DECIDES NOTHING and a concept
+ * loses a row simply by matching fewer characters of it than a rival does. It cost a wrong
+ * diagnosis: Stunning Surprise #1 was being taken by `threshold`, which matched 21 characters of
+ * "into the special world" against its own 20, and moving it up the array changed nothing. To own
+ * a row, match MORE of it. A row that matches nothing
  * still gets a complete ask (the template's own label + prompt as the criteria, plus the
  * stage-level example) — the walk never asks a bare question.
  *
@@ -447,15 +452,19 @@
             val: 'pos',
             m: /call to adventure|experiences a call|given supernatural|visionary direction|only he\/she can solve|calls or sends protagonist|inciting incident/i,
             tech: [{ s: 'Ii', l: 'Inciting Incident' }, { s: 'Hr', l: 'Herald' }],
+            // v7.20.597 (PEDAGOGY §22): the criteria used to be the Stunning Surprise's job
+            // ("makes the old life impossible to continue"). This beat's job is the GENERAL goal;
+            // turning that want into one specific plan is what Stunning Surprise #1 does later.
             crit: [
-                'a single event on a particular day that makes the old life impossible to continue',
+                'a single event on a particular day, not a situation that has been true for years',
                 'it arrives from OUTSIDE — someone brings it, something happens; they do not decide it',
+                'it leaves your protagonist wanting something GENERAL — get out, get even, get home — not yet a plan',
             ],
-            ex: '*An Inspector Calls:* the doorbell cuts Birling off mid-speech — an unasked-for ring at the door, and the evening the family planned is over.',
+            ex: '*An Inspector Calls:* the doorbell cuts Birling off mid-speech, and all the family want at that point is to get this stranger out of the house.',
             more: [
-                '*A Christmas Carol:* Marley’s ghost walks through the door dragging chains of cash-boxes.',
-                '*Harry Potter:* Hagrid arrives with a letter and tells Harry he is a wizard — the cupboard is over.',
-                '*The Hunger Games:* Prim’s name is read out at the reaping — one name, and the old life is finished.',
+                '*A Christmas Carol:* Marley’s ghost walks through the door dragging chains of cash-boxes — Scrooge wants, vaguely, not to end up like that.',
+                '*Harry Potter:* Hagrid arrives with a letter and tells Harry he is a wizard — Harry wants out of the cupboard, and no more than that yet.',
+                '*The Hunger Games:* Prim’s name is read out at the reaping — Katniss wants her sister safe; how, she has no idea.',
             ],
         },
         {
@@ -720,20 +729,48 @@
             ],
         },
         {
-            id: 'stunning-surprise', name: 'The Stunning Surprise', nudge: false,
-            why: 'so his old plan dies and he is forced to change course',
+            // ⭐ v7.20.597 (PEDAGOGY §22): ONE concept used to cover BOTH Stunning Surprises. Its
+            // regex matched #1 and #2, but everything it taught — "the current plan dies" — is #2's
+            // job. #1 does the opposite: it is what GIVES the protagonist a plan in the first place.
+            // Two beats, two jobs, so two concepts. `stunning-surprise` keeps its id (no code reads
+            // it, but research/cw6-audit-findings-2026-08-03.json cites it) and is now only #1.
+            // ⚠️ Each `m` runs to the end of its sentence (`[^.]*`) ON PURPOSE. The resolver keeps
+            // the LONGEST match, not the first, so a bare /stunning surprise #1/ (20 chars) LOSES
+            // this row to `threshold`, which matches 21 chars of "into the special world" in the
+            // same prompt. Matching the whole sentence is how a specific concept wins its own row.
+            id: 'stunning-surprise', name: 'Stunning Surprise #1', nudge: false,
+            why: 'so a vague want becomes one specific plan we can watch them chase',
             val: 'neg',
-            m: /stunning surprise|something shocking|another shock|destroys the plan/i,
+            m: /stunning surprise\s*\\?#\s*1[^.]*/i,
+            tech: [{ s: 'Tw', l: 'Surprise' }, { s: 'Tu', l: 'Turning Point' }],
+            crit: [
+                'ONE event out of the blue that turns a general want into a single specific plan',
+                'it closes the opening act — after it, your protagonist cannot go back to the old life',
+                'it must be FAIR — the reader should be able to look back and see it was possible',
+            ],
+            ex: '*The Hunger Games:* Prim’s name is called and Katniss volunteers — wanting her sister safe turns, in one sentence, into having to win the Games herself.',
+            more: [
+                '*A Christmas Carol:* Marley names the three spirits and the hour each will come — Scrooge’s vague dread becomes a fixed appointment he cannot avoid.',
+                '*Romeo and Juliet:* Romeo learns the girl he has just met is a Capulet, and falling in love turns into a plan he has to hide.',
+                '*Harry Potter:* Hagrid says Harry is a wizard — wanting out of the cupboard becomes going to Hogwarts on the first of September.',
+            ],
+        },
+        {
+            id: 'stunning-surprise-2', name: 'Stunning Surprise #2', nudge: false,
+            why: 'so the plan he has followed all along dies and he must improvise',
+            val: 'neg',
+            m: /stunning surprise\s*\\?#\s*2[^.]*|another shock[^.]*|destroys the plan/i,
             tech: [{ s: 'Tw', l: 'Surprise' }, { s: 'Pt', l: 'Plot Twist' }, { s: 'Ux', l: 'Subverted Expectation' }],
             crit: [
                 'ONE event out of the blue that makes the current plan impossible',
+                'what dies is the PLAN, not the goal — they still want the same thing, with no way left to get it',
                 'it must be FAIR — the reader should be able to look back and see it was possible',
             ],
             ex: '*Great Expectations:* Magwitch walks in out of the rain, and Pip’s entire idea of where his money came from collapses.',
             more: [
                 '*An Inspector Calls:* Eric walks in just after his mother has demanded that the father of the child be punished — she has condemned her own son.',
-                '*Romeo and Juliet:* Tybalt kills Mercutio in the street, and the play stops being a comedy in one stroke.',
-                '*The Hunger Games:* the rule changes mid-Games — two tributes from one district may win — and Katniss immediately goes looking for Peeta.',
+                '*Romeo and Juliet:* the letter explaining Juliet’s sleeping draught never reaches Romeo, and the plan that was going to save them both is gone.',
+                '*Of Mice and Men:* Lennie kills Curley’s wife, and the small farm George has described a hundred times is finished.',
             ],
         },
         {

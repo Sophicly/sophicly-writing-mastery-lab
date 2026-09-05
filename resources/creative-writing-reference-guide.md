@@ -379,7 +379,9 @@ Three rules that keep a wound powerful:
 
 #### 4. The inciting incident
 
-The event that **shatters the protagonist's normal life** and drags them into the story — the moment their shield stops working. McKee's precise definition is worth keeping: the inciting incident **upsets the balance** of the character's life and makes them conceive a **goal** to put it right; it forces a reaction, and it raises the question the whole story then answers ("will they get it?"). Truby adds the best *shape* for it — "out of the frying pan, into the fire": it should feel as if the character has just escaped their trouble, when really they've walked into the worst of their life.
+The event that **begins this story and no other**, and what it hands your protagonist is a **general** goal: get out, get even, get home. Edson is clear that it "can happen ***any time*** in Act One" — most commonly in the first few minutes, but the job names this beat, not where it sits. McKee's definition fits it exactly: the inciting incident **upsets the balance** of the character's life and makes them conceive a **goal** to put it right; it forces a reaction, and it raises the question the whole story then answers ("will they get it?"). Truby adds the best *shape* for it — "out of the frying pan, into the fire": it should feel as if the character has just escaped their trouble, when really they've walked into the worst of their life.
+
+It is **not** the stunning surprise, which does a different job: that beat turns the general want into one specific plan. One event can do both at once — and then the two land together.
 
 - Marley's ghost arrives and Scrooge can no longer hide behind his wealth.
 - Will Byers vanishes and the safe, ordinary world of *Stranger Things* breaks open.
@@ -532,7 +534,7 @@ The repeated routine that *proves* the stuck state — the physical evidence of 
 
 #### Beat 3 — "Until…"
 
-The inciting incident — the event that shatters the ordinary world. One sentence, present tense, after "Until,".
+The inciting incident — the event that begins this story and no other, and hands your protagonist a general goal. One sentence, present tense, after "Until,".
 
 **A strong Beat 3:**
 - a **single event on a particular day** — the moment everything changes;
@@ -631,8 +633,8 @@ Now you build the detailed, beat-by-beat outline of your chosen archetype. Every
 
 ### The six stages
 
-- **Stage I — Setup.** The ordinary world and the protagonist's **false identity** (the mask built over the wound), ending in the **inciting incident**. This is where we bond with the protagonist and feel what's missing. *(Screenwriters call this beat the "Disturbance" — the event that knocks an ordinary life off balance.)*
-- **Stage II — The Dream Stage.** The adventure begins and it feels *good*: early success, a first glimpse of the protagonist's true self, often a **mentor**, and the **crossing of the threshold** into the new world.
+- **Stage I — Setup.** The ordinary world and the protagonist's **false identity** (the mask built over the wound), carrying the **inciting incident** — the event that begins this story and hands your protagonist a general goal. This is where we bond with the protagonist and feel what's missing. *(Screenwriters call this beat the "Disturbance" — the event that knocks an ordinary life off balance.)*
+- **Stage II — The Dream Stage.** The adventure begins and it feels *good*: early success, a first glimpse of the protagonist's true self, often a **mentor**, and the **crossing of the threshold** into the new world. The stage closes on **Stunning Surprise #1**, which turns that general goal into one specific plan and drops the curtain on the opening act.
 - **Stage III — Initial Fascination.** The protagonist vacillates between the false identity and the true self as complications rise. They're being tested, and not yet winning cleanly.
 - **Stage IV — The Nightmare Stage.** Everything goes wrong. The stakes climb, a major setback lands, and the protagonist hits their **lowest point** — the "Dark Moment" where the goal looks lost and the opposition seems to have won. Truby and Edson agree this is essential: the shield goes back up, the plan fails, and only from here can real change be earned.
 - **Stage V — The Final Push.** The protagonist returns to their true self, drops the shield for good, and drives to the **climax** — the decisive confrontation (the "battle") and a thrilling escape from destruction. This is where the change is finally won.
@@ -1029,9 +1031,15 @@ For one moment, the mask slips and we see who your protagonist could be. This is
 
 **You've got it when:** the moment lasts a sentence or two, and afterwards the character behaves as they did before.
 
-#### The Stunning Surprise
+#### The Stunning Surprises (#1 and #2)
 
-One event out of the blue makes the current plan impossible. It must land hard, and it must be fair — those two demands are what make this beat difficult. Fair means the reader, looking back, can find the ground it grew from: a detail you planted, a person you established, a possibility you left open. A surprise that comes from nothing feels like cheating and readers do not forgive it. A surprise that was there all along and simply unnoticed is the most satisfying thing in fiction.
+There are two of these, and they do opposite things to your protagonist's plan.
+
+**Stunning Surprise #1** closes the opening act. It takes the general want the inciting incident gave them — get out, get even, get home — and turns it into **one specific plan**, which is the plan the rest of the story follows. Edson calls it "a single punch to the jaw": not a scene that unfolds, one blow.
+
+**Stunning Surprise #2** comes near the end, and it **destroys that plan for victory**. They still want the same thing; they simply have no way left to get it, so from here they must improvise.
+
+Both must land hard, and both must be fair — those two demands are what make this beat difficult. Fair means the reader, looking back, can find the ground it grew from: a detail you planted, a person you established, a possibility you left open. A surprise that comes from nothing feels like cheating and readers do not forgive it. A surprise that was there all along and simply unnoticed is the most satisfying thing in fiction.
 
 **The common mistake:** inventing something entirely new at this point, which shocks the reader once and then annoys them for the rest of the story.
 

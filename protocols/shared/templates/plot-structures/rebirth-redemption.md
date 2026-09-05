@@ -19,7 +19,7 @@
 | [negative] The protagonist’s life is oppressive and intolerable because he is alone and even though he may have a lot, he refuses to accept that his reality is miserable. |  |
 | [negative] The hero seeks gratification that is often harmful to others, such as bullying; community suffers. |  |
 | [turning-point] TURNING POINT \#1: Opportunity |  |
-| [marker] INCITING INCIDENT - CALL TO ADVENTURE |  |
+| [marker] INCITING INCIDENT - CALL TO ADVENTURE: the event that begins this story and no other. It hands your protagonist a GENERAL goal — get out, get even, get home — the same want as the beat “Protagonist’s goal here is general”. It usually comes early, but it can land anywhere in this opening stage; the job names this beat, not the timing. The Stunning Surprise does a different job — it turns that general want into one specific plan — and one event can do both at once. |  |
 | [negative] he receives some sort of sign or warning urging him to change |  |
 | [positive] He/she is given supernatural or visionary direction, or a secret message as to the goal; ONLY HE/SHE can solve it |  |
 | [negative] The hero ignores this warning |  |
@@ -35,7 +35,6 @@
 | [negative] the protagonist receives a warning; the threat becomes visible |  |
 | [negative] but he/she refuses the call; their weakness is revealed - fear, immaturity, ignorance, resistance to change; he is not quite ready for complete fulfillment; Can I face this challenge? Do I have what it takes? Should I go at all? |  |
 | [positive] For a while, all may seem to go relatively well. The threat may even seem to have receded. |  |
-| [shocking] STUNNING SURPRISE \#1: Something shocking comes out of the blue and in an instant, changes everything; the protagonist’s life will never be the same again; the protagonist’s destiny changes; the protagonist faces a test of character that ironically makes them more worthy to meet the mentor. |  |
 | [turning-point] TURNING POINT \#2: CHANGE OF PLANS |  |
 | [marker] DREAM STAGE - THE SPECIAL WORLD - THE JOURNEY |  |
 | [positive] the Herald guides the protagonist to meet the Mentor |  |
@@ -54,10 +53,12 @@
 | [positive] FIRST EPIPHANY. The protagonist has a moment of genuine insight — they begin to see this new world, challenge, or situation more clearly. Something clicks that shifts their understanding, even if they cannot yet see the full picture |  |
 | [positive] The protagonist receives new clothes, symbolic of a new identity. |  |
 | [positive] protagonist finally answers the call and crosses the threshold into the special world and begins committing to change - the ‘new/special world’ can be anything from a totally new universe to just a completely different place on earth |  |
+| [shocking] STUNNING SURPRISE \#1: this beat turns your protagonist’s general want into ONE specific plan, and it drops the curtain on the opening act, throwing them into the special world. Something comes out of the blue and in an instant changes everything: their life will never be the same, and their destiny changes. Edson: it is “not a scene or a sequence of events that unfold over time”, but one blow. It is not the inciting incident, which does a different job, and one event can do both at once. |  |
 | [positive] a small group of allies may welcome the protagonist into the special world |  |
 
 | STAGE III: INITIAL FASCINATION: Protagonist Vacillates Between False Identity and True Self |  |
 | ----- | :---- |
+| [positive] goal becomes much more specific |  |
 | [positive] The protagonist starts to become more open to the possibility of change |  |
 | [positive] At first the protagonist is excited or fascinated because the new world is puzzling or unfamiliar, but not a place where they feel at home |  |
 | [negative] The hero seems powerless. |  |
