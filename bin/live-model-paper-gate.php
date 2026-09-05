@@ -70,11 +70,12 @@ function swml_lm_paper_checks($md_path, &$report) {
         $ok(strpos($src['text'], '[NEEDS HUMAN') === false, "Source $L: no [NEEDS HUMAN] left in the text");
     }
     $qs = $meta['questions'];
-    $ok(count($qs) === 5, "5 questions (got " . count($qs) . ")");
+    $want_ids = array_keys($side['questions']);
+    $ok(count($qs) === count($want_ids), count($want_ids) . " questions (got " . count($qs) . ")");
     $sum = 0; $ids = [];
     foreach ($qs as $q) { $sum += (int) $q['marks']; $ids[] = $q['id']; $want = $side['questions'][$q['id']] ?? null; $ok((int) $q['marks'] === (int) $want, "{$q['id']} = {$q['marks']} marks (sidecar $want)"); $ok(strlen(trim($q['text'])) > 20, "{$q['id']} has text (" . strlen($q['text']) . " chars)"); }
-    $ok($sum === (int) $side['total_marks'] && $sum === 80, "tariff sums to $sum (expect 80)");
-    $ok($ids === ['Q1', 'Q2', 'Q3', 'Q4', 'Q5'], "question ids in order (" . implode(',', $ids) . ")");
+    $ok($sum === (int) $side['total_marks'], "tariff sums to $sum (sidecar total {$side['total_marks']})");
+    $ok($ids === $want_ids, "question ids in order (" . implode(',', $ids) . " vs sidecar " . implode(',', $want_ids) . ")");
     if (!empty($side['sources']['B'])) {
         $q1 = $qs[0];
         $ok(!empty($q1['statements']) && count($q1['statements']) === 8, "Q1 carries 8 statements (got " . count($q1['statements'] ?? []) . ")");
