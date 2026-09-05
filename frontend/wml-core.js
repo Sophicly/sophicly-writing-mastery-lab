@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.594';
+var WML_BUILD = '7.20.595';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -2106,7 +2106,11 @@ window.WML = (function() {
     // timer, deadline, word target, baseline toast, guidance cards) keys on this, never on the task.
     function isLiveModelling() {
         const c = window.swmlConfig || {};
-        return c.liveModelling === true || c.reviewRole === 'live_modelling';
+        // wp_localize_script() casts every scalar to a STRING: PHP true arrives as "1", false as "".
+        // v7.20.594 compared `=== true` and the gate never opened (measured: cfg.liveModelling === "1",
+        // rail still Diagnostic Guidance). Compare the string form.
+        const lm = c.liveModelling;
+        return lm === true || lm === 1 || lm === '1' || c.reviewRole === 'live_modelling';
     }
     // markingFlow: assessment-marking flows send the FULL chat history (the
     // v7.19.591 confirmed-loop fix). Reads the server caps; the literal fallback

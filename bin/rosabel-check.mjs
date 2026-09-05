@@ -49,7 +49,9 @@ const info = await page.evaluate(() => {
     hasMultiQ: /Section A|Question 1|Q1/i.test(text) && /Question 5|Q5/i.test(text),
     hasEssayShell: /Essay Plan/i.test(text) && /Outline/i.test(text) && !/Question 2|Q2/i.test(text),
     title: document.title,
-    cfg: (window.swmlConfig ? { userId: window.swmlConfig.userId, viewerMode: window.swmlConfig.viewerMode, reviewMode: window.swmlConfig.reviewMode, reviewRole: window.swmlConfig.reviewRole, targetUserId: window.swmlConfig.targetUserId } : null),
+    cfg: (window.swmlConfig ? { userId: window.swmlConfig.userId, viewerMode: window.swmlConfig.viewerMode, reviewMode: window.swmlConfig.reviewMode, reviewRole: window.swmlConfig.reviewRole, targetUserId: window.swmlConfig.targetUserId, liveModelling: window.swmlConfig.liveModelling, build: (typeof WML_BUILD !== 'undefined' ? WML_BUILD : null) } : null),
+    // v7.20.594 (#447m): what the rail actually shows — the live-modelling gates are judged by these, not by cfg alone
+    rail: { title: (document.querySelector('.swml-canvas-sidebar-right h3, .swml-canvas-guidance')?.closest('div')?.querySelector('h3')?.textContent || document.querySelector('h3 .swml-sidebar-close-icon')?.parentElement?.textContent || '').trim(), session: !!Array.from(document.querySelectorAll('h4')).find(h => /Session/.test(h.textContent)), wordTarget: !!document.getElementById('swml-canvas-wc-progress'), baselineCard: !!document.querySelector('.swml-weight-card'), countdown: (document.querySelector('.swml-countdown-status')?.textContent || '').trim() },
     pill: (document.querySelector('.swml-tutor-view-pill') || {}).textContent || '',
     readonlyNote: (document.querySelector('.swml-chat-readonly-note') || {}).textContent || '',
     chatInput: !!document.querySelector('.swml-chat-input, textarea.swml-chat-textarea, .swml-canvas-chat textarea'),
@@ -61,6 +63,7 @@ console.log(`[${label}] sections(${info.sections.length}): ${info.sections.slice
 console.log(`[${label}] outline(${info.tocCount}): ${info.toc.join(' | ')}`);
 console.log(`[${label}] extract=${info.hasExtract} Q1=${info.hasQ1} Q2scope=${info.hasQ2} Q4scope=${info.hasQ4} multiQ=${info.hasMultiQ} essayShell=${info.hasEssayShell}`);
 console.log(`[${label}] cfg=${JSON.stringify(info.cfg)} pill="${info.pill.trim()}" readonlyNote="${info.readonlyNote.trim()}" chatInput=${info.chatInput} contenteditable=${info.editable}`);
+console.log(`[${label}] rail=${JSON.stringify(info.rail)}`);
 console.log(`[${label}] REST (${rest.length}):\n  ` + rest.slice(0, 14).join('\n  '));
 console.log(`[${label}] body text head: ` + JSON.stringify((await page.evaluate(() => (document.querySelector('.swml-app, #swml-app, .swml-canvas, main') || document.body).innerText.replace(/\s+/g, ' ').slice(0, 420)))));
 console.log(`[${label}] console errors (${errors.length}): ${errors.slice(0, 6).join(' || ')}`);
