@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.593';
+var WML_BUILD = '7.20.594';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -2097,6 +2097,16 @@ window.WML = (function() {
     }
     function cap(task, flag) {
         return caps(task) ? !!caps(task)[flag] : false;
+    }
+    // v7.20.594 (#447m, Neil: "it doesn't need a timer… for this specific one"): ONE predicate for
+    // "this lesson is a live-modelling lesson". True for the AUTHOR (server flag `liveModelling`, set
+    // when the bridge/att author is a verified live-modelling author) AND for every viewer
+    // (reviewRole 'live_modelling'). Read live off window.swmlConfig, not the boot-time copy — the
+    // embed config can land after this module evaluates. Every diagnostic-apparatus gate (session
+    // timer, deadline, word target, baseline toast, guidance cards) keys on this, never on the task.
+    function isLiveModelling() {
+        const c = window.swmlConfig || {};
+        return c.liveModelling === true || c.reviewRole === 'live_modelling';
     }
     // markingFlow: assessment-marking flows send the FULL chat history (the
     // v7.19.591 confirmed-loop fix). Reads the server caps; the literal fallback
@@ -5561,7 +5571,7 @@ window.WML = (function() {
         // v7.15.70: Paper-shape resolver (dormant — consumed starting Release B)
         resolvePaperShape,
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
-        caps, cap, isMarkingFlow, hasAssessmentSections,
+        caps, cap, isMarkingFlow, hasAssessmentSections, isLiveModelling,
         // v7.20.129: the ONE outline-row completion rule — all three consumers call it
         // (row nodeView, checkSectionComplete DOM reader, section nodeView PM-attr reader).
         outlineRow,

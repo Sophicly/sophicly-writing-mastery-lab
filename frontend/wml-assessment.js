@@ -32680,7 +32680,7 @@
         // never pushes the document down. Appears on entry with a soft fade, dismissible (× or Got it),
         // and once dismissed it stays gone for that phase (per-phase localStorage). Copy carries NO em
         // dashes; brand purple #5333ed only.
-        if (!state.reviewMode && _wnEssayDoc) {
+        if (!state.reviewMode && _wnEssayDoc && !(WML.isLiveModelling && WML.isLiveModelling())) {   // v7.20.594 (#447m): no "Your baseline" card for the live-modelling author
             const _wnIsRedraft = _wnRedraftPlan || state.phase === 'redraft' || /redraft/.test(_wnDraft);
             const _wnKicker = _wnIsRedraft ? 'Lift your grade' : 'Your baseline';
             const _wnBody = _wnIsRedraft
@@ -35262,7 +35262,8 @@
             localStorage.setItem(countdownKey, new Date().toISOString());
         }
         const noDeadlinePhase = ['preliminary', 'free_practice', 'exam_practice'].includes(state.phase);
-        const countdownStart = (isCwTask || isExamPrep || noDeadlinePhase) ? null : localStorage.getItem(countdownKey);
+        // v7.20.594 (#447m): a live-modelling lesson has no deadline — no footer countdown / "Overdue" either.
+        const countdownStart = (isCwTask || isExamPrep || noDeadlinePhase || (WML.isLiveModelling && WML.isLiveModelling())) ? null : localStorage.getItem(countdownKey);
         if (countdownStart) {
             const cStart = new Date(countdownStart);
             const cDeadline = new Date(cStart.getTime() + totalDays * 24 * 60 * 60 * 1000);
@@ -38614,7 +38615,11 @@
             // v7.15.46's early call here fired before ctxBadges was populated, so the badge
             // landed outside the overflow-dropdown logic on soft nav.
             // v7.15.111: Outlining task uses its own panel title — everything else is diagnostic-style.
-            const _guidanceTitle = (state.task === 'outlining') ? 'Outline Response'
+            // v7.20.594 (#447m): a live-modelling lesson is not a diagnostic — no timer, no deadline,
+            // no word target, no "independent assessment" cards (Neil, 2026-09-05). One predicate.
+            const _isLiveModel = !!(WML.isLiveModelling && WML.isLiveModelling());
+            const _guidanceTitle = _isLiveModel ? 'Live Modelling'
+                : (state.task === 'outlining') ? 'Outline Response'
                 : (state.task === 'mastery_codex') ? 'Mastery Codex'
                 : 'Diagnostic Guidance';
             rightPanel.appendChild(el('h3', {
@@ -38702,6 +38707,14 @@
                 ];
             }
 
+            // v7.20.594 (#447m): live modelling replaces the six diagnostic cards with ONE that says what
+            // this lesson is — for the author it is a reminder of what the class sees; for a student it is
+            // the whole instruction. Plain words, no insider terms (root §5c-ii), no orphan references.
+            if (_isLiveModel) {
+                tips = [{ icon: SVG_GUIDE_BRAIN, colour: '#5333ed', text: (state.reviewRole === 'live_modelling')
+                    ? 'Your tutor is writing this answer live. Watch how it takes shape, and select any words you want to keep to add them to your own notes. You can download the finished document afterwards.'
+                    : 'You are writing this paper live. Students see this document read-only, can file any words to their own notes, and can download it afterwards. No timer, no deadline, no word target.' }];
+            }
             tips.forEach(t => {
                 const tip = el('div', { className: 'swml-canvas-plan-section' });
                 const p = el('p', { innerHTML: `<span class="swml-guide-icon" style="color:${t.colour}">${t.icon}</span> ${t.text}` });
@@ -38814,7 +38827,7 @@
                 style: { fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginTop: '4px', fontStyle: 'italic' },
                 textContent: 'The faster you finish, the sooner you\'ll receive feedback and start improving.'
             }));
-            rightPanel.appendChild(timeWrap);
+            if (!_isLiveModel) rightPanel.appendChild(timeWrap);   // v7.20.594 (#447m): no Session timer / deadline on a live-modelling lesson
 
             // v7.19.345: Codex Session deadline — LIVE + IDENTICAL to the focus-mode
             // sidebar. Root cause of the drift (sidebar "1d left" vs codex "2 days"):
@@ -38876,7 +38889,7 @@
             // v7.19.208: Skip the essay word-target panel for mastery_codex.
             // v7.19.285: ...but give the Codex its own SOFT word-count panel (total
             // words written across the journal, aspirational 650/week target, no gate).
-            if (state.task !== 'mastery_codex') {
+            if (state.task !== 'mastery_codex' && !_isLiveModel) {   // v7.20.594 (#447m): no word target on a live-modelling lesson
                 const progressWrap = el('div', { className: 'swml-canvas-plan-section', id: 'swml-canvas-wc-progress' });
                 progressWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#4D76FD">' + SVG_GUIDE_GRAPH + '</span> Word Count Target' }));
                 const progressBar = el('div', { className: 'swml-canvas-progress-bar' });

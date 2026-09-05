@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.593
+ * Version: 7.20.594
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.593');
+define('SWML_VERSION', '7.20.594');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -564,6 +564,9 @@ class Sophicly_Writing_Mastery_Lab {
             'reviewStudentName' => $review_student_name,
             'viewerMode'       => $embed_review['viewer_mode'],    // v7.15.53: 'edit' | 'comment' | 'readonly'
             'targetUserId'     => $embed_review['target_user_id'], // v7.15.53: student whose canvas is being viewed
+            // v7.20.594 (#447m): this lesson is a LIVE MODELLING lesson (bridge/att author verified) — true for the
+            // AUTHOR as well as every viewer, so the client can drop the diagnostic timer/guidance apparatus for both.
+            'liveModelling'    => !empty($this->embed_author_id),
             // v7.19.288: course deadline window (same source as sidebar badge) for the Codex timer.
             'courseDeadline'   => $this->get_course_deadline_for_config($embed_review['target_user_id'] ?: 0),
             // v7.19.345: course + current-lesson ids so the Codex Session timer can read the
@@ -1151,6 +1154,7 @@ class Sophicly_Writing_Mastery_Lab {
                 'reviewStudentName' => $embed_review['student_name'],
                 'viewerMode'        => $embed_review['viewer_mode'],
                 'targetUserId'      => $embed_review['target_user_id'],
+                'liveModelling'     => !empty($this->embed_author_id),   // v7.20.594 (#447m) — author AND viewers
                 // v7.15.76: Feedback-unlock flags for target student (self if not review).
                 'feedbackUnlocked'       => SWML_Feedback_Unlock::is_global_unlocked($embed_review['target_user_id'] ?: get_current_user_id()),
                 'feedbackUnlockedTopics' => SWML_Feedback_Unlock::get_unlocked_topics($embed_review['target_user_id'] ?: get_current_user_id()),
