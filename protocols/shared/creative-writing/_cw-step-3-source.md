@@ -112,7 +112,7 @@ A useful trick: take the flaw you just named and ask, *what must have happened t
 
 **4 of 7 — The inciting incident**
 
-This is the event that shatters your protagonist's normal life and forces them into the story — the moment their emotional shield stops working.
+This is the event that begins this story and no other. What it hands your protagonist is a **general** goal — get out, get even, get home — and everything that follows grows from that want. It usually comes early, but it can land anywhere in the opening act: the job names this beat, not where it sits.
 
 **A strong inciting incident:**
 
@@ -122,15 +122,17 @@ This is the event that shatters your protagonist's normal life and forces them i
 
 Examples:
 
-- Marley's ghost arrives, and Scrooge can no longer hide behind his wealth.
-- Will Byers vanishes, and the safe ordinary world of *Stranger Things* breaks open.
-- Hagrid hands over a letter — "you're a wizard, Harry" — and life in the cupboard under the stairs is finished.
+- Marley's ghost arrives, and Scrooge wants one thing: to escape the chains waiting for him.
+- Will Byers vanishes, and his friends want him found.
+- Hagrid hands over a letter — "you're a wizard, Harry" — and Harry wants out of the cupboard under the stairs.
 
 Watch out: "life is hard at school" is a situation. "On the first morning of term, the new head teacher confiscates every phone in the school" is an event.
 
+The inciting incident is not the **stunning surprise**, which does a different job: that beat turns a general want into one specific plan. One event can do both at once, and then the two land together.
+
 [HELP_LINE]
 
-**What single event forces your protagonist out of their normal life?**
+**What single event starts your story and gets your protagonist moving?**
 
 ## COMPONENT: goal
 

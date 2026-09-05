@@ -502,6 +502,17 @@ node bin/fossil-lint.js || fail=1
 # diffing two lists is not. Whole-repo and instant. (v7.20.452)
 node bin/cw-step-coherence-lint.js || fail=1
 
+# INCITING-INCIDENT GATE (2026-09-05 — PEDAGOGY.md §22 and its addendum).
+# Neil ruled on 2026-07-29 that Edson's Inciting Incident and his Stunning Surprise are two beats
+# doing two jobs; 38 days later the CW walk still read "Inciting Incident — the 'stunning surprise'
+# — the external event that shatters the protagonist's normal life", and he found it himself in a
+# live lesson. A rule in prose lost to the sentence already on disk, four times over. This gate
+# fails on the conflation, on the Stunning Surprise's "shatters the normal life" wording, and on a
+# definition carried by WHERE THE BEAT SITS instead of what it does to the goal. Whole-repo (the
+# walk and every protocol .md) and instant, like fossil-lint; it self-tests each rule first, so a
+# rule that can no longer fire fails the build rather than passing quietly.
+node bin/inciting-incident-gate.js || fail=1
+
 # CSS has NO fatal errors — a parse failure is recovered by discarding tokens until something looks
 # like a rule again, so a broken stylesheet renders as a subtly (or wildly) wrong page rather than
 # an error anyone sees. `node --check`/`php -l` were the only syntax gates here and both are blind

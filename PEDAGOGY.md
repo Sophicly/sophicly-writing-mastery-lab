@@ -1330,6 +1330,33 @@ not represented at all. The item was unanswerable by inspection. That is the sam
    curtain.
 3. **The Stunning Surprise is the ACT-ENDING reversal** that makes the goal specific (#1) or destroys
    the plan (#2). It is not the opening disturbance.
+
+   ⭐⭐ **ADDENDUM, 2026-09-05 (Neil) — rules 2 and 3 are about the JOB, never about the clock.**
+   Verbatim, on being shown the corrected cards: *"there is a difference between an inciting incident
+   and a stunning surprise, and **they may or may not use them in the same place**."*
+   **The function is the discriminator. The position is a tendency.** Reading rules 2 and 3 as a
+   placement rule — inciting incident in the first few minutes, stunning surprise at the act break —
+   swaps one wrong definition for another, and the first cut of the notes cards did exactly that
+   ("the event near the START", "the shock that ENDS AN ACT").
+   ⭐ **Edson says so himself, in the passage this section already quotes:** *"Depending on story
+   requirements, though, the Inciting Incident **can happen any time** in Act One."* (He adds:
+   *"Most commonly it's within the first one to seven minutes"* — a tendency, and he gives
+   ***Gladiator***, whose Inciting Incident lands 34 minutes in, five minutes from the end of the act.)
+   **The consequence, made explicit: ONE EVENT CAN DO BOTH JOBS AT ONCE** — begin this story and no
+   other, AND turn the general want into one specific plan — in which case the two beats coincide.
+   More often a story lets the character want something vaguely first and makes it specific later,
+   which is when they separate. So teach the two JOBS and let the student's own story put them in one
+   moment or two; never teach either beat by where it sits.
+   **Shipped wording to mirror rather than re-derive** (notes cards v2.6.211): `Ii` — *"…and it
+   produces a GENERAL goal: get out, get even, get home. The job names it, not where it sits; it
+   usually comes early, but it can land anywhere in the opening act. The Stunning Surprise does a
+   different job — it makes a general want specific — and one event can do both at once."*; `Us` —
+   *"…It often falls at the end of an act, but the job names it, not the timing — and where one event
+   does both, the two beats land together."*
+   **Enforced mechanically:** `bin/inciting-incident-gate.js` (in `pre-ship-check.sh`) fails on any
+   student-facing sentence that names the inciting incident with stunning-surprise or
+   "shatters-the-normal-life" wording, or that defines it purely by position without naming the
+   general goal.
 4. **"Life-Changing Event" is not an Edson term.** It appears only in the CW walk's logline template 3
    ("an opportunity to do something LIFE-CHANGING"). Where it stays, it must be taught as *the
    opportunity the protagonist chooses to chase* — which is a different thing again from both beats
