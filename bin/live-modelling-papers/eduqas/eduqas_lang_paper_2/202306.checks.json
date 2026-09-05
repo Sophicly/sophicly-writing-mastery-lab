@@ -1,0 +1,87 @@
+{
+  "topic_number": 202306,
+  "board": "eduqas",
+  "text": "eduqas_lang_paper_2",
+  "store": "swml_topics_eduqas_eduqas_lang_paper_2",
+  "label": "Eduqas Language Component 2 — June 2023 · We save people. It’s just our job (Louise France) / New York Tribune (1869) (Unknown (1869))",
+  "sitting": {
+    "code": "202306",
+    "printed_date": "Monday, 12 June 2023",
+    "label": "June 2023"
+  },
+  "sources": {
+    "A": {
+      "line_count": 64,
+      "line_checks": {
+        "1": "‘We save people. It’s just our j",
+        "5": "with her.",
+        "10": "To be honest, neither would you ",
+        "15": "received since 24 August 2004, w",
+        "20": "answer her alarm pager during th",
+        "25": "just our job.” But doesn’t she g",
+        "30": "off, I dropped everything,” she ",
+        "35": "somewhere near Nash Sands in the",
+        "40": "boat. It was just too rough.” Ti",
+        "45": "progress, the knot for the towli",
+        "50": "could scramble on board. He wait",
+        "55": "to tow the Gower Pride back to s",
+        "60": "Aileen may make light of it but "
+      },
+      "line_markers": "authored (Eduqas prints none on Component 2)"
+    },
+    "B": {
+      "line_count": 38,
+      "line_checks": {
+        "1": "Two weeks ago, towards the end o",
+        "5": "that occasion, four lads capsize",
+        "10": "the full strength and skill of t",
+        "15": "could manage the boat, they trus",
+        "20": "all the energy of despair; but f",
+        "25": "on her head or feet and grabbed ",
+        "30": "saw no choice but to clasp each ",
+        "35": "backward pull on the oars, the o"
+      },
+      "line_markers": "authored (Eduqas prints none on Component 2)"
+    }
+  },
+  "questions": {
+    "Q1": 3,
+    "Q2": 10,
+    "Q3": 3,
+    "Q4": 10,
+    "Q5": 4,
+    "Q6": 10,
+    "Q7": 20,
+    "Q8": 20
+  },
+  "printed_cells": {
+    "Q1": "1 1",
+    "Q2": "1 2",
+    "Q3": "1 3",
+    "Q4": "1 4",
+    "Q5": "1 5",
+    "Q6": "1 6",
+    "Q7": "2 1",
+    "Q8": "2 2"
+  },
+  "total_marks": 80,
+  "q1_format": "sub_parts",
+  "ao_source": "Eduqas mark schemes: Component 1 Summer 2023; Component 2 Autumn 2021 and Autumn 2022 (they agree)",
+  "ms_ao_check": {
+    "checked": false,
+    "reason": "no --ms supplied"
+  },
+  "provenance": {
+    "qp": "June 2023 QP - Component 2 Eduqas English Language GCSE.pdf",
+    "qp_sha1": "8bafa9311a418d36d4178a74a1de7a62a93cbc3a",
+    "ins": null,
+    "ins_sha1": null,
+    "ms": null,
+    "ms_sha1": null
+  },
+  "needs_human": [],
+  "notes": [
+    "Eduqas prints no title for Source B — the board’s own name for the publication was used (New York Tribune (1869))",
+    "Source B is unattributed in the board’s introduction (“Ida Lewis lived with her family at the Lime Rock lighthouse in Newport, America and became…”) — Author written as Unknown (1869)"
+  ]
+}

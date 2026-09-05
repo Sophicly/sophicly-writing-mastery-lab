@@ -1,0 +1,73 @@
+{
+  "topic_number": 202205,
+  "board": "eduqas",
+  "text": "eduqas_lang_paper_1",
+  "store": "swml_topics_eduqas_eduqas_lang_paper_1",
+  "label": "Eduqas Language Component 1 — May 2022 · Untitled prose extract (Unknown)",
+  "sitting": {
+    "code": "202205",
+    "printed_date": "Wednesday, 18 May 2022",
+    "label": "May 2022"
+  },
+  "sources": {
+    "A": {
+      "line_count": 80,
+      "line_checks": {
+        "1": "Rachel was doing a research proj",
+        "5": "studying black grouse then trans",
+        "10": "English Nature, a government age",
+        "15": "black and white uniforms, had fe",
+        "20": "to use her work for his own adva",
+        "25": "Nature one day. When he invited ",
+        "30": "parked outside, he had had a cou",
+        "35": "She first saw Peter Kemp hoverin",
+        "40": "was earnest, trying to please. R",
+        "45": "That spring Peter spent more tim",
+        "50": "should have been a relaxed affai",
+        "55": "‘A bit showy for my taste,’ she ",
+        "60": "plans which she wouldn’t admit t",
+        "65": "Now there were no bottles of cha",
+        "70": "his own work.",
+        "75": "continue to work for him, suppor",
+        "80": "desk one morning. It contained a"
+      },
+      "line_markers": "board-printed (line 1, then every fifth line)"
+    }
+  },
+  "questions": {
+    "Q1": 5,
+    "Q2": 5,
+    "Q3": 10,
+    "Q4": 10,
+    "Q5": 10,
+    "Q6": 40
+  },
+  "printed_cells": {
+    "Q1": "0 1",
+    "Q2": "0 2",
+    "Q3": "0 3",
+    "Q4": "0 4",
+    "Q5": "0 5",
+    "Q6": "1 1"
+  },
+  "total_marks": 80,
+  "q1_format": "open",
+  "ao_source": "Eduqas mark schemes: Component 1 Summer 2023; Component 2 Autumn 2021 and Autumn 2022 (they agree)",
+  "ms_ao_check": {
+    "checked": false,
+    "reason": "no --ms supplied"
+  },
+  "provenance": {
+    "qp": "18 MAY 2022.pdf",
+    "qp_sha1": "ca7844b3634e05517800b45c9afadae291431e8d",
+    "ins": null,
+    "ins_sha1": null,
+    "ms": null,
+    "ms_sha1": null
+  },
+  "needs_human": [],
+  "notes": [
+    "Eduqas prints no title above the Component 1 passage for this sitting — Title written as 'Untitled prose extract'",
+    "Eduqas prints no author for this passage (no byline, no acknowledgement anywhere in the paper) — Author written as Unknown"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "topic_number": 202206,
+  "board": "eduqas",
+  "text": "eduqas_lang_paper_2",
+  "store": "swml_topics_eduqas_eduqas_lang_paper_2",
+  "label": "Eduqas Language Component 2 — June 2022 · Knockout Punch (Craig Arnott) / London Labour and the London Poor (Unknown (1851))",
+  "sitting": {
+    "code": "202206",
+    "printed_date": "Friday, 10 June 2022",
+    "label": "June 2022"
+  },
+  "sources": {
+    "A": {
+      "line_count": 70,
+      "line_checks": {
+        "1": "Knockout Punch",
+        "5": "It’s Tuesday morning on Weymouth",
+        "10": "As it threatens to rain, we dip",
+        "15": "mother as a 5-year-old child. “W",
+        "20": "teddies into puppets and set up",
+        "25": "all over the country, and then b",
+        "30": "an important part of the town’s ",
+        "35": "and sit on the sand, but there a",
+        "40": "Although his shows often draw au",
+        "45": "the show and some of the childre",
+        "50": "Despite his obvious passion",
+        "55": "and make a living, “I make a",
+        "60": "he successfully appealed for",
+        "65": "Outside the café, darker clouds",
+        "70": "shows, come rain or shine.”"
+      },
+      "line_markers": "authored (Eduqas prints none on Component 2)"
+    },
+    "B": {
+      "line_count": 39,
+      "line_checks": {
+        "1": "I am the owner of a Punch and Ju",
+        "5": "regular but a good day now seldo",
+        "10": "something to quiet ’em a bit; an",
+        "15": "rounds early in the morning and ",
+        "20": "performance. Lord Townsend was p",
+        "25": "that’s it. Everybody looks at th",
+        "30": "his footman will take some of wh",
+        "35": "because of ’em. They’ll throw on"
+      },
+      "line_markers": "authored (Eduqas prints none on Component 2)"
+    }
+  },
+  "questions": {
+    "Q1": 3,
+    "Q2": 10,
+    "Q3": 3,
+    "Q4": 10,
+    "Q5": 4,
+    "Q6": 10,
+    "Q7": 20,
+    "Q8": 20
+  },
+  "printed_cells": {
+    "Q1": "1 1",
+    "Q2": "1 2",
+    "Q3": "1 3",
+    "Q4": "1 4",
+    "Q5": "1 5",
+    "Q6": "1 6",
+    "Q7": "2 1",
+    "Q8": "2 2"
+  },
+  "total_marks": 80,
+  "q1_format": "sub_parts",
+  "ao_source": "Eduqas mark schemes: Component 1 Summer 2023; Component 2 Autumn 2021 and Autumn 2022 (they agree)",
+  "ms_ao_check": {
+    "checked": false,
+    "reason": "no --ms supplied"
+  },
+  "provenance": {
+    "qp": "z22-c700u20-1a.pdf",
+    "qp_sha1": "734097cfbc4502e40514be372340e6ec74e9508a",
+    "ins": null,
+    "ins_sha1": null,
+    "ms": null,
+    "ms_sha1": null
+  },
+  "needs_human": [],
+  "notes": [
+    "Source A has no byline; the writer’s name was taken from the article’s own standfirst",
+    "Source B is unattributed in the board’s introduction (“Punch and Judy shows were popular in Victorian England. In the book, ‘London Labour and th…”) — Author written as Unknown (1851)"
+  ]
+}

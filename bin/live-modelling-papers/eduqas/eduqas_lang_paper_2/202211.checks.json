@@ -1,0 +1,95 @@
+{
+  "topic_number": 202211,
+  "board": "eduqas",
+  "text": "eduqas_lang_paper_2",
+  "store": "swml_topics_eduqas_eduqas_lang_paper_2",
+  "label": "Eduqas Language Component 2 — November 2022 · Revealed: new evidence about the life and death of Jumbo, the giant Victorian sensation (Alan Lee) / Matthew Scott’s autobiography (Matthew Scott)",
+  "sitting": {
+    "code": "202211",
+    "printed_date": "Wednesday, 2 November 2022",
+    "label": "November 2022"
+  },
+  "sources": {
+    "A": {
+      "line_count": 75,
+      "line_checks": {
+        "1": "Revealed: new evidence about the",
+        "5": "theatre. Now Alan Lee reports on",
+        "10": "firm favourite of Queen Victoria",
+        "15": "sad, often painful existence.",
+        "20": "seven tons. The skeleton of the ",
+        "25": "about Jumbo’s medical condition ",
+        "30": "those who are said to have adore",
+        "35": "to health and did his best to tr",
+        "40": "He even broke his tusks in his f",
+        "45": "Jumbo’s stomach after his death ",
+        "50": "when he died.",
+        "55": "on Scott, or even worse, a child",
+        "60": "time, they found London Zoo in a",
+        "65": "shocking decision was made to",
+        "70": "waiting and Jumbo-mania erupted.",
+        "75": "last breath."
+      },
+      "line_markers": "authored (Eduqas prints none on Component 2)"
+    },
+    "B": {
+      "line_count": 32,
+      "line_checks": {
+        "1": "When I first saw Jumbo and he wa",
+        "5": "perfectly sound state of mind an",
+        "10": "thankful for in these, my older ",
+        "15": "been engaged in carrying around ",
+        "20": "path when all at once Jumbo came",
+        "25": "strings and had run and fallen i",
+        "30": "drunken fool but I want you to t"
+      },
+      "line_markers": "authored (Eduqas prints none on Component 2)"
+    }
+  },
+  "questions": {
+    "Q1": 3,
+    "Q2": 10,
+    "Q3": 3,
+    "Q4": 10,
+    "Q5": 4,
+    "Q6": 10,
+    "Q7": 20,
+    "Q8": 20
+  },
+  "printed_cells": {
+    "Q1": "1 1",
+    "Q2": "1 2",
+    "Q3": "1 3",
+    "Q4": "1 4",
+    "Q5": "1 5",
+    "Q6": "1 6",
+    "Q7": "2 1",
+    "Q8": "2 2"
+  },
+  "total_marks": 80,
+  "q1_format": "sub_parts",
+  "ao_source": "Eduqas mark schemes: Component 1 Summer 2023; Component 2 Autumn 2021 and Autumn 2022 (they agree)",
+  "ms_ao_check": {
+    "checked": true,
+    "read": {
+      "1": "AO1",
+      "2": "AO2",
+      "3": "AO1",
+      "4": "AO4",
+      "5": "AO1",
+      "6": "AO3"
+    }
+  },
+  "provenance": {
+    "qp": "November 2022 QP - Component 2 Eduqas English Language GCSE.pdf",
+    "qp_sha1": "d67dabf4696ae0785747a20ca4ad35792110807f",
+    "ins": null,
+    "ins_sha1": null,
+    "ms": "November 2022 MS - Component 2 Eduqas English Language GCSE.pdf",
+    "ms_sha1": "94b7d3bfcd5dc63b50b3c9b3b368ceff941f3a49"
+  },
+  "needs_human": [],
+  "notes": [
+    "Source A has no byline; the writer’s name was taken from the wording of question 1 2"
+  ]
+}

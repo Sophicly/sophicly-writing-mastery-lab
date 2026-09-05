@@ -1,0 +1,75 @@
+{
+  "topic_number": 202306,
+  "board": "eduqas",
+  "text": "eduqas_lang_paper_1",
+  "store": "swml_topics_eduqas_eduqas_lang_paper_1",
+  "label": "Eduqas Language Component 1 — June 2023 · A World of Her Own (Penelope Lively)",
+  "sitting": {
+    "code": "202306",
+    "printed_date": "Monday, 5 June 2023",
+    "label": "June 2023"
+  },
+  "sources": {
+    "A": {
+      "line_count": 78,
+      "line_checks": {
+        "1": "My sister Lisa is an artist. She",
+        "5": "about one thing and another, but",
+        "10": "fifteen, mother went to work in ",
+        "15": "I was at college by then, doing ",
+        "20": "and of course she needed smarter",
+        "25": "made everybody laugh and other t",
+        "30": "or for publishers or that kind o",
+        "35": "whom I’d met at college, and we ",
+        "40": "and she said she never liked any",
+        "45": "Lisa mooched about at home for m",
+        "50": "when Lisa first told us.",
+        "55": "at that party.",
+        "60": "bit upset about that but actuall",
+        "65": "much difference. It did get more",
+        "70": "The last time she was here I sud",
+        "75": "Holding them, she said, “With he"
+      },
+      "line_markers": "board-printed (line 1, then every fifth line)"
+    }
+  },
+  "questions": {
+    "Q1": 5,
+    "Q2": 5,
+    "Q3": 10,
+    "Q4": 10,
+    "Q5": 10,
+    "Q6": 40
+  },
+  "printed_cells": {
+    "Q1": "0 1",
+    "Q2": "0 2",
+    "Q3": "0 3",
+    "Q4": "0 4",
+    "Q5": "0 5",
+    "Q6": "1 1"
+  },
+  "total_marks": 80,
+  "q1_format": "open",
+  "ao_source": "Eduqas mark schemes: Component 1 Summer 2023; Component 2 Autumn 2021 and Autumn 2022 (they agree)",
+  "ms_ao_check": {
+    "checked": true,
+    "read": {
+      "1": "AO1",
+      "2": "AO2",
+      "3": "AO2",
+      "4": "AO2",
+      "5": "AO4"
+    }
+  },
+  "provenance": {
+    "qp": "June 2023 QP - Component 1 Eduqas English Language GCSE.pdf",
+    "qp_sha1": "94e30b39709627ca45b014e5a41d81caf648b37a",
+    "ins": null,
+    "ins_sha1": null,
+    "ms": "June 2023 MS - Component 1 Eduqas English Language GCSE.pdf",
+    "ms_sha1": "eff7da8bdb14e385ce8b73c8accd24c88d706350"
+  },
+  "needs_human": [],
+  "notes": []
+}

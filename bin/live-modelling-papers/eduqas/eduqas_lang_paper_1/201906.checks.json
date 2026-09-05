@@ -1,0 +1,74 @@
+{
+  "topic_number": 201906,
+  "board": "eduqas",
+  "text": "eduqas_lang_paper_1",
+  "store": "swml_topics_eduqas_eduqas_lang_paper_1",
+  "label": "Eduqas Language Component 1 — June 2019 · Untitled prose extract (Helen Simpson)",
+  "sitting": {
+    "code": "201906",
+    "printed_date": "Tuesday, 4 June 2019",
+    "label": "June 2019"
+  },
+  "sources": {
+    "A": {
+      "line_count": 89,
+      "line_checks": {
+        "1": "‘Why does everything take so lon",
+        "5": "of clothes in case of car sickne",
+        "10": "‘Why is everything always such a",
+        "15": "round it was spinning away in ex",
+        "20": "‘Right, you can go through. But ",
+        "25": "breathing.’",
+        "30": "‘Hardy didn’t have children, did",
+        "35": "from a newly-acquired book. When",
+        "40": "beer in the garden.’",
+        "45": "is it?’",
+        "50": "they had grown used to this stat",
+        "55": "‘But it’s like a favour, and it’",
+        "60": "‘How can I?’ sniffed Frances. ‘S",
+        "65": "He reached out his hand and they",
+        "70": "and aware of her eyes making adj",
+        "75": "of life. It was there to start w",
+        "80": "‘Would I do a thing like that?’ ",
+        "85": "‘But isn’t it mind-boggling?’ sa",
+        "89": "Frances scooped her up and held "
+      },
+      "line_markers": "board-printed (line 1, then every fifth line)"
+    }
+  },
+  "questions": {
+    "Q1": 5,
+    "Q2": 5,
+    "Q3": 10,
+    "Q4": 10,
+    "Q5": 10,
+    "Q6": 40
+  },
+  "printed_cells": {
+    "Q1": "0 1",
+    "Q2": "0 2",
+    "Q3": "0 3",
+    "Q4": "0 4",
+    "Q5": "0 5",
+    "Q6": "1 1"
+  },
+  "total_marks": 80,
+  "q1_format": "open",
+  "ao_source": "Eduqas mark schemes: Component 1 Summer 2023; Component 2 Autumn 2021 and Autumn 2022 (they agree)",
+  "ms_ao_check": {
+    "checked": false,
+    "reason": "no --ms supplied"
+  },
+  "provenance": {
+    "qp": "EDUQAS GCSE English Language Paper 1 s19-5700-01.pdf",
+    "qp_sha1": "f79f5b56ec5ac84680b8aa16b813abd274539fa9",
+    "ins": "JUNE 2019 Insert.pdf",
+    "ins_sha1": "c0a7624b3b125d8335287d9b1509fb638d54e6d9",
+    "ms": null,
+    "ms_sha1": null
+  },
+  "needs_human": [],
+  "notes": [
+    "Eduqas prints no title above the Component 1 passage for this sitting — Title written as 'Untitled prose extract'"
+  ]
+}

@@ -76,7 +76,9 @@ function swml_lm_paper_checks($md_path, &$report) {
     foreach ($qs as $q) { $sum += (int) $q['marks']; $ids[] = $q['id']; $want = $side['questions'][$q['id']] ?? null; $ok((int) $q['marks'] === (int) $want, "{$q['id']} = {$q['marks']} marks (sidecar $want)"); $ok(strlen(trim($q['text'])) > 20, "{$q['id']} has text (" . strlen($q['text']) . " chars)"); }
     $ok($sum === (int) $side['total_marks'], "tariff sums to $sum (sidecar total {$side['total_marks']})");
     $ok($ids === $want_ids, "question ids in order (" . implode(',', $ids) . " vs sidecar " . implode(',', $want_ids) . ")");
-    if (!empty($side['sources']['B'])) {
+    // Q1 true/false statements are an AQA Paper 2 shape, declared by the sidecar — never inferred from "has a Source B"
+    // (Eduqas Component 2 also has two sources and a three-part retrieval Q1; the sub-lane's GATE-NOTES §1).
+    if (($side['q1_format'] ?? (empty($side['sources']['B']) ? 'open' : 'statements')) === 'statements') {
         $q1 = $qs[0];
         $ok(!empty($q1['statements']) && count($q1['statements']) === 8, "Q1 carries 8 statements (got " . count($q1['statements'] ?? []) . ")");
         $true = array_sum(array_map('intval', $q1['statement_key'] ?? []));
@@ -90,7 +92,7 @@ function swml_lm_paper_checks($md_path, &$report) {
 
 if (PHP_SAPI === 'cli' && isset($argv[0]) && basename($argv[0]) === basename(__FILE__)) {
     $target = $argv[1] ?? __DIR__ . '/live-modelling-papers';
-    $files = is_dir($target) ? array_values(array_filter(iterator_to_array(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($target))), function ($f) { return substr((string) $f, -3) === '.md'; })) : [$target];
+    $files = is_dir($target) ? array_values(array_filter(iterator_to_array(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($target))), function ($f) { return (bool) preg_match('/^\\d{6,7}\\.md$/', basename((string) $f)); })) : [$target];
     sort($files);
     $total = 0;
     foreach ($files as $f) {
