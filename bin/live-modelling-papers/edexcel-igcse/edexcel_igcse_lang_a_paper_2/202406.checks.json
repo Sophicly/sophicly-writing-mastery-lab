@@ -1,0 +1,38 @@
+{
+  "topic_number": 202406,
+  "board": "edexcel-igcse",
+  "text": "edexcel_igcse_lang_a_paper_2",
+  "store": "swml_topics_edexcel-igcse_edexcel_igcse_lang_a_paper_2",
+  "label": "Edexcel IGCSE Language A Paper 2 — June 2024 · An Unknown Girl (Moniza Alvi)",
+  "sources": {
+    "A": {
+      "line_count": 48,
+      "line_checks": {}
+    }
+  },
+  "source_headings": {
+    "A": "Source A"
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 30
+  },
+  "total_marks": 60,
+  "q1_format": "open",
+  "provenance": {
+    "qp": "June 2024 QP.pdf",
+    "qp_sha1": "d46c33e84cf9b9cb11975558228c61feb7782b03",
+    "ms": "Edexcel IGCSE Language Paper 2 Spec A June 2024 MS.pdf",
+    "ms_sha1": "35ffe294115c3a5d39b109006f5ba1983a1a4bfc",
+    "exam_date": "Thursday 6 June 2024",
+    "paper_code": "4EA1/02",
+    "section_b_image_page": "images/202406-section-b-images-11.png"
+  },
+  "needs_human": [],
+  "notes": [
+    "'An Unknown Girl' is not listed under that exact title in the anthology markdown, so the author is the name the question paper itself prints under the extract.",
+    "The board prints no line markers on “An Unknown Girl” — the line numbers in this topic are ours, one per printed line, so there is nothing of the board's to assert them against.",
+    "Section B is emitted as one 30-mark question (Q2) carrying the board's own Q2, Q3 and Q4 as its three options — the paper is answered once, and this is the shape protocols/shared/language-paper-specs.json declares for edexcel-igcse language_p2.",
+    "Sat Thursday 6 June 2024."
+  ]
+}

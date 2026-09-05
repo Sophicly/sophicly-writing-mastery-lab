@@ -1,0 +1,52 @@
+{
+  "topic_number": 2020061,
+  "board": "edexcel-igcse",
+  "text": "edexcel_igcse_lang_a_paper_2",
+  "store": "swml_topics_edexcel-igcse_edexcel_igcse_lang_a_paper_2",
+  "label": "Edexcel IGCSE Language A Paper 2 — June 2020 (R) · The Story of an Hour (Kate Chopin)",
+  "sources": {
+    "A": {
+      "line_count": 72,
+      "line_checks": {
+        "5": "been in the newspaper office whe",
+        "10": "inability to accept its signific",
+        "15": "her soul.",
+        "20": "There were patches of blue sky s",
+        "25": "She was young, with a fair, calm",
+        "30": "did not know; it was too subtle ",
+        "35": "When she abandoned herself a lit",
+        "40": "exalted perception enabled her t",
+        "45": "There would be no one to live fo",
+        "50": "And yet she had loved him – some",
+        "55": "admission. “Louise, open the doo",
+        "60": "and all sorts of days that would",
+        "65": "waiting for them at the bottom.",
+        "70": "the view of his wife."
+      }
+    }
+  },
+  "source_headings": {
+    "A": "Source A"
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 30
+  },
+  "total_marks": 60,
+  "q1_format": "open",
+  "provenance": {
+    "qp": "June 2020 (R) QP.pdf",
+    "qp_sha1": "6bf164c7b4eac39f118bdc74c4e47de0e182a2ee",
+    "ms": "June 2020 (R) MS.pdf",
+    "ms_sha1": "b7d8b2ab86c744520a8db18463acab55aee6aac7",
+    "exam_date": "Friday 5 June 2020",
+    "paper_code": "4EA1/02",
+    "section_b_image_page": "images/2020061-section-b-images-09.png"
+  },
+  "needs_human": [],
+  "notes": [
+    "Author confirmed against the board's own anthology (Kate Chopin).",
+    "Section B is emitted as one 30-mark question (Q2) carrying the board's own Q2, Q3 and Q4 as its three options — the paper is answered once, and this is the shape protocols/shared/language-paper-specs.json declares for edexcel-igcse language_p2.",
+    "Sat Friday 5 June 2020."
+  ]
+}

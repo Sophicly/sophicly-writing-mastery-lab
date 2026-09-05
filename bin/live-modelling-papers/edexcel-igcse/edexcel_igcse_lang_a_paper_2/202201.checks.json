@@ -1,0 +1,37 @@
+{
+  "topic_number": 202201,
+  "board": "edexcel-igcse",
+  "text": "edexcel_igcse_lang_a_paper_2",
+  "store": "swml_topics_edexcel-igcse_edexcel_igcse_lang_a_paper_2",
+  "label": "Edexcel IGCSE Language A Paper 2 — January 2022 · Disabled (Wilfred Owen)",
+  "sources": {
+    "A": {
+      "line_count": 46,
+      "line_checks": {}
+    }
+  },
+  "source_headings": {
+    "A": "Source A"
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 30
+  },
+  "total_marks": 60,
+  "q1_format": "open",
+  "provenance": {
+    "qp": "January 2022 QP.pdf",
+    "qp_sha1": "4964033ac0ae5c5a71436a45a4d63369eccfcc32",
+    "ms": "January 2022 MS.pdf",
+    "ms_sha1": "0c75b3fff817cb420fd01bf46550aa270eb445c3",
+    "exam_date": null,
+    "paper_code": "4EA1/02",
+    "section_b_image_page": "images/202201-section-b-images-11.png"
+  },
+  "needs_human": [],
+  "notes": [
+    "Author confirmed against the board's own anthology (Wilfred Owen).",
+    "The board prints no line markers on “Disabled” — the line numbers in this topic are ours, one per printed line, so there is nothing of the board's to assert them against.",
+    "Section B is emitted as one 30-mark question (Q2) carrying the board's own Q2, Q3 and Q4 as its three options — the paper is answered once, and this is the shape protocols/shared/language-paper-specs.json declares for edexcel-igcse language_p2."
+  ]
+}

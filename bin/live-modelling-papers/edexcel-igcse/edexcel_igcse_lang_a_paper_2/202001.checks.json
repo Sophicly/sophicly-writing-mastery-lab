@@ -1,0 +1,38 @@
+{
+  "topic_number": 202001,
+  "board": "edexcel-igcse",
+  "text": "edexcel_igcse_lang_a_paper_2",
+  "store": "swml_topics_edexcel-igcse_edexcel_igcse_lang_a_paper_2",
+  "label": "Edexcel IGCSE Language A Paper 2 — January 2020 · The Bright Lights of Sarajevo (Tony Harrison)",
+  "sources": {
+    "A": {
+      "line_count": 46,
+      "line_checks": {}
+    }
+  },
+  "source_headings": {
+    "A": "Source A"
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 30
+  },
+  "total_marks": 60,
+  "q1_format": "open",
+  "provenance": {
+    "qp": "January 2020 QP.pdf",
+    "qp_sha1": "71482f7dc5acdc1197561400ff052e7939d53a38",
+    "ms": "January 2020 MS.pdf",
+    "ms_sha1": "1ec62ff20cb5dd7060289ba542a1c5706a860db5",
+    "exam_date": "Tuesday 21 January 2020",
+    "paper_code": "4EA1/02",
+    "section_b_image_page": "images/202001-section-b-images-11.png"
+  },
+  "needs_human": [],
+  "notes": [
+    "Author confirmed against the board's own anthology (Tony Harrison).",
+    "The board prints no line markers on “The Bright Lights of Sarajevo” — the line numbers in this topic are ours, one per printed line, so there is nothing of the board's to assert them against.",
+    "Section B is emitted as one 30-mark question (Q2) carrying the board's own Q2, Q3 and Q4 as its three options — the paper is answered once, and this is the shape protocols/shared/language-paper-specs.json declares for edexcel-igcse language_p2.",
+    "Sat Tuesday 21 January 2020."
+  ]
+}

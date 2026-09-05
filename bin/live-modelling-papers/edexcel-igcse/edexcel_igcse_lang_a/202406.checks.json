@@ -1,0 +1,74 @@
+{
+  "topic_number": 202406,
+  "board": "edexcel-igcse",
+  "text": "edexcel_igcse_lang_a",
+  "store": "swml_topics_edexcel-igcse_edexcel_igcse_lang_a",
+  "label": "Edexcel IGCSE Language A Paper 1 — June 2024 · Tin Bath Tournament (Ben Fogle) / From A Game of Polo with a Headless Goat (Emma Levine)",
+  "sources": {
+    "A": {
+      "line_count": 81,
+      "line_checks": {
+        "5": "A flag snapped in the brisk bree",
+        "10": "unloading its catch.",
+        "15": "against the concrete ramp. Ginge",
+        "20": "into the chilly Irish Sea.",
+        "25": "Ben … ‘. Gingerly I paddled my w",
+        "30": "I was competing against some of ",
+        "35": "halyards and the roar of the cro",
+        "40": "paddles whipped it into a cappuc",
+        "45": "dangerously close to the waterli",
+        "50": "my nostrils as I tumbled into th",
+        "55": "which was already starting to ch",
+        "60": "myself as I tried to catch up. L",
+        "65": "failure to achieve anything. I h",
+        "70": "finished. I was a child again, p",
+        "75": "‘Ben? Ben?’ It seemed as if peop",
+        "80": "in the same water and I was very"
+      }
+    },
+    "B": {
+      "line_count": 58,
+      "line_checks": {
+        "5": "cars.’ ‘But will you try and get",
+        "10": "past and gazed around at us.",
+        "15": "donkey‑carts in front of a cloud",
+        "20": "of the tiny carts using their wh",
+        "25": "Yaqoob chose exactly the right m",
+        "30": "and depended upon the ability to",
+        "35": "traffic – for it was a main road",
+        "40": "near pile‑up as the leading donk",
+        "45": "who had all staked money on the ",
+        "50": "Yaqoob and Iqbal were nervous of",
+        "55": "sedate pace. ‘But I don’t even h"
+      }
+    }
+  },
+  "source_headings": {
+    "A": "Text One (Unseen)",
+    "B": "Text Two (Anthology)"
+  },
+  "questions": {
+    "Q1": 2,
+    "Q2": 4,
+    "Q3": 5,
+    "Q4": 12,
+    "Q5": 22,
+    "Q6": 45
+  },
+  "total_marks": 90,
+  "q1_format": "open",
+  "provenance": {
+    "qp": "June 2024 QP.pdf",
+    "qp_sha1": "edb3219a21494e4b5d71399a4d6535549bf4ecae",
+    "ms": "Edexcel IGCSE Language Paper 1 Spec A June 2024 MS.pdf",
+    "ms_sha1": "4a76b0f3d57bc934e6c7444391d7f08fc3fc2bf4",
+    "exam_date": "Thursday 23 May 2024",
+    "paper_code": "4EA1/01",
+    "section_b_image_page": null
+  },
+  "needs_human": [],
+  "notes": [
+    "Section B is emitted as one 45-mark question (Q6) carrying the board's own Q6 and Q7 as its two options — the paper is answered once, and this is the shape protocols/shared/language-paper-specs.json declares for edexcel-igcse language_p1.",
+    "Sat Thursday 23 May 2024."
+  ]
+}

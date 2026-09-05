@@ -1,0 +1,83 @@
+{
+  "topic_number": 202301,
+  "board": "edexcel-igcse",
+  "text": "edexcel_igcse_lang_a_paper_2",
+  "store": "swml_topics_edexcel-igcse_edexcel_igcse_lang_a_paper_2",
+  "label": "Edexcel IGCSE Language A Paper 2 — January 2023 · The Necklace (Guy de Maupassant)",
+  "sources": {
+    "A": {
+      "line_count": 233,
+      "line_checks": {
+        "5": "Ministry of Education.",
+        "10": "their place in the hierarchy, an",
+        "15": "her station might never even hav",
+        "20": "drawing-rooms dressed with old s",
+        "25": "When she sat down to dinner at t",
+        "30": "served on fabulous china plates,",
+        "35": "She had a friend who was rich, a",
+        "40": "‘Look,’ he said, ‘I’ve got somet",
+        "45": "Instead of being delighted as he",
+        "50": "be able to see all the big nobs ",
+        "55": "of the corners of her eyes and d",
+        "60": "with a wife who is better off fo",
+        "65": "from her husband who was careful",
+        "70": "your four hundred francs. But do",
+        "75": "can put on. I’ll look like a chu",
+        "80": "But her husband exclaimed: ‘You ",
+        "85": "unlocked it, and said to Madame ",
+        "90": "All of a sudden, in a black sati",
+        "95": "‘But of course.’",
+        "100": "her, enquired who she was, and a",
+        "105": "of complete and utter triumph wh",
+        "110": "everyday coat, a commonplace coa",
+        "115": "street, there was no cab in sigh",
+        "120": "It bore them back to their front",
+        "125": "necklace was no longer round her",
+        "130": "looked everywhere. They did not ",
+        "135": "‘No. Did you happen to notice it",
+        "140": "disconsolately on a chair by the",
+        "145": "catastrophe which had befallen t",
+        "150": "to do.’",
+        "155": "The next day they took the case ",
+        "160": "In a shop in the Palais Royal th",
+        "165": "Loisel had eighteen thousand fra",
+        "170": "life, signed papers without know",
+        "175": "When Madame Loisel took it round",
+        "180": "Then began for Madame Loisel the",
+        "185": "washed dishes, wearing down her ",
+        "190": "haggling, frequently abused and ",
+        "195": "By the time ten years had gone b",
+        "200": "and her hands were red. She spok",
+        "205": "could possibly tell? Life is so ",
+        "210": "had paid in full, she would tell",
+        "215": "‘No mistake. I’m Mathilde Loisel",
+        "220": "‘Do you remember that diamond ne",
+        "225": "‘No, I returned another one just",
+        "230": "smiled a proud, innocent smile."
+      }
+    }
+  },
+  "source_headings": {
+    "A": "Source A"
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 30
+  },
+  "total_marks": 60,
+  "q1_format": "open",
+  "provenance": {
+    "qp": "January 2023 QP.pdf",
+    "qp_sha1": "f9f08a3e41c1dae077d43160f956cbeb14fdb9b7",
+    "ms": "January 2023 MS.pdf",
+    "ms_sha1": "07e5e9db65d761871022157cc5424bc52a756d3f",
+    "exam_date": null,
+    "paper_code": "4EA1/02",
+    "section_b_image_page": "images/202301-section-b-images-09.png"
+  },
+  "needs_human": [],
+  "notes": [
+    "'The Necklace' is not listed under that exact title in the anthology markdown, so the author is the name the question paper itself prints under the extract.",
+    "Section B is emitted as one 30-mark question (Q2) carrying the board's own Q2, Q3 and Q4 as its three options — the paper is answered once, and this is the shape protocols/shared/language-paper-specs.json declares for edexcel-igcse language_p2."
+  ]
+}

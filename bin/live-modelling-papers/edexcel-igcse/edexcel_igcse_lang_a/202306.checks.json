@@ -1,0 +1,75 @@
+{
+  "topic_number": 202306,
+  "board": "edexcel-igcse",
+  "text": "edexcel_igcse_lang_a",
+  "store": "swml_topics_edexcel-igcse_edexcel_igcse_lang_a",
+  "label": "Edexcel IGCSE Language A Paper 1 — June 2023 · War Doctor (David Nott) / From A Passage to Africa (George Alagiah)",
+  "sources": {
+    "A": {
+      "line_count": 71,
+      "line_checks": {
+        "5": "people have neither been nor wan",
+        "10": "I was embedded in the Shifa hosp",
+        "15": "There had been an enormous explo",
+        "20": "was very shallow. She had a woun",
+        "25": "being put to sleep and then went",
+        "30": "Everybody else in the room began",
+        "35": "Lots of things went through my m",
+        "40": "I was on my own in the world, wi",
+        "45": "mixture of regret, respect and f",
+        "50": "them into position. There was no",
+        "55": "left arm.",
+        "60": "source and that’s why everybody ",
+        "65": "Perhaps it had been irresponsibl",
+        "70": "have been impossible to do other"
+      }
+    },
+    "B": {
+      "line_count": 71,
+      "line_checks": {
+        "5": "to get there. ‘Take the Badale R",
+        "10": "we’d started our trip just a few",
+        "15": "There was Amina Abdirahman, who ",
+        "20": "simple, frictionless, motionless",
+        "25": "doorway: the smell of decaying f",
+        "30": "struggling breath she took.",
+        "35": "that has yet to be breached. To ",
+        "40": "almost impossible to achieve. An",
+        "45": "away, as its owner retreated int",
+        "50": "why he had smiled. He came back ",
+        "55": "was unsettled by this one smile ",
+        "60": "us and them, between the rich wo",
+        "65": "answer a reporter can give to th",
+        "70": "where they sit in the great sche"
+      }
+    }
+  },
+  "source_headings": {
+    "A": "Text One (Unseen)",
+    "B": "Text Two (Anthology)"
+  },
+  "questions": {
+    "Q1": 2,
+    "Q2": 4,
+    "Q3": 5,
+    "Q4": 12,
+    "Q5": 22,
+    "Q6": 45
+  },
+  "total_marks": 90,
+  "q1_format": "open",
+  "provenance": {
+    "qp": "June 2023 QP (1).pdf",
+    "qp_sha1": "e49058a43ed1504c73f45cd58634bcbdab7faf86",
+    "ms": "June 2023 MS.pdf",
+    "ms_sha1": "76f1e9fd3ac624114446c087ec51255230dcc25f",
+    "exam_date": "Monday 5 June 2023",
+    "paper_code": "4EA1/01",
+    "section_b_image_page": null
+  },
+  "needs_human": [],
+  "notes": [
+    "Section B is emitted as one 45-mark question (Q6) carrying the board's own Q6 and Q7 as its two options — the paper is answered once, and this is the shape protocols/shared/language-paper-specs.json declares for edexcel-igcse language_p1.",
+    "Sat Monday 5 June 2023."
+  ]
+}

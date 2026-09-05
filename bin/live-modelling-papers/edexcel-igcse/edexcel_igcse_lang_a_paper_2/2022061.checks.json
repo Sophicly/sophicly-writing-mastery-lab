@@ -1,0 +1,87 @@
+{
+  "topic_number": 2022061,
+  "board": "edexcel-igcse",
+  "text": "edexcel_igcse_lang_a_paper_2",
+  "store": "swml_topics_edexcel-igcse_edexcel_igcse_lang_a_paper_2",
+  "label": "Edexcel IGCSE Language A Paper 2 — June 2022 (R) · Night (Alice Munro)",
+  "sources": {
+    "A": {
+      "line_count": 254,
+      "line_checks": {
+        "5": "horses still around – in the nor",
+        "10": "A trip of no more than a mile an",
+        "15": "woodlot that he had kept when he",
+        "20": "I thought, but it was not the on",
+        "25": "there could be such a revelation",
+        "30": "got rid of, for here I am today.",
+        "35": "Now I have to describe the sleep",
+        "40": "sister lying helpless in the bun",
+        "45": "I was fourteen. The relationship",
+        "50": "In the month June, as I have sai",
+        "55": "any rate, having to tackle any o",
+        "60": "that. It was all inward – this u",
+        "65": "wide awake I was, with the rest ",
+        "70": "It took a while for the house to",
+        "75": "You might think this was a liber",
+        "80": "turned into absurdity, into the ",
+        "85": "I had been hearing that too, wit",
+        "90": "off. I had the sense to do that,",
+        "95": "And I did think of it. The more ",
+        "100": "The thought that I could strangl",
+        "105": "have been waiting a long time.",
+        "110": "The thing to do was to get up, t",
+        "115": "the doorknob so that anybody try",
+        "120": "Everything was larger. The trees",
+        "125": "The front and back and side lawn",
+        "130": "if each of them had thought of i",
+        "135": "went upstairs without a sound, m",
+        "140": "their classes in the public scho",
+        "145": "It was in that hammock that I sp",
+        "150": "better and that I would in fact ",
+        "155": "where we stood to hang out the h",
+        "160": "their busyness.",
+        "165": "would be worse that way than to ",
+        "170": "another presence, though it’s po",
+        "175": "we would see each other off and ",
+        "180": "comfort from doing so as I had a",
+        "185": "“Having trouble sleeping?” he sa",
+        "190": "awake. Isn’t that the way?”",
+        "195": "stir at the slightest creeping o",
+        "200": "it, I don’t think he’d have got ",
+        "205": "No.",
+        "210": "When I spoke of my little sister",
+        "215": "strangling little Catherine in h",
+        "220": "than a dream, you could say.",
+        "225": "likelihood of its doing so put i",
+        "230": "think that is what I might have ",
+        "235": "you didn’t bother to know about ",
+        "240": "than the necessary and adequate ",
+        "245": "there was the risk of him growin",
+        "250": "his loan. He had worked as hard "
+      }
+    }
+  },
+  "source_headings": {
+    "A": "Source A"
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 30
+  },
+  "total_marks": 60,
+  "q1_format": "open",
+  "provenance": {
+    "qp": "June 2022 (R) QP.pdf",
+    "qp_sha1": "26a1f1227dc4c8920d978a4fb1bfc54b543008ed",
+    "ms": "June 2022 (R) MS.pdf",
+    "ms_sha1": "1850849fb15a772f4ca92f04b54246dc4436c024",
+    "exam_date": null,
+    "paper_code": "4EA1/02",
+    "section_b_image_page": "images/2022061-section-b-images-09.png"
+  },
+  "needs_human": [],
+  "notes": [
+    "Author confirmed against the board's own anthology (Alice Munro).",
+    "Section B is emitted as one 30-mark question (Q2) carrying the board's own Q2, Q3 and Q4 as its three options — the paper is answered once, and this is the shape protocols/shared/language-paper-specs.json declares for edexcel-igcse language_p2."
+  ]
+}

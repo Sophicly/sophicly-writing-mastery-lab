@@ -1,0 +1,67 @@
+{
+  "topic_number": 202006,
+  "board": "edexcel-igcse",
+  "text": "edexcel_igcse_lang_a_paper_2",
+  "store": "swml_topics_edexcel-igcse_edexcel_igcse_lang_a_paper_2",
+  "label": "Edexcel IGCSE Language A Paper 2 — June 2020 · Significant Cigarettes (from The Road Home) (Rose Tremain)",
+  "sources": {
+    "A": {
+      "line_count": 149,
+      "line_checks": {
+        "5": "Lev wore a leather jacket and je",
+        "10": "his lips, and the woman sitting ",
+        "15": "to, something that had promise i",
+        "20": "them, note the degree to which e",
+        "25": "back working – if only that work",
+        "30": "stations, the passengers would b",
+        "35": "of another industrial zone, or t",
+        "40": "in summer, on a hard wooden chai",
+        "45": "of linoleum flooring no wider th",
+        "50": "boiled egg. She peeled it silent",
+        "55": "‘Why d’you say that?’ Lev had as",
+        "60": "‘My name is Lev,’ said Lev.",
+        "65": "‘That sounds promising.’",
+        "70": "you had a good job at School 237",
+        "75": "Lev took off his leather cap and",
+        "80": "and you can tell me if I’m prono",
+        "85": "‘Go on,’ said Lydia.",
+        "90": "Lev could now see that darkness ",
+        "95": "And so he told Lydia that he cam",
+        "100": "‘Sure,’ said Lev. ‘But it isn’t ",
+        "105": "it was his own guilt at still be",
+        "110": "drink. Immigrants made their own",
+        "115": "England is my hope.’",
+        "120": "book was The Power and the Glory",
+        "125": "vigil, the driver’s body tensed ",
+        "130": "examine the note. On one side, t",
+        "135": "Only intermittently do they see ",
+        "140": "known any other system of being ",
+        "145": "the angel’s radiance had probabl"
+      }
+    }
+  },
+  "source_headings": {
+    "A": "Source A"
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 30
+  },
+  "total_marks": 60,
+  "q1_format": "open",
+  "provenance": {
+    "qp": "June 2020 QP.pdf",
+    "qp_sha1": "f92268ce5f0a412b6b5a66cd632919185ee0732d",
+    "ms": "June 2020 MS.pdf",
+    "ms_sha1": "a4d00e479255fa3c1b1dae7d01ce8aa007c01d13",
+    "exam_date": "Friday 5 June 2020",
+    "paper_code": "4EA1/02",
+    "section_b_image_page": "images/202006-section-b-images-09.png"
+  },
+  "needs_human": [],
+  "notes": [
+    "Author confirmed against the board's own anthology (Rose Tremain).",
+    "Section B is emitted as one 30-mark question (Q2) carrying the board's own Q2, Q3 and Q4 as its three options — the paper is answered once, and this is the shape protocols/shared/language-paper-specs.json declares for edexcel-igcse language_p2.",
+    "Sat Friday 5 June 2020."
+  ]
+}
