@@ -1,0 +1,60 @@
+{
+  "topic_number": 202211,
+  "board": "aqa",
+  "text": "aqa_lang_paper_2",
+  "store": "swml_topics_aqa_aqa_lang_paper_2",
+  "label": "AQA Language Paper 2 — November 2022 · How I beat my insomnia (Arifa Akbar) / A sleepless night (Fanny Fern)",
+  "sources": {
+    "A": {
+      "line_count": 46,
+      "line_checks": {
+        "1": "Now, I am about to say something",
+        "5": "A full night’s sleep could never",
+        "6": "late 30s, I had insomnia that cl",
+        "10": "the herbal to the hard stuff, bu",
+        "15": "of us admit to being sleep depri",
+        "20": "So when I came across a magazine",
+        "25": "bodies from limb to limb, and th",
+        "30": "neck and shoulders are heavy and",
+        "35": "but I began to feel calmer, brig",
+        "40": "hypnosis began to turn down the ",
+        "45": "despite the science. I fear the "
+      }
+    },
+    "B": {
+      "line_count": 42,
+      "line_checks": {
+        "1": "You know what it is to lie awake",
+        "5": "owner of that blind across the s",
+        "10": "recommended in such cases. Two o",
+        "15": "before going to bed!",
+        "20": "mind, you start grinning like a ",
+        "23": "And as to mosquitoes. Ah! You to",
+        "25": "over; you have lain on your side",
+        "30": "smothered exclamation, into the ",
+        "35": "headache. Can it be the confined",
+        "40": "the small hours, and then—to bed"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 4,
+    "Q2": 8,
+    "Q3": 12,
+    "Q4": 16,
+    "Q5": 40
+  },
+  "total_marks": 80,
+  "provenance": {
+    "ins": "AQA-87002-INS-NOV22.PDF",
+    "ins_sha1": "fac86b7e7420be81ec642271ec548a427f75f122",
+    "qp": "AQA-87002-QP-NOV22.PDF",
+    "qp_sha1": "79a1317ed85a28da2ac00d062104c6da7db00dc0",
+    "ms": "AQA-87002-MS-NOV22.PDF"
+  },
+  "bank_check": {
+    "skipped": "no bank entry for November 2022"
+  },
+  "needs_human": [],
+  "notes": []
+}

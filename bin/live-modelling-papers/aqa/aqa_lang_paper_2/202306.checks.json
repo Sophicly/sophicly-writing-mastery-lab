@@ -1,0 +1,59 @@
+{
+  "topic_number": 202306,
+  "board": "aqa",
+  "text": "aqa_lang_paper_2",
+  "store": "swml_topics_aqa_aqa_lang_paper_2",
+  "label": "AQA Language Paper 2 — June 2023 · One’s Company (Peter Fleming) / Records of a Girlhood (Fanny Kemble)",
+  "sources": {
+    "A": {
+      "line_count": 39,
+      "line_checks": {
+        "1": "And now the journey was almost o",
+        "5": "more days entirely blank of acti",
+        "7": "doing, and that, for the moment,",
+        "10": "that the number on my berth was ",
+        "12": "All of a sudden there was a frig",
+        "15": "my legs. My little world was til",
+        "20": "headed by my own, were disposed ",
+        "23": "embankment. It had a defiant and",
+        "25": "weather was ideal. And the whole",
+        "30": "grass on a little hill and medit",
+        "35": "dust, and when closed they had p"
+      }
+    },
+    "B": {
+      "line_count": 47,
+      "line_checks": {
+        "5": "peculiar construction, prepared ",
+        "10": "was to drag us along the rails. ",
+        "15": "and are moved by bright steel le",
+        "20": "and I took our seats on the benc",
+        "25": "You can’t imagine how strange it",
+        "30": "across the top of these cliffs, ",
+        "35": "perfect sense of security and no",
+        "40": "one of which is seventy feet hig",
+        "45": "given you an account of all the "
+      }
+    }
+  },
+  "questions": {
+    "Q1": 4,
+    "Q2": 8,
+    "Q3": 12,
+    "Q4": 16,
+    "Q5": 40
+  },
+  "total_marks": 80,
+  "provenance": {
+    "ins": "AQA-87002-INS-JUN23.PDF",
+    "ins_sha1": "3d6929143d53d47650e853d5dc7999d5cd7b4c5a",
+    "qp": "AQA-87002-QP-JUN23.PDF",
+    "qp_sha1": "aeaafff5bd36defd716aac19f1516c41ac3e77b7",
+    "ms": "AQA-87002-MS-JUN23.PDF"
+  },
+  "bank_check": {
+    "skipped": "no bank entry for June 2023"
+  },
+  "needs_human": [],
+  "notes": []
+}

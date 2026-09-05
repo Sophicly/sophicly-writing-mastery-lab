@@ -1,0 +1,62 @@
+{
+  "topic_number": 202206,
+  "board": "aqa",
+  "text": "aqa_lang_paper_2",
+  "store": "swml_topics_aqa_aqa_lang_paper_2",
+  "label": "AQA Language Paper 2 — June 2022 · The Tent, The Bucket and Me (Emma Kennedy) / In the Wilderness (Charles Dudley Warner)",
+  "sources": {
+    "A": {
+      "line_count": 48,
+      "line_checks": {
+        "1": "‘You know,’ said my mother who, ",
+        "5": "hell-bent on wreaking chaos at e",
+        "9": "look at. But in the same way tha",
+        "10": "Eventually we arrived at the cam",
+        "15": "it’s a bit cooler. What a relief",
+        "20": "sun was casting a pink tinge acr",
+        "25": "I returned to our pitch, having ",
+        "29": "Suddenly, there was a squall of ",
+        "30": "began to fall in thick, steady d",
+        "35": "rolling towards us, the starter ",
+        "38": "relentless battering against the",
+        "40": "water was starting to seep in. T",
+        "45": "together, knees against our ches"
+      }
+    },
+    "B": {
+      "line_count": 46,
+      "line_checks": {
+        "1": "The real enjoyment of camping in",
+        "5": "everything is beautiful and unsp",
+        "10": "the red squirrel, who angrily ch",
+        "15": "ground. In an incredible space o",
+        "20": "a kind of shiver in the woods. W",
+        "25": "enjoy ourselves. How much better",
+        "30": "his ear. The roof appears to be ",
+        "35": "The morning opens cheerless. The",
+        "40": "cannot exist more than three day",
+        "45": "where the fire blazed, suggest t"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 4,
+    "Q2": 8,
+    "Q3": 12,
+    "Q4": 16,
+    "Q5": 40
+  },
+  "total_marks": 80,
+  "provenance": {
+    "ins": "AQA-87002-INS-JUN22.PDF",
+    "ins_sha1": "7889d195f0e45f05fa586ca024a9a873b3705072",
+    "qp": "AQA-87002-QP-JUN22.PDF",
+    "qp_sha1": "2040d8a8c6385a987f789a206f0bfeefa2ac223a",
+    "ms": "AQA-87002-MS-JUN22.PDF"
+  },
+  "bank_check": {
+    "skipped": "no bank entry for June 2022"
+  },
+  "needs_human": [],
+  "notes": []
+}

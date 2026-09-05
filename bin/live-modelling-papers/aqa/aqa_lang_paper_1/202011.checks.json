@@ -1,0 +1,49 @@
+{
+  "topic_number": 202011,
+  "board": "aqa",
+  "text": "aqa_lang_paper_1",
+  "store": "swml_topics_aqa_aqa_lang_paper_1",
+  "label": "AQA Language Paper 1 — November 2020 · The Silk Factory (Judith Allnatt)",
+  "sources": {
+    "A": {
+      "line_count": 48,
+      "line_checks": {
+        "1": "It was on their first day at the",
+        "5": "The sash window had old glass th",
+        "10": "they moved, as if she were looki",
+        "14": "Rosie had made a quick check of ",
+        "15": "play. The bottom half of the gar",
+        "20": "ivy that grew up through the bro",
+        "23": "door.",
+        "24": "A little girl was sitting back o",
+        "25": "fence. She had her back to Rosie",
+        "30": "older. Her hair hung down her ba",
+        "35": "terrace were high – surely too h",
+        "40": "unconsciously, Rosie registered ",
+        "45": "gently, raise no challenge about"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 4,
+    "Q2": 8,
+    "Q3": 8,
+    "Q4": 20,
+    "Q5": 40
+  },
+  "total_marks": 80,
+  "provenance": {
+    "ins": "AQA-87001-INS-NOV20.PDF",
+    "ins_sha1": "cbbe9c7a9a7acf3e8e20cde3c57e3936793a329e",
+    "qp": "AQA-87001-QP-NOV20.PDF",
+    "qp_sha1": "5a83435e98a5c21dce4ae7ae6caab03614734eac",
+    "ms": null
+  },
+  "bank_check": {
+    "Q2": 0.88,
+    "Q3": 1.0,
+    "Q4": 0.99
+  },
+  "needs_human": [],
+  "notes": []
+}

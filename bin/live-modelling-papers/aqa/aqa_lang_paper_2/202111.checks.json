@@ -1,0 +1,60 @@
+{
+  "topic_number": 202111,
+  "board": "aqa",
+  "text": "aqa_lang_paper_2",
+  "store": "swml_topics_aqa_aqa_lang_paper_2",
+  "label": "AQA Language Paper 2 — November 2021 · Unreliable Memoirs (Clive James) / Sweets and their Manufacture (anon., 1868)",
+  "sources": {
+    "A": {
+      "line_count": 43,
+      "line_checks": {
+        "1": "Every Saturday afternoon at the ",
+        "5": "swarm of children from all the o",
+        "10": "drawing pin and hardly feel it.",
+        "15": "bought at least one Hoadley's Vi",
+        "20": "Fantails came in a weird, blue p",
+        "25": "being forever. A group of six sm",
+        "28": "children who still had any first",
+        "30": "undoubtedly the Jaffa. A packet ",
+        "35": "chocolate would invade your mout",
+        "40": "bounce off a child’s skull with "
+      }
+    },
+    "B": {
+      "line_count": 42,
+      "line_checks": {
+        "1": "The last thing a child asks is h",
+        "5": "possibly because they were so de",
+        "10": "production. All the higher-class",
+        "15": "It is true that some of the more",
+        "20": "which the confectionery was ador",
+        "25": "are quite safe. Today, it is wro",
+        "30": "sweets pretty freely. As it is i",
+        "35": "The sweets are made with the utm",
+        "40": "carefully done. But, however poo"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 4,
+    "Q2": 8,
+    "Q3": 12,
+    "Q4": 16,
+    "Q5": 40
+  },
+  "total_marks": 80,
+  "provenance": {
+    "ins": "AQA-87002-INS-NOV21.PDF",
+    "ins_sha1": "231a9021c8b7e061a421c6ab26ee79c1e693a075",
+    "qp": "AQA-87002-QP-NOV21.PDF",
+    "qp_sha1": "d7e851228d12cfa75b37e30db10195ce3561d9ae",
+    "ms": "AQA-87002-MS-NOV21.PDF"
+  },
+  "bank_check": {
+    "skipped": "no bank entry for November 2021"
+  },
+  "needs_human": [],
+  "notes": [
+    "Source B is unattributed on the insert front page ('An extract from a magazine article, published in 1868') — author written as Unknown"
+  ]
+}

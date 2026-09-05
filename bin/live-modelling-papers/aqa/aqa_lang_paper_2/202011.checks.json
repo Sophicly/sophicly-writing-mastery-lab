@@ -1,0 +1,62 @@
+{
+  "topic_number": 202011,
+  "board": "aqa",
+  "text": "aqa_lang_paper_2",
+  "store": "swml_topics_aqa_aqa_lang_paper_2",
+  "label": "AQA Language Paper 2 — November 2020 · Touching the Void (Joe Simpson) / Climbing the Meije (Gertrude Bell)",
+  "sources": {
+    "A": {
+      "line_count": 51,
+      "line_checks": {
+        "1": "The col was exposed and windy. D",
+        "4": "sense of hopelessness that had i",
+        "5": "‘What time is it?’ Simon asked.",
+        "10": "Simon let me slide faster than I",
+        "15": "abrupt jerk caused searing pain ",
+        "20": "go. The drop went on until I cou",
+        "23": "The terrible sliding stopped, an",
+        "25": "was glad of the freezing blasts ",
+        "30": "tried to stop it shaking, but th",
+        "31": "snow, gritted my teeth, and wait",
+        "35": "‘At this rate we should be down ",
+        "40": "‘Nothing to wait for. Come on.’",
+        "45": "together."
+      }
+    },
+    "B": {
+      "line_count": 44,
+      "line_checks": {
+        "5": "had known exactly what was befor",
+        "10": "I left here on Friday, having hi",
+        "15": "The night lasted from 8 till 12,",
+        "20": "icy little breath of wind. We ha",
+        "25": "slip. You see, I had practically",
+        "30": "into space.",
+        "35": "perfectly fearful. I thought at ",
+        "40": "When I got in, I found everyone "
+      }
+    }
+  },
+  "questions": {
+    "Q1": 4,
+    "Q2": 8,
+    "Q3": 12,
+    "Q4": 16,
+    "Q5": 40
+  },
+  "total_marks": 80,
+  "provenance": {
+    "ins": "AQA-87002-INS-NOV20.PDF",
+    "ins_sha1": "616058dd3701ed670ce5a6b53e43be964bf8b041",
+    "qp": "AQA-87002-QP-NOV20.PDF",
+    "qp_sha1": "1a34d2b9f0c940e9e3c5cbe721c065951648b59d",
+    "ms": null
+  },
+  "bank_check": {
+    "skipped": "no bank entry for November 2020"
+  },
+  "needs_human": [
+    "Q1 true/false key not read from the mark scheme — statements written as [?]"
+  ],
+  "notes": []
+}

@@ -1,0 +1,188 @@
+{
+  "course": "Live Modelling",
+  "ruling": "skill-first (Neil, 2026-09-05): Section = paper family · Unit = board paper · Lesson = sitting, newest first",
+  "author_uid_placeholder": "{{AUTHOR_UID}}",
+  "author_uid_by_env": {
+    "prod": 1,
+    "staging": 1355
+  },
+  "enrol": "every paid tier (Bronze upward); Free: no",
+  "lessons": [
+    {
+      "section": "Fiction reading — Language Paper 1 family",
+      "unit": "AQA Language Paper 1",
+      "lesson_title": "November 2021 · Half of a Yellow Sun (Adichie)",
+      "sitting": "November 2021",
+      "board": "aqa",
+      "text": "aqa_lang_paper_1",
+      "topic_number": 202111,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"202111\" board=\"aqa\" text=\"aqa_lang_paper_1\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 202111,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87001-INS-NOV21.PDF",
+        "ins_sha1": "a4c50499018a167e1886ddf0a1858fa0906f7bb7",
+        "qp": "AQA-87001-QP-NOV21.PDF",
+        "qp_sha1": "3f82c772639437bdead549ed1810cc675a2e2748",
+        "ms": "AQA-87001-MS-NOV21.PDF"
+      },
+      "notes": []
+    },
+    {
+      "section": "Fiction reading — Language Paper 1 family",
+      "unit": "AQA Language Paper 1",
+      "lesson_title": "November 2020 · The Silk Factory (Allnatt)",
+      "sitting": "November 2020",
+      "board": "aqa",
+      "text": "aqa_lang_paper_1",
+      "topic_number": 202011,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"202011\" board=\"aqa\" text=\"aqa_lang_paper_1\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 202011,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87001-INS-NOV20.PDF",
+        "ins_sha1": "cbbe9c7a9a7acf3e8e20cde3c57e3936793a329e",
+        "qp": "AQA-87001-QP-NOV20.PDF",
+        "qp_sha1": "5a83435e98a5c21dce4ae7ae6caab03614734eac",
+        "ms": null
+      },
+      "notes": []
+    },
+    {
+      "section": "Fiction reading — Language Paper 1 family",
+      "unit": "AQA Language Paper 1",
+      "lesson_title": "June 2017 · The Tiredness of Rosabel (Mansfield)",
+      "sitting": "June 2017",
+      "board": "aqa",
+      "text": "aqa_lang_paper_1",
+      "topic_number": 11,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"11\" board=\"aqa\" text=\"aqa_lang_paper_1\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 11,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA Lang P1 Insert Jun2017 Rosabel.pdf",
+        "qp": "AQA Lang P1 QP Jun2017 Rosabel.pdf"
+      },
+      "notes": [
+        "installed 2026-08-26 by bin/live-model-install-paper.php as topic 11 (not YYYYMM)"
+      ]
+    },
+    {
+      "section": "Non-fiction reading + transactional writing — Language Paper 2 family",
+      "unit": "AQA Language Paper 2",
+      "lesson_title": "June 2023 · One’s Company (Fleming) / Records of a Girlhood (Kemble)",
+      "sitting": "June 2023",
+      "board": "aqa",
+      "text": "aqa_lang_paper_2",
+      "topic_number": 202306,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"202306\" board=\"aqa\" text=\"aqa_lang_paper_2\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 202306,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87002-INS-JUN23.PDF",
+        "ins_sha1": "3d6929143d53d47650e853d5dc7999d5cd7b4c5a",
+        "qp": "AQA-87002-QP-JUN23.PDF",
+        "qp_sha1": "aeaafff5bd36defd716aac19f1516c41ac3e77b7",
+        "ms": "AQA-87002-MS-JUN23.PDF"
+      },
+      "notes": []
+    },
+    {
+      "section": "Non-fiction reading + transactional writing — Language Paper 2 family",
+      "unit": "AQA Language Paper 2",
+      "lesson_title": "November 2022 · How I beat my insomnia (Akbar) / A sleepless night (Fern)",
+      "sitting": "November 2022",
+      "board": "aqa",
+      "text": "aqa_lang_paper_2",
+      "topic_number": 202211,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"202211\" board=\"aqa\" text=\"aqa_lang_paper_2\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 202211,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87002-INS-NOV22.PDF",
+        "ins_sha1": "fac86b7e7420be81ec642271ec548a427f75f122",
+        "qp": "AQA-87002-QP-NOV22.PDF",
+        "qp_sha1": "79a1317ed85a28da2ac00d062104c6da7db00dc0",
+        "ms": "AQA-87002-MS-NOV22.PDF"
+      },
+      "notes": []
+    },
+    {
+      "section": "Non-fiction reading + transactional writing — Language Paper 2 family",
+      "unit": "AQA Language Paper 2",
+      "lesson_title": "June 2022 · The Tent, The Bucket and Me (Kennedy) / In the Wilderness (Warner)",
+      "sitting": "June 2022",
+      "board": "aqa",
+      "text": "aqa_lang_paper_2",
+      "topic_number": 202206,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"202206\" board=\"aqa\" text=\"aqa_lang_paper_2\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 202206,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87002-INS-JUN22.PDF",
+        "ins_sha1": "7889d195f0e45f05fa586ca024a9a873b3705072",
+        "qp": "AQA-87002-QP-JUN22.PDF",
+        "qp_sha1": "2040d8a8c6385a987f789a206f0bfeefa2ac223a",
+        "ms": "AQA-87002-MS-JUN22.PDF"
+      },
+      "notes": []
+    },
+    {
+      "section": "Non-fiction reading + transactional writing — Language Paper 2 family",
+      "unit": "AQA Language Paper 2",
+      "lesson_title": "November 2021 · Unreliable Memoirs (James) / Sweets and their Manufacture (anon.)",
+      "sitting": "November 2021",
+      "board": "aqa",
+      "text": "aqa_lang_paper_2",
+      "topic_number": 202111,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"202111\" board=\"aqa\" text=\"aqa_lang_paper_2\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 202111,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87002-INS-NOV21.PDF",
+        "ins_sha1": "231a9021c8b7e061a421c6ab26ee79c1e693a075",
+        "qp": "AQA-87002-QP-NOV21.PDF",
+        "qp_sha1": "d7e851228d12cfa75b37e30db10195ce3561d9ae",
+        "ms": "AQA-87002-MS-NOV21.PDF"
+      },
+      "notes": [
+        "Source B is unattributed on the insert front page ('An extract from a magazine article, published in 1868') — author written as Unknown"
+      ]
+    }
+  ]
+}
