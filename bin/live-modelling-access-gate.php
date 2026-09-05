@@ -16,8 +16,8 @@ if (!$opt['author'] || !$opt['student']) { echo "usage: author=<uid> student=<ui
 $A = $opt['author']; $S = $opt['student']; $P = $opt['parent']; $C = $opt['child'];
 $admin = (int) get_users(['role' => 'administrator', 'number' => 1, 'fields' => 'ID'])[0];
 
-$fails = 0; $n = 0;
-function ok($cond, $label) { global $fails, $n; $n++; echo ($cond ? '  ✓ ' : '  ✗ ') . $label . "\n"; if (!$cond) $fails++; }
+$GLOBALS['swml_lm_fails'] = 0; $GLOBALS['swml_lm_n'] = 0;
+function ok($cond, $label) { $GLOBALS['swml_lm_n']++; echo ($cond ? '  ✓ ' : '  ✗ ') . $label . "\n"; if (!$cond) $GLOBALS['swml_lm_fails']++; }
 $cls = 'Sophicly_Writing_Mastery_Lab';
 $prior = get_option('swml_live_modelling_authors', null);
 $restore = function () use ($prior) { if ($prior === null) delete_option('swml_live_modelling_authors'); else update_option('swml_live_modelling_authors', $prior, false); };
@@ -93,5 +93,6 @@ $t = SWML_Topic_Questions::get_topic('aqa', 'aqa_lang_paper_1', 11);
 ok(is_array($t) && stripos($t['label'] ?? '', 'Rosabel') !== false, "Rosabel resolves under the canonical slug");
 
 $restore();
+$fails = $GLOBALS['swml_lm_fails']; $n = $GLOBALS['swml_lm_n'];
 echo "\n" . ($fails ? "❌ $fails of $n FAILED" : "✅ $n/$n passed") . "\n";
 exit($fails ? 1 : 0);

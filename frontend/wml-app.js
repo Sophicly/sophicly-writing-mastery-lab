@@ -319,7 +319,11 @@
 
     // ── Tier Access Levels ──
     const userTier = config.userTier || 'free';
-    const hasWMLAccess = ['silver', 'gold', 'platinum'].includes(userTier);
+    // v7.20.590: a LIVE-MODELLING viewer is reading a designated author's document, read-only, with
+    // no Sophia spend — that is Bronze's entitlement (live modelling without the platform), and the
+    // server has already resolved the grant (reviewRole 'live_modelling'). The upgrade wall must not
+    // stand between a paying student and the lesson they are enrolled on.
+    const hasWMLAccess = ['silver', 'gold', 'platinum'].includes(userTier) || config.reviewRole === 'live_modelling';
     const hasProgrammeAccess = ['gold', 'platinum'].includes(userTier);
 
     // ── URL Sync (v7.12.62) ──
@@ -759,7 +763,7 @@
             card.appendChild(el('p', { textContent: 'Get access to guided essay planning, assessment, polishing, model answers, and exam preparation across all exam boards.', style: { fontSize: '13px', opacity: '0.7', lineHeight: '1.5', margin: '0 0 16px' } }));
 
             const features = [
-                { tier: 'Silver', price: '£50/month', desc: 'Full platform access — practise freely on any text' },
+                { tier: 'Silver', price: '£70/month', desc: 'Full platform access — practise freely on any text' },
                 { tier: 'Gold', price: '£140/month', desc: 'Full mastery programme with structured topics & progress tracking', recommended: true },
             ];
             features.forEach(f => {
