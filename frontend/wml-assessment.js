@@ -12172,6 +12172,41 @@
      * replaces. That paragraph is where the old build asked for the description in prose, so
      * on a document that used it, dropping it would delete real writing to fix a shape bug.
      */
+    // v7.20.593 (#447k): EJECTED CHECKLIST TEXT heal. Docs seeded between v7.19.295 and .592 carry
+    // authored Q1 statements as `<div data-checklist-item></div><p>statement</p>` — the item EMPTY and
+    // its text in the paragraph after it (the builder wrapped inline-only content in a block <p>, so
+    // the parser ejected it). Measured on Neil's saved staging doc, every one of the eight. Pull each
+    // orphaned paragraph back INSIDE its item. Idempotent (a healed doc has no empty item followed by
+    // a <p>); runs in review mode too because live-modelling students see the AUTHOR's stored doc and
+    // it must read correctly for them — but only the owner's session persists the repaired shape.
+    function _healEjectedChecklistText(editor) {
+        try {
+            if (!editor || !editor.state || !editor.commands) return;
+            const html = editor.getHTML();
+            if (!html || html.indexOf('data-checklist-item') === -1) return;
+            const box = document.createElement('div');
+            box.innerHTML = html;
+            let moved = 0;
+            Array.from(box.querySelectorAll('[data-checklist-item]')).forEach((item) => {
+                if ((item.textContent || '').trim()) return;                 // already carries its text
+                const next = item.nextElementSibling;
+                if (!next || next.tagName !== 'P' || !(next.textContent || '').trim()) return;
+                if (next.querySelector('[data-checklist-item], [data-field-id], [data-section-type]')) return;
+                item.innerHTML = next.innerHTML;                              // inline content only — a <p> would eject again
+                next.remove();
+                moved++;
+            });
+            if (!moved) return;
+            _migrationActive = true;
+            try { editor.commands.setContent(box.innerHTML, false); }
+            finally { _migrationActive = false; }
+            console.log('[WML #447k] CHECKLIST HEAL: moved ' + moved + ' ejected statement(s) back into their tick rows.');
+            if (!state.reviewMode && typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('[WML #447k] checklist heal failed (doc untouched)', e && e.message);
+        }
+    }
+
     function _healCw9SceneOverviewRow(editor) {
         try {
             if (!editor || !editor.state || !editor.commands) return;
@@ -45693,6 +45728,11 @@
                 // covers the async server setContent replacing the first-pass doc.
                 setTimeout(() => { try { _healCw9SceneOverviewRow(editor); } catch (_) {} }, 1800);
                 setTimeout(() => { try { _healCw9SceneOverviewRow(editor); } catch (_) {} }, 3800);
+                // v7.20.593 (#447k): ejected Q1 statement text back into its tick row — same
+                // staggered/idempotent shape; self-gates (no-op unless an EMPTY checklist item is
+                // followed by a paragraph). Second pass covers the async server setContent.
+                setTimeout(() => { try { _healEjectedChecklistText(editor); } catch (_) {} }, 1800);
+                setTimeout(() => { try { _healEjectedChecklistText(editor); } catch (_) {} }, 3800);
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
@@ -57122,7 +57162,14 @@
                         const s = i + 1;
                         const correctAttr = authoredKey[i] === true ? ' data-correct="true"'
                             : authoredKey[i] === false ? ' data-correct="false"' : '';
-                        checkboxes += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-stmt-${s}" data-authored="true"${correctAttr} class="swml-checklist-item"><p>${escapeHTML(text)}</p></div>`;
+                        // v7.20.593 (#447k, Neil: "the checkboxes for q1 need to be clearer as to which
+                        // statement they are applying to"): NO <p> wrapper. checklistItem's content is
+                        // `inline*`, so ProseMirror cannot place a block <p> inside it — the parser
+                        // closed the (now EMPTY) item and emitted the statement as a sibling paragraph
+                        // BELOW the tick row. Measured on Neil's saved staging doc: every item empty,
+                        // every statement in the <p> after it. Inline text lands in the row's
+                        // contentDOM beside the box, which is the shape the AI-populated path always had.
+                        checkboxes += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-stmt-${s}" data-authored="true"${correctAttr} class="swml-checklist-item">${escapeHTML(text)}</div>`;
                     });
                 } else {
                     checkboxes = `<p><em>Tick the ${stmtCount} correct statements (Sophia will generate these from the source material):</em></p>`;
