@@ -502,7 +502,7 @@
     function appendChatReadonlyNote(panel) {
         const isParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
         const note = el('div', { className: 'swml-chat-readonly-note' });
-        note.textContent = 'Chat read-only in ' + (isParent ? 'parent' : 'tutor') + ' view';
+        note.textContent = state.reviewRole === 'live_modelling' ? 'Live modelling \u2014 read-only' : 'Chat read-only in ' + (isParent ? 'parent' : 'tutor') + ' view';
         panel.appendChild(note);
     }
 
@@ -512,7 +512,7 @@
     // (v7.15.53) — both too intrusive.
     function buildTutorViewPill() {
         const isParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
-        const viewLabel = isParent ? 'Parent view' : 'Tutor view';
+        const viewLabel = state.reviewRole === 'live_modelling' ? 'Live modelling' : (isParent ? 'Parent view' : 'Tutor view');
         const icon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
         const pill = el('button', {
             className: 'swml-tutor-view-pill',
@@ -551,13 +551,19 @@
 
         const name = state.reviewStudentName || 'Student';
         const isParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
-        const viewLabel = isParent ? 'Parent view' : 'Tutor view';
+        const viewLabel = state.reviewRole === 'live_modelling' ? 'Live modelling' : (isParent ? 'Parent view' : 'Tutor view');
         const tierLabel = isParent ? 'Read-only' : 'Comment-only';
         const verb = isParent ? 'viewing' : 'reviewing';
         const can = isParent
             ? ['View ' + name + '\u2019s written response', 'Read the AI chat transcript']
             : ['View ' + name + '\u2019s written response', 'Read the AI chat transcript', 'Add comments on highlighted text', 'Sign off the attempt'];
         const cannot = ['Edit the document', 'Send chat messages as ' + name, 'Trigger Mark Complete on the student\u2019s lesson'];
+        // v7.20.589: LIVE MODELLING — the viewer is a student watching a designated author write.
+        const isLive = state.reviewRole === 'live_modelling';
+        const canList = isLive
+            ? ['Watch ' + name + ' write the answer, live', 'Select any part of it and add it to your Notes', 'Download the document']
+            : can;
+        const cannotList = isLive ? ['Edit the document', 'Comment on it'] : cannot;
 
         // v7.20.486: the student's name reaches this markup from `display_name`, so it is
         // TEXT of unknown shape being pasted into innerHTML. An apostrophe is common and a
@@ -611,11 +617,11 @@
           + '</div>'
           + '<div class="swml-review-modal-section">'
           +   '<div class="swml-review-modal-section-label">You can</div>'
-          +   listHTML(can, '\u2713', 'is-yes')
+          +   listHTML(canList, '\u2713', 'is-yes')
           + '</div>'
           + '<div class="swml-review-modal-section">'
           +   '<div class="swml-review-modal-section-label">You cannot</div>'
-          +   listHTML(cannot, '\u2715', 'is-no')
+          +   listHTML(cannotList, '\u2715', 'is-no')
           + '</div>'
           + '<div class="swml-review-modal-actions"></div>';
 
@@ -44420,12 +44426,17 @@
                     const hasChat = !!document.getElementById('swml-canvas-chat-input');
 
                     const tb = el('div', { className: 'swml-selection-toolbar swml-sel-neumorphic' });
+                    // v7.20.589: LIVE MODELLING (#447) — a read-only viewer (a student watching a designated
+                    // author, or a parent) gets Note and nothing that writes: no Comment, no Sophia, and the
+                    // Dictate/format group is already behind !reviewMode. Note is allowed even in the
+                    // diagnostic shell here, because the student is READING, not sitting the diagnostic.
+                    const _roViewer = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
                     canvasSelToolbar = tb;
                     window.__swmlSelDiagLog?.('create', 'assessment.js:37362 (DOC builder)', 'PM key ' + _selKey);
 
                     // Comment
                     const SVG_CMT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
-                    tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_CMT + ' <span>Comment</span>',
+                    if (!_roViewer) tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_CMT + ' <span>Comment</span>',
                         onClick: (ev) => {
                             ev.stopPropagation();
                             // Capture positions before toolbar removal (ProseMirror mutation may reset selection)
@@ -44460,7 +44471,7 @@
 
                     // Note — hidden in diagnostic mode only.
                     const isDiagnosticMode = state.phase === 'initial' && state.mode === 'guided' && !canvasInAssessment;
-                    if (!isDiagnosticMode) {
+                    if (!isDiagnosticMode || _roViewer) {
                         tb.appendChild(el('button', { className: 'swml-sel-btn swml-sel-notes', innerHTML: SVG_SEL_NOTE + ' <span>Note</span>',
                             onClick: (ev) => {
                                 ev.stopPropagation();
@@ -44476,7 +44487,7 @@
                     // v7.19.44: bundled sparkles.svg (purple gradient, two stars)
                     // replaces single-star placeholder; diagnostic logs trace
                     // the click → openBox path so silent failures surface.
-                    if (isInlineCoaching && !isDiagnosticMode) {
+                    if (isInlineCoaching && !isDiagnosticMode && !_roViewer) {
                         // v7.19.61: sparkle-button design (jh3y/LYJMPBL) — same
                         // treatment as the right-panel Continue button
                         // (v7.19.60). Particles intentionally skipped here so

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.588
+ * Version: 7.20.589
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.588');
+define('SWML_VERSION', '7.20.589');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -66,6 +66,13 @@ if ( ! defined( 'SWML_REVIEW_PARAMS' ) ) {
  * Main plugin class
  */
 class Sophicly_Writing_Mastery_Lab {
+
+    /**
+     * v7.20.589: LIVE MODELLING — the designated author bound to the lesson being rendered
+     * (bridge `wml_author` > shortcode `author=`), validated against the
+     * `swml_live_modelling_authors` option. Read by resolve_review_context(). 0 = none.
+     */
+    private $embed_author_id = 0;
 
     private static $instance = null;
 
@@ -756,6 +763,7 @@ class Sophicly_Writing_Mastery_Lab {
             'fq_bank'  => '',
             'fq_stage' => '',
             'cn_stage' => '',
+            'author'   => '',   // v7.20.589: live-modelling designated author (uid)
         ], $atts, 'writing_mastery_lab');
 
         $post_id = get_the_ID();
@@ -834,6 +842,7 @@ class Sophicly_Writing_Mastery_Lab {
         // wml_step for multi-step tasks like mark_scheme_unit (step=1 Quiz, step=2 FYW).
         // v7.17.16: seed step from shortcode; bridge option (if present) overrides below.
         $step = $step_from_shortcode;
+        $author_from_bridge = 0;
         if ($course_id) {
             $bridge_map = get_option('sophicly_ld_bridge_' . $course_id, []);
             $bridge_entry = $bridge_map[(string)$post_id] ?? [];
@@ -862,6 +871,10 @@ class Sophicly_Writing_Mastery_Lab {
             // v7.20.38: per-lesson CN stage override (bridge picker "CN Stage" field).
             if (!empty($bridge_entry['cn_stage'])) {
                 $cn_stage = absint($bridge_entry['cn_stage']);
+            }
+            // v7.20.589: LIVE MODELLING — per-lesson designated author (bridge field `wml_author`).
+            if (!empty($bridge_entry['wml_author'])) {
+                $author_from_bridge = absint($bridge_entry['wml_author']);
             }
 
             // v7.20.234: SHARED-LESSON RENDER HEAL — universal fix for the
@@ -948,6 +961,18 @@ class Sophicly_Writing_Mastery_Lab {
         // Assets should be enqueued by enqueue_assets() via has_shortcode() detection.
         // But on LD Focus Mode pages, $post may not be set during wp_enqueue_scripts,
         // so we also enqueue here as fallback. Footer scripts still work from the_content. (v7.13.13)
+        // v7.20.589: LIVE MODELLING author binding (#447). Bridge wins, the shortcode att is the
+        // fallback, and either is honoured ONLY when that user is in the
+        // `swml_live_modelling_authors` option — a stray att can never expose a document.
+        // resolve_review_context() reads this to target the author's document for everyone
+        // but the author; a student never types view_as.
+        $author_id = $author_from_bridge ?: absint($atts['author']);
+        if ($author_id && !self::is_live_modelling_author($author_id)) {
+            error_log(sprintf('[WML] live-modelling: author %d on post %d is not in swml_live_modelling_authors — ignored', $author_id, (int) ($post_id ?? 0)));
+            $author_id = 0;
+        }
+        $this->embed_author_id = $author_id;
+
         $this->enqueue_embed_assets();
 
         // v7.19.968 (Neil C — sidebar correct from FIRST PAINT): compute the FQ round size
@@ -1214,6 +1239,11 @@ class Sophicly_Writing_Mastery_Lab {
         // moved to `view_as` and strips `student_id` — so this bailed, review_mode stayed false,
         // and the reviewer was served their OWN document.
         $student_id = sophicly_review_target_id();
+        // v7.20.589: LIVE MODELLING — a lesson bound to a designated author targets that author's
+        // document for everyone but the author. No URL param involved.
+        if (!$student_id && !empty($this->embed_author_id)) {
+            $student_id = absint($this->embed_author_id);
+        }
         if (!$student_id) return $out;
 
         $current_uid = get_current_user_id();
@@ -1231,6 +1261,9 @@ class Sophicly_Writing_Mastery_Lab {
             $role = 'tutor';
         } elseif ($att_role === 'specialist' || $sophicly_role === 'sss') {
             $role = 'specialist';
+        } elseif (!empty($this->embed_author_id) && $student_id === absint($this->embed_author_id) && $viewer_mode === 'readonly') {
+            // v7.20.589: a student (or anyone without a higher tier) watching a live-modelling author.
+            $role = 'live_modelling';
         } else {
             $role = 'parent';
         }
@@ -1293,7 +1326,32 @@ class Sophicly_Writing_Mastery_Lab {
             if ($linked) return 'readonly';
         }
 
+        // v7.20.589: LIVE MODELLING (#447) — a designated author's documents are readable by any
+        // logged-in user (students watching the answer being written). Double-keyed on purpose:
+        // the TARGET must be listed in `swml_live_modelling_authors`, and the grant is never wider
+        // than 'readonly' (every REST write refuses anything below 'edit'). Parents, tutors and
+        // admins keep the branches above; this only fills what used to be the final `false`.
+        if (self::is_live_modelling_author($target_user_id)) {
+            return 'readonly';
+        }
+
         return false;
+    }
+
+    /**
+     * v7.20.589: the designated live-modelling authors — user ids whose WML documents any
+     * logged-in user may READ. Option `swml_live_modelling_authors` (array of ints); empty or
+     * unset ⇒ the feature is inert. Seeded per environment by the deploy step, never by code.
+     */
+    public static function live_modelling_authors() {
+        $ids = get_option('swml_live_modelling_authors', []);
+        if (!is_array($ids)) return [];
+        return array_values(array_filter(array_map('absint', $ids)));
+    }
+
+    public static function is_live_modelling_author($user_id) {
+        $user_id = absint($user_id);
+        return $user_id > 0 && in_array($user_id, self::live_modelling_authors(), true);
     }
 
     /**

@@ -337,10 +337,49 @@ class SWML_Topic_Questions {
      */
     public static function get_topics($board, $text) {
         $topics = get_option(self::option_key($board, $text), []);
-        if (!is_array($topics)) return [];
+        if (!is_array($topics)) $topics = [];
+        // v7.20.589 (#447a): the same language paper can live under THREE slug forms on one site
+        // (`aqa_lang_paper_1` — the form live lessons pass, auto-imported — beside the legacy
+        // `language1` / `language_p1`). option_key() does not normalise, so a lesson passing a
+        // form whose store is EMPTY rendered blank with no error. Read-only fallback to a sibling
+        // form that holds the paper; writes still go to the slug as passed, and the auto-imported
+        // `<board>_lang_paper_N` form is the canonical one for new content.
+        if (empty($topics)) {
+            foreach (self::sibling_text_slugs($board, $text) as $alt) {
+                $alt_topics = get_option(self::option_key($board, $alt), []);
+                if (is_array($alt_topics) && !empty($alt_topics)) {
+                    error_log(sprintf('[WML] topics: store for %s/%s is empty — served sibling form %s', $board, $text, $alt));
+                    $topics = $alt_topics;
+                    break;
+                }
+            }
+        }
+        if (empty($topics)) return [];
         // Sort by topic number
         usort($topics, function($a, $b) { return ($a['topic_number'] ?? 0) - ($b['topic_number'] ?? 0); });
         return $topics;
+    }
+
+    /**
+     * v7.20.589: the OTHER slug forms the same language paper has been stored under, for the
+     * read-only fallback in get_topics(). Derived from text_to_template_slug()'s own
+     * normalisation so there is one vocabulary, not two. Non-language texts → [].
+     */
+    public static function sibling_text_slugs($board, $text) {
+        $tpl = self::text_to_template_slug($text, $board);
+        if (!preg_match('/^language-([a-z])(\d)$/', $tpl, $m)) return [];
+        $n = $m[2];
+        $board_us = str_replace('-', '_', str_replace('_', '-', $board));
+        $forms = [
+            'language' . $n,
+            'language_' . $m[1] . $n,
+            $board_us . '_lang_paper_' . $n,
+        ];
+        if ($board_us === 'edexcel_igcse') {
+            $forms[] = ($n === '1') ? 'edexcel_igcse_lang_a' : 'edexcel_igcse_lang_a_paper_' . $n;
+            $forms[] = 'edexcel_igcse_lang_a_paper_' . $n;
+        }
+        return array_values(array_unique(array_filter($forms, function ($f) use ($text) { return $f !== $text; })));
     }
 
     /**
