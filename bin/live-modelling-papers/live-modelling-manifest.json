@@ -183,6 +183,29 @@
       "notes": [
         "Source B is unattributed on the insert front page ('An extract from a magazine article, published in 1868') — author written as Unknown"
       ]
+    },
+    {
+      "section": "Unseen Poetry",
+      "unit": "AQA Literature Paper 2 Section C",
+      "lesson_title": "June 2023 (reserve) · The washing never gets done (Kaplinski) / A Day in Autumn (Thomas)",
+      "sitting": "June 2023",
+      "board": "aqa",
+      "text": "unseen_poetry",
+      "topic_number": 2023061,
+      "subject": "unseen_poetry",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"2023061\" board=\"aqa\" text=\"unseen_poetry\" subject=\"unseen_poetry\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 2023061,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "qp": "AQA GCSE English Literature Past Papers Paper 2 June 2024 QP.pdf",
+        "qp_sha1": "f8e44ec8055fd6bce84064e9e5ac090a0f88fc18",
+        "ms": null
+      },
+      "notes": []
     }
   ]
 }

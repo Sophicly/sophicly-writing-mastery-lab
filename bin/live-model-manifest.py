@@ -21,7 +21,7 @@ UNITS = {
     ('aqa', 'aqa_lang_paper_2'): ('Non-fiction reading + transactional writing — Language Paper 2 family', 'AQA Language Paper 2'),
     ('aqa', 'unseen_poetry'):    ('Unseen Poetry', 'AQA Literature Paper 2 Section C'),
 }
-SUBJECT = {'aqa_lang_paper_1': 'language', 'aqa_lang_paper_2': 'language', 'unseen_poetry': 'literature'}
+SUBJECT = {'aqa_lang_paper_1': 'language', 'aqa_lang_paper_2': 'language', 'unseen_poetry': 'unseen_poetry'}
 
 def surname(author):
     a = re.sub(r'\s*\(.*?\)\s*', '', author or '').strip()
@@ -40,10 +40,13 @@ for side_path in sorted(glob.glob(os.path.join(ROOT, '**', '*.checks.json'), rec
     titles = []
     for m in re.finditer(r'^## Source [AB]\n\*\*Title:\*\* (.+)\n\*\*Author:\*\* (.+)$', txt, re.M):
         titles.append(f"{m.group(1).strip()} ({surname(m.group(2))})")
+    for m in re.finditer(r'^### Poem\n\*\*Title:\*\* (.+)\n\*\*Poet:\*\* (.+)$', txt, re.M):
+        titles.append(f"{m.group(1).strip()} ({surname(m.group(2))})")
+    variant = ' (reserve)' if len(str(n)) == 7 else ''
     section, unit = UNITS[(board, text)]
     rows.append({
         'section': section, 'unit': unit,
-        'lesson_title': f"{sitting} · " + ' / '.join(titles),
+        'lesson_title': f"{sitting}{variant} · " + ' / '.join(titles),
         'sitting': sitting, 'board': board, 'text': text, 'topic_number': n, 'subject': SUBJECT[text],
         'shortcode': f'[writing_mastery_lab task="diagnostic" phase="initial" topic="{n}" board="{board}" text="{text}" subject="{SUBJECT[text]}" author="{{{{AUTHOR_UID}}}}"]',
         'bridge': {'wml_task': 'diagnostic', 'wml_phase': 'initial', 'wml_topic': n, 'wml_author': '{{AUTHOR_UID}}'},

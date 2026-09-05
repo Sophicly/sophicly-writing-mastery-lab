@@ -45,7 +45,10 @@ foreach ($files as $md) {
     $topics = get_option($key, []);
     if (!is_array($topics)) $topics = [];
     $mtime = get_option($key . '_mtime', null);
-    if ($mtime === null && !$force) { echo "   ⛔ store $key has no _mtime (not the auto-imported store) — refused; pass force-store if that is intended\n"; $refused++; continue; }
+    // The canonical store is the one the template system owns: either it was auto-imported (has _mtime)
+    // or its template file exists and simply has not been imported on this env yet (unseen poetry on prod).
+    $tpl = plugin_dir_path(dirname(__FILE__)) . 'protocols/shared/templates/topics/' . str_replace('_', '-', $side['board']) . '-' . SWML_Topic_Questions::text_to_template_slug($side['text'], $side['board']) . '.md';
+    if ($mtime === null && !file_exists($tpl) && !$force) { echo "   ⛔ store $key has no _mtime and no template ($tpl) — not a canonical store; refused (force-store overrides)\n"; $refused++; continue; }
     $n = (int) $side['topic_number'];
     $existing = null;
     foreach ($topics as $i => $t) { if ((int) ($t['topic_number'] ?? 0) === $n) $existing = $i; }

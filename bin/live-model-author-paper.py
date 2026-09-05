@@ -295,6 +295,76 @@ def parse_qp_p1(path, picture=None):
         qs[qn] = {'text': text, 'marks': marks}
     return qs, needs_human
 
+# ─────────────────────────────────────────────── AQA LIT P2 SECTION C — UNSEEN POETRY ────────
+def parse_unseen_aqa(qp_path):
+    """Section C of AQA 8702/2: poem 1 · Q27.1 [24] · poem 2 · Q27.2 [8]. Poems carry AQA's
+    printed markers every five lines; every line is numbered on output (the document renders one
+    paragraph per line, exactly as the prose inserts do). Stanza breaks are kept as blank lines."""
+    raw = pdftext(qp_path)
+    lines = raw.split('\n')
+    start = None
+    for i, ln in enumerate(lines):
+        if re.search(r'Section C:\s*Unseen poetry', ln, re.I): start = i
+    if start is None: raise SystemExit('unseen: no "Section C: Unseen poetry" heading in the question paper')
+    seg = []
+    for ln in lines[start + 1:]:
+        if re.search(r'END OF QUESTIONS', ln): break
+        if re.match(r'^\s*(IB/G/|\*\d+\*|PMT\s*$)', ln) or re.match(r'^\s*\d{1,2}\s*$', ln) or re.search(r'Answer both questions', ln): continue
+        seg.append(clean(ln))
+    # split at the two question cells
+    qidx = [i for i, ln in enumerate(seg) if re.match(r'^\s*2\s+7\s*\.\s*[12]\b', ln)]
+    if len(qidx) != 2: raise SystemExit(f'unseen: expected the 27.1 and 27.2 cells, found {len(qidx)}')
+    def poem_block(block):
+        block = [l for l in block]
+        while block and not block[0].strip(): block.pop(0)
+        while block and not block[-1].strip(): block.pop()
+        if not block: raise SystemExit('unseen: empty poem block')
+        title = block[0].strip()
+        body = block[1:]
+        # the poet is the last non-blank, non-footnote line, set well to the right
+        poet = None
+        for j in range(len(body) - 1, -1, -1):
+            if body[j].strip() and not body[j].lstrip().startswith('*'):
+                poet = body[j].strip(); body = body[:j]; break
+        if not poet: raise SystemExit(f'unseen: no poet line under {title!r}')
+        out, checks, notes, n, blank = [], {}, [], 0, False
+        for ln in body:
+            if not ln.strip(): blank = True; continue
+            if ln.lstrip().startswith('*'): notes.append(ln.strip()); continue
+            m = re.match(r'^\s*(\d{1,3})\s+(\S.*)$', ln)
+            if blank and out: out.append((None, ''))
+            blank = False
+            n += 1
+            if m:
+                if int(m.group(1)) != n: raise SystemExit(f'unseen {title!r}: printed marker {m.group(1)} landed on reconstructed line {n} — refusing')
+                checks[str(n)] = m.group(2).rstrip()[:32]; out.append((n, m.group(2).rstrip()))
+            else:
+                out.append((n, ln.strip()))
+        return {'title': title, 'poet': poet, 'lines': out, 'checks': checks, 'notes': notes, 'count': n}
+    def question(block):
+        first = re.sub(r'^\s*2\s+7\s*\.\s*[12]\s+', '', block[0]).strip()
+        kept = [first]; marks = None
+        for ln in block[1:]:
+            mm = re.search(r'\[(\d+)\s*marks?\]', ln, re.I)
+            if mm:
+                marks = int(mm.group(1)); pre = ln[:mm.start()].strip()
+                if pre: kept.append(pre)
+                break
+            if ln.strip(): kept.append(ln.strip())
+        return ' '.join(kept), marks
+    p1 = poem_block(seg[:qidx[0]])
+    q1, m1 = question(seg[qidx[0]:qidx[1]])
+    # poem 2 sits between the end of Q27.1's marks line and the 27.2 cell
+    after_q1 = seg[qidx[0]:qidx[1]]
+    k = next((j for j, ln in enumerate(after_q1) if re.search(r'\[\d+\s*marks?\]', ln, re.I)), None)
+    if k is None: raise SystemExit('unseen: Q27.1 has no [marks] line')
+    p2 = poem_block(after_q1[k + 1:])
+    q2, m2 = question(seg[qidx[1]:])
+    needs = []
+    if m1 != 24: needs.append(f'Q27.1 marks read as {m1}, expected 24')
+    if m2 != 8: needs.append(f'Q27.2 marks read as {m2}, expected 8')
+    return p1, (q1, m1), p2, (q2, m2), needs
+
 # ─────────────────────────────────────────────── QUESTION BANK CROSS-CHECK ────────────────────
 def bank_check(bank_path, sitting_label, qs, paper=1):
     if not os.path.exists(bank_path): return {'skipped': 'no bank'}
@@ -315,15 +385,21 @@ def bank_check(bank_path, sitting_label, qs, paper=1):
 # ─────────────────────────────────────────────── EMIT ─────────────────────────────────────────
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--board', default='aqa'); ap.add_argument('--paper', type=int, required=True)
+    ap.add_argument('--board', default='aqa'); ap.add_argument('--paper', required=True, help='1 | 2 | unseen')
+    ap.add_argument('--variant', default='', help="'R' for AQA's reserve paper — topic number gets a trailing 1 and the label says so")
     ap.add_argument('--sitting', required=True, help='YYYYMM, e.g. 202011')
-    ap.add_argument('--ins', required=True); ap.add_argument('--qp', required=True); ap.add_argument('--ms')
+    ap.add_argument('--ins'); ap.add_argument('--qp', required=True); ap.add_argument('--ms')
     ap.add_argument('--out', required=True); ap.add_argument('--bank', default='question-bank-2017-2025.md')
     ap.add_argument('--q5-picture', default=None, help='one-line description of the Q5 stimulus picture (Paper 1), written as [IMAGE — …] like the Rosabel install')
     a = ap.parse_args()
-    if a.board != 'aqa' or a.paper not in (1, 2): raise SystemExit('only AQA Paper 1 and 2 are implemented so far')
+    if a.board != 'aqa' or a.paper not in ('1', '2', 'unseen'): raise SystemExit('only AQA Paper 1, Paper 2 and unseen are implemented so far')
     yyyy, mm = a.sitting[:4], a.sitting[4:6]
-    sitting_label = f'{SITTING_WORDS[mm]} {yyyy}'
+    sitting_label = f'{SITTING_WORDS[mm]} {yyyy}' + (' (reserve paper)' if a.variant.upper() == 'R' else '')
+    topic_number = int(a.sitting + ('1' if a.variant.upper() == 'R' else ''))
+    if a.paper == 'unseen':
+        return emit_unseen(a, sitting_label, topic_number)
+    a.paper = int(a.paper)
+    if not a.ins: raise SystemExit('--ins is required for Paper 1 and 2')
     letters = ['A'] if a.paper == 1 else ['A', 'B']
     sources = {L: parse_insert(a.ins, L) for L in letters}
     if a.paper == 1:
@@ -344,7 +420,7 @@ def main():
     titles = ' / '.join(f"{sources[L][0]['title']} ({sources[L][0]['author'] or ('anon., ' + sources[L][0]['year'] if sources[L][0]['year'] else 'anon.')})" for L in letters)
     label = f"AQA Language Paper {a.paper} — {sitting_label} · {titles}"
     md = []
-    md.append(f"# Topic {a.sitting}: {label}")
+    md.append(f"# Topic {topic_number}: {label}")
     md.append("**Type:** language_paper")
     md.append("**Format:** multi_question")
     md.append(f"**Teaching Point:** AQA Language Paper {a.paper} — {paper_name}, {sitting_label} sitting. {paper_desc}, five questions, 80 marks total. Section A tests reading (Q1–Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.")
@@ -378,7 +454,7 @@ def main():
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     open(a.out, 'w', encoding='utf-8').write('\n'.join(md) + '\n')
     side = {
-        'topic_number': int(a.sitting), 'board': a.board, 'text': f'aqa_lang_paper_{a.paper}',
+        'topic_number': topic_number, 'board': a.board, 'text': f'aqa_lang_paper_{a.paper}',
         'store': f'swml_topics_aqa_aqa_lang_paper_{a.paper}', 'label': label,
         'sources': {L: {'line_count': max(n for n, _ in sources[L][1] if n), 'line_checks': sources[L][2]} for L in letters},
         'questions': {f'Q{qn}': qs[qn]['marks'] for qn in range(1, 6)}, 'total_marks': total,
@@ -393,5 +469,48 @@ def main():
     print("  " + '  '.join(f"Source {L}: {side['sources'][L]['line_count']} lines, {len(side['sources'][L]['line_checks'])} markers" for L in letters) + f"  tariff={side['questions']} bank={side['bank_check']}")
     if needs_human: print("  NEEDS HUMAN: " + ' | '.join(needs_human))
     if notes: print("  note: " + ' | '.join(notes))
+
+def emit_unseen(a, sitting_label, topic_number):
+    p1, (q1, m1), p2, (q2, m2), needs_human = parse_unseen_aqa(a.qp)
+    def surname(x): return x.split()[-1]
+    label = f"AQA Literature Paper 2 Section C — {sitting_label} · {p1['title']} ({surname(p1['poet'])}) / {p2['title']} ({surname(p2['poet'])})"
+    md = []
+    md.append(f"# Topic {topic_number}: {label}")
+    md.append("**Type:** unseen-poetry")
+    md.append("**Format:** unseen")
+    md.append(f"**Teaching Point:** AQA Literature Paper 2, Section C — Unseen Poetry, {sitting_label}. Two unseen poems: Q27.1 analyses the first (24 marks, AO1 and AO2); Q27.2 compares the methods of both poets (8 marks, AO2). 32 marks in total.")
+    md.append("**Marks:** 32")
+    md.append("**AOs:** AO1,AO2")
+    md.append("")
+    for tag, poem, (q, m), aos in (('27.1', p1, (q1, m1), 'AO1,AO2'), ('27.2', p2, (q2, m2), 'AO2')):
+        md.append(f"## Q{tag}")
+        md.append(f"**Marks:** {m}")
+        md.append(f"**AOs:** {aos}")
+        md.append("### Question")   # the parser reads a part's question ONLY from this block
+        md.append(q)
+        md.append("")
+        md.append("### Poem")
+        md.append(f"**Title:** {poem['title']}")
+        md.append(f"**Poet:** {poem['poet']}")
+        md.append("")
+        for n, txt in poem['lines']: md.append('' if n is None else f"{n:<3}{txt}")
+        for note in poem['notes']: md.append(note)
+        md.append("")
+    md.append("---")
+    os.makedirs(os.path.dirname(a.out), exist_ok=True)
+    open(a.out, 'w', encoding='utf-8').write('\n'.join(md) + '\n')
+    side = {
+        'topic_number': topic_number, 'board': a.board, 'text': 'unseen_poetry', 'store': 'swml_topics_aqa_unseen_poetry',
+        'label': label, 'format': 'unseen',
+        'poems': {'A': {'title': p1['title'], 'poet': p1['poet'], 'line_count': p1['count'], 'line_checks': p1['checks']},
+                  'B': {'title': p2['title'], 'poet': p2['poet'], 'line_count': p2['count'], 'line_checks': p2['checks']}},
+        'questions': {'Q27.1': m1, 'Q27.2': m2}, 'total_marks': (m1 or 0) + (m2 or 0),
+        'provenance': {'qp': os.path.basename(a.qp), 'qp_sha1': sha1(a.qp), 'ms': os.path.basename(a.ms) if a.ms else None},
+        'needs_human': needs_human, 'notes': [],
+    }
+    open(re.sub(r'\.md$', '', a.out) + '.checks.json', 'w', encoding='utf-8').write(json.dumps(side, indent=2, ensure_ascii=False) + '\n')
+    print(f"✓ {a.out}\n  {label}")
+    print(f"  poem 1: {p1['count']} lines, {len(p1['checks'])} markers · poem 2: {p2['count']} lines, {len(p2['checks'])} markers · tariff={side['questions']}")
+    if needs_human: print("  NEEDS HUMAN: " + ' | '.join(needs_human))
 
 if __name__ == '__main__': main()

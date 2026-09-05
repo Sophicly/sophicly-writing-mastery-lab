@@ -29,6 +29,27 @@ function swml_lm_paper_checks($md_path, &$report) {
     $t = $topics[0];
     $ok((int) $t['topic_number'] === (int) $side['topic_number'], "topic_number {$t['topic_number']} = sidecar {$side['topic_number']}");
     $ok($t['label'] === $side['label'], "label matches sidecar");
+    if (($side['format'] ?? 'multi_question') === 'unseen') {
+        $ok($t['question_format'] === 'unseen', "question_format unseen (got {$t['question_format']})");
+        foreach (['A' => 'part_a', 'B' => 'part_b'] as $L => $pfx) {
+            $pm = $side['poems'][$L];
+            $q = trim((string) $t[$pfx . '_question']);
+            $ok(strlen($q) > 20 && strpos($q, '### Poem') === false && strpos($q, '**Title') === false, "{$pfx}_question is text only (" . strlen($q) . " chars), no poem leaked into it");
+            $ok((int) $t[$pfx . '_marks'] === (int) ($L === 'A' ? $side['questions']['Q27.1'] : $side['questions']['Q27.2']), "{$pfx}_marks = {$t[$pfx . '_marks']}");
+            $ex = (string) $t[$pfx . '_extract'];
+            $ok(strpos($ex, '**Title:** ' . $pm['title']) !== false && strpos($ex, '**Poet:** ' . $pm['poet']) !== false, "poem $L carries its title + poet ('{$pm['title']}' / '{$pm['poet']}')");
+            $lines = [];
+            foreach (explode("\n", $ex) as $ln) { if (preg_match('/^(\d+)\s+(.*)$/', $ln, $m)) $lines[(int) $m[1]] = $m[2]; }
+            $ok(count($lines) === (int) $pm['line_count'] && max(array_keys($lines) ?: [0]) === (int) $pm['line_count'], "poem $L: " . count($lines) . " numbered lines (expect {$pm['line_count']})");
+            $bad = [];
+            foreach ($pm['line_checks'] as $n => $needle) { if (!isset($lines[(int) $n]) || strpos($lines[(int) $n], $needle) !== 0) $bad[] = $n; }
+            $ok(!$bad, "poem $L: " . count($pm['line_checks']) . " printed markers land on the poet's own words" . ($bad ? " — WRONG at " . implode(',', $bad) : ''));
+        }
+        $ok((int) $t['part_a_marks'] + (int) $t['part_b_marks'] === 32, "tariff 24 + 8 = 32");
+        $nh = $side['needs_human'] ?? [];
+        $ok(empty($nh), empty($nh) ? "nothing left for a human" : "NEEDS HUMAN: " . implode(' | ', $nh));
+        return $fails;
+    }
     $ok($t['question_format'] === 'multi_question', "question_format multi_question (got {$t['question_format']})");
     $ok(is_string($t['metadata']), "metadata is a JSON STRING (" . gettype($t['metadata']) . ") — the #450 shape");
     $meta = json_decode((string) $t['metadata'], true);
