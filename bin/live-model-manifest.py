@@ -15,13 +15,19 @@ Lesson = sitting, newest first.
 import glob, json, os, re, sys
 
 ROOT = os.path.join(os.path.dirname(__file__), 'live-modelling-papers')
-SITTING = {'06': 'June', '11': 'November'}
+SITTING = {'03': 'March', '05': 'May', '06': 'June', '11': 'November'}
 UNITS = {
     ('aqa', 'aqa_lang_paper_1'): ('Fiction reading — Language Paper 1 family', 'AQA Language Paper 1'),
     ('aqa', 'aqa_lang_paper_2'): ('Non-fiction reading + transactional writing — Language Paper 2 family', 'AQA Language Paper 2'),
     ('aqa', 'unseen_poetry'):    ('Unseen Poetry', 'AQA Literature Paper 2 Section C'),
+    ('cambridge-igcse', 'cambridge_igcse_lang_paper_1'): ('Fiction reading — Language Paper 1 family', 'Cambridge IGCSE 0500 Paper 1 (Reading)'),
+    ('cambridge-igcse', 'cambridge_igcse_lang_paper_2'): ('Non-fiction reading + transactional writing — Language Paper 2 family', 'Cambridge IGCSE 0500 Paper 2 (Directed Writing and Composition)'),
+    ('eduqas', 'eduqas_lang_paper_1'): ('Fiction reading — Language Paper 1 family', 'Eduqas Language Component 1'),
+    ('eduqas', 'eduqas_lang_paper_2'): ('Non-fiction reading + transactional writing — Language Paper 2 family', 'Eduqas Language Component 2'),
+    ('edexcel-igcse', 'edexcel_igcse_lang_a'): ('Non-fiction reading + transactional writing — Language Paper 2 family', 'Edexcel IGCSE Language A Paper 1'),
+    ('edexcel-igcse', 'edexcel_igcse_lang_a_paper_2'): ('Fiction reading — Language Paper 1 family', 'Edexcel IGCSE Language A Paper 2'),
 }
-SUBJECT = {'aqa_lang_paper_1': 'language', 'aqa_lang_paper_2': 'language', 'unseen_poetry': 'unseen_poetry'}
+SUBJECT = {'aqa_lang_paper_1': 'language', 'aqa_lang_paper_2': 'language', 'unseen_poetry': 'unseen_poetry', 'cambridge_igcse_lang_paper_1': 'language', 'cambridge_igcse_lang_paper_2': 'language', 'eduqas_lang_paper_1': 'language', 'eduqas_lang_paper_2': 'language', 'edexcel_igcse_lang_a': 'language', 'edexcel_igcse_lang_a_paper_2': 'language'}
 
 def surname(author):
     a = re.sub(r'\s*\(.*?\)\s*', '', author or '').strip()
@@ -38,11 +44,13 @@ for side_path in sorted(glob.glob(os.path.join(ROOT, '**', '*.checks.json'), rec
     yyyy, mm = str(n)[:4], str(n)[4:6]
     sitting = f"{SITTING.get(mm, mm)} {yyyy}"
     titles = []
-    for m in re.finditer(r'^## Source [AB]\n\*\*Title:\*\* (.+)\n\*\*Author:\*\* (.+)$', txt, re.M):
+    for m in re.finditer(r'^## (?:Source|Text) (?:[A-C]|One|Two|Three)\n\*\*Title:\*\* (.+)\n\*\*Author:\*\* (.+)$', txt, re.M):
         titles.append(f"{m.group(1).strip()} ({surname(m.group(2))})")
     for m in re.finditer(r'^### Poem\n\*\*Title:\*\* (.+)\n\*\*Poet:\*\* (.+)$', txt, re.M):
         titles.append(f"{m.group(1).strip()} ({surname(m.group(2))})")
-    variant = ' (reserve)' if len(str(n)) == 7 else ''
+    # a 7th digit is AQA's reserve-paper flag but Cambridge's VARIANT number (up to three per series)
+    variant = (f' (variant {str(n)[6]})' if board == 'cambridge-igcse' else ' (reserve)') if len(str(n)) == 7 else ''
+    if not titles: titles = [side['label'].split('·', 1)[-1].strip()] if '·' in side['label'] else [side['label']]
     section, unit = UNITS[(board, text)]
     rows.append({
         'section': section, 'unit': unit,
@@ -62,7 +70,7 @@ rows.append({
     'bridge': {'wml_task': 'diagnostic', 'wml_phase': 'initial', 'wml_topic': 11, 'wml_author': '{{AUTHOR_UID}}'},
     'source_pdfs': {'ins': 'AQA Lang P1 Insert Jun2017 Rosabel.pdf', 'qp': 'AQA Lang P1 QP Jun2017 Rosabel.pdf'}, 'notes': ['installed 2026-08-26 by bin/live-model-install-paper.php as topic 11 (not YYYYMM)'],
 })
-order = {'June': 6, 'November': 11}
+order = {'March': 3, 'May': 5, 'June': 6, 'November': 11}
 rows.sort(key=lambda r: (r['section'], r['unit'], -(int(r['sitting'].split()[1]) * 100 + order.get(r['sitting'].split()[0], 0))))
 out = {
     'course': 'Live Modelling',

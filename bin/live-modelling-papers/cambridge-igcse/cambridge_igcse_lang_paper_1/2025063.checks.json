@@ -1,0 +1,120 @@
+{
+  "topic_number": 2025063,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — June 2025 (variant 3) · Technology in the job application process / Signs it’s time to make a bold career change! / Jojo’s interview",
+  "sources": {
+    "A": {
+      "title": "Technology in the job application process",
+      "untitled": false,
+      "line_count": 30,
+      "line_checks": {
+        "5": "process itself, and just because",
+        "10": "review those interviews, listeni",
+        "15": "jobs you’re targeting is importa",
+        "20": "have resources to read. With rem",
+        "25": "and colours, but don’t forget th",
+        "30": "application."
+      }
+    },
+    "B": {
+      "title": "Signs it’s time to make a bold career change!",
+      "untitled": false,
+      "line_count": 26,
+      "line_checks": {
+        "5": "mental health in this way. If yo",
+        "10": "but regularly daydreaming about ",
+        "15": "life needs change. Start your fr",
+        "20": "higher salary before you look fo",
+        "25": "that time would be nice wouldn’t"
+      }
+    },
+    "C": {
+      "title": "Jojo’s interview",
+      "untitled": false,
+      "line_count": 49,
+      "line_checks": {
+        "5": "By dawn, I’d arrived, parked aga",
+        "10": "picnic lunch: green vegetable fr",
+        "15": "rich visitors from the city, pot",
+        "20": "‘Chef Josef Jocelin, not Jojo,’ ",
+        "25": "to serve supper, I set off to cy",
+        "30": "restaurant, past waterfalling fa",
+        "35": "‘This is the uniform,’ explained",
+        "40": "the little authenticating detail",
+        "45": "‘Exactly! And while they eat her"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s25_in_13.pdf",
+    "ins_sha1": "7a3209ff43b5bbaf3917af77b4717e0f035c3bc7",
+    "qp": "0500_s25_qp_13.pdf",
+    "qp_sha1": "6d23a8d4cdc2753122934805459630e0abeacf52",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q1 paragraph 2": "ok (Text A, paragraph 2 here)",
+    "Q1 paragraph 3-4": "ok (Text A, paragraph 3 here)",
+    "Q1 paragraph 5": "ok (Text A, paragraph 5 here)",
+    "Q2 paragraph 9 begins": "ok (Text C, paragraph 9 here)",
+    "Q2 paragraph 11 begins": "ok (Text C, paragraph 11 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 36,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "no introduction",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading",
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ]
+}

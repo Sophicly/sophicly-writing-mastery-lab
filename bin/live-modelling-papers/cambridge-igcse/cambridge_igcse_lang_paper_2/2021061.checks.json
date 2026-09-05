@@ -1,0 +1,88 @@
+{
+  "topic_number": 2021061,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — June 2021 (variant 1) · Directed Writing (article) · Composition",
+  "sources": {
+    "A": {
+      "title": "Green shopping won’t save the planet",
+      "untitled": false,
+      "line_count": 29,
+      "line_checks": {
+        "5": "for the environment.",
+        "10": "industry’s emissions, not by all",
+        "15": "Recycling figures are up in most",
+        "20": "everywhere else, recycle, sun-dr",
+        "25": "nearly ubiquitous. When Rogers g"
+      }
+    },
+    "B": {
+      "title": "Giving up hope won’t save the planet",
+      "untitled": false,
+      "line_count": 22,
+      "line_checks": {
+        "5": "extinction; we’re losing biodive",
+        "10": "We need to start thinking about ",
+        "15": "high school students in Tanzania",
+        "20": "what money is spent on within th"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s21_in_21.pdf",
+    "ins_sha1": "78eadf66f08d8bf480061cede89b8c38ca1d4cbc",
+    "qp": "0500_s21_qp_21.pdf",
+    "qp_sha1": "8453c13f8ce588eae6182d7b77419f58b4655720",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

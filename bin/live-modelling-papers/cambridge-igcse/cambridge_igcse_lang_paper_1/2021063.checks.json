@@ -1,0 +1,111 @@
+{
+  "topic_number": 2021063,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — June 2021 (variant 3) · Are humans the only primates that can talk? / Nim Chimpsky: the chimp they tried to turn into a human / A window on the world – my years with chimpanzees",
+  "sources": {
+    "A": {
+      "title": "Are humans the only primates that can talk?",
+      "untitled": false,
+      "line_count": 29,
+      "line_checks": {
+        "5": "communicate.",
+        "10": "human primates actually talk?",
+        "15": "the proboscis monkey, with four ",
+        "20": "in humans. Since we cannot study",
+        "25": "does not include data from human"
+      }
+    },
+    "B": {
+      "title": "Nim Chimpsky: the chimp they tried to turn into a human",
+      "untitled": false,
+      "line_count": 28,
+      "line_checks": {
+        "5": "the early 1970s. Highly intellig",
+        "10": "to humans. Terrace’s experiment ",
+        "15": "other child. Terrace hoped that ",
+        "20": "individuals, and how much we are",
+        "25": "another chimp."
+      }
+    },
+    "C": {
+      "title": "A window on the world – my years with chimpanzees",
+      "untitled": false,
+      "line_count": 50,
+      "line_checks": {
+        "5": "Rustling of leaves above signall",
+        "10": "In the trees, other chimpanzees ",
+        "15": "back.",
+        "20": "enjoying the warm morning sunshi",
+        "25": "from their daily lives, feeding ",
+        "30": "remembering grim years when the ",
+        "35": "rain got heavier Frodo started l",
+        "40": "stopped playing and he, like the",
+        "45": "watery sun had appeared. Its lig",
+        "50": "How much we still have to learn"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s21_in_13.pdf",
+    "ins_sha1": "2ce6d45966a81da5f37d723667d02aac67296f38",
+    "qp": "0500_s21_qp_13.pdf",
+    "qp_sha1": "3ed856e080a6dd7c8a89538c8f274795090b2554",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 41,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": []
+}

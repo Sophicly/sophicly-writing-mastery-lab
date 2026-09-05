@@ -1,0 +1,110 @@
+{
+  "topic_number": 2025062,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — June 2025 (variant 2) · Food trucks / Clever uses for old buses / Our big red bus ride",
+  "sources": {
+    "A": {
+      "title": "Food trucks",
+      "untitled": false,
+      "line_count": 29,
+      "line_checks": {
+        "5": "trails.",
+        "10": "Chuckwagon food typically includ",
+        "15": "becoming more fashionable and in",
+        "20": "option to test the market was ne",
+        "25": "conversions: there are already f"
+      }
+    },
+    "B": {
+      "title": "Clever uses for old buses",
+      "untitled": false,
+      "line_count": 25,
+      "line_checks": {
+        "5": "arts to communities via mobile l",
+        "10": "You’ll often hear from volunteer",
+        "15": "And talking of making a differen",
+        "20": "Launching a new product? Here’s ",
+        "25": "into an office and café? Perfect"
+      }
+    },
+    "C": {
+      "title": "Our big red bus ride",
+      "untitled": false,
+      "line_count": 44,
+      "line_checks": {
+        "5": "This is the story of that big, r",
+        "10": "the liquid in the bottle.",
+        "15": "service before Roger purchased i",
+        "20": "mechanical crisis.",
+        "25": "Our world was inside that double",
+        "30": "table. The seats were removable ",
+        "35": "bus, but that didn’t happen. Our",
+        "40": "fateful last day when it sank on"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s25_in_12.pdf",
+    "ins_sha1": "ff47b6b28e8e7977b2f0aee6de66e5b299781d7d",
+    "qp": "0500_s25_qp_12.pdf",
+    "qp_sha1": "b71fe9a5202b76bfbcc66b78df3d1b34fb8e8352",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q1 paragraph 2": "ok (Text A, paragraph 2 here)",
+    "Q1 paragraph 3": "ok (Text A, paragraph 3 here)",
+    "Q1 paragraph 4": "ok (Text A, paragraph 4 here)",
+    "Q2 paragraph 5 begins": "ok (Text C, paragraph 5 here)",
+    "Q2 paragraph 6 begins": "ok (Text C, paragraph 6 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "no introduction",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ]
+}

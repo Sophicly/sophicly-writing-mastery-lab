@@ -1,0 +1,89 @@
+{
+  "topic_number": 2021032,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — March 2021 (variant 2) · Directed Writing (letter) · Composition",
+  "sources": {
+    "A": {
+      "title": "Tomorrow’s teachers",
+      "untitled": false,
+      "line_count": 32,
+      "line_checks": {
+        "5": "Teachers, however, must deliver ",
+        "10": "We must recruit 20 million teach",
+        "15": "However, we still have some way ",
+        "20": "AI could have a collaborative ro",
+        "25": "information about each student. ",
+        "30": "Convincing parents, teachers, an"
+      }
+    },
+    "B": {
+      "title": "Eight reasons to welcome AI in the classroom",
+      "untitled": false,
+      "line_count": 21,
+      "line_checks": {
+        "5": "environments can provide learner",
+        "10": "can help make teachers more effe",
+        "15": "makes for an incredible amount o",
+        "20": "already in development. These ca"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_m21_in_22.pdf",
+    "ins_sha1": "3d8e777de269da472f606b48a6d4c19d41f8eee1",
+    "qp": "0500_m21_qp_22.pdf",
+    "qp_sha1": "c629967a08700f3b3ac3c69ce69dadeef7181ef0",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

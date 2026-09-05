@@ -1,0 +1,89 @@
+{
+  "topic_number": 2021063,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — June 2021 (variant 3) · Directed Writing (speech) · Composition",
+  "sources": {
+    "A": {
+      "title": "Anyone up for a New Year challenge?",
+      "untitled": false,
+      "line_count": 27,
+      "line_checks": {
+        "5": "the coming year. In the modern w",
+        "10": "that a lucky few are born with, ",
+        "15": "profile’. ‘Some people are more ",
+        "20": "which sets specific goals. ‘You ",
+        "25": "or establishing new ones, is a m"
+      }
+    },
+    "B": {
+      "title": null,
+      "untitled": true,
+      "line_count": 28,
+      "line_checks": {
+        "5": "every single Thursday ... indefi",
+        "10": "that are ambitious at best and d",
+        "15": "climbing centre, and let’s just ",
+        "20": "mistakes.",
+        "25": "happier in myself. I definitely "
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s21_in_23.pdf",
+    "ins_sha1": "f6c163490f2a3581c6a31259e3d41c8dcd97f62f",
+    "qp": "0500_s21_qp_23.pdf",
+    "qp_sha1": "15db592379d2a36824faa1295a665871d2abea79",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

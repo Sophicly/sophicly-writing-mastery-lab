@@ -1,0 +1,88 @@
+{
+  "topic_number": 2020112,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — November 2020 (variant 2) · Directed Writing (article) · Composition",
+  "sources": {
+    "A": {
+      "title": "Who are the real experts?",
+      "untitled": false,
+      "line_count": 23,
+      "line_checks": {
+        "5": "of online restaurant recommendat",
+        "10": "have faith in anything that real",
+        "15": "me’, I’m less likely to accept n",
+        "20": "Of course, celebrities say they’"
+      }
+    },
+    "B": {
+      "title": "Trust me, I’m an expert",
+      "untitled": false,
+      "line_count": 29,
+      "line_checks": {
+        "5": "Luckily, there’s scientific rese",
+        "10": "of their own importance, or ambi",
+        "15": "rather than approaching non-expe",
+        "20": "In my university lectures and bo",
+        "25": "at heart. That’s easier for some"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w20_in_22.pdf",
+    "ins_sha1": "20ad37f1f8cd4b727d28d723cebc8855f057f231",
+    "qp": "0500_w20_qp_22.pdf",
+    "qp_sha1": "79dcedb322c22ae5ad821abe77734db5bebd2a59",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

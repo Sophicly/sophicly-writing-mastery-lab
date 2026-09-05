@@ -1,0 +1,113 @@
+{
+  "topic_number": 2023061,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — June 2023 (variant 1) · What is a motivational speaker? / Why I am quitting motivational speaking / Running for my life",
+  "sources": {
+    "A": {
+      "title": "What is a motivational speaker?",
+      "untitled": false,
+      "line_count": 22,
+      "line_checks": {
+        "5": "most of their own talents and ab",
+        "10": "speech tactics.",
+        "15": "travelling to events all over th",
+        "20": "speaker I could recommend. Many "
+      }
+    },
+    "B": {
+      "title": "Why I am quitting motivational speaking",
+      "untitled": false,
+      "line_count": 33,
+      "line_checks": {
+        "5": "best contribution ever is honest",
+        "10": "engineers or doctors. As a disab",
+        "15": "tragic stories. They have been t",
+        "20": "events, challenged policies, hav",
+        "25": "than as a wheelchair user, but s",
+        "30": "wants to hear you. Then comes a "
+      }
+    },
+    "C": {
+      "title": "Running for my life",
+      "untitled": false,
+      "line_count": 49,
+      "line_checks": {
+        "5": "Rach’s seemingly exotic accent. ",
+        "10": "the outdoors, the benefits of ex",
+        "15": "self-doubt and gnawing concern o",
+        "20": "‘You’re doing it totally unsuppo",
+        "25": "setting out. And possibly why a ",
+        "30": "certainly hadn’t accounted for t",
+        "35": "the forest floor, any of which c",
+        "40": "friends and family know I was ok",
+        "45": "they get it. But it’s the ones s"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s23_in_11.pdf",
+    "ins_sha1": "f1ecc7ab635855eb2afaf4336a77693317a63417",
+    "qp": "0500_s23_qp_11.pdf",
+    "qp_sha1": "362dc37b41278aee8a03b01101d7e8752141c15a",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q2 paragraph 7 begins": "ok (Text C, paragraph 7 here)",
+    "Q2 paragraph 12 begins": "ok (Text C, paragraph 12 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 35,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": []
+}

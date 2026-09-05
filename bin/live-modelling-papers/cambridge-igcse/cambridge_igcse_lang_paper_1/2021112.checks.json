@@ -1,0 +1,110 @@
+{
+  "topic_number": 2021112,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — November 2021 (variant 2) · The whirlwind engineering history of the bicycle / Finding my feet again / Moving on upwards",
+  "sources": {
+    "A": {
+      "title": "The whirlwind engineering history of the bicycle",
+      "untitled": false,
+      "line_count": 29,
+      "line_checks": {
+        "5": "‘Laufmaschine’ (running machine)",
+        "10": "tracks. Hmm. Unsurprisingly, on ",
+        "15": "to increase the size of the whee",
+        "20": "a height that made it easy for r",
+        "25": "That’s what the health-conscious"
+      }
+    },
+    "B": {
+      "title": "Finding my feet again",
+      "untitled": false,
+      "line_count": 28,
+      "line_checks": {
+        "5": "Just like every other athlete, I",
+        "10": "to feel attractive despite my mi",
+        "15": "fluctuations and the hours of cl",
+        "20": "foot held in position, but as ti",
+        "25": "I might be a financial burden to"
+      }
+    },
+    "C": {
+      "title": "Moving on upwards",
+      "untitled": false,
+      "line_count": 47,
+      "line_checks": {
+        "5": "to the summit.",
+        "10": "Rob, agreed to come along with m",
+        "15": "lycra at your age,’ he had infor",
+        "20": "is forced to dismount after kilo",
+        "25": "‘family entertainment’.",
+        "30": "and another fifteen to go, but I",
+        "35": "you will make it to the top. No ",
+        "40": "I recall pulling the dusty old m",
+        "45": "consternation in his voice? ‘Dad"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w21_in_12.pdf",
+    "ins_sha1": "07856343127d26a7a1eee06ea3cafb2e227b16d2",
+    "qp": "0500_w21_qp_12.pdf",
+    "qp_sha1": "1002a54acfc857c4a43c7cc79992892db12cea26",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 33,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": []
+}

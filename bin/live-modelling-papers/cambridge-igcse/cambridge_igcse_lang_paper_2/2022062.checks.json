@@ -1,0 +1,88 @@
+{
+  "topic_number": 2022062,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — June 2022 (variant 2) · Directed Writing (article) · Composition",
+  "sources": {
+    "A": {
+      "title": "We need more wilderness in education",
+      "untitled": false,
+      "line_count": 31,
+      "line_checks": {
+        "5": "same sense of failure I did if t",
+        "10": "Feeling comfortable in the wild ",
+        "15": "either. Even if you don’t have e",
+        "20": "emotional development, improves ",
+        "25": "Scandinavia has led the way in t",
+        "30": "education. We all have a respons"
+      }
+    },
+    "B": {
+      "title": "Outdoor learning – a good idea or another educational fad?",
+      "untitled": false,
+      "line_count": 18,
+      "line_checks": {
+        "5": "schools should do it. And not ju",
+        "10": "the social and physical benefits",
+        "15": "to outdoor spaces? There will ha"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s22_in_22.pdf",
+    "ins_sha1": "606e81f17a2cbfffd6133d7c2176b4e8614ba112",
+    "qp": "0500_s22_qp_22.pdf",
+    "qp_sha1": "b29625d12674efaa667a240c92114b44857f36cd",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

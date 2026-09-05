@@ -1,0 +1,114 @@
+{
+  "topic_number": 2021061,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — June 2021 (variant 1) · Bicycle touring / Is cycle touring right for you? / Into the sunrise: cycling the world, part 2",
+  "sources": {
+    "A": {
+      "title": "Bicycle touring",
+      "untitled": false,
+      "line_count": 27,
+      "line_checks": {
+        "5": "by a club, or charity as a fund-",
+        "10": "The good news is that you don’t ",
+        "15": "longer, than you are planning fo",
+        "20": "average will increase or decreas",
+        "25": "warmly by strangers, especially "
+      }
+    },
+    "B": {
+      "title": "Is cycle touring right for you?",
+      "untitled": false,
+      "line_count": 28,
+      "line_checks": {
+        "5": "that rough side can seem scary. ",
+        "10": "terrifying nights in the tent an",
+        "15": "thought possible.",
+        "20": "all that pedalling. I turned out",
+        "25": "cyclists who help you along the "
+      }
+    },
+    "C": {
+      "title": "Into the sunrise: cycling the world, part 2",
+      "untitled": false,
+      "line_count": 53,
+      "line_checks": {
+        "5": "Vivian’s goal, she explained, wa",
+        "10": "‘The hills are steep,’ she expla",
+        "15": "‘You really should have a mirror",
+        "20": "After more walking / cycling we ",
+        "25": "Vivian wasn’t exactly happy but ",
+        "30": "of long-distance touring. Conque",
+        "35": "small bright bundle of energy. A",
+        "40": "through www.warmshowers-for-cycl",
+        "45": "For weeks Vivian and I rode on t",
+        "50": "achievement. The heavily foreste"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s21_in_11.pdf",
+    "ins_sha1": "98540d28a2022c9fefba15777e30fcbb233c269d",
+    "qp": "0500_s21_qp_11.pdf",
+    "qp_sha1": "faa2129cfde330fb5ffa357f35f928aae8efc38b",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 27,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "no introduction",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading",
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ]
+}

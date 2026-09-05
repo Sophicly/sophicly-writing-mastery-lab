@@ -58,7 +58,9 @@ function swml_lm_paper_checks($md_path, &$report) {
     $ok(count($meta['sources']) === count($side['sources']), "sources: " . count($meta['sources']) . " (sidecar " . count($side['sources']) . ")");
     foreach ($side['sources'] as $L => $sc) {
         $src = null;
-        foreach ($meta['sources'] as $s) { if (preg_match('/Source\s*' . $L . '/i', $s['label'])) $src = $s; }
+        // the board's own word for a source: AQA 'Source A', Cambridge 'Text A', Edexcel IGCSE 'Text One'
+        $alt = ['A' => 'One|1', 'B' => 'Two|2', 'C' => 'Three|3'][$L] ?? $L;
+        foreach ($meta['sources'] as $s) { if (preg_match('/(?:Source|Text)\s*(?:' . $L . '|' . $alt . ')\b/i', $s['label'])) $src = $s; }
         if (!$src) { $ok(false, "Source $L present in metadata"); continue; }
         $lines = [];
         foreach (explode("\n", $src['text']) as $ln) { if (preg_match('/^(\d+)\s+(.*)$/', $ln, $m)) $lines[(int) $m[1]] = $m[2]; }
@@ -66,7 +68,8 @@ function swml_lm_paper_checks($md_path, &$report) {
         $bad = [];
         foreach ($sc['line_checks'] as $n => $needle) { if (!isset($lines[(int) $n]) || strpos($lines[(int) $n], $needle) !== 0) $bad[] = $n; }
         $ok(!$bad, "Source $L: " . count($sc['line_checks']) . " printed markers land on the board's own words" . ($bad ? " — WRONG at " . implode(',', $bad) : ''));
-        $ok(!empty($src['title']) && !empty($src['author']), "Source $L: title + author present ('" . ($src['title'] ?? '') . "' / '" . ($src['author'] ?? '') . "')");
+        if (empty($sc['untitled'])) $ok(!empty($src['title']) && !empty($src['author']), "Source $L: title + author present ('" . ($src['title'] ?? '') . "' / '" . ($src['author'] ?? '') . "')");
+        else $ok(!empty($src['context']) || strpos($src['text'], '**Context:**') !== false, "Source $L: untitled on the paper (declared) — carries its context line");
         $ok(strpos($src['text'], '[NEEDS HUMAN') === false, "Source $L: no [NEEDS HUMAN] left in the text");
     }
     $qs = $meta['questions'];

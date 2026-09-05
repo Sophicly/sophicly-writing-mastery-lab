@@ -1,0 +1,109 @@
+{
+  "topic_number": 2021111,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — November 2021 (variant 1) · Two lives / Changing seasons / The long hot walk",
+  "sources": {
+    "A": {
+      "title": "Two lives",
+      "untitled": false,
+      "line_count": 21,
+      "line_checks": {
+        "5": "in panic. I take cover under the",
+        "10": "workplaces will not be very wet,",
+        "15": "of September. Construction equip",
+        "20": "visiting relatives, while their "
+      }
+    },
+    "B": {
+      "title": "Changing seasons",
+      "untitled": false,
+      "line_count": 33,
+      "line_checks": {
+        "5": "I am no longer rushing to the ma",
+        "10": "heading downstairs to try the ki",
+        "15": "property lines to make sure that",
+        "20": "anxious about the next assault, ",
+        "25": "was doing the best they could.",
+        "30": "as if nervous (and uncertain) ab"
+      }
+    },
+    "C": {
+      "title": "The long hot walk",
+      "untitled": false,
+      "line_count": 44,
+      "line_checks": {
+        "5": "that there was little air to bre",
+        "10": "went buckling across the fields ",
+        "15": "By mid-day, I was parched. Fanta",
+        "20": "was a shower of eucalyptus trees",
+        "25": "The older man bowed: ‘The lady i",
+        "30": "At my replies, the owner threw u",
+        "35": "‘This is the third one in a mont",
+        "40": "Then I was given a plate of brea"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w21_in_11.pdf",
+    "ins_sha1": "e3dadb84bbc594517575ca5ea1b9c3c2dc2d0ee6",
+    "qp": "0500_w21_qp_11.pdf",
+    "qp_sha1": "9f7216ba86b5f8aa0fd0339bdffce6773b73322b",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 35,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": []
+}

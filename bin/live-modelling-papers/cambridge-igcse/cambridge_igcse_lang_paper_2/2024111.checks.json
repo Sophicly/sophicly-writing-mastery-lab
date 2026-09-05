@@ -1,0 +1,89 @@
+{
+  "topic_number": 2024111,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — November 2024 (variant 1) · Directed Writing (article) · Composition",
+  "sources": {
+    "A": {
+      "title": "My musical history",
+      "untitled": false,
+      "line_count": 23,
+      "line_checks": {
+        "5": "wanted to do other things instea",
+        "10": "was a critical turning point. Ki",
+        "15": "I spent hours practising. More h",
+        "20": "face challenging situations and "
+      }
+    },
+    "B": {
+      "title": null,
+      "untitled": true,
+      "line_count": 27,
+      "line_checks": {
+        "5": "precision. Music shows us that w",
+        "10": "Whether a budding scientist or p",
+        "15": "or creatively invent things to d",
+        "20": "existence, music is a journey in",
+        "25": "music from ballet, demonstrating"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w24_in_21.pdf",
+    "ins_sha1": "5369db76bc3b4ca654ec9f9f3ec5bb2b59ec6080",
+    "qp": "0500_w24_qp_21.pdf",
+    "qp_sha1": "6ac570838977d02215b0fad184d93560239217fa",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line",
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

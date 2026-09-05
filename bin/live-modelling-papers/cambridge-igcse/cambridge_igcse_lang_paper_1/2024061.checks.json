@@ -1,0 +1,116 @@
+{
+  "topic_number": 2024061,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — June 2024 (variant 1) · Unusual modes of travel / The Hyperloop high-speed transport system / Riding the rails: learning how to drive a dog-sled",
+  "sources": {
+    "A": {
+      "title": "Unusual modes of travel",
+      "untitled": false,
+      "line_count": 28,
+      "line_checks": {
+        "5": "Here are some more you might not",
+        "10": "taxis. The black taxis are used ",
+        "15": "wicker sledges glide on wooden r",
+        "20": "DUKW – London, UK: these amphibi",
+        "25": "found there – usually just as sa"
+      }
+    },
+    "B": {
+      "title": "The Hyperloop high-speed transport system",
+      "untitled": false,
+      "line_count": 27,
+      "line_checks": {
+        "5": "Having read all the publicly ava",
+        "10": "The science behind Hyperloop app",
+        "15": "Another enormous fault with the ",
+        "20": "comfortable experience imagined,",
+        "25": "projects argue its potential as "
+      }
+    },
+    "C": {
+      "title": "Riding the rails: learning how to drive a dog-sled",
+      "untitled": false,
+      "line_count": 51,
+      "line_checks": {
+        "5": "Out exploring that Friday evenin",
+        "10": "From my evening chats with Mike ",
+        "15": "It was March, the tail end of th",
+        "20": "customary bear hug by Mike’s wif",
+        "25": "Driving a dog-sled is harder tha",
+        "30": "emergency messaging device), but",
+        "35": "downhill run, I tipped sideways ",
+        "40": "cut firewood.",
+        "45": "stars on dark nights, or flooded",
+        "50": "didn’t have a dramatic end in th"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s24_in_11.pdf",
+    "ins_sha1": "be8abfb929d230d6994cb89026f2489fa568f554",
+    "qp": "0500_s24_qp_11.pdf",
+    "qp_sha1": "aadb8f01c77e1232398db7d4c6d3cc71f9fa5cec",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q2 paragraph 8 begins": "ok (Text C, paragraph 9 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 36,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Q2 paragraph 8 begins: Cambridge does not count Text C’s date or sub-heading lines, so its paragraph 8 is the 9th block of the text in this document",
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ]
+}

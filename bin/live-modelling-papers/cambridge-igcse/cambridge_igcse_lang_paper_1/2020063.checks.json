@@ -1,0 +1,114 @@
+{
+  "topic_number": 2020063,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — June 2020 (variant 3) · My week on powdered food / A complete diet in a time-saving way? / The Clement Street Soup and Sourdough Restaurant",
+  "sources": {
+    "A": {
+      "title": "My week on powdered food",
+      "untitled": false,
+      "line_count": 27,
+      "line_checks": {
+        "5": "self-proclaimed ‘future of food ",
+        "10": "My mum suggested I just ate a ba",
+        "15": "Sadly, my first gulp of Erfoo ta",
+        "20": "But if you’re committed to the f",
+        "25": "As the week progresses, Erfoo be"
+      }
+    },
+    "B": {
+      "title": "A complete diet in a time-saving way?",
+      "untitled": false,
+      "line_count": 30,
+      "line_checks": {
+        "5": "more hi-tech, whizz-bang way of ",
+        "10": "ingredients. You’re talking abou",
+        "15": "is it? Peas treated with a numbe",
+        "20": "evening. I have a very healthy l",
+        "25": "I’m not sure. We may want to max",
+        "30": "yourself. And these products jus"
+      }
+    },
+    "C": {
+      "title": "The Clement Street Soup and Sourdough Restaurant",
+      "untitled": false,
+      "line_count": 52,
+      "line_checks": {
+        "5": "GD’s logo, a lightning bolt.",
+        "10": "hello!’ and it would wave a wide",
+        "15": "identical denim. They started ea",
+        "20": "locked in the frame of a video-c",
+        "25": "At meal times, I sat in a corner",
+        "30": "new additions, the fresh-faced o",
+        "35": "(double spicy), all of which, th",
+        "40": "Sometime later, my order arrived",
+        "45": "preparation – I consumed the fir",
+        "50": "into a rippling burp. I laughed "
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s20_in_13.pdf",
+    "ins_sha1": "b3c4815a9261f36deadda6c07982c62e5859bf6b",
+    "qp": "0500_s20_qp_13.pdf",
+    "qp_sha1": "12d6edd4a5c6796f3d3e138511dc9a38231b927a",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q2 paragraph 10 begins": "ok (Text C, paragraph 10 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 31,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": []
+}

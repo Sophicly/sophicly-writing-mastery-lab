@@ -1,0 +1,89 @@
+{
+  "topic_number": 2023061,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — June 2023 (variant 1) · Directed Writing (article) · Composition",
+  "sources": {
+    "A": {
+      "title": "Can the world be saved from over‑tourism?",
+      "untitled": false,
+      "line_count": 27,
+      "line_checks": {
+        "5": "indefinitely to allow its ecosys",
+        "10": "Over‑tourism takes different for",
+        "15": "head of tourism. She was quick t",
+        "20": "attracts attention, with hot spr",
+        "25": "share their wealth with local co"
+      }
+    },
+    "B": {
+      "title": null,
+      "untitled": true,
+      "line_count": 23,
+      "line_checks": {
+        "5": "‘I was born here,’ he says, ‘in ",
+        "10": "homes for those who live elsewhe",
+        "15": "The city’s central squares are l",
+        "20": "tourism or the rising costs of l"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s23_in_21.pdf",
+    "ins_sha1": "9901845d2edc330bf40a80c92c86f43bf7efbe94",
+    "qp": "0500_s23_qp_21.pdf",
+    "qp_sha1": "6ac2d6716040f7bf3871d5ede7c89906c6f40b63",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "heading is the introduction"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line",
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "topic_number": 2023113,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — November 2023 (variant 3) · Violin playing / A career in music / The violinist",
+  "sources": {
+    "A": {
+      "title": "Violin playing",
+      "untitled": false,
+      "line_count": 25,
+      "line_checks": {
+        "5": "the scroll, a decorative piece o",
+        "10": "bow, finger and pluck the string",
+        "15": "supplement their incomes by givi",
+        "20": "need to understand its component",
+        "25": "genius. A few violinists live to"
+      }
+    },
+    "B": {
+      "title": "A career in music",
+      "untitled": false,
+      "line_count": 31,
+      "line_checks": {
+        "5": "in the music room, learning abou",
+        "10": "and teachers, and I rose to that",
+        "15": "I was naturally good at: perform",
+        "20": "become doctors or engineers.",
+        "25": "orchestras. Since then, I have p",
+        "30": "to experience the release, the c"
+      }
+    },
+    "C": {
+      "title": "The violinist",
+      "untitled": false,
+      "line_count": 48,
+      "line_checks": {
+        "5": "He stopped in the presence of a ",
+        "10": "into a magnetically charming fac",
+        "15": "‘May I try that violin, please?’",
+        "20": "asked.",
+        "25": "He had his old trusty violin by ",
+        "30": "of strings and sharply persisten",
+        "35": "instrument he was playing.",
+        "40": "In reply, Sylvia showed Seth a p",
+        "45": "to take that violin. My parents "
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w23_in_13.pdf",
+    "ins_sha1": "c204e0eafe50bf94dfe8f555c89c5a735a30df97",
+    "qp": "0500_w23_qp_13.pdf",
+    "qp_sha1": "2a24fdce372976a66293c1b25d846f7bcd09a72d",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q1 paragraph 1": "ok (Text A, paragraph 1 here)",
+    "Q1 paragraph 5": "ok (Text A, paragraph 5 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 35,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "topic_number": 2022111,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — November 2022 (variant 1) · Directed Writing (letter) · Composition",
+  "sources": {
+    "A": {
+      "title": "Finding the perfect gift",
+      "untitled": false,
+      "line_count": 26,
+      "line_checks": {
+        "5": "individual who gives the present",
+        "10": "happiness.",
+        "15": "The gift of a carefully chosen o",
+        "20": "Save money and reduce packaging ",
+        "25": "And if you’re unlucky enough to "
+      }
+    },
+    "B": {
+      "title": "Experience days and gift experiences",
+      "untitled": false,
+      "line_count": 27,
+      "line_checks": {
+        "5": "in environmentally friendly, dig",
+        "10": "possessions remain separate from",
+        "15": "change jobs, relocate or start a",
+        "20": "we accumulate, the more miserabl",
+        "25": "adorable), race-car driving, for"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w22_in_21.pdf",
+    "ins_sha1": "27f9d4e9854153c38a2fee718a3d87e68bf39151",
+    "qp": "0500_w22_qp_21.pdf",
+    "qp_sha1": "eb70297d9618c743d9f99a0b7be4c99642511a51",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

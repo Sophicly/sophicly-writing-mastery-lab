@@ -1,0 +1,90 @@
+{
+  "topic_number": 2023113,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — November 2023 (variant 3) · Directed Writing (letter) · Composition",
+  "sources": {
+    "A": {
+      "title": "What does ambition mean to you?",
+      "untitled": false,
+      "line_count": 29,
+      "line_checks": {
+        "5": "to you because you’re taught tha",
+        "10": "distinction, and the willingness",
+        "15": "you’re naturally prone to have b",
+        "20": "believing that you should be jus",
+        "25": "ready for the challenge to start"
+      }
+    },
+    "B": {
+      "title": "Ambition – a positive in business?",
+      "untitled": false,
+      "line_count": 24,
+      "line_checks": {
+        "5": "The first major side effect of e",
+        "10": "ability to succeed. Being ambiti",
+        "15": "Being overly ambitious can also ",
+        "20": "for people with more realistic a"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w23_in_23.pdf",
+    "ins_sha1": "3fee8590362063f54bb3dd2e517b8b64f922df15",
+    "qp": "0500_w23_qp_23.pdf",
+    "qp_sha1": "ec7193493c6d089f0b00e21cd7a1e83c7d5cee69",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "no introduction"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line",
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading",
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

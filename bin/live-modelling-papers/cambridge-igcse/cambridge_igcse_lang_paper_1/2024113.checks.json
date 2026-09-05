@@ -1,0 +1,118 @@
+{
+  "topic_number": 2024113,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — November 2024 (variant 3) · What are earthscrapers? / Buying an underground house / Visiting Underground City",
+  "sources": {
+    "A": {
+      "title": "What are earthscrapers?",
+      "untitled": false,
+      "line_count": 24,
+      "line_checks": {
+        "5": "Countless structures, such as ca",
+        "10": "team of Mexican architects. The ",
+        "15": "Building underground is no easy ",
+        "20": "There are mixed feelings about c"
+      }
+    },
+    "B": {
+      "title": "Buying an underground house",
+      "untitled": false,
+      "line_count": 31,
+      "line_checks": {
+        "5": "couldn’t invest a substantial am",
+        "10": "construction. But after reading ",
+        "15": "family reasons, we jumped at the",
+        "20": "We could cross those concerns of",
+        "25": "above us. It was our own slice o",
+        "30": "which actually allows me to pet "
+      }
+    },
+    "C": {
+      "title": "Visiting Underground City",
+      "untitled": false,
+      "line_count": 45,
+      "line_checks": {
+        "5": "dissipated: cold air pushes past",
+        "10": "choosing a hotel without childre",
+        "15": "visits, fresh breezes whipped th",
+        "20": "Jodie and I studied the Undergro",
+        "25": "narrow twists and turns. Ahead, ",
+        "30": "‘It’s a school classroom,’ annou",
+        "35": "a bit like modern day apartments",
+        "40": "volcanic rock and soil that had ",
+        "45": "to do, but Jodie looks excited. "
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w24_in_13.pdf",
+    "ins_sha1": "b3c5ac15b0b684c8f65c46aa23540192e4a9d55a",
+    "qp": "0500_w24_qp_13.pdf",
+    "qp_sha1": "b2b9bc92def07b92eb12673d34a8ec0e03ec1514",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q1 paragraph 2": "ok (Text A, paragraph 2 here)",
+    "Q1 paragraph 3-4": "ok (Text A, paragraph 3 here)",
+    "Q1 paragraph 5": "ok (Text A, paragraph 5 here)",
+    "Q2 paragraph 1 begins": "ok (Text C, paragraph 1 here)",
+    "Q2 paragraph 5 begins": "ok (Text C, paragraph 5 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 35,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ]
+}

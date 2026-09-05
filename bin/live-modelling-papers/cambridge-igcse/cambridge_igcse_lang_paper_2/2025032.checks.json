@@ -1,0 +1,89 @@
+{
+  "topic_number": 2025032,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — March 2025 (variant 2) · Directed Writing (speech) · Composition",
+  "sources": {
+    "A": {
+      "title": null,
+      "untitled": true,
+      "line_count": 25,
+      "line_checks": {
+        "5": "keep, for various reasons. Since",
+        "10": "my husband had very few books, n",
+        "15": "their identity. Of course, there",
+        "20": "There’s a Japanese word, tsundok",
+        "25": "could delight in it as I did?"
+      }
+    },
+    "B": {
+      "title": "Books are for life",
+      "untitled": false,
+      "line_count": 21,
+      "line_checks": {
+        "5": "But life is busy, and intentions",
+        "10": "There are ways to squeeze more r",
+        "15": "you can afford about things you ",
+        "20": "read are there for you to savour"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_m25_in_22.pdf",
+    "ins_sha1": "d36981106f4df94dfd01862aacdf52bff5eb94c0",
+    "qp": "0500_m25_qp_22.pdf",
+    "qp_sha1": "5e9ae1fed1e726aed231b0522ca2c2ba5d902361",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "no introduction"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line",
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

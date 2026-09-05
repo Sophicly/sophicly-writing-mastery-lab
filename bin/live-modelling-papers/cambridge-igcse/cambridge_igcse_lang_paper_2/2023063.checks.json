@@ -1,0 +1,88 @@
+{
+  "topic_number": 2023063,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — June 2023 (variant 3) · Directed Writing (letter) · Composition",
+  "sources": {
+    "A": {
+      "title": null,
+      "untitled": true,
+      "line_count": 25,
+      "line_checks": {
+        "5": "at the seaside. But they rarely ",
+        "10": "doctor, funds his training and h",
+        "15": "developing in his football has s",
+        "20": "competition. ‘Niggling injuries ",
+        "25": "are.’"
+      }
+    },
+    "B": {
+      "title": "Should we rethink elite sports for kids?",
+      "untitled": false,
+      "line_count": 19,
+      "line_checks": {
+        "5": "can shape the lives of children,",
+        "10": "career choices and children, par",
+        "15": "Delaying intense specialisation "
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s23_in_23.pdf",
+    "ins_sha1": "7d84037884f8eccfd504b9bc0534494bf948513e",
+    "qp": "0500_s23_qp_23.pdf",
+    "qp_sha1": "c9fd225d71931016524b30ad9c61f4f250952dac",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "no introduction"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line",
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

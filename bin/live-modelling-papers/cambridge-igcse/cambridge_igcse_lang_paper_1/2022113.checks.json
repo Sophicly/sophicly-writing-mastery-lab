@@ -1,0 +1,116 @@
+{
+  "topic_number": 2022113,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — November 2022 (variant 3) · Giant squid / Is it wrong to swim with dolphins? / Ocean Hotel",
+  "sources": {
+    "A": {
+      "title": "Giant squid",
+      "untitled": false,
+      "line_count": 24,
+      "line_checks": {
+        "5": "of the huge creatures had appare",
+        "10": "impossible.",
+        "15": "‘We didn’t have anything to scar",
+        "20": "Giant squid live deep under the "
+      }
+    },
+    "B": {
+      "title": "Is it wrong to swim with dolphins?",
+      "untitled": false,
+      "line_count": 33,
+      "line_checks": {
+        "5": "the experience.",
+        "10": "their young. The implications fo",
+        "15": "If dolphins leave, many tourism-",
+        "20": "There are tour operators who try",
+        "25": "There are still worries, not lea",
+        "30": "hundreds of kilometres a day, th"
+      }
+    },
+    "C": {
+      "title": "Ocean Hotel",
+      "untitled": false,
+      "line_count": 49,
+      "line_checks": {
+        "5": "from on a naval assignment in a ",
+        "10": "sojourn in a sedate hotel where ",
+        "15": "beforehand.",
+        "20": "King. The appearance of Ocean Ki",
+        "25": "we wouldn’t be able to use any u",
+        "30": "doorstep. I was thrilled by the ",
+        "35": "diving costume, plunged and roll",
+        "40": "on both our pizzas, delivered wi",
+        "45": "only just got to sleep,’ she com"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w22_in_13.pdf",
+    "ins_sha1": "3e8e096b642e8011203b42a97b4f7dda2c0563eb",
+    "qp": "0500_w22_qp_13.pdf",
+    "qp_sha1": "3dc50fe62971976ba7d7cb39692795dfad932e29",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q1 paragraph 4-5": "ok (Text A, paragraph 4 here)",
+    "Q1 paragraph 10": "ok (Text A, paragraph 10 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 36,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "no introduction",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading",
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ]
+}

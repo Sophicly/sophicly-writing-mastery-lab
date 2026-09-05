@@ -1,0 +1,91 @@
+{
+  "topic_number": 2023111,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — November 2023 (variant 1) · Directed Writing (speech) · Composition",
+  "sources": {
+    "A": {
+      "title": "We should replace old buildings with new, better ones",
+      "untitled": false,
+      "line_count": 29,
+      "line_checks": {
+        "5": "as repurposing of the land for p",
+        "10": "Some older buildings may still l",
+        "15": "of purpose, is the obvious answe",
+        "20": "winning architect, Joy Yang. ‘Nu",
+        "25": "modern buildings in natural shap"
+      }
+    },
+    "B": {
+      "title": "Recycling old buildings",
+      "untitled": false,
+      "line_count": 27,
+      "line_checks": {
+        "5": "and bland, saving not just iconi",
+        "10": "retaining many of their historic",
+        "15": "create room for the sort of amen",
+        "20": "contemporary features that provi",
+        "25": "When properly renovated to incor"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w23_in_21.pdf",
+    "ins_sha1": "4b41e053545b0dc3390bc1967f37dae106b9585d",
+    "qp": "0500_w23_qp_21.pdf",
+    "qp_sha1": "e87ba43b186eb346079c15c34577756b2f68e495",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "no introduction"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line",
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading",
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

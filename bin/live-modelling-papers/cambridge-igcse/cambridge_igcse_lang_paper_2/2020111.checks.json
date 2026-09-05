@@ -1,0 +1,89 @@
+{
+  "topic_number": 2020111,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — November 2020 (variant 1) · Directed Writing (speech) · Composition",
+  "sources": {
+    "A": {
+      "title": "eSports in the Olympic games?",
+      "untitled": false,
+      "line_count": 30,
+      "line_checks": {
+        "5": "from the comfort of their homes ",
+        "10": "in gaming. eSports athletes are ",
+        "15": "eSports is young, its players an",
+        "20": "eSports, it is claimed, is the r",
+        "25": "than narrow-minded traditionalis",
+        "30": "eating sounds good too, but no o"
+      }
+    },
+    "B": {
+      "title": "Resistance is futile: eSports is massive ... and growing",
+      "untitled": false,
+      "line_count": 24,
+      "line_checks": {
+        "5": "audiences that rival the biggest",
+        "10": "So how big is this gaming thing?",
+        "15": "The most popular video-streaming",
+        "20": "reality is that more than half o"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w20_in_21.pdf",
+    "ins_sha1": "3cbb682fa41df8c259f3ded19f60235d46ad1591",
+    "qp": "0500_w20_qp_21.pdf",
+    "qp_sha1": "d337fbb18b6c4051885ff6eab915f4f73e275b6b",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

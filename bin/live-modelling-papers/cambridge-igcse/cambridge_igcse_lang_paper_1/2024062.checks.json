@@ -1,0 +1,121 @@
+{
+  "topic_number": 2024062,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — June 2024 (variant 2) · Bring your child to work day / A change of direction / Changing places",
+  "sources": {
+    "A": {
+      "title": "Bring your child to work day",
+      "untitled": false,
+      "line_count": 26,
+      "line_checks": {
+        "5": "parents could take their offspri",
+        "10": "into the atmosphere of your work",
+        "15": "company rules and procedures as ",
+        "20": "meetings? If yes, you’ll need to",
+        "25": "and remote teams can participate"
+      }
+    },
+    "B": {
+      "title": "A change of direction",
+      "untitled": false,
+      "line_count": 30,
+      "line_checks": {
+        "5": "uncertainty, knowing I was likel",
+        "10": "find it easy. However, once I’d ",
+        "15": "Admittedly, memorising new infor",
+        "20": "me no differently from other stu",
+        "25": "lucky to have a lawyer as your r",
+        "30": "me greater empathy for the diffe"
+      }
+    },
+    "C": {
+      "title": "Changing places",
+      "untitled": false,
+      "line_count": 54,
+      "line_checks": {
+        "5": "I’ve mixed feelings now: is it p",
+        "10": "food.",
+        "15": "moving traditional welcome of ex",
+        "20": "29 January",
+        "25": "The weather’s definitely getting",
+        "30": "9 February",
+        "35": "Tulshi is the last of his siblin",
+        "40": "Ramesh looks confused, then amus",
+        "45": "to see each other, catch up, rem",
+        "50": "Ramesh tells everyone that tiger"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s24_in_12.pdf",
+    "ins_sha1": "0c29bd7bf9404358f6b71274db970d1cab8b2c50",
+    "qp": "0500_s24_qp_12.pdf",
+    "qp_sha1": "cbb194aa1e8053cb21e7e62a6f25e47f120dc4b4",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q1 paragraph 2": "ok (Text A, paragraph 2 here)",
+    "Q1 paragraph 3-4": "ok (Text A, paragraph 3 here)",
+    "Q1 paragraph 5": "ok (Text A, paragraph 5 here)",
+    "Q2 paragraph 6 begins": "ok (Text C, paragraph 8 here)",
+    "Q2 paragraph 13 begins": "ok (Text C, paragraph 20 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 32,
+        "previous_line_ends_a_sentence": false,
+        "next_line_opens_one": false,
+        "paragraph_break": false
+      }
+    ]
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Q2 paragraph 6 begins: Cambridge does not count Text C’s date or sub-heading lines, so its paragraph 6 is the 8th block of the text in this document",
+    "Q2 paragraph 13 begins: Cambridge does not count Text C’s date or sub-heading lines, so its paragraph 13 is the 20th block of the text in this document"
+  ]
+}

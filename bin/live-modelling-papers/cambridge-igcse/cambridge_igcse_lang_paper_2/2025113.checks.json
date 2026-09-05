@@ -1,0 +1,86 @@
+{
+  "topic_number": 2025113,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — November 2025 (variant 3) · Directed Writing (letter) · Composition",
+  "sources": {
+    "A": {
+      "title": null,
+      "untitled": true,
+      "line_count": 54,
+      "line_checks": {
+        "5": "around and not really joining in",
+        "10": "Harpreet: No, that’s the worst o",
+        "15": "your mistake and being better ne",
+        "20": "something? Pretty bad if they do",
+        "25": "Esther: Sure, you’d have to read",
+        "30": "Esther: Well, ‘fake it until you",
+        "35": "Esther: I suppose so. I mean, I’",
+        "40": "Harpreet: What do you mean?",
+        "45": "sailing through life not worryin",
+        "50": "The question for our listeners r"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w25_in_23.pdf",
+    "ins_sha1": "fe882d5b397b613abeff12437de619c7f883886c",
+    "qp": "0500_w25_qp_23.pdf",
+    "qp_sha1": "80948e3ea479ef6c07daae53497207fb7e86b392",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [
+      {
+        "after_line": 37,
+        "previous_line_ends_a_sentence": false,
+        "next_line_opens_one": false,
+        "paragraph_break": false
+      }
+    ]
+  },
+  "readings": {
+    "A": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

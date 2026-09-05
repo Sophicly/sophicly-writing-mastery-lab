@@ -1,0 +1,118 @@
+{
+  "topic_number": 2024112,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — November 2024 (variant 2) · The forest elephant / Volunteering with elephants / River Game Reserve",
+  "sources": {
+    "A": {
+      "title": "The forest elephant",
+      "untitled": false,
+      "line_count": 26,
+      "line_checks": {
+        "5": "elusive forest elephant.",
+        "10": "Genetic analysis has demonstrate",
+        "15": "dark colouring, allows the fores",
+        "20": "If we care about the future of o",
+        "25": "very much associated with combat"
+      }
+    },
+    "B": {
+      "title": "Volunteering with elephants",
+      "untitled": false,
+      "line_count": 31,
+      "line_checks": {
+        "5": "but I naively believed that all ",
+        "10": "lucrative tourism rather than ac",
+        "15": "programmes are not particularly ",
+        "20": "I volunteered with elephants for",
+        "25": "exciting goodies to share.",
+        "30": "Our evenings and weekends were f"
+      }
+    },
+    "C": {
+      "title": "River Game Reserve",
+      "untitled": false,
+      "line_count": 47,
+      "line_checks": {
+        "5": "exuberant elephant babies gleefu",
+        "10": "separates from the others and am",
+        "15": "Almost immediately, an animal we",
+        "20": "of a night of torrential rain, t",
+        "25": "It wasn’t until dawn that we man",
+        "30": "around our game reserve, so this",
+        "35": "coffee and very little sleep. Th",
+        "40": "One afternoon he came home and l",
+        "45": "‘I could sense her mood. She isn"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w24_in_12.pdf",
+    "ins_sha1": "32e4b0fb555d18e5f0bcf557f8e4f65dda8ea6bd",
+    "qp": "0500_w24_qp_12.pdf",
+    "qp_sha1": "b0d9382b14bcac3cf1aa2e6ec69cb0d2e3a514b4",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q1 paragraph 4-5": "ok (Text A, paragraph 4 here)",
+    "Q1 paragraph 6": "ok (Text A, paragraph 6 here)",
+    "Q2 paragraph 1 begins": "ok (Text C, paragraph 1 here)",
+    "Q2 paragraph 2 begins": "ok (Text C, paragraph 2 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 37,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ]
+}

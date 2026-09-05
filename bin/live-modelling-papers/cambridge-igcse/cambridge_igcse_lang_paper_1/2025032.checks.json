@@ -1,0 +1,119 @@
+{
+  "topic_number": 2025032,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — March 2025 (variant 2) · Animals that migrate / Zozu’s story / The last migration",
+  "sources": {
+    "A": {
+      "title": "Animals that migrate",
+      "untitled": false,
+      "line_count": 30,
+      "line_checks": {
+        "5": "Despite their feats of incredibl",
+        "10": "different from other types of an",
+        "15": "had to be sedated and docile bef",
+        "20": "their surroundings, or they coul",
+        "25": "figure out conclusively what dri",
+        "30": "acknowledges the study’s lead sc"
+      }
+    },
+    "B": {
+      "title": "Zozu’s story",
+      "untitled": false,
+      "line_count": 26,
+      "line_checks": {
+        "5": "data from studies tracing animal",
+        "10": "speedy migration can avoid givin",
+        "15": "crossings such as underpasses, h",
+        "20": "eventually spend the full year w",
+        "25": "in decline – their migration an "
+      }
+    },
+    "C": {
+      "title": "The last migration",
+      "untitled": false,
+      "line_count": 44,
+      "line_checks": {
+        "5": "confirming it’s working. Her hea",
+        "10": "the days when there were fish to",
+        "15": "learn their secrets. I’m not sur",
+        "20": "Ennis breathes out heavily, unsu",
+        "25": "to his vessel. ‘They’ll only hel",
+        "30": "quizzically from the deck. ‘You ",
+        "35": "‘Because she flies too,’ he smil",
+        "40": "the sky. More somethings appear,"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_m25_in_12.pdf",
+    "ins_sha1": "508a0bb1256493be93b6e3737bb6996d670ad972",
+    "qp": "0500_m25_qp_12.pdf",
+    "qp_sha1": "5201579e66f2b0952a278d86c85e4c7fdd41667b",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q1 paragraph 2": "ok (Text A, paragraph 2 here)",
+    "Q1 paragraph 3-4": "ok (Text A, paragraph 3 here)",
+    "Q1 paragraph 5": "ok (Text A, paragraph 5 here)",
+    "Q2 paragraph 1 begins": "ok (Text C, paragraph 1 here)",
+    "Q2 paragraph 13 begins": "ok (Text C, paragraph 13 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 35,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "no introduction",
+    "C": "introduction skipped, scene rule not numbered"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading",
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "topic_number": 2020061,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — June 2020 (variant 1) · Directed Writing (letter) · Composition",
+  "sources": {
+    "A": {
+      "title": "Why space tourism matters",
+      "untitled": false,
+      "line_count": 26,
+      "line_checks": {
+        "5": "the Mojave Air and Space Port.",
+        "10": "There’s already talk of drastica",
+        "15": "What’s more, the cost of reachin",
+        "20": "achievements of the Apollo missi",
+        "25": "view of the world. As a result, "
+      }
+    },
+    "B": {
+      "title": "Why on earth would I be a space tourist?",
+      "untitled": false,
+      "line_count": 26,
+      "line_checks": {
+        "5": "A thrilling prospect beyond your",
+        "10": "very idea of tourism here on Ear",
+        "15": "with money to burn. They won’t h",
+        "20": "powerfully struck by its beauty.",
+        "25": "My imaginary space-obsessed uncl"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s20_in_21.pdf",
+    "ins_sha1": "b69d47378cc663d4ae4bce594ca8a3f934f6dbc5",
+    "qp": "0500_s20_qp_21.pdf",
+    "qp_sha1": "2ab5183ff5bb8743a676e56305745ecd302380e5",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

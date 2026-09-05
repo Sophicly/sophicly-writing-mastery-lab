@@ -1,0 +1,110 @@
+{
+  "topic_number": 2020113,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — November 2020 (variant 3) · Space travel / The human swan / An incredible journey",
+  "sources": {
+    "A": {
+      "title": "Space travel",
+      "untitled": false,
+      "line_count": 29,
+      "line_checks": {
+        "5": "The desire to go to space is as ",
+        "10": "History’ by Lucian of Samosata (",
+        "15": "However, since the last lunar la",
+        "20": "Space flight is prohibitively ex",
+        "25": "Whether by public or private mea"
+      }
+    },
+    "B": {
+      "title": "The human swan",
+      "untitled": false,
+      "line_count": 28,
+      "line_checks": {
+        "5": "With her swan’s-eye view of the ",
+        "10": "to shoot migrating birds for foo",
+        "15": "At one point, two white-fronted ",
+        "20": "thing and they completely ignore",
+        "25": "Although flying low over the Tai"
+      }
+    },
+    "C": {
+      "title": "An incredible journey",
+      "untitled": false,
+      "line_count": 47,
+      "line_checks": {
+        "5": "water in all the oceans of the w",
+        "10": "brochures, one could ‘read a new",
+        "15": "Helmuth laughed as I urged him t",
+        "20": "The radiator thermometer was alr",
+        "25": "before we started out. The overl",
+        "30": "knees. We were both depressed bu",
+        "35": "‘Maybe we can manage with them a",
+        "40": "shining like patches of snow as ",
+        "45": "were thinking, ‘Funny these huma"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w20_in_13.pdf",
+    "ins_sha1": "956a2abd5fee9898359c8b3d8ce06525bb8c2b40",
+    "qp": "0500_w20_qp_13.pdf",
+    "qp_sha1": "e56733c0569ac89a43e8a767134dca3d9b2e74fb",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 34,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": []
+}

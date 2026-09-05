@@ -1,0 +1,118 @@
+{
+  "topic_number": 2024111,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — November 2024 (variant 1) · Bees / Beekeeping / The business venture",
+  "sources": {
+    "A": {
+      "title": "Bees",
+      "untitled": false,
+      "line_count": 24,
+      "line_checks": {
+        "5": "inside, attended by the workers ",
+        "10": "longer tongue can reach deep ins",
+        "15": "and vanilla. And if you are wear",
+        "20": "use on crops to make our food sa"
+      }
+    },
+    "B": {
+      "title": "Beekeeping",
+      "untitled": false,
+      "line_count": 30,
+      "line_checks": {
+        "5": "town requires hive registrations",
+        "10": "was a lot of advice out there, w",
+        "15": "even in a full beekeeping suit w",
+        "20": "on a level site, receive sun dur",
+        "25": "me shift those hives around.",
+        "30": "heavy hives to beekeeping access"
+      }
+    },
+    "C": {
+      "title": "The business venture",
+      "untitled": false,
+      "line_count": 48,
+      "line_checks": {
+        "5": "freezer isn’t very big,’ he caut",
+        "10": "worker bee, one of the first to ",
+        "15": "would be accompanied by hundreds",
+        "20": "out just once a week in the loca",
+        "25": "pay too high a price for them. W",
+        "30": "A worker bee swung through the k",
+        "35": "silence consumed the kitchen. ‘Y",
+        "40": "to use and whether it is eco-fri",
+        "45": "‘Then we should think bigger and"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w24_in_11.pdf",
+    "ins_sha1": "d6dc9b42097a56789a20ce0a7b796ffb2a1ce25a",
+    "qp": "0500_w24_qp_11.pdf",
+    "qp_sha1": "1c145bf72d8c93795417f439cbd6123e65168eb3",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {
+    "Q1 paragraph 3": "ok (Text A, paragraph 3 here)",
+    "Q1 paragraph 4-5": "ok (Text A, paragraph 4 here)",
+    "Q1 paragraph 6": "ok (Text A, paragraph 6 here)",
+    "Q2 paragraph 5 begins": "ok (Text C, paragraph 5 here)",
+    "Q2 paragraph 11 begins": "ok (Text C, paragraph 11 here)"
+  },
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 29,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "introduction skipped",
+    "C": "introduction skipped, scene rule not numbered"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ]
+}

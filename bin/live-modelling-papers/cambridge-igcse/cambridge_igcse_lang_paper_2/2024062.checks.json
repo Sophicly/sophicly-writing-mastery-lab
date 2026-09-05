@@ -1,0 +1,88 @@
+{
+  "topic_number": 2024062,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — June 2024 (variant 2) · Directed Writing (letter) · Composition",
+  "sources": {
+    "A": {
+      "title": null,
+      "untitled": true,
+      "line_count": 26,
+      "line_checks": {
+        "5": "You don’t want to talk to someon",
+        "10": "simply admit it and apologise. T",
+        "15": "asks for your evaluation of a pr",
+        "20": "This includes making an elaborat",
+        "25": "‘I deserve better because I work"
+      }
+    },
+    "B": {
+      "title": null,
+      "untitled": true,
+      "line_count": 23,
+      "line_checks": {
+        "5": "We don’t just lie to protect our",
+        "10": "reliably lie to protect other pe",
+        "15": "involves moral and emotional rea",
+        "20": "some of those lies help to bind "
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s24_in_22.pdf",
+    "ins_sha1": "1faa64ac29469b925f7e3b579ba29bcc37c5f583",
+    "qp": "0500_s24_qp_22.pdf",
+    "qp_sha1": "ab04c593811e84061bb016e01e5bc2bdf92071fa",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

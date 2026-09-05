@@ -1,0 +1,91 @@
+{
+  "topic_number": 2021111,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — November 2021 (variant 1) · Directed Writing (article) · Composition",
+  "sources": {
+    "A": {
+      "title": "The problems of putting things off and why we do it",
+      "untitled": false,
+      "line_count": 34,
+      "line_checks": {
+        "5": "deadline looming.",
+        "10": "Procrastination is a dangerous f",
+        "15": "Others say it’s not a matter of ",
+        "20": "unfortunately, reality comes bac",
+        "25": "the implications for their futur",
+        "30": "The typical advice for procrasti"
+      }
+    },
+    "B": {
+      "title": "Procrastination is positively good for you",
+      "untitled": false,
+      "line_count": 23,
+      "line_checks": {
+        "5": "always productive. I read a book",
+        "10": "Well, I make a list of activitie",
+        "15": "procrastinators; we can only gue",
+        "20": "makes us more creative. Apparent"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w21_in_21.pdf",
+    "ins_sha1": "8271d65016fcc9f58feceddb7dbd208ecaf87e5c",
+    "qp": "0500_w21_qp_21.pdf",
+    "qp_sha1": "21c2051ec10a9060fdc427204ce6c592751531aa",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "no introduction"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line",
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading",
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

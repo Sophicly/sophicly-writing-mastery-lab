@@ -1,0 +1,89 @@
+{
+  "topic_number": 2025112,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — November 2025 (variant 2) · Directed Writing (letter) · Composition",
+  "sources": {
+    "A": {
+      "title": "AI art",
+      "untitled": false,
+      "line_count": 40,
+      "line_checks": {
+        "5": "written by your favourite musici",
+        "10": "digital art, compare it with the",
+        "15": "no different from drawing with a",
+        "20": "and interpret the world around u",
+        "25": "nothing more sophisticated than ",
+        "30": "judgements. Someone must guide t",
+        "35": "the world has photographers, fil",
+        "40": "art."
+      }
+    },
+    "B": {
+      "title": "Young artist of the future",
+      "untitled": false,
+      "line_count": 14,
+      "line_checks": {
+        "5": "We are asking our young people t",
+        "10": "school year all have an equal op"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w25_in_22.pdf",
+    "ins_sha1": "d3f6b3cf0ede418198ed96ab93177e44c65ec718",
+    "qp": "0500_w25_qp_22.pdf",
+    "qp_sha1": "941477ed5d4678508a44ea4d06a277d333344229",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "topic_number": 2020062,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — June 2020 (variant 2) · Directed Writing (speech) · Composition",
+  "sources": {
+    "A": {
+      "title": null,
+      "untitled": true,
+      "line_count": 22,
+      "line_checks": {
+        "5": "future.",
+        "10": "They have to show enough maturit",
+        "15": "available reflected the country’",
+        "20": "resilience and sense of adventur"
+      }
+    },
+    "B": {
+      "title": null,
+      "untitled": true,
+      "line_count": 25,
+      "line_checks": {
+        "5": "families, planning and preparing",
+        "10": "principles vary widely across th",
+        "15": "all manner of electronics may we",
+        "20": "is not their responsibility. I w",
+        "25": "broadening their horizons."
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s20_in_22.pdf",
+    "ins_sha1": "6a67815f9719b75870ffdce5f35f9b0be18655ea",
+    "qp": "0500_s20_qp_22.pdf",
+    "qp_sha1": "05bb10bc0d9468e26dd32724a2db274ef1dc4abc",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

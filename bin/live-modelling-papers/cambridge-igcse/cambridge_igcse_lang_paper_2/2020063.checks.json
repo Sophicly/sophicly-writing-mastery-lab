@@ -1,0 +1,87 @@
+{
+  "topic_number": 2020063,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — June 2020 (variant 3) · Directed Writing (speech) · Composition",
+  "sources": {
+    "A": {
+      "title": "The surprising benefits of extreme sports",
+      "untitled": false,
+      "line_count": 23,
+      "line_checks": {
+        "5": "However, aside from the obvious ",
+        "10": "Fears can grow from a lack of fa",
+        "15": "life. One can train to become a ",
+        "20": "fears. ‘I know how to manage the"
+      }
+    },
+    "B": {
+      "title": null,
+      "untitled": true,
+      "line_count": 23,
+      "line_checks": {
+        "5": "of a team, they engage in lone s",
+        "10": "more risky, dangerous feats.",
+        "15": "to compete in these sports profe",
+        "20": "can also involve danger to those"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s20_in_23.pdf",
+    "ins_sha1": "27b3f7df690b7098a893d03b1cc504616010b7ab",
+    "qp": "0500_s20_qp_23.pdf",
+    "qp_sha1": "33c59a9622a0126d77dd0329b61efce4f4ec0b83",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}

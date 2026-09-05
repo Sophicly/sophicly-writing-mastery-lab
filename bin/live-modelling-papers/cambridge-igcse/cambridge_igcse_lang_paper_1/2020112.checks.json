@@ -1,0 +1,110 @@
+{
+  "topic_number": 2020112,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_1",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_1",
+  "label": "Cambridge IGCSE 0500 Paper 1 — November 2020 (variant 2) · How cutting down trees can help the environment / Japanese cherry blossom season / Walking in the jungle",
+  "sources": {
+    "A": {
+      "title": "How cutting down trees can help the environment",
+      "untitled": false,
+      "line_count": 29,
+      "line_checks": {
+        "5": "In these situations selective cu",
+        "10": "However, we must consider how th",
+        "15": "they once had. Years ago, larger",
+        "20": "As a result, conservation groups",
+        "25": "very efficiently which causes ov"
+      }
+    },
+    "B": {
+      "title": "Japanese cherry blossom season",
+      "untitled": false,
+      "line_count": 30,
+      "line_checks": {
+        "5": "Flower-viewing picnics flooded p",
+        "10": "but I witnessed how little this ",
+        "15": "it inspires art, music and poetr",
+        "20": "on the revolving carousel of fam",
+        "25": "mountainous and uninhabitable. M",
+        "30": "most northern part of Japan the "
+      }
+    },
+    "C": {
+      "title": "Walking in the jungle",
+      "untitled": false,
+      "line_count": 43,
+      "line_checks": {
+        "5": "Then we get to the waterfall.",
+        "10": "‘It’s perfect, but how do we get",
+        "15": "We are cradled in frothy, azure ",
+        "20": "30-metre-tall trees share space ",
+        "25": "each. My bag, meanwhile, is fill",
+        "30": "on the muddy beach below. Nearby",
+        "35": "branch of a native tree, letting",
+        "40": "will come out at night, but Mari"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 30,
+    "Q2": 25,
+    "Q3": 25
+  },
+  "q1_format": "sub_parts",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_w20_in_12.pdf",
+    "ins_sha1": "e39638d81bbb0b049d148822c8c3aa9df53bfa79",
+    "qp": "0500_w20_qp_12.pdf",
+    "qp_sha1": "1f5cdf05aebc09b79ce9a81b8694a5971eacedd2",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      15
+    ],
+    "Q2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      15
+    ],
+    "Q3": [
+      25
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": [],
+    "C": [
+      {
+        "after_line": 37,
+        "previous_line_ends_a_sentence": true,
+        "next_line_opens_one": true,
+        "paragraph_break": true
+      }
+    ]
+  },
+  "readings": {
+    "A": "introduction skipped",
+    "B": "introduction skipped",
+    "C": "introduction skipped"
+  },
+  "needs_human": [],
+  "notes": []
+}

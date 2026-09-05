@@ -1,0 +1,90 @@
+{
+  "topic_number": 2023062,
+  "board": "cambridge-igcse",
+  "text": "cambridge_igcse_lang_paper_2",
+  "store": "swml_topics_cambridge-igcse_cambridge_igcse_lang_paper_2",
+  "label": "Cambridge IGCSE 0500 Paper 2 — June 2023 (variant 2) · Directed Writing (letter) · Composition",
+  "sources": {
+    "A": {
+      "title": "What are you sorry for?",
+      "untitled": false,
+      "line_count": 22,
+      "line_checks": {
+        "5": "our unique range of bestselling ",
+        "10": "Everyday apologies are part of p",
+        "15": "life, and especially at work, ap",
+        "20": "Actually, a real apology would h"
+      }
+    },
+    "B": {
+      "title": "The power of an apology",
+      "untitled": false,
+      "line_count": 29,
+      "line_checks": {
+        "5": "A leading psychotherapist says t",
+        "10": "every little thing, it will carr",
+        "15": "insulting.",
+        "20": "relationships, but they require ",
+        "25": "at us. By taking responsibility "
+      }
+    }
+  },
+  "questions": {
+    "Q1": 40,
+    "Q2": 40
+  },
+  "q1_format": "open",
+  "total_marks": 80,
+  "provenance": {
+    "syllabus": "0500",
+    "ins": "0500_s23_in_22.pdf",
+    "ins_sha1": "91ce02edc7cb8d4cadab80ae7acb29b4f7458db6",
+    "qp": "0500_s23_qp_22.pdf",
+    "qp_sha1": "77acd05e5d804b94d0c316825c4eebf19eae7cd8",
+    "ms": null
+  },
+  "part_marks": {
+    "Q1": [
+      15,
+      25
+    ],
+    "Q2": [
+      16,
+      24
+    ]
+  },
+  "paragraph_checks": {},
+  "page_breaks": {
+    "A": [],
+    "B": []
+  },
+  "readings": {
+    "A": "no introduction",
+    "B": "no introduction"
+  },
+  "needs_human": [],
+  "notes": [
+    "Text A is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text A\") — its printed description is the Context line",
+    "Text B is printed with no title and no author on the Paper 2 insert (Cambridge heads it simply \"Text B\") — its printed description is the Context line",
+    "Text A carries no introductory line on the insert — Cambridge prints the text straight under the heading",
+    "Text B carries no introductory line on the insert — Cambridge prints the text straight under the heading"
+  ],
+  "section_b_options": [
+    {
+      "n": 2,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 3,
+      "genre": "Descriptive Writing"
+    },
+    {
+      "n": 4,
+      "genre": "Narrative Writing"
+    },
+    {
+      "n": 5,
+      "genre": "Narrative Writing"
+    }
+  ]
+}
